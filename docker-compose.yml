@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  minio:
+    image: minio/minio:latest
+
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+
+    environment:
+      MINIO_ACCESS_KEY: eden12345
+      MINIO_SECRET_KEY: eden12345
+
+    command: server --console-address ":9001" /data
+
+    volumes:
+      - ./minio/data:/data
+      - ./minio/config:/root/.minio

@@ -1,0 +1,78 @@
+module.exports = {
+  env: {
+    browser: true,
+    node: true,
+  },
+  extends: [
+    'next',
+    'airbnb',
+    'airbnb-typescript',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
+    'prettier',
+  ],
+  plugins: ['@typescript-eslint', 'import'],
+  settings: {
+    next: {
+      rootDir: ['apps/*/', 'packages/*/'],
+    },
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
+    },
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: ['apps/*/tsconfig.json'],
+      },
+    },
+  },
+  rules: {
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    'react/prop-types': 'off',
+    'react/no-unescaped-entities': 'off',
+    'react/react-in-jsx-scope': 'off',
+
+    '@typescript-eslint/no-var-requires': 'warn',
+    '@typescript-eslint/ban-ts-comment': 'warn',
+
+    '@typescript-eslint/no-explicit-any': 'error',
+    'react-hooks/exhaustive-deps': 'error',
+    '@typescript-eslint/no-redeclare': 'error',
+    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/naming-convention': [
+      'error',
+      {
+        selector: 'typeLike',
+        format: ['PascalCase', 'UPPER_CASE'],
+      },
+    ],
+    'no-console': [
+      'error',
+      { allow: ['warn', 'error', 'info', 'time', 'timeEnd'] },
+    ],
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: 'lodash',
+            message:
+              "Import from 'lodash/<package>' directly to support tree-shaking.",
+          },
+        ],
+      },
+    ],
+    'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
+  },
+  ignorePatterns: [
+    '**/*.js',
+    '**/*.json',
+    'node_modules',
+    'public',
+    'styles',
+    '.next',
+    'coverage',
+    'dist',
+    '.turbo',
+  ],
+}
