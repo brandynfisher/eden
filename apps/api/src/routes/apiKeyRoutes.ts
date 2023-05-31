@@ -8,14 +8,6 @@ import {
 } from '../controllers/apiKeyController'
 import { isAuth } from '../middleware/authMiddleware'
 
-export interface ApiKeyCreateBody {
-  note?: string
-}
-
-export interface ApiKeyDeleteBody {
-  apiKey: string
-}
-
 const apiKeyRoutes: FastifyPluginAsync = async server => {
   server.post('/apikeys/create', {
     schema: {

@@ -1,8 +1,8 @@
+import { ApiKeyCreateBody, ApiKeyDeleteBody } from '@eden-labs/types'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { randomId } from '../lib/util'
 import { ApiKey, ApiKeyInput } from '../models/ApiKey'
-import { ApiKeyCreateBody, ApiKeyDeleteBody } from '../routes/apiKeyRoutes'
 
 export const createApiKey = async (
   request: FastifyRequest,
