@@ -1,4 +1,4 @@
-import CustomLayout from '@/components/CustomLayout'
+import CustomLayout from '@/components/Layout/CustomLayout'
 import UserProvider from '@/providers/UserProvider'
 import WalletProvider from '@/providers/WalletProvider'
 import '@/styles/globals.css'
