@@ -21,6 +21,7 @@
     "vitest": "^0.31.1"
   },
   "dependencies": {
+    "@eden-sdk/types": "*",
     "axios": "^1.4.0"
   },
   "files": [

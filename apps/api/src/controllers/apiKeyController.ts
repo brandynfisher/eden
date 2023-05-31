@@ -1,4 +1,7 @@
-import { ApiKeyCreateBody, ApiKeyDeleteBody } from '@eden-labs/types'
+import {
+  ApiKeysCreateArguments,
+  ApiKeysDeleteArguments,
+} from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { randomId } from '../lib/util'
@@ -9,7 +12,7 @@ export const createApiKey = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { note } = request.body as ApiKeyCreateBody
+  const { note } = request.body as ApiKeysCreateArguments
 
   const apiKey = randomId(24)
   const apiSecret = randomId(24)
@@ -37,7 +40,7 @@ export const deleteApiKey = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { apiKey } = request.body as ApiKeyDeleteBody
+  const { apiKey } = request.body as ApiKeysDeleteArguments
 
   if (!apiKey) {
     return reply.status(400).send({
