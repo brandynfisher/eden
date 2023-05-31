@@ -1,7 +1,9 @@
-import { ToolOutlined, UserOutlined } from '@ant-design/icons'
+import { UserContext } from '@/providers/UserProvider'
+import { HomeOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons'
 import { Menu, type MenuProps, theme } from 'antd'
 import { Layout } from 'antd'
-import React from 'react'
+import Link from 'next/link'
+import React, { useContext } from 'react'
 
 const { Sider } = Layout
 
@@ -17,27 +19,16 @@ function getItem(
     key,
     icon,
     children,
-    label,
+    label: <Link href={key.toString()}>{label}</Link>,
   } as MenuItem
 }
 
-const items: MenuItem[] = [
-  getItem('User', 'sub1', <UserOutlined />, [
-    getItem('My account', '1'),
-    getItem('My creations', '2'),
-  ]),
-  getItem('Apps', 'sub2', <ToolOutlined />, [getItem('Voice2Image', '3')]),
-  getItem('Generators', 'sub3', <ToolOutlined />, [
-    getItem('Create', '5'),
-    getItem('Interpolate', '6'),
-    getItem('Real2Real', '7'),
-    getItem('Remix', '8'),
-    getItem('Interrogate', '9'),
-    getItem('Lora train', '10'),
-    getItem('TTS', '11'),
-    getItem('Wav2Lip', '12'),
-    getItem('Complete', '13'),
-  ]),
+const items: MenuItem[] = [getItem('All Creations', '/', <HomeOutlined />)]
+
+const authItems: MenuItem[] = [
+  getItem('All Creations', '/', <HomeOutlined />),
+  getItem('My Profile', '/me', <UserOutlined />),
+  getItem('Create', '/create', <ToolOutlined />),
 ]
 
 const LayoutMenu = () => {
@@ -45,14 +36,16 @@ const LayoutMenu = () => {
     token: { colorBgContainer },
   } = theme.useToken()
 
+  const { isAuthenticated } = useContext(UserContext)
+  const menuItems = isAuthenticated ? authItems : items
+
   return (
     <Sider width={200} style={{ background: colorBgContainer }}>
       <Menu
         mode="inline"
-        defaultSelectedKeys={['1']}
-        defaultOpenKeys={['sub1']}
+        defaultSelectedKeys={['sub1']}
         style={{ height: '100%', borderRight: 0 }}
-        items={items}
+        items={menuItems}
       />
     </Sider>
   )
