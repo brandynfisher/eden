@@ -1,6 +1,7 @@
 import AuthModal from '@/components/AuthModal'
+import CreationNotificationMenu from '@/components/CreationNotificationMenu'
 import LoginButton from '@/components/LoginButton'
-import { Layout } from 'antd'
+import { Layout, Space } from 'antd'
 import Link from 'next/link'
 import React from 'react'
 
@@ -21,8 +22,10 @@ const LayoutHeader = () => {
           </Link>
         </div>
         <div style={{ marginLeft: 'auto' }}>
-          {' '}
-          <LoginButton setAuthModalOpen={setAuthModalOpen} />
+          <Space>
+            <CreationNotificationMenu />
+            <LoginButton setAuthModalOpen={setAuthModalOpen} />
+          </Space>
         </div>
       </Header>
       <AuthModal

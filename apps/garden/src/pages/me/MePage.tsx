@@ -1,22 +1,20 @@
-import { UserContext } from '@/providers/UserProvider'
+import CreationFilters from '@/components/CreationFilters'
+import Masonry from '@/components/Masonry'
+import ProfileHeader from '@/components/ProfileHeader'
+import { exImages } from '@/pages/HomePage'
 import { Space } from 'antd'
 import { Inter } from 'next/font/google'
-import React, { useContext } from 'react'
+import React from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
 const MePage = () => {
-  const { mannaBalance } = useContext(UserContext)
-
   return (
     <main className={`flex min-h-screen ${inter.className}`}>
       <Space direction="vertical">
-        <div className={`text-3xl text-black ${inter.className}`}>
-          My Profile
-        </div>
-        <div className={`text-med text-black ${inter.className}`}>
-          Manna Balance: {mannaBalance}
-        </div>
+        <ProfileHeader />
+        <CreationFilters />
+        <Masonry images={exImages} />
       </Space>
     </main>
   )

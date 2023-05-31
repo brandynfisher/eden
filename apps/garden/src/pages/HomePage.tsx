@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const images = [
+export const exImages = [
   [
     'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image.jpg',
     'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-1.jpg',
@@ -34,7 +34,7 @@ const HomePage = () => {
         <div className={`text-3xl text-black ${inter.className}`}>
           The Garden of Eden
         </div>
-        <Masonry images={images} />
+        <Masonry images={exImages} />
       </Space>
     </main>
   )

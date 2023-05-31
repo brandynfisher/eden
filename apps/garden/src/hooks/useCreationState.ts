@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export const usePendingCreationState = () => {
+export const useCreationState = () => {
   const [taskIds] = useState<string[]>([])
 
   return {
