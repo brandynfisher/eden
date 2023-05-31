@@ -8,7 +8,7 @@ module.exports = {
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
   ],
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'react', 'react-hooks'],
   settings: {
     next: {
       rootDir: ['apps/*/', 'packages/*/'],
@@ -33,7 +33,7 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 'warn',
 
     '@typescript-eslint/no-explicit-any': 'error',
-    'react-hooks/exhaustive-deps': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
     '@typescript-eslint/no-redeclare': 'error',
     '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/naming-convention': [

@@ -4,6 +4,6 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["src/", "tests/**/*.ts", "global.d.ts"],
+  "include": ["src/**/*.ts", "global.d.ts", "tests"],
   "exclude": ["node_modules", ".turbo", "coverage", "dist"]
 }
