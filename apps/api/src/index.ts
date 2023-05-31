@@ -2,6 +2,7 @@ import createServer from './server'
 
 process.on('unhandledRejection', err => {
   console.error(err)
+  console.log('hi')
   process.exit(1)
 })
 
