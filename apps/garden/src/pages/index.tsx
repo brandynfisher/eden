@@ -1,23 +1,22 @@
-import AuthModal from '@/components/AuthModal'
 import TaskButton from '@/components/TaskButton'
-import { Button } from 'antd'
+import { UserContext } from '@/providers/UserProvider'
+import { Space } from 'antd'
 import { Inter } from 'next/font/google'
-import { useState } from 'react'
+import { useContext } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
-  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const { mannaBalance } = useContext(UserContext)
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <Button onClick={() => setAuthModalOpen(true)}>Authenticate</Button>
-      <AuthModal
-        open={authModalOpen}
-        onCancel={() => setAuthModalOpen(false)}
-      />
-      <TaskButton />
+    <main className={`flex min-h-screen ${inter.className}`}>
+      <Space direction="vertical">
+        <div className={`text-3xl text-black ${inter.className}`}>
+          Manna Balance: {mannaBalance}
+        </div>
+        <TaskButton />
+      </Space>
     </main>
   )
 }

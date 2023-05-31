@@ -7,6 +7,7 @@ export interface UserContextType {
   isAuthenticating: boolean
   isAuthenticated: boolean
   authenticate?: () => void
+  logout?: () => void
   address?: `0x${string}`
   mannaBalance?: number
 }
@@ -17,6 +18,7 @@ export const UserContext = createContext<UserContextType>({
   isAuthenticating: false,
   isAuthenticated: false,
   authenticate: undefined,
+  logout: undefined,
   address: undefined,
   mannaBalance: undefined,
 })

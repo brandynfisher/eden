@@ -5,8 +5,8 @@ import { useAccount } from 'wagmi'
 
 export const useUserState = () => {
   const { address, isConnected, isConnecting } = useAccount()
-  const { manna } = useBalance()
-  const { isAuthenticated, isAuthenticating, authenticate } = useAuth()
+  const { isAuthenticated, isAuthenticating, authenticate, logout } = useAuth()
+  const { manna } = useBalance({ isAuthenticated })
 
   const user: UserContextType = {
     isConnected,
@@ -14,9 +14,9 @@ export const useUserState = () => {
     isAuthenticating,
     isAuthenticated,
     authenticate,
+    logout,
     address,
     mannaBalance: manna,
   }
-
   return user
 }

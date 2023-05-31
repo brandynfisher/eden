@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { SiweMessage, generateNonce } from 'siwe'
 
@@ -49,7 +49,6 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
 
   // check that the nonce matches
   const { nonce } = new SiweMessage(message)
-  console.log('111', nonce, challenge.nonce)
 
   if (nonce !== challenge.nonce) {
     return reply.status(400).send({

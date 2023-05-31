@@ -36,13 +36,11 @@ export const useAuth = () => {
   }
 
   const login = async (message: string, signature: string) => {
-    const response = await axios.post(`/api/login`, {
+    await axios.post(`/api/login`, {
       address,
       message,
       signature,
     })
-    const { token } = response.data
-    return token
   }
 
   const logout = async () => {
@@ -88,5 +86,6 @@ export const useAuth = () => {
     isAuthenticating,
     authError,
     authenticate,
+    logout,
   }
 }
