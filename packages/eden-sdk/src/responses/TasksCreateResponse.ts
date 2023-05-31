@@ -1,6 +1,6 @@
-import { WebAPICallResult } from '../EdenClient';
+import { WebAPICallResult } from '../EdenClient'
 
 export type TasksCreateResponse = WebAPICallResult & {
-  error?: string;
-  taskId?: string;
-};
+  error?: string
+  taskId?: string
+}

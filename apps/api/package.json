@@ -2,7 +2,6 @@
   "name": "eden-api",
   "version": "0.1.0",
   "description": "Eden.art API",
-  "type": "module",
   "scripts": {
     "dev": "tsx watch src .env | pino-pretty --colorize",
     "build": "tsc --outDir build",
@@ -10,7 +9,7 @@
     "start": "node --experimental-specifier-resolution=node build",
     "pretest": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\""
   },
   "engines": {
     "node": ">=16.0.0"

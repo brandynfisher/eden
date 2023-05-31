@@ -1,5 +1,5 @@
-import { WebAPICallResult } from '../EdenClient';
+import { WebAPICallResult } from '../EdenClient'
 
 export type ApiKeysDeleteResponse = WebAPICallResult & {
-  error?: string;
-};
+  error?: string
+}

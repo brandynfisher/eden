@@ -1,7 +1,7 @@
-import { EdenClient } from './src/EdenClient';
+import { EdenClient } from './src/EdenClient'
 
 declare module 'vitest' {
   export interface TestContext {
-    client: EdenClient;
+    client: EdenClient
   }
 }

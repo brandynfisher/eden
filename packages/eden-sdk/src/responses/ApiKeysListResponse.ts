@@ -1,13 +1,13 @@
-import { WebAPICallResult } from '../EdenClient';
+import { WebAPICallResult } from '../EdenClient'
 
 export type ApiKeysGetResponse = WebAPICallResult & {
-  error?: string;
-  apiKeys?: Array<ApiKey>;
-};
+  error?: string
+  apiKeys?: Array<ApiKey>
+}
 
 export type ApiKey = {
-  apiKey: string;
-  apiSecret: string;
-  note: string;
-  createdAt: string;
-};
+  apiKey: string
+  apiSecret: string
+  note: string
+  createdAt: string
+}

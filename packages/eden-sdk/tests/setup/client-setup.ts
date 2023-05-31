@@ -1,7 +1,8 @@
-import { createTestClient } from '../util';
-import { beforeEach } from 'vitest';
+import { beforeEach } from 'vitest'
+
+import { createTestClient } from '../util'
 
 beforeEach(async context => {
-  const client = await createTestClient();
-  context.client = client;
-});
+  const client = await createTestClient()
+  context.client = client
+})

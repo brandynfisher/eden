@@ -10,6 +10,7 @@
   "scripts": {
     "build": "rm -rf dist && microbundle --tsconfig tsconfig.json --no-sourcemap",
     "dev": "microbundle watch --tsconfig tsconfig.json --no-sourcemap",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "vitest"
   },
   "keywords": [],
@@ -21,7 +22,6 @@
     "vitest": "^0.31.1"
   },
   "dependencies": {
-    "@eden-sdk/types": "*",
     "axios": "^1.4.0"
   },
   "files": [

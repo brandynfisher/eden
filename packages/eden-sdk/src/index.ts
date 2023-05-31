@@ -3,7 +3,7 @@ export {
   WebClientOptions,
   WebAPICallOptions,
   WebAPICallResult,
-} from './EdenClient';
+} from './EdenClient'
 
-export * from './methods';
-export { default as Method } from './methods';
+export * from './methods'
+export { default as Method } from './methods'

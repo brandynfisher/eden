@@ -1,5 +1,5 @@
-import { resolve } from 'path';
-import { defineConfig } from 'vite';
+import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   test: {
@@ -10,4 +10,4 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
-});
+})

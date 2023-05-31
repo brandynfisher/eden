@@ -1,6 +1,6 @@
-import { WebAPICallResult } from '../EdenClient';
+import { WebAPICallResult } from '../EdenClient'
 
 export type AuthLoginResponse = WebAPICallResult & {
-  error?: string;
-  token?: string;
-};
+  error?: string
+  token?: string
+}

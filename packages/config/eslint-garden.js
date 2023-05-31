@@ -4,14 +4,11 @@ module.exports = {
     node: true,
   },
   extends: [
-    'next',
-    'airbnb',
-    'airbnb-typescript',
-    'plugin:import/recommended',
-    'plugin:import/typescript',
-    'prettier',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
   ],
-  plugins: ['@typescript-eslint', 'import'],
+  plugins: ['@typescript-eslint'],
   settings: {
     next: {
       rootDir: ['apps/*/', 'packages/*/'],

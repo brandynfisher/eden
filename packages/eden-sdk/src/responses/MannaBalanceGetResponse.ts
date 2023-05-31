@@ -1,6 +1,6 @@
-import { WebAPICallResult } from '../EdenClient';
+import { WebAPICallResult } from '../EdenClient'
 
 export type MannaBalanceGetResponse = WebAPICallResult & {
-  error?: string;
-  manna: number;
-};
+  error?: string
+  manna: number
+}

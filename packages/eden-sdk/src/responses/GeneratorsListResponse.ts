@@ -1,31 +1,31 @@
-import { WebAPICallResult } from '../EdenClient';
+import { WebAPICallResult } from '../EdenClient'
 
 export type GeneratorsListResponse = WebAPICallResult & {
-  error?: string;
-  generators?: Array<Generator>;
-};
+  error?: string
+  generators?: Array<Generator>
+}
 
 export type Generator = {
-  generatorName: string;
-  description: string;
-  output: string;
-  versions: GeneratorVersion[];
-};
+  generatorName: string
+  description: string
+  output: string
+  versions: GeneratorVersion[]
+}
 
 export type GeneratorVersion = {
-  versionId: string;
-  parameters: GeneratorParameter[];
-};
+  versionId: string
+  parameters: GeneratorParameter[]
+}
 
 export type GeneratorParameter = {
-  name: string;
-  label: string;
-  description?: string;
-  isRequired?: boolean;
-  default?: any;
-  allowedValues?: any[];
-  allowedValuesFrom?: string;
-  minimum?: number;
-  maximum?: number;
-  step?: number;
-};
+  name: string
+  label: string
+  description?: string
+  isRequired?: boolean
+  default?: any
+  allowedValues?: any[]
+  allowedValuesFrom?: string
+  minimum?: number
+  maximum?: number
+  step?: number
+}

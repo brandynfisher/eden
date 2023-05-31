@@ -2,34 +2,18 @@ module.exports = {
   env: {
     node: true,
   },
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
   extends: [
     'eslint:recommended',
+    'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
-    'airbnb-base',
-    'airbnb-typescript/base',
-    'plugin:import/errors',
-    'plugin:import/warnings',
-    'plugin:import/typescript',
-    'prettier',
   ],
-  plugins: ['import', '@typescript-eslint'],
-  parserOptions: {
-    project: ['./tsconfig.json'],
+  rules: {
+    '@typescript-eslint/explicit-module-boundary-types': 0,
+    '@typescript-eslint/camelcase': 0,
+    '@typescript-eslint/no-var-requires': 0,
+    '@typescript-eslint/no-explicit-any': 0,
+    '@typescript-eslint/ban-ts-comment': 0,
   },
-  settings: {
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts'],
-    },
-    'import/resolver': {
-      node: {
-        extensions: ['.js', '.ts'],
-        moduleDirectory: ['node_modules', 'src/'],
-      },
-      typescript: {
-        alwaysTryTypes: true,
-        project: '.',
-      },
-    },
-  },
-  ignorePatterns: ['**/*.js', 'node_modules', '.turbo', 'dist', 'coverage'],
 }
