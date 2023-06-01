@@ -1,8 +1,8 @@
 import CreatePage from '@/pages/create/CreatePage'
 import React from 'react'
 
-const Create = () => {
+const create = () => {
   return <CreatePage />
 }
 
-export default Create
+export default create

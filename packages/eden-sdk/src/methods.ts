@@ -14,6 +14,27 @@ import { TasksCreateResponse } from './responses/TasksCreateResponse'
 import { TasksGetResponse } from './responses/TasksGetResponse'
 import { TasksListResponse } from './responses/TasksListResponse'
 
+const transformArgsIntoURLParams = (
+  args: Record<string, any>,
+): URLSearchParams => {
+  const params = new URLSearchParams()
+
+  for (const key in args) {
+    if (Object.prototype.hasOwnProperty.call(args, key)) {
+      const value = args[key]
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          value.forEach(item => params.append(key, item))
+        } else {
+          params.append(key, value.toString())
+        }
+      }
+    }
+  }
+
+  return params
+}
+
 export default interface Method<
   MethodArguments extends WebAPICallOptions,
   MethodResult extends WebAPICallResult = WebAPICallResult,
@@ -266,12 +287,11 @@ const tasksCreateRequestConfig = (
 const tasksListRequestConfig = (
   args: TasksListArguments,
 ): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
   return {
     method: 'GET',
     url: 'tasks',
-    params: {
-      ...args,
-    },
+    params,
   }
 }
 

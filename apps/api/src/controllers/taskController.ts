@@ -156,6 +156,8 @@ export const getTasks = async (
     }),
   }
 
+  console.log(query)
+
   const tasks = await Task.find(query)
     .sort({ createdAt: -1 })
     .limit(taskFilter.limit || 100)

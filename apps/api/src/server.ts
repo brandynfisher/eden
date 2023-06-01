@@ -27,7 +27,7 @@ const createServer = async (
       customOptions: {
         keywords: ['kind', 'modifier'],
         removeAdditional: 'all',
-        coerceTypes: true,
+        coerceTypes: 'array',
         useDefaults: true,
       },
     },

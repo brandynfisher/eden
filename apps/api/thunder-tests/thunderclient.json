@@ -60,5 +60,67 @@
       "form": []
     },
     "tests": []
+  },
+  {
+    "_id": "f1716e18-d39d-44df-a8bc-6002e6096871",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Get Generators",
+    "url": "http://localhost:5050/generators",
+    "method": "GET",
+    "sortNum": 30000,
+    "created": "2023-06-01T01:46:20.807Z",
+    "modified": "2023-06-01T01:46:20.807Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "user"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "user"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"generatorName\": \"test\"\n}",
+      "form": []
+    },
+    "tests": []
+  },
+  {
+    "_id": "c1b1a4c8-c6b3-40c2-968a-c96b87cf60b9",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Fetch Tasks By ID",
+    "url": "http://localhost:5050/tasks?taskIds=[]",
+    "method": "GET",
+    "sortNum": 15000,
+    "created": "2023-06-01T02:12:07.292Z",
+    "modified": "2023-06-01T02:32:57.173Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "user"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "user"
+      }
+    ],
+    "params": [
+      {
+        "name": "taskIds",
+        "value": "[]",
+        "isPath": false
+      }
+    ],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"taskIds\": [\"19d895d5-bea7-4a86-bb34-4233de3911c4\"]\n}",
+      "form": []
+    },
+    "tests": []
   }
 ]

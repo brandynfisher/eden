@@ -26,5 +26,33 @@
       "form": []
     },
     "tests": []
+  },
+  {
+    "_id": "d03b7ccd-967b-4177-b76d-237e8c41f011",
+    "colId": "history",
+    "containerId": "",
+    "name": "Get Generators",
+    "url": "http://localhost:5050/generators",
+    "method": "GET",
+    "sortNum": 0,
+    "created": "2023-06-01T00:06:47.040Z",
+    "modified": "2023-06-01T01:46:07.356Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "user"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "user"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"generatorName\": \"test\"\n}",
+      "form": []
+    },
+    "tests": []
   }
 ]

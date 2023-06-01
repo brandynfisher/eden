@@ -1,4 +1,4 @@
-import CreationInterface from '@/components/CreationInterface'
+import CreationInterface from '@/components/CreationInterface/CreationInterface'
 import { UserContext } from '@/providers/UserProvider'
 import { Space } from 'antd'
 import { Inter } from 'next/font/google'
