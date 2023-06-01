@@ -36,7 +36,7 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2023-06-01T00:08:17.274Z",
-    "modified": "2023-06-01T00:32:09.386Z",
+    "modified": "2023-06-01T05:03:33.278Z",
     "headers": [
       {
         "name": "X-Api-Key",
@@ -56,7 +56,7 @@
     ],
     "body": {
       "type": "json",
-      "raw": "{\n  \"id\": \"0df2ee9d-d790-4c2f-be4d-7c32c7d5672a\"\n}",
+      "raw": "{\n  \"id\": \"d2973304-085c-4d35-907b-4f8569eba0ec\"\n}",
       "form": []
     },
     "tests": []
@@ -113,6 +113,40 @@
       {
         "name": "taskIds",
         "value": "[]",
+        "isPath": false
+      }
+    ],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"taskIds\": [\"19d895d5-bea7-4a86-bb34-4233de3911c4\"]\n}",
+      "form": []
+    },
+    "tests": []
+  },
+  {
+    "_id": "8e3e02ab-fd71-4d5c-8400-b22e721d2e5b",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Get Creations By Username",
+    "url": "http://localhost:5050/creations?username=0x29C325f75768BC801CCe441233c71F8e31800593",
+    "method": "GET",
+    "sortNum": 17500,
+    "created": "2023-06-01T05:14:42.110Z",
+    "modified": "2023-06-01T05:15:04.925Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "user"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "user"
+      }
+    ],
+    "params": [
+      {
+        "name": "username",
+        "value": "0x29C325f75768BC801CCe441233c71F8e31800593",
         "isPath": false
       }
     ],

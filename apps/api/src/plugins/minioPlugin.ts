@@ -70,14 +70,14 @@ export const uploadBufferAsset = async (
 }
 
 export const minioUrl = (server: FastifyInstance, filename: string) =>
-  `https://${server.config.MINIO_URL}/${server.config.MINIO_BUCKET}/${filename}`
+  `${server.config.MINIO_URI}/${filename}`
 
 export const registerMinio = async (fastify: FastifyInstance) => {
   try {
     let minio
     if (process.env.MINIO_PORT) {
       minio = new MinioClient({
-        endPoint: process.env.MINIO_URL as string,
+        endPoint: process.env.MINIO_HOST as string,
         port: parseInt(process.env.MINIO_PORT as string),
         useSSL: false,
         accessKey: process.env.MINIO_ACCESS_KEY as string,
@@ -85,7 +85,7 @@ export const registerMinio = async (fastify: FastifyInstance) => {
       })
     } else {
       minio = new MinioClient({
-        endPoint: process.env.MINIO_URL as string,
+        endPoint: process.env.MINIO_HOST as string,
         accessKey: process.env.MINIO_ACCESS_KEY as string,
         secretKey: process.env.MINIO_SECRET_KEY as string,
       })

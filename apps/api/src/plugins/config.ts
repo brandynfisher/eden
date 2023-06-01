@@ -24,10 +24,11 @@ const ConfigSchema = Type.Strict(
     PLAYHT_API_SECRET: Type.String(),
     WEBHOOK_URL: Type.String(),
     WEBHOOK_SECRET: Type.String(),
-    MINIO_URL: Type.String(),
+    MINIO_HOST: Type.String(),
     MINIO_ACCESS_KEY: Type.String(),
     MINIO_SECRET_KEY: Type.String(),
     MINIO_BUCKET: Type.String(),
+    MINIO_URI: Type.String(),
   }),
 )
 

@@ -231,12 +231,11 @@ const authLoginRequestConfig = (
 const creationsListRequestConfig = (
   args: CreationsListArguments,
 ): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
   return {
     method: 'GET',
     url: 'creations',
-    params: {
-      ...args,
-    },
+    params,
   }
 }
 

@@ -69,7 +69,7 @@ const createServer = async (
     await registerTts(server)
   }
 
-  if (server.config.MINIO_URL) {
+  if (server.config.MINIO_HOST) {
     await registerMinio(server)
   }
 

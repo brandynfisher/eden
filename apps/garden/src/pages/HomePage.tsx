@@ -1,40 +1,27 @@
 import Masonry from '@/components/Masonry'
+import { useCreations } from '@/hooks/useCreations'
+import { chunkArray } from '@/lib/chunk'
 import { Space } from 'antd'
 import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const exImages = [
-  [
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image.jpg',
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-1.jpg',
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-2.jpg',
-  ],
-  [
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-3.jpg',
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-4.jpg',
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-5.jpg',
-  ],
-  [
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-6.jpg',
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-7.jpg',
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-8.jpg',
-  ],
-  [
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-9.jpg',
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-10.jpg',
-    'https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-11.jpg',
-  ],
-]
-
 const HomePage = () => {
+  const { creations } = useCreations()
+  const creationImages =
+    creations &&
+    (chunkArray(
+      creations.map(creation => creation.thumbnail),
+      3,
+    ) as string[][])
+
   return (
     <main className={`flex min-h-screen ${inter.className}`}>
       <Space direction="vertical">
         <div className={`text-3xl text-black ${inter.className}`}>
           The Garden of Eden
         </div>
-        <Masonry images={exImages} />
+        {creationImages && <Masonry images={creationImages} />}
       </Space>
     </main>
   )
