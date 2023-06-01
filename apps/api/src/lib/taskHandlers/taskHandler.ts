@@ -56,33 +56,6 @@ const submitTask = async (
   return task.id
 }
 
-const submitAndWaitForTask = async (
-  server: FastifyInstance,
-  generatorVersion: any,
-  config: any,
-) => {
-  const { provider } = generatorVersion
-  const result = await providers
-    .get(provider)
-    .submitAndWaitForTask(server, generatorVersion, config)
-  return result
-}
-
-// const handleStarting = async (server: FastifyInstance, taskId: string) => {
-//   const task = await Task.findOne({
-//     taskId,
-//   })
-//   if (!task) {
-//     throw new Error(`Could not find task ${taskId}`);
-//   }
-//   await Task.updateOne(
-//     { taskId },
-//     {
-//       $set: {status: 'starting', progress: 0},
-//     },
-//   )
-// };
-
 const handleUpdate = async (
   server: FastifyInstance,
   taskId: string,
@@ -286,7 +259,6 @@ const getTransactionCost = (
 
 export const taskHandlers: TaskHandlers = {
   submitTask,
-  submitAndWaitForTask,
   receiveTaskUpdate,
   getTransactionCost,
 }

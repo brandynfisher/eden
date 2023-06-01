@@ -1,20 +1,18 @@
 import { FastifyInstance } from 'fastify'
 import { v4 as uuidv4 } from 'uuid'
 
+import { Creation, CreationSchema } from '../../models/Creation'
 import { GeneratorVersionSchema } from '../../models/Generator'
+import { Task } from '../../models/Task'
+import { TaskHandlers } from '../../plugins/tasks'
 
-export const dummySubmitAndWaitForTask = async (
-  _: FastifyInstance,
-  generatorVersion: GeneratorVersionSchema,
-  config: any,
-) => {
-  console.log(
-    `Creating task for generator ${
-      generatorVersion.versionId
-    } with config ${JSON.stringify(config)}`,
-  )
-  await new Promise(resolve => setTimeout(resolve, 5000))
-  return uuidv4()
+const dummyImages: string[] = [
+  'https://media.discordapp.net/attachments/1003581679916548207/1113042054960922717/output.jpg',
+  'https://media.discordapp.net/attachments/1003581679916548207/1111725311122481304/output.jpg',
+]
+
+interface TaskUpdate {
+  id: string
 }
 
 export const dummySubmitTask = async (
@@ -27,7 +25,6 @@ export const dummySubmitTask = async (
       generatorVersion.versionId
     } with config ${JSON.stringify(config)}`,
   )
-  await new Promise(resolve => setTimeout(resolve, 1000))
   return uuidv4()
 }
 
@@ -35,7 +32,43 @@ export const dummyReceiveTaskUpdate = async (
   server: FastifyInstance,
   update: any,
 ) => {
-  console.log(`Received update ${JSON.stringify(update)}`)
+  const { id: taskId } = update as TaskUpdate
+  const task = await Task.findOne({
+    taskId,
+  })
+  if (!task) {
+    throw new Error(`Could not find task ${taskId}`)
+  }
+
+  const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
+
+  const asset = await server.uploadUrlAsset(server, image)
+
+  const creationData: CreationSchema = {
+    user: task.user,
+    task: task._id,
+    uri: asset.uri,
+    thumbnail: asset.thumbnail,
+    name: 'Test Image',
+    attributes: {},
+  }
+  const creation = await Creation.create(creationData)
+
+  const taskUpdate = {
+    status: 'completed',
+    progress: 1.0,
+    creation: creation._id,
+  }
+
+  await Task.updateOne(
+    {
+      taskId,
+    },
+    {
+      $set: taskUpdate,
+    },
+  )
+
   return update
 }
 
@@ -49,5 +82,11 @@ export const dummyGetTransactionCost = (
       generatorVersion.versionId
     } with config ${JSON.stringify(config)}`,
   )
-  return 0
+  return 1
+}
+
+export const dummyTaskHandlers: TaskHandlers = {
+  submitTask: dummySubmitTask,
+  receiveTaskUpdate: dummyReceiveTaskUpdate,
+  getTransactionCost: dummyGetTransactionCost,
 }

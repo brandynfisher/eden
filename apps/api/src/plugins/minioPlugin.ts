@@ -2,18 +2,43 @@ import axios from 'axios'
 import type { FastifyInstance } from 'fastify'
 import { fileTypeFromBuffer } from 'file-type'
 import { Client as MinioClient } from 'minio'
+import sharp from 'sharp'
 
 import * as util from '../lib/util'
+
+export interface Asset {
+  uri: string
+  thumbnail: string
+}
 
 export const uploadUrlAsset = async (
   server: FastifyInstance,
   url: string,
   fileExtension: string | null = null,
-) => {
-  // console.log(` --> Uploading url ${url} to Minio`);
+): Promise<Asset> => {
   const asset = await axios.get(url, { responseType: 'arraybuffer' })
   const assetB64 = Buffer.from(asset.data, 'base64')
-  const urlUpload = await uploadBufferAsset(server, assetB64, fileExtension)
+  const uri = await uploadBufferAsset(server, assetB64, fileExtension)
+  // TODO: handle non image assets
+  const thumbnail = await uploadThumbnailAsset(server, assetB64)
+  return {
+    uri,
+    thumbnail,
+  }
+}
+
+export const uploadThumbnailAsset = async (
+  server: FastifyInstance,
+  assetBuffer: Buffer,
+) => {
+  // Resize and optimize the image while preserving the aspect ratio
+  const resizedBuffer = await sharp(assetBuffer)
+    .resize({ width: 500, withoutEnlargement: true }) // Adjust the width as needed
+    .webp({ quality: 80 }) // Adjust the quality level as needed
+    .toBuffer()
+
+  // Upload the optimized .webp file
+  const urlUpload = await uploadBufferAsset(server, resizedBuffer, 'webp')
   return urlUpload
 }
 
@@ -76,12 +101,12 @@ export const registerMinio = async (fastify: FastifyInstance) => {
 
 declare module 'fastify' {
   interface FastifyInstance {
-    minio?: MinioClient
-    uploadUrlAsset?: (
+    minio: MinioClient
+    uploadUrlAsset: (
       server: FastifyInstance,
       url: string,
       fileExtension?: string | null,
-    ) => Promise<string>
+    ) => Promise<Asset>
   }
 }
 

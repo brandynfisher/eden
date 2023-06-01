@@ -105,20 +105,6 @@ const submitTask = async (
   }
 }
 
-const submitAndWaitForTask = async (
-  server: FastifyInstance,
-  generatorVersion: any,
-  config: any,
-) => {
-  console.log(
-    `Creating task for generator ${
-      generatorVersion.versionId
-    } with config ${JSON.stringify(config)}`,
-  )
-  await new Promise(resolve => setTimeout(resolve, 5000))
-  return 'true'
-}
-
 const getTransactionCost = (_: FastifyInstance, __: any, config: any) => {
   if (config.n_frames) {
     return config.n_frames
@@ -126,4 +112,4 @@ const getTransactionCost = (_: FastifyInstance, __: any, config: any) => {
   return 1
 }
 
-export { submitTask, submitAndWaitForTask, getTransactionCost }
+export { submitTask, getTransactionCost }

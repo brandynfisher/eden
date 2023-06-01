@@ -1,7 +1,7 @@
 import fastifyJWT from '@fastify/jwt'
 import fastify, { FastifyReply, FastifyRequest } from 'fastify'
 
-import { taskHandlers } from './lib/taskHandlers/taskHandler'
+import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import config from './plugins/config'
 import registerLlm from './plugins/llmPlugin'
 import registerMinio from './plugins/minioPlugin'
@@ -19,7 +19,7 @@ export interface CreateServerOpts {
 
 const createServer = async (
   opts: CreateServerOpts = {
-    taskHandlers,
+    taskHandlers: dummyTaskHandlers,
   },
 ) => {
   const server = fastify({

@@ -22,20 +22,6 @@ const submitTask = async (
   return task
 }
 
-const submitAndWaitForTask = async (
-  server: FastifyInstance,
-  generatorVersion: any,
-  config: any,
-) => {
-  console.log(
-    `Creating task for generator ${
-      generatorVersion.versionId
-    } with config ${JSON.stringify(config)}`,
-  )
-  await new Promise(resolve => setTimeout(resolve, 5000))
-  return 'true'
-}
-
 const getTransactionCost = (_: FastifyInstance, __: any, config: any) => 1
 
 const pollTaskUntilDone = async (server: FastifyInstance, task: any) => {
@@ -69,4 +55,4 @@ const pollTaskUntilDone = async (server: FastifyInstance, task: any) => {
   await receiveTaskUpdate(server, update)
 }
 
-export { submitTask, submitAndWaitForTask, getTransactionCost }
+export { submitTask, getTransactionCost }

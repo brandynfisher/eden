@@ -4,17 +4,11 @@ import { FastifyInstance } from 'fastify'
 import {
   dummyGetTransactionCost,
   dummyReceiveTaskUpdate,
-  dummySubmitAndWaitForTask,
   dummySubmitTask,
 } from '../lib/taskHandlers/dummy'
 import { GeneratorVersionSchema } from '../models/Generator'
 
 export interface TaskHandlers {
-  submitAndWaitForTask: (
-    server: FastifyInstance,
-    generatorVersion: GeneratorVersionSchema,
-    config: any,
-  ) => Promise<string>
   submitTask: (
     server: FastifyInstance,
     generatorVersion: GeneratorVersionSchema,
@@ -29,7 +23,6 @@ export interface TaskHandlers {
 }
 
 const dummyHandlers: TaskHandlers = {
-  submitAndWaitForTask: dummySubmitAndWaitForTask,
   submitTask: dummySubmitTask,
   receiveTaskUpdate: dummyReceiveTaskUpdate,
   getTransactionCost: dummyGetTransactionCost,
@@ -40,7 +33,6 @@ export const registerTaskHandlers = (
   taskHandlers: TaskHandlers | undefined,
 ) => {
   const handlers = taskHandlers || dummyHandlers
-  server.decorate('submitAndWaitForTask', handlers.submitAndWaitForTask)
   server.decorate('submitTask', handlers.submitTask)
   server.decorate('receiveTaskUpdate', handlers.receiveTaskUpdate)
   server.decorate('getTransactionCost', handlers.getTransactionCost)
@@ -48,11 +40,6 @@ export const registerTaskHandlers = (
 
 declare module 'fastify' {
   interface FastifyInstance {
-    submitAndWaitForTask: (
-      server: FastifyInstance,
-      generatorVersion: GeneratorVersionSchema,
-      config: any,
-    ) => Promise<string>
     submitTask: (
       server: FastifyInstance,
       generatorVersion: GeneratorVersionSchema,
