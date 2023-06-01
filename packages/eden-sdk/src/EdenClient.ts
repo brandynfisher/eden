@@ -38,7 +38,6 @@ export class EdenClient extends Methods {
     this.apiKey = apiKey
     this.apiSecret = apiSecret
     this.edenApiUrl = edenApiUrl
-    this.checkAuth()
 
     this.axios = axios.create({
       baseURL: edenApiUrl,
@@ -74,11 +73,5 @@ export class EdenClient extends Methods {
   ): Promise<WebAPICallResult> {
     const result = response.data
     return result
-  }
-
-  private checkAuth() {
-    if (!this.token && !this.apiKey && !this.apiSecret) {
-      throw new Error(INVALID_AUTH_MESSAGE)
-    }
   }
 }

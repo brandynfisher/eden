@@ -1,4 +1,5 @@
 import { useUserState } from '@/hooks/useUserState'
+import { Creation } from '@eden-labs/eden-sdk/dist/responses/CreationsGetResponse'
 import React, { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {
@@ -10,6 +11,7 @@ export interface UserContextType {
   logout?: () => void
   address?: `0x${string}`
   mannaBalance?: number
+  creations?: Creation[]
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -21,6 +23,7 @@ export const UserContext = createContext<UserContextType>({
   logout: undefined,
   address: undefined,
   mannaBalance: undefined,
+  creations: undefined,
 })
 
 function UserProvider({ children }: PropsWithChildren) {

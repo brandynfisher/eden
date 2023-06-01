@@ -156,5 +156,24 @@
       "form": []
     },
     "tests": []
+  },
+  {
+    "_id": "e2d06b26-e95e-4f0e-9575-175fa8948b54",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Get Creations Unauthed",
+    "url": "http://localhost:5050/creations",
+    "method": "GET",
+    "sortNum": 18750,
+    "created": "2023-06-01T05:57:11.173Z",
+    "modified": "2023-06-01T05:57:26.278Z",
+    "headers": [],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"taskIds\": [\"19d895d5-bea7-4a86-bb34-4233de3911c4\"]\n}",
+      "form": []
+    },
+    "tests": []
   }
 ]

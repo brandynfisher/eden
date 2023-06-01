@@ -1,16 +1,16 @@
 import CreationFilters from '@/components/CreationFilters'
 import Masonry from '@/components/Masonry'
 import ProfileHeader from '@/components/ProfileHeader'
-import { useMyCreations } from '@/hooks/useMyCreations'
 import { chunkArray } from '@/lib/chunk'
+import { UserContext } from '@/providers/UserProvider'
 import { Space } from 'antd'
 import { Inter } from 'next/font/google'
-import React from 'react'
+import React, { useContext } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
 const MePage = () => {
-  const { creations } = useMyCreations()
+  const { creations } = useContext(UserContext)
   const creationImages =
     creations &&
     (chunkArray(

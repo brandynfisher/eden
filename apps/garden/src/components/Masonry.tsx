@@ -1,3 +1,4 @@
+import CreationCard from '@/components/CreationCard/CreationCard'
 import React from 'react'
 
 type MasonryRowProps = {
@@ -6,18 +7,6 @@ type MasonryRowProps = {
 
 const MasonryRow: React.FC<MasonryRowProps> = ({ children }) => {
   return <div className="grid gap-4">{children}</div>
-}
-
-type MasonryImageProps = {
-  src: string
-}
-
-const MasonryImage: React.FC<MasonryImageProps> = ({ src }) => {
-  return (
-    <div>
-      <img className="h-auto max-w-full rounded-lg" src={src} alt="" />
-    </div>
-  )
 }
 
 type MasonryProps = {
@@ -30,7 +19,7 @@ const Masonry: React.FC<MasonryProps> = ({ images }) => {
       {images.map((image, index) => (
         <MasonryRow key={index}>
           {image.map((src, i) => (
-            <MasonryImage key={i} src={src} />
+            <CreationCard key={i} img={src} />
           ))}
         </MasonryRow>
       ))}

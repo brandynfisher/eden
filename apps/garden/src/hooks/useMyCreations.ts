@@ -1,16 +1,19 @@
 import { fetcher } from '@/lib/fetcher'
-import { UserContext } from '@/providers/UserProvider'
-import { Creation } from '@eden-labs/eden-sdk/dist/responses/CreationsGetResponse'
-import { useContext } from 'react'
 import useSWR from 'swr'
 
-export const useMyCreations = () => {
-  const { address } = useContext(UserContext)
-  const { data } = useSWR(`/api/creations/user?userId=${address}`, fetcher, {
-    refreshInterval: 0,
-  })
+export const useMyCreations = ({
+  userId,
+  isAuthenticated,
+}: {
+  userId: string
+  isAuthenticated: boolean
+}) => {
+  const { data } = useSWR(
+    isAuthenticated ? `/api/creations/user?userId=${userId}` : null,
+    fetcher,
+  )
 
   return {
-    creations: data?.creations as Creation[] | undefined,
+    creations: isAuthenticated ? data?.creations : undefined,
   }
 }

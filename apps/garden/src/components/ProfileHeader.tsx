@@ -2,7 +2,8 @@ import { UserContext } from '@/providers/UserProvider'
 import React, { useContext } from 'react'
 
 const ProfileHeader = () => {
-  const { address } = useContext(UserContext)
+  const { address, creations } = useContext(UserContext)
+  const numCreations = creations ? creations.length : 0
   return (
     <div className="flex items-center bg-blue-500 rounded-lg p-4">
       <div className="flex-shrink-0 mr-4">
@@ -10,7 +11,7 @@ const ProfileHeader = () => {
       </div>
       <div>
         <h2 className="text-white text-lg font-semibold">{address}</h2>
-        <p className="text-white text-sm">100 Creations</p>
+        <p className="text-white text-sm">{numCreations} Creations</p>
       </div>
     </div>
   )
