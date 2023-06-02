@@ -1,25 +1,40 @@
-FROM node:18-alpine AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
-RUN apk add --no-cache git
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm
-RUN pnpm install --no-frozen-lockfile
+FROM node:18-alpine AS base
 
 FROM node:18-alpine AS builder
+RUN apk add --no-cache libc6-compat
+RUN apk update
+# Set working directory
 WORKDIR /app
+RUN yarn global add turbo
 COPY . .
-COPY --from=deps /app/node_modules ./node_modules
-RUN npm run build
+RUN turbo prune --scope=api --docker
+
+# Add lockfile and package.json's of isolated subworkspace
+FROM base AS installer
+RUN apk add --no-cache libc6-compat git
+RUN apk update
+WORKDIR /app
+
+# First install the dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/yarn.lock ./yarn.lock
+RUN yarn install
+
+# Build the project
+COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+RUN yarn turbo run build --filter=api...
 
 FROM node:18-alpine AS runner
-WORKDIR /usr/app
-COPY --from=builder /app/build ./build
-COPY package.json ./
-RUN apk add --no-cache git
-RUN npm install -g pnpm
-RUN pnpm install --prod
+WORKDIR /app
+
+# Don't run production as root
+RUN addgroup --system --gid 1001 node
+RUN adduser --system --uid 1001 node
 USER node
+
+COPY --from=installer /app/build ./build
 ENV NODE_ENV="production"
 CMD ["npm", "start"]

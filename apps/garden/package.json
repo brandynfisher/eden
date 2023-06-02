@@ -10,6 +10,8 @@
     "lint": "eslint src --fix"
   },
   "dependencies": {
+    "@eden-labs/config": "*",
+    "@eden-labs/tsconfig": "*",
     "@eden-labs/eden-sdk": "*",
     "@mantine/hooks": "^6.0.13",
     "@rainbow-me/rainbowkit": "^1.0.1",

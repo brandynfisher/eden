@@ -1,5 +1,5 @@
 {
-  "extends": "tsconfig/api.json",
+  "extends": "@eden-labs/tsconfig/api.json",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist"

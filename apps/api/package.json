@@ -22,6 +22,8 @@
   "author": "Eden Labs",
   "license": "MIT",
   "dependencies": {
+    "@eden-labs/config": "*",
+    "@eden-labs/tsconfig": "*",
     "@eden-labs/eden-sdk": "*",
     "@fastify/cors": "^8.2.1",
     "@fastify/jwt": "^6.7.1",

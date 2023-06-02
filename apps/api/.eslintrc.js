@@ -1,5 +1,5 @@
 module.exports = {
-  ...require('config/eslint-api'),
+  ...require('@eden-labs/config/eslint-api'),
   parserOptions: {
     root: true,
     tsconfigRootDir: __dirname,
