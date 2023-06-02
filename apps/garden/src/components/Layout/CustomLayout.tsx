@@ -4,7 +4,7 @@ import { Layout, theme } from 'antd'
 import React, { PropsWithChildren } from 'react'
 
 const { Content } = Layout
-const CustomLayout: React.FC = ({ children }: PropsWithChildren) => {
+const CustomLayout = ({ children }: PropsWithChildren) => {
   const {
     token: { colorBgContainer },
   } = theme.useToken()

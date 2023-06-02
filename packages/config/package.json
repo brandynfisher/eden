@@ -1,12 +1,12 @@
 {
-  "name": "config",
+  "name": "@eden-labs/config",
   "version": "0.0.0",
   "main": "index.js",
   "license": "MIT",
   "files": [
     "eslint-api.js",
     "eslint-garden.js",
-    "vite-api.config.ts"
+    "eslint-sdk.js"
   ],
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^5.7.0",

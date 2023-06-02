@@ -15,7 +15,7 @@ RUN turbo prune --scope=garden --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat git
 RUN apk update
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN yarn install
 
 # Build the project
 COPY --from=builder /app/out/full/ .
-# COPY turbo.json turbo.json
+COPY turbo.json turbo.json
 
 # Uncomment and use build args to enable remote caching
 # ARG TURBO_TEAM

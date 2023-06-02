@@ -6,7 +6,6 @@
     "apps/*",
     "packages/*"
   ],
-  "packageManager": "yarn@1.22.19",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
@@ -40,5 +39,6 @@
     "*.json": [
       "prettier --write"
     ]
-  }
+  },
+  "packageManager": "yarn@1.22.19"
 }
