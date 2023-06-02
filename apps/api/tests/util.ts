@@ -1,7 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
-import { replicateTaskHandlers } from '../src/lib/taskHandlers/replicate'
 import { Creation } from '../src/models/Creation'
 import { User } from '../src/models/Creator'
 import { Generator, GeneratorSchema } from '../src/models/Generator'
@@ -15,14 +14,14 @@ export const createTestServer = async () => {
   return server
 }
 
-export const createReplicateServer = async () => {
-  const opts: CreateServerOpts = {
-    mongoUri: globalThis.__MONGO_URI__ + 'replicate',
-    taskHandlers: replicateTaskHandlers,
-  }
-  const server = await createServer(opts)
-  return server
-}
+// export const createReplicateServer = async () => {
+//   const opts: CreateServerOpts = {
+//     mongoUri: globalThis.__MONGO_URI__ + 'replicate',
+//     taskHandlers: replicateTaskHandlers,
+//   }
+//   const server = await createServer(opts)
+//   return server
+// }
 
 export const getDb = (server: FastifyInstance) => {
   const db = server.mongo.db

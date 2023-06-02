@@ -3,9 +3,19 @@
   "display": "API",
   "extends": "./base.json",
   "compilerOptions": {
-    "target": "es6",
-    "noEmit": false,
-    "module": "commonjs",
-    "sourceMap": true
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "lib": ["esnext"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "outDir": "build",
+    "baseUrl": "src",
+    "skipLibCheck": true,
+    "strict": true,
+    "paths": {
+      "../*": ["*"]
+    }
   }
 }

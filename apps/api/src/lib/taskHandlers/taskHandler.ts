@@ -113,16 +113,9 @@ const handleUpdate = async (
         attributes: finalOutput.attributes,
       }
       if (finalOutput.file) {
-        creationData.uri = await server.uploadUrlAsset!(
-          server,
-          finalOutput.file,
-        )
-      }
-      if (finalOutput.thumbnail) {
-        creationData.thumbnail = await server.uploadUrlAsset!(
-          server,
-          finalOutput.thumbnail,
-        )
+        const asset = await server.uploadUrlAsset(server, finalOutput.file)
+        creationData.uri = asset.uri
+        creationData.thumbnail = asset.thumbnail
       }
       const creation = await Creation.create(creationData)
       Object.assign(taskUpdate, { creation: creation._id })
@@ -136,11 +129,12 @@ const handleUpdate = async (
         name: finalOutput.name,
       }
       if (finalOutput.file) {
-        loraData.uri = await server.uploadUrlAsset!(
+        const asset = await server.uploadUrlAsset(
           server,
           finalOutput.file,
           'safetensors',
         )
+        loraData.uri = asset.uri
       }
       const lora = await Lora.create(loraData)
       Object.assign(taskUpdate, { lora: lora._id })

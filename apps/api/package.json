@@ -1,12 +1,13 @@
 {
-  "name": "eden-api",
+  "name": "api",
   "version": "0.1.0",
   "description": "Eden.art API",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src .env | pino-pretty --colorize",
     "build": "tsc --outDir build",
     "test": "vitest",
-    "start": "node --experimental-specifier-resolution=node build",
+    "start": "node --experimental-specifier-resolution=node build/src",
     "pretest": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\""
@@ -63,5 +64,8 @@
     "typescript": "^4.9.5",
     "vitest": "^0.25.8",
     "vitest-mongodb": "^0.0.4"
+  },
+  "eslintConfig": {
+    "extends": "./.eslintrc.cjs"
   }
 }

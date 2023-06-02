@@ -30,11 +30,15 @@ RUN yarn turbo run build --filter=api...
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Don't run production as root
-RUN addgroup --system --gid 1001 node
-RUN adduser --system --uid 1001 node
-USER node
+COPY --from=installer /app/apps/api/build ./build
+COPY --from=installer /app/apps/api/package.json .
+COPY --from=installer /app/node_modules ./node_modules
+COPY --from=installer /app/apps/api/.env ./.env
 
-COPY --from=installer /app/build ./build
+# Don't run production as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nodejs
+USER nodejs
+
 ENV NODE_ENV="production"
-CMD ["npm", "start"]
+CMD ["yarn", "start"]
