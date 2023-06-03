@@ -5,12 +5,12 @@ on:
     branches: [main]
     paths:
       - 'apps/api/**'
-      - '.github/workflow/api.yaml'
+      - '.github/workflows/api.yaml'
   pull_request:
     branches: [main]
     paths:
       - 'apps/garden/**'
-      - '.github/workflow/server.yaml'
+      - '.github/workflows/server.yaml'
 jobs:
   build:
     name: Build
