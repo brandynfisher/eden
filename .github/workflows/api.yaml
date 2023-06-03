@@ -75,9 +75,9 @@ jobs:
       - name: Bump Env
         uses: fjogeleit/yaml-update-action@main
         with:
-          valueFile: 'apps/mars/api/values.yaml'
+          valueFile: 'apps/mars/garden2/values.yaml'
           updateFile: true
-          propertyPath: '$.image'
+          propertyPath: '$.api_image'
           value: ${{ steps.prep.outputs.tagged_image }}
           repository: abraham-ai/releases
           branch: main
