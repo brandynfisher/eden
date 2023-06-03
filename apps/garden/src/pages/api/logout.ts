@@ -10,6 +10,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         await req.session.save()
         return res.status(204).end()
       } catch (_error) {
+        console.error(_error)
         res.status(401).json({ error: 'Unauthorized' })
       }
       break
