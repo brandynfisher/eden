@@ -75,7 +75,7 @@ jobs:
       - name: Bump Env
         uses: fjogeleit/yaml-update-action@main
         with:
-          valueFile: 'apps/mars/garden2/values.yaml'
+          valueFile: 'apps/mars/garden2-api/values.yaml'
           updateFile: true
           propertyPath: '$.api_image'
           value: ${{ steps.prep.outputs.tagged_image }}
