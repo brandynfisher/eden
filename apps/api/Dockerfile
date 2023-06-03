@@ -33,7 +33,6 @@ WORKDIR /app
 COPY --from=installer /app/apps/api/build ./build
 COPY --from=installer /app/apps/api/package.json .
 COPY --from=installer /app/node_modules ./node_modules
-COPY --from=installer /app/apps/api/.env ./.env
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
