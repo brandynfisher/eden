@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const challengeRoute = `${CONFIG.API_URL}/auth/challenge`
+  console.error('challengeRoute', challengeRoute)
   const { method } = req
   switch (method) {
     case 'POST':
