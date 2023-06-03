@@ -15,7 +15,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         })
         return res.status(200).json(response.data)
       } catch (_error) {
-        console.error(_error)
         res.status(401).json({ error: 'Unauthorized' })
       }
       break

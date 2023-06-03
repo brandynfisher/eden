@@ -18,7 +18,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const response = await eden.manna.balance()
     return res.status(200).json({ manna: response.manna })
   } catch (error) {
-    console.error(error)
     return res.status(500).json({ error: 'Internal server error' })
   }
 }
