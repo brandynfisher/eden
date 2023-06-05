@@ -165,6 +165,10 @@ export const getTasks = async (
       path: 'generator',
       select: 'generatorName',
     })
+    .populate({
+      path: 'creation',
+      select: ['thumbnail', 'uri'],
+    })
 
   return reply.status(200).send({ tasks })
 }

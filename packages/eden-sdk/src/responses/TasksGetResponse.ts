@@ -19,6 +19,6 @@ export type Task = {
   progress?: number
   output?: any
   intermediate_outputs?: any[]
-  creation?: string
+  creation?: any
   lora?: string
 }

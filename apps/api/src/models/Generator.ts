@@ -10,7 +10,10 @@ export interface GeneratorParameter {
   allowedValuesFrom?: string
   minimum?: number
   maximum?: number
+  minLength?: number
+  maxLength?: number
   step?: number
+  mediaUpload?: boolean
 }
 
 export interface GeneratorVersionSchema {
@@ -89,6 +92,16 @@ const generatorVersion = new Schema<GeneratorVersionDocument>({
         },
         maximum: {
           type: Number,
+        },
+        minLength: {
+          type: Number,
+        },
+        maxLength: {
+          type: Number,
+        },
+        mediaUpload: {
+          type: Boolean,
+          default: false,
         },
       },
     ],

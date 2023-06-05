@@ -28,4 +28,7 @@ export type GeneratorParameter = {
   minimum?: number
   maximum?: number
   step?: number
+  minLength?: number
+  maxLength?: number
+  mediaUpload?: boolean
 }

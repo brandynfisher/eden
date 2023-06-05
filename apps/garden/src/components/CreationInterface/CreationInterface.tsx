@@ -1,52 +1,49 @@
-import GeneratorSelect from '@/components/CreationInterface/GeneratorSelect'
-import { useGenerators } from '@/hooks/useGenerators'
-import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
-import { Button, Space } from 'antd'
-import axios from 'axios'
-import React, { useContext } from 'react'
+import GeneratorForm from '@/components/CreationInterface/GeneratorForm'
+import ResultPreview from '@/components/CreationInterface/ResultPreview'
+import TestGeneratorInterface from '@/components/CreationInterface/TestGeneratorInterface'
+import { EdenContext } from '@/providers/EdenProvider'
+import { Select, Spin } from 'antd'
+import React, { useContext, useState } from 'react'
 
 const CreationInterface = () => {
-  const { taskIds, setTaskIds, tasks, refetchPendingTasks } = useContext(
-    CreationNotificationContext,
+  const { generators } = useContext(EdenContext)
+  const [activeGenerator, setActiveGenerator] = useState(
+    generators?.[0] || undefined,
   )
-  const { generators } = useGenerators()
-  const [activeTaskId, setActiveTaskId] = React.useState<string | null>(null)
-  const pendingTasks = tasks?.filter(task => task.status === 'pending')
+  const activeGeneratorName = activeGenerator?.generatorName
 
-  const handleCreate = async () => {
-    const response = await axios.post('/api/tasks/create', {
-      generatorName: 'test',
-    })
-    const { taskId } = response.data
-    setActiveTaskId(taskId)
-    setTaskIds && setTaskIds([...taskIds, taskId])
-    refetchPendingTasks && refetchPendingTasks()
+  if (!generators) {
+    return <Spin />
   }
 
-  const handleFinish = async (taskId: string) => {
-    await axios.post('/api/tasks/finish', {
-      taskId,
-    })
+  const handleGeneratorChange = (value: string) => {
+    const selectedGenerator = generators.find(
+      generator => generator.generatorName === value,
+    )
+    setActiveGenerator(selectedGenerator)
   }
 
   return (
-    <>
-      <div>Creation Interface</div>
-      {generators && <GeneratorSelect generators={generators} />}
-      {activeTaskId && <div>Active Task: {activeTaskId}</div>}
-      <Space direction="vertical">
-        <Button onClick={handleCreate}>Create</Button>
-        {pendingTasks &&
-          pendingTasks.map(task => (
-            <div key={task.taskId}>
-              {task.taskId}
-              <Button onClick={() => handleFinish(task.taskId)}>
-                Finish Creation
-              </Button>
-            </div>
-          ))}
-      </Space>
-    </>
+    <div className="w-full flex flex-col space-y-4">
+      <label htmlFor="activeGenerator">Selected Generator:</label>
+      <Select
+        id="activeGenerator"
+        value={activeGeneratorName}
+        onChange={handleGeneratorChange}
+      >
+        {generators.map(generator => (
+          <Select.Option
+            key={generator.generatorName}
+            value={generator.generatorName}
+          >
+            {generator.generatorName}
+          </Select.Option>
+        ))}
+      </Select>
+      {activeGenerator && <GeneratorForm generator={activeGenerator} />}
+      <ResultPreview />
+      {process.env.NODE_ENV === 'development' && <TestGeneratorInterface />}
+    </div>
   )
 }
 

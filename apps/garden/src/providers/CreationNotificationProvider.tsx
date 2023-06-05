@@ -6,6 +6,11 @@ export interface CreationNotificationContextType {
   taskIds: string[]
   setTaskIds?: (taskIds: string[]) => void
   tasks?: Task[]
+  pendingTasks?: Task[]
+  activeTaskId?: string
+  setActiveTaskId?: (taskId: string) => void
+  hasChangedGenerator?: boolean
+  setHasChangedGenerator?: (hasChangedGenerator: boolean) => void
   refetchPendingTasks?: () => void
 }
 
@@ -14,6 +19,11 @@ export const CreationNotificationContext =
     taskIds: [],
     setTaskIds: undefined,
     tasks: undefined,
+    pendingTasks: undefined,
+    activeTaskId: undefined,
+    setActiveTaskId: undefined,
+    hasChangedGenerator: undefined,
+    setHasChangedGenerator: undefined,
     refetchPendingTasks: undefined,
   })
 
