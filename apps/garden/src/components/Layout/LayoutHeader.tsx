@@ -1,14 +1,16 @@
-import AuthModal from '@/components/AuthModal'
-import LoginButton from '@/components/LoginButton'
 import CreationNotificationMenu from '@/components/TaskNotificationDropdown'
+import { UserContext } from '@/providers/UserProvider'
+import { WalletOutlined } from '@ant-design/icons'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Layout, Space } from 'antd'
 import Link from 'next/link'
-import React from 'react'
+import React, { useContext } from 'react'
 
 const { Header } = Layout
 
 const LayoutHeader = () => {
-  const [authModalOpen, setAuthModalOpen] = React.useState(false)
+  const { isConnected, isAuthenticated, authenticate } = useContext(UserContext)
+
   return (
     <div>
       <Header style={{ display: 'flex', alignItems: 'center' }}>
@@ -24,14 +26,19 @@ const LayoutHeader = () => {
         <div style={{ marginLeft: 'auto' }}>
           <Space>
             <CreationNotificationMenu />
-            <LoginButton setAuthModalOpen={setAuthModalOpen} />
+            {isConnected && (
+              <div onClick={authenticate}>
+                <WalletOutlined
+                  className={`text-${
+                    isAuthenticated ? 'green' : 'red'
+                  }-500 text-2xl`}
+                />
+              </div>
+            )}
+            <ConnectButton />
           </Space>
         </div>
       </Header>
-      <AuthModal
-        open={authModalOpen}
-        onCancel={() => setAuthModalOpen(false)}
-      />
     </div>
   )
 }

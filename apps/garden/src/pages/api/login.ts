@@ -17,6 +17,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         })
         const { token } = response.data
         req.session.token = token
+        req.session.address = address
         await req.session.save()
         return res.status(200).json({ success: true })
       } catch (_error) {

@@ -36,8 +36,8 @@ const LayoutMenu = () => {
     token: { colorBgContainer },
   } = theme.useToken()
 
-  const { isAuthenticated } = useContext(UserContext)
-  const menuItems = isAuthenticated ? authItems : items
+  const { isConnected } = useContext(UserContext)
+  const menuItems = isConnected ? authItems : items
 
   return (
     <Sider width={200} style={{ background: colorBgContainer }}>
