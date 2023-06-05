@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { edenHandlers } from '../src/lib/taskHandlers/edenHandlers'
 import { Creation } from '../src/models/Creation'
 import { User } from '../src/models/Creator'
 import { Generator, GeneratorSchema } from '../src/models/Generator'
@@ -8,20 +9,20 @@ import createServer, { CreateServerOpts } from '../src/server'
 
 export const createTestServer = async () => {
   const opts: CreateServerOpts = {
-    mongoUri: globalThis.__MONGO_URI__ + 'eden',
+    mongoUri: globalThis.__MONGO_URI__ + 'test',
   }
   const server = await createServer(opts)
   return server
 }
 
-// export const createReplicateServer = async () => {
-//   const opts: CreateServerOpts = {
-//     mongoUri: globalThis.__MONGO_URI__ + 'replicate',
-//     taskHandlers: replicateTaskHandlers,
-//   }
-//   const server = await createServer(opts)
-//   return server
-// }
+export const createEdenServer = async () => {
+  const opts: CreateServerOpts = {
+    mongoUri: globalThis.__MONGO_URI__ + 'eden',
+    taskHandlers: edenHandlers,
+  }
+  const server = await createServer(opts)
+  return server
+}
 
 export const getDb = (server: FastifyInstance) => {
   const db = server.mongo.db

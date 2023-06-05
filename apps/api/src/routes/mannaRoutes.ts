@@ -1,18 +1,8 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-import { getBalance, modifyManna } from '../controllers/mannaController'
-import { isAdmin, isAuth } from '../middleware/authMiddleware'
-
-export interface MannaModifyRequestBody {
-  userId: string
-  amount: number
-}
-
-// export interface MannaVoucherCreateRequestBody {
-//   allowedUsers?: string[];
-//   balance: number;
-// }
+import { getBalance } from '../controllers/mannaController'
+import { isAuth } from '../middleware/authMiddleware'
 
 const mannaRoutes: FastifyPluginAsync = async server => {
   server.get('/manna/balance', {
@@ -25,26 +15,6 @@ const mannaRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [request => isAuth(server, request)],
     handler: (request, reply) => getBalance(request, reply),
-  })
-
-  server.post('/manna/modify', {
-    schema: {
-      request: {
-        body: Type.Object({
-          userId: Type.String(),
-          amount: Type.Number(),
-        }),
-      },
-      response: {
-        200: Type.Object({
-          userId: Type.String(),
-          manna: Type.Number(),
-          transactionId: Type.String(),
-        }),
-      },
-    },
-    preHandler: [request => isAdmin(server, request)],
-    handler: (request, reply) => modifyManna(request, reply),
   })
 
   // server.post(`${MANNA_BASE_ROUTE}/vouchers`, {

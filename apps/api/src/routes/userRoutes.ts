@@ -1,8 +1,8 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-import { getUser, updateProfile } from '../../controllers/user/userController'
-import { isAuth } from '../../middleware/authMiddleware'
+import { getUser, updateProfile } from '../controllers/user/userController'
+import { isAuth } from '../middleware/authMiddleware'
 
 const userRoutes: FastifyPluginAsync = async server => {
   server.get('/user/profile', {

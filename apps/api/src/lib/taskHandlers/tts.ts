@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 
-import { receiveTaskUpdate } from './taskHandler'
+import { receiveTaskUpdate } from './edenHandlers'
 
 const submitTask = async (
   server: FastifyInstance,

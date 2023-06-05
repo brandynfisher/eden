@@ -7,6 +7,7 @@ import fp from 'fastify-plugin'
 export enum NodeEnv {
   development = 'development',
   test = 'test',
+  staging = 'staging',
   production = 'production',
 }
 

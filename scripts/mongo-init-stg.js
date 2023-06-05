@@ -1,4 +1,4 @@
-db = db.getSiblingDB('eden')
+db = db.getSiblingDB('eden-stg')
 
 db.createUser({
   user: 'eden',
@@ -6,7 +6,7 @@ db.createUser({
   roles: [
     {
       role: 'readWrite',
-      db: 'eden',
+      db: 'eden-stg',
     },
   ],
 })

@@ -251,7 +251,7 @@ const getTransactionCost = (
   return cost
 }
 
-export const taskHandlers: TaskHandlers = {
+export const edenHandlers: TaskHandlers = {
   submitTask,
   receiveTaskUpdate,
   getTransactionCost,

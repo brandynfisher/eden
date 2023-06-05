@@ -32,11 +32,11 @@
     "colId": "history",
     "containerId": "",
     "name": "Get Generators",
-    "url": "http://localhost:5050/generators",
+    "url": "http://localhost:5050/generators/create",
     "method": "GET",
     "sortNum": 0,
     "created": "2023-06-01T00:06:47.040Z",
-    "modified": "2023-06-01T01:46:07.356Z",
+    "modified": "2023-06-05T13:42:19.445Z",
     "headers": [
       {
         "name": "X-Api-Key",
@@ -47,53 +47,6 @@
         "value": "user"
       }
     ],
-    "params": [],
-    "body": {
-      "type": "json",
-      "raw": "{\n  \"generatorName\": \"test\"\n}",
-      "form": []
-    },
-    "tests": []
-  },
-  {
-    "_id": "f44d3c8b-bc51-4d25-aa6a-dfee0d0f9cca",
-    "colId": "history",
-    "containerId": "",
-    "name": "https://api2.eden.art/tasks/list",
-    "url": "https://api2.eden.art/tasks/list",
-    "method": "GET",
-    "sortNum": 0,
-    "created": "2023-06-03T18:57:08.842Z",
-    "modified": "2023-06-03T18:57:08.842Z",
-    "headers": [],
-    "params": [],
-    "tests": []
-  },
-  {
-    "_id": "0ec4dc52-9287-4705-957c-c7763b7146d0",
-    "colId": "history",
-    "containerId": "",
-    "name": "https://api2.eden.art/apikeys/list",
-    "url": "https://api2.eden.art/apikeys/list",
-    "method": "GET",
-    "sortNum": 0,
-    "created": "2023-06-03T18:57:16.595Z",
-    "modified": "2023-06-03T18:57:16.595Z",
-    "headers": [],
-    "params": [],
-    "tests": []
-  },
-  {
-    "_id": "12cf6dd9-0701-4cc8-8031-84affbe866e4",
-    "colId": "history",
-    "containerId": "",
-    "name": "https://api2.eden.art/",
-    "url": "https://api2.eden.art/",
-    "method": "GET",
-    "sortNum": 0,
-    "created": "2023-06-03T18:57:29.061Z",
-    "modified": "2023-06-03T18:57:29.061Z",
-    "headers": [],
     "params": [],
     "tests": []
   }
