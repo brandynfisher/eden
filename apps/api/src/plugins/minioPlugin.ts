@@ -27,9 +27,17 @@ export const uploadUrlAsset = async (
 
 export const uploadThumbnailAsset = async (
   server: FastifyInstance,
-  assetBuffer: Buffer,
+  assetInput: string | Buffer,
 ) => {
-  const resizedBuffer = await sharp(assetBuffer)
+  let assetB64: Buffer
+  if (typeof assetInput === 'string') {
+    const asset = await axios.get(assetInput, { responseType: 'arraybuffer' })
+    assetB64 = Buffer.from(asset.data, 'base64')
+  } else {
+    assetB64 = assetInput
+  }
+
+  const resizedBuffer = await sharp(assetB64)
     .resize({ width: 500, withoutEnlargement: true })
     .webp({ quality: 80 })
     .toBuffer()
@@ -106,7 +114,7 @@ declare module 'fastify' {
     ) => Promise<Asset>
     uploadThumbnailAsset: (
       server: FastifyInstance,
-      assetBuffer: Buffer,
+      assetInput: string | Buffer,
     ) => Promise<string>
   }
 }

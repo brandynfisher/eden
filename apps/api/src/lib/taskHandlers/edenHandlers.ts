@@ -114,9 +114,14 @@ const handleUpdate = async (
         attributes: finalOutput.attributes,
       }
       if (finalOutput.file) {
-        const asset = await server.uploadUrlAsset(server, finalOutput.file)
-        creationData.uri = asset.uri
-        creationData.thumbnail = asset.thumbnail
+        const { uri } = await server.uploadUrlAsset(server, finalOutput.file)
+        creationData.uri = uri
+      }
+      if (finalOutput.thumbnail) {
+        creationData.thumbnail = await server.uploadThumbnailAsset(
+          server,
+          finalOutput.thumbnail,
+        )
       }
       const creation = await Creation.create(creationData)
       Object.assign(taskUpdate, { creation: creation._id })
