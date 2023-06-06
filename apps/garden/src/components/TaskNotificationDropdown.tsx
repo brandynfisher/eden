@@ -4,16 +4,14 @@ import { Dropdown, Space, Spin } from 'antd'
 import React, { useContext } from 'react'
 
 const TaskNotificationMenu = () => {
-  const { tasks } = useContext(CreationNotificationContext)
-  const pendingTasks = tasks
-    ? tasks
-        .filter(task => task.status === 'pending')
-        .map(task => {
-          return {
-            label: task._id,
-            key: task._id,
-          }
-        })
+  const { tasks, pendingTasks } = useContext(CreationNotificationContext)
+  const pendingTaskItems = pendingTasks
+    ? pendingTasks.map(task => {
+        return {
+          label: task._id,
+          key: task._id,
+        }
+      })
     : []
 
   const completedTasks = tasks
@@ -29,13 +27,13 @@ const TaskNotificationMenu = () => {
 
   return (
     <Space>
-      {pendingTasks.length > 0 && (
+      {pendingTaskItems.length > 0 && (
         <>
-          <Dropdown menu={{ items: pendingTasks }} trigger={['click']}>
+          <Dropdown menu={{ items: pendingTaskItems }} trigger={['click']}>
             <div className="text-blue-500">
               <Space>
                 <Spin />
-                {pendingTasks.length}
+                {pendingTaskItems.length}
               </Space>
             </div>
           </Dropdown>

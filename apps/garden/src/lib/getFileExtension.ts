@@ -1,4 +1,4 @@
-type SupportedExtension = 'jpg' | 'webp' | ''
+type SupportedExtension = 'jpg' | 'webp' | 'mp4' | ''
 
 export const getFileExtension = (url: string): SupportedExtension => {
   const extension = url.split('.').pop()
@@ -6,7 +6,9 @@ export const getFileExtension = (url: string): SupportedExtension => {
     throw new Error('Invalid file extension')
   }
   const lowercaseExtension = extension.toLowerCase()
-  if (!['jpg', 'webp'].includes(lowercaseExtension as SupportedExtension)) {
+  if (
+    !['jpg', 'webp', 'mp4'].includes(lowercaseExtension as SupportedExtension)
+  ) {
     return ''
   }
   return lowercaseExtension as SupportedExtension
