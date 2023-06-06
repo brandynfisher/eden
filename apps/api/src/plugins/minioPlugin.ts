@@ -8,7 +8,7 @@ import * as util from '../lib/util'
 
 export interface Asset {
   uri: string
-  thumbnail: string
+  assetBuffer: Buffer
 }
 
 export const uploadUrlAsset = async (
@@ -19,16 +19,9 @@ export const uploadUrlAsset = async (
   const asset = await axios.get(url, { responseType: 'arraybuffer' })
   const assetB64 = Buffer.from(asset.data, 'base64')
   const uri = await uploadBufferAsset(server, assetB64, fileExtension)
-  // TODO: handle non image assets
-  let thumbnail = ''
-  if (uri.split('.').pop() === 'jpg') {
-    throw new Error('Only jpg assets are supported')
-  } else {
-    thumbnail = await uploadThumbnailAsset(server, assetB64)
-  }
   return {
     uri,
-    thumbnail,
+    assetBuffer: assetB64,
   }
 }
 
@@ -36,13 +29,11 @@ export const uploadThumbnailAsset = async (
   server: FastifyInstance,
   assetBuffer: Buffer,
 ) => {
-  // Resize and optimize the image while preserving the aspect ratio
   const resizedBuffer = await sharp(assetBuffer)
-    .resize({ width: 500, withoutEnlargement: true }) // Adjust the width as needed
-    .webp({ quality: 80 }) // Adjust the quality level as needed
+    .resize({ width: 500, withoutEnlargement: true })
+    .webp({ quality: 80 })
     .toBuffer()
 
-  // Upload the optimized .webp file
   const urlUpload = await uploadBufferAsset(server, resizedBuffer, 'webp')
   return urlUpload
 }
@@ -97,6 +88,7 @@ export const registerMinio = async (fastify: FastifyInstance) => {
     }
     fastify.decorate('minio', minio)
     fastify.decorate('uploadUrlAsset', uploadUrlAsset)
+    fastify.decorate('uploadThumbnailAsset', uploadThumbnailAsset)
     fastify.log.info('Successfully registered MinioPlugin')
   } catch (err) {
     fastify.log.error('Plugin: Minio, error on register', err)
@@ -112,6 +104,10 @@ declare module 'fastify' {
       url: string,
       fileExtension?: string | null,
     ) => Promise<Asset>
+    uploadThumbnailAsset: (
+      server: FastifyInstance,
+      assetBuffer: Buffer,
+    ) => Promise<string>
   }
 }
 

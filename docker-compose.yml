@@ -10,7 +10,7 @@ services:
       - '27017:27017'
     volumes:
       - ./data:/data/db
-      - ./scripts/mongo-init-stg.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./scripts/mongo-init-dev.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
   minio:
     image: minio/minio:latest
 

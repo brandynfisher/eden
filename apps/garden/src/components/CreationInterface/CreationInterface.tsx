@@ -1,5 +1,6 @@
 import GeneratorForm from '@/components/CreationInterface/GeneratorForm'
 import ResultPreview from '@/components/CreationInterface/ResultPreview'
+import TestGeneratorInterface from '@/components/CreationInterface/TestGeneratorInterface'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Select, Spin } from 'antd'
 import React, { useContext, useState } from 'react'
@@ -41,7 +42,7 @@ const CreationInterface = () => {
       </Select>
       {activeGenerator && <GeneratorForm generator={activeGenerator} />}
       <ResultPreview />
-      {/* {process.env.NODE_ENV === 'development' && <TestGeneratorInterface />} */}
+      <TestGeneratorInterface />
     </div>
   )
 }
