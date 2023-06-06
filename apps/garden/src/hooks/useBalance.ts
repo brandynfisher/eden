@@ -6,9 +6,13 @@ export const useBalance = ({
 }: {
   isAuthenticated: boolean
 }) => {
-  const { data } = useSWR(isAuthenticated ? '/api/balance' : null, fetcher)
+  const { data, mutate: refetchMannaBalance } = useSWR(
+    isAuthenticated ? '/api/balance' : null,
+    fetcher,
+  )
 
   return {
     manna: isAuthenticated ? data?.manna : undefined,
+    refetchMannaBalance,
   }
 }

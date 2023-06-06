@@ -2,7 +2,9 @@ import OptionParameter from '@/components/CreationInterface/parameters/OptionPar
 import SliderParameter from '@/components/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/CreationInterface/parameters/StringParameter'
 import UploadParameter from '@/components/CreationInterface/parameters/UploadParameter'
+import { useBalance } from '@/hooks/useBalance'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
+import { UserContext } from '@/providers/UserProvider'
 import {
   DownCircleOutlined,
   RightCircleOutlined,
@@ -15,6 +17,7 @@ import {
 import { Button, Form } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect } from 'react'
+import { toast } from 'react-toastify'
 
 const GeneratorForm = ({ generator }: { generator: Generator }) => {
   const {
@@ -24,6 +27,8 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
     setHasChangedGenerator,
     refetchPendingTasks,
   } = useContext(CreationNotificationContext)
+  const { isAuthenticated } = useContext(UserContext)
+  const { refetchMannaBalance } = useBalance({ isAuthenticated })
   const [form] = Form.useForm()
   const selectedVersion = generator.versions[0]
   const { parameters } = selectedVersion
@@ -40,11 +45,13 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
       generatorName: generator.generatorName,
       config: form.getFieldsValue(),
     })
+    toast.success('Task created!')
     const { taskId } = response.data
     setActiveTaskId && setActiveTaskId(taskId)
     setTaskIds && setTaskIds([...taskIds, taskId])
     setHasChangedGenerator && setHasChangedGenerator(false)
     refetchPendingTasks && refetchPendingTasks()
+    refetchMannaBalance()
   }
 
   useEffect(() => {

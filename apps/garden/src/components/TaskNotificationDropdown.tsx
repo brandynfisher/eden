@@ -4,7 +4,9 @@ import { Dropdown, Space, Spin } from 'antd'
 import React, { useContext } from 'react'
 
 const TaskNotificationMenu = () => {
-  const { tasks, pendingTasks } = useContext(CreationNotificationContext)
+  const { pendingTasks, completedTasks } = useContext(
+    CreationNotificationContext,
+  )
   const pendingTaskItems = pendingTasks
     ? pendingTasks.map(task => {
         return {
@@ -14,15 +16,13 @@ const TaskNotificationMenu = () => {
       })
     : []
 
-  const completedTasks = tasks
-    ? tasks
-        .filter(task => task.status === 'completed')
-        .map(task => {
-          return {
-            label: task._id,
-            key: task._id,
-          }
-        })
+  const completedTaskItems = completedTasks
+    ? completedTasks.map(task => {
+        return {
+          label: task._id,
+          key: task._id,
+        }
+      })
     : []
 
   return (
@@ -39,13 +39,13 @@ const TaskNotificationMenu = () => {
           </Dropdown>
         </>
       )}
-      {completedTasks.length > 0 && (
+      {completedTaskItems.length > 0 && (
         <>
-          <Dropdown menu={{ items: completedTasks }} trigger={['click']}>
+          <Dropdown menu={{ items: completedTaskItems }} trigger={['click']}>
             <div className="text-green-500">
               <Space>
                 <CheckOutlined />
-                {completedTasks.length}
+                {completedTaskItems.length}
               </Space>
             </div>
           </Dropdown>

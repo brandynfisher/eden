@@ -5,8 +5,9 @@ import React, { PropsWithChildren, createContext } from 'react'
 export interface CreationNotificationContextType {
   taskIds: string[]
   setTaskIds?: (taskIds: string[]) => void
-  tasks?: Task[]
   pendingTasks?: Task[]
+  completedTasks?: Task[]
+  setCompletedTasks?: (completedTasks: Task[]) => void
   activeTaskId?: string
   setActiveTaskId?: (taskId: string) => void
   hasChangedGenerator?: boolean
@@ -18,8 +19,9 @@ export const CreationNotificationContext =
   createContext<CreationNotificationContextType>({
     taskIds: [],
     setTaskIds: undefined,
-    tasks: undefined,
     pendingTasks: undefined,
+    completedTasks: undefined,
+    setCompletedTasks: undefined,
     activeTaskId: undefined,
     setActiveTaskId: undefined,
     hasChangedGenerator: undefined,
