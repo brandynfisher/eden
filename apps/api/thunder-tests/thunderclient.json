@@ -226,5 +226,33 @@
       "form": []
     },
     "tests": []
+  },
+  {
+    "_id": "039bff0a-a212-4541-92cd-ae14c92b1312",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Create Task - 'Interpolate' Generator",
+    "url": "http://localhost:5050/tasks/create",
+    "method": "POST",
+    "sortNum": 13750,
+    "created": "2023-06-06T00:09:12.602Z",
+    "modified": "2023-06-06T00:09:54.855Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "admin"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "admin"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"generatorName\": \"interpolate\",\n  \"config\": { \n    \"interpolation_texts\": [\"sock\", \"shoe\"],\n    \"n_frames\": 3\n  }\n}",
+      "form": []
+    },
+    "tests": []
   }
 ]

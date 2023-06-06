@@ -9,7 +9,14 @@ import React, { useContext } from 'react'
 const { Header } = Layout
 
 const LayoutHeader = () => {
-  const { isConnected, isAuthenticated, authenticate } = useContext(UserContext)
+  const { isConnected, isAuthenticated, authenticate, mannaBalance } =
+    useContext(UserContext)
+
+  const handleAuthClick = () => {
+    if (!isAuthenticated) {
+      authenticate && authenticate()
+    }
+  }
 
   return (
     <div>
@@ -27,12 +34,16 @@ const LayoutHeader = () => {
           <Space>
             <CreationNotificationMenu />
             {isConnected && (
-              <div onClick={authenticate}>
-                <WalletOutlined
-                  className={`text-${
-                    isAuthenticated ? 'green' : 'red'
-                  }-500 text-2xl`}
-                />
+              <div
+                onClick={handleAuthClick}
+                className={`text-${
+                  isAuthenticated ? 'green' : 'red'
+                }-500 text-2xl`}
+              >
+                <Space>
+                  {isAuthenticated ? mannaBalance : 'Sign in'}
+                  <WalletOutlined />
+                </Space>
               </div>
             )}
             <ConnectButton />

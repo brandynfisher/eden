@@ -20,7 +20,12 @@ export const uploadUrlAsset = async (
   const assetB64 = Buffer.from(asset.data, 'base64')
   const uri = await uploadBufferAsset(server, assetB64, fileExtension)
   // TODO: handle non image assets
-  const thumbnail = await uploadThumbnailAsset(server, assetB64)
+  let thumbnail = ''
+  if (uri.split('.').pop() === 'jpg') {
+    throw new Error('Only jpg assets are supported')
+  } else {
+    thumbnail = await uploadThumbnailAsset(server, assetB64)
+  }
   return {
     uri,
     thumbnail,

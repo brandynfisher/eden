@@ -15,7 +15,12 @@ export const useCreationState = () => {
   )
 
   const tasks = data?.tasks as Task[]
-  const pendingTasks = tasks?.filter(task => task.status === 'pending')
+  const pendingTasks = tasks?.filter(
+    task =>
+      task.status === 'pending' ||
+      task.status === 'processing' ||
+      task.status === 'running',
+  )
 
   useEffect(() => {
     const intervalId = setInterval(refetchPendingTasks, 5000) // Refetch every 5 seconds
