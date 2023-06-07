@@ -37,7 +37,7 @@ const LayoutHeader = () => {
               <div
                 onClick={handleAuthClick}
                 className={`text-${
-                  isAuthenticated ? 'green' : 'red'
+                  isAuthenticated ? 'green' : 'blue'
                 }-500 text-2xl`}
               >
                 <Space>

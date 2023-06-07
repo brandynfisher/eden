@@ -10,20 +10,18 @@ services:
       - '27017:27017'
     volumes:
       - ./data:/data/db
-      - ./scripts/mongo-init-stg.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-  minio:
-    image: minio/minio:latest
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
+  minio:
+    build:
+      context: .
+      dockerfile: ./scripts/minio.Dockerfile
     ports:
       - '9000:9000'
       - '9001:9001'
-
     environment:
-      MINIO_ACCESS_KEY: eden12345
-      MINIO_SECRET_KEY: eden12345
-
-    command: server --console-address ":9001" /data
-
+      MINIO_ROOT_USER: eden12345
+      MINIO_ROOT_PASSWORD: eden12345
     volumes:
       - ./minio/data:/data
       - ./minio/config:/root/.minio

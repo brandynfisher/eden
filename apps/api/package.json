@@ -4,7 +4,8 @@
   "description": "Eden.art API",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src .env | pino-pretty --colorize",
+    "dev:dummy": "DOTENV_PATH=.env.dummy tsx watch src .env.dummy | pino-pretty --colorize",
+    "dev:eden": "DOTENV_PATH=.env.eden tsx watch src .env.eden | pino-pretty --colorize",
     "build": "tsc --outDir build",
     "test": "vitest",
     "start": "node --experimental-specifier-resolution=node build/src",

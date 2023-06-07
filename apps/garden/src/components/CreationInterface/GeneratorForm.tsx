@@ -41,17 +41,21 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
   const [showOptional, setShowOptional] = React.useState(false)
 
   const handleFinish = async () => {
-    const response = await axios.post('/api/tasks/create', {
-      generatorName: generator.generatorName,
-      config: form.getFieldsValue(),
-    })
-    toast.success('Task created!')
-    const { taskId } = response.data
-    setActiveTaskId && setActiveTaskId(taskId)
-    setTaskIds && setTaskIds([...taskIds, taskId])
-    setHasChangedGenerator && setHasChangedGenerator(false)
-    refetchPendingTasks && refetchPendingTasks()
-    refetchMannaBalance()
+    try {
+      const response = await axios.post('/api/tasks/create', {
+        generatorName: generator.generatorName,
+        config: form.getFieldsValue(),
+      })
+      toast.success('Task created!')
+      const { taskId } = response.data
+      setActiveTaskId && setActiveTaskId(taskId)
+      setTaskIds && setTaskIds([...taskIds, taskId])
+      setHasChangedGenerator && setHasChangedGenerator(false)
+      refetchPendingTasks && refetchPendingTasks()
+      refetchMannaBalance()
+    } catch (error) {
+      toast.error('Error creating task. Please try again.')
+    }
   }
 
   useEffect(() => {

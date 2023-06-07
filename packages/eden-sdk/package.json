@@ -10,6 +10,8 @@
   "scripts": {
     "build": "rm -rf dist && microbundle --tsconfig tsconfig.json --no-sourcemap",
     "dev": "microbundle watch --tsconfig tsconfig.json --no-sourcemap",
+    "dev:eden": "yarn dev",
+    "dev:dummy": "yarn dev",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "vitest"
   },

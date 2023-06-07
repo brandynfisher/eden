@@ -1,10 +1,11 @@
 import { PlusOutlined } from '@ant-design/icons'
 import { GeneratorParameter } from '@eden-labs/eden-sdk/dist/responses/GeneratorsGetResponse'
-import { Form, FormInstance, Row, message } from 'antd'
+import { Form, FormInstance, Row } from 'antd'
 import { Modal, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import React, { useState } from 'react'
+import { toast } from 'react-toastify'
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -40,7 +41,7 @@ const UploadParameter = (props: {
       if (errorMessage.startsWith('options.maxFileSize')) {
         errorMessage = '20MB file size limit exceeded'
       }
-      message.error(
+      toast.error(
         `${info.file.name} failed to upload because: ${errorMessage}.`,
       )
       return
@@ -52,7 +53,7 @@ const UploadParameter = (props: {
         [props.parameter.name]: isArray ? newUrls : newUrls[0],
       })
       setUrls(newUrls)
-      message.success(
+      toast.success(
         <>
           Uploaded successfully <a href={info.file.response.fileUrl}>[link]</a>.
         </>,

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 import { SiweMessage } from 'siwe'
 import { useAccount, useNetwork, useSignMessage } from 'wagmi'
 
@@ -21,12 +22,16 @@ export const useAuth = () => {
   // Get the user's session status on page load
   useEffect(() => {
     const checkSessionStatus = async () => {
-      const response = await axios.get('/api/session', {
-        withCredentials: true,
-      })
-      const { address: sessionAddress } = response.data
-      const isAuth = sessionAddress && sessionAddress === address
-      setIsAuthenticated(isAuth || false)
+      try {
+        const response = await axios.get('/api/session', {
+          withCredentials: true,
+        })
+        const { address: sessionAddress } = response.data
+        const isAuth = sessionAddress && sessionAddress === address
+        setIsAuthenticated(isAuth || false)
+      } catch (error) {
+        setIsAuthenticated(false)
+      }
     }
 
     checkSessionStatus()
@@ -39,6 +44,13 @@ export const useAuth = () => {
     }
     resetAuth()
   }, [address])
+
+  // Show error message if there is one
+  useEffect(() => {
+    if (authError) {
+      toast.error(authError)
+    }
+  }, [authError])
 
   const createChallenge = async () => {
     const response = await axios.post('/api/challenge', {
@@ -65,6 +77,7 @@ export const useAuth = () => {
   }
 
   const authenticate = async () => {
+    setAuthError(null)
     if (!address || !chainId) {
       setAuthError('No wallet connected')
       return
@@ -73,7 +86,14 @@ export const useAuth = () => {
     setIsAuthenticating(true)
 
     // Create challenge
-    const nonce = await createChallenge()
+    let nonce
+    try {
+      nonce = await createChallenge()
+    } catch (error) {
+      setAuthError('Failed to create login challenge')
+      setIsAuthenticating(false)
+      return
+    }
 
     // Create message for signing using ethers
     const siweMessage = new SiweMessage({
@@ -86,12 +106,25 @@ export const useAuth = () => {
       nonce,
     })
     const message = siweMessage.prepareMessage()
-    const signature = await signMessageAsync({
-      message,
-    })
-    await login(message, signature)
-    setIsAuthenticated(true)
-    setIsAuthenticating(false)
+    let signature
+    try {
+      signature = await signMessageAsync({
+        message,
+      })
+    } catch (error) {
+      setAuthError('You must sign the login message to continue')
+      setIsAuthenticating(false)
+      return
+    }
+
+    try {
+      await login(message, signature)
+      setIsAuthenticated(true)
+      setIsAuthenticating(false)
+    } catch (error) {
+      setAuthError('Failed to login')
+      setIsAuthenticating(false)
+    }
   }
 
   return {

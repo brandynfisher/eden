@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import { FastifyInstance } from 'fastify'
 
 import {

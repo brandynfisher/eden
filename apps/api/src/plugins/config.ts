@@ -1,13 +1,14 @@
 import { Static, Type } from '@sinclair/typebox'
 import Ajv from 'ajv'
-import 'dotenv/config'
+import dotenv from 'dotenv'
 import { FastifyPluginAsync } from 'fastify'
 import fp from 'fastify-plugin'
+
+dotenv.config({ path: process.env.DOTENV_PATH })
 
 export enum NodeEnv {
   development = 'development',
   test = 'test',
-  staging = 'staging',
   production = 'production',
 }
 

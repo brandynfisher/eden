@@ -20,5 +20,7 @@ production.env
 .vscode
 
 .env
+.env.eden
+.env.dummy
 /data
 /minio
