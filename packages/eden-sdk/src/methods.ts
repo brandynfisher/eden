@@ -13,6 +13,10 @@ import { MannaBalanceGetResponse } from './responses/MannaBalanceGetResponse'
 import { TasksCreateResponse } from './responses/TasksCreateResponse'
 import { TasksGetResponse } from './responses/TasksGetResponse'
 import { TasksListResponse } from './responses/TasksListResponse'
+import { AgentsCreateResponse } from 'src/responses/AgentsCreateResponse'
+import { AgentsDeleteResponse } from 'src/responses/AgentsDeleteResponse'
+import { AgentsGetResponse } from 'src/responses/AgentsGetResponse'
+import { AgentsListResponse } from 'src/responses/AgentsListResponse'
 
 const transformArgsIntoURLParams = (
   args: Record<string, any>,
@@ -65,6 +69,25 @@ export abstract class Methods {
     configFn: (options: WebAPICallOptions) => AxiosRequestConfig,
     options?: WebAPICallOptions,
   ): Promise<WebAPICallResult>
+
+  public readonly agents = {
+    create: bindApiCall<AgentsCreateArguments, AgentsCreateResponse>(
+      this,
+      agentsCreateRequestConfig,
+    ),
+    get: bindApiCall<AgentsGetArguments, AgentsGetResponse>(
+      this,
+      agentsGetRequestConfig,
+    ),
+    list: bindApiCall<AgentsListArguments, AgentsListResponse>(
+      this,
+      agentsListRequestConfig,
+    ),
+    delete: bindApiCall<AgentsDeleteArguments, AgentsDeleteResponse>(
+      this,
+      agentsDeleteRequestConfig,
+    ),
+  }
 
   public readonly apiKeys = {
     list: bindApiCall<ApiKeysListArguments, ApiKeysGetResponse>(
@@ -133,6 +156,30 @@ export abstract class Methods {
   }
 }
 
+interface Capability {
+  name: string
+  data: any
+}
+
+export interface AgentsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface AgentsGetArguments extends WebAPICallOptions {
+  agentId: string
+}
+
+export interface AgentsCreateArguments extends WebAPICallOptions {
+  name: string
+  capabilites: Capability[]
+}
+
+export interface AgentsDeleteArguments extends WebAPICallOptions {
+  agentId: string
+}
+
 export type ApiKeysListArguments = WebAPICallOptions & ListQueryParams
 
 export interface ApiKeysCreateArguments extends WebAPICallOptions {
@@ -181,6 +228,53 @@ export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
 
 export interface TasksGetArguments extends WebAPICallOptions {
   taskId: string
+}
+
+const agentsListRequestConfig = (
+  args: AgentsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams({
+    ...args,
+  })
+  return {
+    method: 'GET',
+    url: 'agents',
+    params,
+  }
+}
+
+const agentsGetRequestConfig = (
+  args: AgentsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `agents/${args.agentId}`,
+  }
+}
+
+const agentsCreateRequestConfig = (
+  args: AgentsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'agents/create',
+    data: {
+      name: args.name,
+      capabilities: args.capabilites,
+    },
+  }
+}
+
+const agentsDeleteRequestConfig = (
+  args: AgentsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'agents/delete',
+    data: {
+      agentId: args.agentId,
+    },
+  }
 }
 
 const apiKeysListRequestConfig = (

@@ -1,6 +1,7 @@
-import { TObject, TProperties, TSchema, Type } from '@sinclair/typebox'
+import { TSchema, Type } from '@sinclair/typebox'
 
 import adminRoutes from './adminRoutes'
+import agentRoutes from './agentRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
 import characterRoutes from './characterRoutes'
@@ -40,6 +41,7 @@ export const paginationProperties = () => {
 
 export const routes = [
   adminRoutes,
+  agentRoutes,
   authRoutes,
   mannaRoutes,
   apiKeyRoutes,

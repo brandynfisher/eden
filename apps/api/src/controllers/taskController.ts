@@ -11,7 +11,6 @@ import { Generator, GeneratorVersionSchema } from '../models/Generator'
 import { Manna } from '../models/Manna'
 import { Task, TaskSchema } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
-import CreatorRepository from '../repositories/CreatorRepository'
 import TaskRepository from '../repositories/TaskRepository'
 
 export const createTask = async (
@@ -158,6 +157,10 @@ export const listTasks = async (
   )
 
   return reply.status(200).send(tasks)
+}
+
+interface TaskUpdateQuery {
+  secret: string
 }
 
 export const receiveTaskUpdate = async (
