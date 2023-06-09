@@ -29,14 +29,16 @@ const ActionsButtons = ({ characterId }: { characterId: string }) => {
 
   const handleDeleteCharacter = async () => {
     try {
-      await axios.delete(`/api/characters/${characterId}`)
+      await axios.post(`/api/agents/delete`, {
+        agentId: characterId,
+      })
     } catch (error) {
       handleAxiosError(error)
     }
   }
 
   const handleViewCharacter = () => {
-    router.push(`/characters/${characterId}`)
+    router.push(`/agents/${characterId}`)
   }
 
   return (
