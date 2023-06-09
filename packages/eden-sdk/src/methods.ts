@@ -35,6 +35,12 @@ const transformArgsIntoURLParams = (
   return params
 }
 
+interface ListQueryParams {
+  page?: number
+  limit?: number
+  sort?: object
+}
+
 export default interface Method<
   MethodArguments extends WebAPICallOptions,
   MethodResult extends WebAPICallResult = WebAPICallResult,
@@ -127,7 +133,7 @@ export abstract class Methods {
   }
 }
 
-export type ApiKeysListArguments = WebAPICallOptions
+export type ApiKeysListArguments = WebAPICallOptions & ListQueryParams
 
 export interface ApiKeysCreateArguments extends WebAPICallOptions {
   note?: string
@@ -185,10 +191,16 @@ export interface TasksGetArguments extends WebAPICallOptions {
   taskId: string
 }
 
-const apiKeysListRequestConfig = (): AxiosRequestConfig => {
+const apiKeysListRequestConfig = (
+  args: ApiKeysListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams({
+    ...args,
+  })
   return {
     method: 'GET',
     url: 'apikeys',
+    params,
   }
 }
 

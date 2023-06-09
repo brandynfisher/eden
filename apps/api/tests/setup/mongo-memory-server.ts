@@ -6,7 +6,7 @@ import { setup, teardown } from 'vitest-mongodb'
 import { ApiKey, ApiKeyInput } from '../../src/models/ApiKey'
 import { User, UserInput } from '../../src/models/Creator'
 import { Manna } from '../../src/models/Manna'
-import { createCreation, createGenerator, getDefaultUserId } from '../util'
+import { createCreation, createGenerator } from '../util'
 
 const createAdmin = async () => {
   const userData: UserInput = {
@@ -74,7 +74,7 @@ beforeAll(async () => {
   const client = new MongoClient(globalThis.__MONGO_URI__)
   client.db('eden')
   mongoose.set('strictQuery', true)
-  mongoose.connect(process.env.MONGO_URI as string)
+  await mongoose.connect(process.env.MONGO_URI as string)
 
   // const replicateDb = client.db("replicate");
   // await createAdmin(replicateDb);

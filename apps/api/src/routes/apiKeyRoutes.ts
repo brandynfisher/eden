@@ -1,6 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { listQuery, paginatedResponse } from '.'
 import {
   createApiKey,
   deleteApiKey,
@@ -42,8 +43,9 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
 
   server.get('/apikeys', {
     schema: {
+      querystring: listQuery(Type.Object({})),
       response: {
-        200: Type.Array(
+        200: paginatedResponse(
           Type.Object({
             apiKey: Type.String(),
             apiSecret: Type.String(),

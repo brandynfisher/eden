@@ -1,6 +1,7 @@
 import {
   ApiKeysCreateArguments,
   ApiKeysDeleteArguments,
+  ApiKeysListArguments,
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
@@ -70,11 +71,20 @@ export const getApiKeys = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
+  const { limit, page, sort } = request.query as ApiKeysListArguments
 
-  const apiKeys = await ApiKey.find({
-    user: userId,
-    deleted: false,
-  })
+  const apiKeyRepository = new ApiKeyRepository(ApiKey)
+  const apiKeys = await apiKeyRepository.query(
+    {
+      user: userId,
+    },
+    {
+      limit,
+      page,
+      sort,
+    },
+  )
+  console.log(apiKeys)
 
   return reply.status(200).send(apiKeys)
 }
