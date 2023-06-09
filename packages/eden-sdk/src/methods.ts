@@ -67,7 +67,7 @@ export abstract class Methods {
   ): Promise<WebAPICallResult>
 
   public readonly apiKeys = {
-    get: bindApiCall<ApiKeysListArguments, ApiKeysGetResponse>(
+    list: bindApiCall<ApiKeysListArguments, ApiKeysGetResponse>(
       this,
       apiKeysListRequestConfig,
     ),
@@ -149,13 +149,10 @@ export interface AuthLoginArguments extends WebAPICallOptions {
   signature: string
 }
 
-export interface CreationsListArguments extends WebAPICallOptions {
-  username?: string
-  generators?: string[]
-  collectionId?: string
-  earliestTime?: string
-  latestTime?: string
-  limit?: number
+export interface CreationsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
 }
 
 export interface CreationsGetArguments extends WebAPICallOptions {

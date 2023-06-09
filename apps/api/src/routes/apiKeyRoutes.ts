@@ -1,11 +1,11 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-import { listQuery, paginatedResponse } from '.'
+import { paginatedResponse, paginationProperties } from '.'
 import {
   createApiKey,
   deleteApiKey,
-  getApiKeys,
+  listApiKeys,
 } from '../controllers/apiKeyController'
 import { isAuth } from '../middleware/authMiddleware'
 
@@ -43,7 +43,13 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
 
   server.get('/apikeys', {
     schema: {
-      querystring: listQuery(Type.Object({})),
+      querystring: {
+        type: 'object',
+        properties: {
+          ...paginationProperties(),
+        },
+        required: [],
+      },
       response: {
         200: paginatedResponse(
           Type.Object({
@@ -56,7 +62,7 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [async request => isAuth(server, request)],
-    handler: (request, reply) => getApiKeys(request, reply),
+    handler: (request, reply) => listApiKeys(request, reply),
   })
 }
 

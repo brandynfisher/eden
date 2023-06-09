@@ -1,0 +1,7 @@
+import { CreationDocument } from '../models/Creation'
+import RestfulRepository from './RestfulRepository'
+
+/**
+ * @class MoviesRepository
+ */
+export default class CreationRepository extends RestfulRepository<CreationDocument> {}

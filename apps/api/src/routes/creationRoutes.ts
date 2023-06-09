@@ -1,40 +1,25 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-import { getCreation, getCreations } from '../controllers/creationsController'
-
-export interface CreationsGetQuery {
-  username?: string
-  generators?: string[]
-  collectionId?: string
-  earliestTime?: string
-  latestTime?: string
-  limit?: number
-}
-
-export interface CreationGetParams {
-  creationId: string
-}
+import { paginatedResponse, paginationProperties } from '.'
+import { getCreation, listCreations } from '../controllers/creationsController'
 
 const creationRoutes: FastifyPluginAsync = async server => {
   server.get('/creations', {
     schema: {
-      querystring: Type.Object({
-        username: Type.Optional(Type.String()),
-        generators: Type.Optional(Type.Array(Type.String())),
-        collectionId: Type.Optional(Type.String()),
-        earliestTime: Type.Optional(Type.Any()),
-        latestTime: Type.Optional(Type.Any()),
-        limit: Type.Optional(Type.Number()),
-        reactions: Type.Optional(Type.Array(Type.String())),
-      }),
-      response: {
-        200: {
-          creations: Type.Array(Type.Any()),
+      querystring: {
+        type: 'object',
+        properties: {
+          userId: { type: ['string', 'array'] },
+          ...paginationProperties(),
         },
+        required: [],
+      },
+      response: {
+        200: paginatedResponse(Type.Any()),
       },
     },
-    handler: (request, reply) => getCreations(request, reply),
+    handler: (request, reply) => listCreations(request, reply),
   })
 
   server.get('/creations/:creationId', {

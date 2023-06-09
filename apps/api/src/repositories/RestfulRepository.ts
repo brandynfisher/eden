@@ -1,13 +1,26 @@
 interface IRepository<T> {
   query(
-    query?: object,
+    query?: Record<string, string | string[] | undefined>,
     options?: { page?: number; limit?: number; sort?: object },
-  ): Promise<T>
+  ): Promise<PaginatedResponse<T>>
   create(data: object): Promise<T>
   findOneBy(prop: string, value: string): Promise<T>
   findById(id: string): Promise<T>
   findByIdAndUpdate(id: string, data: object, options?: object): Promise<T>
   deleteById(id: string): Promise<void>
+}
+
+interface PaginatedResponse<T> {
+  docs?: T[]
+  total?: number
+  limit?: number
+  pages?: number
+  page?: number
+  pagingCounter?: number
+  hasPrevPage?: boolean
+  hasNextPage?: boolean
+  prevPage?: number
+  nextPage?: number
 }
 
 class RestfulRepository<T> implements IRepository<T> {
@@ -18,16 +31,30 @@ class RestfulRepository<T> implements IRepository<T> {
   }
 
   async query(
-    query: object = {},
+    query: Record<string, string | string[] | undefined>,
     options: { page?: number; limit?: number; sort?: object } = {},
-  ): Promise<T> {
+  ): Promise<PaginatedResponse<T>> {
     const labels = {
       totalDocs: 'total',
       totalPages: 'pages',
     }
 
-    return await this.model.paginate(query, {
-      ...options,
+    const mongooseQuery: Record<string, any> = {}
+
+    for (const prop in query) {
+      if (Array.isArray(query[prop])) {
+        mongooseQuery[prop] = { $in: query[prop] }
+      } else {
+        mongooseQuery[prop] = query[prop]
+      }
+    }
+
+    // filter any undefined values
+    Object.keys(mongooseQuery).forEach(
+      key => mongooseQuery[key] === undefined && delete mongooseQuery[key],
+    )
+
+    return await this.model.paginate(mongooseQuery, {
       page: options.page ?? 1,
       limit: options.limit ?? 100,
       sort: options.sort ?? { _id: 1 },

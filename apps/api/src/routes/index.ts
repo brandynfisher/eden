@@ -1,4 +1,4 @@
-import { TSchema, Type } from '@sinclair/typebox'
+import { TObject, TProperties, TSchema, Type } from '@sinclair/typebox'
 
 import adminRoutes from './adminRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
@@ -30,16 +30,12 @@ export const paginatedResponse = (docs: TSchema) => {
   })
 }
 
-export const listQuery = (schema: TSchema) => {
-  const querySchema = Type.Object({
-    page: Type.Optional(Type.Number()),
-    limit: Type.Optional(Type.Number()),
-    sort: Type.Optional(Type.String()),
-  })
-
-  const x = Type.Union([querySchema, schema])
-  console.log(x)
-  return x
+export const paginationProperties = () => {
+  return {
+    page: { type: 'number' },
+    limit: { type: 'number' },
+    sort: { type: 'string' },
+  }
 }
 
 export const routes = [

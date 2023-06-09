@@ -66,7 +66,7 @@ export const deleteApiKey = async (
   return reply.status(200).send({})
 }
 
-export const getApiKeys = async (
+export const listApiKeys = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -84,7 +84,6 @@ export const getApiKeys = async (
       sort,
     },
   )
-  console.log(apiKeys)
 
   return reply.status(200).send(apiKeys)
 }
