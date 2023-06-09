@@ -174,14 +174,9 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   metadata?: any
 }
 
-export interface TasksListArguments extends WebAPICallOptions {
-  status?: string
-  taskIds?: string[]
-  userId?: string
-  generators?: string[]
-  earliestTime?: string
-  latestTime?: string
-  limit?: number
+export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
+  status?: string | string[]
+  taskId?: string | string[]
 }
 
 export interface TasksGetArguments extends WebAPICallOptions {

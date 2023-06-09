@@ -12,7 +12,6 @@ test('User can list creations', async context => {
   })
   expect(response.statusCode).toBe(200)
   const json = response.json()
-  console.log(json)
   expect(json).toHaveProperty('docs')
   expect(json.docs.length).toBeGreaterThan(0)
 })

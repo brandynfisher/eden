@@ -1,38 +1,14 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { paginatedResponse, paginationProperties } from '.'
 import {
   createTask,
   getTask,
-  getTasks,
+  listTasks,
   receiveTaskUpdate,
 } from '../controllers/taskController'
 import { isAuth } from '../middleware/authMiddleware'
-
-export interface TaskCreateBody {
-  generatorName: string
-  versionId?: string
-  config?: any
-  metadata?: any
-}
-
-export interface TasksGetQuery {
-  status?: string
-  taskIds?: string[]
-  userId?: string
-  generators?: string[]
-  earliestTime?: string
-  latestTime?: string
-  limit?: number
-}
-
-export interface TaskGetParams {
-  taskId: string
-}
-
-export interface TaskUpdateQuery {
-  secret: string
-}
 
 const taskRoutes: FastifyPluginAsync = async server => {
   server.post('/tasks/create', {
@@ -56,22 +32,20 @@ const taskRoutes: FastifyPluginAsync = async server => {
   server.get('/tasks', {
     schema: {
       querystring: {
-        status: Type.Optional(Type.String()),
-        userId: Type.Optional(Type.String()),
-        taskIds: Type.Optional(Type.Array(Type.String())),
-        generators: Type.Optional(Type.Array(Type.String())),
-        earliestTime: Type.Optional(Type.Any()),
-        latestTime: Type.Optional(Type.Any()),
-        limit: Type.Optional(Type.Number()),
+        type: 'object',
+        properties: {
+          status: { type: ['string', 'array'] },
+          taskId: { type: ['string', 'array'] },
+          ...paginationProperties(),
+        },
+        required: [],
       },
       response: {
-        200: Type.Object({
-          tasks: Type.Array(Type.Any()),
-        }),
+        200: paginatedResponse(Type.Any()),
       },
     },
     preHandler: [async request => isAuth(server, request)],
-    handler: (request, reply) => getTasks(request, reply),
+    handler: (request, reply) => listTasks(request, reply),
   })
 
   server.get('/tasks/:taskId', {

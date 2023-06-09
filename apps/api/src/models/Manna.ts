@@ -1,5 +1,4 @@
 import { Document, Schema, model } from 'mongoose'
-import paginate from 'mongoose-paginate-v2'
 
 import { UserDocument } from './Creator'
 
@@ -35,7 +34,5 @@ manna.pre<MannaDocument>('save', function (next) {
 
   next()
 })
-
-manna.plugin(paginate)
 
 export const Manna = model<MannaDocument>('manna', manna)

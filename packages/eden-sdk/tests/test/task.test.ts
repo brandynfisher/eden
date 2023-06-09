@@ -14,7 +14,7 @@ describe('Task Methods', () => {
     const { client } = context
     const result = await client.tasks.list()
     expect(result).toBeDefined()
-    expect(result.tasks).toBeDefined()
+    expect(result.docs).toBeDefined()
   })
 
   test('should be able to get a task by id', async context => {
