@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
+import paginate from 'mongoose-paginate-v2'
 
 import { UserDocument } from './Creator'
 
@@ -10,7 +11,7 @@ export interface ApiKeySchema {
   note?: string
   deleted?: boolean
   createdAt?: Date
-  updatedAt?: Date | number
+  updatedAt?: Date
 }
 
 export interface ApiKeyInput {
@@ -22,42 +23,41 @@ export interface ApiKeyInput {
 
 export interface ApiKeyDocument extends ApiKeySchema, Document {}
 
-const apiKey = new Schema<ApiKeyDocument>({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: 'users',
-    required: true,
+const apiKey = new Schema<ApiKeyDocument>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+      required: true,
+    },
+    apiKey: {
+      type: String,
+      required: true,
+    },
+    apiSecret: {
+      type: String,
+      required: true,
+    },
+    note: {
+      type: String,
+      required: false,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
-  apiKey: {
-    type: String,
-    required: true,
+  {
+    timestamps: true,
   },
-  apiSecret: {
-    type: String,
-    required: true,
-  },
-  note: {
-    type: String,
-    required: false,
-  },
-  deleted: {
-    type: Boolean,
-    default: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-})
+)
 
-apiKey.pre<ApiKeyDocument>('update', function (next) {
-  this.updatedAt = Date.now()
+apiKey.pre<ApiKeyDocument>('save', function (next) {
+  this.updatedAt = new Date()
 
   next()
 })
+
+apiKey.plugin(paginate)
 
 export const ApiKey = model<ApiKeyDocument>('apikey', apiKey)

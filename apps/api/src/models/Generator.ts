@@ -1,4 +1,5 @@
 import { Document, Schema, model } from 'mongoose'
+import paginate from 'mongoose-paginate-v2'
 
 export interface GeneratorParameter {
   name: string
@@ -129,7 +130,7 @@ export interface GeneratorSchema {
   versions: GeneratorVersionSchema[]
   output: GeneratorOutputType
   createdAt?: Date
-  updatedAt?: Date | number
+  updatedAt?: Date
 }
 
 export interface GeneratorInput {
@@ -168,10 +169,12 @@ const generator = new Schema<GeneratorDocument>({
   },
 })
 
-generator.pre<GeneratorDocument>('update', function (next) {
-  this.updatedAt = Date.now()
+generator.pre<GeneratorDocument>('save', function (next) {
+  this.updatedAt = new Date()
 
   next()
 })
+
+generator.plugin(paginate)
 
 export const Generator = model<GeneratorDocument>('generators', generator)

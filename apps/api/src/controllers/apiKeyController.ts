@@ -6,6 +6,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { randomId } from '../lib/util'
 import { ApiKey, ApiKeyInput } from '../models/ApiKey'
+import ApiKeyRepository from '../repositories/ApiKeyRepository'
 
 export const createApiKey = async (
   request: FastifyRequest,
@@ -24,8 +25,8 @@ export const createApiKey = async (
     note,
   }
 
-  const apiKeyModel = new ApiKey(input)
-  await apiKeyModel.save()
+  const apiKeyRepository = new ApiKeyRepository(ApiKey)
+  await apiKeyRepository.create(input)
 
   return reply.status(200).send({
     apiKey: {
