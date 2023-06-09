@@ -1,5 +1,4 @@
 import { Document, Schema, model } from 'mongoose'
-import paginate from 'mongoose-paginate-v2'
 
 import { CHALLENGE_TTL } from '../lib/constants'
 
@@ -43,7 +42,5 @@ const challenge = new Schema<ChallengeDocument>(
     timestamps: true,
   },
 )
-
-challenge.plugin(paginate)
 
 export default model<ChallengeDocument>('challenges', challenge)
