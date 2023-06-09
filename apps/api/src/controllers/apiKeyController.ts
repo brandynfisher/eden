@@ -1,11 +1,13 @@
 import {
   ApiKeysCreateArguments,
   ApiKeysDeleteArguments,
+  ApiKeysListArguments,
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { randomId } from '../lib/util'
 import { ApiKey, ApiKeyInput } from '../models/ApiKey'
+import ApiKeyRepository from '../repositories/ApiKeyRepository'
 
 export const createApiKey = async (
   request: FastifyRequest,
@@ -24,8 +26,8 @@ export const createApiKey = async (
     note,
   }
 
-  const apiKeyModel = new ApiKey(input)
-  await apiKeyModel.save()
+  const apiKeyRepository = new ApiKeyRepository(ApiKey)
+  await apiKeyRepository.create(input)
 
   return reply.status(200).send({
     apiKey: {
@@ -64,16 +66,24 @@ export const deleteApiKey = async (
   return reply.status(200).send({})
 }
 
-export const getApiKeys = async (
+export const listApiKeys = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
+  const { limit, page, sort } = request.query as ApiKeysListArguments
 
-  const apiKeys = await ApiKey.find({
-    user: userId,
-    deleted: false,
-  })
+  const apiKeyRepository = new ApiKeyRepository(ApiKey)
+  const apiKeys = await apiKeyRepository.query(
+    {
+      user: userId,
+    },
+    {
+      limit,
+      page,
+      sort,
+    },
+  )
 
   return reply.status(200).send(apiKeys)
 }

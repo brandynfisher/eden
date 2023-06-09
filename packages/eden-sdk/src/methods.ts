@@ -35,6 +35,12 @@ const transformArgsIntoURLParams = (
   return params
 }
 
+interface ListQueryParams {
+  page?: number
+  limit?: number
+  sort?: object
+}
+
 export default interface Method<
   MethodArguments extends WebAPICallOptions,
   MethodResult extends WebAPICallResult = WebAPICallResult,
@@ -61,7 +67,7 @@ export abstract class Methods {
   ): Promise<WebAPICallResult>
 
   public readonly apiKeys = {
-    get: bindApiCall<ApiKeysListArguments, ApiKeysGetResponse>(
+    list: bindApiCall<ApiKeysListArguments, ApiKeysGetResponse>(
       this,
       apiKeysListRequestConfig,
     ),
@@ -127,7 +133,7 @@ export abstract class Methods {
   }
 }
 
-export type ApiKeysListArguments = WebAPICallOptions
+export type ApiKeysListArguments = WebAPICallOptions & ListQueryParams
 
 export interface ApiKeysCreateArguments extends WebAPICallOptions {
   note?: string
@@ -143,20 +149,17 @@ export interface AuthLoginArguments extends WebAPICallOptions {
   signature: string
 }
 
-export interface CreationsListArguments extends WebAPICallOptions {
-  username?: string
-  generators?: string[]
-  collectionId?: string
-  earliestTime?: string
-  latestTime?: string
-  limit?: number
+export interface CreationsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
 }
 
 export interface CreationsGetArguments extends WebAPICallOptions {
   creationId: string
 }
 
-export type GeneratorsListArguments = WebAPICallOptions
+export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
 
 export interface GeneratorsGetArguments extends WebAPICallOptions {
   generatorName: string
@@ -171,24 +174,25 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   metadata?: any
 }
 
-export interface TasksListArguments extends WebAPICallOptions {
-  status?: string
-  taskIds?: string[]
-  userId?: string
-  generators?: string[]
-  earliestTime?: string
-  latestTime?: string
-  limit?: number
+export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
+  status?: string | string[]
+  taskId?: string | string[]
 }
 
 export interface TasksGetArguments extends WebAPICallOptions {
   taskId: string
 }
 
-const apiKeysListRequestConfig = (): AxiosRequestConfig => {
+const apiKeysListRequestConfig = (
+  args: ApiKeysListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams({
+    ...args,
+  })
   return {
     method: 'GET',
     url: 'apikeys',
+    params,
   }
 }
 

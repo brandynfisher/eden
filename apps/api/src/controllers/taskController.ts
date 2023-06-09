@@ -1,3 +1,8 @@
+import {
+  TasksCreateArguments,
+  TasksGetArguments,
+  TasksListArguments,
+} from '@eden-labs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
@@ -6,12 +11,8 @@ import { Generator, GeneratorVersionSchema } from '../models/Generator'
 import { Manna } from '../models/Manna'
 import { Task, TaskSchema } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
-import {
-  TaskCreateBody,
-  TaskGetParams,
-  TaskUpdateQuery,
-  TasksGetQuery,
-} from '../routes/taskRoutes'
+import CreatorRepository from '../repositories/CreatorRepository'
+import TaskRepository from '../repositories/TaskRepository'
 
 export const createTask = async (
   server: FastifyInstance,
@@ -20,7 +21,7 @@ export const createTask = async (
 ) => {
   const { userId } = request.user
   const { generatorName, versionId, config, metadata } =
-    request.body as TaskCreateBody
+    request.body as TasksCreateArguments
 
   // get generator
   const generator = await Generator.findOne({
@@ -122,55 +123,41 @@ export const createTask = async (
 }
 
 export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
-  const { taskId } = request.params as TaskGetParams
+  const { taskId } = request.params as TasksGetArguments
   const task = await Task.findOne({ taskId })
   return reply.status(200).send({ task })
 }
 
-export const getTasks = async (
+export const listTasks = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const taskFilter = request.query as TasksGetQuery
-  let user
-  if (taskFilter.userId) {
-    try {
-      user = await User.findOne({ userId: taskFilter.userId })
-    } catch (err) {
-      return reply.status(400).send({
-        message: 'Invalid userId',
-      })
-    }
+  const { userId } = request.user
+  const { status, taskId, limit, page, sort } =
+    request.query as TasksListArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
   }
 
-  const query = {
-    ...(taskFilter.status && { status: taskFilter.status }),
-    ...(taskFilter.taskIds && { taskId: { $in: taskFilter.taskIds } }),
-    ...(user && { user: user._id }),
-    ...(taskFilter.generators && { generator: { $in: taskFilter.generators } }),
-    ...(taskFilter.earliestTime && {
-      createdAt: { $gte: taskFilter.earliestTime },
-    }),
-    ...(taskFilter.latestTime && {
-      createdAt: { $lte: taskFilter.latestTime },
-    }),
-  }
+  const tasksRepository = new TaskRepository(Task)
+  const tasks = await tasksRepository.query(
+    {
+      user: user._id,
+      status,
+      taskId,
+    },
+    {
+      limit,
+      page,
+      sort,
+    },
+  )
 
-  console.log(query)
-
-  const tasks = await Task.find(query)
-    .sort({ createdAt: -1 })
-    .limit(taskFilter.limit || 100)
-    .populate({
-      path: 'generator',
-      select: 'generatorName',
-    })
-    .populate({
-      path: 'creation',
-      select: ['thumbnail', 'uri'],
-    })
-
-  return reply.status(200).send({ tasks })
+  return reply.status(200).send(tasks)
 }
 
 export const receiveTaskUpdate = async (

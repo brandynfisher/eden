@@ -14,7 +14,7 @@ const createApiKey = async (server: FastifyInstance) => {
   return response
 }
 
-const getApiKeys = async (server: FastifyInstance) => {
+const listApiKeys = async (server: FastifyInstance) => {
   const headers = prepareUserHeaders()
   const response = await server.inject({
     method: 'GET',
@@ -49,20 +49,23 @@ test('User can create an API Key', async context => {
 
 test('User can list their API Keys', async context => {
   const { server } = context
-  const response = await getApiKeys(server)
+  const response = await listApiKeys(server)
   expect(response.statusCode).toBe(200)
   const json = response.json()
-  expect(json).toHaveLength(1)
+  expect(json).toHaveProperty('docs')
+  expect(json.docs).toHaveLength(1)
 })
 
 test('User can delete an API Key', async context => {
   const { server } = context
   await createApiKey(server)
-  const getResponse = await getApiKeys(server)
-  const apiKeys = getResponse.json()
+  const getResponse = await listApiKeys(server)
+  const apiKeys = getResponse.json().docs
   const apiKey = apiKeys[1].apiKey
   const deleteResponse = await deleteApiKey(server, apiKey)
   expect(deleteResponse.statusCode).toBe(200)
-  const getResponse2 = await getApiKeys(server)
-  expect(getResponse2.json()).toHaveLength(1)
+  const getResponse2 = await listApiKeys(server)
+  const json = getResponse2.json()
+  expect(json).toHaveProperty('docs')
+  expect(json.docs).toHaveLength(1)
 })

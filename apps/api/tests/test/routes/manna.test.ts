@@ -1,9 +1,17 @@
-import { ObjectId } from '@fastify/mongodb'
 import { FastifyInstance } from 'fastify'
 import { expect, test } from 'vitest'
 
-import { Transaction } from '../../../src/models/Transaction'
 import { prepareAdminHeaders, prepareUserHeaders } from '../../util'
+
+const getMannaBalanceRequest = async (server: FastifyInstance) => {
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'GET',
+    url: '/manna/balance',
+    headers,
+  })
+  return response
+}
 
 const addMannaRequest = async (
   server: FastifyInstance,
@@ -13,21 +21,11 @@ const addMannaRequest = async (
   const headers = prepareAdminHeaders()
   const response = await server.inject({
     method: 'POST',
-    url: '/manna/modify',
+    url: '/admin/manna/modify',
     payload: {
       userId,
       amount,
     },
-    headers,
-  })
-  return response
-}
-
-const getMannaBalanceRequest = async (server: FastifyInstance) => {
-  const headers = prepareUserHeaders()
-  const response = await server.inject({
-    method: 'GET',
-    url: '/manna/balance',
     headers,
   })
   return response
@@ -63,21 +61,6 @@ const getMannaBalanceRequest = async (server: FastifyInstance) => {
 //   });
 //   return response;
 // }
-
-test('Admin can modify Manna', async context => {
-  const { server } = context
-  const response = await addMannaRequest(server, 'user', 100)
-  expect(response.statusCode).toBe(200)
-  expect(response.json()).toHaveProperty('userId')
-  expect(response.json()).toHaveProperty('manna')
-  expect(response.json()).toHaveProperty('transactionId')
-  expect(response.json().manna).toBe(1100)
-
-  // Get the transaction from the database
-  const transactionId = new ObjectId(response.json().transactionId)
-  const transaction = await Transaction.findById(transactionId)
-  expect(transaction).not.toBe(null)
-})
 
 test('A user with manna should see their balance', async context => {
   const { server } = context

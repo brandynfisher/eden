@@ -1,9 +1,11 @@
+import { PaginatedResponse } from 'src/responses/base'
+
 import { WebAPICallResult } from '../EdenClient'
 
-export type CreationsListResponse = WebAPICallResult & {
-  error?: string
-  creations?: Array<Creation>
-}
+export type CreationsListResponse = WebAPICallResult &
+  PaginatedResponse<Creation> & {
+    error?: string
+  }
 
 export type Creation = {
   _id: string

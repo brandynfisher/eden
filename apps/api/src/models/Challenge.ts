@@ -8,6 +8,7 @@ export interface ChallengeSchema {
   ack: boolean
   expiresAt: Date
   createdAt?: Date
+  updatedAt?: Date
 }
 
 export interface ChallengeInput {
@@ -16,29 +17,30 @@ export interface ChallengeInput {
 
 export interface ChallengeDocument extends ChallengeSchema, Document {}
 
-const challenge = new Schema<ChallengeDocument>({
-  address: {
-    type: String,
-    required: true,
+const challenge = new Schema<ChallengeDocument>(
+  {
+    address: {
+      type: String,
+      required: true,
+    },
+    nonce: {
+      type: String,
+      required: true,
+    },
+    ack: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    expiresAt: {
+      type: Date,
+      required: true,
+      default: () => new Date(Date.now() + CHALLENGE_TTL),
+    },
   },
-  nonce: {
-    type: String,
-    required: true,
+  {
+    timestamps: true,
   },
-  ack: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  expiresAt: {
-    type: Date,
-    required: true,
-    default: () => new Date(Date.now() + CHALLENGE_TTL),
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-})
+)
 
 export default model<ChallengeDocument>('challenges', challenge)

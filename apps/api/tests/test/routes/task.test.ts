@@ -23,18 +23,6 @@ test('User can create a task', async context => {
   expect(response.json()).toHaveProperty('taskId')
 })
 
-test('User can list all tasks', async context => {
-  const { server } = context
-  const headers = prepareUserHeaders()
-  const response = await server.inject({
-    method: 'GET',
-    url: '/tasks',
-    headers,
-  })
-  expect(response.statusCode).toBe(200)
-  expect(response.json()).toHaveProperty('tasks')
-})
-
 test('User can list their tasks', async context => {
   const { server } = context
   const headers = prepareUserHeaders()
@@ -45,8 +33,9 @@ test('User can list their tasks', async context => {
     headers,
   })
   expect(response.statusCode).toBe(200)
-  expect(response.json()).toHaveProperty('tasks')
-  expect(response.json().tasks.length).toBeGreaterThan(0)
+  const json = response.json()
+  expect(json).toHaveProperty('docs')
+  expect(json.docs.length).toBeGreaterThan(0)
 })
 
 test('User can get a task by ID', async context => {

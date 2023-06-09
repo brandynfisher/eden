@@ -1,13 +1,17 @@
+import {
+  GeneratorsGetArguments,
+  GeneratorsListArguments,
+} from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { Generator, GeneratorVersionSchema } from '../models/Generator'
-import { GeneratorGetParams } from '../routes/generatorRoutes'
+import GeneratorRepository from '../repositories/GeneratorRepository'
 
 export const getGenerator = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { generatorName } = request.params as GeneratorGetParams
+  const { generatorName } = request.params as GeneratorsGetArguments
   const generator = await Generator.findOne({ generatorName })
 
   if (!generator) {
@@ -31,20 +35,38 @@ export const getGenerator = async (
   return reply.status(200).send({ generator: generatorObj })
 }
 
-export const listGenerators = async (reply: FastifyReply) => {
-  const generators = await Generator.find({})
-  const responseObj = generators.map(generator => ({
-    generatorName: generator.generatorName,
-    output: generator.output,
-    description: generator.description,
-    versions: generator.versions
-      .filter((version: GeneratorVersionSchema) => !version.isDeprecated)
-      .map((version: GeneratorVersionSchema) => ({
-        versionId: version.versionId,
-        parameters: version.parameters,
-      })),
-  }))
-  return reply.status(200).send({ generators: responseObj })
+export const listGenerators = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { limit, page, sort } = request.query as GeneratorsListArguments
+
+  const generatorRepository = new GeneratorRepository(Generator)
+  const generators = await generatorRepository.query(
+    {},
+    {
+      limit,
+      page,
+      sort,
+    },
+  )
+
+  const response = {
+    ...generators,
+    docs: generators.docs.map(generator => ({
+      generatorName: generator.generatorName,
+      output: generator.output,
+      description: generator.description,
+      versions: generator.versions
+        .filter((version: GeneratorVersionSchema) => !version.isDeprecated)
+        .map((version: GeneratorVersionSchema) => ({
+          versionId: version.versionId,
+          parameters: version.parameters,
+        })),
+    })),
+  }
+
+  return reply.status(200).send(response)
 }
 
 // export const registerGenerator = async (request: FastifyRequest, reply: FastifyReply) => {

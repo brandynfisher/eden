@@ -1,53 +1,39 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { paginatedResponse, paginationProperties } from '.'
 import {
   getGenerator,
   listGenerators,
 } from '../controllers/generatorController'
-import { GeneratorParameter } from '../models/Generator'
-
-export interface GeneratorGetParams {
-  generatorName: string
-}
-
-export interface GeneratorRegisterRequestBody {
-  generatorName: string
-  provider: string
-  address: string
-  versionId: string
-  mode: string
-  parameters: GeneratorParameter[]
-  creationAttributes: string[]
-}
-
-export interface GeneratorDeprecateRequestBody {
-  generatorName: string
-  versionId: string
-}
 
 const generatorRoutes: FastifyPluginAsync = async server => {
   server.get('/generators', {
     schema: {
-      response: {
-        200: {
-          generators: Type.Array(
-            Type.Object({
-              generatorName: Type.String(),
-              description: Type.String(),
-              output: Type.String(),
-              versions: Type.Array(
-                Type.Object({
-                  versionId: Type.String(),
-                  parameters: Type.Any(),
-                }),
-              ),
-            }),
-          ),
+      querystring: {
+        type: 'object',
+        properties: {
+          ...paginationProperties(),
         },
+        required: [],
+      },
+      response: {
+        200: paginatedResponse(
+          Type.Object({
+            generatorName: Type.String(),
+            description: Type.String(),
+            output: Type.String(),
+            versions: Type.Array(
+              Type.Object({
+                versionId: Type.String(),
+                parameters: Type.Any(),
+              }),
+            ),
+          }),
+        ),
       },
     },
-    handler: (_, reply) => listGenerators(reply),
+    handler: (request, reply) => listGenerators(request, reply),
   })
 
   server.get('/generators/:generatorName', {

@@ -1,4 +1,5 @@
 import { Document, Schema, model } from 'mongoose'
+import paginate from 'mongoose-paginate-v2'
 
 import { CollectionDocument } from './Collection'
 import { CreationDocument } from './Creation'
@@ -21,7 +22,7 @@ export interface UserSchema {
   instagramId?: string
   githubId?: string
   createdAt?: Date
-  updatedAt?: Date | number
+  updatedAt?: Date
 }
 
 export interface UserInput {
@@ -33,82 +34,81 @@ export interface UserInput {
 
 export interface UserDocument extends UserSchema, Document {}
 
-const user = new Schema<UserDocument>({
-  userId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  isWallet: {
-    type: Boolean,
-    required: true,
-  },
-  isAdmin: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  username: {
-    type: String,
-    required: false,
-    unique: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-  name: {
-    type: String,
-  },
-  bio: {
-    type: String,
-  },
-  email: {
-    type: String,
-  },
-  profilePictureUri: {
-    type: String,
-  },
-  coverPictureUri: {
-    type: String,
-  },
-  website: {
-    type: String,
-  },
-  discordId: {
-    type: String,
-  },
-  twitterId: {
-    type: String,
-  },
-  instagramId: {
-    type: String,
-  },
-  githubId: {
-    type: String,
-  },
-  creations: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'creations',
+const user = new Schema<UserDocument>(
+  {
+    userId: {
+      type: String,
+      required: true,
+      unique: true,
     },
-  ],
-  collections: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'collections',
+    isWallet: {
+      type: Boolean,
+      required: true,
     },
-  ],
-})
+    isAdmin: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    username: {
+      type: String,
+      required: false,
+      unique: true,
+    },
+    name: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
+    email: {
+      type: String,
+    },
+    profilePictureUri: {
+      type: String,
+    },
+    coverPictureUri: {
+      type: String,
+    },
+    website: {
+      type: String,
+    },
+    discordId: {
+      type: String,
+    },
+    twitterId: {
+      type: String,
+    },
+    instagramId: {
+      type: String,
+    },
+    githubId: {
+      type: String,
+    },
+    creations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'creations',
+      },
+    ],
+    collections: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'collections',
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  },
+)
 
-user.pre<UserDocument>('update', function (next) {
-  this.updatedAt = Date.now()
+user.pre<UserDocument>('save', function (next) {
+  this.updatedAt = new Date()
 
   next()
 })
+
+user.plugin(paginate)
 
 export const User = model<UserDocument>('users', user)

@@ -6,9 +6,21 @@ describe('Generator Methods', () => {
     const { client } = context
     const result = await client.generators.list()
     expect(result).toBeDefined()
-    expect(result.generators).toBeDefined()
-    expect(result.generators.length).toBeGreaterThan(0)
+    expect(result.docs).toBeDefined()
+    expect(result.docs.length).toBeGreaterThan(0)
   })
+
+  test('should be able to pass pagination options', async context => {
+    const { client } = context
+    const result = await client.generators.list({
+      limit: 1,
+      page: 1,
+    })
+    expect(result).toBeDefined()
+    expect(result.docs).toBeDefined()
+    expect(result.docs.length).toBe(1)
+  })
+
   test('should be able to get a generator by name', async context => {
     const { client } = context
     const generatorsResponse = await client.generators.get({

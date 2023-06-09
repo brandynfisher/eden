@@ -6,34 +6,31 @@ export interface MannaSchema {
   user: UserDocument
   balance: number
   createdAt?: Date
-  updatedAt?: Date | number
+  updatedAt?: Date
 }
 
 export interface MannaDocument extends MannaSchema, Document {}
 
-const manna = new Schema<MannaDocument>({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: 'users',
-    required: true,
+const manna = new Schema<MannaDocument>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+      required: true,
+    },
+    balance: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
   },
-  balance: {
-    type: Number,
-    default: 0,
-    required: true,
+  {
+    timestamps: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-})
+)
 
-manna.pre<MannaDocument>('update', function (next) {
-  this.updatedAt = Date.now()
+manna.pre<MannaDocument>('save', function (next) {
+  this.updatedAt = new Date()
 
   next()
 })

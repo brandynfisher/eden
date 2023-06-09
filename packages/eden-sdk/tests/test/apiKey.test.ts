@@ -4,9 +4,21 @@ import { describe, expect, test } from 'vitest'
 describe('API Key Methods', () => {
   test('should return a list of API Keys', async context => {
     const { client } = context
-    const result = await client.apiKeys.get()
+    const result = await client.apiKeys.list()
     expect(result).toBeDefined()
-    expect(result.length).toBeGreaterThan(0)
+    expect(result.docs).toBeDefined()
+    expect(result.docs.length).toBeGreaterThan(0)
+  })
+
+  test('should be able to pass pagination options', async context => {
+    const { client } = context
+    const result = await client.apiKeys.list({
+      limit: 1,
+      page: 1,
+    })
+    expect(result).toBeDefined()
+    expect(result.docs).toBeDefined()
+    expect(result.docs.length).toBe(1)
   })
 
   test('should create an API Key', async context => {

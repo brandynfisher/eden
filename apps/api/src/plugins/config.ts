@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import { FastifyPluginAsync } from 'fastify'
 import fp from 'fastify-plugin'
 
-dotenv.config({ path: process.env.DOTENV_PATH })
+dotenv.config({ path: process.env.DOTENV_PATH || '.env.dummy' })
 
 export enum NodeEnv {
   development = 'development',

@@ -11,8 +11,9 @@ test('User can list creations', async context => {
     headers,
   })
   expect(response.statusCode).toBe(200)
-  expect(response.json()).toHaveProperty('creations')
-  expect(response.json().creations.length).toBeGreaterThan(0)
+  const json = response.json()
+  expect(json).toHaveProperty('docs')
+  expect(json.docs.length).toBeGreaterThan(0)
 })
 
 test('User can get a creation by ID', async context => {
