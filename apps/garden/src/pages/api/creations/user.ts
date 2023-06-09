@@ -15,7 +15,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const response = await eden.creations.list({
       username: userId,
     })
-    return res.status(200).json({ creations: response.creations })
+    return res.status(200).json({ creations: response.docs })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })
