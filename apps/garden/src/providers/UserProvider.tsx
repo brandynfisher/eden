@@ -1,4 +1,5 @@
 import { useUserState } from '@/hooks/useUserState'
+import { Agent } from '@eden-labs/eden-sdk/dist/responses/AgentsGetResponse'
 import { Creation } from '@eden-labs/eden-sdk/dist/responses/CreationsGetResponse'
 import React, { PropsWithChildren, createContext } from 'react'
 
@@ -12,6 +13,7 @@ export interface UserContextType {
   address?: `0x${string}`
   mannaBalance?: number
   creations?: Creation[]
+  characters?: Agent[]
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -24,6 +26,7 @@ export const UserContext = createContext<UserContextType>({
   address: undefined,
   mannaBalance: undefined,
   creations: undefined,
+  characters: undefined,
 })
 
 function UserProvider({ children }: PropsWithChildren) {

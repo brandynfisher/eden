@@ -12,6 +12,7 @@ export type Capability = {
 }
 
 export type Agent = {
+  id: string
   name: string
   capabilites: Capability[]
 }

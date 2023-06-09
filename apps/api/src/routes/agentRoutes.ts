@@ -59,6 +59,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       response: {
         200: paginatedResponse(
           Type.Object({
+            id: Type.String(),
             name: Type.String(),
             capabilites: Type.Array(
               Type.Object({
@@ -83,6 +84,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           agent: Type.Object({
+            id: Type.String(),
             name: Type.String(),
             capabilites: Type.Array(
               Type.Object({

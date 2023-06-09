@@ -3,7 +3,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { User } from '../models/Creator'
 import { Manna } from '../models/Manna'
 import { Transaction } from '../models/Transaction'
-import { MannaModifyRequestBody } from '../routes/mannaRoutes'
+import { MannaModifyRequestBody } from '../routes/adminRoutes'
 
 export const modifyManna = async (
   request: FastifyRequest,

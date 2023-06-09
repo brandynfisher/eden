@@ -95,5 +95,17 @@ export const getAgent = async (
 ) => {
   const { agentId } = request.params as AgentsGetArguments
   const agent = await Agent.findOne({ agentId })
-  return reply.status(200).send({ agent })
+  if (!agent) {
+    return reply.status(404).send({
+      message: 'Agent not found',
+    })
+  }
+
+  const response = {
+    id: agent._id,
+    name: agent.name,
+    capabilites: agent.capabilites,
+  }
+
+  return reply.status(200).send({ agent: response })
 }

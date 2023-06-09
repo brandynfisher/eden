@@ -1,11 +1,10 @@
+import { handleAxiosError } from '@/lib/fetcher'
+import { UserContext } from '@/providers/UserProvider'
+import { Agent } from '@eden-labs/eden-sdk/dist/responses/AgentsGetResponse'
 import { Button, Space, Table } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-import React from 'react'
-
-import { useCharacters } from '../hooks/useCharacters'
-import { handleAxiosError } from '../lib/fetcher'
-import { CharacterDocument } from '../models/Character'
+import React, { useContext } from 'react'
 
 const columns = [
   {
@@ -27,11 +26,10 @@ const columns = [
 
 const ActionsButtons = ({ characterId }: { characterId: string }) => {
   const router = useRouter()
-  const { mutate } = useCharacters()
+
   const handleDeleteCharacter = async () => {
     try {
       await axios.delete(`/api/characters/${characterId}`)
-      mutate()
     } catch (error) {
       handleAxiosError(error)
     }
@@ -56,19 +54,16 @@ const ActionsButtons = ({ characterId }: { characterId: string }) => {
   )
 }
 
-const CharacterTable = ({
-  characters,
-}: {
-  characters: CharacterDocument[] | undefined
-}) => {
+const CharacterTable = () => {
+  const { characters } = useContext(UserContext)
+
   const data =
     characters &&
-    characters.map((character: CharacterDocument) => {
+    characters.map((character: Agent) => {
       return {
-        key: character._id,
+        key: character.id,
         name: character.name,
-        deployments: character.deployments.length,
-        actions: <ActionsButtons characterId={character._id} />,
+        actions: <ActionsButtons characterId={character.id} />,
       }
     })
 
