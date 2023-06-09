@@ -1,4 +1,4 @@
-import AgentDetailPage from '@/pages/agents/[agentId]/AgentDetailPage'
+import AgentDetailPage from '@/pages/agents/[id]/AgentDetailPage'
 import React from 'react'
 
 const agentDetail = () => {
