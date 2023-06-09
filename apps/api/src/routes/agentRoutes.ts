@@ -15,7 +15,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: Type.Object({
         name: Type.String(),
-        capabilites: Type.Array(
+        capabilities: Type.Array(
           Type.Object({
             name: Type.String(),
             type: Type.String(),

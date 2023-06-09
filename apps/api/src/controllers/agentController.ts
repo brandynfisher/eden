@@ -73,7 +73,7 @@ export const listAgents = async (
   })
 
   const agentRepository = new AgentRepository(Agent)
-  const agents = await agentRepository.query(
+  const agentPaginatedResponse = await agentRepository.query(
     {
       user: creators.docs
         ? creators.docs.map(creator => creator._id)
@@ -85,8 +85,16 @@ export const listAgents = async (
       sort,
     },
   )
+  const response = {
+    ...agentPaginatedResponse,
+    docs: agentPaginatedResponse.docs.map(agent => ({
+      id: agent._id,
+      name: agent.name,
+      capabilites: agent.capabilites,
+    })),
+  }
 
-  return reply.status(200).send(agents)
+  return reply.status(200).send(response)
 }
 
 export const getAgent = async (

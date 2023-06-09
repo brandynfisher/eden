@@ -1,4 +1,8 @@
 import { AxiosRequestConfig } from 'axios'
+import { AgentsCreateResponse } from 'src/responses/AgentsCreateResponse'
+import { AgentsDeleteResponse } from 'src/responses/AgentsDeleteResponse'
+import { AgentsGetResponse } from 'src/responses/AgentsGetResponse'
+import { AgentsListResponse } from 'src/responses/AgentsListResponse'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import { ApiKeysCreateResponse } from './responses/ApiKeysCreateResponse'
@@ -13,10 +17,6 @@ import { MannaBalanceGetResponse } from './responses/MannaBalanceGetResponse'
 import { TasksCreateResponse } from './responses/TasksCreateResponse'
 import { TasksGetResponse } from './responses/TasksGetResponse'
 import { TasksListResponse } from './responses/TasksListResponse'
-import { AgentsCreateResponse } from 'src/responses/AgentsCreateResponse'
-import { AgentsDeleteResponse } from 'src/responses/AgentsDeleteResponse'
-import { AgentsGetResponse } from 'src/responses/AgentsGetResponse'
-import { AgentsListResponse } from 'src/responses/AgentsListResponse'
 
 const transformArgsIntoURLParams = (
   args: Record<string, any>,
@@ -173,7 +173,7 @@ export interface AgentsGetArguments extends WebAPICallOptions {
 
 export interface AgentsCreateArguments extends WebAPICallOptions {
   name: string
-  capabilites: Capability[]
+  capabilities: Capability[]
 }
 
 export interface AgentsDeleteArguments extends WebAPICallOptions {
@@ -259,8 +259,7 @@ const agentsCreateRequestConfig = (
     method: 'POST',
     url: 'agents/create',
     data: {
-      name: args.name,
-      capabilities: args.capabilites,
+      ...args,
     },
   }
 }
