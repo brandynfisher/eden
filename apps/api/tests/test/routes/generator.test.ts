@@ -11,8 +11,9 @@ test('User can list generators', async context => {
     headers,
   })
   expect(response.statusCode).toBe(200)
-  expect(response.json()).toHaveProperty('generators')
-  const { generators } = response.json()
+  const json = response.json()
+  expect(json).toHaveProperty('docs')
+  const { docs: generators } = response.json()
   expect(generators).toHaveLength(1)
   expect(generators[0]).toHaveProperty('generatorName')
   expect(generators[0]).toHaveProperty('versions')

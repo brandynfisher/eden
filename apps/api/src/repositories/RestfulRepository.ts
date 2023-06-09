@@ -1,6 +1,8 @@
+import { ObjectId } from 'mongodb'
+
 interface IRepository<T> {
   query(
-    query?: Record<string, string | string[] | undefined>,
+    query?: Record<string, string | string[] | ObjectId | undefined>,
     options?: { page?: number; limit?: number; sort?: object },
   ): Promise<PaginatedResponse<T>>
   create(data: object): Promise<T>
@@ -11,16 +13,16 @@ interface IRepository<T> {
 }
 
 interface PaginatedResponse<T> {
-  docs?: T[]
-  total?: number
-  limit?: number
-  pages?: number
-  page?: number
-  pagingCounter?: number
-  hasPrevPage?: boolean
-  hasNextPage?: boolean
-  prevPage?: number
-  nextPage?: number
+  docs: T[]
+  total: number
+  limit: number
+  pages: number
+  page: number
+  pagingCounter: number
+  hasPrevPage: boolean
+  hasNextPage: boolean
+  prevPage: number
+  nextPage: number
 }
 
 class RestfulRepository<T> implements IRepository<T> {
@@ -31,7 +33,7 @@ class RestfulRepository<T> implements IRepository<T> {
   }
 
   async query(
-    query: Record<string, string | string[] | undefined>,
+    query: Record<string, string | string[] | ObjectId | undefined>,
     options: { page?: number; limit?: number; sort?: object } = {},
   ): Promise<PaginatedResponse<T>> {
     const labels = {

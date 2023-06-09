@@ -159,7 +159,7 @@ export interface CreationsGetArguments extends WebAPICallOptions {
   creationId: string
 }
 
-export type GeneratorsListArguments = WebAPICallOptions
+export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
 
 export interface GeneratorsGetArguments extends WebAPICallOptions {
   generatorName: string
