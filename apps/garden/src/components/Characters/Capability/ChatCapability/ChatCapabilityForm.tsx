@@ -134,19 +134,16 @@ const ChatCapabilityForm = () => {
 
   const handleSubmit = async () => {
     const data = {
-      characterId: characterId as string,
-      name: 'Chat',
+      agentId: characterId as string,
+      name: 'Chat Capability',
       type: CapabilityType.CHAT,
       data: {
         prompt: compilePromptWithTemplate().trim(),
       },
     }
     try {
-      await axios.post(`/api/agents/update`, {
-        agentId: 'agentId',
-        capabilities: [data],
-      })
-      router.push(`/characters/${characterId}`)
+      await axios.post(`/api/capabilities/create`, data)
+      router.push(`/agents/${characterId}`)
     } catch (error) {
       handleAxiosError(error, 'Error creating capability')
     }

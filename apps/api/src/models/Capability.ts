@@ -1,6 +1,7 @@
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
+import { AgentDocument } from './Agent'
 import { UserDocument } from './Creator'
 
 export enum CapabilityType {
@@ -9,6 +10,7 @@ export enum CapabilityType {
 
 export interface CapabilitySchema {
   user: UserDocument
+  agent: AgentDocument
   name: string
   type: CapabilityType
   data: any
@@ -23,6 +25,11 @@ const capability = new Schema<CapabilityDocument>(
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users',
+      required: true,
+    },
+    agent: {
+      type: Schema.Types.ObjectId,
+      ref: 'agents',
       required: true,
     },
     name: {
@@ -52,4 +59,4 @@ capability.pre<CapabilityDocument>('save', function (next) {
 
 capability.plugin(paginate)
 
-export const Capability = model<CapabilityDocument>('capability', capability)
+export const Capability = model<CapabilityDocument>('capabilities', capability)

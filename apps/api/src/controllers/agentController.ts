@@ -123,7 +123,7 @@ export const listAgents = async (
   const response = {
     ...agentPaginatedResponse,
     docs: agentPaginatedResponse.docs.map(agent => ({
-      id: agent._id,
+      id: agent._id.toString(),
       name: agent.name,
       capabilities: agent.capabilities,
     })),
@@ -137,7 +137,8 @@ export const getAgent = async (
   reply: FastifyReply,
 ) => {
   const { agentId } = request.params as AgentsGetArguments
-  const agent = await Agent.findOne({ agentId })
+  const agent = await Agent.findById(agentId).populate('capabilities')
+  console.log(agent)
   if (!agent) {
     return reply.status(404).send({
       message: 'Agent not found',

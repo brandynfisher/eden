@@ -71,14 +71,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
           Type.Object({
             id: Type.String(),
             name: Type.String(),
-            capabilities: Type.Array(
-              Type.Object({
-                id: Type.String(),
-                name: Type.String(),
-                type: Type.String(),
-                data: Type.Any(),
-              }),
-            ),
+            capabilities: Type.Array(Type.Any()),
           }),
         ),
       },
@@ -97,14 +90,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
           agent: Type.Object({
             id: Type.String(),
             name: Type.String(),
-            capabilities: Type.Array(
-              Type.Object({
-                id: Type.String(),
-                name: Type.String(),
-                type: Type.String(),
-                data: Type.Any(),
-              }),
-            ),
+            capabilities: Type.Array(Type.Any()),
           }),
         }),
       },

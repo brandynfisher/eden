@@ -265,6 +265,7 @@ export interface AuthLoginArguments extends WebAPICallOptions {
 }
 
 export interface CapabilitiesCreateArguments extends WebAPICallOptions {
+  agentId: string
   name: string
   type: CapabilityType
   data: any

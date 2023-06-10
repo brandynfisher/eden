@@ -25,11 +25,12 @@ const agent = new Schema<AgentDocument>(
       type: String,
       required: true,
     },
-    capabilities: {
-      type: [Schema.Types.ObjectId],
-      ref: 'capabilities',
-      default: [],
-    },
+    capabilities: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'capabilities',
+      },
+    ],
   },
   {
     timestamps: true,
@@ -44,4 +45,4 @@ agent.pre<AgentDocument>('save', function (next) {
 
 agent.plugin(paginate)
 
-export const Agent = model<AgentDocument>('agent', agent)
+export const Agent = model<AgentDocument>('agents', agent)

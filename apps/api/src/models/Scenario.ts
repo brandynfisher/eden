@@ -57,4 +57,4 @@ scenario.pre<ScenarioDocument>('save', function (next) {
 
 scenario.plugin(paginate)
 
-export const Scenario = model<ScenarioDocument>('scenario', scenario)
+export const Scenario = model<ScenarioDocument>('scenarios', scenario)

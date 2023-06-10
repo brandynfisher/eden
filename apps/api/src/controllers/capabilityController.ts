@@ -17,13 +17,26 @@ export const createCapability = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, type, data } = request.body as CapabilitiesCreateArguments
+  const { agentId, name, type, data } =
+    request.body as CapabilitiesCreateArguments
 
   const input = {
     user: userId,
+    agent: agentId,
     name,
     type,
     data,
+  }
+
+  const agent = await Agent.findOne({
+    agentId,
+    user: userId,
+  })
+
+  if (!agent) {
+    return reply.status(401).send({
+      message: 'Agent not found',
+    })
   }
 
   if (!Object.values(CapabilityType).includes(type)) {
@@ -34,6 +47,9 @@ export const createCapability = async (
 
   const capabilityRepository = new CapabilityRepository(Capability)
   const capability = await capabilityRepository.create(input)
+
+  agent.capabilities.push(capability._id)
+  await agent.save()
 
   return reply.status(200).send({
     capabilityId: capability._id,
