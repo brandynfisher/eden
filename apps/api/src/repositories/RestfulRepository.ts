@@ -26,7 +26,7 @@ interface PaginatedResponse<T> {
 }
 
 class RestfulRepository<T> implements IRepository<T> {
-  constructor(private model: any) {
+  constructor(public model: any) {
     // The 'any' type is used here since the 'model' type is not specified in the provided code.
     // Replace it with the appropriate type for your model if possible.
     this.model = model

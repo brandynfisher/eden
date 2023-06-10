@@ -19,6 +19,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         model: 'davinci',
         prompt,
         max_tokens: 100,
+        temperature: 1.0,
         top_p: 1.0,
         stop: ['\n'],
       })

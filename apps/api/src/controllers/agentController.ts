@@ -120,6 +120,11 @@ export const listAgents = async (
       sort,
     },
   )
+
+  await agentRepository.model.populate(agentPaginatedResponse.docs, {
+    path: 'capabilities',
+  })
+
   const response = {
     ...agentPaginatedResponse,
     docs: agentPaginatedResponse.docs.map(agent => ({

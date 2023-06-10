@@ -8,6 +8,8 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
+import { Agent } from '@eden-labs/eden-sdk'
+import axios from 'axios'
 import { useState } from 'react'
 import * as timeago from 'timeago.js'
 
@@ -18,7 +20,7 @@ type ConversationEntry = {
   id?: string
 }
 
-const ChatScenarioUI = () => {
+const ChatScenarioUI = ({ activeCharacter }: { activeCharacter: Agent }) => {
   const [text, setText] = useState('')
   const [conversation, setConversation] = useState<ConversationEntry[]>([])
   const [botIsTyping, setBotIsTyping] = useState(false)
@@ -35,11 +37,16 @@ const ChatScenarioUI = () => {
     try {
       setBotIsTyping(true)
       // dummy sleep
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const prompt = activeCharacter.capabilities?.find(
+        capability => capability.type === 'chat',
+      ).data.prompt as string
+      const fmtPrompt = prompt.replace('{{recentMessage}}', text)
+      const res = await axios.post(`/api/lm/complete`, { prompt: fmtPrompt })
+      const completion = res.data.completion as string
       setConversation(state => [
         ...state,
         {
-          message: 'I am a bot',
+          message: completion.trim(),
           speaker: 'bot',
           date: new Date(),
         },
@@ -62,7 +69,7 @@ const ChatScenarioUI = () => {
         <MessageList
           typingIndicator={
             botIsTyping ? (
-              <TypingIndicator content="Pinecone is typing" />
+              <TypingIndicator content={`${activeCharacter.name} is typing`} />
             ) : null
           }
           style={{ height: 'calc(100vh - 200px)' }}
@@ -82,7 +89,9 @@ const ChatScenarioUI = () => {
                 <Message.CustomContent>{entry.message}</Message.CustomContent>
                 <Message.Footer
                   sentTime={timeago.format(entry.date)}
-                  sender={entry.speaker === 'bot' ? 'Pinecone' : 'You'}
+                  sender={
+                    entry.speaker === 'bot' ? activeCharacter.name : 'You'
+                  }
                 />
               </Message>
             )

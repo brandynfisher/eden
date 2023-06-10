@@ -7,3 +7,6 @@ export {
 
 export * from './methods'
 export { default as Method } from './methods'
+
+export * from './responses/ScenarioResponses'
+export * from './responses/AgentsResponses'
