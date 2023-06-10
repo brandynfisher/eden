@@ -1,5 +1,6 @@
 import { UserContext } from '@/providers/UserProvider'
 import {
+  BellOutlined,
   HomeOutlined,
   RobotOutlined,
   ToolOutlined,
@@ -35,6 +36,7 @@ const authItems: MenuItem[] = [
   getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <ToolOutlined />),
   getItem('Agents', '/agents', <RobotOutlined />),
+  getItem('Scenarios', '/scenarios', <BellOutlined />),
 ]
 
 const LayoutMenu = () => {

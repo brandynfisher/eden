@@ -12,17 +12,13 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
   } = theme.useToken()
 
   return (
-    <Layout>
+    <Layout className="min-h-screen flex flex-col">
       <LayoutHeader />
-      <Layout>
+      <Layout className="flex flex-grow">
         <LayoutMenu />
         <Content
-          style={{
-            padding: 24,
-            margin: 0,
-            minHeight: 280,
-            background: colorBgContainer,
-          }}
+          className="flex-grow p-4"
+          style={{ background: colorBgContainer }}
         >
           {children}
         </Content>
