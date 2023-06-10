@@ -16,13 +16,6 @@ const agentRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: Type.Object({
         name: Type.String(),
-        capabilities: Type.Array(
-          Type.Object({
-            name: Type.String(),
-            type: Type.String(),
-            data: Type.Any(),
-          }),
-        ),
       }),
       response: {
         200: Type.Object({
@@ -39,15 +32,6 @@ const agentRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         agentId: Type.String(),
         name: Type.Optional(Type.String()),
-        capabilities: Type.Optional(
-          Type.Array(
-            Type.Object({
-              name: Type.String(),
-              type: Type.String(),
-              data: Type.Any(),
-            }),
-          ),
-        ),
       }),
       response: {
         200: Type.Object({

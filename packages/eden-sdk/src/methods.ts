@@ -1,9 +1,27 @@
 import { AxiosRequestConfig } from 'axios'
-import { AgentsCreateResponse } from 'src/responses/AgentsCreateResponse'
-import { AgentsDeleteResponse } from 'src/responses/AgentsDeleteResponse'
-import { AgentsGetResponse } from 'src/responses/AgentsGetResponse'
-import { AgentsListResponse } from 'src/responses/AgentsListResponse'
-import { AgentsUpdateResponse } from 'src/responses/AgentsUpdateResponse'
+import {
+  AgentsCreateResponse,
+  AgentsDeleteResponse,
+  AgentsGetResponse,
+  AgentsListResponse,
+  AgentsUpdateResponse,
+} from 'src/responses/AgentsResponses'
+import {
+  CapabilitiesCreateResponse,
+  CapabilitiesDeleteResponse,
+  CapabilitiesGetResponse,
+  CapabilitiesListResponse,
+  CapabilitiesUpdateResponse,
+  CapabilityType,
+} from 'src/responses/CapabilityResponses'
+import {
+  ScenarioType,
+  ScenariosCreateResponse,
+  ScenariosDeleteResponse,
+  ScenariosGetResponse,
+  ScenariosListResponse,
+  ScenariosUpdateResponse,
+} from 'src/responses/ScenarioResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import { ApiKeysCreateResponse } from './responses/ApiKeysCreateResponse'
@@ -80,17 +98,17 @@ export abstract class Methods {
       this,
       agentsUpdateRequestConfig,
     ),
-    get: bindApiCall<AgentsGetArguments, AgentsGetResponse>(
+    delete: bindApiCall<AgentsDeleteArguments, AgentsDeleteResponse>(
       this,
-      agentsGetRequestConfig,
+      agentsDeleteRequestConfig,
     ),
     list: bindApiCall<AgentsListArguments, AgentsListResponse>(
       this,
       agentsListRequestConfig,
     ),
-    delete: bindApiCall<AgentsDeleteArguments, AgentsDeleteResponse>(
+    get: bindApiCall<AgentsGetArguments, AgentsGetResponse>(
       this,
-      agentsDeleteRequestConfig,
+      agentsGetRequestConfig,
     ),
   }
 
@@ -113,6 +131,29 @@ export abstract class Methods {
     login: bindApiCall<AuthLoginArguments, AuthLoginResponse>(
       this,
       authLoginRequestConfig,
+    ),
+  }
+
+  public readonly capabilities = {
+    create: bindApiCall<
+      CapabilitiesCreateArguments,
+      CapabilitiesCreateResponse
+    >(this, capabilitiesCreateRequestConfig),
+    update: bindApiCall<
+      CapabilitiesUpdateArguments,
+      CapabilitiesUpdateResponse
+    >(this, capabilitiesUpdateRequestConfig),
+    delete: bindApiCall<
+      CapabilitiesDeleteArguments,
+      CapabilitiesDeleteResponse
+    >(this, capabilitiesDeleteRequestConfig),
+    list: bindApiCall<CapabilitiesListArguments, CapabilitiesListResponse>(
+      this,
+      capabilitiesListRequestConfig,
+    ),
+    get: bindApiCall<CapabilitiesGetArguments, CapabilitiesGetResponse>(
+      this,
+      capabilitiesGetRequestConfig,
     ),
   }
 
@@ -145,6 +186,29 @@ export abstract class Methods {
     ),
   }
 
+  public readonly scenarios = {
+    create: bindApiCall<ScenariosCreateArguments, ScenariosCreateResponse>(
+      this,
+      scenariosCreateRequestConfig,
+    ),
+    update: bindApiCall<ScenariosUpdateArguments, ScenariosUpdateResponse>(
+      this,
+      scenariosUpdateRequestConfig,
+    ),
+    delete: bindApiCall<ScenariosDeleteArguments, ScenariosDeleteResponse>(
+      this,
+      scenariosDeleteRequestConfig,
+    ),
+    list: bindApiCall<ScenariosListArguments, ScenariosListResponse>(
+      this,
+      scenariosListRequestConfig,
+    ),
+    get: bindApiCall<ScenariosGetArguments, ScenariosGetResponse>(
+      this,
+      scenariosGetRequestConfig,
+    ),
+  }
+
   public readonly tasks = {
     create: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,
@@ -161,11 +225,6 @@ export abstract class Methods {
   }
 }
 
-interface Capability {
-  name: string
-  data: any
-}
-
 export interface AgentsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
@@ -178,13 +237,11 @@ export interface AgentsGetArguments extends WebAPICallOptions {
 
 export interface AgentsCreateArguments extends WebAPICallOptions {
   name: string
-  capabilities: Capability[]
 }
 
 export interface AgentsUpdateArguments extends WebAPICallOptions {
   agentId: string
   name: string
-  capabilities: Capability[]
 }
 
 export interface AgentsDeleteArguments extends WebAPICallOptions {
@@ -207,6 +264,32 @@ export interface AuthLoginArguments extends WebAPICallOptions {
   signature: string
 }
 
+export interface CapabilitiesCreateArguments extends WebAPICallOptions {
+  name: string
+  type: CapabilityType
+  data: any
+}
+
+export interface CapabilitiesUpdateArguments extends WebAPICallOptions {
+  capabilityId: string
+  name?: string
+  data?: any
+}
+
+export interface CapabilitiesDeleteArguments extends WebAPICallOptions {
+  capabilityId: string
+}
+
+export interface CapabilitiesListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  agentId: string | string[]
+}
+
+export interface CapabilitiesGetArguments extends WebAPICallOptions {
+  capabilityId: string
+}
+
 export interface CreationsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
@@ -224,6 +307,34 @@ export interface GeneratorsGetArguments extends WebAPICallOptions {
 }
 
 export type MannaBalanceGetArguments = WebAPICallOptions
+
+export interface ScenariosCreateArguments extends WebAPICallOptions {
+  name: string
+  description: string
+  type: ScenarioType
+  data: any
+}
+
+export interface ScenariosUpdateArguments extends WebAPICallOptions {
+  scenarioId: string
+  name?: string
+  description?: string
+  data?: any
+}
+
+export interface ScenariosDeleteArguments extends WebAPICallOptions {
+  scenarioId: string
+}
+
+export interface ScenariosListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface ScenariosGetArguments extends WebAPICallOptions {
+  scenarioId: string
+}
 
 export interface TasksCreateArguments extends WebAPICallOptions {
   generatorName: string
@@ -348,6 +459,62 @@ const authLoginRequestConfig = (
   }
 }
 
+const capabilitiesCreateRequestConfig = (
+  args: CapabilitiesCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'capabilities/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const capabilitiesUpdateRequestConfig = (
+  args: CapabilitiesUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'capabilities/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const capabilitiesDeleteRequestConfig = (
+  args: CapabilitiesDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'capabilities/delete',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const capabilitiesListRequestConfig = (
+  args: CapabilitiesListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'capabilities',
+    params,
+  }
+}
+
+const capabilitiesGetRequestConfig = (
+  args: CapabilitiesGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `capabilities/${args.capabilityId}`,
+  }
+}
+
 const creationsListRequestConfig = (
   args: CreationsListArguments,
 ): AxiosRequestConfig => {
@@ -388,6 +555,62 @@ const mannaBalanceGetRequestConfig = (): AxiosRequestConfig => {
   return {
     method: 'GET',
     url: 'manna/balance',
+  }
+}
+
+const scenariosCreateRequestConfig = (
+  args: ScenariosCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'scenarios/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const scenariosUpdateRequestConfig = (
+  args: ScenariosUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'scenarios/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const scenariosDeleteRequestConfig = (
+  args: ScenariosDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'scenarios/delete',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const scenariosListRequestConfig = (
+  args: ScenariosListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'scenarios',
+    params,
+  }
+}
+
+const scenariosGetRequestConfig = (
+  args: ScenariosGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `scenarios/${args.scenarioId}`,
   }
 }
 

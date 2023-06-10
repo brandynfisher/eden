@@ -4,6 +4,7 @@ import adminRoutes from './adminRoutes'
 import agentRoutes from './agentRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
+import capabilityRoutes from './capabilityRoutes'
 import characterRoutes from './characterRoutes'
 import collectionRoutes from './collectionRoutes'
 import creationRoutes from './creationRoutes'
@@ -13,6 +14,7 @@ import loraRoutes from './loraRoutes'
 import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
 import mintRoutes from './mintRoutes'
+import scenarioRoutes from './scenarioRoutes'
 import taskRoutes from './taskRoutes'
 import userRoutes from './userRoutes'
 
@@ -55,4 +57,6 @@ export const routes = [
   characterRoutes,
   generatorRoutes,
   taskRoutes,
+  capabilityRoutes,
+  scenarioRoutes,
 ]
