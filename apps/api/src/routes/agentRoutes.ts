@@ -7,6 +7,7 @@ import {
   deleteAgent,
   getAgent,
   listAgents,
+  updateAgent,
 } from '../controllers/agentController'
 import { isAuth } from '../middleware/authMiddleware'
 
@@ -31,6 +32,31 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async request => isAuth(server, request)],
     handler: (request, reply) => createAgent(request, reply),
+  })
+
+  server.post('/agents/update', {
+    schema: {
+      body: Type.Object({
+        agentId: Type.String(),
+        name: Type.Optional(Type.String()),
+        capabilities: Type.Optional(
+          Type.Array(
+            Type.Object({
+              name: Type.String(),
+              type: Type.String(),
+              data: Type.Any(),
+            }),
+          ),
+        ),
+      }),
+      response: {
+        200: Type.Object({
+          agentId: Type.String(),
+        }),
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => updateAgent(request, reply),
   })
 
   server.post('/agents/delete', {
@@ -61,8 +87,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
           Type.Object({
             id: Type.String(),
             name: Type.String(),
-            capabilites: Type.Array(
+            capabilities: Type.Array(
               Type.Object({
+                id: Type.String(),
                 name: Type.String(),
                 type: Type.String(),
                 data: Type.Any(),
@@ -86,8 +113,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
           agent: Type.Object({
             id: Type.String(),
             name: Type.String(),
-            capabilites: Type.Array(
+            capabilities: Type.Array(
               Type.Object({
+                id: Type.String(),
                 name: Type.String(),
                 type: Type.String(),
                 data: Type.Any(),

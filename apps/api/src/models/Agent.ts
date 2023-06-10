@@ -7,16 +7,39 @@ export enum CapabilityType {
   CHAT = 'chat',
 }
 
-export interface Capability {
+export interface CapabilitySchema {
   name: string
   type: CapabilityType
   data: any
 }
 
+export interface CapabilityDocument extends CapabilitySchema, Document {}
+
+const capability = new Schema<CapabilityDocument>(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: Object.values(CapabilityType),
+      required: true,
+    },
+    data: {
+      type: Schema.Types.Mixed,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  },
+)
+
 export interface AgentSchema {
   user: UserDocument
   name: string
-  capabilites: Capability[]
+  capabilities: CapabilitySchema[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -34,22 +57,10 @@ const agent = new Schema<AgentDocument>(
       type: String,
       required: true,
     },
-    capabilites: [
-      {
-        name: {
-          type: String,
-          required: true,
-        },
-        type: {
-          type: String,
-          required: true,
-        },
-        data: {
-          type: Schema.Types.Mixed,
-          required: true,
-        },
-      },
-    ],
+    capabilities: {
+      type: [capability],
+      default: [],
+    },
   },
   {
     timestamps: true,

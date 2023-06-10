@@ -3,6 +3,7 @@ import {
   AgentsDeleteArguments,
   AgentsGetArguments,
   AgentsListArguments,
+  AgentsUpdateArguments,
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
@@ -16,12 +17,12 @@ export const createAgent = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, capabilites } = request.body as AgentsCreateArguments
+  const { name, capabilities } = request.body as AgentsCreateArguments
 
   const input = {
     user: userId,
     name,
-    capabilites,
+    capabilities,
   }
 
   const agentRepository = new AgentRepository(Agent)
@@ -30,6 +31,40 @@ export const createAgent = async (
   return reply.status(200).send({
     agentId: agent._id,
   })
+}
+
+export const updateAgent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { agentId, name, capabilities } = request.body as AgentsUpdateArguments
+
+  if (!agentId) {
+    return reply.status(400).send({
+      message: 'You must provide an agentId',
+    })
+  }
+
+  const agent = await Agent.findOne({
+    agentId,
+    user: userId,
+  })
+
+  if (!agent) {
+    return reply.status(401).send({
+      message: 'Agent not found',
+    })
+  }
+
+  const input = {
+    name,
+    capabilities,
+  }
+
+  await agent.update(input)
+
+  return reply.status(200).send({ agentId })
 }
 
 export const deleteAgent = async (
@@ -90,7 +125,7 @@ export const listAgents = async (
     docs: agentPaginatedResponse.docs.map(agent => ({
       id: agent._id,
       name: agent.name,
-      capabilites: agent.capabilites,
+      capabilities: agent.capabilities,
     })),
   }
 
@@ -112,7 +147,7 @@ export const getAgent = async (
   const response = {
     id: agent._id,
     name: agent.name,
-    capabilites: agent.capabilites,
+    capabilities: agent.capabilities,
   }
 
   return reply.status(200).send({ agent: response })

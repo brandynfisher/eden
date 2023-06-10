@@ -3,6 +3,7 @@ import { AgentsCreateResponse } from 'src/responses/AgentsCreateResponse'
 import { AgentsDeleteResponse } from 'src/responses/AgentsDeleteResponse'
 import { AgentsGetResponse } from 'src/responses/AgentsGetResponse'
 import { AgentsListResponse } from 'src/responses/AgentsListResponse'
+import { AgentsUpdateResponse } from 'src/responses/AgentsUpdateResponse'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import { ApiKeysCreateResponse } from './responses/ApiKeysCreateResponse'
@@ -74,6 +75,10 @@ export abstract class Methods {
     create: bindApiCall<AgentsCreateArguments, AgentsCreateResponse>(
       this,
       agentsCreateRequestConfig,
+    ),
+    update: bindApiCall<AgentsUpdateArguments, AgentsUpdateResponse>(
+      this,
+      agentsUpdateRequestConfig,
     ),
     get: bindApiCall<AgentsGetArguments, AgentsGetResponse>(
       this,
@@ -176,6 +181,12 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   capabilities: Capability[]
 }
 
+export interface AgentsUpdateArguments extends WebAPICallOptions {
+  agentId: string
+  name: string
+  capabilities: Capability[]
+}
+
 export interface AgentsDeleteArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -264,6 +275,18 @@ const agentsCreateRequestConfig = (
   }
 }
 
+const agentsUpdateRequestConfig = (
+  args: AgentsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'agents/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
 const agentsDeleteRequestConfig = (
   args: AgentsDeleteArguments,
 ): AxiosRequestConfig => {
@@ -271,7 +294,7 @@ const agentsDeleteRequestConfig = (
     method: 'POST',
     url: 'agents/delete',
     data: {
-      agentId: args.agentId,
+      ...args,
     },
   }
 }
