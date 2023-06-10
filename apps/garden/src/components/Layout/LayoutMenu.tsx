@@ -1,5 +1,11 @@
 import { UserContext } from '@/providers/UserProvider'
-import { HomeOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  BellOutlined,
+  HomeOutlined,
+  RobotOutlined,
+  ToolOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
 import { Menu, type MenuProps, theme } from 'antd'
 import { Layout } from 'antd'
 import Link from 'next/link'
@@ -29,6 +35,8 @@ const authItems: MenuItem[] = [
   getItem('All Creations', '/', <HomeOutlined />),
   getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <ToolOutlined />),
+  getItem('Agents', '/agents', <RobotOutlined />),
+  getItem('Scenarios', '/scenarios', <BellOutlined />),
 ]
 
 const LayoutMenu = () => {

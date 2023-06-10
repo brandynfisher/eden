@@ -1,6 +1,7 @@
 import { Model } from 'mongoose'
 
 import { ApiKey, ApiKeyDocument } from './ApiKey'
+import { Capability, CapabilityDocument } from './Capability'
 import Challenge, { ChallengeDocument } from './Challenge'
 import { Character, CharacterDocument } from './Character'
 import { Collection, CollectionDocument } from './Collection'
@@ -15,6 +16,7 @@ import { Lora, LoraDocument } from './Lora'
 import { Manna, MannaDocument } from './Manna'
 import { MannaVoucher, MannaVoucherDocument } from './MannaVoucher'
 import { Reaction, ReactionDocument } from './Reaction'
+import { Scenario, ScenarioDocument } from './Scenario'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
 
@@ -36,6 +38,8 @@ export interface Database {
   Character: Model<CharacterDocument>
   LlmCompletion: Model<LlmCompletionDocument>
   Challenge: Model<ChallengeDocument>
+  Capability: Model<CapabilityDocument>
+  Scenario: Model<ScenarioDocument>
 }
 
 export const models: Database = {
@@ -56,4 +60,6 @@ export const models: Database = {
   Character,
   LlmCompletion,
   Challenge,
+  Capability,
+  Scenario,
 }

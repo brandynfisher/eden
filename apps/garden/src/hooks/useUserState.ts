@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth'
 import { useBalance } from '@/hooks/useBalance'
+import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCreations } from '@/hooks/useMyCreations'
 import { UserContextType } from '@/providers/UserProvider'
 import { useEffect, useState } from 'react'
@@ -22,6 +23,10 @@ export const useUserState = () => {
     userId: address || '',
     isAuthenticated,
   })
+  const { characters } = useMyCharacters({
+    userId: address || '',
+    isAuthenticated,
+  })
 
   const user: UserContextType = {
     isConnected: isDefinitelyConnected,
@@ -33,6 +38,7 @@ export const useUserState = () => {
     address,
     mannaBalance: manna,
     creations,
+    characters,
   }
   return user
 }
