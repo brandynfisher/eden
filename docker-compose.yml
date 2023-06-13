@@ -13,9 +13,9 @@ services:
       - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
   minio:
-    build:
-      context: .
-      dockerfile: ./scripts/minio.Dockerfile
+    image: minio/minio:latest
+    networks:
+      - default
     ports:
       - '9000:9000'
       - '9001:9001'
@@ -25,3 +25,13 @@ services:
     volumes:
       - ./minio/data:/data
       - ./minio/config:/root/.minio
+    command: minio server --console-address ":9001" /data
+
+  createbuckets:
+    build:
+      context: .
+      dockerfile: ./scripts/mc.Dockerfile
+    networks:
+      - default
+    depends_on:
+      - minio
