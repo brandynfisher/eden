@@ -1,11 +1,20 @@
-import { PaginatedResponse } from 'src/responses/base'
-
+import { PaginatedResponse } from '.'
 import { WebAPICallResult } from '../EdenClient'
+
+export type TasksCreateResponse = WebAPICallResult & {
+  error?: string
+  taskId?: string
+}
 
 export type TasksListResponse = WebAPICallResult &
   PaginatedResponse<Task> & {
     error?: string
   }
+
+export type TasksGetResponse = WebAPICallResult & {
+  error?: string
+  task?: Task
+}
 
 export type Task = {
   _id: string
@@ -21,6 +30,6 @@ export type Task = {
   progress?: number
   output?: any
   intermediate_outputs?: any[]
-  creation?: string
+  creation?: any
   lora?: string
 }

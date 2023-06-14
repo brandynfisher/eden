@@ -6,7 +6,5 @@ export {
 } from './EdenClient'
 
 export * from './methods'
+export * from './responses'
 export { default as Method } from './methods'
-
-export * from './responses/ScenarioResponses'
-export * from './responses/AgentsResponses'

@@ -1,6 +1,6 @@
 import { useUserState } from '@/hooks/useUserState'
-import { Agent } from '@eden-labs/eden-sdk/dist/responses/AgentsGetResponse'
-import { Creation } from '@eden-labs/eden-sdk/dist/responses/CreationsGetResponse'
+import { Creation } from '@eden-labs/eden-sdk'
+import { Agent } from '@eden-labs/eden-sdk'
 import React, { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {

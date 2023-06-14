@@ -1,11 +1,19 @@
 import { AxiosRequestConfig } from 'axios'
+
+import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
   AgentsCreateResponse,
   AgentsDeleteResponse,
   AgentsGetResponse,
   AgentsListResponse,
   AgentsUpdateResponse,
-} from 'src/responses/AgentsResponses'
+} from './responses/AgentsResponses'
+import {
+  ApiKeysCreateResponse,
+  ApiKeysDeleteResponse,
+  ApiKeysListResponse,
+} from './responses/ApiKeysResponses'
+import { AuthLoginResponse } from './responses/AuthResponses'
 import {
   CapabilitiesCreateResponse,
   CapabilitiesDeleteResponse,
@@ -13,7 +21,16 @@ import {
   CapabilitiesListResponse,
   CapabilitiesUpdateResponse,
   CapabilityType,
-} from 'src/responses/CapabilityResponses'
+} from './responses/CapabilitiesResponses'
+import {
+  CreationsGetResponse,
+  CreationsListResponse,
+} from './responses/CreationsResponses'
+import {
+  GeneratorsGetResponse,
+  GeneratorsListResponse,
+} from './responses/GeneratorsResponses'
+import { MannaBalanceGetResponse } from './responses/MannaResponses'
 import {
   ScenarioType,
   ScenariosCreateResponse,
@@ -21,21 +38,12 @@ import {
   ScenariosGetResponse,
   ScenariosListResponse,
   ScenariosUpdateResponse,
-} from 'src/responses/ScenarioResponses'
-
-import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
-import { ApiKeysCreateResponse } from './responses/ApiKeysCreateResponse'
-import { ApiKeysDeleteResponse } from './responses/ApiKeysDeleteResponse'
-import { ApiKeysGetResponse } from './responses/ApiKeysListResponse'
-import { AuthLoginResponse } from './responses/AuthLoginResponse'
-import { CreationsGetResponse } from './responses/CreationsGetResponse'
-import { CreationsListResponse } from './responses/CreationsListResponse'
-import { GeneratorsGetResponse } from './responses/GeneratorsGetResponse'
-import { GeneratorsListResponse } from './responses/GeneratorsListResponse'
-import { MannaBalanceGetResponse } from './responses/MannaBalanceGetResponse'
-import { TasksCreateResponse } from './responses/TasksCreateResponse'
-import { TasksGetResponse } from './responses/TasksGetResponse'
-import { TasksListResponse } from './responses/TasksListResponse'
+} from './responses/ScenariosResponses'
+import {
+  TasksCreateResponse,
+  TasksGetResponse,
+  TasksListResponse,
+} from './responses/TasksResponses'
 
 const transformArgsIntoURLParams = (
   args: Record<string, any>,
@@ -113,7 +121,7 @@ export abstract class Methods {
   }
 
   public readonly apiKeys = {
-    list: bindApiCall<ApiKeysListArguments, ApiKeysGetResponse>(
+    list: bindApiCall<ApiKeysListArguments, ApiKeysListResponse>(
       this,
       apiKeysListRequestConfig,
     ),

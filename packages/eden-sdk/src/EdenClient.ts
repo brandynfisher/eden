@@ -1,7 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 import { Methods } from './methods'
-import { INVALID_AUTH_MESSAGE } from './types'
 
 export interface WebClientOptions {
   edenApiUrl?: string

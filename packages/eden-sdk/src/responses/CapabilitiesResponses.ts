@@ -1,5 +1,4 @@
-import { PaginatedResponse } from 'src/responses/base'
-
+import { PaginatedResponse } from '.'
 import { WebAPICallResult } from '../EdenClient'
 
 export type CapabilitiesCreateResponse = WebAPICallResult & {

@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Agent } from '@eden-labs/eden-sdk/dist/responses/AgentsGetResponse'
+import { Agent } from '@eden-labs/eden-sdk'
 import useSWR from 'swr'
 
 export const useCharacter = (characterId: string | string[] | undefined) => {
