@@ -14,6 +14,10 @@ export interface UserContextType {
   mannaBalance?: number
   creations?: Creation[]
   characters?: Agent[]
+  refetch: {
+    mannaBalance: VoidFunction
+    characters: VoidFunction
+  }
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -27,6 +31,14 @@ export const UserContext = createContext<UserContextType>({
   mannaBalance: undefined,
   creations: undefined,
   characters: undefined,
+  refetch: {
+    mannaBalance: () => {
+      return null
+    },
+    characters: () => {
+      return null
+    },
+  },
 })
 
 function UserProvider({ children }: PropsWithChildren) {

@@ -350,6 +350,7 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   versionId?: string
   config?: any
   metadata?: any
+  webhook?: string
 }
 
 export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {

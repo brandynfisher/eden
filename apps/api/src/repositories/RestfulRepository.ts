@@ -41,7 +41,9 @@ class RestfulRepository<T> implements IRepository<T> {
       totalPages: 'pages',
     }
 
-    const mongooseQuery: Record<string, any> = {}
+    const mongooseQuery: Record<string, any> = {
+      deleted: false,
+    }
 
     for (const prop in query) {
       if (Array.isArray(query[prop])) {

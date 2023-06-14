@@ -1,4 +1,6 @@
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
+import { SoftDeleteDocument } from 'mongoose-delete'
+import MongooseDelete from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { UserDocument } from './Creator'
@@ -17,7 +19,7 @@ export interface ScenarioSchema {
   updatedAt?: Date
 }
 
-export interface ScenarioDocument extends ScenarioSchema, Document {}
+export interface ScenarioDocument extends ScenarioSchema, SoftDeleteDocument {}
 
 const scenario = new Schema<ScenarioDocument>(
   {
@@ -56,5 +58,6 @@ scenario.pre<ScenarioDocument>('save', function (next) {
 })
 
 scenario.plugin(paginate)
+scenario.plugin(MongooseDelete, { deletedAt: true })
 
 export const Scenario = model<ScenarioDocument>('scenarios', scenario)
