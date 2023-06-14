@@ -18,12 +18,12 @@ export const useUserState = () => {
   }, [address])
 
   const { isAuthenticated, isAuthenticating, authenticate, logout } = useAuth()
-  const { manna } = useBalance({ isAuthenticated })
+  const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })
   const { creations } = useMyCreations({
     userId: address || '',
     isAuthenticated,
   })
-  const { characters } = useMyCharacters({
+  const { characters, refetchMyCharacters } = useMyCharacters({
     userId: address || '',
     isAuthenticated,
   })
@@ -39,6 +39,10 @@ export const useUserState = () => {
     mannaBalance: manna,
     creations,
     characters,
+    refetch: {
+      mannaBalance: refetchMannaBalance,
+      characters: refetchMyCharacters,
+    },
   }
   return user
 }

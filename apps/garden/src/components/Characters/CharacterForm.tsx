@@ -1,7 +1,8 @@
+import { UserContext } from '@/providers/UserProvider'
 import { Button, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-import React from 'react'
+import React, { useContext } from 'react'
 
 import { handleAxiosError } from '../../lib/fetcher'
 
@@ -10,17 +11,18 @@ interface CharacterFormInputs {
 }
 
 const CharacterForm = () => {
+  const { refetch } = useContext(UserContext)
   const [form] = Form.useForm()
   const router = useRouter()
 
   const onFinish = async (values: CharacterFormInputs) => {
     try {
-      const response = await axios.post('/api/agents/create', {
+      await axios.post('/api/agents/create', {
         ...values,
         capabilities: [],
       })
-      const { agentId } = response.data
-      router.push(`/agents/${agentId}`)
+      refetch.characters()
+      router.push(`/agents`)
     } catch (error) {
       handleAxiosError(error)
     }

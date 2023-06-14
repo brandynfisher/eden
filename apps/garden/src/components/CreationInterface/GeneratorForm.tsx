@@ -2,7 +2,6 @@ import OptionParameter from '@/components/CreationInterface/parameters/OptionPar
 import SliderParameter from '@/components/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/CreationInterface/parameters/StringParameter'
 import UploadParameter from '@/components/CreationInterface/parameters/UploadParameter'
-import { useBalance } from '@/hooks/useBalance'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
 import {
@@ -24,8 +23,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
     setHasChangedGenerator,
     refetchPendingTasks,
   } = useContext(CreationNotificationContext)
-  const { isAuthenticated } = useContext(UserContext)
-  const { refetchMannaBalance } = useBalance({ isAuthenticated })
+  const { refetch } = useContext(UserContext)
   const [form] = Form.useForm()
   const selectedVersion = generator.versions[0]
   const { parameters } = selectedVersion
@@ -49,7 +47,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
       setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchPendingTasks && refetchPendingTasks()
-      refetchMannaBalance()
+      refetch.mannaBalance()
     } catch (error) {
       toast.error('Error creating task. Please try again.')
     }

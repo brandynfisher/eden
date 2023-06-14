@@ -26,12 +26,14 @@ const columns = [
 
 const ActionsButtons = ({ characterId }: { characterId: string }) => {
   const router = useRouter()
+  const { refetch } = useContext(UserContext)
 
   const handleDeleteCharacter = async () => {
     try {
       await axios.post(`/api/agents/delete`, {
         agentId: characterId,
       })
+      refetch.characters()
     } catch (error) {
       handleAxiosError(error)
     }
