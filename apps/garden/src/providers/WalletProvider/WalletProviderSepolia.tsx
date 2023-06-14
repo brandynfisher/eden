@@ -24,8 +24,6 @@ import { sepolia } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 
-console.info(CONFIG)
-
 new ParticleNetwork({
   projectId: CONFIG.NEXT_PUBLIC_PARTICLE_PROJECT_ID,
   clientKey: CONFIG.NEXT_PUBLIC_PARTICLE_CLIENT_KEY,
