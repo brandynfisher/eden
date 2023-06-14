@@ -36,6 +36,14 @@ COPY turbo.json turbo.json
 # ARG TURBO_TOKEN
 # ENV TURBO_TOKEN=$TURBO_TOKEN
 
+RUN --mount=type=secret,id=NEXT_PUBLIC_PARTICLE_PROJECT_ID \
+    --mount=type=secret,id=NEXT_PUBLIC_PARTICLE_CLIENT_KEY \
+    --mount=type=secret,id=NEXT_PUBLIC_PARTICLE_APP_ID \
+    export API_ENDPOINT=$(cat /run/secrets/NEXT_PUBLIC_PARTICLE_PROJECT_ID) && \
+    export API_PASSWORD=$(cat /run/secrets/NEXT_PUBLIC_PARTICLE_CLIENT_KEY) && \
+    export API_USERNAME=$(cat /run/secrets/NEXT_PUBLIC_PARTICLE_APP_ID) && \
+    yarn gen
+
 RUN yarn turbo run build --filter=garden...
 
 FROM base AS runner
