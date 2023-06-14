@@ -2,7 +2,7 @@ import { WebAPICallResult } from '../EdenClient'
 
 export type CreationsGetResponse = WebAPICallResult & {
   error?: string
-  creations?: Array<Creation>
+  creation?: Creation
 }
 
 export type Creation = {
