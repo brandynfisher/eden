@@ -1,4 +1,4 @@
-import { Creation } from '@eden-labs/eden-sdk/dist/responses/CreationsGetResponse'
+import { Creation } from '@eden-labs/eden-sdk'
 import React from 'react'
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {

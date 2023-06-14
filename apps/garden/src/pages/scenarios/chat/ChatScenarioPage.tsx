@@ -1,6 +1,6 @@
 import ChatScenarioUI from '@/components/Scenarios/Chat/ChatScenarioUI'
 import { UserContext } from '@/providers/UserProvider'
-import { Agent } from '@eden-labs/eden-sdk/dist/responses/AgentsListResponse'
+import { Agent } from '@eden-labs/eden-sdk'
 import { Select } from 'antd'
 import React, { useContext, useState } from 'react'
 

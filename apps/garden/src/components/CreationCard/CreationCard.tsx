@@ -1,5 +1,5 @@
 import CreationDetail from '@/components/CreationDetail'
-import { Creation } from '@eden-labs/eden-sdk/dist/responses/CreationsListResponse'
+import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { Modal } from 'antd'
 import { useRouter } from 'next/router'

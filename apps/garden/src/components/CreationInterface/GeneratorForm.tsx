@@ -10,10 +10,7 @@ import {
   RightCircleOutlined,
   UpCircleOutlined,
 } from '@ant-design/icons'
-import {
-  Generator,
-  GeneratorParameter,
-} from '@eden-labs/eden-sdk/dist/responses/GeneratorsGetResponse'
+import { Generator, GeneratorParameter } from '@eden-labs/eden-sdk'
 import { Button, Form } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect } from 'react'

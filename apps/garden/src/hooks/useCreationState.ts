@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Task } from '@eden-labs/eden-sdk/dist/responses/TasksGetResponse'
+import { Task } from '@eden-labs/eden-sdk'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import useSWR from 'swr'

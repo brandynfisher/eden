@@ -28,6 +28,7 @@ const createServer = async (
         keywords: ['kind', 'modifier'],
         removeAdditional: 'all',
         coerceTypes: 'array',
+        allowUnionTypes: true,
         useDefaults: true,
       },
     },

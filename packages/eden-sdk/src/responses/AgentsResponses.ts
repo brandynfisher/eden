@@ -1,6 +1,6 @@
-import { Capability } from 'src/responses/CapabilityResponses'
-import { PaginatedResponse } from 'src/responses/base'
+import { Capability } from 'src/responses/CapabilitiesResponses'
 
+import { PaginatedResponse } from '.'
 import { WebAPICallResult } from '../EdenClient'
 
 export type AgentsCreateResponse = WebAPICallResult & {

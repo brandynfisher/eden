@@ -1,4 +1,10 @@
+import { PaginatedResponse } from '.'
 import { WebAPICallResult } from '../EdenClient'
+
+export type GeneratorsListResponse = WebAPICallResult &
+  PaginatedResponse<Generator> & {
+    error?: string
+  }
 
 export type GeneratorsGetResponse = WebAPICallResult & {
   error?: string

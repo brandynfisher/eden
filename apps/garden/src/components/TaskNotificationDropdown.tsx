@@ -1,6 +1,6 @@
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
-import { Task } from '@eden-labs/eden-sdk/dist/responses/TasksListResponse'
+import { Task } from '@eden-labs/eden-sdk'
 import { Dropdown, Menu, Space, Spin } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'

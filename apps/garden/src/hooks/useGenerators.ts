@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Generator } from '@eden-labs/eden-sdk/dist/responses/GeneratorsGetResponse'
+import { Generator } from '@eden-labs/eden-sdk'
 import useSWR from 'swr'
 
 export const useGenerators = () => {

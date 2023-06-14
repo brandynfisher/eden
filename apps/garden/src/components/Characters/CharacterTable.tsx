@@ -1,6 +1,6 @@
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Agent } from '@eden-labs/eden-sdk/dist/responses/AgentsGetResponse'
+import { Agent } from '@eden-labs/eden-sdk'
 import { Button, Space, Table } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'

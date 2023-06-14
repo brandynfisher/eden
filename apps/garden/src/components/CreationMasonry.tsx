@@ -1,6 +1,6 @@
 import CreationCard from '@/components/CreationCard/CreationCard'
 import { chunkArray } from '@/lib/chunk'
-import { Creation } from '@eden-labs/eden-sdk/dist/responses/CreationsListResponse'
+import { Creation } from '@eden-labs/eden-sdk'
 import React, { PropsWithChildren } from 'react'
 
 const CreationMasonryRow = ({ children }: PropsWithChildren) => {

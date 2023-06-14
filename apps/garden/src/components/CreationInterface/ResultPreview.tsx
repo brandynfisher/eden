@@ -5,10 +5,11 @@ import { CreationNotificationContext } from '@/providers/CreationNotificationPro
 import React, { useContext } from 'react'
 
 const ResultPreview = () => {
-  const { hasChangedGenerator, tasks, activeTaskId } = useContext(
+  const { hasChangedGenerator, completedTasks, activeTaskId } = useContext(
     CreationNotificationContext,
   )
-  const activeTask = tasks && tasks.find(task => task.taskId === activeTaskId)
+  const activeTask =
+    completedTasks && completedTasks.find(task => task.taskId === activeTaskId)
   const creationUri = activeTask && (activeTask.creation?.uri as string)
 
   const renderPreview = () => {

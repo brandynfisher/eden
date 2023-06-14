@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons'
-import { GeneratorParameter } from '@eden-labs/eden-sdk/dist/responses/GeneratorsGetResponse'
+import { GeneratorParameter } from '@eden-labs/eden-sdk'
 import { Form, FormInstance, Row } from 'antd'
 import { Modal, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'

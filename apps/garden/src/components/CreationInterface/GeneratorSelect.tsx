@@ -1,4 +1,4 @@
-import { Generator } from '@eden-labs/eden-sdk/dist/responses/GeneratorsGetResponse'
+import { Generator } from '@eden-labs/eden-sdk'
 import React from 'react'
 
 const GeneratorSelect = ({ generators }: { generators: Generator[] }) => {
