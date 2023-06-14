@@ -8,7 +8,7 @@
     "method": "POST",
     "sortNum": 10000,
     "created": "2023-06-01T00:08:02.990Z",
-    "modified": "2023-06-14T15:37:47.265Z",
+    "modified": "2023-06-14T15:51:22.516Z",
     "headers": [
       {
         "name": "X-Api-Key",
@@ -22,7 +22,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n  \"generatorName\": \"test\",\n  \"webhook\": \"http://localhost:5050/custom\"\n}",
+      "raw": "{\n  \"generatorName\": \"test\",\n  \"webhook\": \"https://eden.ngrok.dev\"\n}",
       "form": []
     },
     "tests": []
@@ -36,7 +36,7 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2023-06-01T00:08:17.274Z",
-    "modified": "2023-06-14T15:38:15.927Z",
+    "modified": "2023-06-14T15:51:38.836Z",
     "headers": [
       {
         "name": "X-Api-Key",
@@ -56,7 +56,7 @@
     ],
     "body": {
       "type": "json",
-      "raw": "{\n  \"id\": \"587f6f91-8431-4f56-96aa-b00307553613\"\n}",
+      "raw": "{\n  \"id\": \"e4bb61f4-5276-4324-b967-57db74318cd7\"\n}",
       "form": []
     },
     "tests": []
