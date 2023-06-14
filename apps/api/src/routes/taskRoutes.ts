@@ -18,6 +18,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
         versionId: Type.Optional(Type.String()),
         config: Type.Optional(Type.Any()),
         metadata: Type.Optional(Type.Any()),
+        webhook: Type.Optional(Type.String()),
       },
       response: {
         200: Type.Object({

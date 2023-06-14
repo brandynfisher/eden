@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -68,6 +69,13 @@ export const dummyReceiveTaskUpdate = async (
       $set: taskUpdate,
     },
   )
+
+  if (task.webhook) {
+    await axios.post(task.webhook, {
+      taskId,
+      creation,
+    })
+  }
 
   return update
 }

@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 
 import { Creation, CreationSchema } from '../../models/Creation'
@@ -124,6 +125,13 @@ const handleUpdate = async (
       }
       const creation = await Creation.create(creationData)
       Object.assign(taskUpdate, { creation: creation._id })
+
+      if (task.webhook) {
+        await axios.post(task.webhook, {
+          taskId,
+          creation,
+        })
+      }
     } else if (generator?.output == 'lora') {
       const loraData: LoraSchema = {
         user: task.user,

@@ -14,6 +14,7 @@ export interface TaskSchema {
   versionId: string
   config?: any
   metadata?: any
+  webhook?: string
   cost: number
   taskId: string
   status: TaskStatus
@@ -50,6 +51,10 @@ const task = new Schema<TaskDocument>(
     metadata: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    webhook: {
+      type: String,
+      default: null,
     },
     cost: {
       type: Number,

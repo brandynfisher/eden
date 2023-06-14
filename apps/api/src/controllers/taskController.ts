@@ -19,7 +19,7 @@ export const createTask = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { generatorName, versionId, config, metadata } =
+  const { generatorName, versionId, config, metadata, webhook } =
     request.body as TasksCreateArguments
 
   // get generator
@@ -102,6 +102,7 @@ export const createTask = async (
     versionId: generatorVersion.versionId,
     config: preparedConfig,
     metadata,
+    webhook,
     cost,
   }
   const task = new Task(taskData)
