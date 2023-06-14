@@ -1,3 +1,7 @@
+import {
+  AuthCreateChallengeArguments,
+  AuthLoginArguments,
+} from '@eden-labs/eden-sdk'
 import { ethers } from 'ethers'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { SiweMessage, generateNonce } from 'siwe'
@@ -5,13 +9,9 @@ import { SiweMessage, generateNonce } from 'siwe'
 import Challenge from '../models/Challenge'
 import { User, UserInput } from '../models/Creator'
 import { Manna } from '../models/Manna'
-import {
-  AuthChallengeRequestBody,
-  AuthLoginRequestBody,
-} from '../routes/authRoutes'
 
 export const login = async (request: FastifyRequest, reply: FastifyReply) => {
-  const { address, signature, message } = request.body as AuthLoginRequestBody
+  const { address, signature, message } = request.body as AuthLoginArguments
 
   // first, find the most recent challenge for this address
   const challenge = await Challenge.findOne({
@@ -97,7 +97,7 @@ export const createChallenge = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { address, isWeb2 } = request.body as AuthChallengeRequestBody
+  const { address, isWeb2 } = request.body as AuthCreateChallengeArguments
 
   const nonce = generateNonce()
 

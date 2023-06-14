@@ -3,16 +3,6 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { createChallenge, login } from '../controllers/authController'
 
-export interface AuthLoginRequestBody {
-  address: string
-  message: string
-  signature: string
-}
-
-export interface AuthChallengeRequestBody {
-  address: string
-}
-
 const authRoutes: FastifyPluginAsync = async server => {
   server.post('/auth/login', {
     schema: {

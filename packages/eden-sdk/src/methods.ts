@@ -272,6 +272,11 @@ export interface AuthLoginArguments extends WebAPICallOptions {
   signature: string
 }
 
+export interface AuthCreateChallengeArguments extends WebAPICallOptions {
+  address: string
+  isWeb2: boolean
+}
+
 export interface CapabilitiesCreateArguments extends WebAPICallOptions {
   agentId: string
   name: string
