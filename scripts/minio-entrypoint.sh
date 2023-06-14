@@ -1,19 +1,13 @@
 #!/bin/sh
 set -e
 
-# Start Minio server
-minio server --console-address ":9001" /data
-
 # Wait for Minio server to start
 echo "Waiting for Minio server to start..."
-until curl --silent --fail http://localhost:9001 >/dev/null; do
-    printf '.'
-    sleep 1
-done
+while ! curl -I http://minio:9000/minio/health/live; do echo 'Wait minio to startup...' && sleep 0.1; done
 echo "Minio server started."
 
 # Create the buckets
-mc alias set minio http://localhost:9000 eden12345 eden12345
+mc alias set minio http://minio:9000 eden12345 eden12345
 mc mb minio/minio-dummy
 mc mb minio/minio-eden
 

@@ -10,8 +10,8 @@
 - `yarn dev:dummy`
 
 ### Launch in eden mode (with real generators)
-- `ngrok http 5050`
-- `WEBHOOK_URL=[...] yarn dev:eden`
+- `ngrok http --domain=eden.ngrok.dev --authtoken [AUTH_TOKEN] 5050`
+- `yarn dev:eden`
 
 ## What's Inside?
 
