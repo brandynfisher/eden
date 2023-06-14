@@ -9,13 +9,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (method) {
     case 'POST':
       try {
-        const { address } = req.body
+        const { address, isWeb2 } = req.body
         const response = await axios.post(challengeRoute, {
           address,
+          isWeb2,
         })
         return res.status(200).json(response.data)
       } catch (_error) {
-        console.error(_error)
+        console.error(_error.message)
         res.status(401).json({ error: 'Unauthorized' })
       }
       break
