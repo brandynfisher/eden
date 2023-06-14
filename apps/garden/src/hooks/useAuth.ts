@@ -20,22 +20,22 @@ export const useAuth = () => {
   const chainId = chain?.id
 
   // Get the user's session status on page load
-  useEffect(() => {
-    const checkSessionStatus = async () => {
-      try {
-        const response = await axios.get('/api/session', {
-          withCredentials: true,
-        })
-        const { address: sessionAddress } = response.data
-        const isAuth = sessionAddress && sessionAddress === address
-        setIsAuthenticated(isAuth || false)
-      } catch (error) {
-        setIsAuthenticated(false)
-      }
-    }
+  // useEffect(() => {
+  //   const checkSessionStatus = async () => {
+  //     try {
+  //       const response = await axios.get('/api/session', {
+  //         withCredentials: true,
+  //       })
+  //       const { address: sessionAddress } = response.data
+  //       const isAuth = sessionAddress && sessionAddress === address
+  //       setIsAuthenticated(isAuth || false)
+  //     } catch (error) {
+  //       setIsAuthenticated(false)
+  //     }
+  //   }
 
-    checkSessionStatus()
-  }, [])
+  //   checkSessionStatus()
+  // }, [])
 
   // If the user connects a new wallet, reset the auth state
   useEffect(() => {
