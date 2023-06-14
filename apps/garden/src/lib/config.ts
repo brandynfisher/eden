@@ -2,4 +2,9 @@ export const CONFIG = {
   API_URL: process.env.EDEN_API_URL || 'http://0.0.0.0:5050',
   DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+  NEXT_PUBLIC_PARTICLE_PROJECT_ID:
+    process.env.NEXT_PUBLIC_PARTICLE_PROJECT_ID || '',
+  NEXT_PUBLIC_PARTICLE_CLIENT_KEY:
+    process.env.NEXT_PUBLIC_PARTICLE_CLIENT_KEY || '',
+  NEXT_PUBLIC_PARTICLE_APP_ID: process.env.NEXT_PUBLIC_PARTICLE_APP_ID || '',
 }

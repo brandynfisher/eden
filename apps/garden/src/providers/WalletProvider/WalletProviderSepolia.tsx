@@ -1,3 +1,4 @@
+import { CONFIG } from '@/lib/config'
 import { ParticleNetwork } from '@particle-network/auth'
 import { particleWallet } from '@particle-network/rainbowkit-ext'
 import {
@@ -23,10 +24,12 @@ import { sepolia } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 
+console.info(CONFIG)
+
 new ParticleNetwork({
-  projectId: process.env.NEXT_PUBLIC_PARTICLE_PROJECT_ID as string,
-  clientKey: process.env.NEXT_PUBLIC_PARTICLE_CLIENT_KEY as string,
-  appId: process.env.NEXT_PUBLIC_PARTICLE_APP_ID as string,
+  projectId: CONFIG.NEXT_PUBLIC_PARTICLE_PROJECT_ID,
+  clientKey: CONFIG.NEXT_PUBLIC_PARTICLE_CLIENT_KEY,
+  appId: CONFIG.NEXT_PUBLIC_PARTICLE_APP_ID,
 })
 
 const { chains, publicClient } = configureChains(
