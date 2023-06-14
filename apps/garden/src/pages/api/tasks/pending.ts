@@ -21,7 +21,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       token: authToken,
     })
     const response = await eden.tasks.list({
-      taskIds: taskIdList,
+      taskId: taskIdList,
     })
     return res.status(200).json({ tasks: response.docs })
   } catch (error) {
