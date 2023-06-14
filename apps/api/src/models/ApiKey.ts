@@ -1,5 +1,7 @@
 import { ObjectId } from 'mongodb'
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
+import { SoftDeleteDocument } from 'mongoose-delete'
+import MongooseDelete from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { UserDocument } from './Creator'
@@ -21,7 +23,7 @@ export interface ApiKeyInput {
   note?: string
 }
 
-export interface ApiKeyDocument extends ApiKeySchema, Document {}
+export interface ApiKeyDocument extends ApiKeySchema, SoftDeleteDocument {}
 
 const apiKey = new Schema<ApiKeyDocument>(
   {
@@ -59,5 +61,6 @@ apiKey.pre<ApiKeyDocument>('save', function (next) {
 })
 
 apiKey.plugin(paginate)
+apiKey.plugin(MongooseDelete, { deletedAt: true })
 
 export const ApiKey = model<ApiKeyDocument>('apikey', apiKey)

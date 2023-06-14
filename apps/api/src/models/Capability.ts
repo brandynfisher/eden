@@ -1,4 +1,6 @@
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
+import { SoftDeleteDocument } from 'mongoose-delete'
+import MongooseDelete from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { AgentDocument } from './Agent'
@@ -18,7 +20,9 @@ export interface CapabilitySchema {
   updatedAt?: Date
 }
 
-export interface CapabilityDocument extends CapabilitySchema, Document {}
+export interface CapabilityDocument
+  extends CapabilitySchema,
+    SoftDeleteDocument {}
 
 const capability = new Schema<CapabilityDocument>(
   {
@@ -58,5 +62,6 @@ capability.pre<CapabilityDocument>('save', function (next) {
 })
 
 capability.plugin(paginate)
+capability.plugin(MongooseDelete, { deletedAt: true })
 
 export const Capability = model<CapabilityDocument>('capabilities', capability)
