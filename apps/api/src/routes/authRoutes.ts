@@ -34,6 +34,7 @@ const authRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: Type.Object({
         address: Type.String(),
+        isWeb2: Type.Boolean(),
       }),
       response: {
         200: Type.Object({

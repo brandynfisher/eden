@@ -4,6 +4,7 @@ import { CHALLENGE_TTL } from '../lib/constants'
 
 export interface ChallengeSchema {
   address: string
+  isWeb2: boolean
   nonce: string
   ack: boolean
   expiresAt: Date
@@ -21,6 +22,10 @@ const challenge = new Schema<ChallengeDocument>(
   {
     address: {
       type: String,
+      required: true,
+    },
+    isWeb2: {
+      type: Boolean,
       required: true,
     },
     nonce: {

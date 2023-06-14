@@ -65,7 +65,7 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
     const userInput: UserInput = {
       userId: address,
       username: address,
-      isWallet: true,
+      isWeb2: challenge.isWeb2,
     }
     const newUser = new User(userInput)
     await newUser.save()
@@ -97,12 +97,13 @@ export const createChallenge = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { address } = request.body as AuthChallengeRequestBody
+  const { address, isWeb2 } = request.body as AuthChallengeRequestBody
 
   const nonce = generateNonce()
 
   await Challenge.create({
     address,
+    isWeb2,
     nonce,
   })
 

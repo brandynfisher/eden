@@ -5,7 +5,7 @@ import { SiweMessage } from 'siwe'
 import { useAccount, useNetwork, useSignMessage } from 'wagmi'
 
 export const useAuth = () => {
-  const { address } = useAccount({
+  const { address, connector } = useAccount({
     // If the user disconnects their wallet, reset the auth state
     onDisconnect: async () => {
       await logout()
@@ -53,8 +53,10 @@ export const useAuth = () => {
   }, [authError])
 
   const createChallenge = async () => {
+    const isWeb2 = connector && connector.id === 'particle'
     const response = await axios.post('/api/challenge', {
       address,
+      isWeb2,
     })
     const { nonce } = response.data
     return nonce

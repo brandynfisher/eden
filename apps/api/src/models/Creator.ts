@@ -6,7 +6,7 @@ import { CreationDocument } from './Creation'
 
 export interface UserSchema {
   userId: string
-  isWallet: boolean
+  isWeb2: boolean
   isAdmin: boolean
   creations: CreationDocument[]
   collections: CollectionDocument[]
@@ -27,8 +27,8 @@ export interface UserSchema {
 
 export interface UserInput {
   userId: string
+  isWeb2: boolean
   username: string
-  isWallet: boolean
   isAdmin?: boolean
 }
 
@@ -41,7 +41,7 @@ const user = new Schema<UserDocument>(
       required: true,
       unique: true,
     },
-    isWallet: {
+    isWeb2: {
       type: Boolean,
       required: true,
     },
