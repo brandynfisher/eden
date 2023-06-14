@@ -1,10 +1,33 @@
-import { RainbowKitProvider, getDefaultWallets } from '@rainbow-me/rainbowkit'
+import { ParticleNetwork } from '@particle-network/auth'
+import { particleWallet } from '@particle-network/rainbowkit-ext'
+import {
+  RainbowKitProvider,
+  connectorsForWallets,
+} from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
+import {
+  argentWallet,
+  coinbaseWallet,
+  imTokenWallet,
+  injectedWallet,
+  ledgerWallet,
+  metaMaskWallet,
+  omniWallet,
+  rainbowWallet,
+  trustWallet,
+  walletConnectWallet,
+} from '@rainbow-me/rainbowkit/wallets'
 import { PropsWithChildren } from 'react'
 import { WagmiConfig, configureChains, createConfig } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
+
+new ParticleNetwork({
+  projectId: process.env.NEXT_PUBLIC_PARTICLE_PROJECT_ID as string,
+  clientKey: process.env.NEXT_PUBLIC_PARTICLE_CLIENT_KEY as string,
+  appId: process.env.NEXT_PUBLIC_PARTICLE_APP_ID as string,
+})
 
 const { chains, publicClient } = configureChains(
   [sepolia],
@@ -16,11 +39,41 @@ const { chains, publicClient } = configureChains(
   ],
 )
 
-const { connectors } = getDefaultWallets({
-  appName: 'Eden app',
-  projectId: 'eden-app',
-  chains,
-})
+const particleWallets =
+  typeof window !== 'undefined'
+    ? [
+        particleWallet({ chains, authType: 'email' }),
+        particleWallet({ chains, authType: 'phone' }),
+        particleWallet({ chains, authType: 'google' }),
+        particleWallet({ chains }),
+      ]
+    : []
+
+const popularWallets = {
+  groupName: 'Popular',
+  wallets: [
+    ...particleWallets,
+    injectedWallet({ chains }),
+    rainbowWallet({ chains }),
+    coinbaseWallet({ appName: 'RainbowKit demo', chains }),
+    metaMaskWallet({ chains }),
+    walletConnectWallet({ chains }),
+  ],
+}
+
+const connectors = connectorsForWallets([
+  popularWallets,
+  {
+    groupName: 'Other',
+    wallets: [
+      argentWallet({ chains }),
+      trustWallet({ chains }),
+      omniWallet({ chains }),
+      imTokenWallet({ chains }),
+      ledgerWallet({ chains }),
+    ],
+  },
+])
 
 const config = createConfig({
   autoConnect: true,
