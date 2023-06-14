@@ -11,7 +11,6 @@ export interface ApiKeySchema {
   apiKey: string
   apiSecret: string
   note?: string
-  deleted?: boolean
   createdAt?: Date
   updatedAt?: Date
 }
@@ -43,10 +42,6 @@ const apiKey = new Schema<ApiKeyDocument>(
     note: {
       type: String,
       required: false,
-    },
-    deleted: {
-      type: Boolean,
-      default: false,
     },
   },
   {
