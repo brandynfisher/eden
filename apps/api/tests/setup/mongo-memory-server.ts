@@ -12,7 +12,7 @@ const createAdmin = async () => {
   const userData: UserInput = {
     userId: 'admin',
     username: 'admin',
-    isWallet: false,
+    isWeb2: false,
     isAdmin: true,
   }
   const user = new User(userData)
@@ -31,7 +31,7 @@ const createUser = async () => {
   const userData: UserInput = {
     userId: 'user',
     username: 'user',
-    isWallet: false,
+    isWeb2: false,
     isAdmin: false,
   }
   const user = new User(userData)

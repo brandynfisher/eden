@@ -3,50 +3,46 @@ import { Document, Schema, model } from 'mongoose'
 import { UserDocument } from './Creator'
 
 export interface MannaVoucherSchema {
-  allowedUsers: UserDocument[]
   balance: number
-  used: boolean
   code: string
-  redeemedBy: UserDocument
+  used: boolean
+  allowedUserIds?: string[]
+  redeemedBy?: UserDocument
   createdAt?: Date
   updatedAt?: Date | number
 }
 
 export interface MannaVoucherDocument extends MannaVoucherSchema, Document {}
 
-const mannavoucher = new Schema<MannaVoucherDocument>({
-  allowedUsers: {
-    type: [Schema.Types.ObjectId],
-    ref: 'users',
-    default: null,
+const mannavoucher = new Schema<MannaVoucherDocument>(
+  {
+    allowedUserIds: {
+      type: [String],
+      required: false,
+      default: null,
+    },
+    balance: {
+      type: Number,
+      required: true,
+    },
+    used: {
+      type: Boolean,
+      default: false,
+    },
+    code: {
+      type: String,
+      required: true,
+    },
+    redeemedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+      default: null,
+    },
   },
-  balance: {
-    type: Number,
-    default: 0,
-    required: true,
+  {
+    timestamps: true,
   },
-  used: {
-    type: Boolean,
-    default: false,
-  },
-  code: {
-    type: String,
-    default: null,
-  },
-  redeemedBy: {
-    type: Schema.Types.ObjectId,
-    ref: 'users',
-    default: null,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-})
+)
 
 mannavoucher.pre<MannaVoucherDocument>('update', function (next) {
   this.updatedAt = Date.now()

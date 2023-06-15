@@ -1,7 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 
+import { randomId } from '../lib/util'
 import { User } from '../models/Creator'
 import { Manna } from '../models/Manna'
+import { MannaVoucher } from '../models/MannaVoucher'
 import { Transaction } from '../models/Transaction'
 import { MannaModifyRequestBody } from '../routes/adminRoutes'
 
@@ -49,23 +51,30 @@ export const modifyManna = async (
   })
 }
 
-// export const createMannaVoucher = async (request: FastifyRequest, reply: FastifyReply) => {
-//   const { allowedUsers, balance } = request.body as MannaVoucherCreateRequestBody
+interface MannaVoucherCreateRequestBody {
+  balance: number
+  allowedUserIds: string[] | null
+}
 
-//   const code = randomId(8);
+export const createMannaVoucher = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { allowedUserIds, balance } =
+    request.body as MannaVoucherCreateRequestBody
 
-//   const mannaVoucher = new MannaVoucher({
-//     used: false,
-//     allowedUsers,
-//     balance,
-//     code,
-//   });
-//   mannaVoucher.save();
+  const code = randomId(16)
+  const mannaVoucher = new MannaVoucher({
+    allowedUserIds: allowedUserIds,
+    balance,
+    code,
+  })
+  await mannaVoucher.save()
 
-//   return reply.status(200).send({
-//     mannaVoucher: mannaVoucher.code,
-//   });
-// }
+  return reply.status(200).send({
+    mannaVoucher: mannaVoucher.code,
+  })
+}
 
 export const getBalance = async (
   request: FastifyRequest,
