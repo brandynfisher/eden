@@ -35,7 +35,15 @@ const CreationDetailModal = ({
   )
 }
 
-const CreationCard = ({ creation }: { creation: Creation }) => {
+const CreationCard = ({
+  index,
+  data,
+  width,
+}: {
+  index: number
+  data: Creation
+  width: number
+}) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
   const [preUrl, setPreUrl] = React.useState(router.asPath)
@@ -44,22 +52,32 @@ const CreationCard = ({ creation }: { creation: Creation }) => {
   const openDetailModal = () => {
     setDetailModalOpen(true)
     setPreUrl(router.asPath)
-    router.push('', `/creations/${creation._id}`)
+    router.push('', `/creations/${data._id}`)
   }
 
   return (
     <>
-      <div className="relative cursor-pointer" onClick={openDetailModal}>
+      <div
+        className="relative cursor-pointer"
+        onClick={openDetailModal}
+        key={index}
+      >
         <div className="rounded-lg" ref={ref}>
           <div style={{ position: 'relative' }}>
-            <img src={creation.thumbnail} alt="" className="w-full" />
+            <img
+              src={data.thumbnail || ''}
+              alt=""
+              className="w-full border border-gray-200 rounded-lg"
+            />
             {hovered && <CreationCardOverlay />}
           </div>
         </div>
       </div>
       <CreationDetailModal
-        {...{ open: detailModalOpen, preUrl, setDetailModalOpen, creation }}
+        {...{ open: detailModalOpen, preUrl, setDetailModalOpen }}
+        creation={data}
       />
+      {false && <p>{width}</p>}
     </>
   )
 }

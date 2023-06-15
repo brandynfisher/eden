@@ -1,24 +1,18 @@
 import CreationCard from '@/components/CreationCard/CreationCard'
-import { chunkArray } from '@/lib/chunk'
 import { Creation } from '@eden-labs/eden-sdk'
-import React, { PropsWithChildren } from 'react'
-
-const CreationMasonryRow = ({ children }: PropsWithChildren) => {
-  return <div className="grid gap-4">{children}</div>
-}
+import { Masonry } from 'masonic'
+import React from 'react'
 
 const CreationMasonry = ({ creations }: { creations: Creation[] }) => {
-  const creationsChunked = chunkArray(creations, 3)
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      {creationsChunked.map((creationRow, index) => (
-        <CreationMasonryRow key={index}>
-          {creationRow.map((creation, i) => (
-            <CreationCard key={i} creation={creation} />
-          ))}
-        </CreationMasonryRow>
-      ))}
+    <div className="w-full">
+      <Masonry
+        items={creations}
+        columnCount={4}
+        columnGutter={2}
+        overscanBy={5}
+        render={CreationCard}
+      />
     </div>
   )
 }

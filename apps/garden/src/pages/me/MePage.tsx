@@ -1,7 +1,5 @@
-import ApiKeys from '@/components/ApiKeys'
 import CreationFilters from '@/components/CreationFilters'
 import CreationMasonry from '@/components/CreationMasonry'
-import MannaVoucherRedeem from '@/components/MannaVoucherRedeem'
 import ProfileHeader from '@/components/ProfileHeader'
 import { UserContext } from '@/providers/UserProvider'
 import { Space } from 'antd'
@@ -13,13 +11,13 @@ const inter = Inter({ subsets: ['latin'] })
 const MePage = () => {
   const { creations } = useContext(UserContext)
   return (
-    <main className={`flex min-h-screen ${inter.className}`}>
+    <main className={`flex flex-col min-h-screen ${inter.className}`}>
       <Space direction="vertical">
         <ProfileHeader />
-        <CreationFilters />
-        {creations && <CreationMasonry creations={creations} />}
-        <ApiKeys />
-        <MannaVoucherRedeem />
+        <div className="flex-grow mt-4">
+          <CreationFilters />
+          {creations && <CreationMasonry creations={creations} />}
+        </div>
       </Space>
     </main>
   )
