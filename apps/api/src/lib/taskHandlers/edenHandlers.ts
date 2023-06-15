@@ -236,7 +236,7 @@ export const receiveTaskUpdate = async (
       // await handleStarting(server, taskId);
       break
     case 'processing':
-      await handleUpdate(server, taskId, output)
+      // await handleUpdate(server, taskId, output)
       break
     case 'succeeded':
       await handleUpdate(server, taskId, output)
