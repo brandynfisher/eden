@@ -1,6 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { createChallenge } from '../controllers/authController'
 import { modifyManna } from '../controllers/mannaController'
 import { isAdmin } from '../middleware/authMiddleware'
 
@@ -28,6 +29,21 @@ const mannaRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [request => isAdmin(server, request)],
     handler: (request, reply) => modifyManna(request, reply),
+  })
+  server.post('/admin/auth/challenge', {
+    schema: {
+      body: Type.Object({
+        address: Type.String(),
+        isWeb2: Type.Boolean(),
+      }),
+      response: {
+        200: Type.Object({
+          nonce: Type.String(),
+        }),
+      },
+    },
+    preHandler: [request => isAdmin(server, request)],
+    handler: (request, reply) => createChallenge(request, reply),
   })
 }
 
