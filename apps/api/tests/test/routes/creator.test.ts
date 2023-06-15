@@ -40,7 +40,6 @@ test('User can follow a creator', async context => {
     },
     headers,
   })
-  console.log(response.json())
   expect(response.statusCode).toBe(200)
   expect(response.json()).toHaveProperty('success')
   expect(response.json().success).toBe(true)

@@ -2,7 +2,7 @@ import {
   CreationsGetArguments,
   CreationsListArguments,
   CreationsReactArguments,
-  CreationsUneactArguments,
+  CreationsUnreactArguments,
   ReactionType,
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
@@ -88,15 +88,12 @@ export const creationReact = async (
   }
 
   const existingReaction = await Reaction.findOne(reactionData)
-  console.log('333', existingReaction)
 
   if (existingReaction) {
     return reply.status(400).send({
       message: 'Reaction already exists',
     })
   }
-
-  console.log('222')
 
   await Reaction.create(reactionData)
 
@@ -110,7 +107,7 @@ export const creationUnreact = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { creationId, reaction } = request.body as CreationsUneactArguments
+  const { creationId, reaction } = request.body as CreationsUnreactArguments
 
   // check if reaction in ReactionType enum
   if (!Object.values(ReactionType).includes(reaction)) {
