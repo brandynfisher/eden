@@ -1,4 +1,4 @@
-import WalletProviderSepolia from '@/providers/WalletProvider/WalletProviderSepolia'
+import WalletProviderSepolia from '@/providers/WalletProvider/WalletProviderGoerli'
 import { PropsWithChildren } from 'react'
 
 function WalletProvider({ children }: PropsWithChildren) {

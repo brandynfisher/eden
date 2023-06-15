@@ -19,8 +19,7 @@ import {
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { PropsWithChildren } from 'react'
-import { WagmiConfig, configureChains, createConfig } from 'wagmi'
-import { sepolia } from 'wagmi/chains'
+import { WagmiConfig, configureChains, createConfig, sepolia } from 'wagmi'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 
@@ -28,6 +27,8 @@ new ParticleNetwork({
   projectId: CONFIG.NEXT_PUBLIC_PARTICLE_PROJECT_ID,
   clientKey: CONFIG.NEXT_PUBLIC_PARTICLE_CLIENT_KEY,
   appId: CONFIG.NEXT_PUBLIC_PARTICLE_APP_ID,
+  chainId: sepolia.id,
+  chainName: 'ethereum',
 })
 
 const { chains, publicClient } = configureChains(
