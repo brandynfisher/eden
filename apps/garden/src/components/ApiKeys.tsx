@@ -1,4 +1,5 @@
 import { useApiKeys } from '@/hooks/useApiKeys'
+import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Button, Input, Space, Table } from 'antd'
@@ -33,12 +34,16 @@ const ActionsButtons = ({
 }
 
 const ApiKeys = () => {
-  const { isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated, authenticate } = useContext(UserContext)
   const { apiKeys, refetchApiKeys } = useApiKeys({ isAuthenticated })
   const [apiKeyCreating, setApiKeyCreating] = useState(false)
   const [note, setNote] = useState('')
 
   const handleCreateAPIKey = async () => {
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+      return
+    }
     setApiKeyCreating(true)
     try {
       await axios.post('/api/apikeys/create', {

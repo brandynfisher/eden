@@ -25,7 +25,16 @@ import {
 import {
   CreationsGetResponse,
   CreationsListResponse,
+  CreationsReactResponse,
+  CreationsUnreactResponse,
+  ReactionType,
 } from './responses/CreationsResponses'
+import {
+  CreatorsFollowResponse,
+  CreatorsGetResponse,
+  CreatorsListResponse,
+  CreatorsUnfollowResponse,
+} from './responses/CreatorsResponses'
 import {
   GeneratorsGetResponse,
   GeneratorsListResponse,
@@ -177,6 +186,33 @@ export abstract class Methods {
       this,
       creationsGetRequestConfig,
     ),
+    react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
+      this,
+      creationsReactRequestConfig,
+    ),
+    unreact: bindApiCall<CreationsUnreactArguments, CreationsUnreactResponse>(
+      this,
+      creationsUnreactRequestConfig,
+    ),
+  }
+
+  public readonly creators = {
+    follow: bindApiCall<CreatorsFollowArguments, CreatorsFollowResponse>(
+      this,
+      creatorsFollowRequestConfig,
+    ),
+    unfollow: bindApiCall<CreatorsUnfollowArguments, CreatorsUnfollowResponse>(
+      this,
+      creatorsUnfollowRequestConfig,
+    ),
+    list: bindApiCall<CreatorsListArguments, CreatorsListResponse>(
+      this,
+      creatorsListRequestConfig,
+    ),
+    get: bindApiCall<CreatorsGetArguments, CreatorsGetResponse>(
+      this,
+      creatorsGetRequestConfig,
+    ),
   }
 
   public readonly generators = {
@@ -321,6 +357,34 @@ export interface CreationsListArguments
 
 export interface CreationsGetArguments extends WebAPICallOptions {
   creationId: string
+}
+
+export interface CreationsReactArguments extends WebAPICallOptions {
+  creationId: string
+  reaction: ReactionType
+}
+
+export interface CreationsUnreactArguments extends WebAPICallOptions {
+  creationId: string
+  reaction: ReactionType
+}
+
+export interface CreatorsFollowArguments extends WebAPICallOptions {
+  userId: string
+}
+
+export interface CreatorsUnfollowArguments extends WebAPICallOptions {
+  userId: string
+}
+
+export interface CreatorsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface CreatorsGetArguments extends WebAPICallOptions {
+  userId: string
 }
 
 export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
@@ -560,6 +624,74 @@ const creationsGetRequestConfig = (
   return {
     method: 'GET',
     url: `creations/${args.creationId}`,
+  }
+}
+
+const creationsReactRequestConfig = (
+  args: CreationsReactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creations/react',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creationsUnreactRequestConfig = (
+  args: CreationsUnreactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creations/unreact',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creatorsFollowRequestConfig = (
+  args: CreatorsFollowArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creators/follow',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creatorsUnfollowRequestConfig = (
+  args: CreatorsUnfollowArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creators/unfollow',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creatorsListRequestConfig = (
+  args: CreatorsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'creators',
+    params,
+  }
+}
+
+const creatorsGetRequestConfig = (
+  args: CreatorsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `creators/${args.creatorId}`,
   }
 }
 

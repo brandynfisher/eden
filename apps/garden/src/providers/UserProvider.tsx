@@ -8,8 +8,8 @@ export interface UserContextType {
   isConnecting: boolean
   isAuthenticating: boolean
   isAuthenticated: boolean
-  authenticate?: () => void
-  logout?: () => void
+  authenticate: () => void
+  logout: () => void
   address?: `0x${string}`
   mannaBalance?: number
   creations?: Creation[]
@@ -20,13 +20,17 @@ export interface UserContextType {
   }
 }
 
-export const UserContext = createContext<UserContextType>({
+const defaultUserState: UserContextType = {
   isConnected: false,
   isConnecting: false,
   isAuthenticating: false,
   isAuthenticated: false,
-  authenticate: undefined,
-  logout: undefined,
+  authenticate: () => {
+    return null
+  },
+  logout: () => {
+    return null
+  },
   address: undefined,
   mannaBalance: undefined,
   creations: undefined,
@@ -39,7 +43,9 @@ export const UserContext = createContext<UserContextType>({
       return null
     },
   },
-})
+}
+
+export const UserContext = createContext<UserContextType>(defaultUserState)
 
 function UserProvider({ children }: PropsWithChildren) {
   const userState = useUserState()
