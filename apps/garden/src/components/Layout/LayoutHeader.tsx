@@ -9,7 +9,14 @@ import React, { useContext } from 'react'
 const { Header } = Layout
 
 const LayoutHeader = () => {
-  const { isConnected, isAuthenticated, mannaBalance } = useContext(UserContext)
+  const { isConnected, isAuthenticated, authenticate, mannaBalance } =
+    useContext(UserContext)
+
+  const handleAuthClick = () => {
+    if (!isAuthenticated) {
+      authenticate && authenticate()
+    }
+  }
 
   return (
     <div>
@@ -28,6 +35,7 @@ const LayoutHeader = () => {
             <CreationNotificationMenu />
             {isConnected && (
               <div
+                onClick={handleAuthClick}
                 className={`text-${
                   isAuthenticated ? 'green' : 'blue'
                 }-500 text-2xl`}

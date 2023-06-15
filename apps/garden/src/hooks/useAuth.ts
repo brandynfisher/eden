@@ -15,6 +15,7 @@ export const useAuth = () => {
   const { signMessageAsync } = useSignMessage()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
+  const [hasCheckedForSession, setHasCheckedForSession] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
   const chainId = chain?.id
@@ -35,6 +36,7 @@ export const useAuth = () => {
     }
 
     checkSessionStatus()
+    setHasCheckedForSession(true)
   }, [])
 
   // If the user connects a new wallet, reset the auth state
@@ -43,7 +45,7 @@ export const useAuth = () => {
       await logout()
     }
     resetAuth()
-    address && authenticate()
+    address && hasCheckedForSession && authenticate()
   }, [address])
 
   // Show error message if there is one
