@@ -83,7 +83,7 @@ const config = createConfig({
   publicClient,
 })
 
-function WalletProviderGoerli({ children }: PropsWithChildren) {
+function WalletProviderSepolia({ children }: PropsWithChildren) {
   return (
     <WagmiConfig config={config}>
       <RainbowKitProvider chains={chains}>{children}</RainbowKitProvider>
@@ -91,4 +91,4 @@ function WalletProviderGoerli({ children }: PropsWithChildren) {
   )
 }
 
-export default WalletProviderGoerli
+export default WalletProviderSepolia
