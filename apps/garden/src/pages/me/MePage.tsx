@@ -1,6 +1,7 @@
 import ApiKeys from '@/components/ApiKeys'
 import CreationFilters from '@/components/CreationFilters'
 import CreationMasonry from '@/components/CreationMasonry'
+import MannaVoucherRedeem from '@/components/MannaVoucherRedeem'
 import ProfileHeader from '@/components/ProfileHeader'
 import { UserContext } from '@/providers/UserProvider'
 import { Space } from 'antd'
@@ -18,6 +19,7 @@ const MePage = () => {
         <CreationFilters />
         {creations && <CreationMasonry creations={creations} />}
         <ApiKeys />
+        <MannaVoucherRedeem />
       </Space>
     </main>
   )

@@ -30,7 +30,10 @@ import {
   GeneratorsGetResponse,
   GeneratorsListResponse,
 } from './responses/GeneratorsResponses'
-import { MannaBalanceGetResponse } from './responses/MannaResponses'
+import {
+  MannaBalanceGetResponse,
+  MannaVoucherRedeemResponse,
+} from './responses/MannaResponses'
 import {
   ScenarioType,
   ScenariosCreateResponse,
@@ -192,6 +195,12 @@ export abstract class Methods {
       this,
       mannaBalanceGetRequestConfig,
     ),
+    vouchers: {
+      redeem: bindApiCall<
+        MannaVouchersRedeemArguments,
+        MannaVoucherRedeemResponse
+      >(this, mannaVouchersRedeemRequestConfig),
+    },
   }
 
   public readonly scenarios = {
@@ -321,6 +330,10 @@ export interface GeneratorsGetArguments extends WebAPICallOptions {
 }
 
 export type MannaBalanceGetArguments = WebAPICallOptions
+
+export interface MannaVouchersRedeemArguments extends WebAPICallOptions {
+  code: string
+}
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
   name: string
@@ -570,6 +583,18 @@ const mannaBalanceGetRequestConfig = (): AxiosRequestConfig => {
   return {
     method: 'GET',
     url: 'manna/balance',
+  }
+}
+
+const mannaVouchersRedeemRequestConfig = (
+  args: MannaVouchersRedeemArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'manna/vouchers/redeem',
+    data: {
+      ...args,
+    },
   }
 }
 

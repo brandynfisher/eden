@@ -88,9 +88,9 @@ const ApiKeys = () => {
 
   return (
     <div>
-      <h1>My API Keys</h1>
+      <h1 className="text-xl">API Keys</h1>
       <Table dataSource={data} columns={columns} />
-      <h1>Create new key</h1>
+      <h1 className="mt-10 text-l">Create new API key</h1>
       <Input
         placeholder="Note about this key"
         value={note}

@@ -1,7 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 
+import { randomId } from '../lib/util'
 import { User } from '../models/Creator'
 import { Manna } from '../models/Manna'
+import { MannaVoucher } from '../models/MannaVoucher'
 import { Transaction } from '../models/Transaction'
 import { MannaModifyRequestBody } from '../routes/adminRoutes'
 
@@ -49,23 +51,31 @@ export const modifyManna = async (
   })
 }
 
-// export const createMannaVoucher = async (request: FastifyRequest, reply: FastifyReply) => {
-//   const { allowedUsers, balance } = request.body as MannaVoucherCreateRequestBody
+interface MannaVoucherCreateRequestBody {
+  amount: number
+  allowedUserIds?: string[]
+}
 
-//   const code = randomId(8);
+export const createMannaVoucher = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { allowedUserIds, amount } =
+    request.body as MannaVoucherCreateRequestBody
 
-//   const mannaVoucher = new MannaVoucher({
-//     used: false,
-//     allowedUsers,
-//     balance,
-//     code,
-//   });
-//   mannaVoucher.save();
+  const code = randomId(16)
+  const mannaVoucher = new MannaVoucher({
+    allowedUserIds: allowedUserIds || null,
+    amount,
+    code,
+  })
+  console.log(mannaVoucher)
+  await mannaVoucher.save()
 
-//   return reply.status(200).send({
-//     mannaVoucher: mannaVoucher.code,
-//   });
-// }
+  return reply.status(200).send({
+    code: mannaVoucher.code,
+  })
+}
 
 export const getBalance = async (
   request: FastifyRequest,
@@ -96,75 +106,81 @@ export const getBalance = async (
   })
 }
 
-// interface RedeemMannaVoucherRequest extends FastifyRequest {
-//   body: {
-//     mannaVoucherId: string;
-//   }
-// }
+export const redeemMannaVoucher = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const userId = request.user.userId
+  const { code } = request.body
 
-// export const redeemMannaVoucher = async (request: FastifyRequest, reply: FastifyReply) => {
-//   const userId = request.user.userId;
-//   const {mannaVoucherId} = request.body as RedeemMannaVoucherRequest["body"];
+  const user = await User.findById(userId)
 
-//   const user = await User.findById(userId);
+  if (!user) {
+    return reply.status(400).send({
+      message: `User ${userId} not found`,
+    })
+  }
 
-//   if (!user) {
-//     return reply.status(400).send({
-//       message: `User ${userId} not found`,
-//     });
-//   }
+  const mannaVoucher = await MannaVoucher.findOne({
+    code,
+  })
 
-//   const mannaVoucher = await MannaVoucher.findOne({
-//     code: mannaVoucherId
-//   });
+  if (!mannaVoucher) {
+    return reply.status(400).send({
+      message: `Manna voucher ${code} not found`,
+    })
+  }
 
-//   if (!mannaVoucher) {
-//     return reply.status(400).send({
-//       message: `Manna voucher ${mannaVoucherId} not found`,
-//     });
-//   }
+  if (mannaVoucher.used) {
+    return reply.status(400).send({
+      message: `Manna voucher ${code} already used`,
+    })
+  }
 
-//   if (mannaVoucher.used) {
-//     return reply.status(400).send({
-//       message: `Manna voucher ${mannaVoucherId} already used`,
-//     });
-//   }
+  console.log(mannaVoucher)
+  if (
+    mannaVoucher.allowedUserIds &&
+    !mannaVoucher.allowedUserIds.includes(user.userId)
+  ) {
+    return reply.status(400).send({
+      message: `You cannot redeem this voucher`,
+    })
+  }
 
-//   const manna = await Manna.findOne({
-//     user: user._id,
-//   });
+  const manna = await Manna.findOne({
+    user: user._id,
+  })
 
-//   let newBalance;
-//   let mannaId;
+  let newBalance
+  let mannaId
 
-//   if (!manna) {
-//     const newManna = new Manna({
-//       user: user._id,
-//       balance: mannaVoucher.balance,
-//     });
-//     newBalance = newManna.balance;
-//     mannaId = newManna._id;
-//     await newManna.save();
-//   }
-//   else {
-//     manna.balance += mannaVoucher.balance;
-//     newBalance = manna.balance;
-//     mannaId = manna._id;
-//     await manna.save();
-//   }
+  if (!manna) {
+    const newManna = new Manna({
+      user: user._id,
+      balance: mannaVoucher.amount,
+    })
+    newBalance = newManna.balance
+    mannaId = newManna._id
+    await newManna.save()
+  } else {
+    manna.balance += mannaVoucher.amount
+    newBalance = manna.balance
+    mannaId = manna._id
+    await manna.save()
+  }
 
-//   const transaction = new Transaction({
-//     manna: mannaId,
-//     amount: mannaVoucher.balance,
-//   })
-//   await transaction.save();
+  const transaction = new Transaction({
+    manna: mannaId,
+    amount: mannaVoucher.amount,
+  })
+  await transaction.save()
 
-//   mannaVoucher.used = true;
-//   mannaVoucher.redeemedBy = user._id;
-//   mannaVoucher.save();
+  mannaVoucher.used = true
+  mannaVoucher.redeemedBy = user._id
+  await mannaVoucher.save()
 
-//   return reply.status(200).send({
-//     balance: newBalance,
-//     transactionId: transaction._id
-//   });
-// }
+  return reply.status(200).send({
+    manna: newBalance,
+    transactionId: transaction._id,
+  })
+}

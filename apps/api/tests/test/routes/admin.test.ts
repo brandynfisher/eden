@@ -37,3 +37,32 @@ test('Admin can modify Manna', async context => {
   const transaction = await Transaction.findById(transactionId)
   expect(transaction).not.toBe(null)
 })
+
+test('Admin can create a Manna voucher', async context => {
+  const { server } = context
+  const response = await server.inject({
+    method: 'POST',
+    url: '/admin/manna/vouchers/create',
+    payload: {
+      amount: 100,
+    },
+    headers: prepareAdminHeaders(),
+  })
+  expect(response.statusCode).toBe(200)
+  expect(response.json()).toHaveProperty('code')
+})
+
+test('Admin can create a challenge', async context => {
+  const { server } = context
+  const response = await server.inject({
+    method: 'POST',
+    url: '/admin/auth/challenge',
+    payload: {
+      address: '0x123',
+      isWeb2: false,
+    },
+    headers: prepareAdminHeaders(),
+  })
+  expect(response.statusCode).toBe(200)
+  expect(response.json()).toHaveProperty('nonce')
+})
