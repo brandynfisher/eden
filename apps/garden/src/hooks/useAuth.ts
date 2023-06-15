@@ -43,6 +43,7 @@ export const useAuth = () => {
       await logout()
     }
     resetAuth()
+    address && authenticate()
   }, [address])
 
   // Show error message if there is one
