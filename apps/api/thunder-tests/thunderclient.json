@@ -372,5 +372,33 @@
     ],
     "params": [],
     "tests": []
+  },
+  {
+    "_id": "db469c4e-f4ea-4891-901c-0545774e7bb4",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Create Challenge w/o Admin",
+    "url": "http://localhost:5050/admin/auth/challenge",
+    "method": "POST",
+    "sortNum": 50000,
+    "created": "2023-06-15T15:24:36.179Z",
+    "modified": "2023-06-15T15:25:13.477Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "user"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "user"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"address\": \"0x123\",\n  \"isWeb2\": true\n}",
+      "form": []
+    },
+    "tests": []
   }
 ]
