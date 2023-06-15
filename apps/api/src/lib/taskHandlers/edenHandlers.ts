@@ -239,7 +239,7 @@ export const receiveTaskUpdate = async (
       await handleUpdate(server, taskId, output)
       break
     case 'succeeded':
-      // await handleUpdate(server, taskId, output);
+      await handleUpdate(server, taskId, output)
       break
     case 'failed':
       await handleFailure(taskId, error)

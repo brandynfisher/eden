@@ -8,8 +8,13 @@ echo "Minio server started."
 
 # Create the buckets
 mc alias set minio http://minio:9000 eden12345 eden12345
-mc mb minio/minio-dummy
-mc mb minio/minio-eden
+if ! mc ls minio/minio-dummy; then
+    mc mb minio/minio-dummy
+fi
+
+if ! mc ls minio/minio-eden; then
+    mc mb minio/minio-eden
+fi
 
 # Make all objects in the buckets public
 mc anonymous set public minio/minio-dummy
