@@ -400,5 +400,33 @@
       "form": []
     },
     "tests": []
+  },
+  {
+    "_id": "1e334e6f-4823-4afd-8ac6-5c9ed2e5908c",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Create Manna Voucher",
+    "url": "http://localhost:5050/admin/manna/vouchers/create",
+    "method": "POST",
+    "sortNum": 22500,
+    "created": "2023-06-15T17:13:41.208Z",
+    "modified": "2023-06-15T17:14:13.965Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "admin"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "admin"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"amount\": 100\n}",
+      "form": []
+    },
+    "tests": []
   }
 ]
