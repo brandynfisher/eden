@@ -35,13 +35,13 @@ const mannaRoutes: FastifyPluginAsync = async server => {
     schema: {
       request: {
         body: Type.Object({
-          balance: Type.Number(),
+          amount: Type.Number(),
           allowedUserIds: Type.Optional(Type.Array(Type.String())),
         }),
       },
       response: {
         200: Type.Object({
-          mannaVoucher: Type.String(),
+          code: Type.String(),
         }),
       },
     },

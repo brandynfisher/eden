@@ -3,7 +3,7 @@ import { Document, Schema, model } from 'mongoose'
 import { UserDocument } from './Creator'
 
 export interface MannaVoucherSchema {
-  balance: number
+  amount: number
   code: string
   used: boolean
   allowedUserIds?: string[]
@@ -18,10 +18,9 @@ const mannavoucher = new Schema<MannaVoucherDocument>(
   {
     allowedUserIds: {
       type: [String],
-      required: false,
       default: null,
     },
-    balance: {
+    amount: {
       type: Number,
       required: true,
     },

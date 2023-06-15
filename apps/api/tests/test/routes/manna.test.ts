@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
 import { expect, test } from 'vitest'
 
+import { Transaction } from '../../../src/models/Transaction'
 import { prepareAdminHeaders, prepareUserHeaders } from '../../util'
 
 const getMannaBalanceRequest = async (server: FastifyInstance) => {
@@ -31,36 +33,39 @@ const addMannaRequest = async (
   return response
 }
 
-// const createMannaVoucherRequest = async (server: FastifyInstance, amount: number, allowedUsers?: string[]) => {
-//   const headers = prepareAdminHeaders();
-//   let users;
-//   if (allowedUsers) {
-//     users = allowedUsers
-//   } else {
-//     const user = await getDefaultUserId();
-//     users = [user];
-//   }
-//   const response = await server.inject({
-//     method: 'POST',
-//     url: `${MANNA_BASE_ROUTE}/vouchers`,
-//     payload: {
-//       allowedUsers: users,
-//       amount,
-//     },
-//     headers,
-//   });
-//   return response;
-// }
+const createMannaVoucherRequest = async (
+  server: FastifyInstance,
+  amount: number,
+  allowedUserIds?: string[],
+) => {
+  const headers = prepareAdminHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/admin/manna/vouchers/create',
+    payload: {
+      allowedUserIds,
+      amount,
+    },
+    headers,
+  })
+  return response
+}
 
-// const redeemMannaVoucherRequest = async (server: FastifyInstance, voucherId: string) => {
-//   const headers = prepareUserHeaders();
-//   const response = await server.inject({
-//     method: 'GET',
-//     url: `${MANNA_BASE_ROUTE}/vouchers/${voucherId}/redeem`,
-//     headers,
-//   });
-//   return response;
-// }
+const redeemMannaVoucherRequest = async (
+  server: FastifyInstance,
+  code: string,
+) => {
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/manna/vouchers/redeem',
+    payload: {
+      code,
+    },
+    headers,
+  })
+  return response
+}
 
 test('A user with manna should see their balance', async context => {
   const { server } = context
@@ -71,50 +76,55 @@ test('A user with manna should see their balance', async context => {
   expect(response.json().manna).toBe(1100)
 })
 
-// test('Admin can create a manna voucher', async (context) => {
-//   const { server } = context;
-//   const response = await createMannaVoucherRequest(server, 100);
-//   console.log(response.json())
-//   expect(response.statusCode).toBe(200);
-//   expect(response.json()).toHaveProperty('mannaVoucher');
-// })
+test('User can redeem a manna voucher, and it creates a transaction', async context => {
+  const { server } = context
+  const createVoucherResponse = await createMannaVoucherRequest(server, 100)
+  const code = createVoucherResponse.json().code
+  const redeemResponse = await redeemMannaVoucherRequest(server, code)
+  console.log(redeemResponse.json())
+  expect(redeemResponse.statusCode).toBe(200)
+  expect(redeemResponse.json()).toHaveProperty('manna')
+  expect(redeemResponse.json().manna).toBe(1100)
+  expect(redeemResponse.json()).toHaveProperty('transactionId')
 
-// test('User can redeem a manna voucher, and it creates a transaction', async (context) => {
-//   const { server } = context;
-//   const createVoucherResponse = await createMannaVoucherRequest(server, 100);
-//   const voucherId = createVoucherResponse.json().voucherId
-//   const redeemResponse = await redeemMannaVoucherRequest(server, voucherId);
-//   expect(redeemResponse.statusCode).toBe(200);
-//   expect(redeemResponse.json()).toHaveProperty('manna');
-//   expect(redeemResponse.json().manna).toBe(100);
-//   expect(redeemResponse.json()).toHaveProperty('transactionId');
+  // Get the transaction from the database
+  const transactionId = new ObjectId(redeemResponse.json().transactionId)
+  const transaction = await Transaction.findById(transactionId)
+  expect(transaction).not.toBe(null)
+})
 
-//   // Get the transaction from the database
-//   const transactionId = new ObjectId(redeemResponse.json().transactionId)
-//   const transaction = await Transaction.findById(transactionId);
-//   expect(transaction).not.toBe(null)
-// })
+test('User can redeem a manna voucher they are allowed for', async context => {
+  const { server } = context
+  const createVoucherResponse = await createMannaVoucherRequest(server, 100, [
+    'user',
+  ])
+  const code = createVoucherResponse.json().code
+  const redeemResponse = await redeemMannaVoucherRequest(server, code)
+  expect(redeemResponse.statusCode).toBe(200)
+})
 
-// test('User cannot redeem a manna voucher twice', async (context) => {
-//   const { server } = context;
-//   const createVoucherResponse = await createMannaVoucherRequest(server, 100);
-//   const voucherId = createVoucherResponse.json().voucherId
-//   const redeemResponse = await redeemMannaVoucherRequest(server, voucherId);
-//   expect(redeemResponse.statusCode).toBe(200);
-//   const redeemResponse2 = await redeemMannaVoucherRequest(server, voucherId);
-//   expect(redeemResponse2.statusCode).toBe(400);
-// })
+test('User cannot redeem a manna voucher twice', async context => {
+  const { server } = context
+  const createVoucherResponse = await createMannaVoucherRequest(server, 100)
+  const code = createVoucherResponse.json().code
+  const redeemResponse = await redeemMannaVoucherRequest(server, code)
+  expect(redeemResponse.statusCode).toBe(200)
+  const redeemResponse2 = await redeemMannaVoucherRequest(server, code)
+  expect(redeemResponse2.statusCode).toBe(400)
+})
 
-// test('User cannot redeem a manna voucher that does not exist', async (context) => {
-//   const { server } = context;
-//   const redeemResponse = await redeemMannaVoucherRequest(server, '123');
-//   expect(redeemResponse.statusCode).toBe(404);
-// })
+test('User cannot redeem a manna voucher that does not exist', async context => {
+  const { server } = context
+  const redeemResponse = await redeemMannaVoucherRequest(server, '123')
+  expect(redeemResponse.statusCode).toBe(400)
+})
 
-// test('User cannot redeem a manna voucher they are not allowed to', async (context) => {
-//   const { server } = context;
-//   const createVoucherResponse = await createMannaVoucherRequest(server, 100, ['user2']);
-//   const voucherId = createVoucherResponse.json().voucherId
-//   const redeemResponse = await redeemMannaVoucherRequest(server, voucherId);
-//   expect(redeemResponse.statusCode).toBe(403);
-// })
+test('User cannot redeem a manna voucher they are not allowed to', async context => {
+  const { server } = context
+  const createVoucherResponse = await createMannaVoucherRequest(server, 100, [
+    'user2',
+  ])
+  const code = createVoucherResponse.json().code
+  const redeemResponse = await redeemMannaVoucherRequest(server, code)
+  expect(redeemResponse.statusCode).toBe(400)
+})

@@ -44,12 +44,12 @@ test('Admin can create a Manna voucher', async context => {
     method: 'POST',
     url: '/admin/manna/vouchers/create',
     payload: {
-      balance: 100,
+      amount: 100,
     },
     headers: prepareAdminHeaders(),
   })
   expect(response.statusCode).toBe(200)
-  expect(response.json()).toHaveProperty('mannaVoucher')
+  expect(response.json()).toHaveProperty('code')
 })
 
 test('Admin can create a challenge', async context => {
