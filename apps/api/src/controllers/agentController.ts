@@ -143,7 +143,6 @@ export const getAgent = async (
 ) => {
   const { agentId } = request.params as AgentsGetArguments
   const agent = await Agent.findById(agentId).populate('capabilities')
-  console.log(agent)
   if (!agent) {
     return reply.status(404).send({
       message: 'Agent not found',

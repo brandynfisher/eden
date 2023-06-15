@@ -69,7 +69,6 @@ export const createMannaVoucher = async (
     amount,
     code,
   })
-  console.log(mannaVoucher)
   await mannaVoucher.save()
 
   return reply.status(200).send({
@@ -137,7 +136,6 @@ export const redeemMannaVoucher = async (
     })
   }
 
-  console.log(mannaVoucher)
   if (
     mannaVoucher.allowedUserIds &&
     !mannaVoucher.allowedUserIds.includes(user.userId)

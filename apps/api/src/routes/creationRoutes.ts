@@ -1,8 +1,14 @@
+import { ReactionType } from '@eden-labs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
-import { getCreation, listCreations } from '../controllers/creationsController'
+import {
+  creationReact,
+  getCreation,
+  listCreations,
+} from '../controllers/creationsController'
+import { isAuth } from '../middleware/authMiddleware'
 
 const creationRoutes: FastifyPluginAsync = async server => {
   server.get('/creations', {
@@ -36,61 +42,23 @@ const creationRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => getCreation(request, reply),
   })
 
-  // server.get('/creation/:creationId/collections', {
-  //   schema: {
-  //     response: {
-  //       200: {
-  //         collections: Type.Array(Type.Any()),
-  //       },
-  //     },
-  //   },
-  //   handler: (request, reply) => getCollections(request, reply),
-  // })
-
-  // server.get('/creation/:creationId/recreations', {
-  //   schema: {
-  //     response: {
-  //       200: {
-  //         creations: Type.Array(Type.Any()),
-  //       },
-  //     },
-  //   },
-  //   handler: (request, reply) => getRecreations(request, reply),
-  // })
-
-  // server.post('/creation/:creationId/reactions', {
-  //   schema: {
-  //     request: {
-  //       body: Type.Object({
-  //         reactions: Type.Array(Type.String()),
-  //       }),
-  //     },
-  //     response: {
-  //       200: {
-  //         reactions: Type.Array(Type.Any()),
-  //       },
-  //     },
-  //   },
-  //   handler: (request, reply) => getReactions(request, reply),
-  // })
-
-  // server.post('/creation/:creationId/react', {
-  //   schema: {
-  //     request: {
-  //       body: Type.Object({
-  //         reaction: Type.String(),
-  //         unreact: Type.Boolean(),
-  //       }),
-  //     },
-  //     response: {
-  //       200: {
-  //         success: Type.Boolean(),
-  //       },
-  //     },
-  //   },
-  //   preHandler: [async request => isAuth(server, request)],
-  //   handler: (request, reply) => react(request, reply),
-  // })
+  server.post('/creations/react', {
+    schema: {
+      request: {
+        body: Type.Object({
+          creationId: Type.String(),
+          reaction: Type.Strict(Type.String(), ReactionType),
+        }),
+      },
+      response: {
+        200: {
+          success: Type.Boolean(),
+        },
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => creationReact(request, reply),
+  })
 }
 
 export default creationRoutes

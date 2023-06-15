@@ -81,7 +81,6 @@ test('User can redeem a manna voucher, and it creates a transaction', async cont
   const createVoucherResponse = await createMannaVoucherRequest(server, 100)
   const code = createVoucherResponse.json().code
   const redeemResponse = await redeemMannaVoucherRequest(server, code)
-  console.log(redeemResponse.json())
   expect(redeemResponse.statusCode).toBe(200)
   expect(redeemResponse.json()).toHaveProperty('manna')
   expect(redeemResponse.json().manna).toBe(1100)

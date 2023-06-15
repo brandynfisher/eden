@@ -3,6 +3,8 @@ import { FastifyInstance } from 'fastify'
 import { SiweMessage } from 'siwe'
 import { expect, test } from 'vitest'
 
+import { prepareAdminHeaders } from '../../util'
+
 const TEST_ADDRESS = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
 const RANDOM_ADDRESS = '0x29C325f75768BC801CCe441233c71F8e31800593'
 const TEST_ADDRESS_PK =
@@ -30,22 +32,18 @@ const signMessage = async (message: string) => {
 }
 
 const createNonceRequest = async (server: FastifyInstance, address: string) => {
+  const headers = prepareAdminHeaders()
   const response = await server.inject({
     method: 'POST',
-    url: '/auth/challenge',
+    url: '/admin/auth/challenge',
     payload: {
       address,
+      isWeb2: false,
     },
+    headers,
   })
   return response
 }
-
-test('User can create a challenge for a wallet', async context => {
-  const { server } = context
-  const response = await createNonceRequest(server, TEST_ADDRESS)
-  expect(response.statusCode).toBe(200)
-  expect(response.json()).toHaveProperty('nonce')
-})
 
 test('User can login with Ethereum Wallet', async context => {
   const { server } = context
