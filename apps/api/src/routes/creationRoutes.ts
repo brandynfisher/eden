@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify'
 import { paginatedResponse, paginationProperties } from '.'
 import {
   creationReact,
+  creationUnreact,
   getCreation,
   listCreations,
 } from '../controllers/creationsController'
@@ -58,6 +59,24 @@ const creationRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async request => isAuth(server, request)],
     handler: (request, reply) => creationReact(request, reply),
+  })
+
+  server.post('/creations/unreact', {
+    schema: {
+      request: {
+        body: Type.Object({
+          creationId: Type.String(),
+          reaction: Type.Strict(Type.String(), ReactionType),
+        }),
+      },
+      response: {
+        200: {
+          success: Type.Boolean(),
+        },
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => creationUnreact(request, reply),
   })
 }
 

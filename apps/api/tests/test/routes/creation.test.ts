@@ -56,19 +56,10 @@ test('User can react to a creation', async context => {
   expect(reaction).not.toBeNull()
 })
 
-test('Reacting to a creation a second time removes the reaction', async context => {
+test('User cannot send the same reaction twice', async context => {
   const { server } = context
   const creation = await createCreation()
   const headers = prepareUserHeaders()
-  await server.inject({
-    method: 'POST',
-    url: '/creations/react',
-    payload: {
-      creationId: creation.id,
-      reaction: 'praise',
-    },
-    headers,
-  })
   const response = await server.inject({
     method: 'POST',
     url: '/creations/react',
@@ -81,7 +72,48 @@ test('Reacting to a creation a second time removes the reaction', async context 
   expect(response.statusCode).toBe(200)
   expect(response.json()).toHaveProperty('success')
   expect(response.json().success).toBe(true)
+  const response2 = await server.inject({
+    method: 'POST',
+    url: '/creations/react',
+    payload: {
+      creationId: creation.id,
+      reaction: 'praise',
+    },
+    headers,
+  })
+  expect(response2.statusCode).toBe(400)
+  expect(response2.json()).toHaveProperty('message')
+  expect(response2.json().message).toBe('Reaction already exists')
+})
 
+test('User can unreact to a creation', async context => {
+  const { server } = context
+  const creation = await createCreation()
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/creations/react',
+    payload: {
+      creationId: creation.id,
+      reaction: 'praise',
+    },
+    headers,
+  })
+  expect(response.statusCode).toBe(200)
+  expect(response.json()).toHaveProperty('success')
+  expect(response.json().success).toBe(true)
+  const response2 = await server.inject({
+    method: 'POST',
+    url: '/creations/unreact',
+    payload: {
+      creationId: creation.id,
+      reaction: 'praise',
+    },
+    headers,
+  })
+  expect(response2.statusCode).toBe(200)
+  expect(response2.json()).toHaveProperty('success')
+  expect(response2.json().success).toBe(true)
   const reaction = await Reaction.findOne({
     where: {
       creationId: creation.id,
@@ -89,6 +121,24 @@ test('Reacting to a creation a second time removes the reaction', async context 
     },
   })
   expect(reaction).toBeNull()
+})
+
+test('User cannot unreact to a creation without reacting first', async context => {
+  const { server } = context
+  const creation = await createCreation()
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/creations/unreact',
+    payload: {
+      creationId: creation.id,
+      reaction: 'praise',
+    },
+    headers,
+  })
+  expect(response.statusCode).toBe(400)
+  expect(response.json()).toHaveProperty('message')
+  expect(response.json().message).toBe('Reaction does not exist')
 })
 
 test('User cannot send an invalid reaction', async context => {

@@ -10,6 +10,8 @@ export interface UserSchema {
   isAdmin: boolean
   creations: CreationDocument[]
   collections: CollectionDocument[]
+  followerCount: number
+  followingCount: number
   username?: string
   name?: string
   bio?: string
@@ -97,6 +99,14 @@ const user = new Schema<UserDocument>(
         ref: 'collections',
       },
     ],
+    followerCount: {
+      type: Number,
+      default: 0,
+    },
+    followingCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

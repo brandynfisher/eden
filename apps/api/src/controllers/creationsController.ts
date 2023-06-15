@@ -2,6 +2,7 @@ import {
   CreationsGetArguments,
   CreationsListArguments,
   CreationsReactArguments,
+  CreationsUneactArguments,
   ReactionType,
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
@@ -86,15 +87,61 @@ export const creationReact = async (
     reaction,
   }
 
-  // check if user has already reacted
   const existingReaction = await Reaction.findOne(reactionData)
+  console.log('333', existingReaction)
 
   if (existingReaction) {
-    await existingReaction.remove()
-  } else {
-    const newReaction = new Reaction(reactionData)
-    await newReaction.save()
+    return reply.status(400).send({
+      message: 'Reaction already exists',
+    })
   }
+
+  console.log('222')
+
+  await Reaction.create(reactionData)
+
+  return await reply.status(200).send({
+    success: true,
+  })
+}
+
+export const creationUnreact = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { creationId, reaction } = request.body as CreationsUneactArguments
+
+  // check if reaction in ReactionType enum
+  if (!Object.values(ReactionType).includes(reaction)) {
+    return reply.status(400).send({
+      message: 'Invalid reaction',
+    })
+  }
+
+  const creation = await Creation.findById(creationId)
+
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
+
+  const reactionData = {
+    creation: creationId,
+    user: userId,
+    reaction,
+  }
+
+  const existingReaction = await Reaction.findOne(reactionData)
+
+  if (!existingReaction) {
+    return reply.status(400).send({
+      message: 'Reaction does not exist',
+    })
+  }
+
+  await existingReaction.remove()
   return await reply.status(200).send({
     success: true,
   })
