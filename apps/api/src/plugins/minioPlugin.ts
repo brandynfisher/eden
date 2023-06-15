@@ -52,7 +52,7 @@ export const uploadBufferAsset = async (
   fileExtension: string | null = null,
 ) => {
   const client = server.minio as MinioClient
-  const MINIO_BUCKET = server.config.MINIO_BUCKET as string
+  const MINIO_BUCKET = server.config.MINIO_BUCKET
   const sha = util.sha256(buffer)
   const fileType = await fileTypeFromBuffer(buffer)
   const { ext, mime } = fileType
@@ -79,19 +79,19 @@ export const minioUrl = (server: FastifyInstance, filename: string) =>
 export const registerMinio = async (fastify: FastifyInstance) => {
   try {
     let minio
-    if (process.env.MINIO_PORT) {
+    if (fastify.config.MINIO_PORT) {
       minio = new MinioClient({
-        endPoint: process.env.MINIO_HOST as string,
-        port: parseInt(process.env.MINIO_PORT as string),
+        endPoint: fastify.config.MINIO_HOST,
+        port: parseInt(fastify.config.MINIO_PORT),
         useSSL: false,
-        accessKey: process.env.MINIO_ACCESS_KEY as string,
-        secretKey: process.env.MINIO_SECRET_KEY as string,
+        accessKey: fastify.config.MINIO_ACCESS_KEY,
+        secretKey: fastify.config.MINIO_SECRET_KEY,
       })
     } else {
       minio = new MinioClient({
-        endPoint: process.env.MINIO_HOST as string,
-        accessKey: process.env.MINIO_ACCESS_KEY as string,
-        secretKey: process.env.MINIO_SECRET_KEY as string,
+        endPoint: fastify.config.MINIO_HOST,
+        accessKey: fastify.config.MINIO_ACCESS_KEY,
+        secretKey: fastify.config.MINIO_SECRET_KEY,
       })
     }
     fastify.decorate('minio', minio)

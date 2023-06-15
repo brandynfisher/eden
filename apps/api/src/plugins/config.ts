@@ -27,6 +27,7 @@ const ConfigSchema = Type.Strict(
     WEBHOOK_URL: Type.String(),
     WEBHOOK_SECRET: Type.String(),
     MINIO_HOST: Type.String(),
+    MINIO_PORT: Type.Optional(Type.String()),
     MINIO_ACCESS_KEY: Type.String(),
     MINIO_SECRET_KEY: Type.String(),
     MINIO_BUCKET: Type.String(),
