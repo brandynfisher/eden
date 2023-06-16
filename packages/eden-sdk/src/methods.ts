@@ -1,4 +1,13 @@
 import { AxiosRequestConfig } from 'axios'
+import {
+  CollectionsAddCreationsResponse,
+  CollectionsCreateResponse,
+  CollectionsDeleteResponse,
+  CollectionsGetResponse,
+  CollectionsListResponse,
+  CollectionsRemoveCreationsResponse,
+  CollectionsUpdateResponse,
+} from 'src/responses/CollectionsResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
@@ -25,7 +34,16 @@ import {
 import {
   CreationsGetResponse,
   CreationsListResponse,
+  CreationsReactResponse,
+  CreationsUnreactResponse,
+  ReactionType,
 } from './responses/CreationsResponses'
+import {
+  CreatorsFollowResponse,
+  CreatorsGetResponse,
+  CreatorsListResponse,
+  CreatorsUnfollowResponse,
+} from './responses/CreatorsResponses'
 import {
   GeneratorsGetResponse,
   GeneratorsListResponse,
@@ -168,6 +186,39 @@ export abstract class Methods {
     ),
   }
 
+  public readonly collections = {
+    list: bindApiCall<CollectionsListArguments, CollectionsListResponse>(
+      this,
+      collectionsListRequestConfig,
+    ),
+    get: bindApiCall<CollectionsGetArguments, CollectionsGetResponse>(
+      this,
+      collectionsGetRequestConfig,
+    ),
+    create: bindApiCall<CollectionsCreateArguments, CollectionsCreateResponse>(
+      this,
+      collectionsCreateRequestConfig,
+    ),
+    update: bindApiCall<CollectionsUpdateArguments, CollectionsUpdateResponse>(
+      this,
+      collectionsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<CollectionsDeleteArguments, CollectionsDeleteResponse>(
+      this,
+      collectionsDeleteRequestConfig,
+    ),
+    creations: {
+      add: bindApiCall<
+        CollectionsAddCreationsArguments,
+        CollectionsAddCreationsResponse
+      >(this, collectionsAddCreationsRequestConfig),
+      remove: bindApiCall<
+        CollectionsRemoveCreationsArguments,
+        CollectionsRemoveCreationsResponse
+      >(this, collectionsRemoveCreationsRequestConfig),
+    },
+  }
+
   public readonly creations = {
     list: bindApiCall<CreationsListArguments, CreationsListResponse>(
       this,
@@ -176,6 +227,33 @@ export abstract class Methods {
     get: bindApiCall<CreationsGetArguments, CreationsGetResponse>(
       this,
       creationsGetRequestConfig,
+    ),
+    react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
+      this,
+      creationsReactRequestConfig,
+    ),
+    unreact: bindApiCall<CreationsUnreactArguments, CreationsUnreactResponse>(
+      this,
+      creationsUnreactRequestConfig,
+    ),
+  }
+
+  public readonly creators = {
+    follow: bindApiCall<CreatorsFollowArguments, CreatorsFollowResponse>(
+      this,
+      creatorsFollowRequestConfig,
+    ),
+    unfollow: bindApiCall<CreatorsUnfollowArguments, CreatorsUnfollowResponse>(
+      this,
+      creatorsUnfollowRequestConfig,
+    ),
+    list: bindApiCall<CreatorsListArguments, CreatorsListResponse>(
+      this,
+      creatorsListRequestConfig,
+    ),
+    get: bindApiCall<CreatorsGetArguments, CreatorsGetResponse>(
+      this,
+      creatorsGetRequestConfig,
     ),
   }
 
@@ -313,6 +391,42 @@ export interface CapabilitiesGetArguments extends WebAPICallOptions {
   capabilityId: string
 }
 
+export interface CollectionsCreateArguments extends WebAPICallOptions {
+  name: string
+  description?: string
+  creationIds?: string[]
+}
+
+export interface CollectionsUpdateArguments extends WebAPICallOptions {
+  collectionId: string
+  name?: string
+  description?: string
+}
+
+export interface CollectionsDeleteArguments extends WebAPICallOptions {
+  collectionId: string
+}
+
+export interface CollectionsAddCreationsArguments extends WebAPICallOptions {
+  collectionId: string
+  creationIds: string[]
+}
+
+export interface CollectionsRemoveCreationsArguments extends WebAPICallOptions {
+  collectionId: string
+  creationIds: string[]
+}
+
+export interface CollectionsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface CollectionsGetArguments extends WebAPICallOptions {
+  collectionId: string
+}
+
 export interface CreationsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
@@ -321,6 +435,34 @@ export interface CreationsListArguments
 
 export interface CreationsGetArguments extends WebAPICallOptions {
   creationId: string
+}
+
+export interface CreationsReactArguments extends WebAPICallOptions {
+  creationId: string
+  reaction: ReactionType
+}
+
+export interface CreationsUnreactArguments extends WebAPICallOptions {
+  creationId: string
+  reaction: ReactionType
+}
+
+export interface CreatorsFollowArguments extends WebAPICallOptions {
+  userId: string
+}
+
+export interface CreatorsUnfollowArguments extends WebAPICallOptions {
+  userId: string
+}
+
+export interface CreatorsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface CreatorsGetArguments extends WebAPICallOptions {
+  userId: string
 }
 
 export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
@@ -543,6 +685,86 @@ const capabilitiesGetRequestConfig = (
   }
 }
 
+const collectionsCreateRequestConfig = (
+  args: CollectionsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const collectionsUpdateRequestConfig = (
+  args: CollectionsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const collectionsDeleteRequestConfig = (
+  args: CollectionsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/delete',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const collectionsListRequestConfig = (
+  args: CollectionsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'collections',
+    params,
+  }
+}
+
+const collectionsGetRequestConfig = (
+  args: CollectionsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `collections/${args.collectionId}`,
+  }
+}
+
+const collectionsAddCreationsRequestConfig = (
+  args: CollectionsAddCreationsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/addcreations',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const collectionsRemoveCreationsRequestConfig = (
+  args: CollectionsRemoveCreationsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/removecreations',
+    data: {
+      ...args,
+    },
+  }
+}
+
 const creationsListRequestConfig = (
   args: CreationsListArguments,
 ): AxiosRequestConfig => {
@@ -560,6 +782,74 @@ const creationsGetRequestConfig = (
   return {
     method: 'GET',
     url: `creations/${args.creationId}`,
+  }
+}
+
+const creationsReactRequestConfig = (
+  args: CreationsReactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creations/react',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creationsUnreactRequestConfig = (
+  args: CreationsUnreactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creations/unreact',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creatorsFollowRequestConfig = (
+  args: CreatorsFollowArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creators/follow',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creatorsUnfollowRequestConfig = (
+  args: CreatorsUnfollowArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creators/unfollow',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creatorsListRequestConfig = (
+  args: CreatorsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'creators',
+    params,
+  }
+}
+
+const creatorsGetRequestConfig = (
+  args: CreatorsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `creators/${args.creatorId}`,
   }
 }
 

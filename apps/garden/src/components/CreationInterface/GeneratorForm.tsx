@@ -2,6 +2,7 @@ import OptionParameter from '@/components/CreationInterface/parameters/OptionPar
 import SliderParameter from '@/components/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/CreationInterface/parameters/StringParameter'
 import UploadParameter from '@/components/CreationInterface/parameters/UploadParameter'
+import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
 import {
@@ -23,7 +24,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
     setHasChangedGenerator,
     refetchPendingTasks,
   } = useContext(CreationNotificationContext)
-  const { refetch } = useContext(UserContext)
+  const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
   const [form] = Form.useForm()
   const selectedVersion = generator.versions[0]
   const { parameters } = selectedVersion
@@ -36,6 +37,10 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
   const [showOptional, setShowOptional] = React.useState(false)
 
   const handleFinish = async () => {
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+      return
+    }
     try {
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,

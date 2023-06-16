@@ -1,3 +1,4 @@
+import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Button, Input } from 'antd'
@@ -8,9 +9,13 @@ import { toast } from 'react-toastify'
 const MannaVoucherRedeem = () => {
   const [voucherCode, setVoucherCode] = useState('')
   const [redeemingVoucher, setRedeemingVoucher] = useState(false)
-  const { refetch } = useContext(UserContext)
+  const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
 
   const redeemVoucher = async () => {
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+      return
+    }
     setRedeemingVoucher(true)
     try {
       await axios.post('/api/manna/redeemvoucher', {

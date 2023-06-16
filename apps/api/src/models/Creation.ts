@@ -3,6 +3,7 @@ import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
 import { UserDocument } from './Creator'
+import { ReactionDocument } from './Reaction'
 import { TaskDocument } from './Task'
 
 export interface CreationSchema {
@@ -15,6 +16,7 @@ export interface CreationSchema {
   thumbnail?: string
   name: string
   attributes: any
+  reactions: ReactionDocument[]
   createdAt?: Date
   updatedAt?: Date
 }
