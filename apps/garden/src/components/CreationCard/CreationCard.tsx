@@ -1,3 +1,4 @@
+import CreationCardPreview from '@/components/CreationCard/CreationCardPreview'
 import CreationDetail from '@/components/CreationDetail'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
@@ -64,11 +65,7 @@ const CreationCard = ({
       >
         <div className="rounded-lg" ref={ref}>
           <div style={{ position: 'relative' }}>
-            <img
-              src={data.thumbnail || ''}
-              alt=""
-              className="w-full border border-gray-200 rounded-lg"
-            />
+            <CreationCardPreview creation={data} />
             {hovered && <CreationCardOverlay />}
           </div>
         </div>
