@@ -1,15 +1,15 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { paginatedResponse, paginationProperties } from '.'
 import {
-  addToCollection,
+  addCreationsToCollection,
   createCollection,
   deleteCollection,
   getCollection,
-  getCollectionCreations,
-  getCollections,
-  removeFromCollection,
-  renameCollection,
+  listCollections,
+  removeCreationsFromCollection,
+  updateCollection,
 } from '../controllers/collectionsController'
 import { isAuth } from '../middleware/authMiddleware'
 
@@ -17,21 +17,25 @@ const collectionRoutes: FastifyPluginAsync = async server => {
   server.get('/collections', {
     schema: {
       querystring: {
-        userId: {
-          type: 'string',
+        type: 'object',
+        properties: {
+          userId: { type: ['string', 'array'] },
+          ...paginationProperties(),
         },
+        required: [],
       },
       response: {
-        200: {
-          collections: Type.Array(Type.Any()),
-        },
+        200: paginatedResponse(Type.Any()),
       },
     },
-    handler: (request, reply) => getCollections(request, reply),
+    handler: (request, reply) => listCollections(request, reply),
   })
 
-  server.get('/collection/:collectionId', {
+  server.get('/collections/:collectionId', {
     schema: {
+      params: {
+        collectionId: Type.String(),
+      },
       response: {
         200: {
           collection: Type.Any(),
@@ -41,74 +45,64 @@ const collectionRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => getCollection(request, reply),
   })
 
-  server.get('/collection/:collectionId/creations', {
-    schema: {
-      response: {
-        200: {
-          creations: Type.Array(Type.Any()),
-        },
-      },
-    },
-    handler: (request, reply) => getCollectionCreations(request, reply),
-  })
-
-  server.post('/collection/:collectionId/add', {
+  server.post('/collections/update', {
     schema: {
       request: {
         body: Type.Object({
-          creationId: Type.String(),
+          collectionId: Type.Optional(Type.String()),
+          name: Type.Optional(Type.String()),
+          description: Type.Optional(Type.String()),
         }),
       },
       response: {
-        200: {
-          success: Type.Boolean(),
-        },
+        200: Type.Object({}),
       },
     },
     preHandler: [async request => isAuth(server, request)],
-    handler: (request, reply) => addToCollection(request, reply),
+    handler: (request, reply) => updateCollection(request, reply),
   })
 
-  server.post('/collection/:collectionId/remove', {
+  server.post('/collections/addcreations', {
     schema: {
       request: {
         body: Type.Object({
-          creationId: Type.String(),
+          collectionId: Type.Optional(Type.String()),
+          creationIds: Type.Array(Type.String()),
         }),
       },
       response: {
-        200: {
-          success: Type.Boolean(),
-        },
+        200: Type.Object({}),
       },
     },
     preHandler: [async request => isAuth(server, request)],
-    handler: (request, reply) => removeFromCollection(request, reply),
+    handler: (request, reply) => addCreationsToCollection(request, reply),
   })
 
-  server.post('/collection/:collectionId/rename', {
+  server.post('/collections/removecreations', {
     schema: {
       request: {
         body: Type.Object({
-          name: Type.String(),
+          collectionId: Type.Optional(Type.String()),
+          creationIds: Type.Array(Type.String()),
         }),
       },
       response: {
-        200: {
-          success: Type.Boolean(),
-        },
+        200: Type.Object({}),
       },
     },
     preHandler: [async request => isAuth(server, request)],
-    handler: (request, reply) => renameCollection(request, reply),
+    handler: (request, reply) => removeCreationsFromCollection(request, reply),
   })
 
-  server.post('/collection/:collectionId/delete', {
+  server.post('/collections/delete', {
     schema: {
+      request: {
+        body: Type.Object({
+          collectionId: Type.String(),
+        }),
+      },
       response: {
-        200: {
-          success: Type.Boolean(),
-        },
+        200: Type.Object({}),
       },
     },
     preHandler: [async request => isAuth(server, request)],
@@ -120,6 +114,8 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       request: {
         body: Type.Object({
           name: Type.String(),
+          description: Type.Optional(Type.String()),
+          creationIds: Type.Optional(Type.Array(Type.String())),
         }),
       },
       response: {

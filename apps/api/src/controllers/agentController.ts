@@ -74,12 +74,6 @@ export const deleteAgent = async (
   const { userId } = request.user
   const { agentId } = request.body as AgentsDeleteArguments
 
-  if (!agentId) {
-    return reply.status(400).send({
-      message: 'You must provide an agentId',
-    })
-  }
-
   const dbAgent = await Agent.findOne({
     agentId,
     user: userId,

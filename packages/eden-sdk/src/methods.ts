@@ -1,4 +1,13 @@
 import { AxiosRequestConfig } from 'axios'
+import {
+  CollectionsAddCreationsResponse,
+  CollectionsCreateResponse,
+  CollectionsDeleteResponse,
+  CollectionsGetResponse,
+  CollectionsListResponse,
+  CollectionsRemoveCreationsResponse,
+  CollectionsUpdateResponse,
+} from 'src/responses/CollectionsResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
@@ -177,6 +186,37 @@ export abstract class Methods {
     ),
   }
 
+  public readonly collections = {
+    list: bindApiCall<CollectionsListArguments, CollectionsListResponse>(
+      this,
+      collectionsListRequestConfig,
+    ),
+    get: bindApiCall<CollectionsGetArguments, CollectionsGetResponse>(
+      this,
+      collectionsGetRequestConfig,
+    ),
+    create: bindApiCall<CollectionsCreateArguments, CollectionsCreateResponse>(
+      this,
+      collectionsCreateRequestConfig,
+    ),
+    update: bindApiCall<CollectionsUpdateArguments, CollectionsUpdateResponse>(
+      this,
+      collectionsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<CollectionsDeleteArguments, CollectionsDeleteResponse>(
+      this,
+      collectionsDeleteRequestConfig,
+    ),
+    addCreations: bindApiCall<
+      CollectionsAddCreationsArguments,
+      CollectionsAddCreationsResponse
+    >(this, collectionsAddCreationsRequestConfig),
+    removeCreations: bindApiCall<
+      CollectionsRemoveCreationsArguments,
+      CollectionsRemoveCreationsResponse
+    >(this, collectionsRemoveCreationsRequestConfig),
+  }
+
   public readonly creations = {
     list: bindApiCall<CreationsListArguments, CreationsListResponse>(
       this,
@@ -347,6 +387,42 @@ export interface CapabilitiesListArguments
 
 export interface CapabilitiesGetArguments extends WebAPICallOptions {
   capabilityId: string
+}
+
+export interface CollectionsCreateArguments extends WebAPICallOptions {
+  name: string
+  description?: string
+  creationIds?: string[]
+}
+
+export interface CollectionsUpdateArguments extends WebAPICallOptions {
+  collectionId: string
+  name?: string
+  description?: string
+}
+
+export interface CollectionsDeleteArguments extends WebAPICallOptions {
+  collectionId: string
+}
+
+export interface CollectionsAddCreationsArguments extends WebAPICallOptions {
+  collectionId: string
+  creationIds: string[]
+}
+
+export interface CollectionsRemoveCreationsArguments extends WebAPICallOptions {
+  collectionId: string
+  creationIds: string[]
+}
+
+export interface CollectionsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface CollectionsGetArguments extends WebAPICallOptions {
+  collectionId: string
 }
 
 export interface CreationsListArguments
@@ -604,6 +680,86 @@ const capabilitiesGetRequestConfig = (
   return {
     method: 'GET',
     url: `capabilities/${args.capabilityId}`,
+  }
+}
+
+const collectionsCreateRequestConfig = (
+  args: CollectionsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const collectionsUpdateRequestConfig = (
+  args: CollectionsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const collectionsDeleteRequestConfig = (
+  args: CollectionsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/delete',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const collectionsListRequestConfig = (
+  args: CollectionsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'collections',
+    params,
+  }
+}
+
+const collectionsGetRequestConfig = (
+  args: CollectionsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `collections/${args.collectionId}`,
+  }
+}
+
+const collectionsAddCreationsRequestConfig = (
+  args: CollectionsAddCreationsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/addcreations',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const collectionsRemoveCreationsRequestConfig = (
+  args: CollectionsRemoveCreationsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'collections/removecreations',
+    data: {
+      ...args,
+    },
   }
 }
 

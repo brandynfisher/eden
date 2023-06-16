@@ -1,61 +1,71 @@
-import assert from 'assert'
+import {
+  CollectionsAddCreationsArguments,
+  CollectionsCreateArguments,
+  CollectionsDeleteArguments,
+  CollectionsGetArguments,
+  CollectionsListArguments,
+  CollectionsRemoveCreationsArguments,
+  CollectionsUpdateArguments,
+} from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import { Collection, CollectionDocument } from '../models/Collection'
-import { CollectionEvent } from '../models/CollectionEvent'
-import { Creation, CreationDocument } from '../models/Creation'
+import { Collection } from '../models/Collection'
+import { Creation } from '../models/Creation'
+import { User } from '../models/Creator'
+import CollectionRepository from '../repositories/CollectionRepository'
+import CreatorRepository from '../repositories/CreatorRepository'
 
-interface GetCollectionParams {
-  collectionId: string
+const getDefaultCollection = async () => {
+  let collection = await Collection.findOne({ isDefaultCollection: true })
+
+  // Create the default collection if it doesn't exist
+  if (!collection) {
+    collection = await Collection.create({
+      name: 'Bookmarks',
+      description: 'My bookmarked creations',
+      isDefaultCollection: true,
+    })
+  }
+
+  return collection
 }
 
 export const getCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { collectionId } = request.params as GetCollectionParams
-
-  let collection: CollectionDocument | null = null
-
-  try {
-    collection = await Collection.findById(collectionId)
-  } catch (error) {
-    return reply.status(404).send({
-      message: `Collection ${collectionId} not found`,
-    })
-  }
-
+  const { collectionId } = request.params as CollectionsGetArguments
+  const collection = await Collection.findById(collectionId)
   return reply.status(200).send({ collection })
 }
 
-interface GetCollectionsRequest {
-  query: {
-    userId: string
-  }
-}
-
-export const getCollections = async (
+export const listCollections = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.query as GetCollectionsRequest['query']
+  const { userId, limit, page, sort } =
+    request.query as CollectionsListArguments
 
-  let collections: CollectionDocument[] = []
+  const creatorsRepository = new CreatorRepository(User)
+  const creators = await creatorsRepository.query({
+    userId,
+  })
 
-  let filter = {}
-  if (userId) {
-    filter = { user: userId }
-  }
+  const collectionRepository = new CollectionRepository(Collection)
+  const collections = await collectionRepository.query(
+    {
+      user: creators.docs
+        ? creators.docs.map(creator => creator._id)
+        : undefined,
+    },
+    {
+      limit,
+      page,
+      sort,
+    },
+  )
 
-  collections = await Collection.find(filter)
-
-  return reply.status(200).send({ collections })
-}
-
-interface CreateCollectionRequest {
-  body: {
-    name: string
-  }
+  return reply.status(200).send(collections)
 }
 
 export const createCollection = async (
@@ -63,246 +73,140 @@ export const createCollection = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name } = request.body as CreateCollectionRequest['body']
+  const { name, description, creationIds } =
+    request.body as CollectionsCreateArguments
 
-  if (!name) {
-    return reply.status(400).send({
-      message: 'Missing name',
-    })
+  // validate creations
+  let creations
+  if (creationIds) {
+    creations = await Creation.find({ _id: { $in: creationIds } })
+    if (creations.length !== creationIds.length) {
+      return reply.status(400).send({
+        message: 'Invalid creation(s)',
+      })
+    }
   }
 
-  const collection = new Collection({
-    user: userId,
+  const collection = await Collection.create({
     name,
+    description,
+    creations: creations ? creations.map(creation => creation._id) : undefined,
+    user: userId,
   })
 
-  await collection.save()
-
   return reply.status(200).send({ collection })
-}
-
-export const getCollectionCreations = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { collectionId } = request.params as GetCollectionParams
-
-  let creations: CreationDocument | null = null
-
-  try {
-    creations = await CollectionEvent.findById(collectionId).populate({
-      path: 'creation',
-      select: 'user parent uri attributes createdAt',
-    })
-  } catch (error) {
-    return reply.status(404).send({
-      message: `Collection ${collectionId} not found`,
-    })
-  }
-
-  return reply.status(200).send({ creations })
-}
-
-interface UpdateCollectionRequest {
-  body: {
-    creationId: string
-  }
-}
-
-export const addToCollection = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.user
-  const { collectionId } = request.params as GetCollectionParams
-  const { creationId } = request.body as UpdateCollectionRequest['body']
-
-  let collection: CollectionDocument | null = null
-  let creation: CreationDocument | null = null
-
-  try {
-    collection = await Collection.findById(collectionId)
-    assert(collection)
-  } catch (error) {
-    return reply.status(404).send({
-      message: `Collection ${collectionId} not found`,
-    })
-  }
-
-  creation = await Creation.findById(creationId)
-
-  if (creation === null) {
-    return reply.status(400).send({
-      message: `Creation ${creationId} not found`,
-    })
-  }
-
-  if (userId.toString() !== collection.user.toString()) {
-    return reply.status(403).send({
-      message: 'You are not authorized to update this collection',
-    })
-  }
-
-  const collectionEventData = {
-    user: userId,
-    creation,
-    collectionId: collection,
-  }
-
-  const collectionEvent = await CollectionEvent.findOne(collectionEventData)
-  if (collectionEvent) {
-    return reply.status(200).send({
-      success: true,
-    })
-  }
-
-  try {
-    const newCollectionEvent = new CollectionEvent(collectionEventData)
-    await newCollectionEvent.save()
-    return await reply.status(200).send({
-      success: true,
-    })
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'CollectionEvent not found',
-    })
-  }
-}
-
-export const removeFromCollection = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.user
-  const { collectionId } = request.params as GetCollectionParams
-  const { creationId } = request.body as UpdateCollectionRequest['body']
-
-  let collection: CollectionDocument | null = null
-  let creation: CreationDocument | null = null
-
-  try {
-    collection = await Collection.findById(collectionId)
-    assert(collection)
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'Collection not found',
-    })
-  }
-
-  creation = await Creation.findById(creationId)
-
-  if (creation === null) {
-    return reply.status(400).send({
-      message: 'Missing creationId',
-    })
-  }
-
-  if (userId.toString() !== collection.user.toString()) {
-    return reply.status(403).send({
-      message: 'You are not authorized to update this collection',
-    })
-  }
-
-  const collectionEventData = {
-    user: userId,
-    creation,
-    collectionId: collection,
-  }
-
-  const collectionEvent = await CollectionEvent.findOne(collectionEventData)
-  if (collectionEvent == null) {
-    return reply.status(403).send({
-      message: 'Creation not in collection',
-    })
-  }
-
-  try {
-    await collectionEvent.delete()
-    return await reply.status(200).send({
-      success: true,
-    })
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'Creation not found',
-    })
-  }
 }
 
 export const deleteCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
-  const { collectionId } = request.params as GetCollectionParams
-
-  let collection: CollectionDocument | null = null
-
-  try {
-    collection = await Collection.findById(collectionId)
-    assert(collection)
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'Collection not found',
-    })
-  }
-
-  if (userId.toString() !== collection.user.toString()) {
-    return reply.status(403).send({
-      message: 'You are not authorized to delete this collection',
-    })
-  }
-
-  try {
-    await Collection.deleteOne({ _id: collectionId })
-    return await reply.status(200).send({
-      success: true,
-    })
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'Collection not found',
-    })
-  }
+  const { collectionId } = request.params as CollectionsDeleteArguments
+  await Collection.findByIdAndDelete(collectionId)
+  return reply.status(200).send({})
 }
 
-interface RenameCollectionRequest {
-  body: {
-    name: string
-  }
-}
-
-export const renameCollection = async (
+export const updateCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
-  const { collectionId } = request.params as GetCollectionParams
-  const { name } = request.body as RenameCollectionRequest['body']
+  const { collectionId, name, description } =
+    request.body as CollectionsUpdateArguments
 
-  let collection: CollectionDocument | null = null
+  let collection
 
-  try {
+  if (collectionId) {
     collection = await Collection.findById(collectionId)
-    assert(collection)
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'Collection not found',
+    if (!collection) {
+      return reply.status(400).send({
+        message: 'Invalid collection',
+      })
+    }
+  } else {
+    // Get the default collection
+    collection = await getDefaultCollection()
+  }
+
+  await collection.updateOne({
+    name,
+    description,
+  })
+
+  return reply.status(200).send({})
+}
+
+export const addCreationsToCollection = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { collectionId, creationIds } =
+    request.body as CollectionsAddCreationsArguments
+
+  let collection
+
+  if (collectionId) {
+    collection = await Collection.findById(collectionId)
+  } else {
+    // Get the default collection
+    collection = await getDefaultCollection()
+  }
+
+  if (!collection) {
+    return reply.status(400).send({
+      message: 'Invalid collection',
     })
   }
 
-  if (userId.toString() !== collection.user.toString()) {
-    return reply.status(403).send({
-      message: 'You are not authorized to rename this collection',
+  // validate creations
+  const creationDocs = await Creation.find({ _id: { $in: creationIds } })
+  if (creationDocs.length !== creationIds.length) {
+    return reply.status(400).send({
+      message: 'Invalid creation(s)',
     })
   }
 
-  try {
-    await Collection.findOneAndUpdate({ _id: collectionId }, { name })
-    return await reply.status(200).send({
-      success: true,
-    })
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'Collection not found',
+  await collection.updateOne({
+    $addToSet: {
+      creations: { $each: creationDocs.map(c => c._id) },
+    },
+  })
+
+  return reply.status(200).send({})
+}
+
+export const removeCreationsFromCollection = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { collectionId, creationIds } =
+    request.body as CollectionsRemoveCreationsArguments
+
+  let collection
+
+  if (collectionId) {
+    collection = await Collection.findById(collectionId)
+  } else {
+    // Get the default collection
+    collection = await getDefaultCollection()
+  }
+
+  if (!collection) {
+    return reply.status(400).send({
+      message: 'Invalid collection',
     })
   }
+
+  // validate creations
+  const creationDocs = await Creation.find({ _id: { $in: creationIds } })
+  if (creationDocs.length !== creationIds.length) {
+    return reply.status(400).send({
+      message: 'Invalid creation(s)',
+    })
+  }
+
+  await collection.updateOne({
+    creations: { $pull: { $in: creationDocs.map(c => c._id) } },
+  })
+
+  return reply.status(200).send({})
 }
