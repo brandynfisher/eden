@@ -35,6 +35,6 @@ const reaction = new Schema<ReactionDocument>(
   },
 )
 
-reaction.index({ user: 1, creation: 1 }, { unique: true })
+reaction.index({ user: 1, creation: 1, reaction: 1 }, { unique: true })
 
 export const Reaction = model<ReactionDocument>('reactions', reaction)

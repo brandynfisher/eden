@@ -72,3 +72,14 @@ export const isAdmin = async (
     throw new Error('Not authorized')
   }
 }
+
+export const maybeAuth = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+) => {
+  try {
+    await getCredential(server, request)
+  } catch (error) {
+    // Ignore
+  }
+}

@@ -8,6 +8,7 @@ import {
   CollectionsUpdateArguments,
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 import { Collection } from '../models/Collection'
 import { Creation } from '../models/Creation'
@@ -15,8 +16,8 @@ import { User } from '../models/Creator'
 import CollectionRepository from '../repositories/CollectionRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 
-const getDefaultCollection = async () => {
-  let collection = await Collection.findOne({ isDefaultCollection: true })
+const getDefaultCollection = async (user: ObjectId) => {
+  let collection = await Collection.findOne({ isDefaultCollection: true, user })
 
   // Create the default collection if it doesn't exist
   if (!collection) {
@@ -24,6 +25,7 @@ const getDefaultCollection = async () => {
       name: 'Bookmarks',
       description: 'My bookmarked creations',
       isDefaultCollection: true,
+      user,
     })
   }
 
@@ -101,8 +103,18 @@ export const deleteCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  const { userId } = request.user
   const { collectionId } = request.params as CollectionsDeleteArguments
-  await Collection.findByIdAndDelete(collectionId)
+  const collection = await Collection.findOne({
+    _id: collectionId,
+    user: userId,
+  })
+  if (!collection) {
+    return reply.status(400).send({
+      message: 'Invalid collection',
+    })
+  }
+  await collection.delete()
   return reply.status(200).send({})
 }
 
@@ -110,13 +122,17 @@ export const updateCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  const { userId } = request.user
   const { collectionId, name, description } =
     request.body as CollectionsUpdateArguments
 
   let collection
 
   if (collectionId) {
-    collection = await Collection.findById(collectionId)
+    collection = await Collection.findOne({
+      _id: collectionId,
+      user: userId,
+    })
     if (!collection) {
       return reply.status(400).send({
         message: 'Invalid collection',
@@ -124,7 +140,7 @@ export const updateCollection = async (
     }
   } else {
     // Get the default collection
-    collection = await getDefaultCollection()
+    collection = await getDefaultCollection(userId)
   }
 
   await collection.updateOne({
@@ -139,16 +155,20 @@ export const addCreationsToCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  const { userId } = request.user
   const { collectionId, creationIds } =
     request.body as CollectionsAddCreationsArguments
 
   let collection
 
   if (collectionId) {
-    collection = await Collection.findById(collectionId)
+    collection = await Collection.findOne({
+      _id: collectionId,
+      user: userId,
+    })
   } else {
     // Get the default collection
-    collection = await getDefaultCollection()
+    collection = await getDefaultCollection(userId)
   }
 
   if (!collection) {
@@ -178,16 +198,20 @@ export const removeCreationsFromCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  const { userId } = request.user
   const { collectionId, creationIds } =
     request.body as CollectionsRemoveCreationsArguments
 
   let collection
 
   if (collectionId) {
-    collection = await Collection.findById(collectionId)
+    collection = await Collection.findOne({
+      _id: collectionId,
+      user: userId,
+    })
   } else {
     // Get the default collection
-    collection = await getDefaultCollection()
+    collection = await getDefaultCollection(userId)
   }
 
   if (!collection) {
