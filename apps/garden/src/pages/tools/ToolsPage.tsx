@@ -8,12 +8,12 @@ const inter = Inter({ subsets: ['latin'] })
 
 const ToolsPage = () => {
   return (
-    <main className={`flex flex-col min-h-screen ${inter.className}`}>
+    <div className={`flex flex-col min-h-screen ${inter.className}`}>
       <Space direction="vertical">
         <ApiKeys />
         <MannaVoucherRedeem />
       </Space>
-    </main>
+    </div>
   )
 }
 

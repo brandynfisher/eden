@@ -1,4 +1,5 @@
 import CreationNotificationMenu from '@/components/TaskNotificationDropdown'
+import ThemeToggleButton from '@/components/ThemeToggleButton'
 import { UserContext } from '@/providers/UserProvider'
 import { WalletOutlined } from '@ant-design/icons'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
@@ -19,38 +20,37 @@ const LayoutHeader = () => {
   }
 
   return (
-    <div>
-      <Header style={{ display: 'flex', alignItems: 'center' }}>
-        <div className="demo-logo">
-          <Link href="/">
-            <img
-              src="/favicon-32x32.png"
-              alt="Logo"
-              style={{ height: '32px', marginRight: '16px' }}
-            />
-          </Link>
-        </div>
-        <div style={{ marginLeft: 'auto' }}>
-          <Space>
-            <CreationNotificationMenu />
-            {isConnected && (
-              <div
-                onClick={handleAuthClick}
-                className={`text-${
-                  isAuthenticated ? 'green' : 'blue'
-                }-500 text-2xl`}
-              >
-                <Space>
-                  {isAuthenticated ? mannaBalance : 'Sign in'}
-                  <WalletOutlined />
-                </Space>
-              </div>
-            )}
-            <ConnectButton />
-          </Space>
-        </div>
-      </Header>
-    </div>
+    <Header className="flex items-center p-4 bg-white dark:bg-gray-800">
+      <div className="demo-logo">
+        <Link href="/">
+          <img
+            src="/favicon-32x32.png"
+            alt="Logo"
+            style={{ height: '32px', marginRight: '16px' }}
+          />
+        </Link>
+      </div>
+      <div style={{ marginLeft: 'auto' }}>
+        <Space>
+          <ThemeToggleButton />
+          <CreationNotificationMenu />
+          {isConnected && (
+            <div
+              onClick={handleAuthClick}
+              className={`text-${
+                isAuthenticated ? 'green' : 'blue'
+              }-500 text-2xl`}
+            >
+              <Space>
+                {isAuthenticated ? mannaBalance : 'Sign in'}
+                <WalletOutlined />
+              </Space>
+            </div>
+          )}
+          <ConnectButton />
+        </Space>
+      </div>
+    </Header>
   )
 }
 

@@ -125,8 +125,6 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
           backgroundColor: '#eee',
           padding: 10,
           borderRadius: 10,
-          marginBottom: 10,
-          width: '90%',
         }}
       >
         <h2>/{generator.generatorName}</h2>
@@ -134,10 +132,10 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
           <span style={{ color: 'gray' }}>{generator.description}</span>
         </h3>
       </div>
-      <div style={{ padding: 10 }}>
+      <div>
         <Form form={form} name="generate" onFinish={handleFinish}>
           {renderFormFields(requiredParameters)}
-          <h3 style={{ padding: 5 }}>
+          <Form.Item>
             {optionalParameters.length > 0 && (
               <>
                 {showOptional ? (
@@ -153,7 +151,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
                 )}
               </>
             )}
-          </h3>
+          </Form.Item>
           {showOptional && renderFormFields(optionalParameters)}
           <Form.Item>
             <Button
