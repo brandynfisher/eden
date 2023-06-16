@@ -9,7 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
 
   const feedRoute = userId
-    ? `${CONFIG.API_URL}/feed/?userId=${userId}`
+    ? `${CONFIG.API_URL}/feed?userId=${userId}`
     : `${CONFIG.API_URL}/feed`
   switch (method) {
     case 'GET':
