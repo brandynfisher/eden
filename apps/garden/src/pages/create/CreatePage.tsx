@@ -5,9 +5,9 @@ const inter = Inter({ subsets: ['latin'] })
 
 const CreatePage = () => {
   return (
-    <main className={`flex min-h-screen ${inter.className}`}>
+    <div className={`flex min-h-screen ${inter.className}`}>
       <CreationInterface />
-    </main>
+    </div>
   )
 }
 
