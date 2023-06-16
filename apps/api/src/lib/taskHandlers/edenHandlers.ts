@@ -105,7 +105,7 @@ const handleUpdate = async (
     Object.assign(taskUpdate, { output: finalOutput })
     const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
-      const creationData: CreationSchema = {
+      const creationData = {
         user: task.user,
         task: task._id,
         uri: finalOutput.file,
