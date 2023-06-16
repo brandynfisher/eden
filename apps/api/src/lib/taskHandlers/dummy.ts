@@ -2,14 +2,66 @@ import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { v4 as uuidv4 } from 'uuid'
 
-import { Creation, CreationSchema } from '../../models/Creation'
+import { Creation } from '../../models/Creation'
 import { GeneratorVersionSchema } from '../../models/Generator'
 import { Task } from '../../models/Task'
 import { TaskHandlers } from '../../plugins/tasks'
 
-const dummyImages: string[] = [
-  'https://media.discordapp.net/attachments/1003581679916548207/1113042054960922717/output.jpg',
-  'https://media.discordapp.net/attachments/1003581679916548207/1111725311122481304/output.jpg',
+interface Output {
+  result: string
+  thumbnail: string
+}
+
+const dummyImages: Output[] = [
+  // square image 1
+  {
+    result:
+      'https://media.discordapp.net/attachments/1003581679916548207/1113042054960922717/output.jpg',
+    thumbnail:
+      'https://media.discordapp.net/attachments/1003581679916548207/1113042054960922717/output.jpg',
+  },
+  // square image 1
+  {
+    result:
+      'https://media.discordapp.net/attachments/1003581679916548207/1111725311122481304/output.jpg',
+    thumbnail:
+      'https://media.discordapp.net/attachments/1003581679916548207/1111725311122481304/output.jpg',
+  },
+  // vertical image
+  {
+    result:
+      'https://media.discordapp.net/attachments/1003581679916548207/1119288277082587256/output.jpg',
+    thumbnail:
+      'https://media.discordapp.net/attachments/1003581679916548207/1119288277082587256/output.jpg',
+  },
+  // horizontal image
+  {
+    result:
+      'https://media.discordapp.net/attachments/1003581679916548207/1119288301787033741/output.jpg',
+    thumbnail:
+      'https://media.discordapp.net/attachments/1003581679916548207/1119288301787033741/output.jpg',
+  },
+  // square video
+  {
+    result:
+      'https://cdn.discordapp.com/attachments/1003581679916548207/1115391443146641439/out.mp4',
+    thumbnail:
+      'https://media.discordapp.net/attachments/731285155255419041/1119286801618714634/output.jpg',
+  },
+  // vertical video
+  {
+    result:
+      'https://cdn.discordapp.com/attachments/879507579926102056/1118979744805957643/be36ce2e52040096d10c93b6bb12c179c93e1c3c9eff8fc46956197a4c049b61.mp4',
+    thumbnail:
+      'https://media.discordapp.net/attachments/731285155255419041/1119286801841004664/output1.jpg',
+  },
+  // horizontal video
+  {
+    result:
+      'https://cdn.discordapp.com/attachments/1003581679916548207/1115379600466382918/out.mp4',
+    thumbnail:
+      'https://media.discordapp.net/attachments/731285155255419041/1119286802050732152/output2.jpg',
+  },
 ]
 
 interface TaskUpdate {
@@ -42,8 +94,8 @@ export const dummyReceiveTaskUpdate = async (
   }
 
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
-  const asset = await server.uploadUrlAsset(server, image)
-  const thumbnail = await server.uploadThumbnailAsset(server, asset.assetBuffer)
+  const asset = await server.uploadUrlAsset(server, image.result)
+  const thumbnail = await server.uploadThumbnailAsset(server, image.thumbnail)
 
   const creationData = {
     user: task.user,
@@ -52,6 +104,7 @@ export const dummyReceiveTaskUpdate = async (
     thumbnail,
     name: 'Test Image',
     attributes: {},
+    mediaAttributes: asset.mediaAttributes,
   }
   const creation = await Creation.create(creationData)
 

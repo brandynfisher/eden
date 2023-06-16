@@ -41,6 +41,7 @@
     "fastify": "^4.17.0",
     "fastify-plugin": "^3.0.1",
     "file-type": "^18.3.0",
+    "fluent-ffmpeg": "^2.1.2",
     "form-data": "^4.0.0",
     "minio": "^7.1.0",
     "mongoose": "^6.11.1",
@@ -54,6 +55,7 @@
     "vite": "^4.3.5"
   },
   "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.21",
     "@types/minio": "^7.0.18",
     "@types/mongoose-delete": "^0.5.9",
     "@types/node": "^18.16.6",

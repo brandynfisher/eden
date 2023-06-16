@@ -8,6 +8,7 @@ import capabilityRoutes from './capabilityRoutes'
 import collectionRoutes from './collectionRoutes'
 import creationRoutes from './creationRoutes'
 import creatorRoutes from './creatorRoutes'
+import feedRoutes from './feedRoutes'
 import generatorRoutes from './generatorRoutes'
 import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
@@ -53,4 +54,5 @@ export const routes = [
   taskRoutes,
   capabilityRoutes,
   scenarioRoutes,
+  feedRoutes,
 ]

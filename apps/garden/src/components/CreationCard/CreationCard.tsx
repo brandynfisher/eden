@@ -1,15 +1,11 @@
+import CreationCardHoverOverlay from '@/components/CreationCard/CreationCardHoverOverlay'
+import CreationCardPreview from '@/components/CreationCard/CreationCardPreview'
 import CreationDetail from '@/components/CreationDetail'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { Modal } from 'antd'
 import { useRouter } from 'next/router'
 import React from 'react'
-
-const CreationCardOverlay = () => {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center text-white"></div>
-  )
-}
 
 const CreationDetailModal = ({
   open,
@@ -64,12 +60,8 @@ const CreationCard = ({
       >
         <div className="rounded-lg" ref={ref}>
           <div style={{ position: 'relative' }}>
-            <img
-              src={data.thumbnail || ''}
-              alt=""
-              className="w-full border border-gray-200 rounded-lg"
-            />
-            {hovered && <CreationCardOverlay />}
+            <CreationCardPreview creation={data} />
+            {hovered && <CreationCardHoverOverlay />}
           </div>
         </div>
       </div>
