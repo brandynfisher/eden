@@ -8,7 +8,7 @@ const HomePage = () => {
   const { creations } = useCreations()
 
   return (
-    <main className={`flex flex-col min-h-screen ${inter.className}`}>
+    <div className={`flex flex-col min-h-screen ${inter.className}`}>
       <div className={`text-3xl text-black ${inter.className}`}>
         The Garden of Eden
       </div>
@@ -16,7 +16,7 @@ const HomePage = () => {
         {' '}
         {creations && <CreationMasonry creations={creations} />}
       </div>
-    </main>
+    </div>
   )
 }
 

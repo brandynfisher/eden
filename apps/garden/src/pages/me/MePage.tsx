@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ['latin'] })
 const MePage = () => {
   const { creations } = useContext(UserContext)
   return (
-    <main className={`flex flex-col min-h-screen ${inter.className}`}>
+    <div className={`flex flex-col min-h-screen ${inter.className}`}>
       <Space direction="vertical">
         <ProfileHeader />
         <div className="flex-grow mt-4">
@@ -19,7 +19,7 @@ const MePage = () => {
           {creations && <CreationMasonry creations={creations} />}
         </div>
       </Space>
-    </main>
+    </div>
   )
 }
 
