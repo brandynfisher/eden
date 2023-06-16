@@ -6,6 +6,9 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   darkMode: 'class',
+  corePlugins: {
+    preflight: false,
+  },
   theme: {
     extend: {},
   },
