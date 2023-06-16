@@ -30,4 +30,28 @@ describe('Creation Methods', () => {
     expect(creationsResponse).toBeDefined()
     expect(creationsResponse.creation).toBeDefined()
   })
+
+  test('should be able to react to a creation', async context => {
+    const { client } = context
+    const result = await client.creations.list()
+    const creationId = result.docs[0]._id
+    const reactionResponse = await client.creations.react({
+      creationId,
+      reaction: 'praise',
+    })
+    expect(reactionResponse).toBeDefined()
+    expect(reactionResponse.success).toBe(true)
+  })
+
+  test('should be able to unreaction to a creation', async context => {
+    const { client } = context
+    const result = await client.creations.list()
+    const creationId = result.docs[0]._id
+    const unreactionResponse = await client.creations.unreact({
+      creationId,
+      reaction: 'praise',
+    })
+    expect(unreactionResponse).toBeDefined()
+    expect(unreactionResponse.success).toBe(true)
+  })
 })

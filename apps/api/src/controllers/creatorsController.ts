@@ -1,110 +1,60 @@
+import {
+  CreatorsFollowArguments,
+  CreatorsGetArguments,
+  CreatorsListArguments,
+  CreatorsUnfollowArguments,
+} from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import { CollectionDocument } from '../models/Collection'
-import { Creation, CreationDocument } from '../models/Creation'
-import { User, UserDocument } from '../models/Creator'
+import { User } from '../models/Creator'
 import { Follow, FollowDocument } from '../models/Follow'
+import CreatorRepository from '../repositories/CreatorRepository'
 
-interface CreatorDocument extends UserDocument {
-  creations: CreationDocument[]
-  collections: CollectionDocument[]
+export const listCreators = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId, limit, page, sort } = request.query as CreatorsListArguments
+
+  const creatorRepository = new CreatorRepository(User)
+  const creators = await creatorRepository.query(
+    {
+      userId,
+    },
+    {
+      limit,
+      page,
+      sort,
+    },
+  )
+
+  return reply.status(200).send(creators)
 }
 
 export const getCreator = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { username } = request.params as { username: string }
-
-  const creator = (await User.findOne({
-    username,
-  })) as CreatorDocument
-  if (!creator) {
-    return reply.status(404).send({
-      message: `User ${username} not found`,
-    })
-  }
-
-  const creations = await Creation.find({
-    user: creator._id,
-  }).populate({
-    path: 'task',
-    select: 'config status',
-  })
-  creator.creations = creations
-
+  const { userId } = request.params as CreatorsGetArguments
+  const creator = await User.findOne({ userId })
   return reply.status(200).send({ creator })
 }
 
-export const getCreators = async (
+export const followCreator = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userIds = [] } = (request.body as { userIds: string[] }) || {}
-
-  let creators: CreatorDocument[] = []
-
-  let filter = {}
-  if (userIds.length > 0) {
-    filter = { _id: { $in: userIds } }
-  }
-
-  creators = (await User.find(filter)) as CreatorDocument[]
-
-  // for (const creator of creators) {
-  //   const creations = await Creation.find({user: creator._id}).populate({
-  //     path: 'task',
-  //     select: 'config status'
-  //   });
-  //   creator.creations = creations;
-  // }
-
-  return reply.status(200).send({ creators })
-}
-
-export const getFollowing = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.params as { userId: string }
-
-  let following: UserDocument[] | null = []
-
-  try {
-    following = await Follow.find({ userFollower: userId }) // .populate('users');
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'No following found',
-    })
-  }
-
-  return reply.status(200).send({ following })
-}
-
-export const getFollowers = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.params as { userId: string }
-
-  let followers: UserDocument[] | null = []
-
-  try {
-    followers = await Follow.find({ userFollowee: userId }) // ?.populate('users');
-  } catch (error) {
-    return reply.status(404).send({
-      message: 'No followers found',
-    })
-  }
-
-  return reply.status(200).send({ followers })
-}
-
-export const follow = async (request: FastifyRequest, reply: FastifyReply) => {
   const { userId } = request.user
-  const { userId: userIdToFollow } = request.body as { userId: string }
+  const { userId: userIdToFollow } = request.body as CreatorsFollowArguments
 
-  const userToFollow = await User.findById(userIdToFollow)
+  const userToFollow = await User.findOne({ userId: userIdToFollow })
+  const user = await User.findById(userId)
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User does not exist',
+    })
+  }
 
   if (!userToFollow) {
     return reply.status(400).send({
@@ -119,8 +69,8 @@ export const follow = async (request: FastifyRequest, reply: FastifyReply) => {
   }
 
   const followData = {
-    userFollower: userId,
-    userFollowee: userIdToFollow,
+    follower: userId,
+    following: userToFollow._id,
   }
 
   const followResult = await Follow.findOne(followData)
@@ -131,26 +81,39 @@ export const follow = async (request: FastifyRequest, reply: FastifyReply) => {
     })
   }
 
-  try {
-    await Follow.create(followData)
-    return await reply.status(200).send({
-      success: true,
-    })
-  } catch (error) {
-    return reply.status(400).send({
-      message: 'Could not follow user',
-    })
-  }
+  await Follow.create(followData)
+
+  await userToFollow.updateOne({
+    $inc: {
+      followersCount: 1,
+    },
+  })
+  await user.updateOne({
+    $inc: {
+      followingCount: 1,
+    },
+  })
+
+  return await reply.status(200).send({
+    success: true,
+  })
 }
 
-export const unfollow = async (
+export const unfollowCreator = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { userId: userIdToUnfollow } = request.body as { userId: string }
+  const { userId: userIdToUnfollow } = request.body as CreatorsUnfollowArguments
 
-  const userToUnfollow = await User.findById(userIdToUnfollow)
+  const userToUnfollow = await User.findOne({ userId: userIdToUnfollow })
+  const user = await User.findById(userId)
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User does not exist',
+    })
+  }
 
   if (!userToUnfollow) {
     return reply.status(400).send({
@@ -165,8 +128,8 @@ export const unfollow = async (
   }
 
   const followData = {
-    userFollower: userId,
-    userFollowee: userIdToUnfollow,
+    follower: userId,
+    following: userToUnfollow._id,
   }
 
   const follow: FollowDocument | null = await Follow.findOne(followData)
@@ -177,14 +140,20 @@ export const unfollow = async (
     })
   }
 
-  try {
-    await follow.remove()
-    return await reply.status(201).send({
-      follow,
-    })
-  } catch (error) {
-    return reply.status(400).send({
-      message: 'Could not unfollow user',
-    })
-  }
+  await follow.remove()
+
+  await userToUnfollow.updateOne({
+    $inc: {
+      followersCount: -1,
+    },
+  })
+  await user.updateOne({
+    $inc: {
+      followingCount: -1,
+    },
+  })
+
+  return await reply.status(200).send({
+    success: true,
+  })
 }

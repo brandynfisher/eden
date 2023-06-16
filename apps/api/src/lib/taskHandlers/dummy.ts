@@ -45,7 +45,7 @@ export const dummyReceiveTaskUpdate = async (
   const asset = await server.uploadUrlAsset(server, image)
   const thumbnail = await server.uploadThumbnailAsset(server, asset.assetBuffer)
 
-  const creationData: CreationSchema = {
+  const creationData = {
     user: task.user,
     task: task._id,
     uri: asset.uri,

@@ -1,32 +1,34 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { paginatedResponse, paginationProperties } from '.'
 import {
-  follow,
+  followCreator,
   getCreator,
-  getCreators,
-  getFollowers,
-  getFollowing,
-  unfollow,
+  listCreators,
+  unfollowCreator,
 } from '../controllers/creatorsController'
 import { isAuth } from '../middleware/authMiddleware'
 
 const creatorRoutes: FastifyPluginAsync = async server => {
-  server.post('/creators', {
+  server.get('/creators', {
     schema: {
-      request: {
-        userIds: Type.Array(Type.String()),
+      querystring: {
+        type: 'object',
+        properties: {
+          userId: { type: ['string', 'array'] },
+          ...paginationProperties(),
+        },
+        required: [],
       },
       response: {
-        200: {
-          creators: Type.Array(Type.Any()),
-        },
+        200: paginatedResponse(Type.Any()),
       },
     },
-    handler: (request, reply) => getCreators(request, reply),
+    handler: (request, reply) => listCreators(request, reply),
   })
 
-  server.get('/creator/:username', {
+  server.get('/creators/:userId', {
     schema: {
       response: {
         200: {
@@ -37,29 +39,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => getCreator(request, reply),
   })
 
-  server.get('/creator/:username/following', {
-    schema: {
-      response: {
-        200: {
-          following: Type.Array(Type.Any()),
-        },
-      },
-    },
-    handler: (request, reply) => getFollowing(request, reply),
-  })
-
-  server.get('/creator/:userId/followers', {
-    schema: {
-      response: {
-        200: {
-          followers: Type.Array(Type.Any()),
-        },
-      },
-    },
-    handler: (request, reply) => getFollowers(request, reply),
-  })
-
-  server.post('/creator/:username/follow', {
+  server.post('/creators/follow', {
     schema: {
       request: {
         body: Type.Object({
@@ -73,10 +53,10 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [async request => isAuth(server, request)],
-    handler: (request, reply) => follow(request, reply),
+    handler: (request, reply) => followCreator(request, reply),
   })
 
-  server.post('/creator/:username/unfollow', {
+  server.post('/creators/unfollow', {
     schema: {
       request: {
         body: Type.Object({
@@ -90,7 +70,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [async request => isAuth(server, request)],
-    handler: (request, reply) => unfollow(request, reply),
+    handler: (request, reply) => unfollowCreator(request, reply),
   })
 }
 

@@ -1,3 +1,4 @@
+import { MannaVouchersRedeemArguments } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { randomId } from '../lib/util'
@@ -69,7 +70,6 @@ export const createMannaVoucher = async (
     amount,
     code,
   })
-  console.log(mannaVoucher)
   await mannaVoucher.save()
 
   return reply.status(200).send({
@@ -111,7 +111,7 @@ export const redeemMannaVoucher = async (
   reply: FastifyReply,
 ) => {
   const userId = request.user.userId
-  const { code } = request.body
+  const { code } = request.body as MannaVouchersRedeemArguments
 
   const user = await User.findById(userId)
 
@@ -137,7 +137,6 @@ export const redeemMannaVoucher = async (
     })
   }
 
-  console.log(mannaVoucher)
   if (
     mannaVoucher.allowedUserIds &&
     !mannaVoucher.allowedUserIds.includes(user.userId)

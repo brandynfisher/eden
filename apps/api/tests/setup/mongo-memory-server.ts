@@ -4,9 +4,10 @@ import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
 import { setup, teardown } from 'vitest-mongodb'
 
 import { ApiKey, ApiKeyInput } from '../../src/models/ApiKey'
+import { Collection } from '../../src/models/Collection'
 import { User, UserInput } from '../../src/models/Creator'
 import { Manna } from '../../src/models/Manna'
-import { createCreation, createGenerator } from '../util'
+import { createCreation, createGenerator, getDefaultUserId } from '../util'
 
 const createAdmin = async () => {
   const userData: UserInput = {
@@ -53,6 +54,16 @@ const createUser = async () => {
   await manna.save()
 }
 
+const createCollection = async () => {
+  const user = await getDefaultUserId()
+  const collection = {
+    name: 'bookmarks',
+    isDefaultCollection: true,
+    user,
+  }
+  await Collection.create(collection)
+}
+
 // const createReplicateGenerator = async (db: Db) => {
 //   const generator: GeneratorSchema = {
 //     generatorName: "abraham-ai/eden-stable-diffusion",
@@ -87,6 +98,7 @@ beforeEach(async () => {
   await createUser()
   await createGenerator('test')
   await createCreation()
+  await createCollection()
 })
 
 afterEach(async () => {

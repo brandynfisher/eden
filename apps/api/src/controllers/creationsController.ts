@@ -1,11 +1,15 @@
 import {
   CreationsGetArguments,
   CreationsListArguments,
+  CreationsReactArguments,
+  CreationsUnreactArguments,
+  ReactionType,
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
+import { Reaction } from '../models/Reaction'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 
@@ -55,161 +59,87 @@ export const getCreation = async (
   }
 }
 
-// export const getCollections = async (
-//   request: FastifyRequest,
-//   reply: FastifyReply,
-// ) => {
-//   const { creationId } = request.params as CreationGetParams
+export const creationReact = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { creationId, reaction } = request.body as CreationsReactArguments
 
-//   let collections: CollectionEventDocument[] = []
-//   try {
-//     collections = await CollectionEvent.find({
-//       creation: creationId,
-//     }).populate({
-//       path: 'collectionId',
-//       select: 'name user createdAt',
-//     })
-//   } catch (error) {
-//     return reply.status(404).send({
-//       message: 'Creation not found',
-//     })
-//   }
+  // check if reaction in ReactionType enum
+  if (!Object.values(ReactionType).includes(reaction)) {
+    return reply.status(400).send({
+      message: 'Invalid reaction',
+    })
+  }
 
-//   return reply.status(200).send({ collections })
-// }
+  const creation = await Creation.findById(creationId)
 
-// export const getRecreations = async (
-//   request: FastifyRequest,
-//   reply: FastifyReply,
-// ) => {
-//   const { creationId } = request.params as CreationGetParams
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
 
-//   let creations: CreationDocument[] = []
+  const reactionData = {
+    creation: creationId,
+    user: userId,
+    reaction,
+  }
 
-//   try {
-//     creations = await Creation.find({
-//       parent: creationId,
-//     }).populate({
-//       path: 'task',
-//       select: 'config status generator',
-//       populate: {
-//         path: 'generator',
-//         select: 'generatorName',
-//       },
-//     })
-//   } catch (error) {
-//     return reply.status(404).send({
-//       message: 'Creation not found',
-//     })
-//   }
+  const existingReaction = await Reaction.findOne(reactionData)
 
-//   return reply.status(200).send({ creations })
-// }
+  if (existingReaction) {
+    return reply.status(400).send({
+      message: 'Reaction already exists',
+    })
+  }
 
-// export const getReactions = async (
-//   request: FastifyRequest,
-//   reply: FastifyReply,
-// ) => {
-//   const { creationId } = request.params as CreationGetParams
-//   const { reactions: reactionStrings } = request.body as { reactions: string[] }
+  await Reaction.create(reactionData)
 
-//   const filter = {
-//     creation: creationId,
-//   }
+  return await reply.status(200).send({
+    success: true,
+  })
+}
 
-//   if (reactionStrings && reactionStrings.length > 0) {
-//     Object.assign(filter, { reaction: { $in: reactionStrings } })
-//   }
+export const creationUnreact = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { creationId, reaction } = request.body as CreationsUnreactArguments
 
-//   let reactions: ReactionDocument[] = []
+  // check if reaction in ReactionType enum
+  if (!Object.values(ReactionType).includes(reaction)) {
+    return reply.status(400).send({
+      message: 'Invalid reaction',
+    })
+  }
 
-//   try {
-//     reactions = await Reaction.find(filter).populate({
-//       path: 'user',
-//       select: 'username',
-//     })
-//   } catch (error) {
-//     return reply.status(404).send({
-//       message: 'Creation not found',
-//     })
-//   }
+  const creation = await Creation.findById(creationId)
 
-//   return reply.status(200).send({ reactions })
-// }
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
 
-// export const react = async (request: FastifyRequest, reply: FastifyReply) => {
-//   const { creationId } = request.params as CreationGetParams
-//   const { reaction, unreact } = request.body as {
-//     reaction: string
-//     unreact: boolean
-//   }
-//   const { userId } = request.user
+  const reactionData = {
+    creation: creationId,
+    user: userId,
+    reaction,
+  }
 
-//   let creation: CreationDocument | null = null
+  const existingReaction = await Reaction.findOne(reactionData)
 
-//   try {
-//     creation = await Creation.findById(creationId)
-//   } catch (error) {
-//     return reply.status(404).send({
-//       message: 'Creation not found',
-//     })
-//   }
+  if (!existingReaction) {
+    return reply.status(400).send({
+      message: 'Reaction does not exist',
+    })
+  }
 
-//   if (!creation) {
-//     return reply.status(404).send({
-//       message: 'Creation not found',
-//     })
-//   }
-
-//   const reactionData = {
-//     creation: creationId,
-//     user: userId,
-//     reaction,
-//   }
-
-//   // check if user has already reacted
-//   const existingReaction = await Reaction.findOne(reactionData)
-
-//   // remove reaction
-//   if (existingReaction && unreact) {
-//     try {
-//       await existingReaction.remove()
-//       return await reply.status(200).send({
-//         success: true,
-//       })
-//     } catch (error) {
-//       return reply.status(404).send({
-//         message: 'Reaction not found',
-//       })
-//     }
-//   }
-
-//   // already reacted
-//   else if (existingReaction && !unreact) {
-//     return reply.status(200).send({
-//       success: true,
-//     })
-//   }
-
-//   // nothing to unreact
-//   else if (!existingReaction && unreact) {
-//     return reply.status(200).send({
-//       success: true,
-//     })
-//   }
-
-//   // add reaction
-//   else if (!existingReaction && !unreact) {
-//     try {
-//       const newReaction = new Reaction(reactionData)
-//       await newReaction.save()
-//       return await reply.status(200).send({
-//         success: true,
-//       })
-//     } catch (error) {
-//       return reply.status(404).send({
-//         message: 'Reaction not found',
-//       })
-//     }
-//   }
-// }
+  await existingReaction.remove()
+  return await reply.status(200).send({
+    success: true,
+  })
+}
