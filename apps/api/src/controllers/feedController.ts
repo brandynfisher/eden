@@ -16,7 +16,7 @@ import CreatorRepository from '../repositories/CreatorRepository'
 const getReactions = async (
   userId: ObjectId,
   creations: PaginatedResponse<CreationDocument>,
-): Promise<{ [key: string]: ReactionType[] }> => {
+): Promise<{ [key: string]: Map<ReactionType, boolean> }> => {
   if (!creations.docs) {
     return {}
   }
@@ -46,9 +46,9 @@ const getReactions = async (
   const reactionsMap = reactions.reduce((map, reaction) => {
     const creationId = reaction.creation._id.toString()
     if (!map[creationId]) {
-      map[creationId] = [] // initialize array if it doesn't exist
+      map[creationId] = {}
     }
-    map[creationId].push(reaction.reaction) // add reaction type to array
+    map[creationId][reaction.reaction] = true
     return map
   }, {} as { [key: string]: ReactionType[] }) // explicitly set the type of the accumulator
 
@@ -74,12 +74,14 @@ const getBookmarks = async (
     return {}
   }
 
-  const bookmarksMap = creations.docs.reduce((map, creation) => {
-    map[creation._id.toString()] = defaultCollection.creations.includes(
-      creation._id,
-    )
-    return map
-  }, {} as { [key: string]: boolean })
+  const bookmarksMap = creations.docs
+    .filter(creation => defaultCollection.creations.includes(creation._id))
+    .reduce((map, creation) => {
+      map[creation._id.toString()] = defaultCollection.creations.includes(
+        creation._id,
+      )
+      return map
+    }, {} as { [key: string]: boolean })
 
   return bookmarksMap
 }
@@ -114,17 +116,17 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     // Get user's reactions and bookmarks
     const user = request.user.userId
     const reactionsMap = await getReactions(user, creations)
-    const bookmarksList = await getBookmarks(user, creations)
+    const bookmarksMap = await getBookmarks(user, creations)
     console.log('reactionsMap', reactionsMap)
-    console.log('bookmarksMap', bookmarksList)
+    console.log('bookmarksMap', bookmarksMap)
 
     const feed = {
       ...creations,
       docs: creations.docs.map(creation => ({
         ...creation,
-        reactions: reactionsMap[creation._id.toString()],
-        bookmarked: bookmarksList[creation._id.toString()],
       })),
+      reactions: reactionsMap,
+      bookmarks: bookmarksMap,
     }
 
     return reply.status(200).send(feed)
