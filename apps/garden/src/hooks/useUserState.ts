@@ -15,7 +15,7 @@ export const useUserState = () => {
     } else {
       setIsDefinitelyConnected(false)
     }
-  }, [address])
+  }, [isConnected, address])
 
   const { isAuthenticated, isAuthenticating, authenticate, logout } = useAuth()
   const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })

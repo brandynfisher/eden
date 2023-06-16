@@ -7,7 +7,7 @@ import {
   ToolOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Menu, type MenuProps, theme } from 'antd'
+import { Menu, type MenuProps } from 'antd'
 import { Layout } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'
@@ -42,20 +42,17 @@ const authItems: MenuItem[] = [
 ]
 
 const LayoutMenu = () => {
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken()
-
   const { isConnected } = useContext(UserContext)
   const menuItems = isConnected ? authItems : items
 
   return (
-    <Sider width={200} style={{ background: colorBgContainer }}>
+    <Sider width={200}>
       <Menu
         mode="inline"
         defaultSelectedKeys={['sub1']}
         style={{ height: '100%', borderRight: 0 }}
         items={menuItems}
+        className="text-black bg-white dark:text-white dark:bg-gray-700 "
       />
     </Sider>
   )

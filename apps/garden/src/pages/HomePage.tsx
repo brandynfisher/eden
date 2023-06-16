@@ -9,11 +9,7 @@ const HomePage = () => {
 
   return (
     <div className={`flex flex-col min-h-screen ${inter.className}`}>
-      <div className={`text-3xl text-black ${inter.className}`}>
-        The Garden of Eden
-      </div>
-      <div className="flex-grow mt-4">
-        {' '}
+      <div className="flex-grow">
         {creations && <CreationMasonry creations={creations} />}
       </div>
     </div>
