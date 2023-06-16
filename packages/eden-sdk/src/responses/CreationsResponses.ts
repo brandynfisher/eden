@@ -32,9 +32,22 @@ export type Creation = {
   thumbnail?: string
   name: string
   attributes: any
+  mediaAttributes: MediaAttributes
+}
+
+export interface MediaAttributes {
+  type: MediaType
+  duration?: number
 }
 
 export enum ReactionType {
   Praise = 'praise',
   Burn = 'burn',
+}
+
+export enum MediaType {
+  Image = 'image',
+  Video = 'video',
+  Text = 'text',
+  Audio = 'audio',
 }

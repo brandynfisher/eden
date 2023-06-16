@@ -15,7 +15,7 @@ const MediaDisplay = ({ creationUri }: { creationUri: string }) => {
     return null
   }
 
-  return <>{renderPreview()}</>
+  return <div>{renderPreview()}</div>
 }
 
 export default MediaDisplay

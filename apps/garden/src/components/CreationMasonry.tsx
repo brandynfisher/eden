@@ -9,7 +9,8 @@ const CreationMasonry = ({ creations }: { creations: Creation[] }) => {
       <Masonry
         items={creations}
         columnCount={4}
-        columnGutter={2}
+        columnGutter={8}
+        rowGutter={8}
         overscanBy={5}
         render={CreationCard}
       />

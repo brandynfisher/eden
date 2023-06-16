@@ -1,14 +1,16 @@
 import ImageResult from '@/components/CreationInterface/media/ImageResult'
+import VideoResult from '@/components/CreationInterface/media/VideoResult'
 import { getFileExtension } from '@/lib/getFileExtension'
+import { formatDuration } from '@/lib/time'
 import { Creation } from '@eden-labs/eden-sdk'
 import { Badge } from 'antd'
 import React from 'react'
 
-const VideoLengthBadge = () => {
+const VideoLengthBadge = ({ duration }: { duration?: number }) => {
   return (
     <Badge size="small" className="rounded-full">
-      <span className="inline-block bg-gray-500 text-white px-2 py-1 rounded-full">
-        video
+      <span className="inline-block bg-gray-800 text-white px-2 py-1 rounded-full">
+        {duration ? formatDuration(duration) : '0:00'}
       </span>
     </Badge>
   )
@@ -16,10 +18,10 @@ const VideoLengthBadge = () => {
 
 const VideoPreview = ({ creation }: { creation: Creation }) => {
   return (
-    <div>
-      <ImageResult resultUrl={creation.thumbnail || ''} />
+    <div className="rounded-lg overflow-hidden relative">
+      <VideoResult resultUrl={creation.uri || ''} />
       <div className="absolute top-0 left-0 p-1">
-        <VideoLengthBadge />
+        <VideoLengthBadge duration={creation.mediaAttributes.duration} />
       </div>
     </div>
   )

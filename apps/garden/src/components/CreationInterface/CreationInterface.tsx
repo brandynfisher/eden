@@ -42,8 +42,10 @@ const CreationInterface = () => {
         ))}
       </Select>
       {activeGenerator && <GeneratorForm generator={activeGenerator} />}
-      <ResultPreview />
-      {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
+      <div className="flex flex-col space-y-4">
+        <ResultPreview />
+        {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
+      </div>
     </div>
   )
 }
