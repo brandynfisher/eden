@@ -104,6 +104,7 @@ export const dummyReceiveTaskUpdate = async (
     thumbnail,
     name: 'Test Image',
     attributes: {},
+    mediaAttributes: asset.mediaAttributes,
   }
   const creation = await Creation.create(creationData)
 

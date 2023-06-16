@@ -1,7 +1,13 @@
+import { MediaAttributes, MediaType } from '@eden-labs/eden-sdk'
 import axios from 'axios'
+import { randomUUID } from 'crypto'
 import type { FastifyInstance } from 'fastify'
 import { fileTypeFromBuffer } from 'file-type'
+import ffmpeg from 'fluent-ffmpeg'
+import fs from 'fs'
 import { Client as MinioClient } from 'minio'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import sharp from 'sharp'
 
 import * as util from '../lib/util'
@@ -9,6 +15,28 @@ import * as util from '../lib/util'
 export interface Asset {
   uri: string
   assetBuffer: Buffer
+  mediaAttributes: MediaAttributes
+}
+
+const mediaTypeMap: Record<string, MediaType> = {
+  mp4: MediaType.Video,
+  jpg: MediaType.Image,
+  jpeg: MediaType.Image,
+  png: MediaType.Image,
+  webp: MediaType.Image,
+}
+
+const getMediaDuration = async (buffer: Buffer): Promise<number> => {
+  const tempFilePath = join(tmpdir(), randomUUID())
+  await fs.writeFileSync(tempFilePath, buffer)
+  const duration = await new Promise<number | undefined>((resolve, reject) => {
+    ffmpeg.ffprobe(tempFilePath, (err, metadata) => {
+      if (err) reject(err)
+      else resolve(metadata.format.duration)
+    })
+  })
+  if (!duration) throw new Error('Could not get media duration')
+  return duration
 }
 
 export const uploadUrlAsset = async (
@@ -18,10 +46,15 @@ export const uploadUrlAsset = async (
 ): Promise<Asset> => {
   const asset = await axios.get(url, { responseType: 'arraybuffer' })
   const assetB64 = Buffer.from(asset.data, 'base64')
-  const uri = await uploadBufferAsset(server, assetB64, fileExtension)
+  const { uri, mediaAttributes } = await uploadBufferAsset(
+    server,
+    assetB64,
+    fileExtension,
+  )
   return {
     uri,
     assetBuffer: assetB64,
+    mediaAttributes,
   }
 }
 
@@ -42,15 +75,15 @@ export const uploadThumbnailAsset = async (
     .webp({ quality: 80 })
     .toBuffer()
 
-  const urlUpload = await uploadBufferAsset(server, resizedBuffer, 'webp')
-  return urlUpload
+  const { uri } = await uploadBufferAsset(server, resizedBuffer, 'webp')
+  return uri
 }
 
 export const uploadBufferAsset = async (
   server: FastifyInstance,
   buffer: Buffer,
   fileExtension: string | null = null,
-) => {
+): Promise<{ uri: string; mediaAttributes: MediaAttributes }> => {
   const client = server.minio as MinioClient
   const MINIO_BUCKET = server.config.MINIO_BUCKET
   const sha = util.sha256(buffer)
@@ -70,7 +103,22 @@ export const uploadBufferAsset = async (
     await client.putObject(MINIO_BUCKET, filename, buffer, metadata)
     console.log(` --> Uploaded to ${urlUpload}`)
   }
-  return urlUpload
+
+  const mediaType = mediaTypeMap[ext]
+
+  const mediaAttributes: MediaAttributes = {
+    type: mediaType,
+  }
+
+  if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
+    const duration = await getMediaDuration(buffer)
+    mediaAttributes.duration = duration
+  }
+
+  return {
+    uri: urlUpload,
+    mediaAttributes,
+  }
 }
 
 export const minioUrl = (server: FastifyInstance, filename: string) =>

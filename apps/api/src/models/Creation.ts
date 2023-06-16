@@ -1,3 +1,4 @@
+import { MediaAttributes, MediaType } from '@eden-labs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
@@ -14,8 +15,10 @@ export interface CreationSchema {
   delegateHasClaimed?: boolean
   uri: string
   thumbnail?: string
+  media: string
   name: string
   attributes: any
+  mediaAttributes: MediaAttributes
   reactions: ReactionDocument[]
   createdAt?: Date
   updatedAt?: Date
@@ -61,6 +64,16 @@ const creation = new Schema<CreationDocument>(
     attributes: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    mediaAttributes: {
+      type: {
+        type: String,
+        enum: Object.values(MediaType),
+        required: true,
+      },
+      duration: {
+        type: Number,
+      },
     },
   },
   {

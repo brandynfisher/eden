@@ -112,10 +112,15 @@ const handleUpdate = async (
         thumbnail: finalOutput.thumbnail,
         name: finalOutput.name,
         attributes: finalOutput.attributes,
+        mediaAttributes: {},
       }
       if (finalOutput.file) {
-        const { uri } = await server.uploadUrlAsset(server, finalOutput.file)
+        const { uri, mediaAttributes } = await server.uploadUrlAsset(
+          server,
+          finalOutput.file,
+        )
         creationData.uri = uri
+        creationData.mediaAttributes = mediaAttributes
       }
       if (finalOutput.thumbnail) {
         creationData.thumbnail = await server.uploadThumbnailAsset(
