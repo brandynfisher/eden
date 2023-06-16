@@ -17,14 +17,7 @@ export interface UserContextType {
   refetch: {
     mannaBalance: VoidFunction
     characters: VoidFunction
-    reactions: VoidFunction
-    bookmarks: VoidFunction
   }
-  reactions: {
-    praises?: string[]
-    burns?: string[]
-  }
-  bookmarks?: string[]
 }
 
 const defaultUserState: UserContextType = {
@@ -49,18 +42,7 @@ const defaultUserState: UserContextType = {
     characters: () => {
       return null
     },
-    reactions: () => {
-      return null
-    },
-    bookmarks: () => {
-      return null
-    },
   },
-  reactions: {
-    praises: undefined,
-    burns: undefined,
-  },
-  bookmarks: undefined,
 }
 
 export const UserContext = createContext<UserContextType>(defaultUserState)

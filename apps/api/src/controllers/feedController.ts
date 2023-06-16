@@ -112,19 +112,15 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     },
   )
 
-  if (request.user.userId) {
+  if (request.user?.userId) {
     // Get user's reactions and bookmarks
     const user = request.user.userId
     const reactionsMap = await getReactions(user, creations)
     const bookmarksMap = await getBookmarks(user, creations)
-    console.log('reactionsMap', reactionsMap)
-    console.log('bookmarksMap', bookmarksMap)
 
     const feed = {
       ...creations,
-      docs: creations.docs.map(creation => ({
-        ...creation,
-      })),
+      docs: creations.docs,
       reactions: reactionsMap,
       bookmarks: bookmarksMap,
     }
