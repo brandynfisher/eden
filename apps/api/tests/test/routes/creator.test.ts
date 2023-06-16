@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 
-import { createTask } from '../../../src/controllers/taskController'
 import { prepareUserHeaders } from '../../util'
 
 test('User can list creators', async context => {

@@ -94,7 +94,7 @@ export const createCollection = async (
     user: userId,
   })
 
-  return reply.status(200).send({ collection })
+  return reply.status(200).send({ collectionId: collection._id })
 }
 
 export const deleteCollection = async (
@@ -204,9 +204,12 @@ export const removeCreationsFromCollection = async (
     })
   }
 
-  await collection.updateOne({
-    creations: { $pull: { $in: creationDocs.map(c => c._id) } },
-  })
+  // Remove creations from collection
+  const creationIdsToRemove = creationDocs.map(creation => creation._id)
+  await Collection.updateOne(
+    { _id: collection._id },
+    { $pullAll: { creations: creationIdsToRemove } },
+  )
 
   return reply.status(200).send({})
 }

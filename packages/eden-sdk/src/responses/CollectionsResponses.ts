@@ -5,7 +5,7 @@ import { WebAPICallResult } from '../EdenClient'
 
 export type CollectionsCreateResponse = WebAPICallResult & {
   error?: string
-  agentId?: string
+  collectionId?: string
 }
 
 export type CollectionsUpdateResponse = WebAPICallResult & {

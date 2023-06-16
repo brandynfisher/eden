@@ -207,14 +207,16 @@ export abstract class Methods {
       this,
       collectionsDeleteRequestConfig,
     ),
-    addCreations: bindApiCall<
-      CollectionsAddCreationsArguments,
-      CollectionsAddCreationsResponse
-    >(this, collectionsAddCreationsRequestConfig),
-    removeCreations: bindApiCall<
-      CollectionsRemoveCreationsArguments,
-      CollectionsRemoveCreationsResponse
-    >(this, collectionsRemoveCreationsRequestConfig),
+    creations: {
+      add: bindApiCall<
+        CollectionsAddCreationsArguments,
+        CollectionsAddCreationsResponse
+      >(this, collectionsAddCreationsRequestConfig),
+      remove: bindApiCall<
+        CollectionsRemoveCreationsArguments,
+        CollectionsRemoveCreationsResponse
+      >(this, collectionsRemoveCreationsRequestConfig),
+    },
   }
 
   public readonly creations = {

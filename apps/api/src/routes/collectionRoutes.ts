@@ -120,7 +120,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       },
       response: {
         200: {
-          collection: Type.Any(),
+          collectionId: Type.String(),
         },
       },
     },
