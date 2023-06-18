@@ -2,7 +2,7 @@ import LayoutHeader from '@/components/Layout/LayoutHeader'
 import LayoutMenu from '@/components/Layout/LayoutMenu'
 import { ConfigProvider, Layout, theme as antdTheme } from 'antd'
 import { useTheme } from 'next-themes'
-import React, { PropsWithChildren } from 'react'
+import React, { PropsWithChildren, useEffect, useState } from 'react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -10,15 +10,22 @@ const { Content } = Layout
 
 const CustomLayout = ({ children }: PropsWithChildren) => {
   const { resolvedTheme } = useTheme()
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  useEffect(() => {
+    if (resolvedTheme && resolvedTheme === 'dark') {
+      setIsDarkMode(true)
+    } else {
+      setIsDarkMode(false)
+    }
+  }, [resolvedTheme])
 
   return (
     <ConfigProvider
       theme={{
-        ...antdTheme,
-        algorithm:
-          resolvedTheme === 'dark'
-            ? [antdTheme.darkAlgorithm]
-            : [antdTheme.defaultAlgorithm],
+        algorithm: isDarkMode
+          ? [antdTheme.darkAlgorithm]
+          : [antdTheme.defaultAlgorithm],
       }}
     >
       <Layout className="min-h-screen flex flex-col">

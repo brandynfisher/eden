@@ -11,19 +11,31 @@ import type { AppProps } from 'next/app'
 import React from 'react'
 
 export default function App({ Component, pageProps }: AppProps): JSX.Element {
-  return (
-    <WalletProvider>
-      <EdenProvider>
-        <UserProvider>
-          <ThemeProvider attribute="class">
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const body = (
+    <ThemeProvider attribute="class">
+      <WalletProvider>
+        <EdenProvider>
+          <UserProvider>
             <CreationNotificationProvider>
               <CustomLayout>
                 <Component {...pageProps} />
               </CustomLayout>
             </CreationNotificationProvider>
-          </ThemeProvider>
-        </UserProvider>
-      </EdenProvider>
-    </WalletProvider>
+          </UserProvider>
+        </EdenProvider>
+      </WalletProvider>
+    </ThemeProvider>
   )
+
+  if (!mounted) {
+    return <div style={{ visibility: 'hidden' }}>{body}</div>
+  }
+
+  return body
 }
