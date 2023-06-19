@@ -7,11 +7,11 @@ import { CreationNotificationContext } from '@/providers/CreationNotificationPro
 import { UserContext } from '@/providers/UserProvider'
 import {
   DownCircleOutlined,
-  RightCircleOutlined,
+  ExperimentOutlined,
   UpCircleOutlined,
 } from '@ant-design/icons'
 import { Generator, GeneratorParameter } from '@eden-labs/eden-sdk'
-import { Button, Form } from 'antd'
+import { Button, Card, Form } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect } from 'react'
 import { toast } from 'react-toastify'
@@ -67,11 +67,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
       return (
         <div
           key={parameter.name}
-          style={{
-            paddingBottom: 5,
-            marginBottom: 10,
-            borderBottom: '1px solid #ccc',
-          }}
+          className="bg-gray-100 dark:bg-gray-900 p-4 mb-4 rounded-md"
         >
           {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
           parameter.allowedValuesFrom ? (
@@ -119,52 +115,48 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
   }
 
   return (
-    <>
-      <div
-        style={{
-          backgroundColor: '#eee',
-          padding: 10,
-          borderRadius: 10,
-        }}
+    <Form form={form} name="generate" onFinish={handleFinish}>
+      <Card
+        title={
+          <div className="py-4">
+            <h3>/{generator.generatorName}</h3>
+            <span style={{ color: 'gray' }}>{generator.description}</span>
+          </div>
+        }
+        actions={[
+          <></>,
+          <Button
+            icon={<ExperimentOutlined />}
+            htmlType="submit"
+            size="large"
+            className="justify-self-start"
+          >
+            Create
+          </Button>,
+        ]}
+        className="border-solid border-1 border-gray-200 dark:border-gray-700 rounded-lg"
       >
-        <h2>/{generator.generatorName}</h2>
-        <h3>
-          <span style={{ color: 'gray' }}>{generator.description}</span>
-        </h3>
-      </div>
-      <div>
-        <Form form={form} name="generate" onFinish={handleFinish}>
-          {renderFormFields(requiredParameters)}
-          <Form.Item>
-            {optionalParameters.length > 0 && (
-              <>
-                {showOptional ? (
-                  <Button onClick={() => setShowOptional(false)}>
-                    <UpCircleOutlined />
-                    Hide optional settings
-                  </Button>
-                ) : (
-                  <Button onClick={() => setShowOptional(true)}>
-                    <DownCircleOutlined />
-                    Show optional settings
-                  </Button>
-                )}
-              </>
-            )}
-          </Form.Item>
-          {showOptional && renderFormFields(optionalParameters)}
-          <Form.Item>
-            <Button
-              icon={<RightCircleOutlined />}
-              htmlType="submit"
-              size="large"
-            >
-              Create
-            </Button>
-          </Form.Item>
-        </Form>
-      </div>
-    </>
+        {renderFormFields(requiredParameters)}
+        <Form.Item>
+          {optionalParameters.length > 0 && (
+            <>
+              {showOptional ? (
+                <Button onClick={() => setShowOptional(false)}>
+                  <UpCircleOutlined />
+                  Hide optional settings
+                </Button>
+              ) : (
+                <Button onClick={() => setShowOptional(true)}>
+                  <DownCircleOutlined />
+                  Show optional settings
+                </Button>
+              )}
+            </>
+          )}
+        </Form.Item>
+        {showOptional && renderFormFields(optionalParameters)}
+      </Card>
+    </Form>
   )
 }
 

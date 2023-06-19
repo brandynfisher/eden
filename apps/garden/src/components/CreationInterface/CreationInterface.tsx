@@ -31,6 +31,7 @@ const CreationInterface = () => {
         id="activeGenerator"
         value={activeGeneratorName}
         onChange={handleGeneratorChange}
+        placeholder="Generators"
       >
         {generators.map(generator => (
           <Select.Option
