@@ -1,8 +1,10 @@
 import { fetcher } from '@/lib/fetcher'
-import { Bookmarks, Reactions } from '@/providers/FeedProvider'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation, ReactionType } from '@eden-labs/eden-sdk'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
+
+export type Reactions = Record<ReactionType, Record<string, boolean>>
+export type Bookmarks = Record<string, boolean>
 
 export const useFeed = ({
   isAuthenticated,

@@ -1,6 +1,5 @@
 import CreationMasonry from '@/components/CreationMasonry'
 import { useFeed } from '@/hooks/useFeed'
-import FeedProvider from '@/providers/FeedProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Inter } from 'next/font/google'
 import { useContext } from 'react'
@@ -14,9 +13,7 @@ const HomePage = () => {
   return (
     <div className={`flex flex-col min-h-screen ${inter.className}`}>
       <div className="flex-grow">
-        <FeedProvider>
-          {creations && <CreationMasonry creations={creations} />}
-        </FeedProvider>
+        {creations && <CreationMasonry creations={creations} />}
       </div>
     </div>
   )
