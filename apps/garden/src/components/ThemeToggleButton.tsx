@@ -1,7 +1,7 @@
 import { Space, Switch } from 'antd'
 import { useTheme } from 'next-themes'
 import { UseThemeProps } from 'next-themes/dist/types'
-import { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 const toggleTheme = (theme: UseThemeProps['theme']): 'light' | 'dark' => {
   return theme === 'dark' ? 'light' : 'dark'
@@ -25,12 +25,10 @@ const ThemeToggleButton = () => {
   }
 
   return (
-    <Space>
+    <Space onClick={handleThemeToggleClick}>
+      <div>☾ </div>
       <div className="text-black dark:text-white">Dark Mode</div>
-      <Switch
-        onClick={handleThemeToggleClick}
-        checked={resolvedTheme === 'dark'}
-      />
+      <Switch checked={resolvedTheme === 'dark'} />
     </Space>
   )
 }

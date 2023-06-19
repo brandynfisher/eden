@@ -18,7 +18,7 @@ const SliderParameter = (props: {
   return (
     <>
       <Row>
-        <Col span={8}>
+        <Col flex="auto">
           <Form.Item
             style={{ marginBottom: 5 }}
             label={props.parameter.label}
@@ -40,8 +40,9 @@ const SliderParameter = (props: {
             />
           </Form.Item>
         </Col>
-        <Col style={{ marginLeft: 10 }}>
+        <Col style={{ marginLeft: 10 }} className="flex items-end">
           <InputNumber
+            style={{ marginBottom: 5 }}
             value={value}
             min={props.parameter.minimum}
             max={props.parameter.maximum}

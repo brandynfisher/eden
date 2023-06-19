@@ -1,5 +1,5 @@
 import { GeneratorParameter } from '@eden-labs/eden-sdk'
-import { Col, Form, FormInstance, Row, Select, Switch } from 'antd'
+import { Form, FormInstance, Row, Select, Switch } from 'antd'
 import { useState } from 'react'
 
 const OptionParameter = (props: {
@@ -25,33 +25,30 @@ const OptionParameter = (props: {
 
   return (
     <>
-      <Row>
-        <Col span={12}>
-          <Form.Item
-            style={{ marginBottom: 5 }}
-            label={props.parameter.label}
-            name={props.parameter.name}
-            initialValue={props.parameter.default}
-            rules={[
-              {
-                required: props.parameter.isRequired,
-                message: `${props.parameter.label} required`,
-              },
-            ]}
-          >
-            {typeof props.parameter.default === 'boolean' ? (
-              <Switch checked={value} onChange={onSwitchChange} />
-            ) : (
-              <Select
-                value={value}
-                style={{ width: '40%' }}
-                options={options}
-                onChange={onChange}
-              />
-            )}
-          </Form.Item>
-        </Col>
-      </Row>
+      <Form.Item
+        style={{ marginBottom: 5 }}
+        label={props.parameter.label}
+        name={props.parameter.name}
+        initialValue={props.parameter.default}
+        rules={[
+          {
+            required: props.parameter.isRequired,
+            message: `${props.parameter.label} required`,
+          },
+        ]}
+      >
+        {typeof props.parameter.default === 'boolean' ? (
+          <Switch checked={value} onChange={onSwitchChange} />
+        ) : (
+          <Select
+            value={value}
+            style={{ maxWidth: '50%' }}
+            options={options}
+            onChange={onChange}
+            className="flex ml-auto"
+          />
+        )}
+      </Form.Item>
       <Row>
         <span style={{ color: 'gray' }}>{props.parameter.description}</span>
       </Row>

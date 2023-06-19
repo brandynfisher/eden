@@ -1,5 +1,5 @@
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
-import { Button, Space } from 'antd'
+import { Button, Card } from 'antd'
 import axios from 'axios'
 import React, { useContext } from 'react'
 
@@ -11,21 +11,33 @@ const TestGeneratorInterface = () => {
       taskId,
     })
   }
+
   return (
-    <div>
-      {activeTaskId && <div>Active Task: {activeTaskId}</div>}
-      <Space direction="vertical">
-        {pendingTasks &&
-          pendingTasks.map(task => (
-            <div key={task.taskId}>
+    <Card>
+      <div className="mb-4"> [dev only]</div>
+      {activeTaskId && (
+        <div className="mb-4">
+          <div className="font-bold mb-2">Active Task:</div>
+          <div>{activeTaskId}</div>
+        </div>
+      )}
+      {pendingTasks && (
+        <div>
+          <div className="font-bold">Pending Tasks:</div>
+          {pendingTasks.map(task => (
+            <div
+              className="flex justify-between items-center"
+              key={task.taskId}
+            >
               {task.taskId}
               <Button onClick={() => handleFinish(task.taskId)}>
                 Finish Creation
               </Button>
             </div>
           ))}
-      </Space>
-    </div>
+        </div>
+      )}
+    </Card>
   )
 }
 

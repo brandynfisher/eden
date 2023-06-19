@@ -67,7 +67,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
       return (
         <div
           key={parameter.name}
-          className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md"
+          className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md mb-6"
         >
           {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
           parameter.allowedValuesFrom ? (
@@ -138,23 +138,21 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
         className="border-solid border-1 border-gray-200 dark:border-gray-700 rounded-lg"
       >
         {renderFormFields(requiredParameters)}
-        <Form.Item>
-          {optionalParameters.length > 0 && (
-            <>
-              {showOptional ? (
-                <Button onClick={() => setShowOptional(false)}>
-                  <UpCircleOutlined />
-                  Hide optional settings
-                </Button>
-              ) : (
-                <Button onClick={() => setShowOptional(true)}>
-                  <DownCircleOutlined />
-                  Show optional settings
-                </Button>
-              )}
-            </>
-          )}
-        </Form.Item>
+        {optionalParameters.length > 0 && (
+          <>
+            {showOptional ? (
+              <Button onClick={() => setShowOptional(false)} className="mb-4">
+                <UpCircleOutlined />
+                Hide optional settings
+              </Button>
+            ) : (
+              <Button onClick={() => setShowOptional(true)}>
+                <DownCircleOutlined />
+                Show optional settings
+              </Button>
+            )}
+          </>
+        )}
         {showOptional && renderFormFields(optionalParameters)}
       </Card>
     </Form>

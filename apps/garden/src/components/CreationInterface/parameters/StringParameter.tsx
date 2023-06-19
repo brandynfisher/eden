@@ -28,7 +28,6 @@ const StringParameter = (props: {
       {isArray ? (
         <>
           <Form.Item
-            style={{ marginBottom: 5 }}
             label={props.parameter.label}
             name={props.parameter.name}
             rules={[
@@ -40,8 +39,8 @@ const StringParameter = (props: {
           >
             <>
               {values.map((value, index) => (
-                <Row key={index}>
-                  <Col span={10}>
+                <Row key={index} className="mb-2">
+                  <Col flex="auto" className="mr-1">
                     <Input
                       value={value}
                       onChange={event => {
@@ -51,7 +50,7 @@ const StringParameter = (props: {
                       }}
                     />
                   </Col>
-                  <Col span={2}>
+                  <Col>
                     {values.length > (props.parameter.minLength || 1) && (
                       <Button
                         onClick={() => {
@@ -85,29 +84,25 @@ const StringParameter = (props: {
         </>
       ) : (
         <>
-          <Row>
-            <Col span={10}>
-              <Form.Item
-                style={{ marginBottom: 5 }}
-                label={props.parameter.label}
-                name={props.parameter.name}
-                initialValue={props.parameter.default}
-                rules={[
-                  {
-                    required: props.parameter.isRequired,
-                    message: `${props.parameter.label} required`,
-                  },
-                ]}
-              >
-                <Input
-                  value={value}
-                  onChange={event => {
-                    setValue(event.target.value)
-                  }}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item
+            style={{ marginBottom: 5 }}
+            label={props.parameter.label}
+            name={props.parameter.name}
+            initialValue={props.parameter.default}
+            rules={[
+              {
+                required: props.parameter.isRequired,
+                message: `${props.parameter.label} required`,
+              },
+            ]}
+          >
+            <Input
+              value={value}
+              onChange={event => {
+                setValue(event.target.value)
+              }}
+            />
+          </Form.Item>
           <Row>
             <span style={{ color: 'gray' }}>{props.parameter.description}</span>
           </Row>
