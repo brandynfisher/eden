@@ -8,7 +8,7 @@ import {
   listCreators,
   unfollowCreator,
 } from '../controllers/creatorsController'
-import { isAuth } from '../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../middleware/authMiddleware'
 
 const creatorRoutes: FastifyPluginAsync = async server => {
   server.get('/creators', {
@@ -36,6 +36,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
+    preHandler: [async request => maybeAuth(server, request)],
     handler: (request, reply) => getCreator(request, reply),
   })
 

@@ -14,7 +14,6 @@ import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
 import scenarioRoutes from './scenarioRoutes'
 import taskRoutes from './taskRoutes'
-import userRoutes from './userRoutes'
 
 export const paginatedResponse = (docs: TSchema) => {
   return Type.Object({
@@ -46,7 +45,6 @@ export const routes = [
   mannaRoutes,
   apiKeyRoutes,
   mediaRoutes,
-  userRoutes,
   creatorRoutes,
   creationRoutes,
   collectionRoutes,
