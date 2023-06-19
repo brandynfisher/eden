@@ -46,7 +46,7 @@ const LayoutMenu = () => {
   const menuItems = isConnected ? authItems : items
 
   return (
-    <Sider width={200}>
+    <Sider width={200} className="mr-4">
       <Menu
         mode="inline"
         defaultSelectedKeys={['sub1']}

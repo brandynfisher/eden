@@ -12,18 +12,18 @@ import React from 'react'
 
 export default function App({ Component, pageProps }: AppProps): JSX.Element {
   return (
-    <WalletProvider>
-      <EdenProvider>
-        <UserProvider>
-          <ThemeProvider attribute="class">
+    <ThemeProvider attribute="class">
+      <WalletProvider>
+        <EdenProvider>
+          <UserProvider>
             <CreationNotificationProvider>
               <CustomLayout>
                 <Component {...pageProps} />
               </CustomLayout>
             </CreationNotificationProvider>
-          </ThemeProvider>
-        </UserProvider>
-      </EdenProvider>
-    </WalletProvider>
+          </UserProvider>
+        </EdenProvider>
+      </WalletProvider>
+    </ThemeProvider>
   )
 }
