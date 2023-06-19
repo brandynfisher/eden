@@ -1,5 +1,5 @@
+import SettingsDropdown from '@/components/SettingsDropdown'
 import CreationNotificationMenu from '@/components/TaskNotificationDropdown'
-import ThemeToggleButton from '@/components/ThemeToggleButton'
 import { UserContext } from '@/providers/UserProvider'
 import { WalletOutlined } from '@ant-design/icons'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
@@ -32,7 +32,6 @@ const LayoutHeader = () => {
       </div>
       <div style={{ marginLeft: 'auto' }}>
         <Space>
-          <ThemeToggleButton />
           <CreationNotificationMenu />
           {isConnected && (
             <div
@@ -47,6 +46,7 @@ const LayoutHeader = () => {
               </Space>
             </div>
           )}
+          <SettingsDropdown />
           <ConnectButton />
         </Space>
       </div>
