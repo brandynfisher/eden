@@ -28,7 +28,7 @@ const VideoPreview = ({
       <ImageResult resultUrl={creation.thumbnail || ''} />
       {hovered && (
         <div className="absolute top-0 left-0 w-full h-full">
-          <VideoResult resultUrl={creation.uri || ''} />
+          <VideoResult resultUrl={creation.uri || ''} disableControls />
         </div>
       )}
       <div className="absolute top-0 left-0 p-1">

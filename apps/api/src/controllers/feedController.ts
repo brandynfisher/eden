@@ -114,17 +114,33 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
 
   if (request.user?.userId) {
     // Get user's reactions and bookmarks
-    const user = request.user.userId
-    const reactionsMap = await getReactions(user, creations)
-    const bookmarksMap = await getBookmarks(user, creations)
+    const userId = request.user.userId
+    const user = User.findOne({ userId })
+    if (!user) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+    const uid = new ObjectId(userId)
+    const reactionsMap = await getReactions(uid, creations)
+    const bookmarksMap = await getBookmarks(uid, creations)
+
+    const creationDocs = creations.docs.map(creation => {
+      // wtf
+      const doc = creation._doc as CreationDocument
+      return {
+        ...doc,
+        reactions: reactionsMap[doc._id.toString()],
+        bookmarked: bookmarksMap[doc._id.toString()],
+      }
+    })
 
     const feed = {
       ...creations,
-      docs: creations.docs,
+      docs: creationDocs,
       reactions: reactionsMap,
       bookmarks: bookmarksMap,
     }
-
     return reply.status(200).send(feed)
   } else {
     // No user, so no reactions or bookmarks
