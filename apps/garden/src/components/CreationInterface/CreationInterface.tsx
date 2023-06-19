@@ -26,7 +26,7 @@ const CreationInterface = () => {
 
   return (
     <div className="w-full grid grid-cols-12">
-      <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6">
+      <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6 mb-4">
         <label htmlFor="activeGenerator">Selected Generator:</label>
         <Select
           id="activeGenerator"
@@ -45,7 +45,7 @@ const CreationInterface = () => {
         </Select>
         {activeGenerator && <GeneratorForm generator={activeGenerator} />}
       </div>
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6">
         <ResultPreview />
         {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
       </div>
