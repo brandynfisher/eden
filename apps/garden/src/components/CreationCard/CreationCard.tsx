@@ -53,15 +53,13 @@ const CreationCard = ({
 
   return (
     <>
-      <div
-        className="relative cursor-pointer"
-        onClick={openDetailModal}
-        key={index}
-      >
+      <div className="relative cursor-pointer" key={index}>
         <div className="rounded-lg" ref={ref}>
           <div style={{ position: 'relative' }}>
-            <CreationCardPreview creation={data} />
-            {hovered && <CreationCardHoverOverlay />}
+            <CreationCardPreview creation={data} hovered={hovered} />
+            {hovered && (
+              <CreationCardHoverOverlay openDetailModal={openDetailModal} />
+            )}
           </div>
         </div>
       </div>

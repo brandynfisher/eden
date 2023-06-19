@@ -38,10 +38,24 @@ const SaveButton = () => {
   )
 }
 
-const CreationCardHoverOverlay = () => {
+const CreationCardHoverOverlay = ({
+  openDetailModal,
+}: {
+  openDetailModal: () => void
+}) => {
+  const handleClickOutside = event => {
+    // Check if the click event target is not a button
+    if (!event.target.closest('button')) {
+      openDetailModal()
+    }
+  }
+
   return (
-    <div className="absolute inset-0 flex items-start justify-center">
-      <div className="relative w-full h-full flex flex-col items-center justify-start bg-gray-600 bg-opacity-50">
+    <div
+      className="absolute inset-0 flex items-start justify-center"
+      onClick={handleClickOutside}
+    >
+      <div className="relative w-full h-full flex flex-col items-center justify-start">
         <div className="flex items-center justify-center mt-4">
           <div className="flex">
             <PraiseButton />

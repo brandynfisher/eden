@@ -16,10 +16,21 @@ const VideoLengthBadge = ({ duration }: { duration?: number }) => {
   )
 }
 
-const VideoPreview = ({ creation }: { creation: Creation }) => {
+const VideoPreview = ({
+  creation,
+  hovered,
+}: {
+  creation: Creation
+  hovered: boolean
+}) => {
   return (
     <div className="rounded-lg overflow-hidden relative">
-      <VideoResult resultUrl={creation.uri || ''} />
+      <ImageResult resultUrl={creation.thumbnail || ''} />
+      {hovered && (
+        <div className="absolute top-0 left-0 w-full h-full">
+          <VideoResult resultUrl={creation.uri || ''} />
+        </div>
+      )}
       <div className="absolute top-0 left-0 p-1">
         <VideoLengthBadge duration={creation.mediaAttributes.duration} />
       </div>
@@ -27,7 +38,13 @@ const VideoPreview = ({ creation }: { creation: Creation }) => {
   )
 }
 
-const CreationCardPreview = ({ creation }: { creation: Creation }) => {
+const CreationCardPreview = ({
+  creation,
+  hovered,
+}: {
+  creation: Creation
+  hovered: boolean
+}) => {
   const { uri: creationUri } = creation
 
   const renderPreview = () => {
@@ -36,7 +53,7 @@ const CreationCardPreview = ({ creation }: { creation: Creation }) => {
     if (extension === 'jpg') {
       return <ImageResult resultUrl={creation.thumbnail || ''} />
     } else if (extension === 'mp4') {
-      return <VideoPreview creation={creation} />
+      return <VideoPreview creation={creation} hovered={hovered} />
     }
     return null
   }
