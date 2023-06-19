@@ -67,7 +67,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
       return (
         <div
           key={parameter.name}
-          className="bg-gray-100 dark:bg-gray-900 p-4 mb-4 rounded-md"
+          className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md"
         >
           {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
           parameter.allowedValuesFrom ? (
@@ -124,15 +124,16 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
           </div>
         }
         actions={[
-          <></>,
-          <Button
-            icon={<ExperimentOutlined />}
-            htmlType="submit"
-            size="large"
-            className="justify-self-start"
-          >
-            Create
-          </Button>,
+          <div className="flex px-6">
+            <Button
+              type="primary"
+              icon={<ExperimentOutlined />}
+              htmlType="submit"
+              size="large"
+            >
+              Create
+            </Button>
+          </div>,
         ]}
         className="border-solid border-1 border-gray-200 dark:border-gray-700 rounded-lg"
       >
