@@ -1,3 +1,4 @@
+import { useHover } from '@mantine/hooks'
 import { Button } from 'antd'
 
 const PraiseButton = ({
@@ -9,16 +10,20 @@ const PraiseButton = ({
   loading: boolean
   onClick: () => void
 }) => {
+  const { hovered, ref } = useHover()
   return (
     <Button
-      className={`flex items-center justify-center rounded-l-full bg-gray-800 ${
-        praised ? 'bg-green-500' : ''
-      }`}
+      className={`flex items-center justify-center rounded-l-full bg-gray-800`}
       role="button"
       onClick={onClick}
       loading={loading}
+      ref={ref}
     >
-      <span role="img" aria-label="Raise Hands" className="text-sm">
+      <span
+        role="img"
+        aria-label="Raise Hands"
+        className={`text-sm ${!hovered && !praised && 'filter grayscale'}`}
+      >
         🙌
       </span>
     </Button>
@@ -34,16 +39,21 @@ const BurnButton = ({
   loading: boolean
   onClick: () => void
 }) => {
+  const { hovered, ref } = useHover()
+
   return (
     <Button
-      className={`flex items-center justify-center rounded-r-full bg-gray-800 ${
-        burned ? 'bg-red-500' : ''
-      }`}
+      className={`flex items-center justify-center rounded-r-full bg-gray-800`}
       role="button"
       onClick={onClick}
       loading={loading}
+      ref={ref}
     >
-      <span role="img" aria-label="Fire" className="text-sm">
+      <span
+        role="img"
+        aria-label="Fire"
+        className={`text-sm ${!hovered && !burned && 'filter grayscale'}`}
+      >
         🔥
       </span>
     </Button>
@@ -59,16 +69,22 @@ const SaveButton = ({
   loading: boolean
   onClick: () => void
 }) => {
+  const { hovered, ref } = useHover()
   return (
     <Button
-      className={`flex items-center justify-center rounded-full bg-gray-800 ${
-        bookmarked ? 'bg-red-500' : ''
-      }`}
+      className={`flex items-center justify-center rounded-full bg-gray-800`}
       role="button"
       onClick={onClick}
       loading={loading}
+      ref={ref}
     >
-      💾
+      <span
+        role="img"
+        aria-label="Save"
+        className={`text-sm ${!hovered && !bookmarked && 'filter grayscale'}`}
+      >
+        📌
+      </span>
     </Button>
   )
 }
@@ -98,9 +114,10 @@ const CreationCardHoverOverlay = ({
   reactions,
   bookmarked,
 }: CreationCardHoverOverlayProps) => {
-  const handleClickOutside = event => {
+  const handleClickOutside = (event: React.MouseEvent) => {
     // Check if the click event target is not a button
-    if (!event.target.closest('button')) {
+    const targetElement = event.target as Element
+    if (!targetElement.closest('button')) {
       handlers.openDetailModal()
     }
   }
