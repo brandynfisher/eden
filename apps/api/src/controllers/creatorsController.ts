@@ -36,7 +36,29 @@ export const getCreator = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.params as CreatorsGetArguments
-  const creator = await User.findOne({ userId })
+  const creatorDoc = await User.findOne({ userId })
+  if (!creatorDoc) {
+    return reply.status(404).send({
+      message: 'Creator not found',
+    })
+  }
+  const followers = await Follow.find({ following: creatorDoc?._id })
+  const following = await Follow.find({ follower: creatorDoc?._id })
+  let isFollowing = false
+  if (request.user?.userId) {
+    const followerQuery = await Follow.findOne({
+      follower: request.user.userId,
+      following: creatorDoc._id,
+    })
+
+    isFollowing = !!followerQuery
+  }
+  const creator = {
+    ...creatorDoc._doc,
+    followerCount: followers.length,
+    followingCount: following.length,
+    isFollowing,
+  }
   return reply.status(200).send({ creator })
 }
 

@@ -1,4 +1,10 @@
-const VideoResult = ({ resultUrl }: { resultUrl: string }) => {
+const VideoResult = ({
+  resultUrl,
+  disableControls,
+}: {
+  resultUrl: string
+  disableControls?: boolean
+}) => {
   return (
     <video
       src={resultUrl}
@@ -6,7 +12,7 @@ const VideoResult = ({ resultUrl }: { resultUrl: string }) => {
       autoPlay={true}
       muted={true}
       loop={true}
-      controls={true}
+      controls={disableControls ? false : true}
     />
   )
 }

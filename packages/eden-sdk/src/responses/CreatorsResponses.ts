@@ -26,6 +26,7 @@ export type Creator = {
   userId: string
   creations?: string[]
   collections?: string[]
-  followers?: string[]
-  following?: string[]
+  followerCount?: number
+  followingCount?: number
+  isFollowing: boolean
 }

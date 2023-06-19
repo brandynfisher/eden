@@ -21,6 +21,8 @@ export type CreationsUnreactResponse = WebAPICallResult & {
   success?: boolean
 }
 
+export type Reactions = Record<string, boolean>
+
 export type Creation = {
   _id: string
   user: string
@@ -33,6 +35,8 @@ export type Creation = {
   name: string
   attributes: any
   mediaAttributes: MediaAttributes
+  bookmarked?: boolean
+  reactions?: Reactions
 }
 
 export interface MediaAttributes {
