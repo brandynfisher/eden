@@ -52,7 +52,7 @@ const LayoutMenu = () => {
         defaultSelectedKeys={['sub1']}
         style={{ height: '100%', borderRight: 0 }}
         items={menuItems}
-        className="text-black bg-white dark:text-white dark:bg-gray-700 "
+        className="text-black bg-white dark:text-white dark:bg-gray-900 "
       />
     </Sider>
   )

@@ -1,17 +1,47 @@
 import ThemeToggleButton from '@/components/ThemeToggleButton'
 import { UserContext } from '@/providers/UserProvider'
-import { LogoutOutlined, SettingOutlined } from '@ant-design/icons'
+import {
+  LoginOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+} from '@ant-design/icons'
 import { Dropdown, Space } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
-import React, { useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
 
-const LogoutButton = () => {
-  const { logout } = useContext(UserContext)
+const LoginLogoutButton = () => {
+  const { isConnected, isAuthenticated, authenticate, logout } =
+    useContext(UserContext)
+
+  const handleAuthClick = useCallback(() => {
+    if (!isAuthenticated) {
+      authenticate && authenticate()
+    } else {
+      logout && logout()
+    }
+  }, [logout, authenticate, isAuthenticated])
 
   return (
-    <Space onClick={() => logout()}>
-      <LogoutOutlined />
-      <div className="text-black dark:text-white">Disconnect Wallet</div>
+    <Space onClick={handleAuthClick}>
+      {!isConnected ? (
+        <div>No wallet provider connected</div>
+      ) : (
+        <>
+          {isAuthenticated ? (
+            <>
+              <LogoutOutlined />
+              <div className="text-black dark:text-white">
+                Disconnect Wallet
+              </div>
+            </>
+          ) : (
+            <>
+              <LoginOutlined />
+              <div className="text-black dark:text-white">Connect Wallet</div>
+            </>
+          )}
+        </>
+      )}
     </Space>
   )
 }
@@ -25,8 +55,8 @@ const items: ItemType[] = [
     type: 'divider',
   },
   {
-    label: <LogoutButton />,
-    key: '3',
+    label: <LoginLogoutButton />,
+    key: '2',
   },
 ]
 
@@ -37,8 +67,11 @@ const SettingsDropdown = () => {
         items,
       }}
       trigger={['click']}
+      className="cursor-pointer min-h-max self-stretch justify-center flex"
     >
-      <SettingOutlined className="text-black dark:text-white" size={1000} />
+      <div className="flex items-center" style={{ width: '36px' }}>
+        <SettingOutlined className="text-black dark:text-white text-xl flex block" />
+      </div>
     </Dropdown>
   )
 }
