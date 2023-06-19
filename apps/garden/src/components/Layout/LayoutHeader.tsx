@@ -1,26 +1,16 @@
+import MannaDropdown from '@/components/MannaDropdown'
 import SettingsDropdown from '@/components/SettingsDropdown'
 import CreationNotificationMenu from '@/components/TaskNotificationDropdown'
-import { UserContext } from '@/providers/UserProvider'
-import { WalletOutlined } from '@ant-design/icons'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { Layout, Space } from 'antd'
+import { Layout } from 'antd'
 import Link from 'next/link'
-import React, { useContext } from 'react'
+import React from 'react'
 
 const { Header } = Layout
 
 const LayoutHeader = () => {
-  const { isConnected, isAuthenticated, authenticate, mannaBalance } =
-    useContext(UserContext)
-
-  const handleAuthClick = () => {
-    if (!isAuthenticated) {
-      authenticate && authenticate()
-    }
-  }
-
   return (
-    <Header className="flex items-center p-4 bg-white dark:bg-gray-800">
+    <Header className="flex items-center px-4 bg-white dark:bg-gray-800">
       <div className="demo-logo">
         <Link href="/">
           <img
@@ -30,25 +20,13 @@ const LayoutHeader = () => {
           />
         </Link>
       </div>
-      <div style={{ marginLeft: 'auto' }}>
-        <Space>
+      <div className="ml-auto">
+        <div className="flex items-center" style={{ gap: '8px' }}>
           <CreationNotificationMenu />
-          {isConnected && (
-            <div
-              onClick={handleAuthClick}
-              className={`text-${
-                isAuthenticated ? 'green' : 'blue'
-              }-500 text-2xl`}
-            >
-              <Space>
-                {isAuthenticated ? mannaBalance : 'Sign in'}
-                <WalletOutlined />
-              </Space>
-            </div>
-          )}
+          <MannaDropdown />
           <SettingsDropdown />
           <ConnectButton />
-        </Space>
+        </div>
       </div>
     </Header>
   )
