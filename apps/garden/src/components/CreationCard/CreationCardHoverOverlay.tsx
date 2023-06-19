@@ -1,3 +1,4 @@
+import CreationCardCreator from '@/components/CreationCard/CreationCardCreator'
 import { useHover } from '@mantine/hooks'
 import { Button } from 'antd'
 
@@ -90,6 +91,7 @@ const SaveButton = ({
 }
 
 export interface CreationCardHoverOverlayProps {
+  creatorId: string
   handlers: {
     onPraiseButtonClick: () => void
     onBurnButtonClick: () => void
@@ -109,6 +111,7 @@ export interface CreationCardHoverOverlayProps {
 }
 
 const CreationCardHoverOverlay = ({
+  creatorId,
   handlers,
   loading,
   reactions,
@@ -149,6 +152,9 @@ const CreationCardHoverOverlay = ({
             loading={loading.bookmarking}
           />
         </div>
+      </div>
+      <div className="absolute w-full bottom-0">
+        <CreationCardCreator creatorId={creatorId} />
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Bookmarks, Creation, Reactions } from '@eden-labs/eden-sdk'
+import { Reactions } from '@eden-labs/eden-sdk'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
@@ -11,7 +11,7 @@ export const useFeed = ({
   userId?: string
 }) => {
   const [reactions, setReactions] = useState<Reactions | undefined>(undefined)
-  const [bookmarks, setBookmarks] = useState<Bookmarks | undefined>(undefined)
+  const [bookmarks, setBookmarks] = useState<string[] | undefined>(undefined)
   const route = userId ? `/api/feed?userId=${userId}` : '/api/feed'
   const { data, mutate: refetchFeed } = useSWR(route, fetcher)
 
@@ -29,7 +29,7 @@ export const useFeed = ({
   }, [isAuthenticated])
 
   return {
-    creations: data?.docs as Creation[],
+    creations: data?.docs,
     reactions,
     setReactions,
     bookmarks,

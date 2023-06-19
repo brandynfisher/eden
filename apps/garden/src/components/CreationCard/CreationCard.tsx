@@ -140,6 +140,8 @@ const CreationCard = ({
   }
 
   const overlayProps: CreationCardHoverOverlayProps = {
+    // @ts-ignore: fix the feed response type
+    creatorId: creation.user.userId,
     handlers: {
       onPraiseButtonClick,
       onBurnButtonClick,
