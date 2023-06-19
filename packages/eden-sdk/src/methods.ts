@@ -849,7 +849,7 @@ const creatorsGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `creators/${args.creatorId}`,
+    url: `creators/${args.userId}`,
   }
 }
 

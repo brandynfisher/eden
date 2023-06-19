@@ -8,7 +8,7 @@ const CreationMasonry = ({ creations }: { creations: Creation[] }) => {
     <div className="w-full">
       <Masonry
         items={creations}
-        columnCount={4}
+        columnCount={3}
         columnGutter={8}
         rowGutter={8}
         overscanBy={5}
