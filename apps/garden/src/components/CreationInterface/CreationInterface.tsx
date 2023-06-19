@@ -25,27 +25,29 @@ const CreationInterface = () => {
   }
 
   return (
-    <div className="w-full flex flex-col space-y-4">
-      <label htmlFor="activeGenerator">Selected Generator:</label>
-      <Select
-        id="activeGenerator"
-        value={activeGeneratorName}
-        onChange={handleGeneratorChange}
-        placeholder="Generators"
-      >
-        {generators.map(generator => (
-          <Select.Option
-            key={generator.generatorName}
-            value={generator.generatorName}
-          >
-            {generator.generatorName}
-          </Select.Option>
-        ))}
-      </Select>
-      {activeGenerator && <GeneratorForm generator={activeGenerator} />}
+    <div className="w-full grid grid-cols-1 xl:grid-cols-2">
       <div className="flex flex-col space-y-4">
-        <ResultPreview />
-        {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
+        <label htmlFor="activeGenerator">Selected Generator:</label>
+        <Select
+          id="activeGenerator"
+          value={activeGeneratorName}
+          onChange={handleGeneratorChange}
+          placeholder="Generators"
+        >
+          {generators.map(generator => (
+            <Select.Option
+              key={generator.generatorName}
+              value={generator.generatorName}
+            >
+              {generator.generatorName}
+            </Select.Option>
+          ))}
+        </Select>
+        {activeGenerator && <GeneratorForm generator={activeGenerator} />}
+        <div className="flex flex-col space-y-4">
+          <ResultPreview />
+          {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
+        </div>
       </div>
     </div>
   )
