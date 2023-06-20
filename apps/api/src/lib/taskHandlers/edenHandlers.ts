@@ -37,8 +37,8 @@ interface TaskUpdate {
 
 interface TaskOutput {
   result: string
-  file: string
-  thumbnail: string
+  files: string[]
+  thumbnails: string[]
   name: string
   attributes: any
   progress: number
@@ -93,7 +93,7 @@ const handleUpdate = async (
     intermediateOutputs.length > task.intermediate_outputs.length
   ) {
     const intermediateResults = intermediateOutputs.map(
-      async (o: TaskOutput) => ({ file: o.file, progress: o.progress }),
+      async (o: TaskOutput) => ({ files: o.files, progress: o.progress }),
     )
     Object.assign(taskUpdate, {
       intermediate_outputs: await Promise.all(intermediateResults),
@@ -104,38 +104,41 @@ const handleUpdate = async (
     const finalOutput = finalOutputs.slice(-1)[0]
     Object.assign(taskUpdate, { output: finalOutput })
     const generator = await Generator.findById(task.generator)
-    if (generator?.output == 'creation') {
-      const creationData = {
-        user: task.user,
-        task: task._id,
-        uri: finalOutput.file,
-        thumbnail: finalOutput.thumbnail,
-        name: finalOutput.name,
-        attributes: finalOutput.attributes,
-        mediaAttributes: {},
-      }
-      if (finalOutput.file) {
-        const { uri, mediaAttributes } = await server.uploadUrlAsset(
-          server,
-          finalOutput.file,
-        )
-        creationData.uri = uri
-        creationData.mediaAttributes = mediaAttributes
-      }
-      if (finalOutput.thumbnail) {
-        creationData.thumbnail = await server.uploadThumbnailAsset(
-          server,
-          finalOutput.thumbnail,
-        )
-      }
-      const creation = await Creation.create(creationData)
-      Object.assign(taskUpdate, { creation: creation._id })
 
-      if (task.webhook) {
-        await axios.post(task.webhook, {
-          taskId,
-          creation,
-        })
+    if (generator?.output == 'creation') {
+      for (let i = 0; i < finalOutput.files.length; i++) {
+        const creationData = {
+          user: task.user,
+          task: task._id,
+          uri: finalOutput.files[i],
+          thumbnail: finalOutput.thumbnails[i],
+          name: finalOutput.name,
+          attributes: finalOutput.attributes,
+          mediaAttributes: {},
+        }
+        if (finalOutput.files[i]) {
+          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+            server,
+            finalOutput.files[i],
+          )
+          creationData.uri = uri
+          creationData.mediaAttributes = mediaAttributes
+        }
+        if (finalOutput.thumbnails[i]) {
+          creationData.thumbnail = await server.uploadThumbnailAsset(
+            server,
+            finalOutput.thumbnails[i],
+          )
+        }
+        const creation = await Creation.create(creationData)
+        Object.assign(taskUpdate, { creation: creation._id })
+
+        if (task.webhook) {
+          await axios.post(task.webhook, {
+            taskId,
+            creation,
+          })
+        }
       }
     } else if (generator?.output == 'lora') {
       const loraData: LoraSchema = {
@@ -143,13 +146,13 @@ const handleUpdate = async (
         task: task._id,
         checkpoint: task.config.checkpoint,
         training_images: task.config.lora_training_urls,
-        uri: finalOutput.file,
+        uri: finalOutput.files[0],
         name: finalOutput.name,
       }
-      if (finalOutput.file) {
+      if (finalOutput.files[0]) {
         const asset = await server.uploadUrlAsset(
           server,
-          finalOutput.file,
+          finalOutput.files[0],
           'safetensors',
         )
         loraData.uri = asset.uri
