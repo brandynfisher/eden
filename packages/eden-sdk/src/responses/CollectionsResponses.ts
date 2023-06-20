@@ -40,4 +40,5 @@ export type Collection = {
   isDefaultCollection: boolean
   creations: Creation[]
   displayThumbnail: string
+  creatorId?: string
 }

@@ -12,7 +12,9 @@ export const handleAxiosError = (
   customMessage?: string,
 ) => {
   if (axios.isAxiosError(error)) {
-    const message = customMessage ?? error.response?.data.error
+    const message =
+      customMessage ??
+      (error.response?.data.message || 'Unknown Error has occurred')
     toast.error(message)
   }
 }

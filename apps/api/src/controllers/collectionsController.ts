@@ -39,7 +39,16 @@ export const getCollection = async (
 ) => {
   const { collectionId } = request.params as CollectionsGetArguments
   const collection = await Collection.findById(collectionId)
-  return reply.status(200).send({ collection })
+  if (!collection) {
+    return reply.status(404).send({ message: 'Collection not found' })
+  }
+  const user = await User.findById(collection.user)
+  return reply.status(200).send({
+    collection: {
+      ...collection.toObject(),
+      creatorId: user?.userId,
+    },
+  })
 }
 
 export const listCollections = async (
@@ -130,7 +139,7 @@ export const deleteCollection = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { collectionId } = request.params as CollectionsDeleteArguments
+  const { collectionId } = request.body as CollectionsDeleteArguments
   const collection = await Collection.findOne({
     _id: collectionId,
     user: userId,
@@ -138,6 +147,11 @@ export const deleteCollection = async (
   if (!collection) {
     return reply.status(400).send({
       message: 'Invalid collection',
+    })
+  }
+  if (collection.isDefaultCollection) {
+    return reply.status(400).send({
+      message: 'Cannot delete default collection',
     })
   }
   await collection.delete()

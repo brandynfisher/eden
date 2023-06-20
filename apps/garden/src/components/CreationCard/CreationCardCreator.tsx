@@ -1,3 +1,4 @@
+import { truncatedAddress } from '@/lib/address'
 import { useHover } from '@mantine/hooks'
 import { Avatar } from 'antd'
 import Link from 'next/link'
@@ -5,7 +6,7 @@ import Link from 'next/link'
 const CreationCardCreator = ({ creatorId }: { creatorId: string }) => {
   const { hovered, ref } = useHover()
 
-  const truncatedId = `${creatorId.slice(0, 5)}...${creatorId.slice(-4)}`
+  const truncatedId = truncatedAddress(creatorId)
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()

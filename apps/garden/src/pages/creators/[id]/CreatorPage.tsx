@@ -33,7 +33,7 @@ const CollectionTabContent = ({
     <div className="grid grid-cols-3 gap-4">
       {collections &&
         collections.map(collection => (
-          <CollectionCard key={collection._id} collection={collection} />
+          <CollectionCard key={collection.id} collection={collection} />
         ))}
     </div>
   )

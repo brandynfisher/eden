@@ -5,12 +5,20 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
-  const { userId } = req.query
+  const { userId, collectionId } = req.query
   const authToken = req.session.token
 
-  const feedRoute = userId
-    ? `${CONFIG.API_URL}/feed?userId=${userId}`
-    : `${CONFIG.API_URL}/feed`
+  const route = () => {
+    let base = `${CONFIG.API_URL}/feed`
+    if (userId) {
+      base += `?userId=${userId}`
+    }
+    if (collectionId) {
+      base += `?collectionId=${collectionId}`
+    }
+    return base
+  }
+
   switch (method) {
     case 'GET':
       try {
@@ -19,7 +27,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
               Authorization: `Bearer ${authToken}`,
             }
           : {}
-        const response = await axios.get(`${feedRoute}`, {
+        const response = await axios.get(route(), {
           headers,
         })
         return res.status(200).json(response.data)

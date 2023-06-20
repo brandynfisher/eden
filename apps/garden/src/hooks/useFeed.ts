@@ -6,14 +6,25 @@ import useSWR from 'swr'
 export const useFeed = ({
   isAuthenticated,
   userId,
+  collectionId,
 }: {
   isAuthenticated: boolean
   userId?: string
+  collectionId?: string
 }) => {
+  const route = () => {
+    let base = '/api/feed'
+    if (userId) {
+      base += `?userId=${userId}`
+    }
+    if (collectionId) {
+      base += `?collectionId=${collectionId}`
+    }
+    return base
+  }
   const [reactions, setReactions] = useState<Reactions | undefined>(undefined)
   const [bookmarks, setBookmarks] = useState<string[] | undefined>(undefined)
-  const route = userId ? `/api/feed?userId=${userId}` : '/api/feed'
-  const { data, mutate: refetchFeed } = useSWR(route, fetcher)
+  const { data, mutate: refetchFeed } = useSWR(route(), fetcher)
 
   useEffect(() => {
     if (data) {
