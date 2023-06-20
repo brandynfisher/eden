@@ -5,7 +5,7 @@ import Link from 'next/link'
 const CreationCardCreator = ({ creatorId }: { creatorId: string }) => {
   const { hovered, ref } = useHover()
 
-  const truncatedId = `${creatorId.slice(0, 3)}...${creatorId.slice(-3)}`
+  const truncatedId = `${creatorId.slice(0, 5)}...${creatorId.slice(-4)}`
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
