@@ -2,38 +2,13 @@ import CreationCardHoverOverlay, {
   CreationCardHoverOverlayProps,
 } from '@/components/CreationCard/CreationCardHoverOverlay'
 import CreationCardPreview from '@/components/CreationCard/CreationCardPreview'
-import CreationDetail from '@/components/CreationDetail'
+import CreationDetailModal from '@/components/CreationCard/CreationDetailModal'
 import { handleAxiosError } from '@/lib/fetcher'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { Modal } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React from 'react'
-
-const CreationDetailModal = ({
-  open,
-  setDetailModalOpen,
-  creation,
-  preUrl,
-}: {
-  open: boolean
-  setDetailModalOpen: (open: boolean) => void
-  creation: Creation
-  preUrl: string
-}) => {
-  const router = useRouter()
-  const onDetailModalClose = () => {
-    setDetailModalOpen(false)
-    router.push('', preUrl)
-  }
-
-  return (
-    <Modal open={open} onCancel={onDetailModalClose} title={creation.name}>
-      <CreationDetail creation={creation} />
-    </Modal>
-  )
-}
 
 const CreationCard = ({
   index,
