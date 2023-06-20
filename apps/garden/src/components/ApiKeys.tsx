@@ -1,9 +1,9 @@
 import { useApiKeys } from '@/hooks/useApiKeys'
-import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { CopyOutlined } from '@ant-design/icons'
+import { useClipboard } from '@mantine/hooks'
 import { Breakpoint, Button, Input, Space, Table } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
@@ -37,7 +37,7 @@ const ActionsButtons = ({
 }
 
 const TruncatedField = ({ name, text }: { name: string; text: string }) => {
-  const { copy } = useCopyToClipboard()
+  const { copy } = useClipboard()
 
   const handleCopyClick = async () => {
     await copy(text)
