@@ -1,10 +1,13 @@
 import { useApiKeys } from '@/hooks/useApiKeys'
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Button, Input, Space, Table } from 'antd'
+import { CopyOutlined } from '@ant-design/icons'
+import { Breakpoint, Button, Input, Space, Table } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
+import { toast } from 'react-toastify'
 
 const ActionsButtons = ({
   apiKey,
@@ -30,6 +33,26 @@ const ActionsButtons = ({
         Delete
       </Button>
     </Space>
+  )
+}
+
+const TruncatedField = ({ name, text }: { name: string; text: string }) => {
+  const { copy } = useCopyToClipboard()
+
+  const handleCopyClick = async () => {
+    await copy(text)
+    toast.success(`Copied ${name} to clipboard!`)
+  }
+
+  return (
+    <Button className="flex" onClick={handleCopyClick} title={text}>
+      <div className="truncate" style={{ maxWidth: '80px' }}>
+        {text}
+      </div>
+      <div className="ml-auto">
+        <CopyOutlined />
+      </div>
+    </Button>
   )
 }
 
@@ -61,11 +84,15 @@ const ApiKeys = () => {
       title: 'API Key',
       dataIndex: 'apiKey',
       key: 'apiKey',
+      width: 120,
+      render: (val: string) => <TruncatedField name="API Key" text={val} />,
     },
     {
       title: 'API Secret',
       dataIndex: 'apiSecret',
       key: 'apiSecret',
+      width: 120,
+      render: (val: string) => <TruncatedField name="API Secret" text={val} />,
     },
     {
       title: 'Note',
@@ -77,11 +104,13 @@ const ApiKeys = () => {
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (dateCreated: string) => new Date(dateCreated).toLocaleString(),
+      responsive: ['lg'] as Breakpoint[],
     },
     {
       title: 'Actions',
       dataIndex: 'actions',
       key: 'actions',
+      width: 100,
     },
   ]
 
@@ -92,17 +121,20 @@ const ApiKeys = () => {
   }))
 
   return (
-    <div>
-      <h1 className="text-xl">API Keys</h1>
-      <Table dataSource={data} columns={columns} />
-      <h1 className="mt-10 text-l">Create new API key</h1>
-      <Input
-        placeholder="Note about this key"
-        value={note}
-        style={{ width: '50%', marginTop: 10, marginBottom: 10 }}
-        onChange={e => setNote(e.target.value)}
-      />
-      <br />
+    <div className="mb-4">
+      <h2 className="text-xl">API Keys</h2>
+      <Table dataSource={data} columns={columns} size="middle" />
+
+      <div>
+        <h3 className="text-l">Create new API key</h3>
+        <Input
+          placeholder="Note about this key"
+          value={note}
+          style={{ width: '50%', marginTop: 10, marginBottom: 10 }}
+          onChange={e => setNote(e.target.value)}
+        />
+      </div>
+
       <Button
         className="font-mono bg-black text-white h-10"
         onClick={handleCreateAPIKey}
