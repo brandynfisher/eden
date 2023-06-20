@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 interface IRepository<T> {
   query(
-    query?: Record<string, string | string[] | ObjectId | undefined>,
+    query?: Record<string, string | string[] | ObjectId | object | undefined>,
     options?: { page?: number; limit?: number; sort?: object },
   ): Promise<PaginatedResponse<T>>
   create(data: object): Promise<T>
