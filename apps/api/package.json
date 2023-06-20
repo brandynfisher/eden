@@ -11,7 +11,8 @@
     "start": "node --experimental-specifier-resolution=node build/src",
     "pretest": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "register": "node scripts/mongo-register.js"
   },
   "engines": {
     "node": ">=16.0.0"
