@@ -2,7 +2,7 @@ import CreationCardHoverOverlay, {
   CreationCardHoverOverlayProps,
 } from '@/components/CreationCard/CreationCardHoverOverlay'
 import CreationCardPreview from '@/components/CreationCard/CreationCardPreview'
-import CreationDetail from '@/components/CreationDetail'
+import CreationDetail from '@/components/CreationDetail/CreationDetail'
 import { handleAxiosError } from '@/lib/fetcher'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
@@ -29,7 +29,7 @@ const CreationDetailModal = ({
   }
 
   return (
-    <Modal open={open} onCancel={onDetailModalClose} title={creation.name}>
+    <Modal open={open} onCancel={onDetailModalClose}>
       <CreationDetail creation={creation} />
     </Modal>
   )

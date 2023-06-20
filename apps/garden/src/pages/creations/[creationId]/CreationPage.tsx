@@ -1,4 +1,4 @@
-import CreationDetail from '@/components/CreationDetail'
+import CreationDetail from '@/components/CreationDetail/CreationDetail'
 import { useCreation } from '@/hooks/useCreation'
 import { useRouter } from 'next/router'
 import React from 'react'
