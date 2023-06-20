@@ -7,6 +7,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { SiweMessage, generateNonce } from 'siwe'
 
 import Challenge from '../models/Challenge'
+import { Collection } from '../models/Collection'
 import { User, UserInput } from '../models/Creator'
 import { Manna } from '../models/Manna'
 
@@ -70,6 +71,15 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
     const newUser = new User(userInput)
     await newUser.save()
     authUser = newUser
+
+    // Give them a default collection
+    const collection = new Collection({
+      user: authUser._id,
+      name: 'Bookmarks',
+      description: 'My bookmarked creations',
+      isDefaultCollection: true,
+    })
+    await collection.save()
 
     // Give them free Manna
     const newManna = new Manna({

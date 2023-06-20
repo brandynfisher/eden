@@ -1,3 +1,4 @@
+import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
 import CreationCardHoverOverlay, {
   CreationCardHoverOverlayProps,
 } from '@/components/CreationCard/CreationCardHoverOverlay'
@@ -6,6 +7,7 @@ import CreationDetailModal from '@/components/CreationCard/CreationDetailModal'
 import { handleAxiosError } from '@/lib/fetcher'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
+import { Button, message } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React from 'react'
@@ -27,10 +29,31 @@ const CreationCard = ({
   const [burning, setBurning] = React.useState(false)
   const [bookmarking, setBookmarking] = React.useState(false)
   const [creation, setCreation] = React.useState(data)
+  const [messageApi, contextHolder] = message.useMessage()
+  const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
+    React.useState(false)
 
   const praised = creation.reactions?.praise || false
   const burned = creation.reactions?.burn || false
   const bookmarked = creation.bookmarked || false
+
+  const SaveButtonMessageContent = () => {
+    return (
+      <div className="flex items-center justify-between">
+        <span>Saved to Bookmarks</span>
+        <Button
+          type="primary"
+          className="ml-2 rounded-full"
+          onClick={() => {
+            messageApi.destroy()
+            setAddToCollectionModalOpen(true)
+          }}
+        >
+          Change
+        </Button>
+      </div>
+    )
+  }
 
   const openDetailModal = () => {
     setDetailModalOpen(true)
@@ -108,6 +131,10 @@ const CreationCard = ({
         ...creation,
         bookmarked: !bookmarked,
       })
+      messageApi.open({
+        content: <SaveButtonMessageContent />,
+        className: 'custom-class',
+      })
     } catch (error) {
       handleAxiosError(error)
     }
@@ -150,6 +177,13 @@ const CreationCard = ({
         creation={data}
       />
       {false && <p>{width}</p>}
+      {contextHolder}
+      <AddToCollectionModal
+        open={addToCollectionModalOpen}
+        // open={true}
+        setOpen={setAddToCollectionModalOpen}
+        creation={creation}
+      />
     </>
   )
 }

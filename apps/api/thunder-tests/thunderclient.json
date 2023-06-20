@@ -434,11 +434,11 @@
     "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
     "containerId": "",
     "name": "Get Feed",
-    "url": "http://localhost:5050/feed",
+    "url": "http://localhost:5050/feed?collectionId=6491b9cfd1e626c9085ae632",
     "method": "GET",
     "sortNum": 32500,
     "created": "2023-06-16T20:44:46.887Z",
-    "modified": "2023-06-16T20:45:03.159Z",
+    "modified": "2023-06-20T19:14:55.331Z",
     "headers": [
       {
         "name": "X-Api-Key",
@@ -449,7 +449,13 @@
         "value": "user"
       }
     ],
-    "params": [],
+    "params": [
+      {
+        "name": "collectionId",
+        "value": "6491b9cfd1e626c9085ae632",
+        "isPath": false
+      }
+    ],
     "tests": []
   },
   {
@@ -506,6 +512,29 @@
       "raw": "{\n  \"creationIds\": [\"648c9ae3181b8f96fd16036e\"]\n}",
       "form": []
     },
+    "tests": []
+  },
+  {
+    "_id": "2048607e-bcc0-4402-ac83-9fc7e287404e",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Get Collections",
+    "url": "http://localhost:5050/collections",
+    "method": "GET",
+    "sortNum": 17812.5,
+    "created": "2023-06-20T17:43:52.357Z",
+    "modified": "2023-06-20T17:44:29.728Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "user"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "user"
+      }
+    ],
+    "params": [],
     "tests": []
   }
 ]

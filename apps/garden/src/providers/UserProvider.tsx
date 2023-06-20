@@ -1,5 +1,5 @@
 import { useUserState } from '@/hooks/useUserState'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Collection, Creation } from '@eden-labs/eden-sdk'
 import { Agent } from '@eden-labs/eden-sdk'
 import React, { PropsWithChildren, createContext } from 'react'
 
@@ -14,9 +14,11 @@ export interface UserContextType {
   mannaBalance?: number
   creations?: Creation[]
   characters?: Agent[]
+  collections?: Collection[]
   refetch: {
     mannaBalance: VoidFunction
     characters: VoidFunction
+    collections: VoidFunction
   }
 }
 
@@ -35,11 +37,15 @@ const defaultUserState: UserContextType = {
   mannaBalance: undefined,
   creations: undefined,
   characters: undefined,
+  collections: undefined,
   refetch: {
     mannaBalance: () => {
       return null
     },
     characters: () => {
+      return null
+    },
+    collections: () => {
       return null
     },
   },

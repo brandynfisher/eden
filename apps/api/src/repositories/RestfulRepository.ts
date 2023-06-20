@@ -33,7 +33,7 @@ class RestfulRepository<T> implements IRepository<T> {
   }
 
   async query(
-    query: Record<string, string | string[] | ObjectId | undefined>,
+    query: Record<string, string | string[] | ObjectId | object | undefined>,
     options: { page?: number; limit?: number; sort?: object } = {},
   ): Promise<PaginatedResponse<T>> {
     const labels = {

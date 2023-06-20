@@ -1,8 +1,4 @@
-import {
-  CreationsListArguments,
-  PaginatedResponse,
-  ReactionType,
-} from '@eden-labs/eden-sdk'
+import { PaginatedResponse, ReactionType } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
@@ -86,21 +82,39 @@ const getBookmarks = async (
   return bookmarksMap
 }
 
+interface FeedGetArguments {
+  userId?: string
+  collectionId?: string
+  limit?: number
+  page?: number
+  sort?: object
+}
+
 export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   const {
     userId: filterUserIds,
+    collectionId,
     limit,
     page,
     sort,
-  } = request.query as CreationsListArguments
+  } = request.query as FeedGetArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId: filterUserIds,
   })
 
+  const collection = await Collection.findById(collectionId)
+  const collectionCreations = collection?.creations || undefined
+
   const creationRepository = new CreationRepository(Creation)
+
   const creations = await creationRepository.query(
     {
+      _id: collectionCreations
+        ? {
+            $in: collectionCreations,
+          }
+        : undefined,
       user: creators.docs
         ? creators.docs.map(creator => creator._id)
         : undefined,
