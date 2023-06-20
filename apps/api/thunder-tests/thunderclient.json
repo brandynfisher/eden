@@ -507,5 +507,28 @@
       "form": []
     },
     "tests": []
+  },
+  {
+    "_id": "2048607e-bcc0-4402-ac83-9fc7e287404e",
+    "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
+    "containerId": "",
+    "name": "Get Collections",
+    "url": "http://localhost:5050/collections",
+    "method": "GET",
+    "sortNum": 17812.5,
+    "created": "2023-06-20T17:43:52.357Z",
+    "modified": "2023-06-20T17:44:29.728Z",
+    "headers": [
+      {
+        "name": "X-Api-Key",
+        "value": "user"
+      },
+      {
+        "name": "X-Api-Secret",
+        "value": "user"
+      }
+    ],
+    "params": [],
+    "tests": []
   }
 ]

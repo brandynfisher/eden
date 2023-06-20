@@ -43,8 +43,22 @@ const collection = new Schema<CollectionDocument>(
   },
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
   },
 )
+
+collection.virtual('latestCreation', {
+  ref: 'creations',
+  localField: '_id', // Find creation where `localField`
+  foreignField: 'collection', // is equal to `foreignField`
+  justOne: true, // Only get one document
+  options: { sort: { createdAt: -1 } }, // Sort creations by date in descending order
+})
 
 collection.pre<CollectionDocument>('update', function (next) {
   this.updatedAt = new Date()

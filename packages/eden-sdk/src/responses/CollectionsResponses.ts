@@ -1,6 +1,4 @@
-import { Capability } from 'src/responses/CapabilitiesResponses'
-
-import { PaginatedResponse } from '.'
+import { Creation, PaginatedResponse } from '.'
 import { WebAPICallResult } from '../EdenClient'
 
 export type CollectionsCreateResponse = WebAPICallResult & {
@@ -32,11 +30,14 @@ export type CollectionsListResponse = WebAPICallResult &
 
 export type CollectionsGetResponse = WebAPICallResult & {
   error?: string
-  agent: Collection
+  collection: Collection
 }
 
 export type Collection = {
   id: string
   name: string
-  capabilities: Capability[]
+  description: string
+  isDefaultCollection: boolean
+  creations: Creation[]
+  displayThumbnail: string
 }
