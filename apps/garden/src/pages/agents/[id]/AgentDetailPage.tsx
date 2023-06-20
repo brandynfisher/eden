@@ -23,6 +23,12 @@ const CharacterPage = () => {
   return (
     <CharacterContext.Provider value={{ character }}>
       <h2 className="font-mono font-bold text-xl">Character Details</h2>
+      {character && (
+        <div>
+          {character.name} ({characterId})
+        </div>
+      )}
+
       <h3 className="font-mono mt-4">Capabilities</h3>
       {capabilities && capabilities.length > 0
         ? capabilities.map((capability, idx) => (
