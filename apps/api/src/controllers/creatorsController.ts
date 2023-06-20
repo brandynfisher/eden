@@ -54,7 +54,7 @@ export const getCreator = async (
     isFollowing = !!followerQuery
   }
   const creator = {
-    ...creatorDoc._doc,
+    ...creatorDoc.toObject(),
     followerCount: followers.length,
     followingCount: following.length,
     isFollowing,

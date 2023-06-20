@@ -131,12 +131,10 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     const bookmarksMap = await getBookmarks(uid, creations)
 
     const creationDocs = creations.docs.map(creation => {
-      // wtf
-      const doc = creation._doc as CreationDocument
       return {
-        ...doc,
-        reactions: reactionsMap[doc._id.toString()],
-        bookmarked: bookmarksMap[doc._id.toString()],
+        ...creation.toObject(),
+        reactions: reactionsMap[creation._id.toString()],
+        bookmarked: bookmarksMap[creation._id.toString()],
       }
     })
 
@@ -146,6 +144,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
       reactions: reactionsMap,
       bookmarks: bookmarksMap,
     }
+
     return reply.status(200).send(feed)
   } else {
     // No user, so no reactions or bookmarks
