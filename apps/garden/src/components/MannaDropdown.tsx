@@ -1,6 +1,6 @@
 import { UserContext } from '@/providers/UserProvider'
 import { InfoCircleOutlined, WalletOutlined } from '@ant-design/icons'
-import {Button, Dropdown} from 'antd'
+import { Button, Dropdown } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import React, { useContext } from 'react'
 
@@ -61,10 +61,10 @@ const MannaDropdown = () => {
         items,
       }}
       trigger={['click']}
-      className="mr-4 cursor-pointer"
+      className="cursor-pointer"
     >
       <Button type="text" className="flex">
-        <WalletOutlined className="text-black dark:text-white text-xl flex mr-2" />
+        <WalletOutlined className="text-black dark:text-white text-xl flex mr-1" />
         <div>{mannaBalance}</div>
       </Button>
     </Dropdown>

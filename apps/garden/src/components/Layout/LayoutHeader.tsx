@@ -21,7 +21,7 @@ const LayoutHeader = () => {
         </Link>
       </div>
       <div className="ml-auto">
-        <div className="flex items-center" style={{ gap: '8px' }}>
+        <div className="flex items-center" style={{ gap: '4px' }}>
           <CreationNotificationMenu />
           <MannaDropdown />
           <SettingsDropdown />
