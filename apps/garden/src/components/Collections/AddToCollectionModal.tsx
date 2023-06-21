@@ -1,7 +1,9 @@
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Collection, Creation } from '@eden-labs/eden-sdk'
+import { useHover } from '@mantine/hooks'
 import { Button, Form, Input, List, Modal } from 'antd'
+import { MessageInstance } from 'antd/es/message/interface'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
 
@@ -9,10 +11,12 @@ const AddToCollectionModal = ({
   open,
   setOpen,
   creation,
+  messageApi,
 }: {
   open: boolean
   setOpen: (open: boolean) => void
   creation: Creation
+  messageApi: MessageInstance
 }) => {
   const { collections } = useContext(UserContext)
   const [isCreating, setIsCreating] = useState(false)
@@ -36,15 +40,45 @@ const AddToCollectionModal = ({
         description,
         creationIds: [creation._id],
       })
+      messageApi.open({
+        type: 'success',
+        content: 'Collection created successfully',
+      })
     } catch (e) {
       handleAxiosError(e)
     }
+    form.resetFields()
+    setIsCreating(false)
     setLoading(false)
     setOpen(false)
   }
 
-  const defaultCollection =
-    collections && collections.filter(c => c.isDefaultCollection)[0]
+  const onCancel = () => {
+    form.resetFields()
+    setIsCreating(false)
+    setLoading(false)
+    setOpen(false)
+  }
+
+  const handleSave = async (collection: Collection) => {
+    try {
+      await axios.post('/api/collections/add', {
+        collectionId: collection.id,
+        creationIds: [creation._id],
+      })
+      messageApi.open({
+        type: 'success',
+        content: 'Creation saved successfully',
+      })
+    } catch (e) {
+      handleAxiosError(e)
+    }
+    setOpen(false)
+  }
+
+  const nonDefaultCollections =
+    collections &&
+    collections.filter(collection => collection.isDefaultCollection !== true)
 
   const footer = isCreating
     ? [
@@ -65,12 +99,7 @@ const AddToCollectionModal = ({
   const title = isCreating ? 'Create New Collection' : 'Add to Collection'
 
   return (
-    <Modal
-      title={title}
-      open={open}
-      onCancel={() => setOpen(false)}
-      footer={footer}
-    >
+    <Modal title={title} open={open} onCancel={onCancel} footer={footer}>
       {isCreating ? (
         <Form form={form} layout="vertical">
           <Form.Item
@@ -100,18 +129,24 @@ const AddToCollectionModal = ({
         </Form>
       ) : (
         <div className="overflow-y-auto max-h-80">
-          <h2 className="text-lg font-semibold">Quick Save</h2>
-          <div className="rounded p-2 mb-4">
-            {defaultCollection?.name || 'Default Collection'}
-          </div>
-          <h2 className="text-lg font-semibold">My collections</h2>
           <List
-            dataSource={collections}
-            renderItem={collection => (
-              <List.Item>
-                <div className="rounded p-2 mb-2">{collection.name}</div>
-              </List.Item>
-            )}
+            dataSource={nonDefaultCollections}
+            renderItem={collection => {
+              const { hovered, ref } = useHover()
+
+              return (
+                <List.Item
+                  onClick={() => handleSave(collection)}
+                  style={{
+                    cursor: 'pointer',
+                    backgroundColor: hovered ? '#f0f0f0' : 'transparent',
+                  }}
+                  ref={ref}
+                >
+                  <div className="rounded p-2 mb-2">{collection.name}</div>
+                </List.Item>
+              )
+            }}
           />
           <button
             className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
