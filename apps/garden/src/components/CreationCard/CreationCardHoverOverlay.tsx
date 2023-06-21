@@ -1,5 +1,4 @@
 import CreationCardCreator from '@/components/CreationCard/CreationCardCreator'
-import { StarFilled, StarOutlined } from '@ant-design/icons'
 import { useHover } from '@mantine/hooks'
 import { Button } from 'antd'
 
@@ -83,9 +82,9 @@ const SaveButton = ({
       <span
         role="img"
         aria-label="Save"
-        className={`text-sm ${!hovered && !bookmarked}`}
+        className={`text-sm ${!hovered && !bookmarked && 'filter grayscale'}`}
       >
-        {bookmarked ? <StarFilled /> : <StarOutlined />}
+        ⭐️
       </span>
     </Button>
   )

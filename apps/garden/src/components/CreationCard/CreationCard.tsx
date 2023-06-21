@@ -127,13 +127,17 @@ const CreationCard = ({
           creationIds: [creation._id],
         })
       }
+      if (!bookmarked) {
+        messageApi.open({
+          content: <SaveButtonMessageContent />,
+          className: 'custom-class',
+        })
+      } else {
+        messageApi.destroy()
+      }
       setCreation({
         ...creation,
         bookmarked: !bookmarked,
-      })
-      messageApi.open({
-        content: <SaveButtonMessageContent />,
-        className: 'custom-class',
       })
     } catch (error) {
       handleAxiosError(error)
@@ -180,7 +184,6 @@ const CreationCard = ({
       {contextHolder}
       <AddToCollectionModal
         open={addToCollectionModalOpen}
-        // open={true}
         setOpen={setAddToCollectionModalOpen}
         creation={creation}
       />
