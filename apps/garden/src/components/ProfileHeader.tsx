@@ -1,68 +1,42 @@
-import { UserContext } from '@/providers/UserProvider'
-import { Button } from 'antd'
-import React, { useContext } from 'react'
+import {UserContext} from '@/providers/UserProvider'
+import {Button} from 'antd'
+import {EditOutlined, UserAddOutlined, UserDeleteOutlined} from '@ant-design/icons'
+import React, {useContext} from 'react'
+import ProfileHeaderName from "@/components/ProfileHeaderName";
+import ProfileHeaderSocial from "@/components/ProfileHeaderSocial";
 
 const ProfileHeader = ({
-  creatorDisplayName,
-  numCreations,
-  followerCount,
-  followingCount,
-  isAuthUser,
-  isFollowingUser,
-  onFollowButtonClick,
-  followLoading,
-}: {
+                         creatorDisplayName,
+                         isAuthUser,
+                         numCreations,
+                        ...rest
+                       }: {
   creatorDisplayName: string
+  isAuthUser: boolean
   numCreations: number | undefined
   followerCount: number | undefined
   followingCount: number | undefined
-  isAuthUser: boolean
   isFollowingUser: boolean
   onFollowButtonClick: () => void
   followLoading: boolean
 }) => {
-  const { isAuthenticated } = useContext(UserContext)
+  const {isAuthenticated} = useContext(UserContext)
   return (
-    <div className="flex items-center bg-blue-500 dark:bg-gray-900 rounded-lg p-4 relative">
-      <div className="flex-shrink-0 mr-4">
-        <div className="h-12 w-12 rounded-full bg-white"></div>
-      </div>
-      <div>
-        <div>
-          <div className="overflow-x-hidden">
-            <h2
-              className="text-white text-lg font-semibold truncate"
-              title={creatorDisplayName}
-            >
-              {creatorDisplayName}
-            </h2>
-          </div>
-          <Button>Edit</Button>
+    <div className="flex flex-col bg-gray-200 dark:bg-gray-900 rounded-lg p-4 relative">
+      <div className="flex items-center">
+        <div className="flex h-full flex-shrink-0 mr-4 w-min">
+          <div className="h-12 w-12 rounded-full bg-white"></div>
         </div>
-
-        <p className="text-white text-sm">{numCreations || 0} Creations</p>
-        <div className="flex mt-2">
-          <div className="mr-4">
-            <p className="text-white text-sm">{followerCount || 0} Followers</p>
+        <div className="flex flex-col justify-center w-full">
+          <div className="mb-2">
+            <ProfileHeaderName isOwnProfile={isAuthenticated && isAuthUser} displayName={creatorDisplayName}  />
           </div>
-          <div className="mr-4">
-            <p className="text-white text-sm">
-              {followingCount || 0} Following
-            </p>
-          </div>
+          <div className="text-sm"><strong>{numCreations || 0}</strong> Creations</div>
         </div>
       </div>
-      {isAuthenticated && !isAuthUser && (
-        <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
-          <Button
-            type="primary"
-            onClick={onFollowButtonClick}
-            loading={followLoading}
-          >
-            {isFollowingUser ? 'Following' : 'Follow'}
-          </Button>
-        </div>
-      )}
+      <div className="col-span-full sm:col-span-1">
+        <ProfileHeaderSocial isOwnProfile={isAuthenticated && isAuthUser} {...rest}/>
+      </div>
     </div>
   )
 }

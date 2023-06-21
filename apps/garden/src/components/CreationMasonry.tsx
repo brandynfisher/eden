@@ -8,11 +8,11 @@ const CreationMasonry = ({ creations }: { creations: Creation[] }) => {
     <div className="w-full">
       <Masonry
         items={creations}
-        columnCount={3}
-        columnGutter={8}
-        rowGutter={8}
-        overscanBy={5}
+        maxColumnCount={4}
+        columnGutter={12}
+        overscanBy={2}
         render={CreationCard}
+        itemHeightEstimate={330}
       />
     </div>
   )

@@ -4,7 +4,7 @@ import React from 'react'
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
   return (
-    <div className="pt-4">
+    <div>
       <div className="mb-4 rounded-xl overflow-hidden">
         <img src={creation.thumbnail} alt="" className="max-h-full max-w-full object-contain" />
       </div>
