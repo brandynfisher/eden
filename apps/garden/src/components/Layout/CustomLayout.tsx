@@ -2,11 +2,11 @@ import LayoutHeader from '@/components/Layout/LayoutHeader'
 import LayoutMenu from '@/components/Layout/LayoutMenu'
 import { ConfigProvider, Layout, theme as antdTheme } from 'antd'
 import { useTheme } from 'next-themes'
-import React, {PropsWithChildren, useEffect, useState} from 'react'
+import React, { PropsWithChildren, useEffect, useState } from 'react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-const { Content } = Layout
+const { Content } = Layout1
 
 const CustomLayout = ({ children }: PropsWithChildren) => {
   const { resolvedTheme } = useTheme()
