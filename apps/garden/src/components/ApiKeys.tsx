@@ -2,7 +2,7 @@ import { useApiKeys } from '@/hooks/useApiKeys'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { CopyOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { useClipboard } from '@mantine/hooks'
 import { Breakpoint, Button, Input, Space, Table } from 'antd'
 import axios from 'axios'
@@ -37,7 +37,7 @@ const ActionsButtons = ({
 }
 
 const TruncatedField = ({ name, text }: { name: string; text: string }) => {
-  const { copy } = useClipboard()
+  const { copied, copy } = useClipboard({ timeout: 750 })
 
   const handleCopyClick = async () => {
     await copy(text)
@@ -50,7 +50,7 @@ const TruncatedField = ({ name, text }: { name: string; text: string }) => {
         {text}
       </div>
       <div className="ml-auto">
-        <CopyOutlined />
+        {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
       </div>
     </Button>
   )

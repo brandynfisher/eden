@@ -23,14 +23,23 @@ const ProfileHeader = ({
 }) => {
   const { isAuthenticated } = useContext(UserContext)
   return (
-    <div className="flex items-center bg-blue-500 rounded-lg p-4 relative">
+    <div className="flex items-center bg-blue-500 dark:bg-gray-900 rounded-lg p-4 relative">
       <div className="flex-shrink-0 mr-4">
         <div className="h-12 w-12 rounded-full bg-white"></div>
       </div>
       <div>
-        <h2 className="text-white text-lg font-semibold">
-          {creatorDisplayName}
-        </h2>
+        <div>
+          <div className="overflow-x-hidden">
+            <h2
+              className="text-white text-lg font-semibold truncate"
+              title={creatorDisplayName}
+            >
+              {creatorDisplayName}
+            </h2>
+          </div>
+          <Button>Edit</Button>
+        </div>
+
         <p className="text-white text-sm">{numCreations || 0} Creations</p>
         <div className="flex mt-2">
           <div className="mr-4">

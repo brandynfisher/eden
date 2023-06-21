@@ -1,11 +1,35 @@
 import { Creation } from '@eden-labs/eden-sdk'
+import { Card } from 'antd'
 import React from 'react'
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
   return (
-    <div>
-      <h1 className="text-3xl font-bold">{creation.name}</h1>
-      <img src={creation.thumbnail} alt="" className="w-full" />
+    <div className="pt-4">
+      <div className="mb-4 rounded-xl overflow-hidden">
+        <img src={creation.thumbnail} alt="" className="w-full" />
+      </div>
+
+      <div className="grid grid-cols-12 gap-4">
+        <Card className="col-span-4">
+          <div className="text-gray-500">User</div>
+          {/*// @ts-ignore: @todo: fix the feed response type*/}
+          <div>{creation.user.userId}</div>
+        </Card>
+        <Card className="col-span-8">
+          <div className="grid grid-cols-2">
+            {/*// @ts-ignore: @todo: fix the feed response type*/}
+            {creation.task.config &&
+              // @ts-ignore: @todo: fix the feed response type
+              Object.entries(creation.task.config).map(([key, val]) => (
+                <div key={`cfg-${key}`}>
+                  <div className="text-gray-500 capitalize">{key}</div>
+                  {/*// @ts-ignore: @todo: fix the feed response type*/}
+                  <div>{val}</div>
+                </div>
+              ))}
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -67,7 +67,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
       return (
         <div
           key={parameter.name}
-          className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md mb-6"
+          className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md mb-6"
         >
           {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
           parameter.allowedValuesFrom ? (
@@ -117,6 +117,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
   return (
     <Form form={form} name="generate" onFinish={handleFinish}>
       <Card
+        type="inner"
         title={
           <div className="py-4">
             <h3>/{generator.generatorName}</h3>
@@ -135,7 +136,6 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
             </Button>
           </div>,
         ]}
-        className="border-solid border-1 border-gray-200 dark:border-gray-700 rounded-lg"
       >
         {renderFormFields(requiredParameters)}
         {optionalParameters.length > 0 && (

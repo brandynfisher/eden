@@ -24,6 +24,7 @@ export type CreatorsGetResponse = WebAPICallResult & {
 
 export type Creator = {
   userId: string
+  username?: string
   creations?: string[]
   collections?: string[]
   followerCount?: number

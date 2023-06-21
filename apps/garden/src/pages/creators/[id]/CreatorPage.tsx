@@ -79,7 +79,9 @@ const CreatorPage = ({ creatorId }: { creatorId: string }) => {
     <div className={`flex flex-col min-h-screen ${inter.className}`}>
       <Space direction="vertical">
         <ProfileHeader
-          creatorDisplayName={creatorId}
+          creatorDisplayName={
+            creator && creator.username ? creator.username : creatorId
+          }
           numCreations={creations.length}
           followerCount={followerCount}
           followingCount={creator?.followingCount}

@@ -29,8 +29,15 @@ const CreationDetailModal = ({
   }
 
   return (
-    <Modal open={open} onCancel={onDetailModalClose} title={creation.name}>
-      <CreationDetail creation={creation} />
+    <Modal
+      open={open}
+      onCancel={onDetailModalClose}
+      title={creation.name}
+      footer={false}
+    >
+      <div>
+        <CreationDetail creation={creation} />
+      </div>
     </Modal>
   )
 }
@@ -140,7 +147,7 @@ const CreationCard = ({
   }
 
   const overlayProps: CreationCardHoverOverlayProps = {
-    // @ts-ignore: fix the feed response type
+    // @ts-ignore: @todo: fix the feed response type
     creatorId: creation.user.userId,
     handlers: {
       onPraiseButtonClick,
@@ -163,8 +170,8 @@ const CreationCard = ({
   return (
     <>
       <div className="relative cursor-pointer" key={index}>
-        <div className="rounded-lg" ref={ref}>
-          <div style={{ position: 'relative' }}>
+        <div ref={ref}>
+          <div className="relative rounded-xl overflow-hidden">
             <CreationCardPreview creation={creation} hovered={hovered} />
             {hovered && <CreationCardHoverOverlay {...overlayProps} />}
           </div>
