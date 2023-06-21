@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
-  const { userId } = req.body
+  const { userId } = req.query as { userId: string }
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
