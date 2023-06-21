@@ -1,8 +1,4 @@
-import {
-  CreationsListArguments,
-  PaginatedResponse,
-  ReactionType,
-} from '@eden-labs/eden-sdk'
+import { PaginatedResponse, ReactionType } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
@@ -86,21 +82,39 @@ const getBookmarks = async (
   return bookmarksMap
 }
 
+interface FeedGetArguments {
+  userId?: string
+  collectionId?: string
+  limit?: number
+  page?: number
+  sort?: object
+}
+
 export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   const {
     userId: filterUserIds,
+    collectionId,
     limit,
     page,
     sort,
-  } = request.query as CreationsListArguments
+  } = request.query as FeedGetArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId: filterUserIds,
   })
 
+  const collection = await Collection.findById(collectionId)
+  const collectionCreations = collection?.creations || undefined
+
   const creationRepository = new CreationRepository(Creation)
+
   const creations = await creationRepository.query(
     {
+      _id: collectionCreations
+        ? {
+            $in: collectionCreations,
+          }
+        : undefined,
       user: creators.docs
         ? creators.docs.map(creator => creator._id)
         : undefined,
@@ -131,12 +145,10 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     const bookmarksMap = await getBookmarks(uid, creations)
 
     const creationDocs = creations.docs.map(creation => {
-      // wtf
-      const doc = creation._doc as CreationDocument
       return {
-        ...doc,
-        reactions: reactionsMap[doc._id.toString()],
-        bookmarked: bookmarksMap[doc._id.toString()],
+        ...creation.toObject(),
+        reactions: reactionsMap[creation._id.toString()],
+        bookmarked: bookmarksMap[creation._id.toString()],
       }
     })
 
@@ -146,6 +158,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
       reactions: reactionsMap,
       bookmarks: bookmarksMap,
     }
+
     return reply.status(200).send(feed)
   } else {
     // No user, so no reactions or bookmarks

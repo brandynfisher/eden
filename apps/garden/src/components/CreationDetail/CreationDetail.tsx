@@ -6,9 +6,8 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
   return (
     <div className="pt-4">
       <div className="mb-4 rounded-xl overflow-hidden">
-        <img src={creation.thumbnail} alt="" className="w-full" />
+        <img src={creation.thumbnail} alt="" className="max-h-full max-w-full object-contain" />
       </div>
-
       <div className="grid grid-cols-12 gap-4">
         <Card className="col-span-4">
           <div className="text-gray-500">User</div>

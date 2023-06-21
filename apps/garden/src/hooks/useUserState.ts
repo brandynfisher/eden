@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth'
 import { useBalance } from '@/hooks/useBalance'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
+import { useMyCollections } from '@/hooks/useMyCollections'
 import { useMyCreations } from '@/hooks/useMyCreations'
 import { UserContextType } from '@/providers/UserProvider'
 import { useEffect, useState } from 'react'
@@ -27,6 +28,10 @@ export const useUserState = () => {
     userId: address || '',
     isAuthenticated,
   })
+  const { collections, refetchMyCollections } = useMyCollections({
+    userId: address || '',
+    isAuthenticated,
+  })
 
   const user: UserContextType = {
     isConnected: isDefinitelyConnected,
@@ -39,9 +44,11 @@ export const useUserState = () => {
     mannaBalance: manna,
     creations,
     characters,
+    collections,
     refetch: {
       mannaBalance: refetchMannaBalance,
       characters: refetchMyCharacters,
+      collections: refetchMyCollections,
     },
   }
   return user

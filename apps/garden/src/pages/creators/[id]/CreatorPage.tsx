@@ -1,11 +1,13 @@
+import CollectionCard from '@/components/Collections/CollectionCard'
 import CreationFilters from '@/components/CreationFilters'
 import CreationMasonry from '@/components/CreationMasonry'
 import ProfileHeader from '@/components/ProfileHeader'
+import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { useFeed } from '@/hooks/useFeed'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Collection, Creation } from '@eden-labs/eden-sdk'
 import { Space, Tabs } from 'antd'
 import axios from 'axios'
 import { Inter } from 'next/font/google'
@@ -22,10 +24,25 @@ const CreationTabContent = ({ creations }: { creations: Creation[] }) => {
   )
 }
 
+const CollectionTabContent = ({
+  collections,
+}: {
+  collections: Collection[] | undefined
+}) => {
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {collections &&
+        collections.map(collection => (
+          <CollectionCard key={collection.id} collection={collection} />
+        ))}
+    </div>
+  )
+}
 const CreatorPage = ({ creatorId }: { creatorId: string }) => {
   const { isAuthenticated, address } = useContext(UserContext)
   const { creations } = useFeed({ isAuthenticated, userId: creatorId })
   const { creator } = useCreator(creatorId)
+  const { collections } = useCollections(creatorId)
   const isAuthUser = isAuthenticated && creatorId === address
   const [followerCount, setFollowerCount] = React.useState(0)
   const [isFollowingUser, setIsFollowingUser] = React.useState(false)
@@ -45,7 +62,7 @@ const CreatorPage = ({ creatorId }: { creatorId: string }) => {
     {
       label: 'Collections',
       key: '2',
-      children: <p>Collections</p>,
+      children: <CollectionTabContent collections={collections} />,
     },
   ]
 

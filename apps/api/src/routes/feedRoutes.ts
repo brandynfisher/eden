@@ -5,13 +5,14 @@ import { paginationProperties } from '.'
 import { getFeed } from '../controllers/feedController'
 import { maybeAuth } from '../middleware/authMiddleware'
 
-const authRoutes: FastifyPluginAsync = async server => {
+const feedRoutes: FastifyPluginAsync = async server => {
   server.get('/feed', {
     schema: {
       querystring: {
         type: 'object',
         properties: {
           userId: { type: ['string', 'array'] },
+          collectionId: { type: ['string', 'array'] },
           ...paginationProperties(),
         },
         required: [],
@@ -43,4 +44,4 @@ const authRoutes: FastifyPluginAsync = async server => {
   })
 }
 
-export default authRoutes
+export default feedRoutes

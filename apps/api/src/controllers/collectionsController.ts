@@ -14,6 +14,7 @@ import { Collection } from '../models/Collection'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import CollectionRepository from '../repositories/CollectionRepository'
+import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 
 const getDefaultCollection = async (user: ObjectId) => {
@@ -38,7 +39,16 @@ export const getCollection = async (
 ) => {
   const { collectionId } = request.params as CollectionsGetArguments
   const collection = await Collection.findById(collectionId)
-  return reply.status(200).send({ collection })
+  if (!collection) {
+    return reply.status(404).send({ message: 'Collection not found' })
+  }
+  const user = await User.findById(collection.user)
+  return reply.status(200).send({
+    collection: {
+      ...collection.toObject(),
+      creatorId: user?.userId,
+    },
+  })
 }
 
 export const listCollections = async (
@@ -67,7 +77,32 @@ export const listCollections = async (
     },
   )
 
-  return reply.status(200).send(collections)
+  const creationRepository = new CreationRepository(Creation)
+
+  const collectionDocs = collections.docs.map(async collection => {
+    let displayThumbnail = ''
+    const creations = await creationRepository.query(
+      {
+        /* Query to find creations for the current collection, based on your schema design */
+      },
+      { sort: { createdAt: -1 }, limit: 1 },
+    )
+    // If there are any creations for the collection, add the latest one
+    if (creations.docs.length > 0) {
+      displayThumbnail = creations.docs[0].thumbnail || ''
+    }
+    return {
+      ...collection.toObject(),
+      displayThumbnail,
+    }
+  })
+
+  const response = {
+    ...collections,
+    docs: await Promise.all(collectionDocs),
+  }
+
+  return reply.status(200).send(response)
 }
 
 export const createCollection = async (
@@ -104,7 +139,7 @@ export const deleteCollection = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { collectionId } = request.params as CollectionsDeleteArguments
+  const { collectionId } = request.body as CollectionsDeleteArguments
   const collection = await Collection.findOne({
     _id: collectionId,
     user: userId,
@@ -112,6 +147,11 @@ export const deleteCollection = async (
   if (!collection) {
     return reply.status(400).send({
       message: 'Invalid collection',
+    })
+  }
+  if (collection.isDefaultCollection) {
+    return reply.status(400).send({
+      message: 'Cannot delete default collection',
     })
   }
   await collection.delete()
