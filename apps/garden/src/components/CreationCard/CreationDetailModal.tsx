@@ -24,9 +24,8 @@ const CreationDetailModal = ({
     <Modal
       open={open}
       onCancel={onDetailModalClose}
-      style={{ top: 20 }}
-      footer={null}
-      closable={false}
+      title={creation.name}
+      footer={false}
     >
       <CreationDetail creation={creation} />
     </Modal>

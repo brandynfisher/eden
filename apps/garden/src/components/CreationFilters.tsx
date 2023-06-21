@@ -1,13 +1,13 @@
-import { Space } from 'antd'
+import { Button, Space } from 'antd'
 import React from 'react'
 
 const CreationFilters = () => {
   return (
-    <Space>
-      <div className="text-med text-black">Create</div>
-      <div className="text-med text-black">New</div>
-      <div className="text-med text-black">Top</div>
-      <div className="text-med text-black">Favorited</div>
+    <Space className="mb-4">
+      <Button>Create</Button>
+      <Button>New</Button>
+      <Button>Top</Button>
+      <Button>Favorited</Button>
     </Space>
   )
 }

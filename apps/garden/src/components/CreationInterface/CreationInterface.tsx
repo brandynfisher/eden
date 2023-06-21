@@ -25,7 +25,7 @@ const CreationInterface = () => {
   }
 
   return (
-    <div className="w-full grid grid-cols-12">
+    <div className="w-full grid grid-cols-12" style={{ gap: '16px' }}>
       <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6 mb-4">
         <label htmlFor="activeGenerator">Selected Generator:</label>
         <Select

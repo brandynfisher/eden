@@ -1,4 +1,5 @@
 import CreationCardCreator from '@/components/CreationCard/CreationCardCreator'
+import { StarFilled, StarOutlined } from '@ant-design/icons'
 import { useHover } from '@mantine/hooks'
 import { Button } from 'antd'
 
@@ -14,7 +15,7 @@ const PraiseButton = ({
   const { hovered, ref } = useHover()
   return (
     <Button
-      className={`flex items-center justify-center rounded-l-full bg-gray-800`}
+      className={`flex items-center justify-center rounded-l-full`}
       role="button"
       onClick={onClick}
       loading={loading}
@@ -44,10 +45,10 @@ const BurnButton = ({
 
   return (
     <Button
-      className={`flex items-center justify-center rounded-r-full bg-gray-800`}
+      className={`flex items-center justify-center rounded-r-full`}
       role="button"
       onClick={onClick}
-      loading={loading}
+      disabled={loading}
       ref={ref}
     >
       <span
@@ -73,18 +74,18 @@ const SaveButton = ({
   const { hovered, ref } = useHover()
   return (
     <Button
-      className={`flex items-center justify-center rounded-full bg-gray-800`}
+      className={`flex items-center justify-center rounded-full`}
       role="button"
       onClick={onClick}
-      loading={loading}
+      disabled={loading}
       ref={ref}
     >
       <span
         role="img"
         aria-label="Save"
-        className={`text-sm ${!hovered && !bookmarked && 'filter grayscale'}`}
+        className={`text-sm ${!hovered && !bookmarked}`}
       >
-        📌
+        {bookmarked ? <StarFilled /> : <StarOutlined />}
       </span>
     </Button>
   )
