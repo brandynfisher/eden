@@ -6,7 +6,7 @@ import React, { PropsWithChildren, useEffect, useState } from 'react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-const { Content } = Layout1
+const { Content } = Layout
 
 const CustomLayout = ({ children }: PropsWithChildren) => {
   const { resolvedTheme } = useTheme()
