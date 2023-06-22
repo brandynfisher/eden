@@ -1,6 +1,7 @@
 import CreationCardCreator from '@/components/CreationCard/CreationCardCreator'
 import { useHover } from '@mantine/hooks'
 import { Button } from 'antd'
+import React from 'react'
 
 const PraiseButton = ({
   praised,
@@ -127,11 +128,11 @@ const CreationCardHoverOverlay = ({
 
   return (
     <div
-      className="absolute inset-0 flex items-start justify-center"
+      className="absolute inset-0 flex flex-col justify-between"
       onClick={handleClickOutside}
     >
-      <div className="relative w-full h-full flex flex-col items-center justify-start">
-        <div className="flex items-center justify-center mt-4">
+      <div className="relative flex justify-between mx-4 mt-4">
+        <div>
           <div className="flex">
             <PraiseButton
               onClick={handlers.onPraiseButtonClick}
@@ -145,7 +146,7 @@ const CreationCardHoverOverlay = ({
             />
           </div>
         </div>
-        <div className="absolute top-0 right-0 mt-4 mr-4">
+        <div>
           <SaveButton
             onClick={handlers.onSaveButtonClick}
             bookmarked={bookmarked}
@@ -153,7 +154,7 @@ const CreationCardHoverOverlay = ({
           />
         </div>
       </div>
-      <div className="absolute w-full bottom-0">
+      <div className="mx-4 mb-4">
         <CreationCardCreator creatorId={creatorId} />
       </div>
     </div>

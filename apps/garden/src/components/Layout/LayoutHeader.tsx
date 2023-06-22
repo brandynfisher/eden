@@ -10,7 +10,7 @@ const { Header } = Layout
 
 const LayoutHeader = () => {
   return (
-    <Header className="flex items-center px-4 bg-white dark:bg-gray-800">
+    <Header className="flex items-center px-4 bg-white dark:bg-gray-950">
       <div className="demo-logo">
         <Link href="/">
           <img

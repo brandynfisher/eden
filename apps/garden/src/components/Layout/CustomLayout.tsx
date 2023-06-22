@@ -32,7 +32,9 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
         <LayoutHeader />
         <Layout className="flex flex-grow p-4 bg-white dark:bg-gray-950">
           <LayoutMenu />
-          <Content className="flex-grow">{children}</Content>
+          <Content className="flex-grow max-w-7xl mx-auto w-full">
+            {children}
+          </Content>
         </Layout>
         <ToastContainer />
       </Layout>

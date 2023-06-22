@@ -12,7 +12,7 @@ const CreationMasonry = ({ creations }: { creations: Creation[] }) => {
         columnGutter={12}
         overscanBy={2}
         render={CreationCard}
-        itemHeightEstimate={330}
+        itemHeightEstimate={500}
       />
     </div>
   )
