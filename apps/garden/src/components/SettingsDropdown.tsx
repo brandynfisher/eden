@@ -5,7 +5,7 @@ import {
   LogoutOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
-import {Button, Dropdown, Space} from 'antd'
+import { Button, Dropdown, Space } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import React, { useCallback, useContext } from 'react'
 
@@ -66,11 +66,11 @@ const SettingsDropdown = () => {
       menu={{
         items,
       }}
-      trigger={['click']}
+      trigger={['hover', 'click']}
       className="cursor-pointer"
     >
       <Button type="text" className="flex">
-        <SettingOutlined className="text-black dark:text-white text-xl" />
+        <SettingOutlined className="text-black dark:text-white text-xl mr-2" />
       </Button>
     </Dropdown>
   )

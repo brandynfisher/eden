@@ -60,11 +60,11 @@ const MannaDropdown = () => {
       menu={{
         items,
       }}
-      trigger={['click']}
+      trigger={['hover', 'click']}
       className="cursor-pointer"
     >
       <Button type="text" className="flex">
-        <WalletOutlined className="text-black dark:text-white text-xl flex mr-1" />
+        <WalletOutlined className="text-black dark:text-white text-xl flex mr-2" />
         <div>{mannaBalance}</div>
       </Button>
     </Dropdown>

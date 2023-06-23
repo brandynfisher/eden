@@ -4,12 +4,17 @@ import React from 'react'
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
   return (
-    <div>
+    <div className="lg:flex">
       <div className="mb-4 rounded-xl overflow-hidden">
-        <img src={creation.thumbnail} alt="" className="max-h-full max-w-full object-contain" />
+        <img
+          src={creation.thumbnail}
+          alt=""
+          className="max-h-full max-w-full object-contain"
+        />
       </div>
-      <div className="grid grid-cols-12 gap-4">
-        <Card className="col-span-4">
+
+      <div className="grid grid-cols-12 gap-4 md:flex md:flex-col md:ml-4">
+        <Card className="col-span-4 md:col-span-12">
           <div className="text-gray-500">User</div>
           {/*// @ts-ignore: @todo: fix the feed response type*/}
           <div>{creation.user.userId}</div>
