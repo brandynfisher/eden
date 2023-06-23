@@ -35,15 +35,18 @@ const CompletedTaskMenuItem = ({
         onClick={handleViewCreation}
         className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
       >
-        <div className="flex">
+        <div
+          className="flex w-full"
+          style={{ minWidth: '240px', maxWidth: '320px' }}
+        >
           <div
             className="rounded-md w-12 h-12 mr-2"
             style={{ minWidth: '48px', minHeight: '48px' }}
           >
             <ImageResult resultUrl={task.creation.thumbnail} />
           </div>
-          <div className="flex items-center">
-            <div className="flex flex-col min-w-0 ">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex flex-col min-w-0 mr-2">
               <div>
                 <strong>/{generatorName}</strong>
               </div>
@@ -53,15 +56,13 @@ const CompletedTaskMenuItem = ({
                 </div>
               </div>
             </div>
-            <div>
-              <CloseOutlined
-                className="text-red-500 cursor-pointer"
-                onClick={e => {
-                  e.stopPropagation()
-                  handleDismiss(task._id)
-                }}
-              />
-            </div>
+            <CloseOutlined
+              className="ml-auto text-red-500 cursor-pointer"
+              onClick={e => {
+                e.stopPropagation()
+                handleDismiss(task._id)
+              }}
+            />
           </div>
         </div>
       </div>
@@ -77,7 +78,10 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
   return (
     <>
       <Menu.Divider />
-      <div className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md">
+      <div
+        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
+        style={{ minWidth: '240px' }}
+      >
         <div>
           <strong>/{generatorName}</strong>
         </div>
@@ -143,6 +147,7 @@ const TaskNotificationDropdown = () => {
               {completedTaskItems}
             </Menu>
           }
+          open={true}
         >
           <Button type="text" className="text-green-500 items-center flex">
             <CheckOutlined className="mr-2" />
