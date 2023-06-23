@@ -15,7 +15,7 @@ const MediaDisplay = ({ creationUri }: { creationUri: string }) => {
     return null
   }
 
-  return <div>{renderPreview()}</div>
+  return <div className="rounded-md overflow-hidden">{renderPreview()}</div>
 }
 
 export default MediaDisplay
