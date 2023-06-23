@@ -9,7 +9,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
 
   return (
     <div className="xl:flex xl:justify-center">
-      <div className="w-full flex flex-shrink-0 justify-center xl:justify-normal xl:w-auto">
+      <div className="w-full flex flex-shrink-0 justify-center xl:justify-normal xl:w-auto items-start">
         <div className="inline-flex mb-4 rounded-xl overflow-hidden">
           <img
             src={creation.uri}

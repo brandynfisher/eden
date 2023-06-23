@@ -14,7 +14,7 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
   const [isOwnProfile, setIsOwnProfile] = React.useState(false)
 
   //@ts-ignore //@todo: fix data discrepancies, see other todos
-  const userId = creatorId.userId ? creatorId.userId : creatorId
+  const userId = creatorId
   const { creator } = useCreator(userId)
   const { isAuthenticated, address } = useContext(UserContext)
 

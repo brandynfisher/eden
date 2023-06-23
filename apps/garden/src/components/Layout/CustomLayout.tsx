@@ -1,12 +1,9 @@
 import LayoutHeader from '@/components/Layout/LayoutHeader'
-import LayoutMenu from '@/components/Layout/LayoutMenu'
 import { ConfigProvider, Layout, theme as antdTheme } from 'antd'
 import { useTheme } from 'next-themes'
 import React, { PropsWithChildren, useEffect, useState } from 'react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-
-const { Content } = Layout
 
 const CustomLayout = ({ children }: PropsWithChildren) => {
   const { resolvedTheme } = useTheme()
@@ -31,10 +28,7 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
       <Layout className="min-h-screen flex flex-col">
         <LayoutHeader />
         <Layout className="flex flex-grow p-4 bg-white dark:bg-gray-950">
-          <LayoutMenu />
-          <Content className="flex-grow max-w-7xl mx-auto w-full">
-            {children}
-          </Content>
+          {children}
         </Layout>
         <ToastContainer />
       </Layout>
