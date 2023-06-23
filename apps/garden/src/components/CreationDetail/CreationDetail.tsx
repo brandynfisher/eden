@@ -19,7 +19,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
         </div>
       </div>
       <div className="xl:max-w-lg xl:flex-grow xl:flex xl:flex-col xl:ml-4">
-        <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col min-w-0 p-4 border border-gray-300 dark:border-gray-700 border-solid rounded-lg">
+        <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col min-w-0 p-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg">
           <div className="overflow-hidden flex items-center">
             <div className="min-w-0" ref={ref}>
               {/*// @ts-ignore: @todo: fix the feed response type*/}
@@ -40,7 +40,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
             />
           </div>
         </div>
-        <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-700 border-solid rounded-lg">
+        <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg">
           <div>
             {/*// @ts-ignore: @todo: fix the feed response type*/}
             {creation.task.config &&

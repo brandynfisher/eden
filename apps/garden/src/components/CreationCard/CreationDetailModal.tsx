@@ -26,6 +26,8 @@ const CreationDetailModal = ({
       onCancel={onDetailModalClose}
       title={creation.name}
       footer={false}
+      width={''} // unsets default width, so we can handle it with util classes
+      className="flex overflow-hidden flex-col mx-auto relative z-20 w-full lg:max-w-6xl h-auto my-2 mb-12 lg:my-12 shadow-2xl lg:items-center"
     >
       <CreationDetail creation={creation} />
     </Modal>

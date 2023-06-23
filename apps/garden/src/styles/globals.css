@@ -27,7 +27,7 @@ body {
 } */
 
 .ant-modal {
-    top: 3rem !important;
+    top: 0 !important;
 }
 .ant-modal-mask {
     background-color: rgba(0, 0, 0, 0.9) !important;
