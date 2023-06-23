@@ -40,7 +40,7 @@ const CompletedTaskMenuItem = ({
           style={{ minWidth: '240px', maxWidth: '320px' }}
         >
           <div
-            className="rounded-md w-12 h-12 mr-2"
+            className="rounded-md w-12 h-12 mr-4 flex items-center overflow-hidden"
             style={{ minWidth: '48px', minHeight: '48px' }}
           >
             <ImageResult resultUrl={task.creation.thumbnail} />
@@ -147,7 +147,6 @@ const TaskNotificationDropdown = () => {
               {completedTaskItems}
             </Menu>
           }
-          open={true}
         >
           <Button type="text" className="text-green-500 items-center flex">
             <CheckOutlined className="mr-2" />
