@@ -3,6 +3,7 @@ import { useBalance } from '@/hooks/useBalance'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCollections } from '@/hooks/useMyCollections'
 import { useMyCreations } from '@/hooks/useMyCreations'
+import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
@@ -33,6 +34,8 @@ export const useUserState = () => {
     isAuthenticated,
   })
 
+  const { settings, updateSetting } = useSettings()
+
   const user: UserContextType = {
     isConnected: isDefinitelyConnected,
     isConnecting,
@@ -50,6 +53,8 @@ export const useUserState = () => {
       characters: refetchMyCharacters,
       collections: refetchMyCollections,
     },
+    settings,
+    updateSetting,
   }
   return user
 }

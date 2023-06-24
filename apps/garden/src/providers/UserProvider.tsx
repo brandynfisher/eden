@@ -1,3 +1,4 @@
+import { SettingName, Settings } from '@/hooks/useSettings'
 import { useUserState } from '@/hooks/useUserState'
 import { Collection, Creation } from '@eden-labs/eden-sdk'
 import { Agent } from '@eden-labs/eden-sdk'
@@ -20,6 +21,8 @@ export interface UserContextType {
     characters: VoidFunction
     collections: VoidFunction
   }
+  settings?: Settings
+  updateSetting: (settingName: SettingName, newValue: number) => void
 }
 
 const defaultUserState: UserContextType = {
@@ -48,6 +51,10 @@ const defaultUserState: UserContextType = {
     collections: () => {
       return null
     },
+  },
+  settings: undefined,
+  updateSetting: () => {
+    return null
   },
 }
 

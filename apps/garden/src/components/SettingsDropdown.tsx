@@ -4,8 +4,9 @@ import {
   LoginOutlined,
   LogoutOutlined,
   SettingOutlined,
+  TableOutlined,
 } from '@ant-design/icons'
-import { Button, Dropdown, Space } from 'antd'
+import { Button, Dropdown, Slider, Space } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import React, { useCallback, useContext } from 'react'
 
@@ -29,6 +30,7 @@ const LoginLogoutButton = () => {
         <>
           {isAuthenticated ? (
             <>
+              C
               <LogoutOutlined />
               <div className="text-black dark:text-white">
                 Disconnect Wallet
@@ -46,6 +48,38 @@ const LoginLogoutButton = () => {
   )
 }
 
+const MaxColumnSelector = () => {
+  const { settings, updateSetting } = useContext(UserContext)
+  const currentSetting = settings?.maxGridCols
+
+  if (!currentSetting) {
+    return null
+  }
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center">
+        <TableOutlined />
+        <div className="ml-2">
+          {currentSetting.params.displayName}:{' '}
+          {currentSetting.value || currentSetting.params.defaultValue}
+        </div>
+      </div>
+      <div onClick={ev => ev.stopPropagation()}>
+        <Slider
+          value={currentSetting.value || currentSetting.params.defaultValue}
+          min={currentSetting.params.min}
+          max={currentSetting.params.max}
+          step={1}
+          onChange={(newValue: number) =>
+            updateSetting('maxGridCols', newValue)
+          }
+        />
+      </div>
+    </div>
+  )
+}
+
 const items: ItemType[] = [
   {
     label: <ThemeToggleButton />,
@@ -55,8 +89,15 @@ const items: ItemType[] = [
     type: 'divider',
   },
   {
+    label: <MaxColumnSelector />,
+    key: '1',
+  },
+  {
+    type: 'divider',
+  },
+  {
     label: <LoginLogoutButton />,
-    key: '2',
+    key: '3',
   },
 ]
 
@@ -69,8 +110,8 @@ const SettingsDropdown = () => {
       trigger={['hover', 'click']}
       className="cursor-pointer"
     >
-      <Button type="text" className="flex">
-        <SettingOutlined className="text-black dark:text-white text-xl mr-2" />
+      <Button type="text" className="flex mr-2">
+        <SettingOutlined className="text-black dark:text-white text-xl" />
       </Button>
     </Dropdown>
   )

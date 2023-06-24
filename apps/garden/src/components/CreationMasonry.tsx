@@ -1,14 +1,20 @@
 import CreationCard from '@/components/CreationCard/CreationCard'
+import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@eden-labs/eden-sdk'
 import { Masonry } from 'masonic'
-import React from 'react'
+import React, { useContext } from 'react'
 
 const CreationMasonry = ({ creations }: { creations: Creation[] }) => {
+  const { settings } = useContext(UserContext)
+
   return (
     <div className="w-full">
+      <div>count: {settings?.maxGridCols.value || undefined}</div>
+      <div>max: {settings?.maxGridCols.value || 4}</div>
       <Masonry
         items={creations}
-        maxColumnCount={4}
+        columnCount={settings?.maxGridCols.value || undefined}
+        maxColumnCount={settings?.maxGridCols.value || 4}
         columnGutter={12}
         overscanBy={2}
         render={CreationCard}

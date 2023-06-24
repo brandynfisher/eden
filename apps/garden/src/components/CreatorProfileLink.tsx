@@ -3,13 +3,7 @@ import { Avatar } from 'antd'
 import Link from 'next/link'
 import React from 'react'
 
-const CreatorProfileLink = ({
-  creatorId,
-  hovered,
-}: {
-  creatorId: string
-  hovered: boolean
-}) => {
+const CreatorProfileLink = ({ creatorId }: { creatorId: string }) => {
   const truncatedId = truncatedAddress(creatorId)
 
   return (
@@ -17,10 +11,7 @@ const CreatorProfileLink = ({
       href={{
         pathname: `/creators/${creatorId}`,
       }}
-      style={{
-        textDecoration: hovered ? 'underline' : 'unset',
-      }}
-      className="flex items-center text-white mr-2"
+      className="flex items-center mr-2 text-gray-400 hover:text-white hover:underline"
     >
       <Avatar size={50} className="mr-2" />
       <div className="text-sm font-bold overflow-hidden whitespace-nowrap">

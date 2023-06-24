@@ -28,11 +28,13 @@ body {
 
 .ant-modal {
     top: 0 !important;
+    min-height: calc(100% - 16px) !important;
 }
 .ant-modal-mask {
     background-color: rgba(0, 0, 0, 0.9) !important;
 }
 .ant-modal-content {
     border-radius: 0.75rem !important;
-    min-height: calc(100vh - 20px);
+    /*min-height: fit-content !important;*/
 }
+

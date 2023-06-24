@@ -170,7 +170,7 @@ const CreationCard = ({
     <>
       <div className="relative cursor-pointer" key={index}>
         <div ref={ref}>
-          <div className="relative rounded-xl overflow-hidden">
+          <div className="relative rounded-lg overflow-hidden">
             <CreationCardPreview creation={creation} hovered={hovered} />
             {hovered && <CreationCardHoverOverlay {...overlayProps} />}
           </div>
