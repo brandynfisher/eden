@@ -168,9 +168,12 @@ const CreationCard = ({
 
   return (
     <>
-      <div className="relative cursor-pointer" key={index}>
-        <div ref={ref} className="w-full flex">
-          <div className="relative rounded-lg overflow-hidden">
+      <div className="relative " key={index}>
+        <div className="w-full flex justify-center">
+          <div
+            ref={ref}
+            className="relative rounded-lg overflow-hidden cursor-pointer "
+          >
             <CreationCardPreview creation={creation} hovered={hovered} />
             {hovered && <CreationCardHoverOverlay {...overlayProps} />}
           </div>
