@@ -9,8 +9,6 @@ const CreationMasonry = ({ creations }: { creations: Creation[] }) => {
 
   return (
     <div className="w-full">
-      <div>count: {settings?.maxGridCols.value || undefined}</div>
-      <div>max: {settings?.maxGridCols.value || 4}</div>
       <Masonry
         items={creations}
         columnCount={settings?.maxGridCols.value || undefined}
