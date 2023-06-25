@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 const GridSettingParams = {
-  displayName: 'Max Grid Columns',
+  displayName: 'Max Columns',
   defaultValue: 4,
   min: 1,
   max: 12,

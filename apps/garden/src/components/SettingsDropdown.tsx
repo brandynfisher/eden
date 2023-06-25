@@ -30,7 +30,6 @@ const LoginLogoutButton = () => {
         <>
           {isAuthenticated ? (
             <>
-              C
               <LogoutOutlined />
               <div className="text-black dark:text-white">
                 Disconnect Wallet

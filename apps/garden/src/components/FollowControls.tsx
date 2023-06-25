@@ -59,7 +59,7 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
       <div className="mr-3 text-sm flex-shrink-0">
         <strong>{followingCount || 0}</strong> Following
       </div>
-      {!isOwnProfile && (
+      {isAuthenticated && !isOwnProfile && (
         <Button
           size="small"
           type={isFollowingUser ? 'link' : 'default'}

@@ -8,6 +8,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import 'antd/dist/reset.css'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
+import Head from 'next/head'
 import React from 'react'
 
 import { Page } from '../../types/page'
@@ -26,16 +27,41 @@ export default function App({ Component, pageProps }: Props): JSX.Element {
     ))
 
   return (
-    <ThemeProvider attribute="class">
-      <WalletProvider>
-        <EdenProvider>
-          <UserProvider>
-            <CreationNotificationProvider>
-              {getLayout(<Component {...pageProps} />)}
-            </CreationNotificationProvider>
-          </UserProvider>
-        </EdenProvider>
-      </WalletProvider>
-    </ThemeProvider>
+    <>
+      <Head>
+        <title>Eden Art - Garden</title>
+        <meta property="og:title" content="Eden Art - Garden" key="title" />
+        <meta
+          property="og:description"
+          content="The Garden of Artificial Delights"
+          key="title"
+        />
+        <meta
+          property="description"
+          content="The Garden of Artificial Delights"
+          key="title"
+        />
+        <meta
+          property="og:image"
+          content="https://garden.eden.art/apple-touch-icon.png"
+        />
+        <meta
+          name="viewport"
+          content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+      </Head>
+
+      <ThemeProvider attribute="class">
+        <WalletProvider>
+          <EdenProvider>
+            <UserProvider>
+              <CreationNotificationProvider>
+                {getLayout(<Component {...pageProps} />)}
+              </CreationNotificationProvider>
+            </UserProvider>
+          </EdenProvider>
+        </WalletProvider>
+      </ThemeProvider>
+    </>
   )
 }
