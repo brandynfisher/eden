@@ -1,6 +1,6 @@
 import PageLayoutNoSidebar from '@/components/Layout/PageLayoutNoSidebar'
 import HomePage from '@/pages/HomePage'
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 export default function Home() {
   return <HomePage />

@@ -51,10 +51,6 @@ const items: ItemType[] = [
 const MannaDropdown = () => {
   const { mannaBalance, isConnected, isAuthenticated } = useContext(UserContext)
 
-  if (!isConnected || !isAuthenticated) {
-    return null
-  }
-
   return (
     <Dropdown
       menu={{
@@ -62,10 +58,13 @@ const MannaDropdown = () => {
       }}
       trigger={['hover', 'click']}
       className="cursor-pointer"
+      disabled={!isConnected || !isAuthenticated}
     >
-      <Button type="text" className="flex">
+      <Button type="text" className="flex px-2 mr-2">
         <WalletOutlined className="text-black dark:text-white text-xl flex mr-2" />
-        <div>{mannaBalance}</div>
+        <div className="text-left" style={{ minWidth: '26px' }}>
+          {mannaBalance || '---'}
+        </div>
       </Button>
     </Dropdown>
   )

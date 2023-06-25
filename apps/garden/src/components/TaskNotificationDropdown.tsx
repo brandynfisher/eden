@@ -56,13 +56,15 @@ const CompletedTaskMenuItem = ({
                 </div>
               </div>
             </div>
-            <CloseOutlined
-              className="ml-auto text-red-500 cursor-pointer"
-              onClick={e => {
-                e.stopPropagation()
-                handleDismiss(task._id)
-              }}
-            />
+            <Button type="text" title="Dismiss">
+              <CloseOutlined
+                className="ml-auto cursor-pointer"
+                onClick={e => {
+                  e.stopPropagation()
+                  handleDismiss(task._id)
+                }}
+              />
+            </Button>
           </div>
         </div>
       </div>
@@ -127,7 +129,7 @@ const TaskNotificationDropdown = () => {
         >
           <Button
             type="text"
-            className="text-grey-800 dark:text-gray-200 items-center flex"
+            className="text-grey-800 dark:text-gray-200 items-center flex px-2"
           >
             <Spin
               indicator={
@@ -148,7 +150,7 @@ const TaskNotificationDropdown = () => {
             </Menu>
           }
         >
-          <Button type="text" className="text-green-500 items-center flex">
+          <Button type="text" className="text-green-500 items-center flex px-2">
             <CheckOutlined className="mr-2" />
             {completedTaskItems.length}
           </Button>

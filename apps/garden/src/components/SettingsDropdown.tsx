@@ -109,7 +109,7 @@ const SettingsDropdown = () => {
       trigger={['hover', 'click']}
       className="cursor-pointer"
     >
-      <Button type="text" className="flex mr-2">
+      <Button type="text" className="flex px-2 mr-2">
         <SettingOutlined className="text-black dark:text-white text-xl" />
       </Button>
     </Dropdown>

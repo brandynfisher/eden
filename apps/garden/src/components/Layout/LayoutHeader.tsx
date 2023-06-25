@@ -1,8 +1,10 @@
 import ConnectButton from '@/components/ConnectButton'
 import NavButton from '@/components/Layout/NavButton'
 import MannaDropdown from '@/components/MannaDropdown'
+import QuickCreateMenu from '@/components/QuickCreateMenu'
 import SettingsDropdown from '@/components/SettingsDropdown'
 import CreationNotificationMenu from '@/components/TaskNotificationDropdown'
+import { AppstoreOutlined, HomeOutlined } from '@ant-design/icons'
 import { Layout } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -10,7 +12,7 @@ import React from 'react'
 
 const { Header } = Layout
 
-type NavButtonItem = { text: string; path: string }
+type NavButtonItem = { text: string; path: string; icon: React.ReactNode }
 
 const NavButtons = ({ items }: { items: NavButtonItem[] }) => {
   const router = useRouter()
@@ -23,6 +25,7 @@ const NavButtons = ({ items }: { items: NavButtonItem[] }) => {
           isActive={router.pathname === item.path}
           text={item.text}
           path={item.path}
+          icon={item.icon}
         />
       ))}
     </>
@@ -30,9 +33,9 @@ const NavButtons = ({ items }: { items: NavButtonItem[] }) => {
 }
 
 const navItems = [
-  { text: 'Creations', path: '/' },
-  { text: 'Collections', path: '/collections' },
-  { text: 'Concepts', path: '/concepts' },
+  { text: 'Creations', icon: <HomeOutlined />, path: '/' },
+  { text: 'Collections', icon: <AppstoreOutlined />, path: '/collections' },
+  // {text: 'Concepts', icon: <HomeOutlined/>, path: '/concepts'},
 ]
 
 const LayoutHeader = () => {
@@ -54,6 +57,7 @@ const LayoutHeader = () => {
       <div className="ml-auto">
         <div className="flex items-center" style={{ gap: '4px' }}>
           <CreationNotificationMenu />
+          <QuickCreateMenu />
           <MannaDropdown />
           <SettingsDropdown />
           <ConnectButton />

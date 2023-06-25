@@ -38,3 +38,26 @@ body {
     /*min-height: fit-content !important;*/
 }
 
+.dark .ant-slider-track {
+    position: absolute;
+    background-color: #1668dc;
+    border-radius: 2px;
+    transition: background-color 0.2s;
+}
+
+.dark .ant-slider:hover .ant-slider-track {
+    background-color: #3c89e8;
+}
+
+.dark .ant-slider-handle::after {
+    box-shadow: 0 0 0 2px #1668dc;
+}
+
+.dark .ant-slider:hover .ant-slider-handle::after {
+    box-shadow: 0 0 0 2px #3c89e8;
+}
+
+.ant-upload-select {
+    width: unset !important;
+    height: unset !important;
+}

@@ -1,4 +1,5 @@
 import PageLayoutDefault from '@/components/Layout/PageLayoutDefault'
+import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
 import EdenProvider from '@/providers/EdenProvider'
 import UserProvider from '@/providers/UserProvider'
@@ -52,15 +53,17 @@ export default function App({ Component, pageProps }: Props): JSX.Element {
       </Head>
 
       <ThemeProvider attribute="class">
-        <WalletProvider>
-          <EdenProvider>
-            <UserProvider>
-              <CreationNotificationProvider>
-                {getLayout(<Component {...pageProps} />)}
-              </CreationNotificationProvider>
-            </UserProvider>
-          </EdenProvider>
-        </WalletProvider>
+        <AntConfigWrapProvider>
+          <WalletProvider>
+            <EdenProvider>
+              <UserProvider>
+                <CreationNotificationProvider>
+                  {getLayout(<Component {...pageProps} />)}
+                </CreationNotificationProvider>
+              </UserProvider>
+            </EdenProvider>
+          </WalletProvider>
+        </AntConfigWrapProvider>
       </ThemeProvider>
     </>
   )
