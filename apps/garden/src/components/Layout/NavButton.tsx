@@ -14,7 +14,7 @@ const NavButton = ({
   icon?: ReactNode
 }) => {
   return (
-    <Link href={path} className="mr-2 last:mr-0 flex">
+    <Link href={path} className="mr-2 last:mr-0 flex" passHref>
       <Button
         type="text"
         className={`text-black dark:text-gray-300 ${

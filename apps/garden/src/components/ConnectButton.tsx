@@ -1,5 +1,6 @@
 import { ConnectButton as RainbowkitConnectButton } from '@rainbow-me/rainbowkit'
 import { Button } from 'antd'
+import ButtonGroup from 'antd/es/button/button-group'
 import React from 'react'
 
 function ConnectButton() {
@@ -44,10 +45,11 @@ function ConnectButton() {
               }
 
               return (
-                <div style={{ display: 'flex', gap: 12 }}>
+                <ButtonGroup>
                   <Button
                     onClick={openChainModal}
                     className="flex items-center"
+                    type="dashed"
                   >
                     {chain.hasIcon && (
                       <div
@@ -71,11 +73,10 @@ function ConnectButton() {
                     )}
                     {chain.name}
                   </Button>
-
-                  <Button onClick={openAccountModal}>
+                  <Button type="dashed" onClick={openAccountModal}>
                     {account.displayName}
                   </Button>
-                </div>
+                </ButtonGroup>
               )
             })()}
           </div>

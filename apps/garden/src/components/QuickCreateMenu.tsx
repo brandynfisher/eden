@@ -5,7 +5,7 @@ import React from 'react'
 
 const QuickCreateMenu = () => {
   return (
-    <Link href="/create" className="mr-2">
+    <Link href="/create">
       <Button className="flex items-center">
         <div className="mr-2">Create</div>
         <PlusOutlined />

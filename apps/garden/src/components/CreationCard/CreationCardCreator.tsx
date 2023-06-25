@@ -1,9 +1,9 @@
 import CreatorProfileLink from '@/components/CreatorProfileLink'
-import { useHover } from '@mantine/hooks'
+// import { useHover } from '@mantine/hooks'
 import React from 'react'
 
 const CreationCardCreator = ({ creatorId }: { creatorId: string }) => {
-  const { hovered, ref } = useHover()
+  // const { hovered, ref } = useHover()
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -11,14 +11,14 @@ const CreationCardCreator = ({ creatorId }: { creatorId: string }) => {
 
   return (
     <div
-      ref={ref}
+      // ref={ref}
       className="flex items-center relative p-1"
       onClick={handleClick}
     >
       <div className="absolute inset-0 bg-gray-800 opacity-50 rounded-md" />
       <div className="z-10">
         {' '}
-        <CreatorProfileLink creatorId={creatorId} hovered={hovered} />
+        <CreatorProfileLink creatorId={creatorId} />
       </div>
     </div>
   )

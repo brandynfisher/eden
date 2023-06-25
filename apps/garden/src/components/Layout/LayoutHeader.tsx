@@ -1,6 +1,6 @@
-import ConnectButton from '@/components/ConnectButton'
 import NavButton from '@/components/Layout/NavButton'
 import MannaDropdown from '@/components/MannaDropdown'
+import MyProfileButton from '@/components/MyProfileButton'
 import QuickCreateMenu from '@/components/QuickCreateMenu'
 import SettingsDropdown from '@/components/SettingsDropdown'
 import CreationNotificationMenu from '@/components/TaskNotificationDropdown'
@@ -55,12 +55,12 @@ const LayoutHeader = () => {
       <NavButtons items={navItems} />
 
       <div className="ml-auto">
-        <div className="flex items-center" style={{ gap: '4px' }}>
+        <div className="flex items-center" style={{ gap: '8px' }}>
           <CreationNotificationMenu />
           <QuickCreateMenu />
           <MannaDropdown />
           <SettingsDropdown />
-          <ConnectButton />
+          <MyProfileButton />
         </div>
       </div>
     </Header>

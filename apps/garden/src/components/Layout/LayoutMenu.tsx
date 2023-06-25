@@ -10,6 +10,7 @@ import {
 import { Menu, type MenuProps } from 'antd'
 import { Layout } from 'antd'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const { Sider } = Layout
@@ -33,7 +34,6 @@ function getItem(
 const items: MenuItem[] = [getItem('All Creations', '/', <HomeOutlined />)]
 
 const authItems: MenuItem[] = [
-  getItem('All Creations', '/', <HomeOutlined />),
   getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <EyeOutlined />),
   getItem('Agents', '/agents', <RobotOutlined />),
@@ -42,17 +42,18 @@ const authItems: MenuItem[] = [
 ]
 
 const LayoutMenu = () => {
+  const router = useRouter()
   const { isConnected } = useContext(UserContext)
   const menuItems = isConnected ? authItems : items
 
   return (
-    <Sider width={200} className="mr-4">
+    <Sider width={200} className="mr-4 rounded-lg overflow-hidden">
       <Menu
         mode="inline"
-        defaultSelectedKeys={['sub1']}
+        selectedKeys={[router.pathname]}
         style={{ height: '100%', borderRight: 0 }}
         items={menuItems}
-        className="text-black bg-white dark:text-white dark:bg-gray-900 "
+        className="text-black bg-white dark:text-white dark:bg-gray-900"
       />
     </Sider>
   )

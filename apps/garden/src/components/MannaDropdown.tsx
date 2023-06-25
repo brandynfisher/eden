@@ -60,9 +60,11 @@ const MannaDropdown = () => {
       className="cursor-pointer"
       disabled={!isConnected || !isAuthenticated}
     >
-      <Button type="text" className="flex px-2 mr-2">
-        <WalletOutlined className="text-black dark:text-white text-xl flex mr-2" />
-        <div className="text-left" style={{ minWidth: '26px' }}>
+      <Button type="text" className="flex px-2 justify-center items-center">
+        <div>
+          <WalletOutlined className="text-black dark:text-white flex mr-2 text-xl" />
+        </div>
+        <div className="text-small text-left" style={{ minWidth: '26px' }}>
           {mannaBalance || '---'}
         </div>
       </Button>
