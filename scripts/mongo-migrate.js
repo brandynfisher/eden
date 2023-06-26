@@ -6,6 +6,8 @@ dotenv.config();
 const MONGO_URI_SRC = process.env.MONGO_URI_SRC;
 const MONGO_URI_DEST = process.env.MONGO_URI_DEST;
 
+console.log("Migrating from " + MONGO_URI_SRC + " to " + MONGO_URI_DEST);
+
 const client_from = new MongoClient(MONGO_URI_SRC);
 const client_to = new MongoClient(MONGO_URI_DEST);
 
@@ -31,6 +33,12 @@ async function main() {
     const loras_to = client_to.db('eden-stg-copy').collection('loras');
     const allLoras = await loras_from.find().toArray();
     await loras_to.insertMany(allLoras);
+
+    console.log("Copying apiKeys...");
+    const apiKeys_from = client_from.db('eden-stg').collection('apiKeys');
+    const apiKeys_to = client_to.db('eden-stg-copy').collection('apiKeys');
+    const allApiKeys = await apiKeys_from.find().toArray();
+    await apiKeys_to.insertMany(allApiKeys);
 
     console.log("Copying creations...");
     const creations_from = client_from.db('eden-stg').collection('creations');
