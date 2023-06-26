@@ -1,13 +1,13 @@
 import CapabilityCard from '@/components/Characters/Capability/CapabilityCard'
 import { useCharacter } from '@/hooks/useCharacter'
-import { Agent } from '@eden-labs/eden-sdk'
+import { Character } from '@eden-labs/eden-sdk'
 import { Button } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React from 'react'
 
 interface ICharacterContext {
-  character?: Agent
+  character?: Character
 }
 
 export const CharacterContext = React.createContext<ICharacterContext>({
@@ -23,11 +23,7 @@ const CharacterPage = () => {
   return (
     <CharacterContext.Provider value={{ character }}>
       <h2 className="font-mono font-bold text-xl">Character Details</h2>
-      {character && (
-        <div>
-          {character.name} ({characterId})
-        </div>
-      )}
+      {character && <div>{character.name}</div>}
 
       <h3 className="font-mono mt-4">Capabilities</h3>
       {capabilities && capabilities.length > 0
@@ -41,7 +37,7 @@ const CharacterPage = () => {
             </div>
           ))
         : null}
-      <Link href={`/agents/${characterId}/capabilities`}>
+      <Link href={`/characters/${characterId}/capabilities`}>
         <Button className="font-mono mt-4 text-white bg-black h-10">
           Create Capability
         </Button>

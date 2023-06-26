@@ -1,10 +1,8 @@
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 
-import { Creation, CreationSchema } from '../../models/Creation'
+import { Creation } from '../../models/Creation'
 import { Generator } from '../../models/Generator'
-import { LlmCompletion, LlmCompletionSchema } from '../../models/LlmCompletion'
-import { Lora, LoraSchema } from '../../models/Lora'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
@@ -89,14 +87,14 @@ const handleUpdate = async (
   }
 
   if (
-    !task.intermediate_outputs ||
-    intermediateOutputs.length > task.intermediate_outputs.length
+    !task.intermediateOutputs ||
+    intermediateOutputs.length > task.intermediateOutputs.length
   ) {
     const intermediateResults = intermediateOutputs.map(
       async (o: TaskOutput) => ({ files: o.files, progress: o.progress }),
     )
     Object.assign(taskUpdate, {
-      intermediate_outputs: await Promise.all(intermediateResults),
+      intermediateOutputs: await Promise.all(intermediateResults),
     })
   }
 
@@ -132,41 +130,15 @@ const handleUpdate = async (
         }
         const creation = await Creation.create(creationData)
         Object.assign(taskUpdate, { creation: creation._id })
-
-        if (task.webhook) {
-          await axios.post(task.webhook, {
-            taskId,
-            creation,
+        if (task.webhooks) {
+          task.webhooks.forEach(async (webhook: string) => {
+            await axios.post(webhook, {
+              taskId,
+              creation,
+            })
           })
         }
       }
-    } else if (generator?.output == 'lora') {
-      const loraData: LoraSchema = {
-        user: task.user,
-        task: task._id,
-        checkpoint: task.config.checkpoint,
-        training_images: task.config.lora_training_urls,
-        uri: finalOutput.files[0],
-        name: finalOutput.name,
-      }
-      if (finalOutput.files[0]) {
-        const asset = await server.uploadUrlAsset(
-          server,
-          finalOutput.files[0],
-          'safetensors',
-        )
-        loraData.uri = asset.uri
-      }
-      const lora = await Lora.create(loraData)
-      Object.assign(taskUpdate, { lora: lora._id })
-    } else if (generator?.output == 'llm') {
-      const llmxData: LlmCompletionSchema = {
-        user: task.user,
-        task: task._id,
-        completion: finalOutput.result,
-      }
-      const llmCompletion = await LlmCompletion.create(llmxData)
-      Object.assign(taskUpdate, { llmCompletion: llmCompletion._id })
     }
   }
 

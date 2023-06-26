@@ -1,6 +1,8 @@
+import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
+import { enforceUserDocumentLimit } from '../lib/data'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 
@@ -10,8 +12,15 @@ export interface CollectionSchema {
   description?: string
   creations: CreationDocument[]
   isDefaultCollection: boolean
+  displayImageUri?: string
   createdAt?: Date
   updatedAt?: Date
+}
+
+export interface CollecitonInput {
+  user: ObjectId
+  name: string
+  description?: string
 }
 
 export interface CollectionDocument extends CollectionSchema, Document {}
@@ -26,9 +35,11 @@ const collection = new Schema<CollectionDocument>(
     name: {
       type: String,
       required: true,
+      maxlength: 80,
     },
     description: {
       type: String,
+      maxlength: 1000,
     },
     creations: [
       {
@@ -40,27 +51,17 @@ const collection = new Schema<CollectionDocument>(
       type: Boolean,
       default: false,
     },
+    displayImageUri: {
+      type: String,
+      maxLength: 1000,
+    },
   },
   {
     timestamps: true,
-    toJSON: {
-      virtuals: true,
-    },
-    toObject: {
-      virtuals: true,
-    },
   },
 )
-
-collection.virtual('latestCreation', {
-  ref: 'creations',
-  localField: '_id', // Find creation where `localField`
-  foreignField: 'collection', // is equal to `foreignField`
-  justOne: true, // Only get one document
-  options: { sort: { createdAt: -1 } }, // Sort creations by date in descending order
-})
-
 collection.pre<CollectionDocument>('update', function (next) {
+  enforceUserDocumentLimit(25, 'collections', this.user)
   this.updatedAt = new Date()
 
   next()

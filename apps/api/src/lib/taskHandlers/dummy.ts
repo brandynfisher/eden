@@ -123,11 +123,15 @@ export const dummyReceiveTaskUpdate = async (
     },
   )
 
-  if (task.webhook) {
-    await axios.post(task.webhook, {
-      taskId,
-      creation,
-    })
+  if (task.webhooks) {
+    await Promise.all(
+      task.webhooks.map(async webhook => {
+        await axios.post(webhook, {
+          taskId,
+          creationId: creation._id,
+        })
+      }),
+    )
   }
 
   return update

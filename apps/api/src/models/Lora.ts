@@ -59,4 +59,4 @@ lora.pre<LoraDocument>('update', function (next) {
   next()
 })
 
-export const Lora = model<LoraDocument>('lora', lora)
+export const Lora = model<LoraDocument>('loras', lora)

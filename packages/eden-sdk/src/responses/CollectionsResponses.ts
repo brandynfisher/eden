@@ -8,7 +8,7 @@ export type CollectionsCreateResponse = WebAPICallResult & {
 
 export type CollectionsUpdateResponse = WebAPICallResult & {
   error?: string
-  agentId?: string
+  characterId?: string
 }
 
 export type CollectionsDeleteResponse = WebAPICallResult & {

@@ -1,8 +1,8 @@
 import CharacterForm from '@/components/Characters/CharacterForm'
 import React from 'react'
 
-const CreateAgentPage = () => {
+const CreateCharacterPage = () => {
   return <CharacterForm />
 }
 
-export default CreateAgentPage
+export default CreateCharacterPage

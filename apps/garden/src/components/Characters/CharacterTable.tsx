@@ -1,6 +1,6 @@
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Agent } from '@eden-labs/eden-sdk'
+import { Character } from '@eden-labs/eden-sdk'
 import { Button, Space, Table } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -30,8 +30,8 @@ const ActionsButtons = ({ characterId }: { characterId: string }) => {
 
   const handleDeleteCharacter = async () => {
     try {
-      await axios.post(`/api/agents/delete`, {
-        agentId: characterId,
+      await axios.post(`/api/characters/delete`, {
+        characterId: characterId,
       })
       refetch.characters()
     } catch (error) {
@@ -40,7 +40,7 @@ const ActionsButtons = ({ characterId }: { characterId: string }) => {
   }
 
   const handleViewCharacter = () => {
-    router.push(`/agents/${characterId}`)
+    router.push(`/characters/${characterId}`)
   }
 
   return (
@@ -63,7 +63,7 @@ const CharacterTable = () => {
 
   const data =
     characters &&
-    characters.map((character: Agent) => {
+    characters.map((character: Character) => {
       return {
         key: character.id,
         name: character.name,

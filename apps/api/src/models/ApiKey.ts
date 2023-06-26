@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
-import MongooseDelete from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
+import { enforceUserDocumentLimit } from '../lib/data'
 import { UserDocument } from './Creator'
 
 export interface ApiKeySchema {
@@ -12,7 +12,6 @@ export interface ApiKeySchema {
   apiSecret: string
   note?: string
   createdAt?: Date
-  updatedAt?: Date
 }
 
 export interface ApiKeyInput {
@@ -42,6 +41,7 @@ const apiKey = new Schema<ApiKeyDocument>(
     note: {
       type: String,
       required: false,
+      maxlength: 100,
     },
   },
   {
@@ -50,12 +50,11 @@ const apiKey = new Schema<ApiKeyDocument>(
 )
 
 apiKey.pre<ApiKeyDocument>('save', function (next) {
-  this.updatedAt = new Date()
+  enforceUserDocumentLimit(10, 'apikeys', this.user)
 
   next()
 })
 
 apiKey.plugin(paginate)
-apiKey.plugin(MongooseDelete, { deletedAt: true })
 
-export const ApiKey = model<ApiKeyDocument>('apikey', apiKey)
+export const ApiKey = model<ApiKeyDocument>('apikeys', apiKey)

@@ -77,32 +77,7 @@ export const listCollections = async (
     },
   )
 
-  const creationRepository = new CreationRepository(Creation)
-
-  const collectionDocs = collections.docs.map(async collection => {
-    let displayThumbnail = ''
-    const creations = await creationRepository.query(
-      {
-        /* Query to find creations for the current collection, based on your schema design */
-      },
-      { sort: { createdAt: -1 }, limit: 1 },
-    )
-    // If there are any creations for the collection, add the latest one
-    if (creations.docs.length > 0) {
-      displayThumbnail = creations.docs[0].thumbnail || ''
-    }
-    return {
-      ...collection.toObject(),
-      displayThumbnail,
-    }
-  })
-
-  const response = {
-    ...collections,
-    docs: await Promise.all(collectionDocs),
-  }
-
-  return reply.status(200).send(response)
+  return reply.status(200).send(collections)
 }
 
 export const createCollection = async (
@@ -229,6 +204,7 @@ export const addCreationsToCollection = async (
     $addToSet: {
       creations: { $each: creationDocs.map(c => c._id) },
     },
+    displayImageUri: creationDocs[0].thumbnail,
   })
 
   return reply.status(200).send({})

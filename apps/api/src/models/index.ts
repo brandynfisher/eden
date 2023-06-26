@@ -5,13 +5,10 @@ import { Capability, CapabilityDocument } from './Capability'
 import Challenge, { ChallengeDocument } from './Challenge'
 import { Character, CharacterDocument } from './Character'
 import { Collection, CollectionDocument } from './Collection'
-import { CollectionEvent, CollectionEventDocument } from './CollectionEvent'
 import { Creation, CreationDocument } from './Creation'
 import { User, UserDocument } from './Creator'
 import { Follow, FollowDocument } from './Follow'
 import { Generator, GeneratorDocument } from './Generator'
-import { LiveMint, LiveMintDocument } from './LiveMint'
-import { LlmCompletion, LlmCompletionDocument } from './LlmCompletion'
 import { Lora, LoraDocument } from './Lora'
 import { Manna, MannaDocument } from './Manna'
 import { MannaVoucher, MannaVoucherDocument } from './MannaVoucher'
@@ -30,16 +27,13 @@ export interface Database {
   Creation: Model<CreationDocument>
   Reaction: Model<ReactionDocument>
   Collection: Model<CollectionDocument>
-  CollectionEvent: Model<CollectionEventDocument>
   Transaction: Model<TransactionDocument>
-  LiveMint: Model<LiveMintDocument>
   Generator: Model<GeneratorDocument>
-  Lora: Model<LoraDocument>
   Character: Model<CharacterDocument>
-  LlmCompletion: Model<LlmCompletionDocument>
   Challenge: Model<ChallengeDocument>
   Capability: Model<CapabilityDocument>
   Scenario: Model<ScenarioDocument>
+  Lora: Model<LoraDocument>
 }
 
 export const models: Database = {
@@ -52,14 +46,11 @@ export const models: Database = {
   Creation,
   Reaction,
   Collection,
-  CollectionEvent,
   Transaction,
-  LiveMint,
   Generator,
-  Lora,
   Character,
-  LlmCompletion,
   Challenge,
   Capability,
   Scenario,
+  Lora,
 }

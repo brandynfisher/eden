@@ -14,6 +14,7 @@ export interface ChallengeSchema {
 
 export interface ChallengeInput {
   address: string
+  isWeb2: boolean
 }
 
 export interface ChallengeDocument extends ChallengeSchema, Document {}
@@ -23,6 +24,7 @@ const challenge = new Schema<ChallengeDocument>(
     address: {
       type: String,
       required: true,
+      maxlength: 42,
     },
     isWeb2: {
       type: Boolean,

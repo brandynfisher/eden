@@ -9,7 +9,7 @@ import { getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
 import { User } from '../models/Creator'
 import { Generator, GeneratorVersionSchema } from '../models/Generator'
 import { Manna } from '../models/Manna'
-import { Task, TaskSchema } from '../models/Task'
+import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
 import TaskRepository from '../repositories/TaskRepository'
 
@@ -19,7 +19,7 @@ export const createTask = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { generatorName, versionId, config, metadata, webhook } =
+  const { generatorName, versionId, config, webhooks } =
     request.body as TasksCreateArguments
 
   // get generator
@@ -96,13 +96,12 @@ export const createTask = async (
   // update db
   const taskData: TaskSchema = {
     taskId,
-    status: 'pending',
+    status: TaskStatus.Pending,
     user,
     generator: generator._id,
     versionId: generatorVersion.versionId,
     config: preparedConfig,
-    metadata,
-    webhook,
+    webhooks,
     cost,
   }
   const task = new Task(taskData)

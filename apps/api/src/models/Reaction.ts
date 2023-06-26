@@ -1,4 +1,5 @@
 import { ReactionType } from '@eden-labs/eden-sdk'
+import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 
 import { CreationDocument } from './Creation'
@@ -9,6 +10,12 @@ export interface ReactionSchema {
   creation: CreationDocument
   reaction: ReactionType
   createdAt?: Date
+}
+
+export interface ReactionInput {
+  creator: ObjectId
+  creation: ObjectId
+  reaction: ReactionType
 }
 
 export interface ReactionDocument extends ReactionSchema, Document {}
@@ -27,6 +34,7 @@ const reaction = new Schema<ReactionDocument>(
     },
     reaction: {
       type: String,
+      enum: Object.values(ReactionType),
       required: true,
     },
   },

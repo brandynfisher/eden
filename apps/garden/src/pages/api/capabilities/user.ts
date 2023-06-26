@@ -12,7 +12,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       edenApiUrl: CONFIG.API_URL,
       token: authToken,
     })
-    const response = await eden.agents.list({
+    const response = await eden.characters.list({
       userId: userId,
     })
     return res.status(200).json({ characters: response.docs })
