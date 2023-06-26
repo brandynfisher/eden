@@ -40,7 +40,6 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      // dummy sleep
       const prompt = activeCharacter.capabilities?.find(
         capability => capability.type === 'chat',
       ).data.prompt as string
