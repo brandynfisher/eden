@@ -8,34 +8,34 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { Capability, CapabilityType } from '../models/Capability'
-import { Agent } from '../models/Character'
-import AgentRepository from '../repositories/AgentRepository'
+import { Character } from '../models/Character'
 import CapabilityRepository from '../repositories/CapabilityRepository'
+import CharacterRepository from '../repositories/CharacterRepository'
 
 export const createCapability = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { agentId, name, type, data } =
+  const { characterId, name, type, data } =
     request.body as CapabilitiesCreateArguments
 
   const input = {
     user: userId,
-    agent: agentId,
+    character: characterId,
     name,
     type,
     data,
   }
 
-  const agent = await Agent.findOne({
-    agentId,
+  const character = await Character.findOne({
+    characterId,
     user: userId,
   })
 
-  if (!agent) {
+  if (!character) {
     return reply.status(401).send({
-      message: 'Agent not found',
+      message: 'Character not found',
     })
   }
 
@@ -48,8 +48,8 @@ export const createCapability = async (
   const capabilityRepository = new CapabilityRepository(Capability)
   const capability = await capabilityRepository.create(input)
 
-  agent.capabilities.push(capability._id)
-  await agent.save()
+  character.capabilities.push(capability._id)
+  await character.save()
 
   return reply.status(200).send({
     capabilityId: capability._id,
@@ -125,19 +125,21 @@ export const listCapabilities = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { agentId, limit, page, sort } =
+  const { characterId, limit, page, sort } =
     request.query as CapabilitiesListArguments
 
-  const agentRepository = new AgentRepository(Agent)
-  const agents = await agentRepository.query({
-    agentId,
+  const characterRepository = new CharacterRepository(Character)
+  const characters = await characterRepository.query({
+    characterId,
   })
 
   const capabilityRepository = new CapabilityRepository(Capability)
   const capabilityPaginatedResponse = await capabilityRepository.query(
     {
       user: userId,
-      agent: agents.docs ? agents.docs.map(agent => agent._id) : undefined,
+      character: characters.docs
+        ? characters.docs.map(character => character._id)
+        : undefined,
     },
     {
       limit,

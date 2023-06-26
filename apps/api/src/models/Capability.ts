@@ -61,7 +61,7 @@ const capability = new Schema<CapabilityDocument>(
 capability.pre<CapabilityDocument>('save', async function (next) {
   const character = await mongoose.model('characters').findById(this.character)
   if (!character) {
-    throw new Error('Agent not found.')
+    throw new Error('Character not found.')
   }
   if (character) {
     const count = await mongoose.model('capabilities').countDocuments({
