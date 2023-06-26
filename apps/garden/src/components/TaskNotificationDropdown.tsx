@@ -8,14 +8,8 @@ import {
 } from '@ant-design/icons'
 import { Task } from '@eden-labs/eden-sdk'
 import { Button, Dropdown, Menu, Progress, Space, Spin } from 'antd'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import utc from 'dayjs/plugin/utc'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
-
-dayjs.extend(utc)
-dayjs.extend(relativeTime)
 
 const CompletedTaskMenuItem = ({
   task,
