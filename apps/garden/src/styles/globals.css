@@ -110,10 +110,13 @@ body {
         max-height: 88vh;
     }
 }
-
+.ant-progress {
+    justify-content: space-between;
+}
 .ant-progress-outer {
     height: unset !important;
 }
 .ant-progress-text {
+    margin-top: 2px;
     width: unset !important;
 }
