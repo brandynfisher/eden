@@ -5,17 +5,17 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
-  const { agentId } = req.query as { agentId: string }
+  const { userId } = req.query as { userId: string }
 
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
       token: authToken,
     })
-    const response = await eden.agents.get({
-      agentId,
+    const response = await eden.characters.list({
+      userId: userId,
     })
-    return res.status(200).json({ character: response.agent })
+    return res.status(200).json({ characters: response.docs })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })

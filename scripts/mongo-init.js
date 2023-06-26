@@ -96,23 +96,6 @@ db.loras.insertOne({
   uri: 'uri',
 })
 
-db.createCollection('livemints')
-
-db.livemints.insertOne({
-  mintId: 'mintId',
-  block: 0,
-  txHash: 'txHash',
-  caller: 'user',
-  tokenId: 0,
-  ack: true,
-  taskId: 'taskId',
-  edenSuccess: true,
-  imageUri: 'imageUri',
-  ipfsUri: 'ipfsUri',
-  ipfsImageUri: 'ipfsImageUri',
-  txSuccess: true,
-})
-
 db.createCollection('generators')
 
 const interrogateParametersDev = [

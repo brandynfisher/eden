@@ -6,7 +6,7 @@ import router from 'next/router'
 import { useContext } from 'react'
 import { toast } from 'react-toastify'
 
-const AgentsPage = () => {
+const CharactersPage = () => {
   const { characters, isAuthenticated, authenticate } = useContext(UserContext)
 
   const handleCreateCharacterButtonClick = async () => {
@@ -17,7 +17,7 @@ const AgentsPage = () => {
     if (characters && characters.length >= 5) {
       toast.error('You can only have 5 characters at once.')
     } else {
-      router.push('/agents/create')
+      router.push('/characters/create')
     }
   }
 
@@ -36,4 +36,4 @@ const AgentsPage = () => {
   )
 }
 
-export default AgentsPage
+export default CharactersPage

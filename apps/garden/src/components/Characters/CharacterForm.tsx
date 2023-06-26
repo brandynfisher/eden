@@ -17,12 +17,12 @@ const CharacterForm = () => {
 
   const onFinish = async (values: CharacterFormInputs) => {
     try {
-      await axios.post('/api/agents/create', {
+      await axios.post('/api/characters/create', {
         ...values,
         capabilities: [],
       })
       refetch.characters()
-      router.push(`/agents`)
+      router.push(`/characters`)
     } catch (error) {
       handleAxiosError(error)
     }

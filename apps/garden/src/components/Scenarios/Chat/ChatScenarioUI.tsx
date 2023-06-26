@@ -8,7 +8,7 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
-import { Agent } from '@eden-labs/eden-sdk'
+import { Character } from '@eden-labs/eden-sdk'
 import axios from 'axios'
 import { useState } from 'react'
 import * as timeago from 'timeago.js'
@@ -20,7 +20,11 @@ type ConversationEntry = {
   id?: string
 }
 
-const ChatScenarioUI = ({ activeCharacter }: { activeCharacter: Agent }) => {
+const ChatScenarioUI = ({
+  activeCharacter,
+}: {
+  activeCharacter: Character
+}) => {
   const [text, setText] = useState('')
   const [conversation, setConversation] = useState<ConversationEntry[]>([])
   const [botIsTyping, setBotIsTyping] = useState(false)
@@ -64,7 +68,7 @@ const ChatScenarioUI = ({ activeCharacter }: { activeCharacter: Agent }) => {
       <ChatContainer>
         <ConversationHeader>
           <ConversationHeader.Actions></ConversationHeader.Actions>
-          <ConversationHeader.Content userName="Single Agent Chat" />
+          <ConversationHeader.Content userName="Single Character Chat" />
         </ConversationHeader>
         <MessageList
           typingIndicator={

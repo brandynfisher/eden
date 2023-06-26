@@ -36,7 +36,7 @@ const items: MenuItem[] = [getItem('All Creations', '/', <HomeOutlined />)]
 const authItems: MenuItem[] = [
   getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <EyeOutlined />),
-  getItem('Agents', '/agents', <RobotOutlined />),
+  getItem('Characters', '/characters', <RobotOutlined />),
   getItem('Scenarios', '/scenarios', <BellOutlined />),
   getItem('Tools', '/tools', <ToolOutlined />),
 ]
