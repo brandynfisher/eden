@@ -9,7 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       try {
         // Check if session token exists
         if (!req.session.token) {
-          return res.status(401).json({ error: 'Unauthorized' })
+          return res.status(200).json({ error: 'Unauthorized' })
         }
 
         // Verify session token
@@ -18,7 +18,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           process.env.COOKIE_SECRET as string,
         )
         if (!decodedToken) {
-          return res.status(401).json({ error: 'Unauthorized' })
+          return res.status(200).json({ error: 'Unauthorized' })
         }
 
         // Session is still valid, continue processing
@@ -27,7 +27,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         })
       } catch (error) {
         console.error(error)
-        res.status(401).json({ error: 'Unauthorized' })
+        res.status(200).json({ error: 'Unauthorized' })
       }
       break
     default:
