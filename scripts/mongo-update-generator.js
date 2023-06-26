@@ -1,13 +1,11 @@
 import dotenv from 'dotenv';
 
 import { MongoClient } from 'mongodb';
-import { 
-  createParameters,
-  interpolationParameters,
-  real2realParameters,
-  remixParameters,
-  interrogateParameters
-} from './generator-params.js';
+import createParameters from './generators/create.js';
+import interpolateParameters from './generators/interpolate.js';
+import real2realParameters from './generators/real2real.js';
+import remixParameters from './generators/remix.js';
+import interrogateParameters from './generators/interrogate.js';
 
 const versionId = process.argv[2];
 if (!versionId) {
@@ -45,7 +43,7 @@ async function updateVersion(db) {
     address: 'abraham-ai/eden-sd-pipelines',
     versionId: versionId,
     mode: 'interpolate',
-    parameters: interpolationParameters,
+    parameters: interpolateParameters,
     isDeprecated: false,
   }
 
