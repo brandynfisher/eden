@@ -151,7 +151,6 @@ export const listCapabilities = async (
     ...capabilityPaginatedResponse,
     docs: capabilityPaginatedResponse.docs.map(capability => ({
       id: capability._id,
-      name: capability.name,
       type: capability.type,
       data: capability.data,
     })),
@@ -174,7 +173,6 @@ export const getCapability = async (
 
   const response = {
     id: capability._id,
-    name: capability.name,
     type: capability.type,
     data: capability.data,
   }

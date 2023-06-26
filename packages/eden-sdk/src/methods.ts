@@ -11,13 +11,6 @@ import {
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
-  CharactersCreateResponse,
-  CharactersDeleteResponse,
-  CharactersGetResponse,
-  CharactersListResponse,
-  CharactersUpdateResponse,
-} from './responses/CharactersResponses'
-import {
   ApiKeysCreateResponse,
   ApiKeysDeleteResponse,
   ApiKeysListResponse,
@@ -31,6 +24,13 @@ import {
   CapabilitiesUpdateResponse,
   CapabilityType,
 } from './responses/CapabilitiesResponses'
+import {
+  CharactersCreateResponse,
+  CharactersDeleteResponse,
+  CharactersGetResponse,
+  CharactersListResponse,
+  CharactersUpdateResponse,
+} from './responses/CharactersResponses'
 import {
   CreationsGetResponse,
   CreationsListResponse,
@@ -510,7 +510,7 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   versionId?: string
   config?: any
   metadata?: any
-  webhook?: string
+  webhooks?: string[]
 }
 
 export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {

@@ -4,7 +4,7 @@ import paginate from 'mongoose-paginate-v2'
 
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
-import { GeneratorDocument, GeneratorVersionDocument } from './Generator'
+import { GeneratorDocument } from './Generator'
 
 export enum TaskStatus {
   Pending = 'pending',
@@ -16,7 +16,7 @@ export enum TaskStatus {
 export interface TaskSchema {
   user: UserDocument
   generator: GeneratorDocument
-  version: GeneratorVersionDocument
+  versionId: string
   config: Record<string, any>
   taskId: string
   status: TaskStatus
@@ -52,9 +52,9 @@ const task = new Schema<TaskDocument>(
       type: Schema.Types.ObjectId,
       ref: 'generators',
     },
-    version: {
-      type: Schema.Types.ObjectId,
-      ref: 'generatorversions',
+    versionId: {
+      type: String,
+      required: true,
     },
     creation: {
       type: Schema.Types.ObjectId,

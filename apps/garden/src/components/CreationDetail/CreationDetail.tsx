@@ -34,9 +34,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
               <CreatorProfileLink
                 creatorId={
                   // @ts-ignore: @todo: fix the feed response type
-                  creationData.user.userId
-                    ? creationData.user.userId
-                    : creationData.user
+                  creationData.userId ? creationData.userId : creationData.user
                 }
               />
             </div>
@@ -45,9 +43,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
             <FollowControls
               creatorId={
                 // @ts-ignore: @todo: fix the feed response type
-                creationData.user.userId
-                  ? creationData.user.userId
-                  : creationData.user
+                creationData.userId ? creationData.userId : creationData.user
               }
             />
           </div>

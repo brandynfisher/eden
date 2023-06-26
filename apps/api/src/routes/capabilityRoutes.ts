@@ -16,7 +16,6 @@ const capabilityRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: Type.Object({
         characterId: Type.String(),
-        name: Type.String(),
         type: Type.String(),
         data: Type.Any(),
       }),
@@ -34,7 +33,6 @@ const capabilityRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: Type.Object({
         capabilityId: Type.String(),
-        name: Type.String(),
         data: Type.Any(),
       }),
       response: {
@@ -74,7 +72,6 @@ const capabilityRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             id: Type.String(),
-            name: Type.String(),
             type: Type.String(),
             data: Type.Any(),
           }),
@@ -93,7 +90,6 @@ const capabilityRoutes: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           capability: Type.Object({
-            name: Type.String(),
             type: Type.String(),
             data: Type.Any(),
           }),
