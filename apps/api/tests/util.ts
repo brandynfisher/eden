@@ -1,3 +1,4 @@
+import { MediaType } from '@eden-labs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
@@ -94,6 +95,9 @@ export const createCreation = async () => {
     uri: 'test',
     name: 'test',
     attributes: {},
+    mediaAttributes: {
+      type: MediaType.Image,
+    },
   })
   return creation
 }

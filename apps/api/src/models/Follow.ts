@@ -27,4 +27,4 @@ const follow = new Schema<FollowDocument>({
   },
 })
 
-export const Follow = model<FollowDocument>('follow', follow)
+export const Follow = model<FollowDocument>('follows', follow)

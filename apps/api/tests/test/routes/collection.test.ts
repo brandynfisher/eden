@@ -78,12 +78,15 @@ test('User can update a collection', async context => {
 test('User can delete a collection', async context => {
   const { server } = context
   const headers = prepareUserHeaders()
-  const listResponse = await server.inject({
-    method: 'GET',
-    url: '/collections',
+  const createResponse = await server.inject({
+    method: 'POST',
+    url: '/collections/create',
     headers,
+    payload: {
+      name: 'test',
+    },
   })
-  const collectionId = listResponse.json().docs[0]._id
+  const collectionId = createResponse.json().collectionId
   const response = await server.inject({
     method: 'POST',
     url: '/collections/delete',
@@ -92,6 +95,7 @@ test('User can delete a collection', async context => {
     },
     headers,
   })
+  console.log(response.json())
   expect(response.statusCode).toBe(200)
 })
 

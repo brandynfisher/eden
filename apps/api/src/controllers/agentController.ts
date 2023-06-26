@@ -7,7 +7,7 @@ import {
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import { Agent } from '../models/Agent'
+import { Agent } from '../models/Character'
 import { User } from '../models/Creator'
 import AgentRepository from '../repositories/AgentRepository'
 import CreatorRepository from '../repositories/CreatorRepository'

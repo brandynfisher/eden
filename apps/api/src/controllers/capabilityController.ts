@@ -7,8 +7,8 @@ import {
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import { Agent } from '../models/Agent'
 import { Capability, CapabilityType } from '../models/Capability'
+import { Agent } from '../models/Character'
 import AgentRepository from '../repositories/AgentRepository'
 import CapabilityRepository from '../repositories/CapabilityRepository'
 

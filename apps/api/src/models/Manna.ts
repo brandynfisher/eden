@@ -9,6 +9,11 @@ export interface MannaSchema {
   updatedAt?: Date
 }
 
+export interface MannaInput {
+  creator: string
+  balance?: number
+}
+
 export interface MannaDocument extends MannaSchema, Document {}
 
 const manna = new Schema<MannaDocument>(
@@ -21,7 +26,6 @@ const manna = new Schema<MannaDocument>(
     balance: {
       type: Number,
       default: 0,
-      required: true,
     },
   },
   {
