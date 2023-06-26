@@ -35,8 +35,8 @@ async function main() {
     await loras_to.insertMany(allLoras);
 
     console.log("Copying apiKeys...");
-    const apiKeys_from = client_from.db('eden-stg').collection('apiKeys');
-    const apiKeys_to = client_to.db('eden-stg-copy').collection('apiKeys');
+    const apiKeys_from = client_from.db('eden-stg').collection('apikeys');
+    const apiKeys_to = client_to.db('eden-stg-copy').collection('apikeys');
     const allApiKeys = await apiKeys_from.find().toArray();
     await apiKeys_to.insertMany(allApiKeys);
 
@@ -59,6 +59,8 @@ async function main() {
       delete creation.isWallet;
     });
     await creators_to.insertMany(allCreators);
+
+    console.log("Finished migrating all collections")
 
   } catch (error) {
     console.error(error)
