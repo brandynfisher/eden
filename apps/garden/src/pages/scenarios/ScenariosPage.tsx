@@ -6,15 +6,8 @@ import React from 'react'
 const exampleScenarios: Scenario[] = [
   {
     id: '1',
-    name: 'Single Agent Chat',
-    description: 'Chat with a single agent',
-    type: ScenarioType.CHATROOM,
-    data: {},
-  },
-  {
-    id: '2',
-    name: 'Multi Agent Chat',
-    description: 'Chat with multiple agents',
+    name: 'Single Character Chat',
+    description: 'Chat with a single character',
     type: ScenarioType.CHATROOM,
     data: {},
   },

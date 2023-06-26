@@ -1,31 +1,43 @@
+import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
-import { GeneratorDocument } from './Generator'
-import { LoraDocument } from './Lora'
+import { GeneratorDocument, GeneratorVersionDocument } from './Generator'
 
-export type TaskStatus = 'pending' | 'completed' | 'failed'
+export enum TaskStatus {
+  Pending = 'pending',
+  Running = 'running',
+  Completed = 'completed',
+  Failed = 'failed',
+}
 
 export interface TaskSchema {
   user: UserDocument
   generator: GeneratorDocument
-  versionId: string
-  config?: any
-  metadata?: any
-  webhook?: string
-  cost: number
+  version: GeneratorVersionDocument
+  config: Record<string, any>
   taskId: string
   status: TaskStatus
+  cost: number
+  creation?: CreationDocument
+  webhooks?: string[]
   error?: string
   progress?: number
   output?: any
-  intermediate_outputs?: any[]
-  creation?: CreationDocument
-  lora?: LoraDocument
+  intermediateOutputs?: any[]
   createdAt?: Date
   updatedAt?: Date
+}
+
+export interface TaskInput {
+  creator: ObjectId
+  generator: ObjectId
+  version: ObjectId
+  const: number
+  config?: Record<string, any>
+  webhooks?: string[]
 }
 
 export interface TaskDocument extends TaskSchema, Document {}
@@ -40,34 +52,36 @@ const task = new Schema<TaskDocument>(
       type: Schema.Types.ObjectId,
       ref: 'generators',
     },
-    versionId: {
-      type: String,
-      required: true,
+    version: {
+      type: Schema.Types.ObjectId,
+      ref: 'generatorversions',
+    },
+    creation: {
+      type: Schema.Types.ObjectId,
+      ref: 'creations',
     },
     config: {
       type: Schema.Types.Mixed,
       default: {},
-    },
-    metadata: {
-      type: Schema.Types.Mixed,
-      default: {},
-    },
-    webhook: {
-      type: String,
-      default: null,
-    },
-    cost: {
-      type: Number,
-      required: true,
     },
     taskId: {
       type: String,
       required: true,
       unique: true,
     },
+    webhooks: {
+      type: [String],
+      default: null,
+      maxlength: 10,
+    },
+    cost: {
+      type: Number,
+      required: true,
+    },
     status: {
       type: String,
-      default: 'pending',
+      enum: Object.values(TaskStatus),
+      default: TaskStatus.Pending,
     },
     error: {
       type: String,
@@ -81,17 +95,9 @@ const task = new Schema<TaskDocument>(
       type: Schema.Types.Mixed,
       default: {},
     },
-    intermediate_outputs: {
+    intermediateOutputs: {
       type: [Schema.Types.Mixed],
       default: [],
-    },
-    creation: {
-      type: Schema.Types.ObjectId,
-      ref: 'creations',
-    },
-    lora: {
-      type: Schema.Types.ObjectId,
-      ref: 'loras',
     },
   },
   {

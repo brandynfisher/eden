@@ -13,16 +13,6 @@ export interface UserSchema {
   followerCount: number
   followingCount: number
   username?: string
-  name?: string
-  bio?: string
-  email?: string
-  profilePictureUri?: string
-  coverPictureUri?: string
-  website?: string
-  discordId?: string
-  twitterId?: string
-  instagramId?: string
-  githubId?: string
   createdAt?: Date
   updatedAt?: Date
 }
@@ -42,6 +32,7 @@ const user = new Schema<UserDocument>(
       type: String,
       required: true,
       unique: true,
+      maxlength: 42,
     },
     isWeb2: {
       type: Boolean,
@@ -49,43 +40,12 @@ const user = new Schema<UserDocument>(
     },
     isAdmin: {
       type: Boolean,
-      required: true,
       default: false,
     },
     username: {
       type: String,
-      required: false,
       unique: true,
-    },
-    name: {
-      type: String,
-    },
-    bio: {
-      type: String,
-    },
-    email: {
-      type: String,
-    },
-    profilePictureUri: {
-      type: String,
-    },
-    coverPictureUri: {
-      type: String,
-    },
-    website: {
-      type: String,
-    },
-    discordId: {
-      type: String,
-    },
-    twitterId: {
-      type: String,
-    },
-    instagramId: {
-      type: String,
-    },
-    githubId: {
-      type: String,
+      maxlength: 42,
     },
     creations: [
       {

@@ -1,10 +1,10 @@
 import { TSchema, Type } from '@sinclair/typebox'
 
 import adminRoutes from './adminRoutes'
-import agentRoutes from './agentRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
 import capabilityRoutes from './capabilityRoutes'
+import characterRoutes from './characterRoutes'
 import collectionRoutes from './collectionRoutes'
 import creationRoutes from './creationRoutes'
 import creatorRoutes from './creatorRoutes'
@@ -40,7 +40,7 @@ export const paginationProperties = () => {
 
 export const routes = [
   adminRoutes,
-  agentRoutes,
+  characterRoutes,
   authRoutes,
   mannaRoutes,
   apiKeyRoutes,

@@ -4,24 +4,33 @@ import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
 import { UserDocument } from './Creator'
-import { ReactionDocument } from './Reaction'
 import { TaskDocument } from './Task'
 
 export interface CreationSchema {
   user: UserDocument
   task: TaskDocument
-  parent?: ObjectId
-  delegateUser?: UserDocument
-  delegateHasClaimed?: boolean
-  uri: string
+  delegate?: UserDocument
+  uri?: string
   thumbnail?: string
-  media: string
-  name: string
-  attributes: any
+  name?: string
+  attributes?: any
   mediaAttributes: MediaAttributes
-  reactions: ReactionDocument[]
   createdAt?: Date
   updatedAt?: Date
+}
+
+export interface CreationInput {
+  creator: ObjectId
+  task: ObjectId
+  delegate?: ObjectId
+  uri?: string
+  thumbnail?: string
+  name?: string
+  attributes?: Record<string, any>
+  mediaAttributes?: {
+    type: MediaType
+    duration?: number
+  }
 }
 
 export interface CreationDocument extends CreationSchema, Document {}
@@ -38,28 +47,23 @@ const creation = new Schema<CreationDocument>(
       ref: 'tasks',
       required: true,
     },
-    parent: {
-      type: Schema.Types.ObjectId,
-      ref: 'creations',
-    },
-    delegateUser: {
+    delegate: {
       type: Schema.Types.ObjectId,
       ref: 'users',
-    },
-    delegateHasClaimed: {
-      type: Boolean,
-      default: false,
     },
     uri: {
       type: String,
       required: true,
+      maxlength: 1000,
     },
     thumbnail: {
       type: String,
+      maxlength: 1000,
     },
     name: {
       type: String,
       required: true,
+      maxlength: 1000,
     },
     attributes: {
       type: Schema.Types.Mixed,

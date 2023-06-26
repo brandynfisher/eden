@@ -9,7 +9,7 @@ export const useMyCharacters = ({
   isAuthenticated: boolean
 }) => {
   const { data, mutate: refetchMyCharacters } = useSWR(
-    isAuthenticated ? `/api/agents/user?userId=${userId}` : null,
+    isAuthenticated ? `/api/characters/user?userId=${userId}` : null,
     fetcher,
   )
 

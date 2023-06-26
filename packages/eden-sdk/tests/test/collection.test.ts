@@ -42,10 +42,13 @@ describe('Collection Methods', () => {
 
   test('should be able to update a collection', async context => {
     const { client } = context
-    const collectionId = await getCollectionId(client)
+    const response = await client.collections.create({
+      name: 'test2',
+    })
+    const collectionId = response.collectionId
     const collectionsResponse = await client.collections.update({
       collectionId,
-      name: 'test2',
+      name: 'test3',
     })
     expect(collectionsResponse).toBeDefined()
   })
@@ -63,7 +66,10 @@ describe('Collection Methods', () => {
 
   test('should be able to add creations to a collection', async context => {
     const { client } = context
-    const collectionId = await getCollectionId(client)
+    const response = await client.collections.create({
+      name: 'test2',
+    })
+    const collectionId = response.collectionId
     const creationId = await getCreationId(client)
     const collectionsResponse = await client.collections.creations.add({
       collectionId,
@@ -74,7 +80,10 @@ describe('Collection Methods', () => {
 
   test('should be able to remove creations from a collection', async context => {
     const { client } = context
-    const collectionId = await getCollectionId(client)
+    const response = await client.collections.create({
+      name: 'test2',
+    })
+    const collectionId = response.collectionId
     const creationId = await getCreationId(client)
     const collectionsResponse = await client.collections.creations.remove({
       collectionId,

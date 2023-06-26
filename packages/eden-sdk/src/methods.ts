@@ -11,12 +11,12 @@ import {
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
-  AgentsCreateResponse,
-  AgentsDeleteResponse,
-  AgentsGetResponse,
-  AgentsListResponse,
-  AgentsUpdateResponse,
-} from './responses/AgentsResponses'
+  CharactersCreateResponse,
+  CharactersDeleteResponse,
+  CharactersGetResponse,
+  CharactersListResponse,
+  CharactersUpdateResponse,
+} from './responses/CharactersResponses'
 import {
   ApiKeysCreateResponse,
   ApiKeysDeleteResponse,
@@ -118,26 +118,26 @@ export abstract class Methods {
     options?: WebAPICallOptions,
   ): Promise<WebAPICallResult>
 
-  public readonly agents = {
-    create: bindApiCall<AgentsCreateArguments, AgentsCreateResponse>(
+  public readonly characters = {
+    create: bindApiCall<CharactersCreateArguments, CharactersCreateResponse>(
       this,
-      agentsCreateRequestConfig,
+      charactersCreateRequestConfig,
     ),
-    update: bindApiCall<AgentsUpdateArguments, AgentsUpdateResponse>(
+    update: bindApiCall<CharactersUpdateArguments, CharactersUpdateResponse>(
       this,
-      agentsUpdateRequestConfig,
+      charactersUpdateRequestConfig,
     ),
-    delete: bindApiCall<AgentsDeleteArguments, AgentsDeleteResponse>(
+    delete: bindApiCall<CharactersDeleteArguments, CharactersDeleteResponse>(
       this,
-      agentsDeleteRequestConfig,
+      charactersDeleteRequestConfig,
     ),
-    list: bindApiCall<AgentsListArguments, AgentsListResponse>(
+    list: bindApiCall<CharactersListArguments, CharactersListResponse>(
       this,
-      agentsListRequestConfig,
+      charactersListRequestConfig,
     ),
-    get: bindApiCall<AgentsGetArguments, AgentsGetResponse>(
+    get: bindApiCall<CharactersGetArguments, CharactersGetResponse>(
       this,
-      agentsGetRequestConfig,
+      charactersGetRequestConfig,
     ),
   }
 
@@ -320,27 +320,27 @@ export abstract class Methods {
   }
 }
 
-export interface AgentsListArguments
+export interface CharactersListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
 }
 
-export interface AgentsGetArguments extends WebAPICallOptions {
-  agentId: string
+export interface CharactersGetArguments extends WebAPICallOptions {
+  characterId: string
 }
 
-export interface AgentsCreateArguments extends WebAPICallOptions {
+export interface CharactersCreateArguments extends WebAPICallOptions {
   name: string
 }
 
-export interface AgentsUpdateArguments extends WebAPICallOptions {
-  agentId: string
+export interface CharactersUpdateArguments extends WebAPICallOptions {
+  characterId: string
   name: string
 }
 
-export interface AgentsDeleteArguments extends WebAPICallOptions {
-  agentId: string
+export interface CharactersDeleteArguments extends WebAPICallOptions {
+  characterId: string
 }
 
 export type ApiKeysListArguments = WebAPICallOptions & ListQueryParams
@@ -365,7 +365,7 @@ export interface AuthCreateChallengeArguments extends WebAPICallOptions {
 }
 
 export interface CapabilitiesCreateArguments extends WebAPICallOptions {
-  agentId: string
+  characterId: string
   name: string
   type: CapabilityType
   data: any
@@ -384,7 +384,7 @@ export interface CapabilitiesDeleteArguments extends WebAPICallOptions {
 export interface CapabilitiesListArguments
   extends WebAPICallOptions,
     ListQueryParams {
-  agentId: string | string[]
+  characterId: string | string[]
 }
 
 export interface CapabilitiesGetArguments extends WebAPICallOptions {
@@ -522,58 +522,58 @@ export interface TasksGetArguments extends WebAPICallOptions {
   taskId: string
 }
 
-const agentsListRequestConfig = (
-  args: AgentsListArguments,
+const charactersListRequestConfig = (
+  args: CharactersListArguments,
 ): AxiosRequestConfig => {
   const params = transformArgsIntoURLParams({
     ...args,
   })
   return {
     method: 'GET',
-    url: 'agents',
+    url: 'characters',
     params,
   }
 }
 
-const agentsGetRequestConfig = (
-  args: AgentsGetArguments,
+const charactersGetRequestConfig = (
+  args: CharactersGetArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `agents/${args.agentId}`,
+    url: `characters/${args.characterId}`,
   }
 }
 
-const agentsCreateRequestConfig = (
-  args: AgentsCreateArguments,
+const charactersCreateRequestConfig = (
+  args: CharactersCreateArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'agents/create',
+    url: 'characters/create',
     data: {
       ...args,
     },
   }
 }
 
-const agentsUpdateRequestConfig = (
-  args: AgentsUpdateArguments,
+const charactersUpdateRequestConfig = (
+  args: CharactersUpdateArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'agents/update',
+    url: 'characters/update',
     data: {
       ...args,
     },
   }
 }
 
-const agentsDeleteRequestConfig = (
-  args: AgentsDeleteArguments,
+const charactersDeleteRequestConfig = (
+  args: CharactersDeleteArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'agents/delete',
+    url: 'characters/delete',
     data: {
       ...args,
     },

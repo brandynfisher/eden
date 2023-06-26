@@ -11,7 +11,7 @@ export interface PaginatedResponse<T> {
   nextPage?: number
 }
 
-export * from './AgentsResponses'
+export * from './CharactersResponses'
 export * from './ApiKeysResponses'
 export * from './AuthResponses'
 export * from './CapabilitiesResponses'

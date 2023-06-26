@@ -15,7 +15,7 @@ const capabilityRoutes: FastifyPluginAsync = async server => {
   server.post('/capabilities/create', {
     schema: {
       body: Type.Object({
-        agentId: Type.String(),
+        characterId: Type.String(),
         name: Type.String(),
         type: Type.String(),
         data: Type.Any(),
@@ -65,7 +65,7 @@ const capabilityRoutes: FastifyPluginAsync = async server => {
       querystring: {
         type: 'object',
         properties: {
-          agentId: { type: ['string', 'array'] },
+          characterId: { type: ['string', 'array'] },
           ...paginationProperties(),
         },
         required: [],

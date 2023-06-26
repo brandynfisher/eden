@@ -12,30 +12,35 @@ export interface MannaVoucherSchema {
   updatedAt?: Date | number
 }
 
+export interface MannaVoucherInput {
+  amount: number
+  code: string
+  allowedUserIds?: string[]
+}
+
 export interface MannaVoucherDocument extends MannaVoucherSchema, Document {}
 
 const mannavoucher = new Schema<MannaVoucherDocument>(
   {
-    allowedUserIds: {
-      type: [String],
-      default: null,
-    },
     amount: {
       type: Number,
       required: true,
+    },
+    code: {
+      type: String,
+      required: true,
+      maxlength: 42,
     },
     used: {
       type: Boolean,
       default: false,
     },
-    code: {
-      type: String,
-      required: true,
+    allowedUserIds: {
+      type: [String],
     },
     redeemedBy: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
-      default: null,
+      ref: 'creators',
     },
   },
   {

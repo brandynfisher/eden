@@ -1,9 +1,10 @@
-import { Schema, model } from 'mongoose'
+import { ObjectId } from 'mongodb'
+import mongoose, { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import MongooseDelete from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-import { AgentDocument } from './Agent'
+import { CharacterDocument } from './Character'
 import { UserDocument } from './Creator'
 
 export enum CapabilityType {
@@ -12,12 +13,18 @@ export enum CapabilityType {
 
 export interface CapabilitySchema {
   user: UserDocument
-  agent: AgentDocument
-  name: string
+  character: CharacterDocument
   type: CapabilityType
   data: any
   createdAt?: Date
   updatedAt?: Date
+}
+
+export interface CapabilityInput {
+  creator: ObjectId
+  character: ObjectId
+  type: CapabilityType
+  data: any
 }
 
 export interface CapabilityDocument
@@ -31,13 +38,9 @@ const capability = new Schema<CapabilityDocument>(
       ref: 'users',
       required: true,
     },
-    agent: {
+    character: {
       type: Schema.Types.ObjectId,
-      ref: 'agents',
-      required: true,
-    },
-    name: {
-      type: String,
+      ref: 'characters',
       required: true,
     },
     type: {
@@ -55,7 +58,21 @@ const capability = new Schema<CapabilityDocument>(
   },
 )
 
-capability.pre<CapabilityDocument>('save', function (next) {
+capability.pre<CapabilityDocument>('save', async function (next) {
+  const character = await mongoose.model('characters').findById(this.character)
+  if (!character) {
+    throw new Error('Character not found.')
+  }
+  if (character) {
+    const count = await mongoose.model('capabilities').countDocuments({
+      character: character._id,
+    })
+    if (count >= 10) {
+      throw new Error(
+        'Maximum number of capabilities reached for this character.',
+      )
+    }
+  }
   this.updatedAt = new Date()
 
   next()

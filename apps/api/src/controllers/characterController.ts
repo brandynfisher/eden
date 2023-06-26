@@ -1,71 +1,156 @@
+import {
+  CharactersCreateArguments,
+  CharactersDeleteArguments,
+  CharactersGetArguments,
+  CharactersListArguments,
+  CharactersUpdateArguments,
+} from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import { Character, CharacterDocument } from '../models/Character'
-import { User, UserDocument } from '../models/Creator'
+import { Character } from '../models/Character'
+import { User } from '../models/Creator'
+import CharacterRepository from '../repositories/CharacterRepository'
+import CreatorRepository from '../repositories/CreatorRepository'
 
-interface GetCharacterParams {
-  characterId: string
+export const createCharacter = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { name, capabilities } = request.body as CharactersCreateArguments
+
+  const input = {
+    user: userId,
+    name,
+    capabilities,
+  }
+
+  const characterRepository = new CharacterRepository(Character)
+  const character = await characterRepository.create(input)
+
+  return reply.status(200).send({
+    characterId: character._id,
+  })
+}
+
+export const updateCharacter = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { characterId, name, capabilities } =
+    request.body as CharactersUpdateArguments
+
+  if (!characterId) {
+    return reply.status(400).send({
+      message: 'You must provide an characterId',
+    })
+  }
+
+  const character = await Character.findOne({
+    characterId,
+    user: userId,
+  })
+
+  if (!character) {
+    return reply.status(401).send({
+      message: 'Character not found',
+    })
+  }
+
+  const input = {
+    name,
+    capabilities,
+  }
+
+  await character.update(input)
+
+  return reply.status(200).send({ characterId })
+}
+
+export const deleteCharacter = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { characterId } = request.body as CharactersDeleteArguments
+
+  const dbCharacter = await Character.findOne({
+    characterId,
+    user: userId,
+  })
+
+  if (!dbCharacter) {
+    return reply.status(401).send({
+      message: 'Character not found',
+    })
+  }
+
+  await dbCharacter.delete()
+
+  return reply.status(200).send({})
+}
+
+export const listCharacters = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId, limit, page, sort } = request.query as CharactersListArguments
+
+  const creatorsRepository = new CreatorRepository(User)
+  const creators = await creatorsRepository.query({
+    userId,
+  })
+
+  const characterRepository = new CharacterRepository(Character)
+  const characterPaginatedResponse = await characterRepository.query(
+    {
+      user: creators.docs
+        ? creators.docs.map(creator => creator._id)
+        : undefined,
+    },
+    {
+      limit,
+      page,
+      sort,
+    },
+  )
+
+  await characterRepository.model.populate(characterPaginatedResponse.docs, {
+    path: 'capabilities',
+  })
+
+  const response = {
+    ...characterPaginatedResponse,
+    docs: characterPaginatedResponse.docs.map(character => ({
+      id: character._id.toString(),
+      name: character.name,
+      capabilities: character.capabilities,
+    })),
+  }
+
+  return reply.status(200).send(response)
 }
 
 export const getCharacter = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { characterId } = request.params as GetCharacterParams
-
-  let character: CharacterDocument | null = null
-
-  try {
-    character = await Character.findById(characterId)
-  } catch (error) {
+  const { characterId } = request.params as CharactersGetArguments
+  const character = await Character.findById(characterId).populate(
+    'capabilities',
+  )
+  if (!character) {
     return reply.status(404).send({
       message: 'Character not found',
     })
   }
 
-  return reply.status(200).send({
-    character,
-  })
-}
-
-interface GetCharactersRequest {
-  query: {
-    userId: string
-    username: string
-  }
-}
-
-export const getCharacters = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { userId, username } = request.query as GetCharactersRequest['query']
-
-  const filter = {}
-
-  let user: UserDocument | null = null
-  if (username && !userId) {
-    try {
-      user = await User.findOne({ username })
-      if (!user) {
-        return await reply.status(200).send({ characters: [] })
-      }
-    } catch (error) {
-      return reply.status(404).send({
-        message: 'User not found',
-      })
-    }
-    Object.assign(filter, user ? { user: user._id } : {})
-  } else if (userId && !username) {
-    Object.assign(filter, { user: userId })
-  } else if (userId && username) {
-    return reply.status(500).send({
-      message: 'Specify either userId or username, not both',
-    })
+  const response = {
+    id: character._id,
+    name: character.name,
+    capabilities: character.capabilities,
   }
 
-  let characters: CharacterDocument[] = []
-  characters = await Character.find(filter)
-
-  return reply.status(200).send({ characters })
+  return reply.status(200).send({ character: response })
 }

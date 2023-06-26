@@ -34,6 +34,13 @@ export const useUserState = () => {
     isAuthenticated,
   })
 
+  // reset user state on disconnect
+  useEffect(() => {
+    refetchMannaBalance()
+    refetchMyCharacters()
+    refetchMyCollections()
+  }, [isAuthenticated])
+
   const { settings, updateSetting } = useSettings()
 
   const user: UserContextType = {
