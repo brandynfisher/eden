@@ -1,48 +1,63 @@
+import CreationReactions from '@/components/CreationReactions'
 import CreatorProfileLink from '@/components/CreatorProfileLink'
 import FollowControls from '@/components/FollowControls'
 import { Creation } from '@eden-labs/eden-sdk'
-import React from 'react'
+import React, { useState } from 'react'
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
+  const [creationData, setCreationData] = useState(creation)
+
   return (
     <div className="xl:flex xl:justify-center">
       <div className="w-full flex flex-shrink-0 justify-center xl:justify-normal xl:w-auto items-start">
-        <div className="inline-flex mb-4 rounded-xl overflow-hidden">
-          <img
-            src={creation.uri}
-            alt={creation.name}
-            className="max-h-full max-w-full object-contain"
-          />
+        <div className="inline-flex mb-4 max-h-screen">
+          <div className="flex justify-center overflow-hidden">
+            <img
+              src={creationData.uri}
+              alt={creationData.name}
+              className="max-h-full max-w-full object-contain rounded-xl overflow-hidden"
+            />
+          </div>
         </div>
       </div>
       <div className="xl:max-w-lg xl:flex-grow xl:flex xl:flex-col xl:ml-4">
-        <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col min-w-0 p-4 border border-gray-300 dark:border-gray-700 border-solid rounded-lg">
+        <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
+          <CreationReactions
+            creation={creationData}
+            onChange={setCreationData}
+          />
+        </div>
+
+        <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col min-w-0 p-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg">
           <div className="overflow-hidden flex items-center">
-            <div>{}</div>
             <div className="min-w-0">
-              {/*// @ts-ignore: @todo: fix the feed response type*/}
               <CreatorProfileLink
                 creatorId={
-                  creation.user.userId ? creation.user.userId : creation.user
+                  // @ts-ignore: @todo: fix the feed response type
+                  creationData.user.userId
+                    ? creationData.user.userId
+                    : creationData.user
                 }
               />
             </div>
           </div>
           <div>
-            {/*// @ts-ignore: @todo: fix the feed response type*/}
             <FollowControls
               creatorId={
-                creation.user.userId ? creation.user.userId : creation.user
+                // @ts-ignore: @todo: fix the feed response type
+                creationData.user.userId
+                  ? creationData.user.userId
+                  : creationData.user
               }
             />
           </div>
         </div>
-        <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-700 border-solid rounded-lg">
+        <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg dark:bg-gray-900">
           <div>
             {/*// @ts-ignore: @todo: fix the feed response type*/}
-            {creation.task.config &&
+            {creationData.task.config &&
               // @ts-ignore: @todo: fix the feed response type
-              Object.entries(creation.task.config).map(([key, val]) => (
+              Object.entries(creationData.task.config).map(([key, val]) => (
                 <div key={`cfg-${key}`} className="mb-4 last:mb-0">
                   <div className="text-gray-500 capitalize">{key}</div>
                   {/*// @ts-ignore: @todo: fix the feed response type*/}
