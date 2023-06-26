@@ -37,7 +37,7 @@ const StringParameter = (props: {
               },
             ]}
           >
-            <>
+            <div>
               {values.map((value, index) => (
                 <Row key={index} className="mb-2">
                   <Col flex="auto" className="mr-1">
@@ -72,7 +72,7 @@ const StringParameter = (props: {
                   </Button>
                 </Col>
               </Row>
-            </>
+            </div>
           </Form.Item>
           <Row>
             <Col>

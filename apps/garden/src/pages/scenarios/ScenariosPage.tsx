@@ -28,7 +28,7 @@ const ScenariosPage = () => {
       {exampleScenarios.map(scenario => (
         <div
           key={scenario.id}
-          className="mt-2 border-2 border-black  rounded-lg cursor-pointer"
+          className="mt-2 cursor-pointer"
           onClick={() => router.push(`/scenarios/chat`)}
         >
           <ScenarioCard scenario={scenario} />

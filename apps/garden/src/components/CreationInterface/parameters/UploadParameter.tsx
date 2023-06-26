@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons'
+import { UploadOutlined } from '@ant-design/icons'
 import { GeneratorParameter } from '@eden-labs/eden-sdk'
 import { Form, FormInstance, Row } from 'antd'
 import { Modal, Upload } from 'antd'
@@ -42,7 +42,10 @@ const UploadParameter = (props: {
         errorMessage = '20MB file size limit exceeded'
       }
       toast.error(
-        `${info.file.name} failed to upload because: ${errorMessage}.`,
+        <>
+          <div>{`${info.file.name} failed to upload`}</div>
+          <div className="mt-1 font-bold">{errorMessage}</div>
+        </>,
       )
       return
     }
@@ -55,7 +58,10 @@ const UploadParameter = (props: {
       setUrls(newUrls)
       toast.success(
         <>
-          Uploaded successfully <a href={info.file.response.fileUrl}>[link]</a>.
+          <div>Uploaded successfully</div>
+          <div className="mt-1 font-bold">
+            <a href={info.file.response.fileUrl}>[link]</a>
+          </div>
         </>,
       )
     }
@@ -84,7 +90,7 @@ const UploadParameter = (props: {
     <>
       <Row>
         <Form.Item
-          style={{ marginBottom: 5 }}
+          className="mb-2"
           label={props.parameter.label}
           name={props.parameter.name}
           rules={[
@@ -103,9 +109,9 @@ const UploadParameter = (props: {
             onPreview={handlePreview}
           >
             {fileList.length >= maxUploads ? null : (
-              <div>
-                <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
+              <div className="flex p-2 px-4">
+                <UploadOutlined />
+                <div className="ml-1">Upload File</div>
               </div>
             )}
           </Upload>
@@ -120,7 +126,7 @@ const UploadParameter = (props: {
         footer={null}
         onCancel={() => setPreviewOpen(false)}
       >
-        <img alt="example" style={{ width: '100%' }} src={previewImage} />
+        <img alt="example" className="w-full" src={previewImage} />
       </Modal>
     </>
   )

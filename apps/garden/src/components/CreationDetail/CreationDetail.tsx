@@ -1,33 +1,71 @@
+import CreationReactions from '@/components/CreationReactions'
+import CreatorProfileLink from '@/components/CreatorProfileLink'
+import FollowControls from '@/components/FollowControls'
 import { Creation } from '@eden-labs/eden-sdk'
-import { Card } from 'antd'
-import React from 'react'
+import React, { useState } from 'react'
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
+  const [creationData, setCreationData] = useState(creation)
+
   return (
-    <div className="pt-4">
-      <div className="mb-4 rounded-xl overflow-hidden">
-        <img src={creation.thumbnail} alt="" className="max-h-full max-w-full object-contain" />
+    <div className="xl:flex xl:justify-center">
+      <div className="w-full flex flex-shrink-0 justify-center xl:justify-normal xl:w-auto items-start">
+        <div className="inline-flex mb-4 max-h-screen">
+          <div className="flex justify-center overflow-hidden">
+            <img
+              src={creationData.uri}
+              alt={creationData.name}
+              className="max-h-full max-w-full object-contain rounded-xl overflow-hidden"
+            />
+          </div>
+        </div>
       </div>
-      <div className="grid grid-cols-12 gap-4">
-        <Card className="col-span-4">
-          <div className="text-gray-500">User</div>
-          {/*// @ts-ignore: @todo: fix the feed response type*/}
-          <div>{creation.user.userId}</div>
-        </Card>
-        <Card className="col-span-8">
-          <div className="grid grid-cols-2">
+      <div className="xl:max-w-lg xl:flex-grow xl:flex xl:flex-col xl:ml-4">
+        <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
+          <CreationReactions
+            creation={creationData}
+            onChange={setCreationData}
+          />
+        </div>
+
+        <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col min-w-0 p-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg">
+          <div className="overflow-hidden flex items-center">
+            <div className="min-w-0">
+              <CreatorProfileLink
+                creatorId={
+                  // @ts-ignore: @todo: fix the feed response type
+                  creationData.user.userId
+                    ? creationData.user.userId
+                    : creationData.user
+                }
+              />
+            </div>
+          </div>
+          <div>
+            <FollowControls
+              creatorId={
+                // @ts-ignore: @todo: fix the feed response type
+                creationData.user.userId
+                  ? creationData.user.userId
+                  : creationData.user
+              }
+            />
+          </div>
+        </div>
+        <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg dark:bg-gray-900">
+          <div>
             {/*// @ts-ignore: @todo: fix the feed response type*/}
-            {creation.task.config &&
+            {creationData.task.config &&
               // @ts-ignore: @todo: fix the feed response type
-              Object.entries(creation.task.config).map(([key, val]) => (
-                <div key={`cfg-${key}`}>
+              Object.entries(creationData.task.config).map(([key, val]) => (
+                <div key={`cfg-${key}`} className="mb-4 last:mb-0">
                   <div className="text-gray-500 capitalize">{key}</div>
                   {/*// @ts-ignore: @todo: fix the feed response type*/}
                   <div>{val}</div>
                 </div>
               ))}
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   )

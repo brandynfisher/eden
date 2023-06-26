@@ -67,7 +67,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
       return (
         <div
           key={parameter.name}
-          className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md mb-6"
+          className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md mb-6"
         >
           {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
           parameter.allowedValuesFrom ? (

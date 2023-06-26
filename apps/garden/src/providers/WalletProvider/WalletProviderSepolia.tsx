@@ -1,9 +1,11 @@
+import WalletCustomAvatar from '@/components/WalletCustomAvatar'
 import { CONFIG } from '@/lib/config'
 import { ParticleNetwork } from '@particle-network/auth'
 import { particleWallet } from '@particle-network/rainbowkit-ext'
 import {
   RainbowKitProvider,
   connectorsForWallets,
+  darkTheme,
 } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
 import {
@@ -18,7 +20,8 @@ import {
   trustWallet,
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets'
-import { PropsWithChildren } from 'react'
+import { useTheme } from 'next-themes'
+import { PropsWithChildren, useEffect, useState } from 'react'
 import { WagmiConfig, configureChains, createConfig, sepolia } from 'wagmi'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
@@ -84,9 +87,26 @@ const config = createConfig({
 })
 
 function WalletProviderSepolia({ children }: PropsWithChildren) {
+  const { resolvedTheme } = useTheme()
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  useEffect(() => {
+    if (resolvedTheme && resolvedTheme === 'dark') {
+      setIsDarkMode(true)
+    } else {
+      setIsDarkMode(false)
+    }
+  }, [resolvedTheme])
+
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider chains={chains}>{children}</RainbowKitProvider>
+      <RainbowKitProvider
+        chains={chains}
+        theme={isDarkMode ? darkTheme() : undefined}
+        avatar={WalletCustomAvatar}
+      >
+        {children}
+      </RainbowKitProvider>
     </WagmiConfig>
   )
 }

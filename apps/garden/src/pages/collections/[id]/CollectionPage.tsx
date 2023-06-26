@@ -23,10 +23,10 @@ const CollectionPage = ({ collectionId }: { collectionId: string }) => {
   const onDeleteButtonClick = async () => {
     setDeleteLoading(true)
     try {
-      await axios.post(`/api/collections//delete`, {
+      await axios.post(`/api/collections/delete`, {
         collectionId,
       })
-      router.push(`/me`)
+      await router.push(`/me`)
     } catch (err) {
       handleAxiosError(err)
     }

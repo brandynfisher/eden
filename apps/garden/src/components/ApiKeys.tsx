@@ -125,7 +125,7 @@ const ApiKeys = () => {
       <h2 className="text-xl">API Keys</h2>
       <Table dataSource={data} columns={columns} size="middle" />
 
-      <div>
+      <div className="mt-4">
         <h3 className="text-l">Create new API key</h3>
         <Input
           placeholder="Note about this key"

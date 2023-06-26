@@ -7,7 +7,7 @@ const CreationFilters = () => {
       <Button>Create</Button>
       <Button>New</Button>
       <Button>Top</Button>
-      <Button>Favorited</Button>
+      <Button>Favorites</Button>
     </Space>
   )
 }

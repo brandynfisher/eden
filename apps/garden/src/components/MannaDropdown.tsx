@@ -1,6 +1,6 @@
 import { UserContext } from '@/providers/UserProvider'
 import { InfoCircleOutlined, WalletOutlined } from '@ant-design/icons'
-import { Dropdown } from 'antd'
+import { Button, Dropdown } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import React, { useContext } from 'react'
 
@@ -51,22 +51,23 @@ const items: ItemType[] = [
 const MannaDropdown = () => {
   const { mannaBalance, isConnected, isAuthenticated } = useContext(UserContext)
 
-  if (!isConnected || !isAuthenticated) {
-    return null
-  }
-
   return (
     <Dropdown
       menu={{
         items,
       }}
-      trigger={['click']}
-      className="mr-4 cursor-pointer"
+      trigger={['hover', 'click']}
+      className="cursor-pointer"
+      disabled={!isConnected || !isAuthenticated}
     >
-      <div className="flex items-center">
-        <WalletOutlined className="text-black dark:text-white text-xl flex mr-1" />
-        <div>{mannaBalance}</div>
-      </div>
+      <Button type="text" className="flex px-2 justify-center items-center">
+        <div>
+          <WalletOutlined className="text-black dark:text-white flex mr-2 text-xl" />
+        </div>
+        <div className="text-small text-left" style={{ minWidth: '26px' }}>
+          {mannaBalance || '---'}
+        </div>
+      </Button>
     </Dropdown>
   )
 }
