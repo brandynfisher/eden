@@ -1,4 +1,41 @@
-import baseParameters from './_base.js'
-
-export default {
-}
+export default [
+  {
+    name: 'text',
+    label: 'Text',
+    description: 'Text to synthesize as speech',
+    default: null,
+    isRequired: true,
+  },
+  {
+    name: 'preset',
+    label: 'Preset',
+    description: 'Speed vs quality mode',
+    default: 'standard',
+    allowedValues: ['ultra_fast', 'fast', 'standard', 'high_quality'],
+  },
+  {
+    name: 'voice',
+    label: 'Voice',
+    description: 'Name of the voice to use for synthesis',
+    default: 'random',
+    allowedValues: ['random', 'clone', 'angie', 'applejack', 'cond_latent_example', 'daniel', 'deniro', 'emma', 'freeman', 'geralt', 'halle', 'jlaw', 'lj', 'mol', 'myself', 'pat', 'pat2', 'rainbow', 'snakes', 'tim_reynolds', 'tom', 'train_atkins', 'train_daws', 'train_dotrice', 'train_dreams', 'train_empire', 'train_grace', 'train_kennard', 'train_lescault', 'train_mouse', 'weaver', 'william'],
+  },
+  {
+    name: 'voice_file_urls',
+    label: 'Voice file URLs',
+    description: 'URLs for the audio files of target voice (if voice is clone)',
+    mediaUpload: true,
+    default: [],
+    minLength: 1,
+    maxLength: 16,
+  },
+  {
+    name: 'seed',
+    label: 'Seed',
+    description: 'Set random seed for reproducibility. If blank, will be set randomly.',
+    default: null,
+    minimum: 0,
+    maximum: 1e8,
+    optional: true,
+  },
+]
