@@ -61,11 +61,10 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
       </div>
       {isAuthenticated && !isOwnProfile && (
         <Button
-          size="small"
           type={isFollowingUser ? 'link' : 'default'}
           onClick={onFollowButtonClick}
           loading={followLoading ? { delay: 250 } : false}
-          className="flex-shrink-0"
+          className="flex-shrink-0 px-4"
         >
           {isFollowingUser ? (
             <>

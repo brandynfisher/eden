@@ -1,8 +1,13 @@
+import PageLayoutNoSidebar from '@/components/Layout/PageLayoutNoSidebar'
 import CreationPage from '@/pages/creations/[creationId]/CreationPage'
-import React from 'react'
+import React, { ReactNode } from 'react'
 
-const creation = () => {
+const Creation = () => {
   return <CreationPage />
 }
 
-export default creation
+Creation.getLayout = function getLayout(page: ReactNode) {
+  return <PageLayoutNoSidebar>{page}</PageLayoutNoSidebar>
+}
+
+export default Creation

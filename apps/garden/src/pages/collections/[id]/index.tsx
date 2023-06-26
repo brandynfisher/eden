@@ -1,8 +1,9 @@
+import PageLayoutNoSidebar from '@/components/Layout/PageLayoutNoSidebar'
 import CollectionPage from '@/pages/collections/[id]/CollectionPage'
 import { useRouter } from 'next/router'
-import React from 'react'
+import React, { ReactNode } from 'react'
 
-const collection = () => {
+const Collection = () => {
   const router = useRouter()
   const { id } = router.query
   const collectionId = id as string
@@ -13,4 +14,8 @@ const collection = () => {
   )
 }
 
-export default collection
+Collection.getLayout = function getLayout(page: ReactNode) {
+  return <PageLayoutNoSidebar>{page}</PageLayoutNoSidebar>
+}
+
+export default Collection
