@@ -1,4 +1,4 @@
-import CreationCardCreator from '@/components/CreationCard/CreationCardCreator'
+import CreationCardDetail from '@/components/CreationCard/CreationCardDetail'
 import CreationReactions from '@/components/CreationReactions'
 import { Creation } from '@eden-labs/eden-sdk'
 import React from 'react'
@@ -32,8 +32,7 @@ const CreationCardHoverOverlay = ({
         <CreationReactions creation={creation} onChange={handlers.onChange} />
       </div>
       <div className="mx-4 mb-4">
-        {/*//@ts-ignore @todo: fix response type */}
-        <CreationCardCreator creatorId={creation.user.userId} />
+        <CreationCardDetail creation={creation} />
       </div>
     </div>
   )

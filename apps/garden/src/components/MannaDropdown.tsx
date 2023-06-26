@@ -56,7 +56,7 @@ const MannaDropdown = () => {
       menu={{
         items,
       }}
-      trigger={['hover', 'click']}
+      trigger={['click']}
       className="cursor-pointer"
       disabled={!isConnected || !isAuthenticated}
     >

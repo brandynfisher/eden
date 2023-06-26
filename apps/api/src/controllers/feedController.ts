@@ -130,6 +130,11 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     path: 'user',
     select: 'userId',
   })
+  await creationRepository.model.populate(creations.docs, {
+    path: 'task',
+    select: 'config status generator',
+    populate: { path: 'generator', select: 'generatorName description output' },
+  })
 
   if (request.user?.userId) {
     // Get user's reactions and bookmarks

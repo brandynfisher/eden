@@ -1,4 +1,4 @@
-import { PaginatedResponse } from '.'
+import {Creator, PaginatedResponse, Task} from '.'
 import { WebAPICallResult } from '../EdenClient'
 
 export type CreationsListResponse = WebAPICallResult &
@@ -25,8 +25,8 @@ export type Reactions = Record<string, boolean>
 
 export type Creation = {
   _id: string
-  user: string
-  task: string
+  user: Creator
+  task: Task
   parent?: string
   delegateUser?: string
   delegateHasClaimed?: boolean
@@ -37,6 +37,8 @@ export type Creation = {
   mediaAttributes: MediaAttributes
   bookmarked?: boolean
   reactions?: Reactions
+  createdAt: string
+  updatedAt: string
 }
 
 export interface MediaAttributes {

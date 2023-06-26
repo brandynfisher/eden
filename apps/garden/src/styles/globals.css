@@ -94,3 +94,20 @@ body {
     width: unset !important;
     height: unset !important;
 }
+
+.max-h-72vh {
+    max-height: 72vh;
+}
+
+@media (min-width: 1280px) {
+    .xl\:max-h-88vh {
+        max-height: 88vh;
+    }
+}
+
+.ant-progress-outer {
+    height: unset !important;
+}
+.ant-progress-text {
+    width: unset !important;
+}

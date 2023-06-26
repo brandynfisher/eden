@@ -8,6 +8,7 @@ const CreatorProfileLink = ({ creatorId }: { creatorId: string }) => {
 
   return (
     <Link
+      onClick={ev => ev.stopPropagation()}
       href={{
         pathname: `/creators/${creatorId}`,
       }}
