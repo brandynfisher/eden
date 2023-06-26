@@ -50,7 +50,8 @@ export const getCreation = async (
     const creation = await Creation.findById(creationId)
       .populate({
         path: 'task',
-        select: 'config status',
+        select: 'config status generator',
+        populate: { path: 'generator' },
       })
       .populate({
         path: 'user',
