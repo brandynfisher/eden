@@ -101,31 +101,31 @@ async function updateVersion(db) {
     output: 'creation',
     versions: [interrogateGeneratorVersion]
   }
-  console.log("dfaskljdsflk")
-  // await db.collection('generators').updateOne(
-  //   { generatorName: 'create' }, 
-  //   { $push: { versions: createGeneratorVersion } }
-  // );
+  
+  await db.collection('generators').updateOne(
+    { generatorName: 'create' }, 
+    { $push: { versions: createGeneratorVersion } }
+  );
 
-  // await db.collection('generators').updateOne(
-  //   { generatorName: 'interpolate' }, 
-  //   { $push: { versions: interpolateGeneratorVersion } }
-  // );
+  await db.collection('generators').updateOne(
+    { generatorName: 'interpolate' }, 
+    { $push: { versions: interpolateGeneratorVersion } }
+  );
 
-  // await db.collection('generators').updateOne(
-  //   { generatorName: 'remix' }, 
-  //   { $push: { versions: remixGeneratorVersion } }
-  // );
+  await db.collection('generators').updateOne(
+    { generatorName: 'remix' }, 
+    { $push: { versions: remixGeneratorVersion } }
+  );
 
-  // await db.collection('generators').updateOne(
-  //   { generatorName: 'real2real' }, 
-  //   { $push: { versions: real2realGeneratorVersion } }
-  // );
+  await db.collection('generators').updateOne(
+    { generatorName: 'real2real' }, 
+    { $push: { versions: real2realGeneratorVersion } }
+  );
 
-  // await db.collection('generators').updateOne(
-  //   { generatorName: 'interrogate' }, 
-  //   { $push: { versions: interrogateGeneratorVersion } }
-  // );
+  await db.collection('generators').updateOne(
+    { generatorName: 'interrogate' }, 
+    { $push: { versions: interrogateGeneratorVersion } }
+  );
 
   console.log(`Updated generators for ${versionId}`);
 }
