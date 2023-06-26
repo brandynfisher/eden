@@ -64,7 +64,7 @@ const CompletedTaskMenuItem = ({
                   Took {taskRunDuration}
                 </div>
               </div>
-              <div className="flex min-w-0 truncate">
+              <div className="flex min-w-0 truncate mt-1">
                 <div className="text-xs text-gray-800 dark:text-gray-400 truncate">
                   {task._id}
                 </div>

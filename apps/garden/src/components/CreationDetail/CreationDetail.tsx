@@ -1,11 +1,15 @@
 import CreationReactions from '@/components/CreationReactions'
 import CreatorProfileLink from '@/components/CreatorProfileLink'
 import FollowControls from '@/components/FollowControls'
+import { durationSinceDate } from '@/lib/time'
 import { Creation } from '@eden-labs/eden-sdk'
+import { Divider } from 'antd'
 import React, { useState } from 'react'
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
   const [creationData, setCreationData] = useState(creation)
+
+  const timeSinceCreation = durationSinceDate(creation.createdAt)
 
   return (
     <div className="xl:flex xl:justify-center">
@@ -39,8 +43,14 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
           </div>
         </div>
         <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-600 border-solid rounded-lg bg-gray-100 dark:bg-gray-900">
+          <div className="flex justify-between items-center">
+            <div className="font-bold">
+              /{creation.task.generator.generatorName}
+            </div>
+            <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
+          </div>
+          <Divider className="my-4" />
           <div>
-            {/*{ creationData.task.generator.generatorName }*/}
             {creationData.task.config &&
               Object.entries(creationData.task.config).map(([key, val]) => (
                 <div key={`cfg-${key}`} className="mb-4 last:mb-0">
