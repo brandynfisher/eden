@@ -42,7 +42,7 @@ const CollectionPage = ({ collectionId }: { collectionId: string }) => {
           onDeleteButtonClick={onDeleteButtonClick}
           deleteLoading={deleteLoading}
         />
-        <div className="flex-grow mt-4">
+        <div className="mt-4">
           {creations && <CreationMasonry creations={creations} />}
         </div>
       </Space>

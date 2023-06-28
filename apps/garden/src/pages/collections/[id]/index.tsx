@@ -1,4 +1,5 @@
 import PageLayoutNoSidebar from '@/components/Layout/PageLayoutNoSidebar'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import CollectionPage from '@/pages/collections/[id]/CollectionPage'
 import { useRouter } from 'next/router'
 import React, { ReactNode } from 'react'
@@ -6,12 +7,12 @@ import React, { ReactNode } from 'react'
 const Collection = () => {
   const router = useRouter()
   const { id } = router.query
-  const collectionId = id as string
-  return collectionId ? (
-    <CollectionPage collectionId={collectionId} />
-  ) : (
-    <p>Loading...</p>
-  )
+
+  if (!id) {
+    return <LoadingIndicator />
+  }
+
+  return <CollectionPage collectionId={id as string} />
 }
 
 Collection.getLayout = function getLayout(page: ReactNode) {

@@ -26,13 +26,17 @@ body {
     rgb(var(--background-start-rgb));
 } */
 
+/*.ant-layout-content {*/
+/*    flex: 1 1 0 !important;*/
+/*}*/
+
 .ant-modal {
     top: 0 !important;
     min-height: calc(100% - 16px) !important;
 }
 
 .ant-modal-mask {
-    background-color: rgba(0, 0, 0, 0.9) !important;
+    background-color: rgba(0, 0, 0, 0.92) !important;
 }
 
 .dark .ant-modal-content {
@@ -58,10 +62,6 @@ body {
 .ant-modal-close {
     width: 44px !important;
     height: 44px !important;
-    opacity: 0;
-    animation: fadeIn 500ms;
-    animation-delay: 500ms;
-    animation-fill-mode: forwards;
     background: rgb(0,0,0,0.5) !important;
 }
 
@@ -71,6 +71,10 @@ body {
 
 @media (min-width: 1024px) {
     .ant-modal-close {
+        opacity: 0;
+        animation: fadeIn 350ms;
+        animation-delay: 450ms;
+        animation-fill-mode: forwards;
         position: fixed !important;
         top: 33px !important;
         right: 41px !important;

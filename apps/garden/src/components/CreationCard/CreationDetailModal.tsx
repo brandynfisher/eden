@@ -3,23 +3,27 @@ import { CloseOutlined } from '@ant-design/icons'
 import { Creation } from '@eden-labs/eden-sdk'
 import { Modal } from 'antd'
 import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
 
 const CreationDetailModal = ({
-  open,
   setDetailModalOpen,
   creation,
-  preUrl,
+  modalUrl,
 }: {
-  open: boolean
   setDetailModalOpen: (open: boolean) => void
   creation: Creation
-  preUrl: string
+  modalUrl: string
 }) => {
+  const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
-  const onDetailModalClose = async () => {
-    setDetailModalOpen(false)
-    await router.push('', preUrl)
-  }
+
+  useEffect(() => {
+    if (router.asPath === modalUrl) {
+      setIsOpen(true)
+    } else {
+      setIsOpen(false)
+    }
+  }, [modalUrl, router.asPath])
 
   const CloseButton = () => {
     return (
@@ -29,14 +33,24 @@ const CreationDetailModal = ({
     )
   }
 
+  const onCloseHandler = () => {
+    setIsOpen(false)
+    router.back()
+  }
+
+  const afterCloseHandler = () => {
+    setDetailModalOpen(false)
+  }
+
   return (
     <Modal
-      open={open}
+      open={isOpen}
       closeIcon={<CloseButton />}
-      onCancel={onDetailModalClose}
+      onCancel={onCloseHandler}
+      afterClose={afterCloseHandler}
       footer={false}
       width={''} // unsets default width, so we can handle it with util classes
-      className="flex overflow-hidden flex-col mx-auto relative z-20 w-full lg:max-w-6xl h-auto my-4 lg:items-center my-4 lg:my-12 lg:mt-8 shadow-2xl"
+      className="flex overflow-hidden flex-col mx-auto relative z-20 w-full lg:max-w-6xl h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl"
     >
       <CreationDetail creation={creation} />
     </Modal>

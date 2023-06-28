@@ -8,9 +8,7 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
   return (
     <Layout className="min-h-screen flex flex-col">
       <LayoutHeader />
-      <Layout className="flex flex-grow p-4 bg-white dark:bg-gray-950">
-        {children}
-      </Layout>
+      <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>
       <ToastContainer />
     </Layout>
   )
