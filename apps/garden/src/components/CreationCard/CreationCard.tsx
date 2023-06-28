@@ -20,7 +20,7 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   const modalUrl = `/creations/${creation._id}`
 
   const openDetailModal = async () => {
-    await router.push('', modalUrl)
+    await router.push('', modalUrl, { scroll: false })
     setDetailModalOpen(true)
   }
 

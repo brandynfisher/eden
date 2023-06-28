@@ -59,6 +59,20 @@ body {
     }
 }
 
+@keyframes scaleUpToOriginal {
+    0% {
+        transform: scale(0.8);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.anim-scale-to-original {
+    animation: 200ms ease-in 200ms 1 scaleUpToOriginal;
+    animation-fill-mode: both;
+}
+
 .ant-modal-close {
     width: 44px !important;
     height: 44px !important;
