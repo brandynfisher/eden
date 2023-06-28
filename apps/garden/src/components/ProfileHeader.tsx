@@ -18,17 +18,15 @@ const ProfileHeader = ({
   const { isAuthenticated } = useContext(UserContext)
   return (
     <div className="flex flex-col bg-gray-200 dark:bg-gray-900 rounded-lg p-4 relative">
-      <div className="flex items-center">
-        <div className="flex h-full flex-shrink-0 mr-4 w-min">
+      <div className="flex w-full items-center justify-start gap-4">
+        <div className="flex h-full flex-shrink-0 w-min">
           <ProfileAvatar seed={creatorId} />
         </div>
-        <div className="flex flex-col justify-center w-full">
-          <div className="mb-2">
-            <ProfileHeaderName
-              isOwnProfile={isAuthenticated && isAuthUser}
-              displayName={creatorDisplayName}
-            />
-          </div>
+        <div className="flex flex-col justify-center w-full min-w-0">
+          <ProfileHeaderName
+            isOwnProfile={isAuthenticated && isAuthUser}
+            displayName={creatorDisplayName}
+          />
           <div className="text-sm">
             <strong>{numCreations || 0}</strong> Creations
           </div>
