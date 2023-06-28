@@ -27,7 +27,7 @@ const ProfileHeader = ({
             isOwnProfile={isAuthenticated && isAuthUser}
             displayName={creatorDisplayName}
           />
-          <div className="text-sm">
+          <div className="text-sm mt-1">
             <strong>{numCreations || 0}</strong> Creations
           </div>
         </div>

@@ -50,7 +50,7 @@ const ProfileHeaderName = ({
               className="z-10 pl-0 ml-0 font-semibold border-none shadow-none !ring-none flex h-7 max-w-full items-center text-lg font-medium bg-transparent underline decoration-dotted decoration-2 underline-offset-[6px] !outline-none"
               // onChange={handleNameInputChange}
             />
-            <div className="z-0 flex gap-2 absolute bg-gray-800 p-2 top-full rounded-b-md shadow shadow-black anim-bounce-in-down ">
+            <div className="z-0 flex gap-2 absolute bg-gray-800 p-2 top-full rounded-b-md shadow shadow-black anim-slide-fade-down ">
               <Button
                 size="small"
                 type="text"

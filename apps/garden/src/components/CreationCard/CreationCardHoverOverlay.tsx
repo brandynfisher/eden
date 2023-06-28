@@ -28,10 +28,10 @@ const CreationCardHoverOverlay = ({
       className="absolute inset-0 flex flex-col justify-between"
       onClick={handleClickOutside}
     >
-      <div className="mx-4 mt-4">
+      <div className="mx-2 mt-2 anim-slide-fade-down">
         <CreationReactions creation={creation} onChange={handlers.onChange} />
       </div>
-      <div className="mx-4 mb-4">
+      <div className="mx-2 mb-2 anim-slide-fade-up">
         <CreationCardDetail creation={creation} />
       </div>
     </div>

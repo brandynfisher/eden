@@ -84,7 +84,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
         <MediaViewer creation={creationData} onAfterHide={hideMediaViewer} />
       )}
       <div className="xl:flex xl:justify-center">
-        <div className="w-full flex flex-shrink-0 justify-center xl:justify-normal xl:w-auto items-start">
+        <div className="w-full flex justify-center xl:justify-normal xl:w-auto items-start">
           <div className="inline-flex mb-4 max-h-72vh xl:max-h-88vh">
             <div
               onClick={showMediaViewer}
@@ -94,7 +94,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
             </div>
           </div>
         </div>
-        <div className="xl:max-w-lg xl:flex-grow xl:flex xl:flex-col xl:ml-4">
+        <div className="xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
           <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
             <CreationReactions
               creation={creationData}
