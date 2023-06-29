@@ -1,4 +1,5 @@
 import ImageResult from '@/components/CreationInterface/media/ImageResult'
+import { durationBetweenDates, durationSinceDate } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {
   CheckOutlined,
@@ -6,7 +7,7 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons'
 import { Task } from '@eden-labs/eden-sdk'
-import { Button, Dropdown, Menu, Space, Spin } from 'antd'
+import { Button, Dropdown, Menu, Progress, Space, Spin } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
@@ -19,21 +20,25 @@ const CompletedTaskMenuItem = ({
 }) => {
   const router = useRouter()
   const creationId = task.creation._id
-  const [generatorName, prompt] = Object.entries(task.config).filter(
-    item => item[0] !== 'seed',
-  )[0] as [string, string]
 
   const handleViewCreation = () => {
     if (!creationId) return
     router.push(`/creations/${creationId}`)
   }
 
+  const taskRunDuration = durationBetweenDates(
+    task.createdAt,
+    task.updatedAt,
+    'seconds',
+    true,
+  )
+
   return (
     <>
       <Menu.Divider />
       <div
         onClick={handleViewCreation}
-        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
+        className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
       >
         <div
           className="flex w-full"
@@ -47,16 +52,19 @@ const CompletedTaskMenuItem = ({
           </div>
           <div className="flex items-center justify-between w-full">
             <div className="flex flex-col min-w-0 mr-2">
-              <div>
-                <strong>/{generatorName}</strong>
+              <div className="flex justify-between items-center">
+                <strong>/{task.generator.generatorName}</strong>
+                <div className="text-xs text-gray-800 dark:text-gray-400">
+                  Took {taskRunDuration}
+                </div>
               </div>
-              <div className="flex min-w-0 truncate">
-                <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-                  {prompt}
+              <div className="flex min-w-0 truncate mt-1">
+                <div className="text-xs text-gray-800 dark:text-gray-400 truncate">
+                  {task._id}
                 </div>
               </div>
             </div>
-            <Button type="text" title="Dismiss">
+            <Button type="text" title="Dismiss" className="px-2">
               <CloseOutlined
                 className="ml-auto cursor-pointer"
                 onClick={e => {
@@ -73,22 +81,28 @@ const CompletedTaskMenuItem = ({
 }
 
 const PendingTaskMenuItem = ({ task }: { task: Task }) => {
-  const [generatorName, prompt] = Object.entries(task.config).filter(
-    item => item[0] !== 'seed',
-  )[0] as [string, string]
+  const timeSinceTaskCreation = durationSinceDate(task.createdAt)
 
   return (
     <>
       <Menu.Divider />
       <div
-        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
+        className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
         style={{ minWidth: '240px' }}
       >
-        <div>
-          <strong>/{generatorName}</strong>
+        <div className="flex justify-between items-center">
+          <strong>/{task.generator.generatorName}</strong>
+          <div className="text-xs text-gray-800 dark:text-gray-400">
+            Started {timeSinceTaskCreation}
+          </div>
         </div>
+        <Progress
+          percent={task.progress}
+          status="active"
+          className="mt-1 flex items-center"
+        />
         <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-          {prompt}
+          {task._id}
         </div>
       </div>
     </>
@@ -119,10 +133,10 @@ const TaskNotificationDropdown = () => {
     <Space className="max-w-3xl">
       {pendingTaskItems.length > 0 && (
         <Dropdown
-          trigger={['hover', 'click']}
+          trigger={['click']}
           overlay={
             <Menu className="max-w-xs">
-              <div className="px-2">Pending Tasks</div>
+              <div className="p-2">Pending Tasks</div>
               {pendingTaskItems}
             </Menu>
           }
@@ -142,10 +156,10 @@ const TaskNotificationDropdown = () => {
       )}
       {completedTaskItems.length > 0 && (
         <Dropdown
-          trigger={['hover', 'click']}
+          trigger={['click']}
           overlay={
             <Menu className="max-w-xs">
-              <div className="px-2">Completed Tasks</div>
+              <div className="p-2">Completed Tasks</div>
               {completedTaskItems}
             </Menu>
           }

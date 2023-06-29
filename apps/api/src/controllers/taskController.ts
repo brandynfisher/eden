@@ -160,6 +160,10 @@ export const listTasks = async (
     path: 'creation',
   })
 
+  await tasksRepository.model.populate(tasks.docs, {
+    path: 'generator',
+  })
+
   return reply.status(200).send(tasks)
 }
 

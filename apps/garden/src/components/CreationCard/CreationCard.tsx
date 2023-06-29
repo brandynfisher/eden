@@ -11,17 +11,17 @@ import React from 'react'
 const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
-  const [preUrl, setPreUrl] = React.useState(router.asPath)
   const [detailModalOpen, setDetailModalOpen] = React.useState(false)
   const [creation, setCreation] = React.useState(data)
   const [messageApi, contextHolder] = message.useMessage()
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     React.useState(false)
 
-  const openDetailModal = () => {
+  const modalUrl = `/creations/${creation._id}`
+
+  const openDetailModal = async () => {
+    await router.push('', modalUrl, { scroll: false })
     setDetailModalOpen(true)
-    setPreUrl(router.asPath)
-    router.push('', `/creations/${creation._id}`)
   }
 
   return (
@@ -42,10 +42,13 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
           </div>
         </div>
       </div>
-      <CreationDetailModal
-        {...{ open: detailModalOpen, preUrl, setDetailModalOpen }}
-        creation={creation}
-      />
+      {detailModalOpen && (
+        <CreationDetailModal
+          modalUrl={modalUrl}
+          setDetailModalOpen={setDetailModalOpen}
+          creation={creation}
+        />
+      )}
       {contextHolder}
       <AddToCollectionModal
         open={addToCollectionModalOpen}

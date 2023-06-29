@@ -15,7 +15,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 const CreationTabContent = ({ creations }: { creations: Creation[] }) => {
   return (
-    <div className="flex-grow mt-4">
+    <div className="mt-4">
       <CreationFilters />
       {creations && <CreationMasonry creations={creations} />}
     </div>

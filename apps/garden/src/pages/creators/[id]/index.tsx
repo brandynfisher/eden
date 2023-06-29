@@ -1,12 +1,22 @@
+import PageLayoutNoSidebar from '@/components/Layout/PageLayoutNoSidebar'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import CreatorPage from '@/pages/creators/[id]/CreatorPage'
 import { useRouter } from 'next/router'
-import React from 'react'
+import React, { ReactNode } from 'react'
 
-const creator = () => {
+const Creator = () => {
   const router = useRouter()
   const { id } = router.query
-  const creatorId = id as string
-  return creatorId ? <CreatorPage creatorId={creatorId} /> : <p>Loading...</p>
+
+  if (!id) {
+    return <LoadingIndicator />
+  }
+
+  return <CreatorPage creatorId={id as string} />
 }
 
-export default creator
+Creator.getLayout = function getLayout(page: ReactNode) {
+  return <PageLayoutNoSidebar>{page}</PageLayoutNoSidebar>
+}
+
+export default Creator

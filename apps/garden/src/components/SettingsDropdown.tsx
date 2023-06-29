@@ -117,7 +117,7 @@ const SettingsDropdown = () => {
       menu={{
         items,
       }}
-      trigger={['hover', 'click']}
+      trigger={['click']}
       className="cursor-pointer"
     >
       <Button

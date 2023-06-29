@@ -9,9 +9,7 @@ const PageLayoutDefault = ({ children }: { children: React.ReactNode }) => {
   return (
     <CustomLayout>
       <LayoutMenu />
-      <Content className="flex-grow max-w-7xl mx-auto w-full">
-        {children}
-      </Content>
+      <Content className="max-w-7xl mx-auto w-full">{children}</Content>
     </CustomLayout>
   )
 }

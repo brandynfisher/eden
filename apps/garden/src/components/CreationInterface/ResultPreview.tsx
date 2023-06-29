@@ -1,6 +1,6 @@
 import MediaDisplay from '@/components/MediaDisplay'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
-import { Card, Spin } from 'antd'
+import { Spin } from 'antd'
 import React, { useContext } from 'react'
 
 const ResultPreview = () => {
@@ -13,7 +13,7 @@ const ResultPreview = () => {
 
   if (hasChangedGenerator || !activeTask) return null
   return (
-    <Card className="bg-gray-200 dark:bg-gray-900 flex justify-center items-center">
+    <div className="flex justify-center items-center">
       {!creationUri ? (
         <div className="text-center m-1">
           <Spin size="large" />
@@ -22,7 +22,7 @@ const ResultPreview = () => {
       ) : (
         <MediaDisplay creationUri={creationUri} />
       )}
-    </Card>
+    </div>
   )
 }
 

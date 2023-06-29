@@ -12,9 +12,7 @@ const HomePage = () => {
 
   return (
     <div className={`flex flex-col min-h-screen ${inter.className}`}>
-      <div className="flex-grow">
-        {creations && <CreationMasonry creations={creations} />}
-      </div>
+      {creations && <CreationMasonry creations={creations} />}
     </div>
   )
 }

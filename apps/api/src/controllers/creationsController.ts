@@ -47,10 +47,17 @@ export const getCreation = async (
   const { creationId } = request.params as CreationsGetArguments
 
   try {
-    const creation = await Creation.findById(creationId).populate({
-      path: 'task',
-      select: 'config status',
-    })
+    const creation = await Creation.findById(creationId)
+      .populate({
+        path: 'task',
+        select: 'config status generator',
+        populate: { path: 'generator' },
+      })
+      .populate({
+        path: 'user',
+        select: 'userId',
+      })
+
     return await reply.status(200).send({ creation })
   } catch (error) {
     return reply.status(404).send({

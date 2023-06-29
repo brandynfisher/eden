@@ -51,12 +51,16 @@ const items: ItemType[] = [
 const MannaDropdown = () => {
   const { mannaBalance, isConnected, isAuthenticated } = useContext(UserContext)
 
+  if (!isConnected || !isAuthenticated) {
+    return null
+  }
+
   return (
     <Dropdown
       menu={{
         items,
       }}
-      trigger={['hover', 'click']}
+      trigger={['click']}
       className="cursor-pointer"
       disabled={!isConnected || !isAuthenticated}
     >
