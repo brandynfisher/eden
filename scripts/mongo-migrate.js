@@ -27,6 +27,16 @@ async function main() {
     const tasks_from = client_from.db(MONGO_URI_SRC_DB).collection('tasks');
     const tasks_to = client_to.db('eden').collection('tasks');
     const allTasks = await tasks_from.find().toArray();
+    allTasks.forEach((task) => {
+      if (task.output?.file) {
+        task.output.files = [task.output.file]; 
+        delete task.output.file;
+      }
+      if (task.output?.thumbnail) {
+        task.output.thumbnails = [task.output.thumbnail]; 
+        delete task.output.thumbnail;
+      }
+    });
     await tasks_to.insertMany(allTasks);
 
     console.log("Copying loras...");
