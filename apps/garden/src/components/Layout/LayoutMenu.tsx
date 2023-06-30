@@ -1,9 +1,7 @@
 import { UserContext } from '@/providers/UserProvider'
 import {
-  BellOutlined,
   EyeOutlined,
   HomeOutlined,
-  RobotOutlined,
   ToolOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -36,8 +34,6 @@ const items: MenuItem[] = [getItem('All Creations', '/', <HomeOutlined />)]
 const authItems: MenuItem[] = [
   getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <EyeOutlined />),
-  getItem('Characters', '/characters', <RobotOutlined />),
-  getItem('Scenarios', '/scenarios', <BellOutlined />),
   getItem('Tools', '/tools', <ToolOutlined />),
 ]
 

@@ -1,5 +1,4 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
-import CreationFilters from '@/components/CreationFilters'
 import CreationMasonry from '@/components/CreationMasonry'
 import ProfileHeader from '@/components/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
@@ -16,7 +15,6 @@ const inter = Inter({ subsets: ['latin'] })
 const CreationTabContent = ({ creations }: { creations: Creation[] }) => {
   return (
     <div className="mt-4">
-      <CreationFilters />
       {creations && <CreationMasonry creations={creations} />}
     </div>
   )
@@ -31,7 +29,7 @@ const CollectionTabContent = ({
     <div className="grid grid-cols-3 gap-4">
       {collections &&
         collections.map(collection => (
-          <CollectionCard key={collection.id} collection={collection} />
+          <CollectionCard key={collection._id} collection={collection} />
         ))}
     </div>
   )

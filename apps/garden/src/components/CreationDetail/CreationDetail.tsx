@@ -1,20 +1,11 @@
 import CreationReactions from '@/components/CreationReactions'
 import CreatorProfileLink from '@/components/CreatorProfileLink'
 import FollowControls from '@/components/FollowControls'
+import MediaDisplay from '@/components/MediaDisplay'
 import { durationSinceDate } from '@/lib/time'
 import { Creation } from '@eden-labs/eden-sdk'
 import { Divider } from 'antd'
 import React, { useEffect, useState } from 'react'
-
-const MediaPreview = ({ creation }: { creation: Creation }) => {
-  return (
-    <img
-      src={creation.uri}
-      alt={creation.name}
-      className="max-h-full max-w-full object-contain rounded-xl overflow-hidden"
-    />
-  )
-}
 
 const MediaViewer = ({
   creation,
@@ -90,7 +81,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
               onClick={showMediaViewer}
               className="flex justify-center xl:justify-end overflow-hidden cursor-zoom-in"
             >
-              <MediaPreview creation={creationData} />
+              <MediaDisplay creationUri={creationData.uri} />
             </div>
           </div>
         </div>

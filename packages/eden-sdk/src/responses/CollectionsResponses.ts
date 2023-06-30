@@ -34,11 +34,11 @@ export type CollectionsGetResponse = WebAPICallResult & {
 }
 
 export type Collection = {
-  id: string
+  _id: string
   name: string
   description: string
   isDefaultCollection: boolean
   creations: Creation[]
-  displayThumbnail: string
+  displayImageUri?: string
   creatorId?: string
 }

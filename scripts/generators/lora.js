@@ -1,8 +1,9 @@
-export default [
+module.exports = [
   {
     name: 'lora_training_urls',
     label: 'Training images',
-    description: 'URLs for the image files of target concept to train a LORA for',
+    description:
+      'URLs for the image files of target concept to train a LORA for',
     mediaUpload: true,
     default: [],
     minLength: 1,
@@ -14,22 +15,21 @@ export default [
     label: 'Base checkpoint',
     description: 'Base checkpoint to train from',
     default: 'eden:eden-v1',
-    allowedValues: [
-      'eden:eden-v1',
-      'gordon-berger:gordon-berger-figurative',
-    ],
+    allowedValues: ['eden:eden-v1', 'gordon-berger:gordon-berger-figurative'],
   },
   {
     name: 'name',
     label: 'LORA name',
-    description: 'Choose a name to save the LORA. This also sets how you will trigger the concept when prompting: <lora_name>',
+    description:
+      'Choose a name to save the LORA. This also sets how you will trigger the concept when prompting: <lora_name>',
     default: null,
     isRequired: true,
   },
   {
     name: 'use_template',
     label: 'Template',
-    description: 'Which template to train from. Person works well, style and object are still experimental.',
+    description:
+      'Which template to train from. Person works well, style and object are still experimental.',
     default: 'person',
     allowedValues: ['person', 'object', 'style'],
     isRequired: true,
@@ -45,7 +45,8 @@ export default [
   {
     name: 'perform_inversion',
     label: 'Perform inversion',
-    description: 'Perform textual inversion (find a token to represent your concept)',
+    description:
+      'Perform textual inversion (find a token to represent your concept)',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -53,7 +54,8 @@ export default [
   {
     name: 'resolution',
     label: 'Resolution',
-    description: 'Image resolution (higher res needs lower batch size to avoid OOM!)',
+    description:
+      'Image resolution (higher res needs lower batch size to avoid OOM!)',
     default: 512,
     minimum: 512,
     maximum: 640,
@@ -98,7 +100,8 @@ export default [
   {
     name: 'continue_inversion',
     label: 'Continue inversion',
-    description: 'Continue textual inversion phase while training the LoRa model',
+    description:
+      'Continue textual inversion phase while training the LoRa model',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -146,7 +149,14 @@ export default [
     label: 'LR scheduler',
     description: 'Learning rate scheduler',
     default: 'linear',
-    allowedValues: ['linear', 'cosine', 'cosine_with_restarts', 'polynomial', 'constant', 'constant_with_warmup'],
+    allowedValues: [
+      'linear',
+      'cosine',
+      'cosine_with_restarts',
+      'polynomial',
+      'constant',
+      'constant_with_warmup',
+    ],
     optional: true,
   },
   {
@@ -204,8 +214,9 @@ export default [
   {
     name: 'weight_decay_ti',
     label: 'Textual inversion weight decay',
-    description: 'Weight decay for textual inversion (regularizes the ti embedding), higher values will look less like the concept, but improve promptability',
-    default: 0.0010,
+    description:
+      'Weight decay for textual inversion (regularizes the ti embedding), higher values will look less like the concept, but improve promptability',
+    default: 0.001,
     minimum: 0.0001,
     maximum: 0.005,
     step: 0.0001,
@@ -214,7 +225,8 @@ export default [
   {
     name: 'weight_decay_lora',
     label: 'Weight decay',
-    description: 'Weight decay for LORA matrices, (regularizes the model), higher values will look less like the concept, but improve promptability',
+    description:
+      'Weight decay for LORA matrices, (regularizes the model), higher values will look less like the concept, but improve promptability',
     default: 0.0015,
     minimum: 0.0001,
     maximum: 0.01,
@@ -242,7 +254,8 @@ export default [
   {
     name: 'use_extended_lora',
     label: 'Extended LORA',
-    description: 'Use extended LORA. (false for faces and objects, true for styles is recommended)',
+    description:
+      'Use extended LORA. (false for faces and objects, true for styles is recommended)',
     default: false,
     allowedValues: [false, true],
     optional: true,
@@ -250,9 +263,10 @@ export default [
   {
     name: 'use_face_segmentation_condition',
     label: 'Face segmentation',
-    description: 'Use face segmentation condition. Disable this when training styles / objects',
+    description:
+      'Use face segmentation condition. Disable this when training styles / objects',
     default: true,
     allowedValues: [false, true],
     optional: true,
-  }
+  },
 ]

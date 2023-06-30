@@ -5,10 +5,10 @@ import React from 'react'
 
 const CollectionCard = ({ collection }: { collection: Collection }) => {
   return (
-    <Link href={`/collections/${collection.id}`}>
+    <Link href={`/collections/${collection._id}`}>
       <Card
         hoverable
-        cover={<img alt="example" src={collection.displayThumbnail} />}
+        cover={<img alt="example" src={collection.displayImageUri} />}
       >
         <Card.Meta
           title={collection.name}

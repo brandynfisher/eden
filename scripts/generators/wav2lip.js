@@ -1,4 +1,4 @@
-export default [
+module.exports = [
   {
     name: 'face_url',
     label: 'Face image file',
@@ -13,12 +13,13 @@ export default [
     description: 'Audio of speech to be lip-synced',
     default: null,
     mediaUpload: true,
-    isRequired: true,  
+    isRequired: true,
   },
   {
     name: 'gfpgan',
     label: 'GFPGAN',
-    description: 'Apply GFPGAN to improve face image quality from Wav2Lip (recommended)',
+    description:
+      'Apply GFPGAN to improve face image quality from Wav2Lip (recommended)',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -37,5 +38,5 @@ export default [
     description: 'Add introductory text to wav2lip video (optional)',
     default: null,
     optional: true,
-  }
+  },
 ]

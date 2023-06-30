@@ -11,6 +11,7 @@ services:
     volumes:
       - ./data:/data/db
       - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./scripts/generators:/docker-entrypoint-initdb.d/generators:ro
 
   minio:
     image: minio/minio:latest
