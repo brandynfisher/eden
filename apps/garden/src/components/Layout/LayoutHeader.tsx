@@ -4,7 +4,7 @@ import MyProfileButton from '@/components/MyProfileButton'
 import QuickCreateMenu from '@/components/QuickCreateMenu'
 import SettingsDropdown from '@/components/SettingsDropdown'
 import CreationNotificationMenu from '@/components/TaskNotificationDropdown'
-import { AppstoreOutlined, HomeOutlined } from '@ant-design/icons'
+import { HomeOutlined } from '@ant-design/icons'
 import { Layout } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -34,7 +34,6 @@ const NavButtons = ({ items }: { items: NavButtonItem[] }) => {
 
 const navItems = [
   { text: 'Creations', icon: <HomeOutlined />, path: '/' },
-  { text: 'Collections', icon: <AppstoreOutlined />, path: '/collections' },
   // {text: 'Concepts', icon: <HomeOutlined/>, path: '/concepts'},
 ]
 

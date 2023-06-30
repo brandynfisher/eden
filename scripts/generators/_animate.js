@@ -1,4 +1,4 @@
-export default [
+module.exports = [
   {
     name: 'n_frames',
     label: 'Frames',
@@ -17,7 +17,8 @@ export default [
   {
     name: 'smooth',
     label: 'Smooth',
-    description: 'Optimize video for perceptual smoothness between frames (if false, frames are linearly spaced in prompt conditioning space)',
+    description:
+      'Optimize video for perceptual smoothness between frames (if false, frames are linearly spaced in prompt conditioning space)',
     default: true,
     //allowedValues: [false, true],
     allowedValues: [true],
@@ -26,7 +27,8 @@ export default [
   {
     name: 'n_film',
     label: 'FILM Iterations',
-    description: 'Optionally apply FILM postprocessing to the generated frames to create a smoother video',
+    description:
+      'Optionally apply FILM postprocessing to the generated frames to create a smoother video',
     default: 1,
     allowedValues: [0, 1],
     optional: true,
@@ -43,7 +45,8 @@ export default [
   {
     name: 'scale_modulation',
     label: 'Scale Modulation',
-    description: 'How much to scale down the guidance scale of the prompt conditioning in between keyframes',
+    description:
+      'How much to scale down the guidance scale of the prompt conditioning in between keyframes',
     default: 0.0,
     minimum: 0.0,
     maximum: 0.25,

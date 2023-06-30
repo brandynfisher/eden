@@ -1,10 +1,10 @@
-export default [
+module.exports = [
   {
     name: 'width',
     label: 'Width',
     description: 'Width of the creation in pixels',
     default: 768,
-    minimum: 256, 
+    minimum: 256,
     maximum: 2048,
     step: 64,
   },
@@ -13,7 +13,7 @@ export default [
     label: 'Height',
     description: 'Height of the creation in pixels',
     default: 768,
-    minimum: 256, 
+    minimum: 256,
     maximum: 2048,
     step: 64,
   },
@@ -32,22 +32,21 @@ export default [
     label: 'Checkpoint',
     description: 'Which model checkpoint to generate with',
     default: 'eden:eden-v1',
-    allowedValues: [
-      'eden:eden-v1',
-      'gordon-berger:gordon-berger-figurative',
-    ],
+    allowedValues: ['eden:eden-v1', 'gordon-berger:gordon-berger-figurative'],
   },
   {
     name: 'lora',
     label: 'LORA',
-    description: '(optional) Use LORA on top of the model. To prompt, use <lora_name> e.g. "A photo of <Bill>". Make sure you load LORA on top of the base model is was trained on!',
+    description:
+      '(optional) Use LORA on top of the model. To prompt, use <lora_name> e.g. "A photo of <Bill>". Make sure you load LORA on top of the base model is was trained on!',
     default: '(none)',
     // allowedValues: ['(none)'],
   },
   {
     name: 'lora_scale',
     label: 'LORA scale',
-    description: 'How strongly to apply the LoRa weights (0.0 will result in the base model)',
+    description:
+      'How strongly to apply the LoRa weights (0.0 will result in the base model)',
     default: 0.8,
     minimum: 0.0,
     maximum: 1.2,
@@ -67,7 +66,7 @@ export default [
     label: 'Steps',
     description: 'Number of sampling steps',
     default: 40,
-    minimum: 10, 
+    minimum: 10,
     maximum: 100,
     optional: true,
   },
@@ -76,7 +75,7 @@ export default [
     label: 'Guidance scale',
     description: 'Strength of prompt conditioning guidance',
     default: 7.5,
-    minimum: 0.0, 
+    minimum: 0.0,
     maximum: 30.0,
     step: 0.1,
     optional: true,
@@ -84,7 +83,8 @@ export default [
   {
     name: 'stream',
     label: 'Stream',
-    description: 'Yield intermediate results during creation process (if false, only final result is returned)',
+    description:
+      'Yield intermediate results during creation process (if false, only final result is returned)',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -92,10 +92,11 @@ export default [
   {
     name: 'stream_every',
     label: 'Stream every',
-    description: 'How often to yield intermediate results (when stream is true). In sampling steps for images, frames for video.',
+    description:
+      'How often to yield intermediate results (when stream is true). In sampling steps for images, frames for video.',
     default: 1,
     minimum: 1,
     maximum: 10,
     optional: true,
-  }
+  },
 ]

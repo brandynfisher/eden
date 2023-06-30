@@ -1,4 +1,4 @@
-export default [
+module.exports = [
   {
     name: 'prompt',
     label: 'Prompt',
@@ -26,4 +26,3 @@ export default [
     optional: true,
   },
 ]
-
