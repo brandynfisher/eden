@@ -44,7 +44,7 @@ const PraiseButton = ({
 
   return (
     <Button
-      className={`flex items-center justify-center rounded-l-full`}
+      className={`flex items-center justify-center rounded-full`}
       role="button"
       onClick={onPraiseButtonClick}
       disabled={isLoading}
@@ -59,65 +59,6 @@ const PraiseButton = ({
         }`}
       >
         🙌
-      </span>
-    </Button>
-  )
-}
-
-const BurnButton = ({
-  creation,
-  onChange,
-}: {
-  creation: Creation
-  onChange: (updatedCreation: Creation) => void
-}) => {
-  const { hovered, ref } = useHover()
-  const [isLoading, setIsLoading] = useState(false)
-
-  const onBurnButtonClick = async () => {
-    setIsLoading(true)
-    try {
-      if (creation.reactions?.burn) {
-        await axios.post('/api/creations/unreact', {
-          creationId: creation._id,
-          reaction: 'burn',
-        })
-      } else {
-        await axios.post('/api/creations/react', {
-          creationId: creation._id,
-          reaction: 'burn',
-        })
-      }
-      onChange({
-        ...creation,
-        reactions: {
-          ...creation.reactions,
-          burn: !creation.reactions?.burn,
-        },
-      })
-    } catch (error) {
-      handleAxiosError(error)
-    }
-    setIsLoading(false)
-  }
-
-  return (
-    <Button
-      className={`flex items-center justify-center rounded-r-full`}
-      role="button"
-      onClick={onBurnButtonClick}
-      disabled={isLoading}
-      loading={isLoading ? { delay: 250 } : false}
-      ref={ref}
-    >
-      <span
-        role="img"
-        aria-label="Fire"
-        className={`text-sm ${
-          !hovered && !creation.reactions?.burn && 'filter grayscale'
-        }`}
-      >
-        🔥
       </span>
     </Button>
   )
@@ -215,7 +156,6 @@ const CreationReactions = ({ creation, onChange }: CreationReactionsProps) => {
       <div>
         <div className="flex">
           <PraiseButton creation={creation} onChange={onChange} />
-          <BurnButton creation={creation} onChange={onChange} />
         </div>
       </div>
       <div>
