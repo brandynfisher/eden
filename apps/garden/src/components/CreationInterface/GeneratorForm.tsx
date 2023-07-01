@@ -13,7 +13,7 @@ import {
 import { Generator, GeneratorParameter } from '@eden-labs/eden-sdk'
 import { Button, Card, Form } from 'antd'
 import axios from 'axios'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 
 const GeneratorForm = ({ generator }: { generator: Generator }) => {
@@ -36,15 +36,30 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
   )
   const [showOptional, setShowOptional] = React.useState(false)
 
+  const [stringArrayValues, setStringArrayValues] = useState({})
+
+  const onStringArrayChange = (parameterName: string, newValues: string[]) => {
+    const newStringArrayValues = { ...stringArrayValues }
+    //@ts-ignore
+    newStringArrayValues[parameterName] = newValues
+    setStringArrayValues(newStringArrayValues)
+  }
+
   const handleFinish = async () => {
     if (!isAuthenticated) {
       await requireAuth(authenticate)
       return
     }
     try {
+      const formFieldValues = form.getFieldsValue()
+      const consolidatedFieldValues = {
+        ...formFieldValues,
+        ...stringArrayValues,
+      }
+
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
-        config: form.getFieldsValue(),
+        config: consolidatedFieldValues,
       })
       toast.success('Task created!')
       const { taskId } = response.data
@@ -97,6 +112,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
                       key={parameter.name}
                       form={form}
                       parameter={parameter}
+                      onStringArrayChange={onStringArrayChange}
                     />
                   )}
                 </>
