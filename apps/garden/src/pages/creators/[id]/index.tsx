@@ -1,8 +1,14 @@
 import PageLayoutNoSidebar from '@/components/Layout/PageLayoutNoSidebar'
 import LoadingIndicator from '@/components/LoadingIndicator'
+import { maybeRedirectIfCreationIdQuery } from '@/lib/redirect'
 import CreatorPage from '@/pages/creators/[id]/CreatorPage'
+import { NextPageContext } from 'next'
 import { useRouter } from 'next/router'
 import React, { ReactNode } from 'react'
+
+export async function getServerSideProps(ctx: NextPageContext) {
+  return (await maybeRedirectIfCreationIdQuery(ctx)) || { props: {} }
+}
 
 const Creator = () => {
   const router = useRouter()
