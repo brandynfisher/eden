@@ -1,5 +1,5 @@
-const baseParameters = require('./_base.js')
-const animateParameters = require('./_animate.js')
+import animateParameters from './_animate.js'
+import baseParameters from './_base.js'
 
 const params = [
   ...baseParameters,
@@ -73,4 +73,4 @@ const real2realGenerator = {
   versions: [real2realGeneratorVersion],
 }
 
-module.exports = real2realGenerator
+export default real2realGenerator

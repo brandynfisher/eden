@@ -1,4 +1,4 @@
-const baseParameters = require('./_base.js')
+import baseParameters from './_base.js'
 
 const params = [
   ...baseParameters,
@@ -73,4 +73,4 @@ const createGenerator = {
   versions: [createGeneratorVersion],
 }
 
-module.exports = createGenerator
+export default createGenerator

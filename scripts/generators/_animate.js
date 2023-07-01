@@ -1,4 +1,4 @@
-module.exports = [
+const animateParameters = [
   {
     name: 'n_frames',
     label: 'Frames',
@@ -54,3 +54,5 @@ module.exports = [
     optional: true,
   },
 ]
+
+export default animateParameters

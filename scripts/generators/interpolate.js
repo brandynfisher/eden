@@ -1,5 +1,5 @@
-const baseParameters = require('./_base.js')
-const animateParameters = require('./_animate.js')
+import baseParameters from './_base.js'
+import animateParameters from './_animate.js'
 
 const params = [
   ...baseParameters,
@@ -39,4 +39,4 @@ const interpolateGenerator = {
   versions: [interpolateGeneratorVersion],
 }
 
-module.exports = interpolateGenerator
+export default interpolateGenerator

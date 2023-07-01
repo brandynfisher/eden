@@ -1,4 +1,4 @@
-const baseParameters = require('./_base.js')
+import baseParameters from './_base.js'
 
 const params = [
   ...baseParameters,
@@ -65,4 +65,4 @@ const remixGenerator = {
   versions: [remixGeneratorVersion],
 }
 
-module.exports = remixGenerator
+export default remixGenerator
