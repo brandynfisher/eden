@@ -13,30 +13,6 @@ const main = async () => {
   const client = new MongoClient(MONGO_URI_SRC)
   const db = client.db('eden')
 
-  await db.createCollection('users')
-
-  const admin = await db.collection('users').insertMany([
-    {
-      userId: 'admin',
-      username: 'admin',
-      isWeb2: false,
-      isAdmin: true,
-    },
-  ])
-
-  await db.createCollection('apikeys')
-
-  await db.collection('apikeys').insertMany([
-    {
-      user: admin.insertedIds[0],
-      apiKey: 'admin',
-      apiSecret: 'admin',
-      note: 'Admin API key',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ])
-
   const provider = 'replicate'
   const address = 'abraham-ai/eden-sd-pipelines'
   const versionId =

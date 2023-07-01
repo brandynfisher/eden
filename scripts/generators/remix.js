@@ -49,20 +49,4 @@ const params = [
   },
 ]
 
-const remixGeneratorVersion = {
-  provider: 'replicate',
-  address: 'abraham-ai/eden-sd-pipelines',
-  versionId: '64ad779915a333d4870dc6c1a33cb61bb0be973be6393dacdcbce15a788e63cd',
-  mode: 'remix',
-  parameters: params,
-  isDeprecated: false,
-}
-
-const remixGenerator = {
-  generatorName: 'remix',
-  description: 'Generate a remix of an image',
-  output: 'creation',
-  versions: [remixGeneratorVersion],
-}
-
-export default remixGenerator
+export default params

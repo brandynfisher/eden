@@ -57,20 +57,4 @@ const params = [
   },
 ]
 
-const real2realGeneratorVersion = {
-  provider: 'replicate',
-  address: 'abraham-ai/eden-sd-pipelines',
-  versionId: '64ad779915a333d4870dc6c1a33cb61bb0be973be6393dacdcbce15a788e63cd',
-  mode: 'real2real',
-  parameters: params,
-  isDeprecated: false,
-}
-
-const real2realGenerator = {
-  generatorName: 'real2real',
-  description: 'Create a video interpolation between two images',
-  output: 'creation',
-  versions: [real2realGeneratorVersion],
-}
-
-export default real2realGenerator
+export default params
