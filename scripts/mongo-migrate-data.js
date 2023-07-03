@@ -16,7 +16,7 @@ await client_to.connect()
 
 console.log('Migrating from ' + MONGO_URI_SRC + ' to ' + MONGO_URI_DEST)
 
-// await migrateData(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT)
+await migrateData(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT)
 await addMediaDurations(client_to)
 
 await client_from.close()
