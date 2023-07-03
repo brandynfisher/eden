@@ -1,4 +1,4 @@
-import {Creator, PaginatedResponse, Task} from '.'
+import { Creator, PaginatedResponse, Task } from '.'
 import { WebAPICallResult } from '../EdenClient'
 
 export type CreationsListResponse = WebAPICallResult &
@@ -57,4 +57,5 @@ export enum MediaType {
   Video = 'video',
   Text = 'text',
   Audio = 'audio',
+  Unknown = 'unknown',
 }

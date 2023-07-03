@@ -122,7 +122,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     {
       limit,
       page,
-      sort,
+      sort: sort || { createdAt: -1 },
     },
   )
 

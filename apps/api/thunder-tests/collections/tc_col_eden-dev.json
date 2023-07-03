@@ -440,11 +440,11 @@
       "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
       "containerId": "",
       "name": "Get Feed",
-      "url": "http://localhost:5050/feed",
+      "url": "http://localhost:5050/feed?userId=0x2c8A7A737155e04c9fEc639520ed72626040763B",
       "method": "GET",
       "sortNum": 32500,
       "created": "2023-06-16T20:44:46.887Z",
-      "modified": "2023-07-01T03:03:39.648Z",
+      "modified": "2023-07-01T04:32:16.905Z",
       "headers": [
         {
           "name": "X-Api-Key",
@@ -455,7 +455,13 @@
           "value": "user"
         }
       ],
-      "params": [],
+      "params": [
+        {
+          "name": "userId",
+          "value": "0x2c8A7A737155e04c9fEc639520ed72626040763B",
+          "isPath": false
+        }
+      ],
       "tests": []
     },
     {
