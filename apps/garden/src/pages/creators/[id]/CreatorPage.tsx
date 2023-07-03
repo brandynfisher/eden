@@ -6,16 +6,37 @@ import { useCreator } from '@/hooks/useCreator'
 import { useFeed } from '@/hooks/useFeed'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creation } from '@eden-labs/eden-sdk'
-import { Space, Tabs } from 'antd'
+import { Button, Empty, Space, Tabs } from 'antd'
 import { Inter } from 'next/font/google'
+import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const CreationTabContent = ({ creations }: { creations: Creation[] }) => {
+const CreationTabContent = ({
+  creations,
+  isConnectedUser,
+}: {
+  creations: Creation[]
+  isConnectedUser: boolean
+}) => {
   return (
     <div className="mt-4">
-      {creations && <CreationMasonry creations={creations} />}
+      {creations.length ? (
+        <CreationMasonry creations={creations} />
+      ) : (
+        <div className="flex flex-col items-center">
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+
+          {isConnectedUser && (
+            <Link href="/create">
+              <Button type="dashed" className="flex items-center text-gray-400">
+                <div>Begin creating here!</div>
+              </Button>
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -45,7 +66,12 @@ const CreatorPage = ({ creatorId }: { creatorId: string }) => {
     {
       label: 'Creations',
       key: '1',
-      children: <CreationTabContent creations={creations} />,
+      children: (
+        <CreationTabContent
+          creations={creations}
+          isConnectedUser={isConnectedUser}
+        />
+      ),
     },
     {
       label: 'Collections',
