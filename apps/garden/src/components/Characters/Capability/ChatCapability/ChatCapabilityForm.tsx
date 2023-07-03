@@ -2,7 +2,7 @@ import ChatCapabilityMessageSection from '@/components/Characters/Capability/Cha
 import { useCharacter } from '@/hooks/useCharacter'
 import { handleAxiosError } from '@/lib/fetcher'
 import { CapabilityType, ChatMessageGroup } from '@/lib/types'
-import { Button, Form, Input } from 'antd'
+import { App, Button, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useCallback, useEffect } from 'react'
@@ -51,6 +51,7 @@ interface ChatCapabilityFormInput {
 }
 
 const ChatCapabilityForm = () => {
+  const { message } = App.useApp()
   const router = useRouter()
   const { id: characterId } = router.query
   const { character } = useCharacter(characterId)
@@ -126,7 +127,7 @@ const ChatCapabilityForm = () => {
       })
       return 'completion'
     } catch (error) {
-      handleAxiosError(error, 'Error generating completion')
+      handleAxiosError(error, message, 'Error generating completion')
     } finally {
       setCompleting(false)
     }
@@ -145,7 +146,7 @@ const ChatCapabilityForm = () => {
       await axios.post(`/api/capabilities/create`, data)
       router.push(`/characters/${characterId}`)
     } catch (error) {
-      handleAxiosError(error, 'Error creating capability')
+      handleAxiosError(error, message, 'Error creating capability')
     }
   }
 

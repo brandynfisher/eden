@@ -26,15 +26,25 @@ const CreationTabContent = ({
         <CreationMasonry creations={creations} />
       ) : (
         <div className="flex flex-col items-center">
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <div className="flex flex-col items-center">
+                <div className="mb-4">Nothing created yet.</div>
 
-          {isConnectedUser && (
-            <Link href="/create">
-              <Button type="dashed" className="flex items-center text-gray-400">
-                <div>Begin creating here!</div>
-              </Button>
-            </Link>
-          )}
+                {isConnectedUser && (
+                  <Link href="/create">
+                    <Button
+                      type="dashed"
+                      className="flex items-center text-gray-400"
+                    >
+                      <div>Begin here</div>
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            }
+          />
         </div>
       )}
     </div>
@@ -47,7 +57,7 @@ const CollectionTabContent = ({
   collections: Collection[] | undefined
 }) => {
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
       {collections &&
         collections.map(collection => (
           <CollectionCard key={collection._id} collection={collection} />

@@ -2,11 +2,12 @@ import { useCreator } from '@/hooks/useCreator'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons'
-import { Button } from 'antd'
+import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect } from 'react'
 
 const FollowControls = ({ creatorId }: { creatorId: string }) => {
+  const { message } = App.useApp()
   const [followLoading, setFollowLoading] = React.useState(false)
   const [followerCount, setFollowerCount] = React.useState(0)
   const [followingCount, setFollowingCount] = React.useState(0)
@@ -35,7 +36,7 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
         setFollowerCount(followerCount - 1)
         setIsFollowingUser(!isFollowingUser)
       } catch (error) {
-        handleAxiosError(error)
+        handleAxiosError(error, message)
       }
     } else {
       try {
@@ -45,7 +46,7 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
         setFollowerCount(followerCount + 1)
         setIsFollowingUser(!isFollowingUser)
       } catch (error) {
-        handleAxiosError(error)
+        handleAxiosError(error, message)
       }
     }
     setFollowLoading(false)

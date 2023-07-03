@@ -1,7 +1,7 @@
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@eden-labs/eden-sdk'
-import { Button, Space, Table } from 'antd'
+import { App, Button, Space, Table } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
@@ -25,6 +25,7 @@ const columns = [
 ]
 
 const ActionsButtons = ({ characterId }: { characterId: string }) => {
+  const { message } = App.useApp()
   const router = useRouter()
   const { refetch } = useContext(UserContext)
 
@@ -35,12 +36,12 @@ const ActionsButtons = ({ characterId }: { characterId: string }) => {
       })
       refetch.characters()
     } catch (error) {
-      handleAxiosError(error)
+      handleAxiosError(error, message)
     }
   }
 
-  const handleViewCharacter = () => {
-    router.push(`/characters/${characterId}`)
+  const handleViewCharacter = async () => {
+    await router.push(`/characters/${characterId}`)
   }
 
   return (

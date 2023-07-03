@@ -1,5 +1,5 @@
 import { UserContext } from '@/providers/UserProvider'
-import { Button, Form, Input } from 'antd'
+import { App, Button, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
@@ -11,6 +11,7 @@ interface CharacterFormInputs {
 }
 
 const CharacterForm = () => {
+  const { message } = App.useApp()
   const { refetch } = useContext(UserContext)
   const [form] = Form.useForm()
   const router = useRouter()
@@ -22,9 +23,9 @@ const CharacterForm = () => {
         capabilities: [],
       })
       refetch.characters()
-      router.push(`/characters`)
+      await router.push(`/characters`)
     } catch (error) {
-      handleAxiosError(error)
+      handleAxiosError(error, message)
     }
   }
 
