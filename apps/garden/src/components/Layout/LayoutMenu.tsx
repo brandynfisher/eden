@@ -1,12 +1,9 @@
 import { UserContext } from '@/providers/UserProvider'
 import { EyeOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons'
 import { Menu, type MenuProps } from 'antd'
-import { Layout } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
-
-const { Sider } = Layout
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -42,15 +39,13 @@ const LayoutMenu = () => {
     : defaultItems
 
   return (
-    <Sider width={200} className="mr-4 rounded-lg overflow-hidden">
-      <Menu
-        mode="inline"
-        selectedKeys={[router.pathname]}
-        style={{ height: '100%', borderRight: 0 }}
-        items={menuItems}
-        className="text-black bg-white dark:text-white dark:bg-gray-900"
-      />
-    </Sider>
+    <Menu
+      mode="inline"
+      selectedKeys={[router.pathname]}
+      style={{ height: '100%', borderRight: 0 }}
+      items={menuItems}
+      className="text-black bg-white dark:text-white dark:bg-gray-900"
+    />
   )
 }
 

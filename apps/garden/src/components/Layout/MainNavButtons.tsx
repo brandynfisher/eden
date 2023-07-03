@@ -1,6 +1,15 @@
+import { HomeOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import React, { ReactNode } from 'react'
+
+type NavButtonItem = { text: string; path: string; icon: React.ReactNode }
+
+const navItems: NavButtonItem[] = [
+  { text: 'Creations', icon: <HomeOutlined />, path: '/' },
+  // {text: 'Concepts', icon: <HomeOutlined/>, path: '/concepts'},
+]
 
 const NavButton = ({
   text,
@@ -30,4 +39,22 @@ const NavButton = ({
   )
 }
 
-export default NavButton
+const MainNavButtons = () => {
+  const router = useRouter()
+
+  return (
+    <>
+      {navItems.map(item => (
+        <NavButton
+          key={item.path}
+          isActive={router.pathname === item.path}
+          text={item.text}
+          path={item.path}
+          icon={item.icon}
+        />
+      ))}
+    </>
+  )
+}
+
+export default MainNavButtons
