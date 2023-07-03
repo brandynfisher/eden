@@ -130,13 +130,26 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
             {!isRevealed && (
               <div className="bg-gradient-to-t from-gray-300 dark:from-black to-transparent absolute inset-0 rounded-b-lg">
                 <div className="flex w-full justify-center items-end h-full">
-                  <Button className="mb-4 " onClick={() => setIsRevealed(true)}>
+                  <Button
+                    type="dashed"
+                    className="mb-4 dark:text-gray-400"
+                    onClick={() => setIsRevealed(true)}
+                  >
                     Show all
                   </Button>
                 </div>
               </div>
             )}
           </div>
+          {isRevealed && (
+            <Button
+              type="dashed"
+              className="mt-4 dark:text-gray-400"
+              onClick={() => setIsRevealed(false)}
+            >
+              Show less
+            </Button>
+          )}
         </div>
       </div>
     </>
