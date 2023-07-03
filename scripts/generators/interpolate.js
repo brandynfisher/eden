@@ -1,5 +1,5 @@
-const baseParameters = require('./_base.js')
-const animateParameters = require('./_animate.js')
+import animateParameters from './_animate.js'
+import baseParameters from './_base.js'
 
 const params = [
   ...baseParameters,
@@ -23,20 +23,4 @@ const params = [
   },
 ]
 
-const interpolateGeneratorVersion = {
-  provider: 'replicate',
-  address: 'abraham-ai/eden-sd-pipelines',
-  versionId: '64ad779915a333d4870dc6c1a33cb61bb0be973be6393dacdcbce15a788e63cd',
-  mode: 'interpolate',
-  parameters: params,
-  isDeprecated: false,
-}
-
-const interpolateGenerator = {
-  generatorName: 'interpolate',
-  description: 'Create a video interpolation between two prompts',
-  output: 'creation',
-  versions: [interpolateGeneratorVersion],
-}
-
-module.exports = interpolateGenerator
+export default params

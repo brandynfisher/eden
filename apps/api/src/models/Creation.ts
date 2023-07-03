@@ -20,7 +20,7 @@ export interface CreationSchema {
 }
 
 export interface CreationInput {
-  creator: ObjectId
+  user: ObjectId
   task: ObjectId
   delegate?: ObjectId
   uri?: string
