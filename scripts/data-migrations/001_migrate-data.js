@@ -98,6 +98,8 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
     allCreations.map(creation => {
       creation.delegate = null
       creation.mediaAttributes = getMediaAttributes(creation)
+      creation.praiseCount = 0
+      creation.bookmarkCount = 0
       delete creation.delegateHasClaimed
     })
     await creations_to.insertMany(allCreations)

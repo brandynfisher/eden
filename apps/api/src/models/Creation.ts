@@ -9,6 +9,8 @@ import { TaskDocument } from './Task'
 export interface CreationSchema {
   user: UserDocument
   task: TaskDocument
+  praiseCount: number
+  bookmarkCount: number
   delegate?: UserDocument
   uri?: string
   thumbnail?: string
@@ -46,6 +48,14 @@ const creation = new Schema<CreationDocument>(
       type: Schema.Types.ObjectId,
       ref: 'tasks',
       required: true,
+    },
+    praiseCount: {
+      type: Number,
+      default: 0,
+    },
+    bookmarkCount: {
+      type: Number,
+      default: 0,
     },
     delegate: {
       type: Schema.Types.ObjectId,
