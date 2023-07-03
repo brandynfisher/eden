@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+import { MongoClient } from 'mongodb'
+
 import migration01 from './migrations/001_hello-eden.js'
 
 dotenv.config()

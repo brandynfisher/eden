@@ -4,6 +4,7 @@ import real2realParameters from '../generators/real2real.js'
 import remixParameters from '../generators/remix.js'
 
 const main = async client => {
+  console.log('Adding generators...')
   const db = client.db('eden')
 
   const provider = 'replicate'
