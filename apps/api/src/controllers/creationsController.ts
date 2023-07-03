@@ -104,6 +104,12 @@ export const creationReact = async (
 
   await Reaction.create(reactionData)
 
+  await creation.updateOne({
+    $inc: {
+      praiseCount: reaction === ReactionType.Praise ? 1 : 0,
+    },
+  })
+
   return await reply.status(200).send({
     success: true,
   })
@@ -146,6 +152,13 @@ export const creationUnreact = async (
   }
 
   await existingReaction.remove()
+
+  await creation.updateOne({
+    $inc: {
+      praiseCount: reaction === ReactionType.Praise ? -1 : 0,
+    },
+  })
+
   return await reply.status(200).send({
     success: true,
   })

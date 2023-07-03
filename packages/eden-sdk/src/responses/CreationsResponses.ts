@@ -36,6 +36,8 @@ export type Creation = {
   name: string
   attributes: any
   mediaAttributes: MediaAttributes
+  praiseCount?: number
+  bookmarkCount?: number
   bookmarked?: boolean
   reactions?: Reactions
   createdAt: string
