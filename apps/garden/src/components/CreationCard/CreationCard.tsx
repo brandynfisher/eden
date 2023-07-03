@@ -4,7 +4,6 @@ import CreationCardPreview from '@/components/CreationCard/CreationCardPreview'
 import CreationDetailModal from '@/components/CreationCard/CreationDetailModal'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { message } from 'antd'
 import { NextRouter, useRouter } from 'next/router'
 import React from 'react'
 
@@ -49,7 +48,6 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   const { hovered, ref } = useHover()
   const [detailModalOpen, setDetailModalOpen] = React.useState(false)
   const [creation, setCreation] = React.useState(data)
-  const [messageApi, contextHolder] = message.useMessage()
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     React.useState(false)
 
@@ -85,12 +83,10 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
           creation={creation}
         />
       )}
-      {contextHolder}
       <AddToCollectionModal
         open={addToCollectionModalOpen}
         setOpen={setAddToCollectionModalOpen}
         creation={creation}
-        messageApi={messageApi}
       />
     </>
   )

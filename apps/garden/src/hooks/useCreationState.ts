@@ -1,7 +1,7 @@
 import { fetcher } from '@/lib/fetcher'
 import { Task } from '@eden-labs/eden-sdk'
+import { message } from 'antd'
 import { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
 import useSWR from 'swr'
 
 export const useCreationState = () => {
@@ -39,7 +39,8 @@ export const useCreationState = () => {
           completedTaskIds.forEach(taskId => {
             const task = tasks.find(task => task.taskId === taskId)
             if (task) {
-              toast.success(`Task ${task.taskId} completed successfully!`)
+              message.destroy()
+              message.success(`Task ${task.taskId} completed successfully!`)
             }
           })
           setTaskIds(prevTaskIds =>

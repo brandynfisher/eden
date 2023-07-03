@@ -1,10 +1,9 @@
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Button, Input } from 'antd'
+import { Button, Input, message } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
-import { toast } from 'react-toastify'
 
 const MannaVoucherRedeem = () => {
   const [voucherCode, setVoucherCode] = useState('')
@@ -16,12 +15,14 @@ const MannaVoucherRedeem = () => {
       await requireAuth(authenticate)
       return
     }
+    message.destroy()
     setRedeemingVoucher(true)
     try {
       await axios.post('/api/manna/redeemvoucher', {
         code: voucherCode,
       })
-      toast.success('Voucher redeemed!')
+
+      message.success('Voucher redeemed!')
       refetch.mannaBalance()
     } catch (error) {
       handleAxiosError(error)

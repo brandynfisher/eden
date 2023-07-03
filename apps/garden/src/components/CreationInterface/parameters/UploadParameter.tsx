@@ -1,11 +1,10 @@
 import { UploadOutlined } from '@ant-design/icons'
 import { GeneratorParameter } from '@eden-labs/eden-sdk'
 import { Form, FormInstance, Row } from 'antd'
-import { Modal, Upload } from 'antd'
+import { Modal, Upload, message } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import React, { useState } from 'react'
-import { toast } from 'react-toastify'
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -29,7 +28,7 @@ const UploadParameter = (props: {
   const isArray = Array.isArray(props.parameter.default)
   const maxUploads = isArray ? props.parameter.maxLength || 3 : 1
 
-  const handleChange = (info: UploadChangeParam) => {
+  const handleChange = async (info: UploadChangeParam) => {
     if (info.file.status === 'error') {
       const fileList = [...info.fileList]
       fileList.pop()
@@ -41,12 +40,15 @@ const UploadParameter = (props: {
       if (errorMessage.startsWith('options.maxFileSize')) {
         errorMessage = '20MB file size limit exceeded'
       }
-      toast.error(
+
+      message.destroy()
+      message.error(
         <>
           <div>{`${info.file.name} failed to upload`}</div>
           <div className="mt-1 font-bold">{errorMessage}</div>
         </>,
       )
+
       return
     }
     setFileList(info.fileList)
@@ -56,7 +58,9 @@ const UploadParameter = (props: {
         [props.parameter.name]: isArray ? newUrls : newUrls[0],
       })
       setUrls(newUrls)
-      toast.success(
+
+      message.destroy()
+      message.success(
         <>
           <div>Uploaded successfully</div>
           <div className="mt-1 font-bold">

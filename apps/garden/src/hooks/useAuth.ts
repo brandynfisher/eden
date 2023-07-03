@@ -1,6 +1,6 @@
+import { message } from 'antd'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
 import { SiweMessage } from 'siwe'
 import { useAccount, useNetwork, useSignMessage } from 'wagmi'
 
@@ -32,11 +32,12 @@ export const useAuth = () => {
         setIsAuthenticated(isAuth || false)
       } catch (error) {
         setIsAuthenticated(false)
+      } finally {
+        setHasCheckedForSession(true)
       }
     }
 
     checkSessionStatus()
-    setHasCheckedForSession(true)
   }, [])
 
   // If the user connects a new wallet, reset the auth state
@@ -51,7 +52,8 @@ export const useAuth = () => {
   // Show error message if there is one
   useEffect(() => {
     if (authError) {
-      toast.error(authError)
+      message.destroy()
+      message.error(authError)
     }
   }, [authError])
 

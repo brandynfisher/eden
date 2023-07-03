@@ -5,9 +5,9 @@ import { UserContext } from '@/providers/UserProvider'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { useClipboard } from '@mantine/hooks'
 import { Breakpoint, Button, Card, Input, Space, Table } from 'antd'
+import { message } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
-import { toast } from 'react-toastify'
 
 const ActionsButtons = ({
   apiKey,
@@ -41,7 +41,9 @@ const TruncatedField = ({ name, text }: { name: string; text: string }) => {
 
   const handleCopyClick = async () => {
     await copy(text)
-    toast.success(`Copied ${name} to clipboard!`)
+
+    message.destroy()
+    message.success(`Copied ${name} to clipboard!`)
   }
 
   return (

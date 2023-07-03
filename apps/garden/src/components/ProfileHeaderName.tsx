@@ -2,8 +2,8 @@ import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { EditOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
+import { message } from 'antd'
 import React, { useContext, useState } from 'react'
-import { toast } from 'react-toastify'
 
 const ProfileHeaderName = ({
   displayName,
@@ -30,9 +30,10 @@ const ProfileHeaderName = ({
   //   // setUpdatedName(ev.target.value)
   // }
 
-  const handleNameSubmit = () => {
+  const handleNameSubmit = async () => {
     // @todo: implement here (and in backend?)
-    toast.warning('Not implemented')
+    message.destroy()
+    message.warning('Not implemented')
   }
 
   return (
