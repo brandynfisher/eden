@@ -106,7 +106,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
           <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900">
             <div className="flex justify-between items-center">
               <div className="font-bold">
-                /{creation.task.generator.generatorName}
+                /{creation.task.generator?.generatorName}
               </div>
               <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
             </div>

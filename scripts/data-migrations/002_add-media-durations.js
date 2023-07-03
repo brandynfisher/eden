@@ -36,7 +36,7 @@ async function main(client_to) {
       creation =>
         creation.mediaAttributes && creation.mediaAttributes.duration === 0,
     )
-    console.log(durationMedia.length)
+    console.log(`Found ${durationMedia.length} creations to update`)
 
     const getMediaDurationInBatches = async creations => {
       for (let i = 0; i < creations.length; i += BATCH_SIZE) {

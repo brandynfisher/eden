@@ -46,11 +46,11 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
     }
   }
 
-  const selectDocs = async collectionName => {
+  const selectDocs = async (collectionName, useDocLimit) => {
     const collection_from = client_from
       .db(MONGO_URI_SRC_DB)
       .collection(collectionName)
-    if (DOC_LIMIT) {
+    if (DOC_LIMIT && useDocLimit) {
       return await collection_from
         .find()
         .sort({ createdAt: -1 })
@@ -63,7 +63,7 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
 
   try {
     console.log('Copying tasks...')
-    const allTasks = await selectDocs('tasks')
+    const allTasks = await selectDocs('tasks', true)
     const tasks_to = client_to.db('eden').collection('tasks')
 
     allTasks.forEach(task => {
@@ -92,7 +92,7 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
     await apiKeys_to.insertMany(allApiKeys)
 
     console.log('Copying creations...')
-    const allCreations = await selectDocs('creations')
+    const allCreations = await selectDocs('creations', true)
     const creations_to = client_to.db('eden').collection('creations')
 
     allCreations.map(creation => {
