@@ -61,6 +61,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
         generatorName: generator.generatorName,
         config: consolidatedFieldValues,
       })
+
       toast.success('Task created!')
       const { taskId } = response.data
       setActiveTaskId && setActiveTaskId(taskId)

@@ -19,7 +19,8 @@ export const useUserState = () => {
     }
   }, [address])
 
-  const { isAuthenticated, isAuthenticating, authenticate, logout } = useAuth()
+  const { isAuthenticated, isAuthenticating, authenticate, logout, authError } =
+    useAuth()
   const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })
   const { creations } = useMyCreations({
     userId: address || '',
@@ -48,6 +49,7 @@ export const useUserState = () => {
     isConnecting,
     isAuthenticating,
     isAuthenticated,
+    authError,
     authenticate,
     logout,
     address,

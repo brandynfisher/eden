@@ -9,8 +9,9 @@ export interface UserContextType {
   isConnecting: boolean
   isAuthenticating: boolean
   isAuthenticated: boolean
+  authError: string | null
   authenticate: () => void
-  logout: () => void
+  logout: () => Promise<null>
   address?: `0x${string}`
   mannaBalance?: number
   creations?: Creation[]
@@ -30,10 +31,11 @@ const defaultUserState: UserContextType = {
   isConnecting: false,
   isAuthenticating: false,
   isAuthenticated: false,
+  authError: null,
   authenticate: () => {
     return null
   },
-  logout: () => {
+  logout: async () => {
     return null
   },
   address: undefined,

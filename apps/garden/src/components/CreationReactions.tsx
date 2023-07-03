@@ -1,9 +1,11 @@
+import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
+import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { Button, message } from 'antd'
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 const PraiseButton = ({
   creation,
@@ -12,10 +14,16 @@ const PraiseButton = ({
   creation: Creation
   onChange: (updatedCreation: Creation) => void
 }) => {
+  const { isAuthenticated, authenticate } = useContext(UserContext)
   const { hovered, ref } = useHover()
   const [isLoading, setIsLoading] = useState(false)
 
   const onPraiseButtonClick = async () => {
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+      return
+    }
+
     setIsLoading(true)
     try {
       if (creation.reactions?.praise) {
@@ -71,10 +79,16 @@ const SaveButton = ({
   creation: Creation
   onChange: (updatedCreation: Creation) => void
 }) => {
+  const { isAuthenticated, authenticate } = useContext(UserContext)
   const [isLoading, setIsLoading] = useState(false)
   const [messageApi] = message.useMessage()
 
   const onSaveButtonClick = async () => {
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+      return
+    }
+
     setIsLoading(true)
     try {
       if (creation.bookmarked) {
