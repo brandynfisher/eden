@@ -1,3 +1,4 @@
+import dotenv from 'dotenv'
 import { Client as MinioClient } from 'minio'
 import { MongoClient } from 'mongodb'
 
@@ -5,25 +6,36 @@ import migrateData from './data-migrations/001_migrate-data.js'
 import addMediaDurations from './data-migrations/002_add-media-durations.js'
 import createThumbnails from './data-migrations/003_create-thumbnails.js'
 
-const args = process.argv.slice(2)
-const MONGO_URI_SRC = args[0]
-const MONGO_URI_DEST = args[1]
+dotenv.config()
+const MONGO_URI_SRC = process.env.MONGO_URI_SRC
+const MONGO_URI_DEST = process.env.MONGO_URI_DEST
 const MONGO_URI_SRC_DB = MONGO_URI_SRC.split('/').pop()
-const DOC_LIMIT = args[2] ? parseInt(args[2]) : undefined
 
-const minioClient = new MinioClient({
-  endPoint: 'localhost',
-  port: 9000,
-  useSSL: false,
-  accessKey: 'eden12345',
-  secretKey: 'eden12345',
-})
+let minioClient
+if (process.env.MINIO_PORT) {
+  minioClient = new MinioClient({
+    endPoint: process.env.MINIO_HOST,
+    port: parseInt(process.env.MINIO_PORT),
+    useSSL: false,
+    accessKey: process.env.MINIO_ACCESS_KEY,
+    secretKey: process.env.MINIO_SECRET_KEY,
+  })
+} else {
+  minioClient = new MinioClient({
+    endPoint: process.env.MINIO_HOST,
+    accessKey: process.env.MINIO_ACCESS_KEY,
+    secretKey: process.env.MINIO_SECRET_KEY,
+  })
+}
 
 const minio = {
   minioClient,
-  minioBucket: 'minio-eden',
-  minioUri: 'http://localhost:9000/minio-eden',
+  minioBucket: process.env.MINIO_BUCKET,
+  minioUri: process.env.MINIO_URI,
 }
+
+const args = process.argv.slice(1)
+const DOC_LIMIT = args[1] ? parseInt(args[1]) : undefined
 
 const client_from = new MongoClient(MONGO_URI_SRC)
 const client_to = new MongoClient(MONGO_URI_DEST)
