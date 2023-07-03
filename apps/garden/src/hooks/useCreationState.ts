@@ -1,10 +1,11 @@
 import { fetcher } from '@/lib/fetcher'
 import { Task } from '@eden-labs/eden-sdk'
-import { message } from 'antd'
+import { App } from 'antd'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
 export const useCreationState = () => {
+  const { message } = App.useApp()
   const [taskIds, setTaskIds] = useState<string[]>([])
   const [activeTaskId, setActiveTaskId] = useState<string>()
   const [completedTasks, setCompletedTasks] = useState<Task[]>([])

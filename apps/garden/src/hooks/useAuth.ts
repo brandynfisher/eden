@@ -1,4 +1,4 @@
-import { message } from 'antd'
+import { App } from 'antd'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { SiweMessage } from 'siwe'
@@ -11,6 +11,7 @@ export const useAuth = () => {
       await logout()
     },
   })
+  const { message } = App.useApp()
   const { chain } = useNetwork()
   const { signMessageAsync } = useSignMessage()
   const [isAuthenticated, setIsAuthenticated] = useState(false)

@@ -1,4 +1,4 @@
-import { ConfigProvider, theme as antdTheme } from 'antd'
+import { App, ConfigProvider, theme as antdTheme } from 'antd'
 import { useTheme } from 'next-themes'
 import React, { ReactNode, useEffect, useState } from 'react'
 
@@ -22,7 +22,7 @@ const AntConfigWrapProvider = ({ children }: { children: ReactNode }) => {
           : [antdTheme.defaultAlgorithm],
       }}
     >
-      {children}
+      <App>{children}</App>
     </ConfigProvider>
   )
 }

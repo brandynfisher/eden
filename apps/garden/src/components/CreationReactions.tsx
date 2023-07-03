@@ -3,7 +3,7 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { Button, message } from 'antd'
+import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
 
@@ -14,6 +14,7 @@ const PraiseButton = ({
   creation: Creation
   onChange: (updatedCreation: Creation) => void
 }) => {
+  const { message } = App.useApp()
   const { isAuthenticated, authenticate } = useContext(UserContext)
   const { hovered, ref } = useHover()
   const [isLoading, setIsLoading] = useState(false)
@@ -45,7 +46,7 @@ const PraiseButton = ({
         },
       })
     } catch (error) {
-      handleAxiosError(error)
+      handleAxiosError(error, message)
     }
     setIsLoading(false)
   }
@@ -81,13 +82,15 @@ const SaveButton = ({
 }) => {
   const { isAuthenticated, authenticate } = useContext(UserContext)
   const [isLoading, setIsLoading] = useState(false)
-  const [messageApi] = message.useMessage()
+  const { message } = App.useApp()
 
   const onSaveButtonClick = async () => {
     if (!isAuthenticated) {
       await requireAuth(authenticate)
       return
     }
+
+    message.destroy()
 
     setIsLoading(true)
     try {
@@ -100,20 +103,19 @@ const SaveButton = ({
           creationIds: [creation._id],
         })
       }
+
       if (!creation.bookmarked) {
-        messageApi.open({
+        message.success({
           content: <SaveButtonMessageContent />,
-          className: 'custom-class',
         })
-      } else {
-        messageApi.destroy()
       }
+
       onChange({
         ...creation,
         bookmarked: !creation.bookmarked,
       })
     } catch (error) {
-      handleAxiosError(error)
+      handleAxiosError(error, message)
     }
     setIsLoading(false)
   }

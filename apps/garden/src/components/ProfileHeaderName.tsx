@@ -1,8 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { EditOutlined } from '@ant-design/icons'
-import { Button } from 'antd'
-import { message } from 'antd'
+import { App, Button } from 'antd'
 import React, { useContext, useState } from 'react'
 
 const ProfileHeaderName = ({
@@ -12,6 +11,7 @@ const ProfileHeaderName = ({
   displayName: string
   isOwnProfile: boolean
 }) => {
+  const { message } = App.useApp()
   const { isAuthenticated, authenticate } = useContext(UserContext)
   const [isEditing, setIsEditing] = useState(false)
   // const [ updatedName, setUpdatedName ] = useState('')
