@@ -1,16 +1,9 @@
-import { MongoClient } from 'mongodb'
-
 import createParameters from '../generators/create.js'
 import interpolationParameters from '../generators/interpolate.js'
 import real2realParameters from '../generators/real2real.js'
 import remixParameters from '../generators/remix.js'
 
-const main = async () => {
-  const args = process.argv.slice(1)
-  const MONGO_URI_SRC = args[1]
-  console.log('Writing to: ' + MONGO_URI_SRC)
-
-  const client = new MongoClient(MONGO_URI_SRC)
+const main = async client => {
   const db = client.db('eden')
 
   const provider = 'replicate'

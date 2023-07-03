@@ -1,3 +1,9 @@
 import migration01 from './migrations/001_hello-eden.js'
 
-await migration01()
+dotenv.config()
+const MONGO_URI_DEST = process.env.MONGO_URI_DEST
+
+const client_to = new MongoClient(MONGO_URI_DEST)
+await client_to.connect()
+
+await migration01(client_to)
