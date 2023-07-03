@@ -2,7 +2,7 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { Button, Form, Input, List, Modal, message } from 'antd'
+import { App, Button, Form, Input, List, Modal } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
 
@@ -15,6 +15,7 @@ const AddToCollectionModal = ({
   setOpen: (open: boolean) => void
   creation: Creation
 }) => {
+  const { message } = App.useApp()
   const { collections } = useContext(UserContext)
   const [isCreating, setIsCreating] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -41,7 +42,7 @@ const AddToCollectionModal = ({
 
       message.success('Collection created successfully')
     } catch (e) {
-      handleAxiosError(e)
+      handleAxiosError(e, message)
     }
     form.resetFields()
     setIsCreating(false)
@@ -65,7 +66,7 @@ const AddToCollectionModal = ({
       })
       message.success('Creation saved successfully')
     } catch (e) {
-      handleAxiosError(e)
+      handleAxiosError(e, message)
     }
     setOpen(false)
   }
