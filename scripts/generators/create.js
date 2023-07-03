@@ -1,4 +1,4 @@
-const baseParameters = require('./_base.js')
+import baseParameters from './_base.js'
 
 const params = [
   ...baseParameters,
@@ -57,20 +57,4 @@ const params = [
   },
 ]
 
-const createGeneratorVersion = {
-  provider: 'replicate',
-  address: 'abraham-ai/eden-sd-pipelines',
-  versionId: '64ad779915a333d4870dc6c1a33cb61bb0be973be6393dacdcbce15a788e63cd',
-  mode: 'generate',
-  parameters: params,
-  isDeprecated: false,
-}
-
-const createGenerator = {
-  generatorName: 'create',
-  description: 'Create an image from a prompt',
-  output: 'creation',
-  versions: [createGeneratorVersion],
-}
-
-module.exports = createGenerator
+export default params

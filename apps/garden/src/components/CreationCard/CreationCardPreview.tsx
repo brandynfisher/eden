@@ -32,7 +32,7 @@ const VideoPreview = ({
         </div>
       )}
       <div className="absolute top-0 left-0 p-1">
-        <VideoLengthBadge duration={creation.mediaAttributes.duration} />
+        <VideoLengthBadge duration={creation.mediaAttributes.duration ?? 0} />
       </div>
     </div>
   )

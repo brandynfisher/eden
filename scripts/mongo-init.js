@@ -127,3 +127,16 @@ const interrogateGeneratorDev = {
 }
 
 db.generators.insertOne(interrogateGeneratorDev)
+
+db = db.getSiblingDB('eden')
+
+db.createUser({
+  user: 'eden',
+  pwd: 'eden',
+  roles: [
+    {
+      role: 'readWrite',
+      db: 'eden',
+    },
+  ],
+})

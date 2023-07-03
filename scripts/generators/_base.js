@@ -1,4 +1,4 @@
-module.exports = [
+const baseParameters = [
   {
     name: 'width',
     label: 'Width',
@@ -100,3 +100,5 @@ module.exports = [
     optional: true,
   },
 ]
+
+export default baseParameters

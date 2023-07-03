@@ -115,14 +115,15 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
             $in: collectionCreations,
           }
         : undefined,
-      user: creators.docs
-        ? creators.docs.map(creator => creator._id)
-        : undefined,
+      user:
+        filterUserIds && creators.docs
+          ? creators.docs.map(creator => creator._id)
+          : undefined,
     },
     {
       limit,
       page,
-      sort,
+      sort: sort || { createdAt: -1 },
     },
   )
 
