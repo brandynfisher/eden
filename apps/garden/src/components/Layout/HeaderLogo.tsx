@@ -8,7 +8,7 @@ const HeaderLogo = () => {
         <img
           src="/favicon-32x32.png"
           alt="Logo"
-          style={{ height: '32px', marginRight: '16px', top: '-1px' }}
+          style={{ height: '32px', top: '-1px' }}
           className="relative"
         />
       </Link>

@@ -9,15 +9,16 @@ const MannaBalanceInfo = () => {
 
   return (
     <div>
-      <div>
+      <div className="mb-2">
         You have <span className="font-bold">{mannaBalance}</span> Manna
       </div>
       <a
-        href="https://app.eden.art/how-to-get-manna"
+        href="https://docs.eden.art/docs/overview/manna"
         title="How to get more Manna?"
         className="text-small"
+        target="_blank"
       >
-        Learn how you can get more Manna
+        Learn about Manna
         <InfoCircleOutlined className="ml-1" />
       </a>
     </div>
