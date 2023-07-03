@@ -4,10 +4,9 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { useClipboard } from '@mantine/hooks'
-import { Breakpoint, Button, Input, Space, Table } from 'antd'
+import { App, Breakpoint, Button, Card, Input, Space, Table } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
-import { toast } from 'react-toastify'
 
 const ActionsButtons = ({
   apiKey,
@@ -16,6 +15,7 @@ const ActionsButtons = ({
   apiKey: string
   mutate: VoidFunction
 }) => {
+  const { message } = App.useApp()
   const handleDeleteApiKey = async () => {
     try {
       await axios.post(`/api/apikeys/delete`, {
@@ -23,7 +23,7 @@ const ActionsButtons = ({
       })
       mutate()
     } catch (error) {
-      handleAxiosError(error)
+      handleAxiosError(error, message)
     }
   }
 
@@ -37,11 +37,14 @@ const ActionsButtons = ({
 }
 
 const TruncatedField = ({ name, text }: { name: string; text: string }) => {
+  const { message } = App.useApp()
   const { copied, copy } = useClipboard({ timeout: 750 })
 
   const handleCopyClick = async () => {
     await copy(text)
-    toast.success(`Copied ${name} to clipboard!`)
+
+    message.destroy()
+    message.success(`Copied ${name} to clipboard!`)
   }
 
   return (
@@ -61,6 +64,7 @@ const ApiKeys = () => {
   const { apiKeys, refetchApiKeys } = useApiKeys({ isAuthenticated })
   const [apiKeyCreating, setApiKeyCreating] = useState(false)
   const [note, setNote] = useState('')
+  const { message } = App.useApp()
 
   const handleCreateAPIKey = async () => {
     if (!isAuthenticated) {
@@ -75,7 +79,7 @@ const ApiKeys = () => {
       setApiKeyCreating(false)
       refetchApiKeys()
     } catch (error) {
-      handleAxiosError(error)
+      handleAxiosError(error, message)
     }
   }
 
@@ -123,7 +127,11 @@ const ApiKeys = () => {
   return (
     <div className="mb-4">
       <h2 className="text-xl">API Keys</h2>
-      <Table dataSource={data} columns={columns} size="middle" />
+      {isAuthenticated ? (
+        <Table dataSource={data} columns={columns} size="middle" />
+      ) : (
+        <Card>Not signed in.</Card>
+      )}
 
       <div className="mt-4">
         <h3 className="text-l">Create new API key</h3>

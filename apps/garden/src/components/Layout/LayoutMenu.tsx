@@ -1,10 +1,5 @@
 import { UserContext } from '@/providers/UserProvider'
-import {
-  EyeOutlined,
-  HomeOutlined,
-  ToolOutlined,
-  UserOutlined,
-} from '@ant-design/icons'
+import { EyeOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons'
 import { Menu, type MenuProps } from 'antd'
 import { Layout } from 'antd'
 import Link from 'next/link'
@@ -29,18 +24,22 @@ function getItem(
   } as MenuItem
 }
 
-const items: MenuItem[] = [getItem('All Creations', '/', <HomeOutlined />)]
-
-const authItems: MenuItem[] = [
+const defaultItems: MenuItem[] = [
   getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <EyeOutlined />),
   getItem('Tools', '/tools', <ToolOutlined />),
 ]
 
+const authItems: MenuItem[] = [
+  // getItem('Logout', '/logout', <ToolOutlined />),
+]
+
 const LayoutMenu = () => {
   const router = useRouter()
-  const { isConnected } = useContext(UserContext)
-  const menuItems = isConnected ? authItems : items
+  const { isAuthenticated } = useContext(UserContext)
+  const menuItems = isAuthenticated
+    ? [...defaultItems, ...authItems]
+    : defaultItems
 
   return (
     <Sider width={200} className="mr-4 rounded-lg overflow-hidden">

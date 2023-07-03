@@ -1,8 +1,9 @@
-import { toast } from 'react-toastify'
+import { message } from 'antd'
 
 export const requireAuth = async (authenticate: () => void) => {
   try {
-    toast.error(
+    message.destroy()
+    message.error(
       'You must be logged in to do that. Sign the login message to continue.',
     )
     await authenticate()

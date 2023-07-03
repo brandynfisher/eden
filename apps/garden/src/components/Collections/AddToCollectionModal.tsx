@@ -2,8 +2,7 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { Button, Form, Input, List, Modal } from 'antd'
-import { MessageInstance } from 'antd/es/message/interface'
+import { Button, Form, Input, List, Modal, message } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
 
@@ -11,12 +10,10 @@ const AddToCollectionModal = ({
   open,
   setOpen,
   creation,
-  messageApi,
 }: {
   open: boolean
   setOpen: (open: boolean) => void
   creation: Creation
-  messageApi: MessageInstance
 }) => {
   const { collections } = useContext(UserContext)
   const [isCreating, setIsCreating] = useState(false)
@@ -32,6 +29,7 @@ const AddToCollectionModal = ({
   }
 
   const handleOk = async () => {
+    message.destroy()
     setLoading(true)
     try {
       const { name, description } = await form.validateFields()
@@ -40,10 +38,8 @@ const AddToCollectionModal = ({
         description,
         creationIds: [creation._id],
       })
-      messageApi.open({
-        type: 'success',
-        content: 'Collection created successfully',
-      })
+
+      message.success('Collection created successfully')
     } catch (e) {
       handleAxiosError(e)
     }
@@ -61,15 +57,13 @@ const AddToCollectionModal = ({
   }
 
   const handleSave = async (collection: Collection) => {
+    message.destroy()
     try {
       await axios.post('/api/collections/add', {
-        collectionId: collection.id,
+        collectionId: collection._id,
         creationIds: [creation._id],
       })
-      messageApi.open({
-        type: 'success',
-        content: 'Creation saved successfully',
-      })
+      message.success('Creation saved successfully')
     } catch (e) {
       handleAxiosError(e)
     }
@@ -78,7 +72,7 @@ const AddToCollectionModal = ({
 
   const nonDefaultCollections =
     collections &&
-    collections.filter(collection => collection.isDefaultCollection !== true)
+    collections.filter(collection => !collection.isDefaultCollection)
 
   const footer = isCreating
     ? [

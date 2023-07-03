@@ -4,23 +4,57 @@ import CreationCardPreview from '@/components/CreationCard/CreationCardPreview'
 import CreationDetailModal from '@/components/CreationCard/CreationDetailModal'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { message } from 'antd'
-import { useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/router'
 import React from 'react'
+
+interface ISpecialRouteIndex<TValue> {
+  [id: string]: TValue
+}
+
+const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
+  '/creators/[id]': {
+    basePath: 'creators',
+  },
+  '/collections/[id]': {
+    basePath: 'collections',
+  },
+}
+
+const getModalUrls = (
+  router: NextRouter,
+  creationId: string,
+): { pageUrl: string; modalUrl: string } => {
+  const urls = {
+    pageUrl: '',
+    modalUrl: '',
+  }
+
+  // all default cases
+  if (!specialHandlingRoutes[router.pathname]) {
+    urls.modalUrl = `/creations/${creationId}`
+    return urls
+  }
+
+  // special workaround when we're trying to open modals on routes with dynamic parameters
+  const basePath = specialHandlingRoutes[router.pathname].basePath
+  urls.modalUrl = `/${basePath}/${router.query.id}?creationId=${creationId}`
+  urls.pageUrl = urls.modalUrl
+
+  return urls
+}
 
 const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
   const [detailModalOpen, setDetailModalOpen] = React.useState(false)
   const [creation, setCreation] = React.useState(data)
-  const [messageApi, contextHolder] = message.useMessage()
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     React.useState(false)
 
-  const modalUrl = `/creations/${creation._id}`
+  const { pageUrl, modalUrl } = getModalUrls(router, creation._id)
 
   const openDetailModal = async () => {
-    await router.push('', modalUrl, { scroll: false })
+    await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     setDetailModalOpen(true)
   }
 
@@ -49,12 +83,10 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
           creation={creation}
         />
       )}
-      {contextHolder}
       <AddToCollectionModal
         open={addToCollectionModalOpen}
         setOpen={setAddToCollectionModalOpen}
         creation={creation}
-        messageApi={messageApi}
       />
     </>
   )

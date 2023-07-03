@@ -35,11 +35,11 @@ const CollectionTabContent = ({
   )
 }
 const CreatorPage = ({ creatorId }: { creatorId: string }) => {
-  const { isAuthenticated, address } = useContext(UserContext)
+  const { isAuthenticated, address, isConnected } = useContext(UserContext)
   const { creations } = useFeed({ isAuthenticated, userId: creatorId })
   const { creator } = useCreator(creatorId)
   const { collections } = useCollections(creatorId)
-  const isAuthUser = isAuthenticated && creatorId === address
+  const isConnectedUser = isConnected && creatorId === address
 
   const creatorPageTabs = [
     {
@@ -63,7 +63,7 @@ const CreatorPage = ({ creatorId }: { creatorId: string }) => {
             creator && creator.username ? creator.username : creatorId
           }
           numCreations={creations.length}
-          isAuthUser={isAuthUser}
+          isConnectedUser={isConnectedUser}
         />
         <Tabs defaultActiveKey="1" centered items={creatorPageTabs} />
       </Space>

@@ -11,10 +11,9 @@ import {
   UpCircleOutlined,
 } from '@ant-design/icons'
 import { Generator, GeneratorParameter } from '@eden-labs/eden-sdk'
-import { Button, Card, Form } from 'antd'
+import { Button, Card, Form, message } from 'antd'
 import axios from 'axios'
-import React, { useContext, useEffect } from 'react'
-import { toast } from 'react-toastify'
+import React, { useContext, useEffect, useState } from 'react'
 
 const GeneratorForm = ({ generator }: { generator: Generator }) => {
   const {
@@ -36,17 +35,37 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
   )
   const [showOptional, setShowOptional] = React.useState(false)
 
+  const [stringArrayValues, setStringArrayValues] = useState({})
+
+  const onStringArrayChange = (parameterName: string, newValues: string[]) => {
+    const newStringArrayValues = { ...stringArrayValues }
+    //@ts-ignore
+    newStringArrayValues[parameterName] = newValues
+    setStringArrayValues(newStringArrayValues)
+  }
+
   const handleFinish = async () => {
     if (!isAuthenticated) {
       await requireAuth(authenticate)
       return
     }
+
+    message.destroy()
+
     try {
+      const formFieldValues = form.getFieldsValue()
+      const consolidatedFieldValues = {
+        ...formFieldValues,
+        ...stringArrayValues,
+      }
+
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
-        config: form.getFieldsValue(),
+        config: consolidatedFieldValues,
       })
-      toast.success('Task created!')
+
+      message.success('Task created!')
+
       const { taskId } = response.data
       setActiveTaskId && setActiveTaskId(taskId)
       setTaskIds && setTaskIds([...taskIds, taskId])
@@ -54,7 +73,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
       refetchPendingTasks && refetchPendingTasks()
       refetch.mannaBalance()
     } catch (error) {
-      toast.error('Error creating task. Please try again.')
+      message.error('Error creating task. Please try again.')
     }
   }
 
@@ -97,6 +116,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
                       key={parameter.name}
                       form={form}
                       parameter={parameter}
+                      onStringArrayChange={onStringArrayChange}
                     />
                   )}
                 </>

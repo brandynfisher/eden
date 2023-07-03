@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 const StringParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
+  onStringArrayChange: (parameterName: string, newValues: string[]) => void
 }) => {
   const [value, setValue] = useState(props.parameter.default)
   const [values, setValues] = useState(
@@ -18,7 +19,7 @@ const StringParameter = (props: {
 
   const handleChange = (newValue: string[]) => {
     setValues(newValue)
-    props.form.setFieldsValue({ [props.parameter.name]: newValue })
+    props.onStringArrayChange(props.parameter.name, newValue)
   }
 
   const isArray = Array.isArray(props.parameter.default)

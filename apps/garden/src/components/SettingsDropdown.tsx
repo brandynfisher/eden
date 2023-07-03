@@ -9,51 +9,57 @@ import {
 } from '@ant-design/icons'
 import { Button, Dropdown, Slider } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
-import React, { useCallback, useContext } from 'react'
+import { useRouter } from 'next/router'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 const LoginLogoutButton = () => {
   const { isConnected, isAuthenticated, authenticate, logout } =
     useContext(UserContext)
+  const router = useRouter()
 
-  const handleAuthClick = useCallback(() => {
+  const handleAuthClick = useCallback(async () => {
     if (!isAuthenticated) {
       authenticate && authenticate()
     } else {
-      logout && logout()
+      logout && (await logout())
+      await router.push('/')
     }
   }, [logout, authenticate, isAuthenticated])
 
   return (
     <div>
       <ConnectButton />
-      {!isConnected ? (
-        <div>No wallet provider connected</div>
-      ) : (
-        <Button
-          className="w-full flex items-center mt-2 "
-          onClick={handleAuthClick}
-        >
-          {isAuthenticated ? (
-            <div className="w-full">
-              <div className="flex justify-center">
-                <LogoutOutlined />
-                <div className="text-black dark:text-white ml-2">
-                  Disconnect Wallet
-                </div>
+      <Button
+        className="w-full flex items-center mt-2 "
+        onClick={handleAuthClick}
+      >
+        {isAuthenticated ? (
+          <div className="w-full">
+            <div className="flex justify-center">
+              <LogoutOutlined />
+              <div className="text-black dark:text-white ml-2">
+                Disconnect Wallet
               </div>
             </div>
-          ) : (
-            <div className="w-full">
-              <div className="flex justify-center">
-                <LoginOutlined />
-                <div className="text-black dark:text-white ml-2">
-                  Connect Wallet
-                </div>
+          </div>
+        ) : !isConnected ? (
+          <div className="w-full">
+            <div className="flex justify-center">
+              <LoginOutlined />
+              <div className="text-black dark:text-white ml-2">
+                Connect Wallet
               </div>
             </div>
-          )}
-        </Button>
-      )}
+          </div>
+        ) : (
+          <div className="w-full">
+            <div className="flex justify-center">
+              <LoginOutlined />
+              <div className="text-black dark:text-white ml-2">Sign In</div>
+            </div>
+          </div>
+        )}
+      </Button>
     </div>
   )
 }
@@ -102,6 +108,9 @@ const items: ItemType[] = [
     label: <MaxColumnSelector />,
     key: '1',
   },
+]
+
+const extraItems: ItemType[] = [
   {
     type: 'divider',
   },
@@ -112,10 +121,21 @@ const items: ItemType[] = [
 ]
 
 const SettingsDropdown = () => {
+  const { isConnected } = useContext(UserContext)
+  const [dropDownItems, setDropDownItems] = useState<ItemType[]>(items)
+
+  useEffect(() => {
+    if (isConnected) {
+      setDropDownItems([...items, ...extraItems])
+    } else {
+      setDropDownItems(items)
+    }
+  }, [isConnected])
+
   return (
     <Dropdown
       menu={{
-        items,
+        items: dropDownItems,
       }}
       trigger={['click']}
       className="cursor-pointer"

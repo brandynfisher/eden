@@ -1,6 +1,7 @@
 import { CONFIG } from '@/lib/config'
+import { message } from 'antd'
+import { MessageInstance } from 'antd/es/message/interface'
 import axios, { AxiosError } from 'axios'
-import { toast } from 'react-toastify'
 
 // @ts-ignore
 export const fetcher = (...args) =>
@@ -9,13 +10,16 @@ export const fetcher = (...args) =>
 
 export const handleAxiosError = (
   error: AxiosError | unknown,
+  messageInstance: MessageInstance,
   customMessage?: string,
 ) => {
   if (axios.isAxiosError(error)) {
-    const message =
+    const toastMessage =
       customMessage ??
       (error.response?.data.message || 'Unknown Error has occurred')
-    toast.error(message)
+
+    message.destroy()
+    message.error(toastMessage)
   }
 }
 

@@ -49,7 +49,6 @@ export interface MediaAttributes {
 
 export enum ReactionType {
   Praise = 'praise',
-  Burn = 'burn',
 }
 
 export enum MediaType {

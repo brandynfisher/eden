@@ -1,6 +1,6 @@
+import { App } from 'antd'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
 import { SiweMessage } from 'siwe'
 import { useAccount, useNetwork, useSignMessage } from 'wagmi'
 
@@ -11,6 +11,7 @@ export const useAuth = () => {
       await logout()
     },
   })
+  const { message } = App.useApp()
   const { chain } = useNetwork()
   const { signMessageAsync } = useSignMessage()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -32,11 +33,12 @@ export const useAuth = () => {
         setIsAuthenticated(isAuth || false)
       } catch (error) {
         setIsAuthenticated(false)
+      } finally {
+        setHasCheckedForSession(true)
       }
     }
 
     checkSessionStatus()
-    setHasCheckedForSession(true)
   }, [])
 
   // If the user connects a new wallet, reset the auth state
@@ -51,7 +53,8 @@ export const useAuth = () => {
   // Show error message if there is one
   useEffect(() => {
     if (authError) {
-      toast.error(authError)
+      message.destroy()
+      message.error(authError)
     }
   }, [authError])
 
@@ -75,7 +78,7 @@ export const useAuth = () => {
 
   const logout = async () => {
     if (!isAuthenticated) {
-      return
+      return null
     }
     await axios.get(`/api/logout`)
     setIsAuthenticated(false)
@@ -85,7 +88,7 @@ export const useAuth = () => {
     setAuthError(null)
     if (!address || !chainId) {
       setAuthError('No wallet connected')
-      return
+      return null
     }
 
     setIsAuthenticating(true)
@@ -97,7 +100,7 @@ export const useAuth = () => {
     } catch (error) {
       setAuthError('Failed to create login challenge')
       setIsAuthenticating(false)
-      return
+      return null
     }
 
     // Create message for signing using ethers
@@ -119,7 +122,7 @@ export const useAuth = () => {
     } catch (error) {
       setAuthError('You must sign the login message to continue')
       setIsAuthenticating(false)
-      return
+      return null
     }
 
     try {

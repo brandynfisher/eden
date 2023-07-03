@@ -1,10 +1,9 @@
 import CharacterTable from '@/components/Characters/CharacterTable'
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
-import { Button } from 'antd'
+import { Button, message } from 'antd'
 import router from 'next/router'
 import { useContext } from 'react'
-import { toast } from 'react-toastify'
 
 const CharactersPage = () => {
   const { characters, isAuthenticated, authenticate } = useContext(UserContext)
@@ -15,9 +14,10 @@ const CharactersPage = () => {
       return
     }
     if (characters && characters.length >= 5) {
-      toast.error('You can only have 5 characters at once.')
+      message.destroy()
+      message.error('You can only have 5 characters at once.')
     } else {
-      router.push('/characters/create')
+      await router.push('/characters/create')
     }
   }
 
