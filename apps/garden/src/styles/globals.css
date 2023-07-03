@@ -221,3 +221,7 @@ body {
 .ant-dropdown-menu-item {
     padding: 8px !important;
 }
+
+.ant-message-custom-content {
+    display: flex !important;
+}

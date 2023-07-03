@@ -145,18 +145,20 @@ const SaveButton = ({
 
 const SaveButtonMessageContent = () => {
   return (
-    <div className="flex items-center justify-between">
-      <span>Saved to Bookmarks</span>
-      <Button
-        type="primary"
-        className="ml-2 rounded-full"
-        onClick={() => {
-          // messageApi.destroy()
-          // setAddToCollectionModalOpen(true)
-        }}
-      >
-        Change
-      </Button>
+    <div className="block">
+      <div className="flex items-center justify-between">
+        <div>Saved to Bookmarks</div>
+        {/*<Button*/}
+        {/*  type="primary"*/}
+        {/*  className="ml-2 rounded-full"*/}
+        {/*  onClick={() => {*/}
+        {/*    // messageApi.destroy()*/}
+        {/*    // setAddToCollectionModalOpen(true)*/}
+        {/*  }}*/}
+        {/*>*/}
+        {/*  Change*/}
+        {/*</Button>*/}
+      </div>
     </div>
   )
 }

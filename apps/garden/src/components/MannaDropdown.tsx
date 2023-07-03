@@ -14,7 +14,7 @@ const MannaBalanceInfo = () => {
       </div>
       <a
         href="https://docs.eden.art/docs/overview/manna"
-        title="How to get more Manna?"
+        title="Learn about Manna"
         className="text-small"
         target="_blank"
       >
