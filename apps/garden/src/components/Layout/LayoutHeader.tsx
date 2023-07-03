@@ -1,66 +1,43 @@
-import NavButton from '@/components/Layout/NavButton'
+import Drawer from '@/components/Layout/Drawer'
+import HeaderLogo from '@/components/Layout/HeaderLogo'
+import MainNavButtons from '@/components/Layout/MainNavButtons'
 import MannaDropdown from '@/components/MannaDropdown'
 import MyProfileButton from '@/components/MyProfileButton'
 import QuickCreateMenu from '@/components/QuickCreateMenu'
 import SettingsDropdown from '@/components/SettingsDropdown'
 import CreationNotificationMenu from '@/components/TaskNotificationDropdown'
-import { HomeOutlined } from '@ant-design/icons'
 import { Layout } from 'antd'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
 import React from 'react'
 
 const { Header } = Layout
 
-type NavButtonItem = { text: string; path: string; icon: React.ReactNode }
-
-const NavButtons = ({ items }: { items: NavButtonItem[] }) => {
-  const router = useRouter()
-
-  return (
-    <>
-      {items.map(item => (
-        <NavButton
-          key={item.path}
-          isActive={router.pathname === item.path}
-          text={item.text}
-          path={item.path}
-          icon={item.icon}
-        />
-      ))}
-    </>
-  )
-}
-
-const navItems = [
-  { text: 'Creations', icon: <HomeOutlined />, path: '/' },
-  // {text: 'Concepts', icon: <HomeOutlined/>, path: '/concepts'},
-]
-
 const LayoutHeader = () => {
   return (
-    <Header className="flex items-center px-4 bg-white dark:bg-gray-950">
-      <div className="demo-logo">
-        <Link href="/">
-          <img
-            src="/favicon-32x32.png"
-            alt="Logo"
-            style={{ height: '32px', marginRight: '16px', top: '-1px' }}
-            className="relative"
-          />
-        </Link>
+    <Header
+      className="flex items-center px-4 bg-white dark:bg-gray-950"
+      style={{ gap: '8px' }}
+    >
+      <HeaderLogo />
+
+      <div className="flex sm:hidden">
+        <Drawer />
       </div>
 
-      <NavButtons items={navItems} />
+      <div className="hidden sm:flex w-full">
+        <MainNavButtons />
 
-      <div className="ml-auto">
-        <div className="flex items-center" style={{ gap: '8px' }}>
-          <CreationNotificationMenu />
-          <QuickCreateMenu />
-          <MannaDropdown />
-          <SettingsDropdown />
-          <MyProfileButton />
+        <div className="ml-auto">
+          <div className="flex items-center" style={{ gap: '8px' }}>
+            <CreationNotificationMenu />
+            <QuickCreateMenu />
+          </div>
         </div>
+      </div>
+
+      <div className="ml-auto sm:ml-0 flex items-center" style={{ gap: '8px' }}>
+        <MannaDropdown />
+        <SettingsDropdown />
+        <MyProfileButton />
       </div>
     </Header>
   )

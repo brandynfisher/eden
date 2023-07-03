@@ -11,7 +11,7 @@ import {
   UpCircleOutlined,
 } from '@ant-design/icons'
 import { Generator, GeneratorParameter } from '@eden-labs/eden-sdk'
-import { Button, Card, Form, message } from 'antd'
+import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect, useState } from 'react'
 
@@ -23,6 +23,7 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
     setHasChangedGenerator,
     refetchPendingTasks,
   } = useContext(CreationNotificationContext)
+  const { message } = App.useApp()
   const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
   const [form] = Form.useForm()
   const selectedVersion = generator.versions[0]

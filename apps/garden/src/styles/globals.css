@@ -50,6 +50,15 @@ body {
     background-color: #040916 !important;
 }
 
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
@@ -185,4 +194,30 @@ body {
 .ant-progress-text {
     margin-top: 2px;
     width: unset !important;
+}
+
+
+.ant-drawer-header {
+    height: 64px !important;
+    padding: 16px !important;
+}
+.ant-drawer-body {
+    padding: 0 !important;
+}
+.ant-drawer-body .ant-divider {
+    margin: 0 !important;
+}
+.ant-drawer-body .ant-menu-item {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+}
+
+.ant-dropdown-menu {
+    gap: 8px;
+}
+
+.ant-dropdown-menu-item {
+    padding: 8px !important;
 }

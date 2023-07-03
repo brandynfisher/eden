@@ -1,7 +1,7 @@
 import { UploadOutlined } from '@ant-design/icons'
 import { GeneratorParameter } from '@eden-labs/eden-sdk'
-import { Form, FormInstance, Row } from 'antd'
-import { Modal, Upload, message } from 'antd'
+import { App, Form, FormInstance, Row } from 'antd'
+import { Modal, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import React, { useState } from 'react'
@@ -18,6 +18,7 @@ const UploadParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
 }) => {
+  const { message } = App.useApp()
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewImage, setPreviewImage] = useState('')
   const [previewTitle, setPreviewTitle] = useState('')

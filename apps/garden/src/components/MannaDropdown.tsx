@@ -9,43 +9,45 @@ const MannaBalanceInfo = () => {
 
   return (
     <div>
-      <div>
+      <div className="mb-2">
         You have <span className="font-bold">{mannaBalance}</span> Manna
       </div>
       <a
-        href="https://app.eden.art/how-to-get-manna"
+        href="https://docs.eden.art/docs/overview/manna"
         title="How to get more Manna?"
+        className="text-small"
+        target="_blank"
       >
-        Learn how you can get more Manna
+        Learn about Manna
         <InfoCircleOutlined className="ml-1" />
       </a>
     </div>
   )
 }
 
-const MannaBuyInfo = () => {
-  return (
-    <div>
-      <div>Buy Manna</div>
-      <div>1,000 Manna / 0.01 ETH</div>
-      <div>10,000 Manna / 0.1 ETH</div>
-      <div>100,000 Manna / 1 ETH</div>
-    </div>
-  )
-}
+// const MannaBuyInfo = () => {
+//   return (
+//     <div>
+//       <div>Buy Manna</div>
+//       <div>1,000 Manna / 0.01 ETH</div>
+//       <div>10,000 Manna / 0.1 ETH</div>
+//       <div>100,000 Manna / 1 ETH</div>
+//     </div>
+//   )
+// }
 
 const items: ItemType[] = [
   {
     label: <MannaBalanceInfo />,
     key: '0',
   },
-  {
-    type: 'divider',
-  },
-  {
-    label: <MannaBuyInfo />,
-    key: '2',
-  },
+  // {
+  //   type: 'divider',
+  // },
+  // {
+  //   label: <MannaBuyInfo />,
+  //   key: '2',
+  // },
 ]
 
 const MannaDropdown = () => {

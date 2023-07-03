@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons'
 import { Task } from '@eden-labs/eden-sdk'
 import { Button, Dropdown, Menu, Progress, Space, Spin } from 'antd'
+import { ItemType } from 'antd/es/menu/hooks/useItems'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
@@ -34,8 +35,7 @@ const CompletedTaskMenuItem = ({
   )
 
   return (
-    <>
-      <Menu.Divider />
+    <div>
       <div
         onClick={handleViewCreation}
         className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
@@ -76,7 +76,7 @@ const CompletedTaskMenuItem = ({
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -84,30 +84,28 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
   const timeSinceTaskCreation = durationSinceDate(task.createdAt)
 
   return (
-    <>
-      <Menu.Divider />
-      <div
-        className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
-        style={{ minWidth: '240px' }}
-      >
-        <div className="flex justify-between items-center">
-          <strong>/{task.generator.generatorName}</strong>
-          <div className="text-xs text-gray-800 dark:text-gray-400">
-            Started {timeSinceTaskCreation}
-          </div>
-        </div>
-        <Progress
-          percent={task.progress}
-          status="active"
-          className="mt-1 flex items-center"
-        />
-        <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-          {task._id}
+    <div
+      className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
+      style={{ minWidth: '240px' }}
+    >
+      <div className="flex justify-between items-center">
+        <strong>/{task.generator.generatorName}</strong>
+        <div className="text-xs text-gray-800 dark:text-gray-400">
+          Started {timeSinceTaskCreation}
         </div>
       </div>
-    </>
+      <Progress
+        percent={task.progress}
+        status="active"
+        className="mt-1 flex items-center"
+      />
+      <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
+        {task._id}
+      </div>
+    </div>
   )
 }
+
 const TaskNotificationDropdown = () => {
   const { pendingTasks, completedTasks, setCompletedTasks } = useContext(
     CreationNotificationContext,
@@ -119,10 +117,11 @@ const TaskNotificationDropdown = () => {
     setCompletedTasks(newCompletedTasks)
   }
 
-  const pendingTaskItems = pendingTasks
-    ? pendingTasks.map(task => (
-        <PendingTaskMenuItem key={task._id} task={task} />
-      ))
+  const pendingTaskItems: ItemType[] = pendingTasks
+    ? pendingTasks.map(task => ({
+        label: <PendingTaskMenuItem key={task._id} task={task} />,
+        key: task._id,
+      }))
     : []
 
   const completedTaskItems = completedTasks
@@ -132,15 +131,7 @@ const TaskNotificationDropdown = () => {
   return (
     <Space className="max-w-3xl">
       {pendingTaskItems.length > 0 && (
-        <Dropdown
-          trigger={['click']}
-          overlay={
-            <Menu className="max-w-xs">
-              <div className="p-2">Pending Tasks</div>
-              {pendingTaskItems}
-            </Menu>
-          }
-        >
+        <Dropdown trigger={['click']} menu={{ items: pendingTaskItems }}>
           <Button
             type="text"
             className="text-grey-800 dark:text-gray-200 items-center flex px-2"

@@ -1,11 +1,12 @@
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Button, Input, message } from 'antd'
+import { App, Button, Input } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
 
 const MannaVoucherRedeem = () => {
+  const { message } = App.useApp()
   const [voucherCode, setVoucherCode] = useState('')
   const [redeemingVoucher, setRedeemingVoucher] = useState(false)
   const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
@@ -25,7 +26,7 @@ const MannaVoucherRedeem = () => {
       message.success('Voucher redeemed!')
       refetch.mannaBalance()
     } catch (error) {
-      handleAxiosError(error)
+      handleAxiosError(error, message)
     }
     setRedeemingVoucher(false)
   }
