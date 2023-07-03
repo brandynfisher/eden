@@ -9,6 +9,12 @@ export const uploadMedia = async (
 ) => {
   const data = await request.file()
 
+  if (!data) {
+    return reply.status(500).send({
+      message: 'No data found in upload',
+    })
+  }
+
   if (data && data.mimetype.startsWith('image/')) {
     const buffer = await data.toBuffer()
 
@@ -19,8 +25,4 @@ export const uploadMedia = async (
       message: 'Invalid file type. Only images are allowed',
     })
   }
-
-  return reply.status(500).send({
-    message: 'No data found in upload',
-  })
 }
