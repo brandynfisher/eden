@@ -67,7 +67,7 @@ const PraiseButton = ({
           !hovered && !creation.reactions?.praise && 'filter grayscale'
         }`}
       >
-        🙌
+        {creation.praiseCount || 0} 🙌
       </span>
     </Button>
   )
@@ -137,7 +137,7 @@ const SaveButton = ({
           !hovered && !creation.bookmarked && 'filter grayscale'
         }`}
       >
-        ⭐️
+        {creation.bookmarkCount || 0} ⭐️
       </span>
     </Button>
   )

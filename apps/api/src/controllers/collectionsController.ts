@@ -14,7 +14,6 @@ import { Collection } from '../models/Collection'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import CollectionRepository from '../repositories/CollectionRepository'
-import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 
 const getDefaultCollection = async (user: ObjectId) => {
@@ -207,6 +206,16 @@ export const addCreationsToCollection = async (
     displayImageUri: creationDocs[0].thumbnail,
   })
 
+  if (collection.isDefaultCollection) {
+    await Promise.all(
+      creationDocs.map(creation =>
+        creation.updateOne({
+          $inc: { bookmarkCount: 1 },
+        }),
+      ),
+    )
+  }
+
   return reply.status(200).send({})
 }
 
@@ -250,6 +259,16 @@ export const removeCreationsFromCollection = async (
     { _id: collection._id },
     { $pullAll: { creations: creationIdsToRemove } },
   )
+
+  if (collection.isDefaultCollection) {
+    await Promise.all(
+      creationDocs.map(creation =>
+        creation.updateOne({
+          $inc: { bookmarkCount: -1 },
+        }),
+      ),
+    )
+  }
 
   return reply.status(200).send({})
 }

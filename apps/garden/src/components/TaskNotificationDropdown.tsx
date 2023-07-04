@@ -20,7 +20,7 @@ const CompletedTaskMenuItem = ({
   handleDismiss: (taskId: string) => void
 }) => {
   const router = useRouter()
-  const creationId = task.creation._id
+  const creationId = task.creation?._id
 
   const handleViewCreation = () => {
     if (!creationId) return
@@ -34,6 +34,7 @@ const CompletedTaskMenuItem = ({
     true,
   )
 
+  if (!task.creation) return null
   return (
     <div>
       <div
@@ -95,7 +96,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
         </div>
       </div>
       <Progress
-        percent={task.progress}
+        percent={task.progress ? task.progress * 100 : 0}
         status="active"
         className="mt-1 flex items-center"
       />

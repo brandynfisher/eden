@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { Creation } from '../../models/Creation'
 import { GeneratorVersionSchema } from '../../models/Generator'
-import { Task } from '../../models/Task'
+import { Task, TaskStatus } from '../../models/Task'
 import { TaskHandlers } from '../../plugins/tasks'
 
 interface Output {
@@ -92,6 +92,20 @@ export const dummyReceiveTaskUpdate = async (
   if (!task) {
     throw new Error(`Could not find task ${taskId}`)
   }
+
+  const taskUpdateIntermediate = {
+    status: TaskStatus.Pending,
+    progress: 0.5,
+  }
+
+  await Task.updateOne(
+    {
+      taskId,
+    },
+    {
+      $set: taskUpdateIntermediate,
+    },
+  )
 
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
   const asset = await server.uploadUrlAsset(server, image.result)

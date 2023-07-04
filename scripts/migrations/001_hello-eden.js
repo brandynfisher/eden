@@ -10,7 +10,7 @@ const main = async client => {
   const provider = 'replicate'
   const address = 'abraham-ai/eden-sd-pipelines'
   const versionId =
-    'f6b205fc1b2acbd86441619f2193892c347a775a5c46b192978758c79e0c1ef1'
+    '79befe687d0930473e5528b59673890c694250b615e8405bc8f245f906ae8042'
 
   // Register generators
   const createGeneratorVersion = {
