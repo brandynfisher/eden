@@ -1,4 +1,4 @@
-import CreatorProfileLink from '@/components/CreatorProfileLink'
+import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { durationSinceDate } from '@/lib/time'
 import { Creation } from '@eden-labs/eden-sdk'
 // import { useHover } from '@mantine/hooks'

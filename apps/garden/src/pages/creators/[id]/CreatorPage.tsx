@@ -1,6 +1,6 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
-import CreationMasonry from '@/components/CreationMasonry'
-import ProfileHeader from '@/components/ProfileHeader'
+import CreationMasonry from '@/components/Creation/CreationMasonry'
+import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { useFeed } from '@/hooks/useFeed'

@@ -1,4 +1,4 @@
-import CreationDetail from '@/components/CreationDetail/CreationDetail'
+import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
 import React from 'react'

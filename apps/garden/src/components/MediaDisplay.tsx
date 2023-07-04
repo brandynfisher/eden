@@ -1,5 +1,5 @@
-import ImageResult from '@/components/CreationInterface/media/ImageResult'
-import VideoResult from '@/components/CreationInterface/media/VideoResult'
+import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
+import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { getFileExtension } from '@/lib/getFileExtension'
 import React from 'react'
 

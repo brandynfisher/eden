@@ -1,6 +1,6 @@
 import FollowControls from '@/components/FollowControls'
-import ProfileAvatar from '@/components/ProfileAvatar'
-import ProfileHeaderName from '@/components/ProfileHeaderName'
+import ProfileAvatar from '@/components/Profile/ProfileAvatar'
+import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
 import React from 'react'
 
 const ProfileHeader = ({

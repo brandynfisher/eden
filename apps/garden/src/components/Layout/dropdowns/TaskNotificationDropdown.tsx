@@ -1,4 +1,4 @@
-import ImageResult from '@/components/CreationInterface/media/ImageResult'
+import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import { durationBetweenDates, durationSinceDate } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {

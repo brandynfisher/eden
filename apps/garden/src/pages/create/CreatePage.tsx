@@ -1,4 +1,4 @@
-import CreationInterface from '@/components/CreationInterface/CreationInterface'
+import CreationInterface from '@/components/Creation/CreationInterface/CreationInterface'
 import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
