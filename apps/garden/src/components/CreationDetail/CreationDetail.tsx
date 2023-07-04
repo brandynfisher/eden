@@ -105,7 +105,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
           </div>
           <div
             className={`col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative ${
-              !isRevealed ? 'overflow-y-hidden max-h-[500px]' : ''
+              !isRevealed ? 'overflow-y-hidden max-h-[220px]' : ''
             }`}
           >
             <div>
@@ -128,14 +128,14 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
               </div>
             </div>
             {!isRevealed && (
-              <div className="bg-gradient-to-t from-gray-300 dark:from-black to-transparent absolute inset-0 rounded-b-lg">
+              <div className="bg-gradient-to-t from-gray-300 dark:from-black via-gray-300 dark:via-black to-transparent absolute inset-0 rounded-b-lg mt-32">
                 <div className="flex w-full justify-center items-end h-full">
                   <Button
                     type="dashed"
                     className="mb-4 dark:text-gray-400"
                     onClick={() => setIsRevealed(true)}
                   >
-                    Show all
+                    Show more
                   </Button>
                 </div>
               </div>
