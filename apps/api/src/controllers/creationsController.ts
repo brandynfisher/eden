@@ -6,12 +6,80 @@ import {
   ReactionType,
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 
-import { Creation } from '../models/Creation'
+import { Collection } from '../models/Collection'
+import { Creation, CreationDocument } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Reaction } from '../models/Reaction'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
+
+export const getReactions = async (
+  userId: ObjectId,
+  creations: CreationDocument[],
+): Promise<{ [key: string]: Map<ReactionType, boolean> }> => {
+  const reactions = await Reaction.aggregate([
+    {
+      $match: {
+        user: userId,
+        creation: {
+          $in: creations.map(creation => creation._id),
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: 'creations',
+        localField: 'creation',
+        foreignField: '_id',
+        as: 'creation',
+      },
+    },
+    {
+      $unwind: '$creation',
+    },
+  ])
+
+  // Convert reactions to a map for easy lookup
+  const reactionsMap = reactions.reduce((map, reaction) => {
+    const creationId = reaction.creation._id.toString()
+    if (!map[creationId]) {
+      map[creationId] = {}
+    }
+    map[creationId][reaction.reaction] = true
+    return map
+  }, {} as { [key: string]: ReactionType[] }) // explicitly set the type of the accumulator
+
+  return reactionsMap
+}
+
+export const getBookmarks = async (
+  userId: ObjectId,
+  creations: CreationDocument[],
+): Promise<{ [key: string]: boolean }> => {
+  const defaultCollection = await Collection.findOne({
+    user: userId,
+    isDefaultCollection: true,
+  })
+
+  if (!defaultCollection) {
+    // The user doesn't have a default collection, so none of the creations are bookmarked
+    // This should never happen though.
+    return {}
+  }
+
+  const bookmarksMap = creations
+    .filter(creation => defaultCollection.creations.includes(creation._id))
+    .reduce((map, creation) => {
+      map[creation._id.toString()] = defaultCollection.creations.includes(
+        creation._id,
+      )
+      return map
+    }, {} as { [key: string]: boolean })
+
+  return bookmarksMap
+}
 
 export const listCreations = async (
   request: FastifyRequest,
@@ -46,24 +114,56 @@ export const getCreation = async (
 ) => {
   const { creationId } = request.params as CreationsGetArguments
 
-  try {
-    const creation = await Creation.findById(creationId)
-      .populate({
-        path: 'task',
-        select: 'config status generator',
-        populate: { path: 'generator' },
-      })
-      .populate({
-        path: 'user',
-        select: 'userId',
-      })
+  const creation = (await Creation.findById(creationId)
+    .populate({
+      path: 'task',
+      select: 'config status generator',
+      populate: { path: 'generator' },
+    })
+    .populate({
+      path: 'user',
+      select: 'userId',
+    })) as CreationDocument & {
+    reactions?: Map<ReactionType, boolean>
+    bookmarked?: boolean
+  }
 
-    return await reply.status(200).send({ creation })
-  } catch (error) {
+  if (!creation) {
     return reply.status(404).send({
       message: 'Creation not found',
     })
   }
+
+  if (request.user?.userId) {
+    console.log('user is logged in')
+    // Get user's reactions and bookmarks
+    const userId = request.user.userId
+    const user = User.findOne({ userId })
+    if (!user) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+    const uid = new ObjectId(userId)
+    const reactionsMap = await getReactions(uid, [creation])
+    const bookmarksMap = await getBookmarks(uid, [creation])
+    console.log(reactionsMap)
+    console.log(bookmarksMap)
+
+    // creation.reactions = reactionsMap[creation._id.toString()]
+    // creation.bookmarked = bookmarksMap[creation._id.toString()]
+    const creationWithExtras = {
+      ...creation.toObject(),
+      reactions: reactionsMap[creation._id.toString()],
+      bookmarked: bookmarksMap[creation._id.toString()],
+    }
+
+    return reply.status(200).send({
+      creation: creationWithExtras,
+    })
+  }
+
+  return await reply.status(200).send({ creation })
 }
 
 export const creationReact = async (

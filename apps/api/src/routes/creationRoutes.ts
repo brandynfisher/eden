@@ -9,7 +9,7 @@ import {
   getCreation,
   listCreations,
 } from '../controllers/creationsController'
-import { isAuth } from '../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../middleware/authMiddleware'
 
 const creationRoutes: FastifyPluginAsync = async server => {
   server.get('/creations', {
@@ -40,6 +40,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
+    preHandler: [async request => maybeAuth(server, request)],
     handler: (request, reply) => getCreation(request, reply),
   })
 

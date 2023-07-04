@@ -5,10 +5,12 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { creationId } = req.query
+  const authToken = req.session.token
 
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
+      token: authToken,
     })
     const response = await eden.creations.get({
       creationId: creationId as string,
