@@ -1,5 +1,5 @@
 import ConnectButton from '@/components/ConnectButton'
-import ThemeToggleButton from '@/components/ThemeToggleButton'
+import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
 import { UserContext } from '@/providers/UserProvider'
 import {
   LoginOutlined,

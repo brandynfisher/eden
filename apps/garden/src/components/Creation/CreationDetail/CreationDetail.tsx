@@ -1,10 +1,10 @@
-import CreationReactions from '@/components/CreationReactions'
-import CreatorProfileLink from '@/components/CreatorProfileLink'
+import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
+import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { durationSinceDate } from '@/lib/time'
 import { Creation } from '@eden-labs/eden-sdk'
-import { Divider } from 'antd'
+import { Button, Divider } from 'antd'
 import React, { useEffect, useState } from 'react'
 
 const MediaViewer = ({
@@ -58,7 +58,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
   //  it doesnt work right as is anyway because the parent is not notified of the change
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
-
+  const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = durationSinceDate(creation.createdAt)
 
   const showMediaViewer = () => {
@@ -103,25 +103,53 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
               <FollowControls creatorId={creationData.user.userId} />
             </div>
           </div>
-          <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900">
-            <div className="flex justify-between items-center">
-              <div className="font-bold">
-                /{creation.task.generator?.generatorName}
-              </div>
-              <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
-            </div>
-            <Divider className="my-4" />
+          <div
+            className={`col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative ${
+              !isRevealed ? 'overflow-y-hidden max-h-[220px]' : ''
+            }`}
+          >
             <div>
-              {creationData.task.config &&
-                Object.entries(creationData.task.config).map(([key, val]) => (
-                  <div key={`cfg-${key}`} className="mb-4 last:mb-0">
-                    <div className="text-gray-500 capitalize">{key}</div>
-                    {/*// @ts-ignore: @todo: fix the feed response type*/}
-                    <div>{val}</div>
-                  </div>
-                ))}
+              <div className="flex justify-between items-center">
+                <div className="font-bold">
+                  /{creation.task.generator?.generatorName}
+                </div>
+                <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
+              </div>
+              <Divider className="my-4" />
+              <div>
+                {creationData.task.config &&
+                  Object.entries(creationData.task.config).map(([key, val]) => (
+                    <div key={`cfg-${key}`} className="mb-4 last:mb-0">
+                      <div className="text-gray-500 capitalize">{key}</div>
+                      {/*// @ts-ignore: @todo: fix the feed response type*/}
+                      <div>{val}</div>
+                    </div>
+                  ))}
+              </div>
             </div>
+            {!isRevealed && (
+              <div className="bg-gradient-to-t from-gray-300 dark:from-black via-gray-300 dark:via-black to-transparent absolute inset-0 rounded-b-lg mt-32">
+                <div className="flex w-full justify-center items-end h-full">
+                  <Button
+                    type="dashed"
+                    className="mb-4 dark:text-gray-400"
+                    onClick={() => setIsRevealed(true)}
+                  >
+                    Show more
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
+          {isRevealed && (
+            <Button
+              type="dashed"
+              className="mt-4 dark:text-gray-400"
+              onClick={() => setIsRevealed(false)}
+            >
+              Show less
+            </Button>
+          )}
         </div>
       </div>
     </>

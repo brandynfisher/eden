@@ -1,4 +1,4 @@
-import CreationCard from '@/components/CreationCard/CreationCard'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@eden-labs/eden-sdk'
 import { Masonry } from 'masonic'

@@ -1,4 +1,4 @@
-import PageLayoutNoSidebar from '@/components/Layout/PageLayoutNoSidebar'
+import PageLayoutNoSidebar from '@/components/Layout/layouts/PageLayoutNoSidebar'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import CreationPage from '@/pages/creations/[id]/CreationPage'
 import { useRouter } from 'next/router'

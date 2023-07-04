@@ -1,4 +1,4 @@
-import CreationDetail from '@/components/CreationDetail/CreationDetail'
+import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
 import { CloseOutlined } from '@ant-design/icons'
 import { Creation } from '@eden-labs/eden-sdk'
 import { Modal } from 'antd'

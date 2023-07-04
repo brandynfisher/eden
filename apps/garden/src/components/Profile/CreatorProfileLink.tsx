@@ -1,4 +1,4 @@
-import ProfileAvatar from '@/components/ProfileAvatar'
+import ProfileAvatar from '@/components/Profile/ProfileAvatar'
 import { truncatedAddress } from '@/lib/address'
 import Link from 'next/link'
 import React from 'react'

@@ -1,5 +1,5 @@
 import CustomLayout from '@/components/Layout/CustomLayout'
-import LayoutMenu from '@/components/Layout/LayoutMenu'
+import LayoutMenu from '@/components/Layout/navigation/LayoutMenu'
 import { Layout } from 'antd'
 import React from 'react'
 

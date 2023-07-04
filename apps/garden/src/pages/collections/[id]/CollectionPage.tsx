@@ -1,5 +1,5 @@
 import CollectionHeader from '@/components/Collections/CollectionHeader'
-import CreationMasonry from '@/components/CreationMasonry'
+import CreationMasonry from '@/components/Creation/CreationMasonry'
 import { useCollection } from '@/hooks/useCollection'
 import { useFeed } from '@/hooks/useFeed'
 import { handleAxiosError } from '@/lib/fetcher'

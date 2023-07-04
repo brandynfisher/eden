@@ -22,7 +22,8 @@ import {
 } from '@rainbow-me/rainbowkit/wallets'
 import { useTheme } from 'next-themes'
 import { PropsWithChildren, useEffect, useState } from 'react'
-import { WagmiConfig, configureChains, createConfig, sepolia } from 'wagmi'
+import { WagmiConfig, configureChains, createConfig } from 'wagmi'
+import { arbitrum, mainnet, optimism, polygon, sepolia } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 
@@ -30,12 +31,12 @@ new ParticleNetwork({
   projectId: CONFIG.NEXT_PUBLIC_PARTICLE_PROJECT_ID,
   clientKey: CONFIG.NEXT_PUBLIC_PARTICLE_CLIENT_KEY,
   appId: CONFIG.NEXT_PUBLIC_PARTICLE_APP_ID,
-  chainId: sepolia.id,
-  chainName: 'ethereum',
+  // chainId: sepolia.id,
+  // chainName: 'ethereum',
 })
 
 const { chains, publicClient } = configureChains(
-  [sepolia],
+  [arbitrum, mainnet, optimism, polygon, sepolia],
   [
     alchemyProvider({
       apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA as string,

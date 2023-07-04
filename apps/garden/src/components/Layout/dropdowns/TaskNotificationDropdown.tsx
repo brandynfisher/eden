@@ -1,4 +1,4 @@
-import ImageResult from '@/components/CreationInterface/media/ImageResult'
+import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import { durationBetweenDates, durationSinceDate } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {
@@ -22,9 +22,9 @@ const CompletedTaskMenuItem = ({
   const router = useRouter()
   const creationId = task.creation?._id
 
-  const handleViewCreation = () => {
+  const handleViewCreation = async () => {
     if (!creationId) return
-    router.push(`/creations/${creationId}`)
+    await router.push(`/creations/${creationId}`)
   }
 
   const taskRunDuration = durationBetweenDates(
@@ -118,6 +118,11 @@ const TaskNotificationDropdown = () => {
     setCompletedTasks(newCompletedTasks)
   }
 
+  const handleDismissAll = async () => {
+    if (!completedTasks || !setCompletedTasks) return
+    setCompletedTasks([])
+  }
+
   const pendingTaskItems: ItemType[] = pendingTasks
     ? pendingTasks.map(task => ({
         label: <PendingTaskMenuItem key={task._id} task={task} />,
@@ -151,7 +156,20 @@ const TaskNotificationDropdown = () => {
           trigger={['click']}
           overlay={
             <Menu className="max-w-xs">
-              <div className="p-2">Completed Tasks</div>
+              <div className="p-2 flex items-center justify-between">
+                <div>Completed Tasks</div>
+                <div className="flex justify-center text-xs">
+                  <Button
+                    size="small"
+                    className="text-xs !px-4"
+                    type="dashed"
+                    onClick={handleDismissAll}
+                  >
+                    Dismiss all
+                  </Button>
+                </div>
+              </div>
+
               {completedTaskItems}
             </Menu>
           }

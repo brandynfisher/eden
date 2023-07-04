@@ -1,5 +1,5 @@
-import CreationCardDetail from '@/components/CreationCard/CreationCardDetail'
-import CreationReactions from '@/components/CreationReactions'
+import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
+import CreationReactions from '@/components/Creation/CreationReactions'
 import { Creation } from '@eden-labs/eden-sdk'
 import React from 'react'
 

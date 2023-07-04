@@ -60,15 +60,18 @@ const PraiseButton = ({
       loading={isLoading ? { delay: 250 } : false}
       ref={ref}
     >
-      <span
-        role="img"
-        aria-label="Raise Hands"
-        className={`text-sm ${
-          !hovered && !creation.reactions?.praise && 'filter grayscale'
-        }`}
-      >
-        {creation.praiseCount || 0} 🙌
-      </span>
+      <div className="flex" style={{ gap: '8px' }}>
+        <div>{creation.praiseCount || 0}</div>
+        <div
+          role="img"
+          aria-label="Raise Hands"
+          className={`text-sm ${
+            !hovered && !creation.reactions?.praise && 'filter grayscale'
+          }`}
+        >
+          🙌
+        </div>
+      </div>
     </Button>
   )
 }
@@ -130,33 +133,38 @@ const SaveButton = ({
       loading={isLoading ? { delay: 250 } : false}
       ref={ref}
     >
-      <span
-        role="img"
-        aria-label="Save"
-        className={`text-sm ${
-          !hovered && !creation.bookmarked && 'filter grayscale'
-        }`}
-      >
-        {creation.bookmarkCount || 0} ⭐️
-      </span>
+      <div className="flex" style={{ gap: '8px' }}>
+        <div>{creation.bookmarkCount || 0}</div>
+        <div
+          role="img"
+          aria-label="Save"
+          className={`text-sm relative top-[1px] ${
+            !hovered && !creation.bookmarked && 'filter grayscale'
+          }`}
+        >
+          ️⭐️
+        </div>
+      </div>
     </Button>
   )
 }
 
 const SaveButtonMessageContent = () => {
   return (
-    <div className="flex items-center justify-between">
-      <span>Saved to Bookmarks</span>
-      <Button
-        type="primary"
-        className="ml-2 rounded-full"
-        onClick={() => {
-          // messageApi.destroy()
-          // setAddToCollectionModalOpen(true)
-        }}
-      >
-        Change
-      </Button>
+    <div className="block">
+      <div className="flex items-center justify-between">
+        <div>Saved to Bookmarks</div>
+        {/*<Button*/}
+        {/*  type="primary"*/}
+        {/*  className="ml-2 rounded-full"*/}
+        {/*  onClick={() => {*/}
+        {/*    // messageApi.destroy()*/}
+        {/*    // setAddToCollectionModalOpen(true)*/}
+        {/*  }}*/}
+        {/*>*/}
+        {/*  Change*/}
+        {/*</Button>*/}
+      </div>
     </div>
   )
 }

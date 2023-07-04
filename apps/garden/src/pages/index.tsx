@@ -1,4 +1,4 @@
-import PageLayoutNoSidebar from '@/components/Layout/PageLayoutNoSidebar'
+import PageLayoutNoSidebar from '@/components/Layout/layouts/PageLayoutNoSidebar'
 import HomePage from '@/pages/HomePage'
 import { ReactNode } from 'react'
 
