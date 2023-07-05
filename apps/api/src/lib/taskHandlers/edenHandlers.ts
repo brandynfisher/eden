@@ -207,6 +207,7 @@ export const receiveTaskUpdate = async (
 ) => {
   const { id: taskId, status, output, error } = update as TaskUpdate
   console.log(`Received update for task ${taskId} with status ${status}`)
+  console.log(`Output: ${JSON.stringify(output)}`)
   if (error) {
     console.error(`Error for task ${taskId}: ${error}`)
   }
