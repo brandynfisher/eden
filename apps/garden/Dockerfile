@@ -62,4 +62,5 @@ COPY --from=installer --chown=nextjs:nodejs /app/apps/garden/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/garden/.next/static ./apps/garden/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/garden/public ./apps/garden/public
 
-CMD node apps/garden/server.js
+# CMD node apps/garden/server.js
+CMD ["sleep", "infinity"]
