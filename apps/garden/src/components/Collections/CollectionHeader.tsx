@@ -22,23 +22,23 @@ const CollectionHeader = ({
     <div className="flex flex-col bg-gray-200 dark:bg-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4">
         <div>
-          <h2 className="text-white text-lg font-semibold">
+          <h2 className="dark:text-white text-lg font-semibold">
             {collection.name}
           </h2>
-          <p className="text-white text-md font-semibold">
+          <p className="dark:text-white text-md font-semibold">
             {collection.description}
           </p>
-          <p className="text-white text-sm">
-            {collection.creations?.length || 0} Creations
-          </p>
-          <p className="text-white text-sm">
-            Created by{' '}
+          <p className="dark:text-white text-sm">
+            Curated by{' '}
             <Link href={`/creators/${collection.creatorId}`}>
-              <span className="text-white text-sm font-semibold">
+              <span className="dark:text-white text-sm font-semibold">
                 {' '}
                 {truncatedId}
               </span>
             </Link>
+          </p>
+          <p className="dark:text-white text-sm">
+            {collection.creations?.length || 0} Creations
           </p>
           {isAuthenticated && isAuthUser && !collection.isDefaultCollection && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
