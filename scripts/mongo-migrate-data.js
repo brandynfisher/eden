@@ -25,8 +25,7 @@ if (process.env.MINIO_PORT) {
   minioClient = new MinioClient({
     endPoint: process.env.MINIO_HOST,
     accessKey: process.env.MINIO_ACCESS_KEY,
-    // secretKey: process.env.MINIO_SECRET_KEY,
-    secretKey: 'Start123$'
+    secretKey: process.env.MINIO_SECRET_KEY,
   })
 }
 
@@ -35,8 +34,6 @@ const minio = {
   minioBucket: process.env.MINIO_BUCKET,
   minioUri: process.env.MINIO_URI,
 }
-
-console.log(minio)
 
 const args = process.argv.slice(1)
 const DOC_LIMIT = args[1] ? parseInt(args[1]) : undefined
@@ -50,8 +47,8 @@ const db_to = client_to.db(MONGO_URI_DEST_DB)
 
 console.log('Migrating from ' + MONGO_URI_SRC + ' to ' + MONGO_URI_DEST)
 
-// await migrateData(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT)
-// await addMediaDurations(db_to)
+await migrateData(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT)
+await addMediaDurations(db_to)
 await createThumbnails(db_to, minio)
 
 await client_from.close()

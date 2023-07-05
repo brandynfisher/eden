@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { fileTypeFromBuffer } from 'file-type'
 
 import { uploadBufferAsset } from '../plugins/minioPlugin'
 
@@ -15,14 +16,16 @@ export const uploadMedia = async (
     })
   }
 
-  if (data && data.mimetype.startsWith('image/')) {
-    const buffer = await data.toBuffer()
+  const buffer = await data.toBuffer()
+  const type = await fileTypeFromBuffer(buffer)
 
-    const url = await uploadBufferAsset(server, buffer)
-    return reply.status(200).send({ url })
-  } else {
+  // Allow only images
+  if (!type || !type.mime.startsWith('image/')) {
     return reply.status(400).send({
       message: 'Invalid file type. Only images are allowed',
     })
   }
+
+  const url = await uploadBufferAsset(server, buffer)
+  return reply.status(200).send({ url })
 }

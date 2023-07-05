@@ -38,8 +38,15 @@ const PraiseButton = ({
           reaction: 'praise',
         })
       }
+
+      const newPraiseCount =
+        typeof creation.praiseCount !== 'undefined'
+          ? creation.praiseCount + (creation.reactions?.praise ? -1 : 1)
+          : 0
+
       onChange({
         ...creation,
+        praiseCount: newPraiseCount,
         reactions: {
           ...creation.reactions,
           praise: !creation.reactions?.praise,
@@ -113,8 +120,14 @@ const SaveButton = ({
         })
       }
 
+      const newBookMarkCount =
+        typeof creation.bookmarkCount !== 'undefined'
+          ? creation.bookmarkCount + (creation.bookmarked ? -1 : 1)
+          : 0
+
       onChange({
         ...creation,
+        bookmarkCount: newBookMarkCount,
         bookmarked: !creation.bookmarked,
       })
     } catch (error) {
