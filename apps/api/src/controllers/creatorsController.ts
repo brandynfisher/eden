@@ -6,6 +6,7 @@ import {
 } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
+import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Follow, FollowDocument } from '../models/Follow'
 import CreatorRepository from '../repositories/CreatorRepository'
@@ -42,6 +43,8 @@ export const getCreator = async (
       message: 'Creator not found',
     })
   }
+
+  const creationCount = await Creation.count({ creatorId: userId })
   const followers = await Follow.find({ following: creatorDoc?._id })
   const following = await Follow.find({ follower: creatorDoc?._id })
   let isFollowing = false
@@ -57,6 +60,7 @@ export const getCreator = async (
     ...creatorDoc.toObject(),
     followerCount: followers.length,
     followingCount: following.length,
+    creationCount,
     isFollowing,
   }
   return reply.status(200).send({ creator })
@@ -116,7 +120,7 @@ export const followCreator = async (
     },
   })
 
-  return await reply.status(200).send({
+  return reply.status(200).send({
     success: true,
   })
 }
@@ -175,7 +179,7 @@ export const unfollowCreator = async (
     },
   })
 
-  return await reply.status(200).send({
+  return reply.status(200).send({
     success: true,
   })
 }

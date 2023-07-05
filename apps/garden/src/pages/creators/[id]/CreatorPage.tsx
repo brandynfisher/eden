@@ -60,7 +60,7 @@ const CreatorPage = ({ creatorId }: { creatorId: string }) => {
           creatorDisplayName={
             creator && creator.username ? creator.username : creatorId
           }
-          // numCreations={creations.length}
+          numCreations={creator?.creationsCount}
           isConnectedUser={isConnectedUser}
         />
         <Tabs defaultActiveKey="1" centered items={creatorPageTabs} />

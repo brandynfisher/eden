@@ -31,8 +31,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const queryString = Object.keys(params)
       .map(key => `${key}=${params[key]}`)
       .join('&')
-    const path = queryString ? `${basePath}?${queryString}` : basePath
-    return path
+    return queryString ? `${basePath}?${queryString}` : basePath
   }
 
   switch (method) {
