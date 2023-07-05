@@ -26,6 +26,6 @@ export const uploadMedia = async (
     })
   }
 
-  const url = await uploadBufferAsset(server, buffer)
-  return reply.status(200).send({ url })
+  const { uri } = await uploadBufferAsset(server, buffer)
+  return reply.status(200).send({ url: uri })
 }
