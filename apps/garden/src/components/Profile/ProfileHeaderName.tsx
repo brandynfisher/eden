@@ -1,30 +1,30 @@
-import { requireAuth } from '@/lib/auth'
-import { UserContext } from '@/providers/UserProvider'
-import { EditOutlined } from '@ant-design/icons'
+// import { requireAuth } from '@/lib/auth'
+// import { UserContext } from '@/providers/UserProvider'
+//import { EditOutlined } from '@ant-design/icons'
 import { App, Button } from 'antd'
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 
 const ProfileHeaderName = ({
   displayName,
-  isOwnProfile,
-}: {
+}: //isOwnProfile,
+{
   displayName: string
-  isOwnProfile: boolean
+  //isOwnProfile: boolean
 }) => {
   const { message } = App.useApp()
-  const { isAuthenticated, authenticate } = useContext(UserContext)
+  // const { isAuthenticated, authenticate } = useContext(UserContext)
   const [isEditing, setIsEditing] = useState(false)
   // const [ updatedName, setUpdatedName ] = useState('')
 
-  const handleEditNameClick = async () => {
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
-
-    setIsEditing(true)
-    // setUpdatedName(displayName)
-  }
+  // const handleEditNameClick = async () => {
+  //   if (!isAuthenticated) {
+  //     await requireAuth(authenticate)
+  //     return
+  //   }
+  //
+  //   setIsEditing(true)
+  //   // setUpdatedName(displayName)
+  // }
 
   // const handleNameInputChange = (ev:React.ChangeEvent<HTMLInputElement>) => {
   //   // setUpdatedName(ev.target.value)
@@ -76,15 +76,15 @@ const ProfileHeaderName = ({
         )}
       </div>
 
-      {isOwnProfile && (
-        <>
-          {!isEditing && (
-            <Button size={'small'} type="text" onClick={handleEditNameClick}>
-              <EditOutlined className="text-xl" />
-            </Button>
-          )}
-        </>
-      )}
+      {/*{isOwnProfile && (*/}
+      {/*  <>*/}
+      {/*    {!isEditing && (*/}
+      {/*      <Button size={'small'} type="text" onClick={handleEditNameClick}>*/}
+      {/*        <EditOutlined className="text-xl" />*/}
+      {/*      </Button>*/}
+      {/*    )}*/}
+      {/*  </>*/}
+      {/*)}*/}
     </div>
   )
 }
