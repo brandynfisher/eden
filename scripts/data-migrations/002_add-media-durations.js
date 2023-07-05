@@ -26,10 +26,10 @@ const getMediaDuration = async buffer => {
   return duration
 }
 
-async function main(client_to) {
+async function main(db_to) {
   try {
     console.log('Adding media durations...')
-    const creations_to = client_to.db('eden').collection('creations')
+    const creations_to = db_to.collection('creations')
     const allCreations = await creations_to.find().toArray()
 
     const durationMedia = allCreations.filter(

@@ -24,7 +24,7 @@ function getItem(
 const defaultItems: MenuItem[] = [
   getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <EyeOutlined />),
-  getItem('Tools', '/dropdowns', <ToolOutlined />),
+  getItem('Tools', '/tools', <ToolOutlined />),
 ]
 
 const authItems: MenuItem[] = [

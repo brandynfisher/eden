@@ -37,8 +37,8 @@ export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
     }
 
     // @todo: add sort
-    //@ts-ignore
     const queryString = Object.keys(params)
+      //@ts-ignore
       .map(key => `${key}=${params[key]}`)
       .join('&')
     return queryString ? `${basePath}?${queryString}` : basePath

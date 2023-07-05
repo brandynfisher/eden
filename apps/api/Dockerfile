@@ -33,6 +33,7 @@ WORKDIR /app
 COPY --from=installer /app/apps/api/build ./build
 COPY --from=installer /app/apps/api/package.json .
 COPY --from=installer /app/node_modules ./node_modules
+COPY --from=installer /app/packages/eden-sdk ./packages/eden-sdk
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs

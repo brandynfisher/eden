@@ -1,86 +1,12 @@
-import { PaginatedResponse, ReactionType } from '@eden-labs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { Collection } from '../models/Collection'
-import { Creation, CreationDocument } from '../models/Creation'
+import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
-import { Reaction } from '../models/Reaction'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
-
-const getReactions = async (
-  userId: ObjectId,
-  creations: PaginatedResponse<CreationDocument>,
-): Promise<{ [key: string]: Map<ReactionType, boolean> }> => {
-  if (!creations.docs) {
-    return {}
-  }
-  const reactions = await Reaction.aggregate([
-    {
-      $match: {
-        user: userId,
-        creation: {
-          $in: creations.docs.map(creation => creation._id),
-        },
-      },
-    },
-    {
-      $lookup: {
-        from: 'creations',
-        localField: 'creation',
-        foreignField: '_id',
-        as: 'creation',
-      },
-    },
-    {
-      $unwind: '$creation',
-    },
-  ])
-
-  // Convert reactions to a map for easy lookup
-  const reactionsMap = reactions.reduce((map, reaction) => {
-    const creationId = reaction.creation._id.toString()
-    if (!map[creationId]) {
-      map[creationId] = {}
-    }
-    map[creationId][reaction.reaction] = true
-    return map
-  }, {} as { [key: string]: ReactionType[] }) // explicitly set the type of the accumulator
-
-  return reactionsMap
-}
-
-const getBookmarks = async (
-  userId: ObjectId,
-  creations: PaginatedResponse<CreationDocument>,
-): Promise<{ [key: string]: boolean }> => {
-  if (!creations.docs) {
-    return {}
-  }
-
-  const defaultCollection = await Collection.findOne({
-    user: userId,
-    isDefaultCollection: true,
-  })
-
-  if (!defaultCollection) {
-    // The user doesn't have a default collection, so none of the creations are bookmarked
-    // This should never happen though.
-    return {}
-  }
-
-  const bookmarksMap = creations.docs
-    .filter(creation => defaultCollection.creations.includes(creation._id))
-    .reduce((map, creation) => {
-      map[creation._id.toString()] = defaultCollection.creations.includes(
-        creation._id,
-      )
-      return map
-    }, {} as { [key: string]: boolean })
-
-  return bookmarksMap
-}
+import { getBookmarks, getReactions } from './creationsController'
 
 interface FeedGetArguments {
   userId?: string
@@ -147,8 +73,8 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
       })
     }
     const uid = new ObjectId(userId)
-    const reactionsMap = await getReactions(uid, creations)
-    const bookmarksMap = await getBookmarks(uid, creations)
+    const reactionsMap = await getReactions(uid, creations.docs)
+    const bookmarksMap = await getBookmarks(uid, creations.docs)
 
     const creationDocs = creations.docs.map(creation => {
       return {

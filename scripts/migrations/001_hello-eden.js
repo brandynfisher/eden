@@ -3,9 +3,8 @@ import interpolationParameters from '../generators/interpolate.js'
 import real2realParameters from '../generators/real2real.js'
 import remixParameters from '../generators/remix.js'
 
-const main = async client => {
+const main = async db => {
   console.log('Adding generators...')
-  const db = client.db('eden')
 
   const provider = 'replicate'
   const address = 'abraham-ai/eden-sd-pipelines'
@@ -87,8 +86,6 @@ const main = async client => {
       real2realGenerator,
       remixGenerator,
     ])
-
-  client.close()
 }
 
 export default main

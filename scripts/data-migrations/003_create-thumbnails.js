@@ -4,7 +4,7 @@ import sharp from 'sharp'
 
 const BATCH_SIZE = 10
 
-async function main(client_to, minio) {
+async function main(db_to, minio) {
   const { minioClient, minioBucket, minioUri } = minio
   const sha256 = data => {
     const hashSum = crypto.createHash('sha256')
@@ -51,7 +51,7 @@ async function main(client_to, minio) {
 
   try {
     console.log('Creating thumbnails...')
-    const creations_to = client_to.db('eden').collection('creations')
+    const creations_to = db_to.collection('creations')
     const allCreations = await creations_to.find().toArray()
 
     const visualMedia = allCreations.filter(creation => !!creation.thumbnail)
