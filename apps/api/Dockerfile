@@ -13,6 +13,7 @@ RUN turbo prune --scope=api --docker
 FROM base AS installer
 RUN apk add --no-cache libc6-compat git
 RUN apk update
+RUN apk add ffmpeg
 WORKDIR /app
 
 # First install the dependencies (as they change less often)
@@ -39,6 +40,9 @@ COPY --from=installer /app/packages/eden-sdk ./packages/eden-sdk
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
 USER nodejs
+
+RUN apk add ffmpeg
+RUN apk update
 
 ENV NODE_ENV="production"
 CMD ["yarn", "start"]
