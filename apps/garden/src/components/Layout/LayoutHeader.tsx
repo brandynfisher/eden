@@ -6,12 +6,14 @@ import CreationNotificationMenu from '@/components/Layout/dropdowns/TaskNotifica
 import Drawer from '@/components/Layout/navigation/Drawer'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import MyProfileButton from '@/components/Profile/MyProfileButton'
+import { UserContext } from '@/providers/UserProvider'
 import { Layout } from 'antd'
-import React from 'react'
+import React, { useContext } from 'react'
 
 const { Header } = Layout
 
 const LayoutHeader = () => {
+  const { isAuthenticated } = useContext(UserContext)
   return (
     <Header
       className="flex items-center px-4 bg-white dark:bg-gray-950"
@@ -29,7 +31,7 @@ const LayoutHeader = () => {
         <div className="ml-auto">
           <div className="flex items-center" style={{ gap: '8px' }}>
             <CreationNotificationMenu />
-            <QuickCreateMenu />
+            {isAuthenticated && <QuickCreateMenu />}
           </div>
         </div>
       </div>
