@@ -1,7 +1,7 @@
 import { Button } from 'antd'
 import React, { ReactNode, useState } from 'react'
 
-type OrderByParam = {
+export type OrderByParam = {
   label: string
   field: string
   direction: -1 | 1
@@ -43,8 +43,18 @@ const OrderByButton = ({
   )
 }
 
-const OrderByButtons = () => {
+const OrderByButtons = ({
+  onOrderChange,
+}: {
+  onOrderChange: (item: OrderByParam) => void
+}) => {
   const [selectedParam, setSelectedParam] = useState<OrderByParam>(items[0])
+
+  const handleSelect = (item: OrderByParam) => {
+    if (selectedParam.field === item.field) return
+    setSelectedParam(item)
+    onOrderChange(item)
+  }
 
   return (
     <div className="mb-4 flex gap-2">
@@ -52,7 +62,7 @@ const OrderByButtons = () => {
         <OrderByButton
           key={item.field}
           isActive={item.field === selectedParam?.field}
-          onSelect={() => setSelectedParam(item)}
+          onSelect={() => handleSelect(item)}
         >
           {item.label}
         </OrderByButton>

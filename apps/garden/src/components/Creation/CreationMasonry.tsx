@@ -1,19 +1,22 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import OrderByButtons from '@/components/OrderByButtons'
+import OrderByButtons, { OrderByParam } from '@/components/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
 import { Button, Empty } from 'antd'
 import { Masonry, useInfiniteLoader } from 'masonic'
 import Link from 'next/link'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const CreationMasonry = ({ query }: { query?: PaginatedFeedQuery }) => {
+  const [orderBy, setOrderBy] = useState<OrderByParam>()
+
   const { isConnected, settings, address } = useContext(UserContext)
   const {
     creations,
     maybeLoadMore: maybeLoadNextPage,
     isEmpty,
-  } = useFeedPaginated(query)
+  } = useFeedPaginated(query, orderBy)
+
   const isConnectedUser =
     isConnected && query && query.userId && query.userId === address
 
@@ -27,6 +30,11 @@ const CreationMasonry = ({ query }: { query?: PaginatedFeedQuery }) => {
       threshold: 4,
     },
   )
+
+  useEffect(() => {
+    if (!orderBy) return
+    // console.log('changed order', orderBy)
+  }, [orderBy])
 
   return (
     <>
@@ -54,7 +62,7 @@ const CreationMasonry = ({ query }: { query?: PaginatedFeedQuery }) => {
         </div>
       ) : (
         <>
-          <OrderByButtons />
+          <OrderByButtons onOrderChange={item => setOrderBy(item)} />
           <Masonry
             items={creations}
             columnCount={settings?.maxGridCols.value || undefined}

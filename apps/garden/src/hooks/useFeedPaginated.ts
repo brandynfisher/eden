@@ -1,3 +1,4 @@
+import { OrderByParam } from '@/components/OrderByButtons'
 import { fetcher } from '@/lib/fetcher'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useCallback } from 'react'
@@ -8,6 +9,8 @@ export type FeedRouteQueryParams = {
   limit?: number
   userId?: string
   collectionId?: string
+  orderBy?: string
+  direction?: -1 | 1
 }
 
 export type PaginatedFeedQuery = {
@@ -17,7 +20,10 @@ export type PaginatedFeedQuery = {
   limit?: number
 }
 
-export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
+export const useFeedPaginated = (
+  query: PaginatedFeedQuery = {},
+  orderBy: OrderByParam | undefined,
+) => {
   const pageLimit = query?.limit || 10
 
   const route = (limit: number, page: number) => {
@@ -30,10 +36,14 @@ export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
     }
 
     if (query?.userId) {
-      params.userId = query?.userId
+      params.userId = query.userId
     }
     if (query?.collectionId) {
-      params.collectionId = query?.collectionId
+      params.collectionId = query.collectionId
+    }
+    if (orderBy) {
+      params.orderBy = orderBy.field
+      params.direction = orderBy.direction
     }
 
     // @todo: add sort
@@ -41,6 +51,7 @@ export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
       //@ts-ignore
       .map(key => `${key}=${params[key]}`)
       .join('&')
+
     return queryString ? `${basePath}?${queryString}` : basePath
   }
 
