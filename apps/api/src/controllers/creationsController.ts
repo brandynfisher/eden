@@ -110,7 +110,7 @@ export const creationReact = async (
     },
   })
 
-  return await reply.status(200).send({
+  return reply.status(200).send({
     success: true,
   })
 }
@@ -159,7 +159,7 @@ export const creationUnreact = async (
     },
   })
 
-  return await reply.status(200).send({
+  return reply.status(200).send({
     success: true,
   })
 }

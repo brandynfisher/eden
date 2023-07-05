@@ -44,7 +44,7 @@ export const getCreator = async (
     })
   }
 
-  const creationCount = await Creation.count({ creatorId: userId })
+  const creationsCount = await Creation.count({ user: creatorDoc?._id })
   const followers = await Follow.find({ following: creatorDoc?._id })
   const following = await Follow.find({ follower: creatorDoc?._id })
   let isFollowing = false
@@ -60,7 +60,7 @@ export const getCreator = async (
     ...creatorDoc.toObject(),
     followerCount: followers.length,
     followingCount: following.length,
-    creationCount,
+    creationsCount,
     isFollowing,
   }
   return reply.status(200).send({ creator })
