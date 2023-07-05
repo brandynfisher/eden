@@ -36,13 +36,13 @@ COPY --from=installer /app/apps/api/package.json .
 COPY --from=installer /app/node_modules ./node_modules
 COPY --from=installer /app/packages/eden-sdk ./packages/eden-sdk
 
+RUN apk add ffmpeg
+RUN apk update
+
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
 USER nodejs
-
-RUN apk add ffmpeg
-RUN apk update
 
 ENV NODE_ENV="production"
 CMD ["yarn", "start"]
