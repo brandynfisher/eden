@@ -1,4 +1,4 @@
-async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
+async function main(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
   const getMediaAttributes = doc => {
     if (!doc.uri) {
       return {
@@ -47,9 +47,7 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
   }
 
   const selectDocs = async (collectionName, useDocLimit) => {
-    const collection_from = client_from
-      .db(MONGO_URI_SRC_DB)
-      .collection(collectionName)
+    const collection_from = db_from.collection(collectionName)
     if (DOC_LIMIT && useDocLimit) {
       return await collection_from
         .find()
@@ -64,7 +62,7 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
   try {
     console.log('Copying tasks...')
     const allTasks = await selectDocs('tasks', true)
-    const tasks_to = client_to.db('eden').collection('tasks')
+    const tasks_to = db_to.collection('tasks')
 
     allTasks.forEach(task => {
       if (task.output?.file) {
@@ -80,12 +78,12 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
 
     console.log('Copying loras...')
     const allLoras = await selectDocs('loras')
-    const loras_to = client_to.db('eden').collection('loras')
+    const loras_to = db_to.collection('loras')
     await loras_to.insertMany(allLoras)
 
     console.log('Copying apiKeys...')
     const allApiKeys = await selectDocs('apikeys')
-    const apiKeys_to = client_to.db('eden').collection('apikeys')
+    const apiKeys_to = db_to.collection('apikeys')
     allApiKeys.forEach(apiKey => {
       delete apiKey.deleted
     })
@@ -93,7 +91,7 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
 
     console.log('Copying creations...')
     const allCreations = await selectDocs('creations', true)
-    const creations_to = client_to.db('eden').collection('creations')
+    const creations_to = db_to.collection('creations')
 
     allCreations.map(creation => {
       creation.delegate = null
@@ -106,7 +104,7 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
 
     console.log('Copying creators...')
     const allCreators = await selectDocs('users')
-    const creators_to = client_to.db('eden').collection('users')
+    const creators_to = db_to.collection('users')
     allCreators.forEach(creation => {
       creation.isWeb2 = !creation.isWallet
       delete creation.isWallet
@@ -126,12 +124,12 @@ async function main(client_from, client_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
       }
       allCollections.push(collection)
     })
-    const collections_to = client_to.db('eden').collection('collections')
+    const collections_to = db_to.collection('collections')
     await collections_to.insertMany(allCollections)
 
     // Populate 'collections' and 'creations' for each user
     console.log('Populating user stuff...')
-    const users_to = client_to.db('eden').collection('users')
+    const users_to = db_to.collection('users')
 
     const updatePromises = allCreators.map(user => {
       user.creations = allCreations.filter(
