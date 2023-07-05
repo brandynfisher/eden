@@ -7,12 +7,12 @@ const ProfileHeader = ({
   creatorId,
   creatorDisplayName,
   isConnectedUser,
-  numCreations,
-}: {
+}: // numCreations,
+{
   creatorId: string
   creatorDisplayName: string
   isConnectedUser: boolean
-  numCreations: number | undefined
+  // numCreations: number | undefined
 }) => {
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
@@ -25,9 +25,9 @@ const ProfileHeader = ({
             isOwnProfile={isConnectedUser}
             displayName={creatorDisplayName}
           />
-          <div className="text-sm mt-1">
-            <strong>{numCreations || 0}</strong> Creations
-          </div>
+          {/*<div className="text-sm mt-1">*/}
+          {/*  <strong>{numCreations || 0}</strong> Creations*/}
+          {/*</div>*/}
         </div>
       </div>
       <div className="col-span-full sm:col-span-1">

@@ -1,7 +1,6 @@
 import CollectionHeader from '@/components/Collections/CollectionHeader'
 import CreationMasonry from '@/components/Creation/CreationMasonry'
 import { useCollection } from '@/hooks/useCollection'
-import { useFeed } from '@/hooks/useFeed'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { App, Space } from 'antd'
@@ -16,7 +15,6 @@ const CollectionPage = ({ collectionId }: { collectionId: string }) => {
   const { message } = App.useApp()
   const { isAuthenticated, address } = useContext(UserContext)
   const { collection } = useCollection(collectionId)
-  const { creations } = useFeed({ isAuthenticated, collectionId })
   const [deleteLoading, setDeleteLoading] = React.useState(false)
 
   const isAuthUser = isAuthenticated && collection?.creatorId === address
@@ -44,7 +42,7 @@ const CollectionPage = ({ collectionId }: { collectionId: string }) => {
           deleteLoading={deleteLoading}
         />
         <div className="mt-4">
-          {creations && <CreationMasonry creations={creations} />}
+          <CreationMasonry query={{ collectionId }} />
         </div>
       </Space>
     </div>
