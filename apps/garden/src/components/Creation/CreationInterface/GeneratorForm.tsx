@@ -80,6 +80,10 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
 
   useEffect(() => {
     setHasChangedGenerator && setHasChangedGenerator(true)
+    // reset form
+    form.resetFields()
+    setStringArrayValues({})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [generator, setHasChangedGenerator])
 
   const renderFormFields = (parameters: GeneratorParameter[]) => {
