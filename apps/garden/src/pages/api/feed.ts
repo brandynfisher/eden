@@ -1,3 +1,4 @@
+import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
 import axios from 'axios'
@@ -5,18 +6,32 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
-  const { userId, collectionId } = req.query
+
+  // @todo: add sort
+  const { userId, collectionId, page, limit } = req.query
   const authToken = req.session.token
 
-  const route = () => {
-    let base = `${CONFIG.API_URL}/feed`
+  const route = (limit: number, page: number) => {
+    const basePath = `${CONFIG.API_URL}/feed`
+    const params: FeedRouteQueryParams = {}
+
+    if (limit && page) {
+      params.page = page
+      params.limit = limit
+    }
+
     if (userId) {
-      base += `?userId=${userId}`
+      params.userId = String(userId)
     }
     if (collectionId) {
-      base += `?collectionId=${collectionId}`
+      params.collectionId = String(collectionId)
     }
-    return base
+
+    //@ts-ignore
+    const queryString = Object.keys(params)
+      .map(key => `${key}=${params[key]}`)
+      .join('&')
+    return queryString ? `${basePath}?${queryString}` : basePath
   }
 
   switch (method) {
@@ -27,7 +42,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
               Authorization: `Bearer ${authToken}`,
             }
           : {}
-        const response = await axios.get(route(), {
+        const response = await axios.get(route(Number(limit), Number(page)), {
           headers,
         })
         return res.status(200).json(response.data)
