@@ -6,7 +6,7 @@ import React from 'react'
 const ProfileHeader = ({
   creatorId,
   creatorDisplayName,
-  isConnectedUser,
+  // isConnectedUser,
   numCreations,
 }: {
   creatorId: string
@@ -22,7 +22,7 @@ const ProfileHeader = ({
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">
           <ProfileHeaderName
-            isOwnProfile={isConnectedUser}
+            // isOwnProfile={isConnectedUser}
             displayName={creatorDisplayName}
           />
           <div className="text-sm mt-1">
