@@ -1,4 +1,5 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import OrderByButtons from '@/components/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
 import { Button, Empty } from 'antd'
@@ -53,6 +54,7 @@ const CreationMasonry = ({ query }: { query?: PaginatedFeedQuery }) => {
         </div>
       ) : (
         <>
+          <OrderByButtons />
           <Masonry
             items={creations}
             columnCount={settings?.maxGridCols.value || undefined}
