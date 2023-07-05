@@ -21,7 +21,9 @@ const ResultPreview = () => {
           <Spin size="large" />
           <div className="text-gray-500 mt-4">Awaiting creation... </div>
           <Progress
-            percent={activeTask?.progress ? activeTask.progress * 100 : 0}
+            percent={
+              activeTask?.progress ? Math.round(activeTask.progress * 100) : 0
+            }
             status="active"
             className="mt-1 flex items-center"
           />

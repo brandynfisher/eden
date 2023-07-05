@@ -1,9 +1,8 @@
-import { UserContext } from '@/providers/UserProvider'
-import { HomeOutlined, TableOutlined } from '@ant-design/icons'
+import { HomeOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { ReactNode, useContext, useEffect, useState } from 'react'
+import React, { ReactNode } from 'react'
 
 type NavButtonItem = { text: string; path: string; icon: React.ReactNode }
 
@@ -37,24 +36,23 @@ const NavButton = ({
 
 const MainNavButtons = () => {
   const router = useRouter()
-  const [bookmarkCollectionPath, setBookmarkCollectionPath] = useState('')
+  // const [bookmarkCollectionPath, setBookmarkCollectionPath] = useState('')
 
-  const { collections } = useContext(UserContext)
+  // const { collections } = useContext(UserContext)
 
-  useEffect(() => {
-    if (collections?.length) {
-      setBookmarkCollectionPath(`/collections/${collections[0]._id}`)
-    }
-  }, [collections])
+  // useEffect(() => {
+  //   if (collections?.length) {
+  //     setBookmarkCollectionPath(`/collections/${collections[0]._id}`)
+  //   }
+  // }, [collections])
 
   const navItems: NavButtonItem[] = [
     { text: 'Creations', icon: <HomeOutlined />, path: '/' },
-    {
-      text: 'Collections',
-      icon: <TableOutlined />,
-      path: bookmarkCollectionPath,
-    },
-    // {text: 'Concepts', icon: <HomeOutlined/>, path: '/concepts'},
+    // {
+    //   text: 'Collections',
+    //   icon: <TableOutlined />,
+    //   path: bookmarkCollectionPath,
+    // },
   ]
 
   return (

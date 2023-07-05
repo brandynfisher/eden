@@ -96,7 +96,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
         </div>
       </div>
       <Progress
-        percent={task.progress ? task.progress * 100 : 0}
+        percent={task?.progress ? Math.round(task.progress * 100) : 0}
         status="active"
         className="mt-1 flex items-center"
       />
