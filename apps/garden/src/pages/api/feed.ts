@@ -27,8 +27,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       params.collectionId = String(collectionId)
     }
 
-    //@ts-ignore
     const queryString = Object.keys(params)
+      //@ts-ignore
       .map(key => `${key}=${params[key]}`)
       .join('&')
     return queryString ? `${basePath}?${queryString}` : basePath
