@@ -14,7 +14,13 @@ import {
 import Link from 'next/link'
 import React, { useContext, useRef, useState } from 'react'
 
-const CreationMasonry = ({ query }: { query?: PaginatedFeedQuery }) => {
+const CreationMasonry = ({
+  query,
+  hasSort,
+}: {
+  query?: PaginatedFeedQuery
+  hasSort: boolean
+}) => {
   const containerRef = useRef(null)
   const [orderBy, setOrderBy] = useState<OrderByParam>()
   const [key, setKey] = useState(0)
@@ -73,7 +79,9 @@ const CreationMasonry = ({ query }: { query?: PaginatedFeedQuery }) => {
     <>
       {!isEmpty ? (
         <>
-          <OrderByButtons onOrderChange={item => handleOrderChange(item)} />
+          {hasSort && (
+            <OrderByButtons onOrderChange={item => handleOrderChange(item)} />
+          )}
           <MasonryScroller
             key={key}
             positioner={positioner}
