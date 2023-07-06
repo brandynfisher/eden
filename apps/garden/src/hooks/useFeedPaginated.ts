@@ -10,7 +10,7 @@ export type FeedRouteQueryParams = {
   userId?: string
   collectionId?: string
   orderBy?: string
-  direction?: -1 | 1
+  direction?: number
 }
 
 export type PaginatedFeedQuery = {
@@ -46,7 +46,6 @@ export const useFeedPaginated = (
       params.direction = orderBy.direction
     }
 
-    // @todo: add sort
     const queryString = Object.keys(params)
       //@ts-ignore
       .map(key => `${key}=${params[key]}`)
@@ -63,7 +62,7 @@ export const useFeedPaginated = (
 
       return null
     },
-    [pageLimit],
+    [pageLimit, orderBy],
   )
 
   const {
@@ -72,7 +71,7 @@ export const useFeedPaginated = (
     size,
     setSize,
     isLoading,
-  } = useSWRInfinite(getKey, fetcher, { keepPreviousData: true })
+  } = useSWRInfinite(getKey, fetcher)
   const dataArray = data != null ? data.flat() : []
 
   const isLoadingMore =

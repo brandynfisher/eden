@@ -15,7 +15,7 @@ const items: OrderByParam[] = [
   },
   {
     label: 'Praises',
-    field: 'praisesCount',
+    field: 'praiseCount',
     direction: -1,
   },
 ]

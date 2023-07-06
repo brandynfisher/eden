@@ -8,7 +8,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
   // @todo: add sort
-  const { userId, collectionId, page, limit } = req.query
+  const { userId, collectionId, page, limit, orderBy, direction } = req.query
   const authToken = req.session.token
 
   const route = (limit: number, page: number) => {
@@ -26,11 +26,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (collectionId) {
       params.collectionId = String(collectionId)
     }
+    if (orderBy) {
+      params.orderBy = String(orderBy)
+    }
+    if (direction) {
+      params.direction = Number(direction)
+    }
 
     const queryString = Object.keys(params)
       //@ts-ignore
       .map(key => `${key}=${params[key]}`)
       .join('&')
+
     return queryString ? `${basePath}?${queryString}` : basePath
   }
 

@@ -34,7 +34,8 @@ export const paginationProperties = () => {
   return {
     page: { type: 'number' },
     limit: { type: 'number' },
-    sort: { type: 'string' },
+    orderBy: { type: 'string' },
+    direction: { type: 'number' },
   }
 }
 
