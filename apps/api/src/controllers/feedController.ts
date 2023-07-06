@@ -13,7 +13,14 @@ interface FeedGetArguments {
   collectionId?: string
   limit?: number
   page?: number
-  sort?: object
+  orderBy?: OrderByFieldNames
+  direction?: number
+}
+
+type OrderByFieldNames = 'createdAt' | 'praiseCount' | 'bookmarkCount'
+
+interface SortOptions {
+  [key: string]: string | number
 }
 
 export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -22,12 +29,20 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     collectionId,
     limit,
     page,
-    sort,
+    orderBy,
+    direction,
   } = request.query as FeedGetArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId: filterUserIds,
   })
+
+  const sort: SortOptions = {}
+  if (orderBy && direction) {
+    sort[orderBy] = direction
+  } else {
+    sort['createdAt'] = -1
+  }
 
   const collection = await Collection.findById(collectionId)
   const collectionCreations = collection?.creations || undefined
@@ -49,7 +64,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     {
       limit,
       page,
-      sort: sort || { createdAt: -1 },
+      sort,
     },
   )
 

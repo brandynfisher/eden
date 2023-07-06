@@ -14,7 +14,7 @@ const inter = Inter({ subsets: ['latin'] })
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
   return (
     <div className="mt-4">
-      <CreationMasonry query={{ userId: creatorId }} />
+      <CreationMasonry query={{ userId: creatorId }} hasSort={true} />
     </div>
   )
 }

@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 const HomePage = () => {
   return (
     <div className={`flex flex-col min-h-screen ${inter.className}`}>
-      <CreationMasonry />
+      <CreationMasonry hasSort={true} />
     </div>
   )
 }

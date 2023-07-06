@@ -1,3 +1,4 @@
+import { OrderByParam } from '@/components/OrderByButtons'
 import { fetcher } from '@/lib/fetcher'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useCallback } from 'react'
@@ -8,6 +9,8 @@ export type FeedRouteQueryParams = {
   limit?: number
   userId?: string
   collectionId?: string
+  orderBy?: string
+  direction?: number
 }
 
 export type PaginatedFeedQuery = {
@@ -17,7 +20,10 @@ export type PaginatedFeedQuery = {
   limit?: number
 }
 
-export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
+export const useFeedPaginated = (
+  query: PaginatedFeedQuery = {},
+  orderBy: OrderByParam | undefined,
+) => {
   const pageLimit = query?.limit || 10
 
   const route = (limit: number, page: number) => {
@@ -30,17 +36,21 @@ export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
     }
 
     if (query?.userId) {
-      params.userId = query?.userId
+      params.userId = query.userId
     }
     if (query?.collectionId) {
-      params.collectionId = query?.collectionId
+      params.collectionId = query.collectionId
+    }
+    if (orderBy) {
+      params.orderBy = orderBy.field
+      params.direction = orderBy.direction
     }
 
-    // @todo: add sort
     const queryString = Object.keys(params)
       //@ts-ignore
       .map(key => `${key}=${params[key]}`)
       .join('&')
+
     return queryString ? `${basePath}?${queryString}` : basePath
   }
 
@@ -52,7 +62,7 @@ export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
 
       return null
     },
-    [pageLimit],
+    [pageLimit, orderBy],
   )
 
   const {
@@ -61,7 +71,7 @@ export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
     size,
     setSize,
     isLoading,
-  } = useSWRInfinite(getKey, fetcher, { keepPreviousData: true })
+  } = useSWRInfinite(getKey, fetcher)
   const dataArray = data != null ? data.flat() : []
 
   const isLoadingMore =
@@ -71,6 +81,7 @@ export const useFeedPaginated = (query: PaginatedFeedQuery = {}) => {
 
   const maybeLoadMore = useCallback(() => {
     if (isLoadingMore) return
+    if (isEmpty || (data && data.length >= data?.[0]?.pages)) return
     setSize(prevSize => prevSize + 1)
   }, [isLoadingMore])
 

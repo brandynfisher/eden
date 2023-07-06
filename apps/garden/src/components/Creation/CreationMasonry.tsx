@@ -1,35 +1,102 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import OrderByButtons, { OrderByParam } from '@/components/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
+import { useViewportSize } from '@mantine/hooks'
 import { Button, Empty } from 'antd'
-import { Masonry, useInfiniteLoader } from 'masonic'
+import { useInfiniteLoader } from 'masonic'
+import {
+  MasonryScroller,
+  useContainerPosition,
+  usePositioner,
+  useResizeObserver,
+} from 'masonic'
 import Link from 'next/link'
-import React, { useContext } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 
-const CreationMasonry = ({ query }: { query?: PaginatedFeedQuery }) => {
+const CreationMasonry = ({
+  query,
+  hasSort,
+}: {
+  query?: PaginatedFeedQuery
+  hasSort: boolean
+}) => {
+  const containerRef = useRef(null)
+  const [orderBy, setOrderBy] = useState<OrderByParam>()
+  const [key, setKey] = useState(0)
+
   const { isConnected, settings, address } = useContext(UserContext)
+  const isConnectedUser =
+    isConnected && query && query.userId && query.userId === address
+
   const {
     creations,
     maybeLoadMore: maybeLoadNextPage,
     isEmpty,
-  } = useFeedPaginated(query)
-  const isConnectedUser =
-    isConnected && query && query.userId && query.userId === address
+    setSize,
+  } = useFeedPaginated(query, orderBy)
+
+  const { width: windowWidth, height: windowHeight } = useViewportSize()
+  const { offset, width } = useContainerPosition(containerRef, [
+    windowWidth,
+    windowHeight,
+  ])
+
+  const positioner = usePositioner(
+    {
+      width,
+      columnGutter: 12,
+      columnCount: settings?.maxGridCols.value || undefined,
+      maxColumnCount: settings?.maxGridCols.value || 4,
+    },
+    // When these dependencies
+    // change, the positioner cache will be cleared and the
+    // masonry component will reset as a result.
+    [orderBy],
+  )
+  const resizeObserver = useResizeObserver(positioner)
 
   const maybeLoadMore = useInfiniteLoader(
     async () => {
       await maybeLoadNextPage()
     },
     {
-      isItemLoaded: (index, items) => !!items[index],
+      isItemLoaded: (index, items) => {
+        return !!items[index]
+      },
       minimumBatchSize: 12,
       threshold: 4,
     },
   )
 
+  const handleOrderChange = (newOrderBy: OrderByParam) => {
+    setOrderBy(newOrderBy)
+    setSize(1)
+    setKey(key + 1)
+  }
+
   return (
     <>
-      {isEmpty ? (
+      {!isEmpty ? (
+        <>
+          {hasSort && (
+            <OrderByButtons onOrderChange={item => handleOrderChange(item)} />
+          )}
+          <MasonryScroller
+            key={key}
+            positioner={positioner}
+            resizeObserver={resizeObserver}
+            containerRef={containerRef}
+            items={creations}
+            height={windowHeight}
+            offset={offset}
+            overscanBy={1.75}
+            itemHeightEstimate={500}
+            render={CreationCard}
+            onRender={maybeLoadMore}
+          />
+        </>
+      ) : (
         <div className="flex flex-col items-center">
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -51,19 +118,6 @@ const CreationMasonry = ({ query }: { query?: PaginatedFeedQuery }) => {
             }
           />
         </div>
-      ) : (
-        <>
-          <Masonry
-            items={creations}
-            columnCount={settings?.maxGridCols.value || undefined}
-            maxColumnCount={settings?.maxGridCols.value || 4}
-            columnGutter={12}
-            overscanBy={1.75}
-            render={CreationCard}
-            onRender={maybeLoadMore}
-            itemHeightEstimate={500}
-          />
-        </>
       )}
     </>
   )
