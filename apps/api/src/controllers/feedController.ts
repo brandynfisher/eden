@@ -17,7 +17,7 @@ interface FeedGetArguments {
   direction?: number
 }
 
-type OrderByFieldNames = 'createdAt' | 'praiseCount'
+type OrderByFieldNames = 'createdAt' | 'praiseCount' | 'bookmarkCount'
 
 interface SortOptions {
   [key: string]: string | number
@@ -64,7 +64,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     {
       limit,
       page,
-      sort: sort,
+      sort,
     },
   )
 
