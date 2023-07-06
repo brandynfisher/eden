@@ -81,6 +81,7 @@ export const useFeedPaginated = (
 
   const maybeLoadMore = useCallback(() => {
     if (isLoadingMore) return
+    if (isEmpty || (data && data.length >= data?.[0]?.pages)) return
     setSize(prevSize => prevSize + 1)
   }, [isLoadingMore])
 
