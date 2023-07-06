@@ -4,12 +4,11 @@ import { getFileExtension } from '@/lib/getFileExtension'
 import { formatDuration } from '@/lib/time'
 import { Creation } from '@eden-labs/eden-sdk'
 import { Badge } from 'antd'
-import React from 'react'
 
 const VideoLengthBadge = ({ duration }: { duration?: number }) => {
   return (
-    <Badge size="small" className="rounded-full">
-      <span className="inline-block bg-gray-800 text-white px-2 py-1 rounded-full">
+    <Badge className="rounded-full mx-2 mt-2 anim-slide-fade-down h-[32px] flex items-center">
+      <span className="text-xs inline-block bg-gray-700 text-gray-300 px-2 py-1 rounded-full opacity-90">
         {duration ? formatDuration(duration) : '0:00'}
       </span>
     </Badge>
@@ -31,7 +30,7 @@ const VideoPreview = ({
           <VideoResult resultUrl={creation.uri || ''} disableControls />
         </div>
       )}
-      <div className="absolute top-0 left-0 p-1">
+      <div className="absolute inset-0 flex flex-col justify-between z-10 items-center">
         <VideoLengthBadge duration={creation.mediaAttributes.duration ?? 0} />
       </div>
     </div>
