@@ -11,17 +11,18 @@ import {
 import { Task } from '@eden-labs/eden-sdk'
 import { Button, Dropdown, Menu, Progress, Space, Spin } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
-import { useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const CompletedTaskMenuItem = ({
+  router,
   task,
   handleDismiss,
 }: {
+  router: NextRouter
   task: Task
   handleDismiss: (taskId: string) => void
 }) => {
-  const router = useRouter()
   const creationId = task.creation?._id
 
   const handleViewCreation = async () => {
@@ -38,7 +39,7 @@ const CompletedTaskMenuItem = ({
 
   if (!task.creation) return null
   return (
-    <div>
+    <div key={task._id}>
       <div
         onClick={handleViewCreation}
         className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
@@ -107,7 +108,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           {task._id}
         </div>
         {CONFIG.DEV_TYPE === 'dummy' && (
-          <TestGeneratorFinishButton taskId={task._id} />
+          <TestGeneratorFinishButton taskId={task.taskId} />
         )}
       </div>
     </div>
@@ -115,6 +116,8 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
 }
 
 const TaskNotificationDropdown = () => {
+  const router = useRouter()
+
   const { pendingTasks, completedTasks, setCompletedTasks } = useContext(
     CreationNotificationContext,
   )
@@ -138,7 +141,9 @@ const TaskNotificationDropdown = () => {
     : []
 
   const completedTaskItems = completedTasks
-    ? completedTasks.map(task => CompletedTaskMenuItem({ task, handleDismiss }))
+    ? completedTasks.map(task =>
+        CompletedTaskMenuItem({ task, handleDismiss, router }),
+      )
     : []
 
   return (

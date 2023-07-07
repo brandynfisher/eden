@@ -49,9 +49,6 @@ const CreationMasonry = ({
       columnCount: settings?.maxGridCols.value || undefined,
       maxColumnCount: settings?.maxGridCols.value || 4,
     },
-    // When these dependencies
-    // change, the positioner cache will be cleared and the
-    // masonry component will reset as a result.
     [orderBy],
   )
   const resizeObserver = useResizeObserver(positioner)
@@ -81,6 +78,7 @@ const CreationMasonry = ({
     <>
       {!isEmpty ? (
         <>
+          {creations && !creations.length && <div>has Elements</div>}
           {hasSort && (
             <OrderByButtons onOrderChange={item => handleOrderChange(item)} />
           )}
