@@ -1,7 +1,6 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { getFileExtension } from '@/lib/getFileExtension'
-import React from 'react'
 
 const MediaDisplay = ({ creationUri }: { creationUri: string }) => {
   const renderPreview = () => {

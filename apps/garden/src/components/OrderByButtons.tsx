@@ -37,9 +37,9 @@ const OrderByButton = ({
   return (
     <Button
       onClick={onSelect}
-      className={`h-auto !text-xs px-4 text-black bg-gray-200 dark:text-gray-300 hover:!text-gray-100 hover:!bg-gray-500 dark:bg-gray-900 hover:dark:!bg-gray-800 ${
+      className={`h-auto !text-xs px-4 text-black bg-gray-200 dark:text-gray-300 dark:bg-gray-900 hover:!text-gray-100 hover:!bg-gray-500  hover:dark:!bg-gray-800 ${
         isActive
-          ? 'text-white bg-gray-900 dark:bg-gray-700 hover:dark:!bg-gray-700 hover:!bg-gray-500'
+          ? 'text-white bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-700 dark:!bg-gray-700'
           : ''
       }`}
     >

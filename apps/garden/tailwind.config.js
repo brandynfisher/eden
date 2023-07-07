@@ -1,3 +1,5 @@
+import defaultTheme from 'tailwindcss/defaultTheme'
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -10,7 +12,10 @@ module.exports = {
     preflight: false,
   },
   theme: {
-    extend: {},
+    screens: {
+      'xs': '412px',
+      ...defaultTheme.screens,
+    },
   },
   plugins: [],
 }
