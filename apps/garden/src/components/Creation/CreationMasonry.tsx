@@ -70,9 +70,11 @@ const CreationMasonry = ({
   )
 
   const handleOrderChange = (newOrderBy: OrderByParam) => {
-    setOrderBy(newOrderBy)
-    setSize(1)
-    setKey(key + 1)
+    if (newOrderBy.field !== orderBy?.field) {
+      setOrderBy(newOrderBy)
+      setSize(1)
+      setKey(key + 1)
+    }
   }
 
   return (
@@ -90,7 +92,7 @@ const CreationMasonry = ({
             items={creations}
             height={windowHeight}
             offset={offset}
-            overscanBy={1.75}
+            overscanBy={3}
             itemHeightEstimate={500}
             render={CreationCard}
             onRender={maybeLoadMore}

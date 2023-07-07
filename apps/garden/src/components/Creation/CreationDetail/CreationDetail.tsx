@@ -54,8 +54,6 @@ const MediaViewer = ({
 }
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
-  // @todo: refetch after reactions (or consider global store) to avoid this.
-  //  it doesnt work right as is anyway because the parent is not notified of the change
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
@@ -121,8 +119,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                   Object.entries(creationData.task.config).map(([key, val]) => (
                     <div key={`cfg-${key}`} className="mb-4 last:mb-0">
                       <div className="text-gray-500 capitalize">{key}</div>
-                      {/*// @ts-ignore: @todo: fix the feed response type*/}
-                      <div>{val}</div>
+                      <div>{JSON.stringify(val)}</div>
                     </div>
                   ))}
               </div>
