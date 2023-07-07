@@ -78,7 +78,6 @@ const CreationMasonry = ({
     <>
       {!isEmpty ? (
         <>
-          {creations && !creations.length && <div>has Elements</div>}
           {hasSort && (
             <OrderByButtons onOrderChange={item => handleOrderChange(item)} />
           )}
