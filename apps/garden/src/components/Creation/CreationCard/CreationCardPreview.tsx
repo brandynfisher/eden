@@ -7,10 +7,10 @@ import { Badge } from 'antd'
 
 const VideoLengthBadge = ({ duration }: { duration?: number }) => {
   return (
-    <Badge className="rounded-full mx-2 mt-2 anim-slide-fade-down h-[32px] flex items-center">
-      <span className="text-xs inline-block bg-gray-700 text-gray-300 px-2 py-1 rounded-full opacity-90">
+    <Badge className="rounded-full mx-2 mt-2 anim-slide-fade-down h-[32px] flex items-center pointer-events-none">
+      <div className="text-xs text-gray-300 opacity-70 flex bg-gray-950 px-2 py-1 rounded-xl">
         {duration ? formatDuration(duration) : '0:00'}
-      </span>
+      </div>
     </Badge>
   )
 }

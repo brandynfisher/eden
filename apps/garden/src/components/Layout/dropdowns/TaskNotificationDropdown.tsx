@@ -1,4 +1,6 @@
+import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/TestGeneratorFinishButton'
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
+import { CONFIG } from '@/lib/config'
 import { durationBetweenDates, durationSinceDate } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {
@@ -86,7 +88,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
 
   return (
     <div
-      className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
+      className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
       style={{ minWidth: '240px' }}
     >
       <div className="flex justify-between items-center">
@@ -100,8 +102,13 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
         status="active"
         className="mt-1 flex items-center"
       />
-      <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-        {task._id}
+      <div className="flex justify-between items-center">
+        <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
+          {task._id}
+        </div>
+        {CONFIG.DEV_TYPE === 'dummy' && (
+          <TestGeneratorFinishButton taskId={task._id} />
+        )}
       </div>
     </div>
   )

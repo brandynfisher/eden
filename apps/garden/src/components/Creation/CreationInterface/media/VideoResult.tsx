@@ -8,11 +8,11 @@ const VideoResult = ({
   return (
     <video
       src={resultUrl}
-      style={{ width: '100%', height: 'auto' }}
+      style={{ width: '100%', height: '100%' }}
       autoPlay={true}
       muted={true}
       loop={true}
-      controls={disableControls ? false : true}
+      controls={!disableControls}
     />
   )
 }
