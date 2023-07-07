@@ -64,8 +64,8 @@ const CreationMasonry = ({
       isItemLoaded: (index, items) => {
         return !!items[index]
       },
-      minimumBatchSize: 12,
-      threshold: 4,
+      minimumBatchSize: 16,
+      threshold: 16,
     },
   )
 
@@ -92,8 +92,8 @@ const CreationMasonry = ({
             items={creations}
             height={windowHeight}
             offset={offset}
-            overscanBy={3}
-            itemHeightEstimate={500}
+            overscanBy={4}
+            itemHeightEstimate={400}
             render={CreationCard}
             onRender={maybeLoadMore}
           />
