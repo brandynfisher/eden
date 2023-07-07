@@ -11,7 +11,7 @@ const ProfileHeader = ({
 }: {
   creatorId: string
   creatorDisplayName: string
-  // isConnectedUser: boolean
+  isConnectedUser: boolean
   numCreations: number | undefined
 }) => {
   return (
