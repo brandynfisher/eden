@@ -53,7 +53,7 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
   }
 
   return (
-    <div className="flex dark:text-gray-400 items-center mt-2 gap-2 justify-between">
+    <div className="flex dark:text-gray-400 items-center gap-2 justify-between">
       <div className="flex gap-2">
         <div className="text-xs md:text-sm flex-shrink-0">
           <strong>{followerCount || 0}</strong> Followers

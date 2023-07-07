@@ -245,3 +245,15 @@ body {
 .link-card .ant-card-cover {
     flex-grow: 1
 }
+
+.scaled-canvas {
+    transform: scale(0.5) translate(-18px, -18px);
+    transform-origin: center;
+}
+
+.line-clamp-3 {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    overflow: hidden;
+}

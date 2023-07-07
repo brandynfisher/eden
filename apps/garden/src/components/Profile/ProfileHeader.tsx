@@ -22,7 +22,7 @@ const ProfileHeader = ({
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">
           <ProfileHeaderName
-            // isOwnProfile={isConnectedUser}
+            // isOwnProfile={isConnectedUser}mm
             displayName={creatorDisplayName}
           />
           <div className="">

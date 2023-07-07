@@ -85,7 +85,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
             </div>
           </div>
         </div>
-        <div className="xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
+        <div className="mx-auto md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
           <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
             <CreationReactions
               creation={creationData}
@@ -93,22 +93,22 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
             />
           </div>
 
-          <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
-            <div className="overflow-hidden flex items-center">
+          <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
+            <div className="overflow-hidden flex items-center flex-shrink-0">
               <div className="min-w-0">
                 <CreatorProfileLink creatorId={creationData.user.userId} />
               </div>
             </div>
-            <div>
+            <div className="xl:w-full flex-shrink-0">
               <FollowControls creatorId={creationData.user.userId} />
             </div>
           </div>
           <div
-            className={`col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative ${
+            className={`col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4 ${
               !isRevealed ? 'overflow-y-hidden max-h-[220px]' : ''
             }`}
           >
-            <div>
+            <div style={{ wordWrap: 'break-word' }}>
               <div className="flex justify-between items-center">
                 <div className="font-bold">
                   /{creation.task.generator?.generatorName}
@@ -116,7 +116,28 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                 <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
               </div>
               <Divider className="my-4" />
-              <div>
+              <div
+                title={creation.name}
+                className="relative first-letter:uppercase text-sm select-text cursor-text mb-1 w-full line-clamp-3 flex text-ellipsis"
+              >
+                {creation.name}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex w-full justify-center items-center mb-4">
+            <Button
+              type="dashed"
+              className="dark:text-gray-400"
+              onClick={() => setIsRevealed(!isRevealed)}
+            >
+              {isRevealed ? 'Hide' : 'Show'} configuration
+            </Button>
+          </div>
+
+          {isRevealed && (
+            <>
+              <div className="p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
                 {creationData.task.config &&
                   Object.entries(creationData.task.config).map(([key, val]) => (
                     <div key={`cfg-${key}`} className="mb-4 last:mb-0">
@@ -125,29 +146,17 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                     </div>
                   ))}
               </div>
-            </div>
-            {!isRevealed && (
-              <div className="bg-gradient-to-t from-gray-300 dark:from-black via-gray-300 dark:via-black to-transparent absolute inset-0 rounded-b-lg mt-32">
-                <div className="flex w-full justify-center items-end h-full">
-                  <Button
-                    type="dashed"
-                    className="mb-4 dark:text-gray-400"
-                    onClick={() => setIsRevealed(true)}
-                  >
-                    Show more
-                  </Button>
-                </div>
+
+              <div className="flex w-full justify-center items-center h-full my-4">
+                <Button
+                  type="dashed"
+                  className="dark:text-gray-400"
+                  onClick={() => setIsRevealed(false)}
+                >
+                  Hide configuration
+                </Button>
               </div>
-            )}
-          </div>
-          {isRevealed && (
-            <Button
-              type="dashed"
-              className="mt-4 dark:text-gray-400"
-              onClick={() => setIsRevealed(false)}
-            >
-              Show less
-            </Button>
+            </>
           )}
         </div>
       </div>

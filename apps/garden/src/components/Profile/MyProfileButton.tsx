@@ -34,9 +34,9 @@ const MyProfileButton = () => {
 
   return (
     <Link href="/me" passHref>
-      <Button type="text" className="flex justify-center px-2 h-full">
+      <div className="flex justify-center px-2 h-8 w-8">
         <ProfileAvatar seed={address || ''} />
-      </Button>
+      </div>
     </Link>
   )
 }
