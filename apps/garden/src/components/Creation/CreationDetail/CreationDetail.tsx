@@ -42,14 +42,6 @@ const MediaViewer = ({
         className="fixed inset-0 w-screen h-screen flex items-center z-50 cursor-zoom-out"
       >
         <div className="flex w-full justify-center">
-          {/* @todo: use mediapreview */}
-          {/*<img*/}
-          {/*  src={creation.uri}*/}
-          {/*  alt={creation.name}*/}
-          {/*  className={`transition-all duration-125 scale-90 opacity-0 ${*/}
-          {/*    isVisible ? '!opacity-100 !scale-100' : ''*/}
-          {/*  } object-contain h-auto w-auto max-w-[calc(100vw-30px)] max-h-[calc(100vh-60px)]`}*/}
-          {/*/>*/}
           <div
             className={`transition-all duration-125 scale-90 opacity-0 ${
               isVisible ? '!opacity-100 !scale-100' : ''
