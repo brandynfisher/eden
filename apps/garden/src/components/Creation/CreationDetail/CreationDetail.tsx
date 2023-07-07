@@ -140,9 +140,21 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
               <div className="p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
                 {creationData.task.config &&
                   Object.entries(creationData.task.config).map(([key, val]) => (
-                    <div key={`cfg-${key}`} className="mb-4 last:mb-0">
-                      <div className="text-gray-500 capitalize">{key}</div>
-                      <div>{JSON.stringify(val)}</div>
+                    <div
+                      key={`cfg-${key}`}
+                      className="py-1 m-0 last:mb-0 justify-between grid xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-2"
+                    >
+                      <div className="text-gray-500 capitalize flex-shrink-0">
+                        {key}
+                      </div>
+                      <div
+                        className={`break-words  line-clamp-3 ${
+                          JSON.stringify(val).length > 17 ? 'col-span-2' : ''
+                        }`}
+                        title={JSON.stringify(val)}
+                      >
+                        {JSON.stringify(val)}
+                      </div>
                     </div>
                   ))}
               </div>

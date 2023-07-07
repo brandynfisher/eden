@@ -25,7 +25,7 @@ const CreationCardDetail = ({
 
         <div
           title={creation.name}
-          className="relative first-letter:uppercase text-xs select-text cursor-text mb-1 w-full line-clamp-3 flex text-ellipsis text-gray-300"
+          className="flex relative first-letter:uppercase text-xs select-text  cursor-text mb-1 w-full text-ellipsis text-gray-300 break-words"
         >
           {creation.name}
         </div>
