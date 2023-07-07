@@ -42,7 +42,7 @@ const CollectionPage = ({ collectionId }: { collectionId: string }) => {
           deleteLoading={deleteLoading}
         />
         <div className="mt-4">
-          <CreationMasonry query={{ collectionId }} />
+          <CreationMasonry query={{ collectionId }} hasSort={true} />
         </div>
       </Space>
     </div>
