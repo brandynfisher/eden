@@ -74,9 +74,7 @@ const ConfigParamsTextTabContent = ({
               key={`cfg-${key}`}
               className="py-2 px-4 m-0 last:mb-0 justify-between grid xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 [&:nth-child(odd)]:dark:bg-gray-900 [&:nth-child(even)]:dark:bg-gray-950 [&:nth-child(odd)]:bg-gray-50 [&:nth-child(even)]:bg-gray-100"
             >
-              <div className="text-gray-500 capitalize flex-shrink-0">
-                {key}
-              </div>
+              <div className="text-gray-500 flex-shrink-0">{key}</div>
               <div
                 className={`break-words px-1 line-clamp-3 ${
                   configValue.length > 17 ? 'col-span-2' : ''
@@ -110,7 +108,7 @@ const ConfigParamsCodeTabContent = ({
   return (
     <div className="relative">
       <Button
-        className="absolute right-6 top-4 flex items-center"
+        className="absolute right-6 top-2 flex items-center"
         onClick={handleCopyClick}
         title={'Copy'}
       >
@@ -252,7 +250,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                 />
               </div>
 
-              <div className="flex w-full justify-center items-center h-full my-4">
+              <div className="flex w-full justify-center items-center my-4">
                 <Button
                   type="dashed"
                   className="dark:text-gray-400"
