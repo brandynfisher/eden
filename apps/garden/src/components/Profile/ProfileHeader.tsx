@@ -26,7 +26,7 @@ const ProfileHeader = ({
             displayName={creatorDisplayName}
           />
           <div className="">
-            <div className="text-sm mt-1">
+            <div className="text-sm my-1">
               <strong>{numCreations || 0}</strong> Creations
             </div>
             <div className="col-span-full sm:col-span-1">
