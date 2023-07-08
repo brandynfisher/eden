@@ -2,7 +2,13 @@ import ImageResult from '@/components/Creation/CreationInterface/media/ImageResu
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { getFileExtension } from '@/lib/getFileExtension'
 
-const MediaDisplay = ({ creationUri }: { creationUri: string }) => {
+const MediaDisplay = ({
+  creationUri,
+  fullscreen,
+}: {
+  creationUri: string
+  fullscreen?: boolean
+}) => {
   const renderPreview = () => {
     if (!creationUri) return null
     const extension = getFileExtension(creationUri)
@@ -15,8 +21,14 @@ const MediaDisplay = ({ creationUri }: { creationUri: string }) => {
   }
 
   return (
-    <div className="media-display max-h-full max-w-full rounded-xl overflow-hidden">
-      {renderPreview()}
+    <div
+      className={`media-display ${
+        fullscreen
+          ? 'flex justify-center w-[calc(100vw-30px)] h-[calc(100vh-60px)]'
+          : 'max-h-full max-w-full'
+      }`}
+    >
+      <div className="flex rounded-xl overflow-hidden">{renderPreview()}</div>
     </div>
   )
 }

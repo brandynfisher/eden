@@ -50,7 +50,7 @@ const MediaViewer = ({
               isVisible ? '!opacity-100 !scale-100' : ''
             } object-contain h-auto w-auto max-w-[calc(100vw-30px)] max-h-[calc(100vh-60px)]`}
           >
-            <MediaDisplay creationUri={creation.uri} />
+            <MediaDisplay creationUri={creation.uri} fullscreen={true} />
           </div>
         </div>
       </div>
@@ -189,7 +189,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
             </div>
           </div>
         </div>
-        <div className="mx-auto md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
+        <div className="mx-auto xl:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
           <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
             <CreationReactions
               creation={creationData}
