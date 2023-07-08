@@ -3,8 +3,10 @@ import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { durationSinceDate } from '@/lib/time'
+import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation } from '@eden-labs/eden-sdk'
-import { Button, Divider } from 'antd'
+import { useClipboard } from '@mantine/hooks'
+import { App, Button, Divider, Tabs } from 'antd'
 import React, { useEffect, useState } from 'react'
 
 const MediaViewer = ({
@@ -55,11 +57,110 @@ const MediaViewer = ({
   )
 }
 
+const ConfigParamsTextTabContent = ({
+  creationData,
+}: {
+  creationData: Creation
+}) => {
+  return (
+    <>
+      {creationData.task.config &&
+        Object.entries(creationData.task.config).map(([key, val]) => {
+          const configValue = JSON.stringify(val)
+
+          return (
+            <div
+              key={`cfg-${key}`}
+              className="py-2 px-4 m-0 last:mb-0 justify-between grid xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 [&:nth-child(odd)]:dark:bg-gray-900 [&:nth-child(even)]:dark:bg-gray-950 [&:nth-child(odd)]:bg-gray-50 [&:nth-child(even)]:bg-gray-100"
+            >
+              <div className="text-gray-500 capitalize flex-shrink-0">
+                {key}
+              </div>
+              <div
+                className={`break-words px-1 line-clamp-3 ${
+                  configValue.length > 17 ? 'col-span-2' : ''
+                }`}
+                title={configValue}
+              >
+                {configValue}
+              </div>
+            </div>
+          )
+        })}
+    </>
+  )
+}
+
+// const ConfigParamsEdenSDKTabContent = ({creationData}:{creationData:Creation}) => {
+//   return (
+//     <>
+//       eden sdk script
+//     </>
+//   )
+// }
+
+const ConfigParamsJSONTabContent = ({
+  creationData,
+}: {
+  creationData: Creation
+}) => {
+  const { message } = App.useApp()
+  const { copied, copy } = useClipboard({ timeout: 750 })
+
+  const configData = JSON.stringify(creationData.task.config, null, 2)
+
+  const handleCopyClick = async () => {
+    await copy(configData)
+
+    message.destroy()
+    message.success(`Copied JSON to clipboard!`)
+  }
+
+  return (
+    <div className="relative">
+      <Button
+        className="absolute right-6 top-2 flex ml-4 mb-2 items-center"
+        onClick={handleCopyClick}
+        title={'Copy'}
+      >
+        {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+      </Button>
+      <pre className="px-4">
+        <code
+          className="p-4 text-gray-600 dark:text-gray-400 bg-gray-200 dark:bg-gray-900 cursor-pointer rounded-xl"
+          onClick={handleCopyClick}
+          title={'Copy'}
+        >
+          {configData}
+        </code>
+      </pre>
+    </div>
+  )
+}
+
 const CreationDetail = ({ creation }: { creation: Creation }) => {
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = durationSinceDate(creation.createdAt)
+
+  const items = [
+    {
+      key: '1',
+      label: `Text`,
+      children: <ConfigParamsTextTabContent creationData={creationData} />,
+    },
+    {
+      key: '2',
+      label: `JSON`,
+      children: <ConfigParamsJSONTabContent creationData={creationData} />,
+    },
+    // {
+    //   key: '3',
+    //   label: `Eden SDK`,
+    //   children: <ConfigParamsEdenSDKTabContent creationData={creationData}/>,
+    // },
+  ]
 
   const showMediaViewer = () => {
     setMediaViewerVisible(true)
@@ -67,6 +168,10 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
 
   const hideMediaViewer = () => {
     setMediaViewerVisible(false)
+  }
+
+  const onConfigurationTabChange = () => {
+    // console.log('onConfigurationTabChange', key)
   }
 
   return (
@@ -137,26 +242,13 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
 
           {isRevealed && (
             <>
-              <div className="p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
-                {creationData.task.config &&
-                  Object.entries(creationData.task.config).map(([key, val]) => (
-                    <div
-                      key={`cfg-${key}`}
-                      className="py-1 m-0 last:mb-0 justify-between grid xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-2"
-                    >
-                      <div className="text-gray-500 capitalize flex-shrink-0">
-                        {key}
-                      </div>
-                      <div
-                        className={`break-words  line-clamp-3 ${
-                          JSON.stringify(val).length > 17 ? 'col-span-2' : ''
-                        }`}
-                        title={JSON.stringify(val)}
-                      >
-                        {JSON.stringify(val)}
-                      </div>
-                    </div>
-                  ))}
+              <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden">
+                <Tabs
+                  centered
+                  defaultActiveKey="1"
+                  items={items}
+                  onChange={onConfigurationTabChange}
+                />
               </div>
 
               <div className="flex w-full justify-center items-center h-full my-4">
