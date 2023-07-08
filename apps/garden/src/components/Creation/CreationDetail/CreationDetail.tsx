@@ -1,10 +1,11 @@
+import CodeBlock from '@/components/CodeBlock'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { durationSinceDate } from '@/lib/time'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation, Task } from '@eden-labs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Divider, Tabs } from 'antd'
 import React, { useEffect, useState } from 'react'
@@ -91,51 +92,45 @@ const ConfigParamsTextTabContent = ({
   )
 }
 
-// const ConfigParamsEdenSDKTabContent = ({creationData}:{creationData:Creation}) => {
-//   return (
-//     <>
-//       eden sdk script
-//     </>
-//   )
-// }
-
-const ConfigParamsJSONTabContent = ({
-  creationData,
+const ConfigParamsCodeTabContent = ({
+  taskConfig,
 }: {
-  creationData: Creation
+  taskConfig: Task['config']
 }) => {
   const { message } = App.useApp()
   const { copied, copy } = useClipboard({ timeout: 750 })
 
-  const configData = JSON.stringify(creationData.task.config, null, 2)
-
   const handleCopyClick = async () => {
-    await copy(configData)
+    await copy(taskConfig)
 
     message.destroy()
-    message.success(`Copied JSON to clipboard!`)
+    message.success(`Copied to clipboard!`)
   }
 
   return (
     <div className="relative">
       <Button
-        className="absolute right-6 top-2 flex ml-4 mb-2 items-center"
+        className="absolute right-6 top-4 flex items-center"
         onClick={handleCopyClick}
         title={'Copy'}
       >
         {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
       </Button>
-      <pre className="px-4">
-        <code
-          className="p-4 text-gray-600 dark:text-gray-400 bg-gray-200 dark:bg-gray-900 cursor-pointer rounded-xl"
-          onClick={handleCopyClick}
-          title={'Copy'}
-        >
-          {configData}
-        </code>
-      </pre>
+      <div className="px-4 mb-2 ">
+        <CodeBlock code={taskConfig} language="javascript" />
+      </div>
     </div>
   )
+}
+
+const createEdenSdkCodeSnippet = (taskConfig: Task['config']) => {
+  return `import {EdenClient} from "eden-sdk";
+
+const eden = new EdenClient();
+
+const config = ${taskConfig}
+
+const result = await eden.create("create", config);`
 }
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
@@ -143,6 +138,8 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = durationSinceDate(creation.createdAt)
+
+  const formattedTaskConfig = JSON.stringify(creationData.task.config, null, 2)
 
   const items = [
     {
@@ -153,13 +150,17 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
     {
       key: '2',
       label: `JSON`,
-      children: <ConfigParamsJSONTabContent creationData={creationData} />,
+      children: <ConfigParamsCodeTabContent taskConfig={formattedTaskConfig} />,
     },
-    // {
-    //   key: '3',
-    //   label: `Eden SDK`,
-    //   children: <ConfigParamsEdenSDKTabContent creationData={creationData}/>,
-    // },
+    {
+      key: '3',
+      label: `Eden SDK`,
+      children: (
+        <ConfigParamsCodeTabContent
+          taskConfig={createEdenSdkCodeSnippet(formattedTaskConfig)}
+        />
+      ),
+    },
   ]
 
   const showMediaViewer = () => {
