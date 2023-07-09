@@ -1,7 +1,8 @@
 import {
   CheckCircleOutlined,
   CopyOutlined,
-  DownloadOutlined, // ExperimentOutlined,
+  DownloadOutlined,
+  ExperimentOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons'
 import { Creation } from '@eden-labs/eden-sdk'
@@ -28,8 +29,6 @@ const handleDownload = async (url: string, fileName: string) => {
     console.error('Error downloading creation:', error)
   }
 }
-
-// const [showModal, setShowModal] = useState(false);
 
 const shareNative = async (pageUrl: string) => {
   try {
@@ -60,9 +59,14 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
     await shareNative(pageUrl)
   }
 
-  // const handleCreate = (creation:Creation) => {
-  //
-  // }
+  const handleCreate = async (creation: Creation) => {
+    await router.push('/create', {
+      query: {
+        generatorName: 'remix',
+        parentCreationId: creation._id,
+      },
+    })
+  }
 
   useEffect(() => {
     const host = window.location.host
@@ -98,13 +102,13 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
         await handleDownload(creation.uri, creation._id)
       },
     },
-    // {
-    //   title: 'Create',
-    //   icon: <ExperimentOutlined className="text-xl"/>,
-    //   onClick: async () => {
-    //     await handleCreate(creation)
-    //   }
-    // },
+    {
+      title: 'Create',
+      icon: <ExperimentOutlined className="text-xl" />,
+      onClick: async () => {
+        await handleCreate(creation)
+      },
+    },
   ]
 
   return (

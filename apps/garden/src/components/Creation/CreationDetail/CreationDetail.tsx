@@ -4,6 +4,7 @@ import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import { getFileExtension } from '@/lib/getFileExtension'
 import { durationSinceDate } from '@/lib/time'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation, Task } from '@eden-labs/eden-sdk'
@@ -174,6 +175,12 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
     // console.log('onConfigurationTabChange', key)
   }
 
+  const isImage = (creationUri: string) => {
+    if (!creationUri) return null
+    const extension = getFileExtension(creationUri)
+    return extension === 'jpg'
+  }
+
   return (
     <>
       {mediaViewerVisible && (
@@ -183,7 +190,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
         <div className="w-full flex justify-center xl:justify-normal xl:w-auto items-start">
           <div className="inline-flex mb-4 max-h-72vh xl:max-h-88vh">
             <div
-              onClick={showMediaViewer}
+              onClick={isImage(creation.uri) ? showMediaViewer : () => null}
               className="flex justify-center xl:justify-end overflow-hidden cursor-zoom-in"
             >
               <MediaDisplay creationUri={creationData.uri} />
