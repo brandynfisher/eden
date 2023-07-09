@@ -64,7 +64,7 @@ const CompletedTaskMenuItem = ({
               </div>
               <div className="flex min-w-0 truncate mt-1">
                 <div className="text-xs text-gray-800 dark:text-gray-400 truncate">
-                  {task._id}
+                  {task.creation?.name}
                 </div>
               </div>
             </div>

@@ -72,7 +72,7 @@ const ConfigParamsTextTabContent = ({
           return (
             <div
               key={`cfg-${key}`}
-              className="py-2 px-4 m-0 last:mb-0 justify-between grid xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 [&:nth-child(odd)]:dark:bg-gray-900 [&:nth-child(even)]:dark:bg-gray-950 [&:nth-child(odd)]:bg-gray-50 [&:nth-child(even)]:bg-gray-100"
+              className="py-2 px-4 m-0 first:pt-0 xl last:mb-0 justify-between grid xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-2  [&:nth-child(even)]:bg-gray-50 [&:nth-child(even)]:dark:bg-gray-900"
             >
               <div className="text-gray-500 flex-shrink-0">{key}</div>
               <div
@@ -203,7 +203,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                 <CreatorProfileLink creatorId={creationData.user.userId} />
               </div>
             </div>
-            <div className="xl:w-full flex-shrink-0">
+            <div className="flex items-center xl:w-full flex-shrink-0">
               <FollowControls creatorId={creationData.user.userId} />
             </div>
           </div>
@@ -241,7 +241,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
 
           {isRevealed && (
             <>
-              <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden">
+              <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden text-xs">
                 <Tabs
                   centered
                   defaultActiveKey="1"

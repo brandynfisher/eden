@@ -28,7 +28,13 @@ const MediaDisplay = ({
           : 'max-h-full max-w-full'
       }`}
     >
-      <div className="flex rounded-xl overflow-hidden">{renderPreview()}</div>
+      <div
+        className={`flex rounded-xl overflow-hidden ${
+          fullscreen ? '' : 'max-h-full max-w-full'
+        }`}
+      >
+        {renderPreview()}
+      </div>
     </div>
   )
 }
