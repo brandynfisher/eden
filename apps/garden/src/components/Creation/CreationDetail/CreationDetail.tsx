@@ -1,4 +1,5 @@
 import CodeBlock from '@/components/CodeBlock'
+import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
@@ -203,15 +204,12 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                 <CreatorProfileLink creatorId={creationData.user.userId} />
               </div>
             </div>
-            <div className="flex items-center xl:w-full flex-shrink-0">
+            <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
               <FollowControls creatorId={creationData.user.userId} />
             </div>
           </div>
-          <div
-            className={`col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4 ${
-              !isRevealed ? 'overflow-y-hidden max-h-[220px]' : ''
-            }`}
-          >
+
+          <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
             <div style={{ wordWrap: 'break-word' }}>
               <div className="flex justify-between items-center">
                 <div className="font-bold">
@@ -227,6 +225,10 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                 {creation.name}
               </div>
             </div>
+          </div>
+
+          <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+            <CreationDetailToolButtons creation={creation} />
           </div>
 
           <div className="flex w-full justify-center items-center mb-4">
