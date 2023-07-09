@@ -60,7 +60,8 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   }
 
   const handleCreate = async (creation: Creation) => {
-    await router.push('/create', {
+    await router.push({
+      pathname: '/create',
       query: {
         generatorName: 'remix',
         parentCreationId: creation._id,
