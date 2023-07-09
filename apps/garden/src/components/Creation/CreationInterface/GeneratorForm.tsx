@@ -125,7 +125,7 @@ const GeneratorForm = ({
   }
 
   const renderFormFields = useCallback(
-    (parameters: GeneratorParameter[]) => {
+    (parameters: GeneratorParameter[], isOptional: boolean) => {
       return parameters.map(parameter => {
         if (config) {
           const presetParameter = Object.entries(config).filter(
@@ -137,10 +137,16 @@ const GeneratorForm = ({
           }
         }
 
+        if (!presetConfig && isOptional && !showOptional) {
+          return
+        }
+
         return (
           <div
             key={parameter.name}
-            className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md mb-6"
+            className={`bg-gray-100 dark:bg-gray-900 p-4 rounded-md mb-6 ${
+              !showOptional && isOptional ? 'hidden' : ''
+            }`}
           >
             {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
             parameter.allowedValuesFrom ? (
@@ -187,7 +193,7 @@ const GeneratorForm = ({
         )
       })
     },
-    [config],
+    [config, showOptional],
   )
 
   return (
@@ -218,7 +224,7 @@ const GeneratorForm = ({
           </div>,
         ]}
       >
-        {renderFormFields(requiredParameters)}
+        {renderFormFields(requiredParameters, false)}
         {optionalParameters.length > 0 && (
           <>
             {showOptional ? (
@@ -234,7 +240,7 @@ const GeneratorForm = ({
             )}
           </>
         )}
-        {showOptional && renderFormFields(optionalParameters)}
+        {renderFormFields(optionalParameters, true)}
       </Card>
     </Form>
   )
