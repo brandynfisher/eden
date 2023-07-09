@@ -96,6 +96,7 @@ const UploadParameter = (props: {
       <Row>
         <Form.Item
           className="mb-2"
+          initialValue={props.parameter.default}
           label={props.parameter.label}
           name={props.parameter.name}
           rules={[

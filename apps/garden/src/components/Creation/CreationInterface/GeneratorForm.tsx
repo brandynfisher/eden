@@ -10,12 +10,18 @@ import {
   ExperimentOutlined,
   UpCircleOutlined,
 } from '@ant-design/icons'
-import { Generator, GeneratorParameter } from '@eden-labs/eden-sdk'
+import { Generator, GeneratorParameter, Task } from '@eden-labs/eden-sdk'
 import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 
-const GeneratorForm = ({ generator }: { generator: Generator }) => {
+const GeneratorForm = ({
+  generator,
+  presetConfig,
+}: {
+  generator: Generator
+  presetConfig?: Task['config']
+}) => {
   const {
     taskIds,
     setTaskIds,
@@ -26,16 +32,48 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
   const { message } = App.useApp()
   const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
   const [form] = Form.useForm()
-  const selectedVersion = generator.versions[0]
-  const { parameters } = selectedVersion
-  const requiredParameters = parameters.filter(
-    parameter => parameter.isRequired,
-  )
-  const optionalParameters = parameters.filter(
-    parameter => !parameter.isRequired,
-  )
-  const [showOptional, setShowOptional] = React.useState(false)
+  const [config, setConfig] = useState(presetConfig)
+  const [initialParams, setInitialParams] = useState<GeneratorParameter[]>([])
+  const [requiredParameters, setRequiredParams] = useState<
+    GeneratorParameter[]
+  >([])
+  const [optionalParameters, setOptionalParams] = useState<
+    GeneratorParameter[]
+  >([])
 
+  const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
+    if (!currentGenerator) return
+
+    const selectedVersion = currentGenerator.versions[0]
+
+    if (!selectedVersion) return
+
+    const { parameters } = selectedVersion
+
+    if (!parameters.length) return
+
+    return [
+      ...parameters.map(param => ({
+        ...param,
+        default: param.default === null ? '' : param.default,
+      })),
+    ]
+  }
+
+  useEffect(() => {
+    const currentGeneratorParams = getCurrentGeneratorParameters(generator)
+
+    if (currentGeneratorParams) {
+      setInitialParams(currentGeneratorParams)
+    }
+  }, [generator])
+
+  useEffect(() => {
+    setRequiredParams(initialParams.filter(parameter => parameter.isRequired))
+    setOptionalParams(initialParams.filter(parameter => !parameter.isRequired))
+  }, [initialParams])
+
+  const [showOptional, setShowOptional] = React.useState(false)
   const [stringArrayValues, setStringArrayValues] = useState({})
 
   const onStringArrayChange = (parameterName: string, newValues: string[]) => {
@@ -78,66 +116,79 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
     }
   }
 
-  useEffect(() => {
+  const resetForm = () => {
+    form.resetFields()
     setHasChangedGenerator && setHasChangedGenerator(true)
     // reset form
-    form.resetFields()
     setStringArrayValues({})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [generator, setHasChangedGenerator])
+    setConfig({})
+  }
 
-  const renderFormFields = (parameters: GeneratorParameter[]) => {
-    return parameters.map(parameter => {
-      return (
-        <div
-          key={parameter.name}
-          className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md mb-6"
-        >
-          {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
-          parameter.allowedValuesFrom ? (
-            <OptionParameter
-              key={parameter.name}
-              form={form}
-              parameter={parameter}
-            />
-          ) : (
-            <>
-              {typeof parameter.default === 'number' ? (
-                <SliderParameter
-                  key={parameter.name}
-                  form={form}
-                  parameter={parameter}
-                />
-              ) : (
-                <>
-                  {parameter.mediaUpload ? (
-                    <UploadParameter
-                      key={parameter.name}
-                      form={form}
-                      parameter={parameter}
-                    />
-                  ) : (
-                    <StringParameter
-                      key={parameter.name}
-                      form={form}
-                      parameter={parameter}
-                      onStringArrayChange={onStringArrayChange}
-                    />
-                  )}
-                </>
-              )}
-            </>
-          )}
-          {/* {parameters[key].name == 'lora' && (
+  const renderFormFields = useCallback(
+    (parameters: GeneratorParameter[]) => {
+      return parameters.map(parameter => {
+        if (config) {
+          const presetParameter = Object.entries(config).filter(
+            ([key]) => key === parameter.name,
+          )[0]
+
+          if (presetParameter) {
+            parameter.default = presetParameter[1]
+          }
+        }
+
+        return (
+          <div
+            key={parameter.name}
+            className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md mb-6"
+          >
+            {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
+            parameter.allowedValuesFrom ? (
+              <OptionParameter
+                key={parameter.name}
+                form={form}
+                parameter={parameter}
+              />
+            ) : (
+              <>
+                {typeof parameter.default === 'number' ? (
+                  <SliderParameter
+                    key={parameter.name}
+                    form={form}
+                    parameter={parameter}
+                  />
+                ) : (
+                  <>
+                    {parameter.mediaUpload ? (
+                      <UploadParameter
+                        key={parameter.name}
+                        form={form}
+                        parameter={parameter}
+                      />
+                    ) : (
+                      <StringParameter
+                        key={parameter.name}
+                        form={form}
+                        parameter={parameter}
+                        onStringArrayChange={onStringArrayChange}
+                      />
+                    )}
+                  </>
+                )}
+              </>
+            )}
+            {/* {parameters[key].name == 'lora' && (
             <>
               <Switch checked={allLoras} onChange={setAllLoras} />
               &nbsp;&nbsp;Include all Loras
             </>
           )} */}
-        </div>
-      )
-    })
-  }
+          </div>
+        )
+      })
+    },
+    [config],
+  )
 
   return (
     <Form form={form} name="generate" onFinish={handleFinish}>
@@ -150,14 +201,19 @@ const GeneratorForm = ({ generator }: { generator: Generator }) => {
           </div>
         }
         actions={[
-          <div className="flex px-6">
+          <div className="flex px-6 items-center justify-between">
             <Button
               type="primary"
               icon={<ExperimentOutlined />}
               htmlType="submit"
               size="large"
+              className="capitalize"
             >
-              Create
+              {generator.generatorName}
+            </Button>
+
+            <Button type="text" onClick={resetForm}>
+              Reset {presetConfig ? '(using preset)' : ''}
             </Button>
           </div>,
         ]}

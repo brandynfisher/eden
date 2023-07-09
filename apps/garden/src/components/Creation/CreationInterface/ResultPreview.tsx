@@ -15,9 +15,9 @@ const ResultPreview = () => {
 
   if (hasChangedGenerator || (!activeTask && !completedTask)) return null
   return (
-    <div className="relative flex flex-col space-y-4 col-span-12 mt-4 lg:col-span-6 rounded-lg border border-0 border-solid ">
+    <div className="relative flex flex-col space-y-4 col-span-12 lg:mt-9 lg:col-span-6 rounded-lg border border-0 border-solid ">
       <Card
-        className={`lg:sticky top-4 w-full h-full max-h-[512px] flex justify-center items-center`}
+        className={`lg:sticky lg:top-4 w-full h-full max-h-[512px] flex justify-center items-center`}
       >
         <div className="flex justify-center items-center">
           {!creationUri ? (

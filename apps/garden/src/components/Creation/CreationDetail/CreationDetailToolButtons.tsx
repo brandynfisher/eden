@@ -1,3 +1,4 @@
+import { getFileExtension } from '@/lib/getFileExtension'
 import {
   CheckCircleOutlined,
   CopyOutlined,
@@ -7,7 +8,7 @@ import {
 } from '@ant-design/icons'
 import { Creation } from '@eden-labs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
-import { App } from 'antd'
+import { App, Dropdown } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
@@ -42,6 +43,12 @@ const shareNative = async (pageUrl: string) => {
   }
 }
 
+const isImage = (creationUri: string) => {
+  if (!creationUri) return null
+  const extension = getFileExtension(creationUri)
+  return extension === 'jpg'
+}
+
 const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const { message } = App.useApp()
   const router = useRouter()
@@ -59,22 +66,46 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
     await shareNative(pageUrl)
   }
 
-  const handleCreate = async (creation: Creation) => {
+  const handleCreate = async (generator: string | null, creation: Creation) => {
+    const query: { presetId: string; generator?: string } = {
+      presetId: creation._id,
+    }
+
+    if (generator) {
+      query['generator'] = generator
+    }
+
     await router.push({
       pathname: '/create',
-      query: {
-        generatorName: 'remix',
-        parentCreationId: creation._id,
-      },
+      query,
     })
   }
 
   useEffect(() => {
-    const host = window.location.host
-    const baseUrl = `${window.location.protocol}//${host}`
+    const baseUrl = `${window.location.protocol}//${window.location.host}`
 
     setPageUrl(`${baseUrl}${router.asPath}`)
   }, [router.asPath])
+
+  const getCreateMenuItems = (isImage: boolean) => {
+    const menuItems = [
+      {
+        label: <div onClick={() => handleCreate(null, creation)}>Preset</div>,
+        key: '1',
+      },
+    ]
+
+    if (isImage) {
+      menuItems.push({
+        label: (
+          <div onClick={() => handleCreate('remix', creation)}>Recreate</div>
+        ),
+        key: '2',
+      })
+    }
+
+    return menuItems
+  }
 
   const items = [
     !navigator.share
@@ -105,10 +136,18 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
     },
     {
       title: 'Create',
-      icon: <ExperimentOutlined className="text-xl" />,
-      onClick: async () => {
-        await handleCreate(creation)
-      },
+      icon: (
+        <Dropdown
+          trigger={['click']}
+          arrow={true}
+          placement="topRight"
+          menu={{ items: getCreateMenuItems(!!isImage(creation.uri)) }}
+        >
+          <div className="flex items-center justify-center w-full h-full">
+            <ExperimentOutlined className="text-xl" />
+          </div>
+        </Dropdown>
+      ),
     },
   ]
 

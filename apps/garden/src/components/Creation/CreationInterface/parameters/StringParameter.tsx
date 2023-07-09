@@ -8,7 +8,7 @@ const StringParameter = (props: {
   parameter: GeneratorParameter
   onStringArrayChange: (parameterName: string, newValues: string[]) => void
 }) => {
-  const [value, setValue] = useState(props.parameter.default)
+  // const [value, setValue] = useState('')
   const [values, setValues] = useState(
     new Array(props.parameter.minLength || 1).fill(props.parameter.default),
   )
@@ -43,7 +43,7 @@ const StringParameter = (props: {
                 <Row key={index} className="mb-2">
                   <Col flex="auto" className="mr-1">
                     <Input
-                      value={value}
+                      defaultValue={props.parameter.default[index]}
                       onChange={event => {
                         const newValues = [...values]
                         newValues[index] = event.target.value
@@ -97,12 +97,7 @@ const StringParameter = (props: {
               },
             ]}
           >
-            <Input
-              value={value}
-              onChange={event => {
-                setValue(event.target.value)
-              }}
-            />
+            <Input />
           </Form.Item>
           <Row>
             <span style={{ color: 'gray' }}>{props.parameter.description}</span>
