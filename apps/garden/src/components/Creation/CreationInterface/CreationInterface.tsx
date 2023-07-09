@@ -7,7 +7,7 @@ import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@eden-labs/eden-sdk'
 import { Select } from 'antd'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 const CreationInterface = ({
   generatorName,
@@ -19,6 +19,16 @@ const CreationInterface = ({
   const { generators } = useContext(EdenContext)
   const [activeGenerator, setActiveGenerator] = useState(
     generators?.[0] || undefined,
+  )
+
+  const handleGeneratorChange = useCallback(
+    (value: string) => {
+      const selectedGenerator = generators?.find(
+        generator => generator.generatorName === value,
+      )
+      setActiveGenerator(selectedGenerator)
+    },
+    [generators],
   )
 
   useEffect(() => {
@@ -33,14 +43,7 @@ const CreationInterface = ({
     }
 
     setActiveGenerator(generators?.[0])
-  }, [generators, presetCreation])
-
-  const handleGeneratorChange = (value: string) => {
-    const selectedGenerator = generators?.find(
-      generator => generator.generatorName === value,
-    )
-    setActiveGenerator(selectedGenerator)
-  }
+  }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />
