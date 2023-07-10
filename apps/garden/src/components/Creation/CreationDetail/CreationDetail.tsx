@@ -148,12 +148,16 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
               onClick={isImage(creation.uri) ? showMediaViewer : () => null}
               className="flex justify-center xl:justify-end overflow-hidden"
             >
-              <MediaDisplay
-                creationUri={creationData.uri}
-                previewUri={creationData.uri}
-                showPreview={mediaViewerVisible}
-                onPreviewClose={hideMediaViewer}
-              />
+              {isImage(creation.uri) ? (
+                <MediaDisplay
+                  creationUri={creationData.uri}
+                  previewUri={creationData.uri}
+                  showPreview={mediaViewerVisible}
+                  onPreviewClose={hideMediaViewer}
+                />
+              ) : (
+                <MediaDisplay creationUri={creationData.uri} />
+              )}
             </div>
           </div>
         </div>

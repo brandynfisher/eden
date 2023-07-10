@@ -9,7 +9,7 @@ const MediaDisplay = ({
   onPreviewClose,
 }: {
   creationUri: string
-  previewUri: string
+  previewUri?: string
   showPreview?: boolean
   onPreviewClose?: () => void
 }) => {
