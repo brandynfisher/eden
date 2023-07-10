@@ -1,36 +1,62 @@
+import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
 import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
-import { Select, Spin } from 'antd'
-import React, { useContext, useState } from 'react'
+import { Creation } from '@eden-labs/eden-sdk'
+import { Select } from 'antd'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 
-const CreationInterface = () => {
+const CreationInterface = ({
+  generatorName,
+  presetCreation,
+}: {
+  generatorName?: string
+  presetCreation?: Creation
+}) => {
   const { generators } = useContext(EdenContext)
   const [activeGenerator, setActiveGenerator] = useState(
     generators?.[0] || undefined,
   )
-  const activeGeneratorName = activeGenerator?.generatorName
 
-  if (!generators) {
-    return <Spin />
-  }
+  const handleGeneratorChange = useCallback(
+    (value: string) => {
+      const selectedGenerator = generators?.find(
+        generator => generator.generatorName === value,
+      )
+      setActiveGenerator(selectedGenerator)
+    },
+    [generators],
+  )
 
-  const handleGeneratorChange = (value: string) => {
-    const selectedGenerator = generators.find(
-      generator => generator.generatorName === value,
-    )
-    setActiveGenerator(selectedGenerator)
+  useEffect(() => {
+    if (generatorName) {
+      handleGeneratorChange(generatorName)
+      return
+    }
+
+    if (presetCreation) {
+      handleGeneratorChange(presetCreation.task.generator.generatorName)
+      return
+    }
+
+    setActiveGenerator(generators?.[0])
+  }, [generators, presetCreation, generatorName, handleGeneratorChange])
+
+  if (!generators || !activeGenerator) {
+    return <LoadingIndicator />
   }
 
   return (
     <div className="w-full grid grid-cols-12" style={{ gap: '16px' }}>
       <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6">
+        {presetCreation && <CreationPresetInfo creation={presetCreation} />}
         <label htmlFor="activeGenerator">Selected Generator:</label>
         <Select
           id="activeGenerator"
-          value={activeGeneratorName}
+          value={activeGenerator?.generatorName}
           onChange={handleGeneratorChange}
           placeholder="Generators"
         >
@@ -43,12 +69,18 @@ const CreationInterface = () => {
             </Select.Option>
           ))}
         </Select>
-        {activeGenerator && <GeneratorForm generator={activeGenerator} />}
+        {activeGenerator && (
+          <GeneratorForm
+            generator={activeGenerator}
+            presetConfig={
+              presetCreation ? presetCreation.task.config : undefined
+            }
+          />
+        )}
       </div>
-      <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6">
-        <ResultPreview />
-        {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
-      </div>
+
+      <ResultPreview />
+      {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
     </div>
   )
 }

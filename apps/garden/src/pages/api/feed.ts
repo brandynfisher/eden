@@ -7,7 +7,6 @@ import { NextApiRequest, NextApiResponse } from 'next'
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
-  // @todo: add sort
   const { userId, collectionId, page, limit, orderBy, direction } = req.query
   const authToken = req.session.token
 

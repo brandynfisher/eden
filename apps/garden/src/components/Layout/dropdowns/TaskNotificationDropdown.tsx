@@ -1,4 +1,6 @@
+import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/TestGeneratorFinishButton'
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
+import { CONFIG } from '@/lib/config'
 import { durationBetweenDates, durationSinceDate } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {
@@ -9,17 +11,18 @@ import {
 import { Task } from '@eden-labs/eden-sdk'
 import { Button, Dropdown, Menu, Progress, Space, Spin } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
-import { useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const CompletedTaskMenuItem = ({
+  router,
   task,
   handleDismiss,
 }: {
+  router: NextRouter
   task: Task
   handleDismiss: (taskId: string) => void
 }) => {
-  const router = useRouter()
   const creationId = task.creation?._id
 
   const handleViewCreation = async () => {
@@ -36,7 +39,7 @@ const CompletedTaskMenuItem = ({
 
   if (!task.creation) return null
   return (
-    <div>
+    <div key={task._id}>
       <div
         onClick={handleViewCreation}
         className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
@@ -61,7 +64,7 @@ const CompletedTaskMenuItem = ({
               </div>
               <div className="flex min-w-0 truncate mt-1">
                 <div className="text-xs text-gray-800 dark:text-gray-400 truncate">
-                  {task._id}
+                  {task.creation?.name}
                 </div>
               </div>
             </div>
@@ -86,7 +89,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
 
   return (
     <div
-      className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
+      className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
       style={{ minWidth: '240px' }}
     >
       <div className="flex justify-between items-center">
@@ -100,14 +103,21 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
         status="active"
         className="mt-1 flex items-center"
       />
-      <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-        {task._id}
+      <div className="flex justify-between items-center">
+        <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
+          {task._id}
+        </div>
+        {CONFIG.DEV_TYPE === 'dummy' && (
+          <TestGeneratorFinishButton taskId={task.taskId} />
+        )}
       </div>
     </div>
   )
 }
 
 const TaskNotificationDropdown = () => {
+  const router = useRouter()
+
   const { pendingTasks, completedTasks, setCompletedTasks } = useContext(
     CreationNotificationContext,
   )
@@ -131,7 +141,9 @@ const TaskNotificationDropdown = () => {
     : []
 
   const completedTaskItems = completedTasks
-    ? completedTasks.map(task => CompletedTaskMenuItem({ task, handleDismiss }))
+    ? completedTasks.map(task =>
+        CompletedTaskMenuItem({ task, handleDismiss, router }),
+      )
     : []
 
   return (

@@ -1,65 +1,125 @@
+import CodeBlock from '@/components/CodeBlock'
+import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import { getFileExtension } from '@/lib/getFileExtension'
 import { durationSinceDate } from '@/lib/time'
-import { Creation } from '@eden-labs/eden-sdk'
-import { Button, Divider } from 'antd'
-import React, { useEffect, useState } from 'react'
+import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
+import { Creation, Task } from '@eden-labs/eden-sdk'
+import { useClipboard } from '@mantine/hooks'
+import { App, Button, Divider, Tabs } from 'antd'
+import React, { useState } from 'react'
 
-const MediaViewer = ({
-  creation,
-  onAfterHide,
+const ConfigParamsTextTabContent = ({
+  creationData,
 }: {
-  creation: Creation
-  onAfterHide: () => void
+  creationData: Creation
 }) => {
-  const [isVisible, setIsVisible] = useState(false)
+  return (
+    <>
+      {creationData.task.config &&
+        Object.entries(creationData.task.config).map(([key, val]) => {
+          const configValue = JSON.stringify(val)
 
-  useEffect(() => {
-    setIsVisible(true)
-  }, [])
+          return (
+            <div
+              key={`cfg-${key}`}
+              className="py-2 px-4 m-0 first:pt-0 xl last:mb-0 justify-between grid xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-2  [&:nth-child(even)]:bg-gray-50 [&:nth-child(even)]:dark:bg-gray-900"
+            >
+              <div
+                className={`text-gray-500 flex-shrink-0 ${
+                  key.length > 17 ? 'col-span-2' : ''
+                }`}
+              >
+                {key}
+              </div>
+              <div
+                className={`break-words px-1 line-clamp-3 ${
+                  configValue.length > 17 ? 'col-span-2' : ''
+                }`}
+                title={configValue}
+              >
+                {configValue}
+              </div>
+            </div>
+          )
+        })}
+    </>
+  )
+}
 
-  const hide = () => {
-    setIsVisible(false)
-    // wait for css transitions before unmounting
-    setTimeout(() => {
-      onAfterHide()
-    }, 200)
+const ConfigParamsCodeTabContent = ({
+  taskConfig,
+}: {
+  taskConfig: Task['config']
+}) => {
+  const { message } = App.useApp()
+  const { copied, copy } = useClipboard({ timeout: 750 })
+
+  const handleCopyClick = async () => {
+    await copy(taskConfig)
+
+    message.destroy()
+    message.success(`Copied to clipboard!`)
   }
 
   return (
-    <div>
-      <div
-        className={`transition-all duration-200 fixed inset-0 w-screen h-screen bg-black pointer-events-none z-50 bg-opacity-0 ${
-          isVisible ? '!bg-opacity-95' : ''
-        }`}
-      />
-      <div
-        onClick={hide}
-        className="fixed inset-0 w-screen h-screen flex items-center z-50 cursor-zoom-out"
+    <div className="relative">
+      <Button
+        className="absolute right-6 top-2 flex items-center"
+        onClick={handleCopyClick}
+        title={'Copy'}
       >
-        <div className="flex w-full justify-center">
-          <img
-            src={creation.uri}
-            alt={creation.name}
-            className={`transition-all duration-125 scale-90 opacity-0 ${
-              isVisible ? '!opacity-100 !scale-100' : ''
-            } object-contain h-auto w-auto max-w-[calc(100vw-30px)] max-h-[calc(100vh-60px)] rounded-xl`}
-          />
-        </div>
+        {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+      </Button>
+      <div className="px-4 mb-2 ">
+        <CodeBlock code={taskConfig} language="javascript" />
       </div>
     </div>
   )
 }
 
+const createEdenSdkCodeSnippet = (taskConfig: Task['config']) => {
+  return `import {EdenClient} from "eden-sdk";
+
+const eden = new EdenClient();
+
+const config = ${taskConfig}
+
+const result = await eden.create("create", config);`
+}
+
 const CreationDetail = ({ creation }: { creation: Creation }) => {
-  // @todo: refetch after reactions (or consider global store) to avoid this.
-  //  it doesnt work right as is anyway because the parent is not notified of the change
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = durationSinceDate(creation.createdAt)
+
+  const formattedTaskConfig = JSON.stringify(creationData.task.config, null, 2)
+
+  const items = [
+    {
+      key: '1',
+      label: `Text`,
+      children: <ConfigParamsTextTabContent creationData={creationData} />,
+    },
+    {
+      key: '2',
+      label: `JSON`,
+      children: <ConfigParamsCodeTabContent taskConfig={formattedTaskConfig} />,
+    },
+    {
+      key: '3',
+      label: `Eden SDK`,
+      children: (
+        <ConfigParamsCodeTabContent
+          taskConfig={createEdenSdkCodeSnippet(formattedTaskConfig)}
+        />
+      ),
+    },
+  ]
 
   const showMediaViewer = () => {
     setMediaViewerVisible(true)
@@ -69,23 +129,39 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
     setMediaViewerVisible(false)
   }
 
+  const onConfigurationTabChange = () => {
+    // console.log('onConfigurationTabChange', key)
+  }
+
+  const isImage = (creationUri: string) => {
+    if (!creationUri) return null
+    const extension = getFileExtension(creationUri)
+    return extension === 'jpg'
+  }
+
   return (
     <>
-      {mediaViewerVisible && (
-        <MediaViewer creation={creationData} onAfterHide={hideMediaViewer} />
-      )}
       <div className="xl:flex xl:justify-center">
-        <div className="w-full flex justify-center xl:justify-normal xl:w-auto items-start">
+        <div className="mx-auto xl:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
           <div className="inline-flex mb-4 max-h-72vh xl:max-h-88vh">
             <div
-              onClick={showMediaViewer}
-              className="flex justify-center xl:justify-end overflow-hidden cursor-zoom-in"
+              onClick={isImage(creation.uri) ? showMediaViewer : () => null}
+              className="flex justify-center xl:justify-end overflow-hidden"
             >
-              <MediaDisplay creationUri={creationData.uri} />
+              {isImage(creation.uri) ? (
+                <MediaDisplay
+                  creationUri={creationData.uri}
+                  previewUri={creationData.uri}
+                  showPreview={mediaViewerVisible}
+                  onPreviewClose={hideMediaViewer}
+                />
+              ) : (
+                <MediaDisplay creationUri={creationData.uri} />
+              )}
             </div>
           </div>
         </div>
-        <div className="xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
+        <div className="mx-auto xl:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
           <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
             <CreationReactions
               creation={creationData}
@@ -93,22 +169,19 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
             />
           </div>
 
-          <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
-            <div className="overflow-hidden flex items-center">
+          <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
+            <div className="overflow-hidden flex items-center flex-shrink-0">
               <div className="min-w-0">
                 <CreatorProfileLink creatorId={creationData.user.userId} />
               </div>
             </div>
-            <div>
+            <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
               <FollowControls creatorId={creationData.user.userId} />
             </div>
           </div>
-          <div
-            className={`col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative ${
-              !isRevealed ? 'overflow-y-hidden max-h-[220px]' : ''
-            }`}
-          >
-            <div>
+
+          <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
+            <div style={{ wordWrap: 'break-word' }}>
               <div className="flex justify-between items-center">
                 <div className="font-bold">
                   /{creation.task.generator?.generatorName}
@@ -116,39 +189,50 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                 <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
               </div>
               <Divider className="my-4" />
-              <div>
-                {creationData.task.config &&
-                  Object.entries(creationData.task.config).map(([key, val]) => (
-                    <div key={`cfg-${key}`} className="mb-4 last:mb-0">
-                      <div className="text-gray-500 capitalize">{key}</div>
-                      {/*// @ts-ignore: @todo: fix the feed response type*/}
-                      <div>{val}</div>
-                    </div>
-                  ))}
+              <div
+                title={creation.name}
+                className="relative first-letter:uppercase text-sm select-text cursor-text mb-1 w-full line-clamp-3 flex text-ellipsis"
+              >
+                {creation.name}
               </div>
             </div>
-            {!isRevealed && (
-              <div className="bg-gradient-to-t from-gray-300 dark:from-black via-gray-300 dark:via-black to-transparent absolute inset-0 rounded-b-lg mt-32">
-                <div className="flex w-full justify-center items-end h-full">
-                  <Button
-                    type="dashed"
-                    className="mb-4 dark:text-gray-400"
-                    onClick={() => setIsRevealed(true)}
-                  >
-                    Show more
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
-          {isRevealed && (
+
+          <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+            <CreationDetailToolButtons creation={creation} />
+          </div>
+
+          <div className="flex w-full justify-center items-center mb-4">
             <Button
               type="dashed"
-              className="mt-4 dark:text-gray-400"
-              onClick={() => setIsRevealed(false)}
+              className="dark:text-gray-400"
+              onClick={() => setIsRevealed(!isRevealed)}
             >
-              Show less
+              {isRevealed ? 'Hide' : 'Show'} configuration
             </Button>
+          </div>
+
+          {isRevealed && (
+            <>
+              <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden text-xs">
+                <Tabs
+                  centered
+                  defaultActiveKey="1"
+                  items={items}
+                  onChange={onConfigurationTabChange}
+                />
+              </div>
+
+              <div className="flex w-full justify-center items-center my-4">
+                <Button
+                  type="dashed"
+                  className="dark:text-gray-400"
+                  onClick={() => setIsRevealed(false)}
+                >
+                  Hide configuration
+                </Button>
+              </div>
+            </>
           )}
         </div>
       </div>

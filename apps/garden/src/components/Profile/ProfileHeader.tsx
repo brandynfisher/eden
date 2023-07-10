@@ -22,16 +22,18 @@ const ProfileHeader = ({
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">
           <ProfileHeaderName
-            // isOwnProfile={isConnectedUser}
+            // isOwnProfile={isConnectedUser}mm
             displayName={creatorDisplayName}
           />
-          <div className="text-sm mt-1">
-            <strong>{numCreations || 0}</strong> Creations
+          <div className="">
+            <div className="text-sm my-1">
+              <strong>{numCreations || 0}</strong> Creations
+            </div>
+            <div className="col-span-full sm:col-span-1">
+              <FollowControls creatorId={creatorId} />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="col-span-full sm:col-span-1">
-        <FollowControls creatorId={creatorId} />
       </div>
     </div>
   )

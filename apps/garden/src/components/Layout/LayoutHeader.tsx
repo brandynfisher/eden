@@ -30,13 +30,15 @@ const LayoutHeader = () => {
 
         <div className="ml-auto">
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <CreationNotificationMenu />
             {isAuthenticated && <QuickCreateMenu />}
           </div>
         </div>
       </div>
 
       <div className="ml-auto sm:ml-0 flex items-center" style={{ gap: '8px' }}>
+        <div className="hidden xs:flex">
+          <CreationNotificationMenu />
+        </div>
         <MannaDropdown />
         <SettingsDropdown />
         <MyProfileButton />

@@ -2,7 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 const LoadingIndicator = () => {
   return (
-    <div className="flex items-center h-full justify-center">
+    <div className="flex inset-0 items-center h-full w-full justify-center">
       <div className="flex items-stretch w-full justify-center">
         <div className="flex items-center">
           <LoadingOutlined className="text-3xl" />

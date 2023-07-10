@@ -59,7 +59,7 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   }
 
   return (
-    <>
+    <div>
       <div className="relative " key={index}>
         <div className="w-full flex justify-center">
           <div
@@ -88,7 +88,7 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
         setOpen={setAddToCollectionModalOpen}
         creation={creation}
       />
-    </>
+    </div>
   )
 }
 

@@ -83,7 +83,7 @@ export const useFeedPaginated = (
     if (isLoadingMore) return
     if (isEmpty || (data && data.length >= data?.[0]?.pages)) return
     setSize(prevSize => prevSize + 1)
-  }, [isLoadingMore])
+  }, [isLoadingMore, isEmpty, data])
 
   const creationDocs = (
     dataArray ? [...dataArray.map(pageData => pageData.docs)] : []

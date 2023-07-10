@@ -49,9 +49,6 @@ const CreationMasonry = ({
       columnCount: settings?.maxGridCols.value || undefined,
       maxColumnCount: settings?.maxGridCols.value || 4,
     },
-    // When these dependencies
-    // change, the positioner cache will be cleared and the
-    // masonry component will reset as a result.
     [orderBy],
   )
   const resizeObserver = useResizeObserver(positioner)
@@ -64,15 +61,17 @@ const CreationMasonry = ({
       isItemLoaded: (index, items) => {
         return !!items[index]
       },
-      minimumBatchSize: 12,
-      threshold: 4,
+      minimumBatchSize: 16,
+      threshold: 16,
     },
   )
 
   const handleOrderChange = (newOrderBy: OrderByParam) => {
-    setOrderBy(newOrderBy)
-    setSize(1)
-    setKey(key + 1)
+    if (newOrderBy.field !== orderBy?.field) {
+      setOrderBy(newOrderBy)
+      setSize(1)
+      setKey(key + 1)
+    }
   }
 
   return (
@@ -90,8 +89,8 @@ const CreationMasonry = ({
             items={creations}
             height={windowHeight}
             offset={offset}
-            overscanBy={1.75}
-            itemHeightEstimate={500}
+            overscanBy={4}
+            itemHeightEstimate={400}
             render={CreationCard}
             onRender={maybeLoadMore}
           />

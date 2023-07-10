@@ -1,41 +1,5 @@
-import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
-import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
-import { getFileExtension } from '@/lib/getFileExtension'
-import { formatDuration } from '@/lib/time'
+import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
 import { Creation } from '@eden-labs/eden-sdk'
-import { Badge } from 'antd'
-
-const VideoLengthBadge = ({ duration }: { duration?: number }) => {
-  return (
-    <Badge className="rounded-full mx-2 mt-2 anim-slide-fade-down h-[32px] flex items-center">
-      <span className="text-xs inline-block bg-gray-700 text-gray-300 px-2 py-1 rounded-full opacity-90">
-        {duration ? formatDuration(duration) : '0:00'}
-      </span>
-    </Badge>
-  )
-}
-
-const VideoPreview = ({
-  creation,
-  hovered,
-}: {
-  creation: Creation
-  hovered: boolean
-}) => {
-  return (
-    <div className="rounded-lg overflow-hidden relative">
-      <ImageResult resultUrl={creation.thumbnail || ''} />
-      {hovered && (
-        <div className="absolute top-0 left-0 w-full h-full">
-          <VideoResult resultUrl={creation.uri || ''} disableControls />
-        </div>
-      )}
-      <div className="absolute inset-0 flex flex-col justify-between items-center">
-        <VideoLengthBadge duration={creation.mediaAttributes.duration ?? 0} />
-      </div>
-    </div>
-  )
-}
 
 const CreationCardPreview = ({
   creation,
@@ -44,20 +8,7 @@ const CreationCardPreview = ({
   creation: Creation
   hovered: boolean
 }) => {
-  const { uri: creationUri } = creation
-
-  const renderPreview = () => {
-    if (!creationUri) return null
-    const extension = getFileExtension(creationUri)
-    if (extension === 'jpg') {
-      return <ImageResult resultUrl={creation.thumbnail || ''} />
-    } else if (extension === 'mp4') {
-      return <VideoPreview creation={creation} hovered={hovered} />
-    }
-    return null
-  }
-
-  return <>{renderPreview()}</>
+  return <MediaPreview creation={creation} hovered={hovered} />
 }
 
 export default CreationCardPreview

@@ -1,16 +1,10 @@
+import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/TestGeneratorFinishButton'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
-import { Button, Card } from 'antd'
-import axios from 'axios'
+import { Card } from 'antd'
 import React, { useContext } from 'react'
 
 const TestGeneratorInterface = () => {
   const { pendingTasks, activeTaskId } = useContext(CreationNotificationContext)
-
-  const handleFinish = async (taskId: string) => {
-    await axios.post('/api/tasks/finish', {
-      taskId,
-    })
-  }
 
   return (
     <Card>
@@ -30,9 +24,7 @@ const TestGeneratorInterface = () => {
               key={task.taskId}
             >
               {task.taskId}
-              <Button onClick={() => handleFinish(task.taskId)}>
-                Finish Creation
-              </Button>
+              <TestGeneratorFinishButton taskId={task.taskId} />
             </div>
           ))}
         </div>

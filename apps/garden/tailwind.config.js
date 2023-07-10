@@ -9,8 +9,15 @@ module.exports = {
   corePlugins: {
     preflight: false,
   },
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        'xs': '412px',
+      }
+    },
   },
   plugins: [],
 }

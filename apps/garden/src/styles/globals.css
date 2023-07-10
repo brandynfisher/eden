@@ -50,6 +50,16 @@ body {
     background-color: #040916 !important;
 }
 
+.ant-modal-content {
+    padding: 8px 8px !important;
+}
+
+@media (min-width: 768px) {
+    .ant-modal-content {
+        padding: 20px 24px !important;
+    }
+}
+
 @keyframes fadeOut {
     0% {
         opacity: 1;
@@ -222,7 +232,6 @@ body {
     padding: 8px !important;
 }
 
-
 .ant-message {
     top: 44px !important;
 }
@@ -230,5 +239,44 @@ body {
 .ant-message-custom-content {
     display: flex !important;
 }
-.ant-message-notice-content {
+
+.media-display .ant-image {
+    display: flex !important;
+    justify-content: center !important;
+}
+.media-display .ant-image .ant-image-img {
+    object-fit: contain !important;
+    border-radius: 0.75rem !important;
+    overflow: hidden !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+.media-display .ant-image .ant-image-mask {
+    background: rgba(0, 0, 0, 0.2) !important;
+    cursor: zoom-in !important;
+}
+.ant-image-preview-mask {
+    background: rgba(0, 0, 0, 0.95) !important;
+}
+.ant-image-preview-operations {
+    background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.image-placeholder {
+    background-color: rgba(255, 255, 255, 0.08);
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTQuNSAyLjVoLTEzQS41LjUgMCAwIDAgMSAzdjEwYS41LjUgMCAwIDAgLjUuNWgxM2EuNS41IDAgMCAwIC41LS41VjNhLjUuNSAwIDAgMC0uNS0uNXpNNS4yODEgNC43NWExIDEgMCAwIDEgMCAyIDEgMSAwIDAgMSAwLTJ6bTguMDMgNi44M2EuMTI3LjEyNyAwIDAgMS0uMDgxLjAzSDIuNzY5YS4xMjUuMTI1IDAgMCAxLS4wOTYtLjIwN2wyLjY2MS0zLjE1NmEuMTI2LjEyNiAwIDAgMSAuMTc3LS4wMTZsLjAxNi4wMTZMNy4wOCAxMC4wOWwyLjQ3LTIuOTNhLjEyNi4xMjYgMCAwIDEgLjE3Ny0uMDE2bC4wMTUuMDE2IDMuNTg4IDQuMjQ0YS4xMjcuMTI3IDAgMCAxLS4wMi4xNzV6IiBmaWxsPSIjOEM4QzhDIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48L3N2Zz4=');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 30%;
+}
+
+.link-card .ant-card-cover {
+    flex-grow: 1
+}
+
+.scaled-canvas {
+    transform: scale(0.5) translate(-18px, -18px);
+    transform-origin: center;
 }
