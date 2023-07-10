@@ -32,7 +32,7 @@ const ImageResult = ({
               src: previewUrl,
               visible: showPreview,
               destroyOnClose: true,
-              scaleStep: 0.5,
+              scaleStep: 0.85,
               onVisibleChange: onPreviewClose
                 ? visible => !visible && onPreviewClose()
                 : undefined,

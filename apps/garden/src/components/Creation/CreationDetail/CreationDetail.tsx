@@ -142,7 +142,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
   return (
     <>
       <div className="xl:flex xl:justify-center">
-        <div className="w-full flex justify-center xl:justify-normal xl:w-auto items-start">
+        <div className="mx-auto xl:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
           <div className="inline-flex mb-4 max-h-72vh xl:max-h-88vh">
             <div
               onClick={isImage(creation.uri) ? showMediaViewer : () => null}
