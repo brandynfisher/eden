@@ -25,11 +25,10 @@ const CreationCardDetail = ({
 
         <div
           title={creation.name}
-          className="flex relative first-letter:uppercase text-xs select-text  cursor-text mb-1 w-full text-ellipsis text-gray-300 break-words"
+          className="relative first-letter:uppercase text-xs select-text  cursor-text mb-1 w-full text-ellipsis text-gray-300 break-words line-clamp-3"
         >
           {creation.name}
         </div>
-
         <CreatorProfileLink
           creatorId={creation.user.userId}
           isOverlay={isOverlay}

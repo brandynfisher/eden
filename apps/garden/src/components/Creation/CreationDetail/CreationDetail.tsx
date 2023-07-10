@@ -191,7 +191,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
               <Divider className="my-4" />
               <div
                 title={creation.name}
-                className="relative first-letter:uppercase text-sm select-text cursor-text mb-1 w-full line-clamp-3 flex text-ellipsis"
+                className="relative text-sm select-text cursor-text mb-1 w-full text-ellipsis line-clamp-3"
               >
                 {creation.name}
               </div>
