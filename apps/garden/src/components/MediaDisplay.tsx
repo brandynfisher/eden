@@ -4,16 +4,27 @@ import { getFileExtension } from '@/lib/getFileExtension'
 
 const MediaDisplay = ({
   creationUri,
-  fullscreen,
+  previewUri,
+  showPreview,
+  onPreviewClose,
 }: {
   creationUri: string
-  fullscreen?: boolean
+  previewUri: string
+  showPreview?: boolean
+  onPreviewClose?: () => void
 }) => {
   const renderPreview = () => {
     if (!creationUri) return null
     const extension = getFileExtension(creationUri)
     if (extension === 'jpg') {
-      return <ImageResult resultUrl={creationUri} />
+      return (
+        <ImageResult
+          resultUrl={creationUri}
+          previewUrl={previewUri ? creationUri : undefined}
+          showPreview={showPreview}
+          onPreviewClose={onPreviewClose}
+        />
+      )
     } else if (extension === 'mp4') {
       return <VideoResult resultUrl={creationUri} />
     }
@@ -21,18 +32,8 @@ const MediaDisplay = ({
   }
 
   return (
-    <div
-      className={`media-display ${
-        fullscreen
-          ? 'flex justify-center w-[calc(100vw-30px)] h-[calc(100vh-60px)]'
-          : 'max-h-full max-w-full'
-      }`}
-    >
-      <div
-        className={`flex rounded-xl overflow-hidden ${
-          fullscreen ? '' : 'max-h-full max-w-full'
-        }`}
-      >
+    <div className="media-display max-h-full max-w-full">
+      <div className="flex rounded-xl overflow-hidden max-h-full max-w-full">
         {renderPreview()}
       </div>
     </div>

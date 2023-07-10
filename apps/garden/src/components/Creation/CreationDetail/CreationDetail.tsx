@@ -10,55 +10,7 @@ import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation, Task } from '@eden-labs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Divider, Tabs } from 'antd'
-import React, { useEffect, useState } from 'react'
-
-const MediaViewer = ({
-  creation,
-  onAfterHide,
-}: {
-  creation: Creation
-  onAfterHide: () => void
-}) => {
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    document.body.classList.add('overflow-hidden')
-    setIsVisible(true)
-  }, [])
-
-  const hide = () => {
-    document.body.classList.remove('overflow-hidden')
-    setIsVisible(false)
-    // wait for css transitions before unmounting
-    setTimeout(() => {
-      onAfterHide()
-    }, 200)
-  }
-
-  return (
-    <div>
-      <div
-        className={`transition-all duration-200 fixed inset-0 w-screen h-screen bg-black pointer-events-none z-50 bg-opacity-0 ${
-          isVisible ? '!bg-opacity-95' : ''
-        }`}
-      />
-      <div
-        onClick={hide}
-        className="fixed inset-0 w-screen h-screen flex items-center z-50 cursor-zoom-out"
-      >
-        <div className="flex w-full justify-center">
-          <div
-            className={`transition-all duration-125 scale-90 opacity-0 ${
-              isVisible ? '!opacity-100 !scale-100' : ''
-            } object-contain h-auto w-auto max-w-[calc(100vw-30px)] max-h-[calc(100vh-60px)]`}
-          >
-            <MediaDisplay creationUri={creation.uri} fullscreen={true} />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+import React, { useState } from 'react'
 
 const ConfigParamsTextTabContent = ({
   creationData,
@@ -189,17 +141,19 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
 
   return (
     <>
-      {mediaViewerVisible && (
-        <MediaViewer creation={creationData} onAfterHide={hideMediaViewer} />
-      )}
       <div className="xl:flex xl:justify-center">
         <div className="w-full flex justify-center xl:justify-normal xl:w-auto items-start">
           <div className="inline-flex mb-4 max-h-72vh xl:max-h-88vh">
             <div
               onClick={isImage(creation.uri) ? showMediaViewer : () => null}
-              className="flex justify-center xl:justify-end overflow-hidden cursor-zoom-in"
+              className="flex justify-center xl:justify-end overflow-hidden"
             >
-              <MediaDisplay creationUri={creationData.uri} />
+              <MediaDisplay
+                creationUri={creationData.uri}
+                previewUri={creationData.uri}
+                showPreview={mediaViewerVisible}
+                onPreviewClose={hideMediaViewer}
+              />
             </div>
           </div>
         </div>
