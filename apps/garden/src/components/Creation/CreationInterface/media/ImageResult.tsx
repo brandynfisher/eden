@@ -1,5 +1,6 @@
-import { ExpandOutlined } from '@ant-design/icons'
-import { Image } from 'antd'
+import { ExpandOutlined, ExperimentOutlined } from '@ant-design/icons'
+import { Image, Skeleton } from 'antd'
+import React from 'react'
 
 const ImagePreviewMask = () => (
   <div>
@@ -8,6 +9,14 @@ const ImagePreviewMask = () => (
     </div>
   </div>
 )
+
+const LoadingPlaceholder = () => {
+  return (
+    <Skeleton.Node active={true} className="flex !h-[300px] opacity-60">
+      <ExperimentOutlined className="text-2xl" />
+    </Skeleton.Node>
+  )
+}
 
 const ImageResult = ({
   resultUrl,
@@ -26,6 +35,7 @@ const ImageResult = ({
       alt="result"
       fallback="placeholder.png"
       className={showPreview ? 'opacity-0' : ''}
+      placeholder={<LoadingPlaceholder />}
       preview={
         previewUrl
           ? {

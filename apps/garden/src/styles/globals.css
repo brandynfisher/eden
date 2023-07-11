@@ -280,3 +280,13 @@ body {
     transform: scale(0.5) translate(-18px, -18px);
     transform-origin: center;
 }
+
+.ant-skeleton-element {
+    display: flex !important;
+    /*width: 100% !important;*/
+    /*height: 100% !important;*/
+}
+.ant-skeleton-image {
+    width: 100% !important;
+    height: 100% !important;
+}

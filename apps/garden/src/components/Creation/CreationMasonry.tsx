@@ -90,7 +90,7 @@ const CreationMasonry = ({
             height={windowHeight}
             offset={offset}
             overscanBy={4}
-            itemHeightEstimate={400}
+            itemHeightEstimate={300}
             render={CreationCard}
             onRender={maybeLoadMore}
           />
