@@ -110,7 +110,7 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const items = [
     !navigator.share
       ? {
-          title: 'Copy',
+          title: 'Copy URL',
           icon: copied ? (
             <CheckCircleOutlined className="text-xl" />
           ) : (
@@ -135,7 +135,7 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
       },
     },
     {
-      title: 'Create',
+      title: 'Create...',
       icon: (
         <Dropdown
           trigger={['click']}
