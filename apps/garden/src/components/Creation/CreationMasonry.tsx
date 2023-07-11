@@ -1,5 +1,8 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import OrderByButtons, { OrderByParam } from '@/components/OrderByButtons'
+import OrderByButtons, {
+  OrderByDefaultParam,
+  OrderByParam,
+} from '@/components/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
 import { useViewportSize } from '@mantine/hooks'
@@ -22,7 +25,7 @@ const CreationMasonry = ({
   hasSort: boolean
 }) => {
   const containerRef = useRef(null)
-  const [orderBy, setOrderBy] = useState<OrderByParam>()
+  const [orderBy, setOrderBy] = useState<OrderByParam>(OrderByDefaultParam)
   const [key, setKey] = useState(0)
 
   const { isConnected, settings, address } = useContext(UserContext)
@@ -93,6 +96,7 @@ const CreationMasonry = ({
             itemHeightEstimate={300}
             render={CreationCard}
             onRender={maybeLoadMore}
+            itemKey={data => data._id}
           />
         </>
       ) : (
