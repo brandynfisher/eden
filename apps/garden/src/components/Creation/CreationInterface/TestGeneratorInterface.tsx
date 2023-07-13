@@ -7,7 +7,7 @@ const TestGeneratorInterface = () => {
   const { pendingTasks, activeTaskId } = useContext(CreationNotificationContext)
 
   return (
-    <Card>
+    <Card className="w-full mt-4">
       <div className="mb-4"> [dev only]</div>
       {activeTaskId && (
         <div className="mb-4">

@@ -4,6 +4,7 @@ import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { getFileExtension } from '@/lib/getFileExtension'
 import { durationSinceDate } from '@/lib/time'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
@@ -189,12 +190,8 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                 <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
               </div>
               <Divider className="my-4" />
-              <div
-                title={creation.name}
-                className="relative first-letter:uppercase text-sm select-text cursor-text mb-1 w-full line-clamp-3 flex text-ellipsis"
-              >
-                {creation.name}
-              </div>
+
+              <TruncatedExpandableText text={creation.name} />
             </div>
           </div>
 

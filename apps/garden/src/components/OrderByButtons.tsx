@@ -7,6 +7,12 @@ export type OrderByParam = {
   direction: -1 | 1
 }
 
+export const OrderByDefaultParam: OrderByParam = {
+  label: 'Latest',
+  field: 'createdAt',
+  direction: -1,
+}
+
 const items: OrderByParam[] = [
   {
     label: 'Latest',

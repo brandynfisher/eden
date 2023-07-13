@@ -9,7 +9,7 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons'
 import { Task } from '@eden-labs/eden-sdk'
-import { Button, Dropdown, Menu, Progress, Space, Spin } from 'antd'
+import { Button, Dropdown, Progress, Space, Spin } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import { NextRouter, useRouter } from 'next/router'
 import React, { useContext } from 'react'
@@ -33,7 +33,7 @@ const CompletedTaskMenuItem = ({
   const taskRunDuration = durationBetweenDates(
     task.createdAt,
     task.updatedAt,
-    'seconds',
+    's',
     true,
   )
 
@@ -55,7 +55,7 @@ const CompletedTaskMenuItem = ({
             <ImageResult resultUrl={task.creation.thumbnail} />
           </div>
           <div className="flex items-center justify-between w-full">
-            <div className="flex flex-col min-w-0 mr-2">
+            <div className="flex flex-col min-w-0 mr-2 w-full">
               <div className="flex justify-between items-center">
                 <strong>/{task.generator.generatorName}</strong>
                 <div className="text-xs text-gray-800 dark:text-gray-400">
@@ -140,11 +140,34 @@ const TaskNotificationDropdown = () => {
       }))
     : []
 
-  const completedTaskItems = completedTasks
-    ? completedTasks.map(task =>
-        CompletedTaskMenuItem({ task, handleDismiss, router }),
-      )
-    : []
+  const completedTaskItems = []
+  if (completedTasks?.length) {
+    completedTaskItems.push({
+      label: (
+        <div className="flex items-center justify-between">
+          <div>Completed Tasks</div>
+          <div className="flex justify-center text-xs">
+            <Button
+              size="small"
+              className="text-xs !px-4"
+              type="dashed"
+              onClick={handleDismissAll}
+            >
+              Dismiss all
+            </Button>
+          </div>
+        </div>
+      ),
+      key: 0,
+    })
+
+    completedTaskItems.push(
+      ...completedTasks.map(task => ({
+        label: CompletedTaskMenuItem({ task, handleDismiss, router }),
+        key: task._id,
+      })),
+    )
+  }
 
   return (
     <Space className="max-w-3xl">
@@ -164,28 +187,7 @@ const TaskNotificationDropdown = () => {
         </Dropdown>
       )}
       {completedTaskItems.length > 0 && (
-        <Dropdown
-          trigger={['click']}
-          overlay={
-            <Menu className="max-w-xs">
-              <div className="p-2 flex items-center justify-between">
-                <div>Completed Tasks</div>
-                <div className="flex justify-center text-xs">
-                  <Button
-                    size="small"
-                    className="text-xs !px-4"
-                    type="dashed"
-                    onClick={handleDismissAll}
-                  >
-                    Dismiss all
-                  </Button>
-                </div>
-              </div>
-
-              {completedTaskItems}
-            </Menu>
-          }
-        >
+        <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
           <Button type="text" className="text-green-500 items-center flex px-2">
             <CheckOutlined className="mr-2" />
             {completedTaskItems.length}

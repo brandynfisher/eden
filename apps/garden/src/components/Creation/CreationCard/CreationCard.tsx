@@ -64,7 +64,7 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
         <div className="w-full flex justify-center">
           <div
             ref={ref}
-            className="relative rounded-lg overflow-hidden cursor-pointer "
+            className="relative rounded-lg overflow-hidden cursor-pointer"
           >
             <CreationCardPreview creation={creation} hovered={hovered} />
             {hovered && (

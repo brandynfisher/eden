@@ -50,36 +50,39 @@ const CreationInterface = ({
   }
 
   return (
-    <div className="w-full grid grid-cols-12" style={{ gap: '16px' }}>
-      <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6">
-        {presetCreation && <CreationPresetInfo creation={presetCreation} />}
-        <label htmlFor="activeGenerator">Selected Generator:</label>
-        <Select
-          id="activeGenerator"
-          value={activeGenerator?.generatorName}
-          onChange={handleGeneratorChange}
-          placeholder="Generators"
-        >
-          {generators.map(generator => (
-            <Select.Option
-              key={generator.generatorName}
-              value={generator.generatorName}
-            >
-              {generator.generatorName}
-            </Select.Option>
-          ))}
-        </Select>
-        {activeGenerator && (
-          <GeneratorForm
-            generator={activeGenerator}
-            presetConfig={
-              presetCreation ? presetCreation.task.config : undefined
-            }
-          />
-        )}
+    <div className="w-full">
+      <div className="w-full grid grid-cols-12" style={{ gap: '16px' }}>
+        <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6">
+          {presetCreation && <CreationPresetInfo creation={presetCreation} />}
+          <label htmlFor="activeGenerator">Selected Generator:</label>
+          <Select
+            id="activeGenerator"
+            value={activeGenerator?.generatorName}
+            onChange={handleGeneratorChange}
+            placeholder="Generators"
+          >
+            {generators.map(generator => (
+              <Select.Option
+                key={generator.generatorName}
+                value={generator.generatorName}
+              >
+                {generator.generatorName}
+              </Select.Option>
+            ))}
+          </Select>
+          {activeGenerator && (
+            <GeneratorForm
+              generator={activeGenerator}
+              presetConfig={
+                presetCreation ? presetCreation.task.config : undefined
+              }
+            />
+          )}
+        </div>
+
+        <ResultPreview />
       </div>
 
-      <ResultPreview />
       {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
     </div>
   )
