@@ -290,3 +290,8 @@ body {
     width: 100% !important;
     height: 100% !important;
 }
+
+/* override 'not-allowed' cursor */
+.ant-btn:disabled {
+    cursor: default;
+}
