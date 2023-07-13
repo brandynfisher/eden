@@ -1,5 +1,6 @@
 import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/TestGeneratorFinishButton'
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
+import { truncatedAddress } from '@/lib/address'
 import { CONFIG } from '@/lib/config'
 import { durationBetweenDates, durationSinceDate } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
@@ -105,7 +106,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
       />
       <div className="flex justify-between items-center">
         <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-          {task._id}
+          {truncatedAddress(task.taskId)}
         </div>
         {CONFIG.DEV_TYPE === 'dummy' && (
           <TestGeneratorFinishButton taskId={task.taskId} />
