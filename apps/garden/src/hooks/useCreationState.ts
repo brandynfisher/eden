@@ -3,7 +3,7 @@ import { fetcher } from '@/lib/fetcher'
 import { Task } from '@eden-labs/eden-sdk'
 import { App } from 'antd'
 import { useEffect, useState } from 'react'
-import useSWR, { useSWRConfig } from 'swr'
+import useSWR from 'swr'
 
 export const useCreationState = () => {
   const { message } = App.useApp()
@@ -17,22 +17,6 @@ export const useCreationState = () => {
       : null,
     fetcher,
   )
-  const { mutate, cache } = useSWRConfig()
-
-  const mutateSWRCacheKeys = async (keyFilter: string) => {
-    const isPrefixFilter = keyFilter.startsWith('/')
-
-    // find all */api/feed/ cache keys and trigger mutation/revalidation/refetch
-    for (const key of Array.from(cache.keys())) {
-      // swr infinite keys have a different format and need to be matched with a broader 'includes' filter
-      const targetKey = isPrefixFilter
-        ? key.startsWith(keyFilter)
-        : key.includes(keyFilter)
-      if (targetKey) {
-        await mutate(key, [])
-      }
-    }
-  }
 
   const tasks = data?.tasks as Task[]
   const pendingTasks = tasks?.filter(
@@ -71,9 +55,6 @@ export const useCreationState = () => {
               tasks.filter(task => task.status === 'completed'),
             ),
           )
-
-          // trigger refetch of cached masonry requests
-          await mutateSWRCacheKeys('api/feed')
         }
       }
     }
