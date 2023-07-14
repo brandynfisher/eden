@@ -40,13 +40,18 @@ async function main(db_to, minio) {
       assetB64 = assetInput
     }
 
-    const resizedBuffer = await sharp(assetB64)
-      .resize({ width: 500, withoutEnlargement: true })
-      .webp({ quality: 80 })
-      .toBuffer()
-
-    const uri = await uploadBufferAsset(resizedBuffer)
-    return uri
+    try {
+      const resizedBuffer = await sharp(assetB64)
+        .resize({ width: 500, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer()
+      const uri = await uploadBufferAsset(resizedBuffer)
+      return uri
+    } catch (error) {
+      console.log('Error resizing image')
+      console.error(error)
+      return assetInput
+    }
   }
 
   try {
@@ -54,7 +59,17 @@ async function main(db_to, minio) {
     const creations_to = db_to.collection('creations')
     const allCreations = await creations_to.find().toArray()
 
-    const visualMedia = allCreations.filter(creation => !!creation.thumbnail)
+    const visualMedia = allCreations.filter(
+      creation =>
+        !!creation.thumbnail &&
+        creation.thumbnail.split('.').pop() !== 'webp' &&
+        (creation.mediaAttributes?.mediaType === 'image' ||
+          creation.mediaAttributes?.mediaType === 'video'),
+    )
+
+    console.log(
+      ` --> ${visualMedia.length} creations with visual media, needing thumbs`,
+    )
 
     const getThumbnailInBatches = async creations => {
       for (let i = 0; i < creations.length; i += BATCH_SIZE) {
