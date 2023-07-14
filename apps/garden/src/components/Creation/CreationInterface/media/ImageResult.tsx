@@ -12,7 +12,7 @@ const ImagePreviewMask = () => (
 
 const LoadingPlaceholder = () => {
   return (
-    <Skeleton.Node active={true} className="flex !h-[300px] opacity-60">
+    <Skeleton.Node active={true} className="flex !min-h-[300px] opacity-60">
       <ExperimentOutlined className="text-2xl" />
     </Skeleton.Node>
   )
