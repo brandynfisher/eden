@@ -19,10 +19,6 @@ interface FeedGetArguments {
 
 type OrderByFieldNames = 'createdAt' | 'praiseCount' | 'bookmarkCount'
 
-interface SortOptions {
-  [key: string]: string | number
-}
-
 export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   const {
     userId: filterUserIds,
@@ -37,11 +33,12 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     userId: filterUserIds,
   })
 
-  const sort: SortOptions = {}
+  const sort = []
   if (orderBy && direction) {
-    sort[orderBy] = direction
-  } else {
-    sort['createdAt'] = -1
+    sort.push([orderBy, direction])
+  }
+  if (orderBy !== 'createdAt') {
+    sort.push(['createdAt', -1])
   }
 
   const collection = await Collection.findById(collectionId)

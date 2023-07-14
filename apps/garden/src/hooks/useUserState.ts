@@ -2,7 +2,6 @@ import { useAuth } from '@/hooks/useAuth'
 import { useBalance } from '@/hooks/useBalance'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCollections } from '@/hooks/useMyCollections'
-import { useMyCreations } from '@/hooks/useMyCreations'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
 import { useEffect, useState } from 'react'
@@ -22,10 +21,6 @@ export const useUserState = () => {
   const { isAuthenticated, isAuthenticating, authenticate, logout, authError } =
     useAuth()
   const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })
-  const { creations } = useMyCreations({
-    userId: address || '',
-    isAuthenticated,
-  })
   const { characters, refetchMyCharacters } = useMyCharacters({
     userId: address || '',
     isAuthenticated,
@@ -54,7 +49,6 @@ export const useUserState = () => {
     logout,
     address,
     mannaBalance: manna,
-    creations,
     characters,
     collections,
     refetch: {

@@ -71,7 +71,8 @@ export const useFeedPaginated = (
     size,
     setSize,
     isLoading,
-  } = useSWRInfinite(getKey, fetcher)
+    isValidating,
+  } = useSWRInfinite(getKey, fetcher, { revalidateFirstPage: false })
   const dataArray = data != null ? data.flat() : []
 
   const isLoadingMore =
@@ -79,11 +80,14 @@ export const useFeedPaginated = (
     (size > 0 && data != null && typeof data[size - 1] === 'undefined')
   const isEmpty = data?.[0]?.length === 0
 
-  const maybeLoadMore = useCallback(() => {
-    if (isLoadingMore) return
+  const maybeLoadMore = () => {
+    if (isValidating) return
+    if (isLoading || isLoadingMore) return
     if (isEmpty || (data && data.length >= data?.[0]?.pages)) return
+    if (!data?.[data?.length - 1]?.hasNextPage) return
+
     setSize(prevSize => prevSize + 1)
-  }, [isLoadingMore, isEmpty, data])
+  }
 
   const creationDocs = (
     dataArray ? [...dataArray.map(pageData => pageData.docs)] : []

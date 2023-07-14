@@ -1,3 +1,4 @@
+import { truncatedAddress } from '@/lib/address'
 import { fetcher } from '@/lib/fetcher'
 import { Task } from '@eden-labs/eden-sdk'
 import { App } from 'antd'
@@ -29,7 +30,7 @@ export const useCreationState = () => {
     const intervalId = setInterval(refetchPendingTasks, 5000) // Refetch every 5 seconds
 
     // Cleanup function to remove completed tasks from taskIds
-    const cleanupTasks = () => {
+    const cleanupTasks = async () => {
       if (tasks) {
         const completedTaskIds = tasks
           .filter(task => task.status === 'completed')
@@ -41,7 +42,9 @@ export const useCreationState = () => {
             const task = tasks.find(task => task.taskId === taskId)
             if (task) {
               message.destroy()
-              message.success(`Task ${task.taskId} completed successfully!`)
+              message.success(
+                `Task ${truncatedAddress(task.taskId)} completed successfully!`,
+              )
             }
           })
           setTaskIds(prevTaskIds =>

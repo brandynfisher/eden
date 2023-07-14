@@ -115,6 +115,21 @@ body {
     }
 }
 
+
+.anim-fade-in {
+    animation-name: fadeIn;
+    animation-duration: 350ms;
+    animation-delay: 500ms;
+    animation-fill-mode: forwards;
+}
+
+
+.anim-fade-out {
+    animation-name: fadeOut;
+    animation-duration: 350ms;
+    animation-fill-mode: forwards;
+}
+
 .anim-slide-fade-down {
     animation-name: slide-fade-down;
     animation-duration: 200ms;
@@ -289,4 +304,9 @@ body {
 .ant-skeleton-image {
     width: 100% !important;
     height: 100% !important;
+}
+
+/* override 'not-allowed' cursor */
+.ant-btn:disabled {
+    cursor: default;
 }
