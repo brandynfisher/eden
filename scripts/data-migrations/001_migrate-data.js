@@ -60,6 +60,11 @@ async function main(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
   }
 
   try {
+    console.log('Copying generators...')
+    const allGenerators = await selectDocs('generators')
+    const generators_to = db_to.collection('generators')
+    await generators_to.insertMany(allGenerators)
+
     console.log('Copying tasks...')
     const allTasks = await selectDocs('tasks', true)
     const tasks_to = db_to.collection('tasks')
@@ -80,14 +85,6 @@ async function main(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
     const allLoras = await selectDocs('loras')
     const loras_to = db_to.collection('loras')
     await loras_to.insertMany(allLoras)
-
-    console.log('Copying apiKeys...')
-    const allApiKeys = await selectDocs('apikeys')
-    const apiKeys_to = db_to.collection('apikeys')
-    allApiKeys.forEach(apiKey => {
-      delete apiKey.deleted
-    })
-    await apiKeys_to.insertMany(allApiKeys)
 
     console.log('Copying creations...')
     const allCreations = await selectDocs('creations', true)
@@ -151,6 +148,19 @@ async function main(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
     })
 
     await Promise.all(updatePromises)
+
+    console.log('Populating Manna for existing users...')
+
+    const updatePromises2 = allCreators.map(user => {
+      return db_to.collection('mannas').insertOne({
+        user: user._id,
+        balance: 1000,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    })
+
+    await Promise.all(updatePromises2)
 
     console.log('Finished migrating all collections')
   } catch (error) {

@@ -3,15 +3,15 @@ import interpolationParameters from '../generators/interpolate.js'
 import real2realParameters from '../generators/real2real.js'
 import remixParameters from '../generators/remix.js'
 
-const main = async db => {
-  console.log('Adding generators...')
+const main = async (db, ADMIN_API_KEY, ADMIN_API_SECRET) => {
+  console.log('Adding generator versions...')
 
   const provider = 'replicate'
   const address = 'abraham-ai/eden-sd-pipelines'
   const versionId =
     '79befe687d0930473e5528b59673890c694250b615e8405bc8f245f906ae8042'
 
-  // Register generators
+  // Define new versions
   const createGeneratorVersion = {
     provider,
     address,
@@ -19,13 +19,6 @@ const main = async db => {
     mode: 'generate',
     parameters: createParameters,
     isDeprecated: false,
-  }
-
-  const createGenerator = {
-    generatorName: 'create',
-    description: 'Create an image from a prompt',
-    output: 'creation',
-    versions: [createGeneratorVersion],
   }
 
   const interpolateGeneratorVersion = {
@@ -37,13 +30,6 @@ const main = async db => {
     isDeprecated: false,
   }
 
-  const interpolateGenerator = {
-    generatorName: 'interpolate',
-    description: 'Create a video interpolation between two prompts',
-    output: 'creation',
-    versions: [interpolateGeneratorVersion],
-  }
-
   const real2realGeneratorVersion = {
     provider,
     address,
@@ -51,13 +37,6 @@ const main = async db => {
     mode: 'real2real',
     parameters: real2realParameters,
     isDeprecated: false,
-  }
-
-  const real2realGenerator = {
-    generatorName: 'real2real',
-    description: 'Create a video interpolation between two images',
-    output: 'creation',
-    versions: [real2realGeneratorVersion],
   }
 
   const remixGeneratorVersion = {
@@ -69,23 +48,46 @@ const main = async db => {
     isDeprecated: false,
   }
 
-  const remixGenerator = {
-    generatorName: 'remix',
-    description: 'Generate a remix of an image',
-    output: 'creation',
-    versions: [remixGeneratorVersion],
+  // Fetch and update each generator with new version
+  const generatorNames = ['create', 'interpolate', 'real2real', 'remix']
+  const newVersions = [
+    createGeneratorVersion,
+    interpolateGeneratorVersion,
+    real2realGeneratorVersion,
+    remixGeneratorVersion,
+  ]
+
+  for (let i = 0; i < generatorNames.length; i++) {
+    const generator = await db
+      .collection('generators')
+      .findOne({ generatorName: generatorNames[i] })
+    if (generator) {
+      generator.versions.push(newVersions[i])
+      await db
+        .collection('generators')
+        .updateOne(
+          { generatorName: generatorNames[i] },
+          { $set: { versions: generator.versions } },
+        )
+    } else {
+      console.log(`Generator "${generatorNames[i]}" not found in the database.`)
+    }
   }
 
-  await db.createCollection('generators')
-
-  await db
-    .collection('generators')
-    .insertMany([
-      createGenerator,
-      interpolateGenerator,
-      real2realGenerator,
-      remixGenerator,
-    ])
+  console.log('Creating a secure admin API Key...')
+  const user = await db.collection('users').findOne({ userId: 'admin' })
+  if (user) {
+    await db.collection('apikeys').insertOne({
+      user: user._id,
+      apiKey: ADMIN_API_KEY,
+      apiSecret: ADMIN_API_SECRET,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      note: 'Production admin API key, created by migration.',
+    })
+  } else {
+    console.log(`User "admin" not found in the database.`)
+  }
 }
 
 export default main
