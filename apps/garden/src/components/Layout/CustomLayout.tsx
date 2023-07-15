@@ -11,7 +11,7 @@ const InfiniteLoadingIndicator = ({ isLoading }: { isLoading: boolean }) => {
         isLoading ? 'anim-fade-in' : 'anim-fade-out'
       } z-10 fixed flex p-4 justify-end w-full bottom-0 right-0 pointer-events-none bg-opacity-60`}
     >
-      <div className="text-xs flex w-1/4 bg-gray-200 dark:bg-gray-800 p-2 !bg-opacity-60 rounded-lg">
+      <div className="text-xs flex bg-gray-200 dark:bg-gray-800 p-2 !bg-opacity-60 rounded-lg">
         <Spin size="small" />
       </div>
     </div>
