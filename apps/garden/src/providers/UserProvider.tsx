@@ -22,7 +22,7 @@ export interface UserContextType {
     collections: VoidFunction
   }
   settings?: Settings
-  updateSetting: (settingName: SettingName, newValue: number) => void
+  updateSetting: (settingName: SettingName, newValue: number | 'auto') => void
 }
 
 const defaultUserState: UserContextType = {

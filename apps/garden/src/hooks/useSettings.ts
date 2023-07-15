@@ -1,14 +1,16 @@
+import { useLocalStorage } from '@mantine/hooks'
 import { useCallback, useState } from 'react'
 
 const GridSettingParams = {
-  displayName: 'Max Columns',
-  defaultValue: 4,
+  displayName: 'Grid Columns',
+  initialValue: 4,
+  defaultValue: 'auto',
   min: 1,
   max: 12,
 }
 
 export type GridSetting = {
-  value: number | undefined
+  value: number | 'auto'
   params: typeof GridSettingParams
 }
 
@@ -19,28 +21,30 @@ export interface Settings {
 }
 
 export const useSettings = () => {
+  const [maxGridColsValue, setMaxGridColsValue] = useLocalStorage<
+    number | 'auto'
+  >({ key: 'maxGridCols', defaultValue: 'auto' })
+
   const [settings, setSettings] = useState<Settings>({
     maxGridCols: {
-      value: undefined,
+      value: maxGridColsValue,
       params: GridSettingParams,
     },
   })
 
   const updateSetting = useCallback(
-    (settingName: SettingName, newValue: number) => {
+    (settingName: SettingName, newValue: number | 'auto') => {
       const updatedSettings = { ...settings }
       updatedSettings[settingName].value = newValue
 
-      //@todo: update localstorage persisted settings too
+      if (settingName === 'maxGridCols') {
+        setMaxGridColsValue(newValue)
+      }
 
       setSettings(updatedSettings)
     },
     [settings],
   )
-
-  // useEffect(() => {
-  //   //@todo: fetch / initialize from local storage if available
-  // }, [settings])
 
   return {
     settings,

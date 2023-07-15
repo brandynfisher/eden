@@ -49,8 +49,14 @@ const CreationMasonry = ({
     {
       width,
       columnGutter: 12,
-      columnCount: settings?.maxGridCols.value || undefined,
-      maxColumnCount: settings?.maxGridCols.value || 4,
+      columnCount:
+        settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
+          ? settings.maxGridCols.value
+          : undefined,
+      maxColumnCount:
+        settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
+          ? settings.maxGridCols.value
+          : settings?.maxGridCols.params.initialValue,
     },
     [orderBy],
   )
