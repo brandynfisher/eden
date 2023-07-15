@@ -10,17 +10,25 @@ import {
   ExperimentOutlined,
   UpCircleOutlined,
 } from '@ant-design/icons'
-import { Generator, GeneratorParameter, Task } from '@edenlabs/eden-sdk'
+import {
+  Creation,
+  Generator,
+  GeneratorParameter,
+  Task,
+} from '@edenlabs/eden-sdk'
 import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
+import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
+
+type FieldValues = { [key: string]: string }
 
 const GeneratorForm = ({
   generator,
-  presetConfig,
+  presetCreation,
 }: {
   generator: Generator
-  presetConfig?: Task['config']
+  presetCreation?: Creation
 }) => {
   const {
     taskIds,
@@ -30,9 +38,10 @@ const GeneratorForm = ({
     refetchPendingTasks,
   } = useContext(CreationNotificationContext)
   const { message } = App.useApp()
+  const router = useRouter()
   const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
   const [form] = Form.useForm()
-  const [config, setConfig] = useState(presetConfig)
+  const [presetConfig, setPresetConfig] = useState<Task['config']>()
   const [initialParams, setInitialParams] = useState<GeneratorParameter[]>([])
   const [requiredParameters, setRequiredParams] = useState<
     GeneratorParameter[]
@@ -40,6 +49,29 @@ const GeneratorForm = ({
   const [optionalParameters, setOptionalParams] = useState<
     GeneratorParameter[]
   >([])
+
+  useEffect(() => {
+    const transformConfig = () => {
+      if (!presetCreation) {
+        return
+      }
+
+      // if is "recreate" add fields to pre-populate media/image upload fields by uri
+      if (router.query.generator && router.query.generator === 'remix') {
+        setPresetConfig({
+          ...presetCreation.task.config,
+          init_image_strength: 0.3,
+          init_image_data: presetCreation.uri,
+        })
+        return
+      }
+      // else assume preset mode
+      // transform config in whatever way
+      setPresetConfig(presetCreation.task.config)
+    }
+
+    transformConfig()
+  }, [presetCreation])
 
   const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
     if (!currentGenerator) return
@@ -93,14 +125,22 @@ const GeneratorForm = ({
 
     try {
       const formFieldValues = form.getFieldsValue()
-      const consolidatedFieldValues = {
+      const consolidatedFieldValues: FieldValues = {
         ...formFieldValues,
         ...stringArrayValues,
       }
 
+      // filter out temporary preset form values
+      const cleanedValues = Object.keys(consolidatedFieldValues)
+        .filter(key => !key.endsWith('--preset'))
+        .reduce((obj: FieldValues, key) => {
+          obj[key] = consolidatedFieldValues[key]
+          return obj
+        }, {})
+
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
-        config: consolidatedFieldValues,
+        config: cleanedValues,
       })
 
       message.success('Task created!')
@@ -121,14 +161,14 @@ const GeneratorForm = ({
     setHasChangedGenerator && setHasChangedGenerator(true)
     // reset form
     setStringArrayValues({})
-    setConfig({})
+    setPresetConfig({})
   }
 
   const renderFormFields = useCallback(
     (parameters: GeneratorParameter[], isOptional: boolean) => {
       return parameters.map(parameter => {
-        if (config) {
-          const presetParameter = Object.entries(config).filter(
+        if (presetConfig) {
+          const presetParameter = Object.entries(presetConfig).filter(
             ([key]) => key === parameter.name,
           )[0]
 
@@ -137,7 +177,7 @@ const GeneratorForm = ({
           }
         }
 
-        if (!presetConfig && isOptional && !showOptional) {
+        if (!presetCreation && isOptional && !showOptional) {
           return
         }
 
@@ -193,7 +233,7 @@ const GeneratorForm = ({
         )
       })
     },
-    [config, showOptional],
+    [presetConfig, showOptional],
   )
 
   return (
@@ -219,7 +259,7 @@ const GeneratorForm = ({
             </Button>
 
             <Button type="text" onClick={resetForm}>
-              Reset {presetConfig ? '(using preset)' : ''}
+              Reset {presetCreation ? '(using preset)' : ''}
             </Button>
           </div>,
         ]}

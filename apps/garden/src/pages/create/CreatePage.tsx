@@ -1,10 +1,8 @@
 import CreationInterface from '@/components/Creation/CreationInterface/CreationInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
-import { Inter } from 'next/font/google'
 import { useRouter } from 'next/router'
-
-const inter = Inter({ subsets: ['latin'] })
+import { useEffect, useState } from 'react'
 
 const CreatePageWithPreset = ({
   generator,
@@ -30,15 +28,20 @@ const CreatePageDefault = () => {
 
 const CreatePage = () => {
   const router = useRouter()
+  const [usesPreset, setUsesPreset] = useState<boolean>(false)
 
-  const shouldUsePreset = () => {
-    if (!router.query) return false
-    return !!router.query.presetId
-  }
+  useEffect(() => {
+    if (!router.query) {
+      setUsesPreset(false)
+      return
+    }
+
+    setUsesPreset(!!router.query.presetId)
+  }, [router.query])
 
   return (
-    <div className={`flex ${inter.className}`}>
-      {shouldUsePreset() ? (
+    <div className={`flex`}>
+      {usesPreset ? (
         <CreatePageWithPreset
           generator={
             router.query.generator ? String(router.query.generator) : undefined

@@ -14,7 +14,6 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
   const [isFollowingUser, setIsFollowingUser] = React.useState(false)
   const [isOwnProfile, setIsOwnProfile] = React.useState(false)
 
-  //@ts-ignore //@todo: fix data discrepancies, see other todos
   const userId = creatorId
   const { creator } = useCreator(userId)
   const { isAuthenticated, address } = useContext(UserContext)
@@ -65,6 +64,7 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
 
       {isAuthenticated && !isOwnProfile && (
         <Button
+          title={isFollowingUser ? 'Unfollow' : 'Follow'}
           type={isFollowingUser ? 'link' : 'default'}
           onClick={onFollowButtonClick}
           loading={followLoading ? { delay: 250 } : false}

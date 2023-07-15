@@ -9,7 +9,9 @@ const SliderParameter = (props: {
   const onChange = (newValue: number | null) => {
     if (newValue !== null) {
       props.form.setFieldsValue({ [props.parameter.name]: newValue })
-      props.form.setFieldsValue({ [`${props.parameter.name}-2`]: newValue })
+      props.form.setFieldsValue({
+        [`${props.parameter.name}--preset`]: newValue,
+      })
     }
   }
 
@@ -47,7 +49,7 @@ const SliderParameter = (props: {
         <Col style={{ marginLeft: 10 }} className="flex items-end">
           <Form.Item
             style={{ marginBottom: 5 }}
-            name={`${props.parameter.name}-2`}
+            name={`${props.parameter.name}--preset`}
             initialValue={props.parameter.default}
             rules={[
               {

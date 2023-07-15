@@ -3,7 +3,8 @@ import {
   CheckCircleOutlined,
   CopyOutlined,
   DownloadOutlined,
-  ExperimentOutlined,
+  EllipsisOutlined,
+  RetweetOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -90,7 +91,9 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const getCreateMenuItems = (isImage: boolean) => {
     const menuItems = [
       {
-        label: <div onClick={() => handleCreate(null, creation)}>Preset</div>,
+        label: (
+          <div onClick={() => handleCreate(null, creation)}>Use as preset</div>
+        ),
         key: '1',
       },
     ]
@@ -135,7 +138,14 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
       },
     },
     {
-      title: 'Create...',
+      title: 'Recreate',
+      icon: <RetweetOutlined className="text-xl" />,
+      onClick: async () => {
+        await handleCreate('remix', creation)
+      },
+    },
+    {
+      title: 'More...',
       icon: (
         <Dropdown
           trigger={['click']}
@@ -144,7 +154,7 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
           menu={{ items: getCreateMenuItems(!!isImage(creation.uri)) }}
         >
           <div className="flex items-center justify-center w-full h-full">
-            <ExperimentOutlined className="text-xl" />
+            <EllipsisOutlined className="text-xl" />
           </div>
         </Dropdown>
       ),
