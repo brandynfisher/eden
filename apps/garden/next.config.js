@@ -4,6 +4,7 @@ const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
 module.exports = withTM({
   output: 'standalone',
   experimental: {
+    scrollRestoration: true,
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
   reactStrictMode: true,
