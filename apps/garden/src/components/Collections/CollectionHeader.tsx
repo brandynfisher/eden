@@ -1,6 +1,6 @@
 import { truncatedAddress } from '@/lib/address'
 import { UserContext } from '@/providers/UserProvider'
-import { Collection } from '@eden-labs/eden-sdk'
+import { Collection } from '@edenlabs/eden-sdk'
 import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'

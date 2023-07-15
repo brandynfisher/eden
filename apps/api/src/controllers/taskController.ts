@@ -2,7 +2,7 @@ import {
   TasksCreateArguments,
   TasksGetArguments,
   TasksListArguments,
-} from '@eden-labs/eden-sdk'
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { getLatestGeneratorVersion, prepareConfig } from '../lib/generator'

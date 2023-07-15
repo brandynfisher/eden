@@ -1,5 +1,5 @@
 {
-  "extends": "@eden-labs/tsconfig/garden.json",
+  "extends": "@edenlabs/tsconfig/garden.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

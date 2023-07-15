@@ -9,7 +9,7 @@ import {
   CloseOutlined,
   LoadingOutlined,
 } from '@ant-design/icons'
-import { Task } from '@eden-labs/eden-sdk'
+import { Task } from '@edenlabs/eden-sdk'
 import { Button, Dropdown, Progress, Space, Spin } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import { NextRouter, useRouter } from 'next/router'

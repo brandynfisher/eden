@@ -1,5 +1,5 @@
 import { useCreationState } from '@/hooks/useCreationState'
-import { Task } from '@eden-labs/eden-sdk'
+import { Task } from '@edenlabs/eden-sdk'
 import React, { PropsWithChildren, createContext } from 'react'
 
 export interface CreationNotificationContextType {

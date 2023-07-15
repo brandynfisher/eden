@@ -1,6 +1,6 @@
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import CreationReactions from '@/components/Creation/CreationReactions'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 export interface CreationCardHoverOverlayProps {

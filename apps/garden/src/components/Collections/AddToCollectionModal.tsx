@@ -1,6 +1,6 @@
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Collection, Creation } from '@eden-labs/eden-sdk'
+import { Collection, Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { App, Button, Form, Input, List, Modal } from 'antd'
 import axios from 'axios'

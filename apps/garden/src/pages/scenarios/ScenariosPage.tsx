@@ -1,5 +1,5 @@
 import ScenarioCard from '@/components/Scenarios/ScenarioCard'
-import { Scenario, ScenarioType } from '@eden-labs/eden-sdk'
+import { Scenario, ScenarioType } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/router'
 import React from 'react'
 

@@ -1,7 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { App, Button } from 'antd'
 import axios from 'axios'

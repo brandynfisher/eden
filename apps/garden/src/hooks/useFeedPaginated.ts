@@ -1,6 +1,6 @@
 import { OrderByParam } from '@/components/OrderByButtons'
 import { fetcher } from '@/lib/fetcher'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { useCallback } from 'react'
 import useSWRInfinite from 'swr/infinite'
 

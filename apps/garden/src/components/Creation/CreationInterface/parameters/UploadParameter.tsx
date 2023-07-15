@@ -1,5 +1,5 @@
 import { UploadOutlined } from '@ant-design/icons'
-import { GeneratorParameter } from '@eden-labs/eden-sdk'
+import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { App, Form, FormInstance, Row } from 'antd'
 import { Modal, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'

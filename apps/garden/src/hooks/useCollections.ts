@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Collection } from '@eden-labs/eden-sdk'
+import { Collection } from '@edenlabs/eden-sdk'
 import useSWR from 'swr'
 
 export const useCollections = (userId: string) => {

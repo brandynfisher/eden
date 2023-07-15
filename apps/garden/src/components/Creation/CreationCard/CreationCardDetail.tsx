@@ -1,6 +1,6 @@
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { durationSinceDate } from '@/lib/time'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 const CreationCardDetail = ({

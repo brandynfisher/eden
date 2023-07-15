@@ -1,6 +1,6 @@
 import { truncatedAddress } from '@/lib/address'
 import { fetcher } from '@/lib/fetcher'
-import { Task } from '@eden-labs/eden-sdk'
+import { Task } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'

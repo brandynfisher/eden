@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
-import { stat } from 'fs/promises'
 
 import { Creation } from '../../models/Creation'
 import { Generator } from '../../models/Generator'

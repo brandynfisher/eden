@@ -24,9 +24,9 @@
   "author": "Eden Labs",
   "license": "MIT",
   "dependencies": {
-    "@eden-labs/config": "*",
-    "@eden-labs/eden-sdk": "*",
-    "@eden-labs/tsconfig": "*",
+    "@edenlabs/config": "*",
+    "@edenlabs/eden-sdk": "*",
+    "@edenlabs/tsconfig": "*",
     "@fastify/cors": "^8.2.1",
     "@fastify/jwt": "^6.7.1",
     "@fastify/mongodb": "^6.2.0",

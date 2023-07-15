@@ -1,4 +1,4 @@
-import { MediaAttributes, MediaType } from '@eden-labs/eden-sdk'
+import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'

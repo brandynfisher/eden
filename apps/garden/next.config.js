@@ -1,5 +1,5 @@
-const path = require("path");
-const withTM = require('next-transpile-modules')(['@eden-labs/eden-sdk'])
+const path = require('path')
+const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
 
 module.exports = withTM({
   output: 'standalone',

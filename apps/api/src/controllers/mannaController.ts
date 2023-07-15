@@ -1,4 +1,4 @@
-import { MannaVouchersRedeemArguments } from '@eden-labs/eden-sdk'
+import { MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { randomId } from '../lib/util'

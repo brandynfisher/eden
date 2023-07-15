@@ -1,5 +1,5 @@
 import { useEdenState } from '@/hooks/useEdenState'
-import { Generator } from '@eden-labs/eden-sdk'
+import { Generator } from '@edenlabs/eden-sdk'
 import React, { PropsWithChildren, createContext } from 'react'
 
 export interface EdenContextType {

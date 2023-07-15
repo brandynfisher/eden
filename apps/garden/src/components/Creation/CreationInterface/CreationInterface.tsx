@@ -5,7 +5,7 @@ import TestGeneratorInterface from '@/components/Creation/CreationInterface/Test
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { Select } from 'antd'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 

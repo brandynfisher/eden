@@ -4,7 +4,7 @@ import {
   ScenariosGetArguments,
   ScenariosListArguments,
   ScenariosUpdateArguments,
-} from '@eden-labs/eden-sdk'
+} from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { User } from '../models/Creator'

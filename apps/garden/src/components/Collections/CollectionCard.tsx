@@ -1,4 +1,4 @@
-import { Collection } from '@eden-labs/eden-sdk'
+import { Collection } from '@edenlabs/eden-sdk'
 import { Card, Image } from 'antd'
 import Link from 'next/link'
 import React from 'react'

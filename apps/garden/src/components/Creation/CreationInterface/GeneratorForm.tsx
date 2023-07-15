@@ -10,7 +10,7 @@ import {
   ExperimentOutlined,
   UpCircleOutlined,
 } from '@ant-design/icons'
-import { Generator, GeneratorParameter, Task } from '@eden-labs/eden-sdk'
+import { Generator, GeneratorParameter, Task } from '@edenlabs/eden-sdk'
 import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
 import React, { useCallback, useContext, useEffect, useState } from 'react'

@@ -1,4 +1,4 @@
-import { MediaAttributes, MediaType } from '@eden-labs/eden-sdk'
+import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { randomUUID } from 'crypto'
 import type { FastifyInstance } from 'fastify'

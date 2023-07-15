@@ -1,4 +1,4 @@
-import { MediaType } from '@eden-labs/eden-sdk'
+import { MediaType } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 

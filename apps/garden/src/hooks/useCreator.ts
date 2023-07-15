@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Creator } from '@eden-labs/eden-sdk'
+import { Creator } from '@edenlabs/eden-sdk'
 import useSWR from 'swr'
 
 export const useCreator = (creatorId: string) => {

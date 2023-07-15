@@ -1,7 +1,7 @@
 import {
   AuthCreateChallengeArguments,
   AuthLoginArguments,
-} from '@eden-labs/eden-sdk'
+} from '@edenlabs/eden-sdk'
 import { ethers } from 'ethers'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { SiweMessage, generateNonce } from 'siwe'

@@ -1,4 +1,4 @@
-import { ReactionType } from '@eden-labs/eden-sdk'
+import { ReactionType } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 

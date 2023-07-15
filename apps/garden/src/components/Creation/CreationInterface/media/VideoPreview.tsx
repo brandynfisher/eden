@@ -1,7 +1,7 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { formatDuration } from '@/lib/time'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { Badge } from 'antd'
 
 const VideoLengthBadge = ({ duration }: { duration?: number }) => {

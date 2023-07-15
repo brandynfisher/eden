@@ -4,7 +4,7 @@ import {
   CharactersGetArguments,
   CharactersListArguments,
   CharactersUpdateArguments,
-} from '@eden-labs/eden-sdk'
+} from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { Character } from '../models/Character'

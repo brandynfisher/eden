@@ -1,6 +1,6 @@
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
-import { CharactersDeleteArguments, EdenClient } from '@eden-labs/eden-sdk'
+import { CharactersDeleteArguments, EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {

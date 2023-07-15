@@ -4,7 +4,7 @@ import {
   CapabilitiesGetArguments,
   CapabilitiesListArguments,
   CapabilitiesUpdateArguments,
-} from '@eden-labs/eden-sdk'
+} from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { Capability, CapabilityType } from '../models/Capability'

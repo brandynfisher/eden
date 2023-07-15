@@ -1,4 +1,4 @@
-import { Capability } from '@eden-labs/eden-sdk'
+import { Capability } from '@edenlabs/eden-sdk'
 import { Card } from 'antd'
 import React from 'react'
 

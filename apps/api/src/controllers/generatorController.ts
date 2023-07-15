@@ -1,7 +1,7 @@
 import {
   GeneratorsGetArguments,
   GeneratorsListArguments,
-} from '@eden-labs/eden-sdk'
+} from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { Generator, GeneratorVersionSchema } from '../models/Generator'

@@ -3,7 +3,7 @@ import {
   CreatorsGetArguments,
   CreatorsListArguments,
   CreatorsUnfollowArguments,
-} from '@eden-labs/eden-sdk'
+} from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { Creation } from '../models/Creation'

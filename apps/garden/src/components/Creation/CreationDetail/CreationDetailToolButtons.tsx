@@ -6,7 +6,7 @@ import {
   ExperimentOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Dropdown } from 'antd'
 import { useRouter } from 'next/router'

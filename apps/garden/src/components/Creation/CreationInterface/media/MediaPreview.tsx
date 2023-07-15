@@ -1,7 +1,7 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import VideoPreview from '@/components/Creation/CreationInterface/media/VideoPreview'
 import { getFileExtension } from '@/lib/getFileExtension'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 
 const MediaPreview = ({
   creation,

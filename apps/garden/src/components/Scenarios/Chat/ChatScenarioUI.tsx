@@ -8,7 +8,7 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
-import { Character } from '@eden-labs/eden-sdk'
+import { Character } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { useState } from 'react'
 import * as timeago from 'timeago.js'

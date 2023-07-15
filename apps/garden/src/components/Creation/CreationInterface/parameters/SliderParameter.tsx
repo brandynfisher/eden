@@ -1,4 +1,4 @@
-import { GeneratorParameter } from '@eden-labs/eden-sdk'
+import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Col, Form, FormInstance, InputNumber, Row, Slider } from 'antd'
 import { useEffect } from 'react'
 

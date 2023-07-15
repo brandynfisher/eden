@@ -1,5 +1,5 @@
 import { ForwardFilled } from '@ant-design/icons'
-import { Task } from '@eden-labs/eden-sdk'
+import { Task } from '@edenlabs/eden-sdk'
 import { Button } from 'antd'
 import axios from 'axios'
 

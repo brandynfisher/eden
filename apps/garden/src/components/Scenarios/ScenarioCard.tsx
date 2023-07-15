@@ -1,4 +1,4 @@
-import { Scenario } from '@eden-labs/eden-sdk'
+import { Scenario } from '@edenlabs/eden-sdk'
 import { Card } from 'antd'
 import React from 'react'
 

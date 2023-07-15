@@ -1,6 +1,6 @@
 import CapabilityCard from '@/components/Characters/Capability/CapabilityCard'
 import { useCharacter } from '@/hooks/useCharacter'
-import { Character } from '@eden-labs/eden-sdk'
+import { Character } from '@edenlabs/eden-sdk'
 import { Button } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'

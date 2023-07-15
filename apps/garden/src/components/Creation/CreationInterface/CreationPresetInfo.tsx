@@ -1,6 +1,6 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { Button, Card } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'

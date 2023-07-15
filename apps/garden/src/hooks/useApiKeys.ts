@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { ApiKey } from '@eden-labs/eden-sdk'
+import { ApiKey } from '@edenlabs/eden-sdk'
 import useSWR from 'swr'
 
 export const useApiKeys = ({

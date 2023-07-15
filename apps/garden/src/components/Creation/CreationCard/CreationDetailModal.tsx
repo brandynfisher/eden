@@ -1,6 +1,6 @@
 import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
 import { CloseOutlined } from '@ant-design/icons'
-import { Creation } from '@eden-labs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { Modal } from 'antd'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'

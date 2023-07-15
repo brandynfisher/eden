@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Generator } from '@eden-labs/eden-sdk'
+import { Generator } from '@edenlabs/eden-sdk'
 import useSWR from 'swr'
 import useSWRImmutable from 'swr/immutable'
 

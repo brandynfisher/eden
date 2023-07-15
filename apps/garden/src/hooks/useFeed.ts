@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Reactions } from '@eden-labs/eden-sdk'
+import { Reactions } from '@edenlabs/eden-sdk'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
