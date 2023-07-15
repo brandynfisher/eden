@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
+import { stat } from 'fs/promises'
 
 import { Creation } from '../../models/Creation'
 import { Generator } from '../../models/Generator'
@@ -59,15 +60,13 @@ const handleUpdate = async (
   server: FastifyInstance,
   taskId: string,
   output: TaskOutput[],
+  status?: string,
 ) => {
   const task = await Task.findOne({
     taskId,
   })
   if (!task) {
     throw new Error(`Could not find task ${taskId}`)
-  }
-  if (task.status === 'completed') {
-    return
   }
 
   output = Array.isArray(output) ? output : [output]
@@ -98,7 +97,7 @@ const handleUpdate = async (
     })
   }
 
-  if (isCompleted) {
+  if (isCompleted && status === 'succeeded') {
     const finalOutput = finalOutputs.slice(-1)[0]
     Object.assign(taskUpdate, { output: finalOutput })
     const generator = await Generator.findById(task.generator)
@@ -217,10 +216,10 @@ export const receiveTaskUpdate = async (
       // await handleStarting(server, taskId);
       break
     case 'processing':
-      await handleUpdate(server, taskId, output)
+      await handleUpdate(server, taskId, output, 'processing')
       break
     case 'succeeded':
-      // await handleUpdate(server, taskId, output, 'succeeded')
+      await handleUpdate(server, taskId, output, 'succeeded')
       break
     case 'failed':
       await handleFailure(taskId, error)
