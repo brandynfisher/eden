@@ -6,11 +6,11 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 
 const CreationDetailModal = ({
-  setDetailModalOpen,
+  onAfterClose,
   creation,
   modalUrl,
 }: {
-  setDetailModalOpen: (open: boolean) => void
+  onAfterClose: () => void
   creation: Creation
   modalUrl: string
 }) => {
@@ -39,7 +39,7 @@ const CreationDetailModal = ({
   }
 
   const afterCloseHandler = () => {
-    setDetailModalOpen(false)
+    onAfterClose()
   }
 
   return (

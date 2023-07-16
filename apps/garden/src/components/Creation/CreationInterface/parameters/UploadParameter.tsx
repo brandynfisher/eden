@@ -4,7 +4,7 @@ import { App, Form, FormInstance, Row } from 'antd'
 import { Modal, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -24,9 +24,34 @@ const UploadParameter = (props: {
   const [previewTitle, setPreviewTitle] = useState('')
 
   const [fileList, setFileList] = useState<UploadFile[]>([])
-  const [urls, setUrls] = useState<string[]>([])
 
   const isArray = Array.isArray(props.parameter.default)
+
+  const [urls, setUrls] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!props.parameter.default) {
+      return
+    }
+
+    const newUrls = isArray
+      ? props.parameter.default
+      : [props.parameter.default]
+    const dummyFileList: UploadFile[] = newUrls.map((newUrl: string) => ({
+      name: newUrl,
+      preview: newUrl,
+      percent: 100,
+      response: { fileUrl: newUrl },
+      thumbUrl: newUrl,
+      type: 'image/jpeg',
+    }))
+    setFileList(dummyFileList)
+    props.form.setFieldsValue({
+      [props.parameter.name]: isArray ? newUrls : newUrls[0],
+    })
+    setUrls(newUrls)
+  }, [props.parameter.default])
+
   const maxUploads = isArray ? props.parameter.maxLength || 3 : 1
 
   const handleChange = async (info: UploadChangeParam) => {

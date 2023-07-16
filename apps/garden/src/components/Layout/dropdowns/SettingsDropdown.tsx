@@ -7,7 +7,7 @@ import {
   SettingOutlined,
   TableOutlined,
 } from '@ant-design/icons'
-import { Button, Dropdown, Slider } from 'antd'
+import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
@@ -19,7 +19,7 @@ const LoginLogoutButton = () => {
 
   const handleAuthClick = useCallback(async () => {
     if (!isAuthenticated) {
-      authenticate && authenticate()
+      authenticate && (await authenticate())
     } else {
       logout && (await logout())
       await router.push('/')
@@ -68,6 +68,10 @@ const MaxColumnSelector = () => {
   const { settings, updateSetting } = useContext(UserContext)
   const currentSetting = settings?.maxGridCols
 
+  const updateMaxGridCols = (newValue: number | 'auto') => {
+    updateSetting('maxGridCols', newValue)
+  }
+
   if (!currentSetting) {
     return null
   }
@@ -76,21 +80,41 @@ const MaxColumnSelector = () => {
     <div className="w-full">
       <div className="flex items-center">
         <TableOutlined />
-        <div className="ml-2">
-          {currentSetting.params.displayName}:{' '}
-          {currentSetting.value || currentSetting.params.defaultValue}
+        <div className="ml-2 flex gap-2 w-full justify-between">
+          {currentSetting.params.displayName}
+          <div className="flex gap-2 items-center">
+            <div className="text-gray-500">
+              {currentSetting.value !== 'auto' ? currentSetting.value : 'auto'}
+            </div>
+            <Switch
+              title="Toggle column count (automatic/fixed number)"
+              checked={currentSetting.value === 'auto'}
+              onClick={(newValue, ev) => {
+                updateMaxGridCols(
+                  currentSetting.value === 'auto'
+                    ? currentSetting.params.initialValue
+                    : 'auto',
+                )
+                ev.stopPropagation()
+              }}
+            />
+          </div>
         </div>
       </div>
-      <div onClick={ev => ev.stopPropagation()}>
-        <Slider
-          value={currentSetting.value || currentSetting.params.defaultValue}
-          min={currentSetting.params.min}
-          max={currentSetting.params.max}
-          step={1}
-          onChange={(newValue: number) =>
-            updateSetting('maxGridCols', newValue)
-          }
-        />
+      <div
+        className="flex justify-between items-center"
+        onClick={ev => ev.stopPropagation()}
+      >
+        {currentSetting.value !== 'auto' && (
+          <Slider
+            className="w-full"
+            value={currentSetting.value}
+            min={currentSetting.params.min}
+            max={currentSetting.params.max}
+            step={1}
+            onChange={(newValue: number) => updateMaxGridCols(newValue)}
+          />
+        )}
       </div>
     </div>
   )

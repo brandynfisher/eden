@@ -5,7 +5,7 @@ import CreationDetailModal from '@/components/Creation/CreationCard/CreationDeta
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { NextRouter, useRouter } from 'next/router'
-import React from 'react'
+import { useState } from 'react'
 
 interface ISpecialRouteIndex<TValue> {
   [id: string]: TValue
@@ -46,10 +46,10 @@ const getModalUrls = (
 const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
-  const [detailModalOpen, setDetailModalOpen] = React.useState(false)
-  const [creation, setCreation] = React.useState(data)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [creation, setCreation] = useState(data)
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
-    React.useState(false)
+    useState(false)
 
   const { pageUrl, modalUrl } = getModalUrls(router, creation._id)
 
@@ -79,7 +79,9 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
       {detailModalOpen && (
         <CreationDetailModal
           modalUrl={modalUrl}
-          setDetailModalOpen={setDetailModalOpen}
+          onAfterClose={() => {
+            setDetailModalOpen(false)
+          }}
           creation={creation}
         />
       )}

@@ -2,7 +2,7 @@ import { SettingName, Settings } from '@/hooks/useSettings'
 import { useUserState } from '@/hooks/useUserState'
 import { Collection } from '@edenlabs/eden-sdk'
 import { Character } from '@edenlabs/eden-sdk'
-import React, { PropsWithChildren, createContext } from 'react'
+import { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {
   isConnected: boolean
@@ -22,7 +22,7 @@ export interface UserContextType {
     collections: VoidFunction
   }
   settings?: Settings
-  updateSetting: (settingName: SettingName, newValue: number) => void
+  updateSetting: (settingName: SettingName, newValue: number | 'auto') => void
 }
 
 const defaultUserState: UserContextType = {

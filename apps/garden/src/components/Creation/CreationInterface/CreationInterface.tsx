@@ -73,9 +73,7 @@ const CreationInterface = ({
           {activeGenerator && (
             <GeneratorForm
               generator={activeGenerator}
-              presetConfig={
-                presetCreation ? presetCreation.task.config : undefined
-              }
+              presetCreation={presetCreation}
             />
           )}
         </div>
