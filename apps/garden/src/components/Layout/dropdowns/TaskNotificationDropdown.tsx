@@ -55,7 +55,7 @@ const CompletedTaskMenuItem = ({
           >
             <ImageResult resultUrl={task.creation.thumbnail} />
           </div>
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between min-w-0">
             <div className="flex flex-col min-w-0 mr-2 w-full">
               <div className="flex justify-between items-center">
                 <strong>/{task.generator.generatorName}</strong>
