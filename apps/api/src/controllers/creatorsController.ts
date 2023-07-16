@@ -3,6 +3,7 @@ import {
   CreatorsGetArguments,
   CreatorsListArguments,
   CreatorsUnfollowArguments,
+  CreatorsUpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
@@ -64,6 +65,47 @@ export const getCreator = async (
     isFollowing,
   }
   return reply.status(200).send({ creator })
+}
+
+export const updateCreator = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { username } = request.body as CreatorsUpdateArguments
+
+  const creator = await User.findById(userId)
+  if (!creator) {
+    return reply.status(404).send({
+      message: 'Creator not found',
+    })
+  }
+  if (username) {
+    if (username.length < 3 || username.length > 30) {
+      console.log('xxx', username)
+      if (username === creator.userId) {
+        creator.username = username
+      } else {
+        return reply.status(400).send({
+          message:
+            'Username must be between 3 and 30 characters (or your address)',
+        })
+      }
+    }
+    creator.username = username
+  }
+
+  try {
+    await creator.save()
+  } catch (e) {
+    return reply.status(400).send({
+      message: 'Username already taken',
+    })
+  }
+
+  return reply.status(200).send({
+    creator,
+  })
 }
 
 export const followCreator = async (

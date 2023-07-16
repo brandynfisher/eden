@@ -120,3 +120,73 @@ test('User cannot unfollow a creator they are not following', async context => {
   })
   expect(response.statusCode).toBe(400)
 })
+
+test('User can update their username', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/creators/update',
+    payload: {
+      username: 'test',
+    },
+    headers,
+  })
+  expect(response.statusCode).toBe(200)
+  expect(response.json()).toHaveProperty('creator')
+  expect(response.json().creator.username).toBe('test')
+})
+
+test('Two users cannot have the same username', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/creators/update',
+    payload: {
+      username: 'admin',
+    },
+    headers,
+  })
+  console.log(response.json())
+  expect(response.statusCode).toBe(400)
+  expect(response.json()).toHaveProperty('message')
+  expect(response.json().message).toBe('Username already taken')
+})
+
+test('User cannot set a name that is too short', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/creators/update',
+    payload: {
+      username: 'a',
+    },
+    headers,
+  })
+  expect(response.statusCode).toBe(400)
+  expect(response.json()).toHaveProperty('message')
+  expect(response.json().message).toBe(
+    'Username must be between 3 and 30 characters (or your address)',
+  )
+})
+
+test('User cannot set a name that is too long', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/creators/update',
+    payload: {
+      username:
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa5497875894375893475974395',
+    },
+    headers,
+  })
+  expect(response.statusCode).toBe(400)
+  expect(response.json()).toHaveProperty('message')
+  expect(response.json().message).toBe(
+    'Username must be between 3 and 30 characters (or your address)',
+  )
+})

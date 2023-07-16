@@ -22,6 +22,11 @@ export type CreatorsGetResponse = WebAPICallResult & {
   creator?: Creator
 }
 
+export type CreatorsUpdateResponse = WebAPICallResult & {
+  error?: string
+  creator?: Creator
+}
+
 export type Creator = {
   userId: string
   username?: string

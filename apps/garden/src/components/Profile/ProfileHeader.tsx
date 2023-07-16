@@ -1,12 +1,12 @@
 import FollowControls from '@/components/FollowControls'
 import ProfileAvatar from '@/components/Profile/ProfileAvatar'
 import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const ProfileHeader = ({
   creatorId,
   creatorDisplayName,
-  // isConnectedUser,
+  isConnectedUser,
   numCreations,
 }: {
   creatorId: string
@@ -14,6 +14,12 @@ const ProfileHeader = ({
   isConnectedUser: boolean
   numCreations: number | undefined
 }) => {
+  const [displayName, setDisplayName] = React.useState(creatorDisplayName)
+
+  useEffect(() => {
+    setDisplayName(creatorDisplayName)
+  }, [creatorDisplayName])
+
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4">
@@ -22,8 +28,9 @@ const ProfileHeader = ({
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">
           <ProfileHeaderName
-            // isOwnProfile={isConnectedUser}mm
-            displayName={creatorDisplayName}
+            isOwnProfile={isConnectedUser}
+            displayName={displayName}
+            setDisplayName={setDisplayName}
           />
           <div className="">
             <div className="text-sm my-1">

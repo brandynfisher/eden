@@ -43,6 +43,7 @@ import {
   CreatorsGetResponse,
   CreatorsListResponse,
   CreatorsUnfollowResponse,
+  CreatorsUpdateResponse,
 } from './responses/CreatorsResponses'
 import {
   GeneratorsGetResponse,
@@ -255,6 +256,10 @@ export abstract class Methods {
       this,
       creatorsGetRequestConfig,
     ),
+    update: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
+      this,
+      creatorsUpdateRequestConfig,
+    ),
   }
 
   public readonly generators = {
@@ -463,6 +468,10 @@ export interface CreatorsListArguments
 
 export interface CreatorsGetArguments extends WebAPICallOptions {
   userId: string
+}
+
+export interface CreatorsUpdateArguments extends WebAPICallOptions {
+  username?: string
 }
 
 export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
@@ -850,6 +859,18 @@ const creatorsGetRequestConfig = (
   return {
     method: 'GET',
     url: `creators/${args.userId}`,
+  }
+}
+
+const creatorsUpdateRequestConfig = (
+  args: CreatorsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creators/update',
+    data: {
+      ...args,
+    },
   }
 }
 
