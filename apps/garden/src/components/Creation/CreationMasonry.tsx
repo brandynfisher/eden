@@ -35,7 +35,6 @@ const CreationMasonry = ({
   const {
     creations,
     maybeLoadMore: maybeLoadNextPage,
-    isEmpty,
     setSize,
   } = useFeedPaginated(query, orderBy)
 
@@ -85,33 +84,32 @@ const CreationMasonry = ({
 
   return (
     <>
-      {!isEmpty ? (
-        <>
-          {hasSort && (
-            <OrderByButtons onOrderChange={item => handleOrderChange(item)} />
-          )}
-          <MasonryScroller
-            key={key}
-            positioner={positioner}
-            resizeObserver={resizeObserver}
-            containerRef={containerRef}
-            items={creations}
-            height={windowHeight}
-            offset={offset}
-            overscanBy={3}
-            itemHeightEstimate={300}
-            render={CreationCard}
-            onRender={maybeLoadMore}
-            itemKey={data => data._id}
-          />
-        </>
-      ) : (
+      {hasSort && (
+        <OrderByButtons onOrderChange={item => handleOrderChange(item)} />
+      )}
+
+      <MasonryScroller
+        key={key}
+        positioner={positioner}
+        resizeObserver={resizeObserver}
+        containerRef={containerRef}
+        items={creations}
+        height={windowHeight}
+        offset={offset}
+        overscanBy={3}
+        itemHeightEstimate={300}
+        render={CreationCard}
+        onRender={maybeLoadMore}
+        itemKey={data => data._id}
+      />
+
+      {!creations.length && (
         <div className="flex flex-col items-center">
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <div className="flex flex-col items-center">
-                <div className="mb-4">Nothing created yet.</div>
+                <div className="mb-4">Nothing here yet.</div>
 
                 {isConnectedUser && (
                   <Link href="/create">
@@ -119,7 +117,7 @@ const CreationMasonry = ({
                       type="dashed"
                       className="flex items-center text-gray-400"
                     >
-                      <div>Begin here</div>
+                      <div>Create more</div>
                     </Button>
                   </Link>
                 )}
