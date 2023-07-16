@@ -13,11 +13,11 @@ interface FeedGetArguments {
   collectionId?: string
   limit?: number
   page?: number
-  orderBy?: OrderByFieldNames
+  orderBy?: OrderByFieldName
   direction?: number
 }
 
-type OrderByFieldNames = 'createdAt' | 'praiseCount' | 'bookmarkCount'
+type OrderByFieldName = 'createdAt' | 'praiseCount' | 'bookmarkCount'
 
 export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   const {
@@ -34,11 +34,17 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   })
 
   const sort = []
+  const sortFilter: { [key: string]: unknown } = {}
   if (orderBy && direction) {
     sort.push([orderBy, direction])
   }
+  // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
   if (orderBy !== 'createdAt') {
     sort.push(['createdAt', -1])
+  }
+  // exclude zero count items when sorting by likes, bookmarks, etc
+  if (orderBy === 'bookmarkCount' || orderBy === 'praiseCount') {
+    sortFilter[orderBy] = { $gt: 0 }
   }
 
   const collection = await Collection.findById(collectionId)
@@ -57,6 +63,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
         filterUserIds && creators.docs
           ? creators.docs.map(creator => creator._id)
           : undefined,
+      ...sortFilter,
     },
     {
       limit,
