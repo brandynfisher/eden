@@ -106,10 +106,10 @@ const submitTask = async (
 }
 
 const getTransactionCost = (_: FastifyInstance, __: any, config: any) => {
-  if (config.n_frames) {
-    return config.n_frames
-  }
-  return 1
+  const baseCost = config.n_frames || 1
+  const samples = config.n_samples || 1
+  const cost = baseCost * samples
+  return cost
 }
 
 export { submitTask, getTransactionCost }
