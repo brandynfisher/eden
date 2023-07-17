@@ -36,6 +36,7 @@ const CreationMasonry = ({
     creations,
     maybeLoadMore: maybeLoadNextPage,
     setSize,
+    isEmpty,
   } = useFeedPaginated(query, orderBy)
 
   const { width: windowWidth, height: windowHeight } = useViewportSize()
@@ -103,7 +104,7 @@ const CreationMasonry = ({
         itemKey={data => data._id}
       />
 
-      {!creations.length && (
+      {isEmpty && !creations.length && (
         <div className="flex flex-col items-center">
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}

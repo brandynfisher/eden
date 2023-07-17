@@ -6,14 +6,17 @@ import React, { useContext } from 'react'
 const ResultPreview = () => {
   const { hasChangedGenerator, pendingTasks, completedTasks, activeTaskId } =
     useContext(CreationNotificationContext)
+
   const activeTask = pendingTasks?.find(task => task.taskId === activeTaskId)
   const completedTask = completedTasks?.find(
     task => task.taskId === activeTaskId,
   )
 
-  const creationUri = completedTask?.creation.uri
+  const creationUri =
+    completedTask && completedTask.creation ? completedTask.creation.uri : false
 
   if (hasChangedGenerator || (!activeTask && !completedTask)) return null
+
   return (
     <div className="relative flex flex-col space-y-4 col-span-12 lg:mt-9 lg:col-span-6 rounded-lg border border-0 border-solid ">
       <Card

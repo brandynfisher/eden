@@ -1,9 +1,9 @@
 import { getFileExtension } from '@/lib/getFileExtension'
 import {
   CheckCircleOutlined,
-  CopyOutlined,
   DownloadOutlined,
   EllipsisOutlined,
+  LinkOutlined,
   RetweetOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons'
@@ -117,7 +117,7 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
           icon: copied ? (
             <CheckCircleOutlined className="text-xl" />
           ) : (
-            <CopyOutlined className="text-xl" />
+            <LinkOutlined className="text-xl" />
           ),
           onClick: async () => {
             await handleCopyUrl(pageUrl)

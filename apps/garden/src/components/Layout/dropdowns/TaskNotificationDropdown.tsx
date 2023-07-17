@@ -55,7 +55,7 @@ const CompletedTaskMenuItem = ({
           >
             <ImageResult resultUrl={task.creation.thumbnail} />
           </div>
-          <div className="flex items-center justify-between min-w-0">
+          <div className="flex items-center justify-between min-w-0 w-full">
             <div className="flex flex-col min-w-0 mr-2 w-full">
               <div className="flex justify-between items-center">
                 <strong>/{task.generator.generatorName}</strong>
@@ -187,11 +187,11 @@ const TaskNotificationDropdown = () => {
           </Button>
         </Dropdown>
       )}
-      {completedTaskItems.length > 0 && (
+      {completedTasks && completedTasks.length > 0 && (
         <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
           <Button type="text" className="text-green-500 items-center flex px-2">
             <CheckOutlined className="mr-2" />
-            {completedTaskItems.length}
+            {completedTasks.length}
           </Button>
         </Dropdown>
       )}

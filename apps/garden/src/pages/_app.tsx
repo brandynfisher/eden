@@ -30,8 +30,8 @@ export default function App({ Component, pageProps }: Props): JSX.Element {
   return (
     <>
       <Head>
-        <title>Eden Art - Garden</title>
-        <meta property="og:title" content="Eden Art - Garden" key="title" />
+        <title>Garden of Eden</title>
+        <meta property="og:title" content="Garden of Eden" key="title" />
         <meta
           property="og:description"
           content="The Garden of Artificial Delights"

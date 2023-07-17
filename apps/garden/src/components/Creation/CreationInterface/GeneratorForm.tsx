@@ -56,12 +56,13 @@ const GeneratorForm = ({
         return
       }
 
-      // if is "recreate" add fields to pre-populate media/image upload fields by uri
+      // if is "recreate": add fields to pre-populate media/image upload fields by uri
       if (router.query.generator && router.query.generator === 'remix') {
         setPresetConfig({
           ...presetCreation.task.config,
           init_image_strength: 0.3,
           init_image_data: presetCreation.uri,
+          seed: '',
         })
         return
       }
