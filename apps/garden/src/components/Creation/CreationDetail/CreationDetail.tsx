@@ -8,7 +8,7 @@ import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { getFileExtension } from '@/lib/getFileExtension'
 import { durationSinceDate } from '@/lib/time'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
-import { Creation, Task } from '@edenlabs/eden-sdk'
+import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Divider, Tabs } from 'antd'
 import React, { useState } from 'react'
@@ -82,14 +82,17 @@ const ConfigParamsCodeTabContent = ({
   )
 }
 
-const createEdenSdkCodeSnippet = (taskConfig: Task['config']) => {
+const createEdenSdkCodeSnippet = (
+  generatorName: Generator['generatorName'],
+  taskConfig: Task['config'],
+) => {
   return `import {EdenClient} from "eden-sdk";
 
 const eden = new EdenClient();
 
 const config = ${taskConfig}
 
-const result = await eden.create("create", config);`
+const result = await eden.create("${generatorName}", config);`
 }
 
 const CreationDetail = ({ creation }: { creation: Creation }) => {
@@ -106,17 +109,20 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
       label: `Text`,
       children: <ConfigParamsTextTabContent creationData={creationData} />,
     },
-    {
-      key: '2',
-      label: `JSON`,
-      children: <ConfigParamsCodeTabContent taskConfig={formattedTaskConfig} />,
-    },
+    // {
+    //   key: '2',
+    //   label: `JSON`,
+    //   children: <ConfigParamsCodeTabContent taskConfig={formattedTaskConfig} />,
+    // },
     {
       key: '3',
       label: `Eden SDK`,
       children: (
         <ConfigParamsCodeTabContent
-          taskConfig={createEdenSdkCodeSnippet(formattedTaskConfig)}
+          taskConfig={createEdenSdkCodeSnippet(
+            creationData.task.generator.generatorName,
+            formattedTaskConfig,
+          )}
         />
       ),
     },
