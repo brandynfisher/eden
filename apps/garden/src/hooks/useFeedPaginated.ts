@@ -78,7 +78,7 @@ export const useFeedPaginated = (
   const isLoadingMore =
     isLoading ||
     (size > 0 && data != null && typeof data[size - 1] === 'undefined')
-  const isEmpty = data?.[0]?.length === 0
+  const isEmpty = data?.[0]?.total === 0 || data?.[0]?.length === 0
 
   const maybeLoadMore = () => {
     if (isValidating) return
