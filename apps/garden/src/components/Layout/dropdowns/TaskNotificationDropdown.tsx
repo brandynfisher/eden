@@ -7,6 +7,7 @@ import { CreationNotificationContext } from '@/providers/CreationNotificationPro
 import {
   CheckOutlined,
   CloseOutlined,
+  ExclamationOutlined,
   LoadingOutlined,
 } from '@ant-design/icons'
 import { Task } from '@edenlabs/eden-sdk'
@@ -14,6 +15,62 @@ import { Button, Dropdown, Progress, Space, Spin } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import { NextRouter, useRouter } from 'next/router'
 import React, { useContext } from 'react'
+
+const FailedTaskMenuItem = ({
+  task,
+  handleDismiss,
+}: {
+  task: Task
+  handleDismiss: (taskId: string) => void
+}) => {
+  const taskRunDuration = durationBetweenDates(
+    task.createdAt,
+    task.updatedAt,
+    's',
+    true,
+  )
+
+  return (
+    <div key={task._id}>
+      <div className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md">
+        <div
+          className="flex w-full"
+          style={{ minWidth: '240px', maxWidth: '320px' }}
+        >
+          <div className="flex items-center justify-between min-w-0 w-full">
+            <div className="flex flex-col min-w-0 mr-2 w-full">
+              <div className="flex justify-between items-center">
+                <strong>/{task.generator.generatorName}</strong>
+                <div className="flex min-w-0 truncate mt-1">
+                  <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
+                    {truncatedAddress(task.taskId)}
+                  </div>
+                </div>
+              </div>
+              <div className="text-xs text-gray-800 dark:text-gray-400">
+                Duration: {taskRunDuration}
+              </div>
+              <div className="flex min-w-0 truncate mt-1">
+                <div className="text-xs italic text-red-500 truncate">
+                  {task.error ? task.error : 'Unknown error'}
+                </div>
+              </div>
+            </div>
+            <Button type="text" title="Dismiss" className="px-2">
+              <CloseOutlined
+                className="ml-auto cursor-pointer"
+                onClick={e => {
+                  e.stopPropagation()
+                  handleDismiss(task._id)
+                }}
+              />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const CompletedTaskMenuItem = ({
   router,
@@ -119,19 +176,30 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
 const TaskNotificationDropdown = () => {
   const router = useRouter()
 
-  const { pendingTasks, completedTasks, setCompletedTasks } = useContext(
-    CreationNotificationContext,
-  )
+  const {
+    pendingTasks,
+    completedTasks,
+    setCompletedTasks,
+    failedTasks,
+    setFailedTasks,
+  } = useContext(CreationNotificationContext)
 
-  const handleDismiss = async (taskId: string) => {
-    if (!completedTasks || !setCompletedTasks) return
-    const newCompletedTasks = completedTasks.filter(t => t._id !== taskId)
-    setCompletedTasks(newCompletedTasks)
+  const handleDismiss = async (
+    taskId: string,
+    items: Task[],
+    setter: typeof setCompletedTasks | typeof setFailedTasks,
+  ) => {
+    if (!items || !setter) return
+    const newTasks = items.filter(t => t._id !== taskId)
+    setter(newTasks)
   }
 
-  const handleDismissAll = async () => {
-    if (!completedTasks || !setCompletedTasks) return
-    setCompletedTasks([])
+  const handleDismissAll = async (
+    items: Task[],
+    setter: typeof setCompletedTasks | typeof setFailedTasks,
+  ) => {
+    if (!items || !setter) return
+    setter([])
   }
 
   const pendingTaskItems: ItemType[] = pendingTasks
@@ -152,7 +220,9 @@ const TaskNotificationDropdown = () => {
               size="small"
               className="text-xs !px-4"
               type="dashed"
-              onClick={handleDismissAll}
+              onClick={() =>
+                handleDismissAll(completedTasks, setCompletedTasks)
+              }
             >
               Dismiss all
             </Button>
@@ -164,7 +234,45 @@ const TaskNotificationDropdown = () => {
 
     completedTaskItems.push(
       ...completedTasks.map(task => ({
-        label: CompletedTaskMenuItem({ task, handleDismiss, router }),
+        label: CompletedTaskMenuItem({
+          task,
+          handleDismiss: () =>
+            handleDismiss(task._id, completedTasks, setCompletedTasks),
+          router,
+        }),
+        key: task._id,
+      })),
+    )
+  }
+
+  const failedTaskItems = []
+  if (failedTasks?.length) {
+    failedTaskItems.push({
+      label: (
+        <div className="flex items-center justify-between">
+          <div>Failed Tasks</div>
+          <div className="flex justify-center text-xs">
+            <Button
+              size="small"
+              className="text-xs !px-4"
+              type="dashed"
+              onClick={() => handleDismissAll(failedTasks, setFailedTasks)}
+            >
+              Dismiss all
+            </Button>
+          </div>
+        </div>
+      ),
+      key: 0,
+    })
+
+    failedTaskItems.push(
+      ...failedTasks.map(task => ({
+        label: FailedTaskMenuItem({
+          task,
+          handleDismiss: () =>
+            handleDismiss(task._id, failedTasks, setFailedTasks),
+        }),
         key: task._id,
       })),
     )
@@ -187,6 +295,16 @@ const TaskNotificationDropdown = () => {
           </Button>
         </Dropdown>
       )}
+
+      {failedTasks && failedTasks.length > 0 && (
+        <Dropdown trigger={['click']} menu={{ items: failedTaskItems }}>
+          <Button type="text" className="text-red-500 items-center flex px-2">
+            <ExclamationOutlined className="mr-2" />
+            {failedTasks.length}
+          </Button>
+        </Dropdown>
+      )}
+
       {completedTasks && completedTasks.length > 0 && (
         <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
           <Button type="text" className="text-green-500 items-center flex px-2">
