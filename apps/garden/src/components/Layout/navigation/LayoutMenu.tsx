@@ -1,5 +1,11 @@
 import { UserContext } from '@/providers/UserProvider'
-import { EyeOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  CommentOutlined,
+  EyeOutlined,
+  RobotOutlined,
+  ToolOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -25,6 +31,8 @@ const defaultItems: MenuItem[] = [
   getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <EyeOutlined />),
   getItem('Tools', '/tools', <ToolOutlined />),
+  getItem('Characters', '/characters', <RobotOutlined />),
+  getItem('Scenarios', '/scenarios', <CommentOutlined />),
 ]
 
 const authItems: MenuItem[] = [

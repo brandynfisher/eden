@@ -14,7 +14,7 @@ export const CharacterContext = React.createContext<ICharacterContext>({
   character: undefined,
 })
 
-const CharacterPage = () => {
+const CharacterDetailPage = () => {
   const router = useRouter()
   const { id: characterId } = router.query
   const { character, mutate: mutateCapabilities } = useCharacter(characterId)
@@ -46,4 +46,4 @@ const CharacterPage = () => {
   )
 }
 
-export default CharacterPage
+export default CharacterDetailPage
