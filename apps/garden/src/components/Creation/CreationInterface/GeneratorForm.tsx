@@ -77,7 +77,8 @@ const GeneratorForm = ({
   const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
     if (!currentGenerator) return
 
-    const selectedVersion = currentGenerator.versions[0]
+    const selectedVersion =
+      currentGenerator.versions[currentGenerator.versions.length - 1]
 
     if (!selectedVersion) return
 
