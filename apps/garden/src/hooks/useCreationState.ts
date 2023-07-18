@@ -1,5 +1,5 @@
-import { truncatedAddress } from '@/lib/address'
 import { fetcher } from '@/lib/fetcher'
+import { truncatedAddress } from '@/lib/string'
 import { Task } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
 import { useEffect, useState } from 'react'

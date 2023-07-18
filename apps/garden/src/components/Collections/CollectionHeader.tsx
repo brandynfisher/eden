@@ -1,4 +1,4 @@
-import { truncatedAddress } from '@/lib/address'
+import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection } from '@edenlabs/eden-sdk'
 import { Button } from 'antd'

@@ -8,6 +8,7 @@ import {
   CollectionsRemoveCreationsResponse,
   CollectionsUpdateResponse,
 } from 'src/responses/CollectionsResponses'
+import { MediaUploadResponse } from 'src/responses/MediaResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
@@ -281,6 +282,13 @@ export abstract class Methods {
     },
   }
 
+  public readonly media = {
+    upload: bindApiCall<MediaUploadArguments, MediaUploadResponse>(
+      this,
+      mediaUploadRequestConfig,
+    ),
+  }
+
   public readonly scenarios = {
     create: bindApiCall<ScenariosCreateArguments, ScenariosCreateResponse>(
       this,
@@ -475,6 +483,10 @@ export type MannaBalanceGetArguments = WebAPICallOptions
 
 export interface MannaVouchersRedeemArguments extends WebAPICallOptions {
   code: string
+}
+
+export interface MediaUploadArguments extends WebAPICallOptions {
+  media: Buffer
 }
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
@@ -884,6 +896,20 @@ const mannaVouchersRedeemRequestConfig = (
     url: 'manna/vouchers/redeem',
     data: {
       ...args,
+    },
+  }
+}
+
+const mediaUploadRequestConfig = (args: MediaUploadArguments) => {
+  const blob = new Blob([args.media])
+  const form = new FormData()
+  form.append('file', blob)
+  return {
+    method: 'POST',
+    url: 'media/upload',
+    data: form,
+    headers: {
+      'Content-Type': 'multipart/form-data',
     },
   }
 }

@@ -15,6 +15,13 @@ const SliderParameter = (props: {
     }
   }
 
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { value } = e.target
+    if (value === '' && props.parameter.minimum !== undefined) {
+      onChange(props.parameter.minimum)
+    }
+  }
+
   useEffect(() => {
     onChange(props.parameter.default)
   }, [props.parameter.default])
@@ -32,6 +39,19 @@ const SliderParameter = (props: {
               {
                 required: props.parameter.isRequired,
                 message: `${props.parameter.label} required`,
+              },
+              {
+                validator: (_, value) =>
+                  isNaN(value) ||
+                  (props.parameter.minimum &&
+                    value < props.parameter.minimum) ||
+                  (props.parameter.maximum && value > props.parameter.maximum)
+                    ? Promise.reject(
+                        new Error(
+                          'Value must be a number and within the valid range',
+                        ),
+                      )
+                    : Promise.resolve(),
               },
             ]}
           >
@@ -63,6 +83,7 @@ const SliderParameter = (props: {
               min={props.parameter.minimum}
               max={props.parameter.maximum}
               onChange={onChange}
+              onBlur={onBlur}
             />
           </Form.Item>
         </Col>
