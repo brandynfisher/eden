@@ -67,7 +67,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
 
   await creationRepository.model.populate(creations.docs, {
     path: 'user',
-    select: 'userId',
+    select: 'userId username',
   })
   await creationRepository.model.populate(creations.docs, {
     path: 'task',

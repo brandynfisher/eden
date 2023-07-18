@@ -19,7 +19,7 @@ const ProfileHeaderName = ({
   const { isAuthenticated, authenticate } = useContext(UserContext)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [updatedName, setUpdatedName] = useState('')
+  const [updatedName, setUpdatedName] = useState(displayName)
 
   const handleEditNameClick = async () => {
     if (!isAuthenticated) {
@@ -32,19 +32,30 @@ const ProfileHeaderName = ({
   }
 
   const handleNameInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-    setUpdatedName(ev.target.value)
+    const newValue = ev.target.value
+    const isValid = newValue.match(/^[a-zA-Z0-9_.-]*$/)
+
+    if (!isValid) {
+      return
+    }
+
+    setUpdatedName(newValue.trim())
   }
 
   const handleNameSubmit = async () => {
     setLoading(true)
+    message.destroy()
+
     try {
       await axios.post('/api/creators/update', {
         username: updatedName,
       })
       setDisplayName(updatedName)
       setIsEditing(false)
+      message.success('Name updated successfully!')
     } catch (err) {
       handleAxiosError(err, message)
+      message.error('Failed to update name!')
     }
     setLoading(false)
   }
@@ -64,8 +75,8 @@ const ProfileHeaderName = ({
             <input
               type="text"
               enterKeyHint="enter"
-              defaultValue={displayName}
-              maxLength={30}
+              value={updatedName}
+              maxLength={32}
               minLength={3}
               autoCorrect="off"
               spellCheck="false"
@@ -86,6 +97,7 @@ const ProfileHeaderName = ({
                 size="small"
                 type="text"
                 loading={loading}
+                disabled={!updatedName || updatedName === displayName}
               >
                 Save
               </Button>

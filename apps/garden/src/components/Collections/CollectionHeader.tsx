@@ -17,7 +17,6 @@ const CollectionHeader = ({
   deleteLoading: boolean
 }) => {
   const { isAuthenticated } = useContext(UserContext)
-  const truncatedId = truncatedAddress(collection.creatorId || '')
   return (
     <div className="flex flex-col bg-gray-200 dark:bg-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4">
@@ -30,10 +29,13 @@ const CollectionHeader = ({
           </p>
           <p className="dark:text-white text-sm">
             Curated by{' '}
-            <Link href={`/creators/${collection.creatorId}`}>
+            <Link href={`/creators/${collection.creatorName?.toLowerCase()}`}>
               <span className="dark:text-white text-sm font-semibold">
                 {' '}
-                {truncatedId}
+                {collection?.creatorName &&
+                collection?.creatorName !== collection.creatorId
+                  ? collection.creatorName
+                  : truncatedAddress(collection.creatorId || '')}
               </span>
             </Link>
           </p>

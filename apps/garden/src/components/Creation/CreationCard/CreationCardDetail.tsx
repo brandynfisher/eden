@@ -31,6 +31,7 @@ const CreationCardDetail = ({
         </div>
         <CreatorProfileLink
           creatorId={creation.user.userId}
+          creatorName={creation.user.username}
           isOverlay={isOverlay}
         />
       </div>

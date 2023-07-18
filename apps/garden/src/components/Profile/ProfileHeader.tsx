@@ -43,7 +43,9 @@ const ProfileHeader = ({
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">
           {isLoading ? (
-            <LoadingOutlined />
+            <div>
+              <LoadingOutlined />
+            </div>
           ) : (
             <ProfileHeaderName
               isOwnProfile={isConnectedUser}

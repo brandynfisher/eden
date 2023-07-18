@@ -38,7 +38,12 @@ export const getCreator = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.params as CreatorsGetArguments
-  const creatorDoc = await User.findOne({ userId })
+  const creatorDoc = await User.findOne({
+    $or: [
+      { userId },
+      { username: { $regex: userId.toLowerCase(), $options: 'i' } },
+    ],
+  })
   if (!creatorDoc) {
     return reply.status(404).send({
       message: 'Creator not found',
@@ -81,17 +86,29 @@ export const updateCreator = async (
     })
   }
   if (username) {
-    if (username.length < 3 || username.length > 30) {
+    if (username.length < 3 || username.length > 32) {
       console.log('xxx', username)
       if (username === creator.userId) {
         creator.username = username
       } else {
         return reply.status(400).send({
           message:
-            'Username must be between 3 and 30 characters (or your address)',
+            'Username must be between 3 and 32 characters (or your address)',
         })
       }
     }
+
+    // check if username exists, case-insensitive
+    const userExists = await User.exists({
+      username: { $regex: username.toLowerCase(), $options: 'i' },
+    })
+
+    if (userExists) {
+      return reply.status(400).send({
+        message: 'Username already taken',
+      })
+    }
+
     creator.username = username
   }
 
@@ -99,7 +116,7 @@ export const updateCreator = async (
     await creator.save()
   } catch (e) {
     return reply.status(400).send({
-      message: 'Username already taken',
+      message: 'Failed to save',
     })
   }
 
