@@ -1,68 +1,48 @@
 # Eden SDK
 
-See full examples in the examples directory.
+A thin wrapper around the Eden REST API. Inspect methods.ts for all available methods.
 
 ### Creating an Eden instance
 
 ```
-import {EdenClient} from "eden-sdk";
+import { EdenClient } from "@edenlabs/eden-sdk";
 
 const apiKey = 'YOUR_API_KEY';
 const apiSecret = 'YOUR_API_SECRET';
 
-let eden = new Eden(apiKey, apiSecret);
-
+const eden = new EdenClient({apiKey, apiSecret});
 ```
 
 ### Making a creation
 
 ```
-let config = {
+const config = {
   text_input: "Garden of Eden"
 }
 
-let result = await eden.create("create", config);
-
-console.log(result);
-```
-
-### Starting a creation and polling for status
-
-```
-let config = {
-  text_input: "Garden of Eden"
+const input = {
+  generatorName: "create",
+  config
 }
 
-let taskId = await eden.startTask("create", config);
-
-let result = await eden.getTaskStatus(taskId);
-console.log(result);
+const result = await eden.tasks.create(input);
 ```
 
 ### Uploading an image
 
 ```
-let result = await eden.uploadFile("image.jpg");
-```
+import fs from 'fs'
 
-Can also do multiple files at once:
-
-```
-let result = await eden.uploadFiles(["image1.jpg", "image2.jpg"]);
+const filepath = `${__dirname}/test.png`
+const media = await fs.readFileSync(filepath)
+const result = await client.media.upload({ media })
 ```
 
 ### Generator info
 
-To get all of the parameters for a given generator (e.g. create):
-
-```
-let generator = await eden.getGenerator("create");
-console.log(generator);
-```
-
 To get all the generators available:
 
 ```
-let generators = await eden.getGenerators();
+const generators = await eden.generators.list();
 console.log(generators);
 ```
