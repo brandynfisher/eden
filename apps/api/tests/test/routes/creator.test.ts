@@ -154,6 +154,23 @@ test('Two users cannot have the same username', async context => {
   expect(response.json().message).toBe('Username already taken')
 })
 
+test('Two users cannot have the same username with a different casing', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/creators/update',
+    payload: {
+      username: 'Admin',
+    },
+    headers,
+  })
+  console.log(response.json())
+  expect(response.statusCode).toBe(400)
+  expect(response.json()).toHaveProperty('message')
+  expect(response.json().message).toBe('Username already taken')
+})
+
 test('User cannot set a name that is too short', async context => {
   const { server } = context
   const headers = prepareUserHeaders()
