@@ -60,7 +60,7 @@ const GeneratorForm = ({
       if (router.query.generator && router.query.generator === 'remix') {
         setPresetConfig({
           ...presetCreation.task.config,
-          init_image_strength: 0.3,
+          init_image_strength: 0.175,
           init_image_data: presetCreation.uri,
         })
         return

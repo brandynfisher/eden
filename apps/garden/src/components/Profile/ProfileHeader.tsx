@@ -1,24 +1,39 @@
 import FollowControls from '@/components/FollowControls'
 import ProfileAvatar from '@/components/Profile/ProfileAvatar'
 import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
-import React, { useEffect } from 'react'
+import { LoadingOutlined } from '@ant-design/icons'
+import { Creator } from '@edenlabs/eden-sdk'
+import React, { useEffect, useState } from 'react'
 
 const ProfileHeader = ({
   creatorId,
-  creatorDisplayName,
+  creator,
   isConnectedUser,
   numCreations,
 }: {
   creatorId: string
-  creatorDisplayName: string
+  creator: Creator | undefined
   isConnectedUser: boolean
   numCreations: number | undefined
 }) => {
-  const [displayName, setDisplayName] = React.useState(creatorDisplayName)
+  const [isLoading, setIsLoading] = useState(true)
+  const [displayName, setDisplayName] = useState('')
 
   useEffect(() => {
-    setDisplayName(creatorDisplayName)
-  }, [creatorDisplayName])
+    setIsLoading(true)
+
+    if (!creator) {
+      return
+    }
+
+    if (creator.username) {
+      setDisplayName(creator.username)
+    } else {
+      setDisplayName(creatorId)
+    }
+
+    setIsLoading(false)
+  }, [creator, creatorId])
 
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
@@ -27,12 +42,16 @@ const ProfileHeader = ({
           <ProfileAvatar seed={creatorId} />
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">
-          <ProfileHeaderName
-            isOwnProfile={isConnectedUser}
-            displayName={displayName}
-            setDisplayName={setDisplayName}
-          />
-          <div className="">
+          {isLoading ? (
+            <LoadingOutlined />
+          ) : (
+            <ProfileHeaderName
+              isOwnProfile={isConnectedUser}
+              displayName={displayName}
+              setDisplayName={setDisplayName}
+            />
+          )}
+          <div>
             <div className="text-sm my-1">
               <strong>{numCreations || 0}</strong> Creations
             </div>

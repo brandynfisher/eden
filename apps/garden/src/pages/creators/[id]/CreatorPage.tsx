@@ -57,9 +57,7 @@ const CreatorPage = ({ creatorId }: { creatorId: string }) => {
       <Space direction="vertical">
         <ProfileHeader
           creatorId={creatorId}
-          creatorDisplayName={
-            creator && creator.username ? creator.username : creatorId
-          }
+          creator={creator}
           numCreations={creator?.creationsCount}
           isConnectedUser={isConnectedUser}
         />
