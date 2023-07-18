@@ -43,8 +43,9 @@ const SliderParameter = (props: {
               {
                 validator: (_, value) =>
                   isNaN(value) ||
-                  value < props.parameter.minimum ||
-                  value > props.parameter.maximum
+                  (props.parameter.minimum &&
+                    value < props.parameter.minimum) ||
+                  (props.parameter.maximum && value > props.parameter.maximum)
                     ? Promise.reject(
                         new Error(
                           'Value must be a number and within the valid range',
