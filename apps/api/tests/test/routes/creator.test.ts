@@ -185,7 +185,7 @@ test('User cannot set a name that is too short', async context => {
   expect(response.statusCode).toBe(400)
   expect(response.json()).toHaveProperty('message')
   expect(response.json().message).toBe(
-    'Username must be between 3 and 30 characters (or your address)',
+    'Username must be between 3 and 32 characters (or your address)',
   )
 })
 
@@ -204,6 +204,6 @@ test('User cannot set a name that is too long', async context => {
   expect(response.statusCode).toBe(400)
   expect(response.json()).toHaveProperty('message')
   expect(response.json().message).toBe(
-    'Username must be between 3 and 30 characters (or your address)',
+    'Username must be between 3 and 32 characters (or your address)',
   )
 })
