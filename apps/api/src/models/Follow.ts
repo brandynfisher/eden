@@ -1,4 +1,6 @@
 import { Document, Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import paginate from 'mongoose-paginate-v2'
 
 import { UserDocument } from './Creator'
 
@@ -26,5 +28,8 @@ const follow = new Schema<FollowDocument>({
     default: Date.now,
   },
 })
+
+follow.plugin(paginate)
+follow.plugin(aggregatePaginate)
 
 export const Follow = model<FollowDocument>('follows', follow)

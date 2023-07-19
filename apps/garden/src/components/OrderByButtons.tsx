@@ -7,29 +7,31 @@ export type OrderByParam = {
   direction: -1 | 1
 }
 
-export const OrderByDefaultParam: OrderByParam = {
+export const OrderByLatest: OrderByParam = {
   label: 'Latest',
   field: 'createdAt',
   direction: -1,
 }
 
-const items: OrderByParam[] = [
-  {
-    label: 'Latest',
-    field: 'createdAt',
-    direction: -1,
-  },
-  {
-    label: 'Praises',
-    field: 'praiseCount',
-    direction: -1,
-  },
-  {
-    label: 'Bookmarks',
-    field: 'bookmarkCount',
-    direction: -1,
-  },
-]
+export const OrderByPraises: OrderByParam = {
+  label: 'Praises',
+  field: 'praiseCount',
+  direction: -1,
+}
+
+export const OrderByBookmarks: OrderByParam = {
+  label: 'Bookmarks',
+  field: 'bookmarkCount',
+  direction: -1,
+}
+
+export const OrderByFollowing: OrderByParam = {
+  label: 'Following',
+  field: 'following',
+  direction: -1,
+}
+
+export const OrderByDefaultParam = OrderByLatest
 
 const OrderByButton = ({
   children,
@@ -55,11 +57,13 @@ const OrderByButton = ({
 }
 
 const OrderByButtons = ({
+  params,
   onOrderChange,
 }: {
+  params: OrderByParam[]
   onOrderChange: (item: OrderByParam) => void
 }) => {
-  const [selectedParam, setSelectedParam] = useState<OrderByParam>(items[0])
+  const [selectedParam, setSelectedParam] = useState<OrderByParam>(params[0])
 
   const handleSelect = (item: OrderByParam) => {
     if (selectedParam.field === item.field) return
@@ -69,7 +73,7 @@ const OrderByButtons = ({
 
   return (
     <div className="mb-4 flex gap-2">
-      {items.map(item => (
+      {params.map(item => (
         <OrderByButton
           key={item.field}
           isActive={item.field === selectedParam?.field}

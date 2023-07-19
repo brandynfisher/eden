@@ -1,9 +1,11 @@
+import { PaginatedResponse, ReactionType } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { Collection } from '../models/Collection'
-import { Creation } from '../models/Creation'
+import { Creation, CreationDocument } from '../models/Creation'
 import { User } from '../models/Creator'
+import { Follow } from '../models/Follow'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 import { getBookmarks, getReactions } from './creationsController'
@@ -17,7 +19,47 @@ interface FeedGetArguments {
   direction?: number
 }
 
-type OrderByFieldName = 'createdAt' | 'praiseCount' | 'bookmarkCount'
+type OrderByFieldName =
+  | 'createdAt'
+  | 'praiseCount'
+  | 'bookmarkCount'
+  | 'following'
+
+const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
+  return Follow.aggregate([
+    {
+      $match: {
+        follower: {
+          $eq: new ObjectId(followerId),
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        following: 1,
+      },
+    },
+    {
+      $lookup: {
+        from: 'creations',
+        localField: 'following',
+        foreignField: 'user',
+        as: 'creation',
+      },
+    },
+    {
+      $unwind: {
+        path: '$creation',
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$creation',
+      },
+    },
+  ])
+}
 
 export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   const {
@@ -33,44 +75,56 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     userId: filterUserIds,
   })
 
-  const sort = []
-  const sortFilter: { [key: string]: unknown } = {}
-  if (orderBy && direction) {
-    sort.push([orderBy, direction])
-  }
-  // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
-  if (orderBy !== 'createdAt') {
-    sort.push(['createdAt', -1])
-  }
-  // exclude zero count items when sorting by likes, bookmarks, etc
-  if (orderBy === 'bookmarkCount' || orderBy === 'praiseCount') {
-    sortFilter[orderBy] = { $gt: 0 }
-  }
-
-  const collection = await Collection.findById(collectionId)
-  const collectionCreations = collection?.creations || undefined
-
   const creationRepository = new CreationRepository(Creation)
+  let creations: PaginatedResponse<CreationDocument>
 
-  const creations = await creationRepository.query(
-    {
-      _id: collectionCreations
-        ? {
-            $in: collectionCreations,
-          }
-        : undefined,
-      user:
-        filterUserIds && creators.docs
-          ? creators.docs.map(creator => creator._id)
-          : undefined,
-      ...sortFilter,
-    },
-    {
+  if (orderBy === 'following') {
+    const followCreationRepository = new CreationRepository(Follow) //@todo: this reads rather wonky
+    const followAggregate = aggregateCreationsByFollowerId(request.user.userId)
+
+    creations = await followCreationRepository.aggregateQuery(followAggregate, {
       limit,
       page,
-      sort,
-    },
-  )
+      sort: { createdAt: -1 },
+    })
+  } else {
+    const collection = await Collection.findById(collectionId)
+    const collectionCreations = collection?.creations || undefined
+
+    const sort = []
+    const sortFilter: { [key: string]: unknown } = {}
+    if (orderBy && direction) {
+      sort.push([orderBy, direction])
+    }
+    // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
+    if (orderBy !== 'createdAt') {
+      sort.push(['createdAt', -1])
+    }
+    // exclude zero count items when sorting by likes, bookmarks, etc
+    if (orderBy === 'bookmarkCount' || orderBy === 'praiseCount') {
+      sortFilter[orderBy] = { $gt: 0 }
+    }
+
+    creations = await creationRepository.query(
+      {
+        _id: collectionCreations
+          ? {
+              $in: collectionCreations,
+            }
+          : undefined,
+        user:
+          filterUserIds && creators.docs
+            ? creators.docs.map(creator => creator._id)
+            : undefined,
+        ...sortFilter,
+      },
+      {
+        limit,
+        page,
+        sort,
+      },
+    )
+  }
 
   await creationRepository.model.populate(creations.docs, {
     path: 'user',
@@ -91,23 +145,42 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
         message: 'User not found',
       })
     }
-    const uid = new ObjectId(userId)
-    const reactionsMap = await getReactions(uid, creations.docs)
-    const bookmarksMap = await getBookmarks(uid, creations.docs)
 
-    const creationDocs = creations.docs.map(creation => {
-      return {
-        ...creation.toObject(),
-        reactions: reactionsMap[creation._id.toString()],
-        bookmarked: bookmarksMap[creation._id.toString()],
-      }
-    })
+    interface CreationDocumentExtension {
+      reactions: Map<ReactionType, boolean>
+      bookmarked: boolean
+    }
 
-    const feed = {
+    type FeedResponse = {
+      docs: []
+      reactions: { [key: string]: Map<ReactionType, boolean> } | []
+      bookmarks: { [key: string]: boolean } | []
+    }
+
+    const feed: FeedResponse = {
       ...creations,
-      docs: creationDocs,
-      reactions: reactionsMap,
-      bookmarks: bookmarksMap,
+      docs: [],
+      reactions: [],
+      bookmarks: [],
+    }
+
+    if (creations.docs) {
+      const uid = new ObjectId(userId)
+      const reactionsMap = await getReactions(uid, creations.docs)
+      const bookmarksMap = await getBookmarks(uid, creations.docs)
+
+      const extendedDocs = creations.docs.map(creation => {
+        return {
+          ...(typeof creation.toObject !== 'undefined'
+            ? creation.toObject()
+            : creation), //aggregate returns different format than query
+          reactions: reactionsMap[creation._id.toString()],
+          bookmarked: bookmarksMap[creation._id.toString()],
+        }
+      })
+      feed.docs = extendedDocs
+      feed.reactions = reactionsMap
+      feed.bookmarks = bookmarksMap
     }
 
     return reply.status(200).send(feed)

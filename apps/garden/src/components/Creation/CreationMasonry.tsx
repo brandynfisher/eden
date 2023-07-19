@@ -22,7 +22,7 @@ const CreationMasonry = ({
   hasSort,
 }: {
   query?: PaginatedFeedQuery
-  hasSort: boolean
+  hasSort?: OrderByParam[]
 }) => {
   const containerRef = useRef(null)
   const [orderBy, setOrderBy] = useState<OrderByParam>(OrderByDefaultParam)
@@ -86,7 +86,10 @@ const CreationMasonry = ({
   return (
     <>
       {hasSort && (
-        <OrderByButtons onOrderChange={item => handleOrderChange(item)} />
+        <OrderByButtons
+          params={hasSort}
+          onOrderChange={item => handleOrderChange(item)}
+        />
       )}
 
       <MasonryScroller
