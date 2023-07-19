@@ -75,12 +75,12 @@ const CreatorPage = ({ creatorId }: { creatorId: string }) => {
     return <LoadingIndicator />
   }
 
+  // @todo: redirect or show  400/404/500?
   if (error) {
     console.error(error)
+    return <>error</>
   }
-
   if (!creator) {
-    // @todo: redirect orshow  404?
     return <>not found: {creatorId}</>
   }
 
