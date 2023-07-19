@@ -1,5 +1,10 @@
 import CollectionHeader from '@/components/Collections/CollectionHeader'
 import CreationMasonry from '@/components/Creation/CreationMasonry'
+import {
+  OrderByBookmarks,
+  OrderByLatest,
+  OrderByPraises,
+} from '@/components/OrderByButtons'
 import { useCollection } from '@/hooks/useCollection'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
@@ -42,7 +47,10 @@ const CollectionPage = ({ collectionId }: { collectionId: string }) => {
           deleteLoading={deleteLoading}
         />
         <div className="mt-4">
-          <CreationMasonry query={{ collectionId }} hasSort={true} />
+          <CreationMasonry
+            query={{ collectionId }}
+            hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+          />
         </div>
       </Space>
     </div>

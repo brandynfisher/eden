@@ -1,5 +1,10 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import CreationMasonry from '@/components/Creation/CreationMasonry'
+import {
+  OrderByBookmarks,
+  OrderByLatest,
+  OrderByPraises,
+} from '@/components/OrderByButtons'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
@@ -14,7 +19,10 @@ const inter = Inter({ subsets: ['latin'] })
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
   return (
     <div className="mt-4">
-      <CreationMasonry query={{ userId: creatorId }} hasSort={true} />
+      <CreationMasonry
+        query={{ userId: creatorId }}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+      />
     </div>
   )
 }
