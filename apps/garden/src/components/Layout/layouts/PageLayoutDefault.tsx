@@ -1,10 +1,11 @@
 import CustomLayout from '@/components/Layout/CustomLayout'
 import LayoutMenu from '@/components/Layout/navigation/LayoutMenu'
 import { Layout } from 'antd'
+import { ReactNode } from 'react'
 
 const { Content, Sider } = Layout
 
-const PageLayoutDefault = ({ children }: { children: React.ReactNode }) => {
+const PageLayoutDefault = ({ children }: { children: ReactNode }) => {
   return (
     <CustomLayout>
       <Sider

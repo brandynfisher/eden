@@ -1,39 +1,63 @@
-// import { requireAuth } from '@/lib/auth'
-// import { UserContext } from '@/providers/UserProvider'
-//import { EditOutlined } from '@ant-design/icons'
+import { requireAuth } from '@/lib/auth'
+import { handleAxiosError } from '@/lib/fetcher'
+import { UserContext } from '@/providers/UserProvider'
+import { EditOutlined } from '@ant-design/icons'
 import { App, Button } from 'antd'
-import React, { useState } from 'react'
+import axios from 'axios'
+import React, { useContext, useState } from 'react'
 
 const ProfileHeaderName = ({
   displayName,
-}: //isOwnProfile,
-{
+  setDisplayName,
+  isOwnProfile,
+}: {
   displayName: string
-  //isOwnProfile: boolean
+  setDisplayName: (displayName: string) => void
+  isOwnProfile: boolean
 }) => {
   const { message } = App.useApp()
-  // const { isAuthenticated, authenticate } = useContext(UserContext)
+  const { isAuthenticated, authenticate } = useContext(UserContext)
   const [isEditing, setIsEditing] = useState(false)
-  // const [ updatedName, setUpdatedName ] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [updatedName, setUpdatedName] = useState(displayName)
 
-  // const handleEditNameClick = async () => {
-  //   if (!isAuthenticated) {
-  //     await requireAuth(authenticate)
-  //     return
-  //   }
-  //
-  //   setIsEditing(true)
-  //   // setUpdatedName(displayName)
-  // }
+  const handleEditNameClick = async () => {
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+      return
+    }
 
-  // const handleNameInputChange = (ev:React.ChangeEvent<HTMLInputElement>) => {
-  //   // setUpdatedName(ev.target.value)
-  // }
+    setIsEditing(true)
+    setUpdatedName(displayName)
+  }
+
+  const handleNameInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = ev.target.value
+    const isValid = newValue.match(/^[a-zA-Z0-9_.-]*$/)
+
+    if (!isValid) {
+      return
+    }
+
+    setUpdatedName(newValue.trim())
+  }
 
   const handleNameSubmit = async () => {
-    // @todo: implement here (and in backend?)
+    setLoading(true)
     message.destroy()
-    message.warning('Not implemented')
+
+    try {
+      await axios.post('/api/creators/update', {
+        username: updatedName,
+      })
+      setDisplayName(updatedName)
+      setIsEditing(false)
+      message.success('Name updated successfully!')
+    } catch (err) {
+      handleAxiosError(err, message)
+      message.error('Failed to update name!')
+    }
+    setLoading(false)
   }
 
   return (
@@ -51,13 +75,13 @@ const ProfileHeaderName = ({
             <input
               type="text"
               enterKeyHint="enter"
-              defaultValue={displayName}
+              value={updatedName}
               maxLength={32}
-              minLength={2}
+              minLength={3}
               autoCorrect="off"
               spellCheck="false"
-              className="z-10 pl-0 ml-0 font-semibold border-none shadow-none !ring-none flex h-7 max-w-full items-center text-lg font-medium bg-transparent underline decoration-dotted decoration-2 underline-offset-[6px] !outline-none"
-              // onChange={handleNameInputChange}
+              className="z-10 pl-0 ml-0 border-none shadow-none !ring-none flex h-7 max-w-full items-center text-lg font-medium bg-transparent underline decoration-dotted decoration-2 underline-offset-[6px] !outline-none"
+              onChange={handleNameInputChange}
             />
             <div className="z-0 flex gap-2 absolute bg-white dark:bg-gray-800 p-2 top-full border border-gray-300 dark:border-gray-700 border-solid border-t-0 rounded-b-md anim-slide-fade-down ">
               <Button
@@ -68,7 +92,13 @@ const ProfileHeaderName = ({
               >
                 Cancel
               </Button>
-              <Button onClick={handleNameSubmit} size="small" type="text">
+              <Button
+                onClick={handleNameSubmit}
+                size="small"
+                type="text"
+                loading={loading}
+                disabled={!updatedName || updatedName === displayName}
+              >
                 Save
               </Button>
             </div>
@@ -76,15 +106,15 @@ const ProfileHeaderName = ({
         )}
       </div>
 
-      {/*{isOwnProfile && (*/}
-      {/*  <>*/}
-      {/*    {!isEditing && (*/}
-      {/*      <Button size={'small'} type="text" onClick={handleEditNameClick}>*/}
-      {/*        <EditOutlined className="text-xl" />*/}
-      {/*      </Button>*/}
-      {/*    )}*/}
-      {/*  </>*/}
-      {/*)}*/}
+      {isOwnProfile && (
+        <>
+          {!isEditing && (
+            <Button size={'small'} type="text" onClick={handleEditNameClick}>
+              <EditOutlined className="text-xl" />
+            </Button>
+          )}
+        </>
+      )}
     </div>
   )
 }

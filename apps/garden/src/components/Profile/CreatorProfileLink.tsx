@@ -5,18 +5,20 @@ import React from 'react'
 
 const CreatorProfileLink = ({
   creatorId,
+  creatorName,
   isOverlay,
 }: {
   creatorId: string
+  creatorName?: string
   isOverlay?: boolean
 }) => {
-  const truncatedId = truncatedAddress(creatorId)
-
   return (
     <Link
       onClick={ev => ev.stopPropagation()}
       href={{
-        pathname: `/creators/${creatorId}`,
+        pathname: `/creators/${
+          creatorName ? creatorName.toLowerCase() : creatorId
+        }`,
       }}
       className={`flex items-center mr-2 ${
         isOverlay ? 'text-gray-300' : 'text-gray-500 dark:text-gray-300'
@@ -24,7 +26,9 @@ const CreatorProfileLink = ({
     >
       <ProfileAvatar seed={creatorId} />
       <div className="ml-2 text-sm font-bold overflow-hidden whitespace-nowrap">
-        {truncatedId}
+        {creatorName && creatorName !== creatorId
+          ? creatorName
+          : truncatedAddress(creatorId)}
       </div>
     </Link>
   )

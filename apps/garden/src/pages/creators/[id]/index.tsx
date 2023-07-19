@@ -4,7 +4,7 @@ import { maybeRedirectIfCreationIdQuery } from '@/lib/redirect'
 import CreatorPage from '@/pages/creators/[id]/CreatorPage'
 import { NextPageContext } from 'next'
 import { useRouter } from 'next/router'
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 export async function getServerSideProps(ctx: NextPageContext) {
   return (await maybeRedirectIfCreationIdQuery(ctx)) || { props: {} }
@@ -13,12 +13,13 @@ export async function getServerSideProps(ctx: NextPageContext) {
 const Creator = () => {
   const router = useRouter()
   const { id } = router.query
+  const idParam = id as string
 
-  if (!id) {
+  if (!idParam) {
     return <LoadingIndicator />
   }
 
-  return <CreatorPage creatorId={id as string} />
+  return <CreatorPage creatorId={idParam} />
 }
 
 Creator.getLayout = function getLayout(page: ReactNode) {

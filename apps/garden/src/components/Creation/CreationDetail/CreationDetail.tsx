@@ -179,7 +179,10 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
           <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
             <div className="overflow-hidden flex items-center flex-shrink-0">
               <div className="min-w-0">
-                <CreatorProfileLink creatorId={creationData.user.userId} />
+                <CreatorProfileLink
+                  creatorId={creationData.user.userId}
+                  creatorName={creationData.user.username}
+                />
               </div>
             </div>
             <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">

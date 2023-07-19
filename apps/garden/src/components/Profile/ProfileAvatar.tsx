@@ -7,7 +7,6 @@ const ProfileAvatar = ({ seed }: { seed: string }) => {
       <div className="flex h-full w-full">
         <Blockies
           seed={seed ? seed : ''}
-          color="#64b77e"
           className="relative -z-10 scaled-canvas rounded-full"
           size={10}
           scale={5}
