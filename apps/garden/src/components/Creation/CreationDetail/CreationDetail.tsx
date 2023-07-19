@@ -37,7 +37,7 @@ const ConfigParamsTextTabContent = ({
                 {key}
               </div>
               <div
-                className={`break-words px-1 line-clamp-3 ${
+                className={`break-words px-1 line-clamp-2 ${
                   configValue.length > 17 ? 'col-span-2' : ''
                 }`}
                 title={configValue}
