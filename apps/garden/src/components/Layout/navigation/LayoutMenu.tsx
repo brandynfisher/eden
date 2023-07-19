@@ -1,5 +1,9 @@
 import { UserContext } from '@/providers/UserProvider'
-import { EyeOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  ExperimentOutlined,
+  ToolOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -23,7 +27,7 @@ function getItem(
 
 const defaultItems: MenuItem[] = [
   getItem('My Profile', '/me', <UserOutlined />),
-  getItem('Create', '/create', <EyeOutlined />),
+  getItem('Create', '/create', <ExperimentOutlined />),
   getItem('Tools', '/tools', <ToolOutlined />),
 ]
 

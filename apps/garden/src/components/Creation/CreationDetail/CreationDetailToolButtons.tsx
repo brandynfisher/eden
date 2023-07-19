@@ -11,7 +11,7 @@ import { Creation } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Dropdown } from 'antd'
 import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 const handleDownload = async (url: string, fileName: string) => {
   try {
@@ -88,8 +88,8 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
     setPageUrl(`${baseUrl}${router.asPath}`)
   }, [router.asPath])
 
-  const getCreateMenuItems = (isImage: boolean) => {
-    const menuItems = [
+  const getCreateMenuItems = () => {
+    return [
       {
         label: (
           <div onClick={() => handleCreate(null, creation)}>Use as preset</div>
@@ -97,20 +97,10 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
         key: '1',
       },
     ]
-
-    if (isImage) {
-      menuItems.push({
-        label: (
-          <div onClick={() => handleCreate('remix', creation)}>Recreate</div>
-        ),
-        key: '2',
-      })
-    }
-
-    return menuItems
   }
 
-  const items = [
+  type Item = { title: string; icon: ReactNode; onClick?: () => void }
+  const items: Item[] = [
     !navigator.share
       ? {
           title: 'Copy URL',
@@ -137,29 +127,35 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
         await handleDownload(creation.uri, creation._id)
       },
     },
-    {
+  ]
+
+  // show "Recreate" only for creations with an image output
+  if (isImage(creation.uri)) {
+    items.push({
       title: 'Recreate',
       icon: <RetweetOutlined className="text-xl" />,
       onClick: async () => {
         await handleCreate('remix', creation)
       },
-    },
-    {
-      title: 'More...',
-      icon: (
-        <Dropdown
-          trigger={['click']}
-          arrow={true}
-          placement="topRight"
-          menu={{ items: getCreateMenuItems(!!isImage(creation.uri)) }}
-        >
-          <div className="flex items-center justify-center w-full h-full">
-            <EllipsisOutlined className="text-xl" />
-          </div>
-        </Dropdown>
-      ),
-    },
-  ]
+    })
+  }
+
+  // misc / other stuff accumulated under "more button"
+  items.push({
+    title: 'More...',
+    icon: (
+      <Dropdown
+        trigger={['click']}
+        arrow={true}
+        placement="topRight"
+        menu={{ items: getCreateMenuItems() }}
+      >
+        <div className="flex items-center justify-center w-full h-full">
+          <EllipsisOutlined className="text-xl" />
+        </div>
+      </Dropdown>
+    ),
+  })
 
   return (
     <>

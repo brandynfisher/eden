@@ -1,5 +1,5 @@
 import { UserContext } from '@/providers/UserProvider'
-import { PlusOutlined } from '@ant-design/icons'
+import { ExperimentOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'
@@ -13,9 +13,9 @@ const QuickCreateMenu = () => {
 
   return (
     <Link href="/create">
-      <Button className="flex items-center">
-        <div className="mr-2">Create</div>
-        <PlusOutlined />
+      <Button className="flex items-center gap-2">
+        <ExperimentOutlined />
+        <div>Create</div>
       </Button>
     </Link>
   )
