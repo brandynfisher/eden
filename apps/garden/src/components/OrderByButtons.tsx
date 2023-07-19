@@ -29,6 +29,11 @@ const items: OrderByParam[] = [
     field: 'bookmarkCount',
     direction: -1,
   },
+  {
+    label: 'Following',
+    field: 'following',
+    direction: -1,
+  },
 ]
 
 const OrderByButton = ({
