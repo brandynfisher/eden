@@ -74,6 +74,7 @@ body {
     .ant-modal-body .media-display .ant-image-img {
         min-width: 64vw !important;
         object-position: top !important;
+        max-height: 90vh !important;
     }
 }
 
@@ -283,7 +284,7 @@ body {
     width: auto !important;
     height: auto !important;
     max-width: 100% !important;
-    max-height: 100% !important;
+    /*max-height: 100% !important;*/
 }
 .media-display .ant-image .ant-image-mask {
     background: rgba(0, 0, 0, 0.2) !important;
