@@ -147,102 +147,98 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
   }
 
   return (
-    <>
-      <div className="xl:flex xl:justify-center">
-        <div className="mx-auto xl:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
-          <div className="inline-flex mb-4 max-h-72vh xl:max-h-88vh">
-            <div
-              onClick={isImage(creation.uri) ? showMediaViewer : () => null}
-              className="flex justify-center xl:justify-end overflow-hidden"
-            >
-              {isImage(creation.uri) ? (
-                <MediaDisplay
-                  creationUri={creationData.uri}
-                  previewUri={creationData.uri}
-                  showPreview={mediaViewerVisible}
-                  onPreviewClose={hideMediaViewer}
-                />
-              ) : (
-                <MediaDisplay creationUri={creationData.uri} />
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="mx-auto xl:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
-          <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
-            <CreationReactions
-              creation={creationData}
-              onChange={setCreationData}
+    <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
+      <div className="mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
+        <div
+          onClick={isImage(creation.uri) ? showMediaViewer : () => null}
+          className="flex justify-center lg:flex lg:flex-grow"
+        >
+          {isImage(creation.uri) ? (
+            <MediaDisplay
+              creationUri={creationData.uri}
+              previewUri={creationData.uri}
+              showPreview={mediaViewerVisible}
+              onPreviewClose={hideMediaViewer}
             />
-          </div>
-
-          <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
-            <div className="overflow-hidden flex items-center flex-shrink-0">
-              <div className="min-w-0">
-                <CreatorProfileLink
-                  creatorId={creationData.user.userId}
-                  creatorName={creationData.user.username}
-                />
-              </div>
-            </div>
-            <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
-              <FollowControls creatorId={creationData.user.userId} />
-            </div>
-          </div>
-
-          <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
-            <div style={{ wordWrap: 'break-word' }}>
-              <div className="flex justify-between items-center">
-                <div className="font-bold">
-                  /{creation.task.generator?.generatorName}
-                </div>
-                <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
-              </div>
-              <Divider className="my-4" />
-
-              <TruncatedExpandableText text={creation.name} />
-            </div>
-          </div>
-
-          <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
-            <CreationDetailToolButtons creation={creation} />
-          </div>
-
-          <div className="flex w-full justify-center items-center mb-4">
-            <Button
-              type="dashed"
-              className="dark:text-gray-400"
-              onClick={() => setIsRevealed(!isRevealed)}
-            >
-              {isRevealed ? 'Hide' : 'Show'} configuration
-            </Button>
-          </div>
-
-          {isRevealed && (
-            <>
-              <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden text-xs">
-                <Tabs
-                  centered
-                  defaultActiveKey="1"
-                  items={items}
-                  onChange={onConfigurationTabChange}
-                />
-              </div>
-
-              <div className="flex w-full justify-center items-center my-4">
-                <Button
-                  type="dashed"
-                  className="dark:text-gray-400"
-                  onClick={() => setIsRevealed(false)}
-                >
-                  Hide configuration
-                </Button>
-              </div>
-            </>
+          ) : (
+            <MediaDisplay creationUri={creationData.uri} />
           )}
         </div>
       </div>
-    </>
+      <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
+        <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
+          <CreationReactions
+            creation={creationData}
+            onChange={setCreationData}
+          />
+        </div>
+
+        <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
+          <div className="overflow-hidden flex items-center flex-shrink-0">
+            <div className="min-w-0">
+              <CreatorProfileLink
+                creatorId={creationData.user.userId}
+                creatorName={creationData.user.username}
+              />
+            </div>
+          </div>
+          <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
+            <FollowControls creatorId={creationData.user.userId} />
+          </div>
+        </div>
+
+        <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
+          <div style={{ wordWrap: 'break-word' }}>
+            <div className="flex justify-between items-center">
+              <div className="font-bold">
+                /{creation.task.generator?.generatorName}
+              </div>
+              <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
+            </div>
+            <Divider className="my-4" />
+
+            <TruncatedExpandableText text={creation.name} />
+          </div>
+        </div>
+
+        <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+          <CreationDetailToolButtons creation={creation} />
+        </div>
+
+        <div className="flex w-full justify-center items-center mb-4">
+          <Button
+            type="dashed"
+            className="dark:text-gray-400"
+            onClick={() => setIsRevealed(!isRevealed)}
+          >
+            {isRevealed ? 'Hide' : 'Show'} configuration
+          </Button>
+        </div>
+
+        {isRevealed && (
+          <>
+            <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden text-xs">
+              <Tabs
+                centered
+                defaultActiveKey="1"
+                items={items}
+                onChange={onConfigurationTabChange}
+              />
+            </div>
+
+            <div className="flex w-full justify-center items-center my-4">
+              <Button
+                type="dashed"
+                className="dark:text-gray-400"
+                onClick={() => setIsRevealed(false)}
+              >
+                Hide configuration
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 

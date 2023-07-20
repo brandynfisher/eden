@@ -50,7 +50,7 @@ const CreationDetailModal = ({
       afterClose={afterCloseHandler}
       footer={false}
       width={''} // unsets default width, so we can handle it with util classes
-      className="flex overflow-hidden flex-col mx-auto relative z-20 w-full lg:max-w-6xl h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl"
+      className="flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl"
     >
       <CreationDetail creation={creation} />
     </Modal>

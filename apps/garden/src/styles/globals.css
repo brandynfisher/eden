@@ -42,8 +42,8 @@ body {
 .dark .ant-modal-content {
     border: solid;
     border-radius: 0.75rem !important;
-    border-color: rgba(26, 30, 45, 0.5) !important;
-    border-width: 2px !important;
+    border-color: rgba(26, 30, 45, 1) !important;
+    border-width: 1px !important;
 }
 
 .dark .ant-modal-content {
@@ -57,6 +57,22 @@ body {
 @media (min-width: 768px) {
     .ant-modal-content {
         padding: 20px 24px !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .ant-modal-content {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 85vw !important;
+        min-height: 85vh !important;
+    }
+    .ant-modal-body {
+        display: flex !important;
+        flex-grow: 1 !important;
+    }
+    .ant-modal-body .media-display .ant-image-img {
+        min-width: 64vw !important;
     }
 }
 
