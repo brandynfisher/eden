@@ -73,6 +73,7 @@ body {
     }
     .ant-modal-body .media-display .ant-image-img {
         min-width: 64vw !important;
+        object-position: top !important;
     }
 }
 
