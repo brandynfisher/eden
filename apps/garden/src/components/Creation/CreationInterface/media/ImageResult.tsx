@@ -11,7 +11,7 @@ import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const ImagePreviewMask = () => (
   <div className="image-preview-mask absolute inset-0 flex items-center justify-center">
-    <div className="rounded-full bg-gray-800 h-12 w-12 flex items-center justify-center opacity-70">
+    <div className="rounded-full bg-gray-800 h-12 w-12 flex items-center justify-center">
       <ExpandOutlined className="text-2xl" />
     </div>
   </div>
@@ -87,16 +87,18 @@ const ImageResult = ({
 
   return (
     <>
-      <div className="image-wrap relative">
-        <Image
-          src={resultUrl}
-          alt="result"
-          fallback="placeholder.png"
-          placeholder={<LoadingPlaceholder />}
-          preview={false}
-        ></Image>
+      <div className="image-wrap">
+        <div className="relative">
+          <Image
+            src={resultUrl}
+            alt="result"
+            fallback="placeholder.png"
+            placeholder={<LoadingPlaceholder />}
+            preview={false}
+          ></Image>
 
-        {previewUrl && !showPreview && <ImagePreviewMask />}
+          {previewUrl && !showPreview && <ImagePreviewMask />}
+        </div>
 
         {previewUrl && showPreview ? (
           <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-10`}>
