@@ -1,5 +1,10 @@
-import { ExpandOutlined, ExperimentOutlined } from '@ant-design/icons'
-import { ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons'
+import {
+  ExpandOutlined,
+  ExperimentOutlined,
+  FullscreenOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
+} from '@ant-design/icons'
 import { Button, Image, Skeleton } from 'antd'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
@@ -103,24 +108,24 @@ const ImageResult = ({
             >
               {({ zoomIn, zoomOut, centerView }) => (
                 <>
-                  <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-950 bg-opacity-40 rounded-br-lg">
-                    <Button type="text" onClick={ev => onCloseHandler(ev)}>
-                      Close (ESC)
-                    </Button>
+                  <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-950 bg-opacity-40 rounded-bl-lg right-0">
+                    <Button.Group>
+                      <Button type="text" onClick={() => zoomIn()}>
+                        <ZoomInOutlined className="text-xl" />
+                      </Button>
+                      <Button type="text" onClick={() => zoomOut()}>
+                        <ZoomOutOutlined className="text-xl" />
+                      </Button>
+                    </Button.Group>
                     <Button
                       type="text"
                       onClick={() => centerView(fitContentToWrapper())}
                     >
-                      Reset
+                      <FullscreenOutlined className="text-xl" />
                     </Button>
-                    <Button.Group>
-                      <Button type="text" onClick={() => zoomIn()}>
-                        <ZoomInOutlined />
-                      </Button>
-                      <Button type="text" onClick={() => zoomOut()}>
-                        <ZoomOutOutlined />
-                      </Button>
-                    </Button.Group>
+                    <Button type="text" onClick={ev => onCloseHandler(ev)}>
+                      Close (ESC)
+                    </Button>
                   </div>
                   <TransformComponent wrapperClass="!w-full !h-full">
                     <img
