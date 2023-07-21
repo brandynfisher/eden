@@ -1,11 +1,11 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import CreationMasonry from '@/components/Creation/CreationMasonry'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
 } from '@/components/OrderByButtons'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
