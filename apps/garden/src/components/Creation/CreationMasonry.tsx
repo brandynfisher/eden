@@ -96,6 +96,7 @@ const CreationMasonry = ({
         <div>error fetching list</div>
       ) : (
         <MasonryScroller
+          style={{ outline: 'none' }}
           key={key}
           positioner={positioner}
           resizeObserver={resizeObserver}

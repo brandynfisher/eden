@@ -152,6 +152,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
         <div
           onClick={isImage(creation.uri) ? showMediaViewer : () => null}
           className="flex justify-center lg:flex lg:flex-grow"
+          style={{ width: 'fit-content', margin: '0 auto' }}
         >
           {isImage(creation.uri) ? (
             <MediaDisplay
