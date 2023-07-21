@@ -31,20 +31,20 @@ export default function App({ Component, pageProps }: Props): JSX.Element {
     <>
       <Head>
         <title>Garden of Eden</title>
-        <meta property="og:title" content="Garden of Eden" key="title" />
-        <meta
-          property="og:description"
-          content="The Garden of Artificial Delights"
-          key="title"
-        />
         <meta
           property="description"
           content="The Garden of Artificial Delights"
-          key="title"
+        />
+        <meta property="og:title" key="title" content="Garden of Eden" />
+        <meta
+          property="og:description"
+          content="The Garden of Artificial Delights"
+          key="description"
         />
         <meta
           property="og:image"
-          content="https://garden.eden.art/apple-touch-icon.png"
+          content="https://app.eden.art/apple-touch-icon.png"
+          key="image"
         />
         <meta
           name="viewport"

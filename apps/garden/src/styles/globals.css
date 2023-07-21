@@ -69,14 +69,14 @@ body {
     display: flex;
 }
 
-.media-display .ant-image .ant-image-img {
+.media-display .ant-image-img {
     object-fit: contain !important;
     border-radius: 0.75rem !important;
     overflow: hidden !important;
     width: auto !important;
     height: auto !important;
     max-width: 100% !important;
-    max-height: 85vh !important;
+    max-height: 65vh;
 }
 
 .ant-modal-body .media-display .ant-image-img {
