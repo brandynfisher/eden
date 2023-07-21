@@ -14,7 +14,6 @@ import React from 'react'
 
 import { Page } from '../../types/page'
 
-// this should give a better typing
 type Props = AppProps & {
   Component: Page
 }
