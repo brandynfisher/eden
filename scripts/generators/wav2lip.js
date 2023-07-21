@@ -1,4 +1,4 @@
-module.exports = [
+const params = [
   {
     name: 'face_url',
     label: 'Face image file',
@@ -40,3 +40,5 @@ module.exports = [
     optional: true,
   },
 ]
+
+export default params;

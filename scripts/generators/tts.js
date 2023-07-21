@@ -1,4 +1,4 @@
-module.exports = [
+const params = [
   {
     name: 'text',
     label: 'Text',
@@ -73,3 +73,5 @@ module.exports = [
     optional: true,
   },
 ]
+
+export default params;
