@@ -13,7 +13,7 @@ import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
 import { Inter } from 'next/font/google'
-import React, { useContext } from 'react'
+import { useContext } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
