@@ -1,6 +1,6 @@
-import {PaginatedResponse} from '.'
+import { PaginatedResponse } from '.'
 import { WebAPICallResult } from '../EdenClient'
-import {Generator} from './GeneratorsResponses';
+import { Generator } from './GeneratorsResponses'
 
 export type TasksCreateResponse = WebAPICallResult & {
   error?: string

@@ -20,7 +20,7 @@ const TruncatedExpandableText = ({ text }: { text: string }) => {
         title={text}
         className={`relative text-sm select-text cursor-text w-full ${
           isTruncated ? 'mb-2' : ''
-        } ${showMore ? '' : 'text-ellipsis line-clamp-3'}`}
+        } ${showMore ? '' : 'text-ellipsis line-clamp-2'}`}
       >
         {text}
       </span>

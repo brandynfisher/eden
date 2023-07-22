@@ -34,7 +34,10 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
           <div>Generator: {creation.task.generator.generatorName}</div>
           <div className="flex items-center">
             <span className="mr-2">By</span>{' '}
-            <CreatorProfileLink creatorId={creation.user.userId} />
+            <CreatorProfileLink
+              creatorId={creation.user.userId}
+              creatorName={creation.user.username}
+            />
           </div>
         </div>
       </div>

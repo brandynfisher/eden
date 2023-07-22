@@ -1,27 +1,38 @@
 import PageLayoutNoSidebar from '@/components/Layout/layouts/PageLayoutNoSidebar'
-import LoadingIndicator from '@/components/LoadingIndicator'
-import { maybeRedirectIfCreationIdQuery } from '@/lib/redirect'
+import { CONFIG } from '@/lib/config'
+import { fetcher as fetcherFn } from '@/lib/fetcher'
+import { getServerSidePropsBase } from '@/lib/ssr'
 import CollectionPage from '@/pages/collections/[id]/CollectionPage'
+import { Collection as CollectionType } from '@edenlabs/eden-sdk'
 import { NextPageContext } from 'next'
-import { useRouter } from 'next/router'
 import React, { ReactNode } from 'react'
 
-export async function getServerSideProps(ctx: NextPageContext) {
-  return (await maybeRedirectIfCreationIdQuery(ctx)) || { props: {} }
+import { Page } from '../../../../types/page'
+
+interface PageProps {
+  data: CollectionType
+  error?: string
 }
 
-const Collection = () => {
-  const router = useRouter()
-  const { id } = router.query
+const fetchCollection = async (context: NextPageContext) => {
+  const { query } = context
+  const id = query.id ? String(query.id).trim() : false
 
-  if (!id) {
-    return <LoadingIndicator />
-  }
-
-  return <CollectionPage collectionId={id as string} />
+  return fetcherFn(
+    `${CONFIG.NEXT_PUBLIC_HOST}/api/collections?collectionId=${id}`,
+  )
 }
 
-Collection.getLayout = function getLayout(page: ReactNode) {
+export const getServerSideProps = getServerSidePropsBase(
+  'collection',
+  fetchCollection,
+)
+
+const Collection: Page<PageProps> = ({ data }: PageProps) => {
+  return <CollectionPage data={data} />
+}
+
+Collection.getLayout = (page: ReactNode) => {
   return <PageLayoutNoSidebar>{page}</PageLayoutNoSidebar>
 }
 
