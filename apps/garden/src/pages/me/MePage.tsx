@@ -1,19 +1,16 @@
+import LoadingIndicator from '@/components/LoadingIndicator'
+import { useCreator } from '@/hooks/useCreator'
 import CreatorPage from '@/pages/creators/[id]/CreatorPage'
-import { UserContext } from '@/providers/UserProvider'
-import React, { useContext } from 'react'
+import React from 'react'
 
-const MeCreatorPage = () => {
-  const { address, isConnected } = useContext(UserContext)
+const MePage = ({ address }: { address: string }) => {
+  const { creator } = useCreator(address)
 
-  if (!isConnected || !address) {
-    return null
+  if (!creator) {
+    return <LoadingIndicator />
   }
 
-  return <CreatorPage creatorId={address} />
-}
-
-const MePage = () => {
-  return <MeCreatorPage />
+  return <CreatorPage data={creator} />
 }
 
 export default MePage

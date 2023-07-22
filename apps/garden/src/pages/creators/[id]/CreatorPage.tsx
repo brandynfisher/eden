@@ -1,6 +1,5 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import CreationMasonry from '@/components/Creation/CreationMasonry'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import {
   OrderByBookmarks,
   OrderByLatest,
@@ -9,11 +8,13 @@ import {
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
+import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
 import { Inter } from 'next/font/google'
-import { useContext } from 'react'
+import Head from 'next/head'
+import React, { useContext } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -62,37 +63,62 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   ]
 
   return (
-    <div className={`flex flex-col min-h-screen ${inter.className}`}>
-      <Space direction="vertical">
-        <ProfileHeader
-          creatorId={creator.userId}
-          creator={creator}
-          numCreations={creator?.creationsCount}
-          isConnectedUser={isConnectedUser}
+    <>
+      <Head>
+        <title>{`${creator.username} - Creator | Garden of Eden`}</title>
+        <meta
+          property="og:title"
+          key="title"
+          content={`${creator.username} - Creator | Garden of Eden`}
         />
-        <Tabs defaultActiveKey="1" centered items={creatorPageTabs} />
-      </Space>
-    </div>
+        <meta
+          property="og:description"
+          content={`${creator.username}'s Profile - ${creator.creationsCount} Creations | ${creator.followerCount} Followers`}
+          key="description"
+        />
+        {/* @todo: replace generic logo image with user profile image  */}
+        <meta
+          property="og:image"
+          content="https://app.eden.art/apple-touch-icon.png"
+          key="image"
+        />
+        <meta
+          property="og:image:secure_url"
+          content="https://app.eden.art/apple-touch-icon.png"
+        />
+        <meta
+          property="og:image:alt"
+          content={`${creator.username} - Creator`}
+        />
+        <meta
+          property="og:url"
+          content={`${
+            CONFIG.NEXT_PUBLIC_HOST
+          }/creators/${creator.username?.toLowerCase()}`}
+        />
+      </Head>
+
+      <div className={`flex flex-col min-h-screen ${inter.className}`}>
+        <Space direction="vertical">
+          <ProfileHeader
+            creatorId={creator.userId}
+            creator={creator}
+            numCreations={creator?.creationsCount}
+            isConnectedUser={isConnectedUser}
+          />
+          <Tabs defaultActiveKey="1" centered items={creatorPageTabs} />
+        </Space>
+      </div>
+    </>
   )
 }
 
-const CreatorPage = ({ creatorId }: { creatorId: string }) => {
-  const { creator, isLoading, error } = useCreator(creatorId)
+const CreatorPage = ({ data }: { data: Creator }) => {
+  const { creator: creatorData } = useCreator(data.userId, {
+    fallbackData: data,
+  })
 
-  if (isLoading) {
-    return <LoadingIndicator />
-  }
-
-  // @todo: redirect or show  400/404/500?
-  if (error) {
-    console.error(error)
-    return <>error</>
-  }
-  if (!creator) {
-    return <>not found: {creatorId}</>
-  }
-
-  return <CreatorPageContent creator={creator} />
+  return <CreatorPageContent creator={creatorData || data} />
 }
 
 export default CreatorPage

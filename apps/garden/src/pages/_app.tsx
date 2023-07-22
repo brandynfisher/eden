@@ -45,10 +45,12 @@ export default function App({ Component, pageProps }: Props): JSX.Element {
           content="https://app.eden.art/apple-touch-icon.png"
           key="image"
         />
+        <meta property="og:site_name" content="Garden of Eden" />
         <meta
           name="viewport"
           content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
+        <meta property="og:type" content="website" />
       </Head>
 
       <ThemeProvider attribute="class">

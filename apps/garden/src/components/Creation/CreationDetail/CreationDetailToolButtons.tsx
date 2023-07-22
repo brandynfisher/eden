@@ -150,7 +150,7 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
 
     setPageUrl(`${baseUrl}${router.asPath}`)
     setToolItems(getItems())
-  }, [router.asPath, getItems])
+  }, [router.asPath])
 
   const getCreateMenuItems = () => {
     return [

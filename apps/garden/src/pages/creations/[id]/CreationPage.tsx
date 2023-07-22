@@ -1,5 +1,4 @@
 import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
 import { Creation } from '@edenlabs/eden-sdk'
 import React from 'react'
@@ -9,11 +8,7 @@ const CreationPage = ({ data }: { data: Creation }) => {
     fallbackData: data,
   })
 
-  if (!creationData) {
-    return <LoadingIndicator />
-  }
-
-  return <CreationDetail creation={creationData} />
+  return <CreationDetail creation={creationData || data} />
 }
 
 export default CreationPage

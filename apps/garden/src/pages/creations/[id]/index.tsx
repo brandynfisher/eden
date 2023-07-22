@@ -2,7 +2,7 @@ import { Page } from '@/../types/page'
 import PageLayoutNoSidebar from '@/components/Layout/layouts/PageLayoutNoSidebar'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
-import { maybeRedirectIfCreationIdQuery } from '@/lib/redirect'
+import { getServerSidePropsBase } from '@/lib/ssr'
 import CreationPage from '@/pages/creations/[id]/CreationPage'
 import { Creation as CreationType } from '@edenlabs/eden-sdk'
 import { NextPageContext } from 'next'
@@ -15,34 +15,9 @@ interface PageProps {
 
 const fetchCreation = async (context: NextPageContext) => {
   const { query } = context
-  const creationId = query.id ? String(query.id).trim() : false
+  const id = query.id ? String(query.id).trim() : false
 
-  return fetcherFn(
-    `${CONFIG.NEXT_PUBLIC_HOST}/api/creations?creationId=${creationId}`,
-  )
-}
-
-const getServerSidePropsBase = (
-  responseFieldName: string,
-  dataFetcher: (ctx: NextPageContext) => Promise<{ [key: string]: string }>,
-) => {
-  return async (ctx: NextPageContext) => {
-    await maybeRedirectIfCreationIdQuery(ctx)
-
-    try {
-      const data = await dataFetcher(ctx)
-
-      if (!data || !data[responseFieldName]) {
-        return {
-          notFound: true,
-        }
-      }
-
-      return { props: { data: data[responseFieldName] } }
-    } catch (err) {
-      return { props: { error: 'Something went wrong' } }
-    }
-  }
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations?creationId=${id}`)
 }
 
 export const getServerSideProps = getServerSidePropsBase(

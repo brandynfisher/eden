@@ -8,16 +8,15 @@ export const useCreation = (
   immutable = false,
   options = {},
 ) => {
-  const { data, mutate } = immutable
-    ? useSWRImmutable(
-        '/api/creations?creationId=' + creationId,
-        fetcher,
-        options,
-      )
-    : useSWR('/api/creations?creationId=' + creationId, fetcher, options)
+  const apiPath = `/api/creations?creationId=${creationId}`
+  const { data, mutate, isLoading, error } = immutable
+    ? useSWRImmutable(apiPath, fetcher, options)
+    : useSWR(apiPath, fetcher, options)
 
   return {
     creation: data?.creation as Creation | undefined,
     mutate,
+    isLoading,
+    error,
   }
 }

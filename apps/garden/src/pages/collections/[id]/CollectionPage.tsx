@@ -6,20 +6,22 @@ import {
   OrderByPraises,
 } from '@/components/OrderByButtons'
 import { useCollection } from '@/hooks/useCollection'
+import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
+import { Collection } from '@edenlabs/eden-sdk'
 import { App, Space } from 'antd'
 import axios from 'axios'
 import { Inter } from 'next/font/google'
+import Head from 'next/head'
 import router from 'next/router'
 import React, { useContext } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const CollectionPage = ({ collectionId }: { collectionId: string }) => {
+const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()
   const { isAuthenticated, address } = useContext(UserContext)
-  const { collection } = useCollection(collectionId)
   const [deleteLoading, setDeleteLoading] = React.useState(false)
 
   const isAuthUser = isAuthenticated && collection?.creatorId === address
@@ -28,7 +30,7 @@ const CollectionPage = ({ collectionId }: { collectionId: string }) => {
     setDeleteLoading(true)
     try {
       await axios.post(`/api/collections/delete`, {
-        collectionId,
+        collectionId: collection._id,
       })
       await router.push(`/me`)
     } catch (err) {
@@ -37,26 +39,64 @@ const CollectionPage = ({ collectionId }: { collectionId: string }) => {
     setDeleteLoading(false)
   }
 
-  return collection ? (
-    <div className={`flex flex-col min-h-screen ${inter.className}`}>
-      <Space direction="vertical">
-        <CollectionHeader
-          collection={collection}
-          isAuthUser={isAuthUser}
-          onDeleteButtonClick={onDeleteButtonClick}
-          deleteLoading={deleteLoading}
+  return (
+    <>
+      <Head>
+        <title>{`Collection "${collection.name}" by ${collection.creatorName} | Garden of Eden`}</title>
+        <meta
+          property="og:title"
+          key="title"
+          content={`Collection "${collection.name}" by ${collection.creatorName} | Garden of Eden`}
         />
-        <div className="mt-4">
-          <CreationMasonry
-            query={{ collectionId }}
-            hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+        <meta
+          property="og:description"
+          content={`${collection.creations.length} creations curated by ${collection.creatorName}`}
+          key="description"
+        />
+        <meta
+          property="og:image"
+          content={collection.displayImageUri}
+          key="image"
+        />
+        <meta
+          property="og:image:secure_url"
+          content={collection.displayImageUri}
+        />
+        <meta
+          property="og:image:alt"
+          content={`${collection.name} - Collection by ${collection.creatorName}`}
+        />
+        <meta
+          property="og:url"
+          content={`${CONFIG.NEXT_PUBLIC_HOST}/collections/${collection._id}`}
+        />
+      </Head>
+      <div className={`flex flex-col min-h-screen ${inter.className}`}>
+        <Space direction="vertical">
+          <CollectionHeader
+            collection={collection}
+            isAuthUser={isAuthUser}
+            onDeleteButtonClick={onDeleteButtonClick}
+            deleteLoading={deleteLoading}
           />
-        </div>
-      </Space>
-    </div>
-  ) : (
-    <p>Loading...</p>
+          <div className="mt-4">
+            <CreationMasonry
+              query={{ collectionId: collection._id }}
+              hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+            />
+          </div>
+        </Space>
+      </div>
+    </>
   )
+}
+
+const CollectionPage = ({ data }: { data: Collection }) => {
+  const { collection: collectionData } = useCollection(data._id, {
+    fallbackData: data,
+  })
+
+  return <CollectionPageContent collection={collectionData || data} />
 }
 
 export default CollectionPage
