@@ -6,7 +6,13 @@ export const getServerSidePropsBase = (
   dataFetcher: (ctx: NextPageContext) => Promise<{ [key: string]: string }>,
 ) => {
   return async (ctx: NextPageContext) => {
-    await maybeRedirectIfCreationIdQuery(ctx)
+    const shouldRedirectToCreationDetail = await maybeRedirectIfCreationIdQuery(
+      ctx,
+    )
+
+    if (shouldRedirectToCreationDetail) {
+      return shouldRedirectToCreationDetail
+    }
 
     try {
       const data = await dataFetcher(ctx)
