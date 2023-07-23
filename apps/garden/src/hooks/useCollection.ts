@@ -2,9 +2,9 @@ import { fetcher } from '@/lib/fetcher'
 import { Collection } from '@edenlabs/eden-sdk'
 import useSWR from 'swr'
 
-export const useCollection = (collectionId: string, options = {}) => {
+export const useCollection = (collectionId: string | null, options = {}) => {
   const { data, mutate } = useSWR(
-    '/api/collections?collectionId=' + collectionId,
+    collectionId ? '/api/collections?collectionId=' + collectionId : null,
     fetcher,
     options,
   )

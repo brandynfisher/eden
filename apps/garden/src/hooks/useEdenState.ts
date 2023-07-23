@@ -1,7 +1,7 @@
 import { useGenerators } from '@/hooks/useGenerators'
 
 export const useEdenState = () => {
-  const { generators } = useGenerators(true)
+  const { generators } = useGenerators()
 
   return {
     generators,

@@ -114,9 +114,13 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
 }
 
 const CreatorPage = ({ data }: { data: Creator }) => {
-  const { creator: creatorData } = useCreator(data.userId, {
+  const { creator: creatorData } = useCreator(data ? data.userId : null, {
     fallbackData: data,
   })
+
+  if (!data) {
+    return null
+  }
 
   return <CreatorPageContent creator={creatorData || data} />
 }

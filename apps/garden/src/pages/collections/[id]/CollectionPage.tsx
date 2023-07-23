@@ -92,9 +92,13 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
 }
 
 const CollectionPage = ({ data }: { data: Collection }) => {
-  const { collection: collectionData } = useCollection(data._id, {
+  const { collection: collectionData } = useCollection(data ? data._id : null, {
     fallbackData: data,
   })
+
+  if (!data) {
+    return null
+  }
 
   return <CollectionPageContent collection={collectionData || data} />
 }
