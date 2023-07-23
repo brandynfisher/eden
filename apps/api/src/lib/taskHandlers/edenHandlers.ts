@@ -86,7 +86,7 @@ const handleUpdate = async (
   const taskUpdate = {
     status: isCompleted ? 'completed' : 'running',
     progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
-  }
+  } as { output?: TaskOutput[]; status: string; progress: number }
 
   if (
     !task.intermediateOutputs ||
