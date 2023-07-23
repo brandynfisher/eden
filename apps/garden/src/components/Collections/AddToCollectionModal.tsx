@@ -6,6 +6,29 @@ import { App, Button, Form, Input, List, Modal } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
 
+const CollectionListItem = ({
+  collection,
+  handleSave,
+}: {
+  collection: Collection
+  handleSave: (collection: Collection) => void
+}) => {
+  const { hovered, ref } = useHover()
+
+  return (
+    <List.Item
+      onClick={() => handleSave(collection)}
+      style={{
+        cursor: 'pointer',
+        backgroundColor: hovered ? '#f0f0f0' : 'transparent',
+      }}
+      ref={ref}
+    >
+      <div className="rounded p-2 mb-2">{collection.name}</div>
+    </List.Item>
+  )
+}
+
 const AddToCollectionModal = ({
   open,
   setOpen,
@@ -126,22 +149,12 @@ const AddToCollectionModal = ({
         <div className="overflow-y-auto max-h-80">
           <List
             dataSource={nonDefaultCollections}
-            renderItem={collection => {
-              const { hovered, ref } = useHover()
-
-              return (
-                <List.Item
-                  onClick={() => handleSave(collection)}
-                  style={{
-                    cursor: 'pointer',
-                    backgroundColor: hovered ? '#f0f0f0' : 'transparent',
-                  }}
-                  ref={ref}
-                >
-                  <div className="rounded p-2 mb-2">{collection.name}</div>
-                </List.Item>
-              )
-            }}
+            renderItem={collection => (
+              <CollectionListItem
+                collection={collection}
+                handleSave={handleSave}
+              />
+            )}
           />
           <button
             className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"

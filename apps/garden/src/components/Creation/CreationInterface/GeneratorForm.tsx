@@ -249,7 +249,10 @@ const GeneratorForm = ({
           </div>
         }
         actions={[
-          <div className="flex px-6 items-center justify-between">
+          <div
+            key={generator.generatorName}
+            className="flex px-6 items-center justify-between"
+          >
             <Button
               type="primary"
               icon={<ExperimentOutlined />}
