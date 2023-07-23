@@ -1,15 +1,13 @@
 import { ChatMessageGroup } from '@/lib/types'
 import { Button, Col, Input, Row, Space } from 'antd'
 
-export const ChatCapabilityMessageSection = ({
+export const ChatMessageSection = ({
   messageGroups,
   setMessageGroups,
-  characterName,
   showControls = true,
 }: {
   messageGroups: ChatMessageGroup[]
   setMessageGroups: (messageGroups: ChatMessageGroup[]) => void
-  characterName: string
   showControls?: boolean
 }) => {
   const onMessageSenderChange = (
@@ -65,8 +63,8 @@ export const ChatCapabilityMessageSection = ({
                 setMessageGroups([
                   ...messageGroups,
                   [
-                    { sender: 'M', message: '' },
-                    { sender: characterName, message: '' },
+                    { sender: '{{user}}', message: '' },
+                    { sender: '{{character}}', message: '' },
                   ],
                 ])
               }}
@@ -90,4 +88,4 @@ export const ChatCapabilityMessageSection = ({
   )
 }
 
-export default ChatCapabilityMessageSection
+export default ChatMessageSection
