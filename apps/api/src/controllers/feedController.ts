@@ -152,7 +152,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
     }
 
     type FeedResponse = {
-      docs: []
+      docs: CreationDocumentExtension[]
       reactions: { [key: string]: Map<ReactionType, boolean> } | []
       bookmarks: { [key: string]: boolean } | []
     }

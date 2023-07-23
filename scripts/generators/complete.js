@@ -1,4 +1,4 @@
-module.exports = [
+const params = [
   {
     name: 'prompt',
     label: 'Prompt',
@@ -26,3 +26,5 @@ module.exports = [
     optional: true,
   },
 ]
+
+export default params;

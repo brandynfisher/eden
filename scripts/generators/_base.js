@@ -1,4 +1,4 @@
-const baseParameters = [
+const params = [
   {
     name: 'width',
     label: 'Width',
@@ -101,4 +101,4 @@ const baseParameters = [
   },
 ]
 
-export default baseParameters
+export default params;

@@ -1,4 +1,4 @@
-module.exports = [
+const params = [
   {
     name: 'lora_training_urls',
     label: 'Training images',
@@ -270,3 +270,5 @@ module.exports = [
     optional: true,
   },
 ]
+
+export default params;

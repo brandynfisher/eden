@@ -1,4 +1,4 @@
-const animateParameters = [
+const params = [
   {
     name: 'n_frames',
     label: 'Frames',
@@ -55,4 +55,4 @@ const animateParameters = [
   },
 ]
 
-export default animateParameters
+export default params;
