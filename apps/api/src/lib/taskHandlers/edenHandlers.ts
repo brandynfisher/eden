@@ -68,17 +68,13 @@ const handleUpdate = async (
     throw new Error(`Could not find task ${taskId}`)
   }
 
-  console.log('=====================')
-  console.log(`handle update for ${taskId}`)
-  const output2 = output
-
   output = Array.isArray(output) ? output : [output]
   output = output.filter((o: TaskOutput) => o)
 
   const intermediateOutputs = output.filter((o: TaskOutput) => !o.isFinal)
   const finalOutputs = output.filter((o: TaskOutput) => o.isFinal)
 
-  const isCompleted = finalOutputs.length > 0
+  const isCompleted = finalOutputs.length > 0 && status == 'succeeded'
   const maxProgress = Math.max(
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
@@ -100,9 +96,8 @@ const handleUpdate = async (
     })
   }
 
-  if (isCompleted && status === 'succeeded') {
+  if (isCompleted) {
     const finalOutput = finalOutputs.slice(-1)[0]
-
     Object.assign(taskUpdate, { output: finalOutput })
     const generator = await Generator.findById(task.generator)
 
@@ -143,15 +138,6 @@ const handleUpdate = async (
         }
       }
     }
-  }
-
-  // let's catch a task update which is "completed" but has no output
-  if (isCompleted && !taskUpdate.output) {
-    console.log('task update is completed but has no output')
-    console.log('task update')
-    console.log(taskUpdate)
-    console.log('task')
-    console.log(output2)
   }
 
   await Task.updateOne(
