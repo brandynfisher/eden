@@ -70,6 +70,7 @@ const handleUpdate = async (
 
   console.log('=====================')
   console.log(`handle update for ${taskId}`)
+  const output2 = output
 
   output = Array.isArray(output) ? output : [output]
   output = output.filter((o: TaskOutput) => o)
@@ -87,8 +88,6 @@ const handleUpdate = async (
     progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
   }
 
-  console.log(taskUpdate)
-
   if (
     !task.intermediateOutputs ||
     intermediateOutputs.length > task.intermediateOutputs.length
@@ -101,26 +100,14 @@ const handleUpdate = async (
     })
   }
 
-  console.log('is completed', isCompleted)
-  console.log('status', status)
-
   if (isCompleted && status === 'succeeded') {
-    console.log('final outputs')
-    console.log(finalOutputs)
     const finalOutput = finalOutputs.slice(-1)[0]
-    console.log(finalOutput)
 
     Object.assign(taskUpdate, { output: finalOutput })
     const generator = await Generator.findById(task.generator)
 
-    console.log('generator')
-    console.log(generator)
-    console.log(taskUpdate)
-    console.log(generator?.output)
-
     if (generator?.output == 'creation') {
       for (let i = 0; i < finalOutput.files.length; i++) {
-        console.log('add creation data :: ', i)
         const creationData = {
           user: task.user,
           task: task._id,
@@ -130,7 +117,6 @@ const handleUpdate = async (
           attributes: finalOutput.attributes,
           mediaAttributes: {},
         }
-        console.log(creationData)
         if (finalOutput.files[i]) {
           const { uri, mediaAttributes } = await server.uploadUrlAsset(
             server,
@@ -157,6 +143,15 @@ const handleUpdate = async (
         }
       }
     }
+  }
+
+  // let's catch a task update which is "completed" but has no output
+  if (isCompleted && !taskUpdate.output) {
+    console.log('task update is completed but has no output')
+    console.log('task update')
+    console.log(taskUpdate)
+    console.log('task')
+    console.log(output2)
   }
 
   await Task.updateOne(
