@@ -10,7 +10,7 @@ import 'antd/dist/reset.css'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
-import React from 'react'
+import { ReactElement } from 'react'
 
 import { Page } from '../../types/page'
 
@@ -18,7 +18,7 @@ type Props = AppProps & {
   Component: Page
 }
 
-export default function App({ Component, pageProps }: Props): JSX.Element {
+export default function App({ Component, pageProps }: Props): ReactElement {
   // use per-component layout if defined or fallback to the generic one
   const getLayout =
     Component.getLayout ||

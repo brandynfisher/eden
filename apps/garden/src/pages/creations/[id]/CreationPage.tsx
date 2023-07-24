@@ -4,9 +4,13 @@ import { Creation } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 const CreationPage = ({ data }: { data: Creation }) => {
-  const { creation: creationData } = useCreation(data._id, false, {
+  const { creation: creationData } = useCreation(data ? data._id : null, {
     fallbackData: data,
   })
+
+  if (!data) {
+    return null
+  }
 
   return <CreationDetail creation={creationData || data} />
 }

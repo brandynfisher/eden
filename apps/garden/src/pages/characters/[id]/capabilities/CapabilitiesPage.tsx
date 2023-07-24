@@ -1,18 +1,18 @@
 import ChatCapabilityForm from '@/components/Characters/Capability/ChatCapability/ChatCapabilityForm'
 import { CapabilityType } from '@/lib/types'
 import { Form, Select } from 'antd'
-import React from 'react'
+import { ReactElement, useState } from 'react'
 
 const capabilityLabelMap: Record<CapabilityType, string> = {
   [CapabilityType.CHAT]: 'Chat',
 }
 
-const capabilityComponentMap: Record<CapabilityType, JSX.Element> = {
+const capabilityComponentMap: Record<CapabilityType, ReactElement> = {
   [CapabilityType.CHAT]: <ChatCapabilityForm />,
 }
 
 const CapabilitiesPage = () => {
-  const [capabilityType, setCapabilityType] = React.useState<
+  const [capabilityType, setCapabilityType] = useState<
     CapabilityType | undefined
   >()
 

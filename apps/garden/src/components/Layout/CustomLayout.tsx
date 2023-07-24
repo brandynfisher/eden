@@ -1,8 +1,14 @@
 import LayoutHeader from '@/components/Layout/LayoutHeader'
 import { Layout, Spin } from 'antd'
-import { PropsWithChildren, useEffect, useState } from 'react'
-import { Key, SWRConfig, SWRConfiguration, SWRHook } from 'swr'
-import { BareFetcher, FetcherResponse } from 'swr/_internal'
+import {
+  Dispatch,
+  PropsWithChildren,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react'
+import { Middleware } from 'swr'
+import { BareFetcher, SWRConfig } from 'swr'
 
 const InfiniteLoadingIndicator = ({ isLoading }: { isLoading: boolean }) => {
   return (
@@ -19,31 +25,38 @@ const InfiniteLoadingIndicator = ({ isLoading }: { isLoading: boolean }) => {
 }
 
 type Args = []
-type Data = Promise<[]>
+type Data = Promise<unknown[]>
+
+// @ts-ignore
+export const myRequestCounterMiddlewareWrap: (
+  setter: Dispatch<SetStateAction<number>>,
+) => Middleware = setter => {
+  return useSWRNext => {
+    return (key, fetcher: BareFetcher<Data | unknown>, config) => {
+      // Before hook runs...
+
+      const extendedFetcher = (...args: Args[]) => {
+        setter(prev => prev + 1)
+
+        if (!fetcher) {
+          return null
+        }
+        // @ts-ignore
+        return fetcher(...args).finally(() => setter(prev => prev - 1))
+      }
+
+      // Handle the next middleware, or the `useSWR` hook if this is the last one.
+      const swr = useSWRNext(key, extendedFetcher, config)
+
+      // After hook runs...
+      return swr
+    }
+  }
+}
 
 const CustomLayout = ({ children }: PropsWithChildren) => {
   const [requestCount, setRequestCount] = useState(0)
   const [showLoading, setShowLoading] = useState(false)
-
-  function requestCounter(useSWRInfinite: SWRHook): FetcherResponse {
-    return (
-      key: Key,
-      fetcher: BareFetcher<Data> | null,
-      config: SWRConfiguration,
-    ) => {
-      const extendedFetcher = (...args: Args[]) => {
-        setRequestCount(prev => prev + 1)
-
-        if (!fetcher) {
-          return
-        }
-
-        return fetcher(...args).finally(() => setRequestCount(prev => prev - 1))
-      }
-
-      return useSWRInfinite(key, extendedFetcher, config)
-    }
-  }
 
   useEffect(() => {
     if (requestCount > 0) {
@@ -55,7 +68,9 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
 
   return (
     // @ts-ignore
-    <SWRConfig value={{ use: [requestCounter] }}>
+    <SWRConfig
+      value={{ use: [myRequestCounterMiddlewareWrap(setRequestCount)] }}
+    >
       <Layout className="min-h-screen flex flex-col">
         <LayoutHeader />
         <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>

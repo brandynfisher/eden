@@ -25,7 +25,7 @@ export const getServerSidePropsBase = (
 
       return { props: { data: data[responseFieldName] } }
     } catch (err) {
-      return { props: { error: 'Something went wrong' } }
+      return { props: { data: null, error: 'Something went wrong' } }
     }
   }
 }
