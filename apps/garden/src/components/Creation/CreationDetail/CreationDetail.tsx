@@ -18,7 +18,7 @@ import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import {
   useClipboard,
   useIntersection,
-  useResizeObserver,
+  useResizeObserver, // useViewportSize,
 } from '@mantine/hooks'
 import { App, Button, Divider, Tabs } from 'antd'
 import Head from 'next/head'
@@ -115,6 +115,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
       threshold: 1,
     })
   const [shouldLoadSimilar, setShouldLoadSimilar] = useState(false)
+  const [isMediaLoaded, setIsMediaLoaded] = useState(false)
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
@@ -172,6 +173,10 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
   }
 
   useEffect(() => {
+    if (!isMediaLoaded) {
+      return
+    }
+
     if (!containerRef.current) {
       return
     }
@@ -184,16 +189,37 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
       return
     }
 
+    // console.log(intersectionObserver)
+    const windowHeight = intersectionObserver?.rootBounds?.height || 0
+    const isVisibleOnInitialRender =
+      containerRef?.current.getBoundingClientRect().height -
+        containerRef?.current.offsetTop <
+      windowHeight
+    // console.log(isVisibleOnInitialRender, (containerRef?.current.getBoundingClientRect().height - containerRef?.current.offsetTop), windowHeight)
+    // console.log(rect, containerRef?.current.offsetTop)
+
+    // @todo: add proper flag or detection for if we're in a modal, probably cleanest to just pass an option to change behaviours where necessary
+    if (containerRef?.current.offsetTop === 80 && isVisibleOnInitialRender) {
+      // console.log('isVisibleOnInitialRender - DO LOAD')
+      setShouldLoadSimilar(true)
+      return
+    }
+
     if (
       intersectionObserver &&
       !shouldLoadSimilar &&
       intersectionObserver?.isIntersecting
     ) {
-      if (containerRef.current.getBoundingClientRect().top < 0) {
+      if (
+        containerRef.current.getBoundingClientRect().top < 0 ||
+        isVisibleOnInitialRender
+      ) {
+        // console.log('INTERSECT AND SCROLLED - DO LOAD')
         setShouldLoadSimilar(true)
       }
     }
   }, [
+    isMediaLoaded,
     containerRef,
     rect,
     intersectionObserver?.isIntersecting,
@@ -250,9 +276,19 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
                   previewUri={creationData.uri}
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
+                  onLoad={() => {
+                    // console.log('onload')
+                    setIsMediaLoaded(true)
+                  }}
                 />
               ) : (
-                <MediaDisplay creationUri={creationData.uri} />
+                <MediaDisplay
+                  creationUri={creationData.uri}
+                  onLoad={() => {
+                    // console.log('onload')
+                    setIsMediaLoaded(true)
+                  }}
+                />
               )}
             </div>
           </div>
@@ -333,27 +369,29 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
           </div>
         </div>
 
-        <div className="w-full mx-auto md:max-w-[640px] lg:mx-0 lg:max-w-full">
-          <Divider className="mt-4 lg:mt-16 lg:mb-8" />
-          <h3 className="mb-8">Similar Creations</h3>
+        {isMediaLoaded && (
+          <div className="w-full mx-auto md:max-w-[640px] lg:mx-0 lg:max-w-full">
+            <Divider className="mt-4 lg:mt-16 lg:mb-8" />
+            <h3 className="mb-8">Similar Creations</h3>
 
-          <div ref={ref}>
-            {!shouldLoadSimilar ? (
-              <div className="flex !mt-0 pt-8 pb-16 justify-center">
-                <LoadingOutlined
-                  className="text-4xl"
-                  ref={intersectionTargetRef}
+            <div ref={ref} className="min-h-[16vh]">
+              {!shouldLoadSimilar ? (
+                <div className="flex !mt-0 pt-8 pb-16 justify-center">
+                  <LoadingOutlined
+                    className="text-4xl"
+                    ref={intersectionTargetRef}
+                  />
+                </div>
+              ) : (
+                <CreationMasonry
+                  // wrapperRef={containerRef}
+                  wrapperSizeRect={rect}
+                  query={{ creationId: creationData._id }}
                 />
-              </div>
-            ) : (
-              <CreationMasonry
-                // wrapperRef={containerRef}
-                wrapperSizeRect={rect}
-                query={{ creationId: creationData._id }}
-              />
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   )
