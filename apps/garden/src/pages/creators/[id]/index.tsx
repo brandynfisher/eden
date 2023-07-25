@@ -1,27 +1,36 @@
 import PageLayoutNoSidebar from '@/components/Layout/layouts/PageLayoutNoSidebar'
-import LoadingIndicator from '@/components/LoadingIndicator'
-import { maybeRedirectIfCreationIdQuery } from '@/lib/redirect'
+import { CONFIG } from '@/lib/config'
+import { fetcher as fetcherFn } from '@/lib/fetcher'
+import { getServerSidePropsBase } from '@/lib/ssr'
 import CreatorPage from '@/pages/creators/[id]/CreatorPage'
+import { Creator as CreatorType } from '@edenlabs/eden-sdk'
 import { NextPageContext } from 'next'
-import { useRouter } from 'next/router'
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
-export async function getServerSideProps(ctx: NextPageContext) {
-  return (await maybeRedirectIfCreationIdQuery(ctx)) || { props: {} }
+import { Page } from '../../../../types/page'
+
+interface PageProps {
+  data: CreatorType
+  error?: string
 }
 
-const Creator = () => {
-  const router = useRouter()
-  const { id } = router.query
+const fetchCreator = async (context: NextPageContext) => {
+  const { query } = context
+  const id = query.id ? String(query.id).trim() : false
 
-  if (!id) {
-    return <LoadingIndicator />
-  }
-
-  return <CreatorPage creatorId={id as string} />
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${id}`)
 }
 
-Creator.getLayout = function getLayout(page: ReactNode) {
+export const getServerSideProps = getServerSidePropsBase(
+  'creator',
+  fetchCreator,
+)
+
+const Creator: Page<PageProps> = ({ data }: PageProps) => {
+  return <CreatorPage data={data} />
+}
+
+Creator.getLayout = (page: ReactNode) => {
   return <PageLayoutNoSidebar>{page}</PageLayoutNoSidebar>
 }
 

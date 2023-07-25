@@ -1,9 +1,14 @@
 import { ObjectId } from 'mongodb'
+import { Aggregate, PipelineStage } from 'mongoose'
 
 interface IRepository<T> {
   query(
     query?: Record<string, string | string[] | ObjectId | object | undefined>,
     options?: { page?: number; limit?: number; sort?: object },
+  ): Promise<PaginatedResponse<T>>
+  aggregateQuery(
+    aggregate: Aggregate<any>,
+    options: { page?: number; limit?: number; sort?: object },
   ): Promise<PaginatedResponse<T>>
   create(data: object): Promise<T>
   findOneBy(prop: string, value: string): Promise<T>
@@ -59,6 +64,23 @@ class RestfulRepository<T> implements IRepository<T> {
     )
 
     return await this.model.paginate(mongooseQuery, {
+      page: options.page ?? 1,
+      limit: options.limit ?? 100,
+      sort: options.sort ?? { _id: 1 },
+      customLabels: labels,
+    })
+  }
+
+  async aggregateQuery(
+    aggregate: Aggregate<any>,
+    options: { page?: number; limit?: number; sort?: object } = {},
+  ): Promise<PaginatedResponse<T>> {
+    const labels = {
+      totalDocs: 'total',
+      totalPages: 'pages',
+    }
+
+    return await this.model.aggregatePaginate(aggregate, {
       page: options.page ?? 1,
       limit: options.limit ?? 100,
       sort: options.sort ?? { _id: 1 },

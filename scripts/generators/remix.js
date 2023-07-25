@@ -49,4 +49,4 @@ const params = [
   },
 ]
 
-export default params
+export default params;

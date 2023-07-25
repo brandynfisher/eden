@@ -1,6 +1,6 @@
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Col, Form, FormInstance, InputNumber, Row, Slider } from 'antd'
-import { useEffect } from 'react'
+import { FocusEvent, useEffect } from 'react'
 
 const SliderParameter = (props: {
   form: FormInstance
@@ -15,7 +15,7 @@ const SliderParameter = (props: {
     }
   }
 
-  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const onBlur = (e: FocusEvent<HTMLInputElement>) => {
     const { value } = e.target
     if (value === '' && props.parameter.minimum !== undefined) {
       onChange(props.parameter.minimum)

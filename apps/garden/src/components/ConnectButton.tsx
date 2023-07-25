@@ -1,5 +1,6 @@
 import { ConnectButton as RainbowkitConnectButton } from '@rainbow-me/rainbowkit'
 import { Button } from 'antd'
+import Image from 'next/image'
 import React from 'react'
 
 function ConnectButton() {
@@ -62,7 +63,9 @@ function ConnectButton() {
                         }}
                       >
                         {chain.iconUrl && (
-                          <img
+                          <Image
+                            width={12}
+                            height={12}
                             alt={chain.name ?? 'Chain icon'}
                             src={chain.iconUrl}
                             style={{ width: 12, height: 12 }}

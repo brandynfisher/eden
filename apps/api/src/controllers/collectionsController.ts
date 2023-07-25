@@ -46,6 +46,7 @@ export const getCollection = async (
     collection: {
       ...collection.toObject(),
       creatorId: user?.userId,
+      creatorName: user?.username,
     },
   })
 }

@@ -1,4 +1,4 @@
-module.exports = [
+const params = [
   {
     name: 'init_image_data',
     label: 'Image',
@@ -9,3 +9,5 @@ module.exports = [
     isRequired: true,
   },
 ]
+
+export default params;

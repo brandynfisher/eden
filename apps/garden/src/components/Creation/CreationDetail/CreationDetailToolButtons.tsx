@@ -11,7 +11,7 @@ import { Creation } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Dropdown } from 'antd'
 import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 const handleDownload = async (url: string, fileName: string) => {
   try {
@@ -50,12 +50,14 @@ const isImage = (creationUri: string) => {
   return extension === 'jpg'
 }
 
+type ToolButtonItem = { title: string; icon: ReactNode; onClick?: () => void }
+
 const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const { message } = App.useApp()
   const router = useRouter()
   const [pageUrl, setPageUrl] = useState('')
+  const [toolItems, setToolItems] = useState<ToolButtonItem[]>([])
   const { copied, copy } = useClipboard({ timeout: 750 })
-
   const handleCopyUrl = async (pageUrl: string) => {
     await copy(pageUrl)
 
@@ -82,14 +84,76 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
     })
   }
 
+  const getItems = () => {
+    const items: ToolButtonItem[] = [
+      navigator && !navigator.share
+        ? {
+            title: 'Copy URL',
+            icon: copied ? (
+              <CheckCircleOutlined className="text-xl" />
+            ) : (
+              <LinkOutlined className="text-xl" />
+            ),
+            onClick: async () => {
+              await handleCopyUrl(pageUrl)
+            },
+          }
+        : {
+            title: 'Share',
+            icon: <ShareAltOutlined className="text-xl" />,
+            onClick: async () => {
+              await handleShare(creation, pageUrl)
+            },
+          },
+      {
+        title: 'Download',
+        icon: <DownloadOutlined className="text-xl" />,
+        onClick: async () => {
+          await handleDownload(creation.uri, creation._id)
+        },
+      },
+    ]
+
+    // show "Recreate" only for creations with an image output
+    if (isImage(creation.uri)) {
+      items.push({
+        title: 'Recreate',
+        icon: <RetweetOutlined className="text-xl" />,
+        onClick: async () => {
+          await handleCreate('remix', creation)
+        },
+      })
+    }
+
+    // misc / other stuff accumulated under "more button"
+    items.push({
+      title: 'More...',
+      icon: (
+        <Dropdown
+          trigger={['click']}
+          arrow={true}
+          placement="topRight"
+          menu={{ items: getCreateMenuItems() }}
+        >
+          <div className="flex items-center justify-center w-full h-full">
+            <EllipsisOutlined className="text-xl" />
+          </div>
+        </Dropdown>
+      ),
+    })
+
+    return items
+  }
+
   useEffect(() => {
     const baseUrl = `${window.location.protocol}//${window.location.host}`
 
     setPageUrl(`${baseUrl}${router.asPath}`)
+    setToolItems(getItems())
   }, [router.asPath])
 
-  const getCreateMenuItems = (isImage: boolean) => {
-    const menuItems = [
+  const getCreateMenuItems = () => {
+    return [
       {
         label: (
           <div onClick={() => handleCreate(null, creation)}>Use as preset</div>
@@ -97,82 +161,21 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
         key: '1',
       },
     ]
-
-    if (isImage) {
-      menuItems.push({
-        label: (
-          <div onClick={() => handleCreate('remix', creation)}>Recreate</div>
-        ),
-        key: '2',
-      })
-    }
-
-    return menuItems
   }
-
-  const items = [
-    !navigator.share
-      ? {
-          title: 'Copy URL',
-          icon: copied ? (
-            <CheckCircleOutlined className="text-xl" />
-          ) : (
-            <LinkOutlined className="text-xl" />
-          ),
-          onClick: async () => {
-            await handleCopyUrl(pageUrl)
-          },
-        }
-      : {
-          title: 'Share',
-          icon: <ShareAltOutlined className="text-xl" />,
-          onClick: async () => {
-            await handleShare(creation, pageUrl)
-          },
-        },
-    {
-      title: 'Download',
-      icon: <DownloadOutlined className="text-xl" />,
-      onClick: async () => {
-        await handleDownload(creation.uri, creation._id)
-      },
-    },
-    {
-      title: 'Recreate',
-      icon: <RetweetOutlined className="text-xl" />,
-      onClick: async () => {
-        await handleCreate('remix', creation)
-      },
-    },
-    {
-      title: 'More...',
-      icon: (
-        <Dropdown
-          trigger={['click']}
-          arrow={true}
-          placement="topRight"
-          menu={{ items: getCreateMenuItems(!!isImage(creation.uri)) }}
-        >
-          <div className="flex items-center justify-center w-full h-full">
-            <EllipsisOutlined className="text-xl" />
-          </div>
-        </Dropdown>
-      ),
-    },
-  ]
 
   return (
     <>
-      {items.map((item, index) => (
-        <div
-          key={index}
-          onClick={item.onClick}
-          title={item.title}
-          className="rounded-full hover:bg-gray-200 active:bg-gray-200 hover:dark:bg-gray-800 active:dark:bg-gray-800 h-10 w-10 cursor-pointer flex justify-center"
-        >
-          {item.icon}
-        </div>
-      ))}
+      {toolItems &&
+        toolItems.map((item, index) => (
+          <div
+            key={index}
+            onClick={item.onClick}
+            title={item.title}
+            className="rounded-full hover:bg-gray-200 active:bg-gray-200 hover:dark:bg-gray-800 active:dark:bg-gray-800 h-10 w-10 cursor-pointer flex justify-center"
+          >
+            {item.icon}
+          </div>
+        ))}
     </>
   )
 }

@@ -5,12 +5,14 @@ import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
+import { CONFIG } from '@/lib/config'
 import { getFileExtension } from '@/lib/getFileExtension'
 import { durationSinceDate } from '@/lib/time'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Divider, Tabs } from 'antd'
+import Head from 'next/head'
 import React, { useState } from 'react'
 
 const ConfigParamsTextTabContent = ({
@@ -37,7 +39,7 @@ const ConfigParamsTextTabContent = ({
                 {key}
               </div>
               <div
-                className={`break-words px-1 line-clamp-3 ${
+                className={`break-words px-1 line-clamp-2 ${
                   configValue.length > 17 ? 'col-span-2' : ''
                 }`}
                 title={configValue}
@@ -148,27 +150,66 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
 
   return (
     <>
-      <div className="xl:flex xl:justify-center">
-        <div className="mx-auto xl:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
-          <div className="inline-flex mb-4 max-h-72vh xl:max-h-88vh">
-            <div
-              onClick={isImage(creation.uri) ? showMediaViewer : () => null}
-              className="flex justify-center xl:justify-end overflow-hidden"
-            >
-              {isImage(creation.uri) ? (
-                <MediaDisplay
-                  creationUri={creationData.uri}
-                  previewUri={creationData.uri}
-                  showPreview={mediaViewerVisible}
-                  onPreviewClose={hideMediaViewer}
-                />
-              ) : (
-                <MediaDisplay creationUri={creationData.uri} />
-              )}
-            </div>
+      <Head>
+        <title>{`/${creation.task.generator.generatorName} by ${creation.user.username} - Creation | Garden of Eden`}</title>
+        {isImage(creation.uri) ? (
+          <>
+            <meta property="og:image:type" content="image/jpeg" />
+            <meta property="og:image:width" content="400" />
+            <meta property="og:image:height" content="300" />
+          </>
+        ) : (
+          <>
+            <meta property="og:type" content="video.other" />
+            <meta
+              property="og:video:duration"
+              content={String(creation.mediaAttributes.duration)}
+            />
+          </>
+        )}
+
+        <meta
+          property="og:title"
+          key="title"
+          content={`/${creation.task.generator.generatorName} by ${creation.user.username} - Creation | Garden of Eden`}
+        />
+        <meta
+          property="og:description"
+          content={creation.name}
+          key="description"
+        />
+        <meta property="og:image" content={creation.thumbnail} key="image" />
+        <meta property="og:image:secure_url" content={creation.thumbnail} />
+        <meta
+          property="og:image:alt"
+          content={`/${creation.task.generator.generatorName} by ${creation.user.username} - Creation`}
+        />
+        <meta
+          property="og:url"
+          content={`${CONFIG.NEXT_PUBLIC_HOST}/creations/${creation._id}`}
+        />
+      </Head>
+
+      <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
+        <div className="mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
+          <div
+            onClick={isImage(creation.uri) ? showMediaViewer : () => null}
+            className="flex justify-center lg:flex lg:flex-grow"
+            style={{ width: 'fit-content', margin: '0 auto' }}
+          >
+            {isImage(creation.uri) ? (
+              <MediaDisplay
+                creationUri={creationData.uri}
+                previewUri={creationData.uri}
+                showPreview={mediaViewerVisible}
+                onPreviewClose={hideMediaViewer}
+              />
+            ) : (
+              <MediaDisplay creationUri={creationData.uri} />
+            )}
           </div>
         </div>
-        <div className="mx-auto xl:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col xl:ml-4 xl:min-w-[320px] xl:max-w-[320px]">
+        <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
           <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
             <CreationReactions
               creation={creationData}
@@ -179,7 +220,10 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
           <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
             <div className="overflow-hidden flex items-center flex-shrink-0">
               <div className="min-w-0">
-                <CreatorProfileLink creatorId={creationData.user.userId} />
+                <CreatorProfileLink
+                  creatorId={creationData.user.userId}
+                  creatorName={creationData.user.username}
+                />
               </div>
             </div>
             <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">

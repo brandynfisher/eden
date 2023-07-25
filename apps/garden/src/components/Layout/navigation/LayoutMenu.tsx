@@ -1,7 +1,7 @@
 import { UserContext } from '@/providers/UserProvider'
 import {
   CommentOutlined,
-  EyeOutlined,
+  ExperimentOutlined,
   RobotOutlined,
   ToolOutlined,
   UserOutlined,
@@ -29,7 +29,7 @@ function getItem(
 
 const defaultItems: MenuItem[] = [
   getItem('My Profile', '/me', <UserOutlined />),
-  getItem('Create', '/create', <EyeOutlined />),
+  getItem('Create', '/create', <ExperimentOutlined />),
   getItem('Tools', '/tools', <ToolOutlined />),
   getItem('Characters', '/characters', <RobotOutlined />),
   getItem('Scenarios', '/scenarios', <CommentOutlined />),

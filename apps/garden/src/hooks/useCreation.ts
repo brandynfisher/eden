@@ -1,15 +1,18 @@
 import { fetcher } from '@/lib/fetcher'
 import { Creation } from '@edenlabs/eden-sdk'
 import useSWR from 'swr'
-import useSWRImmutable from 'swr/immutable'
 
-export const useCreation = (creationId: string, immutable = false) => {
-  const { data, mutate } = immutable
-    ? useSWRImmutable('/api/creations?creationId=' + creationId, fetcher)
-    : useSWR('/api/creations?creationId=' + creationId, fetcher)
+export const useCreation = (creationId: string | null, options = {}) => {
+  const { data, mutate, isLoading, error } = useSWR(
+    creationId ? `/api/creations?creationId=${creationId}` : null,
+    fetcher,
+    options,
+  )
 
   return {
-    creation: data?.creation as Creation | undefined,
+    creation: data?.creation as Creation | null,
     mutate,
+    isLoading,
+    error,
   }
 }

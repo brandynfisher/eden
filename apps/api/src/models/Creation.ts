@@ -1,6 +1,7 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
 
 import { UserDocument } from './Creator'
@@ -102,5 +103,6 @@ creation.pre<CreationDocument>('save', function (next) {
 })
 
 creation.plugin(paginate)
+creation.plugin(aggregatePaginate)
 
 export const Creation = model<CreationDocument>('creations', creation)

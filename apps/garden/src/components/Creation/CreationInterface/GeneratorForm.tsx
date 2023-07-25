@@ -60,7 +60,7 @@ const GeneratorForm = ({
       if (router.query.generator && router.query.generator === 'remix') {
         setPresetConfig({
           ...presetCreation.task.config,
-          init_image_strength: 0.3,
+          init_image_strength: 0.175,
           init_image_data: presetCreation.uri,
           seed: '',
         })
@@ -249,7 +249,10 @@ const GeneratorForm = ({
           </div>
         }
         actions={[
-          <div className="flex px-6 items-center justify-between">
+          <div
+            key={generator.generatorName}
+            className="flex px-6 items-center justify-between"
+          >
             <Button
               type="primary"
               icon={<ExperimentOutlined />}

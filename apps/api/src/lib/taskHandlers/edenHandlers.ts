@@ -74,7 +74,7 @@ const handleUpdate = async (
   const intermediateOutputs = output.filter((o: TaskOutput) => !o.isFinal)
   const finalOutputs = output.filter((o: TaskOutput) => o.isFinal)
 
-  const isCompleted = finalOutputs.length > 0
+  const isCompleted = finalOutputs.length > 0 && status == 'succeeded'
   const maxProgress = Math.max(
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
@@ -82,7 +82,7 @@ const handleUpdate = async (
   const taskUpdate = {
     status: isCompleted ? 'completed' : 'running',
     progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
-  }
+  } as { output?: TaskOutput[]; status: string; progress: number }
 
   if (
     !task.intermediateOutputs ||
@@ -96,7 +96,7 @@ const handleUpdate = async (
     })
   }
 
-  if (isCompleted && status === 'succeeded') {
+  if (isCompleted) {
     const finalOutput = finalOutputs.slice(-1)[0]
     Object.assign(taskUpdate, { output: finalOutput })
     const generator = await Generator.findById(task.generator)
