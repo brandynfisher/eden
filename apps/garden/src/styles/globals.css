@@ -103,6 +103,7 @@ body {
         min-width: 85vw !important;
     }
     .ant-modal-body {
+        flex-direction: column;
         display: flex !important;
         flex-grow: 1 !important;
     }
