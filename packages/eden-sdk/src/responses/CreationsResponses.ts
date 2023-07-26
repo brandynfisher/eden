@@ -11,6 +11,11 @@ export type CreationsGetResponse = WebAPICallResult & {
   creation?: Creation
 }
 
+export type CreationsGetSimilarResponse = WebAPICallResult & {
+  error?: string
+  similarCreations?: Creation[]
+}
+
 export type CreationsReactResponse = WebAPICallResult & {
   error?: string
   success?: boolean
