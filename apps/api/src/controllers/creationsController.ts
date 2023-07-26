@@ -1,5 +1,6 @@
 import {
   CreationsGetArguments,
+  CreationsGetSimilarArguments,
   CreationsListArguments,
   CreationsReactArguments,
   CreationsUnreactArguments,
@@ -164,6 +165,32 @@ export const getCreation = async (
   }
 
   return await reply.status(200).send({ creation })
+}
+
+export const getCreationSimilar = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { creationId, n } = request.params as CreationsGetSimilarArguments
+
+  const creation = (await Creation.findById(creationId).populate({
+    path: 'similarCreations',
+  })) as CreationDocument
+
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
+
+  const similarCreations = await Creation.find({
+    _id: {
+      $in: creation.similarCreations,
+    },
+    limit: n,
+  })
+
+  return await reply.status(200).send({ similarCreations })
 }
 
 export const creationReact = async (

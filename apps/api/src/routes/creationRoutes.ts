@@ -7,6 +7,7 @@ import {
   creationReact,
   creationUnreact,
   getCreation,
+  getCreationSimilar,
   listCreations,
 } from '../controllers/creationsController'
 import { isAuth, maybeAuth } from '../middleware/authMiddleware'
@@ -42,6 +43,21 @@ const creationRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async request => maybeAuth(server, request)],
     handler: (request, reply) => getCreation(request, reply),
+  })
+
+  server.get('/creations/:creationId/similar', {
+    schema: {
+      params: {
+        creationId: Type.String(),
+        n: Type.Number(),
+      },
+      response: {
+        200: {
+          similarCreations: Type.Array(Type.Any()),
+        },
+      },
+    },
+    handler: (request, reply) => getCreationSimilar(request, reply),
   })
 
   server.post('/creations/react', {

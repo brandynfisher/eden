@@ -18,6 +18,7 @@ export interface CreationSchema {
   name?: string
   attributes?: any
   mediaAttributes: MediaAttributes
+  similarCreations?: CreationDocument[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -90,6 +91,12 @@ const creation = new Schema<CreationDocument>(
         type: Number,
       },
     },
+    similarCreations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'creations',
+      },
+    ],
   },
   {
     timestamps: true,
