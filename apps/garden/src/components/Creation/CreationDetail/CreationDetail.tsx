@@ -252,7 +252,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
           <div className="flex w-full justify-center items-center mb-4">
             <Button
               type="dashed"
-              className="dark:text-gray-400"
+              className="font-mono dark:text-gray-400"
               onClick={() => setIsRevealed(!isRevealed)}
             >
               {isRevealed ? 'Hide' : 'Show'} configuration
@@ -273,7 +273,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
               <div className="flex w-full justify-center items-center my-4">
                 <Button
                   type="dashed"
-                  className="dark:text-gray-400"
+                  className="font-mono dark:text-gray-400"
                   onClick={() => setIsRevealed(false)}
                 >
                   Hide configuration

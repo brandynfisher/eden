@@ -45,6 +45,7 @@ const CollectionHeader = ({
           {isAuthenticated && isAuthUser && !collection.isDefaultCollection && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
               <Button
+                className="font-mono"
                 type="primary"
                 danger
                 onClick={onDeleteButtonClick}

@@ -21,6 +21,7 @@ const LoginButton = ({
       type="primary"
       shape="round"
       size="large"
+      className="font-mono"
       block
     >
       {isAuthenticated ? 'Logout' : 'Login'}

@@ -87,7 +87,7 @@ const ProfileHeaderName = ({
               <Button
                 size="small"
                 type="text"
-                className="text-gray-500"
+                className="font-mono text-gray-500"
                 onClick={() => setIsEditing(false)}
               >
                 Cancel
@@ -98,6 +98,7 @@ const ProfileHeaderName = ({
                 type="text"
                 loading={loading}
                 disabled={!updatedName || updatedName === displayName}
+                className="font-mono"
               >
                 Save
               </Button>

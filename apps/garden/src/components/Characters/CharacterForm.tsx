@@ -4,7 +4,7 @@ import { CapabilityType, ChatMessageGroup } from '@/lib/types'
 import { App, Button, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 const CHATSUBO_PROMPT = `Chatsubo, the Fire House spirit, is a sentient advice guru with a feisty attitude. He can be sassy and sometimes crude, but he always encourages people to live life a little more deeply and to take risks.`
 
@@ -17,7 +17,7 @@ const exampleMessages: ChatMessageGroup[] = [
     {
       sender: '{{character}}',
       message:
-        "Fuck if I know, bud. I think you should set the world on fire! How about you come up with a catchy slogan -- use allitteration -- and then go behind the McDonald's and practice spraypainting it.",
+        "Fuck if I know, bud. I think you should set the world on fire! How about you come up with a catchy slogan -- use alliteration -- and then go behind the McDonald's and practice spray-painting it.",
     },
   ],
   [
@@ -51,16 +51,16 @@ interface CharacterFormInput {
 const CharacterForm = () => {
   const { message } = App.useApp()
   const router = useRouter()
-  const { id: characterId } = router.query
-  const characterName = 'Chatsubo'
   const [form] = Form.useForm()
   const [messageGroups, setMessageGroups] =
-    React.useState<ChatMessageGroup[]>(exampleMessages)
+    useState<ChatMessageGroup[]>(exampleMessages)
   const [recentMessage, setRecentMessage] =
-    React.useState<ChatMessageGroup[]>(exampleRecentMessage)
-  const [completing, setCompleting] = React.useState<boolean>(false)
-  const mode = 'create'
+    useState<ChatMessageGroup[]>(exampleRecentMessage)
+  const [completing, setCompleting] = useState<boolean>(false)
 
+  const { id: characterId } = router.query
+  const mode = 'create'
+  const characterName = 'Chatsubo'
   const description = Form.useWatch('description', form)
 
   const compilePromptWithoutRecentMessage = useCallback(() => {
@@ -143,7 +143,7 @@ const CharacterForm = () => {
     }
     try {
       await axios.post(`/api/capabilities/create`, data)
-      router.push(`/characters/${characterId}`)
+      await router.push(`/characters/${characterId}`)
     } catch (error) {
       handleAxiosError(error, message, 'Error creating capability')
     }

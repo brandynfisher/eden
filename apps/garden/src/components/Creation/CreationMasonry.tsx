@@ -124,7 +124,7 @@ const CreationMasonry = ({
                   <Link href="/create">
                     <Button
                       type="dashed"
-                      className="flex items-center text-gray-400"
+                      className="font-mono flex items-center text-gray-400"
                     >
                       <div>Create more</div>
                     </Button>

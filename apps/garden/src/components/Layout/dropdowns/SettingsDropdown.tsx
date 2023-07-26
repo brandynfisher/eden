@@ -30,7 +30,7 @@ const LoginLogoutButton = () => {
     <div>
       <ConnectButton />
       <Button
-        className="w-full flex items-center mt-2 "
+        className="font-mono w-full flex items-center mt-2 "
         onClick={handleAuthClick}
       >
         {isAuthenticated ? (
