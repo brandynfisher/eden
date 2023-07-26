@@ -22,7 +22,7 @@ const MyProfileButton = () => {
     return (
       <Button
         type="primary"
-        className="flex justify-center px-2 h-full items-center"
+        className="font-mono flex justify-center px-2 h-full items-center"
         onClick={() => authenticate()}
         loading={isAuthenticating ? { delay: 250 } : false}
         disabled={isAuthenticating}

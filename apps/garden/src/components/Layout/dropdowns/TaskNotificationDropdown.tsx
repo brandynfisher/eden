@@ -2,7 +2,7 @@ import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/T
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import { CONFIG } from '@/lib/config'
 import { rightTruncatedString, truncatedAddress } from '@/lib/string'
-import { durationBetweenDates, durationSinceDate } from '@/lib/time'
+import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {
   CheckOutlined,
@@ -26,7 +26,6 @@ const FailedTaskMenuItem = ({
   const taskRunDuration = durationBetweenDates(
     task.createdAt,
     task.updatedAt,
-    's',
     true,
   )
 
@@ -91,7 +90,6 @@ const CompletedTaskMenuItem = ({
   const taskRunDuration = durationBetweenDates(
     task.createdAt,
     task.updatedAt,
-    's',
     true,
   )
 
@@ -143,7 +141,7 @@ const CompletedTaskMenuItem = ({
 }
 
 const PendingTaskMenuItem = ({ task }: { task: Task }) => {
-  const timeSinceTaskCreation = durationSinceDate(task.createdAt)
+  const timeSinceTaskCreation = timeAgo(task.createdAt)
 
   return (
     <div
@@ -221,7 +219,7 @@ const TaskNotificationDropdown = () => {
           <div className="flex justify-center text-xs">
             <Button
               size="small"
-              className="text-xs !px-4"
+              className="font-mono text-xs !px-4"
               type="dashed"
               onClick={() =>
                 handleDismissAll(completedTasks, setCompletedTasks)
@@ -257,7 +255,7 @@ const TaskNotificationDropdown = () => {
           <div className="flex justify-center text-xs">
             <Button
               size="small"
-              className="text-xs !px-4"
+              className="font-mono text-xs !px-4"
               type="dashed"
               onClick={() => handleDismissAll(failedTasks, setFailedTasks)}
             >
@@ -288,7 +286,7 @@ const TaskNotificationDropdown = () => {
           <Dropdown trigger={['click']} menu={{ items: pendingTaskItems }}>
             <Button
               type="text"
-              className="text-grey-800 dark:text-gray-200 items-center flex px-2"
+              className="font-mono text-grey-800 dark:text-gray-200 items-center flex px-2"
             >
               <Spin
                 indicator={
@@ -302,13 +300,27 @@ const TaskNotificationDropdown = () => {
 
         {failedTasks && failedTasks.length > 0 && (
           <Dropdown trigger={['click']} menu={{ items: failedTaskItems }}>
-            <Button type="text" className="text-red-500 items-center flex px-2">
+            <Button
+              type="text"
+              className="font-mono text-red-500 items-center flex px-2"
+            >
               <ExclamationOutlined className="mr-2" />
               {failedTasks.length}
             </Button>
           </Dropdown>
         )}
 
+        {completedTasks && completedTasks.length > 0 && (
+          <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
+            <Button
+              type="text"
+              className="font-mono text-green-500 items-center flex px-2"
+            >
+              <CheckOutlined className="mr-2" />
+              {completedTasks.length}
+            </Button>
+          </Dropdown>
+        )}
         {completedTasks && completedTasks.length > 0 && (
           <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
             <Button

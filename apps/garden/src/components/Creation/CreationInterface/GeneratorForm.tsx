@@ -258,12 +258,12 @@ const GeneratorForm = ({
               icon={<ExperimentOutlined />}
               htmlType="submit"
               size="large"
-              className="capitalize"
+              className="font-mono capitalize"
             >
               {generator.generatorName}
             </Button>
 
-            <Button type="text" onClick={resetForm}>
+            <Button className="font-mono" type="text" onClick={resetForm}>
               Reset {presetCreation ? '(using preset)' : ''}
             </Button>
           </div>,
@@ -273,12 +273,18 @@ const GeneratorForm = ({
         {optionalParameters.length > 0 && (
           <>
             {showOptional ? (
-              <Button onClick={() => setShowOptional(false)} className="mb-4">
+              <Button
+                onClick={() => setShowOptional(false)}
+                className="font-mono mb-4"
+              >
                 <UpCircleOutlined />
                 Hide optional settings
               </Button>
             ) : (
-              <Button onClick={() => setShowOptional(true)}>
+              <Button
+                onClick={() => setShowOptional(true)}
+                className="font-mono"
+              >
                 <DownCircleOutlined />
                 Show optional settings
               </Button>

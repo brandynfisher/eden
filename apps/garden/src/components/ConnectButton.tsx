@@ -36,19 +36,25 @@ function ConnectButton() {
             {(() => {
               if (!connected) {
                 return (
-                  <Button onClick={openConnectModal}>Connect Wallet</Button>
+                  <Button className="font-mono" onClick={openConnectModal}>
+                    Connect Wallet
+                  </Button>
                 )
               }
 
               if (chain.unsupported) {
-                return <Button onClick={openChainModal}>Wrong network</Button>
+                return (
+                  <Button className="font-mono" onClick={openChainModal}>
+                    Wrong network
+                  </Button>
+                )
               }
 
               return (
                 <Button.Group>
                   <Button
                     onClick={openChainModal}
-                    className="flex items-center"
+                    className="font-mono flex items-center"
                     type="dashed"
                   >
                     {chain.hasIcon && (
@@ -75,7 +81,11 @@ function ConnectButton() {
                     )}
                     {chain.name}
                   </Button>
-                  <Button type="dashed" onClick={openAccountModal}>
+                  <Button
+                    className="font-mono"
+                    type="dashed"
+                    onClick={openAccountModal}
+                  >
                     {account.displayName}
                   </Button>
                 </Button.Group>

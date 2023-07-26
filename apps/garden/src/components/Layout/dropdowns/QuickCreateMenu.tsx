@@ -13,7 +13,7 @@ const QuickCreateMenu = () => {
 
   return (
     <Link href="/create">
-      <Button className="flex items-center gap-2">
+      <Button className="font-mono flex items-center gap-2">
         <ExperimentOutlined />
         <div>Create</div>
       </Button>

@@ -60,7 +60,7 @@ const PraiseButton = ({
 
   return (
     <Button
-      className={`flex items-center justify-center rounded-full bg-gray-700 dark:bg-gray-900 text-white border-gray-600 dark:border-gray-700`}
+      className={`font-mono flex items-center justify-center rounded-full bg-gray-700 dark:bg-gray-900 text-white border-gray-600 dark:border-gray-700`}
       role="button"
       onClick={onPraiseButtonClick}
       disabled={isLoading}
@@ -139,7 +139,7 @@ const SaveButton = ({
   const { hovered, ref } = useHover()
   return (
     <Button
-      className={`flex items-center justify-center rounded-full bg-gray-700 dark:bg-gray-900 text-white border-gray-600 dark:border-gray-700`}
+      className={`font-mono flex items-center justify-center rounded-full bg-gray-700 dark:bg-gray-900 text-white border-gray-600 dark:border-gray-700`}
       role="button"
       onClick={onSaveButtonClick}
       disabled={isLoading}

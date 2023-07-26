@@ -7,7 +7,7 @@ import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getFileExtension } from '@/lib/getFileExtension'
-import { durationSinceDate } from '@/lib/time'
+import { timeAgo } from '@/lib/time'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
@@ -105,11 +105,10 @@ const CreationDetail = ({
   isModal?: boolean
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isMediaLoaded, setIsMediaLoaded] = useState(false)
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
-  const timeSinceCreation = durationSinceDate(creation.createdAt)
+  const timeSinceCreation = timeAgo(creation.createdAt)
 
   const formattedTaskConfig = JSON.stringify(creationData.task.config, null, 2)
 
@@ -212,17 +211,9 @@ const CreationDetail = ({
                   previewUri={creationData.uri}
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
-                  onLoad={() => {
-                    setIsMediaLoaded(true)
-                  }}
                 />
               ) : (
-                <MediaDisplay
-                  creationUri={creationData.uri}
-                  onLoad={() => {
-                    setIsMediaLoaded(true)
-                  }}
-                />
+                <MediaDisplay creationUri={creationData.uri} />
               )}
             </div>
           </div>
@@ -302,14 +293,69 @@ const CreationDetail = ({
             )}
           </div>
         </div>
+        <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
+          <div className="overflow-hidden flex items-center flex-shrink-0">
+            <div className="min-w-0">
+              <CreatorProfileLink
+                creatorId={creationData.user.userId}
+                creatorName={creationData.user.username}
+              />
+            </div>
+          </div>
+          <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
+            <FollowControls creatorId={creationData.user.userId} />
+          </div>
+        </div>
 
-        {isMediaLoaded && (
-          <></>
-          // <SimilarCreations
-          //   creation={creation}
-          //   containerRef={containerRef}
-          //   isModal={isModal}
-          // />
+        <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
+          <div style={{ wordWrap: 'break-word' }}>
+            <div className="flex justify-between items-center">
+              <div className="font-bold">
+                /{creation.task.generator?.generatorName}
+              </div>
+              <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
+            </div>
+            <Divider className="my-4" />
+
+            <TruncatedExpandableText text={creation.name} />
+          </div>
+        </div>
+
+        <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+          <CreationDetailToolButtons creation={creation} />
+        </div>
+
+        <div className="flex w-full justify-center items-center mb-4">
+          <Button
+            type="dashed"
+            className="font-mono dark:text-gray-400"
+            onClick={() => setIsRevealed(!isRevealed)}
+          >
+            {isRevealed ? 'Hide' : 'Show'} configuration
+          </Button>
+        </div>
+
+        {isRevealed && (
+          <>
+            <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden text-xs">
+              <Tabs
+                centered
+                defaultActiveKey="1"
+                items={items}
+                onChange={onConfigurationTabChange}
+              />
+            </div>
+
+            <div className="flex w-full justify-center items-center my-4">
+              <Button
+                type="dashed"
+                className="font-mono dark:text-gray-400"
+                onClick={() => setIsRevealed(false)}
+              >
+                Hide configuration
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </>

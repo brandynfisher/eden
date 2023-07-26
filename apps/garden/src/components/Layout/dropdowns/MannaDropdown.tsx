@@ -66,7 +66,10 @@ const MannaDropdown = () => {
       className="cursor-pointer"
       disabled={!isConnected || !isAuthenticated}
     >
-      <Button type="text" className="flex px-2 justify-center items-center">
+      <Button
+        type="text"
+        className="font-mono flex px-2 justify-center items-center"
+      >
         <div>
           <WalletOutlined className="text-black dark:text-white flex mr-2 text-xl" />
         </div>

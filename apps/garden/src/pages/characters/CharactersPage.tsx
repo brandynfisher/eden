@@ -2,10 +2,11 @@ import CharacterTable from '@/components/Characters/CharacterTable'
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { App, Button } from 'antd'
-import router from 'next/router'
+import { useRouter } from 'next/router'
 import { useContext } from 'react'
 
 const CharactersPage = () => {
+  const router = useRouter()
   const { message } = App.useApp()
   const { characters, isAuthenticated, authenticate } = useContext(UserContext)
 
