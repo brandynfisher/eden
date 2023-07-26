@@ -7,7 +7,8 @@ import { NextApiRequest, NextApiResponse } from 'next'
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
-  const { userId, collectionId, page, limit, orderBy, direction } = req.query
+  const { userId, collectionId, page, limit, orderBy, direction, creationId } =
+    req.query
   const authToken = req.session.token
 
   const route = (limit: number, page: number) => {
@@ -24,6 +25,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     if (collectionId) {
       params.collectionId = String(collectionId)
+    }
+    if (creationId) {
+      params.creationId = String(creationId)
     }
     if (orderBy) {
       params.orderBy = String(orderBy)

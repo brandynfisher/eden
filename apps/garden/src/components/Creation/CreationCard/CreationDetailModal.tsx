@@ -52,7 +52,7 @@ const CreationDetailModal = ({
       width={''} // unsets default width, so we can handle it with util classes
       className="flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl"
     >
-      <CreationDetail creation={creation} />
+      <CreationDetail creation={creation} isModal={true} />
     </Modal>
   )
 }
