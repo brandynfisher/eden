@@ -1,6 +1,6 @@
 import CodeBlock from '@/components/CodeBlock'
 import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
-import CreationMasonry from '@/components/Creation/CreationMasonry'
+import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
@@ -9,20 +9,12 @@ import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getFileExtension } from '@/lib/getFileExtension'
 import { durationSinceDate } from '@/lib/time'
-import {
-  CheckCircleOutlined,
-  CopyOutlined,
-  LoadingOutlined,
-} from '@ant-design/icons'
+import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
-import {
-  useClipboard,
-  useIntersection,
-  useResizeObserver, // useViewportSize,
-} from '@mantine/hooks'
+import { useClipboard } from '@mantine/hooks'
 import { App, Button, Divider, Tabs } from 'antd'
 import Head from 'next/head'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 const ConfigParamsTextTabContent = ({
   creationData,
@@ -106,15 +98,14 @@ const config = ${taskConfig}
 const result = await eden.create("${generatorName}", config);`
 }
 
-const CreationDetail = ({ creation }: { creation: Creation }) => {
-  const [ref, rect] = useResizeObserver()
+const CreationDetail = ({
+  creation,
+  isModal,
+}: {
+  creation: Creation
+  isModal?: boolean
+}) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { ref: intersectionTargetRef, entry: intersectionObserver } =
-    useIntersection({
-      rootMargin: '0px',
-      threshold: 1,
-    })
-  const [shouldLoadSimilar, setShouldLoadSimilar] = useState(false)
   const [isMediaLoaded, setIsMediaLoaded] = useState(false)
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
@@ -171,60 +162,6 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
     const extension = getFileExtension(creationUri)
     return extension === 'jpg'
   }
-
-  useEffect(() => {
-    if (!isMediaLoaded) {
-      return
-    }
-
-    if (!containerRef.current) {
-      return
-    }
-
-    if (shouldLoadSimilar) {
-      return
-    }
-
-    if (rect.height === 0) {
-      return
-    }
-
-    // console.log(intersectionObserver)
-    const windowHeight = intersectionObserver?.rootBounds?.height || 0
-    const isVisibleOnInitialRender =
-      containerRef?.current.getBoundingClientRect().height -
-        containerRef?.current.offsetTop <
-      windowHeight
-    // console.log(isVisibleOnInitialRender, (containerRef?.current.getBoundingClientRect().height - containerRef?.current.offsetTop), windowHeight)
-    // console.log(rect, containerRef?.current.offsetTop)
-
-    // @todo: add proper flag or detection for if we're in a modal, probably cleanest to just pass an option to change behaviours where necessary
-    if (containerRef?.current.offsetTop === 80 && isVisibleOnInitialRender) {
-      // console.log('isVisibleOnInitialRender - DO LOAD')
-      setShouldLoadSimilar(true)
-      return
-    }
-
-    if (
-      intersectionObserver &&
-      !shouldLoadSimilar &&
-      intersectionObserver?.isIntersecting
-    ) {
-      if (
-        containerRef.current.getBoundingClientRect().top < 0 ||
-        isVisibleOnInitialRender
-      ) {
-        // console.log('INTERSECT AND SCROLLED - DO LOAD')
-        setShouldLoadSimilar(true)
-      }
-    }
-  }, [
-    isMediaLoaded,
-    containerRef,
-    rect,
-    intersectionObserver?.isIntersecting,
-    shouldLoadSimilar,
-  ])
 
   return (
     <>
@@ -370,27 +307,11 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
         </div>
 
         {isMediaLoaded && (
-          <div className="w-full mx-auto md:max-w-[640px] lg:mx-0 lg:max-w-full">
-            <Divider className="mt-4 lg:mt-16 lg:mb-8" />
-            <h3 className="mb-8">Similar Creations</h3>
-
-            <div ref={ref} className="min-h-[16vh]">
-              {!shouldLoadSimilar ? (
-                <div className="flex !mt-0 pt-8 pb-16 justify-center">
-                  <LoadingOutlined
-                    className="text-4xl"
-                    ref={intersectionTargetRef}
-                  />
-                </div>
-              ) : (
-                <CreationMasonry
-                  // wrapperRef={containerRef}
-                  wrapperSizeRect={rect}
-                  query={{ creationId: creationData._id }}
-                />
-              )}
-            </div>
-          </div>
+          <SimilarCreations
+            creation={creation}
+            containerRef={containerRef}
+            isModal={isModal}
+          />
         )}
       </div>
     </>

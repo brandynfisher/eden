@@ -31,12 +31,10 @@ type ObserverRect = {
 const CreationMasonry = ({
   query,
   hasSort,
-  // wrapperRef,
   wrapperSizeRect,
 }: {
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
-  // wrapperRef?:  RefObject<HTMLDivElement>
   wrapperSizeRect?: ObserverRect
 }) => {
   const containerRef = useRef(null)
