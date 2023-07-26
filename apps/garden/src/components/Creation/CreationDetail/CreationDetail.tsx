@@ -1,6 +1,5 @@
 import CodeBlock from '@/components/CodeBlock'
 import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
-import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
@@ -100,8 +99,8 @@ const result = await eden.create("${generatorName}", config);`
 
 const CreationDetail = ({
   creation,
-  isModal,
-}: {
+}: // isModal,
+{
   creation: Creation
   isModal?: boolean
 }) => {
@@ -307,11 +306,12 @@ const CreationDetail = ({
         </div>
 
         {isMediaLoaded && (
-          <SimilarCreations
-            creation={creation}
-            containerRef={containerRef}
-            isModal={isModal}
-          />
+          <></>
+          // <SimilarCreations
+          //   creation={creation}
+          //   containerRef={containerRef}
+          //   isModal={isModal}
+          // />
         )}
       </div>
     </>
