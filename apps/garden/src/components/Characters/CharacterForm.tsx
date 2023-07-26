@@ -1,12 +1,16 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
+import { compilePrompt, messageGroupsToDialogueString } from '@/lib/chat'
 import { handleAxiosError } from '@/lib/fetcher'
-import { CapabilityType, ChatMessageGroup } from '@/lib/types'
+import { ChatMessageGroup } from '@/lib/types'
+import { UserContext } from '@/providers/UserProvider'
 import { App, Button, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-import React, { useCallback, useEffect } from 'react'
+import React, { useContext } from 'react'
 
 const CHATSUBO_PROMPT = `Chatsubo, the Fire House spirit, is a sentient advice guru with a feisty attitude. He can be sassy and sometimes crude, but he always encourages people to live life a little more deeply and to take risks.`
+
+const CHATSUBO_GREETING = `The following is a conversation between a mortal and Chatsubo, the Fire House spirit:`
 
 const exampleMessages: ChatMessageGroup[] = [
   [
@@ -15,7 +19,7 @@ const exampleMessages: ChatMessageGroup[] = [
       message: 'What should I do today?',
     },
     {
-      sender: '{{character}}',
+      sender: '{{char}}',
       message:
         "Fuck if I know, bud. I think you should set the world on fire! How about you come up with a catchy slogan -- use allitteration -- and then go behind the McDonald's and practice spraypainting it.",
     },
@@ -26,7 +30,7 @@ const exampleMessages: ChatMessageGroup[] = [
       message: 'What should I buy my girlfriend for her birthday?',
     },
     {
-      sender: '{{character}}',
+      sender: '{{char}}',
       message:
         'Yo, bro; nobody wants any more stuff. Too much shit to carry around on your cycle! Just bake her some galettes. Use your pocket-torch to caramelize the glaze tho.',
     },
@@ -36,7 +40,7 @@ const exampleMessages: ChatMessageGroup[] = [
 const exampleRecentMessage: ChatMessageGroup[] = [
   [
     {
-      sender: 'M',
+      sender: '{{user}}',
       message: 'What is the meaning of life?',
     },
   ],
@@ -45,13 +49,14 @@ const exampleRecentMessage: ChatMessageGroup[] = [
 interface CharacterFormInput {
   name: string
   description: string
+  greeting: string
   completion: string
 }
 
 const CharacterForm = () => {
   const { message } = App.useApp()
+  const { refetch } = useContext(UserContext)
   const router = useRouter()
-  const { id: characterId } = router.query
   const characterName = 'Chatsubo'
   const [form] = Form.useForm()
   const [messageGroups, setMessageGroups] =
@@ -63,68 +68,41 @@ const CharacterForm = () => {
 
   const description = Form.useWatch('description', form)
 
-  const compilePromptWithoutRecentMessage = useCallback(() => {
-    let compiled = description
-    compiled += '\n\n'
-    messageGroups.forEach(messageGroup => {
-      messageGroup.forEach(message => {
-        compiled += `${message.sender}: ${message.message}\n`
-      })
-      compiled += '\n'
-    })
-    compiled += `${recentMessage[0][0].sender}:`
-    return compiled
-  }, [description, messageGroups, recentMessage])
-
-  const compilePrompt = useCallback(() => {
-    let compiled = compilePromptWithoutRecentMessage()
-    compiled += ` ${recentMessage[0][0].message}\n`
-    compiled += `${characterName}:`
-
-    return compiled
-  }, [compilePromptWithoutRecentMessage, recentMessage, characterName])
-
-  const compilePromptWithTemplate = useCallback(() => {
-    let compiled = compilePromptWithoutRecentMessage()
-    compiled += ' {{recentMessage}}\n'
-    compiled += `${characterName}:`
-    return compiled
-  }, [compilePromptWithoutRecentMessage, characterName])
-
-  const [compiledPrompt, setCompiledPrompt] = React.useState<string>(
-    compilePrompt(),
-  )
-
   const initialValues: CharacterFormInput =
     mode === 'create'
       ? {
           name: characterName,
           description: CHATSUBO_PROMPT,
+          greeting: CHATSUBO_GREETING,
           completion: '',
         }
       : {
           name: characterName,
           description: '',
+          greeting: '',
           completion: '',
         }
-
-  useEffect(() => {
-    setCompiledPrompt(compilePrompt())
-  }, [compilePrompt])
 
   const generateCompletion = async () => {
     setCompleting(true)
     try {
       const url = `/api/lm/complete`
+      const dialogue = messageGroupsToDialogueString(messageGroups)
+      const prompt = compilePrompt(
+        characterName,
+        recentMessage[0][0],
+        description,
+        dialogue,
+      )
       const data = {
-        prompt: compiledPrompt,
+        prompt,
       }
-      await axios.post(url, data).then(response => {
-        form.setFieldsValue({
-          completion: response.data.completion,
-        })
+      const response = await axios.post(url, data)
+      const completion = response.data.completion as string
+      const fmtCompletion = completion.trim()
+      form.setFieldsValue({
+        completion: fmtCompletion,
       })
-      return 'completion'
     } catch (error) {
       handleAxiosError(error, message, 'Error generating completion')
     } finally {
@@ -134,18 +112,17 @@ const CharacterForm = () => {
 
   const handleSubmit = async () => {
     const data = {
-      characterId: characterId as string,
-      name: 'Chat Capability',
-      type: CapabilityType.CHAT,
-      data: {
-        prompt: compilePromptWithTemplate().trim(),
-      },
+      name: characterName,
+      description: form.getFieldValue('description'),
+      greeting: form.getFieldValue('greeting'),
+      dialogue: messageGroupsToDialogueString(messageGroups),
     }
     try {
-      await axios.post(`/api/capabilities/create`, data)
-      router.push(`/characters/${characterId}`)
+      await axios.post(`/api/characters/create`, data)
+      refetch.characters()
+      router.push(`/characters`)
     } catch (error) {
-      handleAxiosError(error, message, 'Error creating capability')
+      handleAxiosError(error, message, 'Error creating character')
     }
   }
 
@@ -177,6 +154,20 @@ const CharacterForm = () => {
               min: 3,
               max: 1000,
               message: 'Description must be between 3 and 1000 characters!',
+            },
+          ]}
+        >
+          <Input.TextArea rows={4} />
+        </Form.Item>
+        <Form.Item
+          label={<div className="font-mono">Greeting</div>}
+          labelCol={{ span: 24 }}
+          name="greeting"
+          rules={[
+            {
+              min: 3,
+              max: 1000,
+              message: 'Greeting must be between 3 and 1000 characters!',
             },
           ]}
         >

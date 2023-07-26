@@ -1,3 +1,5 @@
+import { compilePrompt } from '@/lib/chat'
+import { ChatMessage } from '@/lib/types'
 import {
   ChatContainer,
   ConversationHeader,
@@ -40,11 +42,17 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      const prompt = activeCharacter.capabilities?.find(
-        capability => capability.type === 'chat',
-      ).data.prompt as string
-      const fmtPrompt = prompt.replace('{{recentMessage}}', text)
-      const res = await axios.post(`/api/lm/complete`, { prompt: fmtPrompt })
+      const recentMessage: ChatMessage = {
+        sender: '{{user}}',
+        message: text,
+      }
+      const prompt = compilePrompt(
+        activeCharacter.name,
+        recentMessage,
+        activeCharacter.description,
+        activeCharacter.dialogue,
+      )
+      const res = await axios.post(`/api/lm/complete`, { prompt })
       const completion = res.data.completion as string
       setConversation(state => [
         ...state,

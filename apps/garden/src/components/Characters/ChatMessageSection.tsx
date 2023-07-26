@@ -10,16 +10,6 @@ export const ChatMessageSection = ({
   setMessageGroups: (messageGroups: ChatMessageGroup[]) => void
   showControls?: boolean
 }) => {
-  const onMessageSenderChange = (
-    groupIdx: number,
-    idx: number,
-    value: string,
-  ) => {
-    const newMessageGroups = [...messageGroups]
-    newMessageGroups[groupIdx][idx].sender = value
-    setMessageGroups(newMessageGroups)
-  }
-
   const onMessageChange = (groupIdx: number, idx: number, value: string) => {
     const newMessageGroups = [...messageGroups]
     newMessageGroups[groupIdx][idx].message = value
@@ -37,9 +27,7 @@ export const ChatMessageSection = ({
                   <Input
                     className="font-mono"
                     value={message.sender}
-                    onChange={e =>
-                      onMessageSenderChange(groupIdx, idx, e.target.value)
-                    }
+                    disabled={true}
                   />
                 </Col>
                 <Col span={20}>
