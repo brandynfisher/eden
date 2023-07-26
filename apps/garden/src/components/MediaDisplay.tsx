@@ -7,11 +7,13 @@ const MediaDisplay = ({
   previewUri,
   showPreview,
   onPreviewClose,
+  onLoad,
 }: {
   creationUri: string
   previewUri?: string
   showPreview?: boolean
   onPreviewClose?: () => void
+  onLoad?: () => void
 }) => {
   const renderPreview = () => {
     if (!creationUri) return null
@@ -23,10 +25,11 @@ const MediaDisplay = ({
           previewUrl={previewUri ? creationUri : undefined}
           showPreview={showPreview}
           onPreviewClose={onPreviewClose}
+          onLoad={onLoad}
         />
       )
     } else if (extension === 'mp4') {
-      return <VideoResult resultUrl={creationUri} />
+      return <VideoResult resultUrl={creationUri} onLoad={onLoad} />
     }
     return null
   }

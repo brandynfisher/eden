@@ -13,6 +13,7 @@ import { getBookmarks, getReactions } from './creationsController'
 interface FeedGetArguments {
   userId?: string
   collectionId?: string
+  creationId?: string
   limit?: number
   page?: number
   orderBy?: OrderByFieldName
@@ -65,6 +66,7 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   const {
     userId: filterUserIds,
     collectionId,
+    creationId,
     limit,
     page,
     orderBy,

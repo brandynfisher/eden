@@ -6,7 +6,7 @@ import {
   ZoomOutOutlined,
 } from '@ant-design/icons'
 import { Button, Image, Skeleton } from 'antd'
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const ImagePreviewMask = () => (
@@ -30,11 +30,13 @@ const ImageResult = ({
   previewUrl,
   showPreview,
   onPreviewClose,
+  onLoad,
 }: {
   resultUrl: string
   previewUrl?: string
   showPreview?: boolean
   onPreviewClose?: () => void
+  onLoad?: () => void
 }) => {
   const onCloseHandler = (
     ev?: React.MouseEvent | React.KeyboardEvent | undefined,
@@ -65,8 +67,26 @@ const ImageResult = ({
     }
   }, [showPreview, onPreviewClose, onCloseHandler])
 
+  const [isLoaded, setIsLoaded] = useState(false)
   const componentWrapRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLImageElement>(null)
+  const previewImageRef = useRef<HTMLImageElement>(null)
+
+  const handleOnLoad = useCallback(() => {
+    if (!isLoaded) {
+      if (onLoad) {
+        setIsLoaded(true)
+        onLoad()
+      }
+    }
+  }, [isLoaded])
+
+  // trigger image onLoad if the image is complete
+  useEffect(() => {
+    if (!isLoaded && previewImageRef && previewImageRef?.current?.complete) {
+      handleOnLoad()
+    }
+  }, [previewImageRef, isLoaded])
 
   const fitContentToWrapper = useCallback(() => {
     if (componentWrapRef.current && contentRef.current) {
@@ -89,13 +109,25 @@ const ImageResult = ({
     <>
       <div className="image-wrap">
         <div className="relative">
-          <Image
-            src={resultUrl}
-            alt="result"
-            fallback="placeholder.png"
-            placeholder={<LoadingPlaceholder />}
-            preview={false}
-          ></Image>
+          {onLoad ? (
+            <div className="ant-image">
+              <img
+                ref={previewImageRef}
+                onLoad={handleOnLoad}
+                alt="result"
+                src={resultUrl}
+                className="ant-image-img"
+              />
+            </div>
+          ) : (
+            <Image
+              placeholder={<LoadingPlaceholder />}
+              alt="result"
+              fallback="placeholder.png"
+              preview={false}
+              src={resultUrl}
+            />
+          )}
 
           {previewUrl && !showPreview && <ImagePreviewMask />}
         </div>

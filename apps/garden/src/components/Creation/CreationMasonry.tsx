@@ -17,12 +17,25 @@ import {
 import Link from 'next/link'
 import React, { useContext, useRef, useState } from 'react'
 
+type ObserverRect = {
+  bottom: number
+  height: number
+  left: number
+  right: number
+  top: number
+  width: number
+  x: number
+  y: number
+}
+
 const CreationMasonry = ({
   query,
   hasSort,
+  wrapperSizeRect,
 }: {
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
+  wrapperSizeRect?: ObserverRect
 }) => {
   const containerRef = useRef(null)
   const [orderBy, setOrderBy] = useState<OrderByParam>(OrderByDefaultParam)
@@ -40,9 +53,11 @@ const CreationMasonry = ({
   } = useFeedPaginated(query, orderBy)
 
   const { width: windowWidth, height: windowHeight } = useViewportSize()
+
   const { offset, width } = useContainerPosition(containerRef, [
     windowWidth,
     windowHeight,
+    wrapperSizeRect,
   ])
 
   const positioner = usePositioner(
@@ -102,7 +117,7 @@ const CreationMasonry = ({
           resizeObserver={resizeObserver}
           containerRef={containerRef}
           items={creations}
-          height={windowHeight}
+          height={wrapperSizeRect?.height || windowHeight}
           offset={offset}
           overscanBy={3}
           itemHeightEstimate={300}

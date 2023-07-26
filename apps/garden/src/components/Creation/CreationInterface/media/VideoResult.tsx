@@ -1,9 +1,11 @@
 const VideoResult = ({
   resultUrl,
   disableControls,
+  onLoad,
 }: {
   resultUrl: string
   disableControls?: boolean
+  onLoad?: () => void
 }) => {
   return (
     <video
@@ -13,6 +15,7 @@ const VideoResult = ({
       muted={true}
       loop={true}
       controls={!disableControls}
+      onLoad={onLoad}
     />
   )
 }
