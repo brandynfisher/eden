@@ -57,7 +57,6 @@ const CharacterForm = () => {
   const { message } = App.useApp()
   const { refetch } = useContext(UserContext)
   const router = useRouter()
-  const characterName = 'Chatsubo'
   const [form] = Form.useForm()
   const [messageGroups, setMessageGroups] =
     React.useState<ChatMessageGroup[]>(exampleMessages)
@@ -66,18 +65,19 @@ const CharacterForm = () => {
   const [completing, setCompleting] = React.useState<boolean>(false)
   const mode = 'create'
 
+  const characterName = Form.useWatch('name', form)
   const description = Form.useWatch('description', form)
 
   const initialValues: CharacterFormInput =
     mode === 'create'
       ? {
-          name: characterName,
+          name: 'Chatsubo',
           description: CHATSUBO_PROMPT,
           greeting: CHATSUBO_GREETING,
           completion: '',
         }
       : {
-          name: characterName,
+          name: '',
           description: '',
           greeting: '',
           completion: '',
