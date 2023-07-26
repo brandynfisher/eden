@@ -3,7 +3,6 @@ import { TSchema, Type } from '@sinclair/typebox'
 import adminRoutes from './adminRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
-import capabilityRoutes from './capabilityRoutes'
 import characterRoutes from './characterRoutes'
 import collectionRoutes from './collectionRoutes'
 import creationRoutes from './creationRoutes'
@@ -51,7 +50,6 @@ export const routes = [
   collectionRoutes,
   generatorRoutes,
   taskRoutes,
-  capabilityRoutes,
   scenarioRoutes,
   feedRoutes,
 ]

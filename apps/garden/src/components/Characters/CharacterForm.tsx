@@ -227,7 +227,7 @@ const CharacterForm = () => {
             htmlType="submit"
             onClick={handleSubmit}
           >
-            {mode === 'create' ? 'Create' : 'Update'} Capability
+            {mode === 'create' ? 'Create' : 'Update'} Character
           </Button>
         </Form.Item>
       </Form>

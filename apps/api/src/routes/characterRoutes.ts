@@ -16,6 +16,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: Type.Object({
         name: Type.String(),
+        description: Type.Optional(Type.String()),
+        greeting: Type.Optional(Type.String()),
+        dialogue: Type.Optional(Type.String()),
       }),
       response: {
         200: Type.Object({
@@ -32,11 +35,12 @@ const characterRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         characterId: Type.String(),
         name: Type.Optional(Type.String()),
+        description: Type.Optional(Type.String()),
+        greeting: Type.Optional(Type.String()),
+        dialogue: Type.Optional(Type.String()),
       }),
       response: {
-        200: Type.Object({
-          characterId: Type.String(),
-        }),
+        200: Type.Object({}),
       },
     },
     preHandler: [async request => isAuth(server, request)],
@@ -70,13 +74,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             id: Type.String(),
+            user: Type.String(),
             name: Type.String(),
-            capabilities: Type.Array(Type.Any()),
+            description: Type.Optional(Type.String()),
+            greeting: Type.Optional(Type.String()),
+            dialogue: Type.Optional(Type.String()),
           }),
         ),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
     handler: (request, reply) => listCharacters(request, reply),
   })
 
@@ -89,13 +95,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           character: Type.Object({
             id: Type.String(),
+            user: Type.String(),
             name: Type.String(),
-            capabilities: Type.Array(Type.Any()),
+            description: Type.Optional(Type.String()),
+            greeting: Type.Optional(Type.String()),
+            dialogue: Type.Optional(Type.String()),
           }),
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
     handler: (request, reply) => getCharacter(request, reply),
   })
 }

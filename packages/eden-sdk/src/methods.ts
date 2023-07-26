@@ -18,14 +18,6 @@ import {
 } from './responses/ApiKeysResponses'
 import { AuthLoginResponse } from './responses/AuthResponses'
 import {
-  CapabilitiesCreateResponse,
-  CapabilitiesDeleteResponse,
-  CapabilitiesGetResponse,
-  CapabilitiesListResponse,
-  CapabilitiesUpdateResponse,
-  CapabilityType,
-} from './responses/CapabilitiesResponses'
-import {
   CharactersCreateResponse,
   CharactersDeleteResponse,
   CharactersGetResponse,
@@ -162,29 +154,6 @@ export abstract class Methods {
     login: bindApiCall<AuthLoginArguments, AuthLoginResponse>(
       this,
       authLoginRequestConfig,
-    ),
-  }
-
-  public readonly capabilities = {
-    create: bindApiCall<
-      CapabilitiesCreateArguments,
-      CapabilitiesCreateResponse
-    >(this, capabilitiesCreateRequestConfig),
-    update: bindApiCall<
-      CapabilitiesUpdateArguments,
-      CapabilitiesUpdateResponse
-    >(this, capabilitiesUpdateRequestConfig),
-    delete: bindApiCall<
-      CapabilitiesDeleteArguments,
-      CapabilitiesDeleteResponse
-    >(this, capabilitiesDeleteRequestConfig),
-    list: bindApiCall<CapabilitiesListArguments, CapabilitiesListResponse>(
-      this,
-      capabilitiesListRequestConfig,
-    ),
-    get: bindApiCall<CapabilitiesGetArguments, CapabilitiesGetResponse>(
-      this,
-      capabilitiesGetRequestConfig,
     ),
   }
 
@@ -345,11 +314,17 @@ export interface CharactersGetArguments extends WebAPICallOptions {
 
 export interface CharactersCreateArguments extends WebAPICallOptions {
   name: string
+  description?: string
+  greeting?: string
+  dialogue?: string
 }
 
 export interface CharactersUpdateArguments extends WebAPICallOptions {
   characterId: string
-  name: string
+  name?: string
+  description?: string
+  greeting?: string
+  dialogue?: string
 }
 
 export interface CharactersDeleteArguments extends WebAPICallOptions {
@@ -375,33 +350,6 @@ export interface AuthLoginArguments extends WebAPICallOptions {
 export interface AuthCreateChallengeArguments extends WebAPICallOptions {
   address: string
   isWeb2: boolean
-}
-
-export interface CapabilitiesCreateArguments extends WebAPICallOptions {
-  characterId: string
-  name: string
-  type: CapabilityType
-  data: any
-}
-
-export interface CapabilitiesUpdateArguments extends WebAPICallOptions {
-  capabilityId: string
-  name?: string
-  data?: any
-}
-
-export interface CapabilitiesDeleteArguments extends WebAPICallOptions {
-  capabilityId: string
-}
-
-export interface CapabilitiesListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  characterId: string | string[]
-}
-
-export interface CapabilitiesGetArguments extends WebAPICallOptions {
-  capabilityId: string
 }
 
 export interface CollectionsCreateArguments extends WebAPICallOptions {
@@ -647,62 +595,6 @@ const authLoginRequestConfig = (
     data: {
       ...args,
     },
-  }
-}
-
-const capabilitiesCreateRequestConfig = (
-  args: CapabilitiesCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'capabilities/create',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const capabilitiesUpdateRequestConfig = (
-  args: CapabilitiesUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'capabilities/update',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const capabilitiesDeleteRequestConfig = (
-  args: CapabilitiesDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'capabilities/delete',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const capabilitiesListRequestConfig = (
-  args: CapabilitiesListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'capabilities',
-    params,
-  }
-}
-
-const capabilitiesGetRequestConfig = (
-  args: CapabilitiesGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `capabilities/${args.capabilityId}`,
   }
 }
 

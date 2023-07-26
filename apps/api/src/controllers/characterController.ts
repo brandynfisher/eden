@@ -17,12 +17,15 @@ export const createCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, capabilities } = request.body as CharactersCreateArguments
+  const { name, description, greeting, dialogue } =
+    request.body as CharactersCreateArguments
 
   const input = {
     user: userId,
     name,
-    capabilities,
+    description,
+    greeting,
+    dialogue,
   }
 
   const characterRepository = new CharacterRepository(Character)
@@ -38,7 +41,7 @@ export const updateCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { characterId, name, capabilities } =
+  const { characterId, name, description, greeting, dialogue } =
     request.body as CharactersUpdateArguments
 
   if (!characterId) {
@@ -60,7 +63,9 @@ export const updateCharacter = async (
 
   const input = {
     name,
-    capabilities,
+    description,
+    greeting,
+    dialogue,
   }
 
   await character.update(input)
@@ -115,17 +120,15 @@ export const listCharacters = async (
       sort,
     },
   )
-
-  await characterRepository.model.populate(characterPaginatedResponse.docs, {
-    path: 'capabilities',
-  })
-
   const response = {
     ...characterPaginatedResponse,
     docs: characterPaginatedResponse.docs.map(character => ({
       id: character._id.toString(),
+      user: character.user.toString(),
       name: character.name,
-      capabilities: character.capabilities,
+      description: character.description,
+      greeting: character.greeting,
+      dialogue: character.dialogue,
     })),
   }
 
@@ -137,9 +140,7 @@ export const getCharacter = async (
   reply: FastifyReply,
 ) => {
   const { characterId } = request.params as CharactersGetArguments
-  const character = await Character.findById(characterId).populate(
-    'capabilities',
-  )
+  const character = await Character.findById(characterId)
   if (!character) {
     return reply.status(404).send({
       message: 'Character not found',
@@ -148,8 +149,11 @@ export const getCharacter = async (
 
   const response = {
     id: character._id,
+    user: character.user.toString(),
     name: character.name,
-    capabilities: character.capabilities,
+    description: character.description,
+    greeting: character.greeting,
+    dialogue: character.dialogue,
   }
 
   return reply.status(200).send({ character: response })

@@ -1,7 +1,6 @@
 import { Model } from 'mongoose'
 
 import { ApiKey, ApiKeyDocument } from './ApiKey'
-import { Capability, CapabilityDocument } from './Capability'
 import Challenge, { ChallengeDocument } from './Challenge'
 import { Character, CharacterDocument } from './Character'
 import { Collection, CollectionDocument } from './Collection'
@@ -31,7 +30,6 @@ export interface Database {
   Generator: Model<GeneratorDocument>
   Character: Model<CharacterDocument>
   Challenge: Model<ChallengeDocument>
-  Capability: Model<CapabilityDocument>
   Scenario: Model<ScenarioDocument>
   Lora: Model<LoraDocument>
 }
@@ -50,7 +48,6 @@ export const models: Database = {
   Generator,
   Character,
   Challenge,
-  Capability,
   Scenario,
   Lora,
 }
