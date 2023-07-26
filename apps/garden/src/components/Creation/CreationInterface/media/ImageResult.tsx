@@ -110,12 +110,15 @@ const ImageResult = ({
       <div className="image-wrap">
         <div className="relative">
           {onLoad ? (
-            <img
-              ref={previewImageRef}
-              onLoad={handleOnLoad}
-              alt="result"
-              src={resultUrl}
-            />
+            <div className="ant-image">
+              <img
+                ref={previewImageRef}
+                onLoad={handleOnLoad}
+                alt="result"
+                src={resultUrl}
+                className="ant-image-img"
+              />
+            </div>
           ) : (
             <Image
               placeholder={<LoadingPlaceholder />}

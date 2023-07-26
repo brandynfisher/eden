@@ -213,7 +213,6 @@ const CreationDetail = ({
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
                   onLoad={() => {
-                    // console.log('onload')
                     setIsMediaLoaded(true)
                   }}
                 />
@@ -221,7 +220,6 @@ const CreationDetail = ({
                 <MediaDisplay
                   creationUri={creationData.uri}
                   onLoad={() => {
-                    // console.log('onload')
                     setIsMediaLoaded(true)
                   }}
                 />
