@@ -219,7 +219,7 @@ const CharacterForm = () => {
           labelCol={{ span: 24 }}
           name="completion"
         >
-          <Input.TextArea className="border border-black" />
+          <Input.TextArea className="border border-black" readOnly />
         </Form.Item>
         <Form.Item>
           <Button

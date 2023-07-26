@@ -28,7 +28,9 @@ const ThemeToggleButton = () => {
     <Space onClick={handleThemeToggleClick} className="justify-between w-full">
       <div className="flex">
         <div>☾ </div>
-        <div className="ml-2 text-black dark:text-white">Dark Mode</div>
+        <div className="font-mono ml-2 text-black dark:text-white">
+          Dark Mode
+        </div>
       </div>
       <Switch checked={resolvedTheme === 'dark'} />
     </Space>

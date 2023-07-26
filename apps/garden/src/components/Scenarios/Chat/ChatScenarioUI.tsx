@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/time'
 import {
   ChatContainer,
   ConversationHeader,
@@ -11,7 +12,6 @@ import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import { Character } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { useState } from 'react'
-import * as timeago from 'timeago.js'
 
 type ConversationEntry = {
   message: string
@@ -91,7 +91,7 @@ const ChatScenarioUI = ({
               >
                 <Message.CustomContent>{entry.message}</Message.CustomContent>
                 <Message.Footer
-                  sentTime={timeago.format(entry.date)}
+                  sentTime={timeAgo(entry.date)}
                   sender={
                     entry.speaker === 'bot' ? activeCharacter.name : 'You'
                   }

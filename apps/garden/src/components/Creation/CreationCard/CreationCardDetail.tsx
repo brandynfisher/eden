@@ -1,5 +1,5 @@
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
-import { durationSinceDate } from '@/lib/time'
+import { timeAgo } from '@/lib/time'
 import { Creation } from '@edenlabs/eden-sdk'
 import React from 'react'
 
@@ -10,7 +10,7 @@ const CreationCardDetail = ({
   creation: Creation
   isOverlay?: boolean
 }) => {
-  const timeSinceCreation = durationSinceDate(creation.createdAt)
+  const timeSinceCreation = timeAgo(creation.createdAt)
 
   return (
     <div className="flex items-center relative p-2">

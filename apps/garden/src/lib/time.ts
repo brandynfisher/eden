@@ -1,4 +1,4 @@
-import dayjs, { QUnitType } from 'dayjs'
+import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import utc from 'dayjs/plugin/utc'
 
@@ -12,19 +12,22 @@ export const formatDuration = (duration: number) => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
-export const durationSinceDate = (date: string) => {
+/**
+ * Returns relative time between the passed date and now
+ */
+export const timeAgo = (date: Date | string) => {
   return dayjs(date).utc().local().fromNow()
 }
 
+/**
+ * Returns relative time difference between two passed dates
+ */
 export const durationBetweenDates = (
   startDate: string,
   endDate: string,
-  unit: QUnitType,
-  appendUnit: boolean,
+  hideSuffix?: boolean,
 ) => {
   const startDateObj = dayjs(startDate).utc()
   const endDateObj = dayjs(endDate).utc()
-  return `${endDateObj.diff(startDateObj, unit)} ${
-    appendUnit ? unit : ''
-  }`.trim()
+  return `${endDateObj.to(startDateObj, hideSuffix)}`
 }

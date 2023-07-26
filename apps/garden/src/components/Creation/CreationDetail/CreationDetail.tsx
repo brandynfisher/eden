@@ -7,7 +7,7 @@ import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getFileExtension } from '@/lib/getFileExtension'
-import { durationSinceDate } from '@/lib/time'
+import { timeAgo } from '@/lib/time'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
@@ -101,7 +101,7 @@ const CreationDetail = ({ creation }: { creation: Creation }) => {
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
-  const timeSinceCreation = durationSinceDate(creation.createdAt)
+  const timeSinceCreation = timeAgo(creation.createdAt)
 
   const formattedTaskConfig = JSON.stringify(creationData.task.config, null, 2)
 

@@ -80,7 +80,7 @@ const MaxColumnSelector = () => {
     <div className="w-full">
       <div className="flex items-center">
         <TableOutlined />
-        <div className="ml-2 flex gap-2 w-full justify-between">
+        <div className="ml-2 flex gap-2 w-full justify-between font-mono">
           {currentSetting.params.displayName}
           <div className="flex gap-2 items-center">
             <div className="text-gray-500">

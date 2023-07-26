@@ -2,7 +2,7 @@ import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/T
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import { CONFIG } from '@/lib/config'
 import { rightTruncatedString, truncatedAddress } from '@/lib/string'
-import { durationBetweenDates, durationSinceDate } from '@/lib/time'
+import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {
   CheckOutlined,
@@ -26,7 +26,6 @@ const FailedTaskMenuItem = ({
   const taskRunDuration = durationBetweenDates(
     task.createdAt,
     task.updatedAt,
-    's',
     true,
   )
 
@@ -91,7 +90,6 @@ const CompletedTaskMenuItem = ({
   const taskRunDuration = durationBetweenDates(
     task.createdAt,
     task.updatedAt,
-    's',
     true,
   )
 
@@ -143,7 +141,7 @@ const CompletedTaskMenuItem = ({
 }
 
 const PendingTaskMenuItem = ({ task }: { task: Task }) => {
-  const timeSinceTaskCreation = durationSinceDate(task.createdAt)
+  const timeSinceTaskCreation = timeAgo(task.createdAt)
 
   return (
     <div
