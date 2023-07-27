@@ -81,7 +81,7 @@ export const deleteCharacter = async (
   const { characterId } = request.body as CharactersDeleteArguments
 
   const dbCharacter = await Character.findOne({
-    characterId,
+    _id: characterId,
     user: userId,
   })
 
