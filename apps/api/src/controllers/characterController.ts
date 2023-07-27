@@ -51,7 +51,7 @@ export const updateCharacter = async (
   }
 
   const character = await Character.findOne({
-    characterId,
+    _id: characterId,
     user: userId,
   })
 
