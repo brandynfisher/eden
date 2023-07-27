@@ -1,0 +1,60 @@
+import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import { UserContext } from '@/providers/UserProvider'
+import { SettingOutlined } from '@ant-design/icons'
+import { Character } from '@edenlabs/eden-sdk'
+import { Button, Empty } from 'antd'
+import Link from 'next/link'
+import React, { useContext } from 'react'
+
+const CharacterListItem = ({ character }: { character: Character }) => {
+  return (
+    <Link
+      href={`/characters/${character.id}`}
+      passHref
+      className="flex gap-4 cursor-pointer bg-gray-900 hover:bg-gray-800 p-4 rounded-lg text-black dark:text-white"
+    >
+      <div className="flex-shrink-0 min-w-0 flex items-center">
+        <CharacterAvatar character={character} />
+      </div>
+      <div>
+        <div className="font-bold">{character.name}</div>
+        <div
+          className="text-gray-400 line-clamp-2"
+          title={character.description}
+        >
+          {character.description}
+        </div>
+      </div>
+      <div className="flex items-center">
+        <Button className="font-mono bg-black text-white">
+          <SettingOutlined />
+        </Button>
+      </div>
+    </Link>
+  )
+}
+
+const CharacterList = () => {
+  const { characters } = useContext(UserContext)
+
+  return (
+    <div className="flex flex-col gap-4">
+      {characters && characters.length ? (
+        characters.map(character => (
+          <CharacterListItem key={character.id} character={character} />
+        ))
+      ) : (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            <div className="flex flex-col items-center">
+              <div className="mb-4">Nothing here yet.</div>
+            </div>
+          }
+        />
+      )}
+    </div>
+  )
+}
+
+export default CharacterList

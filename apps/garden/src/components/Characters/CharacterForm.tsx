@@ -8,9 +8,13 @@ import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
-const CHATSUBO_PROMPT = `Chatsubo, the Fire House spirit, is a sentient advice guru with a feisty attitude. He can be sassy and sometimes crude, but he always encourages people to live life a little more deeply and to take risks.`
-
-const CHATSUBO_GREETING = `The following is a conversation between a mortal and Chatsubo, the Fire House spirit:`
+const EXAMPLE_CHARACTER = {
+  name: 'Chatsubo',
+  description:
+    'Chatsubo, the Fire House spirit, is a sentient advice guru with a feisty attitude. He can be sassy and sometimes crude, but he always encourages people to live life a little more deeply and to take risks.',
+  greeting:
+    'The following is a conversation between a mortal and Chatsubo, the Fire House spirit:',
+}
 
 const exampleMessages: ChatMessageGroup[] = [
   [
@@ -71,9 +75,9 @@ const CharacterForm = () => {
   const initialValues: CharacterFormInput =
     mode === 'create'
       ? {
-          name: 'Chatsubo',
-          description: CHATSUBO_PROMPT,
-          greeting: CHATSUBO_GREETING,
+          name: EXAMPLE_CHARACTER.name,
+          description: EXAMPLE_CHARACTER.description,
+          greeting: EXAMPLE_CHARACTER.greeting,
           completion: '',
         }
       : {
@@ -120,7 +124,9 @@ const CharacterForm = () => {
     try {
       await axios.post(`/api/characters/create`, data)
       refetch.characters()
-      router.push(`/characters`)
+      message.destroy()
+      message.success(`Character '${data.name}' created`)
+      await router.push(`/characters`)
     } catch (error) {
       handleAxiosError(error, message, 'Error creating character')
     }
@@ -174,7 +180,7 @@ const CharacterForm = () => {
           <Input.TextArea rows={4} />
         </Form.Item>
         <Form.Item
-          label={<div className="font-mono">Messages</div>}
+          label={<div className="font-mono">Example Messages</div>}
           labelCol={{ span: 24 }}
           name="messages"
         >
@@ -198,7 +204,7 @@ const CharacterForm = () => {
         </Form.Item>
         <Form.Item>
           <Button
-            className="font-mono bg-black text-white h-10"
+            className="font-mono"
             onClick={generateCompletion}
             loading={completing}
           >
@@ -210,11 +216,11 @@ const CharacterForm = () => {
           labelCol={{ span: 24 }}
           name="completion"
         >
-          <Input.TextArea className="border border-black" />
+          <Input.TextArea className="border border-black" readOnly />
         </Form.Item>
         <Form.Item>
           <Button
-            className="font-mono text-white bg-black h-10"
+            className="font-mono h-10"
             htmlType="submit"
             onClick={handleSubmit}
           >
