@@ -11,7 +11,7 @@ import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const ImagePreviewMask = () => (
   <div className="image-preview-mask absolute inset-0 flex items-center justify-center">
-    <div className="rounded-full bg-gray-800 h-12 w-12 flex items-center justify-center">
+    <div className="rounded-full bg-gray-300 dark:bg-gray-800  h-12 w-12 flex items-center justify-center">
       <ExpandOutlined className="text-2xl" />
     </div>
   </div>

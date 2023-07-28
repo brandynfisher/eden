@@ -82,7 +82,7 @@ const ChatScenarioUI = ({
           <ConversationHeader.Content
             className="!bg-gray-200 dark:!bg-gray-800"
             userName={
-              <div className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center">
+              <div className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap">
                 <div className="flex items-center gap-2">
                   <CharacterAvatar character={activeCharacter} size={'small'} />
                   <div>{activeCharacter.name}</div>
@@ -96,7 +96,7 @@ const ChatScenarioUI = ({
           />
         </ConversationHeader>
         <MessageList
-          className="!py-2 !bg-gray-50 dark:!bg-gray-900 !border-y !border-y-gray-300 dark:!border-y-gray-700 !border-solid !border-l-0 !border-r-0"
+          className="!py-2 !bg-gray-50 dark:!bg-gray-900 !border-y !border-y-gray-300 dark:!border-y-gray-700 !border-solid !border-l-0 !border-r-0 !pl-[0.4em]"
           typingIndicator={
             botIsTyping ? (
               <TypingIndicator
