@@ -9,7 +9,9 @@ const ChatScenarioPage = () => {
   const [activeCharacter, setActiveCharacter] = useState<Character>(
     characters?.[0] as Character,
   )
-  const [activeCharacterName, setActiveCharacterName] = useState<string>('')
+  const [activeCharacterName, setActiveCharacterName] = useState<string>(
+    activeCharacter && activeCharacter.name,
+  )
 
   const handleActiveCharacterChange = (characterName: string) => {
     const character = characters?.find(

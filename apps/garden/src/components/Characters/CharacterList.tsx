@@ -14,7 +14,11 @@ const CharacterListItem = ({ character }: { character: Character }) => {
       className="flex gap-4 cursor-pointer bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-black p-4 rounded-lg text-black dark:text-white"
     >
       <div className="flex-shrink-0 min-w-0 flex items-center">
-        <CharacterAvatar character={character} />
+        <CharacterAvatar
+          id={character.id}
+          name={character.name}
+          imageUri={character.avatarImageUri}
+        />
       </div>
       <div>
         <div className="font-bold">{character.name}</div>

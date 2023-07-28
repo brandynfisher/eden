@@ -3,30 +3,48 @@ import { Scenario, ScenarioType } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/router'
 import React from 'react'
 
-const exampleScenarios: Scenario[] = [
+type ScenarioWithPath = Scenario & { path: string }
+
+const exampleScenarios: ScenarioWithPath[] = [
   {
     id: '1',
     name: 'Single Character Chat',
     description: 'Chat with a single character',
     type: ScenarioType.CHATROOM,
+    path: '/scenarios/chat',
+    data: {},
+  },
+  {
+    id: '2',
+    name: 'Talking Head',
+    description: 'Bring characters to life with voice and animation',
+    type: ScenarioType.TALKINGHEAD,
+    path: '/scenarios/talkinghead',
     data: {},
   },
 ]
 
 const ScenariosPage = () => {
   const router = useRouter()
+
+  const handleRouteChange = async (path: string) => {
+    await router.push(path)
+  }
+
   return (
     <>
       <h2 className="mb-4">Scenarios</h2>
-      {exampleScenarios.map(scenario => (
-        <div
-          key={scenario.id}
-          className="mt-2 cursor-pointer"
-          onClick={() => router.push(`/scenarios/chat`)}
-        >
-          <ScenarioCard scenario={scenario} />
-        </div>
-      ))}
+      <div className="flex flex-col gap-4">
+        {exampleScenarios.map(scenario => (
+          <div
+            key={scenario.id}
+            className="cursor-pointer"
+            onClick={() => handleRouteChange(scenario.path)}
+          >
+            <ScenarioCard scenario={scenario} />
+          </div>
+        ))}
+      </div>
     </>
   )
 }

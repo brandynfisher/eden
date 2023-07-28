@@ -1,4 +1,5 @@
 @use './animations'; //custom animations/keyframes
+@use './chat-ui-overrides'; // overrides for chat ui kit styles
 
 @tailwind base;
 @tailwind components;

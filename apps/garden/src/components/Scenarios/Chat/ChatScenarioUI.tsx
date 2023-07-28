@@ -1,8 +1,12 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import { useCreator } from '@/hooks/useCreator'
 import { compilePrompt } from '@/lib/chat'
 import { timeAgo } from '@/lib/time'
 import { ChatMessage } from '@/lib/types'
+import { UserContext } from '@/providers/UserProvider'
+import { RobotOutlined } from '@ant-design/icons'
 import {
+  Avatar,
   ChatContainer,
   ConversationHeader,
   MainContainer,
@@ -14,7 +18,7 @@ import {
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import { Character } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 type ConversationEntry = {
   message: string
@@ -28,6 +32,9 @@ const ChatScenarioUI = ({
 }: {
   activeCharacter: Character
 }) => {
+  const { isAuthenticated, address } = useContext(UserContext)
+  const { creator } = useCreator(isAuthenticated && address ? address : null)
+
   const [text, setText] = useState('')
   const [conversation, setConversation] = useState<ConversationEntry[]>([])
   const [botIsTyping, setBotIsTyping] = useState(false)
@@ -71,12 +78,16 @@ const ChatScenarioUI = ({
     setText('')
   }
 
+  if (!creator) {
+    return <div>not logged in</div>
+  }
+
   return (
     <MainContainer
       responsive
       className="dark:!bg-gray-800 !border-none rounded-lg overflow-hidden"
     >
-      <ChatContainer className="!bg-gray-200 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden">
+      <ChatContainer className="!bg-gray-200 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden max-h-[calc(100vh_-_223px)]">
         <ConversationHeader className="!bg-gray-200 dark:!bg-gray-800 !px-4 !py-4 !border-b-0">
           {/*<ConversationHeader.Actions className="!bg-gray-100 dark:!bg-gray-800"></ConversationHeader.Actions>*/}
           <ConversationHeader.Content
@@ -84,7 +95,12 @@ const ChatScenarioUI = ({
             userName={
               <div className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap">
                 <div className="flex items-center gap-2">
-                  <CharacterAvatar character={activeCharacter} size={'small'} />
+                  <CharacterAvatar
+                    id={activeCharacter.id}
+                    name={activeCharacter.name}
+                    imageUri={activeCharacter.avatarImageUri}
+                    size={'small'}
+                  />
                   <div>{activeCharacter.name}</div>
                 </div>
 
@@ -96,6 +112,7 @@ const ChatScenarioUI = ({
           />
         </ConversationHeader>
         <MessageList
+          autoScrollToBottom={true}
           className="!py-2 !bg-gray-50 dark:!bg-gray-900 !border-y !border-y-gray-300 dark:!border-y-gray-700 !border-solid !border-l-0 !border-r-0 !pl-[0.4em]"
           typingIndicator={
             botIsTyping ? (
@@ -107,6 +124,8 @@ const ChatScenarioUI = ({
           }
         >
           {conversation.map((entry, index) => {
+            const isBotSpeaking = entry.speaker === 'bot'
+
             return (
               <Message
                 key={index}
@@ -114,29 +133,75 @@ const ChatScenarioUI = ({
                   type: 'custom',
                   sender: entry.speaker,
                   position: 'single',
-                  direction: entry.speaker === 'bot' ? 'incoming' : 'outgoing',
+                  direction: isBotSpeaking ? 'incoming' : 'outgoing',
                 }}
               >
-                <Message.CustomContent>{entry.message}</Message.CustomContent>
-                <Message.Footer
-                  sentTime={timeAgo(entry.date)}
-                  sender={
-                    entry.speaker === 'bot' ? activeCharacter.name : 'You'
-                  }
-                />
+                <Avatar>
+                  {isBotSpeaking ? (
+                    <CharacterAvatar
+                      id={activeCharacter.id}
+                      name={activeCharacter.name}
+                      imageUri={activeCharacter.avatarImageUri}
+                      size={'small'}
+                    />
+                  ) : (
+                    <CharacterAvatar
+                      id={creator?.userId}
+                      name={creator?.username || creator?.userId}
+                      imageUri={creator.profileImageUri}
+                      size={'small'}
+                    />
+                  )}
+                </Avatar>
+                <Message.Header
+                  className={`!m-0 ${
+                    isBotSpeaking ? '!justify-start' : '!justify-end'
+                  }`}
+                >
+                  <div className="text-gray-700 dark:text-gray-400 mb-2">
+                    {isBotSpeaking ? (
+                      <div className="flex gap-2 items-center">
+                        <div>{activeCharacter.name}</div>
+                        <div
+                          title="Character Generated Response"
+                          className="flex items-center cursor-pointer"
+                        >
+                          <RobotOutlined />
+                        </div>
+                      </div>
+                    ) : (
+                      'You'
+                    )}
+                  </div>
+                </Message.Header>
+                <Message.CustomContent
+                  className={`dark:text-gray-300 px-2 py-1 rounded-bl-lg rounded-br-lg ${
+                    isBotSpeaking
+                      ? 'bg-blue-200 dark:!bg-indigo-900  rounded-tr-lg'
+                      : 'bg-gray-300 dark:!bg-gray-800 rounded-tl-lg'
+                  }`}
+                >
+                  {entry.message}
+                </Message.CustomContent>
+                <Message.Footer className="!mt-0">
+                  <div className="flex gap-2 items-center mt-2 text-gray-500">
+                    <div>{timeAgo(entry.date)}</div>
+                  </div>
+                </Message.Footer>
               </Message>
             )
           })}
         </MessageList>
         <MessageInput
           className="!bg-gray-200 dark:!bg-gray-800 !py-4 !border-t-0"
-          placeholder="Type message here"
+          placeholder="Type your message here..."
           onSend={submit}
           onChange={(e, text) => {
             setText(text)
           }}
           sendButton={true}
           autoFocus
+          attachButton={false}
         />
       </ChatContainer>
     </MainContainer>
