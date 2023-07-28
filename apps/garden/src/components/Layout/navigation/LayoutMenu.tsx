@@ -52,7 +52,7 @@ const LayoutMenu = () => {
       selectedKeys={[router.pathname]}
       style={{ height: '100%', borderRight: 0 }}
       items={menuItems}
-      className="text-black bg-white dark:text-white dark:bg-gray-900"
+      className="text-black dark:text-white bg-gray-100 dark:bg-gray-900"
     />
   )
 }
