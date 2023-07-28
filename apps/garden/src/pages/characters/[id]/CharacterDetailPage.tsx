@@ -35,11 +35,17 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
     }
   }
 
+  const handleCancel = async () => {
+    await router.push('/characters')
+  }
+
   return (
     <div className="flex mt-8 justify-between gap-2">
-      <div>
+      <div className="flex gap-2">
         <Button className="font-mono">Save</Button>
-        <Button className="font-mono">Cancel</Button>
+        <Button className="font-mono" onClick={handleCancel}>
+          Cancel
+        </Button>
       </div>
 
       <Button className="font-mono" danger onClick={handleDeleteCharacter}>
@@ -56,7 +62,7 @@ const CharacterDetailPage = () => {
 
   return (
     <CharacterContext.Provider value={{ character }}>
-      <h2 className="mb-8">Character Details</h2>
+      <h2 className="mb-4">Character Details</h2>
       {character && (
         <>
           <CharacterAvatar character={character} />

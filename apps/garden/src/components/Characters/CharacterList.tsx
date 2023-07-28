@@ -11,7 +11,7 @@ const CharacterListItem = ({ character }: { character: Character }) => {
     <Link
       href={`/characters/${character.id}`}
       passHref
-      className="flex gap-4 cursor-pointer bg-gray-900 hover:bg-gray-800 p-4 rounded-lg text-black dark:text-white"
+      className="flex gap-4 cursor-pointer bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-black p-4 rounded-lg text-black dark:text-white"
     >
       <div className="flex-shrink-0 min-w-0 flex items-center">
         <CharacterAvatar character={character} />
@@ -19,14 +19,14 @@ const CharacterListItem = ({ character }: { character: Character }) => {
       <div>
         <div className="font-bold">{character.name}</div>
         <div
-          className="text-gray-400 line-clamp-2"
+          className="text-gray-500 line-clamp-2"
           title={character.description}
         >
           {character.description}
         </div>
       </div>
       <div className="flex items-center">
-        <Button className="font-mono bg-black text-white">
+        <Button>
           <SettingOutlined />
         </Button>
       </div>

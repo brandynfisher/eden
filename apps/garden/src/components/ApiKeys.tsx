@@ -126,7 +126,7 @@ const ApiKeys = () => {
 
   return (
     <div className="mb-4">
-      <h2 className="mb-8">API Keys</h2>
+      <h2 className="mb-4">API Keys</h2>
       {isAuthenticated ? (
         <Table dataSource={data} columns={columns} size="middle" />
       ) : (

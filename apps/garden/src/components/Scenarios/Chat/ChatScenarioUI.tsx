@@ -1,3 +1,4 @@
+import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { compilePrompt } from '@/lib/chat'
 import { timeAgo } from '@/lib/time'
 import { ChatMessage } from '@/lib/types'
@@ -71,19 +72,36 @@ const ChatScenarioUI = ({
   }
 
   return (
-    <MainContainer responsive>
-      <ChatContainer>
-        <ConversationHeader>
-          <ConversationHeader.Actions></ConversationHeader.Actions>
-          <ConversationHeader.Content userName="Single Character Chat" />
+    <MainContainer
+      responsive
+      className="dark:!bg-gray-800 !border-none rounded-lg overflow-hidden"
+    >
+      <ChatContainer className="!border-none rounded-lg overflow-hidden">
+        <ConversationHeader className="!bg-gray-100 dark:!bg-gray-800">
+          {/*<ConversationHeader.Actions className="!bg-gray-100 dark:!bg-gray-800"></ConversationHeader.Actions>*/}
+          <ConversationHeader.Content
+            className="!bg-gray-100 dark:!bg-gray-800"
+            userName={
+              <div className="!bg-gray-100 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <CharacterAvatar character={activeCharacter} size={'small'} />
+                  <div>{activeCharacter.name}</div>
+                </div>
+
+                <div className="font-normal dark:text-gray-400">
+                  Single Character Chat
+                </div>
+              </div>
+            }
+          />
         </ConversationHeader>
         <MessageList
+          className="!bg-white dark:!bg-"
           typingIndicator={
             botIsTyping ? (
               <TypingIndicator content={`${activeCharacter.name} is typing`} />
             ) : null
           }
-          style={{ height: 'calc(100vh - 200px)' }}
         >
           {conversation.map((entry, index) => {
             return (
@@ -109,6 +127,7 @@ const ChatScenarioUI = ({
           })}
         </MessageList>
         <MessageInput
+          className="!bg-gray-100 dark:!bg-gray-800 !py-2"
           placeholder="Type message here"
           onSend={submit}
           onChange={(e, text) => {

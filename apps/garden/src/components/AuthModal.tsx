@@ -1,6 +1,5 @@
 import { UserContext } from '@/providers/UserProvider'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import '@rainbow-me/rainbowkit/styles.css'
 import { Button, Modal } from 'antd'
 import React, { useContext } from 'react'
 

@@ -20,9 +20,10 @@ const ChatScenarioPage = () => {
   }
 
   return (
-    <>
-      <label htmlFor="activeCharacter">Selected Character:</label>
-      <div className="w-full flex flex-col space-y-4 mt-2">
+    <div className="flex flex-col h-full">
+      <h2 className="mb-4">Scenario: Chat</h2>
+      <label htmlFor="character-select">Selected Character:</label>
+      <div className="w-full flex flex-col space-y-4 mt-2 mb-4">
         <Select
           id="character-select"
           value={activeCharacterName}
@@ -37,7 +38,7 @@ const ChatScenarioPage = () => {
         </Select>
       </div>
       {activeCharacter && <ChatScenarioUI activeCharacter={activeCharacter} />}
-    </>
+    </div>
   )
 }
 

@@ -1,34 +1,8 @@
+@use './animations'; //custom animations/keyframes
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-} */
-
-/*.ant-layout-content {*/
-/*    flex: 1 1 0 !important;*/
-/*}*/
 
 .ant-modal {
     top: 0 !important;
@@ -120,101 +94,6 @@ body {
     }
 }
 
-@keyframes fadeOut {
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-}
-
-@keyframes fadeIn {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
-}
-
-@keyframes scaleUpToOriginal {
-    0% {
-        transform: scale(0.8);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-@keyframes slide-fade-down {
-    0% {
-        transform: translateY(-10%);
-        opacity: 0;
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        transform: none;
-        opacity: unset;
-    }
-}
-
-@keyframes slide-fade-up {
-    0% {
-        transform: translateY(10%);
-        opacity: 0;
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        transform: none;
-        opacity: unset;
-    }
-}
-
-
-.anim-fade-in {
-    animation-name: fadeIn;
-    animation-duration: 350ms;
-    animation-delay: 500ms;
-    animation-fill-mode: forwards;
-}
-
-
-.anim-fade-out {
-    animation-name: fadeOut;
-    animation-duration: 350ms;
-    animation-fill-mode: forwards;
-}
-
-.anim-slide-fade-down {
-    animation-name: slide-fade-down;
-    animation-duration: 200ms;
-    animation-timing-function: ease-in;
-    animation-fill-mode: both;
-}
-
-.anim-slide-fade-up {
-    animation-name: slide-fade-up;
-    animation-duration: 200ms;
-    animation-timing-function: ease-in;
-    animation-fill-mode: both;
-}
-
-.anim-scale-to-original {
-    animation: 200ms ease-in 200ms 1 scaleUpToOriginal;
-    animation-fill-mode: both;
-}
-
-.anim-repeat-none {
-    /*animation-iteration-count: 1;*/
-    /*animation-fill-mode: backwards;*/
-    /*animation-direction: alternate;*/
-}
-
 .ant-modal-close {
     width: 44px !important;
     height: 44px !important;
@@ -281,22 +160,23 @@ body {
     width: unset !important;
 }
 
-
 .ant-drawer-header {
     height: 64px !important;
     padding: 16px !important;
 }
 .ant-drawer-body {
     padding: 0 !important;
-}
-.ant-drawer-body .ant-divider {
-    margin: 0 !important;
-}
-.ant-drawer-body .ant-menu-item {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    width: 100% !important;
-    border-radius: 0 !important;
+
+    .ant-divider {
+        margin: 0 !important;
+    }
+
+    .ant-menu-item {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+    }
 }
 
 .ant-dropdown-menu {

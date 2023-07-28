@@ -28,7 +28,7 @@ const CharactersPage = () => {
 
   return (
     <>
-      <h2 className="mb-8">Characters</h2>
+      <h2 className="mb-4">Characters</h2>
       <CharacterList />
       <div className="mt-8">
         {hasReachedMaxChars && (

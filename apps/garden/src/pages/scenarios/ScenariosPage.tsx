@@ -17,7 +17,7 @@ const ScenariosPage = () => {
   const router = useRouter()
   return (
     <>
-      <h2 className="mb-8">Scenarios</h2>
+      <h2 className="mb-4">Scenarios</h2>
       {exampleScenarios.map(scenario => (
         <div
           key={scenario.id}
