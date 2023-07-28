@@ -76,8 +76,8 @@ const ChatScenarioUI = ({
       responsive
       className="dark:!bg-gray-800 !border-none rounded-lg overflow-hidden"
     >
-      <ChatContainer className="!border-none rounded-lg overflow-hidden">
-        <ConversationHeader className="!bg-gray-100 dark:!bg-gray-800">
+      <ChatContainer className="!bg-gray-100 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden">
+        <ConversationHeader className="!bg-gray-100 dark:!bg-gray-800 !px-4 !py-4 !border-b-0">
           {/*<ConversationHeader.Actions className="!bg-gray-100 dark:!bg-gray-800"></ConversationHeader.Actions>*/}
           <ConversationHeader.Content
             className="!bg-gray-100 dark:!bg-gray-800"
@@ -96,10 +96,13 @@ const ChatScenarioUI = ({
           />
         </ConversationHeader>
         <MessageList
-          className="!bg-white dark:!bg-"
+          className="!py-2 !bg-white dark:!bg-gray-900 !border-y !border-y-gray-300 dark:!border-y-gray-700 !border-solid !border-l-0 !border-r-0"
           typingIndicator={
             botIsTyping ? (
-              <TypingIndicator content={`${activeCharacter.name} is typing`} />
+              <TypingIndicator
+                className="!px-4 !py-2 dark:!bg-gray-700 border-y border-y-gray-200 !right-0"
+                content={`${activeCharacter.name} is typing`}
+              />
             ) : null
           }
         >
@@ -107,7 +110,6 @@ const ChatScenarioUI = ({
             return (
               <Message
                 key={index}
-                style={{ width: '90%' }}
                 model={{
                   type: 'custom',
                   sender: entry.speaker,
@@ -127,7 +129,7 @@ const ChatScenarioUI = ({
           })}
         </MessageList>
         <MessageInput
-          className="!bg-gray-100 dark:!bg-gray-800 !py-2"
+          className="!bg-gray-100 dark:!bg-gray-800 !py-4 !border-t-0"
           placeholder="Type message here"
           onSend={submit}
           onChange={(e, text) => {
