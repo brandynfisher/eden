@@ -65,7 +65,11 @@ const CharacterDetailPage = () => {
       <h2 className="mb-4">Character Details</h2>
       {character && (
         <>
-          <CharacterAvatar character={character} />
+          <CharacterAvatar
+            id={character.id}
+            name={character.name}
+            imageUri={character.avatarImageUri}
+          />
           <div>{character.name}</div>
           <div>{character.description}</div>
           <CharacterToolButtons character={character} />

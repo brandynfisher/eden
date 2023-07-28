@@ -36,7 +36,17 @@ const ChatScenarioUI = ({
   const { creator } = useCreator(isAuthenticated && address ? address : null)
 
   const [text, setText] = useState('')
-  const [conversation, setConversation] = useState<ConversationEntry[]>([])
+  const [conversation, setConversation] = useState<ConversationEntry[]>(
+    activeCharacter.greeting
+      ? [
+          {
+            message: activeCharacter.greeting,
+            speaker: 'bot',
+            date: new Date(),
+          },
+        ]
+      : [],
+  )
   const [botIsTyping, setBotIsTyping] = useState(false)
 
   const submit = async () => {
