@@ -52,7 +52,7 @@ export const messageGroupsToDialogueString = (
 }
 
 export const dialogueStringToMessageGroups = (dialogue: string) => {
-  const lines = dialogue.replace('\n\n', '').split('\n')
+  const lines = dialogue.split('\n')
 
   const messageGroups: ChatMessageGroup[] = []
   let messageGroup: ChatMessageGroup = []

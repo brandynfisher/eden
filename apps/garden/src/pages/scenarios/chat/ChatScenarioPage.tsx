@@ -1,11 +1,15 @@
 import ChatScenarioUI from '@/components/Scenarios/Chat/ChatScenarioUI'
+import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
 import { Select } from 'antd'
 import React, { useContext, useEffect, useState } from 'react'
 
-const ChatScenarioPage = () => {
-  const { characters } = useContext(UserContext)
+const ChatScenarioPageContent = ({
+  characters,
+}: {
+  characters: Character[]
+}) => {
   const [activeCharacter, setActiveCharacter] = useState<Character>(
     characters?.[0] as Character,
   )
@@ -46,6 +50,23 @@ const ChatScenarioPage = () => {
       {activeCharacter && <ChatScenarioUI activeCharacter={activeCharacter} />}
     </div>
   )
+}
+
+const ChatScenarioPage = ({ data }: { data: Character[] }) => {
+  const { isAuthenticated, address } = useContext(UserContext)
+  const { characters: charactersData } = useMyCharacters(
+    address ? address : null,
+    isAuthenticated,
+    {
+      fallbackData: data,
+    },
+  )
+
+  if (!data) {
+    return null
+  }
+
+  return <ChatScenarioPageContent characters={charactersData || data} />
 }
 
 export default ChatScenarioPage

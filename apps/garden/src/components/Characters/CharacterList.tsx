@@ -1,10 +1,8 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import { UserContext } from '@/providers/UserProvider'
 import { SettingOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
 import { Button, Empty } from 'antd'
 import Link from 'next/link'
-import React, { useContext } from 'react'
 
 const CharacterListItem = ({ character }: { character: Character }) => {
   return (
@@ -38,9 +36,7 @@ const CharacterListItem = ({ character }: { character: Character }) => {
   )
 }
 
-const CharacterList = () => {
-  const { characters } = useContext(UserContext)
-
+const CharacterList = ({ characters }: { characters: Character[] }) => {
   return (
     <div className="flex flex-col gap-4">
       {characters && characters.length ? (

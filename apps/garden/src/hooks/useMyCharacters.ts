@@ -1,16 +1,15 @@
 import { fetcher } from '@/lib/fetcher'
 import useSWR from 'swr'
 
-export const useMyCharacters = ({
-  userId,
-  isAuthenticated,
-}: {
-  userId: string
-  isAuthenticated: boolean
-}) => {
+export const useMyCharacters = (
+  userId: string | null,
+  isAuthenticated: boolean,
+  options = {},
+) => {
   const { data, mutate: refetchMyCharacters } = useSWR(
-    isAuthenticated ? `/api/characters/user?userId=${userId}` : null,
+    userId && isAuthenticated ? `/api/characters/user?userId=${userId}` : null,
     fetcher,
+    options,
   )
 
   return {

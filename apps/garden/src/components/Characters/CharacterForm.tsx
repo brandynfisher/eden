@@ -11,7 +11,7 @@ import { Character } from '@edenlabs/eden-sdk'
 import { App, Button, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const EXAMPLE_CHARACTER = {
   name: 'Chatsubo',
@@ -108,38 +108,42 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
 
 const CharacterForm = ({ character }: { character?: Character }) => {
   const mode = !character ? 'create' : 'update'
-
   const { message } = App.useApp()
   const { refetch } = useContext(UserContext)
   const router = useRouter()
   const [form] = Form.useForm()
-  const [messageGroups, setMessageGroups] = React.useState<ChatMessageGroup[]>(
-    mode === 'update'
-      ? dialogueStringToMessageGroups(character?.dialogue)
-      : exampleMessages,
-  )
+  const [messageGroups, setMessageGroups] = useState<ChatMessageGroup[]>([])
   const [recentMessage, setRecentMessage] =
-    React.useState<ChatMessageGroup[]>(exampleRecentMessage)
-  const [completing, setCompleting] = React.useState<boolean>(false)
+    useState<ChatMessageGroup[]>(exampleRecentMessage)
+  const [completing, setCompleting] = useState<boolean>(false)
 
   const characterName = Form.useWatch('name', form)
   const description = Form.useWatch('description', form)
 
-  const initialValues: CharacterFormInput =
-    mode === 'create'
-      ? {
-          name: EXAMPLE_CHARACTER.name,
-          description: EXAMPLE_CHARACTER.description,
-          greeting: EXAMPLE_CHARACTER.greeting,
-          completion: '',
-        }
-      : {
-          name: character?.name,
-          description: character?.description || '',
-          greeting: character?.greeting || '',
-          dialogue: dialogueStringToMessageGroups(character?.dialogue) || '',
-          completion: '',
-        }
+  useEffect(() => {
+    const formValues: CharacterFormInput =
+      mode === 'update' && character
+        ? {
+            name: character?.name,
+            description: character?.description || '',
+            greeting: character?.greeting || '',
+            completion: '',
+          }
+        : {
+            name: EXAMPLE_CHARACTER.name,
+            description: EXAMPLE_CHARACTER.description,
+            greeting: EXAMPLE_CHARACTER.greeting,
+            completion: '',
+          }
+
+    form.setFieldsValue(formValues)
+
+    setMessageGroups(
+      mode === 'create'
+        ? exampleMessages
+        : dialogueStringToMessageGroups(character?.dialogue) || '',
+    )
+  }, [form, mode, character])
 
   const generateCompletion = async () => {
     setCompleting(true)
@@ -191,7 +195,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
 
   return (
     <div>
-      <Form form={form} initialValues={initialValues} name="CharacterForm">
+      <Form form={form} name="CharacterForm">
         <Form.Item
           label={<div className="font-mono mt-2">Character Name</div>}
           labelCol={{ span: 24 }}

@@ -1,11 +1,13 @@
 import { maybeRedirectIfCreationIdQuery } from '@/lib/redirect'
+import { withSessionSsr } from '@/lib/withSession'
 import { NextPageContext } from 'next'
 
 export const getServerSidePropsBase = (
   responseFieldName: string,
   dataFetcher: (ctx: NextPageContext) => Promise<{ [key: string]: string }>,
+  useSessionSsr?: boolean,
 ) => {
-  return async (ctx: NextPageContext) => {
+  const getServerSideProps = async (ctx: NextPageContext) => {
     const shouldRedirectToCreationDetail = await maybeRedirectIfCreationIdQuery(
       ctx,
     )
@@ -28,4 +30,6 @@ export const getServerSidePropsBase = (
       return { props: { data: null, error: 'Something went wrong' } }
     }
   }
+
+  return useSessionSsr ? withSessionSsr(getServerSideProps) : getServerSideProps
 }

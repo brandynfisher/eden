@@ -1,10 +1,14 @@
+import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
 import { Select } from 'antd'
 import React, { useContext, useState } from 'react'
 
-const TalkingHeadScenarioPage = () => {
-  const { characters } = useContext(UserContext)
+const TalkingHeadScenarioPageContent = ({
+  characters,
+}: {
+  characters: Character[]
+}) => {
   const [activeCharacter, setActiveCharacter] = useState<Character>(
     characters?.[0] as Character,
   )
@@ -44,6 +48,23 @@ const TalkingHeadScenarioPage = () => {
       <div>submit</div>
     </div>
   )
+}
+
+const TalkingHeadScenarioPage = ({ data }: { data: Character[] }) => {
+  const { isAuthenticated, address } = useContext(UserContext)
+  const { characters: charactersData } = useMyCharacters(
+    address ? address : null,
+    isAuthenticated,
+    {
+      fallbackData: data,
+    },
+  )
+
+  if (!data) {
+    return null
+  }
+
+  return <TalkingHeadScenarioPageContent characters={charactersData || data} />
 }
 
 export default TalkingHeadScenarioPage
