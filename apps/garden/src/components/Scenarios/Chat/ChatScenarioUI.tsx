@@ -203,7 +203,7 @@ const ChatScenarioUI = ({
                 <Message.CustomContent
                   className={`dark:text-gray-300 px-2 py-1 rounded-bl-lg rounded-br-lg ${
                     isBotSpeaking
-                      ? 'bg-blue-200 dark:!bg-indigo-900  rounded-tr-lg'
+                      ? 'bg-blue-200 dark:!bg-indigo-900 rounded-tr-lg'
                       : 'bg-gray-300 dark:!bg-gray-800 rounded-tl-lg'
                   }`}
                 >

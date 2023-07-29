@@ -18,7 +18,7 @@ export const ChatMessageSection = ({
 
   return (
     <>
-      <div className="mb-4">
+      <div>
         {messageGroups.map((messages, groupIdx) => (
           <div key={groupIdx} className="mb-4">
             {messages.map((message, idx) => (

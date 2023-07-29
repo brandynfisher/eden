@@ -7,8 +7,9 @@ import {
 import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
+import { RobotOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
-import { App, Button, Form, Input } from 'antd'
+import { App, Button, Divider, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
@@ -116,6 +117,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   const [recentMessage, setRecentMessage] =
     useState<ChatMessageGroup[]>(exampleRecentMessage)
   const [completing, setCompleting] = useState<boolean>(false)
+  const [usedCompletion, setUsedCompletion] = useState<boolean>(false)
 
   const characterName = Form.useWatch('name', form)
   const description = Form.useWatch('description', form)
@@ -146,6 +148,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   }, [form, mode, character])
 
   const generateCompletion = async () => {
+    setUsedCompletion(true)
     setCompleting(true)
     try {
       const url = `/api/lm/complete`
@@ -250,35 +253,56 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             setMessageGroups={setMessageGroups}
           />
         </Form.Item>
-
+        <Divider />
         <h3 className="font-mono font-bold text-lg">Test Your Character</h3>
-        <Form.Item
-          labelCol={{ span: 24 }}
-          style={{ marginBottom: 0 }}
-          name="recent"
-        >
-          <ChatCapabilityMessageSection
-            messageGroups={recentMessage}
-            setMessageGroups={setRecentMessage}
-            showControls={false}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            className="font-mono"
-            onClick={generateCompletion}
-            loading={completing}
+        <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg mb-4">
+          <Form.Item
+            labelCol={{ span: 24 }}
+            style={{ marginBottom: 0 }}
+            name="recent"
           >
-            Generate Response
-          </Button>
-        </Form.Item>
-        <Form.Item
-          label={<div className="font-mono font-bold">Response</div>}
-          labelCol={{ span: 24 }}
-          name="completion"
-        >
-          <Input.TextArea className="border border-black" readOnly />
-        </Form.Item>
+            <ChatCapabilityMessageSection
+              messageGroups={recentMessage}
+              setMessageGroups={setRecentMessage}
+              showControls={false}
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              className="font-mono"
+              onClick={generateCompletion}
+              loading={completing}
+            >
+              Generate Response
+            </Button>
+          </Form.Item>
+
+          <div className={`${!usedCompletion ? 'hidden' : ''}`}>
+            <div className="flex gap-2 items-center">
+              <div>{characterName}</div>
+              <div
+                title="Character Generated Response"
+                className="flex items-center cursor-pointer"
+              >
+                <RobotOutlined />
+              </div>
+            </div>
+            <Form.Item
+              labelCol={{ span: 24 }}
+              name="completion"
+              className={`mb-0`}
+            >
+              <Input.TextArea
+                className="border-none mt-1 bg-blue-200 dark:!bg-indigo-900 !rounded-lg !rounded-tl-none"
+                readOnly
+                autoSize
+                disabled={completing}
+              />
+            </Form.Item>
+          </div>
+        </div>
+
+        <Divider />
         <Form.Item>
           <div className="flex flex-wrap gap-4 items-center">
             <Button
