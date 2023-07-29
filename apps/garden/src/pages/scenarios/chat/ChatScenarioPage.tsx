@@ -2,16 +2,20 @@ import ChatScenarioUI from '@/components/Scenarios/Chat/ChatScenarioUI'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
 import { Select } from 'antd'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const ChatScenarioPage = () => {
   const { characters } = useContext(UserContext)
   const [activeCharacter, setActiveCharacter] = useState<Character>(
     characters?.[0] as Character,
   )
-  const [activeCharacterName, setActiveCharacterName] = useState<string>(
-    activeCharacter && activeCharacter.name,
-  )
+  const [activeCharacterName, setActiveCharacterName] = useState<string>()
+
+  useEffect(() => {
+    if (activeCharacter) {
+      handleActiveCharacterChange(activeCharacter.name)
+    }
+  }, [activeCharacter])
 
   const handleActiveCharacterChange = (characterName: string) => {
     const character = characters?.find(

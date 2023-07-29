@@ -86,7 +86,7 @@ const ImageResult = ({
     if (!isLoaded && previewImageRef && previewImageRef?.current?.complete) {
       handleOnLoad()
     }
-  }, [previewImageRef, isLoaded])
+  }, [previewUrl, previewImageRef?.current, isLoaded])
 
   const fitContentToWrapper = useCallback(() => {
     if (componentWrapRef.current && contentRef.current) {

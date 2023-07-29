@@ -1,6 +1,6 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { useCreator } from '@/hooks/useCreator'
-import { compilePrompt } from '@/lib/chat'
+import { MessageMarker, compileMessage, compilePrompt } from '@/lib/chat'
 import { timeAgo } from '@/lib/time'
 import { ChatMessage } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
@@ -18,7 +18,7 @@ import {
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import { Character } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 type ConversationEntry = {
   message: string
@@ -36,18 +36,32 @@ const ChatScenarioUI = ({
   const { creator } = useCreator(isAuthenticated && address ? address : null)
 
   const [text, setText] = useState('')
-  const [conversation, setConversation] = useState<ConversationEntry[]>(
-    activeCharacter.greeting
-      ? [
-          {
-            message: activeCharacter.greeting,
-            speaker: 'bot',
-            date: new Date(),
-          },
-        ]
-      : [],
-  )
+  const [conversation, setConversation] = useState<ConversationEntry[]>([])
   const [botIsTyping, setBotIsTyping] = useState(false)
+
+  const messageMarkers: MessageMarker[] = [
+    { marker: '{{user}}', replacement: creator?.username || '' },
+    { marker: '{{char}}', replacement: activeCharacter.name },
+  ]
+
+  useEffect(() => {
+    if (activeCharacter && creator) {
+      setConversation(
+        activeCharacter.greeting
+          ? [
+              {
+                message: compileMessage(
+                  activeCharacter.greeting,
+                  messageMarkers,
+                ),
+                speaker: 'bot',
+                date: new Date(),
+              },
+            ]
+          : [],
+      )
+    }
+  }, [activeCharacter])
 
   const submit = async () => {
     setConversation(state => [
@@ -75,7 +89,9 @@ const ChatScenarioUI = ({
       setConversation(state => [
         ...state,
         {
-          message: completion.trim(),
+          message: creator?.username
+            ? compileMessage(completion, messageMarkers)
+            : completion.trim(),
           speaker: 'bot',
           date: new Date(),
         },
@@ -193,8 +209,12 @@ const ChatScenarioUI = ({
                 >
                   {entry.message}
                 </Message.CustomContent>
-                <Message.Footer className="!mt-0">
-                  <div className="flex gap-2 items-center mt-2 text-gray-500">
+                <Message.Footer
+                  className={`!mt-0 ${
+                    isBotSpeaking ? '!justify-start' : '!justify-end'
+                  }`}
+                >
+                  <div className={`flex gap-2 items-center mt-2 text-gray-500`}>
                     <div>{timeAgo(entry.date)}</div>
                   </div>
                 </Message.Footer>

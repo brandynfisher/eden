@@ -1,8 +1,13 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
-import { compilePrompt, messageGroupsToDialogueString } from '@/lib/chat'
+import {
+  compilePrompt,
+  dialogueStringToMessageGroups,
+  messageGroupsToDialogueString,
+} from '@/lib/chat'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
+import { Character } from '@edenlabs/eden-sdk'
 import { App, Button, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -25,7 +30,7 @@ const exampleMessages: ChatMessageGroup[] = [
     {
       sender: '{{char}}',
       message:
-        "Fuck if I know, bud. I think you should set the world on fire! How about you come up with a catchy slogan -- use allitteration -- and then go behind the McDonald's and practice spraypainting it.",
+        "Fuck if I know, bud. I think you should set the world on fire! How about you come up with a catchy slogan -- use alliteration -- and then go behind the McDonald's and practice spraypainting it.",
     },
   ],
   [
@@ -55,19 +60,67 @@ interface CharacterFormInput {
   description: string
   greeting: string
   completion: string
+  dialogue?: string
 }
 
-const CharacterForm = () => {
+const CharacterToolButtons = ({ character }: { character: Character }) => {
+  const { message } = App.useApp()
+  const router = useRouter()
+  const { refetch } = useContext(UserContext)
+
+  const handleDeleteCharacter = async () => {
+    try {
+      await axios.post(`/api/characters/delete`, {
+        characterId: character.id,
+      })
+      message.destroy()
+      message.info(`Character '${character.name}' was deleted`)
+      refetch.characters()
+      await router.push('/characters')
+    } catch (error) {
+      handleAxiosError(error, message)
+    }
+  }
+
+  const handleCancel = async () => {
+    await router.push('/characters')
+  }
+
+  return (
+    <div className="flex flex-grow justify-between gap-2">
+      <div className="flex gap-2">
+        <Button type="text" className="font-mono" onClick={handleCancel}>
+          Back to list
+        </Button>
+      </div>
+
+      <Button
+        type="text"
+        className="font-mono"
+        danger
+        onClick={handleDeleteCharacter}
+      >
+        Delete character
+      </Button>
+    </div>
+  )
+}
+
+const CharacterForm = ({ character }: { character?: Character }) => {
+  const mode = !character ? 'create' : 'update'
+
   const { message } = App.useApp()
   const { refetch } = useContext(UserContext)
   const router = useRouter()
   const [form] = Form.useForm()
-  const [messageGroups, setMessageGroups] =
-    React.useState<ChatMessageGroup[]>(exampleMessages)
+  const [messageGroups, setMessageGroups] = React.useState<ChatMessageGroup[]>(
+    mode === 'update'
+      ? dialogueStringToMessageGroups(character?.dialogue)
+      : exampleMessages,
+  )
   const [recentMessage, setRecentMessage] =
     React.useState<ChatMessageGroup[]>(exampleRecentMessage)
   const [completing, setCompleting] = React.useState<boolean>(false)
-  const mode = 'create'
 
   const characterName = Form.useWatch('name', form)
   const description = Form.useWatch('description', form)
@@ -81,9 +134,10 @@ const CharacterForm = () => {
           completion: '',
         }
       : {
-          name: '',
-          description: '',
-          greeting: '',
+          name: character?.name,
+          description: character?.description || '',
+          greeting: character?.greeting || '',
+          dialogue: dialogueStringToMessageGroups(character?.dialogue) || '',
           completion: '',
         }
 
@@ -122,13 +176,16 @@ const CharacterForm = () => {
       dialogue: messageGroupsToDialogueString(messageGroups),
     }
     try {
-      await axios.post(`/api/characters/create`, data)
+      await axios.post(
+        `/api/characters/${mode}`,
+        mode === 'create' ? data : { ...data, characterId: character?.id },
+      )
       refetch.characters()
       message.destroy()
-      message.success(`Character '${data.name}' created`)
+      message.success(`Character '${data.name}' ${mode}d`)
       await router.push(`/characters`)
     } catch (error) {
-      handleAxiosError(error, message, 'Error creating character')
+      handleAxiosError(error, message, 'Error creating/updating character')
     }
   }
 
@@ -190,7 +247,7 @@ const CharacterForm = () => {
           />
         </Form.Item>
 
-        <h3 className="font-mono font-bold text-lg">Test Your Prompt</h3>
+        <h3 className="font-mono font-bold text-lg">Test Your Character</h3>
         <Form.Item
           labelCol={{ span: 24 }}
           style={{ marginBottom: 0 }}
@@ -208,24 +265,27 @@ const CharacterForm = () => {
             onClick={generateCompletion}
             loading={completing}
           >
-            Generate Completion
+            Generate Response
           </Button>
         </Form.Item>
         <Form.Item
-          label={<div className="font-mono font-bold">Completion</div>}
+          label={<div className="font-mono font-bold">Response</div>}
           labelCol={{ span: 24 }}
           name="completion"
         >
           <Input.TextArea className="border border-black" readOnly />
         </Form.Item>
         <Form.Item>
-          <Button
-            className="font-mono h-10"
-            htmlType="submit"
-            onClick={handleSubmit}
-          >
-            {mode === 'create' ? 'Create' : 'Update'} Character
-          </Button>
+          <div className="flex flex-wrap gap-4 items-center">
+            <Button
+              className="font-mono h-10"
+              htmlType="submit"
+              onClick={handleSubmit}
+            >
+              {mode === 'create' ? 'Create' : 'Update'} Character
+            </Button>
+            {character && <CharacterToolButtons character={character} />}
+          </div>
         </Form.Item>
       </Form>
     </div>
