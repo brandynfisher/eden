@@ -26,6 +26,7 @@ import {
 } from './responses/CharactersResponses'
 import {
   CreationsGetResponse,
+  CreationsGetSimilarResponse,
   CreationsListResponse,
   CreationsReactResponse,
   CreationsUnreactResponse,
@@ -198,6 +199,10 @@ export abstract class Methods {
     get: bindApiCall<CreationsGetArguments, CreationsGetResponse>(
       this,
       creationsGetRequestConfig,
+    ),
+    getSimilar: bindApiCall<CreationsGetSimilarArguments, CreationsGetSimilarResponse>(
+      this,
+      creationsGetSimilarRequestConfig,
     ),
     react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
       this,
@@ -396,6 +401,11 @@ export interface CreationsListArguments
 
 export interface CreationsGetArguments extends WebAPICallOptions {
   creationId: string
+}
+
+export interface CreationsGetSimilarArguments extends WebAPICallOptions {
+  creationId: string,
+  n: number
 }
 
 export interface CreationsReactArguments extends WebAPICallOptions {
@@ -695,6 +705,15 @@ const creationsGetRequestConfig = (
   return {
     method: 'GET',
     url: `creations/${args.creationId}`,
+  }
+}
+
+const creationsGetSimilarRequestConfig = (
+  args: CreationsGetSimilarArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `creations/${args.creationId}/similar`,
   }
 }
 
