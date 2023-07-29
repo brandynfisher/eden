@@ -32,14 +32,7 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
     <>
       <h2 className="mb-4">Characters</h2>
       <CharacterList characters={characters} />
-      <div className="mt-8">
-        {hasReachedMaxChars && (
-          <Alert
-            message="You can only have 5 characters at once!"
-            type="warning"
-            className="mb-4 w-fit"
-          />
-        )}
+      <div className="flex gap-4 mt-8 flex-wrap justify-between">
         <Button
           className="font-mono bg-black text-white pt-2 pb-2 h-10"
           onClick={handleCreateCharacterButtonClick}
@@ -47,6 +40,14 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
         >
           Create new Character
         </Button>
+
+        {hasReachedMaxChars && (
+          <Alert
+            message="You can only have 5 characters at once"
+            type="info"
+            className="mb-4 w-fit"
+          />
+        )}
       </div>
     </>
   )
