@@ -170,7 +170,7 @@ const CreationDetail = ({
   return (
     <>
       <Head>
-        <title>{`/${creation.task.generator.generatorName} by ${creation.user.username} - Creation | Garden of Eden`}</title>
+        <title>{`/${creation.task.generator.generatorName} by ${creation.user.username} | Garden of Eden`}</title>
         {isVideo(creation.uri) && (
           <>
             <meta property="og:type" content="video.other" />
@@ -183,7 +183,7 @@ const CreationDetail = ({
         <meta
           property="og:title"
           key="title"
-          content={`/${creation.task.generator.generatorName} by ${creation.user.username} - Creation | Garden of Eden`}
+          content={`/${creation.task.generator.generatorName} by ${creation.user.username} | Garden of Eden`}
         />
         <meta
           property="og:description"

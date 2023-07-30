@@ -1,5 +1,5 @@
+import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import FollowControls from '@/components/FollowControls'
-import ProfileAvatar from '@/components/Profile/ProfileAvatar'
 import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Creator } from '@edenlabs/eden-sdk'
@@ -39,7 +39,11 @@ const ProfileHeader = ({
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4">
         <div className="flex h-full flex-shrink-0 w-min">
-          <ProfileAvatar seed={creatorId} />
+          <CharacterAvatar
+            id={creatorId}
+            name={displayName}
+            imageUri={creator.userImage}
+          />
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">
           {isLoading ? (

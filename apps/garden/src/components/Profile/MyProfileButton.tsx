@@ -1,5 +1,5 @@
+import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import ConnectButton from '@/components/ConnectButton'
-import ProfileAvatar from '@/components/Profile/ProfileAvatar'
 import { UserContext } from '@/providers/UserProvider'
 import { Button } from 'antd'
 import Link from 'next/link'
@@ -8,6 +8,7 @@ import React, { useContext } from 'react'
 const MyProfileButton = () => {
   const {
     address,
+    user,
     isConnected,
     isAuthenticated,
     authenticate,
@@ -34,8 +35,13 @@ const MyProfileButton = () => {
 
   return (
     <Link href="/me" passHref>
-      <div className="flex justify-center px-2 h-8 w-8">
-        <ProfileAvatar seed={address || ''} />
+      <div className="flex justify-center">
+        <CharacterAvatar
+          id={address || ''}
+          name={(user && user?.username) || ''}
+          imageUri={(user && user?.userImage) || ''}
+          size={'small'}
+        />
       </div>
     </Link>
   )

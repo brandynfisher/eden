@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth'
 import { useBalance } from '@/hooks/useBalance'
+import { useCreator } from '@/hooks/useCreator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCollections } from '@/hooks/useMyCollections'
 import { useSettings } from '@/hooks/useSettings'
@@ -29,9 +30,11 @@ export const useUserState = () => {
     userId: address || '',
     isAuthenticated,
   })
+  const { creator, mutate: refetchCreator } = useCreator(address || null)
 
   // reset user state on disconnect
   useEffect(() => {
+    refetchCreator()
     refetchMannaBalance()
     refetchMyCharacters()
     refetchMyCollections()
@@ -55,9 +58,11 @@ export const useUserState = () => {
       mannaBalance: refetchMannaBalance,
       characters: refetchMyCharacters,
       collections: refetchMyCollections,
+      user: refetchCreator,
     },
     settings,
     updateSetting,
+    user: creator ? creator : undefined,
   }
   return user
 }

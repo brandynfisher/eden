@@ -28,7 +28,7 @@ const CharacterAvatarFallback = ({
       }}
     >
       <span
-        className={`text-gray-900 font-bold ${
+        className={`text-gray-900 font-bold pointer-events-none select-none ${
           size === 'small' ? 'text-xs' : 'text-xl'
         }`}
       >

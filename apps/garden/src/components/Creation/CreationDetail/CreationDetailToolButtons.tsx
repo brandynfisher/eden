@@ -1,3 +1,5 @@
+import CircleButton from '@/components/Layout/buttons/CircleButton'
+import ShareButton from '@/components/ShareButton'
 import { getFileExtension } from '@/lib/getFileExtension'
 import {
   CheckCircleOutlined,
@@ -5,7 +7,6 @@ import {
   EllipsisOutlined,
   LinkOutlined,
   RetweetOutlined,
-  ShareAltOutlined,
 } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
@@ -32,18 +33,6 @@ const handleDownload = async (url: string, fileName: string) => {
   }
 }
 
-const shareNative = async (pageUrl: string) => {
-  try {
-    await navigator.share({
-      title: 'Share Creation',
-      text: 'Check out this creation on Eden!',
-      url: pageUrl,
-    })
-  } catch (error) {
-    console.error('Error sharing creation:', error)
-  }
-}
-
 const isImage = (creationUri: string) => {
   if (!creationUri) return null
   const extension = getFileExtension(creationUri)
@@ -63,10 +52,6 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
 
     message.destroy()
     message.success(`Copied url to clipboard!`)
-  }
-
-  const handleShare = async (creation: Creation, pageUrl: string) => {
-    await shareNative(pageUrl)
   }
 
   const handleCreate = async (generator: string | null, creation: Creation) => {
@@ -99,11 +84,8 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
             },
           }
         : {
-            title: 'Share',
-            icon: <ShareAltOutlined className="text-xl" />,
-            onClick: async () => {
-              await handleShare(creation, pageUrl)
-            },
+            title: 'Share Creation',
+            icon: <ShareButton title={'Share Creation'} url={pageUrl} />,
           },
       {
         title: 'Download',
@@ -167,14 +149,12 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
     <>
       {toolItems &&
         toolItems.map((item, index) => (
-          <div
+          <CircleButton
             key={index}
-            onClick={item.onClick}
+            icon={item.icon}
             title={item.title}
-            className="rounded-full hover:bg-gray-200 active:bg-gray-200 hover:dark:bg-gray-800 active:dark:bg-gray-800 h-10 w-10 cursor-pointer flex justify-center"
-          >
-            {item.icon}
-          </div>
+            onClick={item.onClick}
+          />
         ))}
     </>
   )

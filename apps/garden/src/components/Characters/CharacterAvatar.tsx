@@ -15,8 +15,8 @@ const CharacterAvatar = ({
 }) => {
   return (
     <div
-      className={`overflow-hidden flex items-center justify-center ${
-        size === 'small' ? 'rounded-full h-full w-full' : 'rounded-lg w-14 h-14'
+      className={`overflow-hidden flex items-center justify-center flex-shrink-0 ${
+        size === 'small' ? 'rounded h-full w-full' : 'rounded-lg w-14 h-14'
       }`}
     >
       {imageUri ? (

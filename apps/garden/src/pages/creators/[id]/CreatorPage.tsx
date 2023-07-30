@@ -65,11 +65,11 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   return (
     <>
       <Head>
-        <title>{`${creator.username} - Creator | Garden of Eden`}</title>
+        <title>{`${creator.username} | Garden of Eden`}</title>
         <meta
           property="og:title"
           key="title"
-          content={`${creator.username} - Creator | Garden of Eden`}
+          content={`${creator.username} | Garden of Eden`}
         />
         <meta
           property="og:description"

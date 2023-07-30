@@ -9,7 +9,7 @@ import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import { RobotOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
-import { App, Button, Divider, Form, Input } from 'antd'
+import { App, Button, Form, Input } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
@@ -253,56 +253,57 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             setMessageGroups={setMessageGroups}
           />
         </Form.Item>
-        <Divider />
-        <h3 className="font-mono font-bold text-lg">Test Your Character</h3>
-        <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg mb-4">
-          <Form.Item
-            labelCol={{ span: 24 }}
-            style={{ marginBottom: 0 }}
-            name="recent"
-          >
-            <ChatCapabilityMessageSection
-              messageGroups={recentMessage}
-              setMessageGroups={setRecentMessage}
-              showControls={false}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              className="font-mono"
-              onClick={generateCompletion}
-              loading={completing}
-            >
-              Generate Response
-            </Button>
-          </Form.Item>
 
-          <div className={`${!usedCompletion ? 'hidden' : ''}`}>
-            <div className="flex gap-2 items-center">
-              <div>{characterName}</div>
-              <div
-                title="Character Generated Response"
-                className="flex items-center cursor-pointer"
-              >
-                <RobotOutlined />
-              </div>
-            </div>
+        <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg mb-4">
+          <h3 className="font-mono font-bold text-lg">Test Your Character</h3>
+          <div>
             <Form.Item
               labelCol={{ span: 24 }}
-              name="completion"
-              className={`mb-0`}
+              style={{ marginBottom: 0 }}
+              name="recent"
             >
-              <Input.TextArea
-                className="border-none mt-1 bg-blue-200 dark:!bg-indigo-900 !rounded-lg !rounded-tl-none"
-                readOnly
-                autoSize
-                disabled={completing}
+              <ChatCapabilityMessageSection
+                messageGroups={recentMessage}
+                setMessageGroups={setRecentMessage}
+                showControls={false}
               />
             </Form.Item>
+            <Form.Item>
+              <Button
+                className="font-mono"
+                onClick={generateCompletion}
+                loading={completing}
+              >
+                Generate Response
+              </Button>
+            </Form.Item>
+
+            <div className={`${!usedCompletion ? 'hidden' : ''}`}>
+              <div className="flex gap-2 items-center">
+                <div>{characterName}</div>
+                <div
+                  title="Character Generated Response"
+                  className="flex items-center cursor-pointer"
+                >
+                  <RobotOutlined />
+                </div>
+              </div>
+              <Form.Item
+                labelCol={{ span: 24 }}
+                name="completion"
+                className={`mb-0`}
+              >
+                <Input.TextArea
+                  className="border-none mt-1 bg-blue-200 dark:!bg-indigo-900 !rounded-lg !rounded-tl-none"
+                  readOnly
+                  autoSize
+                  disabled={completing}
+                />
+              </Form.Item>
+            </div>
           </div>
         </div>
 
-        <Divider />
         <Form.Item>
           <div className="flex flex-wrap gap-4 items-center">
             <Button

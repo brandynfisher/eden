@@ -174,7 +174,7 @@ const ChatScenarioUI = ({
                     <CharacterAvatar
                       id={creator?.userId}
                       name={creator?.username || creator?.userId}
-                      imageUri={creator.profileImageUri}
+                      imageUri={creator?.userImage}
                       size={'small'}
                     />
                   )}
