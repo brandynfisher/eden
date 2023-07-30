@@ -2,6 +2,7 @@ import fastifyJWT from '@fastify/jwt'
 import fastify, { FastifyReply, FastifyRequest } from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
+import registerChroma from './plugins/chromaPlugin'
 import config from './plugins/config'
 import registerLlm from './plugins/llmPlugin'
 import registerMinio from './plugins/minioPlugin'
@@ -14,6 +15,7 @@ import { routes } from './routes'
 
 export interface CreateServerOpts {
   mongoUri?: string
+  chromaUri?: string
   taskHandlers?: TaskHandlers
 }
 
@@ -40,6 +42,7 @@ const createServer = async (
   await server.register(config)
 
   await registerMongo(server, opts.mongoUri)
+  await registerChroma(server, opts.chromaUri)
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
 
