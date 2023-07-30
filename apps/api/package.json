@@ -35,6 +35,7 @@
     "@sinclair/typebox": "^0.23.5",
     "ajv": "^8.12.0",
     "axios": "^1.4.0",
+    "chromadb": "^1.5.5",
     "dotenv": "^16.0.3",
     "env-schema": "^5.2.0",
     "ethers": "^5.7.2",
