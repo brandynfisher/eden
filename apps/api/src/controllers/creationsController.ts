@@ -174,31 +174,11 @@ export const getCreationSimilar = async (
 ) => {
   const { creationId, n } = request.params as CreationsGetSimilarArguments
 
-  const { chromadb } = server
+  // Todo: n is not actually set here. defaulting to 10
 
-  if (!chromadb) {
-    throw new Error('Chromadb not initialized')
-  }
-
-  console.log(chromadb)
-
-  const collection = await chromadb.getCollection({
-    name: 'test5',
-  })
-
-  console.log(collection)
-
-  console.log('a1')
-  const response = await collection.get({
-    ids: [creationId],
-    include: ['embeddings' as any],
-  })
-
-  console.log(response)
-
-  const creation = (await Creation.findById(creationId).populate({
-    path: 'similarCreations',
-  })) as CreationDocument
+  const creation = (await Creation.findById(
+    creationId,
+  ).lean()) as CreationDocument
 
   if (!creation) {
     return reply.status(404).send({
@@ -206,11 +186,42 @@ export const getCreationSimilar = async (
     })
   }
 
+  const embedding = creation.embedding?.embedding
+
+  if (!embedding) {
+    return reply.status(404).send({
+      message: 'Embedding not found',
+    })
+  }
+
+  const { chromadb } = server
+  if (!chromadb) {
+    throw new Error('Chromadb not initialized')
+  }
+
+  const collection = await chromadb.getCollection({
+    name: 'creation_clip_embeddings',
+  })
+
+  if (!collection) {
+    throw new Error('Chromadb collection not found')
+  }
+
+  const results = await collection.query({
+    queryEmbeddings: [embedding[0]],
+    nResults: 11,
+  })
+
+  if (!results?.ids) {
+    throw new Error('Chromadb query failed')
+  }
+
+  const similarIdxs = results.ids[0].slice(1)
+
   const similarCreations = await Creation.find({
     _id: {
-      $in: creation.similarCreations,
+      $in: similarIdxs,
     },
-    limit: n,
   })
 
   return await reply.status(200).send({ similarCreations })
