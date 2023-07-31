@@ -19,6 +19,10 @@ export interface CreationSchema {
   attributes?: any
   mediaAttributes: MediaAttributes
   similarCreations?: CreationDocument[]
+  embedding?: {
+    embedding: number[]
+    score: number
+  }
   createdAt?: Date
   updatedAt?: Date
 }
@@ -97,6 +101,14 @@ const creation = new Schema<CreationDocument>(
         ref: 'creations',
       },
     ],
+    embedding: {
+      embedding: {
+        type: [Number],
+      },
+      score: {
+        type: Number,
+      },
+    },
   },
   {
     timestamps: true,
