@@ -31,7 +31,6 @@ const DrawerContent = () => {
         <MainNavButtons />
       </div>
 
-      {/*<Divider />*/}
       <div className="flex">
         <div className="flex justify-between items-center">
           <CreationNotificationMenu />
@@ -69,7 +68,7 @@ const Drawer = () => {
         closable={false}
         onClose={onCloseHandler}
         open={isVisible}
-        width={300}
+        width={250}
       >
         <DrawerContent />
       </AntDrawer>
