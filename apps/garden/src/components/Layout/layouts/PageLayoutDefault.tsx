@@ -10,7 +10,7 @@ const PageLayoutDefault = ({ children }: { children: ReactNode }) => {
     <CustomLayout>
       <Sider
         width={200}
-        className="mr-4 rounded-lg overflow-hidden hidden sm:block !bg-transparent"
+        className="mr-4 rounded-lg overflow-hidden hidden lg:block !bg-transparent"
       >
         <LayoutMenu />
       </Sider>

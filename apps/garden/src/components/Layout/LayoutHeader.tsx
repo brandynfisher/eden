@@ -21,7 +21,7 @@ const LayoutHeader = () => {
     >
       <HeaderLogo />
 
-      <div className="flex sm:hidden">
+      <div className="flex lg:hidden">
         <Drawer />
       </div>
 

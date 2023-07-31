@@ -1,10 +1,9 @@
 import HeaderLogo from '@/components/Layout/HeaderLogo'
-import QuickCreateMenu from '@/components/Layout/dropdowns/QuickCreateMenu'
 import CreationNotificationMenu from '@/components/Layout/dropdowns/TaskNotificationDropdown'
 import LayoutMenu from '@/components/Layout/navigation/LayoutMenu'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import NavBurgerButton from '@/components/Layout/navigation/NavBurgerButton'
-import { Drawer as AntDrawer, Divider } from 'antd'
+import { Drawer as AntDrawer } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
@@ -27,17 +26,16 @@ const DrawerTitle = ({
 
 const DrawerContent = () => {
   return (
-    <div>
+    <div className="dark:!bg-gray-900">
       <div className="flex justify-between items-center p-4">
         <MainNavButtons />
       </div>
-      <Divider />
-      <div className="flex justify-between items-center p-4">
-        <QuickCreateMenu />
-        <CreationNotificationMenu />
-      </div>
-      <Divider />
+
+      {/*<Divider />*/}
       <div className="flex">
+        <div className="flex justify-between items-center">
+          <CreationNotificationMenu />
+        </div>
         <LayoutMenu />
       </div>
     </div>
@@ -65,6 +63,7 @@ const Drawer = () => {
         <NavBurgerButton open={isVisible} />
       </div>
       <AntDrawer
+        className="dark:!bg-gray-900"
         title={<DrawerTitle onClose={onCloseHandler} isVisible={isVisible} />}
         placement="left"
         closable={false}
