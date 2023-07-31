@@ -17,4 +17,10 @@ export const registerChroma = async (
   }
 }
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    chromadb?: ChromaClient
+  }
+}
+
 export default registerChroma

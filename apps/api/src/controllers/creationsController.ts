@@ -6,7 +6,7 @@ import {
   CreationsUnreactArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { Collection } from '../models/Collection'
@@ -168,10 +168,33 @@ export const getCreation = async (
 }
 
 export const getCreationSimilar = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { creationId, n } = request.params as CreationsGetSimilarArguments
+
+  const { chromadb } = server
+
+  if (!chromadb) {
+    throw new Error('Chromadb not initialized')
+  }
+
+  console.log(chromadb)
+
+  const collection = await chromadb.getCollection({
+    name: 'test5',
+  })
+
+  console.log(collection)
+
+  console.log('a1')
+  const response = await collection.get({
+    ids: [creationId],
+    include: ['embeddings' as any],
+  })
+
+  console.log(response)
 
   const creation = (await Creation.findById(creationId).populate({
     path: 'similarCreations',
