@@ -1,16 +1,14 @@
+import CopyUrlButton from '@/components/CopyUrlButton'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import ShareButton from '@/components/ShareButton'
 import { getFileExtension } from '@/lib/getFileExtension'
 import {
-  CheckCircleOutlined,
   DownloadOutlined,
   EllipsisOutlined,
-  LinkOutlined,
   RetweetOutlined,
 } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
-import { useClipboard } from '@mantine/hooks'
-import { App, Dropdown } from 'antd'
+import { Dropdown } from 'antd'
 import { useRouter } from 'next/router'
 import { ReactNode, useEffect, useState } from 'react'
 
@@ -42,17 +40,9 @@ const isImage = (creationUri: string) => {
 type ToolButtonItem = { title: string; icon: ReactNode; onClick?: () => void }
 
 const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
-  const { message } = App.useApp()
   const router = useRouter()
   const [pageUrl, setPageUrl] = useState('')
   const [toolItems, setToolItems] = useState<ToolButtonItem[]>([])
-  const { copied, copy } = useClipboard({ timeout: 750 })
-  const handleCopyUrl = async (pageUrl: string) => {
-    await copy(pageUrl)
-
-    message.destroy()
-    message.success(`Copied url to clipboard!`)
-  }
 
   const handleCreate = async (generator: string | null, creation: Creation) => {
     const query: { presetId: string; generator?: string } = {
@@ -70,23 +60,17 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   }
 
   const getItems = () => {
+    const shareItem = {
+      title: 'Share Creation',
+      icon: <ShareButton title={'Share Creation'} url={pageUrl} />,
+    }
+    const copyItem = {
+      title: 'Copy URL',
+      icon: <CopyUrlButton url={pageUrl} />,
+    }
+
     const items: ToolButtonItem[] = [
-      navigator && !navigator.share
-        ? {
-            title: 'Copy URL',
-            icon: copied ? (
-              <CheckCircleOutlined className="text-xl" />
-            ) : (
-              <LinkOutlined className="text-xl" />
-            ),
-            onClick: async () => {
-              await handleCopyUrl(pageUrl)
-            },
-          }
-        : {
-            title: 'Share Creation',
-            icon: <ShareButton title={'Share Creation'} url={pageUrl} />,
-          },
+      ...(navigator && !!navigator.share ? [copyItem, shareItem] : [copyItem]),
       {
         title: 'Download',
         icon: <DownloadOutlined className="text-xl" />,
@@ -129,7 +113,6 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
 
   useEffect(() => {
     const baseUrl = `${window.location.protocol}//${window.location.host}`
-
     setPageUrl(`${baseUrl}${router.asPath}`)
     setToolItems(getItems())
   }, [router.asPath])

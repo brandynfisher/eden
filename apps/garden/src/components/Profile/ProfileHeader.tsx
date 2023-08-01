@@ -1,6 +1,9 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import CopyUrlButton from '@/components/CopyUrlButton'
 import FollowControls from '@/components/FollowControls'
 import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
+import ShareButton from '@/components/ShareButton'
+import { CONFIG } from '@/lib/config'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Creator } from '@edenlabs/eden-sdk'
 import React, { useEffect, useState } from 'react'
@@ -52,11 +55,28 @@ const ProfileHeader = ({
               <LoadingOutlined />
             </div>
           ) : (
-            <ProfileHeaderName
-              isOwnProfile={isConnectedUser}
-              displayName={displayName}
-              setDisplayName={setDisplayName}
-            />
+            <div className="flex items-center">
+              <ProfileHeaderName
+                isOwnProfile={isConnectedUser}
+                displayName={displayName}
+                setDisplayName={setDisplayName}
+              />
+              <div className="flex gap-2">
+                <CopyUrlButton
+                  url={`${
+                    CONFIG.NEXT_PUBLIC_HOST
+                  }/creators/${displayName.toLowerCase()}`}
+                />
+                {navigator && !!navigator.share && (
+                  <ShareButton
+                    title={'Share Creation'}
+                    url={`${
+                      CONFIG.NEXT_PUBLIC_HOST
+                    }/creators/${displayName.toLowerCase()}`}
+                  />
+                )}
+              </div>
+            </div>
           )}
           <div>
             <div className="text-sm my-1">
