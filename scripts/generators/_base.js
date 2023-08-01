@@ -57,7 +57,7 @@ const params = [
     label: 'Sampler',
     description: 'Sampler to use for generation',
     default: 'euler',
-    allowedValues: ['klms', 'dpm2', 'dpm2_ancestral', 'heun', 'euler', 'euler_ancestral', 'ddim', 'plms', 'dpm'],
+    allowedValues: ["ddim", "ddpm", "klms", "euler", "euler_ancestral", "dpm", "kdpm2", "pndm"],
     optional: true,
   },
   {
