@@ -5,7 +5,7 @@ const params = [
     description: 'Number of frames in the video',
     default: 60,
     minimum: 5,
-    maximum: 1000,
+    maximum: 600,
   },
   {
     name: 'loop',
