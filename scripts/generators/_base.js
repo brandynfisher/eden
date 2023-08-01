@@ -63,9 +63,9 @@ const params = [
   {
     name: 'steps',
     label: 'Steps',
-    description: 'Number of sampling steps',
+    description: 'Number of denoising steps (recommended to use >30)',
     default: 40,
-    minimum: 10,
+    minimum: 5,
     maximum: 70,
     optional: true,
   },
