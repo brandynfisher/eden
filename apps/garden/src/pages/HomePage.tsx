@@ -1,9 +1,10 @@
-import CreationMasonry from '@/components/Creation/CreationMasonry'
+import CreationMasonryInfinite from '@/components/Creation/CreationMasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByFollowing,
   OrderByLatest,
   OrderByPraises,
+  OrderByScore,
 } from '@/components/OrderByButtons'
 import { UserContext } from '@/providers/UserProvider'
 import { useContext } from 'react'
@@ -13,12 +14,18 @@ const HomePage = () => {
 
   const sortButtons =
     isConnected && isAuthenticated
-      ? [OrderByLatest, OrderByPraises, OrderByBookmarks, OrderByFollowing]
-      : [OrderByLatest, OrderByPraises, OrderByBookmarks]
+      ? [
+          OrderByScore,
+          OrderByLatest,
+          OrderByPraises,
+          OrderByBookmarks,
+          OrderByFollowing,
+        ]
+      : [OrderByScore, OrderByLatest, OrderByPraises, OrderByBookmarks]
 
   return (
     <div className={`flex flex-col min-h-screen`}>
-      <CreationMasonry hasSort={sortButtons} />
+      <CreationMasonryInfinite hasSort={sortButtons} />
     </div>
   )
 }

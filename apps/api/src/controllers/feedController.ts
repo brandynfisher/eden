@@ -13,7 +13,6 @@ import { getBookmarks, getReactions } from './creationsController'
 interface FeedGetArguments {
   userId?: string
   collectionId?: string
-  creationId?: string
   limit?: number
   page?: number
   orderBy?: OrderByFieldName
@@ -25,6 +24,7 @@ type OrderByFieldName =
   | 'praiseCount'
   | 'bookmarkCount'
   | 'following'
+  | 'embedding.score'
 
 const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
   return Follow.aggregate([
@@ -66,7 +66,6 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   const {
     userId: filterUserIds,
     collectionId,
-    creationId,
     limit,
     page,
     orderBy,
@@ -103,7 +102,11 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
       sort.push(['createdAt', -1])
     }
     // exclude zero count items when sorting by likes, bookmarks, etc
-    if (orderBy === 'bookmarkCount' || orderBy === 'praiseCount') {
+    if (
+      orderBy === 'bookmarkCount' ||
+      orderBy === 'praiseCount' ||
+      orderBy === 'embedding.score'
+    ) {
       sortFilter[orderBy] = { $gt: 0 }
     }
 

@@ -3,6 +3,10 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
+import BookmarkIcon from '@mui/icons-material/Bookmark'
+import BookmarkAddOutlinedIcon from '@mui/icons-material/BookmarkAddOutlined'
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
+import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
@@ -145,18 +149,15 @@ const SaveButton = ({
       disabled={isLoading}
       loading={isLoading ? { delay: 250 } : false}
       ref={ref}
+      title={creation.bookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
     >
-      <div className="flex" style={{ gap: '8px' }}>
-        <div>{creation.bookmarkCount || 0}</div>
-        <div
-          role="img"
-          aria-label="Save"
-          className={`text-sm relative top-[1px] ${
-            !hovered && !creation.bookmarked && 'filter grayscale'
-          }`}
-        >
-          ️⭐️
-        </div>
+      <div className="flex items-center" style={{ gap: '8px' }}>
+        <div className="text-white">{creation.bookmarkCount || 0}</div>
+        {creation.bookmarked ? (
+          <>{hovered ? <BookmarkRemoveIcon /> : <BookmarkIcon />}</>
+        ) : (
+          <>{hovered ? <BookmarkAddOutlinedIcon /> : <BookmarkBorderIcon />}</>
+        )}
       </div>
     </Button>
   )

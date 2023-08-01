@@ -13,6 +13,7 @@ export interface UserSchema {
   followerCount: number
   followingCount: number
   username?: string
+  userImage?: string
   createdAt?: Date
   updatedAt?: Date
 }
@@ -46,6 +47,9 @@ const user = new Schema<UserDocument>(
       type: String,
       unique: true,
       maxlength: 42,
+    },
+    userImage: {
+      type: String,
     },
     creations: [
       {

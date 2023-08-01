@@ -1,5 +1,6 @@
 import CodeBlock from '@/components/CodeBlock'
 import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
+import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
@@ -298,6 +299,7 @@ const CreationDetail = ({
               </>
             )}
           </div>
+          <SimilarCreations creation={creation} containerRef={containerRef} />
         </div>
       </div>
     </>

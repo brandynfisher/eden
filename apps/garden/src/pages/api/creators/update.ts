@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
-  const { username } = req.body
+  const { username, userImage } = req.body
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -18,8 +18,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     })
     const response = await eden.creators.update({
       username,
+      userImage,
     })
-    return res.status(200).json({ taskId: response.creator })
+    return res.status(200).json({ creator: response.creator })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })

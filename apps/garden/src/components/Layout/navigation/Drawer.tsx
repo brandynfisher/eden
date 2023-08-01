@@ -35,8 +35,8 @@ const DrawerContent = () => {
       </div>
 
       {isConnected && isAuthenticated && (
-        <div className="flex">
-          <div className="flex justify-between items-center">
+        <div className="flex flex-col">
+          <div className="px-4 py-2 flex justify-between items-center bg-gray-800">
             <CreationNotificationMenu />
           </div>
           <LayoutMenu />

@@ -1,7 +1,11 @@
-import CreationMasonry from '@/components/Creation/CreationMasonry'
+import SimilarCreationsMasonry from '@/components/Creation/CreationDetail/SimilarCreationsMasonry'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
-import { useIntersection, useResizeObserver } from '@mantine/hooks'
+import {
+  useIntersection,
+  useResizeObserver,
+  useViewportSize,
+} from '@mantine/hooks'
 import { Divider } from 'antd'
 import React, { RefObject, useEffect, useState } from 'react'
 
@@ -22,6 +26,8 @@ const SimilarCreations = ({
     })
   const [shouldLoadSimilar, setShouldLoadSimilar] = useState(false)
 
+  const { height: windowHeight } = useViewportSize()
+
   useEffect(() => {
     if (!containerRef.current) {
       return
@@ -35,14 +41,17 @@ const SimilarCreations = ({
       return
     }
 
-    const windowHeight = intersectionObserver?.rootBounds?.height || 0
+    // const windowHeight = intersectionObserver?.rootBounds?.height || 0
     const isVisibleOnInitialRender =
       containerRef?.current.getBoundingClientRect().height -
         containerRef?.current.offsetTop <
       windowHeight
 
+    // console.log({isModal, isVisibleOnInitialRender})
+
     // modal disables body scroll and has its own scrollable container thus needs to handled differently
     if (isModal && isVisibleOnInitialRender) {
+      // console.log({isModal, isVisibleOnInitialRender})
       setShouldLoadSimilar(true)
       return
     }
@@ -52,6 +61,7 @@ const SimilarCreations = ({
         containerRef.current.getBoundingClientRect().top < 0
 
       if (hasWindowScrolled || isVisibleOnInitialRender) {
+        // console.log('hasWindowScrolled || isVisibleOnInitialRender', { hasWindowScrolled, isVisibleOnInitialRender})
         setShouldLoadSimilar(true)
       }
     }
@@ -74,7 +84,7 @@ const SimilarCreations = ({
             <LoadingOutlined className="text-4xl" ref={intersectionTargetRef} />
           </div>
         ) : (
-          <CreationMasonry query={{ creationId: creation._id }} />
+          <SimilarCreationsMasonry creationId={creation._id} />
         )}
       </div>
     </div>

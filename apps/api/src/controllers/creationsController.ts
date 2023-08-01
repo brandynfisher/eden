@@ -123,7 +123,7 @@ export const getCreation = async (
     })
     .populate({
       path: 'user',
-      select: 'userId username',
+      select: 'userId username userImage',
     })) as CreationDocument & {
     reactions?: Map<ReactionType, boolean>
     bookmarked?: boolean
@@ -224,7 +224,7 @@ export const getCreationSimilar = async (
     },
   })
 
-  return await reply.status(200).send({ similarCreations })
+  return reply.status(200).send({ similarCreations })
 }
 
 export const creationReact = async (

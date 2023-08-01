@@ -31,6 +31,12 @@ export const OrderByFollowing: OrderByParam = {
   direction: -1,
 }
 
+export const OrderByScore: OrderByParam = {
+  label: 'Recommended',
+  field: 'embedding.score',
+  direction: -1,
+}
+
 export const OrderByDefaultParam = OrderByLatest
 
 const OrderByButton = ({
@@ -45,7 +51,7 @@ const OrderByButton = ({
   return (
     <Button
       onClick={onSelect}
-      className={`font-mono h-auto !text-xs px-4 text-black dark:text-gray-300 hover:!text-gray-100 bg-gray-200 dark:bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-800 ${
+      className={`font-mono h-auto !text-xs px-3 text-black dark:text-gray-300 hover:!text-gray-100 bg-gray-200 dark:bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-800 ${
         isActive
           ? 'text-white bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-700 dark:!bg-gray-700'
           : ''

@@ -438,6 +438,7 @@ export interface CreatorsGetArguments extends WebAPICallOptions {
 
 export interface CreatorsUpdateArguments extends WebAPICallOptions {
   username?: string
+  userImage?: string
 }
 
 export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
