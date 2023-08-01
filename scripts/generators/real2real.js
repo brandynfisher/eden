@@ -15,6 +15,15 @@ const params = [
     isRequired: true,
   },
   {
+    name: 'interpolation_texts',
+    label: 'Prompts',
+    description: 'Prompts to interpolate through',
+    default: [],
+    minLength: 2,
+    maxLength: 5,
+    isRequired: false,
+  },
+  {
     name: 'interpolation_init_images_power',
     label: 'Init image power',
     description:
