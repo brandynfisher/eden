@@ -74,10 +74,7 @@ const SimilarCreations = ({
             <LoadingOutlined className="text-4xl" ref={intersectionTargetRef} />
           </div>
         ) : (
-          <CreationMasonry
-            wrapperSizeRect={rect}
-            query={{ creationId: creation._id }}
-          />
+          <CreationMasonry query={{ creationId: creation._id }} />
         )}
       </div>
     </div>

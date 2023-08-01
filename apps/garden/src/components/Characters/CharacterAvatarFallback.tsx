@@ -15,7 +15,7 @@ const CharacterAvatarFallback = ({
 }: {
   id: string
   name: string
-  size?: 'small'
+  size?: 'small' | 'medium' | 'large' | 'auto' | undefined
 }) => {
   const gradientStartColor = stringToHslColor(id, 30, 50)
   const gradientEndColor = stringToHslColor(id, 50, 80)
@@ -29,7 +29,9 @@ const CharacterAvatarFallback = ({
     >
       <span
         className={`text-gray-900 font-bold pointer-events-none select-none ${
-          size === 'small' ? 'text-xs' : 'text-xl'
+          size === 'small' ? 'text-xs' : ''
+        } ${size === 'medium' ? 'text-sm' : ''} ${
+          size === 'large' ? 'text-lg' : ''
         }`}
       >
         {name.charAt(0)}

@@ -43,6 +43,7 @@ const ProfileHeader = ({
             id={creatorId}
             name={displayName}
             imageUri={creator.userImage}
+            size="large"
           />
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">

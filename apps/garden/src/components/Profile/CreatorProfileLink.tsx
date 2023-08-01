@@ -22,7 +22,7 @@ const CreatorProfileLink = ({
           creatorName ? creatorName.toLowerCase() : creatorId
         }`,
       }}
-      className={`flex items-center mr-2 ${
+      className={`creator-profile-link flex items-center mr-2 ${
         isOverlay ? 'text-gray-300' : 'text-gray-500 dark:text-gray-300'
       } hover:dark:text-white`}
     >
@@ -34,7 +34,7 @@ const CreatorProfileLink = ({
           size={'small'}
         />
       </div>
-      <div className="ml-2 text-sm font-bold overflow-hidden whitespace-nowrap">
+      <div className="creator-profile-link-name ml-2 text-sm font-bold overflow-hidden whitespace-nowrap">
         {creatorName && creatorName !== creatorId
           ? creatorName
           : truncatedAddress(creatorId)}

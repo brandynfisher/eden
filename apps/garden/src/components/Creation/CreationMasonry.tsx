@@ -6,6 +6,7 @@ import OrderByButtons, {
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
 import { useViewportSize } from '@mantine/hooks'
+import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
 import { Button, Empty } from 'antd'
 import { useInfiniteLoader } from 'masonic'
 import {
@@ -17,25 +18,12 @@ import {
 import Link from 'next/link'
 import React, { useContext, useRef, useState } from 'react'
 
-type ObserverRect = {
-  bottom: number
-  height: number
-  left: number
-  right: number
-  top: number
-  width: number
-  x: number
-  y: number
-}
-
 const CreationMasonry = ({
   query,
   hasSort,
-  wrapperSizeRect,
 }: {
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
-  wrapperSizeRect?: ObserverRect
 }) => {
   const containerRef = useRef(null)
   const [orderBy, setOrderBy] = useState<OrderByParam>(OrderByDefaultParam)
@@ -44,6 +32,8 @@ const CreationMasonry = ({
   const { isConnected, settings, address } = useContext(UserContext)
   const isConnectedUser =
     isConnected && query && query.userId && query.userId === address
+
+  const [ref, rect] = useResizeObserverMantine()
 
   const {
     creations,
@@ -57,7 +47,7 @@ const CreationMasonry = ({
   const { offset, width } = useContainerPosition(containerRef, [
     windowWidth,
     windowHeight,
-    wrapperSizeRect,
+    rect,
   ])
 
   const positioner = usePositioner(
@@ -73,7 +63,7 @@ const CreationMasonry = ({
           ? settings.maxGridCols.value
           : settings?.maxGridCols.params.initialValue,
     },
-    [orderBy],
+    [orderBy, width],
   )
   const resizeObserver = useResizeObserver(positioner)
 
@@ -99,7 +89,7 @@ const CreationMasonry = ({
   }
 
   return (
-    <>
+    <div ref={ref}>
       {hasSort && (
         <OrderByButtons
           params={hasSort}
@@ -117,7 +107,7 @@ const CreationMasonry = ({
           resizeObserver={resizeObserver}
           containerRef={containerRef}
           items={creations}
-          height={wrapperSizeRect?.height || windowHeight}
+          height={windowHeight}
           offset={offset}
           overscanBy={3}
           itemHeightEstimate={300}
@@ -150,7 +140,7 @@ const CreationMasonry = ({
           />
         </div>
       )}
-    </>
+    </div>
   )
 }
 

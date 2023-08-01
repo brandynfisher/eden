@@ -3,9 +3,10 @@ import CreationNotificationMenu from '@/components/Layout/dropdowns/TaskNotifica
 import LayoutMenu from '@/components/Layout/navigation/LayoutMenu'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import NavBurgerButton from '@/components/Layout/navigation/NavBurgerButton'
+import { UserContext } from '@/providers/UserProvider'
 import { Drawer as AntDrawer } from 'antd'
 import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const DrawerTitle = ({
   onClose,
@@ -25,18 +26,22 @@ const DrawerTitle = ({
 }
 
 const DrawerContent = () => {
+  const { isConnected, isAuthenticated } = useContext(UserContext)
+
   return (
     <div className="dark:!bg-gray-900">
       <div className="flex justify-between items-center p-4">
         <MainNavButtons />
       </div>
 
-      <div className="flex">
-        <div className="flex justify-between items-center">
-          <CreationNotificationMenu />
+      {isConnected && isAuthenticated && (
+        <div className="flex">
+          <div className="flex justify-between items-center">
+            <CreationNotificationMenu />
+          </div>
+          <LayoutMenu />
         </div>
-        <LayoutMenu />
-      </div>
+      )}
     </div>
   )
 }

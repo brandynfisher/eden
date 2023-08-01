@@ -27,24 +27,34 @@ function getItem(
   } as MenuItem
 }
 
+const authItems: MenuItem[] = [
+  // getItem('Logout', '/logout', <ToolOutlined />),
+]
+
 const defaultItems: MenuItem[] = [
-  getItem('My Profile', '/me', <UserOutlined />),
   getItem('Create', '/create', <ExperimentOutlined />),
   getItem('Tools', '/tools', <ToolOutlined />),
   getItem('Characters', '/characters', <RobotOutlined />),
   getItem('Scenarios', '/scenarios', <CommentOutlined />),
 ]
 
-const authItems: MenuItem[] = [
-  // getItem('Logout', '/logout', <ToolOutlined />),
-]
+const createMenuItems = (
+  isAuthenticated: boolean,
+  username: string | undefined,
+) => {
+  const userProfilePath =
+    isAuthenticated && username ? `/creators/${username.toLowerCase()}` : ''
+  const myProfileItem = getItem('My Profile', userProfilePath, <UserOutlined />)
+  return isAuthenticated
+    ? [myProfileItem, ...authItems, ...defaultItems]
+    : [myProfileItem, ...defaultItems]
+}
 
 const LayoutMenu = () => {
   const router = useRouter()
-  const { isAuthenticated } = useContext(UserContext)
-  const menuItems = isAuthenticated
-    ? [...defaultItems, ...authItems]
-    : defaultItems
+  const { isAuthenticated, user } = useContext(UserContext)
+
+  const menuItems = createMenuItems(isAuthenticated, user?.username)
 
   return (
     <Menu

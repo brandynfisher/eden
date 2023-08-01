@@ -7,16 +7,22 @@ const CharacterAvatar = ({
   name,
   imageUri,
   size,
+  shape = 'square',
 }: {
   id: string
   name: string
   imageUri: string
-  size?: 'small'
+  size?: 'small' | 'medium' | 'large' | 'auto' | undefined
+  shape?: 'square' | 'circle'
 }) => {
   return (
     <div
       className={`overflow-hidden flex items-center justify-center flex-shrink-0 ${
-        size === 'small' ? 'rounded h-full w-full' : 'rounded-lg w-14 h-14'
+        size === 'small' ? 'w-fit' : ''
+      } ${size === 'medium' ? 'w-10 h-10' : ''} ${
+        size === 'large' ? 'w-14 h-14' : ''
+      } ${size === 'auto' ? 'w-full h-full' : ''} ${
+        shape === 'square' ? 'rounded ' : 'rounded-full'
       }`}
     >
       {imageUri ? (

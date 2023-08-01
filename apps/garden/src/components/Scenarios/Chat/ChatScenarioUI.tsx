@@ -61,7 +61,7 @@ const ChatScenarioUI = ({
           : [],
       )
     }
-  }, [activeCharacter])
+  }, [activeCharacter, creator])
 
   const submit = async () => {
     setConversation(state => [
@@ -168,14 +168,16 @@ const ChatScenarioUI = ({
                       id={activeCharacter.id}
                       name={activeCharacter.name}
                       imageUri={activeCharacter.avatarImageUri}
-                      size={'small'}
+                      shape="circle"
+                      size="medium"
                     />
                   ) : (
                     <CharacterAvatar
                       id={creator?.userId}
                       name={creator?.username || creator?.userId}
                       imageUri={creator?.userImage}
-                      size={'small'}
+                      shape="circle"
+                      size="medium"
                     />
                   )}
                 </Avatar>

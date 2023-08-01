@@ -232,3 +232,10 @@
 .ant-btn:disabled {
     cursor: default;
 }
+
+.creator-profile-link:hover {
+    .creator-profile-link-name {
+        text-decoration: underline;
+    }
+}
+

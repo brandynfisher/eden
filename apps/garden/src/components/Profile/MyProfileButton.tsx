@@ -33,16 +33,21 @@ const MyProfileButton = () => {
     )
   }
 
+  const userProfilePath =
+    isAuthenticated && user && user.username
+      ? `/creators/${user.username?.toLowerCase()}`
+      : ''
+
   return (
-    <Link href="/me" passHref>
-      <div className="flex justify-center">
+    <Link href={userProfilePath} passHref>
+      <Button type="text" className="flex justify-center px-2">
         <CharacterAvatar
           id={address || ''}
           name={(user && user?.username) || ''}
           imageUri={(user && user?.userImage) || ''}
           size={'small'}
         />
-      </div>
+      </Button>
     </Link>
   )
 }
