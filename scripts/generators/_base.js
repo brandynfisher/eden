@@ -65,7 +65,7 @@ const params = [
     label: 'Steps',
     description: 'Number of sampling steps',
     default: 40,
-    minimum: 20,
+    minimum: 10,
     maximum: 70,
     optional: true,
   },
