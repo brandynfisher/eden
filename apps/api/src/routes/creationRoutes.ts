@@ -57,7 +57,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    handler: (request, reply) => getCreationSimilar(request, reply),
+    handler: (request, reply) => getCreationSimilar(server, request, reply),
   })
 
   server.post('/creations/react', {

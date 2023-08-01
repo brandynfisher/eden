@@ -6,7 +6,7 @@ import {
   CreationsUnreactArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { Collection } from '../models/Collection'
@@ -168,14 +168,17 @@ export const getCreation = async (
 }
 
 export const getCreationSimilar = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { creationId, n } = request.params as CreationsGetSimilarArguments
 
-  const creation = (await Creation.findById(creationId).populate({
-    path: 'similarCreations',
-  })) as CreationDocument
+  // Todo: n is not actually set here. defaulting to 10
+
+  const creation = (await Creation.findById(
+    creationId,
+  ).lean()) as CreationDocument
 
   if (!creation) {
     return reply.status(404).send({
@@ -183,11 +186,42 @@ export const getCreationSimilar = async (
     })
   }
 
+  const embedding = creation.embedding?.embedding
+
+  if (!embedding) {
+    return reply.status(404).send({
+      message: 'Embedding not found',
+    })
+  }
+
+  const { chromadb } = server
+  if (!chromadb) {
+    throw new Error('Chromadb not initialized')
+  }
+
+  const collection = await chromadb.getCollection({
+    name: 'creation_clip_embeddings',
+  })
+
+  if (!collection) {
+    throw new Error('Chromadb collection not found')
+  }
+
+  const results = await collection.query({
+    queryEmbeddings: [embedding[0]],
+    nResults: 11,
+  })
+
+  if (!results?.ids) {
+    throw new Error('Chromadb query failed')
+  }
+
+  const similarIdxs = results.ids[0].slice(1)
+
   const similarCreations = await Creation.find({
     _id: {
-      $in: creation.similarCreations,
+      $in: similarIdxs,
     },
-    limit: n,
   })
 
   return await reply.status(200).send({ similarCreations })
