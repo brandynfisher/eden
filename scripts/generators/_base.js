@@ -21,7 +21,7 @@ const params = [
     name: 'upscale_f',
     label: 'Upscale Factor',
     description: 'Diffusion-based upscaling factor',
-    default: 1.0,
+    default: 1.4,
     minimum: 1.0,
     maximum: 2.0,
     step: 0.1,
