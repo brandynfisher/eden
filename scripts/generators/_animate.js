@@ -11,7 +11,7 @@ const params = [
     name: 'loop',
     label: 'Loop',
     description: 'Loop the output video',
-    default: false,
+    default: true,
     allowedValues: [false, true],
   },
   {
@@ -35,7 +35,7 @@ const params = [
   {
     name: 'fps',
     label: 'FPS',
-    description: 'Frames per second of the output video',
+    description: 'Frames per second of the output video (by default, will be 2x this with n_film=1)',
     default: 12,
     minimum: 1,
     maximum: 30,
