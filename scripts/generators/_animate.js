@@ -4,7 +4,7 @@ const params = [
     label: 'Frames',
     description: 'Number of frames in the video',
     default: 60,
-    minimum: 3,
+    minimum: 5,
     maximum: 1000,
   },
   {
@@ -20,8 +20,7 @@ const params = [
     description:
       'Optimize video for perceptual smoothness between frames (if false, frames are linearly spaced in prompt conditioning space)',
     default: true,
-    //allowedValues: [false, true],
-    allowedValues: [true],
+    allowedValues: [false, true],
     optional: true,
   },
   {
@@ -39,7 +38,7 @@ const params = [
     description: 'Frames per second of the output video',
     default: 12,
     minimum: 1,
-    maximum: 60,
+    maximum: 30,
     optional: true,
   },
   {
