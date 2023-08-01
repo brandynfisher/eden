@@ -11,17 +11,8 @@ const params = [
     default: [],
     mediaUpload: true,
     minLength: 2,
-    maxLength: 5,
+    maxLength: 8,
     isRequired: true,
-  },
-  {
-    name: 'interpolation_texts',
-    label: 'Prompts',
-    description: 'Prompts to interpolate through',
-    default: [],
-    minLength: 2,
-    maxLength: 5,
-    isRequired: false,
   },
   {
     name: 'interpolation_init_images_power',
@@ -55,6 +46,16 @@ const params = [
     maximum: 1.0,
     step: 0.01,
     optional: true,
+  },
+  {
+    name: 'interpolation_texts',
+    label: 'Override prompts',
+    description: 'Optional: Override real2real internal prompts with these ones (length must match number of images)',
+    default: [],
+    minLength: 2,
+    maxLength: 8,
+    isRequired: false,
+    optional: true
   },
   {
     name: 'interpolation_seeds',

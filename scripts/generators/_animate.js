@@ -41,17 +41,17 @@ const params = [
     maximum: 30,
     optional: true,
   },
-  {
-    name: 'scale_modulation',
-    label: 'Scale Modulation',
-    description:
-      'How much to scale down the guidance scale of the prompt conditioning in between keyframes',
-    default: 0.0,
-    minimum: 0.0,
-    maximum: 0.25,
-    step: 0.01,
-    optional: true,
-  },
+  // {
+  //   name: 'scale_modulation',
+  //   label: 'Scale Modulation',
+  //   description:
+  //     'How much to scale down the guidance scale of the prompt conditioning in between keyframes',
+  //   default: 0.0,
+  //   minimum: 0.0,
+  //   maximum: 0.25,
+  //   step: 0.01,
+  //   optional: true,
+  // },
 ]
 
 export default params;

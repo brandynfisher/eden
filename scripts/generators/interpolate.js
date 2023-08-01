@@ -10,7 +10,7 @@ const params = [
     description: 'Prompts to interpolate through',
     default: [],
     minLength: 2,
-    maxLength: 5,
+    maxLength: 8,
     isRequired: true,
   },
   {

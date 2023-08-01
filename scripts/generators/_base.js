@@ -84,7 +84,7 @@ const params = [
     label: 'Stream',
     description:
       'Yield intermediate results during creation process (if false, only final result is returned)',
-    default: true,
+    default: false,
     allowedValues: [false, true],
     optional: true,
   },
