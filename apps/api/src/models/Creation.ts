@@ -18,7 +18,6 @@ export interface CreationSchema {
   name?: string
   attributes?: any
   mediaAttributes: MediaAttributes
-  similarCreations?: CreationDocument[]
   embedding?: {
     embedding: number[]
     score: number
@@ -95,12 +94,6 @@ const creation = new Schema<CreationDocument>(
         type: Number,
       },
     },
-    similarCreations: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'creations',
-      },
-    ],
     embedding: {
       embedding: {
         type: [Number],
