@@ -1,3 +1,4 @@
+import { FeatureFlags, useFeatureFlags } from '@/hooks/useFeatureFlags'
 import { UserContext } from '@/providers/UserProvider'
 import {
   CommentOutlined,
@@ -34,6 +35,9 @@ const authItems: MenuItem[] = [
 const defaultItems: MenuItem[] = [
   getItem('Create', '/create', <ExperimentOutlined />),
   getItem('Tools', '/tools', <ToolOutlined />),
+]
+
+const characterItems: MenuItem[] = [
   getItem('Characters', '/characters', <RobotOutlined />),
   getItem('Scenarios', '/scenarios', <CommentOutlined />),
 ]
@@ -41,20 +45,27 @@ const defaultItems: MenuItem[] = [
 const createMenuItems = (
   isAuthenticated: boolean,
   username: string | undefined,
+  flags: FeatureFlags,
 ) => {
   const userProfilePath =
     isAuthenticated && username ? `/creators/${username.toLowerCase()}` : ''
   const myProfileItem = getItem('My Profile', userProfilePath, <UserOutlined />)
-  return isAuthenticated
-    ? [myProfileItem, ...authItems, ...defaultItems]
-    : [myProfileItem, ...defaultItems]
+  const items = [myProfileItem, ...defaultItems]
+  if (isAuthenticated) {
+    items.push(...authItems)
+  }
+  if (flags.charactersEnabled) {
+    items.push(...characterItems)
+  }
+  return items
 }
 
 const LayoutMenu = () => {
   const router = useRouter()
+  const flags = useFeatureFlags()
   const { isAuthenticated, user } = useContext(UserContext)
 
-  const menuItems = createMenuItems(isAuthenticated, user?.username)
+  const menuItems = createMenuItems(isAuthenticated, user?.username, flags)
 
   return (
     <Menu
