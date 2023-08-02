@@ -299,8 +299,8 @@ const CreationDetail = ({
               </>
             )}
           </div>
-          <SimilarCreations creation={creation} containerRef={containerRef} />
         </div>
+        <SimilarCreations creation={creation} containerRef={containerRef} />
       </div>
     </>
   )
