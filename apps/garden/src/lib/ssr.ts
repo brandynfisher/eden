@@ -31,5 +31,6 @@ export const getServerSidePropsBase = (
     }
   }
 
+  //@ts-ignore
   return useSessionSsr ? withSessionSsr(getServerSideProps) : getServerSideProps
 }

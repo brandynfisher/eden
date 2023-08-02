@@ -143,7 +143,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     setMessageGroups(
       mode === 'create'
         ? exampleMessages
-        : dialogueStringToMessageGroups(character?.dialogue) || '',
+        : dialogueStringToMessageGroups(character?.dialogue || ''),
     )
   }, [form, mode, character])
 

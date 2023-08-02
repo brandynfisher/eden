@@ -45,7 +45,7 @@ const ProfileHeader = ({
           <CharacterAvatar
             id={creatorId}
             name={displayName}
-            imageUri={creator.userImage}
+            imageUri={creator?.userImage || ''}
             size="large"
           />
         </div>

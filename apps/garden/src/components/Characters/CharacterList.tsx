@@ -15,7 +15,7 @@ const CharacterListItem = ({ character }: { character: Character }) => {
         <CharacterAvatar
           id={character.id}
           name={character.name}
-          imageUri={character.avatarImageUri}
+          imageUri={character.avatarImageUri || ''}
           size="large"
         />
       </div>

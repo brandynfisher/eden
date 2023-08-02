@@ -11,6 +11,7 @@ export interface CharacterSchema {
   description?: string
   greeting?: string
   dialogue?: string
+  avatarImageUri?: string
   createdAt?: Date
   updatedAt?: Date
 }
@@ -21,6 +22,7 @@ export interface CharacterInput {
   description?: string
   greeting?: string
   dialogue?: string
+  avatarImageUri?: string
 }
 
 export interface CharacterDocument
@@ -46,6 +48,10 @@ const character = new Schema<CharacterDocument>(
     dialogue: {
       type: String,
       maxlength: 4000,
+    },
+    avatarImageUri: {
+      type: String,
+      maxlength: 1000,
     },
     description: {
       type: String,

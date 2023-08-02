@@ -1,4 +1,5 @@
 import {
+  ScenarioType,
   ScenariosCreateArguments,
   ScenariosDeleteArguments,
   ScenariosGetArguments,
@@ -8,7 +9,7 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { User } from '../models/Creator'
-import { Scenario, ScenarioType } from '../models/Scenario'
+import { Scenario } from '../models/Scenario'
 import CreatorRepository from '../repositories/CreatorRepository'
 import ScenarioRepository from '../repositories/ScenarioRepository'
 
