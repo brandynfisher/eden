@@ -14,7 +14,6 @@ export interface PaginatedResponse<T> {
 export * from './CharactersResponses'
 export * from './ApiKeysResponses'
 export * from './AuthResponses'
-export * from './CapabilitiesResponses'
 export * from './CreationsResponses'
 export * from './CollectionsResponses'
 export * from './CreatorsResponses'
