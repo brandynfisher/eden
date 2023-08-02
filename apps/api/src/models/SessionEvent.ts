@@ -1,25 +1,14 @@
+import { SessionEventType } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { CharacterDocument } from './Character'
+import { CompletionDocument } from './Completion'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 import { ScenarioDocument } from './Scenario'
 import { TaskDocument } from './Task'
-
-export enum SessionEventType {
-  CREATE = 'create',
-  END = 'end',
-  USER_ADD = 'user_add',
-  USER_REMOVE = 'user_remove',
-  CHARACTER_ADD = 'character_add',
-  CHARACTER_REMOVE = 'character_remove',
-  USER_MESSAGE = 'user_message',
-  CHARACTER_MESSAGE = 'character_message',
-  CREATION_REQUEST = 'creation_request',
-  CREATION_RETURN = 'creation_return',
-}
 
 export interface SessionEventSchema {
   session: ScenarioDocument
@@ -40,10 +29,12 @@ export interface SessionEventSchema {
   userMessage?: {
     user: UserDocument
     message: string
+    completion: CompletionDocument
   }
   characterMessage?: {
     character: CharacterDocument
     message: string
+    completion: CompletionDocument
   }
   creationRequest?: {
     user: UserDocument

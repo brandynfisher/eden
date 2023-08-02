@@ -1,5 +1,13 @@
 import { AxiosRequestConfig } from 'axios'
 import {
+  SessionEventsListResponse,
+  SessionsCreateResponse,
+  SessionsDeleteResponse,
+  SessionsGetResponse,
+  SessionsListResponse,
+  SessionsUpdateResponse,
+} from 'src/responses'
+import {
   CollectionsAddCreationsResponse,
   CollectionsCreateResponse,
   CollectionsDeleteResponse,
@@ -292,6 +300,35 @@ export abstract class Methods {
     ),
   }
 
+  public readonly sessions = {
+    create: bindApiCall<SessionsCreateArguments, SessionsCreateResponse>(
+      this,
+      sessionsCreateRequestConfig,
+    ),
+    update: bindApiCall<SessionsUpdateArguments, SessionsUpdateResponse>(
+      this,
+      sessionsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<SessionsDeleteArguments, SessionsDeleteResponse>(
+      this,
+      sessionsDeleteRequestConfig,
+    ),
+    list: bindApiCall<SessionsListArguments, SessionsListResponse>(
+      this,
+      sessionsListRequestConfig,
+    ),
+    get: bindApiCall<SessionsGetArguments, SessionsGetResponse>(
+      this,
+      sessionsGetRequestConfig,
+    ),
+    events: {
+      list: bindApiCall<SessionEventsListArguments, SessionEventsListResponse>(
+        this,
+        sessionEventsListRequestConfig,
+      ),
+    },
+  }
+
   public readonly tasks = {
     create: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,
@@ -484,6 +521,35 @@ export interface ScenariosListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+}
+
+export interface SessionsCreateArguments extends WebAPICallOptions {
+  type: ScenarioType
+}
+
+export interface SessionsUpdateArguments extends WebAPICallOptions {
+  sessionId: string
+  data?: any
+}
+
+export interface SessionsDeleteArguments extends WebAPICallOptions {
+  sessionId: string
+}
+
+export interface SessionsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface SessionsGetArguments extends WebAPICallOptions {
+  sessionId: string
+}
+
+export interface SessionEventsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  sessionId: string
 }
 
 export interface ScenariosGetArguments extends WebAPICallOptions {
@@ -910,6 +976,73 @@ const scenariosGetRequestConfig = (
   return {
     method: 'GET',
     url: `scenarios/${args.scenarioId}`,
+  }
+}
+
+const sessionsCreateRequestConfig = (
+  args: SessionsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const sessionsUpdateRequestConfig = (
+  args: SessionsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const sessionsDeleteRequestConfig = (
+  args: SessionsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/delete',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const sessionsListRequestConfig = (
+  args: SessionsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'sessions',
+    params,
+  }
+}
+
+const sessionsGetRequestConfig = (
+  args: SessionsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `sessions/${args.sessionId}`,
+  }
+}
+
+const sessionEventsListRequestConfig = (
+  args: SessionEventsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: `sessions/${args.sessionId}/events`,
+    params,
   }
 }
 
