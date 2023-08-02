@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
+  createCompletion,
   createTask,
   getTask,
   listTasks,
@@ -27,6 +28,21 @@ const taskRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async request => isAuth(server, request)],
     handler: (request, reply) => createTask(server, request, reply),
+  })
+
+  server.post('/tasks/complete', {
+    schema: {
+      body: {
+        prompt: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          completion: Type.String(),
+        }),
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => createCompletion(server, request, reply),
   })
 
   server.get('/tasks', {

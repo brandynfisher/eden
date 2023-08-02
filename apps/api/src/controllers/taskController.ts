@@ -186,3 +186,13 @@ export const receiveTaskUpdate = async (
 
   await server.receiveTaskUpdate(server, request.body)
 }
+
+export const createCompletion = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { prompt } = request.body as { prompt: string }
+  const completion = await server.complete(server, prompt)
+  return reply.status(200).send({ completion })
+}

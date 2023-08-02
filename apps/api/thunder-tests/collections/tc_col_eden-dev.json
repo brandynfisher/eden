@@ -72,11 +72,11 @@
       "colId": "2ea8f624-0ed6-4bad-a4b2-c2e06bd48f82",
       "containerId": "",
       "name": "Get Generators",
-      "url": "http://localhost:5050/generators",
+      "url": "http://localhost:5050",
       "method": "GET",
       "sortNum": 30000,
       "created": "2023-06-01T01:46:20.807Z",
-      "modified": "2023-06-01T01:46:20.807Z",
+      "modified": "2023-08-02T01:21:16.533Z",
       "headers": [
         {
           "name": "X-Api-Key",
