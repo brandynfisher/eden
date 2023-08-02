@@ -1,4 +1,4 @@
-import ProfileAvatar from '@/components/Profile/ProfileAvatar'
+import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { truncatedAddress } from '@/lib/string'
 import Link from 'next/link'
 import React from 'react'
@@ -6,10 +6,12 @@ import React from 'react'
 const CreatorProfileLink = ({
   creatorId,
   creatorName,
+  creatorImage,
   isOverlay,
 }: {
   creatorId: string
   creatorName?: string
+  creatorImage?: string
   isOverlay?: boolean
 }) => {
   return (
@@ -20,12 +22,19 @@ const CreatorProfileLink = ({
           creatorName ? creatorName.toLowerCase() : creatorId
         }`,
       }}
-      className={`flex items-center mr-2 ${
+      className={`creator-profile-link flex items-center mr-2 ${
         isOverlay ? 'text-gray-300' : 'text-gray-500 dark:text-gray-300'
-      } hover:dark:text-white hover:underline`}
+      } hover:dark:text-white`}
     >
-      <ProfileAvatar seed={creatorId} />
-      <div className="ml-2 text-sm font-bold overflow-hidden whitespace-nowrap">
+      <div className="w-auto">
+        <CharacterAvatar
+          id={creatorId}
+          name={creatorName || ''}
+          imageUri={creatorImage || ''}
+          size={'small'}
+        />
+      </div>
+      <div className="creator-profile-link-name ml-2 text-sm font-bold overflow-hidden whitespace-nowrap">
         {creatorName && creatorName !== creatorId
           ? creatorName
           : truncatedAddress(creatorId)}

@@ -1,6 +1,9 @@
+import { FeatureFlags, useFeatureFlags } from '@/hooks/useFeatureFlags'
 import { UserContext } from '@/providers/UserProvider'
 import {
+  CommentOutlined,
   ExperimentOutlined,
+  RobotOutlined,
   ToolOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -25,22 +28,44 @@ function getItem(
   } as MenuItem
 }
 
-const defaultItems: MenuItem[] = [
-  getItem('My Profile', '/me', <UserOutlined />),
-  getItem('Create', '/create', <ExperimentOutlined />),
-  getItem('Tools', '/tools', <ToolOutlined />),
-]
-
 const authItems: MenuItem[] = [
   // getItem('Logout', '/logout', <ToolOutlined />),
 ]
 
+const defaultItems: MenuItem[] = [
+  getItem('Create', '/create', <ExperimentOutlined />),
+  getItem('Tools', '/tools', <ToolOutlined />),
+]
+
+const characterItems: MenuItem[] = [
+  getItem('Characters', '/characters', <RobotOutlined />),
+  getItem('Scenarios', '/scenarios', <CommentOutlined />),
+]
+
+const createMenuItems = (
+  isAuthenticated: boolean,
+  username: string | undefined,
+  flags: FeatureFlags,
+) => {
+  const userProfilePath =
+    isAuthenticated && username ? `/creators/${username.toLowerCase()}` : ''
+  const myProfileItem = getItem('My Profile', userProfilePath, <UserOutlined />)
+  const items = [myProfileItem, ...defaultItems]
+  if (isAuthenticated) {
+    items.push(...authItems)
+  }
+  if (flags.charactersEnabled) {
+    items.push(...characterItems)
+  }
+  return items
+}
+
 const LayoutMenu = () => {
   const router = useRouter()
-  const { isAuthenticated } = useContext(UserContext)
-  const menuItems = isAuthenticated
-    ? [...defaultItems, ...authItems]
-    : defaultItems
+  const flags = useFeatureFlags()
+  const { isAuthenticated, user } = useContext(UserContext)
+
+  const menuItems = createMenuItems(isAuthenticated, user?.username, flags)
 
   return (
     <Menu
@@ -48,7 +73,7 @@ const LayoutMenu = () => {
       selectedKeys={[router.pathname]}
       style={{ height: '100%', borderRight: 0 }}
       items={menuItems}
-      className="text-black bg-white dark:text-white dark:bg-gray-900"
+      className="text-black dark:text-white bg-gray-100 dark:bg-gray-900"
     />
   )
 }

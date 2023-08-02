@@ -3,7 +3,6 @@ import { TSchema, Type } from '@sinclair/typebox'
 import adminRoutes from './adminRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
-import capabilityRoutes from './capabilityRoutes'
 import characterRoutes from './characterRoutes'
 import collectionRoutes from './collectionRoutes'
 import creationRoutes from './creationRoutes'
@@ -13,6 +12,7 @@ import generatorRoutes from './generatorRoutes'
 import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
 import scenarioRoutes from './scenarioRoutes'
+import sessionRoutes from './sessionRoutes'
 import taskRoutes from './taskRoutes'
 
 export const paginatedResponse = (docs: TSchema) => {
@@ -51,7 +51,7 @@ export const routes = [
   collectionRoutes,
   generatorRoutes,
   taskRoutes,
-  capabilityRoutes,
   scenarioRoutes,
   feedRoutes,
+  sessionRoutes,
 ]

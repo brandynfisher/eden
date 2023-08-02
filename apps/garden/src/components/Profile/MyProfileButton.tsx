@@ -1,5 +1,5 @@
+import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import ConnectButton from '@/components/ConnectButton'
-import ProfileAvatar from '@/components/Profile/ProfileAvatar'
 import { UserContext } from '@/providers/UserProvider'
 import { Button } from 'antd'
 import Link from 'next/link'
@@ -8,6 +8,7 @@ import React, { useContext } from 'react'
 const MyProfileButton = () => {
   const {
     address,
+    user,
     isConnected,
     isAuthenticated,
     authenticate,
@@ -22,7 +23,7 @@ const MyProfileButton = () => {
     return (
       <Button
         type="primary"
-        className="flex justify-center px-2 h-full items-center"
+        className="font-mono flex justify-center px-2 h-full items-center"
         onClick={() => authenticate()}
         loading={isAuthenticating ? { delay: 250 } : false}
         disabled={isAuthenticating}
@@ -32,11 +33,21 @@ const MyProfileButton = () => {
     )
   }
 
+  const userProfilePath =
+    isAuthenticated && user && user.username
+      ? `/creators/${user.username?.toLowerCase()}`
+      : ''
+
   return (
-    <Link href="/me" passHref>
-      <div className="flex justify-center px-2 h-8 w-8">
-        <ProfileAvatar seed={address || ''} />
-      </div>
+    <Link href={userProfilePath} passHref>
+      <Button type="text" className="flex justify-center px-2">
+        <CharacterAvatar
+          id={address || ''}
+          name={(user && user?.username) || ''}
+          imageUri={(user && user?.userImage) || ''}
+          size={'small'}
+        />
+      </Button>
     </Link>
   )
 }

@@ -1,4 +1,6 @@
 import LayoutHeader from '@/components/Layout/LayoutHeader'
+import { VerticalAlignTopOutlined } from '@ant-design/icons'
+import { useWindowScroll } from '@mantine/hooks'
 import { Layout, Spin } from 'antd'
 import {
   Dispatch,
@@ -15,9 +17,9 @@ const InfiniteLoadingIndicator = ({ isLoading }: { isLoading: boolean }) => {
     <div
       className={`${
         isLoading ? 'anim-fade-in' : 'anim-fade-out'
-      } z-10 fixed flex p-4 justify-end w-full bottom-0 right-0 pointer-events-none bg-opacity-60`}
+      } z-10 pointer-events-none bg-opacity-60`}
     >
-      <div className="text-xs flex bg-gray-200 dark:bg-gray-800 p-2 !bg-opacity-60 rounded-lg">
+      <div className="text-xs flex bg-gray-200 dark:bg-gray-800 p-2 !bg-opacity-80 rounded-lg">
         <Spin size="small" />
       </div>
     </div>
@@ -54,6 +56,23 @@ export const myRequestCounterMiddlewareWrap: (
   }
 }
 
+const BackToTopButton = () => {
+  const [scroll, scrollTo] = useWindowScroll()
+
+  if (scroll.y < 700) {
+    return null
+  }
+
+  return (
+    <div
+      className="dark:bg-gray-700 rounded cursor-pointer !bg-opacity-80"
+      onClick={() => scrollTo({ y: 0 })}
+    >
+      <VerticalAlignTopOutlined className="text-2xl p-1" />
+    </div>
+  )
+}
+
 const CustomLayout = ({ children }: PropsWithChildren) => {
   const [requestCount, setRequestCount] = useState(0)
   const [showLoading, setShowLoading] = useState(false)
@@ -74,7 +93,10 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
       <Layout className="min-h-screen flex flex-col">
         <LayoutHeader />
         <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>
-        <InfiniteLoadingIndicator isLoading={showLoading} />
+        <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center">
+          <InfiniteLoadingIndicator isLoading={showLoading} />
+          <BackToTopButton />
+        </div>
       </Layout>
     </SWRConfig>
   )

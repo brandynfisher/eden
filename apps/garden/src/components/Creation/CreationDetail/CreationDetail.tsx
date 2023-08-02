@@ -1,5 +1,6 @@
 import CodeBlock from '@/components/CodeBlock'
 import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
+import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
@@ -7,7 +8,7 @@ import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getFileExtension } from '@/lib/getFileExtension'
-import { durationSinceDate } from '@/lib/time'
+import { timeAgo } from '@/lib/time'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
@@ -88,13 +89,19 @@ const createEdenSdkCodeSnippet = (
   generatorName: Generator['generatorName'],
   taskConfig: Task['config'],
 ) => {
-  return `import {EdenClient} from "eden-sdk";
+  return `import {EdenClient} from "@edenlabs/eden-sdk";
 
-const eden = new EdenClient();
+const eden = new EdenClient({
+  apiKey: "YOUR_API_KEY",
+  apiSecret: "YOUR_API_SECRET"
+});
 
 const config = ${taskConfig}
 
-const result = await eden.create("${generatorName}", config);`
+const result = await eden.tasks.create({
+  generatorName: "${generatorName}",
+  config: config
+});`
 }
 
 const CreationDetail = ({
@@ -105,19 +112,18 @@ const CreationDetail = ({
   isModal?: boolean
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isMediaLoaded, setIsMediaLoaded] = useState(false)
   const [creationData, setCreationData] = useState(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
-  const timeSinceCreation = durationSinceDate(creation.createdAt)
+  const timeSinceCreation = timeAgo(creation.createdAt)
 
-  const formattedTaskConfig = JSON.stringify(creationData.task.config, null, 2)
+  const formattedTaskConfig = JSON.stringify(creation.task.config, null, 2)
 
   const items = [
     {
       key: '1',
       label: `Text`,
-      children: <ConfigParamsTextTabContent creationData={creationData} />,
+      children: <ConfigParamsTextTabContent creationData={creation} />,
     },
     // {
     //   key: '2',
@@ -130,7 +136,7 @@ const CreationDetail = ({
       children: (
         <ConfigParamsCodeTabContent
           taskConfig={createEdenSdkCodeSnippet(
-            creationData.task.generator.generatorName,
+            creation.task.generator.generatorName,
             formattedTaskConfig,
           )}
         />
@@ -165,7 +171,7 @@ const CreationDetail = ({
   return (
     <>
       <Head>
-        <title>{`/${creation.task.generator.generatorName} by ${creation.user.username} - Creation | Garden of Eden`}</title>
+        <title>{`/${creation.task.generator.generatorName} by ${creation.user.username} | Garden of Eden`}</title>
         {isVideo(creation.uri) && (
           <>
             <meta property="og:type" content="video.other" />
@@ -178,7 +184,7 @@ const CreationDetail = ({
         <meta
           property="og:title"
           key="title"
-          content={`/${creation.task.generator.generatorName} by ${creation.user.username} - Creation | Garden of Eden`}
+          content={`/${creation.task.generator.generatorName} by ${creation.user.username} | Garden of Eden`}
         />
         <meta
           property="og:description"
@@ -212,17 +218,9 @@ const CreationDetail = ({
                   previewUri={creationData.uri}
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
-                  onLoad={() => {
-                    setIsMediaLoaded(true)
-                  }}
                 />
               ) : (
-                <MediaDisplay
-                  creationUri={creationData.uri}
-                  onLoad={() => {
-                    setIsMediaLoaded(true)
-                  }}
-                />
+                <MediaDisplay creationUri={creationData.uri} />
               )}
             </div>
           </div>
@@ -302,15 +300,7 @@ const CreationDetail = ({
             )}
           </div>
         </div>
-
-        {isMediaLoaded && (
-          <></>
-          // <SimilarCreations
-          //   creation={creation}
-          //   containerRef={containerRef}
-          //   isModal={isModal}
-          // />
-        )}
+        <SimilarCreations creation={creation} containerRef={containerRef} />
       </div>
     </>
   )

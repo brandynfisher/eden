@@ -1,5 +1,13 @@
 import { AxiosRequestConfig } from 'axios'
 import {
+  SessionEventsListResponse,
+  SessionsCreateResponse,
+  SessionsDeleteResponse,
+  SessionsGetResponse,
+  SessionsListResponse,
+  SessionsUpdateResponse,
+} from 'src/responses'
+import {
   CollectionsAddCreationsResponse,
   CollectionsCreateResponse,
   CollectionsDeleteResponse,
@@ -17,14 +25,6 @@ import {
   ApiKeysListResponse,
 } from './responses/ApiKeysResponses'
 import { AuthLoginResponse } from './responses/AuthResponses'
-import {
-  CapabilitiesCreateResponse,
-  CapabilitiesDeleteResponse,
-  CapabilitiesGetResponse,
-  CapabilitiesListResponse,
-  CapabilitiesUpdateResponse,
-  CapabilityType,
-} from './responses/CapabilitiesResponses'
 import {
   CharactersCreateResponse,
   CharactersDeleteResponse,
@@ -64,6 +64,7 @@ import {
   ScenariosUpdateResponse,
 } from './responses/ScenariosResponses'
 import {
+  TasksCompleteResponse,
   TasksCreateResponse,
   TasksGetResponse,
   TasksListResponse,
@@ -166,29 +167,6 @@ export abstract class Methods {
     ),
   }
 
-  public readonly capabilities = {
-    create: bindApiCall<
-      CapabilitiesCreateArguments,
-      CapabilitiesCreateResponse
-    >(this, capabilitiesCreateRequestConfig),
-    update: bindApiCall<
-      CapabilitiesUpdateArguments,
-      CapabilitiesUpdateResponse
-    >(this, capabilitiesUpdateRequestConfig),
-    delete: bindApiCall<
-      CapabilitiesDeleteArguments,
-      CapabilitiesDeleteResponse
-    >(this, capabilitiesDeleteRequestConfig),
-    list: bindApiCall<CapabilitiesListArguments, CapabilitiesListResponse>(
-      this,
-      capabilitiesListRequestConfig,
-    ),
-    get: bindApiCall<CapabilitiesGetArguments, CapabilitiesGetResponse>(
-      this,
-      capabilitiesGetRequestConfig,
-    ),
-  }
-
   public readonly collections = {
     list: bindApiCall<CollectionsListArguments, CollectionsListResponse>(
       this,
@@ -231,10 +209,10 @@ export abstract class Methods {
       this,
       creationsGetRequestConfig,
     ),
-    getSimilar: bindApiCall<CreationsGetSimilarArguments, CreationsGetSimilarResponse>(
-      this,
-      creationsGetSimilarRequestConfig,
-    ),
+    getSimilar: bindApiCall<
+      CreationsGetSimilarArguments,
+      CreationsGetSimilarResponse
+    >(this, creationsGetSimilarRequestConfig),
     react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
       this,
       creationsReactRequestConfig,
@@ -322,10 +300,43 @@ export abstract class Methods {
     ),
   }
 
+  public readonly sessions = {
+    create: bindApiCall<SessionsCreateArguments, SessionsCreateResponse>(
+      this,
+      sessionsCreateRequestConfig,
+    ),
+    update: bindApiCall<SessionsUpdateArguments, SessionsUpdateResponse>(
+      this,
+      sessionsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<SessionsDeleteArguments, SessionsDeleteResponse>(
+      this,
+      sessionsDeleteRequestConfig,
+    ),
+    list: bindApiCall<SessionsListArguments, SessionsListResponse>(
+      this,
+      sessionsListRequestConfig,
+    ),
+    get: bindApiCall<SessionsGetArguments, SessionsGetResponse>(
+      this,
+      sessionsGetRequestConfig,
+    ),
+    events: {
+      list: bindApiCall<SessionEventsListArguments, SessionEventsListResponse>(
+        this,
+        sessionEventsListRequestConfig,
+      ),
+    },
+  }
+
   public readonly tasks = {
     create: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,
       tasksCreateRequestConfig,
+    ),
+    complete: bindApiCall<TasksCompleteArguments, TasksCompleteResponse>(
+      this,
+      tasksCompleteRequestConfig,
     ),
     get: bindApiCall<TasksGetArguments, TasksGetResponse>(
       this,
@@ -350,11 +361,17 @@ export interface CharactersGetArguments extends WebAPICallOptions {
 
 export interface CharactersCreateArguments extends WebAPICallOptions {
   name: string
+  description?: string
+  greeting?: string
+  dialogue?: string
 }
 
 export interface CharactersUpdateArguments extends WebAPICallOptions {
   characterId: string
-  name: string
+  name?: string
+  description?: string
+  greeting?: string
+  dialogue?: string
 }
 
 export interface CharactersDeleteArguments extends WebAPICallOptions {
@@ -380,33 +397,6 @@ export interface AuthLoginArguments extends WebAPICallOptions {
 export interface AuthCreateChallengeArguments extends WebAPICallOptions {
   address: string
   isWeb2: boolean
-}
-
-export interface CapabilitiesCreateArguments extends WebAPICallOptions {
-  characterId: string
-  name: string
-  type: CapabilityType
-  data: any
-}
-
-export interface CapabilitiesUpdateArguments extends WebAPICallOptions {
-  capabilityId: string
-  name?: string
-  data?: any
-}
-
-export interface CapabilitiesDeleteArguments extends WebAPICallOptions {
-  capabilityId: string
-}
-
-export interface CapabilitiesListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  characterId: string | string[]
-}
-
-export interface CapabilitiesGetArguments extends WebAPICallOptions {
-  capabilityId: string
 }
 
 export interface CollectionsCreateArguments extends WebAPICallOptions {
@@ -456,7 +446,7 @@ export interface CreationsGetArguments extends WebAPICallOptions {
 }
 
 export interface CreationsGetSimilarArguments extends WebAPICallOptions {
-  creationId: string,
+  creationId: string
   n: number
 }
 
@@ -490,6 +480,7 @@ export interface CreatorsGetArguments extends WebAPICallOptions {
 
 export interface CreatorsUpdateArguments extends WebAPICallOptions {
   username?: string
+  userImage?: string
 }
 
 export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
@@ -532,6 +523,35 @@ export interface ScenariosListArguments
   userId?: string | string[]
 }
 
+export interface SessionsCreateArguments extends WebAPICallOptions {
+  type: ScenarioType
+}
+
+export interface SessionsUpdateArguments extends WebAPICallOptions {
+  sessionId: string
+  data?: any
+}
+
+export interface SessionsDeleteArguments extends WebAPICallOptions {
+  sessionId: string
+}
+
+export interface SessionsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface SessionsGetArguments extends WebAPICallOptions {
+  sessionId: string
+}
+
+export interface SessionEventsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  sessionId: string
+}
+
 export interface ScenariosGetArguments extends WebAPICallOptions {
   scenarioId: string
 }
@@ -542,6 +562,11 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   config?: any
   metadata?: any
   webhooks?: string[]
+}
+
+export interface TasksCompleteArguments extends WebAPICallOptions {
+  prompt: string
+  config?: any
 }
 
 export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
@@ -657,62 +682,6 @@ const authLoginRequestConfig = (
     data: {
       ...args,
     },
-  }
-}
-
-const capabilitiesCreateRequestConfig = (
-  args: CapabilitiesCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'capabilities/create',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const capabilitiesUpdateRequestConfig = (
-  args: CapabilitiesUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'capabilities/update',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const capabilitiesDeleteRequestConfig = (
-  args: CapabilitiesDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'capabilities/delete',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const capabilitiesListRequestConfig = (
-  args: CapabilitiesListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'capabilities',
-    params,
-  }
-}
-
-const capabilitiesGetRequestConfig = (
-  args: CapabilitiesGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `capabilities/${args.capabilityId}`,
   }
 }
 
@@ -1010,12 +979,91 @@ const scenariosGetRequestConfig = (
   }
 }
 
+const sessionsCreateRequestConfig = (
+  args: SessionsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const sessionsUpdateRequestConfig = (
+  args: SessionsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const sessionsDeleteRequestConfig = (
+  args: SessionsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/delete',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const sessionsListRequestConfig = (
+  args: SessionsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'sessions',
+    params,
+  }
+}
+
+const sessionsGetRequestConfig = (
+  args: SessionsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `sessions/${args.sessionId}`,
+  }
+}
+
+const sessionEventsListRequestConfig = (
+  args: SessionEventsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: `sessions/${args.sessionId}/events`,
+    params,
+  }
+}
+
 const tasksCreateRequestConfig = (
   args: TasksCreateArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
     url: 'tasks/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const tasksCompleteRequestConfig = (
+  args: TasksCompleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'tasks/complete',
     data: {
       ...args,
     },

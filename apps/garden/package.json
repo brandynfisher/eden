@@ -17,7 +17,11 @@
     "@edenlabs/config": "*",
     "@edenlabs/eden-sdk": "*",
     "@edenlabs/tsconfig": "*",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
     "@mantine/hooks": "^6.0.13",
+    "@mui/icons-material": "^5.14.3",
+    "@mui/material": "^5.14.3",
     "@particle-network/rainbowkit-ext": "^0.13.5",
     "@rainbow-me/rainbowkit": "^1.0.1",
     "antd": "^5.5.1",
@@ -46,7 +50,6 @@
     "siwe": "^2.1.4",
     "swr": "^2.1.5",
     "tailwindcss": "3.3.2",
-    "timeago.js": "^4.0.2",
     "typescript": "5.0.4",
     "viem": "^0.3.37",
     "wagmi": "^1.0.8"
@@ -58,6 +61,7 @@
     "@types/react": "18.2.7",
     "@types/react-blockies": "^1.4.1",
     "@types/react-dom": "18.2.4",
-    "next-transpile-modules": "^10.0.0"
+    "next-transpile-modules": "^10.0.0",
+    "sass": "^1.64.1"
   }
 }

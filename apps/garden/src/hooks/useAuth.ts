@@ -30,6 +30,7 @@ export const useAuth = () => {
         })
         const { address: sessionAddress } = response.data
         const isAuth = sessionAddress && sessionAddress === address
+
         setIsAuthenticated(isAuth || false)
       } catch (error) {
         setIsAuthenticated(false)

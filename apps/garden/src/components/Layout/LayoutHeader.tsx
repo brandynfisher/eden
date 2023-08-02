@@ -7,13 +7,26 @@ import Drawer from '@/components/Layout/navigation/Drawer'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import MyProfileButton from '@/components/Profile/MyProfileButton'
 import { UserContext } from '@/providers/UserProvider'
+import theme from '@/styles/theme'
+import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const { Header } = Layout
 
 const LayoutHeader = () => {
+  const { width: viewportWidth } = useViewportSize()
   const { isAuthenticated } = useContext(UserContext)
+  const [mountDrawer, setMountDrawer] = useState(true)
+
+  useEffect(() => {
+    if (viewportWidth >= theme.screens.lg) {
+      setMountDrawer(false)
+    } else {
+      setMountDrawer(true)
+    }
+  }, [viewportWidth])
+
   return (
     <Header
       className="flex items-center px-4 bg-white dark:bg-gray-950"
@@ -21,9 +34,11 @@ const LayoutHeader = () => {
     >
       <HeaderLogo />
 
-      <div className="flex sm:hidden">
-        <Drawer />
-      </div>
+      {mountDrawer && (
+        <div className="flex">
+          <Drawer />
+        </div>
+      )}
 
       <div className="hidden sm:flex w-full">
         <MainNavButtons />

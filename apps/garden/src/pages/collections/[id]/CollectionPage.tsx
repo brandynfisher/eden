@@ -1,5 +1,5 @@
 import CollectionHeader from '@/components/Collections/CollectionHeader'
-import CreationMasonry from '@/components/Creation/CreationMasonry'
+import CreationMasonryInfinite from '@/components/Creation/CreationMasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByLatest,
@@ -21,7 +21,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()
-  const { isAuthenticated, address } = useContext(UserContext)
+  const { isAuthenticated, address, user } = useContext(UserContext)
   const [deleteLoading, setDeleteLoading] = React.useState(false)
 
   const isAuthUser = isAuthenticated && collection?.creatorId === address
@@ -32,7 +32,11 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
       await axios.post(`/api/collections/delete`, {
         collectionId: collection._id,
       })
-      await router.push(`/me`)
+      const userProfilePath =
+        isAuthenticated && user && user.username
+          ? `/creators/${user.username?.toLowerCase()}`
+          : ''
+      await router.push(userProfilePath)
     } catch (err) {
       handleAxiosError(err, message)
     }
@@ -80,7 +84,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
             deleteLoading={deleteLoading}
           />
           <div className="mt-4">
-            <CreationMasonry
+            <CreationMasonryInfinite
               query={{ collectionId: collection._id }}
               hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
             />

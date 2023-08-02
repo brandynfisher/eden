@@ -13,7 +13,7 @@ const TestGeneratorFinishButton = ({ taskId }: { taskId: Task['_id'] }) => {
   return (
     <Button
       onClick={() => handleFinish(taskId)}
-      className="flex items-center justify-between"
+      className="font-mono flex items-center justify-between"
     >
       <ForwardFilled />
     </Button>

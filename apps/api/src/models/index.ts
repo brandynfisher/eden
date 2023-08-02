@@ -1,7 +1,6 @@
 import { Model } from 'mongoose'
 
 import { ApiKey, ApiKeyDocument } from './ApiKey'
-import { Capability, CapabilityDocument } from './Capability'
 import Challenge, { ChallengeDocument } from './Challenge'
 import { Character, CharacterDocument } from './Character'
 import { Collection, CollectionDocument } from './Collection'
@@ -14,6 +13,8 @@ import { Manna, MannaDocument } from './Manna'
 import { MannaVoucher, MannaVoucherDocument } from './MannaVoucher'
 import { Reaction, ReactionDocument } from './Reaction'
 import { Scenario, ScenarioDocument } from './Scenario'
+import { Session, SessionDocument } from './Session'
+import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
 
@@ -31,9 +32,10 @@ export interface Database {
   Generator: Model<GeneratorDocument>
   Character: Model<CharacterDocument>
   Challenge: Model<ChallengeDocument>
-  Capability: Model<CapabilityDocument>
   Scenario: Model<ScenarioDocument>
   Lora: Model<LoraDocument>
+  Session: Model<SessionDocument>
+  SessionEvent: Model<SessionEventDocument>
 }
 
 export const models: Database = {
@@ -50,7 +52,8 @@ export const models: Database = {
   Generator,
   Character,
   Challenge,
-  Capability,
   Scenario,
   Lora,
+  Session,
+  SessionEvent,
 }

@@ -1,6 +1,6 @@
 import { SettingName, Settings } from '@/hooks/useSettings'
 import { useUserState } from '@/hooks/useUserState'
-import { Collection } from '@edenlabs/eden-sdk'
+import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Character } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, createContext } from 'react'
 
@@ -20,9 +20,11 @@ export interface UserContextType {
     mannaBalance: VoidFunction
     characters: VoidFunction
     collections: VoidFunction
+    user: VoidFunction
   }
   settings?: Settings
   updateSetting: (settingName: SettingName, newValue: number | 'auto') => void
+  user?: Creator
 }
 
 const defaultUserState: UserContextType = {
@@ -51,11 +53,15 @@ const defaultUserState: UserContextType = {
     collections: () => {
       return null
     },
+    user: () => {
+      return null
+    },
   },
   settings: undefined,
   updateSetting: () => {
     return null
   },
+  user: undefined,
 }
 
 export const UserContext = createContext<UserContextType>(defaultUserState)

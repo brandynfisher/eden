@@ -6,6 +6,8 @@ import {
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
+import { Completion, CompletionInput } from '../models/Completion'
+import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Generator, GeneratorVersionSchema } from '../models/Generator'
 import { Manna } from '../models/Manna'
@@ -185,4 +187,24 @@ export const receiveTaskUpdate = async (
   }
 
   await server.receiveTaskUpdate(server, request.body)
+}
+
+export const createCompletion = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { prompt } = request.body as { prompt: string }
+  const completionText = await server.complete(server, prompt)
+  const completionInput: CompletionInput = {
+    prompt,
+    completion: completionText,
+  }
+  const completion = await Completion.create(completionInput)
+  return reply.status(200).send({
+    completion: {
+      id: completion.id,
+      text: completionText,
+    },
+  })
 }

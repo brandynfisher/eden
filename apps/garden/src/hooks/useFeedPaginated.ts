@@ -77,7 +77,7 @@ export const useFeedPaginated = (
     setSize,
     isLoading,
     isValidating,
-  } = useSWRInfinite(getKey, fetcher)
+  } = useSWRInfinite(getKey, fetcher, { revalidateOnFocus: false })
   const dataArray = data != null ? data.flat() : []
 
   const isLoadingMore =

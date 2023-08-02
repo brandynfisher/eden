@@ -30,7 +30,7 @@ const TruncatedExpandableText = ({ text }: { text: string }) => {
             type="text"
             size="small"
             onClick={() => setShowMore(!showMore)}
-            className="!text-xs text-gray-400 hover:underline cursor-pointer"
+            className="font-mono !text-xs text-gray-400 hover:underline cursor-pointer"
           >
             {showMore ? '< Less ' : 'More >'}
           </Button>

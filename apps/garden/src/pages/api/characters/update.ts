@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
-  const { characterId, name, capabilities } =
+  const { characterId, name, capabilities, description, greeting, dialogue } =
     req.body as CharactersUpdateArguments
 
   if (!authToken) {
@@ -20,6 +20,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const response = await eden.characters.update({
       characterId,
       name,
+      description,
+      greeting,
+      dialogue,
       capabilities,
     })
     return res.status(200).json({ characterId: response.characterId })

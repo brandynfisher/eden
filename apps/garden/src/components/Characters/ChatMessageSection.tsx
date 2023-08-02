@@ -1,27 +1,15 @@
 import { ChatMessageGroup } from '@/lib/types'
-import { Button, Col, Input, Row, Space } from 'antd'
+import { Button, Input, Space } from 'antd'
 
-export const ChatCapabilityMessageSection = ({
+export const ChatMessageSection = ({
   messageGroups,
   setMessageGroups,
-  characterName,
   showControls = true,
 }: {
   messageGroups: ChatMessageGroup[]
   setMessageGroups: (messageGroups: ChatMessageGroup[]) => void
-  characterName: string
   showControls?: boolean
 }) => {
-  const onMessageSenderChange = (
-    groupIdx: number,
-    idx: number,
-    value: string,
-  ) => {
-    const newMessageGroups = [...messageGroups]
-    newMessageGroups[groupIdx][idx].sender = value
-    setMessageGroups(newMessageGroups)
-  }
-
   const onMessageChange = (groupIdx: number, idx: number, value: string) => {
     const newMessageGroups = [...messageGroups]
     newMessageGroups[groupIdx][idx].message = value
@@ -30,21 +18,19 @@ export const ChatCapabilityMessageSection = ({
 
   return (
     <>
-      <div className="mb-4">
+      <div>
         {messageGroups.map((messages, groupIdx) => (
-          <div key={groupIdx}>
+          <div key={groupIdx} className="mb-4">
             {messages.map((message, idx) => (
-              <Row key={idx}>
-                <Col span={4}>
+              <div key={idx} className="flex gap-2 mb-1">
+                <div>
                   <Input
-                    className="font-mono"
+                    className="font-mono w-[95px] text-center"
                     value={message.sender}
-                    onChange={e =>
-                      onMessageSenderChange(groupIdx, idx, e.target.value)
-                    }
+                    disabled={true}
                   />
-                </Col>
-                <Col span={20}>
+                </div>
+                <div className="w-full">
                   <Input
                     className="font-mono"
                     value={message.message}
@@ -52,10 +38,9 @@ export const ChatCapabilityMessageSection = ({
                       onMessageChange(groupIdx, idx, e.target.value)
                     }
                   />
-                </Col>
-              </Row>
+                </div>
+              </div>
             ))}
-            <div style={{ height: '1rem' }} />
           </div>
         ))}
         {showControls && (
@@ -65,8 +50,8 @@ export const ChatCapabilityMessageSection = ({
                 setMessageGroups([
                   ...messageGroups,
                   [
-                    { sender: 'M', message: '' },
-                    { sender: characterName, message: '' },
+                    { sender: '{{user}}', message: '' },
+                    { sender: '{{char}}', message: '' },
                   ],
                 ])
               }}
@@ -90,4 +75,4 @@ export const ChatCapabilityMessageSection = ({
   )
 }
 
-export default ChatCapabilityMessageSection
+export default ChatMessageSection

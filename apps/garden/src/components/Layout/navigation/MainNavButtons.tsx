@@ -20,10 +20,11 @@ const NavButton = ({
   return (
     <Link href={path} className="mr-2 last:mr-0 flex" passHref>
       <Button
-        type="text"
-        className={`text-black dark:text-gray-300 ${
-          isActive ? 'bg-gray-300 dark:bg-gray-800' : 'bg-none dark:bg-gray-900'
-        } hover:text-gray-100`}
+        className={`font-mono px-2 text-black dark:text-gray-300 hover:!text-gray-100 bg-gray-200 dark:bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-800 ${
+          isActive
+            ? 'text-white bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-700 dark:!bg-gray-700'
+            : ''
+        }`}
       >
         <div className="flex">
           {icon && <div className="mr-2">{icon}</div>}

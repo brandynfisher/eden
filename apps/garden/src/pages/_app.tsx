@@ -4,7 +4,7 @@ import CreationNotificationProvider from '@/providers/CreationNotificationProvid
 import EdenProvider from '@/providers/EdenProvider'
 import UserProvider from '@/providers/UserProvider'
 import WalletProvider from '@/providers/WalletProvider'
-import '@/styles/globals.css'
+import '@/styles/globals.scss'
 import '@rainbow-me/rainbowkit/styles.css'
 import 'antd/dist/reset.css'
 import { ThemeProvider } from 'next-themes'

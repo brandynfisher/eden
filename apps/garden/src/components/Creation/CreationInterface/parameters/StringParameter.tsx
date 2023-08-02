@@ -43,6 +43,7 @@ const StringParameter = (props: {
                 <Row key={index} className="mb-2">
                   <Col flex="auto" className="mr-1">
                     <Input
+                      className="font-mono"
                       defaultValue={props.parameter.default[index]}
                       onChange={event => {
                         const newValues = [...values]
@@ -90,6 +91,7 @@ const StringParameter = (props: {
             label={props.parameter.label}
             name={props.parameter.name}
             initialValue={props.parameter.default}
+            className="font-mono"
             rules={[
               {
                 required: props.parameter.isRequired,

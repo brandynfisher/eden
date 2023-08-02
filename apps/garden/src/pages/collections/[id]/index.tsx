@@ -1,4 +1,4 @@
-import PageLayoutNoSidebar from '@/components/Layout/layouts/PageLayoutNoSidebar'
+import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
@@ -33,7 +33,7 @@ const Collection: Page<PageProps> = ({ data }: PageProps) => {
 }
 
 Collection.getLayout = (page: ReactNode) => {
-  return <PageLayoutNoSidebar>{page}</PageLayoutNoSidebar>
+  return <PageLayoutDefault>{page}</PageLayoutDefault>
 }
 
 export default Collection

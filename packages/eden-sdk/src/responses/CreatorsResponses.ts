@@ -30,6 +30,7 @@ export type CreatorsUpdateResponse = WebAPICallResult & {
 export type Creator = {
   userId: string
   username?: string
+  userImage?: string
   creations?: string[]
   creationsCount?: number
   collections?: string[]

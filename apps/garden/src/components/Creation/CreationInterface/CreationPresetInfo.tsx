@@ -37,6 +37,7 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
             <CreatorProfileLink
               creatorId={creation.user.userId}
               creatorName={creation.user.username}
+              creatorImage={creation.user.userImage}
             />
           </div>
         </div>

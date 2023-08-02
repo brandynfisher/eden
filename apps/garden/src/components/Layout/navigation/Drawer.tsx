@@ -1,12 +1,12 @@
 import HeaderLogo from '@/components/Layout/HeaderLogo'
-import QuickCreateMenu from '@/components/Layout/dropdowns/QuickCreateMenu'
 import CreationNotificationMenu from '@/components/Layout/dropdowns/TaskNotificationDropdown'
 import LayoutMenu from '@/components/Layout/navigation/LayoutMenu'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import NavBurgerButton from '@/components/Layout/navigation/NavBurgerButton'
-import { Drawer as AntDrawer, Divider } from 'antd'
+import { UserContext } from '@/providers/UserProvider'
+import { Drawer as AntDrawer } from 'antd'
 import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const DrawerTitle = ({
   onClose,
@@ -26,20 +26,22 @@ const DrawerTitle = ({
 }
 
 const DrawerContent = () => {
+  const { isConnected, isAuthenticated } = useContext(UserContext)
+
   return (
-    <div>
+    <div className="dark:!bg-gray-900">
       <div className="flex justify-between items-center p-4">
         <MainNavButtons />
       </div>
-      <Divider />
-      <div className="flex justify-between items-center p-4">
-        <QuickCreateMenu />
-        <CreationNotificationMenu />
-      </div>
-      <Divider />
-      <div className="flex">
-        <LayoutMenu />
-      </div>
+
+      {isConnected && isAuthenticated && (
+        <div className="flex flex-col">
+          <div className="px-4 py-2 flex justify-between items-center bg-gray-800">
+            <CreationNotificationMenu />
+          </div>
+          <LayoutMenu />
+        </div>
+      )}
     </div>
   )
 }
@@ -65,12 +67,13 @@ const Drawer = () => {
         <NavBurgerButton open={isVisible} />
       </div>
       <AntDrawer
+        className="dark:!bg-gray-900"
         title={<DrawerTitle onClose={onCloseHandler} isVisible={isVisible} />}
         placement="left"
         closable={false}
         onClose={onCloseHandler}
         open={isVisible}
-        width={300}
+        width={250}
       >
         <DrawerContent />
       </AntDrawer>

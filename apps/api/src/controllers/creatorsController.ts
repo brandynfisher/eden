@@ -77,7 +77,7 @@ export const updateCreator = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { username } = request.body as CreatorsUpdateArguments
+  const { username, userImage } = request.body as CreatorsUpdateArguments
 
   const creator = await User.findById(userId)
   if (!creator) {
@@ -110,6 +110,10 @@ export const updateCreator = async (
     }
 
     creator.username = username
+  }
+
+  if (userImage) {
+    creator.userImage = userImage
   }
 
   try {

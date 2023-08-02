@@ -36,7 +36,7 @@ const MediaDisplay = ({
 
   return (
     <div className="media-display max-h-full max-w-full lg:flex lg:flex-grow ">
-      <div className="rounded-xl overflow-hidden max-h-full max-w-full lg:flex lg:flex-grow lg:justify-center max-h-[90vh]">
+      <div className="rounded-xl overflow-hidden max-h-full max-w-full lg:flex lg:flex-grow lg:justify-center lg:items-start max-h-[90vh]">
         {renderPreview()}
       </div>
     </div>

@@ -1,17 +1,16 @@
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
-import MongooseDelete from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-import { CapabilityDocument } from './Capability'
 import { UserDocument } from './Creator'
 
 export interface CharacterSchema {
   user: UserDocument
   name: string
-  capabilities: CapabilityDocument[]
   description?: string
+  greeting?: string
+  dialogue?: string
   createdAt?: Date
   updatedAt?: Date
 }
@@ -20,6 +19,8 @@ export interface CharacterInput {
   user: ObjectId
   name: string
   description?: string
+  greeting?: string
+  dialogue?: string
 }
 
 export interface CharacterDocument
@@ -38,12 +39,14 @@ const character = new Schema<CharacterDocument>(
       required: true,
       maxlength: 80,
     },
-    capabilities: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'capabilities',
-      },
-    ],
+    greeting: {
+      type: String,
+      maxlength: 1000,
+    },
+    dialogue: {
+      type: String,
+      maxlength: 4000,
+    },
     description: {
       type: String,
       maxlength: 1000,
@@ -63,6 +66,5 @@ character.pre<CharacterDocument>('save', function (next) {
 character.index({ user: 1, name: 1 }, { unique: true })
 
 character.plugin(paginate)
-character.plugin(MongooseDelete, { deletedAt: true })
 
 export const Character = model<CharacterDocument>('characters', character)
