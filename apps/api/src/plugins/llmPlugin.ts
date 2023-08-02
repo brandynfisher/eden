@@ -21,8 +21,7 @@ export const complete = async (
     if (!choice.text) {
       throw new Error('No text')
     }
-    const text = choice.text.trim()
-    return text
+    return choice.text
   } catch (error) {
     server.log.error('Error during completion', error)
     throw error
