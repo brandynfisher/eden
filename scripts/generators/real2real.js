@@ -58,6 +58,16 @@ const params = [
     optional: true
   },
   {
+    name: 'guidance_scale',
+    label: 'Guidance scale',
+    description: 'Strength of prompt conditioning guidance',
+    default: 5.5,
+    minimum: 0.0,
+    maximum: 30.0,
+    step: 0.1,
+    optional: true,
+  },
+  {
     name: 'interpolation_seeds',
     label: 'Interpolation seeds',
     description:
