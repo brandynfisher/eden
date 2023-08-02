@@ -12,6 +12,7 @@ import generatorRoutes from './generatorRoutes'
 import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
 import scenarioRoutes from './scenarioRoutes'
+import sessionRoutes from './sessionRoutes'
 import taskRoutes from './taskRoutes'
 
 export const paginatedResponse = (docs: TSchema) => {
@@ -52,4 +53,5 @@ export const routes = [
   taskRoutes,
   scenarioRoutes,
   feedRoutes,
+  sessionRoutes,
 ]

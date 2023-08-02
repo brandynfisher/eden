@@ -1,4 +1,4 @@
-import { ScenarioType } from '@edenlabs/eden-sdk'
+import { ScenarioType, SessionEventType } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -32,10 +32,13 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: Type.Object({
         sessionId: Type.String(),
+        type: Type.Optional(Type.Enum(SessionEventType)),
         data: Type.Optional(Type.Any()),
       }),
       response: {
-        200: Type.Object({}),
+        200: Type.Object({
+          eventId: Type.String(),
+        }),
       },
     },
     preHandler: [async request => isAdmin(server, request)],

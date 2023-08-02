@@ -13,39 +13,41 @@ import { TaskDocument } from './Task'
 export interface SessionEventSchema {
   session: ScenarioDocument
   type: SessionEventType
+  data: {
+    userAdded?: {
+      user: UserDocument
+    }
+    userRemoved?: {
+      user: UserDocument
+    }
+    characterAdded?: {
+      character: CharacterDocument
+    }
+    characterRemoved?: {
+      character: CharacterDocument
+    }
+    userMessage?: {
+      user: UserDocument
+      message: string
+      completion: CompletionDocument
+    }
+    characterMessage?: {
+      character: CharacterDocument
+      message: string
+      completion: CompletionDocument
+    }
+    creationRequest?: {
+      user: UserDocument
+      character: CharacterDocument
+      task: TaskDocument
+    }
+    creationReturn?: {
+      user: UserDocument
+      character: CharacterDocument
+      creation: CreationDocument
+    }
+  }
   createdAt?: Date
-  userAdded?: {
-    user: UserDocument
-  }
-  userRemoved?: {
-    user: UserDocument
-  }
-  characterAdded?: {
-    character: CharacterDocument
-  }
-  characterRemoved?: {
-    character: CharacterDocument
-  }
-  userMessage?: {
-    user: UserDocument
-    message: string
-    completion: CompletionDocument
-  }
-  characterMessage?: {
-    character: CharacterDocument
-    message: string
-    completion: CompletionDocument
-  }
-  creationRequest?: {
-    user: UserDocument
-    character: CharacterDocument
-    task: TaskDocument
-  }
-  creationReturn?: {
-    user: UserDocument
-    character: CharacterDocument
-    creation: CreationDocument
-  }
 }
 
 export interface SessionEventDocument
@@ -54,9 +56,18 @@ export interface SessionEventDocument
 
 const sessionEvent = new Schema<SessionEventDocument>(
   {
-    creator: {
+    session: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'sessions',
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: Object.values(SessionEventType),
+      required: true,
+    },
+    data: {
+      type: Schema.Types.Mixed,
       required: true,
     },
   },
@@ -64,12 +75,6 @@ const sessionEvent = new Schema<SessionEventDocument>(
     timestamps: true,
   },
 )
-
-sessionEvent.pre<SessionEventDocument>('save', function (next) {
-  this.updatedAt = new Date()
-
-  next()
-})
 
 sessionEvent.plugin(paginate)
 

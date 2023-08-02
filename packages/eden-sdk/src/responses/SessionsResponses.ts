@@ -7,6 +7,7 @@ export type SessionsCreateResponse = WebAPICallResult & {
 }
 
 export type SessionsUpdateResponse = WebAPICallResult & {
+  eventId: string
   error?: string
 }
 
@@ -52,36 +53,38 @@ export type SessionEvent = {
   id: string
   session: string
   type: SessionEventType
-  userAdded?: {
-    user: string
-  }
-  userRemoved?: {
-    user: string
-  }
-  characterAdded?: {
-    character: string
-  }
-  characterRemoved?: {
-    character: string
-  }
-  userMessage?: {
-    user: string
-    message: string
-    completion: string
-  }
-  characterMessage?: {
-    character: string
-    message: string
-    completion: string
-  }
-  creationRequest?: {
-    user: string
-    character: string
-    task: string
-  }
-  creationReturn?: {
-    user: string
-    character: string
-    creation: string
+  data: {
+    userAdded?: {
+      user: string
+    }
+    userRemoved?: {
+      user: string
+    }
+    characterAdded?: {
+      character: string
+    }
+    characterRemoved?: {
+      character: string
+    }
+    userMessage?: {
+      user: string
+      message: string
+      completion: string
+    }
+    characterMessage?: {
+      character: string
+      message: string
+      completion: string
+    }
+    creationRequest?: {
+      user: string
+      character: string
+      task: string
+    }
+    creationReturn?: {
+      user: string
+      character: string
+      creation: string
+    }
   }
 }

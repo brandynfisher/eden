@@ -1,125 +1,125 @@
 import {
-  ScenariosCreateArguments,
-  ScenariosDeleteArguments,
-  ScenariosGetArguments,
-  ScenariosListArguments,
-  ScenariosUpdateArguments,
+  ScenarioType,
+  SessionEventsListArguments,
+  SessionsCreateArguments,
+  SessionsDeleteArguments,
+  SessionsGetArguments,
+  SessionsListArguments,
+  SessionsUpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { User } from '../models/Creator'
-import { Scenario, ScenarioType } from '../models/Scenario'
+import { Session } from '../models/Session'
+import { SessionEvent } from '../models/SessionEvent'
 import CreatorRepository from '../repositories/CreatorRepository'
-import ScenarioRepository from '../repositories/ScenarioRepository'
+import SessionEventRepository from '../repositories/SessionEventRepository'
+import SessionRepository from '../repositories/SessionRepository'
 
-export const createScenario = async (
+export const createSession = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, description, type, data } =
-    request.body as ScenariosCreateArguments
+  const { type } = request.body as SessionsCreateArguments
 
   if (!Object.values(ScenarioType).includes(type)) {
     return reply.status(400).send({
-      message: 'Scenario type not found',
+      message: 'Session type not found',
     })
   }
 
   const input = {
     user: userId,
-    name,
-    description,
+    type,
+  }
+
+  const sessionRepository = new SessionRepository(Session)
+  const session = await sessionRepository.create(input)
+
+  return reply.status(200).send({
+    sessionId: session._id,
+  })
+}
+
+export const updateSession = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { sessionId, type, data } = request.body as SessionsUpdateArguments
+
+  if (!sessionId) {
+    return reply.status(400).send({
+      message: 'You must provide an sessionId',
+    })
+  }
+
+  const session = await Session.findOne({
+    user: userId,
+    sessionId,
+  })
+
+  if (!session) {
+    return reply.status(401).send({
+      message: 'Session not found',
+    })
+  }
+
+  const input = {
+    session,
     type,
     data,
   }
 
-  const scenarioRepository = new ScenarioRepository(Scenario)
-  const scenario = await scenarioRepository.create(input)
+  const sessionEventRepository = new SessionEventRepository(SessionEvent)
+  const sessionEvent = await sessionEventRepository.create(input)
 
-  return reply.status(200).send({
-    scenarioId: scenario._id,
-  })
+  return reply.status(200).send({ eventId: sessionEvent._id })
 }
 
-export const updateScenario = async (
+export const deleteSession = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { scenarioId, name, description, data } =
-    request.body as ScenariosUpdateArguments
+  const { sessionId } = request.body as SessionsDeleteArguments
 
-  if (!scenarioId) {
+  if (!sessionId) {
     return reply.status(400).send({
-      message: 'You must provide an scenarioId',
+      message: 'You must provide an sessionId',
     })
   }
 
-  const scenario = await Scenario.findOne({
-    user: userId,
-    scenarioId,
-  })
-
-  if (!scenario) {
-    return reply.status(401).send({
-      message: 'Scenario not found',
-    })
-  }
-
-  const input = {
-    name,
-    description,
-    data,
-  }
-
-  await scenario.update(input)
-
-  return reply.status(200).send({ scenarioId })
-}
-
-export const deleteScenario = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.user
-  const { scenarioId } = request.body as ScenariosDeleteArguments
-
-  if (!scenarioId) {
-    return reply.status(400).send({
-      message: 'You must provide an scenarioId',
-    })
-  }
-
-  const dbScenario = await Scenario.findOne({
-    scenarioId,
+  const dbSession = await Session.findOne({
+    sessionId,
     user: userId,
   })
 
-  if (!dbScenario) {
+  if (!dbSession) {
     return reply.status(401).send({
-      message: 'Scenario not found',
+      message: 'Session not found',
     })
   }
 
-  await dbScenario.delete()
+  await dbSession.delete()
 
   return reply.status(200).send({})
 }
 
-export const listScenarios = async (
+export const listSessions = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, limit, page, sort } = request.query as ScenariosListArguments
+  const { userId, limit, page, sort } = request.query as SessionsListArguments
 
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId,
   })
 
-  const scenarioRepository = new ScenarioRepository(Scenario)
-  const scenarioPaginatedResponse = await scenarioRepository.query(
+  const sessionRepository = new SessionRepository(Session)
+  const sessionPaginatedResponse = await sessionRepository.query(
     {
       user: creators.docs
         ? creators.docs.map(creator => creator._id)
@@ -132,38 +132,69 @@ export const listScenarios = async (
     },
   )
   const response = {
-    ...scenarioPaginatedResponse,
-    docs: scenarioPaginatedResponse.docs.map(scenario => ({
-      id: scenario._id,
-      name: scenario.name,
-      description: scenario.description,
-      type: scenario.type,
-      data: scenario.data,
+    ...sessionPaginatedResponse,
+    docs: sessionPaginatedResponse.docs.map(session => ({
+      id: session._id,
+      type: session.type,
     })),
   }
 
   return reply.status(200).send(response)
 }
 
-export const getScenario = async (
+export const getSession = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { scenarioId } = request.params as ScenariosGetArguments
-  const scenario = await Scenario.findOne({ scenarioId })
-  if (!scenario) {
+  const { sessionId } = request.params as SessionsGetArguments
+  const session = await Session.findOne({ sessionId })
+  if (!session) {
     return reply.status(404).send({
-      message: 'Scenario not found',
+      message: 'Session not found',
     })
   }
 
   const response = {
-    id: scenario._id,
-    name: scenario.name,
-    description: scenario.description,
-    type: scenario.type,
-    data: scenario.data,
+    id: session._id,
+    type: session.type,
   }
 
-  return reply.status(200).send({ scenario: response })
+  return reply.status(200).send({ session: response })
+}
+
+export const getSessionEvents = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { sessionId, limit, page, sort } =
+    request.params as SessionEventsListArguments
+  const session = await Session.findOne({ sessionId })
+  if (!session) {
+    return reply.status(404).send({
+      message: 'Session not found',
+    })
+  }
+
+  const sessionEventsRepository = new SessionEventRepository(SessionEvent)
+  const sessionEventsPaginatedResponse = await sessionEventsRepository.query(
+    {
+      session: session._id,
+    },
+    {
+      limit,
+      page,
+      sort,
+    },
+  )
+
+  const response = {
+    ...sessionEventsPaginatedResponse,
+    docs: sessionEventsPaginatedResponse.docs.map(sessionEvent => ({
+      id: sessionEvent._id,
+      type: sessionEvent.type,
+      data: sessionEvent.data,
+    })),
+  }
+
+  return reply.status(200).send(response)
 }

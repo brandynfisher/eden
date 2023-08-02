@@ -13,6 +13,8 @@ import { Manna, MannaDocument } from './Manna'
 import { MannaVoucher, MannaVoucherDocument } from './MannaVoucher'
 import { Reaction, ReactionDocument } from './Reaction'
 import { Scenario, ScenarioDocument } from './Scenario'
+import { Session, SessionDocument } from './Session'
+import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
 
@@ -32,6 +34,8 @@ export interface Database {
   Challenge: Model<ChallengeDocument>
   Scenario: Model<ScenarioDocument>
   Lora: Model<LoraDocument>
+  Session: Model<SessionDocument>
+  SessionEvent: Model<SessionEventDocument>
 }
 
 export const models: Database = {
@@ -50,4 +54,6 @@ export const models: Database = {
   Challenge,
   Scenario,
   Lora,
+  Session,
+  SessionEvent,
 }
