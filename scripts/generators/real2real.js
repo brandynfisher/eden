@@ -11,7 +11,7 @@ const params = [
     default: [],
     mediaUpload: true,
     minLength: 2,
-    maxLength: 5,
+    maxLength: 8,
     isRequired: true,
   },
   {
@@ -45,6 +45,26 @@ const params = [
     minimum: 0.5,
     maximum: 1.0,
     step: 0.01,
+    optional: true,
+  },
+  {
+    name: 'interpolation_texts',
+    label: 'Override prompts',
+    description: 'Optional: Override real2real internal prompts with these ones (length must match number of images)',
+    default: [],
+    minLength: 2,
+    maxLength: 8,
+    isRequired: false,
+    optional: true
+  },
+  {
+    name: 'guidance_scale',
+    label: 'Guidance scale',
+    description: 'Strength of prompt conditioning guidance',
+    default: 5.5,
+    minimum: 0.0,
+    maximum: 30.0,
+    step: 0.1,
     optional: true,
   },
   {
