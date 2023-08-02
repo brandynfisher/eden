@@ -33,6 +33,14 @@ const params = [
     optional: true,
   },
   {
+    name: 'sampler',
+    label: 'Sampler',
+    description: 'Sampler to use for generation',
+    default: 'euler',
+    allowedValues: ["ddim", "ddpm", "klms", "euler"],
+    optional: true,
+  },
+  {
     name: 'fps',
     label: 'FPS',
     description: 'Frames per second of the output video (by default, will be 2x this with n_film=1)',
