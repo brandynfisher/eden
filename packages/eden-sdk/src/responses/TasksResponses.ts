@@ -9,7 +9,7 @@ export type TasksCreateResponse = WebAPICallResult & {
 
 export type TasksCompleteResponse = WebAPICallResult & {
   error?: string
-  completion?: string
+  completion?: Completion
 }
 
 export type TasksListResponse = WebAPICallResult &
@@ -40,4 +40,9 @@ export type Task = {
   lora?: string
   createdAt: string
   updatedAt: string
+}
+
+export type Completion = {
+  id: string
+  text: string
 }

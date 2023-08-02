@@ -6,7 +6,6 @@ import paginate from 'mongoose-paginate-v2'
 import { CharacterDocument } from './Character'
 import { CompletionDocument } from './Completion'
 import { CreationDocument } from './Creation'
-import { UserDocument } from './Creator'
 import { ScenarioDocument } from './Scenario'
 import { TaskDocument } from './Task'
 
@@ -15,10 +14,10 @@ export interface SessionEventSchema {
   type: SessionEventType
   data: {
     userAdded?: {
-      user: UserDocument
+      userId: string
     }
     userRemoved?: {
-      user: UserDocument
+      userId: string
     }
     characterAdded?: {
       character: CharacterDocument
@@ -27,7 +26,7 @@ export interface SessionEventSchema {
       character: CharacterDocument
     }
     userMessage?: {
-      user: UserDocument
+      userId: string
       message: string
       completion: CompletionDocument
     }
@@ -37,12 +36,12 @@ export interface SessionEventSchema {
       completion: CompletionDocument
     }
     creationRequest?: {
-      user: UserDocument
+      userId: string
       character: CharacterDocument
       task: TaskDocument
     }
     creationReturn?: {
-      user: UserDocument
+      userId: string
       character: CharacterDocument
       creation: CreationDocument
     }

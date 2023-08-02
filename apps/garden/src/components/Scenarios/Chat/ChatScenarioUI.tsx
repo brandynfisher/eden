@@ -29,8 +29,10 @@ type ConversationEntry = {
 
 const ChatScenarioUI = ({
   activeCharacter,
+  sessionId,
 }: {
   activeCharacter: Character
+  sessionId: string
 }) => {
   const { isAuthenticated, address } = useContext(UserContext)
   const { creator } = useCreator(isAuthenticated && address ? address : null)
@@ -84,7 +86,11 @@ const ChatScenarioUI = ({
         activeCharacter.description,
         activeCharacter.dialogue,
       )
-      const res = await axios.post(`/api/lm/complete`, { prompt })
+      const res = await axios.post(`/api/lm/complete`, {
+        sessionId,
+        characterId: activeCharacter.id,
+        prompt,
+      })
       const completion = res.data.completion as string
       setConversation(state => [
         ...state,

@@ -37,7 +37,10 @@ const taskRoutes: FastifyPluginAsync = async server => {
       },
       response: {
         200: Type.Object({
-          completion: Type.String(),
+          completion: Type.Object({
+            id: Type.String(),
+            text: Type.String(),
+          }),
         }),
       },
     },

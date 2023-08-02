@@ -195,11 +195,16 @@ export const createCompletion = async (
   reply: FastifyReply,
 ) => {
   const { prompt } = request.body as { prompt: string }
-  const completion = await server.complete(server, prompt)
+  const completionText = await server.complete(server, prompt)
   const completionInput: CompletionInput = {
     prompt,
-    completion,
+    completion: completionText,
   }
-  await Completion.create(completionInput)
-  return reply.status(200).send({ completion })
+  const completion = await Completion.create(completionInput)
+  return reply.status(200).send({
+    completion: {
+      id: completion.id,
+      text: completionText,
+    },
+  })
 }

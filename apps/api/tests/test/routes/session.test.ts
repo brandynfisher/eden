@@ -1,9 +1,7 @@
 import { ScenarioType, SessionEventType } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
-import { ObjectId } from 'mongodb'
 import { expect, test } from 'vitest'
 
-import { Transaction } from '../../../src/models/Transaction'
 import {
   getDefaultUserId,
   prepareAdminHeaders,
