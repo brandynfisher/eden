@@ -46,7 +46,6 @@ export const updateSession = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
   const { sessionId, type, data } = request.body as SessionsUpdateArguments
 
   if (!sessionId) {
@@ -56,8 +55,7 @@ export const updateSession = async (
   }
 
   const session = await Session.findOne({
-    user: userId,
-    sessionId,
+    _id: sessionId,
   })
 
   if (!session) {
@@ -147,7 +145,7 @@ export const getSession = async (
   reply: FastifyReply,
 ) => {
   const { sessionId } = request.params as SessionsGetArguments
-  const session = await Session.findOne({ sessionId })
+  const session = await Session.findById(sessionId)
   if (!session) {
     return reply.status(404).send({
       message: 'Session not found',

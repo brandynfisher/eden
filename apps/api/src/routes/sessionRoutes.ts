@@ -7,6 +7,7 @@ import {
   createSession,
   deleteSession,
   getSession,
+  getSessionEvents,
   listSessions,
   updateSession,
 } from '../controllers/sessionController'
@@ -71,7 +72,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       response: {
         200: paginatedResponse(
           Type.Object({
-            sessionId: Type.String(),
+            id: Type.String(),
           }),
         ),
       },
@@ -88,7 +89,8 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           session: Type.Object({
-            sessionId: Type.String(),
+            id: Type.String(),
+            type: Type.Enum(ScenarioType),
           }),
         }),
       },
@@ -114,7 +116,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [async request => isAuth(server, request)],
-    handler: (request, reply) => getSession(request, reply),
+    handler: (request, reply) => getSessionEvents(request, reply),
   })
 }
 
