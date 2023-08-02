@@ -119,7 +119,7 @@ const ChatScenarioUI = ({
       responsive
       className="dark:!bg-gray-800 !border-none rounded-lg overflow-hidden"
     >
-      <ChatContainer className="!bg-gray-200 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden max-h-[calc(100vh_-_223px)]">
+      <ChatContainer className="!bg-gray-200 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden max-h-[calc(100vh_-_96px)]">
         <ConversationHeader className="!bg-gray-200 dark:!bg-gray-800 !px-4 !py-4 !border-b-0">
           {/*<ConversationHeader.Actions className="!bg-gray-100 dark:!bg-gray-800"></ConversationHeader.Actions>*/}
           <ConversationHeader.Content
