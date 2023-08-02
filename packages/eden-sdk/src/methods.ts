@@ -56,6 +56,7 @@ import {
   ScenariosUpdateResponse,
 } from './responses/ScenariosResponses'
 import {
+  TasksCompleteResponse,
   TasksCreateResponse,
   TasksGetResponse,
   TasksListResponse,
@@ -200,10 +201,10 @@ export abstract class Methods {
       this,
       creationsGetRequestConfig,
     ),
-    getSimilar: bindApiCall<CreationsGetSimilarArguments, CreationsGetSimilarResponse>(
-      this,
-      creationsGetSimilarRequestConfig,
-    ),
+    getSimilar: bindApiCall<
+      CreationsGetSimilarArguments,
+      CreationsGetSimilarResponse
+    >(this, creationsGetSimilarRequestConfig),
     react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
       this,
       creationsReactRequestConfig,
@@ -295,6 +296,10 @@ export abstract class Methods {
     create: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,
       tasksCreateRequestConfig,
+    ),
+    complete: bindApiCall<TasksCompleteArguments, TasksCompleteResponse>(
+      this,
+      tasksCompleteRequestConfig,
     ),
     get: bindApiCall<TasksGetArguments, TasksGetResponse>(
       this,
@@ -404,7 +409,7 @@ export interface CreationsGetArguments extends WebAPICallOptions {
 }
 
 export interface CreationsGetSimilarArguments extends WebAPICallOptions {
-  creationId: string,
+  creationId: string
   n: number
 }
 
@@ -491,6 +496,11 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   config?: any
   metadata?: any
   webhooks?: string[]
+}
+
+export interface TasksCompleteArguments extends WebAPICallOptions {
+  prompt: string
+  config?: any
 }
 
 export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
@@ -909,6 +919,18 @@ const tasksCreateRequestConfig = (
   return {
     method: 'POST',
     url: 'tasks/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const tasksCompleteRequestConfig = (
+  args: TasksCompleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'tasks/complete',
     data: {
       ...args,
     },

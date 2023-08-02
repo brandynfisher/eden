@@ -7,6 +7,11 @@ export type TasksCreateResponse = WebAPICallResult & {
   taskId?: string
 }
 
+export type TasksCompleteResponse = WebAPICallResult & {
+  error?: string
+  completion?: string
+}
+
 export type TasksListResponse = WebAPICallResult &
   PaginatedResponse<Task> & {
     error?: string

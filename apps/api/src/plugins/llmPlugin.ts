@@ -10,6 +10,9 @@ export const complete = async (
       model: 'davinci',
       prompt,
       max_tokens: 300,
+      temperature: 1.0,
+      top_p: 1.0,
+      stop: ['\n'],
     })
     if (!completion.data.choices) {
       throw new Error('No choices')
