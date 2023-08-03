@@ -35,7 +35,7 @@ const CreatorProfileLink = ({
         />
       </div>
       <div className="creator-profile-link-name ml-2 text-sm font-bold overflow-hidden whitespace-nowrap">
-        {creatorName && creatorName !== creatorId
+        {creatorName && (creatorName.length > 32 || creatorName !== creatorId)
           ? creatorName
           : truncatedAddress(creatorId)}
       </div>
