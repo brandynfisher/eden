@@ -321,17 +321,6 @@ const TaskNotificationDropdown = () => {
             </Button>
           </Dropdown>
         )}
-        {completedTasks && completedTasks.length > 0 && (
-          <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
-            <Button
-              type="text"
-              className="text-green-500 items-center flex px-2"
-            >
-              <CheckOutlined className="mr-2" />
-              {completedTasks.length}
-            </Button>
-          </Dropdown>
-        )}
       </Button.Group>
     </Space>
   )
