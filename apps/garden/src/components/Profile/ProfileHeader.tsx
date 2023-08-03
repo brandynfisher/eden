@@ -93,6 +93,7 @@ const ProfileHeader = ({
                       form={form}
                       parameter={{ name: 'userImage', label: '', maxLength: 1 }}
                       key={'userImage'}
+                      acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
                     />
                     <Button
                       type="primary"
