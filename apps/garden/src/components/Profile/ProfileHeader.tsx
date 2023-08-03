@@ -80,9 +80,9 @@ const ProfileHeader = ({
 
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
-      <div className="flex w-full items-center justify-start gap-4">
+      <div className="flex w-full items-center justify-start gap-4 items-stretch">
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
-          <div className="w-[72px] h-[72px]">
+          <div className="w-[90px] h-[90px]">
             <CharacterAvatar
               id={creatorId}
               name={displayName || ''}
@@ -142,7 +142,7 @@ const ProfileHeader = ({
             </div>
           )}
         </div>
-        <div className="flex flex-col justify-center w-full min-w-0">
+        <div className="flex flex-col justify-center w-full min-w-0 h-full">
           {isLoading ? (
             <div>
               <LoadingOutlined />
