@@ -74,7 +74,7 @@ const ProfileHeader = ({
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <CharacterAvatar
             id={creatorId}
-            name={displayName}
+            name={displayName || ''}
             imageUri={creator?.userImage || ''}
             size="large"
           />

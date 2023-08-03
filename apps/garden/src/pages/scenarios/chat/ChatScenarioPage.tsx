@@ -1,23 +1,36 @@
 import ChatScenarioUI from '@/components/Scenarios/Chat/ChatScenarioUI'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
+import { useMySessions } from '@/hooks/useMySessions'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Character, ScenarioType, SessionEventType } from '@edenlabs/eden-sdk'
+import {
+  Character,
+  ScenarioType,
+  Session,
+  SessionEventType,
+} from '@edenlabs/eden-sdk'
 import { App, Button, Select } from 'antd'
 import axios from 'axios'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
 const ChatScenarioPageContent = ({
   characters,
+  sessions,
+  activeSessionId,
 }: {
   characters: Character[]
+  sessions: Session[]
+  activeSessionId?: string
 }) => {
+  const router = useRouter()
   const { message } = App.useApp()
   const { address } = useContext(UserContext)
   const [activeCharacter, setActiveCharacter] = useState<Character>(
     characters?.[0] as Character,
   )
-  const [sessionId, setSessionId] = useState<string>()
+  const [sessionId, setSessionId] = useState<string>(activeSessionId || '')
   const [activeCharacterName, setActiveCharacterName] = useState<string>()
   const [sessionCreating, setSessionCreating] = useState(false)
 
@@ -66,6 +79,7 @@ const ChatScenarioPageContent = ({
 
       await axios.post('/api/sessions/update', characterAddEvent)
       setSessionId(sessionId)
+      await router.push('', `/scenarios/chat/${sessionId}`)
     } catch (error) {
       handleAxiosError(error, message)
     }
@@ -76,28 +90,48 @@ const ChatScenarioPageContent = ({
     <div className="flex flex-col h-full">
       {!sessionId ? (
         <>
-          <label htmlFor="character-select">Select a Character:</label>
-          <div className="w-full flex flex-col space-y-4 mt-2 mb-4">
-            <Select
-              id="character-select"
-              value={activeCharacterName}
-              onChange={handleActiveCharacterChange}
-            >
-              {characters &&
-                characters.map(character => (
-                  <Select.Option key={character.id} value={character.name}>
-                    {character.name}
-                  </Select.Option>
-                ))}
-            </Select>
+          <div className="mb-8">
+            {sessions && sessions.length && (
+              <>
+                <h2 className="mb-4">Previous Sessions</h2>
+                <div className="flex gap-4 flex-wrap">
+                  {sessions.map(session => (
+                    <Link
+                      key={session.id}
+                      href={`/scenarios/chat/${session.id}`}
+                    >
+                      {session.id}
+                    </Link>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-          <Button
-            className={`font-mono px-2 text-black dark:text-gray-300 hover:!text-gray-100 bg-gray-200 dark:bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-800`}
-            onClick={handleStartChat}
-            loading={sessionCreating}
-          >
-            Select Character
-          </Button>
+          <div>
+            <h2 className="mb-4">Start new session</h2>
+            <label htmlFor="character-select">Select a Character:</label>
+            <div className="w-full flex flex-col space-y-4 mt-2 mb-4">
+              <Select
+                id="character-select"
+                value={activeCharacterName}
+                onChange={handleActiveCharacterChange}
+              >
+                {characters &&
+                  characters.map(character => (
+                    <Select.Option key={character.id} value={character.name}>
+                      {character.name}
+                    </Select.Option>
+                  ))}
+              </Select>
+            </div>
+            <Button
+              className={`font-mono px-2 text-black dark:text-gray-300 hover:!text-gray-100 bg-gray-200 dark:bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-800`}
+              onClick={handleStartChat}
+              loading={sessionCreating}
+            >
+              Select Character
+            </Button>
+          </div>
         </>
       ) : (
         <ChatScenarioUI
@@ -109,13 +143,26 @@ const ChatScenarioPageContent = ({
   )
 }
 
-const ChatScenarioPage = ({ data }: { data: Character[] }) => {
+const ChatScenarioPage = ({
+  data,
+  activeSessionId,
+}: {
+  data: { characters: Character[]; sessions: Session[] }
+  activeSessionId?: string
+}) => {
   const { isAuthenticated, address } = useContext(UserContext)
   const { characters: charactersData } = useMyCharacters({
     userId: address ? address : null,
     isAuthenticated,
     options: {
-      fallbackData: data,
+      fallbackData: data.characters,
+    },
+  })
+  const { sessions: sessionsData } = useMySessions({
+    userId: address ? address : null,
+    isAuthenticated,
+    options: {
+      fallbackData: data.characters,
     },
   })
 
@@ -123,7 +170,13 @@ const ChatScenarioPage = ({ data }: { data: Character[] }) => {
     return null
   }
 
-  return <ChatScenarioPageContent characters={charactersData || data} />
+  return (
+    <ChatScenarioPageContent
+      characters={charactersData || data.characters}
+      sessions={sessionsData || data.sessions}
+      activeSessionId={activeSessionId}
+    />
+  )
 }
 
 export default ChatScenarioPage

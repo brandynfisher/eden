@@ -2,12 +2,17 @@ import { maybeRedirectIfCreationIdQuery } from '@/lib/redirect'
 import { withSessionSsr } from '@/lib/withSession'
 import { NextPageContext } from 'next'
 
+type FieldRequest = {
+  responseFieldName: string
+  dataFetcher: (ctx: NextPageContext) => Promise<{ [key: string]: string }>
+}
+
 export const getServerSidePropsBase = (
-  responseFieldName: string,
-  dataFetcher: (ctx: NextPageContext) => Promise<{ [key: string]: string }>,
+  fieldRequests: FieldRequest[],
   useSessionSsr?: boolean,
 ) => {
   const getServerSideProps = async (ctx: NextPageContext) => {
+    `1`
     const shouldRedirectToCreationDetail = await maybeRedirectIfCreationIdQuery(
       ctx,
     )
@@ -17,15 +22,21 @@ export const getServerSidePropsBase = (
     }
 
     try {
-      const data = await dataFetcher(ctx)
+      const allFieldResults = await Promise.all(
+        fieldRequests.map(async fieldRequest => {
+          const data = await fieldRequest.dataFetcher(ctx)
 
-      if (!data || !data[responseFieldName]) {
-        return {
-          notFound: true,
-        }
-      }
+          if (!data || !data[fieldRequest.responseFieldName]) {
+            return {
+              notFound: true,
+            }
+          }
 
-      return { props: { data: data[responseFieldName] } }
+          return data
+        }),
+      )
+
+      return { props: { data: allFieldResults[0] } }
     } catch (err) {
       return { props: { data: null, error: 'Something went wrong' } }
     }
