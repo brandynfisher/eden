@@ -29,6 +29,7 @@ const ProfileHeader = ({
   const [isLoading, setIsLoading] = useState(true)
   const [imageSubmitLoading, setImageSubmitLoading] = useState(false)
   const [displayName, setDisplayName] = useState('')
+  const [displayImage, setDisplayImage] = useState('')
   const [showImageUploader, setShowImageUploader] = useState(false)
   const [form] = Form.useForm()
   const userImageFieldValue = Form.useWatch('userImage', form)
@@ -46,6 +47,10 @@ const ProfileHeader = ({
       setDisplayName(creatorId)
     }
 
+    if (creator.userImage) {
+      setDisplayImage(creator.userImage)
+    }
+
     setIsLoading(false)
   }, [creator, creatorId])
 
@@ -54,11 +59,12 @@ const ProfileHeader = ({
     message.destroy()
 
     try {
-      await axios.post('/api/creators/update', {
+      const creatorResponse = await axios.post('/api/creators/update', {
         userImage: userImageFieldValue,
       })
       message.success('Image updated successfully!')
-      await refetchCreator()
+      await refetchCreator(creatorResponse.data.creator)
+      setDisplayImage(creatorResponse.data.creator.userImage)
       setShowImageUploader(false)
     } catch (err) {
       handleAxiosError(err, message)
@@ -72,12 +78,14 @@ const ProfileHeader = ({
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4">
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
-          <CharacterAvatar
-            id={creatorId}
-            name={displayName || ''}
-            imageUri={creator?.userImage || ''}
-            size="large"
-          />
+          <div className="w-[72px] h-[72px]">
+            <CharacterAvatar
+              id={creatorId}
+              name={displayName || ''}
+              imageUri={displayImage || ''}
+              size="auto"
+            />
+          </div>
           {isConnectedUser && (
             <div className="flex flex-col mt-2 relative">
               <Button onClick={() => setShowImageUploader(!showImageUploader)}>
