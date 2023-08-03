@@ -23,7 +23,6 @@ const MyProfileButton = () => {
     return (
       <Button
         type="primary"
-        className="font-mono flex justify-center px-2 h-full items-center"
         onClick={() => authenticate()}
         loading={isAuthenticating ? { delay: 250 } : false}
         disabled={isAuthenticating}
@@ -39,7 +38,11 @@ const MyProfileButton = () => {
       : ''
 
   return (
-    <Link href={userProfilePath} passHref>
+    <Link
+      href={userProfilePath}
+      passHref
+      className="font-mono flex justify-center px-2 h-full items-center h-[32px] w-[32px] max-h-full"
+    >
       <Button type="text" className="flex justify-center px-2">
         <CharacterAvatar
           id={address || ''}

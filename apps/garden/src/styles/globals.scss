@@ -239,3 +239,12 @@
     }
 }
 
+.creatorProfile {
+    .ant-upload-list {
+        .ant-upload-select,
+        .ant-upload-list-item-container {
+            margin-inline: 0 !important;
+            margin-block: 0 !important;
+        }
+    }
+}

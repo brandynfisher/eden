@@ -11,7 +11,7 @@ const CharacterAvatar = ({
 }: {
   id: string
   name: string
-  imageUri: string
+  imageUri?: string
   size?: 'small' | 'medium' | 'large' | 'auto' | undefined
   shape?: 'square' | 'circle'
 }) => {
@@ -26,7 +26,12 @@ const CharacterAvatar = ({
       }`}
     >
       {imageUri ? (
-        <Image src={imageUri} alt={`${name}'s Avatar`} preview={false} />
+        <Image
+          src={imageUri}
+          alt={`${name}'s Avatar`}
+          preview={false}
+          className="object-contain"
+        />
       ) : (
         <CharacterAvatarFallback id={id} name={name} size={size} />
       )}

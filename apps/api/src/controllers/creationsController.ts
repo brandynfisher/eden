@@ -115,7 +115,9 @@ export const getCreation = async (
 ) => {
   const { creationId } = request.params as CreationsGetArguments
 
-  const creation = (await Creation.findById(creationId)
+  const creation = (await Creation.findById(creationId, {
+    'embedding.embedding': 0,
+  })
     .populate({
       path: 'task',
       select: 'config status generator',
@@ -218,10 +220,23 @@ export const getCreationSimilar = async (
 
   const similarIdxs = results.ids[0].slice(1)
 
-  const similarCreations = await Creation.find({
-    _id: {
-      $in: similarIdxs,
+  const similarCreations = await Creation.find(
+    {
+      _id: {
+        $in: similarIdxs,
+      },
     },
+    { 'embedding.embedding': 0 },
+  )
+
+  await Creation.populate(similarCreations, {
+    path: 'user',
+    select: 'userId username userImage',
+  })
+  await Creation.populate(similarCreations, {
+    path: 'task',
+    select: 'config status generator',
+    populate: { path: 'generator', select: 'generatorName description output' },
   })
 
   return reply.status(200).send({ similarCreations })

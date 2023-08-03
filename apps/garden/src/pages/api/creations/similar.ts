@@ -14,7 +14,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       creationId: creationId as string,
       n: 10,
     })
-    return res.status(200).json({ creations: response.docs })
+    return res.status(200).json({ creations: response.similarCreations })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })

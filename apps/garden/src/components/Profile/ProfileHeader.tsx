@@ -1,11 +1,16 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import CopyUrlButton from '@/components/CopyUrlButton'
+import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FollowControls from '@/components/FollowControls'
 import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
 import ShareButton from '@/components/ShareButton'
+import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
+import { handleAxiosError } from '@/lib/fetcher'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Creator } from '@edenlabs/eden-sdk'
+import { App, Button, Form } from 'antd'
+import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 
 const ProfileHeader = ({
@@ -19,8 +24,14 @@ const ProfileHeader = ({
   isConnectedUser: boolean
   numCreations: number | undefined
 }) => {
+  const { mutate: refetchCreator } = useCreator(creatorId)
+  const { message } = App.useApp()
   const [isLoading, setIsLoading] = useState(true)
+  const [imageSubmitLoading, setImageSubmitLoading] = useState(false)
   const [displayName, setDisplayName] = useState('')
+  const [showImageUploader, setShowImageUploader] = useState(false)
+  const [form] = Form.useForm()
+  const userImageFieldValue = Form.useWatch('userImage', form)
 
   useEffect(() => {
     setIsLoading(true)
@@ -38,16 +49,66 @@ const ProfileHeader = ({
     setIsLoading(false)
   }, [creator, creatorId])
 
+  const handleImageSubmit = async () => {
+    setImageSubmitLoading(true)
+    message.destroy()
+
+    try {
+      await axios.post('/api/creators/update', {
+        userImage: userImageFieldValue,
+      })
+      message.success('Image updated successfully!')
+      await refetchCreator()
+    } catch (err) {
+      handleAxiosError(err, message)
+      message.error('Failed to update image!')
+    }
+    setImageSubmitLoading(false)
+  }
+
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4">
-        <div className="flex h-full flex-shrink-0 w-min">
+        <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <CharacterAvatar
             id={creatorId}
             name={displayName}
             imageUri={creator?.userImage || ''}
             size="large"
           />
+          {isConnectedUser && (
+            <div className="flex flex-col mt-2 relative">
+              <Button onClick={() => setShowImageUploader(!showImageUploader)}>
+                Upload
+              </Button>
+              {showImageUploader && (
+                <div className="bg-gray-800 p-2 rounded-lg top-10 absolute z-10">
+                  <Form
+                    form={form}
+                    name="creatorProfile"
+                    onFinish={handleImageSubmit}
+                    className="flex flex-col justify-center items-center creatorProfile"
+                  >
+                    <UploadParameter
+                      form={form}
+                      parameter={{ name: 'userImage', label: '', maxLength: 1 }}
+                      key={'userImage'}
+                    />
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      className="w-full"
+                      disabled={
+                        isLoading || imageSubmitLoading || !userImageFieldValue
+                      }
+                    >
+                      Save
+                    </Button>
+                  </Form>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex flex-col justify-center w-full min-w-0">
           {isLoading ? (

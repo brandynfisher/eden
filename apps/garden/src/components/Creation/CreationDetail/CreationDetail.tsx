@@ -238,6 +238,7 @@ const CreationDetail = ({
                   <CreatorProfileLink
                     creatorId={creationData.user.userId}
                     creatorName={creationData.user.username}
+                    creatorImage={creationData.user.userImage || ''}
                   />
                 </div>
               </div>
