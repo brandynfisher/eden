@@ -1,6 +1,6 @@
 import WalletCustomAvatar from '@/components/WalletCustomAvatar'
 import { CONFIG } from '@/lib/config'
-import { ParticleNetwork } from '@particle-network/auth'
+import { ParticleNetwork, WalletEntryPosition } from '@particle-network/auth'
 import { particleWallet } from '@particle-network/rainbowkit-ext'
 import {
   RainbowKitProvider,
@@ -30,6 +30,9 @@ new ParticleNetwork({
   projectId: CONFIG.NEXT_PUBLIC_PARTICLE_PROJECT_ID,
   clientKey: CONFIG.NEXT_PUBLIC_PARTICLE_CLIENT_KEY,
   appId: CONFIG.NEXT_PUBLIC_PARTICLE_APP_ID,
+  wallet: {
+    defaultWalletEntryPosition: WalletEntryPosition.BL,
+  },
   // chainId: sepolia.id,
   // chainName: 'ethereum',
 })
