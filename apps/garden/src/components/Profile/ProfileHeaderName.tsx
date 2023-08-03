@@ -2,6 +2,7 @@ import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { EditOutlined } from '@ant-design/icons'
+import { useClickOutside } from '@mantine/hooks'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
@@ -20,6 +21,7 @@ const ProfileHeaderName = ({
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [updatedName, setUpdatedName] = useState(displayName)
+  const clickOutsideTargetRef = useClickOutside(() => setIsEditing(false))
 
   const handleEditNameClick = async () => {
     if (!isAuthenticated) {
@@ -63,6 +65,7 @@ const ProfileHeaderName = ({
   return (
     <div className="flex items-center gap-2 w-full">
       <div
+        ref={clickOutsideTargetRef}
         className={`dark:text-white text-md font-semibold min-w-0 ${
           isEditing ? 'w-full' : ''
         }`}

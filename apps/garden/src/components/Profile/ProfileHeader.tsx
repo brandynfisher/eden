@@ -9,6 +9,7 @@ import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Creator } from '@edenlabs/eden-sdk'
+import { useClickOutside } from '@mantine/hooks'
 import { App, Button, Form } from 'antd'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
@@ -33,6 +34,9 @@ const ProfileHeader = ({
   const [showImageUploader, setShowImageUploader] = useState(false)
   const [form] = Form.useForm()
   const userImageFieldValue = Form.useWatch('userImage', form)
+  const clickOutsideTargetRef = useClickOutside(() =>
+    setShowImageUploader(false),
+  )
 
   useEffect(() => {
     setIsLoading(true)
@@ -87,7 +91,10 @@ const ProfileHeader = ({
             />
           </div>
           {isConnectedUser && (
-            <div className="flex flex-col mt-2 relative">
+            <div
+              ref={clickOutsideTargetRef}
+              className="flex flex-col mt-2 relative"
+            >
               <Button onClick={() => setShowImageUploader(!showImageUploader)}>
                 Upload
               </Button>
@@ -127,13 +134,13 @@ const ProfileHeader = ({
               <LoadingOutlined />
             </div>
           ) : (
-            <div className="flex items-center">
+            <div className="flex items-center flex-wrap md:flex-nowrap">
               <ProfileHeaderName
                 isOwnProfile={isConnectedUser}
                 displayName={displayName}
                 setDisplayName={setDisplayName}
               />
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <CopyUrlButton
                   url={`${
                     CONFIG.NEXT_PUBLIC_HOST
