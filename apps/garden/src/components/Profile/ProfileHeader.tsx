@@ -7,7 +7,7 @@ import ShareButton from '@/components/ShareButton'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
 import { Creator } from '@edenlabs/eden-sdk'
 import { useClickOutside } from '@mantine/hooks'
 import { App, Button, Form } from 'antd'
@@ -95,16 +95,20 @@ const ProfileHeader = ({
               ref={clickOutsideTargetRef}
               className="flex flex-col mt-2 relative"
             >
-              <Button onClick={() => setShowImageUploader(!showImageUploader)}>
-                Upload
+              <Button
+                size="small"
+                className="!px-3 font-mono"
+                onClick={() => setShowImageUploader(!showImageUploader)}
+              >
+                <UploadOutlined /> Set Image
               </Button>
               {showImageUploader && (
-                <div className="bg-gray-800 p-2 rounded-lg top-10 absolute z-10">
+                <div className="bg-gray-800 p-2 rounded-lg top-8 absolute z-10">
                   <Form
                     form={form}
                     name="creatorProfile"
                     onFinish={handleImageSubmit}
-                    className="flex flex-col justify-center items-center creatorProfile"
+                    className="flex gap-2 justify-center items-center creatorProfile"
                   >
                     <UploadParameter
                       form={form}
@@ -112,16 +116,26 @@ const ProfileHeader = ({
                       key={'userImage'}
                       acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
                     />
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      className="w-full"
-                      disabled={
-                        isLoading || imageSubmitLoading || !userImageFieldValue
-                      }
-                    >
-                      Save
-                    </Button>
+                    <div>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        className="w-full"
+                        disabled={
+                          isLoading ||
+                          imageSubmitLoading ||
+                          !userImageFieldValue
+                        }
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        className="mt-4"
+                        onClick={() => setShowImageUploader(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </Form>
                 </div>
               )}

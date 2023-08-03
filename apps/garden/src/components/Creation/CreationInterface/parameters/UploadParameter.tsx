@@ -119,7 +119,7 @@ const UploadParameter = (props: {
 
   return (
     <>
-      <Row>
+      <Row className=" flex-shrink-0 ">
         <Form.Item
           className="mb-2"
           initialValue={props.parameter.default}
@@ -142,9 +142,9 @@ const UploadParameter = (props: {
             accept={props.acceptedMimeTypes ? props.acceptedMimeTypes : ''}
           >
             {fileList.length >= maxUploads ? null : (
-              <div className="flex p-2 px-4">
+              <div className="flex flex-shrink-0 p-2 px-4">
                 <UploadOutlined />
-                <div className="ml-1">Upload File</div>
+                <div className="ml-1">Upload</div>
               </div>
             )}
           </Upload>
