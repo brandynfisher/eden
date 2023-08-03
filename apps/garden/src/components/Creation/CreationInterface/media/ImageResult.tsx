@@ -10,9 +10,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const ImagePreviewMask = () => (
-  <div className="image-preview-mask absolute inset-0 flex items-center justify-center">
-    <div className="rounded-full bg-gray-300 dark:bg-gray-800  h-12 w-12 flex items-center justify-center">
-      <ExpandOutlined className="text-2xl" />
+  <div className="image-preview-mask absolute inset-0 !opacity-80">
+    <div className="rounded-lg bg-gray-300 dark:bg-gray-800 h-8 w-8 flex items-center justify-center absolute top-[-16px] left-[-16px]">
+      <ExpandOutlined className="text-xl" />
     </div>
   </div>
 )
@@ -128,8 +128,6 @@ const ImageResult = ({
               src={resultUrl}
             />
           )}
-
-          {previewUrl && !showPreview && <ImagePreviewMask />}
         </div>
 
         {previewUrl && showPreview ? (
@@ -176,6 +174,7 @@ const ImageResult = ({
             </TransformWrapper>
           </div>
         ) : null}
+        {previewUrl && !showPreview && <ImagePreviewMask />}
       </div>
     </>
   )
