@@ -132,7 +132,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             description: character?.description || '',
             greeting: character?.greeting || '',
             completion: '',
-            image: '',
+            image: character?.image || '',
           }
         : {
             name: EXAMPLE_CHARACTER.name,
@@ -226,7 +226,12 @@ const CharacterForm = ({ character }: { character?: Character }) => {
         >
           <UploadParameter
             form={form}
-            parameter={{ name: 'image', label: '', maxLength: 1 }}
+            parameter={{
+              name: 'image',
+              label: '',
+              maxLength: 1,
+              default: (character && character.image) || '',
+            }}
             key={'image'}
             acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
           />
