@@ -82,7 +82,14 @@ const ProfileHeader = ({
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4 items-stretch">
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
-          <div className="w-[90px] h-[90px]">
+          <div
+            className={`w-[90px] h-[90px] ${
+              isConnectedUser
+                ? 'hover:brightness-125 transition-all cursor-pointer'
+                : ''
+            }`}
+            onClick={() => isConnectedUser && setShowImageUploader(true)}
+          >
             <CharacterAvatar
               id={creatorId}
               name={displayName || ''}
@@ -103,7 +110,7 @@ const ProfileHeader = ({
                 <UploadOutlined /> Set Image
               </Button>
               {showImageUploader && (
-                <div className="bg-gray-800 p-2 rounded-lg top-8 absolute z-10">
+                <div className="bg-gray-400 dark:bg-gray-800 p-2 rounded-lg top-8 absolute z-10">
                   <Form
                     form={form}
                     name="creatorProfile"
@@ -130,7 +137,8 @@ const ProfileHeader = ({
                         Save
                       </Button>
                       <Button
-                        className="mt-4"
+                        type="text"
+                        className="mt-2"
                         onClick={() => setShowImageUploader(false)}
                       >
                         Cancel
