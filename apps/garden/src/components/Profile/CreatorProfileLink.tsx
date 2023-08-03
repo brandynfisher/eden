@@ -26,7 +26,7 @@ const CreatorProfileLink = ({
         isOverlay ? 'text-gray-300' : 'text-gray-500 dark:text-gray-300'
       } hover:dark:text-white`}
     >
-      <div className="flex items-center h-[32px] w-[32px]">
+      <div className="flex items-center justify-center h-[32px] w-[32px]">
         <CharacterAvatar
           id={creatorId}
           name={creatorName || ''}

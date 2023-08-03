@@ -248,11 +248,15 @@
         }
     }
 }
-
+.creator-profile-link,
 .nav-profile-image {
     .ant-image {
         display: flex !important;
         align-items: center;
         justify-content: center;
+
+        .ant-image-img {
+            max-height: 32px !important;
+        }
     }
 }
