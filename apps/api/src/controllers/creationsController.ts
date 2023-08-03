@@ -208,7 +208,7 @@ export const getCreationSimilar = async (
   }
 
   const results = await collection.query({
-    queryEmbeddings: [embedding[0]],
+    queryEmbeddings: [embedding],
     nResults: 11,
   })
 
