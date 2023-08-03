@@ -59,11 +59,13 @@ const ProfileHeader = ({
       })
       message.success('Image updated successfully!')
       await refetchCreator()
+      setShowImageUploader(false)
     } catch (err) {
       handleAxiosError(err, message)
       message.error('Failed to update image!')
+    } finally {
+      setImageSubmitLoading(false)
     }
-    setImageSubmitLoading(false)
   }
 
   return (

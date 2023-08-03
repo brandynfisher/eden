@@ -38,20 +38,20 @@ const MyProfileButton = () => {
       : ''
 
   return (
-    <Link
-      href={userProfilePath}
-      passHref
-      className="font-mono flex justify-center px-2 h-full items-center h-[32px] w-[32px] max-h-full"
-    >
-      <Button type="text" className="flex justify-center px-2">
+    <div>
+      <Link
+        href={userProfilePath}
+        passHref
+        className="font-mono flex justify-center items-center h-[32px] w-[32px] max-h-full hover:brightness-125 transition-all duration-200 nav-profile-image"
+      >
         <CharacterAvatar
           id={address || ''}
           name={(user && user?.username) || ''}
           imageUri={(user && user?.userImage) || ''}
           size={'small'}
         />
-      </Button>
-    </Link>
+      </Link>
+    </div>
   )
 }
 
