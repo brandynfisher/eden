@@ -1,8 +1,7 @@
-import { truncatedAddress } from '@/lib/string'
+import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection } from '@edenlabs/eden-sdk'
 import { Button } from 'antd'
-import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const CollectionHeader = ({
@@ -24,24 +23,25 @@ const CollectionHeader = ({
           <h2 className="dark:text-white text-lg font-semibold">
             {collection.name}
           </h2>
-          <p className="dark:text-white text-md font-semibold">
+          <div className="dark:text-white text-md font-semibold mb-2">
             {collection.description}
-          </p>
-          <p className="dark:text-white text-sm">
-            Curated by{' '}
-            <Link href={`/creators/${collection.creatorName?.toLowerCase()}`}>
-              <span className="dark:text-white text-sm font-semibold">
-                {' '}
-                {collection?.creatorName &&
-                collection?.creatorName !== collection.creatorId
-                  ? collection.creatorName
-                  : truncatedAddress(collection.creatorId || '')}
-              </span>
-            </Link>
-          </p>
-          <p className="dark:text-white text-sm">
-            {collection.creations?.length || 0} Creations
-          </p>
+          </div>
+
+          <div className="dark:text-gray-400 text-sm">
+            <div>{collection.creations?.length || 0} Creations</div>
+            <div className="flex mt-2">
+              <div>
+                <div>Curated by </div>
+                <div className="mt-1">
+                  <CreatorProfileLink
+                    creatorId={collection.creatorId || ''}
+                    creatorName={collection.creatorName || ''}
+                    creatorImage={collection.creatorImage || ''}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
           {isAuthenticated && isAuthUser && !collection.isDefaultCollection && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
               <Button
