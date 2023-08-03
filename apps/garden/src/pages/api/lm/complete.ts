@@ -33,29 +33,31 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(500).json({ error: 'Internal server error' })
     }
 
-    await edenAdmin.sessions.update({
-      sessionId,
-      type: SessionEventType.USER_MESSAGE,
-      data: {
-        userMessage: {
-          userId: req.session.address,
-          message: prompt,
-          completion: completion.id,
+    if (sessionId) {
+      await edenAdmin.sessions.update({
+        sessionId,
+        type: SessionEventType.USER_MESSAGE,
+        data: {
+          userMessage: {
+            userId: req.session.address,
+            message: prompt,
+            completion: completion.id,
+          },
         },
-      },
-    })
+      })
 
-    await edenAdmin.sessions.update({
-      sessionId,
-      type: SessionEventType.CHARACTER_MESSAGE,
-      data: {
-        characterMessage: {
-          character: characterId,
-          message: completion.text,
-          completion: completion.id,
+      await edenAdmin.sessions.update({
+        sessionId,
+        type: SessionEventType.CHARACTER_MESSAGE,
+        data: {
+          characterMessage: {
+            character: characterId,
+            message: completion.text,
+            completion: completion.id,
+          },
         },
-      },
-    })
+      })
+    }
 
     return res.status(200).json({ completion: completion.text })
   } catch (error) {
