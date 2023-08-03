@@ -130,7 +130,7 @@ const ChatScenarioUI = ({
                   <CharacterAvatar
                     id={activeCharacter.id}
                     name={activeCharacter.name}
-                    imageUri={activeCharacter.avatarImageUri || ''}
+                    imageUri={activeCharacter.image || ''}
                     size={'small'}
                   />
                   <div>{activeCharacter.name}</div>
@@ -173,7 +173,7 @@ const ChatScenarioUI = ({
                     <CharacterAvatar
                       id={activeCharacter.id}
                       name={activeCharacter.name}
-                      imageUri={activeCharacter.avatarImageUri || ''}
+                      imageUri={activeCharacter.image || ''}
                       shape="circle"
                       size="medium"
                     />

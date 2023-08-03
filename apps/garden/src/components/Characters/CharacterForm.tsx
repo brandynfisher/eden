@@ -1,4 +1,5 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
+import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import {
   compilePrompt,
   dialogueStringToMessageGroups,
@@ -58,6 +59,7 @@ const exampleRecentMessage: ChatMessageGroup[] = [
 
 interface CharacterFormInput {
   name: string
+  image: string
   description: string
   greeting: string
   completion: string
@@ -130,12 +132,14 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             description: character?.description || '',
             greeting: character?.greeting || '',
             completion: '',
+            image: '',
           }
         : {
             name: EXAMPLE_CHARACTER.name,
             description: EXAMPLE_CHARACTER.description,
             greeting: EXAMPLE_CHARACTER.greeting,
             completion: '',
+            image: '',
           }
 
     form.setFieldsValue(formValues)
@@ -180,6 +184,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       name: characterName,
       description: form.getFieldValue('description'),
       greeting: form.getFieldValue('greeting'),
+      image: form.getFieldValue('image'),
       dialogue: messageGroupsToDialogueString(messageGroups),
     }
     try {
@@ -213,6 +218,18 @@ const CharacterForm = ({ character }: { character?: Character }) => {
           ]}
         >
           <Input />
+        </Form.Item>
+        <Form.Item
+          label={<div className="font-mono mt-2">Character Image</div>}
+          labelCol={{ span: 24 }}
+          name="image"
+        >
+          <UploadParameter
+            form={form}
+            parameter={{ name: 'image', label: '', maxLength: 1 }}
+            key={'image'}
+            acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+          />
         </Form.Item>
         <Form.Item
           label={<div className="font-mono">Description</div>}

@@ -5,8 +5,15 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
-  const { characterId, name, capabilities, description, greeting, dialogue } =
-    req.body as CharactersUpdateArguments
+  const {
+    characterId,
+    name,
+    image,
+    capabilities,
+    description,
+    greeting,
+    dialogue,
+  } = req.body as CharactersUpdateArguments
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -20,6 +27,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const response = await eden.characters.update({
       characterId,
       name,
+      image,
       description,
       greeting,
       dialogue,
