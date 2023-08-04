@@ -52,8 +52,8 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
   }
 
   return (
-    <div className="flex dark:text-gray-400 items-center gap-2 justify-between">
-      <div className="flex gap-2">
+    <div className="flex dark:text-gray-400 items-center gap-2 justify-between flex-wrap">
+      <div className="flex flex-shrink-0 gap-2">
         <div className="text-xs md:text-sm flex-shrink-0">
           <strong>{followerCount || 0}</strong> Followers
         </div>
@@ -64,11 +64,12 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
 
       {isAuthenticated && !isOwnProfile && (
         <Button
+          size="small"
           title={isFollowingUser ? 'Unfollow' : 'Follow'}
           type={isFollowingUser ? 'link' : 'default'}
           onClick={onFollowButtonClick}
           loading={followLoading ? { delay: 250 } : false}
-          className="font-mono flex-shrink-0 px-4"
+          className="font-mono flex-shrink-0 !px-3"
         >
           {isFollowingUser ? (
             <>
