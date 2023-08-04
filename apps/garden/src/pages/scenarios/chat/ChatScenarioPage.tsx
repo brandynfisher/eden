@@ -90,7 +90,9 @@ const ChatScenarioPageContent = ({
     <div className="flex flex-col h-full">
       {!sessionId ? (
         <>
-          <div className="mb-8">
+          {/* @todo: re-enable/unhide when sessions is ready */}
+          {/* @todo: extract this to SessionSelector or something */}
+          <div className="mb-8 hidden">
             {sessions && sessions.length && (
               <>
                 <h2 className="mb-4">Previous Sessions</h2>
@@ -166,7 +168,7 @@ const ChatScenarioPage = ({
     },
   })
 
-  if (!data || !data.characters || !data.sessions) {
+  if (!data) {
     return null
   }
 
