@@ -42,4 +42,5 @@ export type Collection = {
   displayImageUri?: string
   creatorId?: string
   creatorName?: string
+  creatorImage?: string
 }

@@ -206,10 +206,10 @@ const CreationDetail = ({
 
       <div ref={containerRef}>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
-          <div className="mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
+          <div className="relative mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
             <div
               onClick={isImage(creation.uri) ? showMediaViewer : () => null}
-              className="flex justify-center lg:flex lg:flex-grow"
+              className="relative flex justify-center lg:flex lg:flex-grow"
               style={{ width: 'fit-content', margin: '0 auto' }}
             >
               {isImage(creation.uri) ? (
@@ -238,6 +238,7 @@ const CreationDetail = ({
                   <CreatorProfileLink
                     creatorId={creationData.user.userId}
                     creatorName={creationData.user.username}
+                    creatorImage={creationData.user.userImage || ''}
                   />
                 </div>
               </div>

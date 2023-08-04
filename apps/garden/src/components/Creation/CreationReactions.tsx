@@ -3,10 +3,10 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarkAddOutlinedIcon from '@mui/icons-material/BookmarkAddOutlined'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove'
+import BookmarksOutlined from '@mui/icons-material/BookmarksOutlined'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
@@ -153,11 +153,25 @@ const SaveButton = ({
     >
       <div className="flex items-center" style={{ gap: '8px' }}>
         <div className="text-white">{creation.bookmarkCount || 0}</div>
-        {creation.bookmarked ? (
-          <>{hovered ? <BookmarkRemoveIcon /> : <BookmarkIcon />}</>
-        ) : (
-          <>{hovered ? <BookmarkAddOutlinedIcon /> : <BookmarkBorderIcon />}</>
-        )}
+        <div className="text-lg flex items-center">
+          {creation.bookmarked ? (
+            <>
+              {hovered ? (
+                <BookmarkRemoveIcon fontSize="inherit" />
+              ) : (
+                <BookmarksOutlined fontSize="inherit" />
+              )}
+            </>
+          ) : (
+            <>
+              {hovered ? (
+                <BookmarkAddOutlinedIcon fontSize="inherit" />
+              ) : (
+                <BookmarkBorderIcon fontSize="inherit" />
+              )}
+            </>
+          )}
+        </div>
       </div>
     </Button>
   )

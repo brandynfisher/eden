@@ -31,5 +31,5 @@ export type Character = {
   description?: string
   greeting?: string
   dialogue?: string
-  avatarImageUri?: string
+  image?: string
 }

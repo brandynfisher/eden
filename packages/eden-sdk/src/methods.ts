@@ -361,6 +361,7 @@ export interface CharactersGetArguments extends WebAPICallOptions {
 
 export interface CharactersCreateArguments extends WebAPICallOptions {
   name: string
+  image?: string
   description?: string
   greeting?: string
   dialogue?: string
@@ -369,6 +370,7 @@ export interface CharactersCreateArguments extends WebAPICallOptions {
 export interface CharactersUpdateArguments extends WebAPICallOptions {
   characterId: string
   name?: string
+  image?: string
   description?: string
   greeting?: string
   dialogue?: string

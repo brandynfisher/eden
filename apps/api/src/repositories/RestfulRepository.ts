@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { Aggregate, PipelineStage } from 'mongoose'
+import { Aggregate } from 'mongoose'
 
 interface IRepository<T> {
   query(
@@ -39,7 +39,12 @@ class RestfulRepository<T> implements IRepository<T> {
 
   async query(
     query: Record<string, string | string[] | ObjectId | object | undefined>,
-    options: { page?: number; limit?: number; sort?: object } = {},
+    options: {
+      page?: number
+      limit?: number
+      sort?: object
+      select?: object | string
+    } = {},
   ): Promise<PaginatedResponse<T>> {
     const labels = {
       totalDocs: 'total',
@@ -68,6 +73,7 @@ class RestfulRepository<T> implements IRepository<T> {
       limit: options.limit ?? 100,
       sort: options.sort ?? { _id: 1 },
       customLabels: labels,
+      select: options.select ?? '',
     })
   }
 

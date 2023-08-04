@@ -50,6 +50,7 @@ const user = new Schema<UserDocument>(
     },
     userImage: {
       type: String,
+      maxlength: 1000,
     },
     creations: [
       {

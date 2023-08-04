@@ -23,10 +23,12 @@ const fetchCollection = async (context: NextPageContext) => {
   )
 }
 
-export const getServerSideProps = getServerSidePropsBase(
-  'collection',
-  fetchCollection,
-)
+export const getServerSideProps = getServerSidePropsBase([
+  {
+    responseFieldName: 'collection',
+    dataFetcher: fetchCollection,
+  },
+])
 
 const Collection: Page<PageProps> = ({ data }: PageProps) => {
   return <CollectionPage data={data} />

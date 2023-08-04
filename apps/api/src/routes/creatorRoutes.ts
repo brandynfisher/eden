@@ -46,6 +46,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       request: {
         body: Type.Object({
           username: Type.Optional(Type.String()),
+          userImage: Type.Optional(Type.String()),
         }),
       },
       response: {

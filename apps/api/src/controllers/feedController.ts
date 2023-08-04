@@ -127,13 +127,14 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
         limit,
         page,
         sort,
+        select: '-embedding.embedding',
       },
     )
   }
 
   await creationRepository.model.populate(creations.docs, {
     path: 'user',
-    select: 'userId username',
+    select: 'userId username userImage',
   })
   await creationRepository.model.populate(creations.docs, {
     path: 'task',

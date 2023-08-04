@@ -20,10 +20,12 @@ const fetchCreation = async (context: NextPageContext) => {
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations?creationId=${id}`)
 }
 
-export const getServerSideProps = getServerSidePropsBase(
-  'creation',
-  fetchCreation,
-)
+export const getServerSideProps = getServerSidePropsBase([
+  {
+    responseFieldName: 'creation',
+    dataFetcher: fetchCreation,
+  },
+])
 
 const Creation: Page<PageProps> = ({ data }: PageProps) => {
   return <CreationPage data={data} />

@@ -73,6 +73,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             id: Type.String(),
+            type: Type.String(),
           }),
         ),
       },

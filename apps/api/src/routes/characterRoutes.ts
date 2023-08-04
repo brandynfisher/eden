@@ -16,6 +16,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: Type.Object({
         name: Type.String(),
+        image: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
         greeting: Type.Optional(Type.String()),
         dialogue: Type.Optional(Type.String()),
@@ -35,6 +36,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         characterId: Type.String(),
         name: Type.Optional(Type.String()),
+        image: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
         greeting: Type.Optional(Type.String()),
         dialogue: Type.Optional(Type.String()),
@@ -76,6 +78,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             id: Type.String(),
             user: Type.String(),
             name: Type.String(),
+            image: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
             dialogue: Type.Optional(Type.String()),
@@ -97,6 +100,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             id: Type.String(),
             user: Type.String(),
             name: Type.String(),
+            image: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
             dialogue: Type.Optional(Type.String()),

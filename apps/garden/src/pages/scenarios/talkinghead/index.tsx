@@ -21,8 +21,12 @@ const fetchCharacters = async (context: NextPageContext) => {
 }
 
 export const getServerSideProps = getServerSidePropsBase(
-  'characters',
-  fetchCharacters,
+  [
+    {
+      responseFieldName: 'characters',
+      dataFetcher: fetchCharacters,
+    },
+  ],
   true,
 )
 

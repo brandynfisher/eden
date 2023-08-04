@@ -11,7 +11,7 @@
 }
 
 .ant-modal-mask {
-    background-color: rgba(0, 0, 0, 0.92) !important;
+    //background-color: rgba(0, 0, 0, 0.92) !important;
 }
 
 .dark .ant-modal-content {
@@ -38,10 +38,10 @@
     opacity: 0;
     cursor: zoom-in;
 }
-.image-wrap:hover .image-preview-mask {
-    background: rgba(0,0,0,0.1);
-    opacity: 1;
-    display: flex;
+.image-wrap .image-preview-mask {
+    //background: rgba(0,0,0,0.1);
+    //opacity: 1;
+    //display: flex;
 }
 
 .media-display .ant-image-img {
@@ -239,3 +239,24 @@
     }
 }
 
+.creatorProfile {
+    .ant-upload-list {
+        .ant-upload-select,
+        .ant-upload-list-item-container {
+            margin-inline: 0 !important;
+            margin-block: 0 !important;
+        }
+    }
+}
+.creator-profile-link,
+.nav-profile-image {
+    .ant-image {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+
+        .ant-image-img {
+            max-height: 32px !important;
+        }
+    }
+}

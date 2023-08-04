@@ -11,13 +11,13 @@ const CharacterAvatar = ({
 }: {
   id: string
   name: string
-  imageUri: string
+  imageUri?: string
   size?: 'small' | 'medium' | 'large' | 'auto' | undefined
   shape?: 'square' | 'circle'
 }) => {
   return (
     <div
-      className={`overflow-hidden flex items-center justify-center flex-shrink-0 ${
+      className={`overflow-hidden flex items-center justify-center flex-shrink-0 bg-gray-900 h-full ${
         size === 'small' ? 'w-fit' : ''
       } ${size === 'medium' ? 'w-10 h-10' : ''} ${
         size === 'large' ? 'w-14 h-14' : ''
@@ -25,10 +25,19 @@ const CharacterAvatar = ({
         shape === 'square' ? 'rounded ' : 'rounded-full'
       }`}
     >
-      {imageUri ? (
-        <Image src={imageUri} alt={`${name}'s Avatar`} preview={false} />
-      ) : (
-        <CharacterAvatarFallback id={id} name={name} size={size} />
+      {(name || imageUri) && (
+        <>
+          {imageUri ? (
+            <Image
+              src={imageUri}
+              alt={`${name}'s Avatar`}
+              preview={false}
+              className="object-contain"
+            />
+          ) : (
+            <CharacterAvatarFallback id={id} name={name} size={size} />
+          )}
+        </>
       )}
     </div>
   )

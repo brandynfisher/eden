@@ -1,5 +1,4 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import { truncatedAddress } from '@/lib/string'
 import Link from 'next/link'
 import React from 'react'
 
@@ -22,11 +21,11 @@ const CreatorProfileLink = ({
           creatorName ? creatorName.toLowerCase() : creatorId
         }`,
       }}
-      className={`creator-profile-link flex items-center mr-2 ${
+      className={`creator-profile-link flex items-center items-stretch mr-2 ${
         isOverlay ? 'text-gray-300' : 'text-gray-500 dark:text-gray-300'
-      } hover:dark:text-white`}
+      } hover:text-white hover:brightness-125 transition-all`}
     >
-      <div className="w-auto">
+      <div className="flex items-center justify-center h-[32px] w-[32px] flex-shrink-0">
         <CharacterAvatar
           id={creatorId}
           name={creatorName || ''}
@@ -34,10 +33,11 @@ const CreatorProfileLink = ({
           size={'small'}
         />
       </div>
-      <div className="creator-profile-link-name ml-2 text-sm font-bold overflow-hidden whitespace-nowrap">
-        {creatorName && creatorName !== creatorId
-          ? creatorName
-          : truncatedAddress(creatorId)}
+      <div
+        className="creator-profile-link-name ml-2 text-sm font-bold overflow-hidden whitespace-nowrap self-center truncate"
+        title={creatorName || ''}
+      >
+        {creatorName || ''}
       </div>
     </Link>
   )

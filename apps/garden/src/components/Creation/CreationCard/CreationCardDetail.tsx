@@ -20,12 +20,17 @@ const CreationCardDetail = ({
           <div className="text-sm font-bold text-white">
             /{creation.task.generator?.generatorName}
           </div>
-          <div className="text-gray-400 text-xs">{timeSinceCreation}</div>
+          <div
+            className="text-gray-400 text-xs"
+            title={new Date(creation.createdAt).toLocaleString()}
+          >
+            {timeSinceCreation}
+          </div>
         </div>
 
         <div
           title={creation.name}
-          className="relative first-letter:uppercase text-xs select-text  cursor-text mb-1 w-full text-ellipsis text-gray-300 break-words line-clamp-2"
+          className="relative first-letter:uppercase text-xs select-text  cursor-text mb-2 w-full text-ellipsis text-gray-300 break-words line-clamp-2"
         >
           {creation.name}
         </div>

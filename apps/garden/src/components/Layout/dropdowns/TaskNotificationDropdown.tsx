@@ -150,17 +150,24 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
     >
       <div className="flex justify-between items-center">
         <strong>/{task.generator.generatorName}</strong>
+        <div className="flex min-w-0 truncate mt-1">
+          <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
+            {truncatedAddress(task.taskId)}
+          </div>
+        </div>
       </div>
       <Progress
         percent={task?.progress ? Math.round(task.progress * 100) : 0}
         status={task?.status === 'pending' ? 'normal' : 'active'}
         className="mt-1 flex items-center"
       />
-      <div className="text-xs text-gray-800 dark:text-gray-400 flex justify-between">
-        <div className="capitalize">
-          <strong>{task?.status}</strong>
+      <div className="text-xs text-gray-800 dark:text-gray-400">
+        <div className="flex justify-between">
+          <div className="capitalize">
+            <strong>{task?.status}</strong>
+          </div>
+          <div>Started {timeSinceTaskCreation}</div>
         </div>
-        <div>Started {timeSinceTaskCreation}</div>
       </div>
       <div className="flex justify-between items-center">
         <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
@@ -315,17 +322,6 @@ const TaskNotificationDropdown = () => {
             <Button
               type="text"
               className="font-mono text-green-500 items-center flex px-2"
-            >
-              <CheckOutlined className="mr-2" />
-              {completedTasks.length}
-            </Button>
-          </Dropdown>
-        )}
-        {completedTasks && completedTasks.length > 0 && (
-          <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
-            <Button
-              type="text"
-              className="text-green-500 items-center flex px-2"
             >
               <CheckOutlined className="mr-2" />
               {completedTasks.length}
