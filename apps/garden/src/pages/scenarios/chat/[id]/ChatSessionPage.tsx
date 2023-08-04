@@ -17,14 +17,14 @@ const ChatSessionPage = ({
     userId: address ? address : null,
     isAuthenticated,
     options: {
-      fallbackData: data.characters,
+      fallbackData: data ? data.characters : [],
     },
   })
   const { sessions: sessionsData } = useMySessions({
     userId: address ? address : null,
     isAuthenticated,
     options: {
-      fallbackData: data.sessions,
+      fallbackData: data ? data.sessions : [],
     },
   })
 
@@ -36,7 +36,7 @@ const ChatSessionPage = ({
     <ChatScenarioPage
       data={{
         characters: charactersData || data.characters,
-        sessions: sessionsData,
+        sessions: sessionsData || data.sessions,
       }}
       activeSessionId={activeSessionId}
     />
