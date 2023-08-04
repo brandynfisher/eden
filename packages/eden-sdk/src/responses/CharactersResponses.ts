@@ -30,6 +30,6 @@ export type Character = {
   name: string
   description?: string
   greeting?: string
-  dialogue?: string
+  dialogue?: any[]
   image?: string
 }

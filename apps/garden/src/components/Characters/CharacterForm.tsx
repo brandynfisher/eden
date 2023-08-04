@@ -1,10 +1,6 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
-import {
-  compilePrompt,
-  dialogueStringToMessageGroups,
-  messageGroupsToDialogueString,
-} from '@/lib/chat'
+import { compilePrompt, messageGroupsToDialogueString } from '@/lib/chat'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
@@ -26,22 +22,22 @@ const EXAMPLE_CHARACTER = {
 const exampleMessages: ChatMessageGroup[] = [
   [
     {
-      sender: '{{user}}',
+      sender: 'user',
       message: 'What should I do today?',
     },
     {
-      sender: '{{char}}',
+      sender: 'bot',
       message:
         "Fuck if I know, bud. I think you should set the world on fire! How about you come up with a catchy slogan -- use alliteration -- and then go behind the McDonald's and practice spraypainting it.",
     },
   ],
   [
     {
-      sender: '{{user}}',
+      sender: 'user',
       message: 'What should I buy my girlfriend for her birthday?',
     },
     {
-      sender: '{{char}}',
+      sender: 'bot',
       message:
         'Yo, bro; nobody wants any more stuff. Too much shit to carry around on your cycle! Just bake her some galettes. Use your pocket-torch to caramelize the glaze tho.',
     },
@@ -51,7 +47,7 @@ const exampleMessages: ChatMessageGroup[] = [
 const exampleRecentMessage: ChatMessageGroup[] = [
   [
     {
-      sender: '{{user}}',
+      sender: 'user',
       message: 'What is the meaning of life?',
     },
   ],
@@ -64,6 +60,12 @@ interface CharacterFormInput {
   greeting: string
   completion: string
   dialogue?: string
+}
+
+function coupledArray<T>(array: T[]): T[][] {
+  return Array.from({ length: Math.ceil(array.length / 2) }, (_, i) =>
+    array.slice(i * 2, i * 2 + 2),
+  )
 }
 
 const CharacterToolButtons = ({ character }: { character: Character }) => {
@@ -144,11 +146,11 @@ const CharacterForm = ({ character }: { character?: Character }) => {
 
     form.setFieldsValue(formValues)
 
-    setMessageGroups(
-      mode === 'create'
-        ? exampleMessages
-        : dialogueStringToMessageGroups(character?.dialogue || ''),
-    )
+    const characterDialogue = character?.dialogue
+      ? (coupledArray(character.dialogue) as ChatMessageGroup[])
+      : []
+
+    setMessageGroups(mode === 'create' ? exampleMessages : characterDialogue)
   }, [form, mode, character])
 
   const generateCompletion = async () => {
@@ -185,7 +187,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       description: form.getFieldValue('description'),
       greeting: form.getFieldValue('greeting'),
       image: form.getFieldValue('image'),
-      dialogue: messageGroupsToDialogueString(messageGroups),
+      dialogue: messageGroups.flat(),
     }
     try {
       await axios.post(

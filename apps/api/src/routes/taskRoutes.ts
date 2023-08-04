@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
+  createChatCompletion,
   createCompletion,
   createTask,
   getTask,
@@ -46,6 +47,29 @@ const taskRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async request => isAuth(server, request)],
     handler: (request, reply) => createCompletion(server, request, reply),
+  })
+
+  server.post('/tasks/chat', {
+    schema: {
+      body: {
+        chat: Type.Array(
+          Type.Object({
+            sender: Type.String(),
+            message: Type.String(),
+          }),
+        ),
+      },
+      response: {
+        200: Type.Object({
+          completion: Type.Object({
+            id: Type.String(),
+            text: Type.String(),
+          }),
+        }),
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => createChatCompletion(server, request, reply),
   })
 
   server.get('/tasks', {

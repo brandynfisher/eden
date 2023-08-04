@@ -44,7 +44,6 @@ const deleteCharacter = async (
   characterId: string,
 ) => {
   const headers = prepareUserHeaders()
-  console.log('ccc', characterId)
   const response = await server.inject({
     method: 'POST',
     url: '/characters/delete',

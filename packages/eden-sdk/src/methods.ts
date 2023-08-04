@@ -338,6 +338,10 @@ export abstract class Methods {
       this,
       tasksCompleteRequestConfig,
     ),
+    chat: bindApiCall<TasksChatCompleteArguments, TasksCompleteResponse>(
+      this,
+      tasksChatCompleteRequestConfig,
+    ),
     get: bindApiCall<TasksGetArguments, TasksGetResponse>(
       this,
       tasksGetRequestConfig,
@@ -364,7 +368,7 @@ export interface CharactersCreateArguments extends WebAPICallOptions {
   image?: string
   description?: string
   greeting?: string
-  dialogue?: string
+  dialogue?: any[]
 }
 
 export interface CharactersUpdateArguments extends WebAPICallOptions {
@@ -373,7 +377,7 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
   image?: string
   description?: string
   greeting?: string
-  dialogue?: string
+  dialogue?: any[]
 }
 
 export interface CharactersDeleteArguments extends WebAPICallOptions {
@@ -568,6 +572,11 @@ export interface TasksCreateArguments extends WebAPICallOptions {
 
 export interface TasksCompleteArguments extends WebAPICallOptions {
   prompt: string
+  config?: any
+}
+
+export interface TasksChatCompleteArguments extends WebAPICallOptions {
+  chat: any[]
   config?: any
 }
 
@@ -1066,6 +1075,18 @@ const tasksCompleteRequestConfig = (
   return {
     method: 'POST',
     url: 'tasks/complete',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const tasksChatCompleteRequestConfig = (
+  args: TasksChatCompleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'tasks/chat',
     data: {
       ...args,
     },

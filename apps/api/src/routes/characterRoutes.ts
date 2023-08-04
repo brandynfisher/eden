@@ -19,7 +19,14 @@ const characterRoutes: FastifyPluginAsync = async server => {
         image: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
         greeting: Type.Optional(Type.String()),
-        dialogue: Type.Optional(Type.String()),
+        dialogue: Type.Optional(
+          Type.Array(
+            Type.Object({
+              sender: Type.String(),
+              message: Type.String(),
+            }),
+          ),
+        ),
       }),
       response: {
         200: Type.Object({
@@ -39,7 +46,14 @@ const characterRoutes: FastifyPluginAsync = async server => {
         image: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
         greeting: Type.Optional(Type.String()),
-        dialogue: Type.Optional(Type.String()),
+        dialogue: Type.Optional(
+          Type.Array(
+            Type.Object({
+              sender: Type.String(),
+              message: Type.String(),
+            }),
+          ),
+        ),
       }),
       response: {
         200: Type.Object({}),
@@ -81,7 +95,14 @@ const characterRoutes: FastifyPluginAsync = async server => {
             image: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
-            dialogue: Type.Optional(Type.String()),
+            dialogue: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  sender: Type.String(),
+                  message: Type.String(),
+                }),
+              ),
+            ),
           }),
         ),
       },
@@ -103,7 +124,14 @@ const characterRoutes: FastifyPluginAsync = async server => {
             image: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
-            dialogue: Type.Optional(Type.String()),
+            dialogue: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  sender: Type.String(),
+                  message: Type.String(),
+                }),
+              ),
+            ),
           }),
         }),
       },

@@ -1,6 +1,6 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { useCreator } from '@/hooks/useCreator'
-import { MessageMarker, compileMessage, compilePrompt } from '@/lib/chat'
+import { MessageMarker, compileMessage } from '@/lib/chat'
 import { timeAgo } from '@/lib/time'
 import { ChatMessage } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
@@ -34,6 +34,8 @@ const ChatScenarioUI = ({
   activeCharacter: Character
   sessionId: string
 }) => {
+  const MAX_CHAT_HISTORY = 6
+
   const { isAuthenticated, address } = useContext(UserContext)
   const { creator } = useCreator(isAuthenticated && address ? address : null)
 
@@ -66,6 +68,19 @@ const ChatScenarioUI = ({
   }, [activeCharacter, creator])
 
   const submit = async () => {
+    const previousMessages: ChatMessage[] = conversation
+      .slice(-MAX_CHAT_HISTORY)
+      .map(entry => {
+        return {
+          sender: entry.speaker,
+          message: entry.message,
+        }
+      })
+
+    const message: ChatMessage = {
+      sender: 'user',
+      message: text,
+    }
     setConversation(state => [
       ...state,
       {
@@ -76,22 +91,16 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      const recentMessage: ChatMessage = {
-        sender: '{{user}}',
-        message: text,
-      }
-      const prompt = compilePrompt(
-        activeCharacter.name,
-        recentMessage,
-        activeCharacter.description,
-        activeCharacter.dialogue,
-      )
-      const res = await axios.post(`/api/lm/complete`, {
+      let completion: string
+      const res = await axios.post(`/api/lm/chat`, {
         sessionId,
         characterId: activeCharacter.id,
-        prompt,
+        description: activeCharacter.description,
+        dialogue: activeCharacter.dialogue,
+        previousMessages,
+        message,
       })
-      const completion = res.data.completion as string
+      completion = res.data.completion as string
       setConversation(state => [
         ...state,
         {
