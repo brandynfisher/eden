@@ -21,11 +21,11 @@ const CreatorProfileLink = ({
           creatorName ? creatorName.toLowerCase() : creatorId
         }`,
       }}
-      className={`creator-profile-link flex items-center items-stretch mr-2 ${
+      className={`creator-profile-link flex items-center items-stretch max-w-full ${
         isOverlay ? 'text-gray-300' : 'text-gray-500 dark:text-gray-300'
       } hover:text-white hover:brightness-125 transition-all`}
     >
-      <div className="flex items-center justify-center h-[32px] w-[32px] flex-shrink-0">
+      <div className="flex items-center justify-center h-[32px] w-[32px] flex-shrink-0 flex-grow">
         <CharacterAvatar
           id={creatorId}
           name={creatorName || ''}

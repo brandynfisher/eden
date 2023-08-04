@@ -127,7 +127,7 @@ const ChatScenarioUI = ({
             userName={
               <div className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap">
                 <div className="flex items-center gap-2">
-                  <div className="flex justify-center items-center h-[32px] w-[32px]">
+                  <div className="flex justify-center items-center h-[32px] w-[32px] flex-shrink-0 flex-grow">
                     <CharacterAvatar
                       id={activeCharacter.id}
                       name={activeCharacter.name}
