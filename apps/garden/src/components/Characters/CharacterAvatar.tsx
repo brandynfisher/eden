@@ -18,7 +18,7 @@ const CharacterAvatar = ({
   return (
     <div
       className={`overflow-hidden flex items-center justify-center flex-shrink-0 bg-gray-900 h-full ${
-        size === 'small' ? 'w-fit' : ''
+        size === 'small' ? (imageUri ? 'w-fit' : 'w-full') : ''
       } ${size === 'medium' ? 'w-10 h-10' : ''} ${
         size === 'large' ? 'w-14 h-14' : ''
       } ${size === 'auto' ? 'w-full h-full' : ''} ${
