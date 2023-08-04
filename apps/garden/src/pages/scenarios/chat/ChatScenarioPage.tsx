@@ -155,18 +155,18 @@ const ChatScenarioPage = ({
     userId: address ? address : null,
     isAuthenticated,
     options: {
-      fallbackData: data.characters,
+      fallbackData: data ? data.characters : [],
     },
   })
   const { sessions: sessionsData } = useMySessions({
     userId: address ? address : null,
     isAuthenticated,
     options: {
-      fallbackData: data.characters,
+      fallbackData: data ? data.sessions : [],
     },
   })
 
-  if (!data) {
+  if (!data || !data.characters || !data.sessions) {
     return null
   }
 
