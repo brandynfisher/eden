@@ -164,6 +164,7 @@ export const listTasks = async (
 
   await tasksRepository.model.populate(tasks.docs, {
     path: 'generator',
+    select: 'generatorName',
   })
 
   return reply.status(200).send(tasks)
