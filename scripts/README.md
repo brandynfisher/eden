@@ -15,5 +15,5 @@ node mongo-update-generator.js COG VERSIONID
 For example
 
 ```
-node mongo-update-generator.js eden-sd-pipelines 79befe687d0930473e5528b59673890c694250b615e8405bc8f245f906ae8042
+node mongo-update-generator.js eden-sd-pipelines-sdxl 62f5c82490640b448545c4e82751472e0459904629d52cb98a581105edb7d9c0
 ```

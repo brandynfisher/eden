@@ -150,6 +150,75 @@ const handleUpdate = async (
   )
 }
 
+const handleUpdateUniversal = async (
+  server: FastifyInstance,
+  taskId: string,
+  output: string[] | string,
+  status?: string,
+) => {
+  const task = await Task.findOne({
+    taskId,
+  })
+  if (!task) {
+    throw new Error(`Could not find task ${taskId}`)
+  }
+
+  output = Array.isArray(output) ? output : [output]
+  const isCompleted = output.length > 0 && status == 'succeeded'
+
+  const taskUpdate = {
+    status: isCompleted ? 'completed' : 'running',
+    progress: isCompleted ? 1.0 : 0,
+  } as { output?: TaskOutput[]; status: string; progress: number }
+
+  if (isCompleted) {
+    Object.assign(taskUpdate, { output })
+    const generator = await Generator.findById(task.generator)
+
+    if (generator?.output == 'creation') {
+      for (let i = 0; i < output.length; i++) {
+        const creationData = {
+          user: task.user,
+          task: task._id,
+          uri: output[i],
+          thumbnail: null,
+          name: task.config.prompt,
+          attributes: null,
+          mediaAttributes: {},
+        }
+        if (output[i]) {
+          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+            server,
+            output[i],
+          )
+          creationData.uri = uri
+          creationData.mediaAttributes = mediaAttributes
+        }
+        // todo: make a thumbnail
+        const creation = await Creation.create(creationData)
+        Object.assign(taskUpdate, { creation: creation._id })
+        if (task.webhooks) {
+          task.webhooks.forEach(async (webhook: string) => {
+            await axios.post(webhook, {
+              taskId,
+              creation,
+            })
+          })
+        }
+      }
+    }
+  }
+
+  await Task.updateOne(
+    {
+      taskId,
+    },
+    {
+      $set: taskUpdate,
+    },
+  )
+}
+
 const handleFailure = async (taskId: string, error: string) => {
   const task = await Task.findOne({
     taskId,
