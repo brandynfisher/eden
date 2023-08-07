@@ -272,22 +272,44 @@ export const receiveTaskUpdate = async (
   server: FastifyInstance,
   update: any,
 ) => {
-  const { id: taskId, status, output, error } = update as TaskUpdate
+  const { id: taskId, status, output, error } = update as any
   console.log(`Received update for task ${taskId} with status ${status}`)
   console.log(`Output: ${JSON.stringify(output)}`)
   if (error) {
     console.error(`Error for task ${taskId}: ${error}`)
   }
 
+  const task = await Task.findOne({
+    taskId,
+  })
+  if (!task) {
+    throw new Error(`Could not find task ${taskId}`)
+  }
+
+  const generator = await Generator.findById(task.generator)
+  if (!generator) {
+    throw new Error(`Could not find generator ${task.generator}`)
+  }
+
+  const generatorName = generator.generatorName
+
   switch (status) {
     case 'starting':
       // await handleStarting(server, taskId);
       break
     case 'processing':
-      await handleUpdate(server, taskId, output, 'processing')
+      if (generatorName === 'zeroscope-v2-xl') {
+        await handleUpdateUniversal(server, taskId, output, 'processing')
+      } else {
+        await handleUpdate(server, taskId, output, 'processing')
+      }
       break
     case 'succeeded':
-      await handleUpdate(server, taskId, output, 'succeeded')
+      if (generatorName === 'zeroscope-v2-xl') {
+        await handleUpdateUniversal(server, taskId, output, 'succeeded')
+      } else {
+        await handleUpdate(server, taskId, output, 'succeeded')
+      }
       break
     case 'failed':
       await handleFailure(taskId, error)
