@@ -78,7 +78,7 @@ const creation = new Schema<CreationDocument>(
     name: {
       type: String,
       required: true,
-      maxlength: 1000,
+      maxlength: 10000,
     },
     attributes: {
       type: Schema.Types.Mixed,

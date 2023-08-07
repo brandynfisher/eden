@@ -32,7 +32,7 @@ const params = [
       'Min strength of the init_img during interpolation. Lower values will give the interpolation more freedom, leading to more visual changes at the cost of less smoothness',
     default: 0.25,
     minimum: 0.0,
-    maximum: 0.75,
+    maximum: 1.0,
     step: 0.01,
     optional: true,
   },
@@ -42,7 +42,7 @@ const params = [
     description:
       'Max strength of the init_img during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
     default: 0.95,
-    minimum: 0.5,
+    minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
     optional: true,
