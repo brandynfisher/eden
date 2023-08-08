@@ -110,6 +110,14 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
       sortFilter[orderBy] = { $gt: 0 }
     }
 
+    if (orderBy === 'embedding.score') {
+      const daysAgo = 3
+      const dateCutoff = new Date(
+        new Date().setDate(new Date().getDate() - daysAgo),
+      )
+      sortFilter['createdAt'] = { $gte: dateCutoff }
+    }
+
     creations = await creationRepository.query(
       {
         _id: collectionCreations
