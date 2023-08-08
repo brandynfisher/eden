@@ -9,10 +9,14 @@ import interrogateParameters from './generators/interrogate.js';
 import wav2lipParameters from './generators/wav2lip.js';
 import loraParameters from './generators/lora.js';
 
+
+import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
+
 const allowed_cogs = [
-  "eden-sd-pipelines",
+  "eden-sd-pipelines-sdxl",
   "character",
-  "lora"
+  "lora",
+  "zeroscope-v2-xl",
 ]
 
 const cog = process.argv[2];
@@ -38,11 +42,11 @@ console.log(`Adding ${versionId} to ${cog} generators`);
 
 async function updateVersion(db) {
 
-  if (cog === 'eden-sd-pipelines') {
+  if (cog === 'eden-sd-pipelines-sdxl') {
 
     const createGeneratorVersion = {
       provider: 'replicate',
-      address: 'abraham-ai/eden-sd-pipelines',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
       mode: 'generate',
       parameters: createParameters,
@@ -51,7 +55,7 @@ async function updateVersion(db) {
 
     const interpolateGeneratorVersion = {
       provider: 'replicate',
-      address: 'abraham-ai/eden-sd-pipelines',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
       mode: 'interpolate',
       parameters: interpolateParameters,
@@ -60,7 +64,7 @@ async function updateVersion(db) {
 
     const real2realGeneratorVersion = {
       provider: 'replicate',
-      address: 'abraham-ai/eden-sd-pipelines',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
       mode: 'real2real',
       parameters: real2realParameters,
@@ -69,7 +73,7 @@ async function updateVersion(db) {
 
     const remixGeneratorVersion = {
       provider: 'replicate',
-      address: 'abraham-ai/eden-sd-pipelines',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
       mode: 'remix',
       parameters: remixParameters,
@@ -78,7 +82,7 @@ async function updateVersion(db) {
 
     const interrogateGeneratorVersion = {
       provider: 'replicate',
-      address: 'abraham-ai/eden-sd-pipelines',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
       mode: 'interrogate',
       parameters: interrogateParameters,
@@ -129,7 +133,7 @@ async function updateVersion(db) {
     );
   
   }
-    
+  
   else if (cog === 'lora') {
 
     const loraGeneratorVersion = {
@@ -148,6 +152,24 @@ async function updateVersion(db) {
 
   }
 
+  else if (cog === 'zeroscope-v2-xl') {
+
+    const zeroscopeVersion = {
+      provider: 'replicate',
+      address: 'anotherjesse/zeroscope-v2-xl',
+      versionId: versionId,
+      mode: 'zeroscope',
+      parameters: zeroscopeParameters,
+      isDeprecated: false
+    }
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'zeroscope-v2-xl' }, 
+      { $addToSet: { versions: zeroscopeVersion } }
+    );
+
+  }
+
   console.log(`Added ${versionId} to ${cog} generators`);
 }
 
@@ -158,7 +180,7 @@ async function main() {
   try {
     await client.connect();
     console.log(`Connected successfully to ${MONGO_URI}`);
-    const db = await client.db('eden-dev');
+    const db = await client.db('eden');
     await updateVersion(db);
   } catch (err) {
     console.error('Failed to connect to the server:', err);
