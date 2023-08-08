@@ -121,7 +121,7 @@ function ModalProvider({ children }: PropsWithChildren) {
     return () => {
       router.beforePopState(() => true)
     }
-  }, [router]) // Add any state variables to dependencies array if needed.
+  }, [router])
 
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
