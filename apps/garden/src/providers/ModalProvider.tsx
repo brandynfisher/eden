@@ -123,6 +123,18 @@ function ModalProvider({ children }: PropsWithChildren) {
     }
   }, [router])
 
+  useEffect(() => {
+    router.events.on('routeChangeStart', (url, { shallow }) => {
+      if (!shallow) {
+        hideModal()
+      }
+    })
+
+    return () => {
+      router.events.off('routeChangeStart', () => {})
+    }
+  }, [])
+
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
       {renderComponent()}
