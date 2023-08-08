@@ -1,7 +1,7 @@
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
 import CreationCardHoverOverlay from '@/components/Creation/CreationCard/CreationCardHoverOverlay'
 import CreationCardPreview from '@/components/Creation/CreationCard/CreationCardPreview'
-import CreationDetailModal from '@/components/Creation/CreationCard/CreationDetailModal'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { NextRouter, useRouter } from 'next/router'
@@ -46,16 +46,16 @@ const getModalUrls = (
 const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
-  const [detailModalOpen, setDetailModalOpen] = useState(false)
   const [creation, setCreation] = useState(data)
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false)
 
   const { pageUrl, modalUrl } = getModalUrls(router, creation._id)
+  const { showModal } = useModalContext()
 
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    setDetailModalOpen(true)
+    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, { creation })
   }
 
   return (
@@ -76,15 +76,6 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
           </div>
         </div>
       </div>
-      {detailModalOpen && (
-        <CreationDetailModal
-          modalUrl={modalUrl}
-          onAfterClose={() => {
-            setDetailModalOpen(false)
-          }}
-          creation={creation}
-        />
-      )}
       <AddToCollectionModal
         open={addToCollectionModalOpen}
         setOpen={setAddToCollectionModalOpen}
