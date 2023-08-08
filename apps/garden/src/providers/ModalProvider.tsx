@@ -2,7 +2,7 @@ import CreationDetailModal from '@/components/Modals/CreationDetailModal'
 import { CloseOutlined } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
-import router from 'next/router'
+import { useRouter } from 'next/router'
 import {
   PropsWithChildren,
   createContext,
@@ -43,7 +43,7 @@ export const useModalContext = () => useContext(ModalContext)
 
 function ModalProvider({ children }: PropsWithChildren) {
   const [store, setStore] = useState<ModalStore>()
-
+  const router = useRouter()
   const showModal = (
     modalType: ModalStore['modalType'],
     modalProps: ModalStore['modalProps'] = {},
@@ -83,7 +83,10 @@ function ModalProvider({ children }: PropsWithChildren) {
     closeIcon: <CloseButton />,
     className:
       'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
-    onCancel: () => hideModal(),
+    onCancel: () => {
+      hideModal()
+      router.back()
+    },
     width: '',
     open: true,
     title: null,
@@ -112,7 +115,6 @@ function ModalProvider({ children }: PropsWithChildren) {
     router.beforePopState(({ as }) => {
       const currentPath = router.asPath
       if (as !== currentPath) {
-        router.replace('', currentPath)
         hideModal()
       }
       return true
@@ -121,10 +123,11 @@ function ModalProvider({ children }: PropsWithChildren) {
     return () => {
       router.beforePopState(() => true)
     }
-  }, [router])
+  }, [router.asPath])
 
   useEffect(() => {
     router.events.on('routeChangeStart', (url, { shallow }) => {
+      // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
       if (!shallow) {
         hideModal()
       }
