@@ -14,7 +14,7 @@ import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Divider, Tabs } from 'antd'
 import Head from 'next/head'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 const ConfigParamsTextTabContent = ({
   creationData,
@@ -106,18 +106,22 @@ const result = await eden.tasks.create({
 
 const CreationDetail = ({
   creation,
-}: // isModal,
-{
+  isModal,
+}: {
   creation: Creation
   isModal?: boolean
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [creationData, setCreationData] = useState(creation)
+  const [creationData, setCreationData] = useState<Creation>(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = timeAgo(creation.createdAt)
 
   const formattedTaskConfig = JSON.stringify(creation.task.config, null, 2)
+
+  useEffect(() => {
+    setCreationData(creation)
+  }, [creation])
 
   const items = [
     {
@@ -299,7 +303,11 @@ const CreationDetail = ({
             )}
           </div>
         </div>
-        <SimilarCreations creation={creation} containerRef={containerRef} />
+        <SimilarCreations
+          creation={creation}
+          containerRef={containerRef}
+          isModal={isModal}
+        />
       </div>
     </>
   )
