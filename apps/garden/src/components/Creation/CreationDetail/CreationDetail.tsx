@@ -117,6 +117,7 @@ const CreationDetail = ({
   const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = timeAgo(creation.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
+  const [creationImageLoaded, setCreationImageLoaded] = useState(false)
 
   useEffect(() => {
     setCreationData(creation)
@@ -172,6 +173,10 @@ const CreationDetail = ({
     return extension === 'jpg'
   }
 
+  useEffect(() => {
+    setCreationImageLoaded(false)
+  }, [creation.uri])
+
   const pageTitle = `/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`
 
   return (
@@ -217,6 +222,9 @@ const CreationDetail = ({
                   previewUri={creationData?.uri}
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
+                  onLoad={() => {
+                    setCreationImageLoaded(true)
+                  }}
                 />
               ) : (
                 <MediaDisplay creationUri={creationData?.uri} />
@@ -301,11 +309,13 @@ const CreationDetail = ({
             )}
           </div>
         </div>
-        <SimilarCreations
-          creation={creation}
-          containerRef={containerRef}
-          isModal={isModal}
-        />
+        {creationImageLoaded && (
+          <SimilarCreations
+            creation={creation}
+            containerRef={containerRef}
+            isModal={isModal}
+          />
+        )}
       </div>
     </>
   )
