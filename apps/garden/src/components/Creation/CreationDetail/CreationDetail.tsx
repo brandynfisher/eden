@@ -116,11 +116,13 @@ const CreationDetail = ({
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = timeAgo(creation.createdAt)
+  const [createdDateString, setCreatedDateString] = useState('')
 
   const formattedTaskConfig = JSON.stringify(creation.task.config, null, 2)
 
   useEffect(() => {
     setCreationData(creation)
+    setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
   const items = [
@@ -257,7 +259,7 @@ const CreationDetail = ({
                   </div>
                   <div
                     className="text-gray-400 text-xs"
-                    title={new Date(creation.createdAt).toLocaleString()}
+                    title={createdDateString}
                   >
                     {timeSinceCreation}
                   </div>
