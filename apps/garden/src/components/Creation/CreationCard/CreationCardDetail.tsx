@@ -1,7 +1,7 @@
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { timeAgo } from '@/lib/time'
 import { Creation } from '@edenlabs/eden-sdk'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const CreationCardDetail = ({
   creation,
@@ -10,7 +10,12 @@ const CreationCardDetail = ({
   creation: Creation
   isOverlay?: boolean
 }) => {
+  const [createdDateString, setCreatedDateString] = useState('')
   const timeSinceCreation = timeAgo(creation.createdAt)
+
+  useEffect(() => {
+    setCreatedDateString(new Date(creation.createdAt).toLocaleString())
+  }, [creation])
 
   return (
     <div className="flex items-center relative p-2">
@@ -20,10 +25,7 @@ const CreationCardDetail = ({
           <div className="text-sm font-bold text-white">
             /{creation.task.generator?.generatorName}
           </div>
-          <div
-            className="text-gray-400 text-xs"
-            title={new Date(creation.createdAt).toLocaleString()}
-          >
+          <div className="text-gray-400 text-xs" title={createdDateString}>
             {timeSinceCreation}
           </div>
         </div>

@@ -116,11 +116,12 @@ const CreationDetail = ({
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = timeAgo(creation.createdAt)
-
-  const formattedTaskConfig = JSON.stringify(creation.task.config, null, 2)
+  const [createdDateString, setCreatedDateString] = useState('')
+  const [creationImageLoaded, setCreationImageLoaded] = useState(false)
 
   useEffect(() => {
     setCreationData(creation)
+    setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
   const items = [
@@ -140,8 +141,8 @@ const CreationDetail = ({
       children: (
         <ConfigParamsCodeTabContent
           taskConfig={createEdenSdkCodeSnippet(
-            creation.task.generator.generatorName,
-            formattedTaskConfig,
+            creation?.task?.generator?.generatorName,
+            JSON.stringify(creation?.task?.config, null, 2),
           )}
         />
       ),
@@ -172,10 +173,16 @@ const CreationDetail = ({
     return extension === 'jpg'
   }
 
+  useEffect(() => {
+    setCreationImageLoaded(false)
+  }, [creation.uri])
+
+  const pageTitle = `/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`
+
   return (
     <>
       <Head>
-        <title>{`/${creation.task.generator.generatorName} by ${creation.user.username} | Garden of Eden`}</title>
+        <title>{pageTitle}</title>
         {isVideo(creation.uri) && (
           <>
             <meta property="og:type" content="video.other" />
@@ -185,11 +192,7 @@ const CreationDetail = ({
             />
           </>
         )}
-        <meta
-          property="og:title"
-          key="title"
-          content={`/${creation.task.generator.generatorName} by ${creation.user.username} | Garden of Eden`}
-        />
+        <meta property="og:title" key="title" content={pageTitle} />
         <meta
           property="og:description"
           content={creation.name}
@@ -197,10 +200,7 @@ const CreationDetail = ({
         />
         <meta property="og:image" content={creation.thumbnail} key="image" />
         <meta property="og:image:secure_url" content={creation.thumbnail} />
-        <meta
-          property="og:image:alt"
-          content={`/${creation.task.generator.generatorName} by ${creation.user.username} - Creation`}
-        />
+        <meta property="og:image:alt" content={pageTitle} />
         <meta property="og:image:type" content="image/jpeg" />
         <meta
           property="og:url"
@@ -218,13 +218,16 @@ const CreationDetail = ({
             >
               {isImage(creation.uri) ? (
                 <MediaDisplay
-                  creationUri={creationData.uri}
-                  previewUri={creationData.uri}
+                  creationUri={creationData?.uri}
+                  previewUri={creationData?.uri}
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
+                  onLoad={() => {
+                    setCreationImageLoaded(true)
+                  }}
                 />
               ) : (
-                <MediaDisplay creationUri={creationData.uri} />
+                <MediaDisplay creationUri={creationData?.uri} />
               )}
             </div>
           </div>
@@ -239,13 +242,13 @@ const CreationDetail = ({
             <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
               <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
                 <CreatorProfileLink
-                  creatorId={creationData.user.userId}
-                  creatorName={creationData.user.username}
-                  creatorImage={creationData.user.userImage || ''}
+                  creatorId={creationData?.user?.userId}
+                  creatorName={creationData?.user?.username}
+                  creatorImage={creationData?.user?.userImage || ''}
                 />
               </div>
               <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
-                <FollowControls creatorId={creationData.user.userId} />
+                <FollowControls creatorId={creationData?.user?.userId} />
               </div>
             </div>
 
@@ -253,15 +256,18 @@ const CreationDetail = ({
               <div style={{ wordWrap: 'break-word' }}>
                 <div className="flex justify-between items-center">
                   <div className="font-bold">
-                    /{creation.task.generator?.generatorName}
+                    /{creation?.task?.generator?.generatorName}
                   </div>
-                  <div className="text-gray-400 text-xs">
+                  <div
+                    className="text-gray-400 text-xs"
+                    title={createdDateString}
+                  >
                     {timeSinceCreation}
                   </div>
                 </div>
                 <Divider className="my-4" />
 
-                <TruncatedExpandableText text={creation.name} />
+                <TruncatedExpandableText text={creation?.name} />
               </div>
             </div>
 
@@ -303,11 +309,13 @@ const CreationDetail = ({
             )}
           </div>
         </div>
-        <SimilarCreations
-          creation={creation}
-          containerRef={containerRef}
-          isModal={isModal}
-        />
+        {creationImageLoaded && (
+          <SimilarCreations
+            creation={creation}
+            containerRef={containerRef}
+            isModal={isModal}
+          />
+        )}
       </div>
     </>
   )

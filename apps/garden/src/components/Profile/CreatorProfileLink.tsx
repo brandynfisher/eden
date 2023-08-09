@@ -1,4 +1,5 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import { truncatedAddress } from '@/lib/string'
 import Link from 'next/link'
 import React from 'react'
 
@@ -39,7 +40,13 @@ const CreatorProfileLink = ({
         className="creator-profile-link-name ml-2 text-sm font-bold overflow-hidden whitespace-nowrap self-center truncate"
         title={creatorName || ''}
       >
-        {creatorName || ''}
+        {creatorName && (
+          <>
+            {creatorName.length > 32
+              ? truncatedAddress(creatorName)
+              : creatorName}
+          </>
+        )}
       </div>
     </Link>
   )

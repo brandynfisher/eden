@@ -220,12 +220,20 @@
 
 .ant-skeleton-element {
     display: flex !important;
-    /*width: 100% !important;*/
-    /*height: 100% !important;*/
 }
 .ant-skeleton-image {
     width: 100% !important;
     height: 100% !important;
+}
+.image-loading-placeholder {
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 100% !important;
+
+    .ant-skeleton-element {
+        width: 100% !important;
+        height: 100% !important;
+    }
 }
 
 /* override 'not-allowed' cursor */
@@ -258,5 +266,13 @@
         .ant-image-img {
             max-height: 32px !important;
         }
+    }
+}
+
+.label-auto-height {
+    label {
+        display: flex !important;
+        align-items: flex-start !important;
+        height: fit-content !important;
     }
 }

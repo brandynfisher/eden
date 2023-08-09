@@ -19,7 +19,10 @@ const ImagePreviewMask = () => (
 
 const LoadingPlaceholder = () => {
   return (
-    <Skeleton.Node active={true} className="flex !min-h-[300px] opacity-60">
+    <Skeleton.Node
+      active={true}
+      className="flex !min-h-[300px] image-loading-placeholder bg-gray-400 dark:bg-black bg-opacity-90"
+    >
       <ExperimentOutlined className="text-2xl" />
     </Skeleton.Node>
   )
@@ -38,16 +41,17 @@ const ImageResult = ({
   onPreviewClose?: () => void
   onLoad?: () => void
 }) => {
-  const onCloseHandler = (
-    ev?: React.MouseEvent | React.KeyboardEvent | undefined,
-  ) => {
-    if (ev) {
-      ev.stopPropagation()
-    }
-    if (onPreviewClose) {
-      onPreviewClose()
-    }
-  }
+  const onCloseHandler = useCallback(
+    (ev?: React.MouseEvent | React.KeyboardEvent | undefined) => {
+      if (ev) {
+        ev.stopPropagation()
+      }
+      if (onPreviewClose) {
+        onPreviewClose()
+      }
+    },
+    [onPreviewClose],
+  )
 
   useEffect(() => {
     if (!onPreviewClose) {
@@ -74,15 +78,20 @@ const ImageResult = ({
 
   const handleOnLoad = useCallback(() => {
     if (!isLoaded) {
-      if (onLoad) {
-        setIsLoaded(true)
-        onLoad()
-      }
+      setIsLoaded(true)
     }
-  }, [isLoaded])
+
+    if (onLoad) {
+      onLoad()
+    }
+  }, [isLoaded, onLoad])
 
   // trigger image onLoad if the image is complete
   useEffect(() => {
+    if (previewUrl && !previewImageRef?.current?.complete) {
+      setIsLoaded(false)
+    }
+
     if (!isLoaded && previewImageRef && previewImageRef?.current?.complete) {
       handleOnLoad()
     }
@@ -118,6 +127,11 @@ const ImageResult = ({
                 src={resultUrl}
                 className="ant-image-img"
               />
+              {!isLoaded && (
+                <div className="absolute inset-0 z-10">
+                  <LoadingPlaceholder />
+                </div>
+              )}
             </div>
           ) : (
             <Image
@@ -141,7 +155,7 @@ const ImageResult = ({
             >
               {({ zoomIn, zoomOut, centerView }) => (
                 <>
-                  <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-950 bg-opacity-40 rounded-bl-lg right-0">
+                  <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
                     <Button.Group>
                       <Button type="text" onClick={() => zoomIn()}>
                         <ZoomInOutlined className="text-xl" />

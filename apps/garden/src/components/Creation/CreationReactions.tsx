@@ -6,7 +6,7 @@ import { useHover } from '@mantine/hooks'
 import BookmarkAddOutlinedIcon from '@mui/icons-material/BookmarkAddOutlined'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove'
-import BookmarksOutlined from '@mui/icons-material/BookmarksOutlined'
+import Bookmarks from '@mui/icons-material/Bookmarks'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
@@ -159,7 +159,7 @@ const SaveButton = ({
               {hovered ? (
                 <BookmarkRemoveIcon fontSize="inherit" />
               ) : (
-                <BookmarksOutlined fontSize="inherit" />
+                <Bookmarks fontSize="inherit" />
               )}
             </>
           ) : (
