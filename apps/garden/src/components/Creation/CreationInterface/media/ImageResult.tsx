@@ -21,7 +21,7 @@ const LoadingPlaceholder = () => {
   return (
     <Skeleton.Node
       active={true}
-      className="flex !min-h-[300px] image-loading-placeholder"
+      className="flex !min-h-[300px] image-loading-placeholder bg-gray-400 dark:bg-black bg-opacity-90"
     >
       <ExperimentOutlined className="text-2xl" />
     </Skeleton.Node>
