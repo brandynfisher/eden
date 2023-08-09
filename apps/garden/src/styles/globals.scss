@@ -260,3 +260,11 @@
         }
     }
 }
+
+.label-auto-height {
+    label {
+        display: flex !important;
+        align-items: flex-start !important;
+        height: fit-content !important;
+    }
+}

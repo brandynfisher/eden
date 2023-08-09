@@ -1,5 +1,6 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
+import FormLabel from '@/components/Forms/FormLabel'
 import {
   compilePrompt,
   dialogueStringToMessageGroups,
@@ -205,7 +206,13 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     <div>
       <Form form={form} name="CharacterForm">
         <Form.Item
-          label={<div className="font-mono mt-2">Character Name</div>}
+          label={
+            <FormLabel
+              text="Name"
+              description="What should your character be called?"
+            />
+          }
+          className="label-auto-height"
           labelCol={{ span: 24 }}
           name="name"
           rules={[
@@ -220,7 +227,34 @@ const CharacterForm = ({ character }: { character?: Character }) => {
           <Input />
         </Form.Item>
         <Form.Item
-          label={<div className="font-mono mt-2">Character Image</div>}
+          label={
+            <FormLabel
+              text="Description"
+              description="Describe your character and shape its personality"
+            />
+          }
+          className="label-auto-height"
+          labelCol={{ span: 24 }}
+          name="description"
+          rules={[
+            { required: true, message: 'Please input a description!' },
+            {
+              min: 3,
+              max: 1000,
+              message: 'Description must be between 3 and 1000 characters!',
+            },
+          ]}
+        >
+          <Input.TextArea autoSize />
+        </Form.Item>
+        <Form.Item
+          label={
+            <FormLabel
+              text="Image"
+              description="Used as an avatar for your character"
+            />
+          }
+          className="label-auto-height"
           labelCol={{ span: 24 }}
           name="image"
         >
@@ -237,22 +271,13 @@ const CharacterForm = ({ character }: { character?: Character }) => {
           />
         </Form.Item>
         <Form.Item
-          label={<div className="font-mono">Description</div>}
-          labelCol={{ span: 24 }}
-          name="description"
-          rules={[
-            { required: true, message: 'Please input a description!' },
-            {
-              min: 3,
-              max: 1000,
-              message: 'Description must be between 3 and 1000 characters!',
-            },
-          ]}
-        >
-          <Input.TextArea rows={4} />
-        </Form.Item>
-        <Form.Item
-          label={<div className="font-mono">Greeting</div>}
+          label={
+            <FormLabel
+              text="Greeting"
+              description="Your Character will introduce themselves with this message when entering a conversation"
+            />
+          }
+          className="label-auto-height"
           labelCol={{ span: 24 }}
           name="greeting"
           rules={[
@@ -263,10 +288,16 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             },
           ]}
         >
-          <Input.TextArea rows={4} />
+          <Input.TextArea autoSize />
         </Form.Item>
         <Form.Item
-          label={<div className="font-mono">Example Messages</div>}
+          label={
+            <FormLabel
+              text="Example Messages"
+              description="Add sample dialogs to further refine the personality of your character"
+            />
+          }
+          className="label-auto-height"
           labelCol={{ span: 24 }}
           name="messages"
         >
