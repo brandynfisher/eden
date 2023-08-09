@@ -49,6 +49,7 @@ const GeneratorForm = ({
   const [optionalParameters, setOptionalParams] = useState<
     GeneratorParameter[]
   >([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     const transformConfig = () => {
@@ -118,6 +119,8 @@ const GeneratorForm = ({
   }
 
   const handleFinish = async () => {
+    setIsSubmitting(true)
+
     if (!isAuthenticated) {
       await requireAuth(authenticate)
       return
@@ -155,6 +158,8 @@ const GeneratorForm = ({
       refetch.mannaBalance()
     } catch (error) {
       message.error('Error creating task. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -260,6 +265,8 @@ const GeneratorForm = ({
               htmlType="submit"
               size="large"
               className="font-mono capitalize"
+              loading={isSubmitting ? { delay: 250 } : false}
+              disabled={isSubmitting}
             >
               {generator.generatorName}
             </Button>

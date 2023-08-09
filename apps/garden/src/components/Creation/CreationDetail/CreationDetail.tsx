@@ -255,7 +255,10 @@ const CreationDetail = ({
                   <div className="font-bold">
                     /{creation.task.generator?.generatorName}
                   </div>
-                  <div className="text-gray-400 text-xs">
+                  <div
+                    className="text-gray-400 text-xs"
+                    title={new Date(creation.createdAt).toLocaleString()}
+                  >
                     {timeSinceCreation}
                   </div>
                 </div>
