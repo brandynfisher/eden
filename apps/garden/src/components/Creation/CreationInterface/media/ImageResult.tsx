@@ -155,7 +155,7 @@ const ImageResult = ({
             >
               {({ zoomIn, zoomOut, centerView }) => (
                 <>
-                  <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-950 bg-opacity-40 rounded-bl-lg right-0">
+                  <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
                     <Button.Group>
                       <Button type="text" onClick={() => zoomIn()}>
                         <ZoomInOutlined className="text-xl" />
