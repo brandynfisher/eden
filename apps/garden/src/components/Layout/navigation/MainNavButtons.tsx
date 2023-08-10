@@ -1,4 +1,5 @@
 import { HomeOutlined } from '@ant-design/icons'
+import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import { Button } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -18,7 +19,7 @@ const NavButton = ({
   icon?: ReactNode
 }) => {
   return (
-    <Link href={path} className="mr-2 last:mr-0 flex" passHref>
+    <Link href={path} className="flex" passHref>
       <Button
         className={`font-mono px-2 text-black dark:text-gray-300 hover:!text-gray-100 bg-gray-200 dark:bg-gray-900 hover:!bg-gray-500 hover:dark:!bg-gray-800 ${
           isActive
@@ -26,8 +27,8 @@ const NavButton = ({
             : ''
         }`}
       >
-        <div className="flex">
-          {icon && <div className="mr-2">{icon}</div>}
+        <div className="flex gap-2 max-h-full items-center">
+          {icon}
           <div>{text}</div>
         </div>
       </Button>
@@ -49,6 +50,11 @@ const MainNavButtons = () => {
 
   const navItems: NavButtonItem[] = [
     { text: 'Creations', icon: <HomeOutlined />, path: '/' },
+    {
+      text: 'Concepts',
+      icon: <ModelTrainingIcon fontSize="small" />,
+      path: '/concepts',
+    },
     // {
     //   text: 'Collections',
     //   icon: <TableOutlined />,
@@ -57,7 +63,7 @@ const MainNavButtons = () => {
   ]
 
   return (
-    <>
+    <div className="flex gap-2 flex-wrap">
       {navItems.map(item => (
         <NavButton
           key={item.path}
@@ -67,7 +73,7 @@ const MainNavButtons = () => {
           icon={item.icon}
         />
       ))}
-    </>
+    </div>
   )
 }
 

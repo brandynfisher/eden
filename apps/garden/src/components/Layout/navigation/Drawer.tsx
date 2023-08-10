@@ -30,7 +30,7 @@ const DrawerContent = () => {
 
   return (
     <div className="dark:!bg-gray-900">
-      <div className="flex justify-between items-center p-4">
+      <div className="p-4">
         <MainNavButtons />
       </div>
 
@@ -73,7 +73,7 @@ const Drawer = () => {
         closable={false}
         onClose={onCloseHandler}
         open={isVisible}
-        width={250}
+        width={270}
       >
         <DrawerContent />
       </AntDrawer>
