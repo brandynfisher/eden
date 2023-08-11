@@ -12,24 +12,26 @@ const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
     basePath: 'collections',
   },
 }
+
 export const getModalUrls = (
   router: NextRouter,
-  creationId: string,
+  itemType: 'creation' | 'concept',
+  itemId: string,
 ): { pageUrl: string; modalUrl: string } => {
   const urls = {
     pageUrl: '',
     modalUrl: '',
   }
 
-  // all default cases
+  // all default cases; modalUrl has id as path segment instead of query param
   if (!specialHandlingRoutes[router.pathname]) {
-    urls.modalUrl = `/creations/${creationId}`
+    urls.modalUrl = `/${itemType}s/${itemId}`
     return urls
   }
 
-  // special workaround when we're trying to open modals on routes with dynamic parameters
+  // special workaround: modalUrl has id as query param - when we're trying to open modals on routes with dynamic parameters
   const basePath = specialHandlingRoutes[router.pathname].basePath
-  urls.modalUrl = `/${basePath}/${router.query.id}?creationId=${creationId}`
+  urls.modalUrl = `/${basePath}/${router.query.id}?${itemType}Id=${itemId}`
   urls.pageUrl = urls.modalUrl
 
   return urls

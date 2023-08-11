@@ -1,5 +1,5 @@
 import ConceptCardHoverOverlay from '@/components/Concept/ConceptCard/ConceptCardHoverOverlay'
-import ConceptCardPreview from '@/components/Concept/ConceptCard/ConceptCardPreview'
+import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import { getModalUrls } from '@/lib/modal'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Concept } from '@edenlabs/eden-sdk'
@@ -11,7 +11,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
   const [concept, setConcept] = useState(data)
-  const { pageUrl, modalUrl } = getModalUrls(router, concept._id)
+  const { pageUrl, modalUrl } = getModalUrls(router, 'concept', concept._id)
   const { showModal } = useModalContext()
 
   const openDetailModal = async () => {
@@ -27,7 +27,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
             ref={ref}
             className="relative rounded-lg overflow-hidden cursor-pointer"
           >
-            <ConceptCardPreview concept={concept} hovered={hovered} />
+            <ImageResult resultUrl={concept.thumbnail || ''} />
             {hovered && (
               <ConceptCardHoverOverlay
                 concept={concept}

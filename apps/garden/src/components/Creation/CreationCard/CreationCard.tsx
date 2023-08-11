@@ -1,6 +1,6 @@
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
 import CreationCardHoverOverlay from '@/components/Creation/CreationCard/CreationCardHoverOverlay'
-import CreationCardPreview from '@/components/Creation/CreationCard/CreationCardPreview'
+import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
 import { getModalUrls } from '@/lib/modal'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -15,7 +15,7 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false)
 
-  const { pageUrl, modalUrl } = getModalUrls(router, creation._id)
+  const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation._id)
   const { showModal } = useModalContext()
 
   const openDetailModal = async () => {
@@ -31,7 +31,7 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
             ref={ref}
             className="relative rounded-lg overflow-hidden cursor-pointer"
           >
-            <CreationCardPreview creation={creation} hovered={hovered} />
+            <MediaPreview creation={creation} hovered={hovered} />
             {hovered && (
               <CreationCardHoverOverlay
                 creation={creation}
