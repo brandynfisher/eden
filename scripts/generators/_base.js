@@ -75,7 +75,7 @@ const params = [
     description: 'Strength of prompt conditioning guidance',
     default: 7.5,
     minimum: 0.0,
-    maximum: 30.0,
+    maximum: 20.0,
     step: 0.1,
     optional: true,
   },
