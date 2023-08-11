@@ -1,47 +1,12 @@
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
 import CreationCardHoverOverlay from '@/components/Creation/CreationCard/CreationCardHoverOverlay'
 import CreationCardPreview from '@/components/Creation/CreationCard/CreationCardPreview'
+import { getModalUrls } from '@/lib/modal'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { NextRouter, useRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
-
-interface ISpecialRouteIndex<TValue> {
-  [id: string]: TValue
-}
-
-const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
-  '/creators/[id]': {
-    basePath: 'creators',
-  },
-  '/collections/[id]': {
-    basePath: 'collections',
-  },
-}
-
-const getModalUrls = (
-  router: NextRouter,
-  creationId: string,
-): { pageUrl: string; modalUrl: string } => {
-  const urls = {
-    pageUrl: '',
-    modalUrl: '',
-  }
-
-  // all default cases
-  if (!specialHandlingRoutes[router.pathname]) {
-    urls.modalUrl = `/creations/${creationId}`
-    return urls
-  }
-
-  // special workaround when we're trying to open modals on routes with dynamic parameters
-  const basePath = specialHandlingRoutes[router.pathname].basePath
-  urls.modalUrl = `/${basePath}/${router.query.id}?creationId=${creationId}`
-  urls.pageUrl = urls.modalUrl
-
-  return urls
-}
 
 const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
   const router = useRouter()
