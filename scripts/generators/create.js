@@ -86,7 +86,7 @@ const params = [
     label: 'Init image strength',
     description:
       'How much to weight the initial image in the diffusion process (closer to 1.0 = more influence)',
-    default: 0.0,
+    default: 0.4,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
