@@ -30,13 +30,11 @@ export type Concept = {
   _id: string
   user: Creator
   userId?: string
-  task: Task
   parent?: string
   uri: string
   thumbnail?: string
   name: string
   attributes: any
-  mediaAttributes: MediaAttributes
   praiseCount?: number
   bookmarkCount?: number
   bookmarked?: boolean
