@@ -1,7 +1,5 @@
-import baseParameters from './_base.js'
-
 const params = [
-  ...baseParameters,
+  
   {
     name: 'text_input',
     label: 'Prompt',
@@ -10,19 +8,76 @@ const params = [
     isRequired: true,
   },
   {
-    name: 'uc_text',
-    label: 'Negative prompt',
-    description: 'Unconditional (negative) prompt: what you DONT want to see',
-    default:
-      'watermark, text, nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, blurry, blurred, grainy, signature, cut off, draft',
+    name: 'checkpoint',
+    label: 'Checkpoint',
+    description: 'Which model checkpoint to generate with',
+    default: 'sdxl-v1.0',
+    allowedValues: ['sdxl-v1.0'],
+  },
+  //{
+  //  name: 'lora',
+  //  label: 'LORA',
+  //  description:
+  //    '(optional) Use LORA on top of the model. To prompt, use <lora_name> e.g. "A photo of <Bill>". Make sure you load LORA on top of the base model is was trained on!',
+  //  default: '(none)',
+  //  // allowedValues: ['(none)'],
+  //},
+  //{
+  //  name: 'lora_scale',
+  //  label: 'LORA scale',
+  //  description:
+  //    'How strongly to apply the LoRa weights (0.0 will result in the base model)',
+  //  default: 0.8,
+  //  minimum: 0.0,
+  //  maximum: 1.2,
+  //  step: 0.1,
+  //},
+  {
+    name: 'width',
+    label: 'Width',
+    description: 'Width of the creation in pixels',
+    default: 1024,
+    minimum: 512,
+    maximum: 2048,
+    step: 64,
+  },
+  {
+    name: 'height',
+    label: 'Height',
+    description: 'Height of the creation in pixels',
+    default: 1024,
+    minimum: 512,
+    maximum: 2048,
+    step: 64,
+  },
+  {
+    name: 'upscale_f',
+    label: 'Upscale Factor',
+    description: 'Diffusion-based upscaling factor',
+    default: 1.4,
+    minimum: 1.0,
+    maximum: 2.0,
+    step: 0.1,
+  },
+
+
+  ////////////////////////////////////////
+  // optional generation args
+
+  {
+    name: 'controlnet_type',
+    label: 'Controlnet',
+    description: 'Which Controlnet to use (or off to disable)',
+    default: 'off',
+    allowedValues: ["off", "canny-edge"],
     optional: true,
   },
   {
     name: 'init_image_data',
-    label: 'Init image',
+    label: 'Controlnet or Init image',
     default: null,
     description:
-      'URL of image to initiate image before diffusion (if null, use random noise)',
+      'Guidance image. If Controlnet is off, this drives colors and rough shapes. If Controlnet is canny-edge, this will guide edges and contours',
     mediaUpload: true,
     optional: true,
   },
@@ -31,7 +86,7 @@ const params = [
     label: 'Init image strength',
     description:
       'How much to weight the initial image in the diffusion process (closer to 1.0 = more influence)',
-    default: 0.0,
+    default: 0.4,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
@@ -46,6 +101,41 @@ const params = [
     optional: true,
   },
   {
+    name: 'uc_text',
+    label: 'Negative prompt',
+    description: 'Unconditional (negative) prompt: what you DONT want to see',
+    default:
+      'watermark, text, nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, blurry, blurred, grainy, signature, cut off, draft',
+    optional: true,
+  },
+  {
+    name: 'guidance_scale',
+    label: 'Guidance scale',
+    description: 'Strength of prompt conditioning guidance',
+    default: 7.5,
+    minimum: 0.0,
+    maximum: 20.0,
+    step: 0.1,
+    optional: true,
+  },
+  {
+    name: 'sampler',
+    label: 'Sampler',
+    description: 'Sampler to use for generation',
+    default: 'euler',
+    allowedValues: ["ddim", "ddpm", "klms", "euler", "euler_ancestral", "dpm", "kdpm2", "kdpm2_ancestral", "pndm"],
+    optional: true,
+  },
+  {
+    name: 'steps',
+    label: 'Steps',
+    description: 'Number of denoising steps (recommended to use >30)',
+    default: 40,
+    minimum: 5,
+    maximum: 70,
+    optional: true,
+  },
+  {
     name: 'seed',
     label: 'Seed',
     description:
@@ -55,6 +145,7 @@ const params = [
     maximum: 1e8,
     optional: true,
   },
+
 ]
 
 export default params;
