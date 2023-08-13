@@ -85,7 +85,7 @@ const params = [
     name: 'init_image_strength',
     label: 'Init image strength',
     description:
-      'How much to weight the initial image in the diffusion process (closer to 1.0 = more influence)',
+      'How much influence the guidance image has on the creation. Recommended <0.2 with Controlnet off, >0.5 otherwise.',
     default: 0.4,
     minimum: 0.0,
     maximum: 1.0,
