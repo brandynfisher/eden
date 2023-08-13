@@ -1,4 +1,3 @@
-import { FeatureFlags, useFeatureFlags } from '@/hooks/useFeatureFlags'
 import { UserContext } from '@/providers/UserProvider'
 import {
   CommentOutlined,
@@ -45,8 +44,9 @@ const characterItems: MenuItem[] = [
 const createMenuItems = (
   isAuthenticated: boolean,
   username: string | undefined,
-  flags: FeatureFlags,
+  userFlags: string[],
 ) => {
+  const isPreviewUser = userFlags.includes('preview')
   const userProfilePath =
     isAuthenticated && username ? `/creators/${username.toLowerCase()}` : ''
   const myProfileItem = getItem('My Profile', userProfilePath, <UserOutlined />)
@@ -54,18 +54,20 @@ const createMenuItems = (
   if (isAuthenticated) {
     items.push(...authItems)
   }
-  if (flags.charactersEnabled) {
+  if (isPreviewUser) {
     items.push(...characterItems)
   }
   return items
 }
-
 const LayoutMenu = () => {
   const router = useRouter()
-  const flags = useFeatureFlags()
-  const { isAuthenticated, user } = useContext(UserContext)
+  const { isAuthenticated, user, featureFlags } = useContext(UserContext)
 
-  const menuItems = createMenuItems(isAuthenticated, user?.username, flags)
+  const menuItems = createMenuItems(
+    isAuthenticated,
+    user?.username,
+    featureFlags,
+  )
 
   return (
     <Menu
