@@ -25,6 +25,7 @@ export interface UserContextType {
   settings?: Settings
   updateSetting: (settingName: SettingName, newValue: number | 'auto') => void
   user?: Creator
+  featureFlags: string[]
 }
 
 const defaultUserState: UserContextType = {
@@ -62,6 +63,7 @@ const defaultUserState: UserContextType = {
     return null
   },
   user: undefined,
+  featureFlags: [],
 }
 
 export const UserContext = createContext<UserContextType>(defaultUserState)
