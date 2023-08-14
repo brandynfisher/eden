@@ -31,8 +31,7 @@ const LayoutHeader = () => {
 
   return (
     <Header
-      className={`flex items-center px-4 bg-white dark:bg-gray-950 ${inter.className}`}
-      style={{ gap: '8px' }}
+      className={`flex gap-2 items-center px-4 bg-white dark:bg-gray-950 ${inter.className}`}
     >
       <HeaderLogo />
 
@@ -44,19 +43,20 @@ const LayoutHeader = () => {
 
       <div className="hidden md:flex w-full">
         <MainNavButtons />
-
-        <div className="hidden lg:flex ml-auto">
-          <div className="flex items-center" style={{ gap: '8px' }}>
-            {isAuthenticated && <QuickCreateMenu />}
-          </div>
-        </div>
       </div>
 
-      <div className="ml-auto md:ml-0 flex items-center" style={{ gap: '8px' }}>
-        <div className="hidden xs:flex">
-          <CreationNotificationMenu />
-        </div>
-        <MannaDropdown />
+      <div className="ml-auto md:ml-0 flex items-center gap-2">
+        <QuickCreateMenu />
+
+        {isAuthenticated && (
+          <>
+            <CreationNotificationMenu />
+            <div className="hidden lg:flex">
+              <MannaDropdown />
+            </div>
+          </>
+        )}
+
         <SettingsDropdown />
         <MyProfileButton />
       </div>

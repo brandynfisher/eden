@@ -1,4 +1,5 @@
 import HeaderLogo from '@/components/Layout/HeaderLogo'
+import MannaDropdown from '@/components/Layout/dropdowns/MannaDropdown'
 import CreationNotificationMenu from '@/components/Layout/dropdowns/TaskNotificationDropdown'
 import LayoutMenu from '@/components/Layout/navigation/LayoutMenu'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
@@ -30,18 +31,18 @@ const DrawerContent = () => {
 
   return (
     <div className="dark:!bg-gray-900">
+      {isConnected && isAuthenticated && (
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between px-3">
+            <MannaDropdown />
+            <CreationNotificationMenu inDrawer={true} />
+          </div>
+        </div>
+      )}
       <div className="p-4">
         <MainNavButtons />
       </div>
-
-      {isConnected && isAuthenticated && (
-        <div className="flex flex-col">
-          <div className="px-4 py-2 flex justify-between items-center bg-gray-800">
-            <CreationNotificationMenu />
-          </div>
-          <LayoutMenu />
-        </div>
-      )}
+      <LayoutMenu />
     </div>
   )
 }

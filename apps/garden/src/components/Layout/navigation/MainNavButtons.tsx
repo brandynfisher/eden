@@ -63,7 +63,7 @@ const MainNavButtons = () => {
   ]
 
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-2">
       {navItems.map(item => (
         <NavButton
           key={item.path}

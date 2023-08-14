@@ -70,9 +70,7 @@ const MannaDropdown = () => {
         type="text"
         className="font-mono flex px-2 justify-center items-center"
       >
-        <div>
-          <WalletOutlined className="text-black dark:text-white flex mr-2 text-xl" />
-        </div>
+        <WalletOutlined className="text-black dark:text-white flex mr-2 text-xl" />
         <div className="text-small text-left" style={{ minWidth: '26px' }}>
           {mannaBalance || '---'}
         </div>

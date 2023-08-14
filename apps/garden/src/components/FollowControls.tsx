@@ -69,7 +69,9 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
           type={isFollowingUser ? 'link' : 'default'}
           onClick={onFollowButtonClick}
           loading={followLoading ? { delay: 250 } : false}
-          className="font-mono flex-shrink-0 !px-3"
+          className={`font-mono flex-shrink-0 ${
+            isFollowingUser ? '!px-0' : '!px-3'
+          }`}
         >
           {isFollowingUser ? (
             <>

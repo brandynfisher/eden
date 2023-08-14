@@ -181,7 +181,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
   )
 }
 
-const TaskNotificationDropdown = () => {
+const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
   const router = useRouter()
 
   const {
@@ -286,8 +286,22 @@ const TaskNotificationDropdown = () => {
     )
   }
 
+  if (
+    !pendingTaskItems.length &&
+    !completedTaskItems.length &&
+    !failedTaskItems.length
+  ) {
+    return null
+  }
+
   return (
-    <Space className="max-w-3xl">
+    <Space
+      className={`max-w-3xl ${
+        inDrawer
+          ? 'py-2 flex justify-between items-center !flex'
+          : 'hidden sm:flex'
+      }`}
+    >
       <Button.Group>
         {pendingTaskItems.length > 0 && (
           <Dropdown trigger={['click']} menu={{ items: pendingTaskItems }}>
@@ -325,6 +339,18 @@ const TaskNotificationDropdown = () => {
             >
               <CheckOutlined className="mr-2" />
               {completedTasks.length}
+            </Button>
+          </Dropdown>
+        )}
+
+        {completedTasks && completedTasks.length > 0 && (
+          <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
+            <Button
+              type="text"
+              className="font-mono text-red-500 items-center flex px-2"
+            >
+              <ExclamationOutlined className="mr-2" />
+              {failedTasks.length}
             </Button>
           </Dropdown>
         )}
