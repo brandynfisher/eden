@@ -10,10 +10,12 @@ import { UserContext } from '@/providers/UserProvider'
 import theme from '@/styles/theme'
 import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
+import { Inter } from 'next/font/google'
 import React, { useContext, useEffect, useState } from 'react'
 
-const { Header } = Layout
+const inter = Inter({ subsets: ['latin'] })
 
+const { Header } = Layout
 const LayoutHeader = () => {
   const { width: viewportWidth } = useViewportSize()
   const { isAuthenticated } = useContext(UserContext)
@@ -29,7 +31,7 @@ const LayoutHeader = () => {
 
   return (
     <Header
-      className="flex items-center px-4 bg-white dark:bg-gray-950"
+      className={`flex items-center px-4 bg-white dark:bg-gray-950 ${inter.className}`}
       style={{ gap: '8px' }}
     >
       <HeaderLogo />
@@ -40,17 +42,17 @@ const LayoutHeader = () => {
         </div>
       )}
 
-      <div className="hidden sm:flex w-full">
+      <div className="hidden md:flex w-full">
         <MainNavButtons />
 
-        <div className="ml-auto">
+        <div className="hidden lg:flex ml-auto">
           <div className="flex items-center" style={{ gap: '8px' }}>
             {isAuthenticated && <QuickCreateMenu />}
           </div>
         </div>
       </div>
 
-      <div className="ml-auto sm:ml-0 flex items-center" style={{ gap: '8px' }}>
+      <div className="ml-auto md:ml-0 flex items-center" style={{ gap: '8px' }}>
         <div className="hidden xs:flex">
           <CreationNotificationMenu />
         </div>

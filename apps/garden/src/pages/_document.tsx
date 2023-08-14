@@ -1,8 +1,14 @@
-import { Head, Html, Main, NextScript } from 'next/document'
-import React from 'react'
-import type { FC } from 'react'
+import { doExtraStyle } from '@/../scripts/generateAntdCss'
+import { StyleProvider, createCache } from '@ant-design/cssinjs'
+import Document, {
+  DocumentContext,
+  Head,
+  Html,
+  Main,
+  NextScript,
+} from 'next/document'
 
-const Document: FC = () => (
+const CustomDocument = () => (
   <Html lang="en">
     <Head>
       <link
@@ -30,4 +36,34 @@ const Document: FC = () => (
   </Html>
 )
 
-export default Document
+CustomDocument.getInitialProps = async (ctx: DocumentContext) => {
+  const cache = createCache()
+  let fileName: string
+
+  const originalRenderPage = ctx.renderPage
+  ctx.renderPage = () =>
+    originalRenderPage({
+      enhanceApp: App => props =>
+        (
+          <StyleProvider cache={cache}>
+            <App {...props} />
+          </StyleProvider>
+        ),
+    })
+
+  const initialProps = await Document.getInitialProps(ctx)
+  // 1.1 extract style which had been used
+  fileName = doExtraStyle({ cache })
+  return {
+    ...initialProps,
+    styles: (
+      <>
+        {initialProps.styles}
+        {/* 1.2 inject css */}
+        {fileName && <link rel="stylesheet" href={`/${fileName}`} />}
+      </>
+    ),
+  }
+}
+
+export default CustomDocument

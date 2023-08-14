@@ -1,9 +1,14 @@
 import MediaDisplay from '@/components/MediaDisplay'
+import { getModalUrls } from '@/lib/modal'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Card, Progress, Spin } from 'antd'
+import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const ResultPreview = () => {
+  const router = useRouter()
+
   const { hasChangedGenerator, pendingTasks, completedTasks, activeTaskId } =
     useContext(CreationNotificationContext)
 
@@ -11,6 +16,21 @@ const ResultPreview = () => {
   const completedTask = completedTasks?.find(
     task => task.taskId === activeTaskId,
   )
+
+  const { pageUrl, modalUrl } = getModalUrls(
+    router,
+    'creation',
+    completedTask && completedTask.creation ? completedTask.creation._id : '',
+  )
+  const { showModal } = useModalContext()
+
+  const openDetailModal = async () => {
+    await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
+    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
+      creation:
+        completedTask && completedTask.creation ? completedTask.creation : {},
+    })
+  }
 
   const creationUri =
     completedTask && completedTask.creation ? completedTask.creation.uri : false
@@ -38,9 +58,9 @@ const ResultPreview = () => {
               />
             </div>
           ) : (
-            <>
+            <div onClick={openDetailModal}>
               <MediaDisplay creationUri={creationUri} />
-            </>
+            </div>
           )}
         </div>
       </Card>

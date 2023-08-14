@@ -1,3 +1,5 @@
+'use client'
+
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,

@@ -1,13 +1,20 @@
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
-import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+// import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
+// import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Select } from 'antd'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
+import React, {
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 
 const CreationInterface = ({
   generatorName,
@@ -49,6 +56,20 @@ const CreationInterface = ({
     return <LoadingIndicator />
   }
 
+  const GeneratorForm = dynamic(
+    () => import('@/components/Creation/CreationInterface/GeneratorForm'),
+    {
+      suspense: true,
+    },
+  )
+
+  const ResultPreview = dynamic(
+    () => import('@/components/Creation/CreationInterface/ResultPreview'),
+    {
+      suspense: true,
+    },
+  )
+
   return (
     <div className="w-full">
       <h2 className="mb-4">Create</h2>
@@ -72,14 +93,18 @@ const CreationInterface = ({
             ))}
           </Select>
           {activeGenerator && (
-            <GeneratorForm
-              generator={activeGenerator}
-              presetCreation={presetCreation}
-            />
+            <Suspense fallback={<div>Loading</div>}>
+              <GeneratorForm
+                generator={activeGenerator}
+                presetCreation={presetCreation}
+              />
+            </Suspense>
           )}
         </div>
 
-        <ResultPreview />
+        <Suspense fallback={<div>Loading</div>}>
+          <ResultPreview />
+        </Suspense>
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
