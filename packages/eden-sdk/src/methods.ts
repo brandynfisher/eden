@@ -1,4 +1,4 @@
-import { AxiosRequestConfig } from 'axios'
+import {AxiosRequestConfig} from 'axios'
 import {
   SessionEventsListResponse,
   SessionsCreateResponse,
@@ -16,15 +16,15 @@ import {
   CollectionsRemoveCreationsResponse,
   CollectionsUpdateResponse,
 } from 'src/responses/CollectionsResponses'
-import { MediaUploadResponse } from 'src/responses/MediaResponses'
+import {MediaUploadResponse} from 'src/responses/MediaResponses'
 
-import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
+import {WebAPICallOptions, WebAPICallResult} from './EdenClient'
 import {
   ApiKeysCreateResponse,
   ApiKeysDeleteResponse,
   ApiKeysListResponse,
 } from './responses/ApiKeysResponses'
-import { AuthLoginResponse } from './responses/AuthResponses'
+import {AuthLoginResponse} from './responses/AuthResponses'
 import {
   CharactersCreateResponse,
   CharactersDeleteResponse,
@@ -69,6 +69,7 @@ import {
   TasksGetResponse,
   TasksListResponse,
 } from './responses/TasksResponses'
+import {ConceptsGetResponse, ConceptsListResponse} from './responses/ConceptsResponses';
 
 const transformArgsIntoURLParams = (
   args: Record<string, any>,
@@ -243,6 +244,17 @@ export abstract class Methods {
     update: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
       this,
       creatorsUpdateRequestConfig,
+    ),
+  }
+
+  public readonly concepts = {
+    list: bindApiCall<ConceptsListArguments, ConceptsListResponse>(
+      this,
+      conceptsListRequestConfig,
+    ),
+    get: bindApiCall<ConceptsGetArguments, ConceptsGetResponse>(
+      this,
+      conceptsGetRequestConfig,
     ),
   }
 
@@ -460,6 +472,17 @@ export interface CreationsReactArguments extends WebAPICallOptions {
 export interface CreationsUnreactArguments extends WebAPICallOptions {
   creationId: string
   reaction: ReactionType
+}
+
+
+export interface ConceptsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface ConceptsGetArguments extends WebAPICallOptions {
+  conceptId: string
 }
 
 export interface CreatorsFollowArguments extends WebAPICallOptions {
@@ -817,6 +840,26 @@ const creationsUnreactRequestConfig = (
     data: {
       ...args,
     },
+  }
+}
+
+const conceptsListRequestConfig = (
+  args: ConceptsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'concepts',
+    params,
+  }
+}
+
+const conceptsGetRequestConfig = (
+  args: ConceptsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `concepts/${args.conceptId}`,
   }
 }
 

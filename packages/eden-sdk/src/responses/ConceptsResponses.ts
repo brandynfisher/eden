@@ -1,4 +1,4 @@
-import {Creator, MediaAttributes, PaginatedResponse, Reactions, Task} from '.'
+import {Creator, PaginatedResponse, Reactions} from '.'
 import {WebAPICallResult} from '../EdenClient'
 
 export type ConceptsListResponse = WebAPICallResult &
@@ -9,21 +9,6 @@ export type ConceptsListResponse = WebAPICallResult &
 export type ConceptsGetResponse = WebAPICallResult & {
   error?: string
   concept?: Concept
-}
-
-export type ConceptsGetSimilarResponse = WebAPICallResult & {
-  error?: string
-  similarConcepts?: Concept[]
-}
-
-export type ConceptsReactResponse = WebAPICallResult & {
-  error?: string
-  success?: boolean
-}
-
-export type ConceptsUnreactResponse = WebAPICallResult & {
-  error?: string
-  success?: boolean
 }
 
 export type Concept = {

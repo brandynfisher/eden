@@ -11,7 +11,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
 
   const route = (limit: number, page: number) => {
-    const basePath = `${CONFIG.API_URL}/feed`
+    const basePath = `${CONFIG.API_URL}/feed/creations`
     const params: FeedRouteQueryParams = {}
 
     if (limit && page) {

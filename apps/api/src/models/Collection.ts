@@ -17,7 +17,7 @@ export interface CollectionSchema {
   updatedAt?: Date
 }
 
-export interface CollecitonInput {
+export interface CollectionInput {
   user: ObjectId
   name: string
   description?: string

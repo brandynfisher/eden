@@ -42,7 +42,7 @@ const CreationMasonryInfinite = ({
     maybeLoadMore: maybeLoadNextPage,
     setSize,
     isEmpty,
-  } = useFeedPaginated(query, orderBy)
+  } = useFeedPaginated('creations', query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(
     async () => {

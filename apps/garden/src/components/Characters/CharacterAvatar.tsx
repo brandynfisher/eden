@@ -21,7 +21,7 @@ const CharacterAvatar = ({
         size === 'small' ? (imageUri ? 'w-fit' : 'w-full') : ''
       } ${size === 'medium' ? 'w-10 h-10' : ''} ${
         size === 'large' ? 'w-14 h-14' : ''
-      } ${size === 'auto' ? 'w-full h-full' : ''} ${
+      } ${size === 'auto' ? 'w-full' : ''} ${
         shape === 'square' ? 'rounded ' : 'rounded-full'
       }`}
     >
