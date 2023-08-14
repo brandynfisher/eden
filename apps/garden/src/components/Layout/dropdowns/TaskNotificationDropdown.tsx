@@ -342,18 +342,6 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
             </Button>
           </Dropdown>
         )}
-
-        {completedTasks && completedTasks.length > 0 && (
-          <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
-            <Button
-              type="text"
-              className="font-mono text-red-500 items-center flex px-2"
-            >
-              <ExclamationOutlined className="mr-2" />
-              {failedTasks.length}
-            </Button>
-          </Dropdown>
-        )}
       </Button.Group>
     </Space>
   )
