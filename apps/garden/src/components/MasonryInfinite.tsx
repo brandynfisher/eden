@@ -6,6 +6,7 @@ import OrderByButtons, {
 } from '@/components/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
 import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
 import { Button, Empty } from 'antd'
@@ -26,7 +27,7 @@ const MasonryInfinite = ({
   hasSort,
 }: {
   type: 'creations' | 'concepts'
-  itemComponent: React.ComponentType<RenderComponentProps<{}>>
+  itemComponent: React.ComponentType<RenderComponentProps<Creation | Concept>>
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
 }) => {

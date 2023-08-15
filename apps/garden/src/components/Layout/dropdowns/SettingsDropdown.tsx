@@ -6,9 +6,11 @@ import {
   LogoutOutlined,
   SettingOutlined,
   TableOutlined,
+  ToolOutlined,
 } from '@ant-design/icons'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
@@ -120,6 +122,19 @@ const MaxColumnSelector = () => {
   )
 }
 
+const DevToolsLink = () => {
+  return (
+    <Link className="w-full" href="/tools">
+      <div className="flex items-center">
+        <ToolOutlined />
+        <div className="ml-2 flex gap-2 w-full justify-between font-mono">
+          Dev Tools
+        </div>
+      </div>
+    </Link>
+  )
+}
+
 const items: ItemType[] = [
   {
     label: <ThemeToggleButton />,
@@ -135,6 +150,13 @@ const items: ItemType[] = [
 ]
 
 const extraItems: ItemType[] = [
+  {
+    type: 'divider',
+  },
+  {
+    label: <DevToolsLink />,
+    key: '2',
+  },
   {
     type: 'divider',
   },

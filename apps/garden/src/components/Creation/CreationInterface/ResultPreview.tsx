@@ -1,9 +1,13 @@
 import ResultPreviewDisplay from '@/components/Creation/CreationInterface/ResultPreviewDisplay'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { Card, Progress, Spin } from 'antd'
-import React, { useContext } from 'react'
+import React, { RefObject, useContext } from 'react'
 
-const ResultPreview = () => {
+const ResultPreview = ({
+  innerRef,
+}: {
+  innerRef: RefObject<HTMLDivElement>
+}) => {
   const { hasChangedGenerator, pendingTasks, completedTasks, activeTaskId } =
     useContext(CreationNotificationContext)
 
@@ -20,7 +24,10 @@ const ResultPreview = () => {
   if (hasChangedGenerator || (!activeTask && !completedTask)) return null
 
   return (
-    <div className="relative flex flex-col space-y-4 col-span-12 lg:mt-9 lg:col-span-6 rounded-lg border border-0 border-solid ">
+    <div
+      ref={innerRef}
+      className="result-preview relative flex flex-col space-y-4 col-span-12 lg:mt-9 lg:col-span-6 rounded-lg border border-0 border-solid "
+    >
       <Card
         className={`lg:sticky lg:top-4 w-full min-h-[512px] h-fit flex justify-center items-center`}
       >

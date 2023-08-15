@@ -1,7 +1,8 @@
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
 import CreationDetailModal from '@/components/Modals/CreationDetailModal'
+import MannaRefillModal from '@/components/Modals/MannaRefillModal'
 import { CloseOutlined } from '@ant-design/icons'
-import { Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import {
@@ -15,18 +16,22 @@ import {
 export enum MODAL_TYPES {
   CREATION_DETAIL_MODAL = 'CREATION_DETAIL_MODAL',
   CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
+  MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
 }
 
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_MODAL]: CreationDetailModal,
   [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
+  [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
 }
 
 type ModalStore = {
   modalType: string | undefined
   modalProps?:
     | Partial<ModalProps & { creation?: Creation; loadSimilar?: boolean }>
+    | Partial<ModalProps & { concept?: Concept }>
+    | Partial<ModalProps>
     | undefined
 }
 

@@ -28,6 +28,9 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
             className="relative rounded-lg overflow-hidden cursor-pointer"
           >
             <ImageResult resultUrl={concept.thumbnail || ''} />
+            <div className="absolute inset-0 pointer-events-none bg-opacity-70">
+              [type]
+            </div>
             {hovered && (
               <ConceptCardHoverOverlay
                 concept={concept}

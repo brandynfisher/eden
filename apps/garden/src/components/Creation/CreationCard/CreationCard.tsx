@@ -20,7 +20,10 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
 
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, { creation })
+    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
+      creation,
+      loadSimilar: true,
+    })
   }
 
   return (

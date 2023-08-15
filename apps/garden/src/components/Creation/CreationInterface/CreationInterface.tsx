@@ -7,7 +7,13 @@ import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Select } from 'antd'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 const CreationInterface = ({
   generatorName,
@@ -16,6 +22,7 @@ const CreationInterface = ({
   generatorName?: string
   presetCreation?: Creation
 }) => {
+  const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
   const [activeGenerator, setActiveGenerator] = useState(
     generators?.[0] || undefined,
@@ -44,6 +51,15 @@ const CreationInterface = ({
 
     setActiveGenerator(generators?.[0])
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
+
+  const scrollResultPreviewIntoView = useCallback(() => {
+    if (resultPreviewRef && resultPreviewRef.current) {
+      resultPreviewRef.current.scrollIntoView({
+        block: 'center',
+        behavior: 'smooth',
+      })
+    }
+  }, [resultPreviewRef])
 
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />
@@ -75,10 +91,11 @@ const CreationInterface = ({
             <GeneratorForm
               generator={activeGenerator}
               presetCreation={presetCreation}
+              onSubmitSuccess={scrollResultPreviewIntoView}
             />
           )}
         </div>
-        <ResultPreview />
+        <ResultPreview innerRef={resultPreviewRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
