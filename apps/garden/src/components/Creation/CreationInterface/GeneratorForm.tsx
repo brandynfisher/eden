@@ -245,7 +245,13 @@ const GeneratorForm = ({
   )
 
   return (
-    <Form form={form} name="generate" onFinish={handleFinish}>
+    <Form
+      form={form}
+      name="generate"
+      onFinish={handleFinish}
+      key={generator.generatorName}
+      title={generator.generatorName}
+    >
       <Card
         type="inner"
         title={

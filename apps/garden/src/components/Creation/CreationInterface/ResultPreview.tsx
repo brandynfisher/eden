@@ -1,14 +1,9 @@
-import MediaDisplay from '@/components/MediaDisplay'
-import { getModalUrls } from '@/lib/modal'
+import ResultPreviewDisplay from '@/components/Creation/CreationInterface/ResultPreviewDisplay'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
-import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Card, Progress, Spin } from 'antd'
-import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const ResultPreview = () => {
-  const router = useRouter()
-
   const { hasChangedGenerator, pendingTasks, completedTasks, activeTaskId } =
     useContext(CreationNotificationContext)
 
@@ -17,23 +12,10 @@ const ResultPreview = () => {
     task => task.taskId === activeTaskId,
   )
 
-  const { pageUrl, modalUrl } = getModalUrls(
-    router,
-    'creation',
-    completedTask && completedTask.creation ? completedTask.creation._id : '',
-  )
-  const { showModal } = useModalContext()
-
-  const openDetailModal = async () => {
-    await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
-      creation:
-        completedTask && completedTask.creation ? completedTask.creation : {},
-    })
-  }
-
   const creationUri =
     completedTask && completedTask.creation ? completedTask.creation.uri : false
+  const creationId =
+    completedTask && completedTask.creation ? completedTask.creation._id : false
 
   if (hasChangedGenerator || (!activeTask && !completedTask)) return null
 
@@ -58,9 +40,7 @@ const ResultPreview = () => {
               />
             </div>
           ) : (
-            <div onClick={openDetailModal}>
-              <MediaDisplay creationUri={creationUri} />
-            </div>
+            <ResultPreviewDisplay creationId={creationId} />
           )}
         </div>
       </Card>

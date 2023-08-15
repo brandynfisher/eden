@@ -114,7 +114,7 @@ const CompletedTaskMenuItem = ({
             <div className="flex flex-col min-w-0 mr-2 w-full">
               <div className="flex justify-between items-center">
                 <strong>/{task.generator.generatorName}</strong>
-                <div className="text-xs text-gray-800 dark:text-gray-400">
+                <div className="text-xs text-gray-800 dark:text-gray-400 hidden xs:flex">
                   Took {taskRunDuration}
                 </div>
               </div>
@@ -166,7 +166,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           <div className="capitalize">
             <strong>{task?.status}</strong>
           </div>
-          <div>Started {timeSinceTaskCreation}</div>
+          <div className="hidden xs:flex">Started {timeSinceTaskCreation}</div>
         </div>
       </div>
       <div className="flex justify-between items-center">
@@ -304,7 +304,11 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
     >
       <Button.Group>
         {pendingTaskItems.length > 0 && (
-          <Dropdown trigger={['click']} menu={{ items: pendingTaskItems }}>
+          <Dropdown
+            trigger={['click']}
+            menu={{ items: pendingTaskItems }}
+            arrow={true}
+          >
             <Button
               type="text"
               className="font-mono text-grey-800 dark:text-gray-200 items-center flex px-2"
@@ -320,7 +324,11 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
         )}
 
         {failedTasks && failedTasks.length > 0 && (
-          <Dropdown trigger={['click']} menu={{ items: failedTaskItems }}>
+          <Dropdown
+            trigger={['click']}
+            menu={{ items: failedTaskItems }}
+            arrow={true}
+          >
             <Button
               type="text"
               className="font-mono text-red-500 items-center flex px-2"
@@ -332,7 +340,11 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
         )}
 
         {completedTasks && completedTasks.length > 0 && (
-          <Dropdown trigger={['click']} menu={{ items: completedTaskItems }}>
+          <Dropdown
+            trigger={['click']}
+            menu={{ items: completedTaskItems }}
+            arrow={true}
+          >
             <Button
               type="text"
               className="font-mono text-green-500 items-center flex px-2"

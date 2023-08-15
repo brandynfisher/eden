@@ -1,16 +1,36 @@
-import { Button } from 'antd'
+import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import MasonryInfinite from '@/components/MasonryInfinite'
+import {
+  OrderByBookmarks,
+  OrderByFollowing,
+  OrderByLatest,
+  OrderByPraises,
+  OrderByScore,
+} from '@/components/OrderByButtons'
+import { UserContext } from '@/providers/UserProvider'
+import { useContext } from 'react'
 
 const ConceptsPage = () => {
+  const { isConnected, isAuthenticated } = useContext(UserContext)
+
+  const sortButtons =
+    isConnected && isAuthenticated
+      ? [
+          OrderByScore,
+          OrderByLatest,
+          OrderByPraises,
+          OrderByBookmarks,
+          OrderByFollowing,
+        ]
+      : [OrderByScore, OrderByLatest, OrderByPraises, OrderByBookmarks]
+
   return (
-    <div>
-      <div>
-        <Button>Sorting Dropdown (newest, featured, ...)</Button>
-      </div>
-      {/*<div className="flex gap-2 flex-wrap">*/}
-      {/*  <Button>ALL</Button>*/}
-      {/*  <Button>LORA</Button>*/}
-      {/*</div>*/}
-      <div>Concepts Masonry</div>
+    <div className={`flex flex-col min-h-screen`}>
+      <MasonryInfinite
+        hasSort={sortButtons}
+        type="concepts"
+        itemComponent={ConceptCard}
+      />
     </div>
   )
 }

@@ -163,6 +163,7 @@ const SettingsDropdown = () => {
       }}
       trigger={['click']}
       className="cursor-pointer"
+      arrow={true}
     >
       <Button
         type="text"

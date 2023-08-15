@@ -65,6 +65,7 @@ const MannaDropdown = () => {
       trigger={['click']}
       className="cursor-pointer"
       disabled={!isConnected || !isAuthenticated}
+      arrow={true}
     >
       <Button
         type="text"

@@ -1,5 +1,7 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
-import CreationMasonryInfinite from '@/components/Creation/CreationMasonryInfinite'
+import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByLatest,
@@ -22,7 +24,7 @@ const inter = Inter({ subsets: ['latin'] })
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
   return (
     <div className="mt-4">
-      <CreationMasonryInfinite
+      <MasonryInfinite
         query={{ userId: creatorId }}
         hasSort={[
           OrderByLatest,
@@ -30,6 +32,26 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
           OrderByPraises,
           OrderByBookmarks,
         ]}
+        type="creations"
+        itemComponent={CreationCard}
+      />
+    </div>
+  )
+}
+
+const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
+  return (
+    <div className="mt-4">
+      <MasonryInfinite
+        query={{ userId: creatorId }}
+        hasSort={[
+          OrderByLatest,
+          OrderByScore,
+          OrderByPraises,
+          OrderByBookmarks,
+        ]}
+        type="concepts"
+        itemComponent={ConceptCard}
       />
     </div>
   )
@@ -62,8 +84,13 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       children: <CreationTabContent creatorId={creator.userId} />,
     },
     {
-      label: 'Collections',
+      label: 'Concepts',
       key: '2',
+      children: <ConceptTabContent creatorId={creator.userId} />,
+    },
+    {
+      label: 'Collections',
+      key: '3',
       children: <CollectionTabContent collections={collections} />,
     },
   ]

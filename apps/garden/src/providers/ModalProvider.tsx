@@ -25,7 +25,9 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
 
 type ModalStore = {
   modalType: string | undefined
-  modalProps?: Partial<ModalProps & { creation?: Creation }> | undefined
+  modalProps?:
+    | Partial<ModalProps & { creation?: Creation; loadSimilar?: boolean }>
+    | undefined
 }
 
 export interface ModalContextType {

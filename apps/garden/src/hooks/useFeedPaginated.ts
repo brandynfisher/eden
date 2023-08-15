@@ -102,7 +102,7 @@ export const useFeedPaginated = (
   ).flat()
 
   return {
-    creations: creationDocs,
+    items: creationDocs,
     refetchFeed,
     size,
     setSize,
