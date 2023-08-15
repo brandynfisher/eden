@@ -33,12 +33,14 @@ type ModalStore = {
     | Partial<ModalProps & { concept?: Concept }>
     | Partial<ModalProps>
     | undefined
+  usesUrl?: boolean
 }
 
 export interface ModalContextType {
   showModal: (
     modalType: ModalStore['modalType'],
     modalProps?: ModalStore['modalProps'],
+    usesUrl?: ModalStore['usesUrl'],
   ) => void
   hideModal: () => void
 }
@@ -57,11 +59,13 @@ function ModalProvider({ children }: PropsWithChildren) {
   const showModal = (
     modalType: ModalStore['modalType'],
     modalProps: ModalStore['modalProps'] = {},
+    usesUrl?: boolean,
   ) => {
     setStore({
       ...store,
       modalType,
       modalProps,
+      usesUrl,
     })
 
     // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
@@ -78,6 +82,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       ...store,
       modalType: undefined,
       modalProps: {},
+      usesUrl: undefined,
     })
   }
 
@@ -95,7 +100,9 @@ function ModalProvider({ children }: PropsWithChildren) {
       'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
     onCancel: () => {
       hideModal()
-      router.back()
+      if (store?.usesUrl) {
+        router.back()
+      }
     },
     width: '',
     open: true,
