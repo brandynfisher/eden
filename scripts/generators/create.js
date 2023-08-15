@@ -13,24 +13,24 @@ const params = [
     default: 'sdxl-v1.0',
     allowedValues: ['sdxl-v1.0'],
   },
-  {
-    name: 'lora',
-    label: 'LORA',
-    description:
-      '(optional) Use LORA on top of the model. To prompt, use <lora_name> e.g. "A photo of <Bill>". Make sure you load LORA on top of the base model it was trained on!',
-    default: '(none)',
-    // allowedValues: ['(none)'],
-  },
-  {
-    name: 'lora_scale',
-    label: 'LORA scale',
-    description:
-      'How strongly to apply the LoRa weights (0.0 will result in the base model)',
-    default: 0.8,
-    minimum: 0.0,
-    maximum: 1.2,
-    step: 0.1,
-  },
+  // {
+  //   name: 'lora',
+  //   label: 'LORA',
+  //   description:
+  //     '(optional) Use LORA on top of the model. To prompt, use <lora_name> e.g. "A photo of <Bill>". Make sure you load LORA on top of the base model it was trained on!',
+  //   default: '(none)',
+  //   // allowedValues: ['(none)'],
+  // },
+  // {
+  //   name: 'lora_scale',
+  //   label: 'LORA scale',
+  //   description:
+  //     'How strongly to apply the LoRa weights (0.0 will result in the base model)',
+  //   default: 0.8,
+  //   minimum: 0.0,
+  //   maximum: 1.2,
+  //   step: 0.1,
+  // },
   {
     name: 'width',
     label: 'Width',
@@ -84,7 +84,7 @@ const params = [
     name: 'init_image_strength',
     label: 'Init image strength',
     description:
-      'How much to weight the initial image in the diffusion process (closer to 1.0 = more influence)',
+      'How much influence the guidance image has on the creation. Recommended <0.2 with Controlnet off, >0.5 otherwise.',
     default: 0.4,
     minimum: 0.0,
     maximum: 1.0,
@@ -144,7 +144,6 @@ const params = [
     maximum: 1e8,
     optional: true,
   },
-
 ]
 
 export default params;

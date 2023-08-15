@@ -36,5 +36,6 @@ export type Creator = {
   collections?: string[]
   followerCount?: number
   followingCount?: number
-  isFollowing: boolean
+  isFollowing?: boolean
+  featureFlags?: string[]
 }

@@ -12,6 +12,7 @@ export interface UserSchema {
   collections: CollectionDocument[]
   followerCount: number
   followingCount: number
+  featureFlags?: string[]
   username?: string
   userImage?: string
   createdAt?: Date
@@ -72,6 +73,11 @@ const user = new Schema<UserDocument>(
       type: Number,
       default: 0,
     },
+    featureFlags: [
+      {
+        type: String,
+      },
+    ],
   },
   {
     timestamps: true,
