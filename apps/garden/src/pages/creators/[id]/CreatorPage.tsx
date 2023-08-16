@@ -74,8 +74,9 @@ const CollectionTabContent = ({
 
 const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   const { collections } = useCollections(creator.userId)
-  const { address, isConnected } = useContext(UserContext)
+  const { address, isConnected, featureFlags } = useContext(UserContext)
   const isConnectedUser = isConnected && creator.userId === address
+  const isPreviewUser = featureFlags.includes('preview')
 
   const creatorPageTabs = [
     {
@@ -83,17 +84,21 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       key: '1',
       children: <CreationTabContent creatorId={creator.userId} />,
     },
-    {
+  ]
+
+  if (isPreviewUser) {
+    creatorPageTabs.push({
       label: 'Concepts',
       key: '2',
       children: <ConceptTabContent creatorId={creator.userId} />,
-    },
-    {
-      label: 'Collections',
-      key: '3',
-      children: <CollectionTabContent collections={collections} />,
-    },
-  ]
+    })
+  }
+
+  creatorPageTabs.push({
+    label: 'Collections',
+    key: '3',
+    children: <CollectionTabContent collections={collections} />,
+  })
 
   return (
     <>
