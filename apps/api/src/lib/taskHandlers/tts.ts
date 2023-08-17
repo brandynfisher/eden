@@ -32,8 +32,6 @@ const pollTaskUntilDone = async (server: FastifyInstance, task: any) => {
 
   const audioUrl = await tts.pollForTask(2000, task.id)
 
-  console.log('FINALLY GOT THE URL!!!', audioUrl)
-
   const output = {
     file: audioUrl,
     name: `${task.id}.wav`,

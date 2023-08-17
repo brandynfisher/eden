@@ -19,23 +19,19 @@ export const uploadMedia = async (
   const buffer = await data.toBuffer()
   const type = await fileTypeFromBuffer(buffer)
 
-  // Allow both images and audio files
+  // Allow images, audio, text, and .bin files
   if (
     !type ||
-    !(type.mime.startsWith('image/') || type.mime.startsWith('audio/'))
+    !(
+      type.mime.startsWith('image/') ||
+      type.mime.startsWith('audio/') ||
+      type.mime.startsWith('text/') ||
+      type.mime.startsWith('application/zip') ||
+      true
+    )
   ) {
     return reply.status(400).send({
-      message: 'Invalid file type. Only images and audio files are allowed',
-    })
-  }
-
-  // Allow only images and audio
-  if (
-    !type ||
-    !(type.mime.startsWith('image/') || type.mime.startsWith('audio/'))
-  ) {
-    return reply.status(400).send({
-      message: 'Invalid file type. Only images and audio are allowed',
+      message: 'Invalid file type',
     })
   }
 
