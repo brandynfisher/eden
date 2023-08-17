@@ -18,6 +18,24 @@ const params = [
     allowedValues: ['sdxl-v1.0'],
   },
   {
+    name: 'lora',
+    label: 'LORA',
+    description:
+      '(optional) Use LORA on top of the model. Dont forget to use instance prompt. Make sure you load LORA on top of the base model is was trained on!',
+    default: '(none)',
+    // allowedValues: ['(none)'],
+   },
+   {
+    name: 'lora_scale',
+    label: 'LORA scale',
+    description:
+      'How strongly to apply the LoRa weights (0.0 will result in the base model)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.2,
+    step: 0.1,
+  },
+  {
     name: 'width',
     label: 'Width',
     description: 'Width of the creation in pixels',
