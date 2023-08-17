@@ -13,10 +13,9 @@ const MannaBalanceInfo = () => {
         You have <span className="font-bold">{mannaBalance}</span> Manna
       </div>
       <a
-        href="https://docs.eden.art/docs/overview/manna"
-        title="Learn about Manna"
+        href={`${process.env.NEXT_PUBLIC_HOST}/manna`}
+        title="Learn about manna"
         className="text-small"
-        target="_blank"
       >
         Learn about Manna
         <InfoCircleOutlined className="ml-1" />

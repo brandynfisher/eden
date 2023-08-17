@@ -17,6 +17,7 @@ import {
   CollectionsUpdateResponse,
 } from 'src/responses/CollectionsResponses'
 import { MediaUploadResponse } from 'src/responses/MediaResponses'
+import { PaymentsCreateResponse } from 'src/responses/PaymentsResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
@@ -277,6 +278,13 @@ export abstract class Methods {
     ),
   }
 
+  public readonly payments = {
+    create: bindApiCall<PaymentsCreateArguments, PaymentsCreateResponse>(
+      this,
+      paymentsCreateRequestConfig,
+    ),
+  }
+
   public readonly scenarios = {
     create: bindApiCall<ScenariosCreateArguments, ScenariosCreateResponse>(
       this,
@@ -499,6 +507,10 @@ export interface MannaVouchersRedeemArguments extends WebAPICallOptions {
 
 export interface MediaUploadArguments extends WebAPICallOptions {
   media: Buffer
+}
+
+export interface PaymentsCreateArguments extends WebAPICallOptions {
+  priceId: string
 }
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
@@ -921,6 +933,18 @@ const mediaUploadRequestConfig = (args: MediaUploadArguments) => {
     data: form,
     headers: {
       'Content-Type': 'multipart/form-data',
+    },
+  }
+}
+
+const paymentsCreateRequestConfig = (
+  args: PaymentsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'payments/create',
+    data: {
+      ...args,
     },
   }
 }

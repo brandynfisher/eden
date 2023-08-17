@@ -1,0 +1,33 @@
+import { CONFIG } from '@/lib/config'
+import { withSessionRoute } from '@/lib/withSession'
+import { EdenClient } from '@edenlabs/eden-sdk'
+import { NextApiRequest, NextApiResponse } from 'next'
+
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  if (!process.env.NEXT_PUBLIC_FLAG_PAYMENT_ENABLED) {
+    return res.status(400).json({ error: 'Payment is not enabled' })
+  }
+
+  const authToken = req.session.token
+  const { priceId } = req.body
+
+  if (!authToken) {
+    return res.status(401).json({ error: 'Not authenticated' })
+  }
+
+  try {
+    const eden = new EdenClient({
+      edenApiUrl: CONFIG.API_URL,
+      token: authToken,
+    })
+    const response = await eden.payments.create({
+      priceId,
+    })
+    return res.status(200).json({ url: response.url })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+export default withSessionRoute(handler)
