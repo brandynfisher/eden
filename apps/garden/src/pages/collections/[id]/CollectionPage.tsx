@@ -1,5 +1,6 @@
 import CollectionHeader from '@/components/Collections/CollectionHeader'
-import CreationMasonryInfinite from '@/components/Creation/CreationMasonryInfinite'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByLatest,
@@ -84,9 +85,11 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
             deleteLoading={deleteLoading}
           />
           <div className="mt-4">
-            <CreationMasonryInfinite
+            <MasonryInfinite
               query={{ collectionId: collection._id }}
               hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+              type="creations"
+              itemComponent={CreationCard}
             />
           </div>
         </Space>

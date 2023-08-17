@@ -1,4 +1,5 @@
-import CreationMasonryInfinite from '@/components/Creation/CreationMasonryInfinite'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByFollowing,
@@ -25,7 +26,11 @@ const HomePage = () => {
 
   return (
     <div className={`flex flex-col min-h-screen`}>
-      <CreationMasonryInfinite hasSort={sortButtons} />
+      <MasonryInfinite
+        hasSort={sortButtons}
+        type="creations"
+        itemComponent={CreationCard}
+      />
     </div>
   )
 }

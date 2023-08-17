@@ -30,6 +30,7 @@ const MannaVoucherRedeem = () => {
     }
     setRedeemingVoucher(false)
   }
+
   return (
     <div>
       <div>

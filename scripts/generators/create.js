@@ -1,5 +1,4 @@
 const params = [
-  
   {
     name: 'text_input',
     label: 'Prompt',
@@ -14,24 +13,24 @@ const params = [
     default: 'sdxl-v1.0',
     allowedValues: ['sdxl-v1.0'],
   },
-  //{
-  //  name: 'lora',
-  //  label: 'LORA',
-  //  description:
-  //    '(optional) Use LORA on top of the model. To prompt, use <lora_name> e.g. "A photo of <Bill>". Make sure you load LORA on top of the base model is was trained on!',
-  //  default: '(none)',
-  //  // allowedValues: ['(none)'],
-  //},
-  //{
-  //  name: 'lora_scale',
-  //  label: 'LORA scale',
-  //  description:
-  //    'How strongly to apply the LoRa weights (0.0 will result in the base model)',
-  //  default: 0.8,
-  //  minimum: 0.0,
-  //  maximum: 1.2,
-  //  step: 0.1,
-  //},
+  // {
+  //   name: 'lora',
+  //   label: 'LORA',
+  //   description:
+  //     '(optional) Use LORA on top of the model. To prompt, use <lora_name> e.g. "A photo of <Bill>". Make sure you load LORA on top of the base model it was trained on!',
+  //   default: '(none)',
+  //   // allowedValues: ['(none)'],
+  // },
+  // {
+  //   name: 'lora_scale',
+  //   label: 'LORA scale',
+  //   description:
+  //     'How strongly to apply the LoRa weights (0.0 will result in the base model)',
+  //   default: 0.8,
+  //   minimum: 0.0,
+  //   maximum: 1.2,
+  //   step: 0.1,
+  // },
   {
     name: 'width',
     label: 'Width',
@@ -53,7 +52,7 @@ const params = [
   {
     name: 'upscale_f',
     label: 'Upscale Factor',
-    description: 'Diffusion-based upscaling factor',
+    description: 'Diffusion-based up-scaling factor',
     default: 1.4,
     minimum: 1.0,
     maximum: 2.0,
@@ -66,18 +65,18 @@ const params = [
 
   {
     name: 'controlnet_type',
-    label: 'Controlnet',
-    description: 'Which Controlnet to use (or off to disable)',
+    label: 'ControlNet',
+    description: 'Which ControlNet to use (or off to disable)',
     default: 'off',
     allowedValues: ["off", "canny-edge"],
     optional: true,
   },
   {
     name: 'init_image_data',
-    label: 'Controlnet or Init image',
+    label: 'ControlNet or Init image',
     default: null,
     description:
-      'Guidance image. If Controlnet is off, this drives colors and rough shapes. If Controlnet is canny-edge, this will guide edges and contours',
+      'Guidance image. If ControlNet is off, this drives colors and rough shapes. If ControlNet is canny-edge, this will guide edges and contours',
     mediaUpload: true,
     optional: true,
   },
@@ -145,7 +144,6 @@ const params = [
     maximum: 1e8,
     optional: true,
   },
-
 ]
 
 export default params;

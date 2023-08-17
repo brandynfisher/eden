@@ -26,9 +26,11 @@ type FieldValues = { [key: string]: string }
 const GeneratorForm = ({
   generator,
   presetCreation,
+  onSubmitSuccess,
 }: {
   generator: Generator
   presetCreation?: Creation
+  onSubmitSuccess?: () => void
 }) => {
   const {
     taskIds,
@@ -156,6 +158,12 @@ const GeneratorForm = ({
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchPendingTasks && refetchPendingTasks()
       refetch.mannaBalance()
+      onSubmitSuccess && onSubmitSuccess()
+      // const resultPreviewDomElement =
+      //   document.getElementsByClassName('result-preview')
+      // if (resultPreviewDomElement && resultPreviewDomElement.length) {
+      //   resultPreviewDomElement[0].scrollIntoView({ block: 'center', behavior: 'smooth'})
+      // }
     } catch (error) {
       message.error('Error creating task. Please try again.')
     } finally {
@@ -245,7 +253,13 @@ const GeneratorForm = ({
   )
 
   return (
-    <Form form={form} name="generate" onFinish={handleFinish}>
+    <Form
+      form={form}
+      name="generate"
+      onFinish={handleFinish}
+      key={generator.generatorName}
+      title={generator.generatorName}
+    >
       <Card
         type="inner"
         title={

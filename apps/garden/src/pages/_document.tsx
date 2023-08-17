@@ -1,8 +1,7 @@
 import { Head, Html, Main, NextScript } from 'next/document'
 import React from 'react'
-import type { FC } from 'react'
 
-const Document: FC = () => (
+const CustomDocument = () => (
   <Html lang="en">
     <Head>
       <link
@@ -30,4 +29,4 @@ const Document: FC = () => (
   </Html>
 )
 
-export default Document
+export default CustomDocument

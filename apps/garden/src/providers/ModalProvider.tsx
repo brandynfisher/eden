@@ -1,6 +1,8 @@
+import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
 import CreationDetailModal from '@/components/Modals/CreationDetailModal'
+import MannaRefillModal from '@/components/Modals/MannaRefillModal'
 import { CloseOutlined } from '@ant-design/icons'
-import { Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import {
@@ -13,22 +15,32 @@ import {
 
 export enum MODAL_TYPES {
   CREATION_DETAIL_MODAL = 'CREATION_DETAIL_MODAL',
+  CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
+  MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
 }
 
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_MODAL]: CreationDetailModal,
+  [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
+  [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
 }
 
 type ModalStore = {
   modalType: string | undefined
-  modalProps?: Partial<ModalProps & { creation?: Creation }> | undefined
+  modalProps?:
+    | Partial<ModalProps & { creation?: Creation; loadSimilar?: boolean }>
+    | Partial<ModalProps & { concept?: Concept }>
+    | Partial<ModalProps>
+    | undefined
+  usesUrl?: boolean
 }
 
 export interface ModalContextType {
   showModal: (
     modalType: ModalStore['modalType'],
     modalProps?: ModalStore['modalProps'],
+    usesUrl?: ModalStore['usesUrl'],
   ) => void
   hideModal: () => void
 }
@@ -47,11 +59,13 @@ function ModalProvider({ children }: PropsWithChildren) {
   const showModal = (
     modalType: ModalStore['modalType'],
     modalProps: ModalStore['modalProps'] = {},
+    usesUrl?: boolean,
   ) => {
     setStore({
       ...store,
       modalType,
       modalProps,
+      usesUrl,
     })
 
     // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
@@ -68,6 +82,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       ...store,
       modalType: undefined,
       modalProps: {},
+      usesUrl: undefined,
     })
   }
 
@@ -85,7 +100,9 @@ function ModalProvider({ children }: PropsWithChildren) {
       'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
     onCancel: () => {
       hideModal()
-      router.back()
+      if (store?.usesUrl) {
+        router.back()
+      }
     },
     width: '',
     open: true,

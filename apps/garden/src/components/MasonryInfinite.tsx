@@ -1,14 +1,16 @@
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+'use client'
+
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
 } from '@/components/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
 import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
 import { Button, Empty } from 'antd'
-import { useInfiniteLoader } from 'masonic'
+import { RenderComponentProps, useInfiniteLoader } from 'masonic'
 import {
   MasonryScroller,
   useContainerPosition,
@@ -18,10 +20,14 @@ import {
 import Link from 'next/link'
 import React, { useContext, useRef, useState } from 'react'
 
-const CreationMasonryInfinite = ({
+const MasonryInfinite = ({
+  type,
+  itemComponent,
   query,
   hasSort,
 }: {
+  type: 'creations' | 'concepts'
+  itemComponent: React.ComponentType<RenderComponentProps<Creation | Concept>>
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
 }) => {
@@ -36,11 +42,11 @@ const CreationMasonryInfinite = ({
     hasSort ? hasSort[0] : OrderByDefaultParam,
   )
   const {
-    creations,
+    items,
     maybeLoadMore: maybeLoadNextPage,
     setSize,
     isEmpty,
-  } = useFeedPaginated(query, orderBy)
+  } = useFeedPaginated(type, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(
     async () => {
@@ -97,7 +103,7 @@ const CreationMasonryInfinite = ({
         />
       )}
 
-      {creations.length && typeof creations[0] === 'undefined' ? (
+      {items.length && typeof items[0] === 'undefined' ? (
         <div>error fetching list</div>
       ) : (
         <MasonryScroller
@@ -106,18 +112,18 @@ const CreationMasonryInfinite = ({
           positioner={positioner}
           resizeObserver={resizeObserver}
           containerRef={containerRef}
-          items={creations}
+          items={items}
           height={windowHeight}
           offset={offset}
           overscanBy={3}
           itemHeightEstimate={300}
-          render={CreationCard}
+          render={itemComponent}
           onRender={maybeLoadMore}
           itemKey={data => data._id}
         />
       )}
 
-      {isEmpty && !creations.length && (
+      {isEmpty && !items.length && (
         <div className="flex flex-col items-center">
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -144,4 +150,4 @@ const CreationMasonryInfinite = ({
   )
 }
 
-export default CreationMasonryInfinite
+export default MasonryInfinite

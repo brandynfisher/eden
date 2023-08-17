@@ -1,10 +1,10 @@
-import { Creator, PaginatedResponse, Task } from '.'
-import { WebAPICallResult } from '../EdenClient'
+import {Creator, PaginatedResponse, Task} from '.'
+import {WebAPICallResult} from '../EdenClient'
 
 export type CreationsListResponse = WebAPICallResult &
   PaginatedResponse<Creation> & {
-    error?: string
-  }
+  error?: string
+}
 
 export type CreationsGetResponse = WebAPICallResult & {
   error?: string

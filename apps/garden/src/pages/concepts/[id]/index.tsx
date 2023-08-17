@@ -1,0 +1,38 @@
+import { Page } from '@/../types/page'
+import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
+import { CONFIG } from '@/lib/config'
+import { fetcher as fetcherFn } from '@/lib/fetcher'
+import { getServerSidePropsBase } from '@/lib/ssr'
+import ConceptPage from '@/pages/concepts/[id]/ConceptPage'
+import { Concept as ConceptType } from '@edenlabs/eden-sdk'
+import { NextPageContext } from 'next'
+import { ReactNode } from 'react'
+
+interface PageProps {
+  data: ConceptType
+  error?: string
+}
+
+const fetchConcept = async (context: NextPageContext) => {
+  const { query } = context
+  const id = query.id ? String(query.id).trim() : false
+
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts?conceptId=${id}`)
+}
+
+export const getServerSideProps = getServerSidePropsBase([
+  {
+    responseFieldName: 'concept',
+    dataFetcher: fetchConcept,
+  },
+])
+
+const Concept: Page<PageProps> = ({ data }: PageProps) => {
+  return <ConceptPage data={data} />
+}
+
+Concept.getLayout = (page: ReactNode) => {
+  return <PageLayoutDefault>{page}</PageLayoutDefault>
+}
+
+export default Concept
