@@ -79,6 +79,7 @@ export const handlePaymentEvent = async (
 
   if (event.type === 'checkout.session.completed') {
     const adminHeaders = getAdminHeaders(server)
+    // @ts-ignore
     const userId = event.data.object.client_reference_id
     console.log('yyy', userId)
     try {
