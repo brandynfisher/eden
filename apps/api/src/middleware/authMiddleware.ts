@@ -29,8 +29,9 @@ const apiKeyVerify = async (request: FastifyRequest) => {
   }
 }
 
-const userVerify = async (request: FastifyRequest) => {
-  await request.jwtVerify()
+const userVerify = async (server: FastifyInstance, request: FastifyRequest) => {
+  // await request.jwtVerify()
+  await server.verifyUser(request)
 
   if (!request.user) {
     throw new Error('Not authorized')
@@ -52,7 +53,7 @@ const getCredential = async (
   if (request.headers['x-api-key']) {
     await apiKeyVerify(request)
   } else {
-    await userVerify(request)
+    await userVerify(server, request)
   }
 }
 
@@ -81,5 +82,11 @@ export const maybeAuth = async (
     await getCredential(server, request)
   } catch (error) {
     // Ignore
+  }
+}
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    verifyUser: (request: FastifyRequest) => Promise<void>
   }
 }

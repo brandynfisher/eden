@@ -24,6 +24,7 @@
   "author": "Eden Labs",
   "license": "MIT",
   "dependencies": {
+    "@clerk/fastify": "^0.6.3",
     "@edenlabs/config": "*",
     "@edenlabs/eden-sdk": "*",
     "@edenlabs/tsconfig": "*",

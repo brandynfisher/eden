@@ -1,9 +1,10 @@
-import fastifyJWT from '@fastify/jwt'
-import fastify, { FastifyReply, FastifyRequest } from 'fastify'
+import fastify from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerChroma from './plugins/chromaPlugin'
+import { registerClerk } from './plugins/clerkPlugin'
 import config from './plugins/config'
+import registerJwt from './plugins/jwtPlugin'
 import registerLlm from './plugins/llmPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
@@ -41,25 +42,14 @@ const createServer = async (
 
   await server.register(config)
 
+  if (server.config.JWT_SECRET) {
+    await registerJwt(server)
+  }
+
   await registerMongo(server, opts.mongoUri)
   await registerChroma(server, opts.chromaUri)
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
-
-  await server.register(fastifyJWT, {
-    secret: server.config.JWT_SECRET,
-  })
-
-  await server.decorate(
-    'authenticate',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        await request.jwtVerify()
-      } catch (err) {
-        reply.send(err)
-      }
-    },
-  )
 
   if (server.config.REPLICATE_API_TOKEN) {
     await registerReplicate(server)
@@ -75,6 +65,10 @@ const createServer = async (
 
   if (server.config.MINIO_HOST) {
     await registerMinio(server)
+  }
+
+  if (server.config.CLERK_PUBLISHABLE_KEY) {
+    await registerClerk(server)
   }
 
   await server.register(import('@fastify/rate-limit'), {
