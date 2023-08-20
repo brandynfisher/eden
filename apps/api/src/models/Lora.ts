@@ -9,6 +9,7 @@ export interface LoraSchema {
   name: string
   checkpoint: string
   training_images: string[]
+  instance_prompt: string
   uri: string
   createdAt?: Date
   updatedAt?: Date | number
@@ -37,6 +38,10 @@ const lora = new Schema<LoraDocument>({
   },
   training_images: {
     type: [String],
+    required: true,
+  },
+  instance_prompt: {
+    type: String,
     required: true,
   },
   uri: {

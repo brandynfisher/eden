@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify'
 
 import { Creation } from '../../models/Creation'
 import { Generator } from '../../models/Generator'
+import { Lora } from '../../models/Lora'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
@@ -133,6 +134,35 @@ const handleUpdate = async (
             await axios.post(webhook, {
               taskId,
               creation,
+            })
+          })
+        }
+      }
+    } else if (generator?.output == 'lora') {
+      for (let i = 0; i < finalOutput.files.length; i++) {
+        const loraData = {
+          user: task.user,
+          task: task._id,
+          name: finalOutput.name,
+          checkpoint: task.config.checkpoint,
+          training_images: task.config.lora_training_urls,
+          uri: finalOutput.files[i],
+          instance_prompt: task.config.instance_prompt,
+        }
+        if (finalOutput.files[i]) {
+          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+            server,
+            finalOutput.files[i],
+          )
+          loraData.uri = uri
+        }
+        const lora = await Lora.create(loraData)
+        Object.assign(taskUpdate, { lora: lora._id })
+        if (task.webhooks) {
+          task.webhooks.forEach(async (webhook: string) => {
+            await axios.post(webhook, {
+              taskId,
+              lora,
             })
           })
         }

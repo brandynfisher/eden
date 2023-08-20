@@ -15,7 +15,7 @@ import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
 const allowed_cogs = [
   "eden-sd-pipelines-sdxl",
   "character",
-  "lora",
+  "sdxl-lora-trainer",
   "zeroscope-v2-xl",
 ]
 
@@ -134,11 +134,11 @@ async function updateVersion(db) {
   
   }
   
-  else if (cog === 'lora') {
+  else if (cog === 'sdxl-lora-trainer') {
 
     const loraGeneratorVersion = {
       provider: 'replicate',
-      address: 'abraham-ai/eden-sd-lora',
+      address: 'abraham-ai/sdxl-lora-trainer',
       versionId: versionId,
       mode: 'lora',
       parameters: loraParameters,
@@ -146,7 +146,7 @@ async function updateVersion(db) {
     }
 
     await db.collection('generators').updateOne(
-      { generatorName: 'lora' }, 
+      { generatorName: 'sdxl-lora-trainer' }, 
       { $addToSet: { versions: loraGeneratorVersion } }
     );
 
@@ -180,7 +180,7 @@ async function main() {
   try {
     await client.connect();
     console.log(`Connected successfully to ${MONGO_URI}`);
-    const db = await client.db('eden');
+    const db = await client.db('eden-dev');
     await updateVersion(db);
   } catch (err) {
     console.error('Failed to connect to the server:', err);
