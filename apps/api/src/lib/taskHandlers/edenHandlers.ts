@@ -1,9 +1,10 @@
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 
+import { Concept } from '../../models/Concept'
 import { Creation } from '../../models/Creation'
+import { User } from '../../models/Creator'
 import { Generator } from '../../models/Generator'
-import { Lora } from '../../models/Lora'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
@@ -138,15 +139,33 @@ const handleUpdate = async (
           })
         }
       }
-    } else if (generator?.output == 'lora') {
+    } else if (generator?.output == 'concept') {
       for (let i = 0; i < finalOutput.files.length; i++) {
-        const loraData = {
+        // version the concept's public name (v2, v3, etc)
+        const user = await User.findById(task.user)
+        let publicName = `${user?.username}:${finalOutput.name}`
+        const concepts = await Concept.find({
+          name: publicName,
+        })
+        if (concepts.length > 0) {
+          const baseName = publicName
+          let version = 2
+          let newName = `${baseName}_v${version}`
+          while (await Concept.findOne({ name: newName })) {
+            version++
+            newName = `${baseName}_v${version}`
+          }
+          publicName = newName
+        }
+        const conceptData = {
           user: task.user,
           task: task._id,
-          name: finalOutput.name,
+          name: publicName,
+          conceptName: finalOutput.name,
           checkpoint: task.config.checkpoint,
-          training_images: task.config.lora_training_urls,
+          training_images: task.config.concept_training_urls,
           uri: finalOutput.files[i],
+          thumbnail: task.config.concept_training_urls[0],
           instance_prompt: task.config.instance_prompt,
         }
         if (finalOutput.files[i]) {
@@ -154,15 +173,15 @@ const handleUpdate = async (
             server,
             finalOutput.files[i],
           )
-          loraData.uri = uri
+          conceptData.uri = uri
         }
-        const lora = await Lora.create(loraData)
-        Object.assign(taskUpdate, { lora: lora._id })
+        const concept = await Concept.create(conceptData)
+        Object.assign(taskUpdate, { concept: concept._id })
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
             await axios.post(webhook, {
               taskId,
-              lora,
+              concept,
             })
           })
         }

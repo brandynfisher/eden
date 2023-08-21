@@ -4,7 +4,7 @@ There are three cogs, each of which have at least one generator.
 
 - eden-sd-pipelines : create, remix, interpolate, real2real, interrogate
 - character : wav2lip
-- eden-sd-lora : lora
+- sdxl-lora-trainer : concept
 
 To add a new versionId for one of the cogs, first update all the parameters in each of its generators. Then, run the following command:
 

@@ -1,17 +1,17 @@
 const params = [
   {
     name: 'name',
-    label: 'LORA name',
+    label: 'Concept name',
     description:
-      'Choose a name to save the LORA. This also sets how you will trigger the concept when prompting: <lora_name>',
+      'Choose a name to save the Concept. This also sets how you can refer to the concept in prompts.',
     default: null,
     isRequired: true,
   },
   {
-    name: 'lora_training_urls',
+    name: 'concept_training_urls',
     label: 'Training images',
     description:
-      'URLs for the image files of target concept to train a LORA for',
+      'URLs for the image files of target concept to train a Concept for',
     mediaUpload: true,
     default: [],
     minLength: 1,
@@ -93,7 +93,7 @@ const params = [
   {
     name: 'lora_rank',
     label: 'LORA rank',
-    description: 'LORA rank',
+    description: 'Rank of LoRa matrices',
     default: 4,
     minimum: 1,
     maximum: 16,

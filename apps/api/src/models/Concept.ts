@@ -13,9 +13,10 @@ export interface ConceptSchema {
   praiseCount: number
   bookmarkCount: number
   delegate?: UserDocument
-  uri?: string
+  uri: string
   thumbnail?: string
-  name?: string
+  name: string
+  conceptName: string
   checkpoint: string
   training_images: string[]
   instance_prompt: string
@@ -28,9 +29,10 @@ export interface ConceptInput {
   user: ObjectId
   task: ObjectId
   delegate?: ObjectId
-  uri?: string
+  uri: string
   thumbnail?: string
-  name?: string
+  name: string
+  conceptName: string
   checkpoint: string
   training_images: string[]
   instance_prompt: string
@@ -70,7 +72,12 @@ const concept = new Schema<ConceptDocument>(
     name: {
       type: String,
       required: true,
-      maxlength: 10000,
+      maxlength: 1000,
+    },
+    conceptName: {
+      type: String,
+      required: true,
+      maxlength: 1000,
     },
     checkpoint: {
       type: String,

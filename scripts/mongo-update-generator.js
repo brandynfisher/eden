@@ -7,7 +7,7 @@ import real2realParameters from './generators/real2real.js';
 import remixParameters from './generators/remix.js';
 import interrogateParameters from './generators/interrogate.js';
 import wav2lipParameters from './generators/wav2lip.js';
-import loraParameters from './generators/lora.js';
+import conceptParameters from './generators/concept.js';
 
 
 import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
@@ -136,18 +136,18 @@ async function updateVersion(db) {
   
   else if (cog === 'sdxl-lora-trainer') {
 
-    const loraGeneratorVersion = {
+    const conceptGeneratorVersion = {
       provider: 'replicate',
       address: 'abraham-ai/sdxl-lora-trainer',
       versionId: versionId,
-      mode: 'lora',
-      parameters: loraParameters,
+      mode: 'concept',
+      parameters: conceptParameters,
       isDeprecated: false
     }
 
     await db.collection('generators').updateOne(
       { generatorName: 'sdxl-lora-trainer' }, 
-      { $addToSet: { versions: loraGeneratorVersion } }
+      { $addToSet: { versions: conceptGeneratorVersion } }
     );
 
   }
