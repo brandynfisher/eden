@@ -250,7 +250,10 @@ const CreationDetail = ({
                 />
               </div>
               <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
-                <FollowControls creatorId={creationData?.user?.userId} />
+                <FollowControls
+                  creatorId={creationData?.user?.userId}
+                  showStats={false}
+                />
               </div>
             </div>
 

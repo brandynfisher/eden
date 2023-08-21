@@ -1,5 +1,6 @@
 import {AxiosRequestConfig} from 'axios'
 import {
+  CreatorFollowersListResponse, CreatorFollowingListResponse,
   SessionEventsListResponse,
   SessionsCreateResponse,
   SessionsDeleteResponse,
@@ -246,6 +247,21 @@ export abstract class Methods {
       creatorsUpdateRequestConfig,
     ),
   }
+
+  public readonly followers = {
+    list: bindApiCall<FollowersListArguments, CreatorFollowersListResponse>(
+      this,
+      followersListRequestConfig,
+    ),
+  }
+
+  public readonly following = {
+    list: bindApiCall<FollowersListArguments, CreatorFollowingListResponse>(
+      this,
+      followingListRequestConfig,
+    ),
+  }
+
 
   public readonly concepts = {
     list: bindApiCall<ConceptsListArguments, ConceptsListResponse>(
@@ -506,6 +522,18 @@ export interface CreatorsGetArguments extends WebAPICallOptions {
 export interface CreatorsUpdateArguments extends WebAPICallOptions {
   username?: string
   userImage?: string
+}
+
+export interface FollowersListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId: string
+}
+
+export interface FollowingListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId: string
 }
 
 export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
@@ -916,6 +944,28 @@ const creatorsUpdateRequestConfig = (
     data: {
       ...args,
     },
+  }
+}
+
+const followersListRequestConfig = (
+  args: FollowersListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: `creators/${args.userId}/followers`,
+    params,
+  }
+}
+
+const followingListRequestConfig = (
+  args: FollowingListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: `creators/${args.userId}/following`,
+    params,
   }
 }
 

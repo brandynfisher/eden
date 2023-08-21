@@ -1,12 +1,19 @@
 import { useCreator } from '@/hooks/useCreator'
 import { handleAxiosError } from '@/lib/fetcher'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect } from 'react'
 
-const FollowControls = ({ creatorId }: { creatorId: string }) => {
+const FollowControls = ({
+  creatorId,
+  showStats,
+}: {
+  creatorId: string
+  showStats?: boolean
+}) => {
   const { message } = App.useApp()
   const [followLoading, setFollowLoading] = React.useState(false)
   const [followerCount, setFollowerCount] = React.useState(0)
@@ -17,6 +24,16 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
   const userId = creatorId
   const { creator } = useCreator(userId)
   const { isAuthenticated, address } = useContext(UserContext)
+
+  const { showModal } = useModalContext()
+
+  const onFollowersClickHandler = () => {
+    showModal(MODAL_TYPES.FOLLOWERS_MODAL, { creatorId, isOwnProfile })
+  }
+
+  const onFollowingClickHandler = () => {
+    showModal(MODAL_TYPES.FOLLOWING_MODAL, { creatorId, isOwnProfile })
+  }
 
   useEffect(() => {
     setFollowerCount(creator?.followerCount || 0)
@@ -53,14 +70,22 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
 
   return (
     <div className="flex dark:text-gray-400 items-center gap-2 justify-between flex-wrap">
-      <div className="flex flex-shrink-0 gap-2">
-        <div className="text-xs md:text-sm flex-shrink-0">
-          <strong>{followerCount || 0}</strong> Followers
+      {showStats && (
+        <div className="flex flex-shrink-0 gap-2">
+          <div
+            className="text-xs md:text-sm flex-shrink-0 hover:underline hover:brightness-125 cursor-pointer"
+            onClick={() => onFollowersClickHandler()}
+          >
+            <strong>{followerCount || 0}</strong> Followers
+          </div>
+          <div
+            className="text-xs md:text-sm flex-shrink-0 hover:underline hover:brightness-125 cursor-pointer"
+            onClick={() => onFollowingClickHandler()}
+          >
+            <strong>{followingCount || 0}</strong> Following
+          </div>
         </div>
-        <div className="text-xs md:text-sm flex-shrink-0">
-          <strong>{followingCount || 0}</strong> Following
-        </div>
-      </div>
+      )}
 
       {isAuthenticated && !isOwnProfile && (
         <Button
@@ -74,9 +99,9 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
           }`}
         >
           {isFollowingUser ? (
-            <>
-              <UserDeleteOutlined /> Following
-            </>
+            <div className="hover:text-gray-700 hover:dark:text-gray-400">
+              <UserDeleteOutlined /> Unfollow
+            </div>
           ) : (
             <>
               <UserAddOutlined /> Follow

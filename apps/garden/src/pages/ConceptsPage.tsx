@@ -25,7 +25,7 @@ const ConceptsPage = () => {
       : [OrderByScore, OrderByLatest, OrderByPraises, OrderByBookmarks]
 
   return (
-    <div className={`flex flex-col min-h-screen`}>
+    <div className={`flex flex-col`}>
       <MasonryInfinite
         hasSort={sortButtons}
         type="concepts"

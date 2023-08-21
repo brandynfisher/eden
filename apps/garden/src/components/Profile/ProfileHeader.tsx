@@ -184,7 +184,7 @@ const ProfileHeader = ({
               <strong>{numCreations || 0}</strong> Creations
             </div>
             <div className="col-span-full sm:col-span-1">
-              <FollowControls creatorId={creatorId} />
+              <FollowControls creatorId={creatorId} showStats={true} />
             </div>
           </div>
         </div>
