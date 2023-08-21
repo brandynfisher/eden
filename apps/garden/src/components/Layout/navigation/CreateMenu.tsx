@@ -1,5 +1,6 @@
 import { UserContext } from '@/providers/UserProvider'
 import { CommentOutlined, RobotOutlined } from '@ant-design/icons'
+import { DownOutlined } from '@ant-design/icons'
 import FilterVintageIcon from '@mui/icons-material/FilterVintage'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import { Menu, type MenuProps } from 'antd'
@@ -70,7 +71,8 @@ const CreateMenu = () => {
       <Menu
         mode={'horizontal'}
         selectedKeys={[router.pathname]}
-        style={{ height: '100%', borderRight: 0 }}
+        style={{ borderRight: 0 }}
+        overflowedIndicator={<DownOutlined />}
         items={menuItems}
         className="text-black dark:text-white bg-gray-100 dark:bg-gray-900 rounded-lg"
       />
