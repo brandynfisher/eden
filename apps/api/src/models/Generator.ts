@@ -122,7 +122,7 @@ const generatorVersion = new Schema<GeneratorVersionDocument>({
   },
 })
 
-type GeneratorOutputType = 'creation' | 'llm' | 'lora'
+type GeneratorOutputType = 'creation' | 'llm' | 'concept'
 
 export interface GeneratorSchema {
   generatorName: string

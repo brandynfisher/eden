@@ -5,6 +5,7 @@ import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
 import characterRoutes from './characterRoutes'
 import collectionRoutes from './collectionRoutes'
+import conceptRoutes from './conceptRoutes'
 import creationRoutes from './creationRoutes'
 import creatorRoutes from './creatorRoutes'
 import feedRoutes from './feedRoutes'
@@ -50,6 +51,7 @@ export const routes = [
   creationRoutes,
   collectionRoutes,
   generatorRoutes,
+  conceptRoutes,
   taskRoutes,
   scenarioRoutes,
   feedRoutes,

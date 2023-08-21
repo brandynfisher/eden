@@ -85,9 +85,9 @@ db.characters.insertOne({
   uri: 'uri',
 })
 
-db.createCollection('loras')
+db.createCollection('concepts')
 
-db.loras.insertOne({
+db.concepts.insertOne({
   user: adminDev.insertedIds[1],
   task: adminDev.insertedIds[1],
   name: 'Test Character',

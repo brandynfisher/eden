@@ -13,9 +13,13 @@ export interface ConceptSchema {
   praiseCount: number
   bookmarkCount: number
   delegate?: UserDocument
-  uri?: string
+  uri: string
   thumbnail?: string
-  name?: string
+  name: string
+  conceptName: string
+  checkpoint: string
+  training_images: string[]
+  instance_prompt: string
   attributes?: any
   createdAt?: Date
   updatedAt?: Date
@@ -25,9 +29,13 @@ export interface ConceptInput {
   user: ObjectId
   task: ObjectId
   delegate?: ObjectId
-  uri?: string
+  uri: string
   thumbnail?: string
-  name?: string
+  name: string
+  conceptName: string
+  checkpoint: string
+  training_images: string[]
+  instance_prompt: string
   attributes?: Record<string, any>
   mediaAttributes?: {
     type: MediaType
@@ -64,7 +72,24 @@ const concept = new Schema<ConceptDocument>(
     name: {
       type: String,
       required: true,
-      maxlength: 10000,
+      maxlength: 1000,
+    },
+    conceptName: {
+      type: String,
+      required: true,
+      maxlength: 1000,
+    },
+    checkpoint: {
+      type: String,
+      required: true,
+    },
+    training_images: {
+      type: [String],
+      required: true,
+    },
+    instance_prompt: {
+      type: String,
+      required: true,
     },
     attributes: {
       type: Schema.Types.Mixed,

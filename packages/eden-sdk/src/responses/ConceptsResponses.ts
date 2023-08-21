@@ -18,7 +18,7 @@ export type Concept = {
   parent?: string
   uri: string
   thumbnail?: string
-  name: string
+  conceptName: string
   attributes: any
   praiseCount?: number
   bookmarkCount?: number

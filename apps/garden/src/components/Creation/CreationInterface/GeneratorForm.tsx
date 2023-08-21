@@ -1,3 +1,4 @@
+import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/Creation/CreationInterface/parameters/StringParameter'
@@ -181,6 +182,57 @@ const GeneratorForm = ({
 
   const renderFormFields = useCallback(
     (parameters: GeneratorParameter[], isOptional: boolean) => {
+      const renderParameter = (parameter: GeneratorParameter) => {
+        if (
+          (parameter.allowedValues && parameter.allowedValues.length > 0) ||
+          parameter.allowedValuesFrom
+        ) {
+          return (
+            <OptionParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        if (typeof parameter.default === 'number') {
+          return (
+            <SliderParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        if (parameter.mediaUpload) {
+          return (
+            <UploadParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+              acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+            />
+          )
+        }
+        if (parameter.name === 'concept') {
+          return (
+            <ConceptParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        return (
+          <StringParameter
+            key={parameter.name}
+            form={form}
+            parameter={parameter}
+            onStringArrayChange={onStringArrayChange}
+          />
+        )
+      }
+
       return parameters.map(parameter => {
         if (presetConfig) {
           const presetParameter = Object.entries(presetConfig).filter(
@@ -203,48 +255,7 @@ const GeneratorForm = ({
               !showOptional && isOptional ? 'hidden' : ''
             }`}
           >
-            {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
-            parameter.allowedValuesFrom ? (
-              <OptionParameter
-                key={parameter.name}
-                form={form}
-                parameter={parameter}
-              />
-            ) : (
-              <>
-                {typeof parameter.default === 'number' ? (
-                  <SliderParameter
-                    key={parameter.name}
-                    form={form}
-                    parameter={parameter}
-                  />
-                ) : (
-                  <>
-                    {parameter.mediaUpload ? (
-                      <UploadParameter
-                        key={parameter.name}
-                        form={form}
-                        parameter={parameter}
-                        acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
-                      />
-                    ) : (
-                      <StringParameter
-                        key={parameter.name}
-                        form={form}
-                        parameter={parameter}
-                        onStringArrayChange={onStringArrayChange}
-                      />
-                    )}
-                  </>
-                )}
-              </>
-            )}
-            {/* {parameters[key].name == 'lora' && (
-            <>
-              <Switch checked={allLoras} onChange={setAllLoras} />
-              &nbsp;&nbsp;Include all Loras
-            </>
-          )} */}
+            {renderParameter(parameter)}
           </div>
         )
       })

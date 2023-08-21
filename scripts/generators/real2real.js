@@ -18,18 +18,18 @@ const params = [
     allowedValues: ['sdxl-v1.0'],
   },
   {
-    name: 'lora',
-    label: 'LORA',
+    name: 'concept',
+    label: 'Concept',
     description:
-      '(optional) Use LORA on top of the model. Dont forget to use instance prompt. Make sure you load LORA on top of the base model is was trained on!',
+      '(optional) Use Concept on top of the model. Make sure you same base model Concept was trained on!',
     default: '(none)',
     // allowedValues: ['(none)'],
    },
    {
-    name: 'lora_scale',
-    label: 'LORA scale',
+    name: 'concept_scale',
+    label: 'Concept scale',
     description:
-      'How strongly to apply the LoRa weights (0.0 will result in the base model)',
+      'How strongly to apply the Concept weights (0.0 will result in the base model)',
     default: 0.8,
     minimum: 0.0,
     maximum: 1.2,
