@@ -22,7 +22,9 @@ const ConceptCardDetail = ({
       <div className="absolute inset-0 bg-gray-800 opacity-80 rounded-md" />
       <div className="z-10 w-full">
         <div className="flex justify-between mb-1">
-          <div className="text-sm font-bold text-white">{concept.name}</div>
+          <div className="text-sm font-bold text-white">
+            {concept.conceptName}
+          </div>
           <div className="text-gray-400 text-xs" title={createdDateString}>
             {timeSinceConcept}
           </div>
