@@ -1,6 +1,7 @@
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { InfoCircleOutlined, WalletOutlined } from '@ant-design/icons'
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart'
 import RedeemIcon from '@mui/icons-material/Redeem'
 import { Button, Dropdown } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
@@ -15,15 +16,14 @@ const MannaBalanceInfo = () => {
       <div className="mb-2">
         You have <span className="font-bold">{mannaBalance}</span> Manna
       </div>
-      <a
-        href="https://docs.eden.art/docs/overview/manna"
+      <Link
+        href="/manna"
         title="Learn about Manna"
         className="text-small hover:dark:text-gray-400"
-        target="_blank"
       >
         Learn about Manna
         <InfoCircleOutlined className="ml-1" />
-      </a>
+      </Link>
     </div>
   )
 }
@@ -44,7 +44,12 @@ const MannaRefillModalTrigger = () => {
 }
 
 const MannaBuyLink = () => {
-  return <Link href={'/manna'}>Buy Manna</Link>
+  return (
+    <Link href={'/manna'} className="flex items-center gap-2">
+      <AddShoppingCartIcon fontSize="medium" />
+      Buy Manna
+    </Link>
+  )
 }
 
 const items: ItemType[] = [
