@@ -1,5 +1,7 @@
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
 import CreationDetailModal from '@/components/Modals/CreationDetailModal'
+import FollowersModal from '@/components/Modals/FollowersModal'
+import FollowingModal from '@/components/Modals/FollowingModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
 import { CloseOutlined } from '@ant-design/icons'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
@@ -17,6 +19,8 @@ export enum MODAL_TYPES {
   CREATION_DETAIL_MODAL = 'CREATION_DETAIL_MODAL',
   CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
+  FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
+  FOLLOWING_MODAL = 'FOLLOWING_MODAL',
 }
 
 type GenericModalParams = unknown
@@ -24,6 +28,8 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_MODAL]: CreationDetailModal,
   [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
+  [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
+  [MODAL_TYPES.FOLLOWING_MODAL]: FollowingModal,
 }
 
 type ModalStore = {
@@ -32,6 +38,7 @@ type ModalStore = {
     | Partial<ModalProps & { creation?: Creation; loadSimilar?: boolean }>
     | Partial<ModalProps & { concept?: Concept }>
     | Partial<ModalProps>
+    | (Partial<ModalProps> & { creatorId: string; isOwnProfile: boolean })
     | undefined
   usesUrl?: boolean
 }

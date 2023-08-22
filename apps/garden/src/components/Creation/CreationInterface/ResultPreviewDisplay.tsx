@@ -16,10 +16,14 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
 
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
-      creation: creation ? creation : undefined,
-      loadSimilar: false,
-    })
+    showModal(
+      MODAL_TYPES.CREATION_DETAIL_MODAL,
+      {
+        creation: creation ? creation : undefined,
+        loadSimilar: false,
+      },
+      true,
+    )
   }
 
   return (

@@ -1,18 +1,19 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import Breadcrumbs from '@/components/Layout/navigation/Breadcrumbs'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
-  OrderByScore,
 } from '@/components/OrderByButtons'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
+import { HomeOutlined } from '@ant-design/icons'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
 import { Inter } from 'next/font/google'
@@ -26,12 +27,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[
-          OrderByLatest,
-          OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
         type="creations"
         itemComponent={CreationCard}
       />
@@ -44,12 +40,7 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[
-          OrderByLatest,
-          OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
         type="concepts"
         itemComponent={ConceptCard}
       />
@@ -100,6 +91,21 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
     children: <CollectionTabContent collections={collections} />,
   })
 
+  const breadcrumbItems = [
+    {
+      path: '/',
+      icon: <HomeOutlined />,
+    },
+    {
+      path: '/creators',
+      title: 'Creators',
+    },
+    {
+      path: `/creators/${creator?.username?.toLowerCase()}`,
+      title: creator.username,
+    },
+  ]
+
   return (
     <>
       <Head>
@@ -136,7 +142,9 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
         />
       </Head>
 
-      <div className={`flex flex-col min-h-screen ${inter.className}`}>
+      <div className={`flex flex-col ${inter.className}`}>
+        <Breadcrumbs items={breadcrumbItems} />
+
         <Space direction="vertical">
           <ProfileHeader
             creatorId={creator.userId}

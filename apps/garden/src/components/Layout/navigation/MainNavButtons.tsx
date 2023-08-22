@@ -1,6 +1,6 @@
 import { UserContext } from '@/providers/UserProvider'
-import { HomeOutlined } from '@ant-design/icons'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
+import YardIcon from '@mui/icons-material/Yard'
 import { Button } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -50,9 +50,12 @@ const MainNavButtons = () => {
   //     setBookmarkCollectionPath(`/collections/${collections[0]._id}`)
   //   }
   // }, [collections])
-
   const navItems: NavButtonItem[] = [
-    { text: 'Creations', icon: <HomeOutlined />, path: '/' },
+    {
+      text: 'Creations',
+      icon: <YardIcon fontSize="small" />,
+      path: '/',
+    },
     // {
     //   text: 'Collections',
     //   icon: <TableOutlined />,

@@ -23,7 +23,7 @@ const CreationCardDetail = ({
       <div className="z-10 w-full">
         <div className="flex justify-between mb-1">
           <div className="text-sm font-bold text-white">
-            /{creation.task.generator?.generatorName}
+            /{creation.task?.generator?.generatorName}
           </div>
           <div className="text-gray-400 text-xs" title={createdDateString}>
             {timeSinceCreation}
