@@ -17,6 +17,16 @@ export type CreatorsListResponse = WebAPICallResult &
     error?: string
   }
 
+export type CreatorFollowersListResponse = WebAPICallResult &
+  PaginatedResponse<Creator> & {
+  error?: string
+}
+
+export type CreatorFollowingListResponse = WebAPICallResult &
+  PaginatedResponse<Creator> & {
+  error?: string
+}
+
 export type CreatorsGetResponse = WebAPICallResult & {
   error?: string
   creator?: Creator

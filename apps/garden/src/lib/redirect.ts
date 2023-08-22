@@ -20,3 +20,23 @@ export const maybeRedirectIfCreationIdQuery = async (
     }
   }
 }
+
+export const maybeRedirectIfConceptIdQuery = async (
+  context: NextPageContext,
+) => {
+  const { query } = context
+  const conceptId = query.conceptId ? query.conceptId : false
+
+  if (conceptId) {
+    const { res } = context
+
+    if (res) {
+      return {
+        redirect: {
+          destination: `/concepts/${conceptId}`,
+          statusCode: 307,
+        },
+      }
+    }
+  }
+}

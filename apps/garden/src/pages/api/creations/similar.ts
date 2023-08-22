@@ -17,7 +17,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       n: 10,
     })
     return res.status(200).json({ creations: response.similarCreations })
-    // return res.status(200).json({ creations: dummyData })
+    // return res.status(200).json({ creations: dummyData.sort(() => Math.random() - 0.5).slice(0, 2) })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })

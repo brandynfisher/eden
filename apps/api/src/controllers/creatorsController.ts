@@ -4,13 +4,17 @@ import {
   CreatorsListArguments,
   CreatorsUnfollowArguments,
   CreatorsUpdateArguments,
+  FollowersListArguments,
+  FollowingListArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Follow, FollowDocument } from '../models/Follow'
 import CreatorRepository from '../repositories/CreatorRepository'
+import FollowerRepository from '../repositories/FollowerRepository'
 
 export const listCreators = async (
   request: FastifyRequest,
@@ -31,6 +35,151 @@ export const listCreators = async (
   )
 
   return reply.status(200).send(creators)
+}
+
+const aggregateFollowerByUserId = (userId: string) => {
+  return Follow.aggregate([
+    {
+      $match: {
+        following: {
+          $eq: new ObjectId(userId),
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        follower: 1,
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'follower',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $unwind: {
+        path: '$user',
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$user',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        userId: 1,
+        username: 1,
+        userImage: 1,
+      },
+    },
+  ])
+}
+
+const aggregateFollowingByUserId = (userId: string) => {
+  return Follow.aggregate([
+    {
+      $match: {
+        follower: {
+          $eq: new ObjectId(userId),
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        following: 1,
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'following',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $unwind: {
+        path: '$user',
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$user',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        userId: 1,
+        username: 1,
+        userImage: 1,
+      },
+    },
+  ])
+}
+
+export const listCreatorFollowers = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { limit, page } = request.query as FollowersListArguments
+  const { userId } = request.params as FollowersListArguments
+  const creatorDoc = await User.findOne({ userId })
+
+  if (!creatorDoc) {
+    return reply.status(404).send({
+      message: 'Creator not found',
+    })
+  }
+
+  const followCreationRepository = new FollowerRepository(Follow)
+  const followAggregate = aggregateFollowerByUserId(creatorDoc._id)
+  const followers = await followCreationRepository.aggregateQuery(
+    followAggregate,
+    {
+      limit,
+      page,
+      sort: { createdAt: -1 },
+    },
+  )
+
+  return reply.status(200).send(followers)
+}
+
+export const listCreatorFollowing = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { limit, page } = request.query as FollowingListArguments
+  const { userId } = request.params as FollowersListArguments
+
+  const creatorDoc = await User.findOne({ userId })
+
+  if (!creatorDoc) {
+    return reply.status(404).send({
+      message: 'Creator not found',
+    })
+  }
+
+  const followCreationRepository = new FollowerRepository(Follow)
+  const followAggregate = aggregateFollowingByUserId(creatorDoc._id)
+  const following = await followCreationRepository.aggregateQuery(
+    followAggregate,
+    {
+      limit,
+      page,
+      sort: { createdAt: -1 },
+    },
+  )
+
+  return reply.status(200).send(following)
 }
 
 export const getCreator = async (

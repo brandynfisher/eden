@@ -1,16 +1,19 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
-import CreationMasonryInfinite from '@/components/Creation/CreationMasonryInfinite'
+import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import Breadcrumbs from '@/components/Layout/navigation/Breadcrumbs'
+import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
-  OrderByScore,
 } from '@/components/OrderByButtons'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
+import { HomeOutlined } from '@ant-design/icons'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
 import { Inter } from 'next/font/google'
@@ -22,14 +25,24 @@ const inter = Inter({ subsets: ['latin'] })
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
   return (
     <div className="mt-4">
-      <CreationMasonryInfinite
+      <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[
-          OrderByLatest,
-          OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+        type="creations"
+        itemComponent={CreationCard}
+      />
+    </div>
+  )
+}
+
+const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
+  return (
+    <div className="mt-4">
+      <MasonryInfinite
+        query={{ userId: creatorId }}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+        type="concepts"
+        itemComponent={ConceptCard}
       />
     </div>
   )
@@ -52,8 +65,9 @@ const CollectionTabContent = ({
 
 const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   const { collections } = useCollections(creator.userId)
-  const { address, isConnected } = useContext(UserContext)
+  const { address, isConnected, featureFlags } = useContext(UserContext)
   const isConnectedUser = isConnected && creator.userId === address
+  const isPreviewUser = featureFlags.includes('preview')
 
   const creatorPageTabs = [
     {
@@ -61,10 +75,34 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       key: '1',
       children: <CreationTabContent creatorId={creator.userId} />,
     },
-    {
-      label: 'Collections',
+  ]
+
+  if (isPreviewUser) {
+    creatorPageTabs.push({
+      label: 'Concepts',
       key: '2',
-      children: <CollectionTabContent collections={collections} />,
+      children: <ConceptTabContent creatorId={creator.userId} />,
+    })
+  }
+
+  creatorPageTabs.push({
+    label: 'Collections',
+    key: '3',
+    children: <CollectionTabContent collections={collections} />,
+  })
+
+  const breadcrumbItems = [
+    {
+      path: '/',
+      icon: <HomeOutlined />,
+    },
+    {
+      path: '/creators',
+      title: 'Creators',
+    },
+    {
+      path: `/creators/${creator?.username?.toLowerCase()}`,
+      title: creator.username,
     },
   ]
 
@@ -104,7 +142,9 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
         />
       </Head>
 
-      <div className={`flex flex-col min-h-screen ${inter.className}`}>
+      <div className={`flex flex-col ${inter.className}`}>
+        <Breadcrumbs items={breadcrumbItems} />
+
         <Space direction="vertical">
           <ProfileHeader
             creatorId={creator.userId}

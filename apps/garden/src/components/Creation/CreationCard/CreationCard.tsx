@@ -1,61 +1,36 @@
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
 import CreationCardHoverOverlay from '@/components/Creation/CreationCard/CreationCardHoverOverlay'
-import CreationCardPreview from '@/components/Creation/CreationCard/CreationCardPreview'
+import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
+import { getModalUrls } from '@/lib/modal'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { NextRouter, useRouter } from 'next/router'
-import { useState } from 'react'
+import { useRouter } from 'next/router'
+import { FC, useState } from 'react'
 
-interface ISpecialRouteIndex<TValue> {
-  [id: string]: TValue
-}
-
-const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
-  '/creators/[id]': {
-    basePath: 'creators',
-  },
-  '/collections/[id]': {
-    basePath: 'collections',
-  },
-}
-
-const getModalUrls = (
-  router: NextRouter,
-  creationId: string,
-): { pageUrl: string; modalUrl: string } => {
-  const urls = {
-    pageUrl: '',
-    modalUrl: '',
-  }
-
-  // all default cases
-  if (!specialHandlingRoutes[router.pathname]) {
-    urls.modalUrl = `/creations/${creationId}`
-    return urls
-  }
-
-  // special workaround when we're trying to open modals on routes with dynamic parameters
-  const basePath = specialHandlingRoutes[router.pathname].basePath
-  urls.modalUrl = `/${basePath}/${router.query.id}?creationId=${creationId}`
-  urls.pageUrl = urls.modalUrl
-
-  return urls
-}
-
-const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
+const CreationCard: FC<{ index: number; data: Creation }> = ({
+  index,
+  data,
+}) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
   const [creation, setCreation] = useState(data)
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false)
 
-  const { pageUrl, modalUrl } = getModalUrls(router, creation._id)
+  const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation._id)
   const { showModal } = useModalContext()
 
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, { creation })
+    showModal(
+      MODAL_TYPES.CREATION_DETAIL_MODAL,
+      {
+        creation,
+        loadSimilar: true,
+      },
+      true,
+    )
   }
 
   return (
@@ -66,7 +41,7 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
             ref={ref}
             className="relative rounded-lg overflow-hidden cursor-pointer"
           >
-            <CreationCardPreview creation={creation} hovered={hovered} />
+            <MediaPreview creation={creation} hovered={hovered} />
             {hovered && (
               <CreationCardHoverOverlay
                 creation={creation}

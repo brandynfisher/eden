@@ -17,6 +17,24 @@ const params = [
     allowedValues: ['sdxl-v1.0'],
   },
   {
+    name: 'concept',
+    label: 'Concept',
+    description:
+      '(optional) Use Concept on top of the model. Make sure you same base model Concept was trained on!',
+    default: '(none)',
+    // allowedValues: ['(none)'],
+   },
+   {
+    name: 'concept_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.2,
+    step: 0.1,
+  },
+  {
     name: 'width',
     label: 'Width',
     description: 'Width of the creation in pixels',
