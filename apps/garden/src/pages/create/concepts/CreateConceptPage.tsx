@@ -1,3 +1,4 @@
+import ConceptInterface from '@/components/Concept/ConceptInterface/ConceptInterface'
 import Breadcrumbs from '@/components/Layout/navigation/Breadcrumbs'
 import { ExperimentOutlined, HomeOutlined } from '@ant-design/icons'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
@@ -24,7 +25,7 @@ const CreateConceptPage = () => {
     <div>
       <Breadcrumbs items={breadcrumbItems} />
 
-      <div>Concept Trainer</div>
+      <ConceptInterface />
     </div>
   )
 }
