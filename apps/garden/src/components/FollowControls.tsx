@@ -28,11 +28,19 @@ const FollowControls = ({
   const { showModal } = useModalContext()
 
   const onFollowersClickHandler = () => {
-    showModal(MODAL_TYPES.FOLLOWERS_MODAL, { creatorId, isOwnProfile })
+    showModal(MODAL_TYPES.FOLLOWERS_MODAL, {
+      creatorId,
+      isOwnProfile,
+      className: 'modal-small',
+    })
   }
 
   const onFollowingClickHandler = () => {
-    showModal(MODAL_TYPES.FOLLOWING_MODAL, { creatorId, isOwnProfile })
+    showModal(MODAL_TYPES.FOLLOWING_MODAL, {
+      creatorId,
+      isOwnProfile,
+      className: 'modal-small',
+    })
   }
 
   useEffect(() => {

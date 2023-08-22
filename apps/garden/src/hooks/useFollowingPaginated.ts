@@ -1,17 +1,29 @@
-import {
-  FollowersRouteQueryParams,
-  PaginatedFollowersQuery,
-} from '@/hooks/useFollowersPaginated'
 import { fetcher } from '@/lib/fetcher'
 import { Creator } from '@edenlabs/eden-sdk'
 import { useCallback } from 'react'
 import useSWRInfinite from 'swr/infinite'
 
-export const useFollowingPaginated = (query: PaginatedFollowersQuery = {}) => {
-  const pageLimit = query?.limit || 10
+export type FollowersRouteQueryParams = {
+  page?: number
+  limit?: number
+  userId?: string
+}
+
+export type PaginatedFollowersQuery = {
+  // isAuthenticated?: boolean
+  userId?: string
+  limit?: number
+  type: 'followers' | 'following'
+}
+
+const PAGE_SIZE = 10
+
+export const useFollowingPaginated = (query: PaginatedFollowersQuery) => {
+  const pageLimit = query?.limit || PAGE_SIZE || 10
+  const type = query.type
 
   const route = (limit: number, page: number) => {
-    const basePath = `/api/following`
+    const basePath = `/api/${type}`
     const params: FollowersRouteQueryParams = {}
 
     if (pageLimit && page) {
@@ -47,34 +59,33 @@ export const useFollowingPaginated = (query: PaginatedFollowersQuery = {}) => {
     mutate: refetch,
     size,
     setSize,
-    // isLoading,
-    // isValidating,
+    isLoading,
+    isValidating,
   } = useSWRInfinite(getKey, fetcher, { revalidateOnFocus: false })
   const dataArray = data != null ? data.flat() : []
 
-  // const isLoadingMore =
-  //   isLoading ||
-  //   (size > 0 && data != null && typeof data[size - 1] === 'undefined')
-  // const isEmpty = data?.[0]?.total === 0 || data?.[0]?.length === 0
-
-  // const maybeLoadMore = () => {
-  //   if (isValidating) return
-  //   if (isLoading || isLoadingMore) return
-  //   if (isEmpty || (data && data.length >= data?.[0]?.pages)) return
-  //   if (!data?.[data?.length - 1]?.hasNextPage) return
-  //
-  //   setSize(prevSize => prevSize + 1)
-  // }
-
+  const isLoadingMore =
+    isLoading || (size > 0 && data && typeof data[size - 1] === 'undefined')
+  const isEmpty = data?.[0]?.length === 0
+  const isReachingEnd =
+    isEmpty ||
+    (dataArray && dataArray[dataArray.length - 1]?.hasNextPage == false)
+  const isRefreshing = isValidating && data && data.length === size
   const creatorDocs: Creator[] = (
     dataArray ? [...dataArray.map(pageData => pageData.docs)] : []
   ).flat()
 
   return {
+    data,
+    totalItemCount: !isEmpty ? dataArray[0]?.total : 0,
     items: creatorDocs,
     refetch,
     size,
     setSize,
-    // isEmpty,
+    isLoading,
+    isValidating,
+    isLoadingMore,
+    isReachingEnd,
+    isRefreshing,
   }
 }
