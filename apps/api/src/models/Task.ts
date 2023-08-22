@@ -2,10 +2,10 @@ import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
+import { ConceptDocument } from './Concept'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 import { GeneratorDocument } from './Generator'
-import { LoraDocument } from './Lora'
 
 export enum TaskStatus {
   Pending = 'pending',
@@ -23,7 +23,7 @@ export interface TaskSchema {
   status: TaskStatus
   cost: number
   creation?: CreationDocument
-  lora?: LoraDocument
+  concept?: ConceptDocument
   webhooks?: string[]
   error?: string
   progress?: number
@@ -62,9 +62,9 @@ const task = new Schema<TaskDocument>(
       type: Schema.Types.ObjectId,
       ref: 'creations',
     },
-    lora: {
+    concept: {
       type: Schema.Types.ObjectId,
-      ref: 'loras',
+      ref: 'concepts',
     },
     config: {
       type: Schema.Types.Mixed,
