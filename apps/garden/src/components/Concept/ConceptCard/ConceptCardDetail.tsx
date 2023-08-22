@@ -31,10 +31,10 @@ const ConceptCardDetail = ({
         </div>
 
         <div
-          title={concept.name}
+          title={concept.conceptName}
           className="relative first-letter:uppercase text-xs select-text  cursor-text mb-2 w-full text-ellipsis text-gray-300 break-words line-clamp-2"
         >
-          {concept.name}
+          {concept.conceptName}
         </div>
         <CreatorProfileLink
           creatorId={concept.user.userId}
