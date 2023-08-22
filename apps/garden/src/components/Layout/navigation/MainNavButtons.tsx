@@ -1,6 +1,6 @@
 import { UserContext } from '@/providers/UserProvider'
-import FilterVintageIcon from '@mui/icons-material/FilterVintage'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
+import YardIcon from '@mui/icons-material/Yard'
 import { Button } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -53,7 +53,7 @@ const MainNavButtons = () => {
   const navItems: NavButtonItem[] = [
     {
       text: 'Creations',
-      icon: <FilterVintageIcon fontSize="inherit" />,
+      icon: <YardIcon fontSize="small" />,
       path: '/',
     },
     // {

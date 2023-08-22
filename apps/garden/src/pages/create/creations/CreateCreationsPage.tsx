@@ -3,7 +3,7 @@ import Breadcrumbs from '@/components/Layout/navigation/Breadcrumbs'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
 import { ExperimentOutlined, HomeOutlined } from '@ant-design/icons'
-import FilterVintageIcon from '@mui/icons-material/FilterVintage'
+import YardIcon from '@mui/icons-material/Yard'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
@@ -41,7 +41,7 @@ const breadcrumbItems = [
   },
   {
     title: 'Creations',
-    icon: <FilterVintageIcon fontSize="inherit" />,
+    icon: <YardIcon fontSize="inherit" />,
   },
 ]
 

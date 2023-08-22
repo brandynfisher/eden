@@ -1,8 +1,8 @@
 import { UserContext } from '@/providers/UserProvider'
 import { CommentOutlined, RobotOutlined } from '@ant-design/icons'
 import { DownOutlined } from '@ant-design/icons'
-import FilterVintageIcon from '@mui/icons-material/FilterVintage'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
+import YardIcon from '@mui/icons-material/Yard'
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -26,11 +26,7 @@ function getItem(
 }
 
 const defaultItems: MenuItem[] = [
-  getItem(
-    'Creations',
-    '/create/creations',
-    <FilterVintageIcon fontSize="inherit" />,
-  ),
+  getItem('Creations', '/create/creations', <YardIcon fontSize="inherit" />),
 ]
 
 const featurePreviewItems: MenuItem[] = [

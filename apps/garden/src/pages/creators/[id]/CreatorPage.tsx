@@ -7,7 +7,6 @@ import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
-  OrderByScore,
 } from '@/components/OrderByButtons'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
@@ -28,12 +27,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[
-          OrderByLatest,
-          OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
         type="creations"
         itemComponent={CreationCard}
       />
@@ -46,12 +40,7 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[
-          OrderByLatest,
-          OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
         type="concepts"
         itemComponent={ConceptCard}
       />
