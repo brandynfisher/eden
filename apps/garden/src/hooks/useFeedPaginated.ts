@@ -70,7 +70,7 @@ export const useFeedPaginated = (
 
       return null
     },
-    [pageLimit, orderBy],
+    [query, pageLimit, orderBy],
   )
 
   const {
@@ -102,6 +102,7 @@ export const useFeedPaginated = (
   ).flat()
 
   return {
+    hasNextPage: !!data?.[data?.length - 1]?.hasNextPage,
     items: creationDocs,
     refetchFeed,
     size,
