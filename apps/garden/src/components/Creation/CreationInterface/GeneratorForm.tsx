@@ -262,7 +262,6 @@ const GeneratorForm = ({
     },
     [presetConfig, showOptional],
   )
-
   return (
     <Form
       form={form}
