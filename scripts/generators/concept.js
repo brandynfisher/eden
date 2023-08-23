@@ -8,7 +8,7 @@ const params = [
     isRequired: true,
   },
   {
-    name: 'concept_training_urls',
+    name: 'lora_training_urls',
     label: 'Training images',
     description:
       'URLs for the image files of target concept to train a Concept for',

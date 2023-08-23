@@ -1,34 +1,72 @@
 import FollowControls from '@/components/FollowControls'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
-import { Creator } from '@edenlabs/eden-sdk'
-import { Empty } from 'antd'
+import { useFollowingPaginated } from '@/hooks/useFollowingPaginated'
+import { Button, Empty } from 'antd'
 
-const FollowList = ({ listItems }: { listItems: Creator[] }) => {
+const FollowList = ({
+  creatorId,
+  type,
+  title,
+}: {
+  creatorId: string
+  type: 'followers' | 'following'
+  title: string
+}) => {
+  const {
+    items: listItems,
+    isLoadingMore,
+    isReachingEnd,
+    setSize,
+    size,
+    totalItemCount,
+  } = useFollowingPaginated({ userId: creatorId, type })
+
   return (
-    <div className="flex flex-col w-full">
-      {listItems && listItems.length ? (
-        listItems.map(listItem => (
-          <div
-            key={listItem.userId}
-            className="flex gap-2 justify-between py-2 px-4 last:mb-0 [&:nth-child(even)]:bg-gray-50 [&:nth-child(odd)]:bg-gray-100 [&:nth-child(even)]:dark:bg-gray-900 [&:nth-child(odd)]:dark:bg-gray-800 "
-          >
-            <CreatorProfileLink
-              creatorId={listItem.userId}
-              creatorImage={listItem.userImage}
-              creatorName={listItem.username}
-            />
-            <FollowControls creatorId={listItem.userId} showStats={false} />
-          </div>
-        ))
-      ) : (
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={
-            <div className="flex flex-col items-center">
-              <div className="mb-4">Nothing here yet.</div>
-            </div>
-          }
-        />
+    <div>
+      <h3 className="mb-4">
+        {title} ({totalItemCount})
+      </h3>
+      <div className="flex flex-col w-full">
+        {listItems && listItems.length ? (
+          <>
+            {listItems.map(listItem => (
+              <div
+                key={listItem.userId}
+                className="flex gap-2 justify-between py-2 px-4 last:mb-0 [&:nth-child(even)]:bg-gray-50 [&:nth-child(odd)]:bg-gray-100 [&:nth-child(even)]:dark:bg-gray-900 [&:nth-child(odd)]:dark:bg-gray-800 "
+              >
+                <CreatorProfileLink
+                  creatorId={listItem.userId}
+                  creatorImage={listItem.userImage}
+                  creatorName={listItem.username}
+                />
+                <FollowControls creatorId={listItem.userId} showStats={false} />
+              </div>
+            ))}
+          </>
+        ) : (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <div className="flex flex-col items-center">
+                <div className="mb-4">Nothing here yet.</div>
+              </div>
+            }
+          />
+        )}
+      </div>
+
+      {listItems && listItems.length && !isReachingEnd && (
+        <Button
+          className="mt-4"
+          disabled={isLoadingMore || isReachingEnd}
+          onClick={() => setSize(size + 1)}
+        >
+          {isLoadingMore
+            ? 'loading...'
+            : isReachingEnd
+            ? 'no more issues'
+            : 'Load more'}
+        </Button>
       )}
     </div>
   )

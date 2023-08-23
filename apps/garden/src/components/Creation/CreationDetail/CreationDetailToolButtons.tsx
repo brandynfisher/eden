@@ -54,7 +54,7 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
     }
 
     await router.push({
-      pathname: '/create',
+      pathname: '/create/creations',
       query,
     })
   }

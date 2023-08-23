@@ -163,9 +163,9 @@ const handleUpdate = async (
           name: publicName,
           conceptName: finalOutput.name,
           checkpoint: task.config.checkpoint,
-          training_images: task.config.concept_training_urls,
+          training_images: task.config.lora_training_urls,
           uri: finalOutput.files[i],
-          thumbnail: task.config.concept_training_urls[0],
+          thumbnail: task.config.lora_training_urls[0],
           instance_prompt: task.config.instance_prompt,
         }
         if (finalOutput.files[i]) {

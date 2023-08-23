@@ -10,7 +10,7 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
   const router = useRouter()
 
   const handleRemoveClick = async () => {
-    await router.push('/create')
+    await router.push('/create/creations')
   }
 
   return (

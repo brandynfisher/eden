@@ -1,6 +1,6 @@
 import CharacterAvatarFallback from '@/components/Characters/CharacterAvatarFallback'
 import { Image } from 'antd'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const CharacterAvatar = ({
   id,
@@ -15,6 +15,12 @@ const CharacterAvatar = ({
   size?: 'small' | 'medium' | 'large' | 'auto' | undefined
   shape?: 'square' | 'circle'
 }) => {
+  const [showFallback, setShowFallback] = useState(false)
+
+  useEffect(() => {
+    setShowFallback(!imageUri)
+  }, [imageUri])
+
   return (
     <div
       className={`overflow-hidden flex items-center justify-center flex-shrink-0 bg-gray-900 h-full ${
@@ -27,8 +33,9 @@ const CharacterAvatar = ({
     >
       {(name || imageUri) && (
         <>
-          {imageUri ? (
+          {!showFallback ? (
             <Image
+              key={id}
               src={imageUri}
               alt={`${name}'s Avatar`}
               preview={false}
