@@ -28,13 +28,12 @@ export const formatStableDiffusionConfigForReplicate = async (config: any) => {
   newConfig.voice_file_urls
     ? (newConfig.voice_file_urls = newConfig.voice_file_urls.join('|'))
     : null
-  newConfig.concept_training_urls
-    ? (newConfig.concept_training_urls =
-        newConfig.concept_training_urls.join('|'))
+  newConfig.lora_training_urls
+    ? (newConfig.lora_training_urls = newConfig.lora_training_urls.join('|'))
     : null
 
   // if it's a Concept training
-  if (newConfig.concept_training_urls) {
+  if (newConfig.lora_training_urls) {
     // remove any spaces, pipes, or underscores in the name
     newConfig.name = newConfig.name.replace(/ /g, '')
     newConfig.name = newConfig.name.replace(/\|/g, '')
