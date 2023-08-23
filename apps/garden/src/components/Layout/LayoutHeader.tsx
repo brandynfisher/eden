@@ -8,6 +8,7 @@ import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import MyProfileButton from '@/components/Profile/MyProfileButton'
 import { UserContext } from '@/providers/UserProvider'
 import theme from '@/styles/theme'
+import { UserButton } from '@clerk/nextjs'
 import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
 import { Inter } from 'next/font/google'
@@ -58,6 +59,7 @@ const LayoutHeader = () => {
         )}
 
         <SettingsDropdown />
+        <UserButton afterSignOutUrl="/" />
         <MyProfileButton />
       </div>
     </Header>

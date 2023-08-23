@@ -6,6 +6,7 @@ import ModalProvider from '@/providers/ModalProvider'
 import UserProvider from '@/providers/UserProvider'
 import WalletProvider from '@/providers/WalletProvider'
 import '@/styles/globals.scss'
+import { ClerkProvider } from '@clerk/nextjs'
 import '@rainbow-me/rainbowkit/styles.css'
 import 'antd/dist/reset.css'
 import { ThemeProvider } from 'next-themes'
@@ -56,17 +57,19 @@ export default function App({ Component, pageProps }: Props): ReactElement {
 
       <ThemeProvider attribute="class">
         <AntConfigWrapProvider>
-          <WalletProvider>
-            <EdenProvider>
-              <UserProvider>
-                <CreationNotificationProvider>
-                  <ModalProvider>
-                    {getLayout(<Component {...pageProps} />)}
-                  </ModalProvider>
-                </CreationNotificationProvider>
-              </UserProvider>
-            </EdenProvider>
-          </WalletProvider>
+          <ClerkProvider>
+            <WalletProvider>
+              <EdenProvider>
+                <UserProvider>
+                  <CreationNotificationProvider>
+                    <ModalProvider>
+                      {getLayout(<Component {...pageProps} />)}
+                    </ModalProvider>
+                  </CreationNotificationProvider>
+                </UserProvider>
+              </EdenProvider>
+            </WalletProvider>
+          </ClerkProvider>
         </AntConfigWrapProvider>
       </ThemeProvider>
     </>
