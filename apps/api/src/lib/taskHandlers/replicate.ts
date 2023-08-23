@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 
 import { Concept } from '../../models/Concept'
+import { User } from '../../models/Creator'
 
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
@@ -40,18 +41,11 @@ export const formatStableDiffusionConfigForReplicate = async (config: any) => {
     newConfig.name = newConfig.name.replace(/_/g, '')
   }
 
-  // if it's a Concept inference, get the Concept url
+  // if it's a Concept inference, send to lora parameter
   if (newConfig.concept == '(none)') {
     delete newConfig.concept
-  } else if (newConfig.concept) {
-    const concept = await Concept.findOne({
-      conceptName: newConfig.concept,
-    })
-    if (!concept) {
-      throw new Error(`Could not find Concept ${newConfig.concept}`)
-    }
-    newConfig.concept = concept.uri
   }
+
   return newConfig
 }
 

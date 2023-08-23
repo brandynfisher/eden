@@ -9,12 +9,18 @@ const ConceptParameter = (props: {
 }) => {
   const [value, setValue] = useState(props.parameter.default)
   const [allConcepts, setAllConcepts] = useState(false)
-  const conceptOptions = allConcepts ? {} : { userId: 'TBD' } // todo: filter by just user
+  const conceptOptions = allConcepts ? {} : { userId: 'TBD' }
   const { concepts } = useConcepts(conceptOptions)
-  const allowedValues = concepts?.map(
-    concept => concept.user + ':' + concept.conceptName,
-  )
-  const options = allowedValues ? allowedValues.map(value => ({ value })) : []
+
+  const options = [
+    { label: '(none)', value: '(none)' },
+    ...(concepts
+      ? concepts.map(concept => ({
+          label: concept.publicName,
+          value: concept.uri,
+        }))
+      : []),
+  ]
 
   const onChange = (newValue: number | null) => {
     if (newValue !== null) {
