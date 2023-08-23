@@ -24,6 +24,7 @@
   "author": "Eden Labs",
   "license": "MIT",
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^4.12.2",
     "@clerk/fastify": "^0.6.3",
     "@edenlabs/config": "*",
     "@edenlabs/eden-sdk": "*",
@@ -55,6 +56,7 @@
     "replicate-js": "github:genekogan/replicate-js",
     "sharp": "^0.32.1",
     "siwe": "^2.1.4",
+    "svix": "^1.8.1",
     "uuid": "^9.0.0",
     "vite": "^4.3.5"
   },

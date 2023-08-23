@@ -35,6 +35,7 @@ const ConfigSchema = Type.Strict(
     MINIO_URI: Type.String(),
     CLERK_PUBLISHABLE_KEY: Type.String(),
     CLERK_SECRET_KEY: Type.String(),
+    CLERK_WEBHOOK_SECRET: Type.String(),
   }),
 )
 
