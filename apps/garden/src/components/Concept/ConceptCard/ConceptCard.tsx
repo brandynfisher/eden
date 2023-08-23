@@ -20,24 +20,22 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
   }
 
   return (
-    <div>
-      <div className="relative " key={index}>
-        <div className="w-full flex justify-center">
-          <div
-            ref={ref}
-            className="relative rounded-lg overflow-hidden cursor-pointer"
-          >
-            <ImageResult resultUrl={concept.thumbnail || ''} />
-            <div className="absolute inset-0 pointer-events-none bg-opacity-70">
-              [type]
-            </div>
-            {hovered && (
-              <ConceptCardHoverOverlay
-                concept={concept}
-                handlers={{ onChange: setConcept, openDetailModal }}
-              />
-            )}
+    <div className="relative " key={index}>
+      <div className="w-full flex justify-center">
+        <div
+          ref={ref}
+          className="relative rounded-lg overflow-hidden cursor-pointer"
+        >
+          <ImageResult resultUrl={concept.thumbnail || ''} />
+          <div className="absolute inset-0 pointer-events-none bg-gray-800 bg-opacity-70">
+            {concept.conceptName}
           </div>
+          {hovered && (
+            <ConceptCardHoverOverlay
+              concept={concept}
+              handlers={{ onChange: setConcept, openDetailModal }}
+            />
+          )}
         </div>
       </div>
     </div>
