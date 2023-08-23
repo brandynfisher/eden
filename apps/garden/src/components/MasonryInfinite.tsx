@@ -34,7 +34,7 @@ const MasonryInfinite = ({
   hasSort?: OrderByParam[]
 }) => {
   const containerRef = useRef(null)
-  const [key, setKey] = useState(0)
+  const [key, setKey] = useState('')
 
   const { isConnected, settings, address } = useContext(UserContext)
   const isConnectedUser =
@@ -48,11 +48,14 @@ const MasonryInfinite = ({
     maybeLoadMore: maybeLoadNextPage,
     setSize,
     isEmpty,
+    hasNextPage,
   } = useFeedPaginated(type, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(
     async () => {
-      await maybeLoadNextPage()
+      if (hasNextPage) {
+        await maybeLoadNextPage()
+      }
     },
     {
       isItemLoaded: (index, items) => {
@@ -92,7 +95,7 @@ const MasonryInfinite = ({
           ? settings.maxGridCols.value
           : settings?.maxGridCols.params.initialValue,
     },
-    [orderBy, width],
+    [items.length, orderBy, width],
   )
   const resizeObserver = useResizeObserver(positioner)
 

@@ -16,14 +16,11 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
 
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    showModal(
-      MODAL_TYPES.CREATION_DETAIL_MODAL,
-      {
-        creation: creation ? creation : undefined,
-        loadSimilar: false,
-      },
-      true,
-    )
+    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
+      creation: creation ? creation : undefined,
+      loadSimilar: false,
+      usesUrl: true,
+    })
   }
 
   return (
@@ -33,8 +30,8 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
           onClick={openDetailModal}
           className="flex flex-col items-center gap-4"
         >
-          <MediaDisplay creationUri={creation.uri} />
           <Button>Show Details</Button>
+          <MediaDisplay creationUri={creation.uri} />
         </div>
       ) : (
         <LoadingIndicator />

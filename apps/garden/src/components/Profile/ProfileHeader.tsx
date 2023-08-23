@@ -30,7 +30,7 @@ const ProfileHeader = ({
   const [isLoading, setIsLoading] = useState(true)
   const [imageSubmitLoading, setImageSubmitLoading] = useState(false)
   const [displayName, setDisplayName] = useState('')
-  const [displayImage, setDisplayImage] = useState('')
+  const [displayImage, setDisplayImage] = useState<string | undefined>()
   const [showImageUploader, setShowImageUploader] = useState(false)
   const [form] = Form.useForm()
   const userImageFieldValue = Form.useWatch('userImage', form)
@@ -51,9 +51,7 @@ const ProfileHeader = ({
       setDisplayName(creatorId)
     }
 
-    if (creator.userImage) {
-      setDisplayImage(creator.userImage)
-    }
+    setDisplayImage(creator?.userImage)
 
     setIsLoading(false)
   }, [creator, creatorId])

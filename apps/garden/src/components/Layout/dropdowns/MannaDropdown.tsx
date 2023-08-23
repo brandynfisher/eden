@@ -31,7 +31,7 @@ const MannaRefillModalTrigger = () => {
   const { showModal } = useModalContext()
 
   const onClickHandler = () => {
-    showModal(MODAL_TYPES.MANNA_REFILL_MODAL, {})
+    showModal(MODAL_TYPES.MANNA_REFILL_MODAL, { className: 'modal-small' })
   }
 
   return (

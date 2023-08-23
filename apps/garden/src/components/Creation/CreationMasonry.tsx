@@ -39,7 +39,7 @@ const CreationMasonry = ({ creations }: { creations: Creation[] | null }) => {
           ? settings.maxGridCols.value
           : settings?.maxGridCols.params.initialValue,
     },
-    [width],
+    [creations?.length, width],
   )
   const resizeObserver = useResizeObserver(positioner)
 
@@ -58,7 +58,7 @@ const CreationMasonry = ({ creations }: { creations: Creation[] | null }) => {
               items={creations}
               height={windowHeight}
               offset={offset}
-              overscanBy={3}
+              overscanBy={1}
               itemHeightEstimate={300}
               render={CreationCard}
               itemKey={data => data._id}
