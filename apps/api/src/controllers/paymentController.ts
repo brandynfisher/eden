@@ -5,13 +5,37 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { getAdminHeaders } from '../lib/util'
 import { User } from '../models/Creator'
 
+const handlePaymentSuccess = async (
+  server: FastifyInstance,
+  reply: FastifyReply,
+  userId: string,
+) => {
+  try {
+    await axios.post(
+      `${server.config.API_URL}/admin/manna/modify`,
+      {
+        userId,
+        amount: 1000,
+      },
+      {
+        headers: getAdminHeaders(server),
+      },
+    )
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({
+      message: 'Error adding manna',
+    })
+  }
+}
+
 export const createCheckoutSession = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { priceId } = request.body as PaymentsCreateArguments
+  const { priceId, paymentMode } = request.body as PaymentsCreateArguments
 
   const user = await User.findById(userId)
   if (!user) {
@@ -35,7 +59,7 @@ export const createCheckoutSession = async (
   }
 
   const session = await server.stripe.checkout.sessions.create({
-    mode: 'payment',
+    mode: paymentMode,
     payment_method_types: ['card'],
     line_items: [
       {
@@ -77,29 +101,18 @@ export const handlePaymentEvent = async (
     server.config.STRIPE_WEBHOOK_SECRET,
   )
 
-  if (event.type === 'checkout.session.completed') {
-    const adminHeaders = getAdminHeaders(server)
-    // @ts-ignore
-    const userId = event.data.object.client_reference_id
-    console.log('yyy', userId)
-    try {
-      await axios.post(
-        `${server.config.API_URL}/admin/manna/modify`,
-        {
-          userId,
-          amount: 1000,
-        },
-        {
-          headers: adminHeaders,
-        },
-      )
+  // @ts-ignore
+  const userId = event.data.object.client_reference_id
 
+  switch (event.type) {
+    case 'checkout.session.completed':
+      await handlePaymentSuccess(server, reply, userId)
       return reply.status(200).send({})
-    } catch (error) {
-      console.error(error)
-      return reply.status(500).send({
-        message: 'Error adding manna',
-      })
-    }
+    case 'invoice.payment_succeeded':
+      await handlePaymentSuccess(server, reply, userId)
+      return reply.status(200).send({})
+    default:
+      console.log(`Stripe: Unhandled event type ${event.type}`)
+      return reply.status(200).send({})
   }
 }

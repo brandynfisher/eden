@@ -1,6 +1,6 @@
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
-import { EdenClient } from '@edenlabs/eden-sdk'
+import { EdenClient, PaymentsCreateArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -9,7 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const authToken = req.session.token
-  const { priceId } = req.body
+  const { priceId, paymentMode } = req.body as PaymentsCreateArguments
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -22,6 +22,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     })
     const response = await eden.payments.create({
       priceId,
+      paymentMode,
     })
     return res.status(200).json({ url: response.url })
   } catch (error) {

@@ -12,6 +12,7 @@ const paymentRoutes: FastifyPluginAsync = async server => {
     schema: {
       body: {
         priceId: Type.String(),
+        paymentMode: Type.String(),
       },
       response: {
         200: Type.Object({

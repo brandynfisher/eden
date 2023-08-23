@@ -1,6 +1,7 @@
-import {AxiosRequestConfig} from 'axios'
+import { AxiosRequestConfig } from 'axios'
 import {
-  CreatorFollowersListResponse, CreatorFollowingListResponse,
+  CreatorFollowersListResponse,
+  CreatorFollowingListResponse,
   SessionEventsListResponse,
   SessionsCreateResponse,
   SessionsDeleteResponse,
@@ -17,16 +18,16 @@ import {
   CollectionsRemoveCreationsResponse,
   CollectionsUpdateResponse,
 } from 'src/responses/CollectionsResponses'
-import {MediaUploadResponse} from 'src/responses/MediaResponses'
+import { MediaUploadResponse } from 'src/responses/MediaResponses'
 import { PaymentsCreateResponse } from 'src/responses/PaymentsResponses'
 
-import {WebAPICallOptions, WebAPICallResult} from './EdenClient'
+import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
   ApiKeysCreateResponse,
   ApiKeysDeleteResponse,
   ApiKeysListResponse,
 } from './responses/ApiKeysResponses'
-import {AuthLoginResponse} from './responses/AuthResponses'
+import { AuthLoginResponse } from './responses/AuthResponses'
 import {
   CharactersCreateResponse,
   CharactersDeleteResponse,
@@ -34,6 +35,10 @@ import {
   CharactersListResponse,
   CharactersUpdateResponse,
 } from './responses/CharactersResponses'
+import {
+  ConceptsGetResponse,
+  ConceptsListResponse,
+} from './responses/ConceptsResponses'
 import {
   CreationsGetResponse,
   CreationsGetSimilarResponse,
@@ -71,7 +76,6 @@ import {
   TasksGetResponse,
   TasksListResponse,
 } from './responses/TasksResponses'
-import {ConceptsGetResponse, ConceptsListResponse} from './responses/ConceptsResponses';
 
 const transformArgsIntoURLParams = (
   args: Record<string, any>,
@@ -262,7 +266,6 @@ export abstract class Methods {
       followingListRequestConfig,
     ),
   }
-
 
   public readonly concepts = {
     list: bindApiCall<ConceptsListArguments, ConceptsListResponse>(
@@ -498,7 +501,6 @@ export interface CreationsUnreactArguments extends WebAPICallOptions {
   reaction: ReactionType
 }
 
-
 export interface ConceptsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
@@ -562,6 +564,7 @@ export interface MediaUploadArguments extends WebAPICallOptions {
 
 export interface PaymentsCreateArguments extends WebAPICallOptions {
   priceId: string
+  paymentMode: 'payment' | 'subscription'
 }
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {

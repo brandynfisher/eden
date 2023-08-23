@@ -10,10 +10,11 @@ const MannaPage = () => {
   const { message } = App.useApp()
   const { mannaBalance } = useContext(UserContext)
 
-  const handleCheckout = async (priceId: string) => {
+  const handleCheckout = async (priceId: string, paymentMode: string) => {
     try {
       const response = await axios.post('/api/payment', {
         priceId,
+        paymentMode,
       })
       const { url } = response.data
       window.location.href = url
@@ -86,8 +87,20 @@ const MannaPage = () => {
       </div>
 
       {/* dev / debug */}
-      <Button onClick={() => handleCheckout('price_1Nfj5lDX4Emx2YPCa100zNaR')}>
+      <Button
+        onClick={() =>
+          handleCheckout('price_1Nfj5lDX4Emx2YPCa100zNaR', 'payment')
+        }
+      >
         Buy 1000 Manna
+      </Button>
+
+      <Button
+        onClick={() =>
+          handleCheckout('price_1NiGSTDX4Emx2YPCRccbteTp', 'subscription')
+        }
+      >
+        Subscribe
       </Button>
     </div>
   )
