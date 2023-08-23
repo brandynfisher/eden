@@ -30,7 +30,6 @@ const apiKeyVerify = async (request: FastifyRequest) => {
 }
 
 const userVerify = async (server: FastifyInstance, request: FastifyRequest) => {
-  // await request.jwtVerify()
   await server.verifyUser(request)
 
   if (!request.user) {

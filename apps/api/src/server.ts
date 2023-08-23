@@ -42,7 +42,9 @@ const createServer = async (
 
   await server.register(config)
 
-  if (server.config.JWT_SECRET) {
+  if (server.config.CLERK_PUBLISHABLE_KEY) {
+    await registerClerk(server)
+  } else if (server.config.JWT_SECRET) {
     await registerJwt(server)
   }
 
@@ -65,10 +67,6 @@ const createServer = async (
 
   if (server.config.MINIO_HOST) {
     await registerMinio(server)
-  }
-
-  if (server.config.CLERK_PUBLISHABLE_KEY) {
-    await registerClerk(server)
   }
 
   await server.register(import('@fastify/rate-limit'), {

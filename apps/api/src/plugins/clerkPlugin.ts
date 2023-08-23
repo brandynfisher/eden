@@ -1,5 +1,5 @@
 import { Clerk } from '@clerk/backend'
-import { clerkPlugin, createClerkClient } from '@clerk/fastify'
+import { clerkPlugin, createClerkClient, getAuth } from '@clerk/fastify'
 import type { FastifyInstance } from 'fastify'
 
 export const registerClerk = async (fastify: FastifyInstance) => {
@@ -12,6 +12,9 @@ export const registerClerk = async (fastify: FastifyInstance) => {
     const clerkClient = createClerkClient(clerkOptions)
     fastify.register(clerkPlugin, clerkOptions)
     fastify.decorate('clerk', clerkClient)
+    fastify.decorate('userVerify', async (request: any) => {
+      getAuth(request)
+    })
     fastify.log.info('Successfully registered ClerkPlugin')
   } catch (err) {
     fastify.log.error('Plugin: Clerk, error on register', err)
