@@ -81,10 +81,10 @@ async function main(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
     })
     await tasks_to.insertMany(allTasks)
 
-    console.log('Copying concepts...')
-    const allConcepts = await selectDocs('concepts')
-    const concepts_to = db_to.collection('concepts')
-    await concepts_to.insertMany(allConcepts)
+    // console.log('Copying concepts...')
+    // const allConcepts = await selectDocs('concepts')
+    // const concepts_to = db_to.collection('concepts')
+    // await concepts_to.insertMany(allConcepts)
 
     console.log('Copying creations...')
     const allCreations = await selectDocs('creations', true)
