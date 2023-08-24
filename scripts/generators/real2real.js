@@ -18,7 +18,7 @@ const params = [
     allowedValues: ['sdxl-v1.0'],
   },
   {
-    name: 'concept',
+    name: 'lora',
     label: 'Concept',
     description:
       '(optional) Use Concept on top of the model. Make sure you same base model Concept was trained on!',
@@ -26,7 +26,7 @@ const params = [
     // allowedValues: ['(none)'],
    },
    {
-    name: 'concept_scale',
+    name: 'lora_scale',
     label: 'Concept scale',
     description:
       'How strongly to apply the Concept weights (0.0 will result in the base model)',

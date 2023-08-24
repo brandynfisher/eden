@@ -214,7 +214,7 @@ const GeneratorForm = ({
             />
           )
         }
-        if (parameter.name === 'concept') {
+        if (parameter.name === 'lora') {
           return (
             <ConceptParameter
               key={parameter.name}

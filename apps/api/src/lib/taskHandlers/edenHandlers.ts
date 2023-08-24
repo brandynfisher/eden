@@ -142,16 +142,21 @@ const handleUpdate = async (
     } else if (generator?.output == 'concept') {
       for (let i = 0; i < finalOutput.files.length; i++) {
         // version the concept's public name (v2, v3, etc)
-        const user = await User.findById(task.user)
-        let publicName = `${user?.username}:${finalOutput.name}`
+        let publicName = finalOutput.name
         const concepts = await Concept.find({
+          user: task.user,
           name: publicName,
         })
         if (concepts.length > 0) {
           const baseName = publicName
           let version = 2
           let newName = `${baseName}_v${version}`
-          while (await Concept.findOne({ name: newName })) {
+          while (
+            await Concept.findOne({
+              user: task.user,
+              name: newName,
+            })
+          ) {
             version++
             newName = `${baseName}_v${version}`
           }

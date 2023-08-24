@@ -8,7 +8,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
     })
-    const response = await eden.concepts.list()
+    const response = await eden.concepts.list({
+      userId: req.query.userId,
+    })
     return res.status(200).json({ concepts: response.docs })
   } catch (error) {
     console.error(error)
