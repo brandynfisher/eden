@@ -41,9 +41,9 @@ export const formatStableDiffusionConfigForReplicate = async (config: any) => {
     newConfig.name = newConfig.name.replace(/_/g, '')
   }
 
-  // if it's a Concept inference, send to lora parameter
-  if (newConfig.concept == '(none)') {
-    delete newConfig.concept
+  // if no lora selected, delete it
+  if (newConfig.lora == '(none)') {
+    delete newConfig.lora
   }
 
   return newConfig
