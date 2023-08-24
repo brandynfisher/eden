@@ -2,7 +2,7 @@ async function main(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
   const getMediaAttributes = doc => {
     if (!doc.uri) {
       return {
-        mediaType: 'unknown',
+        type: 'unknown',
       }
     }
     const uriParts = doc.uri.split('/')
@@ -14,34 +14,34 @@ async function main(db_from, db_to, MONGO_URI_SRC_DB, DOC_LIMIT) {
       switch (extension) {
         case 'jpg':
           return {
-            mediaType: 'image',
+            type: 'image',
           }
         case 'jpeg':
           return {
-            mediaType: 'image',
+            type: 'image',
           }
         case 'mp4':
           return {
-            mediaType: 'video',
+            type: 'video',
             duration: 0,
           }
         case 'wav':
           return {
-            mediaType: 'audio',
+            type: 'audio',
             duration: 0,
           }
         case 'txt':
           return {
-            mediaType: 'text',
+            type: 'text',
           }
         default:
           return {
-            mediaType: 'unknown',
+            type: 'unknown',
           }
       }
     } else {
       return {
-        mediaType: 'unknown',
+        type: 'unknown',
       }
     }
   }
