@@ -7,6 +7,7 @@ import { CreationDocument } from './Creation'
 export interface UserSchema {
   userId: string
   isWeb2: boolean
+  isClerk?: boolean
   isAdmin: boolean
   creations: CreationDocument[]
   collections: CollectionDocument[]
@@ -17,12 +18,14 @@ export interface UserSchema {
   userImage?: string
   createdAt?: Date
   updatedAt?: Date
+  deleted?: boolean
 }
 
 export interface UserInput {
   userId: string
   isWeb2: boolean
   username: string
+  isClerk?: boolean
   isAdmin?: boolean
 }
 
@@ -39,6 +42,10 @@ const user = new Schema<UserDocument>(
     isWeb2: {
       type: Boolean,
       required: true,
+    },
+    isClerk: {
+      type: Boolean,
+      default: false,
     },
     isAdmin: {
       type: Boolean,
@@ -78,6 +85,10 @@ const user = new Schema<UserDocument>(
         type: String,
       },
     ],
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

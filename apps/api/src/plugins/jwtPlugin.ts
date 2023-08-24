@@ -1,6 +1,8 @@
 import fastifyJWT from '@fastify/jwt'
 import type { FastifyInstance, FastifyRequest } from 'fastify'
 
+import { User } from '../models/Creator'
+
 export const registerJwt = async (fastify: FastifyInstance) => {
   try {
     await fastify.register(fastifyJWT, {
@@ -9,6 +11,14 @@ export const registerJwt = async (fastify: FastifyInstance) => {
 
     fastify.decorate('verifyUser', async (request: FastifyRequest) => {
       await request.jwtVerify()
+
+      const user = await User.findById(request.user.userId)
+
+      if (!user) {
+        throw new Error('Not authorized')
+      }
+
+      request.user.isAdmin = user.isAdmin || false
     })
     fastify.log.info('Successfully registered JWT Plugin')
   } catch (err) {

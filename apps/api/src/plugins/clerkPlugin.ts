@@ -2,6 +2,8 @@ import { Clerk } from '@clerk/backend'
 import { clerkPlugin, createClerkClient, getAuth } from '@clerk/fastify'
 import type { FastifyInstance } from 'fastify'
 
+import { User } from '../models/Creator'
+
 export const registerClerk = async (fastify: FastifyInstance) => {
   try {
     const clerkOptions = {
@@ -12,8 +14,26 @@ export const registerClerk = async (fastify: FastifyInstance) => {
     const clerkClient = createClerkClient(clerkOptions)
     fastify.register(clerkPlugin, clerkOptions)
     fastify.decorate('clerk', clerkClient)
-    fastify.decorate('userVerify', async (request: any) => {
-      getAuth(request)
+    fastify.decorate('verifyUser', async (request: any) => {
+      console.log(request.headers)
+      const { userId } = getAuth(request)
+      console.log(userId)
+      if (!userId) {
+        throw new Error('Not authorized')
+      }
+
+      const user = await User.findOne({
+        userId,
+      })
+
+      if (!user) {
+        throw new Error('Not authorized')
+      }
+
+      request.user = {
+        userId: user._id,
+        isAdmin: user.isAdmin || false,
+      }
     })
     fastify.log.info('Successfully registered ClerkPlugin')
   } catch (err) {

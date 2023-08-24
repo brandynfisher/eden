@@ -29,22 +29,6 @@ const apiKeyVerify = async (request: FastifyRequest) => {
   }
 }
 
-const userVerify = async (server: FastifyInstance, request: FastifyRequest) => {
-  await server.verifyUser(request)
-
-  if (!request.user) {
-    throw new Error('Not authorized')
-  }
-
-  const user = await User.findById(request.user.userId)
-
-  if (!user) {
-    throw new Error('Not authorized')
-  }
-
-  request.user.isAdmin = user.isAdmin || false
-}
-
 const getCredential = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -52,7 +36,7 @@ const getCredential = async (
   if (request.headers['x-api-key']) {
     await apiKeyVerify(request)
   } else {
-    await userVerify(server, request)
+    await server.verifyUser(request)
   }
 }
 

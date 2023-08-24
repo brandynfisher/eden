@@ -12,7 +12,7 @@ import type { WebhookRequiredHeaders } from 'svix'
 
 import Challenge from '../models/Challenge'
 import { Collection } from '../models/Collection'
-import { User, UserInput } from '../models/Creator'
+import { User, UserDocument, UserInput } from '../models/Creator'
 import { Manna } from '../models/Manna'
 
 export const login = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -144,18 +144,36 @@ export const receiveUserUpdate = async (
   }
   const eventType = evt.type
 
+  let user: UserDocument | null
   switch (eventType) {
     case 'user.created':
-      // TODO
-      console.log('user created')
+      await User.create({
+        userId: evt.data.id,
+        username: evt.data.username,
+        isWeb2: false,
+        isClerk: true,
+        isAdmin: false,
+      })
       return reply.status(200).send({})
     case 'user.updated':
-      // TODO
-      console.log('user updated')
+      user = await User.findOne({
+        userId: evt.data.id,
+      })
+      if (!user) {
+        return reply.status(400).send('Webhook Error: User not found')
+      }
+      user.username = evt.data.username || user.username
+      await user.save()
       return reply.status(200).send({})
     case 'user.deleted':
-      // TODO
-      console.log('user deleted')
+      user = await User.findOne({
+        userId: evt.data.id,
+      })
+      if (!user) {
+        return reply.status(400).send('Webhook Error: User not found')
+      }
+      user.deleted = true
+      await user.save()
       return reply.status(200).send({})
     default:
       return reply.status(400).send('Webhook Error: Invalid event type')
