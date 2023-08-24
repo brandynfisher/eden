@@ -15,11 +15,9 @@ export const registerClerk = async (fastify: FastifyInstance) => {
     fastify.register(clerkPlugin, clerkOptions)
     fastify.decorate('clerk', clerkClient)
     fastify.decorate('verifyUser', async (request: any) => {
-      console.log(request.headers)
       const { userId } = getAuth(request)
-      console.log(userId)
       if (!userId) {
-        throw new Error('Not authorized')
+        throw new Error('Clerk: Not authorized')
       }
 
       const user = await User.findOne({
@@ -27,7 +25,7 @@ export const registerClerk = async (fastify: FastifyInstance) => {
       })
 
       if (!user) {
-        throw new Error('Not authorized')
+        throw new Error('Clerk: User not found')
       }
 
       request.user = {

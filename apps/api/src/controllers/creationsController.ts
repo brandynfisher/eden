@@ -1,4 +1,5 @@
 import {
+  AuthLoginArguments,
   CreationsGetArguments,
   CreationsGetSimilarArguments,
   CreationsListArguments,
@@ -6,12 +7,15 @@ import {
   CreationsUnreactArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
+import { ethers } from 'ethers'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+import { SiweMessage } from 'siwe'
 
+import Challenge from '../models/Challenge'
 import { Collection } from '../models/Collection'
 import { Creation, CreationDocument } from '../models/Creation'
-import { User } from '../models/Creator'
+import { User, UserInput } from '../models/Creator'
 import { Reaction } from '../models/Reaction'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
@@ -338,4 +342,90 @@ export const creationUnreact = async (
   return reply.status(200).send({
     success: true,
   })
+}
+
+export const migrateCreations = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { address, signature, message } = request.body as AuthLoginArguments
+
+  // first, find the most recent challenge for this address
+  const challenge = await Challenge.findOne({
+    address,
+  }).sort({ createdAt: -1 })
+
+  if (!challenge) {
+    return reply.status(400).send({
+      message: 'No challenge found for this address',
+    })
+  }
+
+  // Verify the challenge has not expired
+  if (challenge.expiresAt < new Date()) {
+    return reply.status(400).send({
+      message: 'Challenge has expired',
+    })
+  }
+
+  // Verify the challenge has not been acknowledged
+  if (challenge.ack) {
+    return reply.status(400).send({
+      message: 'Challenge has already been used',
+    })
+  }
+
+  // verify the signature
+  const recovered = ethers.utils.verifyMessage(message, signature)
+
+  if (address.toLowerCase() !== recovered.toLowerCase()) {
+    return reply.status(400).send({
+      message: 'Signature is invalid',
+    })
+  }
+
+  // check that the nonce matches
+  const { nonce } = new SiweMessage(message)
+  console.log('xxx', nonce)
+  console.log('yyy', challenge.nonce)
+
+  if (nonce !== challenge.nonce) {
+    return reply.status(400).send({
+      message: 'Nonce does not match',
+    })
+  }
+
+  const authUser = await User.findOne({
+    userId: address,
+  })
+
+  if (!authUser) {
+    return reply.status(404).send({
+      message: 'This wallet does not have any creations associated with it.',
+    })
+  }
+
+  // Get their creations
+  const creations = await Creation.find({
+    user: authUser._id,
+  })
+
+  if (!creations) {
+    return reply.status(404).send({
+      message: 'This wallet does not have any creations associated with it.',
+    })
+  }
+
+  // Update the user id
+  await Creation.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  return reply.status(200).send({})
 }
