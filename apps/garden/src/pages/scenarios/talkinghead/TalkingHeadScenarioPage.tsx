@@ -51,9 +51,9 @@ const TalkingHeadScenarioPageContent = ({
 }
 
 const TalkingHeadScenarioPage = ({ data }: { data: Character[] }) => {
-  const { isAuthenticated, address } = useContext(UserContext)
+  const { isAuthenticated, userId } = useContext(UserContext)
   const { characters: charactersData } = useMyCharacters({
-    userId: address ? address : null,
+    userId,
     isAuthenticated,
     options: {
       fallbackData: data,

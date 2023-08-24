@@ -27,11 +27,11 @@ const DrawerTitle = ({
 }
 
 const DrawerContent = () => {
-  const { isConnected, isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
 
   return (
     <div className="dark:!bg-gray-900">
-      {isConnected && isAuthenticated && (
+      {isAuthenticated && (
         <div className="flex flex-col">
           <div className="flex items-center justify-between px-3 py-2">
             <MannaDropdown />

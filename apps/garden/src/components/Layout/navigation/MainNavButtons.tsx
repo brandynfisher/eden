@@ -39,8 +39,9 @@ const NavButton = ({
 
 const MainNavButtons = () => {
   const router = useRouter()
-  const { featureFlags } = useContext(UserContext)
-  const isPreviewUser = featureFlags.includes('preview')
+  const { user } = useContext(UserContext)
+  const isPreviewUser =
+    user?.featureFlags && user.featureFlags.includes('preview')
   // const [bookmarkCollectionPath, setBookmarkCollectionPath] = useState('')
 
   // const { collections } = useContext(UserContext)

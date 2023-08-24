@@ -7,11 +7,11 @@ import { ReactNode, useContext } from 'react'
 const { Content, Sider } = Layout
 
 const PageLayoutDefault = ({ children }: { children: ReactNode }) => {
-  const { isConnected, isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
 
   return (
     <CustomLayout>
-      {isConnected && isAuthenticated && (
+      {isAuthenticated && (
         <Sider width={175} className="mr-4 hidden lg:block !bg-transparent">
           <div className="rounded-lg overflow-hidden sticky top-4">
             <LayoutMenu />

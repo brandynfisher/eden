@@ -5,14 +5,10 @@ import { Character } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {
-  isConnected: boolean
-  isConnecting: boolean
-  isAuthenticating: boolean
   isAuthenticated: boolean
-  authError: string | null
-  authenticate: () => Promise<null | undefined>
-  logout: () => Promise<null | undefined>
-  address?: `0x${string}`
+  userId: string | null
+  authenticate: VoidFunction
+  logout: VoidFunction
   mannaBalance?: number
   characters?: Character[]
   collections?: Collection[]
@@ -25,22 +21,17 @@ export interface UserContextType {
   settings?: Settings
   updateSetting: (settingName: SettingName, newValue: number | 'auto') => void
   user?: Creator
-  featureFlags: string[]
 }
 
 const defaultUserState: UserContextType = {
-  isConnected: false,
-  isConnecting: false,
-  isAuthenticating: false,
   isAuthenticated: false,
-  authError: null,
+  userId: null,
   authenticate: async () => {
     return null
   },
   logout: async () => {
     return null
   },
-  address: undefined,
   mannaBalance: undefined,
   characters: undefined,
   collections: undefined,
@@ -63,7 +54,6 @@ const defaultUserState: UserContextType = {
     return null
   },
   user: undefined,
-  featureFlags: [],
 }
 
 export const UserContext = createContext<UserContextType>(defaultUserState)

@@ -5,9 +5,9 @@ import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const QuickCreateMenu = () => {
-  const { isConnected } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
 
-  if (!isConnected) {
+  if (!isAuthenticated) {
     return null
   }
 

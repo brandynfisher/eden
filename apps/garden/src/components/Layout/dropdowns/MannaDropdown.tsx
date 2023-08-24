@@ -72,9 +72,9 @@ const items: ItemType[] = [
 ]
 
 const MannaDropdown = () => {
-  const { mannaBalance, isConnected, isAuthenticated } = useContext(UserContext)
+  const { mannaBalance, isAuthenticated } = useContext(UserContext)
 
-  if (!isConnected || !isAuthenticated) {
+  if (!isAuthenticated) {
     return null
   }
 
@@ -85,7 +85,7 @@ const MannaDropdown = () => {
       }}
       trigger={['click']}
       className="cursor-pointer"
-      disabled={!isConnected || !isAuthenticated}
+      disabled={!isAuthenticated}
       arrow={true}
     >
       <Button

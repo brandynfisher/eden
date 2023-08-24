@@ -1,4 +1,5 @@
 import { CONFIG } from '@/lib/config'
+import { getSessionCookie } from '@/lib/fetcher'
 import { withSessionRoute } from '@/lib/withSession'
 import axios from 'axios'
 import formidable, { Fields, Files } from 'formidable'
@@ -17,7 +18,7 @@ interface ParseResult {
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = req.session.token
+  const authToken = getSessionCookie(req)
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
   }

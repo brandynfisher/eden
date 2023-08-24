@@ -5,7 +5,7 @@ export const useMyCollections = ({
   userId,
   isAuthenticated,
 }: {
-  userId: string
+  userId: string | null
   isAuthenticated: boolean
 }) => {
   const { data, mutate: refetchMyCollections } = useSWR(

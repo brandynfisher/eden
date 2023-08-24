@@ -6,27 +6,16 @@ import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const MyProfileButton = () => {
-  const {
-    address,
-    user,
-    isConnected,
-    isAuthenticated,
-    authenticate,
-    isAuthenticating,
-  } = useContext(UserContext)
+  const { userId, user, isAuthenticated, authenticate } =
+    useContext(UserContext)
 
-  if (!isConnected) {
+  if (!isAuthenticated && !userId) {
     return <ConnectButton />
   }
 
   if (!isAuthenticated) {
     return (
-      <Button
-        type="primary"
-        onClick={() => authenticate()}
-        loading={isAuthenticating ? { delay: 250 } : false}
-        disabled={isAuthenticating}
-      >
+      <Button type="primary" onClick={() => authenticate()}>
         Sign In
       </Button>
     )
@@ -45,7 +34,7 @@ const MyProfileButton = () => {
         className="font-mono flex justify-center items-center h-[32px] w-[32px] flex-shrink-0 flex-grow max-h-full hover:brightness-125 transition-all duration-200 nav-profile-image"
       >
         <CharacterAvatar
-          id={address || ''}
+          id={userId || ''}
           name={(user && user?.username) || ''}
           imageUri={(user && user?.userImage) || ''}
           size={'small'}

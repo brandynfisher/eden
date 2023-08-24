@@ -15,6 +15,28 @@ import { Collection } from '../models/Collection'
 import { User, UserDocument, UserInput } from '../models/Creator'
 import { Manna } from '../models/Manna'
 
+const createNewUser = async (input: UserInput) => {
+  const newUser = new User(input)
+  await newUser.save()
+
+  // Give them a default collection
+  const collection = new Collection({
+    user: newUser._id,
+    name: 'Bookmarks',
+    description: 'My bookmarked creations',
+    isDefaultCollection: true,
+  })
+  await collection.save()
+
+  // Give them free Manna
+  const newManna = new Manna({
+    user: newUser._id,
+    balance: 1000,
+  })
+  await newManna.save()
+  return newUser
+}
+
 export const login = async (request: FastifyRequest, reply: FastifyReply) => {
   const { address, signature, message } = request.body as AuthLoginArguments
 
@@ -72,25 +94,7 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
       username: address,
       isWeb2: challenge.isWeb2,
     }
-    const newUser = new User(userInput)
-    await newUser.save()
-    authUser = newUser
-
-    // Give them a default collection
-    const collection = new Collection({
-      user: authUser._id,
-      name: 'Bookmarks',
-      description: 'My bookmarked creations',
-      isDefaultCollection: true,
-    })
-    await collection.save()
-
-    // Give them free Manna
-    const newManna = new Manna({
-      user: authUser._id,
-      balance: 1000,
-    })
-    await newManna.save()
+    authUser = await createNewUser(userInput)
   }
 
   const token = await reply.jwtSign({
@@ -147,7 +151,10 @@ export const receiveUserUpdate = async (
   let user: UserDocument | null
   switch (eventType) {
     case 'user.created':
-      await User.create({
+      if (!evt.data.username) {
+        return reply.status(400).send('Webhook Error: Missing username')
+      }
+      await createNewUser({
         userId: evt.data.id,
         username: evt.data.username,
         isWeb2: false,

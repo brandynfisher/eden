@@ -70,12 +70,12 @@ const createMenuItems = (
 
 const LayoutMenu = ({ inDrawer }: { inDrawer?: boolean }) => {
   const router = useRouter()
-  const { isAuthenticated, user, featureFlags } = useContext(UserContext)
+  const { isAuthenticated, user } = useContext(UserContext)
 
   const menuItems = createMenuItems(
     isAuthenticated,
     user?.username,
-    featureFlags,
+    user?.featureFlags || [],
   )
 
   return (

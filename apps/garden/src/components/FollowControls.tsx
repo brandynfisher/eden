@@ -14,16 +14,15 @@ const FollowControls = ({ creatorId }: { creatorId: string }) => {
   const [isFollowingUser, setIsFollowingUser] = React.useState(false)
   const [isOwnProfile, setIsOwnProfile] = React.useState(false)
 
-  const userId = creatorId
-  const { creator } = useCreator(userId)
-  const { isAuthenticated, address } = useContext(UserContext)
+  const { creator } = useCreator(creatorId)
+  const { isAuthenticated, userId } = useContext(UserContext)
 
   useEffect(() => {
     setFollowerCount(creator?.followerCount || 0)
     setIsFollowingUser(creator?.isFollowing || false)
     setFollowingCount(creator?.followingCount || 0)
-    setIsOwnProfile(isAuthenticated && userId === address)
-  }, [isAuthenticated, address, userId, creator])
+    setIsOwnProfile(isAuthenticated && userId === creatorId)
+  }, [isAuthenticated, creatorId, userId, creator])
 
   const onFollowButtonClick = async () => {
     setFollowLoading(true)

@@ -2,6 +2,8 @@ import { CONFIG } from '@/lib/config'
 import { message } from 'antd'
 import { MessageInstance } from 'antd/es/message/interface'
 import axios, { AxiosError } from 'axios'
+import { parse } from 'cookie'
+import { NextApiRequest } from 'next'
 
 // @ts-ignore
 export const fetcher = (...args) =>
@@ -28,4 +30,10 @@ export const getAdminHeaders = () => {
     'X-Api-Key': CONFIG.EDEN_ADMIN_API_KEY,
     'X-Api-Secret': CONFIG.EDEN_ADMIN_API_SECRET,
   }
+}
+
+export const getSessionCookie = (request: NextApiRequest) => {
+  const cookies = parse(request.headers.cookie || '')
+  const authToken = cookies.__session
+  return authToken
 }

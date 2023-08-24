@@ -34,8 +34,8 @@ const ChatScenarioUI = ({
   activeCharacter: Character
   sessionId: string
 }) => {
-  const { isAuthenticated, address } = useContext(UserContext)
-  const { creator } = useCreator(isAuthenticated && address ? address : null)
+  const { userId } = useContext(UserContext)
+  const { creator } = useCreator(userId)
 
   const [text, setText] = useState('')
   const [conversation, setConversation] = useState<ConversationEntry[]>([])
