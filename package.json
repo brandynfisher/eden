@@ -40,6 +40,9 @@
     ],
     "*.json": [
       "prettier --write"
+    ],
+    "apps/api/**/*": [
+      "yarn vitest"
     ]
   },
   "packageManager": "yarn@1.22.19"
