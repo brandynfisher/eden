@@ -1,16 +1,18 @@
 import { useConcepts } from '@/hooks/useConcepts'
+import { UserContext } from '@/providers/UserProvider'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, Row, Select, Switch } from 'antd'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 const ConceptParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
 }) => {
+  const [viewPublic, setViewPublic] = useState(false)
   const [value, setValue] = useState(props.parameter.default)
-  const [allConcepts, setAllConcepts] = useState(false)
-  const conceptOptions = allConcepts ? {} : { userId: 'TBD' }
-  const { concepts } = useConcepts(conceptOptions)
+  const { user } = useContext(UserContext)
+  const conceptFilter = !viewPublic && user ? user.userId : null
+  const { concepts } = useConcepts(conceptFilter)
 
   const options = [
     { label: '(none)', value: '(none)' },
@@ -61,7 +63,7 @@ const ConceptParameter = (props: {
         )}
       </Form.Item>
       <Row>
-        <Switch checked={allConcepts} onChange={setAllConcepts} />
+        <Switch checked={viewPublic} onChange={setViewPublic} />
         &nbsp;&nbsp;Search Public Concepts
       </Row>
       <Row>
