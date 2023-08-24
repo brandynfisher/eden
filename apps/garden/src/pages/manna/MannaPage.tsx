@@ -1,5 +1,6 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import ProductsList from '@/components/Products/ProductsList'
+import SubscriptionsList from '@/components/Subscriptions/SubscriptionsList'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { App, Button } from 'antd'
@@ -37,53 +38,11 @@ const MannaPage = () => {
       </div>
 
       <div className="mb-4">
-        <h3 className="font-mono font-bold text-l">Subscriptions</h3>
-        <div className="p-4 max-w-md rounded-lg border-solid border-green-700 bg-gray-900">
-          <div>
-            <div>Casual</div>
-            <div>5'000 Manna / Month</div>
-            <div className="flex gap-4 mt-2">
-              <div className="basis-1/2 text-center p-2 rounded-lg bg-gray-800">
-                <div className="text-gray-300">monthly</div>
-                <div className="text-green-700">10 USD (selected)</div>
-              </div>
-              <div className="basis-1/2 text-center p-2 rounded-lg bg-gray-950">
-                <div className="text-gray-400">yearly</div>
-                <div>100 USD</div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-2 flex gap-2 flex-wrap justify-between items-center">
-            <div>
-              <div className="font-bold text-green-700">ACTIVE</div>
-              <div>Renews in 21 days. At 2023-08-29 9:00.</div>
-            </div>
-            <Button>Cancel</Button>
-          </div>
-        </div>
-        <div>
-          <div>
-            <div>Pro</div>
-            <div>40'000 Manna / Month</div>
-            <div className="flex gap-4">
-              <div>
-                <div>monthly</div>
-                <div>30 USD</div>
-              </div>
-              <div>
-                <div>yearly</div>
-                <div>300 USD</div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-2 flex justify-between">
-            <Button className="mt-2">Subscribe</Button>
-          </div>
-        </div>
+        <SubscriptionsList checkoutHandler={handleCheckout} />
       </div>
 
       <div className="mb-4">
-        <ProductsList />
+        <ProductsList checkoutHandler={handleCheckout} />
       </div>
 
       {/* dev / debug */}

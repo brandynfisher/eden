@@ -1,19 +1,12 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
-import { Product, useProducts } from '@/hooks/useProducts'
-import React from 'react'
+import ProductCard from '@/components/Products/ProductCard'
+import { useProducts } from '@/hooks/useProducts'
 
-const ProductCard = ({ product }: { product: Product }) => {
-  return (
-    <div title={product.name}>
-      <div>{product.id}</div>
-      <div>{product.name}</div>
-      <div>{product.description}</div>
-      <div></div>
-    </div>
-  )
-}
-
-const ProductsList = () => {
+const ProductsList = ({
+  checkoutHandler,
+}: {
+  checkoutHandler: (priceId: string, paymentMode: string) => void
+}) => {
   const { products } = useProducts()
 
   return (
@@ -22,11 +15,15 @@ const ProductsList = () => {
       {!products || !products.length ? (
         <LoadingIndicator />
       ) : (
-        <>
+        <div className="flex gap-4">
           {products.map(product => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              checkoutHandler={checkoutHandler}
+            />
           ))}
-        </>
+        </div>
       )}
     </div>
   )

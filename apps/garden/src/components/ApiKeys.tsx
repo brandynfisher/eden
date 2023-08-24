@@ -6,7 +6,7 @@ import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { useClipboard } from '@mantine/hooks'
 import { App, Breakpoint, Button, Card, Input, Space, Table } from 'antd'
 import axios from 'axios'
-import React, { useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
 const ActionsButtons = ({
   apiKey,
