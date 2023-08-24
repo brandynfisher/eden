@@ -373,6 +373,10 @@ export abstract class Methods {
       this,
       tasksCreateRequestConfig,
     ),
+    cost: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
+      this,
+      tasksCostRequestConfig,
+    ),
     complete: bindApiCall<TasksCompleteArguments, TasksCompleteResponse>(
       this,
       tasksCompleteRequestConfig,
@@ -1180,6 +1184,17 @@ const tasksCreateRequestConfig = (
   }
 }
 
+const tasksCostRequestConfig = (
+  args: TasksCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'tasks/cost',
+    data: {
+      ...args,
+    },
+  }
+}
 const tasksCompleteRequestConfig = (
   args: TasksCompleteArguments,
 ): AxiosRequestConfig => {

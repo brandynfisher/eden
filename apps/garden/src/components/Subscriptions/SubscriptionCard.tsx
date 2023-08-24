@@ -3,26 +3,6 @@ import { Button } from 'antd'
 import { useState } from 'react'
 import type { Stripe } from 'stripe'
 
-// {/*<div>*/}
-// {/*  <div>*/}
-// {/*    <div>Pro</div>*/}
-// {/*    <div>40'000 Manna / Month</div>*/}
-// {/*    <div className="flex gap-4">*/}
-// {/*      <div>*/}
-// {/*        <div>monthly</div>*/}
-// {/*        <div>30 USD</div>*/}
-// {/*      </div>*/}
-// {/*      <div>*/}
-// {/*        <div>yearly</div>*/}
-// {/*        <div>300 USD</div>*/}
-// {/*      </div>*/}
-// {/*    </div>*/}
-// {/*  </div>*/}
-// {/*  <div className="mt-2 flex justify-between">*/}
-// {/*    <Button className="mt-2">Subscribe</Button>*/}
-// {/*  </div>*/}
-// {/*</div>*/}
-
 const SubscriptionCardPlans = ({
   plans,
   selectedPlan,
@@ -113,7 +93,7 @@ const SubscriptionCard = ({
           <div className="flex gap-2 flex-wrap justify-between items-center">
             <div>
               <div className="font-bold text-green-700">ACTIVE</div>
-              <div>Renews in 21 days. At 2023-08-29 9:00.</div>
+              <div>Renews in X days. At 20XX-XX-XX XX:XX.</div>
             </div>
             <Button>Cancel</Button>
           </div>

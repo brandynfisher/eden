@@ -1,6 +1,6 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import ProductsList from '@/components/Products/ProductsList'
-import SubscriptionsList from '@/components/Subscriptions/SubscriptionsList'
+// import SubscriptionsList from '@/components/Subscriptions/SubscriptionsList'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { App, Button } from 'antd'
@@ -37,9 +37,9 @@ const MannaPage = () => {
         )}
       </div>
 
-      <div className="mb-4">
-        <SubscriptionsList checkoutHandler={handleCheckout} />
-      </div>
+      {/*<div className="mb-4">*/}
+      {/*  <SubscriptionsList checkoutHandler={handleCheckout} />*/}
+      {/*</div>*/}
 
       <div className="mb-4">
         <ProductsList checkoutHandler={handleCheckout} />

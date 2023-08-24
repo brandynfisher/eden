@@ -53,6 +53,10 @@ const GeneratorForm = ({
     GeneratorParameter[]
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
+  const [taskCost, setTaskCost] = useState<
+    { cost: number; balance: number } | undefined
+  >()
 
   useEffect(() => {
     const transformConfig = () => {
@@ -121,11 +125,55 @@ const GeneratorForm = ({
     setStringArrayValues(newStringArrayValues)
   }
 
+  const handleGetTaskCost = async () => {
+    setIsLoadingTaskCost(true)
+
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+
+      setIsLoadingTaskCost(false)
+      return
+    }
+
+    message.destroy()
+
+    try {
+      // @todo dedupe this below
+      const formFieldValues = form.getFieldsValue()
+      const consolidatedFieldValues: FieldValues = {
+        ...formFieldValues,
+        ...stringArrayValues,
+      }
+
+      // filter out temporary preset form values
+      const cleanedValues = Object.keys(consolidatedFieldValues)
+        .filter(key => !key.endsWith('--preset'))
+        .reduce((obj: FieldValues, key) => {
+          obj[key] = consolidatedFieldValues[key]
+          return obj
+        }, {})
+      // @todo dedupe this above
+
+      const response = await axios.post('/api/tasks/cost', {
+        generatorName: generator.generatorName,
+        config: cleanedValues,
+      })
+
+      setTaskCost(response.data)
+    } catch (err) {
+      message.error('Error fetching task cost estimate')
+    } finally {
+      setIsLoadingTaskCost(false)
+    }
+  }
+
   const handleFinish = async () => {
     setIsSubmitting(true)
 
     if (!isAuthenticated) {
       await requireAuth(authenticate)
+
+      setIsSubmitting(false)
       return
     }
 
@@ -294,6 +342,22 @@ const GeneratorForm = ({
             >
               {generator.generatorName}
             </Button>
+
+            <Button
+              className="font-mono"
+              type="text"
+              onClick={handleGetTaskCost}
+              loading={isLoadingTaskCost ? { delay: 250 } : false}
+              disabled={isLoadingTaskCost}
+            >
+              Get Cost
+            </Button>
+
+            {taskCost && (
+              <div>
+                ({taskCost.cost}/{taskCost.balance})
+              </div>
+            )}
 
             <Button className="font-mono" type="text" onClick={resetForm}>
               Reset {presetCreation ? '(using preset)' : ''}
