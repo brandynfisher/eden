@@ -331,17 +331,24 @@ const GeneratorForm = ({
             key={generator.generatorName}
             className="flex px-6 items-center justify-between"
           >
-            <Button
-              type="primary"
-              icon={<ExperimentOutlined />}
-              htmlType="submit"
-              size="large"
-              className="font-mono capitalize"
-              loading={isSubmitting ? { delay: 250 } : false}
-              disabled={isSubmitting}
-            >
-              {generator.generatorName}
-            </Button>
+            <div>
+              <Button
+                type="primary"
+                icon={<ExperimentOutlined />}
+                htmlType="submit"
+                size="large"
+                className="font-mono capitalize"
+                loading={isSubmitting ? { delay: 250 } : false}
+                disabled={isSubmitting}
+              >
+                {generator.generatorName}
+              </Button>
+              {taskCost && (
+                <div>
+                  ({taskCost.cost}/{taskCost.balance})
+                </div>
+              )}
+            </div>
 
             <Button
               className="font-mono"
@@ -352,12 +359,6 @@ const GeneratorForm = ({
             >
               Get Cost
             </Button>
-
-            {taskCost && (
-              <div>
-                ({taskCost.cost}/{taskCost.balance})
-              </div>
-            )}
 
             <Button className="font-mono" type="text" onClick={resetForm}>
               Reset {presetCreation ? '(using preset)' : ''}
