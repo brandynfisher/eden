@@ -23,7 +23,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           cost: Type.Number(),
-          balance: Type.Number(),
         }),
       },
     },

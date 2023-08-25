@@ -17,9 +17,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       token: authToken,
     })
     const response = await eden.tasks.cost({ generatorName, config })
-    return res
-      .status(200)
-      .json({ cost: response.cost, balance: response.balance })
+    return res.status(200).json({ cost: response.cost })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })

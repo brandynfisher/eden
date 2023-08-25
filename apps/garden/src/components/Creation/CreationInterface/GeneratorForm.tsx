@@ -9,6 +9,7 @@ import { UserContext } from '@/providers/UserProvider'
 import {
   DownCircleOutlined,
   ExperimentOutlined,
+  LoadingOutlined,
   UpCircleOutlined,
 } from '@ant-design/icons'
 import {
@@ -17,12 +18,32 @@ import {
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
-import { App, Button, Card, Form } from 'antd'
+import { HelpOutline } from '@mui/icons-material'
+import { App, Button, Card, Form, Popover } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 type FieldValues = { [key: string]: string }
+
+const getCleanedConfig = (
+  formFieldValues: FieldValues | GeneratorParameter[],
+  stringArrayValues: FieldValues | undefined,
+) => {
+  const consolidatedFieldValues = {
+    ...formFieldValues,
+    ...stringArrayValues,
+  }
+
+  // filter out temporary preset form values
+  return Object.keys(consolidatedFieldValues)
+    .filter(key => !key.endsWith('--preset'))
+    .reduce((obj: FieldValues, key) => {
+      // @ts-ignore
+      obj[key] = consolidatedFieldValues[key]
+      return obj
+    }, {})
+}
 
 const GeneratorForm = ({
   generator,
@@ -45,6 +66,7 @@ const GeneratorForm = ({
   const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
+  const [isFormTouched, setIsFormTouched] = useState(false)
   const [initialParams, setInitialParams] = useState<GeneratorParameter[]>([])
   const [requiredParameters, setRequiredParams] = useState<
     GeneratorParameter[]
@@ -54,9 +76,7 @@ const GeneratorForm = ({
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
-  const [taskCost, setTaskCost] = useState<
-    { cost: number; balance: number } | undefined
-  >()
+  const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
 
   useEffect(() => {
     const transformConfig = () => {
@@ -82,6 +102,11 @@ const GeneratorForm = ({
     transformConfig()
   }, [presetCreation])
 
+  const handleFormFieldsChange = async () => {
+    setIsFormTouched(true)
+    await handleGetTaskCost(getCurrentGeneratorParameters(generator))
+  }
+
   const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
     if (!currentGenerator) return
 
@@ -99,21 +124,23 @@ const GeneratorForm = ({
         ...param,
         default: param.default === null ? '' : param.default,
       })),
-    ]
+    ] as GeneratorParameter[]
   }
 
   useEffect(() => {
     const currentGeneratorParams = getCurrentGeneratorParameters(generator)
 
     if (currentGeneratorParams) {
+      setRequiredParams(
+        currentGeneratorParams.filter(parameter => parameter.isRequired),
+      )
+      setOptionalParams(
+        currentGeneratorParams.filter(parameter => !parameter.isRequired),
+      )
       setInitialParams(currentGeneratorParams)
+      handleGetTaskCost(currentGeneratorParams)
     }
   }, [generator])
-
-  useEffect(() => {
-    setRequiredParams(initialParams.filter(parameter => parameter.isRequired))
-    setOptionalParams(initialParams.filter(parameter => !parameter.isRequired))
-  }, [initialParams])
 
   const [showOptional, setShowOptional] = React.useState(false)
   const [stringArrayValues, setStringArrayValues] = useState({})
@@ -125,47 +152,57 @@ const GeneratorForm = ({
     setStringArrayValues(newStringArrayValues)
   }
 
-  const handleGetTaskCost = async () => {
-    setIsLoadingTaskCost(true)
-
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-
-      setIsLoadingTaskCost(false)
-      return
-    }
-
-    message.destroy()
-
-    try {
-      // @todo dedupe this below
-      const formFieldValues = form.getFieldsValue()
-      const consolidatedFieldValues: FieldValues = {
-        ...formFieldValues,
-        ...stringArrayValues,
+  const handleGetTaskCost = useCallback(
+    async (generatorParams: GeneratorParameter[] | undefined) => {
+      if (isLoadingTaskCost) {
+        return
       }
 
-      // filter out temporary preset form values
-      const cleanedValues = Object.keys(consolidatedFieldValues)
-        .filter(key => !key.endsWith('--preset'))
-        .reduce((obj: FieldValues, key) => {
-          obj[key] = consolidatedFieldValues[key]
-          return obj
-        }, {})
-      // @todo dedupe this above
+      if (!generatorParams) {
+        setTaskCost(undefined)
+        return
+      }
 
-      const response = await axios.post('/api/tasks/cost', {
-        generatorName: generator.generatorName,
-        config: cleanedValues,
-      })
+      setIsLoadingTaskCost(true)
 
-      setTaskCost(response.data)
-    } catch (err) {
-      message.error('Error fetching task cost estimate')
-    } finally {
-      setIsLoadingTaskCost(false)
-    }
-  }
+      if (!isAuthenticated) {
+        await requireAuth(authenticate)
+
+        setIsLoadingTaskCost(false)
+        return
+      }
+
+      message.destroy()
+
+      try {
+        let cleanedValues = getCleanedConfig(generatorParams, undefined)
+        const requiredParams = generatorParams.filter(
+          parameter => parameter.isRequired,
+        )
+
+        requiredParams.map(reqParam => {
+          if (Array.isArray(reqParam['default'])) {
+            // @ts-ignore
+            cleanedValues[reqParam.name] = ['dummy field content']
+          } else {
+            cleanedValues[reqParam.name] = 'dummy field content'
+          }
+        })
+
+        const response = await axios.post('/api/tasks/cost', {
+          generatorName: generator.generatorName,
+          config: cleanedValues,
+        })
+
+        setTaskCost(response.data)
+      } catch (err) {
+        message.error('Error fetching task cost estimate')
+      } finally {
+        setIsLoadingTaskCost(false)
+      }
+    },
+    [generator, initialParams],
+  )
 
   const handleFinish = async () => {
     setIsSubmitting(true)
@@ -180,19 +217,10 @@ const GeneratorForm = ({
     message.destroy()
 
     try {
-      const formFieldValues = form.getFieldsValue()
-      const consolidatedFieldValues: FieldValues = {
-        ...formFieldValues,
-        ...stringArrayValues,
-      }
-
-      // filter out temporary preset form values
-      const cleanedValues = Object.keys(consolidatedFieldValues)
-        .filter(key => !key.endsWith('--preset'))
-        .reduce((obj: FieldValues, key) => {
-          obj[key] = consolidatedFieldValues[key]
-          return obj
-        }, {})
+      const cleanedValues = getCleanedConfig(
+        form.getFieldsValue(),
+        stringArrayValues,
+      )
 
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
@@ -208,11 +236,6 @@ const GeneratorForm = ({
       refetchPendingTasks && refetchPendingTasks()
       refetch.mannaBalance()
       onSubmitSuccess && onSubmitSuccess()
-      // const resultPreviewDomElement =
-      //   document.getElementsByClassName('result-preview')
-      // if (resultPreviewDomElement && resultPreviewDomElement.length) {
-      //   resultPreviewDomElement[0].scrollIntoView({ block: 'center', behavior: 'smooth'})
-      // }
     } catch (error) {
       message.error('Error creating task. Please try again.')
     } finally {
@@ -310,6 +333,13 @@ const GeneratorForm = ({
     },
     [presetConfig, showOptional],
   )
+
+  useEffect(() => {
+    if (form) {
+      setIsFormTouched(form.isFieldsTouched())
+    }
+  }, [form])
+
   return (
     <Form
       form={form}
@@ -317,6 +347,7 @@ const GeneratorForm = ({
       onFinish={handleFinish}
       key={generator.generatorName}
       title={generator.generatorName}
+      onFieldsChange={handleFormFieldsChange}
     >
       <Card
         type="inner"
@@ -329,9 +360,9 @@ const GeneratorForm = ({
         actions={[
           <div
             key={generator.generatorName}
-            className="flex px-6 items-center justify-between"
+            className="flex px-6 items-center justify-between flex-wrap"
           >
-            <div>
+            <div className="flex gap-3 items-center">
               <Button
                 type="primary"
                 icon={<ExperimentOutlined />}
@@ -339,26 +370,37 @@ const GeneratorForm = ({
                 size="large"
                 className="font-mono capitalize"
                 loading={isSubmitting ? { delay: 250 } : false}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isFormTouched}
               >
                 {generator.generatorName}
               </Button>
-              {taskCost && (
-                <div>
-                  ({taskCost.cost}/{taskCost.balance})
+              {(isLoadingTaskCost || taskCost) && (
+                <div className="flex items-center gap-2 font-mono text-gray-400">
+                  <div className="cursor-default">
+                    {isLoadingTaskCost ? (
+                      <LoadingOutlined />
+                    ) : (
+                      <span className="font-bold">{taskCost?.cost}</span>
+                    )}{' '}
+                    Manna
+                  </div>
+                  <Popover
+                    content={
+                      <div>
+                        Displays the estimated manna cost for this operation
+                      </div>
+                    }
+                    title="Manna Cost"
+                    trigger="click"
+                  >
+                    <HelpOutline
+                      fontSize="small"
+                      className="hover:text-blue-400"
+                    />
+                  </Popover>
                 </div>
               )}
             </div>
-
-            <Button
-              className="font-mono"
-              type="text"
-              onClick={handleGetTaskCost}
-              loading={isLoadingTaskCost ? { delay: 250 } : false}
-              disabled={isLoadingTaskCost}
-            >
-              Get Cost
-            </Button>
 
             <Button className="font-mono" type="text" onClick={resetForm}>
               Reset {presetCreation ? '(using preset)' : ''}
