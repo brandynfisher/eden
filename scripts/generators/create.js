@@ -81,6 +81,14 @@ const params = [
     optional: true,
   },
   {
+    name: 'adopt_aspect_from_init_img',
+    label: 'Adopt aspect ratio of Init image',
+    description: 'Make sure the creation has the same aspect ratio as the Init image.',
+    default: true,
+    allowedValues: [false, true],
+    optional: true,
+  },
+  {
     name: 'init_image_strength',
     label: 'Init image strength',
     description:
