@@ -15,7 +15,7 @@ const ProductsList = ({
       {!products || !products.length ? (
         <LoadingIndicator />
       ) : (
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
           {products.map(product => (
             <ProductCard
               key={product.id}

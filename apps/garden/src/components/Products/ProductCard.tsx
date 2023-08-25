@@ -1,5 +1,8 @@
-import { Button } from 'antd'
+import { Button, Card } from 'antd'
+import Image from 'next/image'
 import type { Stripe } from 'stripe'
+
+const { Meta } = Card
 
 const ProductCard = ({
   product,
@@ -12,19 +15,53 @@ const ProductCard = ({
     checkoutHandler(product.id, 'product')
   }
 
-  return (
-    <div
-      className="p-4 max-w-md rounded-lg border-solid border-gray-600"
-      title={product.name || ''}
-    >
-      <div>{product.id}</div>
-      <div className="font-bold">{product.name}</div>
-      <div>{product.description}</div>
-      {/*<div>{product.default_price}</div>*/}
-      <div className="mt-2 flex gap-2 flex-wrap justify-center items-center">
-        <Button onClick={handleBuyProductClick}>Buy</Button>
+  const renderDisplayPrice = (product: Stripe.Product) => {
+    if (product?.default_price === 'string') {
+      return <div>{product?.default_price}</div>
+    }
+
+    const displayPrice = product.default_price as Stripe.Price
+
+    return (
+      <div>
+        {displayPrice.currency}{' '}
+        {(displayPrice?.unit_amount
+          ? displayPrice?.unit_amount / 100
+          : 0
+        ).toFixed(2)}
       </div>
-    </div>
+    )
+  }
+
+  return (
+    <Card
+      className="w-64"
+      cover={
+        <Image
+          width={256}
+          height={256}
+          alt="example"
+          src={
+            product.images && product.images.length
+              ? product.images[0]
+              : '/eden-logo-512x512.png'
+          }
+          className="bg-gray-200 dark:bg-gray-800"
+        />
+      }
+      actions={[
+        <div
+          key={product.id}
+          className="px-6 flex gap-2 justify-between items-center"
+          onClick={handleBuyProductClick}
+        >
+          <Button>Buy</Button>
+          {renderDisplayPrice(product)}
+        </div>,
+      ]}
+    >
+      <Meta title={product.name || ''} description={product.description} />
+    </Card>
   )
 }
 
