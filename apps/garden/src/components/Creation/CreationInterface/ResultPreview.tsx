@@ -95,12 +95,15 @@ const ResultPreview = ({
                         <div className="capitalize mb-2">
                           <strong>{activeTask.status}</strong>
                         </div>
-                        <div className="text-xs text-gray-800 dark:text-gray-400">
+                        <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
                           Started {timeAgo(activeTask.createdAt)}
+                        </div>
+                        <div className="text-xs text-gray-800 dark:text-gray-400">
+                          Cost: <strong>{activeTask?.cost}</strong> Manna
                         </div>
                       </div>
                       <div
-                        className="flex items-center gap-2 cursor-pointer"
+                        className="flex items-center gap-2 cursor-copy"
                         onClick={() => handleCopyClick(activeTask.taskId)}
                       >
                         <div

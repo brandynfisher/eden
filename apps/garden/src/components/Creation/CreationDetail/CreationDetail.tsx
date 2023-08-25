@@ -73,7 +73,7 @@ const ConfigParamsCodeTabContent = ({
   return (
     <div className="relative">
       <Button
-        className="absolute right-6 top-2 flex items-center"
+        className="absolute right-6 top-2 flex items-center cursor-copy"
         onClick={handleCopyClick}
         title={'Copy'}
       >

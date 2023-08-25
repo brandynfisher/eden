@@ -4,6 +4,7 @@ import { CONFIG } from '@/lib/config'
 import { rightTruncatedString, truncatedAddress } from '@/lib/string'
 import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import {
   CheckCircleOutlined,
   CheckOutlined,
@@ -54,7 +55,7 @@ const FailedTaskMenuItem = ({
               <div className="flex justify-between items-center">
                 <strong>/{task.generator.generatorName}</strong>
                 <div
-                  className="flex min-w-0 truncate mt-1"
+                  className="flex min-w-0 truncate mt-1 cursor-copy"
                   onClick={handleCopyClick}
                 >
                   <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
@@ -163,7 +164,9 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
   const { message } = App.useApp()
   const { copied, copy } = useClipboard({ timeout: 750 })
 
-  const handleCopyClick = async () => {
+  const handleCopyClick = async (ev: React.MouseEvent<HTMLDivElement>) => {
+    ev.preventDefault()
+    ev.stopPropagation()
     await copy(task.taskId)
 
     message.destroy()
@@ -174,11 +177,12 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
     <div
       className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
       style={{ minWidth: '240px' }}
+      key={task._id}
     >
       <div className="flex justify-between items-center">
         <strong>/{task.generator.generatorName}</strong>
         <div
-          className="flex gap-2 min-w-0 truncate mt-1"
+          className="flex gap-2 min-w-0 truncate mt-1 cursor-copy"
           onClick={handleCopyClick}
         >
           <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
@@ -192,7 +196,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
         status={task?.status === 'pending' ? 'normal' : 'active'}
         className="mt-1 flex items-center"
       />
-      <div className="text-xs text-gray-800 dark:text-gray-400">
+      <div className="text-xs text-gray-800 dark:text-gray-400 mb-1">
         <div className="flex justify-between">
           <div className="capitalize">
             <strong>{task?.status}</strong>
@@ -204,16 +208,26 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
         <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
           {rightTruncatedString(task.config.text_input || '', 30)}
         </div>
+        <div className="text-xs text-gray-800 dark:text-gray-400">
+          <strong>{task?.cost}</strong> Manna
+        </div>
         {CONFIG.DEV_TYPE === 'dummy' && (
           <TestGeneratorFinishButton taskId={task.taskId} />
         )}
       </div>
+      <div></div>
     </div>
   )
 }
 
 const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
   const router = useRouter()
+
+  const { showModal } = useModalContext()
+
+  const openDetailModal = async (task: Task) => {
+    showModal(MODAL_TYPES.TASK_DETAIL_MODAL, { task })
+  }
 
   const {
     pendingTasks,
@@ -245,6 +259,7 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
     ? pendingTasks.map(task => ({
         label: <PendingTaskMenuItem key={task._id} task={task} />,
         key: task._id,
+        onClick: () => openDetailModal(task),
       }))
     : []
 
@@ -313,6 +328,7 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
             handleDismiss(task._id, failedTasks, setFailedTasks),
         }),
         key: task._id,
+        onClick: () => openDetailModal(task),
       })),
     )
   }
