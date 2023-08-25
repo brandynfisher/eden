@@ -19,6 +19,7 @@ import {
   Task,
 } from '@edenlabs/eden-sdk'
 import { HelpOutline } from '@mui/icons-material'
+import { debounce } from '@mui/material'
 import { App, Button, Card, Form, Popover } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -106,6 +107,8 @@ const GeneratorForm = ({
     setIsFormTouched(true)
     await handleGetTaskCost()
   }
+
+  const debouncedHandleFormFieldsChange = debounce(handleFormFieldsChange, 250)
 
   const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
     if (!currentGenerator) return
@@ -354,7 +357,7 @@ const GeneratorForm = ({
       onFinish={handleFinish}
       key={generator.generatorName}
       title={generator.generatorName}
-      onFieldsChange={handleFormFieldsChange}
+      onFieldsChange={debouncedHandleFormFieldsChange}
     >
       <Card
         type="inner"
