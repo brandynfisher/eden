@@ -5,13 +5,16 @@ import { rightTruncatedString, truncatedAddress } from '@/lib/string'
 import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {
+  CheckCircleOutlined,
   CheckOutlined,
   CloseOutlined,
+  CopyOutlined,
   ExclamationOutlined,
   LoadingOutlined,
 } from '@ant-design/icons'
 import { Task } from '@edenlabs/eden-sdk'
-import { Button, Dropdown, Progress, Space, Spin } from 'antd'
+import { useClipboard } from '@mantine/hooks'
+import { App, Button, Dropdown, Progress, Space, Spin } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import { NextRouter, useRouter } from 'next/router'
 import React, { useContext } from 'react'
@@ -29,6 +32,16 @@ const FailedTaskMenuItem = ({
     true,
   )
 
+  const { message } = App.useApp()
+  const { copied, copy } = useClipboard({ timeout: 750 })
+
+  const handleCopyClick = async () => {
+    await copy(task.taskId)
+
+    message.destroy()
+    message.success(`Copied Task ID to clipboard!`)
+  }
+
   return (
     <div key={task._id}>
       <div className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md">
@@ -36,14 +49,18 @@ const FailedTaskMenuItem = ({
           className="flex w-full"
           style={{ minWidth: '240px', maxWidth: '320px' }}
         >
-          <div className="flex items-center justify-between min-w-0 w-full">
-            <div className="flex flex-col min-w-0 mr-2 w-full">
+          <div className="flex items-center justify-between min-w-0 gap-2 w-full">
+            <div className="flex flex-col min-w-0 w-full">
               <div className="flex justify-between items-center">
                 <strong>/{task.generator.generatorName}</strong>
-                <div className="flex min-w-0 truncate mt-1">
+                <div
+                  className="flex min-w-0 truncate mt-1"
+                  onClick={handleCopyClick}
+                >
                   <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
                     {truncatedAddress(task.taskId)}
                   </div>
+                  {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
                 </div>
               </div>
               <div className="text-xs text-gray-800 dark:text-gray-400">
@@ -111,7 +128,7 @@ const CompletedTaskMenuItem = ({
             <ImageResult resultUrl={task.creation.thumbnail} />
           </div>
           <div className="flex items-center justify-between min-w-0 w-full">
-            <div className="flex flex-col min-w-0 mr-2 w-full">
+            <div className="flex flex-col gap-2 min-w-0 w-full">
               <div className="flex justify-between items-center">
                 <strong>/{task.generator.generatorName}</strong>
                 <div className="text-xs text-gray-800 dark:text-gray-400 hidden xs:flex">
@@ -143,6 +160,16 @@ const CompletedTaskMenuItem = ({
 const PendingTaskMenuItem = ({ task }: { task: Task }) => {
   const timeSinceTaskCreation = timeAgo(task.createdAt)
 
+  const { message } = App.useApp()
+  const { copied, copy } = useClipboard({ timeout: 750 })
+
+  const handleCopyClick = async () => {
+    await copy(task.taskId)
+
+    message.destroy()
+    message.success(`Copied Task ID to clipboard!`)
+  }
+
   return (
     <div
       className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
@@ -150,10 +177,14 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
     >
       <div className="flex justify-between items-center">
         <strong>/{task.generator.generatorName}</strong>
-        <div className="flex min-w-0 truncate mt-1">
+        <div
+          className="flex gap-2 min-w-0 truncate mt-1"
+          onClick={handleCopyClick}
+        >
           <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
             {truncatedAddress(task.taskId)}
           </div>
+          {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
         </div>
       </div>
       <Progress
@@ -302,7 +333,7 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
           : 'hidden sm:flex'
       }`}
     >
-      <Button.Group>
+      <Button.Group className="flex items-center">
         {pendingTaskItems.length > 0 && (
           <Dropdown
             trigger={['click']}
