@@ -2,8 +2,13 @@ import ResultPreviewDisplay from '@/components/Creation/CreationInterface/Result
 import { rightTruncatedString, truncatedAddress } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
-import { LoadingOutlined } from '@ant-design/icons'
-import { Card, Progress, Spin } from 'antd'
+import {
+  CheckCircleOutlined,
+  CopyOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons'
+import { useClipboard } from '@mantine/hooks'
+import { App, Card, Progress, Spin } from 'antd'
 import React, { RefObject, useContext } from 'react'
 
 const ResultPreview = ({
@@ -11,6 +16,16 @@ const ResultPreview = ({
 }: {
   innerRef: RefObject<HTMLDivElement>
 }) => {
+  const { message } = App.useApp()
+  const { copied, copy } = useClipboard({ timeout: 750 })
+
+  const handleCopyClick = async (taskId: string) => {
+    await copy(taskId)
+
+    message.destroy()
+    message.success(`Copied Task ID to clipboard!`)
+  }
+
   const { hasChangedGenerator, pendingTasks, completedTasks, activeTaskId } =
     useContext(CreationNotificationContext)
 
@@ -68,22 +83,30 @@ const ResultPreview = ({
                   className="mt-2 flex items-center"
                 />
               </div>
-              <div className="flex justify-between text-xs">
-                <div>
-                  <div className="capitalize mb-2">
-                    <strong>{activeTask?.status}</strong>
+              {activeTask && (
+                <div className="flex justify-between text-xs">
+                  <div>
+                    <div className="capitalize mb-2">
+                      <strong>{activeTask.status}</strong>
+                    </div>
+                    <div className="text-xs text-gray-800 dark:text-gray-400">
+                      Started {timeAgo(activeTask.createdAt)}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-800 dark:text-gray-400">
-                    Started {timeAgo(activeTask ? activeTask?.createdAt : '')}
+                  <div
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => handleCopyClick(activeTask.taskId)}
+                  >
+                    <div
+                      className="italic text-gray-800 dark:text-gray-400"
+                      title={activeTask.taskId}
+                    >
+                      {truncatedAddress(activeTask.taskId)}
+                    </div>
+                    {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
                   </div>
                 </div>
-                <div
-                  className="italic text-gray-800 dark:text-gray-400"
-                  title={activeTask?.taskId}
-                >
-                  {truncatedAddress(activeTask ? activeTask?.taskId : '')}
-                </div>
-              </div>
+              )}
             </div>
           ) : (
             <ResultPreviewDisplay creationId={creationId} />
