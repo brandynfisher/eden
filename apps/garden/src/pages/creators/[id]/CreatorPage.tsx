@@ -1,7 +1,6 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import Breadcrumbs from '@/components/Layout/navigation/Breadcrumbs'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
@@ -13,7 +12,6 @@ import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
-import { HomeOutlined } from '@ant-design/icons'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
 import { Inter } from 'next/font/google'
@@ -91,21 +89,6 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
     children: <CollectionTabContent collections={collections} />,
   })
 
-  const breadcrumbItems = [
-    {
-      path: '/',
-      icon: <HomeOutlined />,
-    },
-    {
-      path: '/creators',
-      title: 'Creators',
-    },
-    {
-      path: `/creators/${creator?.username?.toLowerCase()}`,
-      title: creator.username,
-    },
-  ]
-
   return (
     <>
       <Head>
@@ -123,12 +106,20 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
         {/* @todo: replace generic logo image with user profile image  */}
         <meta
           property="og:image"
-          content="https://app.eden.art/apple-touch-icon.png"
+          content={
+            creator.userImage
+              ? creator.userImage
+              : 'https://app.eden.art/apple-touch-icon.png'
+          }
           key="image"
         />
         <meta
           property="og:image:secure_url"
-          content="https://app.eden.art/apple-touch-icon.png"
+          content={
+            creator.userImage
+              ? creator.userImage
+              : 'https://app.eden.art/apple-touch-icon.png'
+          }
         />
         <meta
           property="og:image:alt"
@@ -143,8 +134,6 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       </Head>
 
       <div className={`flex flex-col ${inter.className}`}>
-        <Breadcrumbs items={breadcrumbItems} />
-
         <Space direction="vertical">
           <ProfileHeader
             creatorId={creator.userId}
