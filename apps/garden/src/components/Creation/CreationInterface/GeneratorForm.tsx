@@ -104,7 +104,7 @@ const GeneratorForm = ({
 
   const handleFormFieldsChange = async () => {
     setIsFormTouched(true)
-    await handleGetTaskCost(getCurrentGeneratorParameters(generator))
+    await handleGetTaskCost()
   }
 
   const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
@@ -124,7 +124,7 @@ const GeneratorForm = ({
         ...param,
         default: param.default === null ? '' : param.default,
       })),
-    ] as GeneratorParameter[]
+    ]
   }
 
   useEffect(() => {
@@ -153,15 +153,15 @@ const GeneratorForm = ({
   }
 
   const handleGetTaskCost = useCallback(
-    async (generatorParams: GeneratorParameter[] | undefined) => {
-      if (isLoadingTaskCost) {
-        return
-      }
+    async (generatorParams?: GeneratorParameter[]) => {
+      // if (isLoadingTaskCost) {
+      //   return
+      // }
 
-      if (!generatorParams) {
-        setTaskCost(undefined)
-        return
-      }
+      // if (!generatorParams) {
+      //   setTaskCost(undefined)
+      //   return
+      // }
 
       setIsLoadingTaskCost(true)
 
@@ -175,12 +175,18 @@ const GeneratorForm = ({
       message.destroy()
 
       try {
-        let cleanedValues = getCleanedConfig(generatorParams, undefined)
-        const requiredParams = generatorParams.filter(
+        let cleanedValues = getCleanedConfig(
+          generatorParams || form.getFieldsValue(),
+          undefined,
+        )
+        const required = getCurrentGeneratorParameters(generator)?.filter(
+          parameter => parameter.isRequired,
+        )
+        const requiredParams = required?.filter(
           parameter => parameter.isRequired,
         )
 
-        requiredParams.map(reqParam => {
+        requiredParams?.map(reqParam => {
           if (Array.isArray(reqParam['default'])) {
             // @ts-ignore
             cleanedValues[reqParam.name] = ['dummy field content']
@@ -196,6 +202,7 @@ const GeneratorForm = ({
 
         setTaskCost(response.data)
       } catch (err) {
+        console.error(err)
         message.error('Error fetching task cost estimate')
       } finally {
         setIsLoadingTaskCost(false)
