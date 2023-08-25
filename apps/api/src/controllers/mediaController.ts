@@ -38,3 +38,21 @@ export const uploadMedia = async (
   const { uri } = await uploadBufferAsset(server, buffer)
   return reply.status(200).send({ url: uri })
 }
+
+export const uploadMediaAdmin = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const data = await request.file()
+
+  if (!data) {
+    return reply.status(500).send({
+      message: 'No data found in upload',
+    })
+  }
+
+  const buffer = await data.toBuffer()
+  const { uri } = await uploadBufferAsset(server, buffer)
+  return reply.status(200).send({ url: uri })
+}
