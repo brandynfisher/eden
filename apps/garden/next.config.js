@@ -12,6 +12,17 @@ module.exports = withTM({
     config.resolve.fallback = { fs: false, net: false, tls: false }
     return config
   },
+  images: {
+    domains: ['https://minio.aws.abraham.fun/creations-stg/'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'minio.aws.abraham.fun',
+        port: '',
+        pathname: '**',
+      },
+    ],
+  },
 })
 
 // @todo: revisit PWA / service worker

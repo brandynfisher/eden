@@ -19,6 +19,7 @@ export type Concept = {
   parent?: string
   uri: string
   thumbnail?: string
+  training_images?: string[]
   name: string
   publicName: string
   conceptName: string

@@ -9,6 +9,7 @@ import { UserContext } from '@/providers/UserProvider'
 import { Concept } from '@edenlabs/eden-sdk'
 import { Collapse, Divider } from 'antd'
 import Head from 'next/head'
+import probe from 'probe-image-size'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const { Panel } = Collapse
@@ -47,6 +48,31 @@ const ConceptDetail = ({
   //   setConceptImageLoaded(false)
   // }, [concept.uri])
 
+  const [probedImageUrls, setProbedImageUrls] =
+    useState<{ url: string; size: { width: number; height: number } }[]>()
+
+  useEffect(() => {
+    const probeImageSize = async (imageUrls: string[]) => {
+      const imagesWithSizes = await Promise.all(
+        imageUrls.map(async imageUrl => {
+          const imageWithSize = { url: imageUrl, size: { width: 0, height: 0 } }
+          imageWithSize.size = await probe(imageUrl)
+
+          return imageWithSize
+        }),
+      )
+
+      setProbedImageUrls(imagesWithSizes)
+    }
+
+    if (conceptData.training_images) {
+      probeImageSize(conceptData?.training_images)
+      return
+    }
+
+    setProbedImageUrls(undefined)
+  }, [conceptData.training_images])
+
   return (
     <>
       <Head>
@@ -70,25 +96,53 @@ const ConceptDetail = ({
       <div ref={containerRef}>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
           <div className="relative mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
-            <div
-              onClick={showMediaViewer}
-              className="relative flex justify-center lg:flex lg:flex-grow"
-              style={{ width: 'fit-content', margin: '0 auto' }}
-            >
-              <MediaDisplay
-                creationUri={
-                  conceptData?.thumbnail
-                    ? conceptData.thumbnail
-                    : '/placeholder.png'
-                }
-                previewUri={conceptData?.thumbnail}
-                showPreview={mediaViewerVisible}
-                onPreviewClose={hideMediaViewer}
-                // onLoad={() => {
-                //   setCreationImageLoaded(true)
-                // }}
-              />
-            </div>
+            {/*<div*/}
+            {/*  onClick={showMediaViewer}*/}
+            {/*  className="relative flex justify-center lg:flex lg:flex-grow"*/}
+            {/*  style={{ width: 'fit-content', margin: '0 auto' }}*/}
+            {/*>*/}
+            {/*  <MediaDisplay*/}
+            {/*    creationUri={*/}
+            {/*      conceptData?.thumbnail*/}
+            {/*        ? conceptData.thumbnail*/}
+            {/*        : '/placeholder.png'*/}
+            {/*    }*/}
+            {/*    previewUri={conceptData?.thumbnail}*/}
+            {/*    showPreview={mediaViewerVisible}*/}
+            {/*    onPreviewClose={hideMediaViewer}*/}
+            {/*    // onLoad={() => {*/}
+            {/*    //   setCreationImageLoaded(true)*/}
+            {/*    // }}*/}
+            {/*  />*/}
+            {/*</div>*/}
+
+            {probedImageUrls && (
+              <div className="flex gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow">
+                {probedImageUrls &&
+                  probedImageUrls.map(trainingImage => (
+                    <div
+                      key={trainingImage.url}
+                      className="max-w-[200px] max-h-[200px] overflow-hidden"
+                      onClick={showMediaViewer}
+                    >
+                      <MediaDisplay
+                        creationUri={
+                          trainingImage.url
+                            ? trainingImage.url
+                            : '/placeholder.png'
+                        }
+                        previewUri={trainingImage.url}
+                        showPreview={mediaViewerVisible}
+                        onPreviewClose={hideMediaViewer}
+                        // onLoad={() => {
+                        //   setCreationImageLoaded(true)
+                        // }}
+                      />
+                      {/*<Image src={trainingImage.url} alt={trainingImage.url} width={trainingImage.size.width} height={trainingImage.size.height} className="rounded-lg w-full h-auto object-contain max-h-full max-w-full bg-gray-900"/>*/}
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
           <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
             <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col gap-2 xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
