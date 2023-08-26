@@ -194,7 +194,7 @@ const params = [
     label: 'Init image max strength',
     description:
       'Max strength of the init_img during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
-    default: 0.85,
+    default: 0.9,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
