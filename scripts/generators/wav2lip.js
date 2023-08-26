@@ -12,7 +12,7 @@ const params = [
     label: 'Audio file',
     description: 'Audio of speech to be lip-synced',
     default: null,
-    mediaUpload: true,
+    mediaUpload: 'audio/webm, audio/mp3, audio/wav',
     isRequired: true,
   },
   {

@@ -102,7 +102,6 @@ const generatorVersion = new Schema<GeneratorVersionDocument>({
         },
         mediaUpload: {
           type: String,
-          default: false,
         },
       },
     ],
