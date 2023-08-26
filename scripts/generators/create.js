@@ -28,7 +28,7 @@ const params = [
      'How strongly to apply the Concept weights (0.0 will result in the base model)',
    default: 0.8,
    minimum: 0.0,
-   maximum: 1.2,
+   maximum: 1.5,
    step: 0.1,
   },
   {
@@ -53,7 +53,7 @@ const params = [
     name: 'upscale_f',
     label: 'Upscale Factor',
     description: 'Diffusion-based up-scaling factor',
-    default: 1.4,
+    default: 1.0,
     minimum: 1.0,
     maximum: 2.0,
     step: 0.1,
@@ -78,6 +78,14 @@ const params = [
     description:
       'Guidance image. If ControlNet is off, this drives colors and rough shapes. If ControlNet is canny-edge, this will guide edges and contours',
     mediaUpload: 'image/png, image/jpeg, image/webp',
+    optional: true,
+  },
+  {
+    name: 'adopt_aspect_from_init_img',
+    label: 'Adopt aspect ratio of Init image',
+    description: 'Make sure the creation has the same aspect ratio as the Init image.',
+    default: true,
+    allowedValues: [false, true],
     optional: true,
   },
   {
