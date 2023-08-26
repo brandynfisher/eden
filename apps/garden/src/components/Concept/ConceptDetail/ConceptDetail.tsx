@@ -23,20 +23,20 @@ const ConceptDetail = ({
   const { isAuthenticated, user, address } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [conceptData, setConceptData] = useState<Concept>(concept)
-  // const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
+  const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const timeSinceConcept = timeAgo(concept.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
   // const [conceptImageLoaded, setConceptImageLoaded] = useState(false)
 
   const pageTitle = `/${concept?.task?.generator?.generatorName} by ${concept?.user?.username} | Garden of Eden`
 
-  // const showMediaViewer = () => {
-  //   setMediaViewerVisible(true)
-  // }
+  const showMediaViewer = () => {
+    setMediaViewerVisible(true)
+  }
 
-  // const hideMediaViewer = () => {
-  //   setMediaViewerVisible(false)
-  // }
+  const hideMediaViewer = () => {
+    setMediaViewerVisible(false)
+  }
 
   useEffect(() => {
     setConceptData(concept)
@@ -54,16 +54,16 @@ const ConceptDetail = ({
         <meta property="og:title" key="title" content={pageTitle} />
         <meta
           property="og:description"
-          content={concept.name}
+          content={conceptData.name}
           key="description"
         />
-        <meta property="og:image" content={concept.thumbnail} key="image" />
-        <meta property="og:image:secure_url" content={concept.thumbnail} />
+        <meta property="og:image" content={conceptData.thumbnail} key="image" />
+        <meta property="og:image:secure_url" content={conceptData.thumbnail} />
         <meta property="og:image:alt" content={pageTitle} />
         <meta property="og:image:type" content="image/jpeg" />
         <meta
           property="og:url"
-          content={`${CONFIG.NEXT_PUBLIC_HOST}/concepts/${concept._id}`}
+          content={`${CONFIG.NEXT_PUBLIC_HOST}/concepts/${conceptData._id}`}
         />
       </Head>
 
@@ -71,16 +71,21 @@ const ConceptDetail = ({
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
           <div className="relative mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
             <div
-              // onClick={showMediaViewer}
+              onClick={showMediaViewer}
               className="relative flex justify-center lg:flex lg:flex-grow"
               style={{ width: 'fit-content', margin: '0 auto' }}
             >
               <MediaDisplay
                 creationUri={
-                  conceptData?.thumbnail ? conceptData?.thumbnail : ''
+                  conceptData?.thumbnail
+                    ? conceptData.thumbnail
+                    : '/placeholder.png'
                 }
+                previewUri={conceptData?.thumbnail}
+                showPreview={mediaViewerVisible}
+                onPreviewClose={hideMediaViewer}
                 // onLoad={() => {
-                //   setConceptImageLoaded(true)
+                //   setCreationImageLoaded(true)
                 // }}
               />
             </div>
@@ -108,7 +113,7 @@ const ConceptDetail = ({
               <div style={{ wordWrap: 'break-word' }}>
                 <div className="flex justify-between items-center">
                   <div className="font-bold">
-                    /{concept?.task?.generator?.generatorName}
+                    /{conceptData?.task?.generator?.generatorName}
                   </div>
                   <div
                     className="text-gray-400 text-xs"
@@ -119,7 +124,7 @@ const ConceptDetail = ({
                 </div>
                 <Divider className="my-4" />
 
-                <TruncatedExpandableText text={concept?.name} />
+                <TruncatedExpandableText text={conceptData?.name} />
               </div>
             </div>
 
