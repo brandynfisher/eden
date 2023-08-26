@@ -5,7 +5,7 @@ const params = [
     label: 'Real images',
     description: 'URLs of images to use as init images for real2real',
     default: [],
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     minLength: 2,
     maxLength: 8,
     isRequired: true,
