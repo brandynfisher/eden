@@ -29,7 +29,7 @@ const params = [
     name: 'instance_prompt',
     label: 'Instance prompt',
     description:
-      'A single prompt that describes the concept to be learned (eg "a photo of a man")',
+      'A single prompt that describes the concept to be learned (eg "a photo of a man" or "a cartoon of a superhero")',
     default: null,
     isRequired: true,
   },
