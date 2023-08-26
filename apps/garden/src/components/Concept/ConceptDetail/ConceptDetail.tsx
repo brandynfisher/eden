@@ -104,15 +104,6 @@ const ConceptDetail = ({
               )}
             </div>
 
-            <Collapse expandIconPosition="start" className="mb-4">
-              <Panel key={'1'} header={'Raw JSON'}>
-                <CodeBlock
-                  code={JSON.stringify(conceptData, null, 2)}
-                  language="javascript"
-                />
-              </Panel>
-            </Collapse>
-
             <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
               <div style={{ wordWrap: 'break-word' }}>
                 <div className="flex justify-between items-center">
@@ -131,6 +122,15 @@ const ConceptDetail = ({
                 <TruncatedExpandableText text={concept?.name} />
               </div>
             </div>
+
+            <Collapse expandIconPosition="start" className="mb-4">
+              <Panel key={'1'} header={'Raw JSON'}>
+                <CodeBlock
+                  code={JSON.stringify(conceptData, null, 2)}
+                  language="javascript"
+                />
+              </Panel>
+            </Collapse>
 
             {/*<div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">*/}
             {/*<CreationDetailToolButtons creation={concept} />*/}

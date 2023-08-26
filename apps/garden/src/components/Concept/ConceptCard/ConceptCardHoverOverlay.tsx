@@ -4,35 +4,15 @@ import React from 'react'
 
 export interface ConceptCardHoverOverlayProps {
   concept: Concept
-  handlers: {
-    onChange: (updatedConcept: Concept) => void
-    openDetailModal: () => void
-  }
 }
 
-const ConceptCardHoverOverlay = ({
-  concept,
-  handlers,
-}: ConceptCardHoverOverlayProps) => {
-  const handleClickOutside = (event: React.MouseEvent) => {
-    // Check if the click event target is not a button
-    const targetElement = event.target as Element
-    if (!targetElement.closest('button')) {
-      handlers.openDetailModal()
-    }
-  }
-
+const ConceptCardHoverOverlay = ({ concept }: ConceptCardHoverOverlayProps) => {
   return (
-    <div
-      className="absolute inset-0 flex flex-col justify-between"
-      onClick={handleClickOutside}
-    >
+    <div>
       {/*<div className="mx-2 mt-2 anim-slide-fade-down">*/}
       {/*  <ConceptReactions concept={concept} onChange={handlers.onChange} />*/}
       {/*</div>*/}
-      <div className="mx-2 mb-2 anim-slide-fade-up">
-        <ConceptCardDetail concept={concept} isOverlay={true} />
-      </div>
+      <ConceptCardDetail concept={concept} isOverlay={true} />
     </div>
   )
 }
