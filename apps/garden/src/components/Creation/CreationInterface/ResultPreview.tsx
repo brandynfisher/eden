@@ -67,7 +67,7 @@ const ResultPreview = ({
                       <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
                         {rightTruncatedString(
                           activeTask?.config.text_input || '',
-                          30,
+                          36,
                         )}
                       </div>
                     </div>

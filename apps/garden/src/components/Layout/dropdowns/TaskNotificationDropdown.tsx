@@ -5,6 +5,7 @@ import { rightTruncatedString, truncatedAddress } from '@/lib/string'
 import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
+import { UserContext } from '@/providers/UserProvider'
 import {
   CheckCircleOutlined,
   CheckOutlined,
@@ -191,6 +192,9 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
         </div>
       </div>
+      <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
+        {rightTruncatedString(task.config.text_input || '', 36)}
+      </div>
       <Progress
         percent={task?.progress ? Math.round(task.progress * 100) : 0}
         status={task?.status === 'pending' ? 'normal' : 'active'}
@@ -205,9 +209,6 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
         </div>
       </div>
       <div className="flex justify-between items-center">
-        <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-          {rightTruncatedString(task.config.text_input || '', 30)}
-        </div>
         <div className="text-xs text-gray-800 dark:text-gray-400">
           <strong>{task?.cost}</strong> Manna
         </div>
@@ -236,6 +237,8 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
     failedTasks,
     setFailedTasks,
   } = useContext(CreationNotificationContext)
+
+  const { refetch } = useContext(UserContext)
 
   const handleDismiss = async (
     taskId: string,
@@ -301,6 +304,8 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
 
   const failedTaskItems = []
   if (failedTasks?.length) {
+    refetch.mannaBalance()
+
     failedTaskItems.push({
       label: (
         <div className="flex items-center justify-between">

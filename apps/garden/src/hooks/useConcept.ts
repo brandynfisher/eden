@@ -10,7 +10,7 @@ export const useConcept = (conceptId: string | null, options = {}) => {
   )
 
   return {
-    concept: data?.concept as Concept | null,
+    concept: data?.concepts ? (data.concepts[0] as Concept) : null,
     mutate,
     isLoading,
     error,

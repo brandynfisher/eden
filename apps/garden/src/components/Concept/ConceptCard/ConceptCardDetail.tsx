@@ -37,9 +37,9 @@ const ConceptCardDetail = ({
           {concept.conceptName}
         </div>
         <CreatorProfileLink
-          creatorId={concept.user.userId}
-          creatorName={concept.user.username}
-          creatorImage={concept.user.userImage}
+          creatorId={concept.user?.userId}
+          creatorName={concept.user?.username}
+          creatorImage={concept.user?.userImage}
           isOverlay={isOverlay}
         />
       </div>

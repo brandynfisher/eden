@@ -1,4 +1,4 @@
-import CodeBlock from '@/components/CodeBlock'
+import ConfigParamsTabs from '@/components/ConfigParamsTabs'
 import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
 import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import CreationReactions from '@/components/Creation/CreationReactions'
@@ -10,100 +10,10 @@ import { CONFIG } from '@/lib/config'
 import { getFileExtension } from '@/lib/getFileExtension'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
-import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
-import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
-import { useClipboard } from '@mantine/hooks'
-import { App, Button, Divider, Tabs } from 'antd'
+import { Creation } from '@edenlabs/eden-sdk'
+import { Divider } from 'antd'
 import Head from 'next/head'
 import React, { useContext, useEffect, useRef, useState } from 'react'
-
-const ConfigParamsTextTabContent = ({
-  creationData,
-}: {
-  creationData: Creation
-}) => {
-  return (
-    <>
-      {creationData.task.config &&
-        Object.entries(creationData.task.config).map(([key, val]) => {
-          const configValue = JSON.stringify(val)
-
-          return (
-            <div
-              key={`cfg-${key}`}
-              className="py-2 px-4 m-0 first:pt-0 xl last:mb-0 justify-between grid xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-2  [&:nth-child(even)]:bg-gray-50 [&:nth-child(even)]:dark:bg-gray-900"
-            >
-              <div
-                className={`text-gray-500 flex-shrink-0 ${
-                  key.length > 17 ? 'col-span-2' : ''
-                }`}
-              >
-                {key}
-              </div>
-              <div
-                className={`break-words px-1 line-clamp-2 ${
-                  configValue.length > 17 ? 'col-span-2' : ''
-                }`}
-                title={configValue}
-              >
-                {configValue}
-              </div>
-            </div>
-          )
-        })}
-    </>
-  )
-}
-
-const ConfigParamsCodeTabContent = ({
-  taskConfig,
-}: {
-  taskConfig: Task['config']
-}) => {
-  const { message } = App.useApp()
-  const { copied, copy } = useClipboard({ timeout: 750 })
-
-  const handleCopyClick = async () => {
-    await copy(taskConfig)
-
-    message.destroy()
-    message.success(`Copied to clipboard!`)
-  }
-
-  return (
-    <div className="relative">
-      <Button
-        className="absolute right-6 top-2 flex items-center cursor-copy"
-        onClick={handleCopyClick}
-        title={'Copy'}
-      >
-        {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
-      </Button>
-      <div className="px-4 mb-2 ">
-        <CodeBlock code={taskConfig} language="javascript" />
-      </div>
-    </div>
-  )
-}
-
-const createEdenSdkCodeSnippet = (
-  generatorName: Generator['generatorName'],
-  taskConfig: Task['config'],
-) => {
-  return `import {EdenClient} from "@edenlabs/eden-sdk";
-
-const eden = new EdenClient({
-  apiKey: "YOUR_API_KEY",
-  apiSecret: "YOUR_API_SECRET"
-});
-
-const config = ${taskConfig}
-
-const result = await eden.tasks.create({
-  generatorName: "${generatorName}",
-  config: config
-});`
-}
 
 const CreationDetail = ({
   creation,
@@ -118,7 +28,6 @@ const CreationDetail = ({
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
-  const [isRevealed, setIsRevealed] = useState(false)
   const timeSinceCreation = timeAgo(creation.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
   const [creationImageLoaded, setCreationImageLoaded] = useState(false)
@@ -128,41 +37,12 @@ const CreationDetail = ({
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
-  const items = [
-    {
-      key: '1',
-      label: `Text`,
-      children: <ConfigParamsTextTabContent creationData={creation} />,
-    },
-    // {
-    //   key: '2',
-    //   label: `JSON`,
-    //   children: <ConfigParamsCodeTabContent taskConfig={formattedTaskConfig} />,
-    // },
-    {
-      key: '3',
-      label: `Eden SDK`,
-      children: (
-        <ConfigParamsCodeTabContent
-          taskConfig={createEdenSdkCodeSnippet(
-            creation?.task?.generator?.generatorName,
-            JSON.stringify(creation?.task?.config, null, 2),
-          )}
-        />
-      ),
-    },
-  ]
-
   const showMediaViewer = () => {
     setMediaViewerVisible(true)
   }
 
   const hideMediaViewer = () => {
     setMediaViewerVisible(false)
-  }
-
-  const onConfigurationTabChange = () => {
-    // console.log('onConfigurationTabChange', key)
   }
 
   const isVideo = (creationUri: string) => {
@@ -284,38 +164,7 @@ const CreationDetail = ({
               <CreationDetailToolButtons creation={creation} />
             </div>
 
-            <div className="flex w-full justify-center items-center mb-4">
-              <Button
-                type="dashed"
-                className="dark:text-gray-400"
-                onClick={() => setIsRevealed(!isRevealed)}
-              >
-                {isRevealed ? 'Hide' : 'Show'} configuration
-              </Button>
-            </div>
-
-            {isRevealed && (
-              <>
-                <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden text-xs">
-                  <Tabs
-                    centered
-                    defaultActiveKey="1"
-                    items={items}
-                    onChange={onConfigurationTabChange}
-                  />
-                </div>
-
-                <div className="flex w-full justify-center items-center my-4">
-                  <Button
-                    type="dashed"
-                    className="dark:text-gray-400"
-                    onClick={() => setIsRevealed(false)}
-                  >
-                    Hide configuration
-                  </Button>
-                </div>
-              </>
-            )}
+            <ConfigParamsTabs data={creation} />
           </div>
         </div>
         {loadSimilar && creationImageLoaded && (
