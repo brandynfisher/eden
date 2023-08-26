@@ -4,7 +4,7 @@ const params = [
     label: 'Face image file',
     description: 'Image containing face to be avatar',
     default: null,
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: true,
   },
   {

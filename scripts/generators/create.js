@@ -77,7 +77,7 @@ const params = [
     default: null,
     description:
       'Guidance image. If ControlNet is off, this drives colors and rough shapes. If ControlNet is canny-edge, this will guide edges and contours',
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     optional: true,
   },
   {

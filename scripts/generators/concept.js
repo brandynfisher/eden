@@ -12,7 +12,7 @@ const params = [
     label: 'Training images',
     description:
       'URLs for the image files of target concept to train a Concept for',
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp, application/zip',
     default: [],
     minLength: 1,
     maxLength: 8,
