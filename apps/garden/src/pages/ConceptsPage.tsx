@@ -1,10 +1,9 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import {
-  OrderByBookmarks,
+  // OrderByBookmarks,
   OrderByFollowing,
-  OrderByLatest,
-  OrderByPraises,
+  OrderByLatest, // OrderByPraises,
   OrderByScore,
 } from '@/components/OrderByButtons'
 import { UserContext } from '@/providers/UserProvider'
@@ -17,11 +16,11 @@ const ConceptsPage = () => {
     ? [
         OrderByScore,
         OrderByLatest,
-        OrderByPraises,
-        OrderByBookmarks,
+        // OrderByPraises,
+        // OrderByBookmarks,
         OrderByFollowing,
       ]
-    : [OrderByScore, OrderByLatest, OrderByPraises, OrderByBookmarks]
+    : [OrderByScore, OrderByLatest]
 
   return (
     <div className={`flex flex-col`}>

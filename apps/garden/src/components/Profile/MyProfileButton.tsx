@@ -1,25 +1,11 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import ConnectButton from '@/components/ConnectButton'
 import { UserContext } from '@/providers/UserProvider'
-import { Button } from 'antd'
+import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const MyProfileButton = () => {
-  const { userId, user, isAuthenticated, authenticate } =
-    useContext(UserContext)
-
-  if (!isAuthenticated && !userId) {
-    return <ConnectButton />
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <Button type="primary" onClick={() => authenticate()}>
-        Sign In
-      </Button>
-    )
-  }
+  const { userId, user, isAuthenticated } = useContext(UserContext)
 
   const userProfilePath =
     isAuthenticated && user && user.username
@@ -27,7 +13,14 @@ const MyProfileButton = () => {
       : ''
 
   return (
-    <div>
+    <div className="flex rounded border-solid border-gray-700">
+      <SignedIn>
+        <UserButton afterSignOutUrl="/" />
+      </SignedIn>
+      <SignedOut>
+        <SignInButton />
+      </SignedOut>
+
       <Link
         href={userProfilePath}
         passHref
