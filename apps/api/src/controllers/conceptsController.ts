@@ -38,9 +38,10 @@ export const listConcepts = async (
   const conceptRepository = new ConceptRepository(Concept)
   const concepts = await conceptRepository.query(
     {
-      user: creators.docs
-        ? creators.docs.map(creator => creator._id)
-        : undefined,
+      user:
+        userId && creators.docs
+          ? creators.docs.map(creator => creator._id)
+          : undefined,
     },
     {
       limit,
