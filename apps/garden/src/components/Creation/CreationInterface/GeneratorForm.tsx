@@ -291,7 +291,7 @@ const GeneratorForm = ({
               key={parameter.name}
               form={form}
               parameter={parameter}
-              acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+              acceptedMimeTypes={parameter.mediaUpload}
             />
           )
         }

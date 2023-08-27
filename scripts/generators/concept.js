@@ -12,7 +12,7 @@ const params = [
     label: 'Training images',
     description:
       'URLs for the image files of target concept to train a Concept for',
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp, application/zip',
     default: [],
     minLength: 1,
     maxLength: 8,
@@ -29,7 +29,7 @@ const params = [
     name: 'instance_prompt',
     label: 'Instance prompt',
     description:
-      'A single prompt that describes the concept to be learned',
+      'A single prompt that describes the concept to be learned (eg "a photo of a man" or "a cartoon of a superhero")',
     default: null,
     isRequired: true,
   },

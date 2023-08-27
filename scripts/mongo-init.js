@@ -105,7 +105,7 @@ const interrogateParametersDev = [
     description:
       'URL of image to initiate image before diffusion (if null, use random noise)',
     default: 'x',
-    mediaUpload: false,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: false,
   },
 ]

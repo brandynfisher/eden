@@ -5,7 +5,7 @@ const params = [
     label: 'Real images',
     description: 'URLs of images to use as init images for real2real',
     default: [],
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     minLength: 2,
     maxLength: 8,
     isRequired: true,
@@ -132,7 +132,7 @@ const params = [
     description:
       'Optionally apply FILM postprocessing to the generated frames to create a smoother video',
     default: 1,
-    allowedValues: [0, 1],
+    allowedValues: [0, 1, 2, 3],
     optional: true,
   },
   {
@@ -194,7 +194,7 @@ const params = [
     label: 'Init image max strength',
     description:
       'Max strength of the init_img during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
-    default: 0.85,
+    default: 0.9,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
