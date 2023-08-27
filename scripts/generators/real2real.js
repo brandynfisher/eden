@@ -132,7 +132,7 @@ const params = [
     description:
       'Optionally apply FILM postprocessing to the generated frames to create a smoother video',
     default: 1,
-    allowedValues: [0, 1, 2],
+    allowedValues: [0, 1, 2, 3],
     optional: true,
   },
   {
