@@ -20,6 +20,8 @@ export type Concept = {
   uri: string
   thumbnail?: string
   training_images?: string[]
+  instance_prompt?: string
+  checkpoint?: string
   name: string
   publicName: string
   conceptName: string

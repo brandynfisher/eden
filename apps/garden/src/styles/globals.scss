@@ -92,6 +92,19 @@
     }
 }
 
+.media-display {
+    //&.media-display__small {
+    //    .ant-image-img {
+    //        max-height: 128px !important;
+    //    }
+    //}
+    &.media-display__main {
+        .ant-image-img {
+            max-height: 50vh !important;
+        }
+    }
+}
+
 .modal-small {
     .ant-modal-content {
         min-width: 480px !important;

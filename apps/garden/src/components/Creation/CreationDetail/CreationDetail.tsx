@@ -31,6 +31,15 @@ const CreationDetail = ({
   const timeSinceCreation = timeAgo(creation.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
   const [creationImageLoaded, setCreationImageLoaded] = useState(false)
+  const [showFollowControls, setShowFollowControls] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated && user?.userId === address) {
+      setShowFollowControls(true)
+    } else {
+      setShowFollowControls(false)
+    }
+  }, [isAuthenticated, user?.userId, address])
 
   useEffect(() => {
     setCreationData(creation)
@@ -61,12 +70,10 @@ const CreationDetail = ({
     setCreationImageLoaded(false)
   }, [creation.uri])
 
-  const pageTitle = `/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`
-
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
+        <title>{`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}</title>
         {isVideo(creation.uri) && (
           <>
             <meta property="og:type" content="video.other" />
@@ -76,7 +83,11 @@ const CreationDetail = ({
             />
           </>
         )}
-        <meta property="og:title" key="title" content={pageTitle} />
+        <meta
+          property="og:title"
+          key="title"
+          content={`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}
+        />
         <meta
           property="og:description"
           content={creation.name}
@@ -84,7 +95,10 @@ const CreationDetail = ({
         />
         <meta property="og:image" content={creation.thumbnail} key="image" />
         <meta property="og:image:secure_url" content={creation.thumbnail} />
-        <meta property="og:image:alt" content={pageTitle} />
+        <meta
+          property="og:image:alt"
+          content={`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}
+        />
         <meta property="og:image:type" content="image/jpeg" />
         <meta
           property="og:url"
@@ -131,7 +145,7 @@ const CreationDetail = ({
                   creatorImage={creationData?.user?.userImage || ''}
                 />
               </div>
-              {!isAuthenticated && user?.userId === address && (
+              {showFollowControls && (
                 <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
                   <FollowControls
                     creatorId={creationData?.user?.userId}

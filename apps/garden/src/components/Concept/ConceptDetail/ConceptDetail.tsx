@@ -1,4 +1,5 @@
 import CodeBlock from '@/components/CodeBlock'
+import ConceptDetailToolButtons from '@/components/Concept/ConceptDetail/ConceptDetailToolButtons'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
@@ -9,18 +10,60 @@ import { UserContext } from '@/providers/UserProvider'
 import { Concept } from '@edenlabs/eden-sdk'
 import { Collapse, Divider } from 'antd'
 import Head from 'next/head'
+import Image from 'next/image'
 import probe from 'probe-image-size'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const { Panel } = Collapse
+type ProbedImage = {
+  url: string
+  size: { width: number; height: number }
+  thumbnailSize: { width: number; height: number }
+}
+
+const probeImageForSize = async (
+  imageUrl: string,
+  maxThumbnailSize: number,
+) => {
+  const imageWithSize = {
+    url: imageUrl,
+    size: { width: 0, height: 0 },
+    thumbnailSize: { width: 0, height: 0 },
+  }
+  imageWithSize.size = await probe(imageUrl)
+
+  if (
+    imageWithSize.size.height < maxThumbnailSize &&
+    imageWithSize.size.width < maxThumbnailSize
+  ) {
+    imageWithSize.thumbnailSize = imageWithSize.size
+    return imageWithSize
+  }
+
+  if (imageWithSize.size.height > imageWithSize.size.width) {
+    imageWithSize.thumbnailSize.width =
+      imageWithSize.size.width / (imageWithSize.size.height / maxThumbnailSize)
+    // limit height, scale width accordingly
+    imageWithSize.thumbnailSize.height = maxThumbnailSize
+  } else {
+    imageWithSize.thumbnailSize.height =
+      imageWithSize.size.height / (imageWithSize.size.width / maxThumbnailSize)
+    // limit width, scale height accordingly
+    imageWithSize.thumbnailSize.width = maxThumbnailSize
+  }
+
+  return imageWithSize
+}
 
 const ConceptDetail = ({
   concept,
 }: // isModal,
 {
   concept: Concept
-  // isModal?: boolean
+  isModal?: boolean
 }) => {
+  const maxThumbnailSize = 96
+
   const { isAuthenticated, user, address } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [conceptData, setConceptData] = useState<Concept>(concept)
@@ -28,8 +71,16 @@ const ConceptDetail = ({
   const timeSinceConcept = timeAgo(concept.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
   // const [conceptImageLoaded, setConceptImageLoaded] = useState(false)
+  const [showFollowControls, setShowFollowControls] = useState(false)
+  const [displayImage, setDisplayImage] = useState({ url: '', thumbnail: '' })
 
-  const pageTitle = `/${concept?.task?.generator?.generatorName} by ${concept?.user?.username} | Garden of Eden`
+  useEffect(() => {
+    if (isAuthenticated && user?.userId === address) {
+      setShowFollowControls(true)
+    } else {
+      setShowFollowControls(false)
+    }
+  }, [isAuthenticated, user?.userId, address])
 
   const showMediaViewer = () => {
     setMediaViewerVisible(true)
@@ -48,21 +99,24 @@ const ConceptDetail = ({
   //   setConceptImageLoaded(false)
   // }, [concept.uri])
 
-  const [probedImageUrls, setProbedImageUrls] =
-    useState<{ url: string; size: { width: number; height: number } }[]>()
+  const [probedImageUrls, setProbedImageUrls] = useState<ProbedImage[]>()
 
   useEffect(() => {
     const probeImageSize = async (imageUrls: string[]) => {
       const imagesWithSizes = await Promise.all(
         imageUrls.map(async imageUrl => {
-          const imageWithSize = { url: imageUrl, size: { width: 0, height: 0 } }
-          imageWithSize.size = await probe(imageUrl)
-
-          return imageWithSize
+          return probeImageForSize(imageUrl, maxThumbnailSize)
         }),
       )
 
       setProbedImageUrls(imagesWithSizes)
+
+      if (imagesWithSizes.length) {
+        setDisplayImage({
+          url: imagesWithSizes[0].url,
+          thumbnail: imagesWithSizes[0].url,
+        })
+      }
     }
 
     if (conceptData.training_images) {
@@ -76,8 +130,12 @@ const ConceptDetail = ({
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
-        <meta property="og:title" key="title" content={pageTitle} />
+        <title>{`/${conceptData?.task?.generator?.generatorName} by ${conceptData?.user?.username} | Garden of Eden`}</title>
+        <meta
+          property="og:title"
+          key="title"
+          content={`/${conceptData?.task?.generator?.generatorName} by ${conceptData?.user?.username} | Garden of Eden`}
+        />
         <meta
           property="og:description"
           content={conceptData.name}
@@ -85,7 +143,10 @@ const ConceptDetail = ({
         />
         <meta property="og:image" content={conceptData.thumbnail} key="image" />
         <meta property="og:image:secure_url" content={conceptData.thumbnail} />
-        <meta property="og:image:alt" content={pageTitle} />
+        <meta
+          property="og:image:alt"
+          content={`/${conceptData?.task?.generator?.generatorName} by ${conceptData?.user?.username} | Garden of Eden`}
+        />
         <meta property="og:image:type" content="image/jpeg" />
         <meta
           property="og:url"
@@ -94,53 +155,55 @@ const ConceptDetail = ({
       </Head>
 
       <div ref={containerRef}>
+        <h3>Training Images</h3>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
-          <div className="relative mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
-            {/*<div*/}
-            {/*  onClick={showMediaViewer}*/}
-            {/*  className="relative flex justify-center lg:flex lg:flex-grow"*/}
-            {/*  style={{ width: 'fit-content', margin: '0 auto' }}*/}
-            {/*>*/}
-            {/*  <MediaDisplay*/}
-            {/*    creationUri={*/}
-            {/*      conceptData?.thumbnail*/}
-            {/*        ? conceptData.thumbnail*/}
-            {/*        : '/placeholder.png'*/}
-            {/*    }*/}
-            {/*    previewUri={conceptData?.thumbnail}*/}
-            {/*    showPreview={mediaViewerVisible}*/}
-            {/*    onPreviewClose={hideMediaViewer}*/}
-            {/*    // onLoad={() => {*/}
-            {/*    //   setCreationImageLoaded(true)*/}
-            {/*    // }}*/}
-            {/*  />*/}
-            {/*</div>*/}
-
+          <div className="relative">
+            <div
+              onClick={showMediaViewer}
+              className="relative flex justify-center lg:flex lg:flex-grow"
+              style={{ width: 'fit-content', margin: '0 auto' }}
+            >
+              <MediaDisplay
+                className={'media-display__main'}
+                creationUri={
+                  displayImage?.thumbnail
+                    ? displayImage.thumbnail
+                    : '/placeholder.png'
+                }
+                previewUri={displayImage?.thumbnail}
+                showPreview={mediaViewerVisible}
+                onPreviewClose={hideMediaViewer}
+                // onLoad={() => {
+                //   setCreationImageLoaded(true)
+                // }}
+              />
+            </div>
             {probedImageUrls && (
-              <div className="flex gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow">
-                {probedImageUrls &&
-                  probedImageUrls.map(trainingImage => (
-                    <div
-                      key={trainingImage.url}
-                      className="max-w-[200px] max-h-[200px] overflow-hidden"
-                      onClick={showMediaViewer}
-                    >
-                      <MediaDisplay
-                        creationUri={
-                          trainingImage.url
-                            ? trainingImage.url
-                            : '/placeholder.png'
-                        }
-                        previewUri={trainingImage.url}
-                        showPreview={mediaViewerVisible}
-                        onPreviewClose={hideMediaViewer}
-                        // onLoad={() => {
-                        //   setCreationImageLoaded(true)
-                        // }}
-                      />
-                      {/*<Image src={trainingImage.url} alt={trainingImage.url} width={trainingImage.size.width} height={trainingImage.size.height} className="rounded-lg w-full h-auto object-contain max-h-full max-w-full bg-gray-900"/>*/}
-                    </div>
-                  ))}
+              <div className="flex items-center justify-center gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow mb-4">
+                {probedImageUrls.map(trainingImage => (
+                  <div
+                    key={trainingImage.url}
+                    className={`flex w-[96px] h-[96px] overflow-hidden rounded-lg border border-solid ${
+                      trainingImage.url === displayImage.url
+                        ? 'border-gray-700 bg-gray-800'
+                        : 'cursor-pointer border-gray-800 hover:border-blue-600 '
+                    }`}
+                    onClick={() =>
+                      setDisplayImage({
+                        url: trainingImage.url,
+                        thumbnail: trainingImage.url,
+                      })
+                    }
+                  >
+                    <Image
+                      src={trainingImage.url}
+                      alt={trainingImage.url}
+                      width={trainingImage.thumbnailSize.width}
+                      height={trainingImage.thumbnailSize.height}
+                      className="rounded-lg w-full h-auto object-contain max-h-full"
+                    />
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -153,7 +216,7 @@ const ConceptDetail = ({
                   creatorImage={conceptData?.user?.userImage || ''}
                 />
               </div>
-              {!isAuthenticated && user?.userId === address && (
+              {showFollowControls && (
                 <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
                   <FollowControls
                     creatorId={conceptData?.user?.userId}
@@ -182,6 +245,30 @@ const ConceptDetail = ({
               </div>
             </div>
 
+            <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+              <div className="w-full">
+                <div className="flex gap-2 justify-between">
+                  <div>Training Images</div>
+                  {conceptData?.training_images?.length || 0}
+                </div>
+                <div className="flex gap-2 justify-between">
+                  <div>Instance Prompt</div>
+                  <div>{conceptData?.instance_prompt}</div>
+                </div>
+                <div className="flex gap-2 justify-between">
+                  <div>Checkpoint</div>
+                  <div>{conceptData?.checkpoint}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+              <ConceptDetailToolButtons concept={concept} />
+            </div>
+
+            {/* //@todo add config params and eden sdk for this once we have some prod data */}
+            {/*<ConfigParamsTabs data={concept} />*/}
+
             <Collapse expandIconPosition="start" className="mb-4">
               <Panel key={'1'} header={'Raw JSON'}>
                 <CodeBlock
@@ -190,12 +277,6 @@ const ConceptDetail = ({
                 />
               </Panel>
             </Collapse>
-
-            {/*<div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">*/}
-            {/*<CreationDetailToolButtons creation={concept} />*/}
-            {/*</div>*/}
-
-            {/*<ConfigParamsTabs data={concept} />*/}
           </div>
         </div>
         {/*{loadSimilar && creationImageLoaded && (*/}
