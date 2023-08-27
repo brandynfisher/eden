@@ -7,6 +7,9 @@ import BookmarkAddOutlinedIcon from '@mui/icons-material/BookmarkAddOutlined'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove'
 import Bookmarks from '@mui/icons-material/Bookmarks'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined'
+import FavoriteTwoToneIcon from '@mui/icons-material/FavoriteTwoTone'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
@@ -71,16 +74,26 @@ const PraiseButton = ({
       loading={isLoading ? { delay: 250 } : false}
       ref={ref}
     >
-      <div className="flex" style={{ gap: '8px' }}>
-        <div>{creation.praiseCount || 0}</div>
-        <div
-          role="img"
-          aria-label="Raise Hands"
-          className={`text-sm ${
-            !hovered && !creation.reactions?.praise && 'filter grayscale'
-          }`}
-        >
-          🙌
+      <div className="flex items-center" style={{ gap: '8px' }}>
+        <div className="text-white">{creation.praiseCount || 0}</div>
+        <div className="text-lg flex items-center" role="img" aria-label="Like">
+          {creation.reactions?.praise ? (
+            <>
+              {hovered ? (
+                <FavoriteOutlinedIcon fontSize="inherit" />
+              ) : (
+                <FavoriteOutlinedIcon fontSize="inherit" />
+              )}
+            </>
+          ) : (
+            <>
+              {hovered ? (
+                <FavoriteTwoToneIcon fontSize="inherit" />
+              ) : (
+                <FavoriteBorderIcon fontSize="inherit" />
+              )}
+            </>
+          )}
         </div>
       </div>
     </Button>

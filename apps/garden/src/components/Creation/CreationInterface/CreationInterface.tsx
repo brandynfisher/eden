@@ -15,6 +15,14 @@ import React, {
   useState,
 } from 'react'
 
+const hiddenCreationGenerators = [
+  'complete',
+  'tts',
+  'wav2lip',
+  'tts_fast',
+  'sdxl-lora-trainer',
+]
+
 const CreationInterface = ({
   generatorName,
   presetCreation,
@@ -78,14 +86,19 @@ const CreationInterface = ({
             onChange={handleGeneratorChange}
             placeholder="Generators"
           >
-            {generators.map(generator => (
-              <Select.Option
-                key={generator.generatorName}
-                value={generator.generatorName}
-              >
-                {generator.generatorName}
-              </Select.Option>
-            ))}
+            {generators
+              .filter(
+                generator =>
+                  !hiddenCreationGenerators.includes(generator.generatorName),
+              )
+              .map(generator => (
+                <Select.Option
+                  key={generator.generatorName}
+                  value={generator.generatorName}
+                >
+                  {generator.generatorName}
+                </Select.Option>
+              ))}
           </Select>
           {activeGenerator && (
             <GeneratorForm

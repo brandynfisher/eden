@@ -6,9 +6,12 @@ import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { FC, useState } from 'react'
 
-const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
+const CreationCard: FC<{ index: number; data: Creation }> = ({
+  index,
+  data,
+}) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
   const [creation, setCreation] = useState(data)
@@ -23,6 +26,7 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
     showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
       creation,
       loadSimilar: true,
+      usesUrl: true,
     })
   }
 

@@ -6,7 +6,6 @@ import {
   GithubOutlined,
   RobotOutlined,
   TwitterOutlined,
-  UserOutlined,
 } from '@ant-design/icons'
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
@@ -50,21 +49,13 @@ const createMenuItems = (
   userFlags: string[],
 ) => {
   const isPreviewUser = userFlags.includes('preview')
-  const userProfilePath =
-    isAuthenticated && username ? `/creators/${username.toLowerCase()}` : ''
-  const myProfileItem = getItem('My Profile', userProfilePath, <UserOutlined />)
-  const items = [
-    myProfileItem,
-    { type: 'divider' } as MenuItem,
-    ...defaultItems,
-  ]
+  const items = [...defaultItems]
   if (isAuthenticated) {
     items.push(...authItems)
   }
   if (isPreviewUser) {
     items.push(...characterItems)
   }
-
   return items
 }
 

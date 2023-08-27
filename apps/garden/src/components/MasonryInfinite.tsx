@@ -10,7 +10,7 @@ import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
 import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
 import { Button, Empty } from 'antd'
-import { RenderComponentProps, useInfiniteLoader } from 'masonic'
+import { useInfiniteLoader } from 'masonic'
 import {
   MasonryScroller,
   useContainerPosition,
@@ -18,7 +18,7 @@ import {
   useResizeObserver,
 } from 'masonic'
 import Link from 'next/link'
-import React, { useContext, useRef, useState } from 'react'
+import React, { FC, useContext, useRef, useState } from 'react'
 
 const MasonryInfinite = ({
   type,
@@ -27,12 +27,14 @@ const MasonryInfinite = ({
   hasSort,
 }: {
   type: 'creations' | 'concepts'
-  itemComponent: React.ComponentType<RenderComponentProps<Creation | Concept>>
+  itemComponent:
+    | FC<{ index: number; data: Creation }>
+    | FC<{ index: number; data: Concept }>
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
 }) => {
   const containerRef = useRef(null)
-  const [key, setKey] = useState(0)
+  const [key, setKey] = useState('')
 
   const { isAuthenticated, settings, userId } = useContext(UserContext)
   const isConnectedUser =
@@ -46,11 +48,14 @@ const MasonryInfinite = ({
     maybeLoadMore: maybeLoadNextPage,
     setSize,
     isEmpty,
+    hasNextPage,
   } = useFeedPaginated(type, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(
     async () => {
-      await maybeLoadNextPage()
+      if (hasNextPage) {
+        await maybeLoadNextPage()
+      }
     },
     {
       isItemLoaded: (index, items) => {
@@ -90,7 +95,7 @@ const MasonryInfinite = ({
           ? settings.maxGridCols.value
           : settings?.maxGridCols.params.initialValue,
     },
-    [orderBy, width],
+    [items.length, orderBy, width],
   )
   const resizeObserver = useResizeObserver(positioner)
 
@@ -132,7 +137,7 @@ const MasonryInfinite = ({
                 <div className="mb-4">Nothing here yet.</div>
 
                 {isConnectedUser && (
-                  <Link href="/create">
+                  <Link href="/create/creations">
                     <Button
                       type="dashed"
                       className="font-mono flex items-center text-gray-400"

@@ -6,7 +6,7 @@ const params = [
     description:
       'URL of image to initiate image before diffusion (if null, use random noise)',
     default: null,
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: true,
   },
   {
@@ -26,24 +26,24 @@ const params = [
     default: 'sdxl-v1.0',
     allowedValues: ['sdxl-v1.0'],
   },
-  //{
-  //  name: 'lora',
-  //  label: 'LORA',
-  //  description:
-  //    '(optional) Use LORA on top of the model. To prompt, use <lora_name> e.g. "A photo of <Bill>". Make sure you load LORA on top of the base model is was trained on!',
-  //  default: '(none)',
-  //  // allowedValues: ['(none)'],
-  //},
-  //{
-  //  name: 'lora_scale',
-  //  label: 'LORA scale',
-  //  description:
-  //    'How strongly to apply the LoRa weights (0.0 will result in the base model)',
-  //  default: 0.8,
-  //  minimum: 0.0,
-  //  maximum: 1.2,
-  //  step: 0.1,
-  //},
+  {
+    name: 'lora',
+    label: 'Concept',
+    description:
+      '(optional) Use Concept on top of the model. Make sure you same base model Concept was trained on!',
+    default: '(none)',
+    // allowedValues: ['(none)'],
+   },
+   {
+    name: 'lora_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.2,
+    step: 0.1,
+  },
   {
     name: 'width',
     label: 'Width',

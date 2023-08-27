@@ -9,12 +9,13 @@ import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getFileExtension } from '@/lib/getFileExtension'
 import { timeAgo } from '@/lib/time'
+import { UserContext } from '@/providers/UserProvider'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Divider, Tabs } from 'antd'
 import Head from 'next/head'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const ConfigParamsTextTabContent = ({
   creationData,
@@ -113,6 +114,7 @@ const CreationDetail = ({
   isModal?: boolean
   loadSimilar?: boolean
 }) => {
+  const { isAuthenticated, user, address } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
@@ -249,9 +251,14 @@ const CreationDetail = ({
                   creatorImage={creationData?.user?.userImage || ''}
                 />
               </div>
-              <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
-                <FollowControls creatorId={creationData?.user?.userId} />
-              </div>
+              {!isAuthenticated && user?.userId === address && (
+                <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
+                  <FollowControls
+                    creatorId={creationData?.user?.userId}
+                    showStats={false}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">

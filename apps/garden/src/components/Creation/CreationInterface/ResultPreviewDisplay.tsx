@@ -19,6 +19,7 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
     showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
       creation: creation ? creation : undefined,
       loadSimilar: false,
+      usesUrl: true,
     })
   }
 
@@ -29,8 +30,8 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
           onClick={openDetailModal}
           className="flex flex-col items-center gap-4"
         >
-          <MediaDisplay creationUri={creation.uri} />
           <Button>Show Details</Button>
+          <MediaDisplay creationUri={creation.uri} />
         </div>
       ) : (
         <LoadingIndicator />

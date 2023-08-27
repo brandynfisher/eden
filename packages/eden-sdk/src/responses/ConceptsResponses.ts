@@ -1,4 +1,4 @@
-import {Creator, PaginatedResponse, Reactions} from '.'
+import {Creator, Task, PaginatedResponse, Reactions} from '.'
 import {WebAPICallResult} from '../EdenClient'
 
 export type ConceptsListResponse = WebAPICallResult &
@@ -14,11 +14,14 @@ export type ConceptsGetResponse = WebAPICallResult & {
 export type Concept = {
   _id: string
   user: Creator
+  task: Task
   userId?: string
   parent?: string
   uri: string
   thumbnail?: string
   name: string
+  publicName: string
+  conceptName: string
   attributes: any
   praiseCount?: number
   bookmarkCount?: number

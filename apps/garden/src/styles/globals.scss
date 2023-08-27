@@ -72,6 +72,7 @@
         flex-direction: column !important;
         min-width: 85vw !important;
     }
+
     .ant-modal-body {
         flex-direction: column;
         display: flex !important;
@@ -87,6 +88,15 @@
 @media (min-width: 1280px) {
     .ant-modal-body .media-display .ant-image-img {
         width: 63vw !important;
+    }
+}
+
+.modal-small {
+    .ant-modal-content {
+        min-width: 480px !important;
+    }
+    .ant-modal-close {
+        top: 0 !important;
     }
 }
 
@@ -287,4 +297,22 @@
         width: 100%;
         height: 100%;
     }
+}
+
+.ant-menu-overflow-item.ant-menu-item {
+    align-items: center;
+    display: flex;
+}
+.ant-menu-overflow-item-rest {
+    align-items: center;
+    display: flex !important;
+
+    .ant-menu-submenu-title {
+        width: 32px;
+        text-align: center;
+    }
+}
+
+.ant-menu-submenu-title .anticon, .ant-menu-item-icon {
+  font-size: 18px !important;
 }

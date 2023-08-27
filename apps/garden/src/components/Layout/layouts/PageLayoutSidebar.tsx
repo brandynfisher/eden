@@ -1,13 +1,15 @@
 import CustomLayout from '@/components/Layout/CustomLayout'
 import { Layout } from 'antd'
-import React from 'react'
+import { ReactNode } from 'react'
 
 const { Content } = Layout
-const PageLayoutNoSidebar = ({ children }: { children: React.ReactNode }) => {
+
+const PageLayoutSidebar = ({ children }: { children: ReactNode }) => {
   return (
     <CustomLayout>
       <Content className="max-w-7xl mx-auto w-full">{children}</Content>
     </CustomLayout>
   )
 }
-export default PageLayoutNoSidebar
+
+export default PageLayoutSidebar

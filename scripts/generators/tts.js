@@ -57,7 +57,7 @@ const params = [
     name: 'voice_file_urls',
     label: 'Voice file URLs',
     description: 'URLs for the audio files of target voice (if voice is clone)',
-    mediaUpload: true,
+    mediaUpload: 'audio/webm, audio/mp3, audio/wav',
     default: [],
     minLength: 1,
     maxLength: 16,

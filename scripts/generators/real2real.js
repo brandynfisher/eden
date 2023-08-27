@@ -5,7 +5,7 @@ const params = [
     label: 'Real images',
     description: 'URLs of images to use as init images for real2real',
     default: [],
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     minLength: 2,
     maxLength: 8,
     isRequired: true,
@@ -16,6 +16,24 @@ const params = [
     description: 'Which model checkpoint to generate with',
     default: 'sdxl-v1.0',
     allowedValues: ['sdxl-v1.0'],
+  },
+  {
+    name: 'lora',
+    label: 'Concept',
+    description:
+      '(optional) Use Concept on top of the model. Make sure you same base model Concept was trained on!',
+    default: '(none)',
+    // allowedValues: ['(none)'],
+   },
+   {
+    name: 'lora_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.2,
+    step: 0.1,
   },
   {
     name: 'width',
@@ -114,7 +132,7 @@ const params = [
     description:
       'Optionally apply FILM postprocessing to the generated frames to create a smoother video',
     default: 1,
-    allowedValues: [0, 1],
+    allowedValues: [0, 1, 2, 3],
     optional: true,
   },
   {
@@ -176,7 +194,7 @@ const params = [
     label: 'Init image max strength',
     description:
       'Max strength of the init_img during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
-    default: 0.85,
+    default: 0.9,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,

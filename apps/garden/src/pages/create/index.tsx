@@ -1,8 +1,11 @@
+import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
 import CreatePage from '@/pages/create/CreatePage'
-import React from 'react'
+import { ReactNode } from 'react'
 
-const create = () => {
+export default function Create() {
   return <CreatePage />
 }
 
-export default create
+Create.getLayout = function getLayout(page: ReactNode) {
+  return <PageLayoutSidebar>{page}</PageLayoutSidebar>
+}

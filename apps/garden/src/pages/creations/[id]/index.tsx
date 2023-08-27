@@ -1,12 +1,10 @@
 import { Page } from '@/../types/page'
-import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import CreationPage from '@/pages/creations/[id]/CreationPage'
 import { Creation as CreationType } from '@edenlabs/eden-sdk'
 import { NextPageContext } from 'next'
-import { ReactNode } from 'react'
 
 interface PageProps {
   data: CreationType
@@ -29,10 +27,6 @@ export const getServerSideProps = getServerSidePropsBase([
 
 const Creation: Page<PageProps> = ({ data }: PageProps) => {
   return <CreationPage data={data} />
-}
-
-Creation.getLayout = (page: ReactNode) => {
-  return <PageLayoutDefault>{page}</PageLayoutDefault>
 }
 
 export default Creation

@@ -5,6 +5,8 @@ import { paginatedResponse, paginationProperties } from '.'
 import {
   followCreator,
   getCreator,
+  listCreatorFollowers,
+  listCreatorFollowing,
   listCreators,
   unfollowCreator,
   updateCreator,
@@ -27,6 +29,40 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       },
     },
     handler: (request, reply) => listCreators(request, reply),
+  })
+
+  server.get('/creators/:userId/followers', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          ...paginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: paginatedResponse(Type.Any()),
+      },
+    },
+    preHandler: [async request => maybeAuth(server, request)],
+    handler: (request, reply) => listCreatorFollowers(request, reply),
+  })
+
+  server.get('/creators/:userId/following', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          ...paginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: paginatedResponse(Type.Any()),
+      },
+    },
+    preHandler: [async request => maybeAuth(server, request)],
+    handler: (request, reply) => listCreatorFollowing(request, reply),
   })
 
   server.get('/creators/:userId', {

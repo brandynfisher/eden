@@ -16,7 +16,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
 
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    showModal(MODAL_TYPES.CONCEPT_DETAIL_MODAL, { concept })
+    showModal(MODAL_TYPES.CONCEPT_DETAIL_MODAL, { concept, usesUrl: true })
   }
 
   return (

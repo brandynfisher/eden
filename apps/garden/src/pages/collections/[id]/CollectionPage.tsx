@@ -76,7 +76,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
           content={`${CONFIG.NEXT_PUBLIC_HOST}/collections/${collection._id}`}
         />
       </Head>
-      <div className={`flex flex-col min-h-screen ${inter.className}`}>
+      <div className={`flex flex-col ${inter.className}`}>
         <Space direction="vertical">
           <CollectionHeader
             collection={collection}

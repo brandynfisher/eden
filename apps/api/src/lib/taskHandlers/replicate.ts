@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 
-import { Lora } from '../../models/Lora'
+import { Concept } from '../../models/Concept'
+import { User } from '../../models/Creator'
 
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
@@ -32,40 +33,19 @@ export const formatStableDiffusionConfigForReplicate = async (config: any) => {
     ? (newConfig.lora_training_urls = newConfig.lora_training_urls.join('|'))
     : null
 
-  // if it's a LORA training
+  // if it's a Concept training
   if (newConfig.lora_training_urls) {
     // remove any spaces, pipes, or underscores in the name
     newConfig.name = newConfig.name.replace(/ /g, '')
     newConfig.name = newConfig.name.replace(/\|/g, '')
     newConfig.name = newConfig.name.replace(/_/g, '')
-
-    // version the name (v2, v3, etc)
-    const loras = await Lora.find({ name: newConfig.name })
-    if (loras.length > 0) {
-      const baseName = newConfig.name
-      let version = 2
-      let newName = `${baseName}_v${version}`
-      while (await Lora.findOne({ name: newName })) {
-        version++
-        newName = `${baseName}_v${version}`
-      }
-      newConfig.name = newName
-    }
-
-    // set placeholder token to name
-    newConfig.placeholder_tokens = `<${newConfig.name}>`
   }
 
-  // if it's a LORA inference, get the LORA url
+  // if no lora selected, delete it
   if (newConfig.lora == '(none)') {
     delete newConfig.lora
-  } else if (newConfig.lora) {
-    const lora = await Lora.findOne({ name: newConfig.lora })
-    if (!lora) {
-      throw new Error(`Could not find Lora ${newConfig.lora}`)
-    }
-    newConfig.lora = lora.uri
   }
+
   return newConfig
 }
 
