@@ -7,7 +7,7 @@ import { PropsWithChildren, createContext } from 'react'
 export interface UserContextType {
   isAuthenticated: boolean
   userId: string | null
-  authenticate: VoidFunction
+  authenticate: (afterSignInUrl?: string) => Promise<void>
   logout: VoidFunction
   mannaBalance?: number
   characters?: Character[]
@@ -27,7 +27,7 @@ const defaultUserState: UserContextType = {
   isAuthenticated: false,
   userId: null,
   authenticate: async () => {
-    return null
+    return new Promise(resolve => resolve())
   },
   logout: async () => {
     return null

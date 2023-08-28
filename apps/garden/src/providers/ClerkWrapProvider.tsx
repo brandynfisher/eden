@@ -5,21 +5,17 @@ import React, { ReactNode, useEffect, useState } from 'react'
 
 const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
   const { resolvedTheme } = useTheme()
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [baseTheme, setBaseTheme] = useState<typeof dark | undefined>(dark)
 
   useEffect(() => {
     if (resolvedTheme && resolvedTheme === 'dark') {
-      setIsDarkMode(true)
+      setBaseTheme(dark)
     } else {
-      setIsDarkMode(false)
+      setBaseTheme(undefined)
     }
   }, [resolvedTheme])
 
-  return (
-    <ClerkProvider appearance={isDarkMode ? { baseTheme: dark } : undefined}>
-      {children}
-    </ClerkProvider>
-  )
+  return <ClerkProvider appearance={{ baseTheme }}>{children}</ClerkProvider>
 }
 
 export default ClerkWrapProvider

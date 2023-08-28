@@ -1,11 +1,20 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { UserContext } from '@/providers/UserProvider'
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import {
+  ClerkLoaded,
+  ClerkLoading,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const MyProfileButton = () => {
-  const { userId, user, isAuthenticated } = useContext(UserContext)
+  const { userId, user, isAuthenticated, authenticate } =
+    useContext(UserContext)
 
   const userProfilePath =
     isAuthenticated && user && user.username
@@ -13,26 +22,33 @@ const MyProfileButton = () => {
       : ''
 
   return (
-    <div className="flex rounded border-solid border-gray-700">
-      <SignedIn>
-        <UserButton afterSignOutUrl="/" />
-      </SignedIn>
-      <SignedOut>
-        <SignInButton />
-      </SignedOut>
+    <div className="flex rounded items-center">
+      <ClerkLoading>
+        <LoadingIndicator />
+      </ClerkLoading>
+      <ClerkLoaded>
+        <SignedIn>
+          <UserButton afterSignOutUrl="/" />
 
-      <Link
-        href={userProfilePath}
-        passHref
-        className="font-mono flex justify-center items-center h-[32px] w-[32px] flex-shrink-0 flex-grow max-h-full hover:brightness-125 transition-all duration-200 nav-profile-image"
-      >
-        <CharacterAvatar
-          id={userId || ''}
-          name={(user && user?.username) || ''}
-          imageUri={(user && user?.userImage) || ''}
-          size={'small'}
-        />
-      </Link>
+          <Link
+            href={userProfilePath}
+            passHref
+            className="font-mono flex justify-center items-center h-[32px] w-[32px] flex-shrink-0 flex-grow max-h-full hover:brightness-125 transition-all duration-200 nav-profile-image"
+          >
+            <CharacterAvatar
+              id={userId || ''}
+              name={(user && user?.username) || ''}
+              imageUri={(user && user?.userImage) || ''}
+              size={'small'}
+            />
+          </Link>
+        </SignedIn>
+        <SignedOut>
+          <Button type="primary" onClick={() => authenticate()}>
+            Log in
+          </Button>
+        </SignedOut>
+      </ClerkLoaded>
     </div>
   )
 }
