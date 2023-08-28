@@ -81,16 +81,28 @@ const handleUpdate = async (
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
 
-  const taskUpdate = {
+  const taskStatusUpdate = {
     status: isCompleted ? 'completed' : 'running',
     progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
   } as { output?: TaskOutput[]; status: string; progress: number }
 
+  await Task.updateOne(
+    { taskId, status: { $nin: ['completed', 'failed'] } },
+    {
+      $set: taskStatusUpdate,
+    },
+  )
+
+  const taskUpdate = {}
+  const filteredIntermediateOutputs = intermediateOutputs.filter(
+    o => o.files && Array.isArray(o.files) && o.files.length > 0,
+  )
+
   if (
     !task.intermediateOutputs ||
-    intermediateOutputs.length > task.intermediateOutputs.length
+    filteredIntermediateOutputs.length > task.intermediateOutputs.length
   ) {
-    const intermediateResults = intermediateOutputs.map(
+    const intermediateResults = filteredIntermediateOutputs.map(
       async (o: TaskOutput) => ({ files: o.files, progress: o.progress }),
     )
     Object.assign(taskUpdate, {
@@ -130,6 +142,7 @@ const handleUpdate = async (
         }
         const creation = await Creation.create(creationData)
         Object.assign(taskUpdate, { creation: creation._id })
+        // todo: maybe fire one webhook with all creations instead of per file
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
             await axios.post(webhook, {

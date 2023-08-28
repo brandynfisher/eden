@@ -219,9 +219,9 @@ const params = [
     label: 'Stream every',
     description:
       'How often to yield intermediate results (when stream is true). In sampling steps for images, frames for video.',
-    default: 1,
+    default: 10,
     minimum: 1,
-    maximum: 10,
+    maximum: 25,
     optional: true,
   },
 
