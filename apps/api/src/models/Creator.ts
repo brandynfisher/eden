@@ -25,6 +25,7 @@ export interface UserInput {
   userId: string
   isWeb2: boolean
   username: string
+  userImage?: string
   isClerk?: boolean
   isAdmin?: boolean
 }
