@@ -81,19 +81,8 @@ const handleUpdate = async (
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
 
-  const taskStatusUpdate = {
-    status: isCompleted ? 'completed' : 'running',
-    progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
-  } as { output?: TaskOutput[]; status: string; progress: number }
-
-  await Task.updateOne(
-    { taskId, status: { $nin: ['completed', 'failed'] } },
-    {
-      $set: taskStatusUpdate,
-    },
-  )
-
   const taskUpdate = {}
+
   const filteredIntermediateOutputs = intermediateOutputs.filter(
     o => o.files && Array.isArray(o.files) && o.files.length > 0,
   )
@@ -141,7 +130,11 @@ const handleUpdate = async (
           )
         }
         const creation = await Creation.create(creationData)
-        Object.assign(taskUpdate, { creation: creation._id })
+        Object.assign(taskUpdate, {
+          creation: creation._id,
+          status: 'completed',
+          progress: 1.0,
+        })
         // todo: maybe fire one webhook with all creations instead of per file
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
@@ -194,7 +187,11 @@ const handleUpdate = async (
           conceptData.uri = uri
         }
         const concept = await Concept.create(conceptData)
-        Object.assign(taskUpdate, { concept: concept._id })
+        Object.assign(taskUpdate, {
+          concept: concept._id,
+          status: 'completed',
+          progress: 1.0,
+        })
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
             await axios.post(webhook, {
@@ -213,6 +210,19 @@ const handleUpdate = async (
     },
     {
       $set: taskUpdate,
+    },
+  )
+
+  // only update status if not already completed/failed
+  const taskStatusUpdate = {
+    status: isCompleted ? 'completed' : 'running',
+    progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
+  } as { output?: TaskOutput[]; status: string; progress: number }
+
+  await Task.updateOne(
+    { taskId, status: { $nin: ['completed', 'failed'] } },
+    {
+      $set: taskStatusUpdate,
     },
   )
 }
