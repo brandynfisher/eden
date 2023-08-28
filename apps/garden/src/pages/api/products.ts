@@ -1,10 +1,9 @@
 import { withSessionRoute } from '@/lib/withSession'
 import { NextApiRequest, NextApiResponse } from 'next'
-import type { Stripe } from 'stripe'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const dummyStripeProductsListResponse: Stripe.Product[] = [
+    const dummyStripeProductsListResponse = [
       {
         id: 'prod_f4268604',
         object: 'product',
