@@ -125,6 +125,16 @@ const params = [
     allowedValues: [false, true],
     optional: true,
   },
+  
+  {
+    name: 'latent_blending_skip_f',
+    label: 'Denoising skip fractions (very advanced)',
+    description:
+      'What fraction of denoising steps to skip at the start and end of the render. Higher values result in smoother video (will also render faster), too high values will look more like crossfading in pixel space.',
+    default: [0.15, 0.75],
+    optional: true,
+  },
+  
   {
     name: 'n_film',
     label: 'FILM Iterations',
@@ -154,15 +164,6 @@ const params = [
     description:
       'Random seeds. Must have 1 for each prompt. If left blank, will be set randomly.',
     default: [],
-    optional: true,
-  },
-  
-  {
-    name: 'latent_blending_skip_f',
-    label: 'Denoising skip fractions (very advanced)',
-    description:
-      'What fraction of denoising steps to skip at the start and end of the render. Higher values result in smoother video (will also render faster), too high values will look more like crossfading in pixel space.',
-    default: [0.15, 0.75],
     optional: true,
   },
 
