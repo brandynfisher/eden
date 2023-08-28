@@ -26,6 +26,7 @@
 }
 
 .ant-modal-content {
+    max-width: 100vw !important;
     padding: 8px 8px !important;
 }
 
@@ -88,6 +89,19 @@
 @media (min-width: 1280px) {
     .ant-modal-body .media-display .ant-image-img {
         width: 63vw !important;
+    }
+}
+
+.media-display {
+    //&.media-display__small {
+    //    .ant-image-img {
+    //        max-height: 128px !important;
+    //    }
+    //}
+    &.media-display__main {
+        .ant-image-img {
+            max-height: 50vh !important;
+        }
     }
 }
 

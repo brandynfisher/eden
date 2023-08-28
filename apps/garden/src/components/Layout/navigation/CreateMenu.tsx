@@ -70,7 +70,7 @@ const CreateMenu = () => {
         style={{ borderRight: 0 }}
         overflowedIndicator={<DownOutlined />}
         items={menuItems}
-        className="text-black dark:text-white bg-gray-100 dark:bg-gray-900 rounded-lg"
+        className="text-black dark:text-white bg-gray-100 dark:bg-gray-900 rounded-lg mb-4"
       />
     </div>
   )

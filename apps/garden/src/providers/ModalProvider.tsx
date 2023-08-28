@@ -3,8 +3,9 @@ import CreationDetailModal from '@/components/Modals/CreationDetailModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
+import TaskDetailModal from '@/components/Modals/TaskDetailModal'
 import { CloseOutlined } from '@ant-design/icons'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation, Task } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import {
@@ -21,6 +22,7 @@ export enum MODAL_TYPES {
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
   FOLLOWING_MODAL = 'FOLLOWING_MODAL',
+  TASK_DETAIL_MODAL = 'TASK_DETAIL_MODAL',
 }
 
 type GenericModalParams = unknown
@@ -30,6 +32,7 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
   [MODAL_TYPES.FOLLOWING_MODAL]: FollowingModal,
+  [MODAL_TYPES.TASK_DETAIL_MODAL]: TaskDetailModal,
 }
 
 type BaseModalProps = Partial<ModalProps> & {
@@ -42,6 +45,7 @@ type ModalStore = {
     | Partial<BaseModalProps & { creation?: Creation; loadSimilar?: boolean }>
     | Partial<BaseModalProps & { concept?: Concept }>
     | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })
+    | (Partial<BaseModalProps> & { task?: Task })
     | undefined
 }
 

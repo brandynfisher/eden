@@ -1,10 +1,5 @@
-import Breadcrumbs from '@/components/Layout/navigation/Breadcrumbs'
+import CreateMenu from '@/components/Layout/navigation/CreateMenu'
 import ScenarioCard from '@/components/Scenarios/ScenarioCard'
-import {
-  CommentOutlined,
-  ExperimentOutlined,
-  HomeOutlined,
-} from '@ant-design/icons'
 import { Scenario, ScenarioType } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/router'
 import React from 'react'
@@ -30,22 +25,6 @@ const exampleScenarios: ScenarioWithPath[] = [
   },
 ]
 
-const breadcrumbItems = [
-  {
-    path: '/',
-    icon: <HomeOutlined />,
-  },
-  {
-    path: '/create',
-    title: 'Create',
-    icon: <ExperimentOutlined />,
-  },
-  {
-    title: 'Scenarios',
-    icon: <CommentOutlined />,
-  },
-]
-
 const ScenariosPage = () => {
   const router = useRouter()
   const handleRouteChange = async (path: string) => {
@@ -54,7 +33,7 @@ const ScenariosPage = () => {
 
   return (
     <>
-      <Breadcrumbs items={breadcrumbItems} />
+      <CreateMenu />
 
       <h2 className="mb-4">Scenarios</h2>
       <div className="flex flex-col gap-4">

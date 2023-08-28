@@ -7,13 +7,84 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
 import { Completion, CompletionInput } from '../models/Completion'
-import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
-import { Generator, GeneratorVersionSchema } from '../models/Generator'
+import {
+  Generator,
+  GeneratorDocument,
+  GeneratorVersionSchema,
+} from '../models/Generator'
 import { Manna } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
 import TaskRepository from '../repositories/TaskRepository'
+
+const getGeneratorVersion = (
+  generator: GeneratorDocument,
+  versionId: string | undefined,
+) => {
+  if (versionId) {
+    const version = generator.versions.find(
+      (v: GeneratorVersionSchema) => v.versionId === versionId,
+    )
+    if (!version) {
+      return
+    }
+    return version
+  } else {
+    return getLatestGeneratorVersion(generator)
+  }
+}
+
+export const getTaskCost = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { generatorName, versionId, config } =
+    request.body as TasksCreateArguments
+
+  // get user
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  // get generator
+  const generator = await Generator.findOne({
+    generatorName,
+  })
+
+  if (!generator) {
+    const generatorNames = await Generator.find().distinct('generatorName')
+    return reply.status(400).send({
+      message: `Generator ${generatorName} not found. Options are (${generatorNames.join(
+        ', ',
+      )})`,
+    })
+  }
+
+  // use versionId if provided else latest
+  const generatorVersion = getGeneratorVersion(generator, versionId)
+  if (!generatorVersion) {
+    return reply.status(400).send({
+      message: 'Generator version not found',
+    })
+  }
+
+  // validate config, add defaults
+  const preparedConfig = prepareConfig(generatorVersion.parameters, config)
+
+  const cost = server.getTransactionCost(
+    server,
+    generatorVersion,
+    preparedConfig,
+  )
+
+  return reply.status(200).send({ cost })
+}
 
 export const createTask = async (
   server: FastifyInstance,
@@ -38,19 +109,11 @@ export const createTask = async (
   }
 
   // use versionId if provided else latest
-  let generatorVersion
-  if (versionId) {
-    const version = generator.versions.find(
-      (v: GeneratorVersionSchema) => v.versionId === versionId,
-    )
-    if (!version) {
-      return reply.status(400).send({
-        message: 'Generator version not found',
-      })
-    }
-    generatorVersion = version
-  } else {
-    generatorVersion = getLatestGeneratorVersion(generator)
+  const generatorVersion = getGeneratorVersion(generator, versionId)
+  if (!generatorVersion) {
+    return reply.status(400).send({
+      message: 'Generator version not found',
+    })
   }
 
   // get user

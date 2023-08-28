@@ -11,7 +11,7 @@ const VideoResult = ({
     <div className="ant-image">
       <video
         src={resultUrl}
-        className="ant-image-img"
+        className="ant-image-img object-contain max-w-full"
         autoPlay={true}
         muted={true}
         loop={true}

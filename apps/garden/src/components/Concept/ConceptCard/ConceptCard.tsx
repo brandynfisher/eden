@@ -1,43 +1,36 @@
-import ConceptCardHoverOverlay from '@/components/Concept/ConceptCard/ConceptCardHoverOverlay'
+// import ConceptCardOverlay from '@/components/Concept/ConceptCard/ConceptCardOverlay'
+import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import { getModalUrls } from '@/lib/modal'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Concept } from '@edenlabs/eden-sdk'
-import { useHover } from '@mantine/hooks'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import React, { useState } from 'react'
+
+// import { useHover } from '@mantine/hooks';
 
 const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
+  const [concept /*setConcept*/] = useState(data)
   const router = useRouter()
-  const { hovered, ref } = useHover()
-  const [concept, setConcept] = useState(data)
   const { pageUrl, modalUrl } = getModalUrls(router, 'concept', concept._id)
   const { showModal } = useModalContext()
 
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    showModal(MODAL_TYPES.CONCEPT_DETAIL_MODAL, { concept, usesUrl: true })
+    showModal(MODAL_TYPES.CONCEPT_DETAIL_MODAL, {
+      concept: concept,
+      usesUrl: true,
+    })
   }
 
+  // @todo: add back reactions, overlay and click handling to allow clicking creator link instead of opening modal...
   return (
-    <div>
-      <div className="relative " key={index}>
-        <div className="w-full flex justify-center">
-          <div
-            ref={ref}
-            className="relative rounded-lg overflow-hidden cursor-pointer"
-          >
-            <ImageResult resultUrl={concept.thumbnail || ''} />
-            <div className="absolute inset-0 pointer-events-none bg-opacity-70">
-              [type]
-            </div>
-            {hovered && (
-              <ConceptCardHoverOverlay
-                concept={concept}
-                handlers={{ onChange: setConcept, openDetailModal }}
-              />
-            )}
-          </div>
+    <div className="relative " key={index} onClick={openDetailModal}>
+      <div className="w-full flex justify-center">
+        <div className="relative rounded-lg overflow-hidden cursor-pointer">
+          <ConceptCardDetail concept={concept} isOverlay={true} />
+          <ImageResult resultUrl={concept.thumbnail || ''} />
+          {/*<ConceptCardOverlay concept={concept} handlers={{ onChange: setConcept }}/>*/}
         </div>
       </div>
     </div>
