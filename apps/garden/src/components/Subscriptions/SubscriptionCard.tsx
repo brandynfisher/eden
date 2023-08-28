@@ -76,7 +76,7 @@ const SubscriptionCard = ({
       title={subscription.description || ''}
     >
       <div className="text-center">
-        <div className="font-bold">{subscription.name}</div>
+        {/*<div className="font-bold">{subscription.name}</div>*/}
         <div>{subscription.description}</div>
         {subscription.items ? (
           <SubscriptionCardPlans
