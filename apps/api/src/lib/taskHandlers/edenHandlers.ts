@@ -81,6 +81,22 @@ const handleUpdate = async (
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
 
+  // only update status if not already completed/failed
+  const taskStatusUpdate = {
+    status: isCompleted ? 'completed' : 'running',
+    progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
+  } as {
+    output?: TaskOutput[]
+    status: string
+    progress: number
+  }
+  await Task.updateOne(
+    { taskId, status: { $nin: ['completed', 'failed'] } },
+    {
+      $set: taskStatusUpdate,
+    },
+  )
+
   const taskUpdate = {}
 
   const filteredIntermediateOutputs = intermediateOutputs.filter(
@@ -210,19 +226,6 @@ const handleUpdate = async (
     },
     {
       $set: taskUpdate,
-    },
-  )
-
-  // only update status if not already completed/failed
-  const taskStatusUpdate = {
-    status: isCompleted ? 'completed' : 'running',
-    progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
-  } as { output?: TaskOutput[]; status: string; progress: number }
-
-  await Task.updateOne(
-    { taskId, status: { $nin: ['completed', 'failed'] } },
-    {
-      $set: taskStatusUpdate,
     },
   )
 }
