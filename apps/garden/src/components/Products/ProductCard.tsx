@@ -40,13 +40,13 @@ const ProductCard = ({
         <Image
           width={256}
           height={256}
-          alt="example"
+          alt={product.name || ''}
           src={
             product.images && product.images.length
               ? product.images[0]
               : '/eden-logo-512x512.png'
           }
-          className="bg-gray-200 dark:bg-gray-800"
+          className="bg-gray-100 dark:bg-gray-800 "
         />
       }
       actions={[

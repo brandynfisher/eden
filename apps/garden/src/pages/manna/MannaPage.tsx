@@ -5,11 +5,13 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { App, Button } from 'antd'
 import axios from 'axios'
-import React, { useContext } from 'react'
+import { useRouter } from 'next/router'
+import React, { useContext, useEffect, useState } from 'react'
 
 const MannaPage = () => {
   const { message } = App.useApp()
-  const { mannaBalance } = useContext(UserContext)
+  const { mannaBalance, user } = useContext(UserContext)
+  const router = useRouter()
 
   const handleCheckout = async (priceId: string, paymentMode: string) => {
     try {
@@ -22,6 +24,24 @@ const MannaPage = () => {
     } catch (error) {
       handleAxiosError(error, message)
     }
+  }
+
+  const [isPreviewUser, setIsPreviewUser] = useState<boolean | undefined>(
+    undefined,
+  )
+
+  useEffect(() => {
+    if (user && user.featureFlags) {
+      if (user.featureFlags.includes('preview')) {
+        setIsPreviewUser(true)
+      } else {
+        router.replace(`/`)
+      }
+    }
+  }, [user?.featureFlags])
+
+  if (typeof isPreviewUser === 'undefined') {
+    return <LoadingIndicator />
   }
 
   return (

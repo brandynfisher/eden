@@ -52,7 +52,7 @@ const MannaBuyLink = () => {
   )
 }
 
-const items: ItemType[] = [
+const defaultItems: ItemType[] = [
   {
     label: <MannaBalanceInfo />,
     key: '0',
@@ -64,6 +64,9 @@ const items: ItemType[] = [
     label: <MannaRefillModalTrigger />,
     key: '1',
   },
+]
+
+const buyMannaItems: ItemType[] = [
   {
     type: 'divider',
   },
@@ -74,7 +77,13 @@ const items: ItemType[] = [
 ]
 
 const MannaDropdown = () => {
-  const { mannaBalance, isConnected, isAuthenticated } = useContext(UserContext)
+  const { mannaBalance, isConnected, isAuthenticated, user } =
+    useContext(UserContext)
+
+  const items =
+    user && user.featureFlags && user.featureFlags.includes('preview')
+      ? [...defaultItems, ...buyMannaItems]
+      : defaultItems
 
   if (!isConnected || !isAuthenticated) {
     return null
