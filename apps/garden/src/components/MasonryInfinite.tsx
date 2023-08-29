@@ -111,21 +111,25 @@ const MasonryInfinite = ({
       {items.length && typeof items[0] === 'undefined' ? (
         <div>error fetching list</div>
       ) : (
-        <MasonryScroller
-          style={{ outline: 'none' }}
-          key={key}
-          positioner={positioner}
-          resizeObserver={resizeObserver}
-          containerRef={containerRef}
-          items={items}
-          height={windowHeight}
-          offset={offset}
-          overscanBy={3}
-          itemHeightEstimate={300}
-          render={itemComponent}
-          onRender={maybeLoadMore}
-          itemKey={data => data._id}
-        />
+        <>
+          {items.length > 0 && (
+            <MasonryScroller
+              style={{ outline: 'none' }}
+              key={key}
+              positioner={positioner}
+              resizeObserver={resizeObserver}
+              containerRef={containerRef}
+              items={items}
+              height={windowHeight}
+              offset={offset}
+              overscanBy={3}
+              itemHeightEstimate={300}
+              render={itemComponent}
+              onRender={maybeLoadMore}
+              itemKey={data => data._id}
+            />
+          )}
+        </>
       )}
 
       {isEmpty && !items.length && (
