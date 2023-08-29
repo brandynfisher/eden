@@ -14,13 +14,12 @@ interface PageProps {
 const fetchConcept = async (context: NextPageContext) => {
   const { query } = context
   const id = query.id ? String(query.id).trim() : false
-
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts?conceptId=${id}`)
 }
 
 export const getServerSideProps = getServerSidePropsBase([
   {
-    responseFieldName: 'concept',
+    responseFieldName: 'concepts',
     dataFetcher: fetchConcept,
   },
 ])

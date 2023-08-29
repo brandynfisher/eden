@@ -34,7 +34,7 @@ const authItems: MenuItem[] = [
 ]
 
 const defaultItems: MenuItem[] = [
-  getItem('Create', '/create', <ExperimentOutlined />),
+  getItem('Create', '/create/creations', <ExperimentOutlined />),
   // getItem('Tools', '/tools', <ToolOutlined />),
 ]
 

@@ -1,4 +1,5 @@
-import fastify from 'fastify'
+import fastifyJWT from '@fastify/jwt'
+import fastify, { FastifyReply, FastifyRequest } from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerChroma from './plugins/chromaPlugin'
@@ -10,6 +11,7 @@ import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
+import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
 import registerTts from './plugins/ttsPlugin'
 import { routes } from './routes'
@@ -42,6 +44,14 @@ const createServer = async (
 
   await server.register(config)
 
+  await server.register(import('fastify-raw-body'), {
+    field: 'rawBody',
+    global: false,
+    encoding: 'utf8',
+    runFirst: true,
+    routes: [],
+  })
+
   if (server.config.CLERK_PUBLISHABLE_KEY) {
     await registerClerk(server)
   } else if (server.config.JWT_SECRET) {
@@ -52,6 +62,7 @@ const createServer = async (
   await registerChroma(server, opts.chromaUri)
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
+  await registerStripe(server)
 
   if (server.config.REPLICATE_API_TOKEN) {
     await registerReplicate(server)

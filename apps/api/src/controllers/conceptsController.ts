@@ -52,7 +52,7 @@ export const listConcepts = async (
 
   const conceptsWithPublicName = await Promise.all(
     concepts.docs.map(async doc => {
-      const user = await User.findById(doc.user)
+      const user = await User.findById(doc.user._id)
       const publicName = `${user?.username}:${doc.name}`
       return {
         ...doc.toObject(),

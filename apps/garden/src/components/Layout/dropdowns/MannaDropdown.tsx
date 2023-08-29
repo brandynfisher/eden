@@ -1,9 +1,11 @@
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { InfoCircleOutlined, WalletOutlined } from '@ant-design/icons'
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart'
 import RedeemIcon from '@mui/icons-material/Redeem'
 import { Button, Dropdown } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
+import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const MannaBalanceInfo = () => {
@@ -14,15 +16,14 @@ const MannaBalanceInfo = () => {
       <div className="mb-2">
         You have <span className="font-bold">{mannaBalance}</span> Manna
       </div>
-      <a
-        href="https://docs.eden.art/docs/overview/manna"
+      <Link
+        href="/manna"
         title="Learn about Manna"
         className="text-small hover:dark:text-gray-400"
-        target="_blank"
       >
         Learn about Manna
         <InfoCircleOutlined className="ml-1" />
-      </a>
+      </Link>
     </div>
   )
 }
@@ -42,18 +43,16 @@ const MannaRefillModalTrigger = () => {
   )
 }
 
-// const MannaBuyInfo = () => {
-//   return (
-//     <div>
-//       <div>Buy Manna</div>
-//       <div>1,000 Manna / 0.01 ETH</div>
-//       <div>10,000 Manna / 0.1 ETH</div>
-//       <div>100,000 Manna / 1 ETH</div>
-//     </div>
-//   )
-// }
+const MannaBuyLink = () => {
+  return (
+    <Link href={'/manna'} className="flex items-center gap-2">
+      <AddShoppingCartIcon fontSize="medium" />
+      Buy Manna
+    </Link>
+  )
+}
 
-const items: ItemType[] = [
+const defaultItems: ItemType[] = [
   {
     label: <MannaBalanceInfo />,
     key: '0',
@@ -65,14 +64,25 @@ const items: ItemType[] = [
     label: <MannaRefillModalTrigger />,
     key: '1',
   },
-  // {
-  //   label: <MannaBuyInfo />,
-  //   key: '2',
-  // },
+]
+
+const buyMannaItems: ItemType[] = [
+  {
+    type: 'divider',
+  },
+  {
+    label: <MannaBuyLink />,
+    key: '2',
+  },
 ]
 
 const MannaDropdown = () => {
-  const { mannaBalance, isAuthenticated } = useContext(UserContext)
+  const { mannaBalance, isAuthenticated, user } = useContext(UserContext)
+
+  const items =
+    user && user.featureFlags && user.featureFlags.includes('preview')
+      ? [...defaultItems, ...buyMannaItems]
+      : defaultItems
 
   if (!isAuthenticated) {
     return null

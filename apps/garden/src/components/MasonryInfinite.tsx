@@ -95,7 +95,7 @@ const MasonryInfinite = ({
           ? settings.maxGridCols.value
           : settings?.maxGridCols.params.initialValue,
     },
-    [items.length, orderBy, width],
+    [orderBy, width],
   )
   const resizeObserver = useResizeObserver(positioner)
 

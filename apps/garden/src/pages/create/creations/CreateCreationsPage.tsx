@@ -1,9 +1,7 @@
 import CreationInterface from '@/components/Creation/CreationInterface/CreationInterface'
-import Breadcrumbs from '@/components/Layout/navigation/Breadcrumbs'
+import CreateMenu from '@/components/Layout/navigation/CreateMenu'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
-import { ExperimentOutlined, HomeOutlined } from '@ant-design/icons'
-import YardIcon from '@mui/icons-material/Yard'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
@@ -29,22 +27,6 @@ const CreatePageDefault = () => {
   return <CreationInterface />
 }
 
-const breadcrumbItems = [
-  {
-    path: '/',
-    icon: <HomeOutlined />,
-  },
-  {
-    path: '/create',
-    title: 'Create',
-    icon: <ExperimentOutlined />,
-  },
-  {
-    title: 'Creations',
-    icon: <YardIcon fontSize="inherit" />,
-  },
-]
-
 const CreateCreationsPage = () => {
   const router = useRouter()
   const [usesPreset, setUsesPreset] = useState<boolean>(false)
@@ -60,7 +42,7 @@ const CreateCreationsPage = () => {
 
   return (
     <div className={`flex flex-col`}>
-      <Breadcrumbs items={breadcrumbItems} />
+      <CreateMenu />
 
       {usesPreset ? (
         <CreatePageWithPreset

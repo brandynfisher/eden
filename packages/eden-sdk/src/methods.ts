@@ -1,6 +1,7 @@
-import {AxiosRequestConfig} from 'axios'
+import { AxiosRequestConfig } from 'axios'
 import {
-  CreatorFollowersListResponse, CreatorFollowingListResponse,
+  CreatorFollowersListResponse,
+  CreatorFollowingListResponse,
   SessionEventsListResponse,
   SessionsCreateResponse,
   SessionsDeleteResponse,
@@ -17,15 +18,16 @@ import {
   CollectionsRemoveCreationsResponse,
   CollectionsUpdateResponse,
 } from 'src/responses/CollectionsResponses'
-import {MediaUploadResponse} from 'src/responses/MediaResponses'
+import { MediaUploadResponse } from 'src/responses/MediaResponses'
+import { PaymentsCreateResponse } from 'src/responses/PaymentsResponses'
 
-import {WebAPICallOptions, WebAPICallResult} from './EdenClient'
+import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
   ApiKeysCreateResponse,
   ApiKeysDeleteResponse,
   ApiKeysListResponse,
 } from './responses/ApiKeysResponses'
-import {AuthLoginResponse} from './responses/AuthResponses'
+import { AuthLoginResponse } from './responses/AuthResponses'
 import {
   CharactersCreateResponse,
   CharactersDeleteResponse,
@@ -33,6 +35,10 @@ import {
   CharactersListResponse,
   CharactersUpdateResponse,
 } from './responses/CharactersResponses'
+import {
+  ConceptsGetResponse,
+  ConceptsListResponse,
+} from './responses/ConceptsResponses'
 import {
   CreationsGetResponse,
   CreationsGetSimilarResponse,
@@ -70,7 +76,6 @@ import {
   TasksGetResponse,
   TasksListResponse,
 } from './responses/TasksResponses'
-import {ConceptsGetResponse, ConceptsListResponse} from './responses/ConceptsResponses';
 
 const transformArgsIntoURLParams = (
   args: Record<string, any>,
@@ -262,7 +267,6 @@ export abstract class Methods {
     ),
   }
 
-
   public readonly concepts = {
     list: bindApiCall<ConceptsListArguments, ConceptsListResponse>(
       this,
@@ -302,6 +306,13 @@ export abstract class Methods {
     upload: bindApiCall<MediaUploadArguments, MediaUploadResponse>(
       this,
       mediaUploadRequestConfig,
+    ),
+  }
+
+  public readonly payments = {
+    create: bindApiCall<PaymentsCreateArguments, PaymentsCreateResponse>(
+      this,
+      paymentsCreateRequestConfig,
     ),
   }
 
@@ -361,6 +372,10 @@ export abstract class Methods {
     create: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,
       tasksCreateRequestConfig,
+    ),
+    cost: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
+      this,
+      tasksCostRequestConfig,
     ),
     complete: bindApiCall<TasksCompleteArguments, TasksCompleteResponse>(
       this,
@@ -490,7 +505,6 @@ export interface CreationsUnreactArguments extends WebAPICallOptions {
   reaction: ReactionType
 }
 
-
 export interface ConceptsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
@@ -550,6 +564,11 @@ export interface MannaVouchersRedeemArguments extends WebAPICallOptions {
 
 export interface MediaUploadArguments extends WebAPICallOptions {
   media: Buffer
+}
+
+export interface PaymentsCreateArguments extends WebAPICallOptions {
+  priceId: string
+  paymentMode: 'payment' | 'subscription'
 }
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
@@ -1018,6 +1037,18 @@ const mediaUploadRequestConfig = (args: MediaUploadArguments) => {
   }
 }
 
+const paymentsCreateRequestConfig = (
+  args: PaymentsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'payments/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
 const scenariosCreateRequestConfig = (
   args: ScenariosCreateArguments,
 ): AxiosRequestConfig => {
@@ -1153,6 +1184,17 @@ const tasksCreateRequestConfig = (
   }
 }
 
+const tasksCostRequestConfig = (
+  args: TasksCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'tasks/cost',
+    data: {
+      ...args,
+    },
+  }
+}
 const tasksCompleteRequestConfig = (
   args: TasksCompleteArguments,
 ): AxiosRequestConfig => {
