@@ -21,7 +21,7 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
           style={{ minWidth: '64px', minHeight: '64px' }}
         >
           {creation.thumbnail ? (
-            <ImageResult resultUrl={creation.thumbnail} />
+            <ImageResult previewSizeUrl={creation.thumbnail} />
           ) : (
             <div className="image-placeholder w-full h-full h-full" />
           )}

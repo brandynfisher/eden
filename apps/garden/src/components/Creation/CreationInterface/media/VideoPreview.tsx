@@ -23,7 +23,7 @@ const VideoPreview = ({
 }) => {
   return (
     <div className="rounded-lg overflow-hidden relative">
-      <ImageResult resultUrl={creation.thumbnail || ''} />
+      <ImageResult previewSizeUrl={creation.thumbnail || ''} />
       {hovered && (
         <div className="absolute top-0 left-0 w-full h-full">
           <div></div>
