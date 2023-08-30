@@ -70,9 +70,12 @@ const StringParameter = (props: {
               ))}
               <Row>
                 <Col>
-                  <Button onClick={handleAddInput}>
-                    <PlusOutlined />
-                  </Button>
+                  {!props.parameter.maxLength ||
+                    (values.length < props.parameter.maxLength && (
+                      <Button onClick={handleAddInput}>
+                        <PlusOutlined />
+                      </Button>
+                    ))}
                 </Col>
               </Row>
             </div>
