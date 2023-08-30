@@ -10,13 +10,6 @@ const params = [
     isRequired: true,
   },
   {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
-  },
-  {
     name: 'width',
     label: 'Width',
     description: 'Width of the creation in pixels',
@@ -34,20 +27,11 @@ const params = [
     maximum: 2048,
     step: 64,
   },
-  // {
-  //   name: 'upscale_f',
-  //   label: 'Upscale Factor',
-  //   description: 'Diffusion-based upscaling factor',
-  //   default: 1.4,
-  //   minimum: 1.0,
-  //   maximum: 2.0,
-  //   step: 0.1,
-  // },
   {
     name: 'n_frames',
     label: 'Frames',
-    description: 'Number of frames in the video',
-    default: 50,
+    description: 'Number of frames in the video (increase when you use many prompts)',
+    default: 60,
     minimum: 10,
     maximum: 600,
   },
@@ -93,7 +77,7 @@ const params = [
   {
     name: 'guidance_scale',
     label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance',
+    description: 'Strength of prompt conditioning guidance, higher values result in more saturated frames',
     default: 7.5,
     minimum: 0.0,
     maximum: 20.0,
@@ -168,6 +152,13 @@ const params = [
     optional: true,
   },
 
+  {
+    name: 'checkpoint',
+    label: 'Checkpoint',
+    description: 'Which model checkpoint to generate with',
+    default: 'sdxl-v1.0',
+    allowedValues: ['sdxl-v1.0'],
+  },
   ////////////////////////////////////////
   // stream intermediate results
 
