@@ -17,24 +17,6 @@ const params = [
     allowedValues: ['sdxl-v1.0'],
   },
   {
-    name: 'lora',
-    label: 'Concept',
-    description:
-      '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
-    default: '(none)',
-    // allowedValues: ['(none)'],
-   },
-   {
-    name: 'lora_scale',
-    label: 'Concept scale',
-    description:
-      'How strongly to apply the Concept weights (0.0 will result in the base model)',
-    default: 0.8,
-    minimum: 0.0,
-    maximum: 1.2,
-    step: 0.1,
-  },
-  {
     name: 'width',
     label: 'Width',
     description: 'Width of the creation in pixels',
@@ -65,8 +47,8 @@ const params = [
     name: 'n_frames',
     label: 'Frames',
     description: 'Number of frames in the video',
-    default: 60,
-    minimum: 5,
+    default: 50,
+    minimum: 10,
     maximum: 600,
   },
   {
@@ -80,6 +62,25 @@ const params = [
 
   ////////////////////////////////////////
   // optional generation args
+  
+  {
+    name: 'lora',
+    label: 'Concept',
+    description:
+      '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
+    default: '(none)',
+    // allowedValues: ['(none)'],
+   },
+   {
+    name: 'lora_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.2,
+    step: 0.1,
+  },
 
   {
     name: 'uc_text',
@@ -111,7 +112,7 @@ const params = [
     name: 'steps',
     label: 'Steps',
     description: 'Number of denoising steps (recommended to use >30)',
-    default: 40,
+    default: 35,
     minimum: 5,
     maximum: 70,
     optional: true,
@@ -131,7 +132,7 @@ const params = [
     label: 'Denoising skip fractions (very advanced)',
     description:
       'What fraction of denoising steps to skip at the start and end of the render. Higher values result in smoother video (will also render faster), too high values will look more like crossfading in pixel space.',
-    default: [0.15, 0.75],
+    default: [0.2, 0.75],
     optional: true,
   },
   
@@ -174,7 +175,7 @@ const params = [
     name: 'stream',
     label: 'Stream',
     description:
-      'Yield intermediate results during creation process (if false, only final result is returned)',
+      'Yield intermediate frames during creation process (if false, only final video is returned)',
     default: false,
     allowedValues: [false, true],
     optional: true,
