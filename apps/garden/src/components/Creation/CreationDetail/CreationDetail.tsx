@@ -66,10 +66,6 @@ const CreationDetail = ({
     return extension === 'jpg'
   }
 
-  useEffect(() => {
-    setCreationImageLoaded(false)
-  }, [creation.uri])
-
   return (
     <>
       <Head>
@@ -181,13 +177,13 @@ const CreationDetail = ({
             <ConfigParamsTabs data={creation} />
           </div>
         </div>
-        {loadSimilar && creationImageLoaded && (
+        {loadSimilar && creationImageLoaded ? (
           <SimilarCreations
             creation={creation}
             containerRef={containerRef}
             isModal={isModal}
           />
-        )}
+        ) : null}
       </div>
     </>
   )

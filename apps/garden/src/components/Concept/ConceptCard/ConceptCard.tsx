@@ -4,7 +4,7 @@ import { getModalUrls } from '@/lib/modal'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Concept } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
   const [concept /*setConcept*/] = useState(data)
@@ -26,7 +26,6 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
         <div className="relative rounded-lg overflow-hidden cursor-pointer">
           <ConceptCardDetail concept={concept} isOverlay={true} />
           <ImageResult fullSizeUrl={concept.thumbnail || ''} />
-          {/*<ConceptCardOverlay concept={concept} handlers={{ onChange: setConcept }}/>*/}
         </div>
       </div>
     </div>
