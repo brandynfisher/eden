@@ -28,6 +28,7 @@ const NumberParameter = (props: {
       <Row>
         <Col style={{ marginLeft: 10 }} className="flex items-end w-full">
           <Form.Item
+            className="w-full"
             style={{ marginBottom: 5 }}
             label={`${props.parameter.label}`}
             name={`${props.parameter.name}`}
@@ -40,6 +41,7 @@ const NumberParameter = (props: {
             ]}
           >
             <InputNumber
+              className="self-end"
               style={{ marginBottom: 5 }}
               min={props.parameter.minimum}
               max={props.parameter.maximum}
