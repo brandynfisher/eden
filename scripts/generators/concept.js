@@ -19,13 +19,6 @@ const params = [
     isRequired: true,
   },
   {
-    name: 'checkpoint',
-    label: 'Base checkpoint',
-    description: 'Base checkpoint to train from',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
-  },
-  {
     name: 'instance_prompt',
     label: 'Instance prompt',
     description:
@@ -33,6 +26,27 @@ const params = [
     default: null,
     isRequired: true,
   },
+  
+  {
+    name: 'learning_rate',
+    label: 'learning rate',
+    description: 'Learning rate for the trainer. This is the most important setting of the entire process (recommended to keep this at default unless you know what youre doing)',
+    default: 5e-5,
+    minimum: 1e-5,
+    maximum: 2e-4,
+    step: 1e-5,
+    optional: true,
+  },
+  {
+    name: 'max_train_steps',
+    label: 'Number of training steps',
+    description: 'More steps can lead to a better fit of your concept, but too much training will lose your ability to "prompt" the concept',
+    default: 300,
+    minimum: 150,
+    maximum: 500,
+    optional: true,
+  },
+  
   {
     name: 'resolution',
     label: 'Resolution',
@@ -56,10 +70,19 @@ const params = [
   {
     name: 'train_batch_size',
     label: 'Batch size',
-    description: 'Training batch size',
+    description: 'Training batch size (number of images to look at simultaneously during training)',
     default: 2,
     minimum: 1,
     maximum: 3,
+    optional: true,
+  },
+  {
+    name: 'lora_rank',
+    label: 'LORA rank',
+    description: 'Rank of LoRa matrices. Dont change unless you know what youre doing.',
+    default: 5,
+    minimum: 2,
+    maximum: 16,
     optional: true,
   },
   {
@@ -72,32 +95,11 @@ const params = [
     optional: true,
   },
   {
-    name: 'learning_rate',
-    label: 'learning rate',
-    description: 'Learning rate for the trainer (recommended to keep this at default unless you know what youre doing) ',
-    default: 3e-5,
-    minimum: 1e-5,
-    maximum: 2e-4,
-    step: 1e-5,
-    optional: true,
-  },
-  {
-    name: 'max_train_steps',
-    label: 'Tuning max steps',
-    description: 'Max train steps for tuning (U-Net and text encoder)',
-    default: 300,
-    minimum: 100,
-    maximum: 500,
-    optional: true,
-  },
-  {
-    name: 'lora_rank',
-    label: 'LORA rank',
-    description: 'Rank of LoRa matrices',
-    default: 5,
-    minimum: 2,
-    maximum: 16,
-    optional: true,
+    name: 'checkpoint',
+    label: 'Base checkpoint',
+    description: 'Base checkpoint to train from',
+    default: 'sdxl-v1.0',
+    allowedValues: ['sdxl-v1.0'],
   },
 
 ]
