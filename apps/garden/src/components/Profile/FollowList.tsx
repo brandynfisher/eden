@@ -27,7 +27,7 @@ const FollowList = ({
         {title} ({totalItemCount})
       </h3>
       <div className="flex flex-col w-full">
-        {listItems && listItems.length ? (
+        {listItems && listItems.length > 0 ? (
           <>
             {listItems.map(listItem => (
               <div
@@ -55,7 +55,7 @@ const FollowList = ({
         )}
       </div>
 
-      {listItems && listItems.length && !isReachingEnd && (
+      {listItems && listItems.length && !isReachingEnd ? (
         <Button
           className="mt-4"
           disabled={isLoadingMore || isReachingEnd}
@@ -67,7 +67,7 @@ const FollowList = ({
             ? 'no more issues'
             : 'Load more'}
         </Button>
-      )}
+      ) : null}
     </div>
   )
 }
