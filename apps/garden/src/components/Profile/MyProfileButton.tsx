@@ -1,13 +1,7 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { UserContext } from '@/providers/UserProvider'
-import {
-  ClerkLoaded,
-  ClerkLoading,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut } from '@clerk/nextjs'
 import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'
@@ -28,8 +22,6 @@ const MyProfileButton = () => {
       </ClerkLoading>
       <ClerkLoaded>
         <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-
           <Link
             href={userProfilePath}
             passHref

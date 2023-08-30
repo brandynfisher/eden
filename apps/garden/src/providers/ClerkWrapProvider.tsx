@@ -15,7 +15,23 @@ const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [resolvedTheme])
 
-  return <ClerkProvider appearance={{ baseTheme }}>{children}</ClerkProvider>
+  return (
+    <ClerkProvider
+      appearance={{
+        baseTheme,
+        layout: {
+          socialButtonsPlacement: 'bottom',
+          socialButtonsVariant: 'iconButton',
+          termsPageUrl: 'https://app.eden.art/terms',
+          privacyPageUrl: 'https://app.eden.art/privacy',
+          helpPageUrl: 'https://app.eden.art/help',
+          logoImageUrl: 'https://app.eden.art/eden-logo-512x512.png',
+        },
+      }}
+    >
+      {children}
+    </ClerkProvider>
+  )
 }
 
 export default ClerkWrapProvider

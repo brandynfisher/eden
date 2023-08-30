@@ -7,6 +7,7 @@ import {
   TableOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
+import { UserButton } from '@clerk/nextjs'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import Link from 'next/link'
@@ -135,8 +136,12 @@ const extraItems: ItemType[] = [
     type: 'divider',
   },
   {
-    label: <LoginLogoutButton />,
+    label: <UserButton afterSignOutUrl="/" showName={true} />,
     key: '3',
+  },
+  {
+    label: <LoginLogoutButton />,
+    key: '4',
   },
 ]
 
