@@ -22,7 +22,7 @@ const params = [
     name: 'instance_prompt',
     label: 'Instance prompt',
     description:
-      'A single sentence that describes the concept to be learned (eg "a photo of a man" or "a cartoon of a superhero"). You can use our "interrogate" function to get ideas.',
+      'A single sentence that describes the concept to be learned (eg "a photo of a man" or "a cartoon of a superhero"). You can use our "interrogate" function to get ideas. When training a face, you can use eg a celebrity name that looks similar.',
     default: null,
     isRequired: true,
   },
