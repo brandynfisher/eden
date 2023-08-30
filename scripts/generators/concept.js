@@ -11,7 +11,7 @@ const params = [
     name: 'lora_training_urls',
     label: 'Training images',
     description:
-      'images to train on (can also be a .zip file)',
+      'images to train on (can also be a .zip file containing your images)',
     mediaUpload: 'image/png, image/jpeg, image/webp, application/zip',
     default: [],
     minLength: 1,
