@@ -47,7 +47,7 @@ const params = [
     name: 'lr_flip_p',
     label: 'Left-right flip probability',
     description:
-      'Left-right flipping probability for data augmentation',
+      'Probability of flipping a training image left/right at every step (data augmentation, essentially increases the number of training images)',
     default: 0.2,
     minimum: 0,
     maximum: 1,
