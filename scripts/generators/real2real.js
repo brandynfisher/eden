@@ -13,7 +13,7 @@ const params = [
   {
     name: 'width',
     label: 'Width',
-    description: 'Width of the creation in pixels',
+    description: 'real2real uses [Width x Height] total number of pixels and adopts the average aspect ratio of your provided images',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -22,7 +22,7 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Height of the creation in pixels',
+    description: 'real2real uses [Width x Height] total number of pixels and adopts the average aspect ratio of your provided images',
     default: 1024,
     minimum: 512,
     maximum: 2048,
