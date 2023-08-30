@@ -127,7 +127,7 @@ const CompletedTaskMenuItem = ({
             className="rounded-md w-12 h-12 mr-4 flex items-center overflow-hidden"
             style={{ minWidth: '48px', minHeight: '48px' }}
           >
-            <ImageResult previewSizeUrl={task.creation.thumbnail} />
+            <ImageResult fullSizeUrl={task.creation?.thumbnail || ''} />
           </div>
           <div className="flex items-center justify-between min-w-0 w-full">
             <div className="flex flex-col gap-2 min-w-0 w-full">

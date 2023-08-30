@@ -29,14 +29,14 @@ const LoadingPlaceholder = () => {
 }
 
 const ImageResult = ({
-  previewSizeUrl,
   fullSizeUrl,
+  previewSizeUrl,
   showPreview,
   onPreviewClose,
   onLoad,
 }: {
-  previewSizeUrl?: string
   fullSizeUrl: string
+  previewSizeUrl?: string
   showPreview?: boolean
   onPreviewClose?: () => void
   onLoad?: () => void
