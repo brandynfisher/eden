@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   mongo:
@@ -36,3 +36,24 @@ services:
       - default
     depends_on:
       - minio
+
+  chromadb:
+    build:
+      context: ./infra/chroma
+      dockerfile: Dockerfile
+    volumes:
+      - ./infra/chroma:/chroma
+      - chroma_index_data:/index_data
+    command: uvicorn chromadb.app:app --reload --workers 1 --host 0.0.0.0 --port 8000 --log-config log_config.yml
+    environment:
+      IS_PERSISTENT: "TRUE"
+    ports:
+      - 8000:8000
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  chroma_index_data:
+    driver: local
