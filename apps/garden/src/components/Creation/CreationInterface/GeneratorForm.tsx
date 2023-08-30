@@ -1,4 +1,5 @@
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
+import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/Creation/CreationInterface/parameters/StringParameter'
@@ -291,6 +292,23 @@ const GeneratorForm = ({
             />
           )
         }
+
+        if (
+          parameter.default === '' &&
+          typeof parameter.minimum !== 'undefined' &&
+          typeof parameter.maximum !== 'undefined' &&
+          typeof parameter.minimum === 'number' &&
+          typeof parameter.maximum === 'number'
+        ) {
+          return (
+            <NumberParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+
         if (typeof parameter.default === 'number') {
           return (
             <SliderParameter
