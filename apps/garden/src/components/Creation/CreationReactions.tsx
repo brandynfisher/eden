@@ -26,7 +26,13 @@ const PraiseButton = ({
   const { hovered, ref } = useHover()
   const [isLoading, setIsLoading] = useState(false)
 
-  const onPraiseButtonClick = async () => {
+  const onPraiseButtonClick = async (
+    ev:
+      | React.MouseEvent<HTMLAnchorElement, MouseEvent>
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    ev.stopPropagation()
+
     if (!isAuthenticated) {
       await requireAuth(authenticate)
       return
@@ -111,7 +117,13 @@ const SaveButton = ({
   const [isLoading, setIsLoading] = useState(false)
   const { message } = App.useApp()
 
-  const onSaveButtonClick = async () => {
+  const onSaveButtonClick = async (
+    ev:
+      | React.MouseEvent<HTMLAnchorElement, MouseEvent>
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    ev.stopPropagation()
+
     if (!isAuthenticated) {
       await requireAuth(authenticate)
       return
@@ -219,11 +231,11 @@ const CreationReactions = ({ creation, onChange }: CreationReactionsProps) => {
   return (
     <div className="relative flex justify-between">
       <div>
-        <div className="flex">
+        <div className="flex pointer-events-auto">
           <PraiseButton creation={creation} onChange={onChange} />
         </div>
       </div>
-      <div>
+      <div className="pointer-events-auto">
         <SaveButton creation={creation} onChange={onChange} />
       </div>
     </div>

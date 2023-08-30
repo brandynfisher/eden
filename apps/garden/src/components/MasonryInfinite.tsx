@@ -1,12 +1,13 @@
 'use client'
 
+import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
 } from '@/components/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
 import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
 import { Button, Empty } from 'antd'
@@ -18,7 +19,7 @@ import {
   useResizeObserver,
 } from 'masonic'
 import Link from 'next/link'
-import React, { FC, useContext, useRef, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 
 const MasonryInfinite = ({
   type,
@@ -27,9 +28,7 @@ const MasonryInfinite = ({
   hasSort,
 }: {
   type: 'creations' | 'concepts'
-  itemComponent:
-    | FC<{ index: number; data: Creation }>
-    | FC<{ index: number; data: Concept }>
+  itemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
 }) => {
@@ -111,21 +110,25 @@ const MasonryInfinite = ({
       {items.length && typeof items[0] === 'undefined' ? (
         <div>error fetching list</div>
       ) : (
-        <MasonryScroller
-          style={{ outline: 'none' }}
-          key={key}
-          positioner={positioner}
-          resizeObserver={resizeObserver}
-          containerRef={containerRef}
-          items={items}
-          height={windowHeight}
-          offset={offset}
-          overscanBy={3}
-          itemHeightEstimate={300}
-          render={itemComponent}
-          onRender={maybeLoadMore}
-          itemKey={data => data._id}
-        />
+        <>
+          {items.length > 0 && (
+            <MasonryScroller
+              style={{ outline: 'none' }}
+              key={key}
+              positioner={positioner}
+              resizeObserver={resizeObserver}
+              containerRef={containerRef}
+              items={items}
+              height={windowHeight}
+              offset={offset}
+              overscanBy={3}
+              itemHeightEstimate={300}
+              render={itemComponent}
+              onRender={maybeLoadMore}
+              itemKey={data => data._id}
+            />
+          )}
+        </>
       )}
 
       {isEmpty && !items.length && (

@@ -1,4 +1,5 @@
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
+import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/Creation/CreationInterface/parameters/StringParameter'
@@ -23,7 +24,13 @@ import { debounce } from '@mui/material'
 import { App, Button, Card, Form, Popover } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 type FieldValues = { [key: string]: string }
 
@@ -68,7 +75,6 @@ const GeneratorForm = ({
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
   const [isFormTouched, setIsFormTouched] = useState(false)
-  const [initialParams, setInitialParams] = useState<GeneratorParameter[]>([])
   const [requiredParameters, setRequiredParams] = useState<
     GeneratorParameter[]
   >([])
@@ -110,7 +116,10 @@ const GeneratorForm = ({
     await handleGetTaskCost()
   }
 
-  const debouncedHandleFormFieldsChange = debounce(handleFormFieldsChange, 250)
+  const debouncedHandleFormFieldsChange = useMemo(
+    () => debounce(handleFormFieldsChange, 500),
+    [handleFormFieldsChange],
+  )
 
   const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
     if (!currentGenerator) return
@@ -133,19 +142,32 @@ const GeneratorForm = ({
   }
 
   useEffect(() => {
+    if (!generator) {
+      return
+    }
+
     const currentGeneratorParams = getCurrentGeneratorParameters(generator)
 
     if (currentGeneratorParams) {
+      if (
+        !presetCreation ||
+        (presetCreation &&
+          presetCreation.task.generator.generatorName !==
+            generator.generatorName)
+      ) {
+        resetForm()
+      }
+
       setRequiredParams(
         currentGeneratorParams.filter(parameter => parameter.isRequired),
       )
       setOptionalParams(
         currentGeneratorParams.filter(parameter => !parameter.isRequired),
       )
-      setInitialParams(currentGeneratorParams)
+
       handleGetTaskCost(currentGeneratorParams)
     }
-  }, [generator])
+  }, [generator, presetCreation])
 
   const [showOptional, setShowOptional] = React.useState(false)
   const [stringArrayValues, setStringArrayValues] = useState({})
@@ -159,15 +181,6 @@ const GeneratorForm = ({
 
   const handleGetTaskCost = useCallback(
     async (generatorParams?: GeneratorParameter[]) => {
-      // if (isLoadingTaskCost) {
-      //   return
-      // }
-
-      // if (!generatorParams) {
-      //   setTaskCost(undefined)
-      //   return
-      // }
-
       setIsLoadingTaskCost(true)
 
       if (!isAuthenticated) {
@@ -177,18 +190,18 @@ const GeneratorForm = ({
         return
       }
 
-      message.destroy()
-
       try {
+        message.destroy()
+
+        const currentGeneratorParameters =
+          getCurrentGeneratorParameters(generator)
+        const requiredParams = currentGeneratorParameters?.filter(
+          parameter => parameter.isRequired,
+        )
+
         let cleanedValues = getCleanedConfig(
           generatorParams || form.getFieldsValue(),
           undefined,
-        )
-        const required = getCurrentGeneratorParameters(generator)?.filter(
-          parameter => parameter.isRequired,
-        )
-        const requiredParams = required?.filter(
-          parameter => parameter.isRequired,
         )
 
         requiredParams?.map(reqParam => {
@@ -213,7 +226,7 @@ const GeneratorForm = ({
         setIsLoadingTaskCost(false)
       }
     },
-    [generator, initialParams],
+    [generator],
   )
 
   const handleFinish = async () => {
@@ -261,6 +274,7 @@ const GeneratorForm = ({
     // reset form
     setStringArrayValues({})
     setPresetConfig({})
+    setIsFormTouched(false)
   }
 
   const renderFormFields = useCallback(
@@ -278,6 +292,23 @@ const GeneratorForm = ({
             />
           )
         }
+
+        if (
+          parameter.default === '' &&
+          typeof parameter.minimum !== 'undefined' &&
+          typeof parameter.maximum !== 'undefined' &&
+          typeof parameter.minimum === 'number' &&
+          typeof parameter.maximum === 'number'
+        ) {
+          return (
+            <NumberParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+
         if (typeof parameter.default === 'number') {
           return (
             <SliderParameter
@@ -345,12 +376,6 @@ const GeneratorForm = ({
     },
     [presetConfig, showOptional],
   )
-
-  useEffect(() => {
-    if (form) {
-      setIsFormTouched(form.isFieldsTouched())
-    }
-  }, [form])
 
   return (
     <Form
