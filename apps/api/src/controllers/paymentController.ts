@@ -4,18 +4,50 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { getAdminHeaders } from '../lib/util'
 import { User } from '../models/Creator'
+import { Price } from '../models/Price'
 
 const handlePaymentSuccess = async (
   server: FastifyInstance,
   reply: FastifyReply,
   userId: string,
+  sessionId: string,
 ) => {
+  if (!server.stripe) {
+    return reply.status(500).send({
+      message: 'Stripe is not configured',
+    })
+  }
+
+  // get the priceId
+  const session = await server.stripe.checkout.sessions.retrieve(sessionId, {
+    expand: ['line_items'],
+  })
+  if (
+    !session.line_items ||
+    session.line_items.data.length === 0 ||
+    !session.line_items.data[0].price
+  ) {
+    return reply.status(400).send({
+      message: 'No line items found',
+    })
+  }
+  const priceId = session.line_items.data[0].price.id
+
+  // get the amount of manna
+  const price = await Price.findOne({ priceId })
+  if (!price) {
+    return reply.status(400).send({
+      message: 'No price found',
+    })
+  }
+  const { mannaAmount } = price
+
   try {
     await axios.post(
       `${server.config.API_URL}/admin/manna/modify`,
       {
         userId,
-        amount: 1000,
+        amount: mannaAmount,
       },
       {
         headers: getAdminHeaders(server),
@@ -104,15 +136,24 @@ export const handlePaymentEvent = async (
   // @ts-ignore
   const userId = event.data.object.client_reference_id
 
+  // Get the priceId
+  // @ts-ignore
+  const sessionId = event.data.object.id
+
   switch (event.type) {
     case 'checkout.session.completed':
-      await handlePaymentSuccess(server, reply, userId)
+      await handlePaymentSuccess(server, reply, userId, sessionId)
       return reply.status(200).send({})
     case 'invoice.payment_succeeded':
-      await handlePaymentSuccess(server, reply, userId)
+      await handlePaymentSuccess(server, reply, userId, sessionId)
       return reply.status(200).send({})
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)
       return reply.status(200).send({})
   }
+}
+
+export const getPriceList = async (reply: FastifyReply) => {
+  const prices = await Price.find({})
+  return reply.status(200).send(prices)
 }
