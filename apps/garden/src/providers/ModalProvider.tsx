@@ -1,8 +1,11 @@
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
 import CreationDetailModal from '@/components/Modals/CreationDetailModal'
+import FollowersModal from '@/components/Modals/FollowersModal'
+import FollowingModal from '@/components/Modals/FollowingModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
+import TaskDetailModal from '@/components/Modals/TaskDetailModal'
 import { CloseOutlined } from '@ant-design/icons'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation, Task } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import {
@@ -17,6 +20,9 @@ export enum MODAL_TYPES {
   CREATION_DETAIL_MODAL = 'CREATION_DETAIL_MODAL',
   CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
+  FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
+  FOLLOWING_MODAL = 'FOLLOWING_MODAL',
+  TASK_DETAIL_MODAL = 'TASK_DETAIL_MODAL',
 }
 
 type GenericModalParams = unknown
@@ -24,23 +30,29 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_MODAL]: CreationDetailModal,
   [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
+  [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
+  [MODAL_TYPES.FOLLOWING_MODAL]: FollowingModal,
+  [MODAL_TYPES.TASK_DETAIL_MODAL]: TaskDetailModal,
 }
 
+type BaseModalProps = Partial<ModalProps> & {
+  usesUrl?: boolean
+  className?: string
+}
 type ModalStore = {
   modalType: string | undefined
   modalProps?:
-    | Partial<ModalProps & { creation?: Creation; loadSimilar?: boolean }>
-    | Partial<ModalProps & { concept?: Concept }>
-    | Partial<ModalProps>
+    | Partial<BaseModalProps & { creation?: Creation; loadSimilar?: boolean }>
+    | Partial<BaseModalProps & { concept?: Concept }>
+    | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })
+    | (Partial<BaseModalProps> & { task?: Task })
     | undefined
-  usesUrl?: boolean
 }
 
 export interface ModalContextType {
   showModal: (
     modalType: ModalStore['modalType'],
     modalProps?: ModalStore['modalProps'],
-    usesUrl?: ModalStore['usesUrl'],
   ) => void
   hideModal: () => void
 }
@@ -56,16 +68,15 @@ export const useModalContext = () => useContext(ModalContext)
 function ModalProvider({ children }: PropsWithChildren) {
   const [store, setStore] = useState<ModalStore>()
   const router = useRouter()
+
   const showModal = (
     modalType: ModalStore['modalType'],
     modalProps: ModalStore['modalProps'] = {},
-    usesUrl?: boolean,
   ) => {
     setStore({
       ...store,
       modalType,
       modalProps,
-      usesUrl,
     })
 
     // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
@@ -82,7 +93,6 @@ function ModalProvider({ children }: PropsWithChildren) {
       ...store,
       modalType: undefined,
       modalProps: {},
-      usesUrl: undefined,
     })
   }
 
@@ -100,7 +110,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
     onCancel: () => {
       hideModal()
-      if (store?.usesUrl) {
+      if (store?.modalProps?.usesUrl) {
         router.back()
       }
     },
@@ -120,10 +130,21 @@ function ModalProvider({ children }: PropsWithChildren) {
       return null
     }
 
+    const defaultClassNames = defaultModalProps?.className?.split(' ')
+    const customClassNames = store?.modalProps?.className
+      ? store?.modalProps?.className.split(' ')
+      : []
+    const classNames = customClassNames.length
+      ? defaultClassNames?.concat(
+          customClassNames.filter(item => defaultClassNames.indexOf(item) < 0),
+        )
+      : defaultClassNames
+
     return (
       // @ts-ignore
       <ModalComponent
         {...({ ...defaultModalProps, ...store.modalProps } as ModalProps)}
+        className={classNames}
       />
     )
   }

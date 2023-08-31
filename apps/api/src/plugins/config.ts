@@ -18,6 +18,10 @@ const ConfigSchema = Type.Strict(
     LOG_LEVEL: Type.String(),
     API_HOST: Type.String(),
     API_PORT: Type.String(),
+    API_URL: Type.String(),
+    EDEN_ADMIN_API_KEY: Type.String(),
+    EDEN_ADMIN_API_SECRET: Type.String(),
+    FRONTEND_URL: Type.String(),
     MONGO_URI: Type.String(),
     CHROMA_URI: Type.String(),
     JWT_SECRET: Type.String(),
@@ -36,6 +40,9 @@ const ConfigSchema = Type.Strict(
     CLERK_PUBLISHABLE_KEY: Type.String(),
     CLERK_SECRET_KEY: Type.String(),
     CLERK_WEBHOOK_SECRET: Type.String(),
+    STRIPE_PUBLISHABLE_KEY: Type.String(),
+    STRIPE_SECRET_KEY: Type.String(),
+    STRIPE_WEBHOOK_SECRET: Type.String(),
   }),
 )
 

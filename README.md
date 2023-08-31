@@ -15,6 +15,15 @@
 - `ngrok http --domain=eden.ngrok.dev --authtoken [AUTH_TOKEN] 5050`
 - `yarn dev:eden`
 
+### Run stripe event forwarding
+```
+stripe login
+stripe listen --forward-to localhost:5050/payment/event
+stripe trigger payment_intent.succeeded
+```
+
+https://dashboard.stripe.com/test/webhooks/create?endpoint_location=local
+
 ## What's Inside?
 
 This monorepo is composed of apps and packages.

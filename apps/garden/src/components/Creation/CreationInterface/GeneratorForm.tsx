@@ -1,3 +1,5 @@
+import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
+import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/Creation/CreationInterface/parameters/StringParameter'
@@ -8,6 +10,7 @@ import { UserContext } from '@/providers/UserProvider'
 import {
   DownCircleOutlined,
   ExperimentOutlined,
+  LoadingOutlined,
   UpCircleOutlined,
 } from '@ant-design/icons'
 import {
@@ -16,12 +19,39 @@ import {
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
-import { App, Button, Card, Form } from 'antd'
+import { HelpOutline } from '@mui/icons-material'
+import { debounce } from '@mui/material'
+import { App, Button, Card, Form, Popover } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 type FieldValues = { [key: string]: string }
+
+const getCleanedConfig = (
+  formFieldValues: FieldValues | GeneratorParameter[],
+  stringArrayValues: FieldValues | undefined,
+) => {
+  const consolidatedFieldValues = {
+    ...formFieldValues,
+    ...stringArrayValues,
+  }
+
+  // filter out temporary preset form values
+  return Object.keys(consolidatedFieldValues)
+    .filter(key => !key.endsWith('--preset'))
+    .reduce((obj: FieldValues, key) => {
+      // @ts-ignore
+      obj[key] = consolidatedFieldValues[key]
+      return obj
+    }, {})
+}
 
 const GeneratorForm = ({
   generator,
@@ -44,7 +74,7 @@ const GeneratorForm = ({
   const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
-  const [initialParams, setInitialParams] = useState<GeneratorParameter[]>([])
+  const [isFormTouched, setIsFormTouched] = useState(false)
   const [requiredParameters, setRequiredParams] = useState<
     GeneratorParameter[]
   >([])
@@ -52,12 +82,16 @@ const GeneratorForm = ({
     GeneratorParameter[]
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
+  const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
 
   useEffect(() => {
     const transformConfig = () => {
       if (!presetCreation) {
         return
       }
+
+      setIsFormTouched(true)
 
       // if is "recreate": add fields to pre-populate media/image upload fields by uri
       if (router.query.generator && router.query.generator === 'remix') {
@@ -76,6 +110,16 @@ const GeneratorForm = ({
 
     transformConfig()
   }, [presetCreation])
+
+  const handleFormFieldsChange = async () => {
+    setIsFormTouched(true)
+    await handleGetTaskCost()
+  }
+
+  const debouncedHandleFormFieldsChange = useMemo(
+    () => debounce(handleFormFieldsChange, 500),
+    [handleFormFieldsChange],
+  )
 
   const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
     if (!currentGenerator) return
@@ -98,17 +142,32 @@ const GeneratorForm = ({
   }
 
   useEffect(() => {
+    if (!generator) {
+      return
+    }
+
     const currentGeneratorParams = getCurrentGeneratorParameters(generator)
 
     if (currentGeneratorParams) {
-      setInitialParams(currentGeneratorParams)
-    }
-  }, [generator])
+      if (
+        !presetCreation ||
+        (presetCreation &&
+          presetCreation.task.generator.generatorName !==
+            generator.generatorName)
+      ) {
+        resetForm()
+      }
 
-  useEffect(() => {
-    setRequiredParams(initialParams.filter(parameter => parameter.isRequired))
-    setOptionalParams(initialParams.filter(parameter => !parameter.isRequired))
-  }, [initialParams])
+      setRequiredParams(
+        currentGeneratorParams.filter(parameter => parameter.isRequired),
+      )
+      setOptionalParams(
+        currentGeneratorParams.filter(parameter => !parameter.isRequired),
+      )
+
+      handleGetTaskCost(currentGeneratorParams)
+    }
+  }, [generator, presetCreation])
 
   const [showOptional, setShowOptional] = React.useState(false)
   const [stringArrayValues, setStringArrayValues] = useState({})
@@ -120,30 +179,73 @@ const GeneratorForm = ({
     setStringArrayValues(newStringArrayValues)
   }
 
+  const handleGetTaskCost = useCallback(
+    async (generatorParams?: GeneratorParameter[]) => {
+      setIsLoadingTaskCost(true)
+
+      if (!isAuthenticated) {
+        await requireAuth(authenticate)
+
+        setIsLoadingTaskCost(false)
+        return
+      }
+
+      try {
+        message.destroy()
+
+        const currentGeneratorParameters =
+          getCurrentGeneratorParameters(generator)
+        const requiredParams = currentGeneratorParameters?.filter(
+          parameter => parameter.isRequired,
+        )
+
+        let cleanedValues = getCleanedConfig(
+          generatorParams || form.getFieldsValue(),
+          undefined,
+        )
+
+        requiredParams?.map(reqParam => {
+          if (Array.isArray(reqParam['default'])) {
+            // @ts-ignore
+            cleanedValues[reqParam.name] = ['dummy field content']
+          } else {
+            cleanedValues[reqParam.name] = 'dummy field content'
+          }
+        })
+
+        const response = await axios.post('/api/tasks/cost', {
+          generatorName: generator.generatorName,
+          config: cleanedValues,
+        })
+
+        setTaskCost(response.data)
+      } catch (err) {
+        console.error(err)
+        message.error('Error fetching task cost estimate')
+      } finally {
+        setIsLoadingTaskCost(false)
+      }
+    },
+    [generator],
+  )
+
   const handleFinish = async () => {
     setIsSubmitting(true)
 
     if (!isAuthenticated) {
       await requireAuth(authenticate)
+
+      setIsSubmitting(false)
       return
     }
 
     message.destroy()
 
     try {
-      const formFieldValues = form.getFieldsValue()
-      const consolidatedFieldValues: FieldValues = {
-        ...formFieldValues,
-        ...stringArrayValues,
-      }
-
-      // filter out temporary preset form values
-      const cleanedValues = Object.keys(consolidatedFieldValues)
-        .filter(key => !key.endsWith('--preset'))
-        .reduce((obj: FieldValues, key) => {
-          obj[key] = consolidatedFieldValues[key]
-          return obj
-        }, {})
+      const cleanedValues = getCleanedConfig(
+        form.getFieldsValue(),
+        stringArrayValues,
+      )
 
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
@@ -159,11 +261,6 @@ const GeneratorForm = ({
       refetchPendingTasks && refetchPendingTasks()
       refetch.mannaBalance()
       onSubmitSuccess && onSubmitSuccess()
-      // const resultPreviewDomElement =
-      //   document.getElementsByClassName('result-preview')
-      // if (resultPreviewDomElement && resultPreviewDomElement.length) {
-      //   resultPreviewDomElement[0].scrollIntoView({ block: 'center', behavior: 'smooth'})
-      // }
     } catch (error) {
       message.error('Error creating task. Please try again.')
     } finally {
@@ -177,10 +274,79 @@ const GeneratorForm = ({
     // reset form
     setStringArrayValues({})
     setPresetConfig({})
+    setIsFormTouched(false)
   }
 
   const renderFormFields = useCallback(
     (parameters: GeneratorParameter[], isOptional: boolean) => {
+      const renderParameter = (parameter: GeneratorParameter) => {
+        if (
+          (parameter.allowedValues && parameter.allowedValues.length > 0) ||
+          parameter.allowedValuesFrom
+        ) {
+          return (
+            <OptionParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+
+        if (
+          parameter.default === '' &&
+          typeof parameter.minimum !== 'undefined' &&
+          typeof parameter.maximum !== 'undefined' &&
+          typeof parameter.minimum === 'number' &&
+          typeof parameter.maximum === 'number'
+        ) {
+          return (
+            <NumberParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+
+        if (typeof parameter.default === 'number') {
+          return (
+            <SliderParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        if (parameter.mediaUpload) {
+          return (
+            <UploadParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+              acceptedMimeTypes={parameter.mediaUpload}
+            />
+          )
+        }
+        if (parameter.name === 'lora') {
+          return (
+            <ConceptParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        return (
+          <StringParameter
+            key={parameter.name}
+            form={form}
+            parameter={parameter}
+            onStringArrayChange={onStringArrayChange}
+          />
+        )
+      }
+
       return parameters.map(parameter => {
         if (presetConfig) {
           const presetParameter = Object.entries(presetConfig).filter(
@@ -203,48 +369,7 @@ const GeneratorForm = ({
               !showOptional && isOptional ? 'hidden' : ''
             }`}
           >
-            {(parameter.allowedValues && parameter.allowedValues.length > 0) ||
-            parameter.allowedValuesFrom ? (
-              <OptionParameter
-                key={parameter.name}
-                form={form}
-                parameter={parameter}
-              />
-            ) : (
-              <>
-                {typeof parameter.default === 'number' ? (
-                  <SliderParameter
-                    key={parameter.name}
-                    form={form}
-                    parameter={parameter}
-                  />
-                ) : (
-                  <>
-                    {parameter.mediaUpload ? (
-                      <UploadParameter
-                        key={parameter.name}
-                        form={form}
-                        parameter={parameter}
-                        acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
-                      />
-                    ) : (
-                      <StringParameter
-                        key={parameter.name}
-                        form={form}
-                        parameter={parameter}
-                        onStringArrayChange={onStringArrayChange}
-                      />
-                    )}
-                  </>
-                )}
-              </>
-            )}
-            {/* {parameters[key].name == 'lora' && (
-            <>
-              <Switch checked={allLoras} onChange={setAllLoras} />
-              &nbsp;&nbsp;Include all Loras
-            </>
-          )} */}
+            {renderParameter(parameter)}
           </div>
         )
       })
@@ -259,6 +384,7 @@ const GeneratorForm = ({
       onFinish={handleFinish}
       key={generator.generatorName}
       title={generator.generatorName}
+      onFieldsChange={debouncedHandleFormFieldsChange}
     >
       <Card
         type="inner"
@@ -271,19 +397,47 @@ const GeneratorForm = ({
         actions={[
           <div
             key={generator.generatorName}
-            className="flex px-6 items-center justify-between"
+            className="flex px-6 items-center justify-between flex-wrap"
           >
-            <Button
-              type="primary"
-              icon={<ExperimentOutlined />}
-              htmlType="submit"
-              size="large"
-              className="font-mono capitalize"
-              loading={isSubmitting ? { delay: 250 } : false}
-              disabled={isSubmitting}
-            >
-              {generator.generatorName}
-            </Button>
+            <div className="flex gap-3 items-center">
+              <Button
+                type="primary"
+                icon={<ExperimentOutlined />}
+                htmlType="submit"
+                size="large"
+                className="font-mono capitalize"
+                loading={isSubmitting ? { delay: 250 } : false}
+                disabled={isSubmitting || !isFormTouched}
+              >
+                {generator.generatorName}
+              </Button>
+              {(isLoadingTaskCost || taskCost) && (
+                <div className="flex items-center gap-2 font-mono text-gray-400">
+                  <div className="cursor-default">
+                    {isLoadingTaskCost ? (
+                      <LoadingOutlined />
+                    ) : (
+                      <span className="font-bold">{taskCost?.cost}</span>
+                    )}{' '}
+                    Manna
+                  </div>
+                  <Popover
+                    content={
+                      <div>
+                        Displays the estimated manna cost for this operation
+                      </div>
+                    }
+                    title="Manna Cost"
+                    trigger="click"
+                  >
+                    <HelpOutline
+                      fontSize="small"
+                      className="hover:text-blue-400"
+                    />
+                  </Popover>
+                </div>
+              )}
+            </div>
 
             <Button className="font-mono" type="text" onClick={resetForm}>
               Reset {presetCreation ? '(using preset)' : ''}

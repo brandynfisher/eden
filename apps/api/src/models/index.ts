@@ -4,13 +4,14 @@ import { ApiKey, ApiKeyDocument } from './ApiKey'
 import Challenge, { ChallengeDocument } from './Challenge'
 import { Character, CharacterDocument } from './Character'
 import { Collection, CollectionDocument } from './Collection'
+import { Concept, ConceptDocument } from './Concept'
 import { Creation, CreationDocument } from './Creation'
 import { User, UserDocument } from './Creator'
 import { Follow, FollowDocument } from './Follow'
 import { Generator, GeneratorDocument } from './Generator'
-import { Lora, LoraDocument } from './Lora'
 import { Manna, MannaDocument } from './Manna'
 import { MannaVoucher, MannaVoucherDocument } from './MannaVoucher'
+import { Price, PriceDocument } from './Price'
 import { Reaction, ReactionDocument } from './Reaction'
 import { Scenario, ScenarioDocument } from './Scenario'
 import { Session, SessionDocument } from './Session'
@@ -26,6 +27,7 @@ export interface Database {
   Follow: Model<FollowDocument>
   Task: Model<TaskDocument>
   Creation: Model<CreationDocument>
+  Concept: Model<ConceptDocument>
   Reaction: Model<ReactionDocument>
   Collection: Model<CollectionDocument>
   Transaction: Model<TransactionDocument>
@@ -33,9 +35,9 @@ export interface Database {
   Character: Model<CharacterDocument>
   Challenge: Model<ChallengeDocument>
   Scenario: Model<ScenarioDocument>
-  Lora: Model<LoraDocument>
   Session: Model<SessionDocument>
   SessionEvent: Model<SessionEventDocument>
+  Price: Model<PriceDocument>
 }
 
 export const models: Database = {
@@ -46,6 +48,7 @@ export const models: Database = {
   Follow,
   Task,
   Creation,
+  Concept,
   Reaction,
   Collection,
   Transaction,
@@ -53,7 +56,7 @@ export const models: Database = {
   Character,
   Challenge,
   Scenario,
-  Lora,
   Session,
   SessionEvent,
+  Price,
 }

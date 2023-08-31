@@ -2,25 +2,18 @@ const params = [
   
   {
     name: 'interpolation_init_images',
-    label: 'Real images',
-    description: 'URLs of images to use as init images for real2real',
+    label: 'Your images',
+    description: 'Images to use as keyframes for the interpolation video',
     default: [],
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     minLength: 2,
     maxLength: 8,
     isRequired: true,
   },
   {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
-  },
-  {
     name: 'width',
     label: 'Width',
-    description: 'Width of the creation in pixels',
+    description: 'real2real uses [Width x Height] total number of pixels and adopts the average aspect ratio of your provided images',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -29,33 +22,24 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Height of the creation in pixels',
+    description: 'real2real uses [Width x Height] total number of pixels and adopts the average aspect ratio of your provided images',
     default: 1024,
     minimum: 512,
     maximum: 2048,
     step: 64,
   },
-  // {
-  //   name: 'upscale_f',
-  //   label: 'Upscale Factor',
-  //   description: 'Diffusion-based upscaling factor',
-  //   default: 1.4,
-  //   minimum: 1.0,
-  //   maximum: 2.0,
-  //   step: 0.1,
-  // },
   {
     name: 'n_frames',
     label: 'Frames',
-    description: 'Number of frames in the video',
+    description: 'Number of frames in the video (increase when you use many images)',
     default: 60,
-    minimum: 5,
+    minimum: 10,
     maximum: 600,
   },
   {
     name: 'loop',
     label: 'Loop',
-    description: 'Loop the output video',
+    description: 'Make the video loopable (end=start)',
     default: true,
     allowedValues: [false, true],
   },
@@ -63,6 +47,24 @@ const params = [
 
   ////////////////////////////////////////
   // optional generation args
+  {
+    name: 'lora',
+    label: 'Concept',
+    description:
+      '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
+    default: '(none)',
+    // allowedValues: ['(none)'],
+   },
+   {
+    name: 'lora_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.2,
+    step: 0.1,
+  },
 
   {
     name: 'uc_text',
@@ -75,7 +77,7 @@ const params = [
   {
     name: 'guidance_scale',
     label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance',
+    description: 'Strength of prompt conditioning guidance, higher values result in more saturated frames',
     default: 7.5,
     minimum: 0.0,
     maximum: 20.0,
@@ -103,18 +105,30 @@ const params = [
     name: 'smooth',
     label: 'Smooth',
     description:
-      'Optimize video for perceptual smoothness between frames (if false, frames are linearly spaced in prompt conditioning space)',
+      'Optimize video for perceptual smoothness (highly recommended)',
     default: true,
     allowedValues: [false, true],
     optional: true,
   },
+  
+  {
+    name: 'latent_blending_skip_f',
+    label: 'Denoising skip fractions (very advanced)',
+    description:
+      'Fraction of denoising to skip at the start/end of the animation. Higher values result in smoother video (will also render faster), too high values will look more like crossfading in pixel space.',
+    default: [0.2, 0.75],
+    minLength: 2,
+    maxLength: 2,
+    optional: true,
+  },
+  
   {
     name: 'n_film',
     label: 'FILM Iterations',
     description:
-      'Optionally apply FILM postprocessing to the generated frames to create a smoother video',
+      'Optionally apply FILM postprocessing to create a smoother video (1 = highly recommended)',
     default: 1,
-    allowedValues: [0, 1],
+    allowedValues: [0, 1, 2, 3],
     optional: true,
   },
   {
@@ -154,7 +168,7 @@ const params = [
     label: 'Init image power',
     description:
       'Power of the init_img_strength curve (how fast init_img_strength declines at the keyframes)',
-    default: 3.5,
+    default: 3.0,
     minimum: 0.5,
     maximum: 5.0,
     step: 0.01,
@@ -176,13 +190,20 @@ const params = [
     label: 'Init image max strength',
     description:
       'Max strength of the init_img during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
-    default: 0.85,
+    default: 0.9,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
     optional: true,
   },
 
+  {
+    name: 'checkpoint',
+    label: 'Checkpoint',
+    description: 'Which model checkpoint to generate with',
+    default: 'sdxl-v1.0',
+    allowedValues: ['sdxl-v1.0'],
+  },
 
   ////////////////////////////////////////
   // stream intermediate results
@@ -201,9 +222,9 @@ const params = [
     label: 'Stream every',
     description:
       'How often to yield intermediate results (when stream is true). In sampling steps for images, frames for video.',
-    default: 1,
+    default: 10,
     minimum: 1,
-    maximum: 10,
+    maximum: 25,
     optional: true,
   },
 

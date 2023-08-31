@@ -6,7 +6,6 @@ import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
-  OrderByScore,
 } from '@/components/OrderByButtons'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
@@ -26,12 +25,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[
-          OrderByLatest,
-          OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
         type="creations"
         itemComponent={CreationCard}
       />
@@ -44,12 +38,7 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[
-          OrderByLatest,
-          OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]}
+        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
         type="concepts"
         itemComponent={ConceptCard}
       />
@@ -118,12 +107,20 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
         {/* @todo: replace generic logo image with user profile image  */}
         <meta
           property="og:image"
-          content="https://app.eden.art/apple-touch-icon.png"
+          content={
+            creator.userImage
+              ? creator.userImage
+              : 'https://app.eden.art/apple-touch-icon.png'
+          }
           key="image"
         />
         <meta
           property="og:image:secure_url"
-          content="https://app.eden.art/apple-touch-icon.png"
+          content={
+            creator.userImage
+              ? creator.userImage
+              : 'https://app.eden.art/apple-touch-icon.png'
+          }
         />
         <meta
           property="og:image:alt"
@@ -137,7 +134,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
         />
       </Head>
 
-      <div className={`flex flex-col min-h-screen ${inter.className}`}>
+      <div className={`flex flex-col ${inter.className}`}>
         <Space direction="vertical">
           <ProfileHeader
             creatorId={creator.userId}

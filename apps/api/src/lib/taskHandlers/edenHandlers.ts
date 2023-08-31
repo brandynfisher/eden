@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 
+import { Concept } from '../../models/Concept'
 import { Creation } from '../../models/Creation'
+import { User } from '../../models/Creator'
 import { Generator } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
@@ -79,16 +81,33 @@ const handleUpdate = async (
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
 
-  const taskUpdate = {
+  // only update status if not already completed/failed
+  const taskStatusUpdate = {
     status: isCompleted ? 'completed' : 'running',
     progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
-  } as { output?: TaskOutput[]; status: string; progress: number }
+  } as {
+    output?: TaskOutput[]
+    status: string
+    progress: number
+  }
+  await Task.updateOne(
+    { taskId, status: { $nin: ['completed', 'failed'] } },
+    {
+      $set: taskStatusUpdate,
+    },
+  )
+
+  const taskUpdate = {}
+
+  const filteredIntermediateOutputs = intermediateOutputs.filter(
+    o => o.files && Array.isArray(o.files) && o.files.length > 0,
+  )
 
   if (
     !task.intermediateOutputs ||
-    intermediateOutputs.length > task.intermediateOutputs.length
+    filteredIntermediateOutputs.length > task.intermediateOutputs.length
   ) {
-    const intermediateResults = intermediateOutputs.map(
+    const intermediateResults = filteredIntermediateOutputs.map(
       async (o: TaskOutput) => ({ files: o.files, progress: o.progress }),
     )
     Object.assign(taskUpdate, {
@@ -127,12 +146,79 @@ const handleUpdate = async (
           )
         }
         const creation = await Creation.create(creationData)
-        Object.assign(taskUpdate, { creation: creation._id })
+        Object.assign(taskUpdate, {
+          creation: creation._id,
+          status: 'completed',
+          progress: 1.0,
+        })
+        // todo: maybe fire one webhook with all creations instead of per file
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
             await axios.post(webhook, {
               taskId,
               creation,
+            })
+          })
+        }
+      }
+    } else if (generator?.output == 'concept') {
+      for (let i = 0; i < finalOutput.files.length; i++) {
+        // version the concept's public name (v2, v3, etc)
+        let publicName = finalOutput.name
+        const concepts = await Concept.find({
+          user: task.user,
+          name: publicName,
+        })
+        if (concepts.length > 0) {
+          const baseName = publicName
+          let version = 2
+          let newName = `${baseName}_v${version}`
+          while (
+            await Concept.findOne({
+              user: task.user,
+              name: newName,
+            })
+          ) {
+            version++
+            newName = `${baseName}_v${version}`
+          }
+          publicName = newName
+        }
+        const conceptData = {
+          user: task.user,
+          task: task._id,
+          name: publicName,
+          conceptName: finalOutput.name,
+          checkpoint: task.config.checkpoint,
+          training_images: task.config.lora_training_urls,
+          uri: finalOutput.files[i],
+          thumbnail: finalOutput.thumbnails[0],
+          instance_prompt: task.config.instance_prompt,
+        }
+        if (finalOutput.files[i]) {
+          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+            server,
+            finalOutput.files[i],
+          )
+          conceptData.uri = uri
+        }
+        if (finalOutput.thumbnails[i]) {
+          conceptData.thumbnail = await server.uploadThumbnailAsset(
+            server,
+            finalOutput.thumbnails[i],
+          )
+        }
+        const concept = await Concept.create(conceptData)
+        Object.assign(taskUpdate, {
+          concept: concept._id,
+          status: 'completed',
+          progress: 1.0,
+        })
+        if (task.webhooks) {
+          task.webhooks.forEach(async (webhook: string) => {
+            await axios.post(webhook, {
+              taskId,
+              concept,
             })
           })
         }

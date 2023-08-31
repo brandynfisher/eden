@@ -2,7 +2,7 @@ import CharacterForm from '@/components/Characters/CharacterForm'
 import { useCharacter } from '@/hooks/useCharacter'
 import { Character } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/router'
-import { createContext } from 'react'
+import React, { createContext } from 'react'
 
 interface ICharacterContext {
   character?: Character

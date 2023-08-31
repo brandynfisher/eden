@@ -38,9 +38,10 @@ export const listConcepts = async (
   const conceptRepository = new ConceptRepository(Concept)
   const concepts = await conceptRepository.query(
     {
-      user: creators.docs
-        ? creators.docs.map(creator => creator._id)
-        : undefined,
+      user:
+        userId && creators.docs
+          ? creators.docs.map(creator => creator._id)
+          : undefined,
     },
     {
       limit,
@@ -49,7 +50,23 @@ export const listConcepts = async (
     },
   )
 
-  return reply.status(200).send(concepts)
+  const conceptsWithPublicName = await Promise.all(
+    concepts.docs.map(async doc => {
+      const user = await User.findById(doc.user._id)
+      const publicName = `${user?.username}:${doc.name}`
+      return {
+        ...doc.toObject(),
+        publicName,
+      }
+    }),
+  )
+
+  const response = {
+    ...concepts,
+    docs: conceptsWithPublicName,
+  }
+
+  return reply.status(200).send(response)
 }
 
 export const getConcept = async (

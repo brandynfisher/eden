@@ -5,12 +5,14 @@ import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
 import characterRoutes from './characterRoutes'
 import collectionRoutes from './collectionRoutes'
+import conceptRoutes from './conceptRoutes'
 import creationRoutes from './creationRoutes'
 import creatorRoutes from './creatorRoutes'
 import feedRoutes from './feedRoutes'
 import generatorRoutes from './generatorRoutes'
 import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
+import paymentRoutes from './paymentRoutes'
 import scenarioRoutes from './scenarioRoutes'
 import sessionRoutes from './sessionRoutes'
 import taskRoutes from './taskRoutes'
@@ -50,8 +52,10 @@ export const routes = [
   creationRoutes,
   collectionRoutes,
   generatorRoutes,
+  conceptRoutes,
   taskRoutes,
   scenarioRoutes,
   feedRoutes,
   sessionRoutes,
+  paymentRoutes,
 ]

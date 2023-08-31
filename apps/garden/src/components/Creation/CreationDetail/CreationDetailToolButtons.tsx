@@ -41,7 +41,6 @@ type ToolButtonItem = { title: string; icon: ReactNode; onClick?: () => void }
 
 const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const router = useRouter()
-  const [pageUrl, setPageUrl] = useState('')
   const [toolItems, setToolItems] = useState<ToolButtonItem[]>([])
 
   const handleCreate = async (generator: string | null, creation: Creation) => {
@@ -54,7 +53,7 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
     }
 
     await router.push({
-      pathname: '/create',
+      pathname: '/create/creations',
       query,
     })
   }
@@ -62,11 +61,11 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const getItems = () => {
     const shareItem = {
       title: 'Share Creation',
-      icon: <ShareButton title={'Share Creation'} url={pageUrl} />,
+      icon: <ShareButton title={'Share Creation'} url={``} />,
     }
     const copyItem = {
       title: 'Copy URL',
-      icon: <CopyUrlButton url={pageUrl} />,
+      icon: <CopyUrlButton url={``} />,
     }
 
     const items: ToolButtonItem[] = [
@@ -112,8 +111,6 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   }
 
   useEffect(() => {
-    const baseUrl = `${window.location.protocol}//${window.location.host}`
-    setPageUrl(`${baseUrl}${router.asPath}`)
     setToolItems(getItems())
   }, [router.asPath])
 

@@ -23,5 +23,4 @@ const PageLayoutDefault = ({ children }: { children: ReactNode }) => {
     </CustomLayout>
   )
 }
-
 export default PageLayoutDefault

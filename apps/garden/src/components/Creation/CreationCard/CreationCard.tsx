@@ -6,9 +6,12 @@ import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import React, { FC, useState } from 'react'
 
-const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
+const CreationCard: FC<{ index: number; data: Creation }> = ({
+  index,
+  data,
+}) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
   const [creation, setCreation] = useState(data)
@@ -23,22 +26,30 @@ const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
     showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
       creation,
       loadSimilar: true,
+      usesUrl: true,
     })
   }
 
   return (
     <div>
-      <div className="relative " key={index}>
+      <div className="relative" key={index}>
         <div className="w-full flex justify-center">
           <div
             ref={ref}
             className="relative rounded-lg overflow-hidden cursor-pointer"
+            onClick={openDetailModal}
           >
-            <MediaPreview creation={creation} hovered={hovered} />
+            <a
+              onClick={ev => ev.preventDefault()}
+              href={`/creations/${creation._id}`}
+              target={'_blank'}
+            >
+              <MediaPreview creation={creation} hovered={hovered} />
+            </a>
             {hovered && (
               <CreationCardHoverOverlay
                 creation={creation}
-                handlers={{ onChange: setCreation, openDetailModal }}
+                handlers={{ onChange: setCreation }}
               />
             )}
           </div>

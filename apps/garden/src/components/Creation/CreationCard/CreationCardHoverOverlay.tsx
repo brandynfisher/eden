@@ -7,7 +7,6 @@ export interface CreationCardHoverOverlayProps {
   creation: Creation
   handlers: {
     onChange: (updatedCreation: Creation) => void
-    openDetailModal: () => void
   }
 }
 
@@ -15,19 +14,8 @@ const CreationCardHoverOverlay = ({
   creation,
   handlers,
 }: CreationCardHoverOverlayProps) => {
-  const handleClickOutside = (event: React.MouseEvent) => {
-    // Check if the click event target is not a button
-    const targetElement = event.target as Element
-    if (!targetElement.closest('button')) {
-      handlers.openDetailModal()
-    }
-  }
-
   return (
-    <div
-      className="absolute inset-0 flex flex-col justify-between"
-      onClick={handleClickOutside}
-    >
+    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
       <div className="mx-2 mt-2 anim-slide-fade-down">
         <CreationReactions creation={creation} onChange={handlers.onChange} />
       </div>

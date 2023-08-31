@@ -7,7 +7,7 @@ import real2realParameters from './generators/real2real.js';
 import remixParameters from './generators/remix.js';
 import interrogateParameters from './generators/interrogate.js';
 import wav2lipParameters from './generators/wav2lip.js';
-import loraParameters from './generators/lora.js';
+import conceptParameters from './generators/concept.js';
 
 
 import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
@@ -15,7 +15,7 @@ import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
 const allowed_cogs = [
   "eden-sd-pipelines-sdxl",
   "character",
-  "lora",
+  "sdxl-lora-trainer",
   "zeroscope-v2-xl",
 ]
 
@@ -134,20 +134,20 @@ async function updateVersion(db) {
   
   }
   
-  else if (cog === 'lora') {
+  else if (cog === 'sdxl-lora-trainer') {
 
-    const loraGeneratorVersion = {
+    const conceptGeneratorVersion = {
       provider: 'replicate',
-      address: 'abraham-ai/eden-sd-lora',
+      address: 'abraham-ai/sdxl-lora-trainer',
       versionId: versionId,
-      mode: 'lora',
-      parameters: loraParameters,
+      mode: 'concept',
+      parameters: conceptParameters,
       isDeprecated: false
     }
 
     await db.collection('generators').updateOne(
-      { generatorName: 'lora' }, 
-      { $addToSet: { versions: loraGeneratorVersion } }
+      { generatorName: 'sdxl-lora-trainer' }, 
+      { $addToSet: { versions: conceptGeneratorVersion } }
     );
 
   }
@@ -180,7 +180,7 @@ async function main() {
   try {
     await client.connect();
     console.log(`Connected successfully to ${MONGO_URI}`);
-    const db = await client.db('eden');
+    const db = await client.db('eden-dev');
     await updateVersion(db);
   } catch (err) {
     console.error('Failed to connect to the server:', err);
