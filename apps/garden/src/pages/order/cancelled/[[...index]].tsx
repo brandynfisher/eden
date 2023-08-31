@@ -1,5 +1,5 @@
 import { withSessionSsr } from '@/lib/withSession'
-import OrderSuccessPage from '@/pages/order/success/SuccessPage'
+import OrderCancelledPage from '@/pages/order/cancelled/CancelledPage'
 import { NextPageContext } from 'next'
 
 import { Page } from '../../../../types/page'
@@ -44,7 +44,7 @@ export const getOrderServerSidePropsBase = () => {
 export const getServerSideProps = getOrderServerSidePropsBase()
 
 const orderCancelled: Page<PageProps> = ({ data }: PageProps) => {
-  return <OrderSuccessPage data={data} />
+  return <OrderCancelledPage data={data} />
 }
 
 export default orderCancelled
