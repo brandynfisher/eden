@@ -26,7 +26,10 @@ const Banner = ({
           {children}
         </div>
         {dismissible ? (
-          <Button onClick={handleCloseClick} className="sm:absolute sm:right-4">
+          <Button
+            onClick={handleCloseClick}
+            className="sm:absolute sm:right-4 mb-4 sm:mb-0"
+          >
             <CloseOutlined />
             Dismiss
           </Button>
