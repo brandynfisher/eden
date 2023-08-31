@@ -52,7 +52,6 @@ const ProfileHeader = ({
   const [userMigrated /*setUserMigrated*/] = useState()
   const [showImageUploader, setShowImageUploader] = useState(false)
   const [form] = Form.useForm()
-  // const userImageFieldValue = Form.useWatch('userImage', form)
   const clickOutsideTargetRef = useClickOutside(() =>
     setShowImageUploader(false),
   )
@@ -97,11 +96,6 @@ const ProfileHeader = ({
     message.destroy()
 
     try {
-      // const creatorResponse = await axios.post('/api/creators/update', {
-      //   userImage: userImageFieldValue,
-      // })
-      // const creatorResponse =
-
       if (!encodedImage) {
         message.error('Failed to update image!')
         setImageSubmitLoading(false)
