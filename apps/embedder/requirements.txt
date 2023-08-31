@@ -1,0 +1,16 @@
+torch
+torchvision
+numpy
+pillow
+pymongo
+requests
+tqdm
+ftfy
+regex
+gdown
+python-dotenv
+scikit-image
+opencv-python
+open_clip_torch
+git+https://github.com/chroma-core/chroma.git
+git+https://github.com/openai/CLIP.git
