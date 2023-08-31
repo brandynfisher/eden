@@ -1,16 +1,30 @@
 import Banner from '@/components/Banners/BaseBanner'
+import { useLocalStorage } from '@mantine/hooks'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const AuthChangeBanner = () => {
-  const [shouldShow, setShouldShow] = useState(true) //@todo: initialize from local storage
+  const [shouldShow, setShouldShow] = useState(false) //@todo: initialize from local storage
+
+  const [bannerDismissed, setBannerDismissed] = useLocalStorage<
+    boolean | 'auto'
+  >({
+    key: 'banner::auth-change--seen',
+    defaultValue: false,
+  })
 
   const onCloseHandler = () => {
-    // @todo: set localstorage to announcement:[bannerName]:seen = true
+    setBannerDismissed(true)
     setShouldShow(false)
   }
 
-  if (!shouldShow) {
+  useEffect(() => {
+    if (typeof bannerDismissed !== 'undefined' && bannerDismissed === false) {
+      setShouldShow(true)
+    }
+  }, [bannerDismissed])
+
+  if (bannerDismissed || !shouldShow) {
     return null
   }
 

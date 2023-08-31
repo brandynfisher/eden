@@ -3,13 +3,12 @@ import AuthChangeBanner from '@/components/Banners/AuthChangeBanner'
 import FetchIndicator from '@/components/Layout/FetchIndicator'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
 import BackToTopButton from '@/components/Layout/buttons/BackToTopButton'
-import { UserContext } from '@/providers/UserProvider'
+import { ClerkLoaded, SignedIn, SignedOut } from '@clerk/nextjs'
 import { Layout } from 'antd'
 import {
   Dispatch,
   PropsWithChildren,
   SetStateAction,
-  useContext,
   useEffect,
   useState,
 } from 'react'
@@ -50,8 +49,6 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
   const [requestCount, setRequestCount] = useState(0)
   const [showLoading, setShowLoading] = useState(false)
 
-  const { isAuthenticated } = useContext(UserContext)
-
   useEffect(() => {
     if (requestCount > 0) {
       setShowLoading(true)
@@ -66,7 +63,14 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
       value={{ use: [myRequestCounterMiddlewareWrap(setRequestCount)] }}
     >
       <Layout className="min-h-screen flex flex-col">
-        {isAuthenticated ? <AccountMigrationBanner /> : <AuthChangeBanner />}
+        <ClerkLoaded>
+          <SignedIn>
+            <AccountMigrationBanner />
+          </SignedIn>
+          <SignedOut>
+            <AuthChangeBanner />
+          </SignedOut>
+        </ClerkLoaded>
 
         <LayoutHeader />
         <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>

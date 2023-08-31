@@ -1,18 +1,32 @@
 import Banner from '@/components/Banners/BaseBanner'
 import { UserContext } from '@/providers/UserProvider'
+import { useLocalStorage } from '@mantine/hooks'
 import Link from 'next/link'
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 const AccountMigrationBanner = () => {
   const { user } = useContext(UserContext)
-  const [shouldShow, setShouldShow] = useState(true) //@todo: initialize from local storage
+  const [shouldShow, setShouldShow] = useState(false) //@todo: initialize from local storage
+
+  const [bannerDismissed, setBannerDismissed] = useLocalStorage<
+    boolean | 'auto'
+  >({
+    key: 'banner::account-migration--seen',
+    defaultValue: false,
+  })
 
   const onCloseHandler = () => {
-    // @todo: set localstorage to announcement:[bannerName]:seen = true
+    setBannerDismissed(true)
     setShouldShow(false)
   }
 
-  if (!shouldShow) {
+  useEffect(() => {
+    if (typeof bannerDismissed !== 'undefined' && bannerDismissed === false) {
+      setShouldShow(true)
+    }
+  }, [bannerDismissed])
+
+  if (bannerDismissed || !shouldShow) {
     return null
   }
 
@@ -24,7 +38,7 @@ const AccountMigrationBanner = () => {
       </div>
 
       <Link href="/migrate" className="font-bold my-2" onClick={onCloseHandler}>
-        Click here to migrate data from your old account
+        Click here to migrate data from your old account(s)
       </Link>
 
       <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
