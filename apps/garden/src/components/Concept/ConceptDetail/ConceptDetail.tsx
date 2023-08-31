@@ -64,7 +64,7 @@ const ConceptDetail = ({
 }) => {
   const maxThumbnailSize = 96
 
-  const { isAuthenticated, user, address } = useContext(UserContext)
+  const { isAuthenticated, user } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [conceptData, setConceptData] = useState<Concept>(concept)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
@@ -75,12 +75,12 @@ const ConceptDetail = ({
   const [displayImage, setDisplayImage] = useState({ url: '', thumbnail: '' })
 
   useEffect(() => {
-    if (isAuthenticated && user?.userId === address) {
+    if (isAuthenticated && user?.userId === concept?.user?.userId) {
       setShowFollowControls(true)
     } else {
       setShowFollowControls(false)
     }
-  }, [isAuthenticated, user?.userId, address])
+  }, [isAuthenticated, user?.userId, concept?.user?.userId])
 
   const showMediaViewer = () => {
     setMediaViewerVisible(true)
