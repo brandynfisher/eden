@@ -6,7 +6,7 @@ import { useContext, useEffect, useState } from 'react'
 
 const AccountMigrationBanner = () => {
   const { user } = useContext(UserContext)
-  const [shouldShow, setShouldShow] = useState(false) //@todo: initialize from local storage
+  const [shouldShow, setShouldShow] = useState(false)
 
   const [bannerDismissed, setBannerDismissed] = useLocalStorage<
     boolean | 'auto'

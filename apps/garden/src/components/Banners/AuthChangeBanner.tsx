@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 const AuthChangeBanner = () => {
-  const [shouldShow, setShouldShow] = useState(false) //@todo: initialize from local storage
+  const [shouldShow, setShouldShow] = useState(false)
 
   const [bannerDismissed, setBannerDismissed] = useLocalStorage<
     boolean | 'auto'
