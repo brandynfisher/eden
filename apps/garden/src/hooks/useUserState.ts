@@ -4,13 +4,14 @@ import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCollections } from '@/hooks/useMyCollections'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
-import { useAuth } from '@clerk/nextjs'
+import { useAuth, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
 export const useUserState = () => {
   const router = useRouter()
   const { isSignedIn, userId: clerkUid } = useAuth()
+  const { signOut, openSignIn } = useClerk()
   const isAuthenticated = isSignedIn || false
   const userId = clerkUid || null
   const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })
@@ -24,14 +25,18 @@ export const useUserState = () => {
   })
   const { creator, mutate: refetchCreator } = useCreator(userId || null)
 
-  const authenticate = async () => {
+  const authenticate = async (afterSignInUrl?: string) => {
     if (!isAuthenticated) {
-      await router.push('/sign-in')
+      await openSignIn(afterSignInUrl ? { afterSignInUrl } : undefined)
     }
   }
 
   const logout = async () => {
-    await router.push('/sign-out')
+    if (isAuthenticated) {
+      await signOut()
+    }
+
+    await router.push('/')
   }
 
   // reset user state on disconnect

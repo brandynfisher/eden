@@ -54,12 +54,12 @@ const createMenuItems = (
 
 const CreateMenu = () => {
   const router = useRouter()
-  const { isAuthenticated, user, featureFlags } = useContext(UserContext)
+  const { isAuthenticated, user } = useContext(UserContext)
 
   const menuItems = createMenuItems(
     isAuthenticated,
     user?.username,
-    featureFlags,
+    user && user.featureFlags ? user.featureFlags : [],
   )
 
   return (

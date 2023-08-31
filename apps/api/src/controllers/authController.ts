@@ -157,6 +157,7 @@ export const receiveUserUpdate = async (
       await createNewUser({
         userId: evt.data.id,
         username: evt.data.username,
+        userImage: evt.data.image_url,
         isWeb2: false,
         isClerk: true,
         isAdmin: false,
@@ -170,6 +171,7 @@ export const receiveUserUpdate = async (
         return reply.status(400).send('Webhook Error: User not found')
       }
       user.username = evt.data.username || user.username
+      user.userImage = evt.data.image_url || user.userImage
       await user.save()
       return reply.status(200).send({})
     case 'user.deleted':

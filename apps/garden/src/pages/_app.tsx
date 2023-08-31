@@ -1,12 +1,12 @@
 import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
+import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
 import EdenProvider from '@/providers/EdenProvider'
 import ModalProvider from '@/providers/ModalProvider'
 import UserProvider from '@/providers/UserProvider'
 import WalletProvider from '@/providers/WalletProvider'
 import '@/styles/globals.scss'
-import { ClerkProvider } from '@clerk/nextjs'
 import '@rainbow-me/rainbowkit/styles.css'
 import 'antd/dist/reset.css'
 import { ThemeProvider } from 'next-themes'
@@ -57,7 +57,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
 
       <ThemeProvider attribute="class">
         <AntConfigWrapProvider>
-          <ClerkProvider>
+          <ClerkWrapProvider>
             <WalletProvider>
               <EdenProvider>
                 <UserProvider>
@@ -69,7 +69,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
                 </UserProvider>
               </EdenProvider>
             </WalletProvider>
-          </ClerkProvider>
+          </ClerkWrapProvider>
         </AntConfigWrapProvider>
       </ThemeProvider>
     </>

@@ -113,7 +113,7 @@ const CreationDetail = ({
               {isImage(creation.uri) ? (
                 <MediaDisplay
                   creationUri={creationData?.uri}
-                  previewUri={creationData?.uri}
+                  previewUri={creationData?.thumbnail}
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
                   onLoad={() => {

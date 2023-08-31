@@ -1,4 +1,5 @@
-import fastify from 'fastify'
+import fastifyJWT from '@fastify/jwt'
+import fastify, { FastifyReply, FastifyRequest } from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerChroma from './plugins/chromaPlugin'

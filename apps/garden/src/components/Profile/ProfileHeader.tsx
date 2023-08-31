@@ -1,3 +1,4 @@
+import AccountMigrationProfileBanner from '@/components/Banners/AccountMigrationProfileBanner'
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import CopyUrlButton from '@/components/CopyUrlButton'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
@@ -31,6 +32,7 @@ const ProfileHeader = ({
   const [imageSubmitLoading, setImageSubmitLoading] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [displayImage, setDisplayImage] = useState<string | undefined>()
+  const [userMigrated /*setUserMigrated*/] = useState()
   const [showImageUploader, setShowImageUploader] = useState(false)
   const [form] = Form.useForm()
   const userImageFieldValue = Form.useWatch('userImage', form)
@@ -187,6 +189,9 @@ const ProfileHeader = ({
           </div>
         </div>
       </div>
+      {isConnectedUser && !userMigrated ? (
+        <AccountMigrationProfileBanner />
+      ) : null}
     </div>
   )
 }
