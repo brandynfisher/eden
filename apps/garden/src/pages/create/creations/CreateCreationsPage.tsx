@@ -12,7 +12,11 @@ const CreatePageWithPreset = ({
   generator?: string
   presetId: string
 }) => {
-  const { creation } = useCreation(presetId)
+  const { creation } = useCreation(presetId, {
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  })
 
   if (!creation) {
     return <LoadingIndicator />
