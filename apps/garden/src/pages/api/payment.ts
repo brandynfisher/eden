@@ -4,10 +4,6 @@ import { EdenClient, PaymentsCreateArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (!process.env.NEXT_PUBLIC_FLAG_PAYMENT_ENABLED) {
-    return res.status(400).json({ error: 'Payment is not enabled' })
-  }
-
   const authToken = req.session.token
   const { priceId, paymentMode } = req.body as PaymentsCreateArguments
 
