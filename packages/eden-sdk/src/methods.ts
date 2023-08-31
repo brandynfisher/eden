@@ -19,7 +19,10 @@ import {
   CollectionsUpdateResponse,
 } from 'src/responses/CollectionsResponses'
 import { MediaUploadResponse } from 'src/responses/MediaResponses'
-import { PaymentsCreateResponse } from 'src/responses/PaymentsResponses'
+import {
+  PaymentsCreateResponse,
+  PaymentsProductsResponse,
+} from 'src/responses/PaymentsResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
@@ -314,6 +317,10 @@ export abstract class Methods {
       this,
       paymentsCreateRequestConfig,
     ),
+    products: bindApiCall<PaymentsProductsArguments, PaymentsProductsResponse>(
+      this,
+      paymentsProductsRequestConfig,
+    ),
   }
 
   public readonly scenarios = {
@@ -570,6 +577,8 @@ export interface PaymentsCreateArguments extends WebAPICallOptions {
   priceId: string
   paymentMode: 'payment' | 'subscription'
 }
+
+export interface PaymentsProductsArguments extends WebAPICallOptions {}
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
   name: string
@@ -1046,6 +1055,13 @@ const paymentsCreateRequestConfig = (
     data: {
       ...args,
     },
+  }
+}
+
+const paymentsProductsRequestConfig = (): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'payments/products',
   }
 }
 

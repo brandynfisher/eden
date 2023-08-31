@@ -13,7 +13,10 @@ module.exports = withTM({
     return config
   },
   images: {
-    domains: ['https://minio.aws.abraham.fun/creations-stg/'],
+    domains: [
+      'https://minio.aws.abraham.fun/creations-stg/',
+      'files.stripe.com',
+    ],
     remotePatterns: [
       {
         protocol: 'https',

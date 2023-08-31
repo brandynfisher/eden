@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify'
 
 import {
   createCheckoutSession,
-  getPriceList,
+  getProducts,
   handlePaymentEvent,
 } from '../controllers/paymentController'
 import { isAuth } from '../middleware/authMiddleware'
@@ -39,20 +39,15 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       handlePaymentEvent(server, request, reply),
   })
 
-  server.get('/payments/prices', {
+  server.get('/payments/products', {
     schema: {
       response: {
-        200: Type.Array(
-          Type.Object({
-            priceId: Type.String(),
-            price: Type.Number(),
-            isSubscription: Type.Boolean(),
-            mannaAmount: Type.Number(),
-          }),
-        ),
+        200: Type.Object({
+          products: Type.Array(Type.Any()),
+        }),
       },
     },
-    handler: async (_, reply) => getPriceList(reply),
+    handler: async (_, reply) => getProducts(server, reply),
   })
 }
 

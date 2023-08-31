@@ -4,7 +4,6 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { getAdminHeaders } from '../lib/util'
 import { User } from '../models/Creator'
-import { Price } from '../models/Price'
 
 const handlePaymentSuccess = async (
   server: FastifyInstance,
@@ -18,36 +17,43 @@ const handlePaymentSuccess = async (
     })
   }
 
-  // get the priceId
   const session = await server.stripe.checkout.sessions.retrieve(sessionId, {
-    expand: ['line_items'],
+    expand: ['line_items.data.price.product'],
   })
   if (
     !session.line_items ||
     session.line_items.data.length === 0 ||
-    !session.line_items.data[0].price
+    !session.line_items.data[0].price ||
+    !session.line_items.data[0].price.product
   ) {
     return reply.status(400).send({
       message: 'No line items found',
     })
   }
-  const priceId = session.line_items.data[0].price.id
-
-  // get the amount of manna
-  const price = await Price.findOne({ priceId })
-  if (!price) {
+  // @ts-ignore
+  const mannaAmount = session.line_items.data[0].price.product.metadata
+    .manna as string
+  if (!mannaAmount) {
     return reply.status(400).send({
-      message: 'No price found',
+      message: 'No manna amount found',
     })
   }
-  const { mannaAmount } = price
+
+  let mannaAmountInt: number
+  try {
+    mannaAmountInt = parseInt(mannaAmount)
+  } catch (error) {
+    return reply.status(400).send({
+      message: 'Invalid manna amount',
+    })
+  }
 
   try {
     await axios.post(
       `${server.config.API_URL}/admin/manna/modify`,
       {
         userId,
-        amount: mannaAmount,
+        amount: mannaAmountInt,
       },
       {
         headers: getAdminHeaders(server),
@@ -153,7 +159,32 @@ export const handlePaymentEvent = async (
   }
 }
 
-export const getPriceList = async (reply: FastifyReply) => {
-  const prices = await Price.find({})
-  return reply.status(200).send(prices)
+export const getProducts = async (
+  server: FastifyInstance,
+  reply: FastifyReply,
+) => {
+  if (!server.stripe) {
+    return reply.status(500).send({
+      message: 'Stripe is not configured',
+    })
+  }
+  const products = await server.stripe.products.list({})
+  const activeProducts = products.data.filter(product => product.active)
+  const productsWithPrices = await Promise.all(
+    activeProducts.map(async product => {
+      // @ts-ignore
+      const prices = await server.stripe.prices.list({ product: product.id })
+      return {
+        ...product,
+        displayPrice: {
+          currency: prices.data[0].currency,
+          unit_amount: prices.data[0].unit_amount,
+        },
+      }
+    }),
+  )
+
+  return reply.status(200).send({
+    products: productsWithPrices,
+  })
 }
