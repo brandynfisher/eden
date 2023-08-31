@@ -1,6 +1,6 @@
+import { Product } from '@edenlabs/eden-sdk'
 import { Button, Card } from 'antd'
 import Image from 'next/image'
-import type { Stripe } from 'stripe'
 
 const { Meta } = Card
 
@@ -8,20 +8,15 @@ const ProductCard = ({
   product,
   checkoutHandler,
 }: {
-  product: Stripe.Product
+  product: Product
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
   const handleBuyProductClick = () => {
-    checkoutHandler(product.id, 'product')
+    checkoutHandler(product.default_price, 'payment')
   }
 
-  const renderDisplayPrice = (product: Stripe.Product) => {
-    if (product?.default_price === 'string') {
-      return <div>{product?.default_price}</div>
-    }
-
-    const displayPrice = product.default_price as Stripe.Price
-
+  const renderDisplayPrice = (product: Product) => {
+    const { displayPrice } = product
     return (
       <div>
         {displayPrice.currency}{' '}

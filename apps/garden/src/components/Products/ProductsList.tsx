@@ -8,6 +8,11 @@ const ProductsList = ({
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
   const { products } = useProducts()
+  const productsSortedByPrice = products?.sort((a, b) => {
+    const aPrice = a.displayPrice.unit_amount
+    const bPrice = b.displayPrice.unit_amount
+    return aPrice > bPrice ? 1 : -1
+  })
 
   return (
     <div>
@@ -16,7 +21,7 @@ const ProductsList = ({
         <LoadingIndicator />
       ) : (
         <div className="flex gap-4 flex-wrap">
-          {products.map(product => (
+          {productsSortedByPrice.map(product => (
             <ProductCard
               key={product.id}
               product={product}

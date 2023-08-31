@@ -192,7 +192,7 @@ const handleUpdate = async (
           checkpoint: task.config.checkpoint,
           training_images: task.config.lora_training_urls,
           uri: finalOutput.files[i],
-          thumbnail: task.config.lora_training_urls[0],
+          thumbnail: finalOutput.thumbnails[0],
           instance_prompt: task.config.instance_prompt,
         }
         if (finalOutput.files[i]) {
@@ -201,6 +201,12 @@ const handleUpdate = async (
             finalOutput.files[i],
           )
           conceptData.uri = uri
+        }
+        if (finalOutput.thumbnails[i]) {
+          conceptData.thumbnail = await server.uploadThumbnailAsset(
+            server,
+            finalOutput.thumbnails[i],
+          )
         }
         const concept = await Concept.create(conceptData)
         Object.assign(taskUpdate, {
