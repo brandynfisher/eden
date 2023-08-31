@@ -5,7 +5,7 @@ const AccountMigrationProfileBanner = () => {
   return (
     <Banner
       dismissible={false}
-      className="bg-green-200 dark:bg-indigo-950 mt-2"
+      className="bg-green-200 dark:bg-indigo-950 mt-2 rounded-lg"
     >
       <Link href="/migrate" className="font-bold">
         Click here to migrate data from your old account(s)

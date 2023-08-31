@@ -31,7 +31,10 @@ const AccountMigrationBanner = () => {
   }
 
   return (
-    <Banner onClose={onCloseHandler} className="bg-green-200 dark:bg-green-950">
+    <Banner
+      onClose={onCloseHandler}
+      className="bg-green-200 dark:bg-indigo-950"
+    >
       <div className="mt-2">
         Welcome to the Garden,{' '}
         <span className="font-bold">{user?.username}</span>!
