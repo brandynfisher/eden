@@ -19,7 +19,6 @@ export interface ConceptSchema {
   conceptName: string
   checkpoint: string
   training_images: string[]
-  instance_prompt: string
   attributes?: any
   createdAt?: Date
   updatedAt?: Date
@@ -35,7 +34,6 @@ export interface ConceptInput {
   conceptName: string
   checkpoint: string
   training_images: string[]
-  instance_prompt: string
   attributes?: Record<string, any>
   mediaAttributes?: {
     type: MediaType
@@ -85,10 +83,6 @@ const concept = new Schema<ConceptDocument>(
     },
     training_images: {
       type: [String],
-      required: true,
-    },
-    instance_prompt: {
-      type: String,
       required: true,
     },
     attributes: {

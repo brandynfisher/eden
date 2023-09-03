@@ -251,10 +251,11 @@ const ConceptDetail = ({
                   <div>Training Images</div>
                   {conceptData?.training_images?.length || 0}
                 </div>
-                <div className="flex gap-2 justify-between">
+                {/* instance_prompt no longer exists */}
+                {/* <div className="flex gap-2 justify-between">
                   <div>Instance Prompt</div>
                   <div>{conceptData?.instance_prompt}</div>
-                </div>
+                </div> */}
                 <div className="flex gap-2 justify-between">
                   <div>Checkpoint</div>
                   <div>{conceptData?.checkpoint}</div>

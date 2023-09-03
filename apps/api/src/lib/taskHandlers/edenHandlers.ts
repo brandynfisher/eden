@@ -189,11 +189,10 @@ const handleUpdate = async (
           task: task._id,
           name: publicName,
           conceptName: finalOutput.name,
-          checkpoint: task.config.checkpoint,
+          checkpoint: 'sdxl-v1.0', //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
           uri: finalOutput.files[i],
           thumbnail: finalOutput.thumbnails[0],
-          instance_prompt: task.config.instance_prompt,
         }
         if (finalOutput.files[i]) {
           const { uri, mediaAttributes } = await server.uploadUrlAsset(
