@@ -54,7 +54,7 @@ const params = [
     description: 'learning rate for the LORA matrices. This is the most important setting of the entire process (recommended to keep at default unless you know what youre doing)',
     default: 5e-5,
     minimum: 1e-5,
-    maximum: 3e-4,
+    maximum: 1e-4,
     step: 1e-5,
     optional: true,
   },
