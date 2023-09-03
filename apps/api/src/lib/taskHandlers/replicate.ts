@@ -32,6 +32,10 @@ export const formatStableDiffusionConfigForReplicate = async (config: any) => {
   newConfig.lora_training_urls
     ? (newConfig.lora_training_urls = newConfig.lora_training_urls.join('|'))
     : null
+  newConfig.latent_blending_skip_f
+    ? (newConfig.latent_blending_skip_f =
+        newConfig.latent_blending_skip_f.join('|'))
+    : null
 
   // if it's a Concept training
   if (newConfig.lora_training_urls) {

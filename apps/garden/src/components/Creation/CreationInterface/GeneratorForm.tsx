@@ -153,7 +153,10 @@ const GeneratorForm = ({
         !presetCreation ||
         (presetCreation &&
           presetCreation.task.generator.generatorName !==
-            generator.generatorName)
+            generator.generatorName &&
+          router.query.generator &&
+          router.query.generator === 'remix' &&
+          generator.generatorName !== 'remix')
       ) {
         resetForm()
       }
@@ -274,7 +277,10 @@ const GeneratorForm = ({
     // reset form
     setStringArrayValues({})
     setPresetConfig({})
-    setIsFormTouched(false)
+
+    if (!presetCreation) {
+      setIsFormTouched(false)
+    }
   }
 
   const renderFormFields = useCallback(
