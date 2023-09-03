@@ -40,7 +40,6 @@ const params = [
     maximum: 1200,
     optional: true,
   },
-  
   {
     name: 'left_right_flip_augmentation',
     label: 'To randomly flip training imgs left/right',
@@ -49,7 +48,6 @@ const params = [
     allowedValues: [false, true],
     optional: true,
   },
-
   {
     name: 'lora_lr',
     label: 'learning rate for the LORA matrices',
@@ -70,7 +68,6 @@ const params = [
     step: 1e-5,
     optional: true,
   },
-
   {
     name: 'lora_rank',
     label: 'LORA rank',
@@ -80,7 +77,6 @@ const params = [
     maximum: 16,
     optional: true,
   },
-
   {
     name: 'caption_prefix',
     label: 'trigger text',
@@ -89,7 +85,6 @@ const params = [
     default: "",
     optional: true,
   },
-  
   {
     name: 'resolution',
     label: 'Resolution',
@@ -110,8 +105,6 @@ const params = [
     optional: true,
   },
   
-
-
 ]
 
 export default params;
