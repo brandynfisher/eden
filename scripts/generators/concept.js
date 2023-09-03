@@ -82,7 +82,7 @@ const params = [
   },
 
   {
-    name: 'caption prefix',
+    name: 'caption_prefix',
     label: 'trigger text',
     description:
       'A short sentence that describes & triggers the concept to be learned (eg "man with mustache" or "cartoon of a yellow superhero"). When empty, chatgpt takes care of this (recommended)',
