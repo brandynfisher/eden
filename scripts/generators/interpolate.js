@@ -116,7 +116,7 @@ const params = [
     label: 'Denoising skip fractions (very advanced)',
     description:
       'What fraction of denoising steps to skip at the start and end of the render. Higher values result in smoother video (will also render faster), too high values will look more like crossfading in pixel space.',
-    default: [0.2, 0.75],
+    default: [0.15, 0.65],
     minLength: 2,
     maxLength: 2,
     optional: true,
