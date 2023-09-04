@@ -4,6 +4,8 @@
 
 - `yarn install`
 - copy envs from 1password
+- git submodule init
+- git submodule update
 - `docker-compose up --build`
 
 ### Launch in dummy mode (with fake test generators)
