@@ -84,6 +84,7 @@ const GeneratorForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
   const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
+  const [uploadsInProgress, setUploadsInProgress] = useState(false)
 
   useEffect(() => {
     const transformConfig = () => {
@@ -113,7 +114,10 @@ const GeneratorForm = ({
 
   const handleFormFieldsChange = async () => {
     setIsFormTouched(true)
-    await handleGetTaskCost()
+
+    if (!uploadsInProgress) {
+      await handleGetTaskCost()
+    }
   }
 
   const debouncedHandleFormFieldsChange = useMemo(
@@ -277,6 +281,7 @@ const GeneratorForm = ({
     // reset form
     setStringArrayValues({})
     setPresetConfig({})
+    setUploadsInProgress(false)
 
     if (!presetCreation) {
       setIsFormTouched(false)
@@ -331,6 +336,9 @@ const GeneratorForm = ({
               form={form}
               parameter={parameter}
               acceptedMimeTypes={parameter.mediaUpload}
+              onUploadInProgress={(uploading: boolean) =>
+                setUploadsInProgress(uploading)
+              }
             />
           )
         }
@@ -405,44 +413,52 @@ const GeneratorForm = ({
             key={generator.generatorName}
             className="flex px-6 items-center justify-between flex-wrap"
           >
-            <div className="flex gap-3 items-center">
-              <Button
-                type="primary"
-                icon={<ExperimentOutlined />}
-                htmlType="submit"
-                size="large"
-                className="font-mono capitalize"
-                loading={isSubmitting ? { delay: 250 } : false}
-                disabled={isSubmitting || !isFormTouched}
-              >
-                {generator.generatorName}
-              </Button>
-              {(isLoadingTaskCost || taskCost) && (
-                <div className="flex items-center gap-2 font-mono text-gray-400">
-                  <div className="cursor-default">
-                    {isLoadingTaskCost ? (
-                      <LoadingOutlined />
-                    ) : (
-                      <span className="font-bold">{taskCost?.cost}</span>
-                    )}{' '}
-                    Manna
+            <div>
+              <div className="flex gap-3 items-center">
+                <Button
+                  type="primary"
+                  icon={<ExperimentOutlined />}
+                  htmlType="submit"
+                  size="large"
+                  className="font-mono capitalize"
+                  loading={isSubmitting ? { delay: 250 } : false}
+                  disabled={isSubmitting || !isFormTouched || uploadsInProgress}
+                >
+                  {generator.generatorName}
+                </Button>
+                {(isLoadingTaskCost || taskCost) && (
+                  <div className="flex items-center gap-2 font-mono text-gray-400">
+                    <div className="cursor-default">
+                      {isLoadingTaskCost ? (
+                        <LoadingOutlined />
+                      ) : (
+                        <span className="font-bold">{taskCost?.cost}</span>
+                      )}{' '}
+                      Manna
+                    </div>
+                    <Popover
+                      content={
+                        <div>
+                          Displays the estimated manna cost for this operation
+                        </div>
+                      }
+                      title="Manna Cost"
+                      trigger="click"
+                    >
+                      <HelpOutline
+                        fontSize="small"
+                        className="hover:text-blue-400"
+                      />
+                    </Popover>
                   </div>
-                  <Popover
-                    content={
-                      <div>
-                        Displays the estimated manna cost for this operation
-                      </div>
-                    }
-                    title="Manna Cost"
-                    trigger="click"
-                  >
-                    <HelpOutline
-                      fontSize="small"
-                      className="hover:text-blue-400"
-                    />
-                  </Popover>
+                )}
+              </div>
+              {uploadsInProgress ? (
+                <div className="text-orange-500 mt-4">
+                  <LoadingOutlined className="mr-2" />
+                  File upload still in progress. Please wait.{' '}
                 </div>
-              )}
+              ) : null}
             </div>
 
             <Button className="font-mono" type="text" onClick={resetForm}>

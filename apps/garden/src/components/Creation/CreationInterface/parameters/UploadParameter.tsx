@@ -18,6 +18,7 @@ const UploadParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
   acceptedMimeTypes?: string
+  onUploadInProgress?: (uploading: boolean) => void
 }) => {
   const { message } = App.useApp()
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -54,6 +55,23 @@ const UploadParameter = (props: {
   }, [props.parameter.default])
 
   const maxUploads = isArray ? props.parameter.maxLength || 3 : 1
+
+  useEffect(() => {
+    if (!props.onUploadInProgress) {
+      return
+    }
+
+    if (!fileList || !fileList.length) {
+      props.onUploadInProgress(false)
+      return
+    }
+
+    const someUnfinished = fileList.some(
+      fileListItem => fileListItem.percent !== 100,
+    )
+
+    props.onUploadInProgress(someUnfinished)
+  }, [fileList])
 
   const handleChange = async (info: UploadChangeParam) => {
     if (info.file.status === 'error') {
