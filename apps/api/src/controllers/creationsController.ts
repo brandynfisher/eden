@@ -12,11 +12,19 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { SiweMessage } from 'siwe'
 
+import { ApiKey } from '../models/ApiKey'
 import Challenge from '../models/Challenge'
+import { Character } from '../models/Character'
 import { Collection } from '../models/Collection'
+import { Concept } from '../models/Concept'
 import { Creation, CreationDocument } from '../models/Creation'
 import { User, UserInput } from '../models/Creator'
+import { Follow } from '../models/Follow'
+import { Manna } from '../models/Manna'
+import { MannaVoucher } from '../models/MannaVoucher'
 import { Reaction } from '../models/Reaction'
+import { Session } from '../models/Session'
+import { Task } from '../models/Task'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 
@@ -402,23 +410,118 @@ export const migrateCreations = async (
 
   if (!authUser) {
     return reply.status(404).send({
-      message: 'This wallet does not have any creations associated with it.',
+      message: 'No user with this wallet found.',
     })
   }
 
-  // Get their creations
-  const creations = await Creation.find({
-    user: authUser._id,
-  })
-
-  if (!creations) {
-    return reply.status(404).send({
-      message: 'This wallet does not have any creations associated with it.',
-    })
-  }
-
-  // Update the user id
+  // migrate creations from old user to new user
   await Creation.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate tasks
+  await Task.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate api keys
+  await ApiKey.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate collections
+  await Collection.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate concepts
+  await Concept.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate manna
+  await Manna.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+  await MannaVoucher.updateMany(
+    {
+      redeemedBy: authUser._id,
+    },
+    {
+      redeemedBy: userId,
+    },
+  )
+
+  // migrate following/followers
+  await Follow.updateMany(
+    {
+      follower: authUser._id,
+    },
+    {
+      follower: userId,
+    },
+  )
+  await Follow.updateMany(
+    {
+      following: authUser._id,
+    },
+    {
+      following: userId,
+    },
+  )
+
+  // migrate reactions
+  await Reaction.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate character
+  await Character.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate sessions
+  await Session.updateMany(
     {
       user: authUser._id,
     },
