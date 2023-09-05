@@ -9,7 +9,6 @@ import {
   getCreation,
   getCreationSimilar,
   listCreations,
-  migrateCreations,
 } from '../controllers/creationsController'
 import { isAuth, maybeAuth } from '../middleware/authMiddleware'
 
@@ -95,23 +94,6 @@ const creationRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async request => isAuth(server, request)],
     handler: (request, reply) => creationUnreact(request, reply),
-  })
-
-  server.post('/creations/migrate', {
-    schema: {
-      request: {
-        body: Type.Object({
-          address: Type.String(),
-          message: Type.String(),
-          signature: Type.String(),
-        }),
-      },
-      response: {
-        200: Type.Object({}),
-      },
-    },
-    preHandler: [async request => isAuth(server, request)],
-    handler: async (request, reply) => migrateCreations(request, reply),
   })
 }
 
