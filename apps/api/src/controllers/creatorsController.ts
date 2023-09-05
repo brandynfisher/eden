@@ -472,6 +472,16 @@ export const migrateCreator = async (
     })
   }
 
+  // check if this user has already been migrated
+  const alreadyMigrated = await UserMigration.exists({
+    oldUser: authUser._id,
+  })
+  if (alreadyMigrated) {
+    return reply.status(400).send({
+      message: 'User has already been migrated',
+    })
+  }
+
   // migrate creations from old user to new user
   await Creation.updateMany(
     {
@@ -571,8 +581,8 @@ export const migrateCreator = async (
 
   // record migration
   await UserMigration.create({
-    user: authUser._id,
-    oldUser: userId,
+    user: userId,
+    oldUser: authUser._id,
   })
 
   return reply.status(200).send({})
