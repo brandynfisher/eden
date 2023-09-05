@@ -37,7 +37,7 @@ const AuthChangeBanner = () => {
       </Link>
 
       <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
-        Your existing data can be migrated afterwards
+        If you already have an account, your data can be migrated afterwards
       </div>
     </Banner>
   )
