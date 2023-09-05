@@ -35,7 +35,7 @@ const params = [
     name: 'max_train_steps',
     label: 'Number of training steps',
     description: 'More steps can lead to a better fit of your concept, but too much training will lose your ability to "prompt" the concept and often causes visual artifacts',
-    default: 700,
+    default: 800,
     minimum: 200,
     maximum: 1200,
     optional: true,
