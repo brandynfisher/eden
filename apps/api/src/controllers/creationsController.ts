@@ -66,7 +66,7 @@ export const getBookmarks = async (
 
   if (!defaultCollection) {
     // The user doesn't have a default collection, so none of the creations are bookmarked
-    // This should never happen though.
+    // This should never happen though...
     return {}
   }
 
