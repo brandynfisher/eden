@@ -93,6 +93,7 @@ const MigratePage = () => {
       <h1>Migrate</h1>
       <p>Step 1: Connect your wallet</p>
       <ConnectButton />
+
       <p>
         Step 2: Sign a message to confirm you wish to migrate to your account
       </p>

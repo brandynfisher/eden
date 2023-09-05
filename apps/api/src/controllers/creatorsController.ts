@@ -26,6 +26,7 @@ import { MannaVoucher } from '../models/MannaVoucher'
 import { Reaction } from '../models/Reaction'
 import { Session } from '../models/Session'
 import { Task } from '../models/Task'
+import { UserMigration } from '../models/UserMigration'
 import CreatorRepository from '../repositories/CreatorRepository'
 import FollowerRepository from '../repositories/FollowerRepository'
 
@@ -501,16 +502,6 @@ export const migrateCreator = async (
     },
   )
 
-  // migrate collections
-  await Collection.updateMany(
-    {
-      user: authUser._id,
-    },
-    {
-      user: userId,
-    },
-  )
-
   // migrate concepts
   await Concept.updateMany(
     {
@@ -521,15 +512,6 @@ export const migrateCreator = async (
     },
   )
 
-  // migrate manna
-  await Manna.updateMany(
-    {
-      user: authUser._id,
-    },
-    {
-      user: userId,
-    },
-  )
   await MannaVoucher.updateMany(
     {
       redeemedBy: authUser._id,
@@ -586,6 +568,12 @@ export const migrateCreator = async (
       user: userId,
     },
   )
+
+  // record migration
+  await UserMigration.create({
+    user: authUser._id,
+    oldUser: userId,
+  })
 
   return reply.status(200).send({})
 }
