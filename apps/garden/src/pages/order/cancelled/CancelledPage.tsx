@@ -6,7 +6,7 @@ import React, { useContext } from 'react'
 const OrderCancelledPage = ({
   data,
 }: {
-  data: { session: { id: string } }
+  data: { session?: { id: string } }
 }) => {
   const { user } = useContext(UserContext)
 
@@ -24,7 +24,11 @@ const OrderCancelledPage = ({
           </Button>
         </Link>
 
-        <div className="hidden">({JSON.stringify(data.session, null, 2)})</div>
+        {data.session && (
+          <div className="hidden">
+            ({JSON.stringify(data.session, null, 2)})
+          </div>
+        )}
       </div>
     </div>
   )

@@ -3,7 +3,7 @@ import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'
 
-const OrderSuccessPage = ({ data }: { data: { session: { id: string } } }) => {
+const OrderSuccessPage = ({ data }: { data: { session?: { id: string } } }) => {
   const { isAuthenticated, user } = useContext(UserContext)
 
   return (
@@ -23,7 +23,11 @@ const OrderSuccessPage = ({ data }: { data: { session: { id: string } } }) => {
           )}
         </div>
 
-        <div className="hidden">({JSON.stringify(data.session, null, 2)})</div>
+        {data.session && (
+          <div className="hidden">
+            ({JSON.stringify(data.session, null, 2)})
+          </div>
+        )}
       </div>
     </div>
   )
