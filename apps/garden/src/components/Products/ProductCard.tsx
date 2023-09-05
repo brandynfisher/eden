@@ -19,11 +19,13 @@ const ProductCard = ({
     const { displayPrice } = product
     return (
       <div>
-        {displayPrice.currency}{' '}
-        {(displayPrice?.unit_amount
-          ? displayPrice?.unit_amount / 100
-          : 0
-        ).toFixed(2)}
+        {displayPrice.currency.toUpperCase()}{' '}
+        <strong>
+          {(displayPrice?.unit_amount
+            ? displayPrice?.unit_amount / 100
+            : 0
+          ).toFixed(2)}
+        </strong>
       </div>
     )
   }

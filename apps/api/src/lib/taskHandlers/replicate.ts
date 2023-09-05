@@ -1,8 +1,5 @@
 import { FastifyInstance } from 'fastify'
 
-import { Concept } from '../../models/Concept'
-import { User } from '../../models/Creator'
-
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
 
@@ -89,7 +86,15 @@ const submitTask = async (
   }
 }
 
-const getTransactionCost = (_: FastifyInstance, __: any, config: any) => {
+const getTransactionCost = (
+  _: FastifyInstance,
+  generatorVersion: any,
+  config: any,
+) => {
+  if (generatorVersion.mode === 'concept') {
+    return 100
+  }
+
   const baseCost = config.n_frames || 1
   const samples = config.n_samples || 1
   const cost = baseCost * samples
