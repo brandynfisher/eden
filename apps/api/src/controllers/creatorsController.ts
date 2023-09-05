@@ -16,7 +16,6 @@ import { SiweMessage } from 'siwe'
 import { ApiKey } from '../models/ApiKey'
 import Challenge from '../models/Challenge'
 import { Character } from '../models/Character'
-import { Collection } from '../models/Collection'
 import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
@@ -576,6 +575,27 @@ export const migrateCreator = async (
     },
     {
       user: userId,
+    },
+  )
+
+  // update the new user's manna to the max of the two
+  const authUserManna = await Manna.findOne({
+    user: authUser._id,
+  })
+  const newUserIdManna = await Manna.findOne({
+    user: userId,
+  })
+  const maxBalance = Math.max(
+    authUserManna?.balance || 0,
+    newUserIdManna?.balance || 0,
+  )
+
+  await Manna.updateOne(
+    {
+      user: userId,
+    },
+    {
+      balance: maxBalance,
     },
   )
 

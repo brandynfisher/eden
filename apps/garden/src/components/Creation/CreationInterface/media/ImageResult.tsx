@@ -35,7 +35,7 @@ const ImageResult = ({
   onPreviewClose,
   onLoad,
 }: {
-  fullSizeUrl: string
+  fullSizeUrl?: string
   previewSizeUrl?: string
   showPreview?: boolean
   onPreviewClose?: () => void

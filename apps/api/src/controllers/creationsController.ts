@@ -174,7 +174,7 @@ export const getCreationSimilar = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { creationId, n } = request.params as CreationsGetSimilarArguments
+  const { creationId } = request.params as CreationsGetSimilarArguments
 
   // Todo: n is not actually set here. defaulting to 10
 
