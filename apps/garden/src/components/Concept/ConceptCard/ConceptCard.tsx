@@ -20,13 +20,12 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
     })
   }
 
-  // @todo: add back reactions, overlay and click handling to allow clicking creator link instead of opening modal...
   return (
     <div className="relative " key={index} onClick={openDetailModal}>
       <div className="w-full flex justify-center">
         <div className="relative rounded-lg overflow-hidden cursor-pointer">
           <ConceptCardDetail concept={concept} isOverlay={true} />
-          <ImageResult resultUrl={concept.thumbnail || ''} />
+          <ImageResult fullSizeUrl={concept.thumbnail || ''} />
         </div>
       </div>
     </div>

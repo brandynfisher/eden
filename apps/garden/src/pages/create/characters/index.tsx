@@ -1,11 +1,9 @@
-import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import CharactersPage from '@/pages/create/characters/CharactersPage'
 import { Character as CharacterType } from '@edenlabs/eden-sdk'
 import { NextPageContext } from 'next'
-import { ReactNode } from 'react'
 
 import { Page } from '../../../../types/page'
 
@@ -34,10 +32,6 @@ export const getServerSideProps = getServerSidePropsBase(
 
 const characters: Page<PageProps> = ({ data }: PageProps) => {
   return <CharactersPage data={data} />
-}
-
-characters.getLayout = function getLayout(page: ReactNode) {
-  return <PageLayoutSidebar>{page}</PageLayoutSidebar>
 }
 
 export default characters

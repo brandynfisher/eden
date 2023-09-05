@@ -29,14 +29,14 @@ const LoadingPlaceholder = () => {
 }
 
 const ImageResult = ({
-  resultUrl,
-  previewUrl,
+  fullSizeUrl,
+  previewSizeUrl,
   showPreview,
   onPreviewClose,
   onLoad,
 }: {
-  resultUrl: string
-  previewUrl?: string
+  fullSizeUrl?: string
+  previewSizeUrl?: string
   showPreview?: boolean
   onPreviewClose?: () => void
   onLoad?: () => void
@@ -88,14 +88,14 @@ const ImageResult = ({
 
   // trigger image onLoad if the image is complete
   useEffect(() => {
-    if (previewUrl && !previewImageRef?.current?.complete) {
+    if (fullSizeUrl && !previewImageRef?.current?.complete) {
       setIsLoaded(false)
     }
 
     if (!isLoaded && previewImageRef && previewImageRef?.current?.complete) {
       handleOnLoad()
     }
-  }, [previewUrl, previewImageRef?.current, isLoaded])
+  }, [fullSizeUrl, previewImageRef?.current, isLoaded])
 
   const fitContentToWrapper = useCallback(() => {
     if (componentWrapRef.current && contentRef.current) {
@@ -124,11 +124,12 @@ const ImageResult = ({
                 ref={previewImageRef}
                 onLoad={handleOnLoad}
                 alt="result"
-                src={resultUrl}
+                src={previewSizeUrl}
+                // srcSet={}
                 className="ant-image-img"
               />
               {!isLoaded && (
-                <div className="absolute inset-0 z-10">
+                <div className="absolute inset-0 z-10 bg-opacity-95">
                   <LoadingPlaceholder />
                 </div>
               )}
@@ -139,13 +140,14 @@ const ImageResult = ({
               alt="result"
               fallback="placeholder.png"
               preview={false}
-              src={resultUrl}
+              src={previewSizeUrl}
             />
           )}
-          {previewUrl && !showPreview && <ImagePreviewMask />}
+          {fullSizeUrl && !showPreview && <ImagePreviewMask />}
         </div>
 
-        {previewUrl && showPreview ? (
+        {/* //@todo: extract preview and controls to isolated component */}
+        {fullSizeUrl && showPreview ? (
           <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-10`}>
             <TransformWrapper
               minScale={0.1}
@@ -177,8 +179,8 @@ const ImageResult = ({
                   <TransformComponent wrapperClass="!w-full !h-full">
                     <img
                       ref={contentRef}
-                      src={previewUrl}
-                      alt={previewUrl}
+                      src={fullSizeUrl}
+                      alt={fullSizeUrl}
                       onLoad={() => {
                         centerView(fitContentToWrapper())
                       }}

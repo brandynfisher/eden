@@ -2,9 +2,10 @@ import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { EditOutlined } from '@ant-design/icons'
+import { useUser } from '@clerk/nextjs'
 import { useClickOutside } from '@mantine/hooks'
 import { App, Button } from 'antd'
-import axios from 'axios'
+import { useRouter } from 'next/router'
 import React, { useContext, useState } from 'react'
 
 const ProfileHeaderName = ({
@@ -17,11 +18,13 @@ const ProfileHeaderName = ({
   isOwnProfile: boolean
 }) => {
   const { message } = App.useApp()
+  const router = useRouter()
   const { isAuthenticated, authenticate } = useContext(UserContext)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [updatedName, setUpdatedName] = useState(displayName)
   const clickOutsideTargetRef = useClickOutside(() => setIsEditing(false))
+  const { user } = useUser()
 
   const handleEditNameClick = async () => {
     if (!isAuthenticated) {
@@ -44,17 +47,22 @@ const ProfileHeaderName = ({
     setUpdatedName(newValue.trim())
   }
 
+  const updateClerkUsername = async (newName: string) => {
+    await user?.update({
+      username: newName,
+    })
+  }
+
   const handleNameSubmit = async () => {
     setLoading(true)
     message.destroy()
 
     try {
-      await axios.post('/api/creators/update', {
-        username: updatedName,
-      })
+      await updateClerkUsername(updatedName)
       setDisplayName(updatedName)
       setIsEditing(false)
       message.success('Name updated successfully!')
+      await router.replace(`/creators/${updatedName.toLowerCase()}`)
     } catch (err) {
       handleAxiosError(err, message)
       message.error('Failed to update name!')

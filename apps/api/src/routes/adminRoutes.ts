@@ -11,7 +11,7 @@ export interface MannaModifyRequestBody {
   amount: number
 }
 
-const mannaRoutes: FastifyPluginAsync = async server => {
+const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/manna/modify', {
     schema: {
       request: {
@@ -79,4 +79,4 @@ const mannaRoutes: FastifyPluginAsync = async server => {
   })
 }
 
-export default mannaRoutes
+export default adminRoutes

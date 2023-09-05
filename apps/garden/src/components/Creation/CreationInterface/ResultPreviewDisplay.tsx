@@ -31,7 +31,10 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
           className="flex flex-col items-center gap-4"
         >
           <Button>Show Details</Button>
-          <MediaDisplay creationUri={creation.uri} />
+          <MediaDisplay
+            creationUri={creation.uri}
+            previewUri={creation.thumbnail}
+          />
         </div>
       ) : (
         <LoadingIndicator />

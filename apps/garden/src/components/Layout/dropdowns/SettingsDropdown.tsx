@@ -1,4 +1,3 @@
-import ConnectButton from '@/components/ConnectButton'
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
 import { UserContext } from '@/providers/UserProvider'
 import {
@@ -8,60 +7,36 @@ import {
   TableOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
+import { UserButton } from '@clerk/nextjs'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const LoginLogoutButton = () => {
-  const { isConnected, isAuthenticated, authenticate, logout } =
-    useContext(UserContext)
-  const router = useRouter()
-
-  const handleAuthClick = useCallback(async () => {
-    if (!isAuthenticated) {
-      authenticate && (await authenticate())
-    } else {
-      logout && (await logout())
-      await router.push('/')
-    }
-  }, [logout, authenticate, isAuthenticated])
+  const { isAuthenticated, authenticate, logout } = useContext(UserContext)
 
   return (
     <div>
-      <ConnectButton />
-      <Button
-        className="font-mono w-full flex items-center mt-2 "
-        onClick={handleAuthClick}
-      >
+      <div className="w-full">
         {isAuthenticated ? (
-          <div className="w-full">
-            <div className="flex justify-center">
-              <LogoutOutlined />
-              <div className="text-black dark:text-white ml-2">
-                Disconnect Wallet
-              </div>
-            </div>
-          </div>
-        ) : !isConnected ? (
-          <div className="w-full">
-            <div className="flex justify-center">
-              <LoginOutlined />
-              <div className="text-black dark:text-white ml-2">
-                Connect Wallet
-              </div>
-            </div>
-          </div>
+          <Button
+            className="flex gap-2 justify-center font-mono w-full items-center"
+            onClick={async () => logout && (await logout())}
+          >
+            <LogoutOutlined />
+            <div>Sign out</div>
+          </Button>
         ) : (
-          <div className="w-full">
-            <div className="flex justify-center">
-              <LoginOutlined />
-              <div className="text-black dark:text-white ml-2">Sign In</div>
-            </div>
-          </div>
+          <Button
+            className="flex gap-2 justify-center font-mono w-full items-center"
+            onClick={async () => authenticate && (await authenticate())}
+          >
+            <LoginOutlined />
+            <div>Sign in</div>
+          </Button>
         )}
-      </Button>
+      </div>
     </div>
   )
 }
@@ -161,22 +136,26 @@ const extraItems: ItemType[] = [
     type: 'divider',
   },
   {
-    label: <LoginLogoutButton />,
+    label: <UserButton afterSignOutUrl="/" showName={true} />,
     key: '3',
+  },
+  {
+    label: <LoginLogoutButton />,
+    key: '4',
   },
 ]
 
 const SettingsDropdown = () => {
-  const { isConnected } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
   const [dropDownItems, setDropDownItems] = useState<ItemType[]>(items)
 
   useEffect(() => {
-    if (isConnected) {
+    if (isAuthenticated) {
       setDropDownItems([...items, ...extraItems])
     } else {
       setDropDownItems(items)
     }
-  }, [isConnected])
+  }, [isAuthenticated])
 
   return (
     <Dropdown
