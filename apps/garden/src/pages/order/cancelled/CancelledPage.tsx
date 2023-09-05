@@ -3,11 +3,7 @@ import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'
 
-const OrderCancelledPage = ({
-  data,
-}: {
-  data: { session?: { id: string } }
-}) => {
+const OrderCancelledPage = () => {
   const { user } = useContext(UserContext)
 
   return (
@@ -23,12 +19,6 @@ const OrderCancelledPage = ({
             <div>Go back to products</div>
           </Button>
         </Link>
-
-        {data.session && (
-          <div className="hidden">
-            ({JSON.stringify(data.session, null, 2)})
-          </div>
-        )}
       </div>
     </div>
   )
