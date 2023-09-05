@@ -138,7 +138,6 @@ export const getCreation = async (
   }
 
   if (request.user?.userId) {
-    console.log('user is logged in')
     // Get user's reactions and bookmarks
     const userId = request.user.userId
     const user = User.findOne({ userId })

@@ -17,6 +17,7 @@ export const registerClerk = async (fastify: FastifyInstance) => {
     fastify.decorate('verifyUser', async (request: any) => {
       const { userId } = getAuth(request)
       if (!userId) {
+        console.log(request.headers)
         throw new Error('Clerk: Not authorized')
       }
 
