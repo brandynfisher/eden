@@ -483,9 +483,10 @@ export const migrateCreator = async (
 
   // copy imageUri if it exists
   if (authUser.userImage) {
+    console.log('ABCDEFG ', userId, authUser.userImage)
     await User.updateOne(
       {
-        user: userId,
+        _id: userId,
       },
       {
         userImage: authUser.userImage,
