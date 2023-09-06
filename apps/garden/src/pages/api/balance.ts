@@ -17,10 +17,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     //   token: authToken,
     // })
     // const response = await eden.manna.balance()
+    const requestKey = randomUUID()
+    console.log('Balance request key', requestKey)
     const response = await axios.post(`${CONFIG.API_URL}/manna/balance`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
-        'X-Request-Key': randomUUID(),
+        'X-Request-Key': requestKey,
       },
       data: {
         token: authToken,
