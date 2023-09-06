@@ -2,7 +2,7 @@ import {
   maybeRedirectIfConceptIdQuery,
   maybeRedirectIfCreationIdQuery,
 } from '@/lib/redirect'
-import ConceptsPage from '@/pages/ConceptsPage'
+import ConceptsPage from '@/pages/concepts/ConceptsPage'
 import { NextPageContext } from 'next'
 
 export async function getServerSideProps(ctx: NextPageContext) {
