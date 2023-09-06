@@ -101,6 +101,8 @@ concept.pre<ConceptDocument>('save', function (next) {
   next()
 })
 
+concept.index({ createdAt: 1 })
+
 concept.plugin(paginate)
 concept.plugin(aggregatePaginate)
 

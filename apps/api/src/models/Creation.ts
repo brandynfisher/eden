@@ -114,6 +114,8 @@ creation.pre<CreationDocument>('save', function (next) {
   next()
 })
 
+creation.index({ createdAt: 1 })
+
 creation.plugin(paginate)
 creation.plugin(aggregatePaginate)
 

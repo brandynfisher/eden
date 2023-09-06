@@ -90,6 +90,8 @@ user.pre<UserDocument>('save', function (next) {
   next()
 })
 
+user.index({ createdAt: 1 })
+
 user.plugin(paginate)
 
 export const User = model<UserDocument>('users', user)

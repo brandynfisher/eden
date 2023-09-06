@@ -75,6 +75,7 @@ const sessionEvent = new Schema<SessionEventDocument>(
   },
 )
 
+sessionEvent.index({ createdAt: 1 })
 sessionEvent.plugin(paginate)
 
 export const SessionEvent = model<SessionEventDocument>(

@@ -117,6 +117,7 @@ task.pre<TaskDocument>('save', function (next) {
   next()
 })
 
+task.index({ createdAt: 1 })
 task.plugin(paginate)
 
 export const Task = model<TaskDocument>('tasks', task)
