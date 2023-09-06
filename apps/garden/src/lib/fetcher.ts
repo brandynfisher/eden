@@ -1,8 +1,8 @@
 import { CONFIG } from '@/lib/config'
+import { getAuth } from '@clerk/nextjs/server'
 import { message } from 'antd'
 import { MessageInstance } from 'antd/es/message/interface'
 import axios, { AxiosError } from 'axios'
-import { parse } from 'cookie'
 import { NextApiRequest } from 'next'
 
 // @ts-ignore
@@ -32,10 +32,8 @@ export const getAdminHeaders = () => {
   }
 }
 
-export const getSessionCookie = (request: NextApiRequest) => {
-  const cookies = parse(request.headers.cookie || '')
-  console.log('xxx cookies', cookies)
-  const authToken = cookies.__session
-  console.log('xxx authToken', authToken)
+export const getSessionCookie = async (request: NextApiRequest) => {
+  const { getToken } = getAuth(request)
+  const authToken = await getToken()
   return authToken
 }

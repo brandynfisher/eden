@@ -6,7 +6,7 @@ import { CharactersCreateArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = getSessionCookie(req)
+  const authToken = await getSessionCookie(req)
   const { name, image, description, greeting, dialogue } =
     req.body as CharactersCreateArguments
 

@@ -9,7 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
   const { userId, page, limit, orderBy, direction } = req.query
-  const authToken = getSessionCookie(req)
+  const authToken = await getSessionCookie(req)
 
   const route = (limit: number, page: number) => {
     const basePath = `${CONFIG.API_URL}/feed/concepts`

@@ -6,7 +6,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { creationId } = req.query
-  const authToken = getSessionCookie(req)
+  const authToken = await getSessionCookie(req)
 
   try {
     const eden = new EdenClient({

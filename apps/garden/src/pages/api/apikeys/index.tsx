@@ -5,7 +5,7 @@ import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = getSessionCookie(req)
+  const authToken = await getSessionCookie(req)
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
