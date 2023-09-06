@@ -1,12 +1,11 @@
 import { CONFIG } from '@/lib/config'
-import { getSessionCookie } from '@/lib/fetcher'
 import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { CharactersCreateArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = await getSessionCookie(req)
+  const authToken = req.session.token
   const { name, image, description, greeting, dialogue } =
     req.body as CharactersCreateArguments
 

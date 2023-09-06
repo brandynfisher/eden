@@ -1,6 +1,6 @@
-import AccountMigrationProfileBanner from '@/components/Banners/AccountMigrationProfileBanner'
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import CopyUrlButton from '@/components/CopyUrlButton'
+import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FollowControls from '@/components/FollowControls'
 import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
 import ShareButton from '@/components/ShareButton'
@@ -8,26 +8,11 @@ import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
-import { useUser } from '@clerk/nextjs'
 import { Creator } from '@edenlabs/eden-sdk'
 import { useClickOutside } from '@mantine/hooks'
 import { App, Button, Form } from 'antd'
-import React, { ChangeEvent, useEffect, useState } from 'react'
-
-const convertBase64 = (file: File): Promise<string | ArrayBuffer | null> => {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader()
-    fileReader.readAsDataURL(file)
-
-    fileReader.onload = () => {
-      resolve(fileReader.result)
-    }
-
-    fileReader.onerror = error => {
-      reject(error)
-    }
-  })
-}
+import axios from 'axios'
+import React, { useEffect, useState } from 'react'
 
 const ProfileHeader = ({
   creatorId,
@@ -46,82 +31,39 @@ const ProfileHeader = ({
   const [imageSubmitLoading, setImageSubmitLoading] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [displayImage, setDisplayImage] = useState<string | undefined>()
-  const [encodedImage, setEncodedImage] = useState<
-    string | ArrayBuffer | null
-  >()
-  const [userMigrated /*setUserMigrated*/] = useState()
   const [showImageUploader, setShowImageUploader] = useState(false)
   const [form] = Form.useForm()
+  const userImageFieldValue = Form.useWatch('userImage', form)
   const clickOutsideTargetRef = useClickOutside(() =>
     setShowImageUploader(false),
   )
-  const { user } = useUser()
-
-  const uploadImage = async (event: ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files) {
-      return
-    }
-
-    const file = event.target.files[0]
-    const base64encoding = await convertBase64(file)
-    if (base64encoding) {
-      setEncodedImage(base64encoding)
-    }
-  }
 
   useEffect(() => {
     setIsLoading(true)
-
     if (!creator) {
       return
     }
 
-    if (creator?.username) {
-      setDisplayName(creator?.username)
+    if (creator.username) {
+      setDisplayName(creator.username)
     } else {
       setDisplayName(creatorId)
     }
-
     setDisplayImage(creator?.userImage)
-
     setIsLoading(false)
   }, [creator, creatorId])
-
-  const updateClerkUserImage = async (newImage: string) => {
-    return user?.setProfileImage({ file: newImage })
-  }
 
   const handleImageSubmit = async () => {
     setImageSubmitLoading(true)
     message.destroy()
 
     try {
-      if (!encodedImage) {
-        message.error('Failed to update image!')
-        setImageSubmitLoading(false)
-        return
-      }
-
-      const updateImageResponse = await updateClerkUserImage(
-        encodedImage.toString(),
-      )
-
-      if (!updateImageResponse) {
-        message.error('Failed to update image!')
-        setImageSubmitLoading(false)
-        return
-      }
-
-      message.success('Image updated successfully!')
-      await refetchCreator({
-        ...creator,
-        userImage: updateImageResponse.publicUrl,
+      const creatorResponse = await axios.post('/api/creators/update', {
+        userImage: userImageFieldValue,
       })
-      setDisplayImage(
-        updateImageResponse.publicUrl
-          ? updateImageResponse.publicUrl
-          : undefined,
-      )
+      message.success('Image updated successfully!')
+      await refetchCreator(creatorResponse.data.creator)
+      setDisplayImage(creatorResponse.data.creator.userImage)
       setShowImageUploader(false)
     } catch (err) {
       handleAxiosError(err, message)
@@ -130,7 +72,6 @@ const ProfileHeader = ({
       setImageSubmitLoading(false)
     }
   }
-
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4 items-stretch">
@@ -170,13 +111,11 @@ const ProfileHeader = ({
                     onFinish={handleImageSubmit}
                     className="flex gap-2 justify-center items-center creatorProfile"
                   >
-                    <input
-                      name="userImage"
-                      id="userImage"
-                      type="file"
-                      onChange={ev => uploadImage(ev)}
-                      maxLength={1}
-                      accept={'image/png,image/jpeg,image/webp'}
+                    <UploadParameter
+                      form={form}
+                      parameter={{ name: 'userImage', label: '', maxLength: 1 }}
+                      key={'userImage'}
+                      acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
                     />
                     <div>
                       <Button
@@ -184,7 +123,9 @@ const ProfileHeader = ({
                         htmlType="submit"
                         className="w-full"
                         disabled={
-                          isLoading || imageSubmitLoading || !encodedImage
+                          isLoading ||
+                          imageSubmitLoading ||
+                          !userImageFieldValue
                         }
                       >
                         Save
@@ -219,14 +160,14 @@ const ProfileHeader = ({
                 <CopyUrlButton
                   url={`${
                     CONFIG.NEXT_PUBLIC_HOST
-                  }/creators/${displayName?.toLowerCase()}`}
+                  }/creators/${displayName.toLowerCase()}`}
                 />
                 {navigator && !!navigator.share && (
                   <ShareButton
                     title={'Share Creation'}
                     url={`${
                       CONFIG.NEXT_PUBLIC_HOST
-                    }/creators/${displayName?.toLowerCase()}`}
+                    }/creators/${displayName.toLowerCase()}`}
                   />
                 )}
               </div>
@@ -242,11 +183,7 @@ const ProfileHeader = ({
           </div>
         </div>
       </div>
-      {isConnectedUser && !userMigrated ? (
-        <AccountMigrationProfileBanner />
-      ) : null}
     </div>
   )
 }
-
 export default ProfileHeader

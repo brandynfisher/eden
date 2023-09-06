@@ -1,43 +1,36 @@
+import { useAuth } from '@/hooks/useAuth'
 import { useBalance } from '@/hooks/useBalance'
 import { useCreator } from '@/hooks/useCreator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCollections } from '@/hooks/useMyCollections'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
-import { useAuth, useClerk } from '@clerk/nextjs'
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useAccount } from 'wagmi'
 
 export const useUserState = () => {
-  const router = useRouter()
-  const { isSignedIn, userId: clerkUid } = useAuth()
-  const { signOut, openSignIn } = useClerk()
-  const isAuthenticated = isSignedIn || false
-  const userId = clerkUid || null
+  const { address, isConnected, isConnecting } = useAccount()
+  const [isDefinitelyConnected, setIsDefinitelyConnected] = useState(false)
+  useEffect(() => {
+    if (isConnected) {
+      setIsDefinitelyConnected(true)
+    } else {
+      setIsDefinitelyConnected(false)
+    }
+  }, [address])
+
+  const { isAuthenticated, isAuthenticating, authenticate, logout, authError } =
+    useAuth()
   const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })
   const { characters, refetchMyCharacters } = useMyCharacters({
-    userId,
+    userId: address || '',
     isAuthenticated,
   })
   const { collections, refetchMyCollections } = useMyCollections({
-    userId,
+    userId: address || '',
     isAuthenticated,
   })
-  const { creator, mutate: refetchCreator } = useCreator(userId || null)
-
-  const authenticate = async (afterSignInUrl?: string) => {
-    if (!isAuthenticated) {
-      await openSignIn(afterSignInUrl ? { afterSignInUrl } : undefined)
-    }
-  }
-
-  const logout = async () => {
-    if (isAuthenticated) {
-      await signOut()
-    }
-
-    await router.push('/')
-  }
+  const { creator, mutate: refetchCreator } = useCreator(address || null)
 
   // reset user state on disconnect
   useEffect(() => {
@@ -50,10 +43,14 @@ export const useUserState = () => {
   const { settings, updateSetting } = useSettings()
 
   const user: UserContextType = {
+    isConnected: isDefinitelyConnected,
+    isConnecting,
+    isAuthenticating,
     isAuthenticated,
-    userId,
+    authError,
     authenticate,
     logout,
+    address,
     mannaBalance: manna,
     characters,
     collections,
@@ -66,6 +63,7 @@ export const useUserState = () => {
     settings,
     updateSetting,
     user: creator ? creator : undefined,
+    featureFlags: creator?.featureFlags || [],
   }
   return user
 }

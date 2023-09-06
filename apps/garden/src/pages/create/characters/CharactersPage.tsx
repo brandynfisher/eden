@@ -57,9 +57,9 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
 }
 
 const CharactersPage = ({ data }: { data: Character[] }) => {
-  const { isAuthenticated, userId } = useContext(UserContext)
+  const { isAuthenticated, address } = useContext(UserContext)
   const { characters: charactersData } = useMyCharacters({
-    userId,
+    userId: address ? address : null,
     isAuthenticated,
     options: {
       fallbackData: data,

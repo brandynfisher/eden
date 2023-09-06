@@ -21,8 +21,9 @@ const FollowControls = ({
   const [isFollowingUser, setIsFollowingUser] = React.useState(false)
   const [isOwnProfile, setIsOwnProfile] = React.useState(false)
 
-  const { creator } = useCreator(creatorId)
-  const { isAuthenticated, userId } = useContext(UserContext)
+  const userId = creatorId
+  const { creator } = useCreator(userId)
+  const { isAuthenticated, address } = useContext(UserContext)
 
   const { showModal } = useModalContext()
 
@@ -46,8 +47,8 @@ const FollowControls = ({
     setFollowerCount(creator?.followerCount || 0)
     setIsFollowingUser(creator?.isFollowing || false)
     setFollowingCount(creator?.followingCount || 0)
-    setIsOwnProfile(isAuthenticated && userId === creatorId)
-  }, [isAuthenticated, creatorId, userId, creator])
+    setIsOwnProfile(isAuthenticated && userId === address)
+  }, [isAuthenticated, address, userId, creator])
 
   const onFollowButtonClick = async () => {
     setFollowLoading(true)

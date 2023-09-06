@@ -63,10 +63,9 @@ const CollectionTabContent = ({
 
 const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   const { collections } = useCollections(creator.userId)
-  const { userId, user } = useContext(UserContext)
-  const isConnectedUser = creator.userId === userId
-  const isPreviewUser =
-    user?.featureFlags && user?.featureFlags.includes('preview')
+  const { address, isConnected, featureFlags } = useContext(UserContext)
+  const isConnectedUser = isConnected && creator.userId === address
+  const isPreviewUser = featureFlags.includes('preview')
 
   const creatorPageTabs = [
     {

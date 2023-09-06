@@ -11,17 +11,18 @@ import { UserContext } from '@/providers/UserProvider'
 import { useContext } from 'react'
 
 const HomePage = () => {
-  const { isAuthenticated } = useContext(UserContext)
+  const { isConnected, isAuthenticated } = useContext(UserContext)
 
-  const sortButtons = isAuthenticated
-    ? [
-        OrderByScore,
-        OrderByLatest,
-        OrderByPraises,
-        OrderByBookmarks,
-        OrderByFollowing,
-      ]
-    : [OrderByScore, OrderByLatest, OrderByPraises, OrderByBookmarks]
+  const sortButtons =
+    isConnected && isAuthenticated
+      ? [
+          OrderByScore,
+          OrderByLatest,
+          OrderByPraises,
+          OrderByBookmarks,
+          OrderByFollowing,
+        ]
+      : [OrderByScore, OrderByLatest, OrderByPraises, OrderByBookmarks]
 
   return (
     <div className={`flex flex-col`}>
