@@ -34,6 +34,8 @@ export const getAdminHeaders = () => {
 
 export const getSessionCookie = (request: NextApiRequest) => {
   const cookies = parse(request.headers.cookie || '')
+  console.log('xxx cookies', cookies)
   const authToken = cookies.__session
+  console.log('xxx authToken', authToken)
   return authToken
 }

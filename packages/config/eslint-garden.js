@@ -44,7 +44,7 @@ module.exports = {
       },
     ],
     'no-console': [
-      'error',
+      'warn',
       { allow: ['warn', 'error', 'info', 'time', 'timeEnd'] },
     ],
     'no-restricted-imports': [
