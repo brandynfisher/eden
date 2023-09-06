@@ -481,6 +481,18 @@ export const migrateCreator = async (
     })
   }
 
+  // copy imageUri if it exists
+  if (authUser.userImage) {
+    await User.updateOne(
+      {
+        _id: userId,
+      },
+      {
+        userImage: authUser.userImage,
+      },
+    )
+  }
+
   // migrate creations from old user to new user
   await Creation.updateMany(
     {
