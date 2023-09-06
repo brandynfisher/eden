@@ -66,7 +66,7 @@ export const getBookmarks = async (
 
   if (!defaultCollection) {
     // The user doesn't have a default collection, so none of the creations are bookmarked
-    // This should never happen though.
+    // This should never happen though...
     return {}
   }
 
@@ -138,7 +138,6 @@ export const getCreation = async (
   }
 
   if (request.user?.userId) {
-    console.log('user is logged in')
     // Get user's reactions and bookmarks
     const userId = request.user.userId
     const user = User.findOne({ userId })
@@ -174,7 +173,7 @@ export const getCreationSimilar = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { creationId, n } = request.params as CreationsGetSimilarArguments
+  const { creationId } = request.params as CreationsGetSimilarArguments
 
   // Todo: n is not actually set here. defaulting to 10
 

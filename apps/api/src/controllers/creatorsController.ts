@@ -1,4 +1,5 @@
 import {
+  AuthLoginArguments,
   CreatorsFollowArguments,
   CreatorsGetArguments,
   CreatorsListArguments,
@@ -7,12 +8,24 @@ import {
   FollowersListArguments,
   FollowingListArguments,
 } from '@edenlabs/eden-sdk'
+import { ethers } from 'ethers'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+import { SiweMessage } from 'siwe'
 
+import { ApiKey } from '../models/ApiKey'
+import Challenge from '../models/Challenge'
+import { Character } from '../models/Character'
+import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Follow, FollowDocument } from '../models/Follow'
+import { Manna } from '../models/Manna'
+import { MannaVoucher } from '../models/MannaVoucher'
+import { Reaction } from '../models/Reaction'
+import { Session } from '../models/Session'
+import { Task } from '../models/Task'
+import { UserMigration } from '../models/UserMigration'
 import CreatorRepository from '../repositories/CreatorRepository'
 import FollowerRepository from '../repositories/FollowerRepository'
 
@@ -394,4 +407,215 @@ export const unfollowCreator = async (
   return reply.status(200).send({
     success: true,
   })
+}
+
+export const migrateCreator = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { address, signature, message } = request.body as AuthLoginArguments
+
+  // first, find the most recent challenge for this address
+  const challenge = await Challenge.findOne({
+    address,
+  }).sort({ createdAt: -1 })
+
+  if (!challenge) {
+    return reply.status(400).send({
+      message: 'No challenge found for this address',
+    })
+  }
+
+  // Verify the challenge has not expired
+  if (challenge.expiresAt < new Date()) {
+    return reply.status(400).send({
+      message: 'Challenge has expired',
+    })
+  }
+
+  // Verify the challenge has not been acknowledged
+  if (challenge.ack) {
+    return reply.status(400).send({
+      message: 'Challenge has already been used',
+    })
+  }
+
+  // verify the signature
+  const recovered = ethers.utils.verifyMessage(message, signature)
+
+  if (address.toLowerCase() !== recovered.toLowerCase()) {
+    return reply.status(400).send({
+      message: 'Signature is invalid',
+    })
+  }
+
+  // check that the nonce matches
+  const { nonce } = new SiweMessage(message)
+  console.log('xxx', nonce)
+  console.log('yyy', challenge.nonce)
+
+  if (nonce !== challenge.nonce) {
+    return reply.status(400).send({
+      message: 'Nonce does not match',
+    })
+  }
+
+  const authUser = await User.findOne({
+    userId: address,
+  })
+
+  if (!authUser) {
+    return reply.status(404).send({
+      message: 'No user with this wallet found.',
+    })
+  }
+
+  // check if this user has already been migrated
+  const alreadyMigrated = await UserMigration.exists({
+    oldUser: authUser._id,
+  })
+  if (alreadyMigrated) {
+    return reply.status(400).send({
+      message: 'User has already been migrated',
+    })
+  }
+
+  // copy imageUri if it exists
+  if (authUser.userImage) {
+    await User.updateOne(
+      {
+        _id: userId,
+      },
+      {
+        userImage: authUser.userImage,
+      },
+    )
+  }
+
+  // migrate creations from old user to new user
+  await Creation.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate tasks
+  await Task.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate api keys
+  await ApiKey.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate concepts
+  await Concept.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  await MannaVoucher.updateMany(
+    {
+      redeemedBy: authUser._id,
+    },
+    {
+      redeemedBy: userId,
+    },
+  )
+
+  // migrate following/followers
+  await Follow.updateMany(
+    {
+      follower: authUser._id,
+    },
+    {
+      follower: userId,
+    },
+  )
+  await Follow.updateMany(
+    {
+      following: authUser._id,
+    },
+    {
+      following: userId,
+    },
+  )
+
+  // migrate reactions
+  await Reaction.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate character
+  await Character.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // migrate sessions
+  await Session.updateMany(
+    {
+      user: authUser._id,
+    },
+    {
+      user: userId,
+    },
+  )
+
+  // update the new user's manna to the max of the two
+  const authUserManna = await Manna.findOne({
+    user: authUser._id,
+  })
+  const newUserIdManna = await Manna.findOne({
+    user: userId,
+  })
+  const maxBalance = Math.max(
+    authUserManna?.balance || 0,
+    newUserIdManna?.balance || 0,
+  )
+
+  await Manna.updateOne(
+    {
+      user: userId,
+    },
+    {
+      balance: maxBalance,
+    },
+  )
+
+  // record migration
+  await UserMigration.create({
+    user: userId,
+    oldUser: authUser._id,
+  })
+
+  return reply.status(200).send({})
 }

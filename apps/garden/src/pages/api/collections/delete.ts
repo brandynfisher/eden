@@ -1,10 +1,11 @@
 import { CONFIG } from '@/lib/config'
+import { getSessionCookie } from '@/lib/fetcher'
 import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = req.session.token
+  const authToken = getSessionCookie(req)
   const { collectionId } = req.body
 
   if (!authToken) {

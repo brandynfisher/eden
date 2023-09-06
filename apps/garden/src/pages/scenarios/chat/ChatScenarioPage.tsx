@@ -26,7 +26,7 @@ const ChatScenarioPageContent = ({
 }) => {
   const router = useRouter()
   const { message } = App.useApp()
-  const { address } = useContext(UserContext)
+  const { userId } = useContext(UserContext)
   const [activeCharacter, setActiveCharacter] = useState<Character>(
     characters?.[0] as Character,
   )
@@ -61,7 +61,7 @@ const ChatScenarioPageContent = ({
         type: SessionEventType.USER_ADD,
         data: {
           userAdded: {
-            userId: address,
+            userId,
           },
         },
       }
@@ -152,16 +152,16 @@ const ChatScenarioPage = ({
   data: { characters: Character[]; sessions: Session[] }
   activeSessionId?: string
 }) => {
-  const { isAuthenticated, address } = useContext(UserContext)
+  const { isAuthenticated, userId } = useContext(UserContext)
   const { characters: charactersData } = useMyCharacters({
-    userId: address ? address : null,
+    userId,
     isAuthenticated,
     options: {
       fallbackData: data ? data.characters : [],
     },
   })
   const { sessions: sessionsData } = useMySessions({
-    userId: address ? address : null,
+    userId,
     isAuthenticated,
     options: {
       fallbackData: data ? data.sessions : [],

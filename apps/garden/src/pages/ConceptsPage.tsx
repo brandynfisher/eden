@@ -1,28 +1,26 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import {
-  OrderByBookmarks,
+  // OrderByBookmarks,
   OrderByFollowing,
-  OrderByLatest,
-  OrderByPraises,
+  OrderByLatest, // OrderByPraises,
   OrderByScore,
 } from '@/components/OrderByButtons'
 import { UserContext } from '@/providers/UserProvider'
 import { useContext } from 'react'
 
 const ConceptsPage = () => {
-  const { isConnected, isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
 
-  const sortButtons =
-    isConnected && isAuthenticated
-      ? [
-          OrderByScore,
-          OrderByLatest,
-          OrderByPraises,
-          OrderByBookmarks,
-          OrderByFollowing,
-        ]
-      : [OrderByScore, OrderByLatest, OrderByPraises, OrderByBookmarks]
+  const sortButtons = isAuthenticated
+    ? [
+        OrderByScore,
+        OrderByLatest,
+        // OrderByPraises,
+        // OrderByBookmarks,
+        OrderByFollowing,
+      ]
+    : [OrderByScore, OrderByLatest]
 
   return (
     <div className={`flex flex-col`}>

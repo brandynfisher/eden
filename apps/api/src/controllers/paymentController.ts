@@ -106,8 +106,8 @@ export const createCheckoutSession = async (
       },
     ],
     client_reference_id: userAddress,
-    success_url: `${server.config.FRONTEND_URL}`,
-    cancel_url: `${server.config.FRONTEND_URL}`,
+    success_url: `${server.config.FRONTEND_URL}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${server.config.FRONTEND_URL}/order/cancelled?session_id={CHECKOUT_SESSION_ID}`,
   })
 
   return reply.status(200).send({

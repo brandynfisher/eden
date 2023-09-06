@@ -11,13 +11,13 @@ import { Follow, FollowDocument } from './Follow'
 import { Generator, GeneratorDocument } from './Generator'
 import { Manna, MannaDocument } from './Manna'
 import { MannaVoucher, MannaVoucherDocument } from './MannaVoucher'
-import { Price, PriceDocument } from './Price'
 import { Reaction, ReactionDocument } from './Reaction'
 import { Scenario, ScenarioDocument } from './Scenario'
 import { Session, SessionDocument } from './Session'
 import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
+import { UserMigration, UserMigrationDocument } from './UserMigration'
 
 export interface Database {
   User: Model<UserDocument>
@@ -37,7 +37,7 @@ export interface Database {
   Scenario: Model<ScenarioDocument>
   Session: Model<SessionDocument>
   SessionEvent: Model<SessionEventDocument>
-  Price: Model<PriceDocument>
+  UserMigration: Model<UserMigrationDocument>
 }
 
 export const models: Database = {
@@ -58,5 +58,5 @@ export const models: Database = {
   Scenario,
   Session,
   SessionEvent,
-  Price,
+  UserMigration,
 }

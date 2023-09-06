@@ -1,11 +1,9 @@
-import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import TalkingHeadScenarioPage from '@/pages/scenarios/talkinghead/TalkingHeadScenarioPage'
 import { Character as CharacterType } from '@edenlabs/eden-sdk/dist/responses/CharactersResponses'
 import { NextPageContext } from 'next'
-import { ReactNode } from 'react'
 
 import { Page } from '../../../../types/page'
 
@@ -34,10 +32,6 @@ export const getServerSideProps = getServerSidePropsBase(
 
 const talkingHeadScenario: Page<PageProps> = ({ data }: PageProps) => {
   return <TalkingHeadScenarioPage data={data} />
-}
-
-talkingHeadScenario.getLayout = function getLayout(page: ReactNode) {
-  return <PageLayoutSidebar>{page}</PageLayoutSidebar>
 }
 
 export default talkingHeadScenario

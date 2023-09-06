@@ -23,8 +23,8 @@ const MediaDisplay = ({
     if (extension === 'jpg') {
       return (
         <ImageResult
-          resultUrl={creationUri}
-          previewUrl={previewUri ? creationUri : undefined}
+          previewSizeUrl={previewUri}
+          fullSizeUrl={creationUri}
           showPreview={showPreview}
           onPreviewClose={onPreviewClose}
           onLoad={onLoad}
