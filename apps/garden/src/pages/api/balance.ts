@@ -19,6 +19,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // const response = await eden.manna.balance()
     const requestKey = randomUUID()
     console.log('Balance request key', requestKey)
+    console.log('Balance auth token', authToken)
     const response = await axios.post(`${CONFIG.API_URL}/manna/balance`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
@@ -30,7 +31,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     })
     return res.status(200).json({ manna: response.data.manna })
   } catch (error) {
-    console.error(error)
     return res.status(500).json({ error: 'Internal server error' })
   }
 }
