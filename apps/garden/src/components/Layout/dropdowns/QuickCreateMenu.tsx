@@ -4,33 +4,19 @@ import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'
 
-const QuickCreateButton = () => {
-  return (
-    <Button className="font-mono flex items-center gap-2">
-      <ExperimentOutlined />
-      <div>Create</div>
-    </Button>
-  )
-}
-
 const QuickCreateMenu = () => {
-  const { isAuthenticated, authenticate } = useContext(UserContext)
-  const createHomePath = '/create/creations'
+  const { isConnected } = useContext(UserContext)
 
-  if (!isAuthenticated) {
-    return (
-      <div
-        className="hidden xs:flex"
-        onClick={() => authenticate(createHomePath)}
-      >
-        <QuickCreateButton />
-      </div>
-    )
+  if (!isConnected) {
+    return null
   }
 
   return (
-    <Link href={createHomePath}>
-      <QuickCreateButton />
+    <Link href="/create/creations">
+      <Button className="font-mono flex items-center gap-2">
+        <ExperimentOutlined />
+        <div>Create</div>
+      </Button>
     </Link>
   )
 }

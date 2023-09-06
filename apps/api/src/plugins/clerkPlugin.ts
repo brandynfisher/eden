@@ -7,8 +7,8 @@ import { User } from '../models/Creator'
 export const registerClerk = async (fastify: FastifyInstance) => {
   try {
     const clerkOptions = {
-      publishableKey: fastify.config.CLERK_PUBLISHABLE_KEY,
-      secretKey: fastify.config.CLERK_SECRET_KEY,
+      publishableKey: '',
+      secretKey: '',
     }
 
     const clerkClient = createClerkClient(clerkOptions)

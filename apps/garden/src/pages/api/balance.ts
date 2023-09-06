@@ -1,10 +1,10 @@
 import { CONFIG } from '@/lib/config'
-import { getSessionCookie } from '@/lib/fetcher'
+import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = await getSessionCookie(req)
+  const authToken = req.session.token
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -22,4 +22,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 }
 
-export default handler
+export default withSessionRoute(handler)

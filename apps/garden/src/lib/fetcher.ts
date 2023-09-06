@@ -1,16 +1,12 @@
 import { CONFIG } from '@/lib/config'
-import { getAuth } from '@clerk/nextjs/server'
 import { message } from 'antd'
 import { MessageInstance } from 'antd/es/message/interface'
 import axios, { AxiosError } from 'axios'
-import { NextApiRequest } from 'next'
 
 // @ts-ignore
 export const fetcher = (...args) =>
   // @ts-ignore
-  fetch(...args, { cache: 'no-store', next: { revalidate: 0 } }).then(res =>
-    res.json(),
-  )
+  fetch(...args, { cache: 'no-store' }).then(res => res.json())
 
 export const handleAxiosError = (
   error: AxiosError | unknown,
@@ -32,10 +28,4 @@ export const getAdminHeaders = () => {
     'X-Api-Key': CONFIG.EDEN_ADMIN_API_KEY,
     'X-Api-Secret': CONFIG.EDEN_ADMIN_API_SECRET,
   }
-}
-
-export const getSessionCookie = async (request: NextApiRequest) => {
-  const { getToken } = getAuth(request)
-  const authToken = await getToken()
-  return authToken || undefined
 }

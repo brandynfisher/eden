@@ -17,7 +17,6 @@ import { Session, SessionDocument } from './Session'
 import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
-import { UserMigration, UserMigrationDocument } from './UserMigration'
 
 export interface Database {
   User: Model<UserDocument>
@@ -37,7 +36,6 @@ export interface Database {
   Scenario: Model<ScenarioDocument>
   Session: Model<SessionDocument>
   SessionEvent: Model<SessionEventDocument>
-  UserMigration: Model<UserMigrationDocument>
 }
 
 export const models: Database = {
@@ -58,5 +56,4 @@ export const models: Database = {
   Scenario,
   Session,
   SessionEvent,
-  UserMigration,
 }

@@ -1,10 +1,7 @@
-import AccountMigrationBanner from '@/components/Banners/AccountMigrationBanner'
-import AuthChangeBanner from '@/components/Banners/AuthChangeBanner'
-import FetchIndicator from '@/components/Layout/FetchIndicator'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
-import BackToTopButton from '@/components/Layout/buttons/BackToTopButton'
-import { ClerkLoaded, SignedIn, SignedOut } from '@clerk/nextjs'
-import { Layout } from 'antd'
+import { VerticalAlignTopOutlined } from '@ant-design/icons'
+import { useWindowScroll } from '@mantine/hooks'
+import { Layout, Spin } from 'antd'
 import {
   Dispatch,
   PropsWithChildren,
@@ -14,6 +11,20 @@ import {
 } from 'react'
 import { Middleware } from 'swr'
 import { BareFetcher, SWRConfig } from 'swr'
+
+const InfiniteLoadingIndicator = ({ isLoading }: { isLoading: boolean }) => {
+  return (
+    <div
+      className={`${
+        isLoading ? 'anim-fade-in' : 'anim-fade-out'
+      } z-10 pointer-events-none bg-opacity-60`}
+    >
+      <div className="text-xs flex bg-gray-200 dark:bg-gray-800 p-2 !bg-opacity-80 rounded-lg">
+        <Spin size="small" />
+      </div>
+    </div>
+  )
+}
 
 type Args = []
 type Data = Promise<unknown[]>
@@ -45,6 +56,23 @@ export const myRequestCounterMiddlewareWrap: (
   }
 }
 
+const BackToTopButton = () => {
+  const [scroll, scrollTo] = useWindowScroll()
+
+  if (scroll.y < 700) {
+    return null
+  }
+
+  return (
+    <div
+      className="dark:bg-gray-700 rounded cursor-pointer !bg-opacity-80"
+      onClick={() => scrollTo({ y: 0 })}
+    >
+      <VerticalAlignTopOutlined className="text-2xl p-1" />
+    </div>
+  )
+}
+
 const CustomLayout = ({ children }: PropsWithChildren) => {
   const [requestCount, setRequestCount] = useState(0)
   const [showLoading, setShowLoading] = useState(false)
@@ -63,19 +91,10 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
       value={{ use: [myRequestCounterMiddlewareWrap(setRequestCount)] }}
     >
       <Layout className="min-h-screen flex flex-col">
-        <ClerkLoaded>
-          <SignedIn>
-            <AccountMigrationBanner />
-          </SignedIn>
-          <SignedOut>
-            <AuthChangeBanner />
-          </SignedOut>
-        </ClerkLoaded>
-
         <LayoutHeader />
         <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>
         <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center">
-          <FetchIndicator isLoading={showLoading} />
+          <InfiniteLoadingIndicator isLoading={showLoading} />
           <BackToTopButton />
         </div>
       </Layout>

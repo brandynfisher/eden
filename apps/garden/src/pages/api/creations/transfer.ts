@@ -1,11 +1,10 @@
 import { CONFIG } from '@/lib/config'
-import { getSessionCookie } from '@/lib/fetcher'
 import { withSessionRoute } from '@/lib/withSession'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = await getSessionCookie(req)
+  const authToken = req.session.token
   const { address, message, signature } = req.body
 
   if (!authToken) {

@@ -1,12 +1,11 @@
 import { CONFIG } from '@/lib/config'
-import { getSessionCookie } from '@/lib/fetcher'
 import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { creationId } = req.query
-  const authToken = await getSessionCookie(req)
+  const authToken = req.session.token
 
   try {
     const eden = new EdenClient({

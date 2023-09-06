@@ -1,6 +1,5 @@
 import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
-import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
 import EdenProvider from '@/providers/EdenProvider'
 import ModalProvider from '@/providers/ModalProvider'
@@ -57,19 +56,17 @@ export default function App({ Component, pageProps }: Props): ReactElement {
 
       <ThemeProvider attribute="class">
         <AntConfigWrapProvider>
-          <ClerkWrapProvider>
-            <WalletProvider>
-              <EdenProvider>
-                <UserProvider>
-                  <CreationNotificationProvider>
-                    <ModalProvider>
-                      {getLayout(<Component {...pageProps} />)}
-                    </ModalProvider>
-                  </CreationNotificationProvider>
-                </UserProvider>
-              </EdenProvider>
-            </WalletProvider>
-          </ClerkWrapProvider>
+          <WalletProvider>
+            <EdenProvider>
+              <UserProvider>
+                <CreationNotificationProvider>
+                  <ModalProvider>
+                    {getLayout(<Component {...pageProps} />)}
+                  </ModalProvider>
+                </CreationNotificationProvider>
+              </UserProvider>
+            </EdenProvider>
+          </WalletProvider>
         </AntConfigWrapProvider>
       </ThemeProvider>
     </>

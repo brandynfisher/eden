@@ -1,11 +1,8 @@
-import fastifyJWT from '@fastify/jwt'
-import fastify, { FastifyReply, FastifyRequest } from 'fastify'
+import fastify from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerChroma from './plugins/chromaPlugin'
-import { registerClerk } from './plugins/clerkPlugin'
 import config from './plugins/config'
-import registerDisableCache from './plugins/disableCachePlugin'
 import registerJwt from './plugins/jwtPlugin'
 import registerLlm from './plugins/llmPlugin'
 import registerMinio from './plugins/minioPlugin'
@@ -44,12 +41,8 @@ const createServer = async (
   })
 
   await server.register(config)
+  await registerJwt(server)
 
-  if (server.config.CLERK_PUBLISHABLE_KEY) {
-    await registerClerk(server)
-  } else if (server.config.JWT_SECRET) {
-    await registerJwt(server)
-  }
   await server.register(import('fastify-raw-body'), {
     field: 'rawBody',
     global: false,
@@ -63,7 +56,6 @@ const createServer = async (
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
   await registerStripe(server)
-  await registerDisableCache(server)
 
   if (server.config.REPLICATE_API_TOKEN) {
     await registerReplicate(server)

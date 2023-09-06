@@ -8,7 +8,6 @@ import {
   listCreatorFollowers,
   listCreatorFollowing,
   listCreators,
-  migrateCreator,
   unfollowCreator,
   updateCreator,
 } from '../controllers/creatorsController'
@@ -128,23 +127,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async request => isAuth(server, request)],
     handler: (request, reply) => unfollowCreator(request, reply),
-  })
-
-  server.post('/creators/migrate', {
-    schema: {
-      request: {
-        body: Type.Object({
-          address: Type.String(),
-          message: Type.String(),
-          signature: Type.String(),
-        }),
-      },
-      response: {
-        200: Type.Object({}),
-      },
-    },
-    preHandler: [async request => isAuth(server, request)],
-    handler: async (request, reply) => migrateCreator(request, reply),
   })
 }
 

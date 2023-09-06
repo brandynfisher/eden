@@ -77,14 +77,15 @@ const buyMannaItems: ItemType[] = [
 ]
 
 const MannaDropdown = () => {
-  const { mannaBalance, isAuthenticated, user } = useContext(UserContext)
+  const { mannaBalance, isConnected, isAuthenticated, user } =
+    useContext(UserContext)
 
   const items =
     user && user.featureFlags && user.featureFlags.includes('preview')
       ? [...defaultItems, ...buyMannaItems]
       : defaultItems
 
-  if (!isAuthenticated) {
+  if (!isConnected || !isAuthenticated) {
     return null
   }
 
@@ -95,7 +96,7 @@ const MannaDropdown = () => {
       }}
       trigger={['click']}
       className="cursor-pointer"
-      disabled={!isAuthenticated}
+      disabled={!isConnected || !isAuthenticated}
       arrow={true}
     >
       <Button

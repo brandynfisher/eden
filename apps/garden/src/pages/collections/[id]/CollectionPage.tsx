@@ -22,10 +22,10 @@ const inter = Inter({ subsets: ['latin'] })
 
 const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()
-  const { isAuthenticated, userId, user } = useContext(UserContext)
+  const { isAuthenticated, address, user } = useContext(UserContext)
   const [deleteLoading, setDeleteLoading] = React.useState(false)
 
-  const isAuthUser = isAuthenticated && collection?.creatorId === userId
+  const isAuthUser = isAuthenticated && collection?.creatorId === address
 
   const onDeleteButtonClick = async () => {
     setDeleteLoading(true)
