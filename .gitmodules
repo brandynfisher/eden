@@ -1,3 +1,4 @@
 [submodule "infra/chroma"]
 	path = infra/chroma
 	url = https://github.com/chroma-core/chroma
+	ignore = untracked
