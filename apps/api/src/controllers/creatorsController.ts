@@ -485,7 +485,7 @@ export const migrateCreator = async (
   if (authUser.userImage) {
     await User.updateOne(
       {
-        userId,
+        user: userId,
       },
       {
         userImage: authUser.userImage,
