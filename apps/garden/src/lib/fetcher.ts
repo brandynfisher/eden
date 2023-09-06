@@ -35,5 +35,5 @@ export const getAdminHeaders = () => {
 export const getSessionCookie = async (request: NextApiRequest) => {
   const { getToken } = getAuth(request)
   const authToken = await getToken()
-  return authToken
+  return authToken || undefined
 }
