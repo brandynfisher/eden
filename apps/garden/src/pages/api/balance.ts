@@ -1,7 +1,6 @@
 import { CONFIG } from '@/lib/config'
 import { getSessionCookie } from '@/lib/fetcher'
-import axios from 'axios'
-import { randomUUID } from 'crypto'
+import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -12,24 +11,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    // const eden = new EdenClient({
-    //   edenApiUrl: CONFIG.API_URL,
-    //   token: authToken,
-    // })
-    // const response = await eden.manna.balance()
-    const requestKey = randomUUID()
-    console.log('Balance request key', requestKey)
-    console.log('Balance auth token', authToken)
-    const response = await axios.post(`${CONFIG.API_URL}/manna/balance`, {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-        'X-Request-Key': requestKey,
-      },
-      data: {
-        token: authToken,
-      },
+    const eden = new EdenClient({
+      edenApiUrl: CONFIG.API_URL,
+      token: authToken,
     })
-    return res.status(200).json({ manna: response.data.manna })
+    const response = await eden.manna.balance()
+    return res.status(200).json({ manna: response.manna })
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' })
   }
