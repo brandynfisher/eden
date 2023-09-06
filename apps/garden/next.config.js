@@ -7,6 +7,17 @@ module.exports = withTM({
     scrollRestoration: true,
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
+  headers: () => [
+    {
+      source: '/:path*',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'no-store',
+        },
+      ],
+    },
+  ],
   reactStrictMode: true,
   webpack: config => {
     config.resolve.fallback = { fs: false, net: false, tls: false }

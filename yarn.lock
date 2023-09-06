@@ -8653,6 +8653,13 @@ fastfall@^1.5.0:
   dependencies:
     reusify "^1.0.0"
 
+fastify-disablecache@^3.1.5:
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/fastify-disablecache/-/fastify-disablecache-3.1.5.tgz#fd3b0578b57a4d85ff6514bd9ce507ba0fe5fb9b"
+  integrity sha512-ejx1Q96JyX3jKm2G1C/qPXLoN6ApM+lcI/Zf146dZZdYdqbdSSyaVAb/IyKag7uuE4Rzfd3ARSqGBR2E9sF48Q==
+  dependencies:
+    fastify-plugin "^4.5.1"
+
 fastify-error@^0.3.0:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/fastify-error/-/fastify-error-0.3.1.tgz#8eb993e15e3cf57f0357fc452af9290f1c1278d2"
@@ -8689,6 +8696,11 @@ fastify-plugin@^4.0.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-4.5.0.tgz#8b853923a0bba6ab6921bb8f35b81224e6988d91"
   integrity sha512-79ak0JxddO0utAXAQ5ccKhvs6vX2MGyHHMMsmZkBANrq3hXc1CHzvNPHOcvTsVMEPl5I+NT+RO4YKMGehOfSIg==
+
+fastify-plugin@^4.5.1:
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-4.5.1.tgz#44dc6a3cc2cce0988bc09e13f160120bbd91dbee"
+  integrity sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==
 
 fastify-raw-body@4.1.3:
   version "4.1.3"
