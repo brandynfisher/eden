@@ -107,12 +107,21 @@
 
 .modal-small {
     .ant-modal-content {
-        min-width: 480px !important;
+        min-width: 284px !important;
     }
     .ant-modal-close {
         top: 0 !important;
     }
 }
+
+@media (min-width: 1024px) {
+    .modal-small {
+        .ant-modal-content {
+            min-width: 480px !important;
+        }
+    }
+}
+
 
 .ant-modal-close {
     width: 44px !important;

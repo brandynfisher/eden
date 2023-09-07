@@ -77,7 +77,7 @@ const FollowControls = ({
   }
 
   return (
-    <div className="flex dark:text-gray-400 items-center gap-2 justify-between flex-wrap">
+    <div className="flex dark:text-gray-400 items-center gap-2 justify-between flex-wrap items-center h-full">
       {showStats && (
         <div className="flex flex-shrink-0 gap-2">
           <div
@@ -102,7 +102,7 @@ const FollowControls = ({
           type={isFollowingUser ? 'link' : 'default'}
           onClick={onFollowButtonClick}
           loading={followLoading ? { delay: 250 } : false}
-          className={`font-mono flex-shrink-0 ${
+          className={`font-mono flex-shrink-0 overflow-hidden ${
             isFollowingUser ? '!px-0' : '!px-3'
           }`}
         >
