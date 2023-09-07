@@ -9,6 +9,7 @@ import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
+import registerSentry from './plugins/sentryPlugin'
 import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
 import registerTts from './plugins/ttsPlugin'
@@ -41,6 +42,11 @@ const createServer = async (
   })
 
   await server.register(config)
+
+  if (server.config.NODE_ENV !== 'development') {
+    await registerSentry(server)
+  }
+
   await registerJwt(server)
 
   await server.register(import('fastify-raw-body'), {
