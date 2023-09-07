@@ -42,7 +42,11 @@ const createServer = async (
   })
 
   await server.register(config)
-  await registerSentry(server)
+
+  if (server.config.NODE_ENV !== 'development') {
+    await registerSentry(server)
+  }
+
   await registerJwt(server)
 
   await server.register(import('fastify-raw-body'), {
