@@ -85,8 +85,8 @@ if (process.env.NODE_ENV !== 'development') {
       // Suppresses source map uploading logs during build
       silent: true,
 
-      org: 'eden-b0e6cda4f',
-      project: 'javascript-nextjs',
+      org: process.env.NEXT_PUBLIC_SENTRY_ORG,
+      project: process.env.NEXT_PUBLIC_SENTRY_PROJECT,
     },
     {
       // For all available options, see:
