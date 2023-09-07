@@ -189,6 +189,16 @@ export const createTask = async (
 export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
   const { taskId } = request.params as TasksGetArguments
   const task = await Task.findOne({ taskId })
+
+  await Task.populate(task, {
+    path: 'creation',
+  })
+
+  await Task.populate(task, {
+    path: 'generator',
+    select: 'generatorName',
+  })
+
   return reply.status(200).send({ task })
 }
 
