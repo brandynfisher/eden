@@ -5,10 +5,12 @@ import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
+import { downloadFile } from '@/lib/files'
+import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept } from '@edenlabs/eden-sdk'
-import { Collapse, Divider } from 'antd'
+import { Button, Collapse, Divider } from 'antd'
 import Head from 'next/head'
 import Image from 'next/image'
 import probe from 'probe-image-size'
@@ -120,8 +122,13 @@ const ConceptDetail = ({
     }
 
     if (conceptData.training_images) {
-      probeImageSize(conceptData?.training_images)
-      return
+      const imageUrls = conceptData?.training_images.filter((url: string) =>
+        isImageUrl(url),
+      )
+      if (imageUrls.length) {
+        probeImageSize(imageUrls)
+        return
+      }
     }
 
     setProbedImageUrls(undefined)
@@ -155,7 +162,7 @@ const ConceptDetail = ({
       </Head>
 
       <div ref={containerRef}>
-        <h3>Training Images</h3>
+        <h3>Samples</h3>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
           <div className="relative">
             <div
@@ -166,46 +173,93 @@ const ConceptDetail = ({
               <MediaDisplay
                 className={'media-display__main'}
                 creationUri={
-                  displayImage?.thumbnail
-                    ? displayImage.thumbnail
+                  conceptData?.thumbnail
+                    ? conceptData.thumbnail
                     : '/placeholder.png'
                 }
-                previewUri={displayImage?.thumbnail}
+                previewUri={conceptData?.thumbnail}
                 showPreview={mediaViewerVisible}
                 onPreviewClose={hideMediaViewer}
-                // onLoad={() => {
-                //   setCreationImageLoaded(true)
-                // }}
               />
             </div>
+          </div>
+        </div>
+
+        <h3>Training Images</h3>
+        <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
+          <div className="relative">
             {probedImageUrls && (
-              <div className="flex items-center justify-center gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow mb-4">
-                {probedImageUrls.map(trainingImage => (
-                  <div
-                    key={trainingImage.url}
-                    className={`flex w-[96px] h-[96px] overflow-hidden rounded-lg border border-solid ${
-                      trainingImage.url === displayImage.url
-                        ? 'border-gray-700 bg-gray-800'
-                        : 'cursor-pointer border-gray-800 hover:border-blue-600 '
-                    }`}
-                    onClick={() =>
-                      setDisplayImage({
-                        url: trainingImage.url,
-                        thumbnail: trainingImage.url,
-                      })
+              <>
+                <div
+                  onClick={showMediaViewer}
+                  className="relative flex justify-center lg:flex lg:flex-grow"
+                  style={{ width: 'fit-content', margin: '0 auto' }}
+                >
+                  <MediaDisplay
+                    className={'media-display__main'}
+                    creationUri={
+                      displayImage?.thumbnail
+                        ? displayImage.thumbnail
+                        : '/placeholder.png'
                     }
-                  >
-                    <Image
-                      src={trainingImage.url}
-                      alt={trainingImage.url}
-                      width={trainingImage.thumbnailSize.width}
-                      height={trainingImage.thumbnailSize.height}
-                      className="rounded-lg w-full h-auto object-contain max-h-full"
-                    />
-                  </div>
-                ))}
-              </div>
+                    previewUri={displayImage?.thumbnail}
+                    showPreview={mediaViewerVisible}
+                    onPreviewClose={hideMediaViewer}
+                    // onLoad={() => {
+                    //   setCreationImageLoaded(true)
+                    // }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-center gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow mb-4">
+                  {probedImageUrls.map(trainingImage => (
+                    <div
+                      key={trainingImage.url}
+                      className={`flex w-[96px] h-[96px] overflow-hidden rounded-lg border border-solid ${
+                        trainingImage.url === displayImage.url
+                          ? 'border-gray-700 bg-gray-800'
+                          : 'cursor-pointer border-gray-800 hover:border-blue-600 '
+                      }`}
+                      onClick={() =>
+                        setDisplayImage({
+                          url: trainingImage.url,
+                          thumbnail: trainingImage.url,
+                        })
+                      }
+                    >
+                      <Image
+                        src={trainingImage.url}
+                        alt={trainingImage.url}
+                        width={trainingImage.thumbnailSize.width}
+                        height={trainingImage.thumbnailSize.height}
+                        className="rounded-lg w-full h-auto object-contain max-h-full"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
+            {conceptData?.training_images &&
+            conceptData?.training_images[0] &&
+            !isImageUrl(conceptData?.training_images[0]) ? (
+              <div className="flex items-center mb-4">
+                <div className="test-xs truncate">
+                  {conceptData?.training_images[0]}
+                </div>
+                <Button
+                  onClick={() =>
+                    conceptData?.training_images &&
+                    conceptData?.training_images[0] &&
+                    downloadFile(
+                      conceptData?.training_images[0],
+                      `concept_${conceptData._id}_0`,
+                    )
+                  }
+                >
+                  Download .zip archive
+                </Button>
+              </div>
+            ) : null}
           </div>
           <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
             <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col gap-2 xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">

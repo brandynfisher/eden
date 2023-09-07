@@ -12,6 +12,8 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
   const { pageUrl, modalUrl } = getModalUrls(router, 'concept', concept._id)
   const { showModal } = useModalContext()
 
+  console.log(concept)
+
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     showModal(MODAL_TYPES.CONCEPT_DETAIL_MODAL, {
@@ -25,7 +27,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
       <div className="w-full flex justify-center">
         <div className="relative rounded-lg overflow-hidden cursor-pointer">
           <ConceptCardDetail concept={concept} isOverlay={true} />
-          <ImageResult fullSizeUrl={concept.thumbnail || ''} />
+          <ImageResult previewSizeUrl={concept.thumbnail || ''} />
         </div>
       </div>
     </div>

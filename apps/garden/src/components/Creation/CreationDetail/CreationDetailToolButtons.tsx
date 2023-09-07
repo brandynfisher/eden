@@ -1,6 +1,7 @@
 import CopyUrlButton from '@/components/CopyUrlButton'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import ShareButton from '@/components/ShareButton'
+import { downloadFile } from '@/lib/files'
 import { getFileExtension } from '@/lib/getFileExtension'
 import {
   DownloadOutlined,
@@ -11,25 +12,6 @@ import { Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import { useRouter } from 'next/router'
 import { ReactNode, useEffect, useState } from 'react'
-
-const handleDownload = async (url: string, fileName: string) => {
-  try {
-    const response = await fetch(url)
-    const blob = await response.blob()
-    const blobUrl = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = blobUrl
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    URL.revokeObjectURL(blobUrl)
-  } catch (error) {
-    console.error('Error downloading creation:', error)
-  }
-}
 
 const isImage = (creationUri: string) => {
   if (!creationUri) return null
@@ -74,7 +56,7 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
         title: 'Download',
         icon: <DownloadOutlined className="text-xl" />,
         onClick: async () => {
-          await handleDownload(creation.uri, creation._id)
+          await downloadFile(creation.uri, creation._id)
         },
       },
     ]
