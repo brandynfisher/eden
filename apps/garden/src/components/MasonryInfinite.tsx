@@ -33,7 +33,7 @@ const MasonryInfinite = ({
   hasSort?: OrderByParam[]
 }) => {
   const containerRef = useRef(null)
-  const [key, setKey] = useState('')
+  const [key, setKey] = useState(1)
 
   const { isConnected, settings, address } = useContext(UserContext)
   const isConnectedUser =
@@ -125,7 +125,7 @@ const MasonryInfinite = ({
               itemHeightEstimate={300}
               render={itemComponent}
               onRender={maybeLoadMore}
-              itemKey={data => data._id}
+              itemKey={(item, _index) => item?._id ?? _index}
             />
           )}
         </>

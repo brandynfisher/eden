@@ -29,6 +29,8 @@ const follow = new Schema<FollowDocument>({
   },
 })
 
+follow.index({ createdAt: 1 })
+
 follow.plugin(paginate)
 follow.plugin(aggregatePaginate)
 
