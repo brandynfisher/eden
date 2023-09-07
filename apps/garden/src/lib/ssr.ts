@@ -36,14 +36,16 @@ export const getServerSidePropsBase = (
         fieldRequests.map(async fieldRequest => {
           const data = await fieldRequest.dataFetcher(ctx)
           if (!data || !data[fieldRequest.responseFieldName]) {
-            return {
-              notFound: true,
-            }
+            return false
           }
 
           return data
         }),
       )
+
+      if (allFieldResults[0] === false) {
+        return { notFound: true }
+      }
 
       return { props: { data: allFieldResults[0] } }
     } catch (err) {
