@@ -12,8 +12,6 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
   const { pageUrl, modalUrl } = getModalUrls(router, 'concept', concept._id)
   const { showModal } = useModalContext()
 
-  console.log(concept)
-
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     showModal(MODAL_TYPES.CONCEPT_DETAIL_MODAL, {
