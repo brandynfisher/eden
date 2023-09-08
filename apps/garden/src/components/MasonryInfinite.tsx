@@ -33,7 +33,7 @@ const MasonryInfinite = ({
   hasSort?: OrderByParam[]
 }) => {
   const containerRef = useRef(null)
-  const [key, setKey] = useState(1)
+  const [key, setKey] = useState(0)
 
   const { isConnected, settings, address } = useContext(UserContext)
   const isConnectedUser =
@@ -94,7 +94,7 @@ const MasonryInfinite = ({
           ? settings.maxGridCols.value
           : settings?.maxGridCols.params.initialValue,
     },
-    [orderBy, width],
+    [orderBy, width, query?.userId],
   )
   const resizeObserver = useResizeObserver(positioner)
 
