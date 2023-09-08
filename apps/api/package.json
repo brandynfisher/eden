@@ -54,6 +54,7 @@
     "mongoose-aggregate-paginate-v2": "^1.0.6",
     "mongoose-delete": "^1.0.1",
     "mongoose-paginate-v2": "^1.7.1",
+    "mongoose-slug-plugin": "^2.1.0",
     "openai": "^3.2.1",
     "replicate-js": "github:genekogan/replicate-js",
     "sharp": "^0.32.1",

@@ -4,7 +4,7 @@ import useSWR from 'swr'
 
 export const useCreator = (creatorId: string | null, options = {}) => {
   const { data, mutate, isLoading, error } = useSWR(
-    creatorId ? `/api/creators?creatorId=${creatorId}` : null,
+    `/api/creators?creatorId=${creatorId || ''}`,
     fetcher,
     options,
   )

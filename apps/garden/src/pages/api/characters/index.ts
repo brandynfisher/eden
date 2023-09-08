@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
-  const { characterId } = req.query as { characterId: string }
+  const { slug } = req.query as { slug: string }
 
   try {
     const eden = new EdenClient({
@@ -13,7 +13,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       token: authToken,
     })
     const response = await eden.characters.get({
-      characterId,
+      slug,
     })
     return res.status(200).json({ character: response.character })
   } catch (error) {

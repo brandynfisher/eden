@@ -1,3 +1,4 @@
+import CopyImageButton from '@/components/CopyImageButton'
 import CopyUrlButton from '@/components/CopyUrlButton'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import ShareButton from '@/components/ShareButton'
@@ -25,6 +26,8 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const router = useRouter()
   const [toolItems, setToolItems] = useState<ToolButtonItem[]>([])
 
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
+
   const handleCreate = async (generator: string | null, creation: Creation) => {
     const query: { presetId: string; generator?: string } = {
       presetId: creation._id,
@@ -43,15 +46,22 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const getItems = () => {
     const shareItem = {
       title: 'Share Creation',
-      icon: <ShareButton title={'Share Creation'} url={``} />,
+      icon: <ShareButton title={'Share Creation'} url={currentUrl} />,
     }
     const copyItem = {
       title: 'Copy URL',
-      icon: <CopyUrlButton url={``} />,
+      icon: <CopyUrlButton url={currentUrl} />,
+    }
+
+    const copyImageItem = {
+      title: 'Copy Image',
+      icon: <CopyImageButton url={creation.uri} />,
     }
 
     const items: ToolButtonItem[] = [
-      ...(navigator && !!navigator.share ? [copyItem, shareItem] : [copyItem]),
+      ...(navigator && !!navigator.share
+        ? [copyItem, copyImageItem, shareItem]
+        : [copyItem, copyImageItem]),
       {
         title: 'Download',
         icon: <DownloadOutlined className="text-xl" />,

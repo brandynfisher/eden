@@ -45,6 +45,7 @@ class RestfulRepository<T> implements IRepository<T> {
       sort?: object
       select?: object | string
     } = {},
+    projection: object = {},
   ): Promise<PaginatedResponse<T>> {
     const labels = {
       totalDocs: 'total',
@@ -74,6 +75,7 @@ class RestfulRepository<T> implements IRepository<T> {
       sort: options.sort ?? { _id: 1 },
       customLabels: labels,
       select: options.select ?? '',
+      projection,
     })
   }
 
