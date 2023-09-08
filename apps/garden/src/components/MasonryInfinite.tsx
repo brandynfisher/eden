@@ -34,7 +34,6 @@ const MasonryInfinite = ({
 }) => {
   const containerRef = useRef(null)
   const [key, setKey] = useState(1)
-  console.log('masonry key', key)
 
   const { isConnected, settings, address } = useContext(UserContext)
   const isConnectedUser =
