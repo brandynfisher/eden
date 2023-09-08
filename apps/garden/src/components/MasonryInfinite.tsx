@@ -34,6 +34,7 @@ const MasonryInfinite = ({
 }) => {
   const containerRef = useRef(null)
   const [key, setKey] = useState(1)
+  console.log('masonry key', key)
 
   const { isConnected, settings, address } = useContext(UserContext)
   const isConnectedUser =
@@ -49,7 +50,6 @@ const MasonryInfinite = ({
     isEmpty,
     hasNextPage,
   } = useFeedPaginated(type, query, orderBy)
-  console.log('masonryItems:', items)
 
   const maybeLoadMore = useInfiniteLoader(
     async () => {
