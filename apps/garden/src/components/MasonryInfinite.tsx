@@ -49,6 +49,7 @@ const MasonryInfinite = ({
     isEmpty,
     hasNextPage,
   } = useFeedPaginated(type, query, orderBy)
+  console.log('masonryItems:', items)
 
   const maybeLoadMore = useInfiniteLoader(
     async () => {

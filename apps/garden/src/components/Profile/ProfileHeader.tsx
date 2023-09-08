@@ -25,7 +25,6 @@ const ProfileHeader = ({
   isConnectedUser: boolean
   numCreations: number | undefined
 }) => {
-  console.log('profile header', creatorId)
   const { mutate: refetchCreator } = useCreator(creatorId)
   const { message } = App.useApp()
   const [isLoading, setIsLoading] = useState(true)
