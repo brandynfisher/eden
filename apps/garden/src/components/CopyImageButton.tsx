@@ -35,7 +35,7 @@ const CopyImageButton = ({ url }: { url: string }) => {
 
   return (
     <CircleButton
-      title={'Copy Page URL'}
+      title={'Copy Image to Clipboard'}
       icon={
         copied ? (
           <CheckCircleOutlined className="text-xl" />
