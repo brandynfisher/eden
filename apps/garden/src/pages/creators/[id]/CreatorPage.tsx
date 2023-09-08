@@ -35,6 +35,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
         hasSort={sortButtons}
         type="creations"
         itemComponent={CreationCard}
+        customKey={creatorId}
       />
     </div>
   )
