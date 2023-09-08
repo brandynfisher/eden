@@ -26,17 +26,14 @@ const MasonryInfinite = ({
   itemComponent,
   query,
   hasSort,
-  customKey,
 }: {
   type: 'creations' | 'concepts'
   itemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
-  customKey?: string
 }) => {
   const containerRef = useRef(null)
-  const [key, setKey] = useState(customKey || 'key')
-  console.log('masonry key', key)
+  const [key, setKey] = useState(1)
 
   const { isConnected, settings, address } = useContext(UserContext)
   const isConnectedUser =
@@ -72,7 +69,7 @@ const MasonryInfinite = ({
     if (newOrderBy.field !== orderBy?.field) {
       setOrderBy(newOrderBy)
       setSize(1)
-      setKey(`${key}.${newOrderBy.field}`)
+      setKey(key + 1)
     }
   }
 
