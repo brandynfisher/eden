@@ -34,6 +34,7 @@ export const createCharacter = async (
 
   return reply.status(200).send({
     characterId: character._id,
+    slug: character.slug,
   })
 }
 

@@ -24,6 +24,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           characterId: Type.String(),
+          slug: Type.String(),
         }),
       },
     },
