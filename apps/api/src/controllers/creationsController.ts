@@ -104,6 +104,9 @@ export const listCreations = async (
       page,
       sort,
     },
+    {
+      'embedding.embedding': 0,
+    },
   )
 
   return reply.status(200).send(creations)
