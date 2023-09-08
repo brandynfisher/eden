@@ -28,6 +28,7 @@ export type Character = {
   id: string
   user: string
   name: string
+  slug: string
   description?: string
   greeting?: string
   dialogue?: string

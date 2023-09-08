@@ -78,6 +78,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             id: Type.String(),
             user: Type.String(),
             name: Type.String(),
+            slug: Type.String(),
             image: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
@@ -89,10 +90,10 @@ const characterRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => listCharacters(request, reply),
   })
 
-  server.get('/characters/:characterId', {
+  server.get('/characters/:slug', {
     schema: {
       params: Type.Object({
-        characterId: Type.String(),
+        slug: Type.String(),
       }),
       response: {
         200: Type.Object({
@@ -100,6 +101,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             id: Type.String(),
             user: Type.String(),
             name: Type.String(),
+            slug: Type.String(),
             image: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
