@@ -58,6 +58,7 @@ jobs:
             "NEXT_PUBLIC_PARTICLE_APP_ID=${{ secrets.NEXT_PUBLIC_PARTICLE_APP_ID }}"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
+            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
   deploy:
     name: Deploy
