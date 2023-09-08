@@ -21,11 +21,18 @@ import React, { useContext } from 'react'
 const inter = Inter({ subsets: ['latin'] })
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
+  const { isConnected, isAuthenticated } = useContext(UserContext)
+
+  const sortButtons =
+    isConnected && isAuthenticated
+      ? [OrderByLatest, OrderByPraises, OrderByBookmarks]
+      : [OrderByLatest]
+
   return (
     <div className="mt-4">
       <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+        hasSort={sortButtons}
         type="creations"
         itemComponent={CreationCard}
       />
@@ -38,7 +45,7 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+        hasSort={[OrderByLatest]}
         type="concepts"
         itemComponent={ConceptCard}
       />

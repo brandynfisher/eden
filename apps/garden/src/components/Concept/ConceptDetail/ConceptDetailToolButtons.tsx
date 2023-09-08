@@ -1,29 +1,11 @@
 import CopyUrlButton from '@/components/CopyUrlButton'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import ShareButton from '@/components/ShareButton'
+import { downloadFile } from '@/lib/files'
 import { DownloadOutlined } from '@ant-design/icons'
 import { Concept } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/router'
 import { ReactNode, useEffect, useState } from 'react'
-
-const handleDownload = async (url: string, fileName: string) => {
-  try {
-    const response = await fetch(url)
-    const blob = await response.blob()
-    const blobUrl = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = blobUrl
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    URL.revokeObjectURL(blobUrl)
-  } catch (error) {
-    console.error('Error downloading concept:', error)
-  }
-}
 
 type ToolButtonItem = { title: string; icon: ReactNode; onClick?: () => void }
 
@@ -47,7 +29,7 @@ const ConceptDetailToolButtons = ({ concept }: { concept: Concept }) => {
         title: 'Download',
         icon: <DownloadOutlined className="text-xl" />,
         onClick: async () => {
-          await handleDownload(concept.uri, concept._id)
+          await downloadFile(concept.uri, concept._id)
         },
       },
     ]

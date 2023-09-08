@@ -3,3 +3,7 @@ export const truncatedAddress = (creatorId: string) =>
 
 export const rightTruncatedString = (str: string, length: number) =>
   str.length > length ? `${str.slice(0, length)}...` : str
+
+export const isImageUrl = (url: string) => {
+  return /\.(jpg|jpeg|png|webp|avif|gif|svg)$/.test(url)
+}

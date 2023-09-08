@@ -123,9 +123,9 @@ export const getCreationsFeed = async (
     }
 
     if (orderBy === 'embedding.score') {
-      const daysAgo = 3
+      const hoursAgo = 20
       const dateCutoff = new Date(
-        new Date().setDate(new Date().getDate() - daysAgo),
+        new Date().setHours(new Date().getHours() - hoursAgo),
       )
       sortFilter['createdAt'] = { $gte: dateCutoff }
     }

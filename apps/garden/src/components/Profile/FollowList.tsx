@@ -32,14 +32,19 @@ const FollowList = ({
             {listItems.map(listItem => (
               <div
                 key={listItem.userId}
-                className="flex gap-2 justify-between py-2 px-4 last:mb-0 [&:nth-child(even)]:bg-gray-50 [&:nth-child(odd)]:bg-gray-100 [&:nth-child(even)]:dark:bg-gray-900 [&:nth-child(odd)]:dark:bg-gray-800 "
+                className="relative flex gap-2 justify-between py-2 px-4 last:mb-0 [&:nth-child(even)]:bg-gray-50 [&:nth-child(odd)]:bg-gray-100 [&:nth-child(even)]:dark:bg-gray-900 [&:nth-child(odd)]:dark:bg-gray-800 flex-wrap"
               >
                 <CreatorProfileLink
                   creatorId={listItem.userId}
                   creatorImage={listItem.userImage}
                   creatorName={listItem.username}
                 />
-                <FollowControls creatorId={listItem.userId} showStats={false} />
+                <div className="absolute self-center h-full right-2 bg-gray-800">
+                  <FollowControls
+                    creatorId={listItem.userId}
+                    showStats={false}
+                  />
+                </div>
               </div>
             ))}
           </>
@@ -64,7 +69,7 @@ const FollowList = ({
           {isLoadingMore
             ? 'loading...'
             : isReachingEnd
-            ? 'no more issues'
+            ? 'no more items'
             : 'Load more'}
         </Button>
       ) : null}
