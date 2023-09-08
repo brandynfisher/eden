@@ -17,7 +17,7 @@ const MannaBalanceInfo = () => {
         You have <span className="font-bold">{mannaBalance}</span> Manna
       </div>
       <Link
-        href="/manna"
+        href="https://docs.eden.art/docs/overview/manna"
         title="Learn about Manna"
         className="text-small hover:dark:text-gray-400"
       >
