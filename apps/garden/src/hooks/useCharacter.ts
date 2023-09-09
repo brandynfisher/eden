@@ -2,10 +2,10 @@ import { fetcher } from '@/lib/fetcher'
 import { Character } from '@edenlabs/eden-sdk'
 import useSWR from 'swr'
 
-export const useCharacter = (characterId: string | string[] | undefined) => {
-  const id = typeof characterId === 'string' ? characterId : undefined
+export const useCharacter = (characterSlug: string | string[] | undefined) => {
+  const slug = typeof characterSlug === 'string' ? characterSlug : undefined
   const { data, mutate } = useSWR(
-    id ? `/api/characters?characterId=${id}` : null,
+    slug ? `/api/characters?slug=${slug}` : null,
     fetcher,
   )
 

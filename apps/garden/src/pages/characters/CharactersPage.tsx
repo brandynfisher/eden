@@ -25,7 +25,7 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
       message.destroy()
       message.error('You can only have 5 characters at once.')
     } else {
-      await router.push('/create/characters/create')
+      await router.push('/create/characters')
     }
   }
 

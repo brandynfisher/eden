@@ -1,6 +1,8 @@
+import CopyImageButton from '@/components/CopyImageButton'
 import CopyUrlButton from '@/components/CopyUrlButton'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import ShareButton from '@/components/ShareButton'
+import { downloadFile } from '@/lib/files'
 import { getFileExtension } from '@/lib/getFileExtension'
 import {
   DownloadOutlined,
@@ -11,25 +13,6 @@ import { Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import { useRouter } from 'next/router'
 import { ReactNode, useEffect, useState } from 'react'
-
-const handleDownload = async (url: string, fileName: string) => {
-  try {
-    const response = await fetch(url)
-    const blob = await response.blob()
-    const blobUrl = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = blobUrl
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    URL.revokeObjectURL(blobUrl)
-  } catch (error) {
-    console.error('Error downloading creation:', error)
-  }
-}
 
 const isImage = (creationUri: string) => {
   if (!creationUri) return null
@@ -42,6 +25,8 @@ type ToolButtonItem = { title: string; icon: ReactNode; onClick?: () => void }
 const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const router = useRouter()
   const [toolItems, setToolItems] = useState<ToolButtonItem[]>([])
+
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
 
   const handleCreate = async (generator: string | null, creation: Creation) => {
     const query: { presetId: string; generator?: string } = {
@@ -61,20 +46,27 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const getItems = () => {
     const shareItem = {
       title: 'Share Creation',
-      icon: <ShareButton title={'Share Creation'} url={``} />,
+      icon: <ShareButton title={'Share Creation'} url={currentUrl} />,
     }
     const copyItem = {
       title: 'Copy URL',
-      icon: <CopyUrlButton url={``} />,
+      icon: <CopyUrlButton url={currentUrl} />,
+    }
+
+    const copyImageItem = {
+      title: 'Copy Image',
+      icon: <CopyImageButton url={creation.uri} />,
     }
 
     const items: ToolButtonItem[] = [
-      ...(navigator && !!navigator.share ? [copyItem, shareItem] : [copyItem]),
+      ...(navigator && !!navigator.share
+        ? [copyItem, copyImageItem, shareItem]
+        : [copyItem, copyImageItem]),
       {
         title: 'Download',
         icon: <DownloadOutlined className="text-xl" />,
         onClick: async () => {
-          await handleDownload(creation.uri, creation._id)
+          await downloadFile(creation.uri, creation._id)
         },
       },
     ]

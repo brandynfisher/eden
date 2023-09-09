@@ -29,11 +29,11 @@ const listCharacters = async (server: FastifyInstance) => {
   return response
 }
 
-const getCharacter = async (server: FastifyInstance, characterId: string) => {
+const getCharacter = async (server: FastifyInstance, slug: string) => {
   const headers = prepareUserHeaders()
   const response = await server.inject({
     method: 'GET',
-    url: `/characters/${characterId}`,
+    url: `/characters/${slug}`,
     headers,
   })
   return response
@@ -91,8 +91,8 @@ test('User can delete an Character', async context => {
 test('Can get a character by ID', async context => {
   const { server } = context
   const createResponse = await createCharacter(server)
-  const characterId = createResponse.json().characterId
-  const getResponse = await getCharacter(server, characterId)
+  const slug = createResponse.json().slug
+  const getResponse = await getCharacter(server, slug)
   expect(getResponse.statusCode).toBe(200)
   const json = getResponse.json()
   expect(json).toHaveProperty('character')

@@ -5,10 +5,12 @@ import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
+import { downloadFile } from '@/lib/files'
+import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept } from '@edenlabs/eden-sdk'
-import { Collapse, Divider } from 'antd'
+import { Button, Collapse, Divider } from 'antd'
 import Head from 'next/head'
 import Image from 'next/image'
 import probe from 'probe-image-size'
@@ -120,8 +122,13 @@ const ConceptDetail = ({
     }
 
     if (conceptData.training_images) {
-      probeImageSize(conceptData?.training_images)
-      return
+      const imageUrls = conceptData?.training_images.filter((url: string) =>
+        isImageUrl(url),
+      )
+      if (imageUrls.length) {
+        probeImageSize(imageUrls)
+        return
+      }
     }
 
     setProbedImageUrls(undefined)
@@ -154,9 +161,10 @@ const ConceptDetail = ({
         />
       </Head>
 
-      <div ref={containerRef}>
-        <h3>Training Images</h3>
-        <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
+      <div ref={containerRef} className="lg:flex lg:justify-center">
+        <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0">
+          <h3>Samples</h3>
+          {/*<div className="lg:flex lg:flex-grow xl:flex xl:justify-center">*/}
           <div className="relative">
             <div
               onClick={showMediaViewer}
@@ -166,119 +174,165 @@ const ConceptDetail = ({
               <MediaDisplay
                 className={'media-display__main'}
                 creationUri={
-                  displayImage?.thumbnail
-                    ? displayImage.thumbnail
+                  conceptData?.thumbnail
+                    ? conceptData.thumbnail
                     : '/placeholder.png'
                 }
-                previewUri={displayImage?.thumbnail}
+                previewUri={conceptData?.thumbnail}
                 showPreview={mediaViewerVisible}
                 onPreviewClose={hideMediaViewer}
-                // onLoad={() => {
-                //   setCreationImageLoaded(true)
-                // }}
               />
             </div>
+          </div>
+          {/*</div>*/}
+
+          <h3>Training Images</h3>
+          <div className="relative overflow-hidden max-w-full">
             {probedImageUrls && (
-              <div className="flex items-center justify-center gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow mb-4">
-                {probedImageUrls.map(trainingImage => (
-                  <div
-                    key={trainingImage.url}
-                    className={`flex w-[96px] h-[96px] overflow-hidden rounded-lg border border-solid ${
-                      trainingImage.url === displayImage.url
-                        ? 'border-gray-700 bg-gray-800'
-                        : 'cursor-pointer border-gray-800 hover:border-blue-600 '
-                    }`}
-                    onClick={() =>
-                      setDisplayImage({
-                        url: trainingImage.url,
-                        thumbnail: trainingImage.url,
-                      })
+              <>
+                <div className="flex items-center justify-center gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow mb-4">
+                  {probedImageUrls.map(trainingImage => (
+                    <div
+                      key={trainingImage.url}
+                      className={`flex w-[96px] h-[96px] overflow-hidden rounded-lg border border-solid ${
+                        trainingImage.url === displayImage.url
+                          ? 'border-gray-700 bg-gray-800'
+                          : 'cursor-pointer border-gray-800 hover:border-blue-600 '
+                      }`}
+                      onClick={() =>
+                        setDisplayImage({
+                          url: trainingImage.url,
+                          thumbnail: trainingImage.url,
+                        })
+                      }
+                    >
+                      <Image
+                        src={trainingImage.url}
+                        alt={trainingImage.url}
+                        width={trainingImage.thumbnailSize.width}
+                        height={trainingImage.thumbnailSize.height}
+                        className="rounded-lg w-full h-auto object-contain max-h-full"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div
+                  onClick={showMediaViewer}
+                  className="relative flex justify-center lg:flex lg:flex-grow"
+                  style={{ width: 'fit-content', margin: '0 auto' }}
+                >
+                  <MediaDisplay
+                    className={'media-display__main'}
+                    creationUri={
+                      displayImage?.thumbnail
+                        ? displayImage.thumbnail
+                        : '/placeholder.png'
                     }
-                  >
-                    <Image
-                      src={trainingImage.url}
-                      alt={trainingImage.url}
-                      width={trainingImage.thumbnailSize.width}
-                      height={trainingImage.thumbnailSize.height}
-                      className="rounded-lg w-full h-auto object-contain max-h-full"
-                    />
-                  </div>
-                ))}
+                    previewUri={displayImage?.thumbnail}
+                    showPreview={mediaViewerVisible}
+                    onPreviewClose={hideMediaViewer}
+                    // onLoad={() => {
+                    //   setCreationImageLoaded(true)
+                    // }}
+                  />
+                </div>
+              </>
+            )}
+            {conceptData?.training_images &&
+            conceptData?.training_images[0] &&
+            !isImageUrl(conceptData?.training_images[0]) ? (
+              <div className="flex items-center mb-4">
+                <div className="test-xs truncate">
+                  {conceptData?.training_images[0]}
+                </div>
+                <Button
+                  onClick={() =>
+                    conceptData?.training_images &&
+                    conceptData?.training_images[0] &&
+                    downloadFile(
+                      conceptData?.training_images[0],
+                      `concept_${conceptData._id}_0`,
+                    )
+                  }
+                >
+                  Download .zip archive
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        </div>
+        <div className="mx-auto lg:mx-0 md:max-w-[640px]  lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
+          <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col gap-2 xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
+            <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
+              <CreatorProfileLink
+                creatorId={conceptData?.user?.userId}
+                creatorName={conceptData?.user?.username}
+                creatorImage={conceptData?.user?.userImage || ''}
+              />
+            </div>
+            {showFollowControls && (
+              <div className="flex items-center xl:mt-1 flex-shrink-0 ">
+                <FollowControls
+                  creatorId={conceptData?.user?.userId}
+                  showStats={false}
+                />
               </div>
             )}
           </div>
-          <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
-            <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col gap-2 xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
-              <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
-                <CreatorProfileLink
-                  creatorId={conceptData?.user?.userId}
-                  creatorName={conceptData?.user?.username}
-                  creatorImage={conceptData?.user?.userImage || ''}
-                />
+
+          <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
+            <div style={{ wordWrap: 'break-word' }}>
+              <div className="flex justify-between items-center">
+                <div className="font-bold">
+                  /{conceptData?.task?.generator?.generatorName}
+                </div>
+                <div
+                  className="text-gray-400 text-xs"
+                  title={createdDateString}
+                >
+                  {timeSinceConcept}
+                </div>
               </div>
-              {showFollowControls && (
-                <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
-                  <FollowControls
-                    creatorId={conceptData?.user?.userId}
-                    showStats={false}
-                  />
-                </div>
-              )}
+              <Divider className="my-4" />
+
+              <TruncatedExpandableText text={conceptData?.name} />
             </div>
+          </div>
 
-            <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
-              <div style={{ wordWrap: 'break-word' }}>
-                <div className="flex justify-between items-center">
-                  <div className="font-bold">
-                    /{conceptData?.task?.generator?.generatorName}
-                  </div>
-                  <div
-                    className="text-gray-400 text-xs"
-                    title={createdDateString}
-                  >
-                    {timeSinceConcept}
-                  </div>
-                </div>
-                <Divider className="my-4" />
-
-                <TruncatedExpandableText text={conceptData?.name} />
+          <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+            <div className="w-full">
+              <div className="flex gap-2 justify-between">
+                <div>Training Images</div>
+                {conceptData?.training_images?.length || 0}
               </div>
-            </div>
-
-            <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
-              <div className="w-full">
-                <div className="flex gap-2 justify-between">
-                  <div>Training Images</div>
-                  {conceptData?.training_images?.length || 0}
-                </div>
-                {/* instance_prompt no longer exists */}
-                {/* <div className="flex gap-2 justify-between">
+              {/* instance_prompt no longer exists */}
+              {/* <div className="flex gap-2 justify-between">
                   <div>Instance Prompt</div>
                   <div>{conceptData?.instance_prompt}</div>
                 </div> */}
-                <div className="flex gap-2 justify-between">
-                  <div>Checkpoint</div>
-                  <div>{conceptData?.checkpoint}</div>
-                </div>
+              <div className="flex gap-2 justify-between">
+                <div>Checkpoint</div>
+                <div>{conceptData?.checkpoint}</div>
               </div>
             </div>
-
-            <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
-              <ConceptDetailToolButtons concept={concept} />
-            </div>
-
-            {/* //@todo add config params and eden sdk for this once we have some prod data */}
-            {/*<ConfigParamsTabs data={concept} />*/}
-
-            <Collapse expandIconPosition="start" className="mb-4">
-              <Panel key={'1'} header={'Raw JSON'}>
-                <CodeBlock
-                  code={JSON.stringify(conceptData, null, 2)}
-                  language="javascript"
-                />
-              </Panel>
-            </Collapse>
           </div>
+
+          <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+            <ConceptDetailToolButtons concept={concept} />
+          </div>
+
+          {/* //@todo add config params and eden sdk for this once we have some prod data */}
+          {/*<ConfigParamsTabs data={concept} />*/}
+
+          <Collapse expandIconPosition="start" className="mb-4">
+            <Panel key={'1'} header={'Raw JSON'}>
+              <CodeBlock
+                code={JSON.stringify(conceptData, null, 2)}
+                language="javascript"
+              />
+            </Panel>
+          </Collapse>
         </div>
         {/*{loadSimilar && creationImageLoaded && (*/}
         {/*  <SimilarConcepts*/}

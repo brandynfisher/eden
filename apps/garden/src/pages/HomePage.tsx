@@ -22,7 +22,7 @@ const HomePage = () => {
           OrderByBookmarks,
           OrderByFollowing,
         ]
-      : [OrderByScore, OrderByLatest, OrderByPraises, OrderByBookmarks]
+      : [OrderByScore, OrderByLatest]
 
   return (
     <div className={`flex flex-col`}>

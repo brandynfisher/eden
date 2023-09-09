@@ -1,6 +1,7 @@
 import { CONFIG } from '@/lib/config'
 import { getAdminHeaders } from '@/lib/fetcher'
 import { withSessionRoute } from '@/lib/withSession'
+import * as Sentry from '@sentry/nextjs'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -22,7 +23,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         )
         return res.status(200).json(response.data)
       } catch (_error) {
-        console.error(_error)
+        Sentry.captureException(_error)
         res.status(401).json({ error: 'Unauthorized' })
       }
       break

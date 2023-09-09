@@ -40,6 +40,7 @@ const ConfigSchema = Type.Strict(
     STRIPE_PUBLISHABLE_KEY: Type.String(),
     STRIPE_SECRET_KEY: Type.String(),
     STRIPE_WEBHOOK_SECRET: Type.String(),
+    SENTRY_DSN: Type.String(),
   }),
 )
 

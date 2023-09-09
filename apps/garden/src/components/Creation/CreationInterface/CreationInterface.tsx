@@ -6,6 +6,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
+import { useViewportSize } from '@mantine/hooks'
 import { Select } from 'antd'
 import React, {
   useCallback,
@@ -32,6 +33,7 @@ const CreationInterface = ({
 }) => {
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
+  const { width } = useViewportSize()
   const [activeGenerator, setActiveGenerator] = useState(
     generators?.[0] || undefined,
   )
@@ -61,13 +63,17 @@ const CreationInterface = ({
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
   const scrollResultPreviewIntoView = useCallback(() => {
+    if (width > 1024) {
+      return
+    }
+
     if (resultPreviewRef && resultPreviewRef.current) {
       resultPreviewRef.current.scrollIntoView({
         block: 'center',
         behavior: 'smooth',
       })
     }
-  }, [resultPreviewRef])
+  }, [resultPreviewRef, width])
 
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />

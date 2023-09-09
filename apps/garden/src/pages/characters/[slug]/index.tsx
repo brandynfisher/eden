@@ -1,4 +1,4 @@
-import CharacterDetailPage from '@/pages/characters/[id]/CharacterDetailPage'
+import CharacterDetailPage from '@/pages/characters/[slug]/CharacterDetailPage'
 
 const characterDetail = () => {
   return <CharacterDetailPage />

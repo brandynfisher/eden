@@ -196,7 +196,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       refetch.characters()
       message.destroy()
       message.success(`Character '${data.name}' ${mode}d`)
-      await router.push(`/create/characters`)
+      await router.push(`/characters`)
     } catch (error) {
       handleAxiosError(error, message, 'Error creating/updating character')
     }
