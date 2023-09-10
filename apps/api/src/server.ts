@@ -9,6 +9,7 @@ import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
+import registerS3 from './plugins/s3Plugin'
 import registerSentry from './plugins/sentryPlugin'
 import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
@@ -62,6 +63,7 @@ const createServer = async (
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
   await registerStripe(server)
+  await registerS3(server)
 
   if (server.config.REPLICATE_API_TOKEN) {
     await registerReplicate(server)
@@ -73,10 +75,6 @@ const createServer = async (
 
   if (server.config.PLAYHT_API_KEY) {
     await registerTts(server)
-  }
-
-  if (server.config.MINIO_HOST) {
-    await registerMinio(server)
   }
 
   await server.register(import('@fastify/rate-limit'), {
