@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { fileTypeFromBuffer } from 'file-type'
 
-import { uploadBufferAsset } from '../plugins/minioPlugin'
+import { uploadBufferAsset } from '../plugins/s3Plugin'
 
 export const uploadMedia = async (
   server: FastifyInstance,
