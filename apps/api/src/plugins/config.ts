@@ -46,6 +46,7 @@ const ConfigSchema = Type.Strict(
     MINIO_SECRET_KEY: Type.Optional(Type.String()),
     MINIO_BUCKET: Type.Optional(Type.String()),
     MINIO_URI: Type.Optional(Type.String()),
+    AUTH_ALLOWLIST: Type.Optional(Type.String()),
   }),
 )
 

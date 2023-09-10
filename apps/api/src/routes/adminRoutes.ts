@@ -63,7 +63,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [request => isAdmin(server, request)],
-    handler: (request, reply) => createChallenge(request, reply),
+    handler: (request, reply) => createChallenge(server, request, reply),
   })
 
   server.post('/admin/media/upload', {
