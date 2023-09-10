@@ -26,6 +26,7 @@ module.exports = withTM({
   images: {
     domains: [
       'https://minio.aws.abraham.fun/creations-stg/',
+      'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
       'files.stripe.com',
     ],
     remotePatterns: [
