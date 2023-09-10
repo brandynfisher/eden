@@ -9,6 +9,7 @@ dotenv.config({ path: process.env.DOTENV_PATH || '.env.dummy' })
 export enum NodeEnv {
   development = 'development',
   test = 'test',
+  staging = 'staging',
   production = 'production',
 }
 
@@ -39,6 +40,12 @@ const ConfigSchema = Type.Strict(
     STRIPE_SECRET_KEY: Type.String(),
     STRIPE_WEBHOOK_SECRET: Type.String(),
     SENTRY_DSN: Type.String(),
+    MINIO_HOST: Type.Optional(Type.String()),
+    MINIO_PORT: Type.Optional(Type.String()),
+    MINIO_ACCESS_KEY: Type.Optional(Type.String()),
+    MINIO_SECRET_KEY: Type.Optional(Type.String()),
+    MINIO_BUCKET: Type.Optional(Type.String()),
+    MINIO_URI: Type.Optional(Type.String()),
   }),
 )
 

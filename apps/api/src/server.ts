@@ -5,6 +5,7 @@ import registerChroma from './plugins/chromaPlugin'
 import config from './plugins/config'
 import registerJwt from './plugins/jwtPlugin'
 import registerLlm from './plugins/llmPlugin'
+import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
@@ -62,7 +63,12 @@ const createServer = async (
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
   await registerStripe(server)
-  await registerS3(server)
+
+  if (server.config.MINIO_URI) {
+    await registerMinio(server)
+  } else {
+    await registerS3(server)
+  }
 
   if (server.config.REPLICATE_API_TOKEN) {
     await registerReplicate(server)

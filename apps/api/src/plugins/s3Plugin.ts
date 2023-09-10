@@ -141,7 +141,8 @@ export const registerS3 = async (fastify: FastifyInstance) => {
     fastify.decorate('s3', s3)
     fastify.decorate('uploadUrlAsset', uploadUrlAsset)
     fastify.decorate('uploadThumbnailAsset', uploadThumbnailAsset)
-    fastify.log.info('Successfully registered MinioPlugin')
+    fastify.decorate('uploadBufferAsset', uploadBufferAsset)
+    fastify.log.info('Successfully registered S3Plugin')
   } catch (err) {
     fastify.log.error('Plugin: S3, error on register', err)
     console.error(err)
@@ -160,6 +161,11 @@ declare module 'fastify' {
       server: FastifyInstance,
       assetInput: string | Buffer,
     ) => Promise<string>
+    uploadBufferAsset: (
+      server: FastifyInstance,
+      buffer: Buffer,
+      fileExtension?: string | null,
+    ) => Promise<{ uri: string; mediaAttributes: MediaAttributes }>
   }
 }
 
