@@ -24,7 +24,8 @@ const CreationDetail = ({
   isModal?: boolean
   loadSimilar?: boolean
 }) => {
-  const { isAuthenticated, user } = useContext(UserContext)
+  const { isConnected, isAuthenticated, user, address } =
+    useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
@@ -34,12 +35,12 @@ const CreationDetail = ({
   const [showFollowControls, setShowFollowControls] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated && user?.userId === creation?.user?.userId) {
+    if (isConnected && isAuthenticated && user?.userId === address) {
       setShowFollowControls(true)
     } else {
       setShowFollowControls(false)
     }
-  }, [isAuthenticated, user?.userId, creation?.user?.userId])
+  }, [isConnected, isAuthenticated, user?.userId, address])
 
   useEffect(() => {
     setCreationData(creation)
@@ -113,7 +114,7 @@ const CreationDetail = ({
               {isImage(creation.uri) ? (
                 <MediaDisplay
                   creationUri={creationData?.uri}
-                  previewUri={creationData?.thumbnail}
+                  previewUri={creationData?.uri}
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
                   onLoad={() => {
