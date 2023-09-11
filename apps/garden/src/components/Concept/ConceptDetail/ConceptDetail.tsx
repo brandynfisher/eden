@@ -174,8 +174,8 @@ const ConceptDetail = ({
               <MediaDisplay
                 className={'media-display__main'}
                 creationUri={
-                  conceptData?.thumbnail
-                    ? conceptData.thumbnail
+                  concept && concept?.thumbnail
+                    ? concept.thumbnail
                     : '/placeholder.png'
                 }
                 previewUri={conceptData?.thumbnail}
