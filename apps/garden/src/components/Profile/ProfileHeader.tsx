@@ -77,7 +77,7 @@ const ProfileHeader = ({
       <div className="flex w-full items-center justify-start gap-4 items-stretch">
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <div
-            className={`w-[90px] h-[90px] ${
+            className={`w-[90px] h-[90px] rounded-full overflow-hidden ${
               isConnectedUser
                 ? 'hover:brightness-125 transition-all cursor-pointer'
                 : ''
