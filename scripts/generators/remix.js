@@ -4,7 +4,7 @@ const params = [
     name: 'init_image_data',
     label: 'Init image',
     description:
-      'URL of image to initiate image before diffusion (if null, use random noise)',
+      'The image you want to remix',
     default: null,
     mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: true,
