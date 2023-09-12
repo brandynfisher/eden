@@ -81,7 +81,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
             <ConceptCardDetail concept={concept} />
           </div>
         </div>
-        <div className="absolute top-0.5 right-0 z-10 md:bottom-4 md:right-2">
+        <div className="absolute top-0.5 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
           {trainingMode ? (
             <Tag color="blue" className="first-letter:capitalize me-0">
               {trainingMode}
