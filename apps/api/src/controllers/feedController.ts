@@ -62,6 +62,7 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
             },
           },
           { $sort: { createdAt: -1 } },
+          { $limit: 100 },
         ],
         as: 'creations',
       },
