@@ -1,7 +1,8 @@
 const path = require('path')
 const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
-
+const runtimeCaching = require("next-pwa/cache");
 module.exports = withTM({
+  swcMinify: true,
   output: 'standalone',
   experimental: {
     scrollRestoration: true,
@@ -30,9 +31,9 @@ module.exports = withTM({
 
 const withNextPWA = require('next-pwa')({
   dest: 'public',
+  runtimeCaching,
   disable: process.env.NODE_ENV === 'development',
   register: true,
-  swcMinify: true,
 });
 
 // Injected content via Sentry wizard below
