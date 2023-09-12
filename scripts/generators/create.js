@@ -7,31 +7,6 @@ const params = [
     isRequired: true,
   },
   {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
-  },
-  {
-   name: 'lora',
-   label: 'Concept',
-   description:
-     '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
-   default: '(none)',
-   // allowedValues: ['(none)'],
-  },
-  {
-   name: 'lora_scale',
-   label: 'Concept scale',
-   description:
-     'How strongly to apply the Concept weights (0.0 will result in the base model)',
-   default: 0.8,
-   minimum: 0.0,
-   maximum: 1.5,
-   step: 0.1,
-  },
-  {
     name: 'width',
     label: 'Width',
     description: 'Width of the creation in pixels',
@@ -49,27 +24,40 @@ const params = [
     maximum: 2048,
     step: 64,
   },
+
+  ////////////////////////////////////////
+  // optional generation args
   {
     name: 'upscale_f',
     label: 'Upscale Factor',
-    description: 'Diffusion-based up-scaling factor',
+    description: 'Up-scale your creation with this factor after generation',
     default: 1.0,
     minimum: 1.0,
     maximum: 2.0,
     step: 0.1,
+    optional: true,
   },
 
-
-  ////////////////////////////////////////
-  // optional generation args
-
+  
   {
-    name: 'controlnet_type',
-    label: 'ControlNet',
-    description: 'Which ControlNet to use (or off to disable)',
-    default: 'off',
-    allowedValues: ["off", "canny-edge"],
-    optional: true,
+   name: 'lora',
+   label: 'Concept',
+   description:
+     '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
+   default: '(none)',
+   // allowedValues: ['(none)'],
+  optional: true,
+  },
+  {
+   name: 'lora_scale',
+   label: 'Concept scale',
+   description:
+     'How strongly to apply the Concept weights (0.0 will result in the base model)',
+   default: 0.8,
+   minimum: 0.0,
+   maximum: 1.5,
+   step: 0.1,
+  optional: true,
   },
   {
     name: 'init_image_data',
@@ -89,6 +77,14 @@ const params = [
     optional: true,
   },
   {
+    name: 'controlnet_type',
+    label: 'ControlNet',
+    description: 'Which ControlNet to use (or off to disable)',
+    default: 'off',
+    allowedValues: ["off", "canny-edge"],
+    optional: true,
+  },
+  {
     name: 'init_image_strength',
     label: 'Init image strength',
     description:
@@ -102,7 +98,7 @@ const params = [
   {
     name: 'n_samples',
     label: 'Samples',
-    description: 'Number of samples to create',
+    description: 'Number of variations to create',
     default: 1,
     allowedValues: [1, 2, 4],
     optional: true,
@@ -141,6 +137,13 @@ const params = [
     minimum: 5,
     maximum: 70,
     optional: true,
+  },
+  {
+    name: 'checkpoint',
+    label: 'Checkpoint',
+    description: 'Which model checkpoint to generate with',
+    default: 'sdxl-v1.0',
+    allowedValues: ['sdxl-v1.0'],
   },
   {
     name: 'seed',
