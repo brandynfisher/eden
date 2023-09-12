@@ -27,6 +27,16 @@ const params = [
 
   ////////////////////////////////////////
   // optional generation args
+  
+  {
+    name: 'n_samples',
+    label: 'Samples',
+    description: 'Number of variations to create',
+    default: 1,
+    allowedValues: [1, 2, 4],
+    optional: true,
+  },
+  
   {
     name: 'upscale_f',
     label: 'Upscale Factor',
@@ -93,14 +103,6 @@ const params = [
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
-    optional: true,
-  },
-  {
-    name: 'n_samples',
-    label: 'Samples',
-    description: 'Number of variations to create',
-    default: 1,
-    allowedValues: [1, 2, 4],
     optional: true,
   },
   {
