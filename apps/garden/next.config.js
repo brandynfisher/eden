@@ -7,7 +7,6 @@ module.exports = withTM({
     scrollRestoration: true,
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
-  swcMinify: true,
   reactStrictMode: true,
   webpack: config => {
     config.resolve.fallback = {fs: false, net: false, tls: false}
@@ -33,6 +32,7 @@ const withNextPWA = require('next-pwa')({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
   register: true,
+  swcMinify: true,
 });
 
 // Injected content via Sentry wizard below
