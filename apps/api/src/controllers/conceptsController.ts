@@ -75,10 +75,16 @@ export const getConcept = async (
 ) => {
   const { conceptId } = request.params as ConceptsGetArguments
 
-  const concept = (await Concept.findById(conceptId, {}).populate({
-    path: 'user',
-    select: 'userId username userImage',
-  })) as ConceptDocument & {
+  const concept = (await Concept.findById(conceptId, {})
+    .populate({
+      path: 'user',
+      select: 'userId username userImage',
+    })
+    .populate({
+      path: 'task',
+      select: 'status config',
+      populate: { path: 'generator', select: 'generatorName output' },
+    })) as ConceptDocument & {
     reactions?: Map<ReactionType, boolean>
     bookmarked?: boolean
   }

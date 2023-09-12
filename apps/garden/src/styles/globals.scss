@@ -41,13 +41,14 @@
 }
 
 .media-display .ant-image-img {
-    object-fit: contain !important;
-    border-radius: 0.75rem !important;
+    //object-fit: contain !important;
     overflow: hidden !important;
     width: auto !important;
     height: auto !important;
     max-width: 100% !important;
     max-height: 65vh;
+    margin: auto !important;
+    border-radius: 8px !important;
 }
 
 .ant-modal-body .media-display .ant-image-img {
@@ -80,17 +81,17 @@
         flex-grow: 1 !important;
     }
     .ant-modal-body .media-display .ant-image-img {
-        min-width: 50vw !important;
-        object-position: top !important;
+        //min-width: 50vw !important;
+        //object-position: center !important;
         max-height: 90vh !important;
     }
 }
 
-@media (min-width: 1280px) {
-    .ant-modal-body .media-display .ant-image-img {
-        width: 63vw !important;
-    }
-}
+//@media (min-width: 1280px) {
+//    .ant-modal-body .media-display .ant-image-img {
+//        //width: 63vw !important;
+//    }
+//}
 
 .media-display {
     //&.media-display__small {
@@ -339,3 +340,20 @@
 .ant-menu-submenu-title .anticon, .ant-menu-item-icon {
   font-size: 18px !important;
 }
+
+//@media (min-width: 768px) {
+    .card-image {
+        .ant-image {
+            display: flex;
+            justify-content: center;
+        }
+
+        .ant-image-img {
+            max-height: 72vh;
+            max-width: 100%;
+            width: auto;
+            margin: auto;
+            border-radius: 8px;
+        }
+    }
+//}

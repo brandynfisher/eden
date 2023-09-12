@@ -110,7 +110,6 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
           content={`${creator.username}'s Profile - ${creator.creationsCount} Creations | ${creator.followerCount} Followers`}
           key="description"
         />
-        {/* @todo: replace generic logo image with user profile image  */}
         <meta
           property="og:image"
           content={

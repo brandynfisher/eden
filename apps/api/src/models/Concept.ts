@@ -50,6 +50,11 @@ const concept = new Schema<ConceptDocument>(
       ref: 'users',
       required: true,
     },
+    task: {
+      type: Schema.Types.ObjectId,
+      ref: 'tasks',
+      required: true,
+    },
     praiseCount: {
       type: Number,
       default: 0,

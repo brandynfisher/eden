@@ -1,6 +1,7 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { getFileExtension } from '@/lib/getFileExtension'
+import { isImageUrl } from '@/lib/string'
 
 const MediaDisplay = ({
   creationUri,
@@ -19,8 +20,7 @@ const MediaDisplay = ({
 }) => {
   const renderPreview = () => {
     if (!creationUri) return null
-    const extension = getFileExtension(creationUri)
-    if (extension === 'jpg') {
+    if (isImageUrl(creationUri)) {
       return (
         <ImageResult
           previewSizeUrl={previewUri}
@@ -30,13 +30,12 @@ const MediaDisplay = ({
           onLoad={onLoad}
         />
       )
-    } else if (extension === 'mp4') {
+    } else if (getFileExtension(creationUri) === 'mp4') {
       return <VideoResult resultUrl={creationUri} onLoad={onLoad} />
     }
     return null
   }
 
-  // @todo: add prop to swap className that then swaps css bevhaviour
   return (
     <div
       className={`media-display max-h-full max-w-full lg:flex lg:flex-grow ${className}`}

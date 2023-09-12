@@ -25,10 +25,10 @@ const CreatorProfileLink = ({
       className={`creator-profile-link flex items-center items-stretch max-w-full ${
         isOverlay
           ? 'text-gray-300 hover:text-white'
-          : 'hover:text-gray-800 text-gray-500 dark:text-gray-300'
+          : 'hover:text-gray-800 text-black dark:text-gray-300'
       }  hover:brightness-125 transition-all`}
     >
-      <div className="flex items-center justify-center h-[32px] w-[32px] flex-shrink-0">
+      <div className="flex items-center justify-center h-[28px] w-[28px] flex-shrink-0 rounded-full overflow-hidden">
         <CharacterAvatar
           id={creatorId}
           name={creatorName || ''}
@@ -37,7 +37,7 @@ const CreatorProfileLink = ({
         />
       </div>
       <div
-        className="creator-profile-link-name ml-2 text-sm font-bold overflow-hidden whitespace-nowrap self-center truncate"
+        className="creator-profile-link-name ml-2 text-xs font-bold overflow-hidden whitespace-nowrap self-center truncate"
         title={creatorName || ''}
       >
         {creatorName && (
