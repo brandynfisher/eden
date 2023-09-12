@@ -24,7 +24,8 @@ const CreationDetail = ({
   isModal?: boolean
   loadSimilar?: boolean
 }) => {
-  const { isAuthenticated, user } = useContext(UserContext)
+  const { isConnected, isAuthenticated, user, address } =
+    useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
@@ -34,12 +35,12 @@ const CreationDetail = ({
   const [showFollowControls, setShowFollowControls] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated && user?.userId === creation?.user?.userId) {
+    if (isConnected && isAuthenticated && user?.userId === address) {
       setShowFollowControls(true)
     } else {
       setShowFollowControls(false)
     }
-  }, [isAuthenticated, user?.userId, creation?.user?.userId])
+  }, [isConnected, isAuthenticated, user?.userId, address])
 
   useEffect(() => {
     setCreationData(creation)
@@ -104,7 +105,7 @@ const CreationDetail = ({
 
       <div ref={containerRef}>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
-          <div className="relative mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
+          <div className="relative mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
             <div
               onClick={isImage(creation.uri) ? showMediaViewer : () => null}
               className="relative flex justify-center lg:flex lg:flex-grow"
@@ -113,7 +114,7 @@ const CreationDetail = ({
               {isImage(creation.uri) ? (
                 <MediaDisplay
                   creationUri={creationData?.uri}
-                  previewUri={creationData?.thumbnail}
+                  previewUri={creationData?.uri}
                   showPreview={mediaViewerVisible}
                   onPreviewClose={hideMediaViewer}
                   onLoad={() => {
@@ -125,15 +126,9 @@ const CreationDetail = ({
               )}
             </div>
           </div>
-          <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
-            <div className="col-span-12 mb-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
-              <CreationReactions
-                creation={creationData}
-                onChange={setCreationData}
-              />
-            </div>
 
-            <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col gap-2 xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
+          <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
+            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
               <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
                 <CreatorProfileLink
                   creatorId={creationData?.user?.userId}
@@ -142,7 +137,7 @@ const CreationDetail = ({
                 />
               </div>
               {showFollowControls && (
-                <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0 ">
+                <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0">
                   <FollowControls
                     creatorId={creationData?.user?.userId}
                     showStats={false}
@@ -151,7 +146,18 @@ const CreationDetail = ({
               )}
             </div>
 
-            <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
+            <div className="col-span-12 px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900">
+              <CreationReactions
+                creation={creationData}
+                onChange={setCreationData}
+              />
+            </div>
+
+            <div className="flex mb-2 min-w-0 px-4 py-1 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
+              <CreationDetailToolButtons creation={creation} />
+            </div>
+
+            <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 ">
               <div style={{ wordWrap: 'break-word' }}>
                 <div className="flex justify-between items-center">
                   <div className="font-bold">
@@ -168,10 +174,6 @@ const CreationDetail = ({
 
                 <TruncatedExpandableText text={creation?.name} />
               </div>
-            </div>
-
-            <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
-              <CreationDetailToolButtons creation={creation} />
             </div>
 
             <ConfigParamsTabs data={creation} />

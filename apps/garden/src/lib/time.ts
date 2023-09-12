@@ -1,9 +1,29 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import updateLocale from 'dayjs/plugin/updateLocale'
 import utc from 'dayjs/plugin/utc'
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
+dayjs.extend(updateLocale)
+
+dayjs.updateLocale('en', {
+  relativeTime: {
+    future: 'in %s',
+    past: '%s',
+    s: '1s',
+    m: '1min',
+    mm: '%dmin',
+    h: '1h',
+    hh: '%dh',
+    d: '1d',
+    dd: '%dd',
+    M: '1m',
+    MM: '%dm',
+    y: '1y',
+    yy: '%dy',
+  },
+})
 
 export const formatDuration = (duration: number) => {
   // convert number to x:xx format

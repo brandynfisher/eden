@@ -53,19 +53,28 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
     {
       $lookup: {
         from: 'creations',
-        localField: 'following',
-        foreignField: 'user',
-        as: 'creation',
+        let: { followingId: '$following' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$user', '$$followingId'] } } },
+          {
+            $project: {
+              'embedding.embedding': 0,
+            },
+          },
+          { $sort: { createdAt: -1 } },
+          { $limit: 100 },
+        ],
+        as: 'creations',
       },
     },
     {
       $unwind: {
-        path: '$creation',
+        path: '$creations',
       },
     },
     {
       $replaceRoot: {
-        newRoot: '$creation',
+        newRoot: '$creations',
       },
     },
   ])
@@ -263,6 +272,11 @@ export const getConceptsFeed = async (
   await conceptRepository.model.populate(concepts.docs, {
     path: 'user',
     select: 'userId username userImage',
+  })
+  await conceptRepository.model.populate(concepts.docs, {
+    path: 'task',
+    select: 'status config',
+    populate: { path: 'generator', select: 'generatorName output' },
   })
 
   if (request.user?.userId) {

@@ -35,6 +35,7 @@ export const getServerSidePropsBase = (
       const allFieldResults = await Promise.all(
         fieldRequests.map(async fieldRequest => {
           const data = await fieldRequest.dataFetcher(ctx)
+
           if (!data || !data[fieldRequest.responseFieldName]) {
             return false
           }
