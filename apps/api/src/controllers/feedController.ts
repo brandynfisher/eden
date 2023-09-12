@@ -273,6 +273,11 @@ export const getConceptsFeed = async (
     path: 'user',
     select: 'userId username userImage',
   })
+  await conceptRepository.model.populate(concepts.docs, {
+    path: 'task',
+    select: 'status config',
+    populate: { path: 'generator', select: 'generatorName output' },
+  })
 
   if (request.user?.userId) {
     // Get user's reactions and bookmarks
