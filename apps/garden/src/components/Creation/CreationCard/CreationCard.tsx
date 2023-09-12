@@ -84,7 +84,7 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
       <div className="relative" key={index}>
         <div className="w-full flex justify-center flex-col">
           <div
-            className={` flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-900 md:bg-opacity-70 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
+            className={` flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:bg-opacity-70 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
               hovered ? 'md:!visible' : 'md:hidden'
             }`}
           >
@@ -94,7 +94,10 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
                 creatorName={creation.user.username}
                 creatorImage={creation.user.userImage}
               />
-              <div className="text-gray-400 text-xs" title={createdDateString}>
+              <div
+                className="text-gray-700 dark:text-gray-400 text-xs"
+                title={createdDateString}
+              >
                 <span className="mx-1">•</span>
                 {timeSinceCreation}
               </div>
@@ -123,7 +126,7 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
             </a>
           </div>
           <div
-            className={`md:mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-900 md:bg-opacity-70 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${
+            className={`md:mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:bg-opacity-70 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${
               hovered ? 'md:!visible' : 'md:hidden'
             }`}
           >
