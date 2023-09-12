@@ -7,7 +7,7 @@ import { Concept as ConceptType } from '@edenlabs/eden-sdk'
 import { NextPageContext } from 'next'
 
 interface PageProps {
-  data: ConceptType
+  data: { concept: ConceptType }
   error?: string
 }
 
