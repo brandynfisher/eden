@@ -8,6 +8,8 @@ import remixParameters from './generators/remix.js';
 import interrogateParameters from './generators/interrogate.js';
 import wav2lipParameters from './generators/wav2lip.js';
 import conceptParameters from './generators/concept.js';
+import blendParameters from './generators/blend.js';
+import upscaleParameters from './generators/upscale.js';
 
 
 import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
@@ -89,6 +91,24 @@ async function updateVersion(db) {
       isDeprecated: false
     }
 
+    const blendGeneratorVersion = {
+      provider: 'replicate',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
+      versionId: versionId,
+      mode: 'blend',
+      parameters: blendParameters,
+      isDeprecated: false
+    }
+
+    const upscaleGeneratorVersion = {
+      provider: 'replicate',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
+      versionId: versionId,
+      mode: 'upscale',
+      parameters: upscaleParameters,
+      isDeprecated: false
+    }
+
     await db.collection('generators').updateOne(
       { generatorName: 'create' }, 
       { $addToSet: { versions: createGeneratorVersion } }
@@ -112,6 +132,16 @@ async function updateVersion(db) {
     await db.collection('generators').updateOne(
       { generatorName: 'interrogate' }, 
       { $addToSet: { versions: interrogateGeneratorVersion } }
+    );
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'blend' }, 
+      { $addToSet: { versions: blendGeneratorVersion } }
+    );
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'upscale' }, 
+      { $addToSet: { versions: upscaleGeneratorVersion } }
     );
 
   }
