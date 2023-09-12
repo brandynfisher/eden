@@ -176,7 +176,7 @@ const ConceptDetail = ({
                 creationUri={
                   concept && concept?.thumbnail
                     ? concept.thumbnail
-                    : '/placeholder.png'
+                    : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                 }
                 previewUri={conceptData?.thumbnail}
                 showPreview={mediaViewerVisible}
@@ -227,7 +227,7 @@ const ConceptDetail = ({
                     creationUri={
                       displayImage?.thumbnail
                         ? displayImage.thumbnail
-                        : '/placeholder.png'
+                        : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                     }
                     previewUri={displayImage?.thumbnail}
                     showPreview={mediaViewerVisible}

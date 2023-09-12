@@ -1,3 +1,4 @@
+import { CONFIG } from '@/lib/config'
 import {
   ExpandOutlined,
   ExperimentOutlined,
@@ -138,7 +139,7 @@ const ImageResult = ({
             <Image
               placeholder={<LoadingPlaceholder />}
               alt="result"
-              fallback="placeholder.png"
+              fallback={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}
               preview={false}
               src={previewSizeUrl}
             />

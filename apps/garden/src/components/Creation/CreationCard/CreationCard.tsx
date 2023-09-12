@@ -126,7 +126,7 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
             </a>
           </div>
           <div
-            className={`md:mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${
+            className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${
               hovered ? 'md:!visible' : 'md:hidden'
             }`}
           >
