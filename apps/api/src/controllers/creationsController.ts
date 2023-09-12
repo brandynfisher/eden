@@ -192,7 +192,7 @@ export const getCreationSimilar = async (
 
   const embedding = creation.embedding?.embedding
 
-  if (!embedding) {
+  if (!embedding || embedding.length == 0) {
     return reply.status(404).send({
       message: 'Embedding not found',
     })

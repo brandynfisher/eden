@@ -19,8 +19,8 @@ export interface CreationSchema {
   attributes?: any
   mediaAttributes: MediaAttributes
   embedding?: {
-    embedding: number[]
-    score: number
+    embedding?: number[]
+    score?: number
   }
   createdAt?: Date
   updatedAt?: Date
