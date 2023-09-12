@@ -263,7 +263,7 @@ const ConceptDetail = ({
           </div>
         </div>
         <div className="mx-auto lg:mx-0 md:max-w-[640px]  lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
-          <div className="mb-4 col-span-4 xl:col-span-12 flex flex-col gap-2 xs:flex-row min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
+          <div className="mb-4 col-span-4 xl:col-span-12 flex gap-2 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
             <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
               <CreatorProfileLink
                 creatorId={conceptData?.user?.userId}
