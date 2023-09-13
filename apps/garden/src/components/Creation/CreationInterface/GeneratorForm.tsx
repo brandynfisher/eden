@@ -23,6 +23,7 @@ import { HelpOutline } from '@mui/icons-material'
 import { debounce } from '@mui/material'
 import { App, Button, Card, Form, Popover } from 'antd'
 import axios from 'axios'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, {
   useCallback,
@@ -71,7 +72,8 @@ const GeneratorForm = ({
   } = useContext(CreationNotificationContext)
   const { message } = App.useApp()
   const router = useRouter()
-  const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
+  const { refetch, isAuthenticated, authenticate, mannaBalance } =
+    useContext(UserContext)
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -81,10 +83,22 @@ const GeneratorForm = ({
   const [optionalParameters, setOptionalParams] = useState<
     GeneratorParameter[]
   >([])
+  const [advancedParameters, setAdvancedParameters] = useState<
+    GeneratorParameter[]
+  >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
   const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
+  const [canAffordOperation, setCanAffordOperation] = useState(false)
+
+  useEffect(() => {
+    if (taskCost && mannaBalance) {
+      setCanAffordOperation(mannaBalance >= taskCost?.cost)
+    } else {
+      setCanAffordOperation(false)
+    }
+  }, [taskCost, mannaBalance])
 
   useEffect(() => {
     const transformConfig = () => {
@@ -169,7 +183,14 @@ const GeneratorForm = ({
         currentGeneratorParams.filter(parameter => parameter.isRequired),
       )
       setOptionalParams(
-        currentGeneratorParams.filter(parameter => !parameter.isRequired),
+        currentGeneratorParams.filter(
+          parameter => !parameter.isRequired && !parameter.optional,
+        ),
+      )
+      setAdvancedParameters(
+        currentGeneratorParams.filter(
+          parameter => !parameter.isRequired && parameter.optional,
+        ),
       )
 
       handleGetTaskCost(currentGeneratorParams)
@@ -216,7 +237,7 @@ const GeneratorForm = ({
             // @ts-ignore
             cleanedValues[reqParam.name] = ['dummy field content']
           } else {
-            cleanedValues[reqParam.name] = 'dummy field content'
+            cleanedValues[reqParam.name] = 'concept'
           }
         })
 
@@ -415,43 +436,58 @@ const GeneratorForm = ({
           >
             <div>
               <div className="flex gap-3 items-center">
-                <Button
-                  type="primary"
-                  icon={<ExperimentOutlined />}
-                  htmlType="submit"
-                  size="large"
-                  className="font-mono capitalize"
-                  loading={isSubmitting ? { delay: 250 } : false}
-                  disabled={isSubmitting || !isFormTouched || uploadsInProgress}
-                >
-                  {generator.generatorName}
-                </Button>
-                {(isLoadingTaskCost || taskCost) && (
-                  <div className="flex items-center gap-2 font-mono text-gray-400">
-                    <div className="cursor-default">
-                      {isLoadingTaskCost ? (
-                        <LoadingOutlined />
-                      ) : (
-                        <span className="font-bold">{taskCost?.cost}</span>
-                      )}{' '}
-                      Manna
-                    </div>
-                    <Popover
-                      content={
-                        <div>
-                          Displays the estimated manna cost for this operation
-                        </div>
-                      }
-                      title="Manna Cost"
-                      trigger="click"
-                    >
-                      <HelpOutline
-                        fontSize="small"
-                        className="hover:text-blue-400"
-                      />
-                    </Popover>
+                {!canAffordOperation ? (
+                  <div className="text-orange-500">
+                    Insufficient Manna! ({mannaBalance}){' '}
+                    <Link href="/manna">Click here to get more</Link>
                   </div>
+                ) : (
+                  <Button
+                    type="primary"
+                    icon={<ExperimentOutlined />}
+                    htmlType="submit"
+                    size="large"
+                    className="font-mono capitalize"
+                    loading={isSubmitting ? { delay: 250 } : false}
+                    disabled={
+                      isSubmitting ||
+                      !isFormTouched ||
+                      uploadsInProgress ||
+                      !canAffordOperation
+                    }
+                  >
+                    {generator.generatorName}
+                  </Button>
                 )}
+                <div className="flex gap-2">
+                  {(isLoadingTaskCost || taskCost) && (
+                    <div className="flex items-center gap-2 font-mono text-gray-400">
+                      <div className="cursor-default">
+                        Cost:{' '}
+                        {isLoadingTaskCost ? (
+                          <LoadingOutlined />
+                        ) : (
+                          <span className="font-bold">{taskCost?.cost}</span>
+                        )}{' '}
+                        Manna
+                      </div>
+                      <Popover
+                        content={
+                          <div>
+                            Displays the estimated manna cost for this operation
+                          </div>
+                        }
+                        title="Manna Cost"
+                        trigger="click"
+                      >
+                        <HelpOutline
+                          fontSize="small"
+                          className="hover:text-blue-400"
+                        />
+                      </Popover>
+                    </div>
+                  )}
+                </div>
               </div>
               {uploadsInProgress ? (
                 <div className="text-orange-500 mt-4">
@@ -468,7 +504,8 @@ const GeneratorForm = ({
         ]}
       >
         {renderFormFields(requiredParameters, false)}
-        {optionalParameters.length > 0 && (
+        {renderFormFields(optionalParameters, false)}
+        {advancedParameters.length > 0 && (
           <>
             {showOptional ? (
               <Button
@@ -489,7 +526,7 @@ const GeneratorForm = ({
             )}
           </>
         )}
-        {renderFormFields(optionalParameters, true)}
+        {renderFormFields(advancedParameters, true)}
       </Card>
     </Form>
   )

@@ -1,26 +1,16 @@
 const path = require('path')
 const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
-
+const runtimeCaching = require("next-pwa/cache");
 module.exports = withTM({
+  swcMinify: true,
   output: 'standalone',
   experimental: {
     scrollRestoration: true,
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
-  headers: () => [
-    {
-      source: '/:path*',
-      headers: [
-        {
-          key: 'Cache-Control',
-          value: 'no-store',
-        },
-      ],
-    },
-  ],
   reactStrictMode: true,
   webpack: config => {
-    config.resolve.fallback = { fs: false, net: false, tls: false }
+    config.resolve.fallback = {fs: false, net: false, tls: false}
     return config
   },
   images: {
@@ -40,43 +30,18 @@ module.exports = withTM({
   },
 })
 
-// @todo: revisit PWA / service worker
-//
-// const path = require('path')
-//
-// /** @type {import('next').NextConfig} */
-// const nextConfig = {
-//   reactStrictMode: true,
-//   swcMinify: true,
-//   compiler: {
-//     removeConsole: process.env.NODE_ENV !== 'development',
-//   },
-//   output: 'standalone',
-//   experimental: {
-//     scrollRestoration: true,
-//     outputFileTracingRoot: path.join(__dirname, '../../'),
-//   },
-//   webpack: config => {
-//     config.resolve.fallback = { fs: false, net: false, tls: false }
-//     return config
-//   },
-// };
-//
-// const withPWA = require('next-pwa')({
-//   dest: 'public',
-//   disable: process.env.NODE_ENV === 'development',
-//   register: true,
-// });
-//
-// const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
-//
-// module.exports = withPWA(withTM(nextConfig));
+const withNextPWA = require('next-pwa')({
+  dest: 'public',
+  runtimeCaching,
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+});
 
 // Injected content via Sentry wizard below
 
-const { withSentryConfig } = require('@sentry/nextjs')
+const {withSentryConfig} = require('@sentry/nextjs')
 
-module.exports = withSentryConfig(
+module.exports = withNextPWA(withSentryConfig(
   module.exports,
   {
     // For all available options, see:
@@ -106,4 +71,4 @@ module.exports = withSentryConfig(
     // Automatically tree-shake Sentry logger statements to reduce bundle size
     disableLogger: true,
   },
-)
+))

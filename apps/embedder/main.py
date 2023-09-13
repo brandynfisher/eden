@@ -19,6 +19,7 @@ MINIO_HOST = os.getenv('MINIO_HOST')
 
 model_path = "combo_2023-08-02_03:48:00_8.1k_imgs_80_epochs_-1.0000_mse.pth"
 device = "cpu"
+generator_names = ["create", "remix", "blend", "upscale", "real2real", "interpolate", "wav2lip"]
 
 # setup mongo
 client = MongoClient(MONGO_URI)
@@ -31,7 +32,6 @@ chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=8000)
 collection = chroma_client.get_or_create_collection(name="creation_clip_embeddings")
 print(chroma_client.list_collections())
 print(f"Clip embeddings collection size: {collection.count()}")
-
 
 # pre-populate chroma with all creations which already have embeddings
 pipeline = [
@@ -59,8 +59,12 @@ if not FAKE_DATA:
 
 
 def induct_creation(document):
-    uri = document['uri']
+    uri = document['thumbnail']
     
+    if not uri:
+        print(f"skip creation {document['_id']}, no thumbnail")
+        return
+
     if MINIO_HOST:
         parsed_url = urlparse(uri)
         host = f"{parsed_url.scheme}://{parsed_url.netloc}"
@@ -103,7 +107,6 @@ def induct_creation(document):
 def scan_unembedded_creations():
     PAGE_SIZE = 100
     
-    generator_names = ["create", "remix"]
     generator_ids = [g['_id'] for g in generators.find({
         "generatorName": {"$in": generator_names}
     })]
@@ -184,4 +187,4 @@ while True:
         scan_unembedded_creations()
     except Exception as e:
        print(e)
-    time.sleep(10)
+    time.sleep(5)

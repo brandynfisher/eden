@@ -20,7 +20,7 @@ const CreationCardHoverOverlay = ({
         <CreationReactions creation={creation} onChange={handlers.onChange} />
       </div>
       <div className="mx-2 mb-2 anim-slide-fade-up">
-        <CreationCardDetail creation={creation} isOverlay={true} />
+        <CreationCardDetail creation={creation} />
       </div>
     </div>
   )

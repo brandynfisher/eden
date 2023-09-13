@@ -113,6 +113,7 @@ const CompletedTaskMenuItem = ({
   )
 
   if (!task.creation) return null
+
   return (
     <div key={task._id}>
       <div
@@ -127,7 +128,7 @@ const CompletedTaskMenuItem = ({
             className="rounded-md w-12 h-12 mr-4 flex items-center overflow-hidden"
             style={{ minWidth: '48px', minHeight: '48px' }}
           >
-            <ImageResult fullSizeUrl={task.creation?.thumbnail || ''} />
+            <ImageResult previewSizeUrl={task.creation?.thumbnail || ''} />
           </div>
           <div className="flex items-center justify-between min-w-0 w-full">
             <div className="flex flex-col gap-2 min-w-0 w-full">
@@ -291,12 +292,15 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
 
     completedTaskItems.push(
       ...completedTasks.map(task => ({
-        label: CompletedTaskMenuItem({
-          task,
-          handleDismiss: () =>
-            handleDismiss(task._id, completedTasks, setCompletedTasks),
-          router,
-        }),
+        label: (
+          <CompletedTaskMenuItem
+            router={router}
+            task={task}
+            handleDismiss={() =>
+              handleDismiss(task._id, completedTasks, setCompletedTasks)
+            }
+          />
+        ),
         key: task._id,
       })),
     )
@@ -327,11 +331,14 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
 
     failedTaskItems.push(
       ...failedTasks.map(task => ({
-        label: FailedTaskMenuItem({
-          task,
-          handleDismiss: () =>
-            handleDismiss(task._id, failedTasks, setFailedTasks),
-        }),
+        label: (
+          <FailedTaskMenuItem
+            task={task}
+            handleDismiss={() =>
+              handleDismiss(task._id, failedTasks, setFailedTasks)
+            }
+          />
+        ),
         key: task._id,
         onClick: () => openDetailModal(task),
       })),

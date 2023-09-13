@@ -80,14 +80,14 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
       message.destroy()
       message.info(`Character '${character.name}' was deleted`)
       refetch.characters()
-      await router.push('/characters')
+      await router.push('/create/characters')
     } catch (error) {
       handleAxiosError(error, message)
     }
   }
 
   const handleCancel = async () => {
-    await router.push('/characters')
+    await router.push('/create/characters')
   }
 
   return (

@@ -19,8 +19,8 @@ export interface CreationSchema {
   attributes?: any
   mediaAttributes: MediaAttributes
   embedding?: {
-    embedding: number[]
-    score: number
+    embedding?: number[]
+    score?: number
   }
   createdAt?: Date
   updatedAt?: Date
@@ -115,6 +115,7 @@ creation.pre<CreationDocument>('save', function (next) {
 })
 
 creation.index({ createdAt: 1 })
+creation.index({ user: 1 })
 
 creation.plugin(paginate)
 creation.plugin(aggregatePaginate)
