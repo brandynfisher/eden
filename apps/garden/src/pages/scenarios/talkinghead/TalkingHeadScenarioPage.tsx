@@ -1,7 +1,7 @@
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
-import { Select } from 'antd'
+import { Button, Select } from 'antd'
 import React, { useContext, useState } from 'react'
 
 const TalkingHeadScenarioPageContent = ({
@@ -35,6 +35,7 @@ const TalkingHeadScenarioPageContent = ({
           onChange={handleActiveCharacterChange}
         >
           {characters &&
+            characters.length &&
             characters.map(character => (
               <Select.Option key={character.id} value={character.name}>
                 {character.name}
@@ -45,7 +46,7 @@ const TalkingHeadScenarioPageContent = ({
 
       <div>{JSON.stringify(activeCharacter, null, 2)}</div>
       <div>prompt: xxx123</div>
-      <div>submit</div>
+      <Button>Submit</Button>
     </div>
   )
 }

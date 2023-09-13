@@ -179,7 +179,7 @@ const params = [
     label: 'Init image min strength',
     description:
       'Min strength of the init_img during interpolation. Lower values will give the interpolation more freedom, leading to more visual changes at the cost of less smoothness',
-    default: 0.15,
+    default: 0.1,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
