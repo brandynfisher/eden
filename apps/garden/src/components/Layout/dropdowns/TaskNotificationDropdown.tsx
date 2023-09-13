@@ -113,6 +113,7 @@ const CompletedTaskMenuItem = ({
   )
 
   if (!task.creation) return null
+
   return (
     <div key={task._id}>
       <div
@@ -291,12 +292,15 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
 
     completedTaskItems.push(
       ...completedTasks.map(task => ({
-        label: CompletedTaskMenuItem({
-          task,
-          handleDismiss: () =>
-            handleDismiss(task._id, completedTasks, setCompletedTasks),
-          router,
-        }),
+        label: (
+          <CompletedTaskMenuItem
+            router={router}
+            task={task}
+            handleDismiss={() =>
+              handleDismiss(task._id, completedTasks, setCompletedTasks)
+            }
+          />
+        ),
         key: task._id,
       })),
     )
@@ -327,11 +331,14 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
 
     failedTaskItems.push(
       ...failedTasks.map(task => ({
-        label: FailedTaskMenuItem({
-          task,
-          handleDismiss: () =>
-            handleDismiss(task._id, failedTasks, setFailedTasks),
-        }),
+        label: (
+          <FailedTaskMenuItem
+            task={task}
+            handleDismiss={() =>
+              handleDismiss(task._id, failedTasks, setFailedTasks)
+            }
+          />
+        ),
         key: task._id,
         onClick: () => openDetailModal(task),
       })),

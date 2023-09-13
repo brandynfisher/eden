@@ -8,6 +8,7 @@ import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getFileExtension } from '@/lib/getFileExtension'
+import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -61,12 +62,6 @@ const CreationDetail = ({
     return extension === 'mp4'
   }
 
-  const isImage = (creationUri: string) => {
-    if (!creationUri) return null
-    const extension = getFileExtension(creationUri)
-    return extension === 'jpg'
-  }
-
   return (
     <>
       <Head>
@@ -107,11 +102,11 @@ const CreationDetail = ({
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
           <div className="relative mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
             <div
-              onClick={isImage(creation.uri) ? showMediaViewer : () => null}
+              onClick={isImageUrl(creation.uri) ? showMediaViewer : () => null}
               className="relative flex justify-center lg:flex lg:flex-grow"
               style={{ width: 'fit-content', margin: '0 auto' }}
             >
-              {isImage(creation.uri) ? (
+              {isImageUrl(creation.uri) ? (
                 <MediaDisplay
                   creationUri={creationData?.uri}
                   previewUri={creationData?.uri}
@@ -122,7 +117,12 @@ const CreationDetail = ({
                   }}
                 />
               ) : (
-                <MediaDisplay creationUri={creationData?.uri} />
+                <MediaDisplay
+                  creationUri={creationData?.uri}
+                  onLoad={() => {
+                    setCreationImageLoaded(true)
+                  }}
+                />
               )}
             </div>
           </div>
