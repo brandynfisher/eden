@@ -35,18 +35,11 @@ const params = [
     minimum: 10,
     maximum: 600,
   },
-  {
-    name: 'loop',
-    label: 'Loop',
-    description: 'Loop the output video',
-    default: true,
-    allowedValues: [false, true],
-  },
 
 
   ////////////////////////////////////////
   // optional generation args
-  
+
   {
     name: 'lora',
     label: 'Concept',
@@ -64,6 +57,50 @@ const params = [
     minimum: 0.0,
     maximum: 1.2,
     step: 0.1,
+  },
+
+
+  
+  {
+    name: 'init_image_data',
+    label: 'Init image',
+    default: null,
+    description:
+      'Guidance image. This will guide the edges and contours of the creation',
+    mediaUpload: 'image/png, image/jpeg, image/webp',
+    isRequired: false,
+    optional: true,
+  },
+  {
+    name: 'controlnet_type',
+    label: 'ControlNet',
+    description: 'Which ControlNet to use',
+    default: 'off',
+    allowedValues: ["off", "canny-edge"],
+    optional: true,
+  },
+  {
+    name: 'init_image_strength',
+    label: 'Init image strength',
+    description:
+      'How much influence the guidance image has in the video. Recommended >0.5 with ControlNet on, <0.1 with ControlNet off',
+    default: 0.1,
+    minimum: 0.0,
+    maximum: 1.0,
+    step: 0.01,
+    optional: true,
+  },
+
+  
+
+  
+  {
+    name: 'loop',
+    label: 'Loop',
+    description: 'Loop the output video',
+    default: true,
+    allowedValues: [false, true],
+    optional: true,
   },
 
   {
@@ -141,10 +178,6 @@ const params = [
     optional: true,
   },
 
-
-  ////////////////////////////////////////
-  // optional interpolation args
-
   {
     name: 'interpolation_seeds',
     label: 'Seeds',
@@ -161,8 +194,6 @@ const params = [
     default: 'sdxl-v1.0',
     allowedValues: ['sdxl-v1.0'],
   },
-  ////////////////////////////////////////
-  // stream intermediate results
 
   {
     name: 'stream',
