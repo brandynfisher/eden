@@ -14,13 +14,13 @@ import * as replicate from './replicate'
 import * as taskRunner from './taskRunner'
 import * as tts from './tts'
 
-type TaskProvider = 'llm' | 'replicate' | 'tts' | 'taskRunner'
+type TaskProvider = 'llm' | 'replicate' | 'tts' | 'task-runner'
 
 const providers = new Map<TaskProvider, any>([
   ['llm', llm],
   ['tts', tts],
   ['replicate', replicate],
-  ['taskRunner', taskRunner],
+  ['task-runner', taskRunner],
 ])
 
 type TaskStatus =
