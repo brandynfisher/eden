@@ -83,6 +83,9 @@ const GeneratorForm = ({
   const [optionalParameters, setOptionalParams] = useState<
     GeneratorParameter[]
   >([])
+  const [advancedParameters, setAdvancedParameters] = useState<
+    GeneratorParameter[]
+  >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
   const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
@@ -180,7 +183,14 @@ const GeneratorForm = ({
         currentGeneratorParams.filter(parameter => parameter.isRequired),
       )
       setOptionalParams(
-        currentGeneratorParams.filter(parameter => !parameter.isRequired),
+        currentGeneratorParams.filter(
+          parameter => !parameter.isRequired && !parameter.optional,
+        ),
+      )
+      setAdvancedParameters(
+        currentGeneratorParams.filter(
+          parameter => !parameter.isRequired && parameter.optional,
+        ),
       )
 
       handleGetTaskCost(currentGeneratorParams)
@@ -494,7 +504,8 @@ const GeneratorForm = ({
         ]}
       >
         {renderFormFields(requiredParameters, false)}
-        {optionalParameters.length > 0 && (
+        {renderFormFields(optionalParameters, false)}
+        {advancedParameters.length > 0 && (
           <>
             {showOptional ? (
               <Button
@@ -515,7 +526,7 @@ const GeneratorForm = ({
             )}
           </>
         )}
-        {renderFormFields(optionalParameters, true)}
+        {renderFormFields(advancedParameters, true)}
       </Card>
     </Form>
   )
