@@ -50,6 +50,15 @@ services:
     ports:
       - 8000:8000
 
+  task-runner:
+    build:
+      context: ./apps/task-runner
+      dockerfile: Dockerfile
+    environment:
+      MONGO_URI: mongodb://admin:admin@mongo:27017
+      MONGO_DB_NAME: eden
+      MINIO_HOST: http://minio:9000
+
   embedder:
     build:
       context: ./apps/embedder
