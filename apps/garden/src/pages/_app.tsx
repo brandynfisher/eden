@@ -2,6 +2,7 @@ import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
 import EdenProvider from '@/providers/EdenProvider'
+import ModalProvider from '@/providers/ModalProvider'
 import UserProvider from '@/providers/UserProvider'
 import WalletProvider from '@/providers/WalletProvider'
 import '@/styles/globals.scss'
@@ -51,6 +52,32 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <meta property="og:type" content="website" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        {/*<link rel="mask-icon" href="/icons/mask-icon.svg" color="#FFFFFF" />*/}
+        <meta name="theme-color" content="#64b77e" />
+        <meta name="background-color" content="#030712" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <link
+          rel="apple-touch-icon"
+          sizes="152x152"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="167x167"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/eden-logo-512x512.png"
+          sizes="640x1136"
+        />
       </Head>
 
       <ThemeProvider attribute="class">
@@ -59,7 +86,9 @@ export default function App({ Component, pageProps }: Props): ReactElement {
             <EdenProvider>
               <UserProvider>
                 <CreationNotificationProvider>
-                  {getLayout(<Component {...pageProps} />)}
+                  <ModalProvider>
+                    {getLayout(<Component {...pageProps} />)}
+                  </ModalProvider>
                 </CreationNotificationProvider>
               </UserProvider>
             </EdenProvider>

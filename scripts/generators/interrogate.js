@@ -5,7 +5,7 @@ const params = [
     description:
       'URL of image to initiate image before diffusion (if null, use random noise)',
     default: null,
-    mediaUpload: true,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: true,
   },
 ]

@@ -1,4 +1,7 @@
-import { maybeRedirectIfCreationIdQuery } from '@/lib/redirect'
+import {
+  maybeRedirectIfConceptIdQuery,
+  maybeRedirectIfCreationIdQuery,
+} from '@/lib/redirect'
 import { withSessionSsr } from '@/lib/withSession'
 import { NextPageContext } from 'next'
 
@@ -12,7 +15,6 @@ export const getServerSidePropsBase = (
   useSessionSsr?: boolean,
 ) => {
   const getServerSideProps = async (ctx: NextPageContext) => {
-    `1`
     const shouldRedirectToCreationDetail = await maybeRedirectIfCreationIdQuery(
       ctx,
     )
@@ -21,20 +23,30 @@ export const getServerSidePropsBase = (
       return shouldRedirectToCreationDetail
     }
 
+    const shouldRedirectToConceptDetail = await maybeRedirectIfConceptIdQuery(
+      ctx,
+    )
+
+    if (shouldRedirectToConceptDetail) {
+      return shouldRedirectToConceptDetail
+    }
+
     try {
       const allFieldResults = await Promise.all(
         fieldRequests.map(async fieldRequest => {
           const data = await fieldRequest.dataFetcher(ctx)
 
           if (!data || !data[fieldRequest.responseFieldName]) {
-            return {
-              notFound: true,
-            }
+            return false
           }
 
           return data
         }),
       )
+
+      if (allFieldResults[0] === false) {
+        return { notFound: true }
+      }
 
       return { props: { data: allFieldResults[0] } }
     } catch (err) {

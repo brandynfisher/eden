@@ -12,6 +12,7 @@ export interface UserSchema {
   collections: CollectionDocument[]
   followerCount: number
   followingCount: number
+  featureFlags?: string[]
   username?: string
   userImage?: string
   createdAt?: Date
@@ -22,6 +23,8 @@ export interface UserInput {
   userId: string
   isWeb2: boolean
   username: string
+  userImage?: string
+  isClerk?: boolean
   isAdmin?: boolean
 }
 
@@ -72,6 +75,11 @@ const user = new Schema<UserDocument>(
       type: Number,
       default: 0,
     },
+    featureFlags: [
+      {
+        type: String,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -83,6 +91,8 @@ user.pre<UserDocument>('save', function (next) {
 
   next()
 })
+
+user.index({ createdAt: 1 })
 
 user.plugin(paginate)
 

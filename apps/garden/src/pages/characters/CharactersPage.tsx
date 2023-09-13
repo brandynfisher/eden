@@ -1,4 +1,5 @@
 import CharacterList from '@/components/Characters/CharacterList'
+import CreateMenu from '@/components/Layout/navigation/CreateMenu'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
@@ -24,12 +25,14 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
       message.destroy()
       message.error('You can only have 5 characters at once.')
     } else {
-      await router.push('/characters/create')
+      await router.push('/create/characters/new')
     }
   }
 
   return (
     <>
+      <CreateMenu />
+
       <h2 className="mb-4">Characters</h2>
       <CharacterList characters={characters} />
       <div className="flex gap-4 mt-8 flex-wrap justify-between">

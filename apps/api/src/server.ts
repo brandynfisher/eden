@@ -1,16 +1,19 @@
-import fastifyJWT from '@fastify/jwt'
-import fastify, { FastifyReply, FastifyRequest } from 'fastify'
+import fastify from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerChroma from './plugins/chromaPlugin'
 import config from './plugins/config'
+//import registerPlayHt from './plugins/playHtPlugin'
+import registerElevenLabs from './plugins/elevenLabsPlugin'
+import registerJwt from './plugins/jwtPlugin'
 import registerLlm from './plugins/llmPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
+import registerSentry from './plugins/sentryPlugin'
+import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
-import registerTts from './plugins/ttsPlugin'
 import { routes } from './routes'
 
 export interface CreateServerOpts {
@@ -41,25 +44,25 @@ const createServer = async (
 
   await server.register(config)
 
+  if (server.config.NODE_ENV !== 'development') {
+    await registerSentry(server)
+  }
+
+  await registerJwt(server)
+
+  await server.register(import('fastify-raw-body'), {
+    field: 'rawBody',
+    global: false,
+    encoding: 'utf8',
+    runFirst: true,
+    routes: [],
+  })
+
   await registerMongo(server, opts.mongoUri)
   await registerChroma(server, opts.chromaUri)
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
-
-  await server.register(fastifyJWT, {
-    secret: server.config.JWT_SECRET,
-  })
-
-  await server.decorate(
-    'authenticate',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        await request.jwtVerify()
-      } catch (err) {
-        reply.send(err)
-      }
-    },
-  )
+  await registerStripe(server)
 
   if (server.config.REPLICATE_API_TOKEN) {
     await registerReplicate(server)
@@ -69,8 +72,12 @@ const createServer = async (
     await registerLlm(server)
   }
 
-  if (server.config.PLAYHT_API_KEY) {
-    await registerTts(server)
+  // if (server.config.PLAYHT_API_KEY) {
+  //   await registerPlayHt(server)
+  // }
+
+  if (server.config.ELEVENLABS_API_KEY) {
+    await registerElevenLabs(server)
   }
 
   if (server.config.MINIO_HOST) {

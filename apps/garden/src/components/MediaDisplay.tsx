@@ -1,6 +1,7 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { getFileExtension } from '@/lib/getFileExtension'
+import { isImageUrl } from '@/lib/string'
 
 const MediaDisplay = ({
   creationUri,
@@ -8,34 +9,37 @@ const MediaDisplay = ({
   showPreview,
   onPreviewClose,
   onLoad,
+  className,
 }: {
   creationUri: string
   previewUri?: string
   showPreview?: boolean
   onPreviewClose?: () => void
   onLoad?: () => void
+  className?: string
 }) => {
   const renderPreview = () => {
     if (!creationUri) return null
-    const extension = getFileExtension(creationUri)
-    if (extension === 'jpg') {
+    if (isImageUrl(creationUri)) {
       return (
         <ImageResult
-          resultUrl={creationUri}
-          previewUrl={previewUri ? creationUri : undefined}
+          previewSizeUrl={previewUri}
+          fullSizeUrl={creationUri}
           showPreview={showPreview}
           onPreviewClose={onPreviewClose}
           onLoad={onLoad}
         />
       )
-    } else if (extension === 'mp4') {
+    } else if (getFileExtension(creationUri) === 'mp4') {
       return <VideoResult resultUrl={creationUri} onLoad={onLoad} />
     }
     return null
   }
 
   return (
-    <div className="media-display max-h-full max-w-full lg:flex lg:flex-grow ">
+    <div
+      className={`media-display max-h-full max-w-full lg:flex lg:flex-grow ${className}`}
+    >
       <div className="rounded-xl overflow-hidden max-h-full max-w-full lg:flex lg:flex-grow lg:justify-center lg:items-start max-h-[90vh]">
         {renderPreview()}
       </div>

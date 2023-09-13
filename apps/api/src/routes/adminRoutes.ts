@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { createChallenge } from '../controllers/authController'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
+import { uploadMediaAdmin } from '../controllers/mediaController'
 import { isAdmin } from '../middleware/authMiddleware'
 
 export interface MannaModifyRequestBody {
@@ -10,7 +11,7 @@ export interface MannaModifyRequestBody {
   amount: number
 }
 
-const mannaRoutes: FastifyPluginAsync = async server => {
+const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/manna/modify', {
     schema: {
       request: {
@@ -64,6 +65,18 @@ const mannaRoutes: FastifyPluginAsync = async server => {
     preHandler: [request => isAdmin(server, request)],
     handler: (request, reply) => createChallenge(request, reply),
   })
+
+  server.post('/admin/media/upload', {
+    schema: {
+      response: {
+        200: Type.Object({
+          url: Type.String(),
+        }),
+      },
+    },
+    preHandler: [async request => isAdmin(server, request)],
+    handler: (req, reply) => uploadMediaAdmin(server, req, reply),
+  })
 }
 
-export default mannaRoutes
+export default adminRoutes

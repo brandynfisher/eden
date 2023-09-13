@@ -1,3 +1,4 @@
+import { CONFIG } from '@/lib/config'
 import {
   ExpandOutlined,
   ExperimentOutlined,
@@ -11,7 +12,7 @@ import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const ImagePreviewMask = () => (
   <div className="image-preview-mask absolute inset-0 !opacity-60 hover:!opacity-100">
-    <div className="rounded-lg bg-gray-300 dark:bg-gray-800 h-8 w-8 flex items-center justify-center absolute top-[-16px] left-[-16px]">
+    <div className="rounded-lg bg-gray-300 dark:bg-gray-800 h-8 w-8 flex items-center justify-center absolute">
       <ExpandOutlined className="text-xl" />
     </div>
   </div>
@@ -19,35 +20,39 @@ const ImagePreviewMask = () => (
 
 const LoadingPlaceholder = () => {
   return (
-    <Skeleton.Node active={true} className="flex !min-h-[300px] opacity-60">
+    <Skeleton.Node
+      active={true}
+      className="flex !min-h-[300px] image-loading-placeholder bg-gray-400 dark:bg-black !bg-opacity-80"
+    >
       <ExperimentOutlined className="text-2xl" />
     </Skeleton.Node>
   )
 }
 
 const ImageResult = ({
-  resultUrl,
-  previewUrl,
+  fullSizeUrl,
+  previewSizeUrl,
   showPreview,
   onPreviewClose,
   onLoad,
 }: {
-  resultUrl: string
-  previewUrl?: string
+  fullSizeUrl?: string
+  previewSizeUrl?: string
   showPreview?: boolean
   onPreviewClose?: () => void
   onLoad?: () => void
 }) => {
-  const onCloseHandler = (
-    ev?: React.MouseEvent | React.KeyboardEvent | undefined,
-  ) => {
-    if (ev) {
-      ev.stopPropagation()
-    }
-    if (onPreviewClose) {
-      onPreviewClose()
-    }
-  }
+  const onCloseHandler = useCallback(
+    (ev?: React.MouseEvent | React.KeyboardEvent | undefined) => {
+      if (ev) {
+        ev.stopPropagation()
+      }
+      if (onPreviewClose) {
+        onPreviewClose()
+      }
+    },
+    [onPreviewClose],
+  )
 
   useEffect(() => {
     if (!onPreviewClose) {
@@ -74,19 +79,24 @@ const ImageResult = ({
 
   const handleOnLoad = useCallback(() => {
     if (!isLoaded) {
-      if (onLoad) {
-        setIsLoaded(true)
-        onLoad()
-      }
+      setIsLoaded(true)
     }
-  }, [isLoaded])
+
+    if (onLoad) {
+      onLoad()
+    }
+  }, [isLoaded, onLoad])
 
   // trigger image onLoad if the image is complete
   useEffect(() => {
+    if (fullSizeUrl && !previewImageRef?.current?.complete) {
+      setIsLoaded(false)
+    }
+
     if (!isLoaded && previewImageRef && previewImageRef?.current?.complete) {
       handleOnLoad()
     }
-  }, [previewUrl, previewImageRef?.current, isLoaded])
+  }, [fullSizeUrl, previewImageRef?.current, isLoaded])
 
   const fitContentToWrapper = useCallback(() => {
     if (componentWrapRef.current && contentRef.current) {
@@ -115,22 +125,30 @@ const ImageResult = ({
                 ref={previewImageRef}
                 onLoad={handleOnLoad}
                 alt="result"
-                src={resultUrl}
+                src={previewSizeUrl}
+                // srcSet={}
                 className="ant-image-img"
               />
+              {!isLoaded && (
+                <div className="absolute inset-0 z-10 bg-opacity-95">
+                  <LoadingPlaceholder />
+                </div>
+              )}
             </div>
           ) : (
             <Image
               placeholder={<LoadingPlaceholder />}
               alt="result"
-              fallback="placeholder.png"
+              fallback={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}
               preview={false}
-              src={resultUrl}
+              src={previewSizeUrl}
             />
           )}
+          {fullSizeUrl && !showPreview && <ImagePreviewMask />}
         </div>
 
-        {previewUrl && showPreview ? (
+        {/* //@todo: extract preview and controls to isolated component */}
+        {fullSizeUrl && showPreview ? (
           <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-10`}>
             <TransformWrapper
               minScale={0.1}
@@ -140,7 +158,7 @@ const ImageResult = ({
             >
               {({ zoomIn, zoomOut, centerView }) => (
                 <>
-                  <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-950 bg-opacity-40 rounded-bl-lg right-0">
+                  <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
                     <Button.Group>
                       <Button type="text" onClick={() => zoomIn()}>
                         <ZoomInOutlined className="text-xl" />
@@ -162,8 +180,8 @@ const ImageResult = ({
                   <TransformComponent wrapperClass="!w-full !h-full">
                     <img
                       ref={contentRef}
-                      src={previewUrl}
-                      alt={previewUrl}
+                      src={fullSizeUrl}
+                      alt={fullSizeUrl}
                       onLoad={() => {
                         centerView(fitContentToWrapper())
                       }}
@@ -174,7 +192,6 @@ const ImageResult = ({
             </TransformWrapper>
           </div>
         ) : null}
-        {previewUrl && !showPreview && <ImagePreviewMask />}
       </div>
     </>
   )

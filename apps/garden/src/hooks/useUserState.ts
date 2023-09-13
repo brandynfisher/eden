@@ -63,6 +63,7 @@ export const useUserState = () => {
     settings,
     updateSetting,
     user: creator ? creator : undefined,
+    featureFlags: creator?.featureFlags || [],
   }
   return user
 }

@@ -13,7 +13,7 @@ const MediaPreview = ({
   if (!creation.uri) return null
   const extension = getFileExtension(creation.uri)
   if (extension === 'jpg') {
-    return <ImageResult resultUrl={creation.thumbnail || ''} />
+    return <ImageResult previewSizeUrl={creation.thumbnail || ''} />
   } else if (extension === 'mp4') {
     return <VideoPreview creation={creation} hovered={hovered} />
   }

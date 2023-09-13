@@ -34,6 +34,7 @@ export const createCharacter = async (
 
   return reply.status(200).send({
     characterId: character._id,
+    slug: character.slug,
   })
 }
 
@@ -128,6 +129,7 @@ export const listCharacters = async (
       id: character._id.toString(),
       user: character.user.toString(),
       name: character.name,
+      slug: character.slug,
       image: character.image,
       description: character.description,
       greeting: character.greeting,
@@ -142,8 +144,8 @@ export const getCharacter = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { characterId } = request.params as CharactersGetArguments
-  const character = await Character.findById(characterId)
+  const { slug } = request.params as CharactersGetArguments
+  const character = await Character.findOne({ slug })
   if (!character) {
     return reply.status(404).send({
       message: 'Character not found',
@@ -154,6 +156,7 @@ export const getCharacter = async (
     id: character._id,
     user: character.user.toString(),
     name: character.name,
+    slug: character.slug,
     image: character.image,
     description: character.description,
     greeting: character.greeting,

@@ -37,7 +37,7 @@ export type Task = {
   output?: any
   intermediate_outputs?: any[]
   creation?: any
-  lora?: string
+  concept?: string
   createdAt: string
   updatedAt: string
 }

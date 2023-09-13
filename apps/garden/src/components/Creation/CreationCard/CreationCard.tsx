@@ -1,90 +1,140 @@
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
-import CreationCardHoverOverlay from '@/components/Creation/CreationCard/CreationCardHoverOverlay'
-import CreationCardPreview from '@/components/Creation/CreationCard/CreationCardPreview'
-import CreationDetailModal from '@/components/Creation/CreationCard/CreationDetailModal'
+import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
+import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
+import CreationReactions from '@/components/Creation/CreationReactions'
+import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import { getModalUrls } from '@/lib/modal'
+import { timeAgo } from '@/lib/time'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
+import { EllipsisOutlined } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import { NextRouter, useRouter } from 'next/router'
-import { useState } from 'react'
+import { Dropdown } from 'antd'
+import { useRouter } from 'next/router'
+import React, { FC, useEffect, useState } from 'react'
 
-interface ISpecialRouteIndex<TValue> {
-  [id: string]: TValue
-}
-
-const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
-  '/creators/[id]': {
-    basePath: 'creators',
-  },
-  '/collections/[id]': {
-    basePath: 'collections',
-  },
-}
-
-const getModalUrls = (
-  router: NextRouter,
-  creationId: string,
-): { pageUrl: string; modalUrl: string } => {
-  const urls = {
-    pageUrl: '',
-    modalUrl: '',
-  }
-
-  // all default cases
-  if (!specialHandlingRoutes[router.pathname]) {
-    urls.modalUrl = `/creations/${creationId}`
-    return urls
-  }
-
-  // special workaround when we're trying to open modals on routes with dynamic parameters
-  const basePath = specialHandlingRoutes[router.pathname].basePath
-  urls.modalUrl = `/${basePath}/${router.query.id}?creationId=${creationId}`
-  urls.pageUrl = urls.modalUrl
-
-  return urls
-}
-
-const CreationCard = ({ index, data }: { index: number; data: Creation }) => {
+const CreationCard: FC<{ index: number; data: Creation }> = ({
+  index,
+  data,
+}) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
-  const [detailModalOpen, setDetailModalOpen] = useState(false)
   const [creation, setCreation] = useState(data)
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false)
 
-  const { pageUrl, modalUrl } = getModalUrls(router, creation._id)
+  const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation._id)
+  const { showModal } = useModalContext()
 
   const openDetailModal = async () => {
     await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    setDetailModalOpen(true)
+    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
+      creation,
+      loadSimilar: true,
+      usesUrl: true,
+    })
+  }
+
+  const [createdDateString, setCreatedDateString] = useState('')
+  const timeSinceCreation = timeAgo(creation.createdAt)
+
+  useEffect(() => {
+    setCreatedDateString(new Date(creation.createdAt).toLocaleString())
+  }, [creation])
+
+  const getCardMenuItems = () => {
+    return [
+      {
+        label: (
+          <div
+            onClick={() =>
+              console.log('//@todo: copy creation url to clipboard')
+            }
+          >
+            Copy... creation url to clipboard
+          </div>
+        ),
+        key: '1',
+      },
+      {
+        label: (
+          <div
+            onClick={() => console.log('//@todo: copy image file to clipboard')}
+          >
+            Copy... image file to clipboard
+          </div>
+        ),
+        key: '2',
+      },
+      {
+        label: (
+          <div
+            onClick={() => console.log('//@todo: copy image url to clipboard')}
+          >
+            Copy... image url to clipboard
+          </div>
+        ),
+        key: '3',
+      },
+    ]
   }
 
   return (
-    <div>
-      <div className="relative " key={index}>
-        <div className="w-full flex justify-center">
+    <div ref={ref} className="mx-auto max-w-[500px] md:mx-0 md:max-w-none">
+      <div className="relative" key={index}>
+        <div className="w-full flex justify-center flex-col">
           <div
-            ref={ref}
-            className="relative rounded-lg overflow-hidden cursor-pointer"
+            className={` flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
+              hovered ? 'md:!visible' : 'md:hidden'
+            }`}
           >
-            <CreationCardPreview creation={creation} hovered={hovered} />
-            {hovered && (
-              <CreationCardHoverOverlay
-                creation={creation}
-                handlers={{ onChange: setCreation, openDetailModal }}
+            <div className="flex items-center pointer-events-auto">
+              <CreatorProfileLink
+                creatorId={creation.user.userId}
+                creatorName={creation.user.username}
+                creatorImage={creation.user.userImage}
               />
-            )}
+              <div
+                className="text-gray-700 dark:text-gray-400 text-xs"
+                title={createdDateString}
+              >
+                <span className="mx-1">•</span>
+                {timeSinceCreation}
+              </div>
+            </div>
+            <Dropdown
+              trigger={['click']}
+              arrow={true}
+              placement="bottomRight"
+              menu={{ items: getCardMenuItems() }}
+            >
+              <div className="flex items-center cursor-pointer pointer-events-auto">
+                <EllipsisOutlined className="text-xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
+              </div>
+            </Dropdown>
+          </div>
+          <div
+            className="card-image relative rounded-lg overflow-hidden cursor-pointer"
+            onClick={openDetailModal}
+          >
+            <a
+              onClick={ev => ev.preventDefault()}
+              href={`/creations/${creation._id}`}
+              target={'_blank'}
+            >
+              <MediaPreview creation={creation} hovered={hovered} />
+            </a>
+          </div>
+          <div
+            className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${
+              hovered ? 'md:!visible' : 'md:hidden'
+            }`}
+          >
+            <CreationReactions creation={creation} onChange={setCreation} />
+            <CreationCardDetail creation={creation} />
           </div>
         </div>
       </div>
-      {detailModalOpen && (
-        <CreationDetailModal
-          modalUrl={modalUrl}
-          onAfterClose={() => {
-            setDetailModalOpen(false)
-          }}
-          creation={creation}
-        />
-      )}
       <AddToCollectionModal
         open={addToCollectionModalOpen}
         setOpen={setAddToCollectionModalOpen}

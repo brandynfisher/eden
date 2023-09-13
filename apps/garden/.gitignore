@@ -33,3 +33,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Sentry Auth Token
+.sentryclirc
+
+# service worker / next-pwa
+**/public/workbox-*.js*
+**/public/sw.js*
+**/public/fallback-*.js*

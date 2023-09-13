@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   mongo:
@@ -36,3 +36,44 @@ services:
       - default
     depends_on:
       - minio
+
+  chromadb:
+    build:
+      context: ./infra/chroma
+      dockerfile: Dockerfile
+    volumes:
+      - ./infra/chroma:/chroma
+      - chroma_index_data:/index_data
+    command: uvicorn chromadb.app:app --reload --workers 1 --host 0.0.0.0 --port 8000 --log-config log_config.yml
+    environment:
+      IS_PERSISTENT: "TRUE"
+    ports:
+      - 8000:8000
+
+  task-runner:
+    build:
+      context: ./apps/task-runner
+      dockerfile: Dockerfile
+    environment:
+      MONGO_URI: mongodb://admin:admin@mongo:27017
+      MONGO_DB_NAME: eden
+      MINIO_HOST: http://minio:9000
+
+  embedder:
+    build:
+      context: ./apps/embedder
+      dockerfile: Dockerfile
+    environment:
+      MONGO_URI: mongodb://admin:admin@mongo:27017
+      MONGO_DB_NAME: eden
+      CHROMA_HOST: chromadb
+      MINIO_HOST: http://minio:9000
+      FAKE_DATA: TRUE  # remove if you want to set to false
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  chroma_index_data:
+    driver: local

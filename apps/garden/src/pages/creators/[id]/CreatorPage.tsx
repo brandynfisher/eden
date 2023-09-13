@@ -1,10 +1,11 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
-import CreationMasonryInfinite from '@/components/Creation/CreationMasonryInfinite'
+import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
-  OrderByScore,
 } from '@/components/OrderByButtons'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
@@ -20,16 +21,33 @@ import React, { useContext } from 'react'
 const inter = Inter({ subsets: ['latin'] })
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
+  const { isConnected, isAuthenticated } = useContext(UserContext)
+
+  const sortButtons =
+    isConnected && isAuthenticated
+      ? [OrderByLatest, OrderByPraises, OrderByBookmarks]
+      : [OrderByLatest]
+
   return (
     <div className="mt-4">
-      <CreationMasonryInfinite
+      <MasonryInfinite
         query={{ userId: creatorId }}
-        hasSort={[
-          OrderByLatest,
-          OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]}
+        hasSort={sortButtons}
+        type="creations"
+        itemComponent={CreationCard}
+      />
+    </div>
+  )
+}
+
+const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
+  return (
+    <div className="mt-4">
+      <MasonryInfinite
+        query={{ userId: creatorId }}
+        hasSort={[OrderByLatest]}
+        type="concepts"
+        itemComponent={ConceptCard}
       />
     </div>
   )
@@ -52,8 +70,9 @@ const CollectionTabContent = ({
 
 const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   const { collections } = useCollections(creator.userId)
-  const { address, isConnected } = useContext(UserContext)
+  const { address, isConnected, featureFlags } = useContext(UserContext)
   const isConnectedUser = isConnected && creator.userId === address
+  const isPreviewUser = featureFlags.includes('preview')
 
   const creatorPageTabs = [
     {
@@ -61,12 +80,21 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       key: '1',
       children: <CreationTabContent creatorId={creator.userId} />,
     },
-    {
-      label: 'Collections',
-      key: '2',
-      children: <CollectionTabContent collections={collections} />,
-    },
   ]
+
+  if (isPreviewUser) {
+    creatorPageTabs.push({
+      label: 'Concepts',
+      key: '2',
+      children: <ConceptTabContent creatorId={creator.userId} />,
+    })
+  }
+
+  creatorPageTabs.push({
+    label: 'Collections',
+    key: '3',
+    children: <CollectionTabContent collections={collections} />,
+  })
 
   return (
     <>
@@ -82,15 +110,22 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
           content={`${creator.username}'s Profile - ${creator.creationsCount} Creations | ${creator.followerCount} Followers`}
           key="description"
         />
-        {/* @todo: replace generic logo image with user profile image  */}
         <meta
           property="og:image"
-          content="https://app.eden.art/apple-touch-icon.png"
+          content={
+            creator.userImage
+              ? creator.userImage
+              : 'https://app.eden.art/apple-touch-icon.png'
+          }
           key="image"
         />
         <meta
           property="og:image:secure_url"
-          content="https://app.eden.art/apple-touch-icon.png"
+          content={
+            creator.userImage
+              ? creator.userImage
+              : 'https://app.eden.art/apple-touch-icon.png'
+          }
         />
         <meta
           property="og:image:alt"
@@ -104,7 +139,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
         />
       </Head>
 
-      <div className={`flex flex-col min-h-screen ${inter.className}`}>
+      <div className={`flex flex-col ${inter.className}`}>
         <Space direction="vertical">
           <ProfileHeader
             creatorId={creator.userId}

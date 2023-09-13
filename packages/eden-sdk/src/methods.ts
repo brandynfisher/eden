@@ -1,5 +1,7 @@
 import { AxiosRequestConfig } from 'axios'
 import {
+  CreatorFollowersListResponse,
+  CreatorFollowingListResponse,
   SessionEventsListResponse,
   SessionsCreateResponse,
   SessionsDeleteResponse,
@@ -17,6 +19,10 @@ import {
   CollectionsUpdateResponse,
 } from 'src/responses/CollectionsResponses'
 import { MediaUploadResponse } from 'src/responses/MediaResponses'
+import {
+  PaymentsCreateResponse,
+  PaymentsProductsResponse,
+} from 'src/responses/PaymentsResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
@@ -32,6 +38,10 @@ import {
   CharactersListResponse,
   CharactersUpdateResponse,
 } from './responses/CharactersResponses'
+import {
+  ConceptsGetResponse,
+  ConceptsListResponse,
+} from './responses/ConceptsResponses'
 import {
   CreationsGetResponse,
   CreationsGetSimilarResponse,
@@ -246,6 +256,31 @@ export abstract class Methods {
     ),
   }
 
+  public readonly followers = {
+    list: bindApiCall<FollowersListArguments, CreatorFollowersListResponse>(
+      this,
+      followersListRequestConfig,
+    ),
+  }
+
+  public readonly following = {
+    list: bindApiCall<FollowersListArguments, CreatorFollowingListResponse>(
+      this,
+      followingListRequestConfig,
+    ),
+  }
+
+  public readonly concepts = {
+    list: bindApiCall<ConceptsListArguments, ConceptsListResponse>(
+      this,
+      conceptsListRequestConfig,
+    ),
+    get: bindApiCall<ConceptsGetArguments, ConceptsGetResponse>(
+      this,
+      conceptsGetRequestConfig,
+    ),
+  }
+
   public readonly generators = {
     list: bindApiCall<GeneratorsListArguments, GeneratorsListResponse>(
       this,
@@ -274,6 +309,17 @@ export abstract class Methods {
     upload: bindApiCall<MediaUploadArguments, MediaUploadResponse>(
       this,
       mediaUploadRequestConfig,
+    ),
+  }
+
+  public readonly payments = {
+    create: bindApiCall<PaymentsCreateArguments, PaymentsCreateResponse>(
+      this,
+      paymentsCreateRequestConfig,
+    ),
+    products: bindApiCall<PaymentsProductsArguments, PaymentsProductsResponse>(
+      this,
+      paymentsProductsRequestConfig,
     ),
   }
 
@@ -334,6 +380,10 @@ export abstract class Methods {
       this,
       tasksCreateRequestConfig,
     ),
+    cost: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
+      this,
+      tasksCostRequestConfig,
+    ),
     complete: bindApiCall<TasksCompleteArguments, TasksCompleteResponse>(
       this,
       tasksCompleteRequestConfig,
@@ -360,7 +410,7 @@ export interface CharactersListArguments
 }
 
 export interface CharactersGetArguments extends WebAPICallOptions {
-  characterId: string
+  slug: string
 }
 
 export interface CharactersCreateArguments extends WebAPICallOptions {
@@ -466,6 +516,16 @@ export interface CreationsUnreactArguments extends WebAPICallOptions {
   reaction: ReactionType
 }
 
+export interface ConceptsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface ConceptsGetArguments extends WebAPICallOptions {
+  conceptId: string
+}
+
 export interface CreatorsFollowArguments extends WebAPICallOptions {
   userId: string
 }
@@ -489,6 +549,18 @@ export interface CreatorsUpdateArguments extends WebAPICallOptions {
   userImage?: string
 }
 
+export interface FollowersListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId: string
+}
+
+export interface FollowingListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId: string
+}
+
 export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
 
 export interface GeneratorsGetArguments extends WebAPICallOptions {
@@ -504,6 +576,13 @@ export interface MannaVouchersRedeemArguments extends WebAPICallOptions {
 export interface MediaUploadArguments extends WebAPICallOptions {
   media: Buffer
 }
+
+export interface PaymentsCreateArguments extends WebAPICallOptions {
+  priceId: string
+  paymentMode: 'payment' | 'subscription'
+}
+
+export interface PaymentsProductsArguments extends WebAPICallOptions {}
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
   name: string
@@ -607,7 +686,7 @@ const charactersGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `characters/${args.characterId}`,
+    url: `characters/${args.slug}`,
   }
 }
 
@@ -829,6 +908,26 @@ const creationsUnreactRequestConfig = (
   }
 }
 
+const conceptsListRequestConfig = (
+  args: ConceptsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'concepts',
+    params,
+  }
+}
+
+const conceptsGetRequestConfig = (
+  args: ConceptsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `concepts/${args.conceptId}`,
+  }
+}
+
 const creatorsFollowRequestConfig = (
   args: CreatorsFollowArguments,
 ): AxiosRequestConfig => {
@@ -885,6 +984,28 @@ const creatorsUpdateRequestConfig = (
   }
 }
 
+const followersListRequestConfig = (
+  args: FollowersListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: `creators/${args.userId}/followers`,
+    params,
+  }
+}
+
+const followingListRequestConfig = (
+  args: FollowingListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: `creators/${args.userId}/following`,
+    params,
+  }
+}
+
 const generatorsListRequestConfig = (): AxiosRequestConfig => {
   return {
     method: 'GET',
@@ -931,6 +1052,25 @@ const mediaUploadRequestConfig = (args: MediaUploadArguments) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+  }
+}
+
+const paymentsCreateRequestConfig = (
+  args: PaymentsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'payments/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const paymentsProductsRequestConfig = (): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'payments/products',
   }
 }
 
@@ -1069,6 +1209,17 @@ const tasksCreateRequestConfig = (
   }
 }
 
+const tasksCostRequestConfig = (
+  args: TasksCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'tasks/cost',
+    data: {
+      ...args,
+    },
+  }
+}
 const tasksCompleteRequestConfig = (
   args: TasksCompleteArguments,
 ): AxiosRequestConfig => {

@@ -6,8 +6,23 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
+import { useViewportSize } from '@mantine/hooks'
 import { Select } from 'antd'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+
+const hiddenCreationGenerators = [
+  'complete',
+  'tts',
+  'wav2lip',
+  'tts_fast',
+  'sdxl-lora-trainer',
+]
 
 const CreationInterface = ({
   generatorName,
@@ -16,7 +31,9 @@ const CreationInterface = ({
   generatorName?: string
   presetCreation?: Creation
 }) => {
+  const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
+  const { width } = useViewportSize()
   const [activeGenerator, setActiveGenerator] = useState(
     generators?.[0] || undefined,
   )
@@ -45,6 +62,19 @@ const CreationInterface = ({
     setActiveGenerator(generators?.[0])
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
+  const scrollResultPreviewIntoView = useCallback(() => {
+    if (width > 1024) {
+      return
+    }
+
+    if (resultPreviewRef && resultPreviewRef.current) {
+      resultPreviewRef.current.scrollIntoView({
+        block: 'center',
+        behavior: 'smooth',
+      })
+    }
+  }, [resultPreviewRef, width])
+
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />
   }
@@ -62,24 +92,29 @@ const CreationInterface = ({
             onChange={handleGeneratorChange}
             placeholder="Generators"
           >
-            {generators.map(generator => (
-              <Select.Option
-                key={generator.generatorName}
-                value={generator.generatorName}
-              >
-                {generator.generatorName}
-              </Select.Option>
-            ))}
+            {generators
+              .filter(
+                generator =>
+                  !hiddenCreationGenerators.includes(generator.generatorName),
+              )
+              .map(generator => (
+                <Select.Option
+                  key={generator.generatorName}
+                  value={generator.generatorName}
+                >
+                  {generator.generatorName}
+                </Select.Option>
+              ))}
           </Select>
           {activeGenerator && (
             <GeneratorForm
               generator={activeGenerator}
               presetCreation={presetCreation}
+              onSubmitSuccess={scrollResultPreviewIntoView}
             />
           )}
         </div>
-
-        <ResultPreview />
+        <ResultPreview innerRef={resultPreviewRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}

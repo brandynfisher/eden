@@ -30,7 +30,7 @@ const ProfileHeader = ({
   const [isLoading, setIsLoading] = useState(true)
   const [imageSubmitLoading, setImageSubmitLoading] = useState(false)
   const [displayName, setDisplayName] = useState('')
-  const [displayImage, setDisplayImage] = useState('')
+  const [displayImage, setDisplayImage] = useState<string | undefined>()
   const [showImageUploader, setShowImageUploader] = useState(false)
   const [form] = Form.useForm()
   const userImageFieldValue = Form.useWatch('userImage', form)
@@ -40,7 +40,6 @@ const ProfileHeader = ({
 
   useEffect(() => {
     setIsLoading(true)
-
     if (!creator) {
       return
     }
@@ -50,11 +49,7 @@ const ProfileHeader = ({
     } else {
       setDisplayName(creatorId)
     }
-
-    if (creator.userImage) {
-      setDisplayImage(creator.userImage)
-    }
-
+    setDisplayImage(creator?.userImage)
     setIsLoading(false)
   }, [creator, creatorId])
 
@@ -77,13 +72,12 @@ const ProfileHeader = ({
       setImageSubmitLoading(false)
     }
   }
-
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4 items-stretch">
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <div
-            className={`w-[90px] h-[90px] ${
+            className={`w-[90px] h-[90px] rounded-full overflow-hidden ${
               isConnectedUser
                 ? 'hover:brightness-125 transition-all cursor-pointer'
                 : ''
@@ -184,7 +178,7 @@ const ProfileHeader = ({
               <strong>{numCreations || 0}</strong> Creations
             </div>
             <div className="col-span-full sm:col-span-1">
-              <FollowControls creatorId={creatorId} />
+              <FollowControls creatorId={creatorId} showStats={true} />
             </div>
           </div>
         </div>
@@ -192,5 +186,4 @@ const ProfileHeader = ({
     </div>
   )
 }
-
 export default ProfileHeader

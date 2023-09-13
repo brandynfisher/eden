@@ -33,13 +33,11 @@ const ChatScenarioPageContent = ({
   const [sessionId, setSessionId] = useState<string>(activeSessionId || '')
   const [activeCharacterName, setActiveCharacterName] = useState<string>()
   const [sessionCreating, setSessionCreating] = useState(false)
-
   useEffect(() => {
     if (activeCharacter) {
       handleActiveCharacterChange(activeCharacter.name)
     }
   }, [activeCharacter])
-
   const handleActiveCharacterChange = (characterName: string) => {
     const character = characters?.find(
       character => character.name === characterName,
@@ -47,7 +45,6 @@ const ChatScenarioPageContent = ({
     setActiveCharacter(character as Character)
     setActiveCharacterName(character?.name as string)
   }
-
   const handleStartChat = async () => {
     setSessionCreating(true)
     try {
@@ -55,7 +52,6 @@ const ChatScenarioPageContent = ({
         type: ScenarioType.CHATROOM,
       })
       const { sessionId } = response.data
-
       const userAddEvent = {
         sessionId,
         type: SessionEventType.USER_ADD,
@@ -66,7 +62,6 @@ const ChatScenarioPageContent = ({
         },
       }
       await axios.post('/api/sessions/update', userAddEvent)
-
       const characterAddEvent = {
         sessionId,
         type: SessionEventType.CHARACTER_ADD,
@@ -76,7 +71,6 @@ const ChatScenarioPageContent = ({
           },
         },
       }
-
       await axios.post('/api/sessions/update', characterAddEvent)
       setSessionId(sessionId)
       await router.push('', `/scenarios/chat/${sessionId}`)
@@ -85,12 +79,13 @@ const ChatScenarioPageContent = ({
     }
     setSessionCreating(false)
   }
-
   return (
     <div className="flex flex-col h-full">
       {!sessionId ? (
         <>
-          <div className="mb-8">
+          {/* @todo: re-enable/unhide when sessions is ready */}
+          {/* @todo: extract this to SessionSelector or something */}
+          <div className="mb-8 hidden">
             {sessions && sessions.length && (
               <>
                 <h2 className="mb-4">Previous Sessions</h2>
@@ -142,7 +137,6 @@ const ChatScenarioPageContent = ({
     </div>
   )
 }
-
 const ChatScenarioPage = ({
   data,
   activeSessionId,
@@ -155,21 +149,19 @@ const ChatScenarioPage = ({
     userId: address ? address : null,
     isAuthenticated,
     options: {
-      fallbackData: data.characters,
+      fallbackData: data ? data.characters : [],
     },
   })
   const { sessions: sessionsData } = useMySessions({
     userId: address ? address : null,
     isAuthenticated,
     options: {
-      fallbackData: data.characters,
+      fallbackData: data ? data.sessions : [],
     },
   })
-
   if (!data) {
     return null
   }
-
   return (
     <ChatScenarioPageContent
       characters={charactersData || data.characters}
@@ -178,5 +170,4 @@ const ChatScenarioPage = ({
     />
   )
 }
-
 export default ChatScenarioPage

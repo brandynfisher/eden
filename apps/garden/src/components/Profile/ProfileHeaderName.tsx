@@ -28,19 +28,15 @@ const ProfileHeaderName = ({
       await requireAuth(authenticate)
       return
     }
-
     setIsEditing(true)
     setUpdatedName(displayName)
   }
-
   const handleNameInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = ev.target.value
     const isValid = newValue.match(/^[a-zA-Z0-9_.-]*$/)
-
     if (!isValid) {
       return
     }
-
     setUpdatedName(newValue.trim())
   }
 

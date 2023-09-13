@@ -7,12 +7,30 @@ import {
   createCompletion,
   createTask,
   getTask,
+  getTaskCost,
   listTasks,
   receiveTaskUpdate,
 } from '../controllers/taskController'
 import { isAuth } from '../middleware/authMiddleware'
 
 const taskRoutes: FastifyPluginAsync = async server => {
+  server.post('/tasks/cost', {
+    schema: {
+      body: {
+        generatorName: Type.String(),
+        versionId: Type.Optional(Type.String()),
+        config: Type.Optional(Type.Any()),
+      },
+      response: {
+        200: Type.Object({
+          cost: Type.Number(),
+        }),
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => getTaskCost(server, request, reply),
+  })
+
   server.post('/tasks/create', {
     schema: {
       body: {

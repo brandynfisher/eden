@@ -1,9 +1,31 @@
-import MediaDisplay from '@/components/MediaDisplay'
+import ResultPreviewDisplay from '@/components/Creation/CreationInterface/ResultPreviewDisplay'
+import { rightTruncatedString, truncatedAddress } from '@/lib/string'
+import { timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
-import { Card, Progress, Spin } from 'antd'
-import React, { useContext } from 'react'
+import {
+  CheckCircleOutlined,
+  CopyOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons'
+import { useClipboard } from '@mantine/hooks'
+import { App, Card, Progress, Spin } from 'antd'
+import React, { RefObject, useContext } from 'react'
 
-const ResultPreview = () => {
+const ResultPreview = ({
+  innerRef,
+}: {
+  innerRef: RefObject<HTMLDivElement>
+}) => {
+  const { message } = App.useApp()
+  const { copied, copy } = useClipboard({ timeout: 750 })
+
+  const handleCopyClick = async (taskId: string) => {
+    await copy(taskId)
+
+    message.destroy()
+    message.success(`Copied Task ID to clipboard!`)
+  }
+
   const { hasChangedGenerator, pendingTasks, completedTasks, activeTaskId } =
     useContext(CreationNotificationContext)
 
@@ -14,32 +36,90 @@ const ResultPreview = () => {
 
   const creationUri =
     completedTask && completedTask.creation ? completedTask.creation.uri : false
-
-  if (hasChangedGenerator || (!activeTask && !completedTask)) return null
+  const creationId =
+    completedTask && completedTask.creation ? completedTask.creation._id : false
 
   return (
-    <div className="relative flex flex-col space-y-4 col-span-12 lg:mt-9 lg:col-span-6 rounded-lg border border-0 border-solid ">
+    <div
+      ref={innerRef}
+      className="result-preview relative flex flex-col space-y-4 col-span-12 lg:col-span-6 rounded-lg border border-0 border-solid"
+    >
       <Card
         className={`lg:sticky lg:top-4 w-full min-h-[512px] h-fit flex justify-center items-center`}
       >
-        <div className="flex justify-center items-center">
-          {!creationUri ? (
-            <div className="text-center m-1">
-              <Spin size="large" />
-              <div className="text-gray-500 mt-6">Awaiting creation... </div>
-              <Progress
-                percent={
-                  activeTask?.progress
-                    ? Math.round(activeTask.progress * 100)
-                    : 0
-                }
-                status="active"
-                className="mt-4 flex items-center"
-              />
+        <div className="flex justify-center items-center h-full">
+          {hasChangedGenerator || (!activeTask && !completedTask) ? (
+            <div className={'text-gray-500'}>
+              Creation results will appear here
             </div>
           ) : (
             <>
-              <MediaDisplay creationUri={creationUri} />
+              {!creationUri ? (
+                <div className="w-full">
+                  <div className="text-center">
+                    <div className="text-gray-500 mb-2">
+                      Awaiting creation...{' '}
+                    </div>
+                    <div className="mb-4">
+                      <div className="font-bold mb-2">
+                        /{activeTask?.generator.generatorName}
+                      </div>
+                      <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
+                        {rightTruncatedString(
+                          activeTask?.config.text_input || '',
+                          36,
+                        )}
+                      </div>
+                    </div>
+                    <Spin
+                      size="large"
+                      indicator={
+                        <LoadingOutlined className="text-grey-800 dark:text-gray-200" />
+                      }
+                    />
+                    <Progress
+                      percent={
+                        activeTask?.progress
+                          ? Math.round(activeTask.progress * 100)
+                          : 0
+                      }
+                      status={
+                        activeTask?.status === 'pending' ? 'normal' : 'active'
+                      }
+                      className="mt-2 flex items-center"
+                    />
+                  </div>
+                  {activeTask && (
+                    <div className="flex justify-between text-xs">
+                      <div>
+                        <div className="capitalize mb-2">
+                          <strong>{activeTask.status}</strong>
+                        </div>
+                        <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
+                          Started {timeAgo(activeTask.createdAt)}
+                        </div>
+                        <div className="text-xs text-gray-800 dark:text-gray-400">
+                          Cost: <strong>{activeTask?.cost}</strong> Manna
+                        </div>
+                      </div>
+                      <div
+                        className="flex items-center gap-2 cursor-copy"
+                        onClick={() => handleCopyClick(activeTask.taskId)}
+                      >
+                        <div
+                          className="italic text-gray-800 dark:text-gray-400"
+                          title={activeTask.taskId}
+                        >
+                          {truncatedAddress(activeTask.taskId)}
+                        </div>
+                        {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <ResultPreviewDisplay creationId={creationId} />
+              )}
             </>
           )}
         </div>

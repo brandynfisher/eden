@@ -3,12 +3,21 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { Collection } from '../models/Collection'
+import { Concept, ConceptDocument } from '../models/Concept'
 import { Creation, CreationDocument } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Follow } from '../models/Follow'
+import ConceptRepository from '../repositories/ConceptRepository'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
-import { getBookmarks, getReactions } from './creationsController'
+import {
+  getBookmarks as getConceptBookmarks,
+  getReactions as getConceptReactions,
+} from './conceptsController'
+import {
+  getBookmarks as getCreationBookmarks,
+  getReactions as getCreationReactions,
+} from './creationsController'
 
 interface FeedGetArguments {
   userId?: string
@@ -44,25 +53,37 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
     {
       $lookup: {
         from: 'creations',
-        localField: 'following',
-        foreignField: 'user',
-        as: 'creation',
+        let: { followingId: '$following' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$user', '$$followingId'] } } },
+          {
+            $project: {
+              'embedding.embedding': 0,
+            },
+          },
+          { $sort: { createdAt: -1 } },
+          { $limit: 100 },
+        ],
+        as: 'creations',
       },
     },
     {
       $unwind: {
-        path: '$creation',
+        path: '$creations',
       },
     },
     {
       $replaceRoot: {
-        newRoot: '$creation',
+        newRoot: '$creations',
       },
     },
   ])
 }
 
-export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
+export const getCreationsFeed = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   const {
     userId: filterUserIds,
     collectionId,
@@ -108,6 +129,14 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
       orderBy === 'embedding.score'
     ) {
       sortFilter[orderBy] = { $gt: 0 }
+    }
+
+    if (orderBy === 'embedding.score') {
+      const hoursAgo = 20
+      const dateCutoff = new Date(
+        new Date().setHours(new Date().getHours() - hoursAgo),
+      )
+      sortFilter['createdAt'] = { $gte: dateCutoff }
     }
 
     creations = await creationRepository.query(
@@ -172,8 +201,8 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
 
     if (creations.docs) {
       const uid = new ObjectId(userId)
-      const reactionsMap = await getReactions(uid, creations.docs)
-      const bookmarksMap = await getBookmarks(uid, creations.docs)
+      const reactionsMap = await getCreationReactions(uid, creations.docs)
+      const bookmarksMap = await getCreationBookmarks(uid, creations.docs)
 
       const extendedDocs = creations.docs.map(creation => {
         return {
@@ -193,5 +222,113 @@ export const getFeed = async (request: FastifyRequest, reply: FastifyReply) => {
   } else {
     // No user, so no reactions or bookmarks
     return reply.status(200).send(creations)
+  }
+}
+
+export const getConceptsFeed = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const {
+    userId: filterUserIds,
+    limit,
+    page,
+    orderBy,
+    direction,
+  } = request.query as FeedGetArguments
+  const creatorsRepository = new CreatorRepository(User)
+  const creators = await creatorsRepository.query({
+    userId: filterUserIds,
+  })
+
+  const conceptRepository = new ConceptRepository(Concept)
+
+  const sort = []
+  const sortFilter: { [key: string]: unknown } = {}
+  if (orderBy && direction) {
+    sort.push([orderBy, direction])
+  }
+  // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
+  if (orderBy !== 'createdAt') {
+    sort.push(['createdAt', -1])
+  }
+
+  const concepts: PaginatedResponse<ConceptDocument> =
+    await conceptRepository.query(
+      {
+        user:
+          filterUserIds && creators.docs
+            ? creators.docs.map(creator => creator._id)
+            : undefined,
+        ...sortFilter,
+      },
+      {
+        limit,
+        page,
+        sort,
+      },
+    )
+
+  await conceptRepository.model.populate(concepts.docs, {
+    path: 'user',
+    select: 'userId username userImage',
+  })
+  await conceptRepository.model.populate(concepts.docs, {
+    path: 'task',
+    select: 'status config',
+    populate: { path: 'generator', select: 'generatorName output' },
+  })
+
+  if (request.user?.userId) {
+    // Get user's reactions and bookmarks
+    const userId = request.user.userId
+    const user = User.findOne({ userId })
+    if (!user) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+
+    interface ConceptDocumentExtension {
+      reactions: Map<ReactionType, boolean>
+      bookmarked: boolean
+    }
+
+    type FeedResponse = {
+      docs: ConceptDocumentExtension[]
+      reactions: { [key: string]: Map<ReactionType, boolean> } | []
+      bookmarks: { [key: string]: boolean } | []
+    }
+
+    const feed: FeedResponse = {
+      ...concepts,
+      docs: [],
+      reactions: [],
+      bookmarks: [],
+    }
+
+    if (concepts.docs) {
+      const uid = new ObjectId(userId)
+      const reactionsMap = await getConceptReactions(uid, concepts.docs)
+      const bookmarksMap = await getConceptBookmarks(uid, concepts.docs)
+
+      const extendedDocs = concepts.docs.map(concept => {
+        return {
+          ...(typeof concept.toObject !== 'undefined'
+            ? concept.toObject()
+            : concept), //aggregate returns different format than query
+          reactions: reactionsMap[concept._id.toString()],
+          bookmarked: bookmarksMap[concept._id.toString()],
+        }
+      })
+      feed.docs = extendedDocs
+      feed.reactions = reactionsMap
+      feed.bookmarks = bookmarksMap
+    }
+
+    return reply.status(200).send(feed)
+  } else {
+    // No user, so no reactions or bookmarks
+    return reply.status(200).send(concepts)
   }
 }

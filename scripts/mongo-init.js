@@ -85,9 +85,9 @@ db.characters.insertOne({
   uri: 'uri',
 })
 
-db.createCollection('loras')
+db.createCollection('concepts')
 
-db.loras.insertOne({
+db.concepts.insertOne({
   user: adminDev.insertedIds[1],
   task: adminDev.insertedIds[1],
   name: 'Test Character',
@@ -105,7 +105,7 @@ const interrogateParametersDev = [
     description:
       'URL of image to initiate image before diffusion (if null, use random noise)',
     default: 'x',
-    mediaUpload: false,
+    mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: false,
   },
 ]

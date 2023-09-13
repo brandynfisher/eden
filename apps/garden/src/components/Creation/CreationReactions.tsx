@@ -3,13 +3,16 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import BookmarkAddOutlinedIcon from '@mui/icons-material/BookmarkAddOutlined'
+import BookmarkAddTwoToneIcon from '@mui/icons-material/BookmarkAddTwoTone'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove'
-import BookmarksOutlined from '@mui/icons-material/BookmarksOutlined'
-import { App, Button } from 'antd'
+import Bookmarks from '@mui/icons-material/Bookmarks'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined'
+import FavoriteTwoToneIcon from '@mui/icons-material/FavoriteTwoTone'
+import { App } from 'antd'
 import axios from 'axios'
-import React, { useContext, useState } from 'react'
+import React, { useContext } from 'react'
 
 const PraiseButton = ({
   creation,
@@ -21,15 +24,20 @@ const PraiseButton = ({
   const { message } = App.useApp()
   const { isAuthenticated, authenticate } = useContext(UserContext)
   const { hovered, ref } = useHover()
-  const [isLoading, setIsLoading] = useState(false)
 
-  const onPraiseButtonClick = async () => {
+  const onPraiseButtonClick = async (
+    ev:
+      | React.MouseEvent<HTMLAnchorElement, MouseEvent>
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>,
+  ) => {
+    ev.stopPropagation()
+
     if (!isAuthenticated) {
       await requireAuth(authenticate)
       return
     }
 
-    setIsLoading(true)
     try {
       if (creation.reactions?.praise) {
         await axios.post('/api/creations/unreact', {
@@ -59,31 +67,42 @@ const PraiseButton = ({
     } catch (error) {
       handleAxiosError(error, message)
     }
-    setIsLoading(false)
   }
 
   return (
-    <Button
-      className={`font-mono flex items-center justify-center rounded-full bg-gray-700 dark:bg-gray-900 text-white border-gray-600 dark:border-gray-700`}
+    <div
+      className={`flex items-center justify-center w-10 h-10 text-black dark:text-white cursor-pointer font-mono`}
       role="button"
       onClick={onPraiseButtonClick}
-      disabled={isLoading}
-      loading={isLoading ? { delay: 250 } : false}
       ref={ref}
     >
-      <div className="flex" style={{ gap: '8px' }}>
-        <div>{creation.praiseCount || 0}</div>
+      <div className="flex gap-2 items-center">
         <div
+          className="text-2xl flex items-center"
           role="img"
-          aria-label="Raise Hands"
-          className={`text-sm ${
-            !hovered && !creation.reactions?.praise && 'filter grayscale'
-          }`}
+          aria-label="Like"
         >
-          🙌
+          {creation.reactions?.praise ? (
+            <>
+              {hovered ? (
+                <FavoriteOutlinedIcon fontSize="inherit" />
+              ) : (
+                <FavoriteOutlinedIcon fontSize="inherit" />
+              )}
+            </>
+          ) : (
+            <>
+              {hovered ? (
+                <FavoriteTwoToneIcon fontSize="inherit" />
+              ) : (
+                <FavoriteBorderIcon fontSize="inherit" />
+              )}
+            </>
+          )}
         </div>
+        <div>{creation.praiseCount || 0}</div>
       </div>
-    </Button>
+    </div>
   )
 }
 
@@ -95,10 +114,16 @@ const SaveButton = ({
   onChange: (updatedCreation: Creation) => void
 }) => {
   const { isAuthenticated, authenticate } = useContext(UserContext)
-  const [isLoading, setIsLoading] = useState(false)
   const { message } = App.useApp()
 
-  const onSaveButtonClick = async () => {
+  const onSaveButtonClick = async (
+    ev:
+      | React.MouseEvent<HTMLAnchorElement, MouseEvent>
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>,
+  ) => {
+    ev.stopPropagation()
+
     if (!isAuthenticated) {
       await requireAuth(authenticate)
       return
@@ -106,7 +131,6 @@ const SaveButton = ({
 
     message.destroy()
 
-    setIsLoading(true)
     try {
       if (creation.bookmarked) {
         await axios.post('/api/collections/remove', {
@@ -137,43 +161,40 @@ const SaveButton = ({
     } catch (error) {
       handleAxiosError(error, message)
     }
-    setIsLoading(false)
   }
 
   const { hovered, ref } = useHover()
   return (
-    <Button
-      className={`font-mono flex items-center justify-center rounded-full bg-gray-700 dark:bg-gray-900 text-white border-gray-600 dark:border-gray-700`}
-      role="button"
+    <div
+      className={`flex w-10 h-10 items-center justify-end text-black dark:text-white font-mono cursor-pointer`}
       onClick={onSaveButtonClick}
-      disabled={isLoading}
-      loading={isLoading ? { delay: 250 } : false}
       ref={ref}
       title={creation.bookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
     >
-      <div className="flex items-center" style={{ gap: '8px' }}>
-        <div className="text-white">{creation.bookmarkCount || 0}</div>
-        <div className="text-lg flex items-center">
-          {creation.bookmarked ? (
-            <>
-              {hovered ? (
-                <BookmarkRemoveIcon fontSize="inherit" />
-              ) : (
-                <BookmarksOutlined fontSize="inherit" />
-              )}
-            </>
-          ) : (
-            <>
-              {hovered ? (
-                <BookmarkAddOutlinedIcon fontSize="inherit" />
-              ) : (
-                <BookmarkBorderIcon fontSize="inherit" />
-              )}
-            </>
-          )}
-        </div>
+      <div
+        className="text-2xl flex items-center"
+        role="img"
+        aria-label="Bookmark"
+      >
+        {creation.bookmarked ? (
+          <>
+            {hovered ? (
+              <BookmarkRemoveIcon fontSize="inherit" />
+            ) : (
+              <Bookmarks fontSize="inherit" />
+            )}
+          </>
+        ) : (
+          <>
+            {hovered ? (
+              <BookmarkAddTwoToneIcon fontSize="inherit" />
+            ) : (
+              <BookmarkBorderIcon fontSize="inherit" />
+            )}
+          </>
+        )}
       </div>
-    </Button>
+    </div>
   )
 }
 
@@ -206,11 +227,11 @@ const CreationReactions = ({ creation, onChange }: CreationReactionsProps) => {
   return (
     <div className="relative flex justify-between">
       <div>
-        <div className="flex">
+        <div className="flex pointer-events-auto">
           <PraiseButton creation={creation} onChange={onChange} />
         </div>
       </div>
-      <div>
+      <div className="pointer-events-auto">
         <SaveButton creation={creation} onChange={onChange} />
       </div>
     </div>

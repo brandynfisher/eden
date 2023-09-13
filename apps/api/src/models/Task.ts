@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
+import { ConceptDocument } from './Concept'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 import { GeneratorDocument } from './Generator'
@@ -22,6 +23,7 @@ export interface TaskSchema {
   status: TaskStatus
   cost: number
   creation?: CreationDocument
+  concept?: ConceptDocument
   webhooks?: string[]
   error?: string
   progress?: number
@@ -59,6 +61,10 @@ const task = new Schema<TaskDocument>(
     creation: {
       type: Schema.Types.ObjectId,
       ref: 'creations',
+    },
+    concept: {
+      type: Schema.Types.ObjectId,
+      ref: 'concepts',
     },
     config: {
       type: Schema.Types.Mixed,
@@ -111,6 +117,7 @@ task.pre<TaskDocument>('save', function (next) {
   next()
 })
 
+task.index({ createdAt: 1 })
 task.plugin(paginate)
 
 export const Task = model<TaskDocument>('tasks', task)

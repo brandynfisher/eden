@@ -22,14 +22,17 @@ export type PaginatedFeedQuery = {
   limit?: number
 }
 
+export type FeedType = 'creations' | 'concepts'
+
 export const useFeedPaginated = (
+  type: FeedType,
   query: PaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,
 ) => {
   const pageLimit = query?.limit || 10
 
   const route = (limit: number, page: number) => {
-    const basePath = '/api/feed'
+    const basePath = `/api/feed/${type}`
     const params: FeedRouteQueryParams = {}
 
     if (pageLimit && page) {
@@ -67,7 +70,7 @@ export const useFeedPaginated = (
 
       return null
     },
-    [pageLimit, orderBy],
+    [query, pageLimit, orderBy],
   )
 
   const {
@@ -99,7 +102,8 @@ export const useFeedPaginated = (
   ).flat()
 
   return {
-    creations: creationDocs,
+    hasNextPage: !!data?.[data?.length - 1]?.hasNextPage,
+    items: creationDocs,
     refetchFeed,
     size,
     setSize,

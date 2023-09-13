@@ -42,7 +42,8 @@ const StringParameter = (props: {
               {values.map((value, index) => (
                 <Row key={index} className="mb-2">
                   <Col flex="auto" className="mr-1">
-                    <Input
+                    <Input.TextArea
+                      autoSize
                       className="font-mono"
                       defaultValue={props.parameter.default[index]}
                       onChange={event => {
@@ -69,9 +70,12 @@ const StringParameter = (props: {
               ))}
               <Row>
                 <Col>
-                  <Button onClick={handleAddInput}>
-                    <PlusOutlined />
-                  </Button>
+                  {!props.parameter.maxLength ||
+                    (values.length < props.parameter.maxLength && (
+                      <Button onClick={handleAddInput}>
+                        <PlusOutlined />
+                      </Button>
+                    ))}
                 </Col>
               </Row>
             </div>
@@ -99,7 +103,7 @@ const StringParameter = (props: {
               },
             ]}
           >
-            <Input />
+            <Input.TextArea autoSize />
           </Form.Item>
           <Row>
             <span style={{ color: 'gray' }}>{props.parameter.description}</span>

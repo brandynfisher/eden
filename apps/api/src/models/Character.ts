@@ -2,6 +2,8 @@ import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
+// @ts-ignore
+import slug from 'mongoose-slug-plugin'
 
 import { UserDocument } from './Creator'
 
@@ -13,6 +15,7 @@ interface ChatSchema {
 export interface CharacterSchema {
   user: UserDocument
   name: string
+  slug: string
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
@@ -46,6 +49,7 @@ const character = new Schema<CharacterDocument>(
       required: true,
       maxlength: 80,
     },
+    slug: { type: String, unique: true },
     greeting: {
       type: String,
       maxlength: 1000,
@@ -73,5 +77,6 @@ character.pre<CharacterDocument>('save', function (next) {
 character.index({ user: 1, name: 1 }, { unique: true })
 
 character.plugin(paginate)
+character.plugin(slug, { tmpl: '<%=name%>' })
 
 export const Character = model<CharacterDocument>('characters', character)
