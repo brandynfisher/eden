@@ -6,7 +6,7 @@ const CreationCardDetail = ({ creation }: { creation: Creation }) => {
   return (
     <div className="relative">
       <div className="text-sm" title={creation.name}>
-        <span className="inline relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
+        <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
           <strong className="dark:text-gray-200 mr-1">
             /{creation.task?.generator?.generatorName}
           </strong>
