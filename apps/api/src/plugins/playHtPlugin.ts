@@ -54,24 +54,24 @@ export class PlayHT {
   }
 }
 
-export const registerTts = async (fastify: FastifyInstance) => {
+export const registerPlayHt = async (fastify: FastifyInstance) => {
   try {
     const playHt = new PlayHT(
       'https://play.ht/api/v1/convert',
       process.env.PLAYHT_API_KEY!,
       process.env.PLAYHT_API_SECRET!,
     )
-    fastify.decorate('tts', playHt)
+    fastify.decorate('playHt', playHt)
     fastify.log.info('Successfully registered playHtPlugin')
   } catch (err) {
-    fastify.log.error('Plugin: Tts, error on register', err)
+    fastify.log.error('Plugin: PlayHt, error on register', err)
   }
 }
 
 declare module 'fastify' {
   interface FastifyInstance {
-    tts?: PlayHT
+    playHt?: PlayHT
   }
 }
 
-export default registerTts
+export default registerPlayHt
