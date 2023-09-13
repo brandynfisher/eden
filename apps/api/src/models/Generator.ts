@@ -6,6 +6,7 @@ export interface GeneratorParameter {
   label: string
   description?: string
   isRequired?: boolean
+  optional?: boolean
   default?: any
   allowedValues?: any[]
   allowedValuesFrom?: string
@@ -74,6 +75,10 @@ const generatorVersion = new Schema<GeneratorVersionDocument>({
           required: true,
         },
         isRequired: {
+          type: Boolean,
+          default: false,
+        },
+        optional: {
           type: Boolean,
           default: false,
         },

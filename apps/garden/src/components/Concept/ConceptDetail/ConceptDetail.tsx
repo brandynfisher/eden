@@ -1,5 +1,6 @@
 import CodeBlock from '@/components/CodeBlock'
 import ConceptDetailToolButtons from '@/components/Concept/ConceptDetail/ConceptDetailToolButtons'
+import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
@@ -69,12 +70,12 @@ const ConceptDetail = ({
   const { isAuthenticated, user, address } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [conceptData, setConceptData] = useState<Concept>(concept)
-  const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const timeSinceConcept = timeAgo(concept.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
   // const [conceptImageLoaded, setConceptImageLoaded] = useState(false)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [displayImage, setDisplayImage] = useState({ url: '', thumbnail: '' })
+  const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
     if (isAuthenticated && user?.userId === address) {
@@ -84,12 +85,17 @@ const ConceptDetail = ({
     }
   }, [isAuthenticated, user?.userId, address])
 
-  const showMediaViewer = () => {
-    setMediaViewerVisible(true)
+  const hideMediaViewer = () => {
+    setZoomedInImageUrl(null)
   }
 
-  const hideMediaViewer = () => {
-    setMediaViewerVisible(false)
+  const handlePreviewClick = (url: string | undefined) => {
+    if (!url) {
+      setZoomedInImageUrl(null)
+      return
+    }
+
+    setZoomedInImageUrl(url)
   }
 
   useEffect(() => {
@@ -161,31 +167,39 @@ const ConceptDetail = ({
         />
       </Head>
 
-      <div ref={containerRef} className="lg:flex lg:justify-center">
+      {zoomedInImageUrl && (
+        <ImageZoomPan
+          imageUrl={zoomedInImageUrl}
+          onCloseHandler={hideMediaViewer}
+        />
+      )}
+
+      <div ref={containerRef} className="lg:flex lg:justify-center gap-4">
         <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0">
-          <h3>Samples</h3>
-          {/*<div className="lg:flex lg:flex-grow xl:flex xl:justify-center">*/}
-          <div className="relative">
-            <div
-              onClick={showMediaViewer}
-              className="relative flex justify-center lg:flex lg:flex-grow"
-              style={{ width: 'fit-content', margin: '0 auto' }}
-            >
-              <MediaDisplay
-                className={'media-display__main'}
-                creationUri={
-                  concept && concept?.thumbnail
-                    ? concept.thumbnail
-                    : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                }
-                previewUri={conceptData?.thumbnail}
-                showPreview={mediaViewerVisible}
-                onPreviewClose={hideMediaViewer}
-              />
+          <div className="mb-4">
+            <h3>Samples</h3>
+            <div className="relative">
+              <div
+                // onClick={showMediaViewer}
+                onClick={() => handlePreviewClick(conceptData.thumbnail)}
+                className="relative flex justify-center lg:flex lg:flex-grow"
+                style={{ width: 'fit-content', margin: '0 auto' }}
+              >
+                <MediaDisplay
+                  className={'media-display__main'}
+                  creationUri={
+                    conceptData && conceptData?.thumbnail
+                      ? conceptData?.thumbnail
+                      : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                  }
+                  previewUri={conceptData?.thumbnail}
+                />
+              </div>
             </div>
           </div>
-          {/*</div>*/}
+        </div>
 
+        <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0">
           <h3>Training Images</h3>
           <div className="relative overflow-hidden max-w-full">
             {probedImageUrls && (
@@ -218,7 +232,7 @@ const ConceptDetail = ({
                 </div>
 
                 <div
-                  onClick={showMediaViewer}
+                  onClick={() => handlePreviewClick(displayImage.url)}
                   className="relative flex justify-center lg:flex lg:flex-grow"
                   style={{ width: 'fit-content', margin: '0 auto' }}
                 >
@@ -230,8 +244,6 @@ const ConceptDetail = ({
                         : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                     }
                     previewUri={displayImage?.thumbnail}
-                    showPreview={mediaViewerVisible}
-                    onPreviewClose={hideMediaViewer}
                     // onLoad={() => {
                     //   setCreationImageLoaded(true)
                     // }}
@@ -262,6 +274,7 @@ const ConceptDetail = ({
             ) : null}
           </div>
         </div>
+
         <div className="mx-auto lg:mx-0 md:max-w-[640px]  lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
           <div className="mb-4 col-span-4 xl:col-span-12 flex gap-2 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
             <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
@@ -306,11 +319,6 @@ const ConceptDetail = ({
                 <div>Training Images</div>
                 {conceptData?.training_images?.length || 0}
               </div>
-              {/* instance_prompt no longer exists */}
-              {/* <div className="flex gap-2 justify-between">
-                  <div>Instance Prompt</div>
-                  <div>{conceptData?.instance_prompt}</div>
-                </div> */}
               <div className="flex gap-2 justify-between">
                 <div>Checkpoint</div>
                 <div>{conceptData?.checkpoint}</div>

@@ -28,6 +28,7 @@ export type GeneratorParameter = {
   label: string
   description?: string
   isRequired?: boolean
+  optional?: boolean
   default?: any
   allowedValues?: any[]
   allowedValuesFrom?: string
