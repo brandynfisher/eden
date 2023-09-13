@@ -50,8 +50,8 @@ export const ChatMessageSection = ({
                 setMessageGroups([
                   ...messageGroups,
                   [
-                    { sender: '{{user}}', message: '' },
-                    { sender: '{{char}}', message: '' },
+                    { sender: 'user', message: '' },
+                    { sender: 'char', message: '' },
                   ],
                 ])
               }}
