@@ -93,9 +93,9 @@ const runTask = async (
 
   const update = {
     id: task.id,
-    status: 'processing',
+    status: 'succeeded',
     progress: 1,
-    output,
+    output: result[0],
     error: null,
   }
 
