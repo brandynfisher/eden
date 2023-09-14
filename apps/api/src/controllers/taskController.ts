@@ -77,6 +77,7 @@ export const getTaskCost = async (
 
   // use versionId if provided else latest
   const generatorVersion = getGeneratorVersion(generator, versionId)
+  console.log(`get generatorVersion: ${generatorVersion?.versionId}`)
   if (!generatorVersion) {
     return reply.status(400).send({
       message: 'Generator version not found',
