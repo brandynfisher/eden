@@ -20,6 +20,7 @@ export interface CharacterSchema {
   greeting?: string
   dialogue?: ChatSchema[]
   image?: string
+  voice?: string
   createdAt?: Date
   updatedAt?: Date
 }
@@ -31,6 +32,7 @@ export interface CharacterInput {
   greeting?: string
   dialogue?: ChatSchema[]
   image?: string
+  voice?: string
 }
 
 export interface CharacterDocument
@@ -61,6 +63,14 @@ const character = new Schema<CharacterDocument>(
     description: {
       type: String,
       maxlength: 1000,
+    },
+    image: {
+      type: String,
+      required: false,
+    },
+    voice: {
+      type: String,
+      required: false,
     },
   },
   {

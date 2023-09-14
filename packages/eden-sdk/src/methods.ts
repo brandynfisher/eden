@@ -416,6 +416,7 @@ export interface CharactersGetArguments extends WebAPICallOptions {
 export interface CharactersCreateArguments extends WebAPICallOptions {
   name: string
   image?: string
+  voice?: string
   description?: string
   greeting?: string
   dialogue?: any[]
@@ -425,6 +426,7 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
   characterId: string
   name?: string
   image?: string
+  voice?: string
   description?: string
   greeting?: string
   dialogue?: any[]

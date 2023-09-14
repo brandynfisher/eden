@@ -17,13 +17,14 @@ export const createCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, image, description, greeting, dialogue } =
+  const { name, image, voice, description, greeting, dialogue } =
     request.body as CharactersCreateArguments
 
   const input = {
     user: userId,
     name,
     image,
+    voice,
     description,
     greeting,
     dialogue,
@@ -43,7 +44,7 @@ export const updateCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { characterId, name, image, description, greeting, dialogue } =
+  const { characterId, name, image, voice, description, greeting, dialogue } =
     request.body as CharactersUpdateArguments
 
   if (!characterId) {
@@ -66,6 +67,7 @@ export const updateCharacter = async (
   const input = {
     name,
     image,
+    voice,
     description,
     greeting,
     dialogue,
@@ -131,6 +133,7 @@ export const listCharacters = async (
       name: character.name,
       slug: character.slug,
       image: character.image,
+      voice: character.voice,
       description: character.description,
       greeting: character.greeting,
       dialogue: character.dialogue,
@@ -158,6 +161,7 @@ export const getCharacter = async (
     name: character.name,
     slug: character.slug,
     image: character.image,
+    voice: character.voice,
     description: character.description,
     greeting: character.greeting,
     dialogue: character.dialogue,

@@ -57,15 +57,15 @@ const runTask = async (
 
   const audioBuffer = await elevenLabs.runTask('EXAVITQu4vr4xnSDxMaL', answer)
 
-  const { uri, mediaAttributes } = await uploadBufferAsset(server, audioBuffer)
+  const { uri: audioUri } = await uploadBufferAsset(server, audioBuffer)
 
-  console.log('SAVE', uri)
+  console.log('SAVE', audioUri)
 
-  const face_url =
+  const faceUrl =
     'https://minio.aws.abraham.fun/creations-stg/6f93def26cc577b6a3bb7152da5bb3dbebb5eebf293f100712bd115635294bda.jpg'
-  const speech_url = uri
+  const speech_url = audioUri
 
-  console.log('face_url', face_url)
+  console.log('face_url', faceUrl)
   console.log('speech_url', speech_url)
 
   const generatorAddress = 'abraham-ai/character'
@@ -76,8 +76,8 @@ const runTask = async (
 
   const result = await model.predict({
     mode: 'wav2lip',
-    face_url: face_url,
-    speech_url: speech_url,
+    face_url: faceUrl,
+    speech_url: audioUri,
     gfpgan: false,
     gfpgan_upscale: 1,
     intro_text: null,

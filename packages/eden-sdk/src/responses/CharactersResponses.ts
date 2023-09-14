@@ -33,4 +33,5 @@ export type Character = {
   greeting?: string
   dialogue?: any[]
   image?: string
+  voice?: string
 }
