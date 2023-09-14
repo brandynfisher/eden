@@ -143,7 +143,7 @@ const GeneratorForm = ({
     if (!currentGenerator) return
 
     const selectedVersion =
-      currentGenerator.versions[currentGenerator.versions.length - 1]
+      currentGenerator.versions[currentGenerator.versions.length - 2]
 
     if (!selectedVersion) return
 
