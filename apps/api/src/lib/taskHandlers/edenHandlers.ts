@@ -127,7 +127,7 @@ const handleUpdate = async (
           task: task._id,
           uri: finalOutput.files[i],
           thumbnail: finalOutput.thumbnails[i],
-          name: finalOutput.name,
+          name: finalOutput.name || task.config.text_input,
           attributes: finalOutput.attributes,
           mediaAttributes: {},
         }
