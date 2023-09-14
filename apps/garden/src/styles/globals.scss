@@ -216,6 +216,12 @@
 .ant-dropdown-menu-item {
     padding: 8px !important;
 }
+.ant-dropdown-menu-submenu-title {
+    min-width: 100px
+}
+.ant-dropdown-menu-item-only-child {
+    min-width: 120px
+}
 
 .ant-message {
     top: 44px !important;
