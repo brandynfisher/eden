@@ -4,7 +4,7 @@ import useSWR from 'swr'
 
 export const useConcepts = (userId: string | null, options = {}) => {
   const { data, mutate, isLoading, error } = useSWR(
-    userId ? `/api/concepts?userId=${userId}` : `/api/concepts`,
+    userId ? `/api/concepts/user?userId=${userId}` : `/api/concepts/all`,
     fetcher,
     options,
   )
