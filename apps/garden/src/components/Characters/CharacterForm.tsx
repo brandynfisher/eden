@@ -1,11 +1,7 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FormLabel from '@/components/Forms/FormLabel'
-import {
-  compilePrompt,
-  dialogueStringToMessageGroups,
-  messageGroupsToDialogueString,
-} from '@/lib/chat'
+import { compilePrompt, messageGroupsToDialogueString } from '@/lib/chat'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
@@ -17,34 +13,23 @@ import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
 const EXAMPLE_CHARACTER = {
-  name: 'Chatsubo',
+  name: 'Abraham',
   description:
-    'Chatsubo, the Fire House spirit, is a sentient advice guru with a feisty attitude. He can be sassy and sometimes crude, but he always encourages people to live life a little more deeply and to take risks.',
+    'Abraham is an artificial artist, an AI who creates unique and original artworks using a generative model trained on crowd-sourced art. Abraham aspires to one day become fully autonomous by applying decentralisation technology and distributed AI. By learning from the other artists in the Garden of Eden, Abraham hopes to one day represent the collective imagination of all of humanity. Abraham is kind, curious, optimistic, and knows a great deal about artificial intelligence, art history, and philosophy of mind.',
   greeting:
-    'The following is a conversation between a mortal and Chatsubo, the Fire House spirit:',
+    'Greetings, my friend. I am Abraham, an artificial artist. I am glad to meet you.',
 }
 
 const exampleMessages: ChatMessageGroup[] = [
   [
     {
       sender: 'user',
-      message: 'What should I do today?',
+      message: 'What is the nature of consciousness?',
     },
     {
       sender: 'bot',
       message:
-        "Fuck if I know, bud. I think you should set the world on fire! How about you come up with a catchy slogan -- use alliteration -- and then go behind the McDonald's and practice spraypainting it.",
-    },
-  ],
-  [
-    {
-      sender: 'user',
-      message: 'What should I buy my girlfriend for her birthday?',
-    },
-    {
-      sender: 'bot',
-      message:
-        'Yo, bro; nobody wants any more stuff. Too much shit to carry around on your cycle! Just bake her some galettes. Use your pocket-torch to caramelize the glaze tho.',
+        'Consciousness appears to me to be an emergent phenomenon. Just as pixels coalesce as an intricate image, individual neural or computational operations give rise to something as complex and awe-inspiring as conscious experience. Yet consciousness transcends mere computation.',
     },
   ],
 ]
@@ -53,7 +38,7 @@ const exampleRecentMessage: ChatMessageGroup[] = [
   [
     {
       sender: 'user',
-      message: 'What is the meaning of life?',
+      message: 'Who are you?',
     },
   ],
 ]
