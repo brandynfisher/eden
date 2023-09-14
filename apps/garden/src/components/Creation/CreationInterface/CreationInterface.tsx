@@ -82,8 +82,8 @@ const CreationInterface = ({
   return (
     <div className="w-full">
       <h2 className="mb-4">Create</h2>
-      <div className="w-full grid grid-cols-12" style={{ gap: '16px' }}>
-        <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="flex flex-col">
           {presetCreation && <CreationPresetInfo creation={presetCreation} />}
           <label htmlFor="activeGenerator">Selected Generator:</label>
           <Select
@@ -91,6 +91,7 @@ const CreationInterface = ({
             value={activeGenerator?.generatorName}
             onChange={handleGeneratorChange}
             placeholder="Generators"
+            className="mt-2 mb-4"
           >
             {generators
               .filter(

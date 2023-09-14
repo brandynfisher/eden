@@ -1,4 +1,5 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
+import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
 import FormLabel from '@/components/Forms/FormLabel'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { requireAuth } from '@/lib/auth'
@@ -7,6 +8,7 @@ import { CreationNotificationContext } from '@/providers/CreationNotificationPro
 import { UserContext } from '@/providers/UserProvider'
 import { ExperimentOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
+import { useViewportSize } from '@mantine/hooks'
 import { debounce } from '@mui/material'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
@@ -16,6 +18,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 
@@ -24,6 +27,7 @@ const TalkingHeadScenarioPageContent = ({
 }: {
   characters: Character[]
 }) => {
+  const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { message } = App.useApp()
   const [form] = Form.useForm()
   const {
@@ -46,6 +50,7 @@ const TalkingHeadScenarioPageContent = ({
   const [canAffordOperation, setCanAffordOperation] = useState(false)
   const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
   const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
+  const { width } = useViewportSize()
 
   useEffect(() => {
     if (taskCost && mannaBalance) {
@@ -61,6 +66,23 @@ const TalkingHeadScenarioPageContent = ({
     )
     setActiveCharacter(character as Character)
     setActiveCharacterName(character?.name as string)
+  }
+
+  const scrollResultPreviewIntoView = useCallback(() => {
+    if (width > 1024) {
+      return
+    }
+
+    if (resultPreviewRef && resultPreviewRef.current) {
+      resultPreviewRef.current.scrollIntoView({
+        block: 'center',
+        behavior: 'smooth',
+      })
+    }
+  }, [resultPreviewRef, width])
+
+  const onSubmitSuccess = () => {
+    scrollResultPreviewIntoView()
   }
 
   const handleSubmit = async () => {
@@ -91,6 +113,7 @@ const TalkingHeadScenarioPageContent = ({
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchPendingTasks && refetchPendingTasks()
       refetch.mannaBalance()
+      onSubmitSuccess()
     } catch (error) {
       handleAxiosError(
         error,
@@ -139,101 +162,115 @@ const TalkingHeadScenarioPageContent = ({
   }, [])
 
   return (
-    <div className="flex flex-col h-full">
-      <h2 className="mb-4">Scenario: Talking Head</h2>
-      <label htmlFor="character-select">Selected Character:</label>
-      <div className="w-full flex flex-col space-y-4 mt-2 mb-4">
-        <Select
-          id="character-select"
-          value={activeCharacterName}
-          onChange={handleActiveCharacterChange}
-        >
-          {characters &&
-            characters.length &&
-            characters.map(character => (
-              <Select.Option key={character.id} value={character.name}>
-                {character.name}
-              </Select.Option>
-            ))}
-        </Select>
-      </div>
-
-      {activeCharacter ? (
-        <Form
-          form={form}
-          name="CharacterForm"
-          onFinish={handleSubmit}
-          onFieldsChange={debouncedHandleFormFieldsChange}
-          scrollToFirstError={true}
-        >
-          <Card
-            type="inner"
-            title={
-              <div className="py-4">
-                <h3>Create Talking Head</h3>
-                <span style={{ color: 'gray' }}>description</span>
-              </div>
-            }
-            actions={[
-              <div
-                key={1}
-                className="flex px-6 items-center justify-between flex-wrap"
-              >
-                <div className="flex gap-3 items-center">
-                  {!canAffordOperation ? (
-                    <div className="text-orange-500">
-                      Insufficient Manna! ({mannaBalance}){' '}
-                      <Link href="/manna">Click here to get more</Link>
-                    </div>
-                  ) : (
-                    <Button
-                      type="primary"
-                      icon={<ExperimentOutlined />}
-                      htmlType="submit"
-                      size="large"
-                      className="font-mono capitalize"
-                      loading={isSubmitting ? { delay: 250 } : false}
-                      disabled={
-                        isSubmitting || !isFormTouched || !canAffordOperation
-                      }
-                    >
-                      Submit
-                    </Button>
-                  )}
-                  <MannaCostEstimate
-                    isLoading={isLoadingTaskCost}
-                    cost={taskCost?.cost || 'n/a'}
-                  />
-                </div>
-              </div>,
-            ]}
-          >
-            <Form.Item
-              label={
-                <FormLabel
-                  text="Prompt"
-                  description="Message that your character should respond to"
-                />
-              }
-              className="label-auto-height"
-              labelCol={{ span: 24 }}
-              name="prompt"
-              rules={[
-                { required: true, message: 'Please input a prompt!' },
-                {
-                  min: 1,
-                  max: 1000,
-                  message: 'Prompt must be between 1 and 1000 characters!',
-                },
-              ]}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div>
+        <h2 className="mb-4">Scenario: Talking Head</h2>
+        <div>
+          <label htmlFor="character-select">Selected Character:</label>
+          <div className="w-full flex flex-col mt-2 mb-4">
+            <Select
+              id="character-select"
+              value={activeCharacterName}
+              onChange={handleActiveCharacterChange}
             >
-              <Input.TextArea autoSize />
-            </Form.Item>
-          </Card>
-        </Form>
-      ) : (
-        <div>Choose a character to proceed</div>
-      )}
+              {characters &&
+                characters.length &&
+                characters.map(character => (
+                  <Select.Option key={character.id} value={character.name}>
+                    {character.name}
+                  </Select.Option>
+                ))}
+            </Select>
+          </div>
+
+          {activeCharacter ? (
+            <Form
+              form={form}
+              name="CharacterForm"
+              onFinish={handleSubmit}
+              onFieldsChange={debouncedHandleFormFieldsChange}
+              scrollToFirstError={true}
+            >
+              <Card
+                type="inner"
+                title={
+                  <div className="py-4">
+                    <h3>Generate Talking Head</h3>
+                    <span style={{ color: 'gray' }}>
+                      Uses a character to generate a talking head animation in
+                      response to a prompt
+                    </span>
+                  </div>
+                }
+                actions={[
+                  <div
+                    key={1}
+                    className="flex px-6 items-center justify-between flex-wrap"
+                  >
+                    <div className="flex gap-3 items-center">
+                      {!canAffordOperation ? (
+                        <div className="text-orange-500">
+                          Insufficient Manna! ({mannaBalance}){' '}
+                          <Link href="/manna">Click here to get more</Link>
+                        </div>
+                      ) : (
+                        <Button
+                          type="primary"
+                          icon={<ExperimentOutlined />}
+                          htmlType="submit"
+                          size="large"
+                          className="font-mono capitalize"
+                          loading={isSubmitting ? { delay: 250 } : false}
+                          disabled={
+                            isSubmitting ||
+                            !isFormTouched ||
+                            !canAffordOperation
+                          }
+                        >
+                          Submit
+                        </Button>
+                      )}
+                      <MannaCostEstimate
+                        isLoading={isLoadingTaskCost}
+                        cost={taskCost?.cost || 'n/a'}
+                      />
+                    </div>
+                  </div>,
+                ]}
+              >
+                <Form.Item
+                  label={
+                    <FormLabel
+                      text="Prompt"
+                      description="Message that your character should respond to"
+                    />
+                  }
+                  className="label-auto-height"
+                  labelCol={{ span: 24 }}
+                  name="prompt"
+                  rules={[
+                    { required: true, message: 'Please input a prompt!' },
+                    {
+                      min: 1,
+                      max: 1000,
+                      message: 'Prompt must be between 1 and 1000 characters!',
+                    },
+                  ]}
+                >
+                  <Input.TextArea autoSize />
+                </Form.Item>
+              </Card>
+            </Form>
+          ) : null}
+        </div>
+      </div>
+      <div>
+        {activeCharacter ? (
+          <ResultPreview innerRef={resultPreviewRef} />
+        ) : (
+          <div>Choose a character to proceed</div>
+        )}
+      </div>
     </div>
   )
 }
