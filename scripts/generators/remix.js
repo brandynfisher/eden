@@ -23,7 +23,7 @@ const params = [
   {
     name: 'width',
     label: 'Width',
-    description: 'Remix uses [Width x Height] total number of pixels and adopts the average aspect ratio of your provided image',
+    description: 'Remix uses [Width x Height] total number of pixels and adopts the aspect ratio of your provided image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -32,7 +32,7 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Remix uses [Width x Height] total number of pixels and adopts the average aspect ratio of your provided image',
+    description: 'Remix uses [Width x Height] total number of pixels and adopts the aspect ratio of your provided image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
