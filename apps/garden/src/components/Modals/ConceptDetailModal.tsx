@@ -14,7 +14,7 @@ const ConceptDetailModal = ({ concept, ...rest }: { concept: Concept }) => {
   )
 
   return (
-    <Modal {...rest}>
+    <Modal keyboard={false} {...rest}>
       <Suspense fallback={<div>Loading</div>}>
         <ConceptDetail concept={concept} isModal={true} />
       </Suspense>
