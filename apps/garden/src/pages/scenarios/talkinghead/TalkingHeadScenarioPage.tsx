@@ -234,7 +234,6 @@ const TalkingHeadScenarioPageContent = ({
       ) : (
         <div>Choose a character to proceed</div>
       )}
-      <div>{JSON.stringify(activeCharacter, null, 2)}</div>
     </div>
   )
 }
