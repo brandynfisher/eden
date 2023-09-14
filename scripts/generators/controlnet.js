@@ -31,7 +31,7 @@ const params = [
   {
     name: 'width',
     label: 'Width',
-    description: 'Target width of the creation in pixels (creation will adopt aspect ratio of Init image)',
+    description: 'Will generate [Width x Height] total number of pixels but adopts the aspect ratio of your provided image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -41,7 +41,7 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Target height of the creation in pixels (creation will adopt aspect ratio of Init image)',
+    description: 'Will generate [Width x Height] total number of pixels but adopts the aspect ratio of your provided image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
