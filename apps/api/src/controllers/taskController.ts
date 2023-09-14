@@ -5,7 +5,11 @@ import {
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import { getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
+import {
+  getDefaultGeneratorVersion,
+  getLatestGeneratorVersion,
+  prepareConfig,
+} from '../lib/generator'
 import { Completion, CompletionInput } from '../models/Completion'
 import { User } from '../models/Creator'
 import {
@@ -31,7 +35,12 @@ const getGeneratorVersion = (
     }
     return version
   } else {
-    return getLatestGeneratorVersion(generator)
+    const defaultVersion = getDefaultGeneratorVersion(generator)
+    if (defaultVersion) {
+      return defaultVersion
+    } else {
+      return getLatestGeneratorVersion(generator)
+    }
   }
 }
 
