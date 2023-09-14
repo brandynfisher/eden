@@ -123,6 +123,7 @@ const params = [
     description: 'Which model checkpoint to generate with',
     default: 'sdxl-v1.0',
     allowedValues: ['sdxl-v1.0'],
+    optional: true,
   },
 
 ]
