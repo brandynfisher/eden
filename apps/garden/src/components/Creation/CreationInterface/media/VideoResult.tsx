@@ -16,7 +16,7 @@ const VideoResult = ({
         muted={true}
         loop={true}
         controls={!disableControls}
-        onLoad={onLoad}
+        onPlay={onLoad}
       />
     </div>
   )

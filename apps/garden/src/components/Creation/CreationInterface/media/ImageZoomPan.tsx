@@ -53,7 +53,7 @@ const ImageZoomPan = ({
   }, [contentRef, componentWrapRef])
 
   return (
-    <div className={`fixed inset-0 bg-black z-10`} ref={componentWrapRef}>
+    <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-30`}>
       <TransformWrapper
         minScale={0.1}
         maxScale={4}
@@ -62,7 +62,7 @@ const ImageZoomPan = ({
       >
         {({ zoomIn, zoomOut, centerView }) => (
           <>
-            <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
+            <div className="absolute tools z-30 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
               <Button.Group>
                 <Button type="text" onClick={() => zoomIn()}>
                   <ZoomInOutlined className="text-xl" />
