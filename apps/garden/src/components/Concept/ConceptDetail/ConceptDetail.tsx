@@ -182,7 +182,6 @@ const ConceptDetail = ({
         <div>
           <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0">
             <div className="mb-4">
-              <h3>Samples</h3>
               <div className="relative">
                 <div
                   // onClick={showMediaViewer}

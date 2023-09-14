@@ -18,27 +18,22 @@ const ImageZoomPan = ({
   const contentRef = useRef<HTMLImageElement>(null)
 
   const onEscHandler = useCallback(
-    (ev: KeyboardEvent) => {
+    (ev: React.KeyboardEvent<HTMLDivElement>) => {
+      console.log('imageZoomPan', ev)
       // console.log('esc handler executed', ev)
       if (ev.key === 'Escape') {
         // console.log('stop propagation', ev)
-        ev.stopImmediatePropagation()
+        // ev.stopImmediatePropagation()
         ev.stopPropagation()
         onCloseHandler()
       }
     },
-    [onCloseHandler, imageUrl],
+    [onCloseHandler],
   )
 
   useEffect(() => {
-    if (imageUrl) {
-      document?.addEventListener('keydown', onEscHandler, false)
-    }
-
-    return () => {
-      document?.removeEventListener('keydown', onEscHandler, false)
-    }
-  }, [onEscHandler, imageUrl])
+    contentRef.current?.focus()
+  }, [])
 
   const fitContentToWrapper = useCallback(() => {
     if (componentWrapRef.current && contentRef.current) {
@@ -58,7 +53,7 @@ const ImageZoomPan = ({
   }, [contentRef, componentWrapRef])
 
   return (
-    <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-10`}>
+    <div className={`fixed inset-0 bg-black z-10`} ref={componentWrapRef}>
       <TransformWrapper
         minScale={0.1}
         maxScale={4}
@@ -87,14 +82,20 @@ const ImageZoomPan = ({
               </Button>
             </div>
             <TransformComponent wrapperClass="!w-full !h-full">
-              <img
+              <div
                 ref={contentRef}
-                src={imageUrl}
-                alt={imageUrl}
-                onLoad={() => {
-                  centerView(fitContentToWrapper())
-                }}
-              />
+                tabIndex={0}
+                onKeyDown={ev => onEscHandler(ev)}
+                className="outline-0"
+              >
+                <img
+                  src={imageUrl}
+                  alt={imageUrl}
+                  onLoad={() => {
+                    centerView(fitContentToWrapper())
+                  }}
+                />
+              </div>
             </TransformComponent>
           </>
         )}
