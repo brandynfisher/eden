@@ -37,7 +37,7 @@ const TalkingHeadScenarioPageContent = ({
     setIsSubmitting(true)
     const data = {
       characterId: activeCharacter.id,
-      description: form.getFieldValue('prompt'),
+      prompt: form.getFieldValue('prompt'),
     }
     try {
       await axios.post(`/api/monologue`, data)
