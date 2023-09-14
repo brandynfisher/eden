@@ -1,13 +1,23 @@
+import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
 import FormLabel from '@/components/Forms/FormLabel'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
+import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
+import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { ExperimentOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
 import { debounce } from '@mui/material'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
-import React, { useContext, useMemo, useState } from 'react'
+import Link from 'next/link'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 const TalkingHeadScenarioPageContent = ({
   characters,
@@ -16,6 +26,15 @@ const TalkingHeadScenarioPageContent = ({
 }) => {
   const { message } = App.useApp()
   const [form] = Form.useForm()
+  const {
+    taskIds,
+    setTaskIds,
+    setActiveTaskId,
+    setHasChangedGenerator,
+    refetchPendingTasks,
+  } = useContext(CreationNotificationContext)
+  const { refetch, mannaBalance, isAuthenticated, authenticate } =
+    useContext(UserContext)
   const [isFormTouched, setIsFormTouched] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeCharacter, setActiveCharacter] = useState<Character>(
@@ -24,6 +43,17 @@ const TalkingHeadScenarioPageContent = ({
   const [activeCharacterName, setActiveCharacterName] = useState<string>(
     activeCharacter && activeCharacter.name,
   )
+  const [canAffordOperation, setCanAffordOperation] = useState(false)
+  const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
+  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
+
+  useEffect(() => {
+    if (taskCost && mannaBalance) {
+      setCanAffordOperation(mannaBalance >= taskCost?.cost)
+    } else {
+      setCanAffordOperation(true)
+    }
+  }, [taskCost, mannaBalance])
 
   const handleActiveCharacterChange = (characterName: string) => {
     const character = characters?.find(
@@ -35,14 +65,32 @@ const TalkingHeadScenarioPageContent = ({
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    const data = {
+    const config = {
       characterId: activeCharacter.id,
       prompt: form.getFieldValue('prompt'),
     }
     try {
-      await axios.post(`/api/monologue`, data)
+      const response = await axios.post('/api/tasks/create', {
+        generatorName: 'monologue',
+        config: config,
+      })
+
       message.destroy()
-      message.success(`Prompt sent!`)
+
+      if (!response || !response.data) {
+        message.error(`Talking Head task response error`)
+        return
+      }
+
+      const { taskId } = response.data
+
+      message.success(`Talking Head Task created! (${taskId})`)
+
+      setActiveTaskId && setActiveTaskId(taskId)
+      setTaskIds && setTaskIds([...taskIds, taskId])
+      setHasChangedGenerator && setHasChangedGenerator(false)
+      refetchPendingTasks && refetchPendingTasks()
+      refetch.mannaBalance()
     } catch (error) {
       handleAxiosError(
         error,
@@ -55,9 +103,40 @@ const TalkingHeadScenarioPageContent = ({
   }
 
   const debouncedHandleFormFieldsChange = useMemo(
-    () => debounce(() => setIsFormTouched(true), 500),
+    () =>
+      debounce(() => {
+        setIsFormTouched(true)
+        handleGetTaskCost()
+      }, 500),
     [],
   )
+
+  const handleGetTaskCost = useCallback(async () => {
+    setIsLoadingTaskCost(true)
+
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+
+      setIsLoadingTaskCost(false)
+      return
+    }
+
+    try {
+      message.destroy()
+
+      const response = await axios.post('/api/tasks/cost', {
+        generatorName: 'monologue',
+        config: { prompt: 'dummy prompt' },
+      })
+
+      setTaskCost(response.data)
+    } catch (err) {
+      console.error(err)
+      message.error('Error fetching task cost estimate')
+    } finally {
+      setIsLoadingTaskCost(false)
+    }
+  }, [])
 
   return (
     <div className="flex flex-col h-full">
@@ -85,6 +164,7 @@ const TalkingHeadScenarioPageContent = ({
           name="CharacterForm"
           onFinish={handleSubmit}
           onFieldsChange={debouncedHandleFormFieldsChange}
+          scrollToFirstError={true}
         >
           <Card
             type="inner"
@@ -100,24 +180,30 @@ const TalkingHeadScenarioPageContent = ({
                 className="flex px-6 items-center justify-between flex-wrap"
               >
                 <div className="flex gap-3 items-center">
-                  {/*{!canAffordOperation ? (*/}
-                  {/*  <div className="text-orange-500">*/}
-                  {/*    Insufficient Manna! ({mannaBalance}){' '}*/}
-                  {/*    <Link href="/manna">Click here to get more</Link>*/}
-                  {/*  </div>*/}
-                  {/*) : (*/}
-                  <Button
-                    type="primary"
-                    icon={<ExperimentOutlined />}
-                    htmlType="submit"
-                    size="large"
-                    className="font-mono capitalize"
-                    loading={isSubmitting ? { delay: 250 } : false}
-                    disabled={isSubmitting || !isFormTouched}
-                  >
-                    Submit
-                  </Button>
-                  {/*)}*/}
+                  {!canAffordOperation ? (
+                    <div className="text-orange-500">
+                      Insufficient Manna! ({mannaBalance}){' '}
+                      <Link href="/manna">Click here to get more</Link>
+                    </div>
+                  ) : (
+                    <Button
+                      type="primary"
+                      icon={<ExperimentOutlined />}
+                      htmlType="submit"
+                      size="large"
+                      className="font-mono capitalize"
+                      loading={isSubmitting ? { delay: 250 } : false}
+                      disabled={
+                        isSubmitting || !isFormTouched || !canAffordOperation
+                      }
+                    >
+                      Submit
+                    </Button>
+                  )}
+                  <MannaCostEstimate
+                    isLoading={isLoadingTaskCost}
+                    cost={taskCost?.cost || 'n/a'}
+                  />
                 </div>
               </div>,
             ]}
