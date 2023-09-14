@@ -7,13 +7,18 @@ import slug from 'mongoose-slug-plugin'
 
 import { UserDocument } from './Creator'
 
+interface ChatSchema {
+  sender: string
+  message: string[]
+}
+
 export interface CharacterSchema {
   user: UserDocument
   name: string
   slug: string
   description?: string
   greeting?: string
-  dialogue?: string
+  dialogue?: ChatSchema[]
   image?: string
   createdAt?: Date
   updatedAt?: Date
@@ -24,7 +29,7 @@ export interface CharacterInput {
   name: string
   description?: string
   greeting?: string
-  dialogue?: string
+  dialogue?: ChatSchema[]
   image?: string
 }
 
@@ -50,12 +55,8 @@ const character = new Schema<CharacterDocument>(
       maxlength: 1000,
     },
     dialogue: {
-      type: String,
-      maxlength: 4000,
-    },
-    image: {
-      type: String,
-      maxlength: 1000,
+      type: Array,
+      required: false,
     },
     description: {
       type: String,

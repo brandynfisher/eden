@@ -31,6 +31,6 @@ export type Character = {
   slug: string
   description?: string
   greeting?: string
-  dialogue?: string
+  dialogue?: any[]
   image?: string
 }
