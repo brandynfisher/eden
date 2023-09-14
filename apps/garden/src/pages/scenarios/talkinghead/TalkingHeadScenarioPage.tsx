@@ -54,13 +54,9 @@ const TalkingHeadScenarioPageContent = ({
     }
   }
 
-  const handleFormFieldsChange = async () => {
-    setIsFormTouched(true)
-  }
-
   const debouncedHandleFormFieldsChange = useMemo(
-    () => debounce(handleFormFieldsChange, 500),
-    [handleFormFieldsChange],
+    () => debounce(() => setIsFormTouched(true), 500),
+    [],
   )
 
   return (
