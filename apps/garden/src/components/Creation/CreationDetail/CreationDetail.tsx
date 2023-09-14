@@ -1,6 +1,7 @@
 import ConfigParamsTabs from '@/components/ConfigParamsTabs'
 import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
 import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
+import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
@@ -29,11 +30,11 @@ const CreationDetail = ({
     useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
-  const [mediaViewerVisible, setMediaViewerVisible] = useState(false)
   const timeSinceCreation = timeAgo(creation.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
   const [creationImageLoaded, setCreationImageLoaded] = useState(false)
   const [showFollowControls, setShowFollowControls] = useState(false)
+  const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
     if (isConnected && isAuthenticated && user?.userId === address) {
@@ -48,18 +49,23 @@ const CreationDetail = ({
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
-  const showMediaViewer = () => {
-    setMediaViewerVisible(true)
-  }
-
-  const hideMediaViewer = () => {
-    setMediaViewerVisible(false)
-  }
-
   const isVideo = (creationUri: string) => {
     if (!creationUri) return null
     const extension = getFileExtension(creationUri)
     return extension === 'mp4'
+  }
+
+  const hideMediaViewer = () => {
+    setZoomedInImageUrl(null)
+  }
+
+  const handlePreviewClick = (url: string | undefined) => {
+    if (!url) {
+      setZoomedInImageUrl(null)
+      return
+    }
+
+    setZoomedInImageUrl(url)
   }
 
   return (
@@ -98,11 +104,22 @@ const CreationDetail = ({
         />
       </Head>
 
+      {zoomedInImageUrl && (
+        <ImageZoomPan
+          imageUrl={zoomedInImageUrl}
+          onCloseHandler={hideMediaViewer}
+        />
+      )}
+
       <div ref={containerRef}>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
           <div className="relative mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
             <div
-              onClick={isImageUrl(creation.uri) ? showMediaViewer : () => null}
+              onClick={
+                isImageUrl(creation.uri)
+                  ? () => handlePreviewClick(creation.uri)
+                  : () => handlePreviewClick(creation.thumbnail)
+              }
               className="relative flex justify-center lg:flex lg:flex-grow"
               style={{ width: 'fit-content', margin: '0 auto' }}
             >
@@ -110,8 +127,6 @@ const CreationDetail = ({
                 <MediaDisplay
                   creationUri={creationData?.uri}
                   previewUri={creationData?.uri}
-                  showPreview={mediaViewerVisible}
-                  onPreviewClose={hideMediaViewer}
                   onLoad={() => {
                     setCreationImageLoaded(true)
                   }}
