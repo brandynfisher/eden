@@ -1,3 +1,4 @@
+import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
@@ -19,9 +20,8 @@ import {
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
-import { HelpOutline } from '@mui/icons-material'
 import { debounce } from '@mui/material'
-import { App, Button, Card, Form, Popover } from 'antd'
+import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -87,7 +87,9 @@ const GeneratorForm = ({
     GeneratorParameter[]
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
+  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState<boolean | null>(
+    null,
+  )
   const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
   const [canAffordOperation, setCanAffordOperation] = useState(false)
@@ -420,6 +422,7 @@ const GeneratorForm = ({
       key={generator.generatorName}
       title={generator.generatorName}
       onFieldsChange={debouncedHandleFormFieldsChange}
+      scrollToFirstError={true}
     >
       <Card
         type="inner"
@@ -436,7 +439,7 @@ const GeneratorForm = ({
           >
             <div>
               <div className="flex gap-3 items-center">
-                {!canAffordOperation ? (
+                {isLoadingTaskCost === false && !canAffordOperation ? (
                   <div className="text-orange-500">
                     Insufficient Manna! ({mannaBalance}){' '}
                     <Link href="/manna">Click here to get more</Link>
@@ -459,35 +462,10 @@ const GeneratorForm = ({
                     {generator.generatorName}
                   </Button>
                 )}
-                <div className="flex gap-2">
-                  {(isLoadingTaskCost || taskCost) && (
-                    <div className="flex items-center gap-2 font-mono text-gray-400">
-                      <div className="cursor-default">
-                        Cost:{' '}
-                        {isLoadingTaskCost ? (
-                          <LoadingOutlined />
-                        ) : (
-                          <span className="font-bold">{taskCost?.cost}</span>
-                        )}{' '}
-                        Manna
-                      </div>
-                      <Popover
-                        content={
-                          <div>
-                            Displays the estimated manna cost for this operation
-                          </div>
-                        }
-                        title="Manna Cost"
-                        trigger="click"
-                      >
-                        <HelpOutline
-                          fontSize="small"
-                          className="hover:text-blue-400"
-                        />
-                      </Popover>
-                    </div>
-                  )}
-                </div>
+                <MannaCostEstimate
+                  isLoading={!!isLoadingTaskCost}
+                  cost={taskCost?.cost || 'n/a'}
+                />
               </div>
               {uploadsInProgress ? (
                 <div className="text-orange-500 mt-4">

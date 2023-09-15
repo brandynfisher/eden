@@ -15,7 +15,7 @@ const LoadingPlaceholder = () => {
   return (
     <Skeleton.Node
       active={true}
-      className="flex !min-h-[300px] image-loading-placeholder bg-gray-400 dark:bg-black !bg-opacity-80"
+      className="flex !min-h-[300px] image-loading-placeholder bg-gray-400 dark:bg-black !bg-opacity-90"
     >
       <ExperimentOutlined className="text-2xl" />
     </Skeleton.Node>
@@ -26,45 +26,13 @@ const ImageResult = ({
   fullSizeUrl,
   previewSizeUrl,
   showPreview,
-  onPreviewClose,
   onLoad,
 }: {
   fullSizeUrl?: string
   previewSizeUrl?: string
   showPreview?: boolean
-  onPreviewClose?: () => void
   onLoad?: () => void
 }) => {
-  const onCloseHandler = useCallback(
-    (ev?: React.MouseEvent | React.KeyboardEvent | undefined) => {
-      if (ev) {
-        ev.stopPropagation()
-      }
-      if (onPreviewClose) {
-        onPreviewClose()
-      }
-    },
-    [onPreviewClose],
-  )
-
-  useEffect(() => {
-    if (!onPreviewClose) {
-      return
-    }
-
-    const onEscHandler = (key: string) => {
-      if (key === 'Escape') {
-        onCloseHandler()
-      }
-    }
-
-    if (showPreview) {
-      document.addEventListener('keydown', ev => onEscHandler(ev.key), false)
-    } else {
-      document.removeEventListener('keydown', ev => onEscHandler(ev.key), false)
-    }
-  }, [showPreview, onPreviewClose, onCloseHandler])
-
   const [isLoaded, setIsLoaded] = useState(false)
   const previewImageRef = useRef<HTMLImageElement>(null)
 
@@ -101,10 +69,10 @@ const ImageResult = ({
                 alt="result"
                 src={previewSizeUrl}
                 // srcSet={}
-                className="ant-image-img"
+                className="ant-image-img z-10"
               />
               {!isLoaded && (
-                <div className="absolute inset-0 z-10 bg-opacity-95">
+                <div className="absolute inset-0 bg-opacity-95">
                   <LoadingPlaceholder />
                 </div>
               )}

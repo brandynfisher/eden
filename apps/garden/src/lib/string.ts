@@ -7,3 +7,7 @@ export const rightTruncatedString = (str: string, length: number) =>
 export const isImageUrl = (url: string) => {
   return /\.(jpg|jpeg|png|webp|avif|gif|svg)$/.test(url)
 }
+
+export const isVideoUrl = (url: string) => {
+  return /\.(mp4)$/.test(url)
+}

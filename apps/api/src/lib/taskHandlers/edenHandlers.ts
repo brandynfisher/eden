@@ -11,14 +11,16 @@ import { Transaction } from '../../models/Transaction'
 import { TaskHandlers } from '../../plugins/tasks'
 import * as llm from './llm'
 import * as replicate from './replicate'
+import * as taskRunner from './taskRunner'
 import * as tts from './tts'
 
-type TaskProvider = 'llm' | 'replicate' | 'tts'
+type TaskProvider = 'llm' | 'replicate' | 'tts' | 'task-runner'
 
 const providers = new Map<TaskProvider, any>([
   ['llm', llm],
   ['tts', tts],
   ['replicate', replicate],
+  ['task-runner', taskRunner],
 ])
 
 type TaskStatus =

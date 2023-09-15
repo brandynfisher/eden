@@ -30,6 +30,7 @@ const ConfigSchema = Type.Strict(
     REPLICATE_API_TOKEN: Type.String(),
     PLAYHT_API_KEY: Type.String(),
     PLAYHT_API_SECRET: Type.String(),
+    ELEVENLABS_API_KEY: Type.String(),
     WEBHOOK_URL: Type.String(),
     WEBHOOK_SECRET: Type.String(),
     AWS_ACCESS_KEY: Type.Optional(Type.String()),

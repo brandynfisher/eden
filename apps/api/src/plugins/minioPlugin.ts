@@ -91,6 +91,8 @@ export const uploadBufferAsset = async (
   const { ext, mime } = fileType
     ? (fileType as { ext: string; mime: string })
     : { ext: 'txt', mime: 'text/plain' }
+  console.log('got it')
+  console.log(ext, mime)
   const metadata = { 'Content-Type': mime, SHA: sha }
   const filename = `${sha}.${fileExtension || ext}`
   const urlUpload = minioUrl(server, filename)

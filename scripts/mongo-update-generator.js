@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-
 import { MongoClient } from 'mongodb';
+
 import createParameters from './generators/create.js';
 import interpolateParameters from './generators/interpolate.js';
 import real2realParameters from './generators/real2real.js';
@@ -10,34 +10,39 @@ import wav2lipParameters from './generators/wav2lip.js';
 import conceptParameters from './generators/concept.js';
 import blendParameters from './generators/blend.js';
 import upscaleParameters from './generators/upscale.js';
-
-
+import monologueParameters from './generators/monologue.js';
 import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
 
-const allowed_cogs = [
+const allowedCogs = [
   "eden-sd-pipelines-sdxl",
   "character",
   "sdxl-lora-trainer",
   "zeroscope-v2-xl",
+  "task-runner",
 ]
 
-const cog = process.argv[2];
+const env = process.argv[2];
+dotenv.config({ path: `./.env.${env}` });
+const MONGO_URI = process.env.MONGO_URI;
+const MONGO_DB_NAME = process.env.MONGO_DB_NAME;
+if (!MONGO_URI) {
+  throw new Error('MONGO_URI environment variable is missing');
+}
+if (!MONGO_DB_NAME) {
+  throw new Error('MONGO_DB_NAME environment variable is missing');
+}
+
+const cog = process.argv[3];
 if (!cog) {
   throw new Error('cog argument is missing');
 }
-if (cog && !allowed_cogs.includes(cog)) {
-  throw new Error(`cog argument is invalid. Only ${allowed_cogs.join(', ')} are allowed`);
+if (cog && !allowedCogs.includes(cog)) {
+  throw new Error(`cog argument is invalid. Only ${allowedCogs.join(', ')} are allowed`);
 }
 
-const versionId = process.argv[3];
+const versionId = process.argv[4];
 if (!versionId) {
   throw new Error('versionId argument is missing');
-}
-
-dotenv.config();
-const MONGO_URI = process.env.MONGO_URI;
-if (!MONGO_URI) {
-  throw new Error('MONGO_URI environment variable is missing');
 }
 
 console.log(`Adding ${versionId} to ${cog} generators`);
@@ -200,6 +205,24 @@ async function updateVersion(db) {
 
   }
 
+  else if (cog === 'task-runner') {
+
+    const monologueVersion = {
+      provider: 'task-runner',
+      address: 'eden/monologue',
+      versionId: versionId,
+      mode: 'monologue',
+      parameters: monologueParameters,
+      isDeprecated: false
+    }
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'monologue' }, 
+      { $addToSet: { versions: monologueVersion } }
+    );
+
+  }
+
   console.log(`Added ${versionId} to ${cog} generators`);
 }
 
@@ -210,7 +233,7 @@ async function main() {
   try {
     await client.connect();
     console.log(`Connected successfully to ${MONGO_URI}`);
-    const db = await client.db('eden-dev');
+    const db = await client.db(MONGO_DB_NAME);
     await updateVersion(db);
   } catch (err) {
     console.error('Failed to connect to the server:', err);

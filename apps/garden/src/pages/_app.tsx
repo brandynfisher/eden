@@ -10,6 +10,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import 'antd/dist/reset.css'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
+import { Inter } from 'next/font/google'
 import Head from 'next/head'
 import { ReactElement } from 'react'
 
@@ -18,6 +19,8 @@ import { Page } from '../../types/page'
 type Props = AppProps & {
   Component: Page
 }
+
+const inter = Inter({ subsets: ['latin'] })
 
 export default function App({ Component, pageProps }: Props): ReactElement {
   // use per-component layout if defined or fallback to the generic one
@@ -80,21 +83,23 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         />
       </Head>
 
-      <ThemeProvider attribute="class">
-        <AntConfigWrapProvider>
-          <WalletProvider>
-            <EdenProvider>
-              <UserProvider>
-                <CreationNotificationProvider>
-                  <ModalProvider>
-                    {getLayout(<Component {...pageProps} />)}
-                  </ModalProvider>
-                </CreationNotificationProvider>
-              </UserProvider>
-            </EdenProvider>
-          </WalletProvider>
-        </AntConfigWrapProvider>
-      </ThemeProvider>
+      <main className={`${inter.className}`}>
+        <ThemeProvider attribute="class">
+          <AntConfigWrapProvider>
+            <WalletProvider>
+              <EdenProvider>
+                <UserProvider>
+                  <CreationNotificationProvider>
+                    <ModalProvider>
+                      {getLayout(<Component {...pageProps} />)}
+                    </ModalProvider>
+                  </CreationNotificationProvider>
+                </UserProvider>
+              </EdenProvider>
+            </WalletProvider>
+          </AntConfigWrapProvider>
+        </ThemeProvider>
+      </main>
     </>
   )
 }

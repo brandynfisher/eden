@@ -1,11 +1,18 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
-import ProductsList from '@/components/Products/ProductsList'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { App } from 'antd'
 import axios from 'axios'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
+
+const ProductsList = dynamic(
+  () => import('@/components/Products/ProductsList'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const MannaPage = () => {
   const { message } = App.useApp()

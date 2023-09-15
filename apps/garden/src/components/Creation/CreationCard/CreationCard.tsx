@@ -1,8 +1,11 @@
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
+import CopyImageButton from '@/components/CopyImageButton'
+import CopyUrlButton from '@/components/CopyUrlButton'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import { CONFIG } from '@/lib/config'
 import { getModalUrls } from '@/lib/modal'
 import { timeAgo } from '@/lib/time'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
@@ -44,38 +47,58 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
 
   const getCardMenuItems = () => {
     return [
+      // {
+      //   label: (
+      //     <div
+      //       onClick={() =>
+      //         console.log('//@todo: copy creation url to clipboard')
+      //       }
+      //     >
+      //       Copy... creation url to clipboard
+      //     </div>
+      //   ),
+      //   key: '1',
+      // },
       {
-        label: (
-          <div
-            onClick={() =>
-              console.log('//@todo: copy creation url to clipboard')
-            }
-          >
-            Copy... creation url to clipboard
-          </div>
-        ),
+        label: 'Copy...',
         key: '1',
+        children: [
+          {
+            icon: <CopyImageButton url={creation.uri} variant="text" />,
+            key: '1-1',
+          },
+          {
+            icon: (
+              <CopyUrlButton
+                url={creation.uri}
+                variant="text"
+                label="Image URL"
+              />
+            ),
+            key: '1-2',
+          },
+          {
+            icon: (
+              <CopyUrlButton
+                url={`${CONFIG.NEXT_PUBLIC_HOST}${pageUrl || modalUrl}`}
+                variant="text"
+                label="Page URL"
+              />
+            ),
+            key: '1-3',
+          },
+        ],
       },
-      {
-        label: (
-          <div
-            onClick={() => console.log('//@todo: copy image file to clipboard')}
-          >
-            Copy... image file to clipboard
-          </div>
-        ),
-        key: '2',
-      },
-      {
-        label: (
-          <div
-            onClick={() => console.log('//@todo: copy image url to clipboard')}
-          >
-            Copy... image url to clipboard
-          </div>
-        ),
-        key: '3',
-      },
+      // {
+      //   label: (
+      //     <div
+      //       onClick={() => console.log('//@todo: copy image url to clipboard')}
+      //     >
+      //       Copy... image url to clipboard
+      //     </div>
+      //   ),
+      //   key: '3',
+      // },
     ]
   }
 

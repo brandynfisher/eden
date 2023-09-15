@@ -11,6 +11,7 @@ import { useRouter } from 'next/router'
 import {
   PropsWithChildren,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -176,10 +177,28 @@ function ModalProvider({ children }: PropsWithChildren) {
     }
   }, [])
 
+  const onEscHandler = useCallback((ev: KeyboardEvent) => {
+    if (ev.key === 'Escape') {
+      ev.stopImmediatePropagation()
+      ev.stopPropagation()
+      hideModal()
+    }
+  }, [])
+  //
+  useEffect(() => {
+    document.body.addEventListener('keydown', onEscHandler, false)
+
+    return () => {
+      document.body.removeEventListener('keydown', onEscHandler, false)
+    }
+  }, [onEscHandler])
+
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
-      {renderComponent()}
-      {children}
+      <div tabIndex={0}>
+        {renderComponent()}
+        {children}
+      </div>
     </ModalContext.Provider>
   )
 }

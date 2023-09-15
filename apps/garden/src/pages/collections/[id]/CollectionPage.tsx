@@ -1,6 +1,5 @@
-import CollectionHeader from '@/components/Collections/CollectionHeader'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import MasonryInfinite from '@/components/MasonryInfinite'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import {
   OrderByBookmarks,
   OrderByLatest,
@@ -13,12 +12,21 @@ import { UserContext } from '@/providers/UserProvider'
 import { Collection } from '@edenlabs/eden-sdk'
 import { App, Space } from 'antd'
 import axios from 'axios'
-import { Inter } from 'next/font/google'
+import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import router from 'next/router'
 import React, { useContext } from 'react'
 
-const inter = Inter({ subsets: ['latin'] })
+const CollectionHeader = dynamic(
+  () => import('@/components/Collections/CollectionHeader'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const MasonryInfinite = dynamic(() => import('@/components/MasonryInfinite'), {
+  loading: () => <LoadingIndicator />,
+})
 
 const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()
@@ -76,7 +84,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
           content={`${CONFIG.NEXT_PUBLIC_HOST}/collections/${collection._id}`}
         />
       </Head>
-      <div className={`flex flex-col ${inter.className}`}>
+      <div className={`flex flex-col`}>
         <Space direction="vertical">
           <CollectionHeader
             collection={collection}

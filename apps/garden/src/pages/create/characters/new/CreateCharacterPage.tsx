@@ -1,6 +1,20 @@
-import CharacterForm from '@/components/Characters/CharacterForm'
-import CreateMenu from '@/components/Layout/navigation/CreateMenu'
+import LoadingIndicator from '@/components/LoadingIndicator'
+import dynamic from 'next/dynamic'
 import React from 'react'
+
+const CreateMenu = dynamic(
+  () => import('@/components/Layout/navigation/CreateMenu'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const CharacterForm = dynamic(
+  () => import('@/components/Characters/CharacterForm'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const CreateCharacterPage = () => {
   return (

@@ -17,9 +17,17 @@ const characterRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         name: Type.String(),
         image: Type.Optional(Type.String()),
+        voice: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
         greeting: Type.Optional(Type.String()),
-        dialogue: Type.Optional(Type.String()),
+        dialogue: Type.Optional(
+          Type.Array(
+            Type.Object({
+              sender: Type.String(),
+              message: Type.String(),
+            }),
+          ),
+        ),
       }),
       response: {
         200: Type.Object({
@@ -38,9 +46,17 @@ const characterRoutes: FastifyPluginAsync = async server => {
         characterId: Type.String(),
         name: Type.Optional(Type.String()),
         image: Type.Optional(Type.String()),
+        voice: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
         greeting: Type.Optional(Type.String()),
-        dialogue: Type.Optional(Type.String()),
+        dialogue: Type.Optional(
+          Type.Array(
+            Type.Object({
+              sender: Type.String(),
+              message: Type.String(),
+            }),
+          ),
+        ),
       }),
       response: {
         200: Type.Object({}),
@@ -81,9 +97,17 @@ const characterRoutes: FastifyPluginAsync = async server => {
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
+            voice: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
-            dialogue: Type.Optional(Type.String()),
+            dialogue: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  sender: Type.String(),
+                  message: Type.String(),
+                }),
+              ),
+            ),
           }),
         ),
       },
@@ -104,9 +128,17 @@ const characterRoutes: FastifyPluginAsync = async server => {
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
+            voice: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
-            dialogue: Type.Optional(Type.String()),
+            dialogue: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  sender: Type.String(),
+                  message: Type.String(),
+                }),
+              ),
+            ),
           }),
         }),
       },

@@ -1,6 +1,6 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import VideoPreview from '@/components/Creation/CreationInterface/media/VideoPreview'
-import { getFileExtension } from '@/lib/getFileExtension'
+import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { Creation } from '@edenlabs/eden-sdk'
 
 const MediaPreview = ({
@@ -11,10 +11,9 @@ const MediaPreview = ({
   hovered?: boolean
 }) => {
   if (!creation.uri) return null
-  const extension = getFileExtension(creation.uri)
-  if (extension === 'jpg') {
+  if (isImageUrl(creation.uri)) {
     return <ImageResult previewSizeUrl={creation.thumbnail || ''} />
-  } else if (extension === 'mp4') {
+  } else if (isVideoUrl(creation.uri)) {
     return <VideoPreview creation={creation} hovered={hovered} />
   }
   return null

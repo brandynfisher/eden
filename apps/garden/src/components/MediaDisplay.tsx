@@ -1,20 +1,17 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
-import { getFileExtension } from '@/lib/getFileExtension'
-import { isImageUrl } from '@/lib/string'
+import { isImageUrl, isVideoUrl } from '@/lib/string'
 
 const MediaDisplay = ({
   creationUri,
   previewUri,
   showPreview,
-  onPreviewClose,
   onLoad,
   className,
 }: {
   creationUri: string
   previewUri?: string
   showPreview?: boolean
-  onPreviewClose?: () => void
   onLoad?: () => void
   className?: string
 }) => {
@@ -26,11 +23,10 @@ const MediaDisplay = ({
           previewSizeUrl={previewUri}
           fullSizeUrl={creationUri}
           showPreview={showPreview}
-          onPreviewClose={onPreviewClose}
           onLoad={onLoad}
         />
       )
-    } else if (getFileExtension(creationUri) === 'mp4') {
+    } else if (isVideoUrl(creationUri)) {
       return <VideoResult resultUrl={creationUri} onLoad={onLoad} />
     }
     return null
@@ -38,7 +34,9 @@ const MediaDisplay = ({
 
   return (
     <div
-      className={`media-display max-h-full max-w-full lg:flex lg:flex-grow ${className}`}
+      className={`media-display max-h-full max-w-full lg:flex lg:flex-grow ${
+        className ? className : ''
+      }`}
     >
       <div className="rounded-xl overflow-hidden max-h-full max-w-full lg:flex lg:flex-grow lg:justify-center lg:items-start max-h-[90vh]">
         {renderPreview()}

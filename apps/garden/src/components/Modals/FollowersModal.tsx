@@ -1,14 +1,15 @@
 'use client'
 
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { Modal } from 'antd'
 import dynamic from 'next/dynamic'
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
+
+const FollowList = dynamic(() => import('@/components/Profile/FollowList'), {
+  loading: () => <LoadingIndicator />,
+})
 
 const FollowersModal = ({ creatorId, ...rest }: { creatorId: string }) => {
-  const FollowList = dynamic(() => import('@/components/Profile/FollowList'), {
-    suspense: true,
-  })
-
   return (
     <Modal {...rest}>
       <Suspense fallback={<div>Loading</div>}>

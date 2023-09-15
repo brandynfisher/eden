@@ -3,6 +3,8 @@ import fastify from 'fastify'
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerChroma from './plugins/chromaPlugin'
 import config from './plugins/config'
+//import registerPlayHt from './plugins/playHtPlugin'
+import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerJwt from './plugins/jwtPlugin'
 import registerLlm from './plugins/llmPlugin'
 import registerMinio from './plugins/minioPlugin'
@@ -13,7 +15,6 @@ import registerS3 from './plugins/s3Plugin'
 import registerSentry from './plugins/sentryPlugin'
 import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
-import registerTts from './plugins/ttsPlugin'
 import { routes } from './routes'
 
 export interface CreateServerOpts {
@@ -78,8 +79,12 @@ const createServer = async (
     await registerLlm(server)
   }
 
-  if (server.config.PLAYHT_API_KEY) {
-    await registerTts(server)
+  // if (server.config.PLAYHT_API_KEY) {
+  //   await registerPlayHt(server)
+  // }
+
+  if (server.config.ELEVENLABS_API_KEY) {
+    await registerElevenLabs(server)
   }
 
   await server.register(import('@fastify/rate-limit'), {

@@ -1,9 +1,14 @@
-import ApiKeys from '@/components/ApiKeys'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { KeyOutlined } from '@mui/icons-material'
 import { Collapse } from 'antd'
+import dynamic from 'next/dynamic'
 import React from 'react'
 
 const { Panel } = Collapse
+
+const ApiKeys = dynamic(() => import('@/components/ApiKeys'), {
+  loading: () => <LoadingIndicator />,
+})
 
 const ToolsPage = () => {
   const genExtra = () => (

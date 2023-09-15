@@ -1,9 +1,16 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
+import { ImageOutlined } from '@mui/icons-material'
 import { App } from 'antd'
 import { useState } from 'react'
 
-const CopyImageButton = ({ url }: { url: string }) => {
+const CopyImageButton = ({
+  url,
+  variant,
+}: {
+  url: string
+  variant?: 'text'
+}) => {
   const { message } = App.useApp()
   const [copied, setCopied] = useState(false)
   const handleCopyUrl = async (imageUrl: string) => {
@@ -31,6 +38,19 @@ const CopyImageButton = ({ url }: { url: string }) => {
     message.destroy()
     message.success(`Copied image to clipboard!`)
     setCopied(true)
+  }
+
+  if (variant === 'text') {
+    return (
+      <div
+        onClick={() => handleCopyUrl(url)}
+        className="flex items-center gap-2 w-full justify-between"
+        title={'Copy Image to Clipboard'}
+      >
+        <div>Image File</div>
+        <ImageOutlined />
+      </div>
+    )
   }
 
   return (

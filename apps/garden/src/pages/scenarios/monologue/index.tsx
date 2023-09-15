@@ -1,7 +1,7 @@
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
-import TalkingHeadScenarioPage from '@/pages/scenarios/talkinghead/TalkingHeadScenarioPage'
+import MonologueScenarioPage from '@/pages/scenarios/monologue/MonologueScenarioPage'
 import { Character as CharacterType } from '@edenlabs/eden-sdk/dist/responses/CharactersResponses'
 import { NextPageContext } from 'next'
 
@@ -30,8 +30,8 @@ export const getServerSideProps = getServerSidePropsBase(
   true,
 )
 
-const talkingHeadScenario: Page<PageProps> = ({ data }: PageProps) => {
-  return <TalkingHeadScenarioPage data={data} />
+const monologueScenario: Page<PageProps> = ({ data }: PageProps) => {
+  return <MonologueScenarioPage data={data} />
 }
 
-export default talkingHeadScenario
+export default monologueScenario

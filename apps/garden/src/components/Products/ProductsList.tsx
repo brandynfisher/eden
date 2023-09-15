@@ -1,6 +1,11 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
-import ProductCard from '@/components/Products/ProductCard'
 import { useProducts } from '@/hooks/useProducts'
+import dynamic from 'next/dynamic'
+import React from 'react'
+
+const ProductCard = dynamic(() => import('@/components/Products/ProductCard'), {
+  loading: () => <LoadingIndicator />,
+})
 
 const ProductsList = ({
   checkoutHandler,

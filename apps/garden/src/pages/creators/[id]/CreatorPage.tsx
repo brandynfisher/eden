@@ -1,24 +1,29 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
 } from '@/components/OrderByButtons'
-import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
-import { Inter } from 'next/font/google'
+import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import React, { useContext } from 'react'
 
-const inter = Inter({ subsets: ['latin'] })
+const ProfileHeader = dynamic(
+  () => import('@/components/Profile/ProfileHeader'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
   const { isConnected, isAuthenticated } = useContext(UserContext)
@@ -139,7 +144,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
         />
       </Head>
 
-      <div className={`flex flex-col ${inter.className}`}>
+      <div className={`flex flex-col`}>
         <Space direction="vertical">
           <ProfileHeader
             creatorId={creator.userId}

@@ -1,6 +1,6 @@
-import CreateMenu from '@/components/Layout/navigation/CreateMenu'
-import ScenarioCard from '@/components/Scenarios/ScenarioCard'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { Scenario, ScenarioType } from '@edenlabs/eden-sdk'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React from 'react'
 
@@ -9,7 +9,7 @@ type ScenarioWithPath = Scenario & { path: string }
 const exampleScenarios: ScenarioWithPath[] = [
   {
     id: '1',
-    name: 'Single Character Chat',
+    name: 'Character Chat',
     description: 'Chat with a single character',
     type: ScenarioType.CHATROOM,
     path: '/scenarios/chat',
@@ -17,13 +17,27 @@ const exampleScenarios: ScenarioWithPath[] = [
   },
   {
     id: '2',
-    name: 'Talking Head',
-    description: 'Bring characters to life with voice and animation',
-    type: ScenarioType.TALKINGHEAD,
-    path: '/scenarios/talkinghead',
+    name: 'Monologue',
+    description: 'Bring characters to life with an animated monologue',
+    type: ScenarioType.MONOLOGUE,
+    path: '/scenarios/monologue',
     data: {},
   },
 ]
+
+const CreateMenu = dynamic(
+  () => import('@/components/Layout/navigation/CreateMenu'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const ScenarioCard = dynamic(
+  () => import('@/components/Scenarios/ScenarioCard'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const ScenariosPage = () => {
   const router = useRouter()
