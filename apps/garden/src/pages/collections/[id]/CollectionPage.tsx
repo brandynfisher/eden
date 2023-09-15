@@ -13,12 +13,9 @@ import { Collection } from '@edenlabs/eden-sdk'
 import { App, Space } from 'antd'
 import axios from 'axios'
 import dynamic from 'next/dynamic'
-import { Inter } from 'next/font/google'
 import Head from 'next/head'
 import router from 'next/router'
 import React, { useContext } from 'react'
-
-const inter = Inter({ subsets: ['latin'] })
 
 const CollectionHeader = dynamic(
   () => import('@/components/Collections/CollectionHeader'),
@@ -87,7 +84,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
           content={`${CONFIG.NEXT_PUBLIC_HOST}/collections/${collection._id}`}
         />
       </Head>
-      <div className={`flex flex-col ${inter.className}`}>
+      <div className={`flex flex-col`}>
         <Space direction="vertical">
           <CollectionHeader
             collection={collection}
