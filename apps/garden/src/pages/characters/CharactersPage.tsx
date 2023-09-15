@@ -1,14 +1,28 @@
-import CharacterList from '@/components/Characters/CharacterList'
-import CreateMenu from '@/components/Layout/navigation/CreateMenu'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
 import { Alert, App, Button } from 'antd'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const maxCharacters = 5
+
+const CreateMenu = dynamic(
+  () => import('@/components/Layout/navigation/CreateMenu'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const CharacterList = dynamic(
+  () => import('@/components/Characters/CharacterList'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
   const router = useRouter()
