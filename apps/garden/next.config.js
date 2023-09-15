@@ -1,6 +1,19 @@
 const path = require('path')
 const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
 const runtimeCaching = require("next-pwa/cache");
+
+const defaultImageDomains = [
+  'https://minio.aws.abraham.fun/creations-stg/',
+  'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
+  'files.stripe.com',
+]
+
+const devImageDomains = [
+  'localhost'
+]
+
+const imageDomains = process.env.NODE_ENV === 'development' ? [ ...defaultImageDomains, ...devImageDomains ] : defaultImageDomains
+
 module.exports = withTM({
   swcMinify: true,
   output: 'standalone',
@@ -14,11 +27,10 @@ module.exports = withTM({
     return config
   },
   images: {
-    domains: [
-      'https://minio.aws.abraham.fun/creations-stg/',
-      'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
-      'files.stripe.com',
-    ],
+    // deviceSizes: [320, 640, 828, 1080, 1200, 1920, 2048, 3840],
+    // imageSizes: [32, 64, 96, 128, 256, 300],
+    minimumCacheTTL: 3600,
+    domains: imageDomains,
     remotePatterns: [
       {
         protocol: 'https',

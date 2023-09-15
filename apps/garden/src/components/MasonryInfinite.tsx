@@ -60,8 +60,8 @@ const MasonryInfinite = ({
       isItemLoaded: (index, items) => {
         return !!items[index]
       },
-      minimumBatchSize: 10,
-      threshold: 10,
+      minimumBatchSize: 5,
+      threshold: 16,
     },
   )
 
@@ -124,7 +124,7 @@ const MasonryInfinite = ({
               items={items}
               height={windowHeight}
               offset={offset}
-              overscanBy={3}
+              overscanBy={2}
               itemHeightEstimate={300}
               render={itemComponent}
               onRender={maybeLoadMore}
