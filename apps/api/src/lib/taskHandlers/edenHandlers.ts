@@ -53,6 +53,7 @@ const submitTask = async (
   config: any,
 ) => {
   const { provider } = generatorVersion
+  console.log('submit Task', provider)
   const task = await providers
     .get(provider)
     .submitTask(server, generatorVersion, config)
