@@ -49,6 +49,14 @@ const params = [
     optional: false,
   },
 
+  {
+    name: 'controlnet_type',
+    label: 'ControlNet',
+    description: 'Which ControlNet to use',
+    default: 'canny-edge',
+    allowedValues: ["canny-edge", "depth"],
+    optional: true,
+  },
   ////////////////////////////////////////
   // optional generation args
   
@@ -86,14 +94,6 @@ const params = [
     description: 'Make sure the creation has the same aspect ratio as the Init image.',
     default: true,
     allowedValues: [false, true],
-    optional: true,
-  },
-  {
-    name: 'controlnet_type',
-    label: 'ControlNet',
-    description: 'Which ControlNet to use',
-    default: 'canny-edge',
-    allowedValues: ["canny-edge"],
     optional: true,
   },
   {
