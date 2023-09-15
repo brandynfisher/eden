@@ -1,6 +1,6 @@
-import CreateMenu from '@/components/Layout/navigation/CreateMenu'
-import ScenarioCard from '@/components/Scenarios/ScenarioCard'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { Scenario, ScenarioType } from '@edenlabs/eden-sdk'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React from 'react'
 
@@ -24,6 +24,20 @@ const exampleScenarios: ScenarioWithPath[] = [
     data: {},
   },
 ]
+
+const CreateMenu = dynamic(
+  () => import('@/components/Layout/navigation/CreateMenu'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const ScenarioCard = dynamic(
+  () => import('@/components/Scenarios/ScenarioCard'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const ScenariosPage = () => {
   const router = useRouter()

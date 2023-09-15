@@ -1,14 +1,22 @@
 import HeaderLogo from '@/components/Layout/HeaderLogo'
 import MannaDropdown from '@/components/Layout/dropdowns/MannaDropdown'
-import CreationNotificationMenu from '@/components/Layout/dropdowns/TaskNotificationDropdown'
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import NavBurgerButton from '@/components/Layout/navigation/NavBurgerButton'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { UserContext } from '@/providers/UserProvider'
 import { GithubOutlined, TwitterOutlined } from '@ant-design/icons'
 import { Drawer as AntDrawer, Divider } from 'antd'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
+
+const TaskNotificationDropdown = dynamic(
+  () => import('@/components/Layout/dropdowns/TaskNotificationDropdown'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const DrawerTitle = ({
   onClose,
@@ -40,7 +48,7 @@ const DrawerContent = () => {
           <Divider />
           <div className="flex items-center justify-between px-3 py-2">
             <MannaDropdown />
-            <CreationNotificationMenu inDrawer={true} />
+            <TaskNotificationDropdown inDrawer={true} />
           </div>
         </div>
       )}

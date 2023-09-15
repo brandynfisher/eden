@@ -1,6 +1,5 @@
-import CollectionHeader from '@/components/Collections/CollectionHeader'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import MasonryInfinite from '@/components/MasonryInfinite'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import {
   OrderByBookmarks,
   OrderByLatest,
@@ -13,12 +12,24 @@ import { UserContext } from '@/providers/UserProvider'
 import { Collection } from '@edenlabs/eden-sdk'
 import { App, Space } from 'antd'
 import axios from 'axios'
+import dynamic from 'next/dynamic'
 import { Inter } from 'next/font/google'
 import Head from 'next/head'
 import router from 'next/router'
 import React, { useContext } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
+
+const CollectionHeader = dynamic(
+  () => import('@/components/Collections/CollectionHeader'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const MasonryInfinite = dynamic(() => import('@/components/MasonryInfinite'), {
+  loading: () => <LoadingIndicator />,
+})
 
 const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()

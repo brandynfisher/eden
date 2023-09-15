@@ -6,7 +6,7 @@ import axios, { AxiosError } from 'axios'
 // @ts-ignore
 export const fetcher = (...args) =>
   // @ts-ignore
-  fetch(...args, { cache: 'no-store' }).then(res => res.json())
+  fetch(...args).then(res => res.json())
 
 export const handleAxiosError = (
   error: AxiosError | unknown,
