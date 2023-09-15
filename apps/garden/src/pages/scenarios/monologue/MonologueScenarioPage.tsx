@@ -49,7 +49,9 @@ const MonologueScenarioPageContent = ({
   )
   const [canAffordOperation, setCanAffordOperation] = useState(false)
   const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
-  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
+  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState<boolean | null>(
+    null,
+  )
   const { width } = useViewportSize()
 
   useEffect(() => {
@@ -204,7 +206,7 @@ const MonologueScenarioPageContent = ({
                     className="flex px-6 items-center justify-between flex-wrap"
                   >
                     <div className="flex gap-3 items-center">
-                      {!canAffordOperation ? (
+                      {isLoadingTaskCost === false && !canAffordOperation ? (
                         <div className="text-orange-500">
                           Insufficient Manna! ({mannaBalance}){' '}
                           <Link href="/manna">Click here to get more</Link>
@@ -227,7 +229,7 @@ const MonologueScenarioPageContent = ({
                         </Button>
                       )}
                       <MannaCostEstimate
-                        isLoading={isLoadingTaskCost}
+                        isLoading={!!isLoadingTaskCost}
                         cost={taskCost?.cost || 'n/a'}
                       />
                     </div>

@@ -118,7 +118,7 @@ const CreationDetail = ({
               onClick={
                 isImageUrl(creation.uri)
                   ? () => handlePreviewClick(creation.uri)
-                  : () => handlePreviewClick(creation.thumbnail)
+                  : () => false
               }
               className="relative flex justify-center lg:flex lg:flex-grow"
               style={{ width: 'fit-content', margin: '0 auto' }}

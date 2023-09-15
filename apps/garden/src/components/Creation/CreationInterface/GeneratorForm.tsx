@@ -87,7 +87,9 @@ const GeneratorForm = ({
     GeneratorParameter[]
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState(false)
+  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState<boolean | null>(
+    null,
+  )
   const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
   const [canAffordOperation, setCanAffordOperation] = useState(false)
@@ -437,7 +439,7 @@ const GeneratorForm = ({
           >
             <div>
               <div className="flex gap-3 items-center">
-                {!canAffordOperation ? (
+                {isLoadingTaskCost === false && !canAffordOperation ? (
                   <div className="text-orange-500">
                     Insufficient Manna! ({mannaBalance}){' '}
                     <Link href="/manna">Click here to get more</Link>
@@ -461,7 +463,7 @@ const GeneratorForm = ({
                   </Button>
                 )}
                 <MannaCostEstimate
-                  isLoading={isLoadingTaskCost}
+                  isLoading={!!isLoadingTaskCost}
                   cost={taskCost?.cost || 'n/a'}
                 />
               </div>
