@@ -77,7 +77,7 @@ const params = [
     label: 'ControlNet',
     description: 'Which ControlNet to use',
     default: 'off',
-    allowedValues: ["off", "canny-edge"],
+    allowedValues: ["off", "canny-edge", "depth"],
     optional: true,
   },
   {
