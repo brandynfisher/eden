@@ -85,7 +85,7 @@ export const uploadBufferAsset = async (
   fileExtension: string | null = null,
 ): Promise<{ uri: string; mediaAttributes: MediaAttributes }> => {
   const client = server.minio as MinioClient
-  const MINIO_BUCKET = server.config.MINIO_BUCKET
+  const MINIO_BUCKET = server.config.MINIO_BUCKET as string
   const sha = util.sha256(buffer)
   const fileType = await fileTypeFromBuffer(buffer)
   const { ext, mime } = fileType
@@ -131,22 +131,23 @@ export const registerMinio = async (fastify: FastifyInstance) => {
     let minio
     if (fastify.config.MINIO_PORT) {
       minio = new MinioClient({
-        endPoint: fastify.config.MINIO_HOST,
+        endPoint: fastify.config.MINIO_HOST as string,
         port: parseInt(fastify.config.MINIO_PORT),
         useSSL: false,
-        accessKey: fastify.config.MINIO_ACCESS_KEY,
-        secretKey: fastify.config.MINIO_SECRET_KEY,
+        accessKey: fastify.config.MINIO_ACCESS_KEY as string,
+        secretKey: fastify.config.MINIO_SECRET_KEY as string,
       })
     } else {
       minio = new MinioClient({
-        endPoint: fastify.config.MINIO_HOST,
-        accessKey: fastify.config.MINIO_ACCESS_KEY,
-        secretKey: fastify.config.MINIO_SECRET_KEY,
+        endPoint: fastify.config.MINIO_HOST as string,
+        accessKey: fastify.config.MINIO_ACCESS_KEY as string,
+        secretKey: fastify.config.MINIO_SECRET_KEY as string,
       })
     }
     fastify.decorate('minio', minio)
     fastify.decorate('uploadUrlAsset', uploadUrlAsset)
     fastify.decorate('uploadThumbnailAsset', uploadThumbnailAsset)
+    fastify.decorate('uploadBufferAsset', uploadBufferAsset)
     fastify.log.info('Successfully registered MinioPlugin')
   } catch (err) {
     fastify.log.error('Plugin: Minio, error on register', err)
@@ -166,6 +167,11 @@ declare module 'fastify' {
       server: FastifyInstance,
       assetInput: string | Buffer,
     ) => Promise<string>
+    uploadBufferAsset: (
+      server: FastifyInstance,
+      buffer: Buffer,
+      fileExtension?: string | null,
+    ) => Promise<{ uri: string; mediaAttributes: MediaAttributes }>
   }
 }
 

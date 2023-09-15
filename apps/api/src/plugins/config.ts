@@ -9,6 +9,7 @@ dotenv.config({ path: process.env.DOTENV_PATH || '.env.dummy' })
 export enum NodeEnv {
   development = 'development',
   test = 'test',
+  staging = 'staging',
   production = 'production',
 }
 
@@ -32,16 +33,21 @@ const ConfigSchema = Type.Strict(
     ELEVENLABS_API_KEY: Type.String(),
     WEBHOOK_URL: Type.String(),
     WEBHOOK_SECRET: Type.String(),
-    MINIO_HOST: Type.String(),
-    MINIO_PORT: Type.Optional(Type.String()),
-    MINIO_ACCESS_KEY: Type.String(),
-    MINIO_SECRET_KEY: Type.String(),
-    MINIO_BUCKET: Type.String(),
-    MINIO_URI: Type.String(),
+    AWS_ACCESS_KEY: Type.Optional(Type.String()),
+    AWS_SECRET_KEY: Type.Optional(Type.String()),
+    AWS_REGION: Type.Optional(Type.String()),
+    AWS_S3_BUCKET: Type.Optional(Type.String()),
     STRIPE_PUBLISHABLE_KEY: Type.String(),
     STRIPE_SECRET_KEY: Type.String(),
     STRIPE_WEBHOOK_SECRET: Type.String(),
     SENTRY_DSN: Type.String(),
+    MINIO_HOST: Type.Optional(Type.String()),
+    MINIO_PORT: Type.Optional(Type.String()),
+    MINIO_ACCESS_KEY: Type.Optional(Type.String()),
+    MINIO_SECRET_KEY: Type.Optional(Type.String()),
+    MINIO_BUCKET: Type.Optional(Type.String()),
+    MINIO_URI: Type.Optional(Type.String()),
+    AUTH_ALLOWLIST: Type.Optional(Type.String()),
   }),
 )
 

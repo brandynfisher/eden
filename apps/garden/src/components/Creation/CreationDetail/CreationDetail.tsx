@@ -8,7 +8,8 @@ import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
-import { isImageUrl, isVideoUrl } from '@/lib/string'
+import { getFileExtension } from '@/lib/getFileExtension'
+import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -48,6 +49,12 @@ const CreationDetail = ({
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
+  const isVideo = (creationUri: string) => {
+    if (!creationUri) return null
+    const extension = getFileExtension(creationUri)
+    return extension === 'mp4'
+  }
+
   const hideMediaViewer = () => {
     setZoomedInImageUrl(null)
   }
@@ -65,7 +72,7 @@ const CreationDetail = ({
     <>
       <Head>
         <title>{`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}</title>
-        {isVideoUrl(creation.uri) && (
+        {isVideo(creation.uri) && (
           <>
             <meta property="og:type" content="video.other" />
             <meta
@@ -145,7 +152,7 @@ const CreationDetail = ({
                 />
               </div>
               {showFollowControls && (
-                <div className="flex items-center flex-shrink-0">
+                <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0">
                   <FollowControls
                     creatorId={creationData?.user?.userId}
                     showStats={false}

@@ -131,6 +131,7 @@ type GeneratorOutputType = 'creation' | 'llm' | 'concept'
 export interface GeneratorSchema {
   generatorName: string
   description: string
+  defaultVersionId?: string
   versions: GeneratorVersionSchema[]
   output: GeneratorOutputType
   createdAt?: Date
@@ -140,6 +141,7 @@ export interface GeneratorSchema {
 export interface GeneratorInput {
   generatorName: string
   description: string
+  defaultVersionId?: string
   versions: GeneratorVersionInput[]
   output: GeneratorOutputType
 }
@@ -158,6 +160,9 @@ const generator = new Schema<GeneratorDocument>({
   output: {
     type: String,
     required: true,
+  },
+  defaultVersionId: {
+    type: String,
   },
   versions: {
     type: [generatorVersion],

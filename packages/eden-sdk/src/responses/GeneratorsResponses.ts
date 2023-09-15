@@ -15,6 +15,7 @@ export type Generator = {
   generatorName: string
   description: string
   output: string
+  defaultVersionId?: string
   versions: GeneratorVersion[]
 }
 

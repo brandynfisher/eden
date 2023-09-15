@@ -24,6 +24,7 @@ export const getGenerator = async (
     generatorName: generator.generatorName,
     output: generator.output,
     description: generator.description,
+    defaultVersionId: generator.defaultVersionId,
     versions: generator.versions
       .filter((version: GeneratorVersionSchema) => !version.isDeprecated)
       .map((version: GeneratorVersionSchema) => ({
@@ -57,6 +58,7 @@ export const listGenerators = async (
       generatorName: generator.generatorName,
       output: generator.output,
       description: generator.description,
+      defaultVersionId: generator.defaultVersionId,
       versions: generator.versions
         .filter((version: GeneratorVersionSchema) => !version.isDeprecated)
         .map((version: GeneratorVersionSchema) => ({

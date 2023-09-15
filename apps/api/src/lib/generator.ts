@@ -3,6 +3,9 @@ import { GeneratorParameter, GeneratorSchema } from '../models/Generator'
 export const getLatestGeneratorVersion = (generator: GeneratorSchema) =>
   generator.versions[generator.versions.length - 1]
 
+export const getDefaultGeneratorVersion = (generator: GeneratorSchema) =>
+  generator.versions.filter(v => v.versionId == generator.defaultVersionId)[0]
+
 const setupSeeds = (config?: any) => {
   if (!config.seed) {
     config.seed = Math.floor(Math.random() * 1e8)

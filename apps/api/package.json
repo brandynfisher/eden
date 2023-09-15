@@ -36,6 +36,7 @@
     "@sinclair/typebox": "^0.23.5",
     "@stripe/stripe-js": "^2.1.0",
     "ajv": "^8.12.0",
+    "aws-sdk": "^2.1454.0",
     "axios": "^1.4.0",
     "chromadb": "^1.5.5",
     "dotenv": "^16.0.3",

@@ -17,23 +17,19 @@ const ImageZoomPan = ({
   const componentWrapRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLImageElement>(null)
 
-  const onEscHandler = useCallback(
-    (ev: React.KeyboardEvent<HTMLDivElement>) => {
-      console.log('imageZoomPan', ev)
-      // console.log('esc handler executed', ev)
-      if (ev.key === 'Escape') {
-        // console.log('stop propagation', ev)
-        // ev.stopImmediatePropagation()
-        ev.stopPropagation()
+  useEffect(() => {
+    const onEscHandler = (key: string) => {
+      if (key === 'Escape') {
         onCloseHandler()
       }
-    },
-    [onCloseHandler],
-  )
+    }
 
-  useEffect(() => {
-    contentRef.current?.focus()
-  }, [])
+    if (imageUrl) {
+      document.addEventListener('keydown', ev => onEscHandler(ev.key), false)
+    } else {
+      document.removeEventListener('keydown', ev => onEscHandler(ev.key), false)
+    }
+  }, [onCloseHandler])
 
   const fitContentToWrapper = useCallback(() => {
     if (componentWrapRef.current && contentRef.current) {
@@ -53,7 +49,7 @@ const ImageZoomPan = ({
   }, [contentRef, componentWrapRef])
 
   return (
-    <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-30`}>
+    <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-10`}>
       <TransformWrapper
         minScale={0.1}
         maxScale={4}
@@ -62,7 +58,7 @@ const ImageZoomPan = ({
       >
         {({ zoomIn, zoomOut, centerView }) => (
           <>
-            <div className="absolute tools z-30 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
+            <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
               <Button.Group>
                 <Button type="text" onClick={() => zoomIn()}>
                   <ZoomInOutlined className="text-xl" />
@@ -82,20 +78,15 @@ const ImageZoomPan = ({
               </Button>
             </div>
             <TransformComponent wrapperClass="!w-full !h-full">
-              <div
+              <img
                 ref={contentRef}
-                tabIndex={0}
-                onKeyDown={ev => onEscHandler(ev)}
-                className="outline-0"
-              >
-                <img
-                  src={imageUrl}
-                  alt={imageUrl}
-                  onLoad={() => {
-                    centerView(fitContentToWrapper())
-                  }}
-                />
-              </div>
+                src={imageUrl}
+                alt={imageUrl}
+                onLoad={() => {
+                  console.log('centerView', imageUrl)
+                  centerView(fitContentToWrapper())
+                }}
+              />
             </TransformComponent>
           </>
         )}

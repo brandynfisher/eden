@@ -6,7 +6,11 @@ import {
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ChatCompletionRequestMessage } from 'openai'
 
-import { getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
+import {
+  getDefaultGeneratorVersion,
+  getLatestGeneratorVersion,
+  prepareConfig,
+} from '../lib/generator'
 import { Completion, CompletionInput } from '../models/Completion'
 import { User } from '../models/Creator'
 import {
@@ -32,7 +36,12 @@ const getGeneratorVersion = (
     }
     return version
   } else {
-    return getLatestGeneratorVersion(generator)
+    const defaultVersion = getDefaultGeneratorVersion(generator)
+    if (defaultVersion) {
+      return defaultVersion
+    } else {
+      return getLatestGeneratorVersion(generator)
+    }
   }
 }
 
@@ -69,6 +78,7 @@ export const getTaskCost = async (
 
   // use versionId if provided else latest
   const generatorVersion = getGeneratorVersion(generator, versionId)
+  console.log(`get generatorVersion: ${generatorVersion?.versionId}`)
   if (!generatorVersion) {
     return reply.status(400).send({
       message: 'Generator version not found',

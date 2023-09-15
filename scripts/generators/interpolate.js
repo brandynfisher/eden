@@ -46,7 +46,7 @@ const params = [
     description:
       '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
     default: '(none)',
-    // allowedValues: ['(none)'],
+    optional: true,
    },
    {
     name: 'lora_scale',
@@ -57,6 +57,7 @@ const params = [
     minimum: 0.0,
     maximum: 1.2,
     step: 0.1,
+    optional: true,
   },
 
 
@@ -193,6 +194,7 @@ const params = [
     description: 'Which model checkpoint to generate with',
     default: 'sdxl-v1.0',
     allowedValues: ['sdxl-v1.0'],
+    optional: true,
   },
 
   {

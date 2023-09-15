@@ -3,7 +3,7 @@ import {
   AuthLoginArguments,
 } from '@edenlabs/eden-sdk'
 import { ethers } from 'ethers'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { SiweMessage, generateNonce } from 'siwe'
 
 import Challenge from '../models/Challenge'
@@ -11,8 +11,25 @@ import { Collection } from '../models/Collection'
 import { User, UserInput } from '../models/Creator'
 import { Manna } from '../models/Manna'
 
-export const login = async (request: FastifyRequest, reply: FastifyReply) => {
+const getAuthAllowlist = (server: FastifyInstance) => {
+  const allowlist = server.config.AUTH_ALLOWLIST
+  if (!allowlist) return null
+  return allowlist.split(',')
+}
+
+export const login = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   const { address, signature, message } = request.body as AuthLoginArguments
+
+  const allowlist = getAuthAllowlist(server)
+  if (allowlist && !allowlist.includes(address)) {
+    return reply.status(401).send({
+      message: 'Address not in allowlist',
+    })
+  }
 
   // first, find the most recent challenge for this address
   const challenge = await Challenge.findOne({
@@ -104,10 +121,19 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
 }
 
 export const createChallenge = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { address, isWeb2 } = request.body as AuthCreateChallengeArguments
+  console.log('address', address)
+
+  const allowlist = getAuthAllowlist(server)
+  if (allowlist && !allowlist.includes(address)) {
+    return reply.status(401).send({
+      message: 'Address not in allowlist',
+    })
+  }
 
   const nonce = generateNonce()
 

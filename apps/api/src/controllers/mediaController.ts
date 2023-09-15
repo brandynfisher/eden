@@ -1,8 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { fileTypeFromBuffer } from 'file-type'
 
-import { uploadBufferAsset } from '../plugins/minioPlugin'
-
 export const uploadMedia = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -35,7 +33,7 @@ export const uploadMedia = async (
     })
   }
 
-  const { uri } = await uploadBufferAsset(server, buffer)
+  const { uri } = await server.uploadBufferAsset(server, buffer)
   return reply.status(200).send({ url: uri })
 }
 
@@ -53,6 +51,6 @@ export const uploadMediaAdmin = async (
   }
 
   const buffer = await data.toBuffer()
-  const { uri } = await uploadBufferAsset(server, buffer)
+  const { uri } = await server.uploadBufferAsset(server, buffer)
   return reply.status(200).send({ url: uri })
 }

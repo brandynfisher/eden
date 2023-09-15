@@ -23,7 +23,7 @@ const params = [
   {
     name: 'width',
     label: 'Width',
-    description: 'Target width of the creation in pixels (aspect ratio of input img will be maintained)',
+    description: 'Upscale uses [Width x Height] total number of pixels and adopts the aspect ratio of your provided image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -32,7 +32,7 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Target height of the creation in pixels (aspect ratio of input img will be maintained)',
+    description: 'Upscale uses [Width x Height] total number of pixels and adopts the aspect ratio of your provided image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
