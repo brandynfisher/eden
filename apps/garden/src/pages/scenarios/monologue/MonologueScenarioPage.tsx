@@ -22,7 +22,7 @@ import React, {
   useState,
 } from 'react'
 
-const TalkingHeadScenarioPageContent = ({
+const MonologueScenarioPageContent = ({
   characters,
 }: {
   characters: Character[]
@@ -100,13 +100,13 @@ const TalkingHeadScenarioPageContent = ({
       message.destroy()
 
       if (!response || !response.data) {
-        message.error(`Talking Head task response error`)
+        message.error(`Monologue task response error`)
         return
       }
 
       const { taskId } = response.data
 
-      message.success(`Talking Head Task created! (${taskId})`)
+      message.success(`Monologue Task created! (${taskId})`)
 
       setActiveTaskId && setActiveTaskId(taskId)
       setTaskIds && setTaskIds([...taskIds, taskId])
@@ -115,11 +115,7 @@ const TalkingHeadScenarioPageContent = ({
       refetch.mannaBalance()
       onSubmitSuccess()
     } catch (error) {
-      handleAxiosError(
-        error,
-        message,
-        'Error requesting talking head generation',
-      )
+      handleAxiosError(error, message, 'Error requesting monologue generation')
     } finally {
       setIsSubmitting(false)
     }
@@ -164,7 +160,7 @@ const TalkingHeadScenarioPageContent = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
-        <h2 className="mb-4">Scenario: Talking Head</h2>
+        <h2 className="mb-4">Scenario: Monologue</h2>
         <div>
           <label htmlFor="character-select">Selected Character:</label>
           <div className="w-full flex flex-col mt-2 mb-4">
@@ -195,9 +191,9 @@ const TalkingHeadScenarioPageContent = ({
                 type="inner"
                 title={
                   <div className="py-4">
-                    <h3>Generate Talking Head</h3>
+                    <h3>Generate Monologue</h3>
                     <span style={{ color: 'gray' }}>
-                      Uses a character to generate a talking head animation in
+                      Uses a character to generate an animated monologue in
                       response to a prompt
                     </span>
                   </div>
@@ -275,7 +271,7 @@ const TalkingHeadScenarioPageContent = ({
   )
 }
 
-const TalkingHeadScenarioPage = ({ data }: { data: Character[] }) => {
+const MonologueScenarioPage = ({ data }: { data: Character[] }) => {
   const { isAuthenticated, address } = useContext(UserContext)
   const { characters: charactersData } = useMyCharacters({
     userId: address ? address : null,
@@ -289,7 +285,7 @@ const TalkingHeadScenarioPage = ({ data }: { data: Character[] }) => {
     return null
   }
 
-  return <TalkingHeadScenarioPageContent characters={charactersData || data} />
+  return <MonologueScenarioPageContent characters={charactersData || data} />
 }
 
-export default TalkingHeadScenarioPage
+export default MonologueScenarioPage

@@ -27,7 +27,7 @@ export type ScenariosGetResponse = WebAPICallResult & {
 
 export enum ScenarioType {
   CHATROOM = 'chatroom',
-  TALKINGHEAD = 'talkinghead',
+  MONOLOGUE = 'monologue',
 }
 
 export type Scenario = {

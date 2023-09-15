@@ -1,5 +1,8 @@
 import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
+import { ChatCompletionRequestMessage } from 'openai'
 
+import { Character } from '../../models/Character'
 import { uploadBufferAsset } from '../../plugins/minioPlugin'
 import { randomId } from '../util'
 import { receiveTaskUpdate } from './edenHandlers'
@@ -39,45 +42,65 @@ const runTask = async (
     throw new Error('Replicate not initialized')
   }
 
-  const completion = await llm.createCompletion({
-    model: 'text-davinci-003',
-    prompt: config.prompt,
-    temperature: 0.9,
-    max_tokens: 200,
-    top_p: 1,
-    frequency_penalty: 0.15,
-    presence_penalty: 0.1,
+  const character = await Character.findOne({
+    _id: new ObjectId(config.characterId),
   })
 
-  const answer = completion.data.choices[0].text
-
-  if (!answer) {
-    throw new Error('No result')
+  if (!character) {
+    throw new Error('Character not found')
   }
 
-  const audioBuffer = await elevenLabs.runTask('EXAVITQu4vr4xnSDxMaL', answer)
+  const systemMessage = `You are playing ${character.name}. ${character.description}. You are to respond to users in character, as if you were ${character.name}.`
 
+  const messages: ChatCompletionRequestMessage[] = [
+    {
+      role: 'system',
+      content: systemMessage,
+    },
+    {
+      role: 'user',
+      content: config.prompt,
+    },
+  ]
+
+  const completion = await server.llm.createChatCompletion({
+    model: 'gpt-3.5-turbo',
+    messages: messages,
+    temperature: 1,
+    max_tokens: 512,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  })
+
+  if (!completion.data.choices) {
+    throw new Error('No choices')
+  }
+  const response = completion.data.choices[0].message?.content
+  if (!response) {
+    throw new Error('No response from character')
+  }
+
+  const voiceId = character.voice || 'EXAVITQu4vr4xnSDxMaL'
+
+  const audioBuffer = await elevenLabs.runTask(voiceId, response)
   const { uri: audioUri } = await uploadBufferAsset(server, audioBuffer)
 
-  console.log('SAVE', audioUri)
-
-  const faceUrl =
-    'https://minio.aws.abraham.fun/creations-stg/6f93def26cc577b6a3bb7152da5bb3dbebb5eebf293f100712bd115635294bda.jpg'
-  const speech_url = audioUri
-
-  console.log('face_url', faceUrl)
-  console.log('speech_url', speech_url)
+  const faceUrl = character.image
 
   const generatorAddress = 'abraham-ai/character'
-  // const model = await replicate.getModel(generatorAddress)
   const model = await replicate.models.get(generatorAddress)
-
-  console.log(model)
 
   const result = await model.predict({
     mode: 'wav2lip',
-    face_url: faceUrl,
-    speech_url: audioUri,
+    face_url: faceUrl?.replace(
+      'http://localhost:9000',
+      'https://354a-145-224-73-37.ngrok-free.app',
+    ),
+    speech_url: audioUri.replace(
+      'http://localhost:9000',
+      'https://354a-145-224-73-37.ngrok-free.app',
+    ),
     gfpgan: false,
     gfpgan_upscale: 1,
     intro_text: null,
@@ -85,11 +108,6 @@ const runTask = async (
 
   console.log('finished!')
   console.log(result)
-
-  const output = {
-    result,
-    isFinal: true,
-  }
 
   const update = {
     id: task.id,
@@ -107,7 +125,7 @@ const getTransactionCost = (
   generatorVersion: any,
   config: any,
 ) => {
-  const cost = 20
+  const cost = 5
   return cost
 }
 

@@ -1,5 +1,7 @@
 import { FastifyInstance } from 'fastify'
 
+import { uploadBufferAsset } from '../../plugins/minioPlugin'
+import { randomId } from '../util'
 import { receiveTaskUpdate } from './edenHandlers'
 
 const submitTask = async (
@@ -7,38 +9,29 @@ const submitTask = async (
   generatorVersion: any,
   config: any,
 ) => {
-  const { tts } = server
-  if (!tts) {
-    throw new Error('Tts not initialized')
-  }
-
-  const taskId = await tts.startTask(config.voice, config.text)
-  const task = { id: taskId }
-
+  const task = { id: randomId(24) }
   setTimeout(async () => {
-    await pollTaskUntilDone(server, task)
+    await runTask(server, config, task)
   }, 0)
-
   return task
 }
 
 const getTransactionCost = (_: FastifyInstance, __: any, config: any) => 1
 
-const pollTaskUntilDone = async (server: FastifyInstance, task: any) => {
-  const { tts } = server
-  if (!tts) {
-    throw new Error('Tts not initialized')
+const runTask = async (server: FastifyInstance, config: any, task: any) => {
+  const { elevenLabs } = server
+  if (!elevenLabs) {
+    throw new Error('elevenLabs not initialized')
   }
 
-  const audioUrl = await tts.pollForTask(2000, task.id)
+  const audioBuffer = await elevenLabs.runTask(config.voice, config.text)
+  const { uri: audioUri } = await uploadBufferAsset(server, audioBuffer)
 
   const output = {
-    file: audioUrl,
+    file: audioUri,
     name: `${task.id}.wav`,
     isFinal: true,
   }
-
-  console.log('OUTPUT', output)
 
   const update = {
     id: task.id,

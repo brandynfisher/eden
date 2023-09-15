@@ -9,7 +9,7 @@ type ScenarioWithPath = Scenario & { path: string }
 const exampleScenarios: ScenarioWithPath[] = [
   {
     id: '1',
-    name: 'Single Character Chat',
+    name: 'Character Chat',
     description: 'Chat with a single character',
     type: ScenarioType.CHATROOM,
     path: '/scenarios/chat',
@@ -17,10 +17,10 @@ const exampleScenarios: ScenarioWithPath[] = [
   },
   {
     id: '2',
-    name: 'Talking Head',
-    description: 'Bring characters to life with voice and animation',
-    type: ScenarioType.TALKINGHEAD,
-    path: '/scenarios/talkinghead',
+    name: 'Monologue',
+    description: 'Bring characters to life with an animated monologue',
+    type: ScenarioType.MONOLOGUE,
+    path: '/scenarios/monologue',
     data: {},
   },
 ]
