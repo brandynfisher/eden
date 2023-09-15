@@ -184,7 +184,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       hideModal()
     }
   }, [])
-  //
+
   useEffect(() => {
     document.body.addEventListener('keydown', onEscHandler, false)
 

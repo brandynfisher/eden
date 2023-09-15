@@ -47,18 +47,6 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
 
   const getCardMenuItems = () => {
     return [
-      // {
-      //   label: (
-      //     <div
-      //       onClick={() =>
-      //         console.log('//@todo: copy creation url to clipboard')
-      //       }
-      //     >
-      //       Copy... creation url to clipboard
-      //     </div>
-      //   ),
-      //   key: '1',
-      // },
       {
         label: 'Copy...',
         key: '1',
@@ -89,16 +77,6 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
           },
         ],
       },
-      // {
-      //   label: (
-      //     <div
-      //       onClick={() => console.log('//@todo: copy image url to clipboard')}
-      //     >
-      //       Copy... image url to clipboard
-      //     </div>
-      //   ),
-      //   key: '3',
-      // },
     ]
   }
 
