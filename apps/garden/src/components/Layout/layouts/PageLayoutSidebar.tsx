@@ -5,6 +5,7 @@ import { Layout } from 'antd'
 import { ReactNode, useContext } from 'react'
 
 const { Content, Sider } = Layout
+
 const PageLayoutSidebar = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useContext(UserContext)
 

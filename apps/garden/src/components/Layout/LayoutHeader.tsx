@@ -1,21 +1,42 @@
 import HeaderLogo from '@/components/Layout/HeaderLogo'
-import MannaDropdown from '@/components/Layout/dropdowns/MannaDropdown'
 import QuickCreateMenu from '@/components/Layout/dropdowns/QuickCreateMenu'
-import SettingsDropdown from '@/components/Layout/dropdowns/SettingsDropdown'
-import CreationNotificationMenu from '@/components/Layout/dropdowns/TaskNotificationDropdown'
 import Drawer from '@/components/Layout/navigation/Drawer'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import MyProfileButton from '@/components/Profile/MyProfileButton'
 import { UserContext } from '@/providers/UserProvider'
 import theme from '@/styles/theme'
 import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
+import dynamic from 'next/dynamic'
 import { Inter } from 'next/font/google'
 import React, { useContext, useEffect, useState } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
 const { Header } = Layout
+
+const TaskNotificationDropdown = dynamic(
+  () => import('@/components/Layout/dropdowns/TaskNotificationDropdown'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const MannaDropdown = dynamic(
+  () => import('@/components/Layout/dropdowns/MannaDropdown'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const SettingsDropdown = dynamic(
+  () => import('@/components/Layout/dropdowns/SettingsDropdown'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
 const LayoutHeader = () => {
   const { width: viewportWidth } = useViewportSize()
   const { isAuthenticated } = useContext(UserContext)
@@ -50,7 +71,7 @@ const LayoutHeader = () => {
 
         {isAuthenticated && (
           <>
-            <CreationNotificationMenu />
+            <TaskNotificationDropdown />
             <div className="hidden lg:flex">
               <MannaDropdown />
             </div>

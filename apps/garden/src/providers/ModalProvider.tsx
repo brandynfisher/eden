@@ -178,7 +178,6 @@ function ModalProvider({ children }: PropsWithChildren) {
   }, [])
 
   const onEscHandler = useCallback((ev: KeyboardEvent) => {
-    console.log('modal', ev)
     if (ev.key === 'Escape') {
       ev.stopImmediatePropagation()
       ev.stopPropagation()

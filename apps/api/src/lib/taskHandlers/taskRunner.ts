@@ -77,7 +77,10 @@ const runTask = async (
   const result = await model.predict({
     mode: 'wav2lip',
     face_url: faceUrl,
-    speech_url: audioUri,
+    speech_url: audioUri.replace(
+      'http://localhost:9000',
+      'https://f.eden.ngrok.dev',
+    ),
     gfpgan: false,
     gfpgan_upscale: 1,
     intro_text: null,
