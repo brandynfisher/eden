@@ -1,4 +1,4 @@
-import { OrderByParam } from '@/components/OrderByButtons'
+import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { fetcher } from '@/lib/fetcher'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useCallback } from 'react'

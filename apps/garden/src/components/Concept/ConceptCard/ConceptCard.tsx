@@ -46,7 +46,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
               hovered ? 'md:!visible' : 'md:hidden'
             }`}
           >
-            <div className="flex items-center pointer-events-auto">
+            <div className="flex items-center pointer-events-auto my-1">
               <CreatorProfileLink
                 creatorId={concept.user.userId}
                 creatorName={concept.user.username}

@@ -364,3 +364,18 @@
         }
     }
 //}
+
+
+.ant-dropdown-menu-item {
+    a {
+        color: rgba(0, 0, 0, 0.85) !important;
+    }
+}
+
+.dark {
+    .ant-dropdown-menu-item {
+        a {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+    }
+}

@@ -1,12 +1,14 @@
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
-import CopyImageButton from '@/components/CopyImageButton'
-import CopyUrlButton from '@/components/CopyUrlButton'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
 import CreationReactions from '@/components/Creation/CreationReactions'
+import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
+import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
+import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { CONFIG } from '@/lib/config'
 import { getModalUrls } from '@/lib/modal'
+import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { EllipsisOutlined } from '@ant-design/icons'
@@ -51,16 +53,18 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
         label: 'Copy...',
         key: '1',
         children: [
-          {
-            icon: <CopyImageButton url={creation.uri} variant="text" />,
-            key: '1-1',
-          },
+          isImageUrl(creation.uri)
+            ? {
+                icon: <CopyImageButton url={creation.uri} variant="text" />,
+                key: '1-1',
+              }
+            : null,
           {
             icon: (
               <CopyUrlButton
                 url={creation.uri}
                 variant="text"
-                label="Image URL"
+                label="File URL"
               />
             ),
             key: '1-2',
@@ -77,6 +81,22 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
           },
         ],
       },
+      {
+        label: 'Open in...',
+        key: '2',
+        children: [
+          {
+            icon: (
+              <NewTabLinkButton
+                url={`${CONFIG.NEXT_PUBLIC_HOST}${pageUrl || modalUrl}`}
+                variant="text"
+                label="New Tab"
+              />
+            ),
+            key: '2-1',
+          },
+        ],
+      },
     ]
   }
 
@@ -89,7 +109,7 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
               hovered ? 'md:!visible' : 'md:hidden'
             }`}
           >
-            <div className="flex items-center pointer-events-auto">
+            <div className="flex items-center pointer-events-auto my-1">
               <CreatorProfileLink
                 creatorId={creation.user.userId}
                 creatorName={creation.user.username}

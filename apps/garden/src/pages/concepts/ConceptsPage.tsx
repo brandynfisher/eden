@@ -1,6 +1,6 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfinite from '@/components/MasonryInfinite'
-import { OrderByLatest } from '@/components/OrderByButtons'
 import { UserContext } from '@/providers/UserProvider'
 import { useContext } from 'react'
 

@@ -1,4 +1,4 @@
-import ConnectButton from '@/components/ConnectButton'
+import ConnectButton from '@/components/Layout/buttons/ConnectButton'
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
 import { UserContext } from '@/providers/UserProvider'
 import {

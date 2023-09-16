@@ -1,10 +1,10 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
-} from '@/components/OrderByButtons'
+} from '@/components/Layout/buttons/OrderByButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCollection } from '@/hooks/useCollection'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'

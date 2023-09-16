@@ -1,12 +1,12 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByFollowing,
   OrderByLatest,
   OrderByPraises,
   OrderByScore,
-} from '@/components/OrderByButtons'
+} from '@/components/Layout/buttons/OrderByButtons'
+import MasonryInfinite from '@/components/MasonryInfinite'
 import { UserContext } from '@/providers/UserProvider'
 import { useContext } from 'react'
 

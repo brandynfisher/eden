@@ -1,6 +1,6 @@
-import CopyUrlButton from '@/components/CopyUrlButton'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
-import ShareButton from '@/components/ShareButton'
+import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
+import ShareButton from '@/components/Layout/buttons/ShareButton'
 import { downloadFile } from '@/lib/files'
 import { DownloadOutlined } from '@ant-design/icons'
 import { Concept } from '@edenlabs/eden-sdk'

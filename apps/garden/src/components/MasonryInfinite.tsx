@@ -5,7 +5,7 @@ import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
-} from '@/components/OrderByButtons'
+} from '@/components/Layout/buttons/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
 import { useViewportSize } from '@mantine/hooks'
