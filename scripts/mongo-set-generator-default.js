@@ -4,6 +4,7 @@ import { MongoClient } from 'mongodb';
 
 const allowedCogs = [
   "eden-sd-pipelines-sdxl",
+  "eden-sd-pipelines-sdxl-video",
   "character",
   "sdxl-lora-trainer",
   "zeroscope-v2-xl",
@@ -40,13 +41,23 @@ async function updateDefaultVersion(db) {
 
   const sdxl_generators = [
     'create', 'remix', 
-    'interpolate', 'real2real', 
     'blend', 'upscale',
     'interrogate',
+  ];
+  const sdxl_generators_video = [
+    'interpolate', 'real2real', 
   ];
     
   if (cog === 'eden-sd-pipelines-sdxl') {
     for (const generatorName of sdxl_generators) {
+      await db.collection('generators').updateOne(
+        { generatorName: generatorName }, 
+        { $set: { defaultVersionId: versionId } }      
+      );  
+    }
+  }
+  else if (cog === 'eden-sd-pipelines-sdxl-video') {
+    for (const generatorName of sdxl_generators_video) {
       await db.collection('generators').updateOne(
         { generatorName: generatorName }, 
         { $set: { defaultVersionId: versionId } }      
@@ -71,7 +82,7 @@ async function updateDefaultVersion(db) {
       { $set: { defaultVersionId: versionId } }
     );
   }
-  console.log(`Added ${versionId} to ${cog} generators`);
+  console.log(`Setting default ${versionId} to ${cog} generators`);
 }
 
 async function main() {
