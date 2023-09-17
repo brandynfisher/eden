@@ -3,22 +3,21 @@ import { FastifyInstance } from 'fastify'
 
 import { Concept } from '../../models/Concept'
 import { Creation } from '../../models/Creation'
-import { User } from '../../models/Creator'
 import { Generator } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
 import { TaskHandlers } from '../../plugins/tasks'
-import * as llm from './llm'
+import * as elevenPlay from './elevenPlay'
+import * as openai from './openai'
 import * as replicate from './replicate'
 import * as taskRunner from './taskRunner'
-import * as tts from './tts'
 
-type TaskProvider = 'llm' | 'replicate' | 'tts' | 'task-runner'
+type TaskProvider = 'openai' | 'replicate' | 'elevenPlay' | 'task-runner'
 
 const providers = new Map<TaskProvider, any>([
-  ['llm', llm],
-  ['tts', tts],
+  ['openai', openai],
+  ['elevenPlay', elevenPlay],
   ['replicate', replicate],
   ['task-runner', taskRunner],
 ])

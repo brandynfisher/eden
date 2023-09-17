@@ -29,12 +29,12 @@ const runTask = async (
     } with config ${JSON.stringify(config)}`,
   )
 
-  const { llm } = server
-  if (!llm) {
-    throw new Error('Llm not initialized')
+  const { openai } = server
+  if (!openai) {
+    throw new Error('OpenAI not initialized')
   }
 
-  const completion = await llm.createCompletion({
+  const completion = await openai.createCompletion({
     model: 'text-davinci-003',
     prompt: config.prompt,
     temperature: 0.9,

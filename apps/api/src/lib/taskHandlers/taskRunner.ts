@@ -33,10 +33,10 @@ const runTask = async (
   )
 
   console.log('run task 2')
-  const { llm, elevenLabs, replicate } = server
-  if (!llm) {
-    console.log('llm not init')
-    throw new Error('Llm not initialized')
+  const { openai, elevenLabs, replicate } = server
+  if (!openai) {
+    console.log('Openai not init')
+    throw new Error('Openai not initialized')
   }
   if (!elevenLabs) {
     console.log('eleven not init')
@@ -74,7 +74,7 @@ const runTask = async (
 
   console.log('run task 6.5')
 
-  const completion = await server.llm.createChatCompletion({
+  const completion = await server.openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
     messages: messages,
     temperature: 1,
