@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify'
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
 
-export const formatStableDiffusionConfigForReplicate = async (config: any) => {
+const formatConfigForReplicate = async (config: any) => {
   const newConfig = { ...config }
 
   // if no text input, use interpolation texts
@@ -68,7 +68,7 @@ const submitTask = async (
   }
   const modelId = generatorVersion.versionId
   try {
-    const preparedConfig = await formatStableDiffusionConfigForReplicate(config)
+    const preparedConfig = await formatConfigForReplicate(config)
     preparedConfig.mode = generatorVersion.mode
     // @ts-ignore
     const task = await replicate.startPrediction(
