@@ -8,8 +8,7 @@ import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
-import { getFileExtension } from '@/lib/getFileExtension'
-import { isImageUrl } from '@/lib/string'
+import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -49,12 +48,6 @@ const CreationDetail = ({
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
-  const isVideo = (creationUri: string) => {
-    if (!creationUri) return null
-    const extension = getFileExtension(creationUri)
-    return extension === 'mp4'
-  }
-
   const hideMediaViewer = () => {
     setZoomedInImageUrl(null)
   }
@@ -72,7 +65,7 @@ const CreationDetail = ({
     <>
       <Head>
         <title>{`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}</title>
-        {isVideo(creation.uri) && (
+        {isVideoUrl(creation.uri) && (
           <>
             <meta property="og:type" content="video.other" />
             <meta
@@ -120,11 +113,20 @@ const CreationDetail = ({
                   ? () => handlePreviewClick(creation.uri)
                   : () => false
               }
-              className="relative flex justify-center lg:flex lg:flex-grow"
-              style={{ width: 'fit-content', margin: '0 auto' }}
+              className="relative flex justify-center flex flex-grow"
             >
               {isImageUrl(creation.uri) ? (
                 <MediaDisplay
+                  width={
+                    creationData.mediaAttributes.width
+                      ? creationData.mediaAttributes.width
+                      : 300
+                  }
+                  height={
+                    creationData.mediaAttributes.height
+                      ? creationData.mediaAttributes.height
+                      : 300
+                  }
                   creationUri={creationData?.uri}
                   previewUri={creationData?.uri}
                   onLoad={() => {
@@ -133,6 +135,16 @@ const CreationDetail = ({
                 />
               ) : (
                 <MediaDisplay
+                  width={
+                    creationData.mediaAttributes.width
+                      ? creationData.mediaAttributes.width
+                      : 300
+                  }
+                  height={
+                    creationData.mediaAttributes.height
+                      ? creationData.mediaAttributes.height
+                      : 300
+                  }
                   creationUri={creationData?.uri}
                   onLoad={() => {
                     setCreationImageLoaded(true)

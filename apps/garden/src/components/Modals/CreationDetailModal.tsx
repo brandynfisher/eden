@@ -4,7 +4,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Modal } from 'antd'
 import dynamic from 'next/dynamic'
-import React, { Suspense } from 'react'
+import React from 'react'
 
 const CreationDetail = dynamic(
   () => import('@/components/Creation/CreationDetail/CreationDetail'),
@@ -22,14 +22,12 @@ const CreationDetailModal = ({
   loadSimilar?: boolean
 }) => {
   return (
-    <Modal {...rest}>
-      <Suspense fallback={<div>Loading</div>}>
-        <CreationDetail
-          creation={creation}
-          isModal={true}
-          loadSimilar={loadSimilar}
-        />
-      </Suspense>
+    <Modal {...rest} className="modal-full">
+      <CreationDetail
+        creation={creation}
+        isModal={true}
+        loadSimilar={loadSimilar}
+      />
     </Modal>
   )
 }

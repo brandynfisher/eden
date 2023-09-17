@@ -6,13 +6,23 @@ import { Creation } from '@edenlabs/eden-sdk'
 const MediaPreview = ({
   creation,
   hovered,
+  width,
+  height,
 }: {
   creation: Creation
   hovered?: boolean
+  width: number
+  height: number
 }) => {
   if (!creation.uri) return null
   if (isImageUrl(creation.uri)) {
-    return <ImageResult previewSizeUrl={creation.thumbnail || ''} />
+    return (
+      <ImageResult
+        previewSizeUrl={creation.thumbnail || ''}
+        width={width}
+        height={height}
+      />
+    )
   } else if (isVideoUrl(creation.uri)) {
     return <VideoPreview creation={creation} hovered={hovered} />
   }

@@ -1,36 +1,16 @@
-import { CONFIG } from '@/lib/config'
-import { ExpandOutlined, ExperimentOutlined } from '@ant-design/icons'
-import { Image, Skeleton } from 'antd'
+import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/media/ImageLoadingPlaceholder'
+import Image from 'next/image'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-const ImagePreviewMask = () => (
-  <div className="image-preview-mask absolute inset-0 !opacity-60 hover:!opacity-100">
-    <div className="rounded-lg bg-gray-300 dark:bg-gray-800 h-8 w-8 flex items-center justify-center absolute">
-      <ExpandOutlined className="text-xl" />
-    </div>
-  </div>
-)
-
-const LoadingPlaceholder = () => {
-  return (
-    <Skeleton.Node
-      active={true}
-      className="flex !min-h-[300px] image-loading-placeholder bg-gray-400 dark:bg-black !bg-opacity-90"
-    >
-      <ExperimentOutlined className="text-2xl" />
-    </Skeleton.Node>
-  )
-}
-
 const ImageResult = ({
-  fullSizeUrl,
   previewSizeUrl,
-  showPreview,
+  width,
+  height,
   onLoad,
 }: {
-  fullSizeUrl?: string
-  previewSizeUrl?: string
-  showPreview?: boolean
+  previewSizeUrl: string
+  width: number
+  height: number
   onLoad?: () => void
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -48,48 +28,40 @@ const ImageResult = ({
 
   // trigger image onLoad if the image is complete
   useEffect(() => {
-    if (fullSizeUrl && !previewImageRef?.current?.complete) {
-      setIsLoaded(false)
-    }
-
     if (!isLoaded && previewImageRef && previewImageRef?.current?.complete) {
       handleOnLoad()
     }
-  }, [previewSizeUrl, fullSizeUrl, previewImageRef?.current, isLoaded])
+  }, [previewSizeUrl, previewImageRef?.current, isLoaded])
+
+  const aspectRatio = (height / width) * 100
 
   return (
-    <>
-      <div className="image-wrap">
-        <div className="relative">
-          {onLoad ? (
-            <div className="ant-image">
-              <img
-                ref={previewImageRef}
-                onLoad={handleOnLoad}
-                alt="result"
-                src={previewSizeUrl}
-                // srcSet={}
-                className="ant-image-img z-10"
-              />
-              {!isLoaded && (
-                <div className="absolute inset-0 bg-opacity-95">
-                  <LoadingPlaceholder />
-                </div>
-              )}
-            </div>
-          ) : (
-            <Image
-              placeholder={<LoadingPlaceholder />}
-              alt="result"
-              fallback={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}
-              preview={false}
-              src={previewSizeUrl}
-            />
-          )}
-          {fullSizeUrl && !showPreview && <ImagePreviewMask />}
-        </div>
+    <div className={`w-full`}>
+      <div
+        className={`relative w-full h-full rounded-lg overflow-hidden inline-flex`}
+        style={{ paddingTop: `${aspectRatio}%` }}
+      >
+        <Image
+          src={previewSizeUrl}
+          alt={previewSizeUrl}
+          fill={true}
+          placeholder="empty"
+          sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
+          style={{
+            maxWidth: '100%',
+            zIndex: 1,
+            objectFit: 'contain',
+            borderRadius: '8px',
+          }}
+          onLoad={handleOnLoad}
+        />
+        {!isLoaded && (
+          <div className="absolute inset-0 text-gray-500">
+            <ImageLoadingPlaceholder />
+          </div>
+        )}
       </div>
-    </>
+    </div>
   )
 }
 

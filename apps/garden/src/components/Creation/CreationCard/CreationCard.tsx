@@ -160,8 +160,22 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
               onClick={ev => ev.preventDefault()}
               href={`/creations/${creation._id}`}
               target={'_blank'}
+              className="block"
             >
-              <MediaPreview creation={creation} hovered={hovered} />
+              <MediaPreview
+                creation={creation}
+                hovered={hovered}
+                width={
+                  creation.mediaAttributes.width
+                    ? creation.mediaAttributes.width
+                    : 300
+                }
+                height={
+                  creation.mediaAttributes.height
+                    ? creation.mediaAttributes.height
+                    : 300
+                }
+              />
             </a>
           </div>
           <div
