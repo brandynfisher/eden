@@ -2,9 +2,9 @@ import dotenv from 'dotenv'
 import { Client as MinioClient } from 'minio'
 import { MongoClient } from 'mongodb'
 
-import migrateData from './data-migrations/001_migrate-data.js'
-import addMediaDurations from './data-migrations/002_add-media-durations.js'
-import createThumbnails from './data-migrations/003_create-thumbnails.js'
+import migrateData from './001_migrate-data.js'
+import addMediaDurations from './002_add-media-durations.js'
+import createThumbnails from './003_create-thumbnails.js'
 
 dotenv.config()
 const MONGO_URI_SRC = process.env.MONGO_URI_SRC
