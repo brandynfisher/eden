@@ -74,7 +74,6 @@ const params = [
     label: 'Concept',
     description:
      '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
-    default: '(none)',
     optional: true,
   },
   {
