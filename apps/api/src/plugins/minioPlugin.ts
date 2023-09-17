@@ -26,17 +26,70 @@ const mediaTypeMap: Record<string, MediaType> = {
   webp: MediaType.Image,
 }
 
-const getMediaDuration = async (buffer: Buffer): Promise<number> => {
+const getMediaAttributes = async (
+  buffer: Buffer,
+  fileExtension: string,
+): Promise<MediaAttributes> => {
+  const mediaType = mediaTypeMap[fileExtension]
+  const mediaAttributes: MediaAttributes = {
+    type: mediaType,
+  }
+
   const tempFilePath = join(tmpdir(), randomUUID())
   await fs.writeFileSync(tempFilePath, buffer)
-  const duration = await new Promise<number | undefined>((resolve, reject) => {
-    ffmpeg.ffprobe(tempFilePath, (err, metadata) => {
-      if (err) reject(err)
-      else resolve(metadata.format.duration)
+
+  if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
+    const duration = await new Promise<number | undefined>(
+      (resolve, reject) => {
+        ffmpeg.ffprobe(tempFilePath, (err, metadata) => {
+          if (err) reject(err)
+          else resolve(metadata.format.duration)
+        })
+      },
+    )
+    if (!duration) throw new Error('Could not get media duration')
+    mediaAttributes.duration = duration
+  }
+
+  if (mediaType === MediaType.Video) {
+    const { width, height, aspectRatio } = await new Promise<{
+      width: number
+      height: number
+      aspectRatio: number
+    }>((resolve, reject) => {
+      ffmpeg.ffprobe(tempFilePath, (err, metadata) => {
+        if (err) reject(err)
+        else {
+          const width = metadata.streams[0].width
+          const height = metadata.streams[0].height
+          const aspectRatio = width && height ? width / height : undefined
+          if (width && height && aspectRatio) {
+            resolve({ width, height, aspectRatio })
+          } else {
+            reject(new Error('Width, height or aspect ratio is undefined'))
+          }
+        }
+      })
     })
-  })
-  if (!duration) throw new Error('Could not get media duration')
-  return duration
+    if (!width || !height || !aspectRatio) {
+      throw new Error('Could not get media resolution')
+    }
+    mediaAttributes.width = width
+    mediaAttributes.height = height
+    mediaAttributes.aspectRatio = aspectRatio
+  }
+
+  if (mediaType === MediaType.Image) {
+    const metadata = await sharp(buffer).metadata()
+    if (!metadata.width || !metadata.height) {
+      throw new Error('Could not get image resolution')
+    }
+    mediaAttributes.width = metadata.width
+    mediaAttributes.height = metadata.height
+    mediaAttributes.aspectRatio = metadata.width / metadata.height
+  }
+
+  return mediaAttributes
 }
 
 export const uploadUrlAsset = async (
@@ -91,8 +144,6 @@ export const uploadBufferAsset = async (
   const { ext, mime } = fileType
     ? (fileType as { ext: string; mime: string })
     : { ext: 'txt', mime: 'text/plain' }
-  console.log('got it')
-  console.log(ext, mime)
   const metadata = { 'Content-Type': mime, SHA: sha }
   const filename = `${sha}.${fileExtension || ext}`
   const urlUpload = minioUrl(server, filename)
@@ -106,16 +157,7 @@ export const uploadBufferAsset = async (
     console.log(` --> Uploaded to ${urlUpload}`)
   }
 
-  const mediaType = mediaTypeMap[ext]
-
-  const mediaAttributes: MediaAttributes = {
-    type: mediaType,
-  }
-
-  if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
-    const duration = await getMediaDuration(buffer)
-    mediaAttributes.duration = duration
-  }
+  const mediaAttributes = await getMediaAttributes(buffer, ext)
 
   return {
     uri: urlUpload,

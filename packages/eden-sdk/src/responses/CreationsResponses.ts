@@ -52,6 +52,9 @@ export type Creation = {
 export interface MediaAttributes {
   type: MediaType
   duration?: number
+  width?: number
+  height?: number
+  aspectRatio?: number
 }
 
 export enum ReactionType {
