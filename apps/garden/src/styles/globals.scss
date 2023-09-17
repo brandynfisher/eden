@@ -379,3 +379,9 @@
         }
     }
 }
+
+.card-tools-dropdown {
+    .ant-dropdown-menu-root > .ant-dropdown-menu-item-only-child {
+        padding: 0 !important;
+    }
+}

@@ -1,0 +1,47 @@
+import CircleButton from '@/components/Layout/buttons/CircleButton'
+import { downloadFile } from '@/lib/files'
+import { DownloadOutlined } from '@ant-design/icons'
+import { App } from 'antd'
+import React from 'react'
+
+const DownloadFileButton = ({
+  url,
+  fileName,
+  variant,
+  label,
+}: {
+  url: string
+  fileName: string
+  variant?: 'text'
+  label?: string
+}) => {
+  const { message } = App.useApp()
+  const handleClick = async (url: string) => {
+    message.destroy()
+    message.success(`Downloading file...`)
+    await downloadFile(url, fileName)
+  }
+
+  if (variant === 'text') {
+    return (
+      <div
+        onClick={() => handleClick(url)}
+        className="flex items-center gap-2 w-full justify-between"
+        title={'Download file'}
+      >
+        <div>{label}</div>
+        <DownloadOutlined className="text-xl" />
+      </div>
+    )
+  }
+
+  return (
+    <CircleButton
+      title={'Download file'}
+      icon={<DownloadOutlined className="text-xl" />}
+      onClick={() => handleClick(url)}
+    />
+  )
+}
+
+export default DownloadFileButton

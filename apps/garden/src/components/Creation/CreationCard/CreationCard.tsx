@@ -4,6 +4,7 @@ import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPre
 import CreationReactions from '@/components/Creation/CreationReactions'
 import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
+import DownloadFileButton from '@/components/Layout/buttons/DownloadFileButton'
 import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { CONFIG } from '@/lib/config'
@@ -47,39 +48,40 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
+  const imageCopyItems = [
+    {
+      icon: <CopyImageButton url={creation.uri} variant="text" />,
+      key: '1-1',
+    },
+  ]
+  const otherTypeCopyItems = [
+    {
+      icon: (
+        <CopyUrlButton url={creation.uri} variant="text" label="File URL" />
+      ),
+      key: '1-2',
+    },
+    {
+      icon: (
+        <CopyUrlButton
+          url={`${CONFIG.NEXT_PUBLIC_HOST}${pageUrl || modalUrl}`}
+          variant="text"
+          label="Page URL"
+        />
+      ),
+      key: '1-3',
+    },
+  ]
+  const copyItems = isImageUrl(creation.uri)
+    ? [...imageCopyItems, ...otherTypeCopyItems]
+    : otherTypeCopyItems
+
   const getCardMenuItems = () => {
     return [
       {
         label: 'Copy...',
         key: '1',
-        children: [
-          isImageUrl(creation.uri)
-            ? {
-                icon: <CopyImageButton url={creation.uri} variant="text" />,
-                key: '1-1',
-              }
-            : null,
-          {
-            icon: (
-              <CopyUrlButton
-                url={creation.uri}
-                variant="text"
-                label="File URL"
-              />
-            ),
-            key: '1-2',
-          },
-          {
-            icon: (
-              <CopyUrlButton
-                url={`${CONFIG.NEXT_PUBLIC_HOST}${pageUrl || modalUrl}`}
-                variant="text"
-                label="Page URL"
-              />
-            ),
-            key: '1-3',
-          },
-        ],
+        children: copyItems,
       },
       {
         label: 'Open in...',
@@ -96,6 +98,21 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
             key: '2-1',
           },
         ],
+      },
+      {
+        key: '3',
+        type: 'divider',
+      },
+      {
+        icon: (
+          <DownloadFileButton
+            url={creation.uri}
+            fileName={creation._id}
+            variant="text"
+            label="Download"
+          />
+        ),
+        key: '4',
       },
     ]
   }
@@ -128,6 +145,7 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
               arrow={true}
               placement="bottomRight"
               menu={{ items: getCardMenuItems() }}
+              className="card-tools-dropdown"
             >
               <div className="flex items-center cursor-pointer pointer-events-auto">
                 <EllipsisOutlined className="text-xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
