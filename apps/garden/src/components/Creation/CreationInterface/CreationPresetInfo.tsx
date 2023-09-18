@@ -1,5 +1,6 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import { getAspectRatio } from '@/lib/media'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Button, Card } from 'antd'
 import Link from 'next/link'
@@ -21,9 +22,15 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
           style={{ minWidth: '64px', minHeight: '64px' }}
         >
           {creation.thumbnail ? (
-            <ImageResult previewSizeUrl={creation.thumbnail} />
+            <ImageResult
+              previewSizeUrl={creation.thumbnail}
+              aspectRatio={getAspectRatio(
+                creation.mediaAttributes.width,
+                creation.mediaAttributes.height,
+              )}
+            />
           ) : (
-            <div className="image-placeholder w-full h-full h-full" />
+            <div className="image-placeholder w-full h-full" />
           )}
         </div>
         <div className="min-w-0">
