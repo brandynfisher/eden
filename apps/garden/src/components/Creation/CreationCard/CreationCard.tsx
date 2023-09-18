@@ -12,13 +12,14 @@ import { getAspectRatio } from '@/lib/media'
 import { getModalUrls } from '@/lib/modal'
 import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
+import { MasonryContext } from '@/providers/MasonryProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { EllipsisOutlined } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { Dropdown } from 'antd'
 import { useRouter } from 'next/router'
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useContext, useEffect, useState } from 'react'
 
 const CreationCard: FC<{ index: number; data: Creation }> = ({
   index,
@@ -32,13 +33,18 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
 
   const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation._id)
   const { showModal } = useModalContext()
+  const { setCurrentIndex } = useContext(MasonryContext)
 
   const openDetailModal = async () => {
-    await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
+    console.log(index, data)
+    setCurrentIndex(index)
     showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
-      creation,
+      // creation,
       loadSimilar: true,
       usesUrl: true,
+      pageUrl,
+      modalUrl,
+      originPageUrl: router.asPath,
     })
   }
 

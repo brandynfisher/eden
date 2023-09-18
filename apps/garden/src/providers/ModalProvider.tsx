@@ -38,6 +38,9 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
 
 type BaseModalProps = Partial<ModalProps> & {
   usesUrl?: boolean
+  pageUrl?: string
+  modalUrl?: string
+  originPageUrl?: string
   className?: string
 }
 type ModalStore = {
@@ -109,10 +112,18 @@ function ModalProvider({ children }: PropsWithChildren) {
     closeIcon: <CloseButton />,
     className:
       'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
-    onCancel: () => {
+    onCancel: async () => {
       hideModal()
       if (store?.modalProps?.usesUrl) {
-        router.back()
+        if (store?.modalProps?.originPageUrl) {
+          await router.push(
+            store?.modalProps?.originPageUrl,
+            store?.modalProps?.originPageUrl,
+            { shallow: true, scroll: false },
+          )
+        } else {
+          router.back()
+        }
       }
     },
     width: '',
