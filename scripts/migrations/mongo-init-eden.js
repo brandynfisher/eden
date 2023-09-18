@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import { MongoClient } from 'mongodb'
 
-import migration01 from './migrations/001_hello-eden.js'
+import migration01 from './000_hello-eden.js'
 
 dotenv.config()
 const MONGO_URI_DEST = process.env.MONGO_URI_DEST

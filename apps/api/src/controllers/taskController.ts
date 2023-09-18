@@ -315,7 +315,7 @@ export const createChatCompletion = async (
 
   console.log(chatMessages)
 
-  const response = await server.llm.createChatCompletion({
+  const response = await server.openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
     messages: chatMessages,
     temperature: 1,

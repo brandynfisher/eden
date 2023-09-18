@@ -18,7 +18,6 @@ const eden = new EdenClient({
   apiSecret: EDEN_API_SECRET,
 });
 
-
 // async function uploadFile(filePath) {
 //   const readFileAsync = promisify(fs.readFile);
 //   const media = await readFileAsync(filePath);
@@ -37,7 +36,6 @@ const eden = new EdenClient({
 //   return response.data;
 // }
 
-
 // async function downloadImage(url, filename) {
 //   const response = await fetch(url);
 //   const arrayBuffer = await response.arrayBuffer();
@@ -49,7 +47,6 @@ const eden = new EdenClient({
 //     }
 //   });
 // }
-
 
 const pollForTask = async function(pollingInterval, taskId) {
   let finished = false;
