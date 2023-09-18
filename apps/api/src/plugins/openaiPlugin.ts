@@ -6,7 +6,7 @@ export const complete = async (
   prompt: string,
 ): Promise<string> => {
   try {
-    const completion = await server.llm.createCompletion({
+    const completion = await server.openai.createCompletion({
       model: 'davinci',
       prompt,
       max_tokens: 300,
@@ -33,7 +33,7 @@ export const chatComplete = async (
   chat: ChatCompletionRequestMessage[],
 ): Promise<string> => {
   try {
-    const completion = await server.llm.createChatCompletion({
+    const completion = await server.openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: chat,
       temperature: 1,
@@ -56,28 +56,28 @@ export const chatComplete = async (
   }
 }
 
-export const registerLlm = async (fastify: FastifyInstance) => {
+export const registerOpenai = async (fastify: FastifyInstance) => {
   try {
     const configuration = new Configuration({
       apiKey: process.env.OPENAI_API_KEY,
     })
     const openai = new OpenAIApi(configuration)
-    fastify.decorate('llm', openai)
+    fastify.decorate('openai', openai)
     fastify.decorate('complete', complete)
     fastify.decorate('chatComplete', chatComplete)
-    fastify.log.info('Successfully registered LlmPlugin')
+    fastify.log.info('Successfully registered OpenaiPlugin')
   } catch (err) {
     console.error(err)
-    fastify.log.error('Plugin: Llm, error on register', err)
+    fastify.log.error('Plugin: Openai, error on register', err)
   }
 }
 
 declare module 'fastify' {
   interface FastifyInstance {
-    llm: OpenAIApi
+    openai: OpenAIApi
     complete: (server: FastifyInstance, prompt: string) => Promise<string>
     chatComplete: (server: FastifyInstance, prompt: string) => Promise<string>
   }
 }
 
-export default registerLlm
+export default registerOpenai

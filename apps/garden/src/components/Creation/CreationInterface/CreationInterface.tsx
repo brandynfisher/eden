@@ -19,9 +19,10 @@ import React, {
 const hiddenCreationGenerators = [
   'complete',
   'tts',
-  'wav2lip',
   'tts_fast',
   'sdxl-lora-trainer',
+  'interrogate',
+  'monologue',
 ]
 
 const CreationInterface = ({

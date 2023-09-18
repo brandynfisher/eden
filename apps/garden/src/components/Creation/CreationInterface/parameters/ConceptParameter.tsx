@@ -15,11 +15,11 @@ const ConceptParameter = (props: {
   const { concepts } = useConcepts(conceptFilter)
 
   const options = [
-    { label: '(none)', value: '(none)' },
+    { label: '', value: null },
     ...(concepts
       ? concepts.map(concept => ({
           label: concept.publicName,
-          value: concept.uri,
+          value: concept._id,
         }))
       : []),
   ]

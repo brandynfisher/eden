@@ -10,11 +10,13 @@ import wav2lipParameters from './generators/wav2lip.js';
 import conceptParameters from './generators/concept.js';
 import blendParameters from './generators/blend.js';
 import upscaleParameters from './generators/upscale.js';
+import controlnetParameters from './generators/controlnet.js';
 import monologueParameters from './generators/monologue.js';
 import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
 
 const allowedCogs = [
   "eden-sd-pipelines-sdxl",
+  "eden-sd-pipelines-sdxl-video",
   "character",
   "sdxl-lora-trainer",
   "zeroscope-v2-xl",
@@ -60,24 +62,6 @@ async function updateVersion(db) {
       isDeprecated: false,
     }
 
-    const interpolateGeneratorVersion = {
-      provider: 'replicate',
-      address: 'abraham-ai/eden-sd-pipelines-sdxl',
-      versionId: versionId,
-      mode: 'interpolate',
-      parameters: interpolateParameters,
-      isDeprecated: false,
-    }
-
-    const real2realGeneratorVersion = {
-      provider: 'replicate',
-      address: 'abraham-ai/eden-sd-pipelines-sdxl',
-      versionId: versionId,
-      mode: 'real2real',
-      parameters: real2realParameters,
-      isDeprecated: false
-    }
-
     const remixGeneratorVersion = {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
@@ -114,24 +98,23 @@ async function updateVersion(db) {
       isDeprecated: false
     }
 
+    const controlnetGeneratorVersion = {
+      provider: 'replicate',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
+      versionId: versionId,
+      mode: 'controlnet',
+      parameters: controlnetParameters,
+      isDeprecated: false
+    }
+
     await db.collection('generators').updateOne(
       { generatorName: 'create' }, 
       { $addToSet: { versions: createGeneratorVersion } }
     );
 
     await db.collection('generators').updateOne(
-      { generatorName: 'interpolate' }, 
-      { $addToSet: { versions: interpolateGeneratorVersion } }
-    );
-
-    await db.collection('generators').updateOne(
       { generatorName: 'remix' }, 
       { $addToSet: { versions: remixGeneratorVersion } }
-    );
-
-    await db.collection('generators').updateOne(
-      { generatorName: 'real2real' }, 
-      { $addToSet: { versions: real2realGeneratorVersion } }
     );
 
     await db.collection('generators').updateOne(
@@ -147,6 +130,43 @@ async function updateVersion(db) {
     await db.collection('generators').updateOne(
       { generatorName: 'upscale' }, 
       { $addToSet: { versions: upscaleGeneratorVersion } }
+    );
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'controlnet' }, 
+      { $addToSet: { versions: controlnetGeneratorVersion } }
+    );
+
+  }
+
+  else if (cog === 'eden-sd-pipelines-sdxl-video') {
+
+    const interpolateGeneratorVersion = {
+      provider: 'replicate',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
+      versionId: versionId,
+      mode: 'interpolate',
+      parameters: interpolateParameters,
+      isDeprecated: false,
+    }
+
+    const real2realGeneratorVersion = {
+      provider: 'replicate',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
+      versionId: versionId,
+      mode: 'real2real',
+      parameters: real2realParameters,
+      isDeprecated: false
+    }
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'interpolate' }, 
+      { $addToSet: { versions: interpolateGeneratorVersion } }
+    );
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'real2real' }, 
+      { $addToSet: { versions: real2realGeneratorVersion } }
     );
 
   }
