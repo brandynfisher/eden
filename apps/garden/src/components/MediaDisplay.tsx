@@ -10,16 +10,16 @@ const MediaDisplay = ({
   showPreview,
   onLoad,
   className,
-  width,
-  height,
+  aspectRatio,
+  priority,
 }: {
   creationUri: string
   previewUri?: string
   showPreview?: boolean
   onLoad?: () => void
   className?: string
-  width: number
-  height: number
+  aspectRatio: number
+  priority?: boolean
 }) => {
   const renderPreview = () => {
     if (!creationUri) return null
@@ -27,24 +27,24 @@ const MediaDisplay = ({
       if (creationUri && previewUri) {
         return (
           <ImageResultZoomable
-            width={width}
-            height={height}
+            aspectRatio={aspectRatio}
             previewSizeUrl={previewUri}
             fullSizeUrl={creationUri}
             showPreview={showPreview}
             onLoad={onLoad}
+            priority={priority}
           />
         )
       }
 
       return (
         <ImageResult
-          width={width}
-          height={height}
+          aspectRatio={aspectRatio}
           previewSizeUrl={
             previewUri || `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
           }
           onLoad={onLoad}
+          priority={priority}
         />
       )
     } else if (isVideoUrl(creationUri)) {

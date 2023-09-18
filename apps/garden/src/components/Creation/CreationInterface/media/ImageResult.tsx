@@ -4,14 +4,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 const ImageResult = ({
   previewSizeUrl,
-  width,
-  height,
+  aspectRatio,
   onLoad,
+  priority,
 }: {
   previewSizeUrl: string
-  width: number
-  height: number
+  aspectRatio: number
   onLoad?: () => void
+  priority?: boolean
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const previewImageRef = useRef<HTMLImageElement>(null)
@@ -33,8 +33,6 @@ const ImageResult = ({
     }
   }, [previewSizeUrl, previewImageRef?.current, isLoaded])
 
-  const aspectRatio = (height / width) * 100
-
   return (
     <div className={`w-full`}>
       <div
@@ -54,6 +52,7 @@ const ImageResult = ({
             borderRadius: '8px',
           }}
           onLoad={handleOnLoad}
+          priority={priority}
         />
         {!isLoaded && (
           <div className="absolute inset-0 text-gray-500">

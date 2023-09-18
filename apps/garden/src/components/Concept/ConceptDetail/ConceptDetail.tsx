@@ -20,8 +20,8 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 const { Panel } = Collapse
 type ProbedImage = {
   url: string
-  size: { width: number; height: number }
-  thumbnailSize: { width: number; height: number }
+  size: { width: number; height: number; aspectRatio: number }
+  thumbnailSize: { width: number; height: number; aspectRatio: number }
 }
 
 const probeImageForSize = async (
@@ -30,10 +30,14 @@ const probeImageForSize = async (
 ) => {
   const imageWithSize = {
     url: imageUrl,
-    size: { width: 0, height: 0 },
-    thumbnailSize: { width: 0, height: 0 },
+    size: { width: 0, height: 0, aspectRatio: 1 },
+    thumbnailSize: { width: 0, height: 0, aspectRatio: 1 },
   }
-  imageWithSize.size = await probe(imageUrl)
+  const probeResult = await probe(imageUrl)
+  imageWithSize.size = {
+    ...probeResult,
+    aspectRatio: (probeResult.height / probeResult.width) * 100,
+  }
 
   if (
     imageWithSize.size.height < maxThumbnailSize &&
@@ -55,6 +59,8 @@ const probeImageForSize = async (
     imageWithSize.thumbnailSize.width = maxThumbnailSize
   }
 
+  imageWithSize.thumbnailSize.aspectRatio = imageWithSize.size.aspectRatio
+
   return imageWithSize
 }
 
@@ -74,7 +80,11 @@ const ConceptDetail = ({
   const [createdDateString, setCreatedDateString] = useState('')
   // const [conceptImageLoaded, setConceptImageLoaded] = useState(false)
   const [showFollowControls, setShowFollowControls] = useState(false)
-  const [displayImage, setDisplayImage] = useState({ url: '', thumbnail: '' })
+  const [displayImage, setDisplayImage] = useState({
+    url: '',
+    thumbnail: '',
+    aspectRatio: 100,
+  })
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
@@ -119,6 +129,7 @@ const ConceptDetail = ({
         setDisplayImage({
           url: imagesWithSizes[0].url,
           thumbnail: imagesWithSizes[0].url,
+          aspectRatio: imagesWithSizes[0].size.aspectRatio,
         })
       }
     }
@@ -171,17 +182,18 @@ const ConceptDetail = ({
       )}
 
       <div ref={containerRef} className="lg:flex lg:justify-center gap-4">
-        <div>
-          <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0">
+        <div className="flex flex-col flex-grow items-center">
+          <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0 w-full">
             <div className="mb-4">
               <h3>Samples</h3>
-              <div className="relative">
+              <div className="relative flex justify-center">
                 <div
                   onClick={() => handlePreviewClick(conceptData.thumbnail)}
-                  className="relative flex justify-center lg:flex lg:flex-grow"
-                  style={{ width: 'fit-content', margin: '0 auto' }}
+                  className="relative flex justify-center flex flex-grow"
                 >
                   <MediaDisplay
+                    priority={true}
+                    aspectRatio={100}
                     className={'media-display__main'}
                     creationUri={
                       conceptData && conceptData?.thumbnail
@@ -189,6 +201,9 @@ const ConceptDetail = ({
                         : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                     }
                     previewUri={conceptData?.thumbnail}
+                    // onLoad={() => {
+                    //   setConceptImageLoaded(true)
+                    // }}
                   />
                 </div>
               </div>
@@ -213,6 +228,7 @@ const ConceptDetail = ({
                           setDisplayImage({
                             url: trainingImage.url,
                             thumbnail: trainingImage.url,
+                            aspectRatio: trainingImage.size.aspectRatio,
                           })
                         }
                       >
@@ -230,9 +246,9 @@ const ConceptDetail = ({
                   <div
                     onClick={() => handlePreviewClick(displayImage.url)}
                     className="relative flex justify-center lg:flex lg:flex-grow"
-                    style={{ width: 'fit-content', margin: '0 auto' }}
                   >
                     <MediaDisplay
+                      aspectRatio={displayImage.aspectRatio}
                       className={'media-display__main'}
                       creationUri={
                         displayImage?.thumbnail

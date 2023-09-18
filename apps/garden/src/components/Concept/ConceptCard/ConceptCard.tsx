@@ -69,8 +69,12 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
               onClick={ev => ev.preventDefault()}
               href={`/concepts/${concept._id}`}
               target={'_blank'}
+              className="block"
             >
-              <ImageResult previewSizeUrl={concept.thumbnail || ''} />
+              <ImageResult
+                previewSizeUrl={concept.thumbnail || ''}
+                aspectRatio={100}
+              />
             </a>
           </div>
           <div

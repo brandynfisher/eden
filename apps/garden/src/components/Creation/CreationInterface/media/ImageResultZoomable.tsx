@@ -6,17 +6,17 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 const ImageResultZoomable = ({
   fullSizeUrl,
   previewSizeUrl,
-  width,
-  height,
+  aspectRatio,
   showPreview,
   onLoad,
+  priority,
 }: {
   fullSizeUrl?: string
   previewSizeUrl: string
-  width: number
-  height: number
+  aspectRatio: number
   showPreview?: boolean
   onLoad?: () => void
+  priority?: boolean
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const previewImageRef = useRef<HTMLImageElement>(null)
@@ -38,11 +38,9 @@ const ImageResultZoomable = ({
     }
   }, [previewSizeUrl, fullSizeUrl, previewImageRef?.current, isLoaded])
 
-  const aspectRatio = (height / width) * 100
-
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-lg h-full ${
+      className={`image-zoomable-wrap relative w-full overflow-hidden rounded-lg h-full ${
         isLoaded ? '!pt-0 md:min-h-[75vh]' : ''
       }`}
       style={{ paddingTop: `${aspectRatio}%` }}
@@ -55,6 +53,7 @@ const ImageResultZoomable = ({
         // sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 25vw'}
         onLoad={handleOnLoad}
         className="!relative max-w-full z-10 object-contain max-h-[75vh] lg:!absolute"
+        priority={priority}
       />
       {!isLoaded && (
         <div className="absolute inset-0 text-gray-500">

@@ -8,6 +8,7 @@ import DownloadFileButton from '@/components/Layout/buttons/DownloadFileButton'
 import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { CONFIG } from '@/lib/config'
+import { getAspectRatio } from '@/lib/media'
 import { getModalUrls } from '@/lib/modal'
 import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
@@ -165,16 +166,10 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
               <MediaPreview
                 creation={creation}
                 hovered={hovered}
-                width={
-                  creation.mediaAttributes.width
-                    ? creation.mediaAttributes.width
-                    : 300
-                }
-                height={
-                  creation.mediaAttributes.height
-                    ? creation.mediaAttributes.height
-                    : 300
-                }
+                aspectRatio={getAspectRatio(
+                  creation.mediaAttributes.width,
+                  creation.mediaAttributes.height,
+                )}
               />
             </a>
           </div>
