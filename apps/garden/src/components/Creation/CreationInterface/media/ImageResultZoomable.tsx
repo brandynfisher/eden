@@ -52,7 +52,7 @@ const ImageResultZoomable = ({
         placeholder="empty"
         // sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 25vw'}
         onLoad={handleOnLoad}
-        className="!relative max-w-full z-10 object-contain max-h-[75vh] lg:!absolute"
+        className="!relative max-w-full z-10 object-contain object-top max-h-[75vh] lg:!absolute"
         priority={priority}
       />
       {!isLoaded && (

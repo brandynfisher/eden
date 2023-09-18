@@ -210,7 +210,7 @@ const ConceptDetail = ({
             </div>
           </div>
 
-          <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0">
+          <div className="self-start max-w-sm lg:mx-0 mx-auto mb-4 lg:mx-0 w-full">
             <h3>Training Images</h3>
             <div className="relative overflow-hidden max-w-full">
               {probedImageUrls && (
@@ -266,10 +266,7 @@ const ConceptDetail = ({
               {conceptData?.training_images &&
               conceptData?.training_images[0] &&
               !isImageUrl(conceptData?.training_images[0]) ? (
-                <div className="flex items-center mb-4">
-                  <div className="test-xs truncate">
-                    {conceptData?.training_images[0]}
-                  </div>
+                <div className="flex items-center mb-4 gap-2">
                   <Button
                     onClick={() =>
                       conceptData?.training_images &&
@@ -282,6 +279,9 @@ const ConceptDetail = ({
                   >
                     Download .zip archive
                   </Button>
+                  <div className="test-xs truncate">
+                    {conceptData?.training_images[0]}
+                  </div>
                 </div>
               ) : null}
             </div>
