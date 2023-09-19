@@ -9,7 +9,6 @@ import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { CONFIG } from '@/lib/config'
 import { getAspectRatio } from '@/lib/media'
-import { getModalUrls } from '@/lib/modal'
 import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { MasonryContext } from '@/providers/MasonryProvider'
@@ -19,34 +18,43 @@ import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { Dropdown } from 'antd'
 import { useRouter } from 'next/router'
-import React, { FC, useContext, useEffect, useState } from 'react'
+import React, { FC, useCallback, useContext, useEffect, useState } from 'react'
 
-const CreationCard: FC<{ index: number; data: Creation }> = ({
-  index,
-  data,
-}) => {
+const CreationCard: FC<{
+  index: number
+  data: Creation
+  disableArrowNav?: boolean
+}> = ({ index, data, disableArrowNav }) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
   const [creation, setCreation] = useState(data)
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false)
 
-  const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation._id)
   const { showModal } = useModalContext()
   const { setCurrentIndex } = useContext(MasonryContext)
 
-  const openDetailModal = async () => {
-    console.log(index, data)
+  const openDetailModal = useCallback(async () => {
+    // console.log({ 'routerAsPath': router.asPath })
+    if (disableArrowNav) {
+      // console.log('disabledArrow nav')
+      showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
+        creation,
+        loadSimilar: true,
+        usesUrl: true,
+        originPageUrl: router.asPath,
+      })
+
+      return
+    }
+
     setCurrentIndex(index)
     showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
-      // creation,
       loadSimilar: true,
       usesUrl: true,
-      pageUrl,
-      modalUrl,
       originPageUrl: router.asPath,
     })
-  }
+  }, [index, data, router, disableArrowNav])
 
   const [createdDateString, setCreatedDateString] = useState('')
   const timeSinceCreation = timeAgo(creation.createdAt)
@@ -71,7 +79,7 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
     {
       icon: (
         <CopyUrlButton
-          url={`${CONFIG.NEXT_PUBLIC_HOST}${pageUrl || modalUrl}`}
+          url={`${CONFIG.NEXT_PUBLIC_HOST}/creations/${creation.uri}`}
           variant="text"
           label="Page URL"
         />
@@ -97,7 +105,7 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
           {
             icon: (
               <NewTabLinkButton
-                url={`${CONFIG.NEXT_PUBLIC_HOST}${pageUrl || modalUrl}`}
+                url={`${CONFIG.NEXT_PUBLIC_HOST}/creations/${creation._id}`}
                 variant="text"
                 label="New Tab"
               />

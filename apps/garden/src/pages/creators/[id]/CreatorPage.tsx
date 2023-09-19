@@ -5,6 +5,7 @@ import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
+  OrderByScore,
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/MasonryInfinite'
@@ -30,7 +31,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
 
   const sortButtons =
     isConnected && isAuthenticated
-      ? [OrderByLatest, OrderByPraises, OrderByBookmarks]
+      ? [OrderByLatest, OrderByScore, OrderByPraises, OrderByBookmarks]
       : [OrderByLatest]
 
   return (

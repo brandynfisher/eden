@@ -1,5 +1,6 @@
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
 import CreationDetailModal from '@/components/Modals/CreationDetailModal'
+import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
@@ -19,6 +20,7 @@ import {
 
 export enum MODAL_TYPES {
   CREATION_DETAIL_MODAL = 'CREATION_DETAIL_MODAL',
+  CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
   CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
@@ -29,6 +31,7 @@ export enum MODAL_TYPES {
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_MODAL]: CreationDetailModal,
+  [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
   [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
@@ -87,7 +90,7 @@ function ModalProvider({ children }: PropsWithChildren) {
     const modalWrapDomElement =
       document.getElementsByClassName('ant-modal-wrap')
     if (modalWrapDomElement && modalWrapDomElement.length) {
-      modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      // modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     }
     // @todo ---end ugly---
   }

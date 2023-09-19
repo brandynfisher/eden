@@ -60,7 +60,13 @@ const CreationMasonry = ({ creations }: { creations: Creation[] | null }) => {
               offset={offset}
               overscanBy={1}
               itemHeightEstimate={300}
-              render={CreationCard}
+              render={props => (
+                <CreationCard
+                  index={props.index}
+                  data={props.data}
+                  disableArrowNav={true}
+                />
+              )}
               itemKey={data => data._id}
             />
           )}
