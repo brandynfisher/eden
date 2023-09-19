@@ -109,6 +109,8 @@ const MasonryInfinite = ({
   }, [items.length])
 
   useEffect(() => {
+    if (currentIndex === null) return
+
     setCurrentItem(items[currentIndex])
 
     if (hasNextPage && currentIndex === items.length - 1) {
