@@ -1,5 +1,6 @@
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
+import { getAspectRatio } from '@/lib/media'
 import { formatDuration } from '@/lib/time'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Badge } from 'antd'
@@ -23,7 +24,13 @@ const VideoPreview = ({
 }) => {
   return (
     <div className="rounded-lg overflow-hidden relative">
-      <ImageResult previewSizeUrl={creation.thumbnail || ''} />
+      <ImageResult
+        previewSizeUrl={creation.thumbnail || ''}
+        aspectRatio={getAspectRatio(
+          creation.mediaAttributes.width,
+          creation.mediaAttributes.height,
+        )}
+      />
       {hovered && (
         <div className="absolute top-0 left-0 w-full h-full">
           <div></div>

@@ -4,7 +4,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import { Concept } from '@edenlabs/eden-sdk'
 import { Modal } from 'antd'
 import dynamic from 'next/dynamic'
-import React, { Suspense } from 'react'
+import React from 'react'
 
 const ConceptDetail = dynamic(
   () => import('@/components/Concept/ConceptDetail/ConceptDetail'),
@@ -15,10 +15,8 @@ const ConceptDetail = dynamic(
 
 const ConceptDetailModal = ({ concept, ...rest }: { concept: Concept }) => {
   return (
-    <Modal {...rest}>
-      <Suspense fallback={<div>Loading</div>}>
-        <ConceptDetail concept={concept} isModal={true} />
-      </Suspense>
+    <Modal {...rest} className="modal-full">
+      <ConceptDetail concept={concept} isModal={true} />
     </Modal>
   )
 }

@@ -1,5 +1,5 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import ConnectButton from '@/components/ConnectButton'
+import ConnectButton from '@/components/Layout/buttons/ConnectButton'
 import { UserContext } from '@/providers/UserProvider'
 import { Button } from 'antd'
 import Link from 'next/link'

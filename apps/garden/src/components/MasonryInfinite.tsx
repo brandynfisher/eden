@@ -5,8 +5,9 @@ import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
-} from '@/components/OrderByButtons'
+} from '@/components/Layout/buttons/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
+import { MasonryContext } from '@/providers/MasonryProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { useViewportSize } from '@mantine/hooks'
 import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
@@ -19,7 +20,7 @@ import {
   useResizeObserver,
 } from 'masonic'
 import Link from 'next/link'
-import React, { useContext, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const MasonryInfinite = ({
   type,
@@ -32,6 +33,8 @@ const MasonryInfinite = ({
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
 }) => {
+  const { currentIndex, setCurrentItem, setTotalItems } =
+    useContext(MasonryContext)
   const containerRef = useRef(null)
   const [key, setKey] = useState(0)
 
@@ -85,7 +88,7 @@ const MasonryInfinite = ({
     {
       width,
       columnGutter: 16,
-      rowGutter: windowWidth < 768 ? 0 : 16,
+      rowGutter: windowWidth < 768 ? 0 : 8,
       columnCount:
         settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
@@ -100,6 +103,21 @@ const MasonryInfinite = ({
     [orderBy, width, query?.userId],
   )
   const resizeObserver = useResizeObserver(positioner)
+
+  useEffect(() => {
+    setTotalItems(items.length)
+  }, [items.length])
+
+  useEffect(() => {
+    if (currentIndex === null) return
+
+    setCurrentItem(items[currentIndex])
+
+    if (hasNextPage && currentIndex === items.length - 1) {
+      console.log('reached last item, trigger maybeLoadMore')
+      maybeLoadMore(currentIndex, currentIndex + 10, items)
+    }
+  }, [currentIndex, hasNextPage])
 
   return (
     <div ref={ref}>

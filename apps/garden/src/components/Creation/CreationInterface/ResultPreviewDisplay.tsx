@@ -1,6 +1,7 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MediaDisplay from '@/components/MediaDisplay'
 import { useCreation } from '@/hooks/useCreation'
+import { getAspectRatio } from '@/lib/media'
 import { getModalUrls } from '@/lib/modal'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Button } from 'antd'
@@ -34,6 +35,10 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
           <MediaDisplay
             creationUri={creation.uri}
             previewUri={creation.thumbnail}
+            aspectRatio={getAspectRatio(
+              creation.mediaAttributes.width,
+              creation.mediaAttributes.height,
+            )}
           />
         </div>
       ) : (

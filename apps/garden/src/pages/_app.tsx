@@ -2,6 +2,7 @@ import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
 import EdenProvider from '@/providers/EdenProvider'
+import MasonryProvider from '@/providers/MasonryProvider'
 import ModalProvider from '@/providers/ModalProvider'
 import UserProvider from '@/providers/UserProvider'
 import WalletProvider from '@/providers/WalletProvider'
@@ -90,9 +91,11 @@ export default function App({ Component, pageProps }: Props): ReactElement {
               <EdenProvider>
                 <UserProvider>
                   <CreationNotificationProvider>
-                    <ModalProvider>
-                      {getLayout(<Component {...pageProps} />)}
-                    </ModalProvider>
+                    <MasonryProvider>
+                      <ModalProvider>
+                        {getLayout(<Component {...pageProps} />)}
+                      </ModalProvider>
+                    </MasonryProvider>
                   </CreationNotificationProvider>
                 </UserProvider>
               </EdenProvider>

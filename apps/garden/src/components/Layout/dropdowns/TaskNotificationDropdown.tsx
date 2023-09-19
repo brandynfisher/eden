@@ -1,6 +1,7 @@
 import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/TestGeneratorFinishButton'
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import { CONFIG } from '@/lib/config'
+import { getAspectRatio } from '@/lib/media'
 import { rightTruncatedString, truncatedAddress } from '@/lib/string'
 import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
@@ -128,7 +129,13 @@ const CompletedTaskMenuItem = ({
             className="rounded-md w-12 h-12 mr-4 flex items-center overflow-hidden"
             style={{ minWidth: '48px', minHeight: '48px' }}
           >
-            <ImageResult previewSizeUrl={task.creation?.thumbnail || ''} />
+            <ImageResult
+              previewSizeUrl={task.creation?.thumbnail || ''}
+              aspectRatio={getAspectRatio(
+                task.creation?.mediaAttributes.width,
+                task.creation?.mediaAttributes.height,
+              )}
+            />
           </div>
           <div className="flex items-center justify-between min-w-0 w-full">
             <div className="flex flex-col gap-2 min-w-0 w-full">

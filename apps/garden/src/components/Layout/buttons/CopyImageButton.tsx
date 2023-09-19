@@ -48,7 +48,7 @@ const CopyImageButton = ({
         title={'Copy Image to Clipboard'}
       >
         <div>Image File</div>
-        <ImageOutlined />
+        <ImageOutlined fontSize="small" />
       </div>
     )
   }

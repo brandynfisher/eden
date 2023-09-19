@@ -1,7 +1,9 @@
 import LayoutHeader from '@/components/Layout/LayoutHeader'
+import ProgressBar from '@/components/Layout/ProgressBar'
 import { VerticalAlignTopOutlined } from '@ant-design/icons'
 import { useWindowScroll } from '@mantine/hooks'
 import { Layout, Spin } from 'antd'
+import { Router } from 'next/router'
 import {
   Dispatch,
   PropsWithChildren,
@@ -73,6 +75,13 @@ const BackToTopButton = () => {
   )
 }
 
+const progress = new ProgressBar({
+  size: 2,
+  color: '#38a169',
+  className: 'bar-of-progress',
+  delay: 100,
+})
+
 const CustomLayout = ({ children }: PropsWithChildren) => {
   const [requestCount, setRequestCount] = useState(0)
   const [showLoading, setShowLoading] = useState(false)
@@ -84,6 +93,18 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
       setShowLoading(false)
     }
   }, [requestCount])
+
+  useEffect(() => {
+    Router.events.on('routeChangeStart', progress.start)
+    Router.events.on('routeChangeComplete', progress.finish)
+    Router.events.on('routeChangeError', progress.finish)
+
+    return () => {
+      Router.events.off('routeChangeStart', progress.start)
+      Router.events.off('routeChangeComplete', progress.finish)
+      Router.events.off('routeChangeError', progress.finish)
+    }
+  }, [])
 
   return (
     // @ts-ignore

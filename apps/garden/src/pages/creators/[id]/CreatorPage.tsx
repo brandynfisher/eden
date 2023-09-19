@@ -1,13 +1,14 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import LoadingIndicator from '@/components/LoadingIndicator'
-import MasonryInfinite from '@/components/MasonryInfinite'
 import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
-} from '@/components/OrderByButtons'
+  OrderByScore,
+} from '@/components/Layout/buttons/OrderByButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
+import MasonryInfinite from '@/components/MasonryInfinite'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
@@ -30,7 +31,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
 
   const sortButtons =
     isConnected && isAuthenticated
-      ? [OrderByLatest, OrderByPraises, OrderByBookmarks]
+      ? [OrderByLatest, OrderByScore, OrderByPraises, OrderByBookmarks]
       : [OrderByLatest]
 
   return (
