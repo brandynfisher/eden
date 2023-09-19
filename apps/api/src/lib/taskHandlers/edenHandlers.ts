@@ -251,7 +251,7 @@ const handleUpdateUniversal = async (
   }
 
   output = Array.isArray(output) ? output : [output]
-  const isCompleted = output.length > 0 && status == 'succeeded'
+  const isCompleted = output.some(Boolean) && status == 'succeeded'
 
   const taskUpdate = {
     status: isCompleted ? 'completed' : 'running',
