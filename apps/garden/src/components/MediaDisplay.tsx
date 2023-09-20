@@ -7,6 +7,7 @@ import { isImageUrl, isVideoUrl } from '@/lib/string'
 const MediaDisplay = ({
   creationUri,
   previewUri,
+  thumbnailUri,
   showPreview,
   onLoad,
   className,
@@ -15,6 +16,7 @@ const MediaDisplay = ({
 }: {
   creationUri: string
   previewUri?: string
+  thumbnailUri?: string
   showPreview?: boolean
   onLoad?: () => void
   className?: string
@@ -30,6 +32,7 @@ const MediaDisplay = ({
             aspectRatio={aspectRatio}
             previewSizeUrl={previewUri}
             fullSizeUrl={creationUri}
+            thumbnailSizeUrl={thumbnailUri}
             showPreview={showPreview}
             onLoad={onLoad}
             priority={priority}
@@ -59,9 +62,9 @@ const MediaDisplay = ({
         className ? className : ''
       }`}
     >
-      <div className="rounded-xl overflow-hidden max-h-full max-w-full flex flex-grow lg:justify-center lg:items-start max-h-[90vh]">
-        {renderPreview()}
-      </div>
+      {/*<div className="rounded-xl overflow-hidden max-h-full max-w-full flex flex-grow lg:justify-center lg:items-start max-h-[90vh]">*/}
+      {renderPreview()}
+      {/*</div>*/}
     </div>
   )
 }

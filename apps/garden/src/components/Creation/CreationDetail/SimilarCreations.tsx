@@ -74,7 +74,7 @@ const SimilarCreations = ({
   ])
 
   return (
-    <div className="w-full mx-auto md:max-w-[640px] lg:mx-0 lg:max-w-full">
+    <div className="px-2 md:px-0 w-full mx-auto md:max-w-[640px] lg:mx-0 lg:max-w-full">
       <Divider className="mt-4 lg:mt-16 lg:mb-8" />
       <h3 className="mb-4">Similar Creations</h3>
 

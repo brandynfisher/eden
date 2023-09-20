@@ -32,7 +32,6 @@ const CreationDetail = ({
   const [creationData, setCreationData] = useState<Creation>(creation)
   const timeSinceCreation = timeAgo(creation.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
-  const [creationImageLoaded, setCreationImageLoaded] = useState(false)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
@@ -125,9 +124,7 @@ const CreationDetail = ({
                   )}
                   creationUri={creationData?.uri}
                   previewUri={creationData?.uri}
-                  onLoad={() => {
-                    setCreationImageLoaded(true)
-                  }}
+                  thumbnailUri={creationData?.thumbnail}
                 />
               ) : (
                 <MediaDisplay
@@ -136,15 +133,12 @@ const CreationDetail = ({
                     creation.mediaAttributes.height,
                   )}
                   creationUri={creationData?.uri}
-                  onLoad={() => {
-                    setCreationImageLoaded(true)
-                  }}
                 />
               )}
             </div>
           </div>
 
-          <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
+          <div className="px-2  md:px-0 mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
             <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
               <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
                 <CreatorProfileLink
@@ -196,7 +190,7 @@ const CreationDetail = ({
             <ConfigParamsTabs data={creation} />
           </div>
         </div>
-        {loadSimilar && creationImageLoaded ? (
+        {loadSimilar ? (
           <SimilarCreations
             creation={creation}
             containerRef={containerRef}

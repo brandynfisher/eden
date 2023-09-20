@@ -37,7 +37,7 @@ const VideoPreview = ({
           <VideoResult resultUrl={creation.uri || ''} disableControls />
         </div>
       )}
-      <div className="absolute inset-0 flex flex-col justify-between items-center">
+      <div className="absolute inset-0 flex flex-col justify-between items-center pointer-events-none">
         <VideoLengthBadge duration={creation.mediaAttributes.duration ?? 0} />
       </div>
     </div>

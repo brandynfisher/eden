@@ -16,14 +16,6 @@ const MannaBalanceInfo = () => {
       <div className="mb-2">
         You have <span className="font-bold">{mannaBalance}</span> Manna
       </div>
-      <Link
-        href="https://docs.eden.art/docs/overview/manna"
-        title="Learn about Manna"
-        className="text-small hover:dark:text-gray-400"
-      >
-        Learn about Manna
-        <InfoCircleOutlined className="ml-1" />
-      </Link>
     </div>
   )
 }
@@ -58,11 +50,24 @@ const defaultItems: ItemType[] = [
     key: '0',
   },
   {
+    label: (
+      <Link
+        href="https://docs.eden.art/docs/overview/manna"
+        title="Learn about Manna"
+        className="text-small hover:dark:text-gray-400"
+      >
+        Learn about Manna
+        <InfoCircleOutlined className="ml-1" />
+      </Link>
+    ),
+    key: '1',
+  },
+  {
     type: 'divider',
   },
   {
     label: <MannaRefillModalTrigger />,
-    key: '1',
+    key: '2',
   },
 ]
 
@@ -72,7 +77,7 @@ const buyMannaItems: ItemType[] = [
   },
   {
     label: <MannaBuyLink />,
-    key: '2',
+    key: '3',
   },
 ]
 
