@@ -23,7 +23,7 @@ const VideoPreview = ({
   hovered?: boolean
 }) => {
   return (
-    <div className="rounded-lgoverflow-hidden relative">
+    <div className="rounded-lg overflow-hidden relative">
       <ImageResult
         previewSizeUrl={creation.thumbnail || ''}
         aspectRatio={getAspectRatio(
