@@ -32,7 +32,7 @@ const CreationDetailStaticModal = ({
   }, [creation])
 
   return (
-    <Modal {...rest} className="modal-full">
+    <Modal {...rest} className="modal-full max-w-7xl">
       <CreationDetail
         creation={creation}
         isModal={true}

@@ -98,6 +98,10 @@ const MasonryInfinite = ({
           ? 1
           : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
+          : windowWidth > 1920
+          ? 6
+          : windowWidth > 1440
+          ? 5
           : settings?.maxGridCols.params.initialValue,
     },
     [orderBy, width, query?.userId],

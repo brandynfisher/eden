@@ -2,7 +2,7 @@ import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/med
 import ImagePreviewMask from '@/components/Creation/CreationInterface/media/ImagePreviewMask'
 import { LoadingOutlined } from '@ant-design/icons'
 import Image from 'next/image'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
   return (
@@ -21,7 +21,6 @@ const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
     </div>
   )
 }
-
 const ImageResultZoomable = ({
   fullSizeUrl,
   previewSizeUrl,
@@ -40,35 +39,27 @@ const ImageResultZoomable = ({
   priority?: boolean
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const handleOnLoad = useCallback(() => {
-    console.log('handleOnLoad', previewSizeUrl.slice(50))
-
     if (!isLoaded) {
-      console.log('-- set', true, previewSizeUrl.slice(50))
+      // console.log('-- set', true, previewSizeUrl.slice(50))
       setIsLoaded(true)
       // }
     } else {
-      console.log('-- set', false, previewSizeUrl.slice(50))
+      // console.log('-- set', false, previewSizeUrl.slice(50))
       setIsLoaded(false)
     }
 
     if (onLoad) {
       onLoad()
     }
-  }, [isLoaded, onLoad, previewSizeUrl])
-
-  // useEffect(() => {
-  //
-  // }, [previewSizeUrl, thumbnailSizeUrl])
+  }, [isLoaded, onLoad, previewSizeUrl, containerRef, aspectRatio])
 
   return (
     <div
-      key={previewSizeUrl}
-      // className={`image-zoomable-wrap relative w-full overflow-hidden rounded-lg flex ${
-      //   isLoaded ? '!pt-0 md:min-h-[75vh] max-h-[75vh]' : ''
-      // }`}
-      className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg`}
+      ref={containerRef}
+      className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg max-h-[80vh]`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
       {/*{!isLoaded ? (*/}
@@ -82,19 +73,14 @@ const ImageResultZoomable = ({
       <Image
         src={previewSizeUrl}
         alt={previewSizeUrl}
-        // fill={true}
         placeholder="empty"
         sizes={'(max-width: 1024px) 100vw, 50vw'}
         onLoadingComplete={handleOnLoad}
-        // className={`${isLoaded ? '!relative' : ''} max-w-full max-h-[75vh] z-10 object-contain lg:!absolute`}
-        // className={`z-10 object-contain`}
-        // className="object-contain"
         priority={priority}
         width="0"
         height="0"
-        // sizes="100vw"
-        className="w-full h-auto object-contain absolute z-10 inset-0 "
-        // className={`w-full h-auto object-contain absolute z-10 inset-0 opacity-0 ${isLoaded ? 'anim-fade-in' : ''}`}
+        className="w-full h-auto object-contain absolute z-10 inset-0"
+        style={{ objectFit: 'contain', objectPosition: 'center' }}
       />
       {fullSizeUrl && !showPreview && <ImagePreviewMask />}
     </div>

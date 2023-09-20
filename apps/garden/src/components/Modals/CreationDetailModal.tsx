@@ -82,7 +82,7 @@ const CreationDetailModal = ({
   }, [currentItem])
 
   return (
-    <Modal {...rest} className="modal-full">
+    <Modal {...rest} className="modal-full max-w-7xl">
       {currentItem && (
         <CreationDetail
           creation={currentItem as Creation}
