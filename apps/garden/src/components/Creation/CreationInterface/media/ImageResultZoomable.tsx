@@ -71,11 +71,11 @@ const ImageResultZoomable = ({
       className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
-      {!isLoaded ? (
-        <div className="absolute inset-0 text-gray-500">
-          <ImageLoadingPlaceholder />
-        </div>
-      ) : null}
+      {/*{!isLoaded ? (*/}
+      <div className="absolute inset-0 text-gray-500 opacity-80">
+        <ImageLoadingPlaceholder />
+      </div>
+      {/*) : null}*/}
       {!isLoaded && thumbnailSizeUrl ? (
         <ImagePlaceholder imageUrl={thumbnailSizeUrl} />
       ) : null}
@@ -93,7 +93,8 @@ const ImageResultZoomable = ({
         width="0"
         height="0"
         // sizes="100vw"
-        className="w-full h-auto object-contain absolute z-10 inset-0"
+        className="w-full h-auto object-contain absolute z-10 inset-0 "
+        // className={`w-full h-auto object-contain absolute z-10 inset-0 opacity-0 ${isLoaded ? 'anim-fade-in' : ''}`}
       />
       {fullSizeUrl && !showPreview && <ImagePreviewMask />}
     </div>

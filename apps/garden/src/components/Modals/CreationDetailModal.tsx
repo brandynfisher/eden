@@ -67,7 +67,7 @@ const CreationDetailModal = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [currentIndex, totalItems])
+  }, [currentIndex, totalItems, handlePrevItem, handleNextItem])
 
   useEffect(() => {
     if (currentItem) {
