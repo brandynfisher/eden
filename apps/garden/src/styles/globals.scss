@@ -422,11 +422,11 @@ body {
     &.ant-modal {
         display: flex !important;
         justify-content: center;
-        top: 0 !important;
+
         min-height: 100% !important;
     }
     .ant-modal-content {
-        padding-top: 8px !important;
+        //padding-top: 8px !important;
         display: flex !important;
         min-height: 85vh;
         //width: 85vw !important;
@@ -437,15 +437,15 @@ body {
     }
 }
 
-
-@media (min-width: 768px) {
+@media (max-width: 768px) {
     .modal-full {
         &.ant-modal {
-            top: 8px !important;
-            min-height: calc(100% - 8px) !important;
+            top: 0 !important;
+            //top: 8px !important;
+            //min-height: calc(100% - 8px) !important;
         }
         .ant-modal-content {
-            padding-top: 0 !important;
+            padding-top: 8px !important;
         }
     }
 }
