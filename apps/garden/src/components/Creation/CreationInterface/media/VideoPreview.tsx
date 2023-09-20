@@ -23,7 +23,7 @@ const VideoPreview = ({
   hovered?: boolean
 }) => {
   return (
-    <div className="rounded-lg overflow-hidden relative">
+    <div className="rounded-lgoverflow-hidden relative">
       <ImageResult
         previewSizeUrl={creation.thumbnail || ''}
         aspectRatio={getAspectRatio(
@@ -37,7 +37,11 @@ const VideoPreview = ({
           <VideoResult resultUrl={creation.uri || ''} disableControls />
         </div>
       )}
-      <div className="absolute inset-0 flex flex-col justify-between items-center pointer-events-none">
+      <div
+        className={`absolute ${
+          hovered ? 'top-6' : ''
+        } z-10 inset-0 flex flex-col justify-between items-center pointer-events-none`}
+      >
         <VideoLengthBadge duration={creation.mediaAttributes.duration ?? 0} />
       </div>
     </div>
