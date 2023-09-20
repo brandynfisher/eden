@@ -4,12 +4,11 @@ import CircleButton from '@/components/Layout/buttons/CircleButton'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
-import { useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
-import { Modal } from 'antd'
+import { Modal, ModalProps } from 'antd'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect } from 'react'
@@ -27,10 +26,10 @@ const CreationDetailModal = ({
 }: {
   loadSimilar?: boolean
 }) => {
+  const { onCancel } = rest as ModalProps
   const router = useRouter()
   const { currentIndex, setCurrentIndex, totalItems, currentItem } =
     useContext(MasonryContext)
-  const { hideModal } = useModalContext()
   const handlePrevItem = (index: number) => {
     const prevIndex = index - 1
 
@@ -108,7 +107,8 @@ const CreationDetailModal = ({
             <CircleButton
               title={'Close'}
               icon={<CloseIcon fontSize="large" />}
-              onClick={() => hideModal()}
+              //@ts-ignore
+              onClick={onCancel}
             />
           </div>
           <div className="justify-self-end pointer-events-auto">

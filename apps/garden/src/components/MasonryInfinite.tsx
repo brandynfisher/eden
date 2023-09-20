@@ -118,7 +118,7 @@ const MasonryInfinite = ({
     setCurrentItem(items[currentIndex])
 
     if (hasNextPage && currentIndex === items.length - 1) {
-      console.log('reached last item, trigger maybeLoadMore')
+      // console.log('reached last item, trigger maybeLoadMore')
       maybeLoadMore(currentIndex, currentIndex + 10, items)
     }
   }, [currentIndex, hasNextPage])

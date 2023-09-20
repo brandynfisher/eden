@@ -116,7 +116,6 @@ function ModalProvider({ children }: PropsWithChildren) {
     className:
       'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
     onCancel: async () => {
-      console.log('onCancel')
       hideModal()
       if (store?.modalProps?.usesUrl) {
         if (store?.modalProps?.originPageUrl) {
@@ -160,6 +159,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       // @ts-ignore
       <ModalComponent
         {...({ ...defaultModalProps, ...store.modalProps } as ModalProps)}
+        handleCancel={store.modalProps?.onCancel}
         className={classNames}
       />
     )
@@ -193,7 +193,6 @@ function ModalProvider({ children }: PropsWithChildren) {
   }, [])
 
   const onEscHandler = useCallback((ev: KeyboardEvent) => {
-    console.log('keyboard', ev.key)
     if (ev.key === 'Escape') {
       ev.stopImmediatePropagation()
       ev.stopPropagation()

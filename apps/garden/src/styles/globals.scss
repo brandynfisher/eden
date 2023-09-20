@@ -9,10 +9,6 @@ body {
     outline: 0
 }
 
-.ant-modal {
-    top: 16px !important;
-    min-height: calc(100% - 16px) !important;
-}
 
 .ant-modal-mask {
     background-color: rgba(0, 0, 0, 0.70) !important;
@@ -416,12 +412,21 @@ body {
     }
 }
 
+
+.ant-modal {
+    top: 16px !important;
+    min-height: calc(100% - 16px) !important;
+}
+
 .modal-full {
     &.ant-modal {
         display: flex !important;
         justify-content: center;
+        top: 0 !important;
+        min-height: 100% !important;
     }
     .ant-modal-content {
+        padding-top: 8px !important;
         display: flex !important;
         min-height: 85vh;
         //width: 85vw !important;
@@ -429,5 +434,18 @@ body {
     }
     .ant-modal-body {
         width: 100%;
+    }
+}
+
+
+@media (min-width: 768px) {
+    .modal-full {
+        &.ant-modal {
+            top: 8px !important;
+            min-height: calc(100% - 8px) !important;
+        }
+        .ant-modal-content {
+            padding-top: 0 !important;
+        }
     }
 }
