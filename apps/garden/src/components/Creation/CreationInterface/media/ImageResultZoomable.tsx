@@ -10,10 +10,8 @@ const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
       <Image
         src={imageUrl}
         alt={''}
-        fill={true}
-        // placeholder="empty"
-        // className="object-contain"
-        // className={`z-10 object-contain`}
+        width="0"
+        height="0"
         className="w-full h-auto object-contain absolute z-10 inset-0"
         sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
         style={{ objectFit: 'contain', objectPosition: 'center' }}
@@ -75,7 +73,6 @@ const ImageResultZoomable = ({
       <Image
         src={previewSizeUrl}
         alt={previewSizeUrl}
-        // placeholder="empty"
         sizes={'(max-width: 1024px) 100vw, 50vw'}
         onLoadingComplete={handleOnLoad}
         priority={priority}
