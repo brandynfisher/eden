@@ -1,4 +1,3 @@
-import CircleButton from '@/components/Layout/buttons/CircleButton'
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
 import CreationDetailModal from '@/components/Modals/CreationDetailModal'
 import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
@@ -8,8 +7,6 @@ import MannaRefillModal from '@/components/Modals/MannaRefillModal'
 import TaskDetailModal from '@/components/Modals/TaskDetailModal'
 import { CloseOutlined } from '@ant-design/icons'
 import { Concept, Creation, Task } from '@edenlabs/eden-sdk'
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, {
@@ -75,6 +72,14 @@ const initialState: ModalContextType = {
 const ModalContext = createContext(initialState)
 export const useModalContext = () => useContext(ModalContext)
 
+export const CloseButton = () => {
+  return (
+    <div className="text-white text-xl">
+      <CloseOutlined />
+    </div>
+  )
+}
+
 function ModalProvider({ children }: PropsWithChildren) {
   const [store, setStore] = useState<ModalStore>()
   const router = useRouter()
@@ -104,14 +109,6 @@ function ModalProvider({ children }: PropsWithChildren) {
       modalType: undefined,
       modalProps: {},
     })
-  }
-
-  const CloseButton = () => {
-    return (
-      <div className="text-white text-xl">
-        <CloseOutlined />
-      </div>
-    )
   }
 
   const defaultModalProps: ModalProps = {
@@ -213,28 +210,6 @@ function ModalProvider({ children }: PropsWithChildren) {
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
       <div tabIndex={0}>
-        <div
-          // className="fixed bottom-4 w-fit left-[calc(50%_-_42px)] md:bottom-auto flex md:justify-between md:top-1/2 md:w-[calc(100vw_-_32px)] md:left-2 gap-4 bg-gray-200 dark:bg-gray-950 rounded-full border border-solid border-gray-600 md:border-none md:p-0 md:dark:!bg-transparent"
-          className="flex md:justify-between md:top-1/2 md:left-2 gap-4 bg-gray-200 dark:bg-gray-950 rounded-full border border-solid border-gray-600 md:border-none md:p-0 md:dark:!bg-transparent"
-          style={{ zIndex: 1001 }}
-        >
-          <div className="justify-self-start pointer-events-auto">
-            <CircleButton
-              // disabled={currentIndex - 1 < 0}
-              title={'Prev'}
-              icon={<KeyboardArrowLeftIcon />}
-              // onClick={() => handlePrevItem(currentIndex)}
-            />
-          </div>
-          <div className="justify-self-end pointer-events-auto">
-            <CircleButton
-              // disabled={currentIndex + 1 >= totalItems}
-              title={'Next'}
-              icon={<KeyboardArrowRightIcon />}
-              // onClick={() => handleNextItem(currentIndex)}
-            />
-          </div>
-        </div>
         {renderComponent()}
         {children}
       </div>
