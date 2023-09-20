@@ -6,16 +6,17 @@ import React, { useCallback, useRef, useState } from 'react'
 
 const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0 z-10">
       <Image
         src={imageUrl}
         alt={''}
         fill={true}
-        placeholder="empty"
+        // placeholder="empty"
         // className="object-contain"
         // className={`z-10 object-contain`}
         className="w-full h-auto object-contain absolute z-10 inset-0"
         sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
+        style={{ objectFit: 'contain', objectPosition: 'center' }}
       />
       <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-70 text-gray-700" />
     </div>
@@ -58,22 +59,23 @@ const ImageResultZoomable = ({
 
   return (
     <div
+      key={previewSizeUrl}
       ref={containerRef}
       className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg max-h-[80vh]`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
-      {/*{!isLoaded ? (*/}
-      <div className="absolute inset-0 text-gray-500 opacity-80">
-        <ImageLoadingPlaceholder />
-      </div>
-      {/*) : null}*/}
-      {!isLoaded && thumbnailSizeUrl ? (
+      {thumbnailSizeUrl ? (
         <ImagePlaceholder imageUrl={thumbnailSizeUrl} />
+      ) : null}
+      {!isLoaded ? (
+        <div className="absolute inset-0 text-gray-500 opacity-80">
+          <ImageLoadingPlaceholder />
+        </div>
       ) : null}
       <Image
         src={previewSizeUrl}
         alt={previewSizeUrl}
-        placeholder="empty"
+        // placeholder="empty"
         sizes={'(max-width: 1024px) 100vw, 50vw'}
         onLoadingComplete={handleOnLoad}
         priority={priority}

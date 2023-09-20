@@ -29,7 +29,6 @@ const SimilarCreations = ({
   const { height: windowHeight } = useViewportSize()
 
   useEffect(() => {
-    console.log('SimilarCreations::useEffect')
     if (!containerRef.current) {
       return
     }
@@ -48,7 +47,7 @@ const SimilarCreations = ({
         containerRef?.current.offsetTop <
       windowHeight
 
-    console.log({ isModal, isVisibleOnInitialRender, creation })
+    // console.log({ isModal, isVisibleOnInitialRender, creation })
 
     // modal disables body scroll and has its own scrollable container thus needs to handled differently
     if (isModal && isVisibleOnInitialRender) {
@@ -62,10 +61,10 @@ const SimilarCreations = ({
         containerRef.current.getBoundingClientRect().top < 0
 
       if (hasWindowScrolled || isVisibleOnInitialRender) {
-        console.log('hasWindowScrolled || isVisibleOnInitialRender', {
-          hasWindowScrolled,
-          isVisibleOnInitialRender,
-        })
+        // console.log('hasWindowScrolled || isVisibleOnInitialRender', {
+        //   hasWindowScrolled,
+        //   isVisibleOnInitialRender,
+        // })
         setShouldLoadSimilar(true)
       }
     }
