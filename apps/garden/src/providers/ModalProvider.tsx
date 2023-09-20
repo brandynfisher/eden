@@ -9,7 +9,7 @@ import { CloseOutlined } from '@ant-design/icons'
 import { Concept, Creation, Task } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
-import {
+import React, {
   PropsWithChildren,
   createContext,
   useCallback,
@@ -72,6 +72,14 @@ const initialState: ModalContextType = {
 const ModalContext = createContext(initialState)
 export const useModalContext = () => useContext(ModalContext)
 
+export const CloseButton = () => {
+  return (
+    <div className="text-white text-xl">
+      <CloseOutlined />
+    </div>
+  )
+}
+
 function ModalProvider({ children }: PropsWithChildren) {
   const [store, setStore] = useState<ModalStore>()
   const router = useRouter()
@@ -90,7 +98,7 @@ function ModalProvider({ children }: PropsWithChildren) {
     const modalWrapDomElement =
       document.getElementsByClassName('ant-modal-wrap')
     if (modalWrapDomElement && modalWrapDomElement.length) {
-      // modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     }
     // @todo ---end ugly---
   }
@@ -101,14 +109,6 @@ function ModalProvider({ children }: PropsWithChildren) {
       modalType: undefined,
       modalProps: {},
     })
-  }
-
-  const CloseButton = () => {
-    return (
-      <div className="text-white text-xl">
-        <CloseOutlined />
-      </div>
-    )
   }
 
   const defaultModalProps: ModalProps = {
@@ -159,6 +159,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       // @ts-ignore
       <ModalComponent
         {...({ ...defaultModalProps, ...store.modalProps } as ModalProps)}
+        handleCancel={store.modalProps?.onCancel}
         className={classNames}
       />
     )

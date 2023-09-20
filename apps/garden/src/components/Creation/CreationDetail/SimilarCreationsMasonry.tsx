@@ -8,7 +8,7 @@ const SimilarCreationsMasonry = ({ creationId }: { creationId: string }) => {
     return null
   }
 
-  return <CreationMasonry creations={creations} />
+  return <CreationMasonry creations={creations} creationId={creationId} />
 }
 
 export default SimilarCreationsMasonry

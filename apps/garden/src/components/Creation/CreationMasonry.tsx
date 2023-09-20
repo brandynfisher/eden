@@ -14,7 +14,13 @@ import {
 } from 'masonic'
 import React, { useContext, useRef } from 'react'
 
-const CreationMasonry = ({ creations }: { creations: Creation[] | null }) => {
+const CreationMasonry = ({
+  creations,
+  creationId,
+}: {
+  creations: Creation[] | null
+  creationId: string
+}) => {
   const containerRef = useRef(null)
   const { settings } = useContext(UserContext)
 
@@ -39,7 +45,7 @@ const CreationMasonry = ({ creations }: { creations: Creation[] | null }) => {
           ? settings.maxGridCols.value
           : settings?.maxGridCols.params.initialValue,
     },
-    [creations?.length, width],
+    [creations, width],
   )
   const resizeObserver = useResizeObserver(positioner)
 
@@ -51,6 +57,7 @@ const CreationMasonry = ({ creations }: { creations: Creation[] | null }) => {
             <div>error fetching list</div>
           ) : (
             <MasonryScroller
+              key={creationId}
               style={{ outline: 'none' }}
               positioner={positioner}
               resizeObserver={resizeObserver}
@@ -58,7 +65,7 @@ const CreationMasonry = ({ creations }: { creations: Creation[] | null }) => {
               items={creations}
               height={windowHeight}
               offset={offset}
-              overscanBy={1}
+              overscanBy={2}
               itemHeightEstimate={300}
               render={props => (
                 <CreationCard

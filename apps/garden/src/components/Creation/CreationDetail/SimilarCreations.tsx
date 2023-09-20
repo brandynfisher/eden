@@ -47,7 +47,7 @@ const SimilarCreations = ({
         containerRef?.current.offsetTop <
       windowHeight
 
-    // console.log({isModal, isVisibleOnInitialRender})
+    // console.log({ isModal, isVisibleOnInitialRender, creation })
 
     // modal disables body scroll and has its own scrollable container thus needs to handled differently
     if (isModal && isVisibleOnInitialRender) {
@@ -61,7 +61,10 @@ const SimilarCreations = ({
         containerRef.current.getBoundingClientRect().top < 0
 
       if (hasWindowScrolled || isVisibleOnInitialRender) {
-        // console.log('hasWindowScrolled || isVisibleOnInitialRender', { hasWindowScrolled, isVisibleOnInitialRender})
+        // console.log('hasWindowScrolled || isVisibleOnInitialRender', {
+        //   hasWindowScrolled,
+        //   isVisibleOnInitialRender,
+        // })
         setShouldLoadSimilar(true)
       }
     }
@@ -74,11 +77,15 @@ const SimilarCreations = ({
   ])
 
   return (
-    <div className="w-full mx-auto md:max-w-[640px] lg:mx-0 lg:max-w-full">
+    <div
+      className={`${
+        isModal ? 'px-2 md:px-0' : ''
+      } w-full mx-auto md:max-w-[640px] lg:mx-0 lg:max-w-full`}
+    >
       <Divider className="mt-4 lg:mt-16 lg:mb-8" />
       <h3 className="mb-4">Similar Creations</h3>
 
-      <div ref={ref} className="min-h-[16vh]">
+      <div key={creation._id} ref={ref} className="min-h-[16vh]">
         {!shouldLoadSimilar ? (
           <div className="flex !mt-0 pt-8 pb-16 justify-center">
             <LoadingOutlined className="text-4xl" ref={intersectionTargetRef} />

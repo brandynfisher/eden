@@ -15,7 +15,7 @@ const ConceptDetail = dynamic(
 
 const ConceptDetailModal = ({ concept, ...rest }: { concept: Concept }) => {
   return (
-    <Modal {...rest} className="modal-full">
+    <Modal {...rest} className="modal-full max-w-7xl">
       <ConceptDetail concept={concept} isModal={true} />
     </Modal>
   )

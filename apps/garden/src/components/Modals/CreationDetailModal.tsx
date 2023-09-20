@@ -5,9 +5,10 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
 import { Creation } from '@edenlabs/eden-sdk'
+import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
-import { Modal } from 'antd'
+import { Modal, ModalProps } from 'antd'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect } from 'react'
@@ -25,12 +26,10 @@ const CreationDetailModal = ({
 }: {
   loadSimilar?: boolean
 }) => {
+  const { onCancel } = rest as ModalProps
   const router = useRouter()
   const { currentIndex, setCurrentIndex, totalItems, currentItem } =
     useContext(MasonryContext)
-
-  // console.log({ currentIndex })
-
   const handlePrevItem = (index: number) => {
     const prevIndex = index - 1
 
@@ -68,7 +67,7 @@ const CreationDetailModal = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [currentIndex, totalItems])
+  }, [currentIndex, totalItems, handlePrevItem, handleNextItem])
 
   useEffect(() => {
     if (currentItem) {
@@ -83,7 +82,7 @@ const CreationDetailModal = ({
   }, [currentItem])
 
   return (
-    <Modal {...rest} className="modal-full">
+    <Modal {...rest} className="modal-full max-w-7xl">
       {currentItem && (
         <CreationDetail
           creation={currentItem as Creation}
@@ -91,24 +90,32 @@ const CreationDetailModal = ({
           loadSimilar={loadSimilar}
         />
       )}
-      {currentIndex ? (
+      {currentIndex !== null ? (
         <div
-          className="fixed bottom-4 w-fit left-[calc(50%_-_42px)] md:bottom-auto flex md:justify-between md:top-1/2 md:w-[calc(100vw_-_32px)] md:left-2 gap-4 bg-gray-200 dark:bg-gray-950 rounded-full border border-solid border-gray-600 md:border-none md:p-0 md:dark:!bg-transparent"
+          className="fixed bottom-4 w-fit left-[calc(50%_-_77px)] md:bottom-auto flex md:justify-between md:top-1/2 md:w-[calc(100vw_-_32px)] md:left-2 gap-4 bg-gray-200 dark:bg-gray-950 rounded-full border border-solid border-gray-600 md:border-none md:p-0 md:dark:!bg-transparent opacity-0 anim-fade-in shadow-2xl"
           style={{ zIndex: 1001 }}
         >
           <div className="justify-self-start pointer-events-auto">
             <CircleButton
               disabled={currentIndex - 1 < 0}
               title={'Prev'}
-              icon={<KeyboardArrowLeftIcon />}
+              icon={<KeyboardArrowLeftIcon fontSize="large" />}
               onClick={() => handlePrevItem(currentIndex)}
+            />
+          </div>
+          <div className="pointer-events-auto md:hidden">
+            <CircleButton
+              title={'Close'}
+              icon={<CloseIcon fontSize="large" />}
+              //@ts-ignore
+              onClick={onCancel}
             />
           </div>
           <div className="justify-self-end pointer-events-auto">
             <CircleButton
               disabled={currentIndex + 1 >= totalItems}
               title={'Next'}
-              icon={<KeyboardArrowRightIcon />}
+              icon={<KeyboardArrowRightIcon fontSize="large" />}
               onClick={() => handleNextItem(currentIndex)}
             />
           </div>

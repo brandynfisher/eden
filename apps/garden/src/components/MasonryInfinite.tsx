@@ -63,7 +63,7 @@ const MasonryInfinite = ({
       isItemLoaded: (index, items) => {
         return !!items[index]
       },
-      minimumBatchSize: 5,
+      minimumBatchSize: 16,
       threshold: 16,
     },
   )
@@ -98,6 +98,10 @@ const MasonryInfinite = ({
           ? 1
           : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
+          : windowWidth > 1920
+          ? 6
+          : windowWidth > 1440
+          ? 5
           : settings?.maxGridCols.params.initialValue,
     },
     [orderBy, width, query?.userId],
@@ -114,7 +118,7 @@ const MasonryInfinite = ({
     setCurrentItem(items[currentIndex])
 
     if (hasNextPage && currentIndex === items.length - 1) {
-      console.log('reached last item, trigger maybeLoadMore')
+      // console.log('reached last item, trigger maybeLoadMore')
       maybeLoadMore(currentIndex, currentIndex + 10, items)
     }
   }, [currentIndex, hasNextPage])
@@ -142,7 +146,7 @@ const MasonryInfinite = ({
               items={items}
               height={windowHeight}
               offset={offset}
-              overscanBy={2}
+              overscanBy={3}
               itemHeightEstimate={300}
               render={itemComponent}
               onRender={maybeLoadMore}
