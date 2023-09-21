@@ -23,7 +23,7 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
       {creation && !isLoading ? (
         <div
           onClick={openDetailModal}
-          className="flex flex-col items-center gap-4 cursor-pointer h-full w-full"
+          className="flex flex-col gap-4 cursor-pointer h-full w-full"
         >
           <Button>Show Details</Button>
           <MediaDisplay
