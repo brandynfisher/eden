@@ -15,7 +15,7 @@ const CreationCardHoverOverlay = ({
   handlers,
 }: CreationCardHoverOverlayProps) => {
   return (
-    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+    <div className="absolute z-10 inset-0 flex flex-col justify-between pointer-events-none">
       <div className="mx-2 mt-2 anim-slide-fade-down">
         <CreationReactions creation={creation} onChange={handlers.onChange} />
       </div>

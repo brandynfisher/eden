@@ -137,7 +137,27 @@ const CreationCard: FC<{
       <div className="relative" key={index}>
         <div className="w-full flex justify-center flex-col">
           <div
-            className={` flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
+            className="card-image relative rounded-lg overflow-hidden cursor-pointer"
+            onClick={openDetailModal}
+          >
+            <a
+              onClick={ev => ev.preventDefault()}
+              href={`/creations/${creation._id}`}
+              target={'_blank'}
+              className="block"
+            >
+              <MediaPreview
+                creation={creation}
+                hovered={hovered}
+                aspectRatio={getAspectRatio(
+                  creation.mediaAttributes.width,
+                  creation.mediaAttributes.height,
+                )}
+              />
+            </a>
+          </div>
+          <div
+            className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
               hovered ? 'md:!visible' : 'md:hidden'
             }`}
           >
@@ -166,26 +186,6 @@ const CreationCard: FC<{
                 <EllipsisOutlined className="text-xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
               </div>
             </Dropdown>
-          </div>
-          <div
-            className="card-image relative rounded-lg overflow-hidden cursor-pointer"
-            onClick={openDetailModal}
-          >
-            <a
-              onClick={ev => ev.preventDefault()}
-              href={`/creations/${creation._id}`}
-              target={'_blank'}
-              className="block"
-            >
-              <MediaPreview
-                creation={creation}
-                hovered={hovered}
-                aspectRatio={getAspectRatio(
-                  creation.mediaAttributes.width,
-                  creation.mediaAttributes.height,
-                )}
-              />
-            </a>
           </div>
           <div
             className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${

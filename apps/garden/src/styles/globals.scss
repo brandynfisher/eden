@@ -6,13 +6,12 @@
 @tailwind utilities;
 
 body {
-    outline: 0
+    outline: 0;
 }
 
-
 .ant-modal-mask {
-    background-color: rgba(0, 0, 0, 0.70) !important;
-    backdrop-filter: blur(15px);
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    backdrop-filter: blur(20px);
 }
 
 .dark .ant-modal-content {

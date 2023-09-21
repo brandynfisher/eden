@@ -30,7 +30,7 @@ const ImageResultZoomable = ({
   priority,
 }: {
   fullSizeUrl?: string
-  previewSizeUrl: string
+  previewSizeUrl?: string
   thumbnailSizeUrl?: string
   aspectRatio: number
   showPreview?: boolean
@@ -53,7 +53,7 @@ const ImageResultZoomable = ({
     if (onLoad) {
       onLoad()
     }
-  }, [isLoaded, onLoad, previewSizeUrl, containerRef, aspectRatio])
+  }, [isLoaded, onLoad, previewSizeUrl])
 
   return (
     <div
@@ -62,25 +62,29 @@ const ImageResultZoomable = ({
       className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg max-h-[80vh]`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
-      {thumbnailSizeUrl ? (
-        <ImagePlaceholder imageUrl={thumbnailSizeUrl} />
-      ) : null}
       {!isLoaded ? (
         <div className="absolute inset-0 text-gray-500 opacity-80">
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
-      <Image
-        src={previewSizeUrl}
-        alt={previewSizeUrl}
-        sizes={'(max-width: 1024px) 100vw, 50vw'}
-        onLoadingComplete={handleOnLoad}
-        priority={priority}
-        width="0"
-        height="0"
-        className="w-full h-auto object-contain absolute z-10 inset-0"
-        style={{ objectFit: 'contain', objectPosition: 'center' }}
-      />
+      {thumbnailSizeUrl ? (
+        <ImagePlaceholder imageUrl={thumbnailSizeUrl} />
+      ) : null}
+      {previewSizeUrl ? (
+        <div className="absolute inset-0">
+          <Image
+            src={previewSizeUrl}
+            alt={previewSizeUrl}
+            sizes={'(max-width: 1024px) 100vw, 50vw'}
+            onLoadingComplete={handleOnLoad}
+            priority={priority}
+            width="0"
+            height="0"
+            className="w-full h-auto object-contain absolute z-10 inset-0"
+            style={{ objectFit: 'contain', objectPosition: 'center' }}
+          />
+        </div>
+      ) : null}
       {fullSizeUrl && !showPreview && <ImagePreviewMask />}
     </div>
   )
