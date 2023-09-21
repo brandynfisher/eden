@@ -87,6 +87,16 @@ const CreationCard: FC<{
       ),
       key: '1-3',
     },
+    {
+      icon: (
+        <CopyUrlButton
+          url={`${CONFIG.NEXT_PUBLIC_HOST}/create/creations?presetId=${creation._id}`}
+          variant="text"
+          label="Preset URL"
+        />
+      ),
+      key: '1-4',
+    },
   ]
   const copyItems = isImageUrl(creation.uri)
     ? [...imageCopyItems, ...otherTypeCopyItems]
