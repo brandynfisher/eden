@@ -87,7 +87,7 @@ const MasonryInfinite = ({
   const positioner = usePositioner(
     {
       width,
-      columnGutter: 16,
+      columnGutter: 8,
       rowGutter: windowWidth < 768 ? 0 : 8,
       columnCount:
         settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'

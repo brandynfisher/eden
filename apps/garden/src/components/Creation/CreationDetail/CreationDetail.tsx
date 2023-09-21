@@ -133,6 +133,7 @@ const CreationDetail = ({
                     creation.mediaAttributes.height,
                   )}
                   creationUri={creationData?.uri}
+                  thumbnailUri={creationData?.thumbnail}
                 />
               )}
             </div>

@@ -37,7 +37,9 @@ const VideoPreview = ({
         </div>
       )}
       <div
-        className={`absolute z-10 inset-0 flex flex-col justify-between items-center pointer-events-none`}
+        className={`absolute z-10 inset-0 flex flex-col justify-between items-center pointer-events-none ${
+          hovered ? 'top-6 z-20' : ''
+        }`}
       >
         <VideoLengthBadge duration={creation.mediaAttributes.duration ?? 0} />
       </div>

@@ -71,17 +71,19 @@ const ImageResultZoomable = ({
         <ImagePlaceholder imageUrl={thumbnailSizeUrl} />
       ) : null}
       {previewSizeUrl ? (
-        <Image
-          src={previewSizeUrl}
-          alt={previewSizeUrl}
-          sizes={'(max-width: 1024px) 100vw, 50vw'}
-          onLoadingComplete={handleOnLoad}
-          priority={priority}
-          width="0"
-          height="0"
-          className="w-full h-auto object-contain absolute z-10 inset-0"
-          style={{ objectFit: 'contain', objectPosition: 'center' }}
-        />
+        <div className="absolute inset-0">
+          <Image
+            src={previewSizeUrl}
+            alt={previewSizeUrl}
+            sizes={'(max-width: 1024px) 100vw, 50vw'}
+            onLoadingComplete={handleOnLoad}
+            priority={priority}
+            width="0"
+            height="0"
+            className="w-full h-auto object-contain absolute z-10 inset-0"
+            style={{ objectFit: 'contain', objectPosition: 'center' }}
+          />
+        </div>
       ) : null}
       {fullSizeUrl && !showPreview && <ImagePreviewMask />}
     </div>

@@ -1,7 +1,8 @@
-import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
+import ImageResultZoomable from '@/components/Creation/CreationInterface/media/ImageResultZoomable'
 import VideoPreview from '@/components/Creation/CreationInterface/media/VideoPreview'
 import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { Creation } from '@edenlabs/eden-sdk'
+import React from 'react'
 
 const MediaPreview = ({
   creation,
@@ -15,7 +16,7 @@ const MediaPreview = ({
   if (!creation.uri) return null
   if (isImageUrl(creation.uri)) {
     return (
-      <ImageResult
+      <ImageResultZoomable
         previewSizeUrl={creation.thumbnail || ''}
         aspectRatio={aspectRatio}
       />
