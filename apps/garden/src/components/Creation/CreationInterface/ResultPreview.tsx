@@ -33,7 +33,6 @@ const ResultPreview = ({
   const completedTask = completedTasks?.find(
     task => task.taskId === activeTaskId,
   )
-
   const creationUri =
     completedTask && completedTask.creation ? completedTask.creation.uri : false
   const creationId =
