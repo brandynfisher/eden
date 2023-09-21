@@ -6,6 +6,7 @@ import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import DownloadFileButton from '@/components/Layout/buttons/DownloadFileButton'
 import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
+import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { CONFIG } from '@/lib/config'
 import { getAspectRatio } from '@/lib/media'
@@ -86,6 +87,16 @@ const CreationCard: FC<{
       ),
       key: '1-3',
     },
+    {
+      icon: (
+        <CopyUrlButton
+          url={`${CONFIG.NEXT_PUBLIC_HOST}/create/creations?presetId=${creation._id}`}
+          variant="text"
+          label="Preset URL"
+        />
+      ),
+      key: '1-4',
+    },
   ]
   const copyItems = isImageUrl(creation.uri)
     ? [...imageCopyItems, ...otherTypeCopyItems]
@@ -115,7 +126,23 @@ const CreationCard: FC<{
         ],
       },
       {
+        label: 'Use as...',
         key: '3',
+        children: [
+          {
+            icon: (
+              <UseAsPresetButton
+                creationId={creation._id}
+                variant="text"
+                label="Preset"
+              />
+            ),
+            key: '3-1',
+          },
+        ],
+      },
+      {
+        key: '4',
         type: 'divider',
       },
       {
@@ -127,7 +154,7 @@ const CreationCard: FC<{
             label="Download"
           />
         ),
-        key: '4',
+        key: '5',
       },
     ]
   }
