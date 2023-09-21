@@ -28,6 +28,7 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
           <Button>Show Details</Button>
           <MediaDisplay
             creationUri={creation.uri}
+            previewUri={creation.uri}
             thumbnailUri={creation.thumbnail}
             aspectRatio={getAspectRatio(
               creation.mediaAttributes.width,
