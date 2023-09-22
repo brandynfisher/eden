@@ -2,7 +2,7 @@ import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/med
 import ImagePreviewMask from '@/components/Creation/CreationInterface/media/ImagePreviewMask'
 import { LoadingOutlined } from '@ant-design/icons'
 import Image from 'next/image'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useRef, useState } from 'react'
 
 const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
   return (
@@ -28,6 +28,7 @@ const ImageResultZoomable = ({
   showPreview,
   onLoad,
   priority,
+  children,
 }: {
   fullSizeUrl?: string
   previewSizeUrl?: string
@@ -36,11 +37,30 @@ const ImageResultZoomable = ({
   showPreview?: boolean
   onLoad?: () => void
   priority?: boolean
+  children?: ReactNode
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [adjustedAspectRatio, setAdjustedAspectRatio] = useState(aspectRatio)
 
   const handleOnLoad = useCallback(() => {
+    if (containerRef.current) {
+      console.log({
+        offsetHeight: containerRef.current.offsetHeight,
+        offsetWidth: containerRef.current.offsetWidth,
+        aspectRatio,
+      })
+      const containerHeight = containerRef.current.offsetHeight
+      const imageHeight = (containerRef.current.offsetWidth * aspectRatio) / 100
+      if (imageHeight > containerHeight) {
+        const newAspectRatio =
+          (containerHeight / containerRef.current.offsetWidth) * 100
+        // aspectRatio = newAspectRatio
+        setAdjustedAspectRatio(newAspectRatio)
+      }
+      console.log(containerHeight, imageHeight, aspectRatio)
+    }
+
     if (!isLoaded) {
       // console.log('-- set', true, previewSizeUrl.slice(50))
       setIsLoaded(true)
@@ -53,14 +73,14 @@ const ImageResultZoomable = ({
     if (onLoad) {
       onLoad()
     }
-  }, [isLoaded, onLoad, previewSizeUrl])
+  }, [isLoaded, onLoad, previewSizeUrl, containerRef, aspectRatio])
 
   return (
     <div
       key={previewSizeUrl}
       ref={containerRef}
       className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg max-h-[80vh]`}
-      style={{ paddingTop: `${aspectRatio}%` }}
+      style={{ paddingTop: `${adjustedAspectRatio}%` }}
     >
       {!isLoaded ? (
         <div className="absolute inset-0 text-gray-500 opacity-80">
@@ -80,11 +100,12 @@ const ImageResultZoomable = ({
             priority={priority}
             width="0"
             height="0"
-            className="w-full h-auto object-contain absolute z-10 inset-0"
+            className="w-full h-full object-contain absolute z-10 inset-0"
             style={{ objectFit: 'contain', objectPosition: 'center' }}
           />
         </div>
       ) : null}
+      {children ? children : null}
       {fullSizeUrl && !showPreview && <ImagePreviewMask />}
     </div>
   )
