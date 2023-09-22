@@ -1,10 +1,12 @@
 import { FastifyInstance } from 'fastify'
 
+import { GeneratorDocument } from '../../models/Generator'
 import { randomId } from '../util'
 import { receiveTaskUpdate } from './edenHandlers'
 
 const submitTask = async (
   server: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: any,
   config: any,
 ) => {
@@ -15,7 +17,12 @@ const submitTask = async (
   return task
 }
 
-const getTransactionCost = (_: FastifyInstance, __: any, config: any) => 1
+const getTransactionCost = (
+  _: FastifyInstance,
+  __: any,
+  ___: any,
+  config: any,
+) => 1
 
 const runTask = async (
   server: FastifyInstance,

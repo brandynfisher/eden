@@ -9,6 +9,7 @@ import { receiveTaskUpdate } from './edenHandlers'
 
 const submitTask = async (
   server: FastifyInstance,
+  generator: any,
   generatorVersion: any,
   config: any,
 ) => {
@@ -31,6 +32,9 @@ const runTask = async (
       generatorVersion.versionId
     } with config ${JSON.stringify(config)}`,
   )
+
+  console.log('HELOO!!')
+  console.log(task.generator)
 
   console.log('run task 2')
   const { openai, elevenLabs, replicate } = server
@@ -140,6 +144,7 @@ const runTask = async (
 
 const getTransactionCost = (
   _: FastifyInstance,
+  generator: any,
   generatorVersion: any,
   config: any,
 ) => {
