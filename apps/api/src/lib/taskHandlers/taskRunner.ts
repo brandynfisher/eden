@@ -34,40 +34,27 @@ const runTask = async (
     } with config ${JSON.stringify(config)}`,
   )
 
-  console.log('HELOO!!')
-  console.log(generator)
-
-  console.log('run task 2')
   const { openai, elevenLabs, replicate } = server
   if (!openai) {
-    console.log('Openai not init')
     throw new Error('Openai not initialized')
   }
   if (!elevenLabs) {
-    console.log('eleven not init')
     throw new Error('Elevenlabs not initialized')
   }
   if (!replicate) {
-    console.log('rep not init')
     throw new Error('Replicate not initialized')
   }
 
   if (generator.generatorName == 'monologue') {
-    console.log('run task 3')
     const character = await Character.findOne({
       _id: new ObjectId(config.characterId),
     })
-    console.log('run task 4')
-    console.log(character)
-
     if (!character) {
       throw new Error('Character not found')
     }
-    console.log('run task 5')
+
     const systemMessage = `You are playing ${character.name}. ${character.description}. You are to respond to users in character, as if you were ${character.name}.`
 
-    console.log('run task 6')
-    console.log(systemMessage)
     const messages: ChatCompletionRequestMessage[] = [
       {
         role: 'system',
@@ -79,8 +66,6 @@ const runTask = async (
       },
     ]
 
-    console.log('run task 6.5')
-
     const completion = await server.openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: messages,
@@ -90,8 +75,6 @@ const runTask = async (
       frequency_penalty: 0,
       presence_penalty: 0,
     })
-
-    console.log('run task 7')
 
     if (!completion.data.choices) {
       console.log('no choices')
@@ -103,31 +86,36 @@ const runTask = async (
       throw new Error('No response from character')
     }
 
-    console.log('voice')
     const voiceId = character.voice || 'EXAVITQu4vr4xnSDxMaL'
-    console.log(voiceId)
 
     const audioBuffer = await elevenLabs.runTask(voiceId, response)
-    const { uri: audioUri } = await uploadBufferAsset(server, audioBuffer)
-
-    console.log('run task 8')
-    console.log(audioUri)
+    const { uri: audioUrl } = await uploadBufferAsset(server, audioBuffer)
+    //const faceUrl = "https://minio.aws.abraham.fun/creations-stg/3adb55669b6414be02b09ec90c0c08a28e3d4d663c4b10f8b67316599683bfef.jpg" ;//character.image
     const faceUrl = character.image
 
     const generatorAddress = 'abraham-ai/character'
     const model = await replicate.models.get(generatorAddress)
+
+    // const audio2 = "https://minio.aws.abraham.fun/creations-stg/af5e334d5b46ba56eabc3dde133a872bc7ea6c76e4568245cae6edebdc8c1d39.mp3";
+
     console.log(generatorAddress)
     console.log('run task 9')
-
-    console.log('THE MODEL')
+    console.log('GET MODEL')
     console.log(model)
-    console.log(faceUrl)
-    console.log(audioUri)
+    console.log(generatorAddress)
+    console.log('goog', {
+      mode: 'wav2lip',
+      face_url: faceUrl,
+      speech_url: audioUrl,
+      gfpgan: false,
+      gfpgan_upscale: 1,
+      intro_text: null,
+    })
 
     const result = await model.predict({
       mode: 'wav2lip',
       face_url: faceUrl,
-      speech_url: audioUri,
+      speech_url: audio2,
       gfpgan: false,
       gfpgan_upscale: 1,
       intro_text: null,
@@ -145,33 +133,20 @@ const runTask = async (
       error: null,
     }
 
-    console.log('update')
-    console.log(update)
-
     await receiveTaskUpdate(server, update)
   } else if (generator.generatorName == 'dialogue') {
-    console.log('THIS IS A DIALOGUEEUEUEUEUEUEU!!!')
-
-    console.log('run task 3')
     const character1 = await Character.findOne({
       _id: new ObjectId(config.characterIds[0]),
     })
     const character2 = await Character.findOne({
       _id: new ObjectId(config.characterIds[0]),
     })
-    console.log('run task 4')
-    console.log(character1)
-    console.log(character2)
-
     if (!character1 || !character2) {
       throw new Error('Character not found')
     }
 
-    console.log('run task 5')
     const systemMessage = `You are playing ${character1.name}. ${character1.description}. You are to respond to users in character, as if you were ${character1.name}.`
 
-    console.log('run task 6')
-    console.log(systemMessage)
     const messages: ChatCompletionRequestMessage[] = [
       {
         role: 'system',
@@ -182,8 +157,6 @@ const runTask = async (
         content: config.prompt,
       },
     ]
-
-    console.log('run task 6.5')
 
     const completion = await server.openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
@@ -212,20 +185,32 @@ const runTask = async (
     console.log(voiceId)
 
     const audioBuffer = await elevenLabs.runTask(voiceId, response)
-    const { uri: audioUri } = await uploadBufferAsset(server, audioBuffer)
+    const { uri: audioUrl } = await uploadBufferAsset(server, audioBuffer)
 
     console.log('run task 8')
-    console.log(audioUri)
+    console.log(audioUrl)
+    // const audio2 = "https://minio.aws.abraham.fun/creations-stg/af5e334d5b46ba56eabc3dde133a872bc7ea6c76e4568245cae6edebdc8c1d39.mp3";
     const faceUrl = character1.image
 
     const generatorAddress = 'abraham-ai/character'
     const model = await replicate.models.get(generatorAddress)
     console.log(generatorAddress)
     console.log('run task 9')
+    console.log('GET MODEL')
+    console.log(model)
+    console.log(generatorAddress)
+    console.log('goog', {
+      mode: 'wav2lip',
+      face_url: faceUrl,
+      speech_url: audioUrl,
+      gfpgan: false,
+      gfpgan_upscale: 1,
+      intro_text: null,
+    })
     const result = await model.predict({
       mode: 'wav2lip',
       face_url: faceUrl,
-      speech_url: audioUri,
+      speech_url: audioUrl,
       gfpgan: false,
       gfpgan_upscale: 1,
       intro_text: null,
