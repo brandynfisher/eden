@@ -1,7 +1,7 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
 import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
 import FormLabel from '@/components/Forms/FormLabel'
-import { useMyCharacters } from '@/hooks/useMyCharacters'
+import { useCharacters } from '@/hooks/useCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
@@ -261,9 +261,8 @@ const DialogueScenarioPageContent = ({
 }
 
 const DialogueScenarioPage = ({ data }: { data: Character[] }) => {
-  const { isAuthenticated, address } = useContext(UserContext)
-  const { characters: charactersData } = useMyCharacters({
-    userId: address ? address : null,
+  const { isAuthenticated } = useContext(UserContext)
+  const { characters: charactersData } = useCharacters({
     isAuthenticated,
     options: {
       fallbackData: data,
