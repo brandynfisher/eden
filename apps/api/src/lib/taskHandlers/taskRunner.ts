@@ -34,6 +34,9 @@ const runTask = async (
     } with config ${JSON.stringify(config)}`,
   )
 
+  console.log('====================================')
+  console.log('TR1!', task.id)
+
   const { openai, elevenLabs, replicate } = server
   if (!openai) {
     throw new Error('Openai not initialized')
@@ -45,7 +48,9 @@ const runTask = async (
     throw new Error('Replicate not initialized')
   }
 
+  console.log('TR2', generator.generatorName)
   if (generator.generatorName == 'monologue') {
+    console.log('TR3 monologue')
     const character = await Character.findOne({
       _id: new ObjectId(config.characterId),
     })
@@ -53,6 +58,7 @@ const runTask = async (
       throw new Error('Character not found')
     }
 
+    console.log('character', character.name)
     const systemMessage = `You are playing ${character.name}. ${character.description}. You are to respond to users in character, as if you were ${character.name}.`
 
     const messages: ChatCompletionRequestMessage[] = [
@@ -75,6 +81,8 @@ const runTask = async (
       frequency_penalty: 0,
       presence_penalty: 0,
     })
+
+    console.log('TR5, completion', completion)
 
     if (!completion.data.choices) {
       console.log('no choices')
@@ -135,6 +143,8 @@ const runTask = async (
 
     await receiveTaskUpdate(server, update)
   } else if (generator.generatorName == 'dialogue') {
+    console.log('TR3 dialogue')
+
     const character1 = await Character.findOne({
       _id: new ObjectId(config.characterIds[0]),
     })
@@ -168,6 +178,7 @@ const runTask = async (
       presence_penalty: 0,
     })
 
+    console.log('TR4, ', completion)
     console.log('run task 7')
 
     if (!completion.data.choices) {
