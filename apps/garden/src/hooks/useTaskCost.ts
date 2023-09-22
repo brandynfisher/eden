@@ -39,9 +39,7 @@ export const useTaskCost = () => {
         message.destroy()
 
         const response = await axios.post('/api/tasks/cost', {
-          // generatorName: 'dialogue',
           generatorName,
-          // config: { prompt: 'dummy prompt' },
           config,
         })
 
