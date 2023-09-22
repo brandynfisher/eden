@@ -115,7 +115,10 @@ const MonologueScenarioPageContent = ({
     () =>
       debounce(async () => {
         setIsFormTouched(true)
-        await getTaskCost('monologue', { prompt: 'dummy prompt' })
+        await getTaskCost('monologue', {
+          characterId: '1',
+          prompt: 'dummy prompt',
+        })
       }, 500),
     [],
   )

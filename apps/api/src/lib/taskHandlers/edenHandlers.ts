@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify'
 
 import { Concept } from '../../models/Concept'
 import { Creation } from '../../models/Creation'
-import { Generator } from '../../models/Generator'
+import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
@@ -48,6 +48,7 @@ interface TaskOutput {
 
 const submitTask = async (
   server: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: any,
   config: any,
 ) => {
@@ -55,7 +56,7 @@ const submitTask = async (
   console.log('submit Task', provider)
   const task = await providers
     .get(provider)
-    .submitTask(server, generatorVersion, config)
+    .submitTask(server, generator, generatorVersion, config)
   return task.id
 }
 
@@ -404,13 +405,14 @@ export const receiveTaskUpdate = async (
 
 const getTransactionCost = (
   server: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: any,
   config: any,
 ) => {
   const { provider } = generatorVersion
   const cost = providers
     .get(provider)
-    .getTransactionCost(server, generatorVersion, config)
+    .getTransactionCost(server, generator, generatorVersion, config)
   return cost
 }
 
