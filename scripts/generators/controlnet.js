@@ -53,8 +53,8 @@ const params = [
     name: 'controlnet_type',
     label: 'ControlNet',
     description: 'Which ControlNet to use',
-    default: 'canny-edge',
-    allowedValues: ["canny-edge", "luminance", "depth"],
+    default: 'luminance',
+    allowedValues: ["luminance"],
   },
   ////////////////////////////////////////
   // optional generation args
