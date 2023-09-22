@@ -53,7 +53,7 @@ const MediaDisplay = ({
 
   return (
     <div
-      className={`media-display max-h-full max-w-full flex flex-grow ${
+      className={`media-display relative max-h-full max-w-full flex flex-grow ${
         className ? className : ''
       }`}
     >

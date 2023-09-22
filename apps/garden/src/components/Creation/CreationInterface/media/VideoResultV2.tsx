@@ -18,28 +18,27 @@ const VideoResult = ({
 
   return (
     <>
-      {thumbnailUrl ? (
-        <ImageResultZoomable
-          thumbnailSizeUrl={thumbnailUrl}
-          aspectRatio={aspectRatio}
-          priority={true}
+      <ImageResultZoomable
+        thumbnailSizeUrl={thumbnailUrl}
+        aspectRatio={aspectRatio}
+        priority={true}
+      >
+        <video
+          src={resultUrl}
+          className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg opacity-40 ${
+            isLoaded ? '!opacity-100' : ''
+          }`}
+          style={{ objectFit: 'contain', objectPosition: 'center' }}
+          autoPlay={true}
+          muted={true}
+          loop={true}
+          controls={!disableControls}
+          onPlay={() => {
+            setIsLoaded(true)
+            onLoad && onLoad()
+          }}
         />
-      ) : null}
-      <video
-        src={resultUrl}
-        className={`w-full h-auto object-contain absolute z-10 inset-0 rounded-lg opacity-0 ${
-          isLoaded ? '!opacity-100' : ''
-        }`}
-        style={{ objectFit: 'contain', objectPosition: 'center' }}
-        autoPlay={true}
-        muted={true}
-        loop={true}
-        controls={!disableControls}
-        onPlay={() => {
-          setIsLoaded(true)
-          onLoad && onLoad()
-        }}
-      />
+      </ImageResultZoomable>
     </>
   )
 }

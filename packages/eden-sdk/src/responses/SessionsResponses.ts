@@ -45,7 +45,7 @@ export enum SessionEventType {
 
 export type Session = {
   id: string
-  scenario: string
+  type: string
   creator: string
 }
 

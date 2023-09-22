@@ -4,8 +4,12 @@ import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = req.session.token
   const { userId } = req.query as { userId: string }
+  const authToken = req.session.token
+
+  if (!authToken) {
+    return res.status(401).json({ error: 'Not authenticated' })
+  }
 
   try {
     const eden = new EdenClient({

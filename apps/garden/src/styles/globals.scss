@@ -5,8 +5,12 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+html, body, image, video, main {
     outline: 0;
+}
+
+body {
+    min-height: calc(100vh + 1px); //cheap hack to force scroll bars to be always present
 }
 
 .ant-modal-mask {
@@ -30,7 +34,7 @@ body {
     padding: 8px 8px !important;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .ant-modal-content {
         padding: 0 !important;
         border: 0 !important;   
