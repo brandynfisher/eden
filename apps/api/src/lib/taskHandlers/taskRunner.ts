@@ -117,7 +117,6 @@ const runTask = async (
       speech_url: audioUrl,
       gfpgan: false,
       gfpgan_upscale: 1,
-      intro_text: null,
     })
 
     const result = await model.predict({
@@ -126,7 +125,6 @@ const runTask = async (
       speech_url: audioUrl,
       gfpgan: false,
       gfpgan_upscale: 1,
-      intro_text: null,
     })
     console.log('run task 10')
 
@@ -216,7 +214,6 @@ const runTask = async (
       speech_url: audioUrl,
       gfpgan: false,
       gfpgan_upscale: 1,
-      intro_text: null,
     })
     const result = await model.predict({
       mode: 'wav2lip',
@@ -224,7 +221,6 @@ const runTask = async (
       speech_url: audioUrl,
       gfpgan: false,
       gfpgan_upscale: 1,
-      intro_text: null,
     })
     console.log('run task 10')
 
