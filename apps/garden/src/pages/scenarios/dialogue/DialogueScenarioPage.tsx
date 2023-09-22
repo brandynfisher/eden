@@ -123,7 +123,10 @@ const DialogueScenarioPageContent = ({
     () =>
       debounce(async () => {
         setIsFormTouched(true)
-        await getTaskCost('dialogue', { prompt: 'dummy prompt' })
+        await getTaskCost('dialogue', {
+          characterIds: ['1', '2'],
+          prompt: 'dummy prompt',
+        })
       }, 500),
     [],
   )
