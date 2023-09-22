@@ -2,16 +2,16 @@ import { fetcher } from '@/lib/fetcher'
 import useSWR from 'swr'
 
 export const useMySessionEvents = ({
-  userId,
+  sessionId,
   isAuthenticated,
   options,
 }: {
-  userId: string | null
+  sessionId: string | null
   isAuthenticated: boolean
   options?: {}
 }) => {
   const { data, mutate: refetchMyCharacters } = useSWR(
-    userId && isAuthenticated ? `/api/sessions/?userId=${userId}` : null,
+    sessionId && isAuthenticated ? `/api/sessions/${sessionId}/events` : null,
     fetcher,
     options,
   )

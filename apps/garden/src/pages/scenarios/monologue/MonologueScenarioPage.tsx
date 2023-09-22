@@ -2,7 +2,7 @@ import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCost
 import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
 import FormLabel from '@/components/Forms/FormLabel'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
-import { requireAuth } from '@/lib/auth'
+import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
@@ -16,7 +16,6 @@ import Link from 'next/link'
 import React, {
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -37,8 +36,9 @@ const MonologueScenarioPageContent = ({
     setHasChangedGenerator,
     refetchPendingTasks,
   } = useContext(CreationNotificationContext)
-  const { refetch, mannaBalance, isAuthenticated, authenticate } =
-    useContext(UserContext)
+  const { refetch, mannaBalance } = useContext(UserContext)
+  const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
+    useTaskCost()
   const [isFormTouched, setIsFormTouched] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeCharacter, setActiveCharacter] = useState<Character>(
@@ -47,20 +47,8 @@ const MonologueScenarioPageContent = ({
   const [activeCharacterName, setActiveCharacterName] = useState<string>(
     activeCharacter && activeCharacter.name,
   )
-  const [canAffordOperation, setCanAffordOperation] = useState(false)
-  const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
-  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState<boolean | null>(
-    null,
-  )
-  const { width } = useViewportSize()
 
-  useEffect(() => {
-    if (taskCost && mannaBalance) {
-      setCanAffordOperation(mannaBalance >= taskCost?.cost)
-    } else {
-      setCanAffordOperation(true)
-    }
-  }, [taskCost, mannaBalance])
+  const { width } = useViewportSize()
 
   const handleActiveCharacterChange = (characterName: string) => {
     const character = characters?.find(
@@ -125,39 +113,12 @@ const MonologueScenarioPageContent = ({
 
   const debouncedHandleFormFieldsChange = useMemo(
     () =>
-      debounce(() => {
+      debounce(async () => {
         setIsFormTouched(true)
-        handleGetTaskCost()
+        await getTaskCost('monologue', { prompt: 'dummy prompt' })
       }, 500),
     [],
   )
-
-  const handleGetTaskCost = useCallback(async () => {
-    setIsLoadingTaskCost(true)
-
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-
-      setIsLoadingTaskCost(false)
-      return
-    }
-
-    try {
-      message.destroy()
-
-      const response = await axios.post('/api/tasks/cost', {
-        generatorName: 'monologue',
-        config: { prompt: 'dummy prompt' },
-      })
-
-      setTaskCost(response.data)
-    } catch (err) {
-      console.error(err)
-      message.error('Error fetching task cost estimate')
-    } finally {
-      setIsLoadingTaskCost(false)
-    }
-  }, [])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -230,7 +191,7 @@ const MonologueScenarioPageContent = ({
                       )}
                       <MannaCostEstimate
                         isLoading={!!isLoadingTaskCost}
-                        cost={taskCost?.cost || 'n/a'}
+                        cost={taskCost || 'n/a'}
                       />
                     </div>
                   </div>,
