@@ -210,7 +210,7 @@ function ModalProvider({ children }: PropsWithChildren) {
 
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
-      <div tabIndex={0}>
+      <div tabIndex={0} className="outline-0">
         {renderComponent()}
         {children}
       </div>
