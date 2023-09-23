@@ -22,6 +22,29 @@ const MediaDisplay = ({
   aspectRatio: number
   priority?: boolean
 }) => {
+  // const [ adjustedAspectRatio, setAdjustedAspectRatio ] = useState(aspectRatio)
+  // const { ref, width, height } = useElementSize();
+
+  // useEffect(() => {
+  //   if (!contained) return
+  //
+  //   if (ref) {
+  //     const roundedWidth = Number(width.toFixed(0))
+  //     const roundedHeight = Number(height.toFixed(0))
+  //
+  //     const containerHeight = roundedHeight
+  //     const imageHeight = (roundedWidth * aspectRatio) / 100
+  //
+  //     if (imageHeight > containerHeight) {
+  //       const newAspectRatio = parseFloat(((containerHeight / roundedWidth) * 100).toFixed(0))
+  //       setAdjustedAspectRatio(newAspectRatio)
+  //       console.log('SETTING NEW ASPECT RATIO', newAspectRatio)
+  //     } else {
+  //       setAdjustedAspectRatio(aspectRatio)
+  //     }
+  //   }
+  // }, [ref, height, width, aspectRatio])
+
   const renderPreview = () => {
     if (!creationUri) return null
     if (isImageUrl(creationUri)) {
@@ -53,7 +76,9 @@ const MediaDisplay = ({
 
   return (
     <div
-      className={`media-display relative max-h-full max-w-full flex flex-grow ${
+      // ref={ref}
+      // className={`media-display relative max-h-[85vh] h-full max-w-full flex flex-grow ${
+      className={`media-display relative max-w-full flex flex-grow ${
         className ? className : ''
       }`}
     >

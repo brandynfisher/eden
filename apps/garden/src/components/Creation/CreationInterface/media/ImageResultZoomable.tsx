@@ -2,7 +2,7 @@ import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/med
 import ImagePreviewMask from '@/components/Creation/CreationInterface/media/ImagePreviewMask'
 import { LoadingOutlined } from '@ant-design/icons'
 import Image from 'next/image'
-import React, { ReactNode, useCallback, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useState } from 'react'
 
 const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
   return (
@@ -12,7 +12,7 @@ const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
         alt={''}
         width="0"
         height="0"
-        className="w-full h-auto object-contain absolute z-10 inset-0"
+        className="w-full h-full object-contain absolute z-10 inset-0"
         sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
         style={{ objectFit: 'contain', objectPosition: 'center' }}
       />
@@ -40,54 +40,33 @@ const ImageResultZoomable = ({
   children?: ReactNode
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [adjustedAspectRatio, setAdjustedAspectRatio] = useState(aspectRatio)
 
   const handleOnLoad = useCallback(() => {
-    if (containerRef.current) {
-      console.log({
-        offsetHeight: containerRef.current.offsetHeight,
-        offsetWidth: containerRef.current.offsetWidth,
-        aspectRatio,
-      })
-      const containerHeight = containerRef.current.offsetHeight
-      const imageHeight = (containerRef.current.offsetWidth * aspectRatio) / 100
-      if (imageHeight > containerHeight) {
-        const newAspectRatio =
-          (containerHeight / containerRef.current.offsetWidth) * 100
-        // aspectRatio = newAspectRatio
-        setAdjustedAspectRatio(newAspectRatio)
-      }
-      console.log(containerHeight, imageHeight, aspectRatio)
-    }
-
-    if (!isLoaded) {
-      // console.log('-- set', true, previewSizeUrl.slice(50))
-      setIsLoaded(true)
-      // }
-    } else {
-      // console.log('-- set', false, previewSizeUrl.slice(50))
-      setIsLoaded(false)
-    }
+    // console.log('handleOnLoad')
+    // if (!isLoaded) {
+    setIsLoaded(true)
+    // } else {
+    // console.log('-- unload')
+    // setIsLoaded(false)
+    // }
 
     if (onLoad) {
       onLoad()
     }
-  }, [isLoaded, onLoad, previewSizeUrl, containerRef, aspectRatio])
+  }, [onLoad, previewSizeUrl, setIsLoaded])
 
   return (
     <div
       key={previewSizeUrl}
-      ref={containerRef}
-      className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg max-h-[80vh]`}
-      style={{ paddingTop: `${adjustedAspectRatio}%` }}
+      className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg`}
+      style={{ paddingTop: `${aspectRatio}%` }}
     >
       {!isLoaded ? (
         <div className="absolute inset-0 text-gray-500 opacity-80">
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
-      {thumbnailSizeUrl ? (
+      {!isLoaded && thumbnailSizeUrl ? (
         <ImagePlaceholder imageUrl={thumbnailSizeUrl} />
       ) : null}
       {previewSizeUrl ? (
