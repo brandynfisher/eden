@@ -452,3 +452,9 @@ body {
         }
     }
 }
+
+.ant-modal,
+.ant-modal-wrap,
+.ant-modal-content {
+    overflow-x: hidden !important;
+}
