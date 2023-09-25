@@ -27,6 +27,7 @@ const VideoPreview = ({
   return (
     <div className="rounded-lg overflow-hidden relative pointer-events-none">
       <ImageResult
+        key={creation.thumbnail}
         previewSizeUrl={creation.thumbnail || ''}
         aspectRatio={getAspectRatio(
           creation.mediaAttributes.width,

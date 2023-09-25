@@ -17,12 +17,15 @@ const MediaPreview = ({
   if (isImageUrl(creation.uri)) {
     return (
       <ImageResultZoomable
+        key={creation.thumbnail}
         previewSizeUrl={creation.thumbnail || ''}
         aspectRatio={aspectRatio}
       />
     )
   } else if (isVideoUrl(creation.uri)) {
-    return <VideoPreview creation={creation} hovered={hovered} />
+    return (
+      <VideoPreview key={creation.uri} creation={creation} hovered={hovered} />
+    )
   }
   return null
 }

@@ -30,6 +30,7 @@ const ImageResultZoomable = ({
   priority,
   children,
 }: {
+  key?: string
   fullSizeUrl?: string
   previewSizeUrl?: string
   thumbnailSizeUrl?: string
@@ -57,7 +58,6 @@ const ImageResultZoomable = ({
 
   return (
     <div
-      key={previewSizeUrl}
       className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
@@ -66,12 +66,13 @@ const ImageResultZoomable = ({
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
-      {!isLoaded && thumbnailSizeUrl ? (
-        <ImagePlaceholder imageUrl={thumbnailSizeUrl} />
+      {thumbnailSizeUrl ? (
+        <ImagePlaceholder key={thumbnailSizeUrl} imageUrl={thumbnailSizeUrl} />
       ) : null}
       {previewSizeUrl ? (
         <div className="absolute inset-0">
           <Image
+            key={previewSizeUrl}
             src={previewSizeUrl}
             alt={previewSizeUrl}
             sizes={'(max-width: 1024px) 100vw, 50vw'}
