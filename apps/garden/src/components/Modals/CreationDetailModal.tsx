@@ -21,7 +21,7 @@ const CreationDetail = dynamic(
 )
 
 const CreationDetailModal = ({
-  loadSimilar,
+  // loadSimilar,
   ...rest
 }: {
   loadSimilar?: boolean
@@ -87,7 +87,7 @@ const CreationDetailModal = ({
         <CreationDetail
           creation={currentItem as Creation}
           isModal={true}
-          loadSimilar={loadSimilar}
+          // loadSimilar={loadSimilar}
         />
       )}
       {currentIndex !== null ? (
