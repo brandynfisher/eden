@@ -1,6 +1,6 @@
 import ConfigParamsTabs from '@/components/ConfigParamsTabs'
 import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
-import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
+// import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
@@ -20,11 +20,11 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 const CreationDetail = ({
   creation,
   isModal,
-  loadSimilar,
-}: {
+}: // loadSimilar,
+{
   creation: Creation
   isModal?: boolean
-  loadSimilar?: boolean
+  // loadSimilar?: boolean
 }) => {
   const { isConnected, isAuthenticated, user, address } =
     useContext(UserContext)
@@ -195,13 +195,13 @@ const CreationDetail = ({
             <ConfigParamsTabs data={creation} />
           </div>
         </div>
-        {loadSimilar ? (
-          <SimilarCreations
-            creation={creation}
-            containerRef={containerRef}
-            isModal={isModal}
-          />
-        ) : null}
+        {/*{loadSimilar ? (*/}
+        {/*  <SimilarCreations*/}
+        {/*    creation={creation}*/}
+        {/*    containerRef={containerRef}*/}
+        {/*    isModal={isModal}*/}
+        {/*  />*/}
+        {/*) : null}*/}
       </div>
     </>
   )
