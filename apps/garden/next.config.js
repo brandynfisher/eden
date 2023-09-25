@@ -15,6 +15,22 @@ const devImageDomains = [
 const imageDomains = process.env.NODE_ENV === 'development' ? [ ...defaultImageDomains, ...devImageDomains ] : defaultImageDomains
 
 module.exports = withTM({
+  async redirects() {
+    return [
+      process.env.EDEN_MAINTENANCE_MODE === 'true' ?
+        {
+          source: "/((?!maintenance|downtime|android-chrome-192x192).*)",
+          destination: "/maintenance.html",
+          permanent: false,
+        }
+        :
+        {
+          source: "/maintenance.html",
+          destination: "/",
+          permanent: false,
+        },
+    ]
+  },
   swcMinify: true,
   output: 'standalone',
   experimental: {
