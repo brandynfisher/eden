@@ -118,6 +118,7 @@ class RestfulRepository<T> implements IRepository<T> {
     options: object = {},
   ): Promise<T> {
     const obj = await this.model.findOneAndUpdate({ _id: id }, data, options)
+    console.log({ _id: id }, data, options)
     return obj.save()
   }
 

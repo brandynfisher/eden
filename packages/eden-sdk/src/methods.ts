@@ -1,5 +1,8 @@
 import { AxiosRequestConfig } from 'axios'
 import {
+  Creation,
+  CreationsDeleteResponse,
+  CreationsUpdateResponse,
   CreatorFollowersListResponse,
   CreatorFollowingListResponse,
   SessionEventsListResponse,
@@ -231,6 +234,14 @@ export abstract class Methods {
       this,
       creationsUnreactRequestConfig,
     ),
+    update: bindApiCall<CreationsUpdateArguments, CreationsUpdateResponse>(
+      this,
+      creationsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<CreationsDeleteArguments, CreationsDeleteResponse>(
+      this,
+      creationsDeleteRequestConfig,
+    )
   }
 
   public readonly creators = {
@@ -516,6 +527,15 @@ export interface CreationsReactArguments extends WebAPICallOptions {
 export interface CreationsUnreactArguments extends WebAPICallOptions {
   creationId: string
   reaction: ReactionType
+}
+
+export interface CreationsDeleteArguments extends WebAPICallOptions {
+  creationId: string
+}
+
+export interface CreationsUpdateArguments extends WebAPICallOptions {
+  creationId: string,
+  update: Partial<Creation>
 }
 
 export interface ConceptsListArguments
@@ -904,6 +924,30 @@ const creationsUnreactRequestConfig = (
   return {
     method: 'POST',
     url: 'creations/unreact',
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creationsUpdateRequestConfig = (
+  args: CreationsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `creations/${args.creationId}`,
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creationsDeleteRequestConfig = (
+  args: CreationsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `creations/${args.creationId}`,
     data: {
       ...args,
     },

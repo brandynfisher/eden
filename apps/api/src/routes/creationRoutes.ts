@@ -4,8 +4,10 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
+  creationDelete,
   creationReact,
   creationUnreact,
+  creationUpdate,
   getCreation,
   getCreationSimilar,
   listCreations,
@@ -30,10 +32,10 @@ const creationRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => listCreations(request, reply),
   })
 
-  server.get('/creations/:creationId', {
+  server.get('/creations/:id', {
     schema: {
       params: {
-        creationId: Type.String(),
+        id: Type.String(),
       },
       response: {
         200: {
@@ -43,6 +45,41 @@ const creationRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async request => maybeAuth(server, request)],
     handler: (request, reply) => getCreation(request, reply),
+  })
+
+  server.patch('/creations/:id', {
+    schema: {
+      params: {
+        id: Type.String(),
+      },
+      request: {
+        update: Type.Object({
+          private: Type.Boolean(),
+        }),
+      },
+      response: {
+        200: {
+          creation: Type.Any(),
+        },
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => creationUpdate(request, reply),
+  })
+
+  server.delete('/creations/:id', {
+    schema: {
+      params: {
+        id: Type.String(),
+      },
+      response: {
+        200: {
+          success: Type.Boolean(),
+        },
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => creationDelete(request, reply),
   })
 
   server.get('/creations/:creationId/similar', {

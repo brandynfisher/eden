@@ -15,7 +15,7 @@ const fetchCreation = async (context: NextPageContext) => {
   const { query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations?creationId=${id}`)
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations/${id}`)
 }
 
 export const getServerSideProps = getServerSidePropsBase([

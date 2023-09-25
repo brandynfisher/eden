@@ -1,9 +1,11 @@
 import {
+  CreationsDeleteArguments,
   CreationsGetArguments,
   CreationsGetSimilarArguments,
   CreationsListArguments,
   CreationsReactArguments,
   CreationsUnreactArguments,
+  CreationsUpdateArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -242,6 +244,70 @@ export const getCreationSimilar = async (
   })
 
   return reply.status(200).send({ similarCreations })
+}
+
+export const creationDelete = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { id } = request.params as CreationsDeleteArguments
+
+  const creation = await Creation.findById(id)
+
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
+
+  if (creation.user.userId !== userId.toString()) {
+    return reply.status(401).send({
+      message: 'User not authorized to delete this',
+    })
+  }
+
+  await creation.delete({ deleteBy: 'user' })
+
+  return reply.status(200).send({
+    success: true,
+  })
+}
+
+export const creationUpdate = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { creationId } = request.params as CreationsUpdateArguments
+  const { update } = request.body as CreationsUpdateArguments
+
+  if (!userId || !creationId || !update) {
+    return reply.status(422).send({
+      message: 'Missing parameters or malformed request body',
+    })
+  }
+
+  const creation = await Creation.findOneAndUpdate(
+    {
+      creationId,
+      user: userId,
+    },
+    update,
+    {
+      new: true,
+    },
+  )
+
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
+
+  return reply.status(200).send({
+    creation,
+  })
 }
 
 export const creationReact = async (

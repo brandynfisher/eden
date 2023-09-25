@@ -50,6 +50,7 @@ const MediaDisplay = ({
     if (isImageUrl(creationUri)) {
       return (
         <ImageResultZoomable
+          key={creationUri}
           aspectRatio={aspectRatio}
           previewSizeUrl={
             previewUri || `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
@@ -64,6 +65,7 @@ const MediaDisplay = ({
     } else if (isVideoUrl(creationUri)) {
       return (
         <VideoResultV2
+          key={creationUri}
           resultUrl={creationUri}
           thumbnailUrl={thumbnailUri}
           onLoad={onLoad}

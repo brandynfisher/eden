@@ -1,13 +1,16 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import mongooseDelete from 'mongoose-delete'
+import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
+import { VisibilitySchema } from '../types/baseSchemas'
 import { UserDocument } from './Creator'
 import { TaskDocument } from './Task'
 
-export interface CreationSchema {
+export interface CreationSchema extends VisibilitySchema {
   user: UserDocument
   task: TaskDocument
   praiseCount: number
@@ -43,7 +46,7 @@ export interface CreationInput {
   }
 }
 
-export interface CreationDocument extends CreationSchema, Document {}
+export interface CreationDocument extends SoftDeleteDocument, CreationSchema {}
 
 const creation = new Schema<CreationDocument>(
   {
@@ -114,6 +117,17 @@ const creation = new Schema<CreationDocument>(
         type: Number,
       },
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    deleteBy: {
+      type: String,
+    },
+    private: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -128,6 +142,8 @@ creation.pre<CreationDocument>('save', function (next) {
 
 creation.index({ createdAt: 1 })
 creation.index({ user: 1 })
+
+creation.plugin(mongooseDelete, { overrideMethods: 'all' })
 
 creation.plugin(paginate)
 creation.plugin(aggregatePaginate)
