@@ -10,7 +10,7 @@ import { MasonryContext } from '@/providers/MasonryProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
-import LockPersonIcon from '@mui/icons-material/LockPerson'
+import LockIcon from '@mui/icons-material/Lock'
 import { useRouter } from 'next/router'
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react'
 
@@ -79,6 +79,15 @@ const CreationCard: FC<{
               />
             </a>
           </div>
+          {creation.private ? (
+            <div
+              className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
+                hovered ? 'top-12' : ''
+              }`}
+            >
+              <LockIcon fontSize="small" />
+            </div>
+          ) : null}
           <div
             className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
               hovered ? 'md:!visible' : 'md:hidden'
@@ -99,7 +108,9 @@ const CreationCard: FC<{
               </div>
             </div>
             <div className="flex items-center gap-4">
-              {creation.private ? <LockPersonIcon fontSize="medium" /> : null}
+              {creation.private ? (
+                <LockIcon fontSize="small" className="md:hidden" />
+              ) : null}
               <CreationCardToolsDropdown
                 creation={creation}
                 onChange={setCreation}
