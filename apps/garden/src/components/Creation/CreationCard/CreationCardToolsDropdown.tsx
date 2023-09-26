@@ -110,8 +110,10 @@ const CreationCardToolsDropdown = ({
       },
     ]
 
+    const hasUserFeatureFlagPrivate =
+      user && user.featureFlags && user.featureFlags.includes('private')
     const creatorMenuItems =
-      user?.userId === creation.user.userId
+      hasUserFeatureFlagPrivate && user?.userId === creation.user.userId
         ? [
             {
               key: '4',

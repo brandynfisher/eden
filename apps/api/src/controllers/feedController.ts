@@ -55,7 +55,14 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
         from: 'creations',
         let: { followingId: '$following' },
         pipeline: [
-          { $match: { $expr: { $eq: ['$user', '$$followingId'] } } },
+          {
+            $match: {
+              $and: [
+                { $expr: { $eq: ['$user', '$$followingId'] } },
+                { private: { $ne: true } },
+              ],
+            },
+          },
           {
             $project: {
               'embedding.embedding': 0,
@@ -97,12 +104,19 @@ export const getCreationsFeed = async (
     userId: filterUserIds,
   })
 
+  const { userId: ownUserId } = request.user
+  const creatorId = creators.docs
+    ? creators.docs.map(creator => creator._id)[0].toString()
+    : undefined
+  const isUserRequestingOwnProfileFeed =
+    creatorId && ownUserId.toString() === creatorId
+
   const creationRepository = new CreationRepository(Creation)
   let creations: PaginatedResponse<CreationDocument>
 
   if (orderBy === 'following') {
     const followCreationRepository = new CreationRepository(Follow) //@todo: this reads rather wonky
-    const followAggregate = aggregateCreationsByFollowerId(request.user.userId)
+    const followAggregate = aggregateCreationsByFollowerId(ownUserId)
 
     creations = await followCreationRepository.aggregateQuery(followAggregate, {
       limit,
@@ -137,6 +151,10 @@ export const getCreationsFeed = async (
         new Date().setHours(new Date().getHours() - hoursAgo),
       )
       sortFilter['createdAt'] = { $gte: dateCutoff }
+    }
+
+    if (!isUserRequestingOwnProfileFeed) {
+      sortFilter['private'] = { $ne: true }
     }
 
     creations = await creationRepository.query(

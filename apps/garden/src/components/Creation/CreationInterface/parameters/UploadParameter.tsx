@@ -109,9 +109,10 @@ const UploadParameter = (props: {
         <>
           <div>Uploaded successfully</div>
           <div className="mt-1 font-bold">
-            <a href={info.file.response.fileUrl}>[link]</a>
+            <a href={info.file.response.fileUrl}>[ link ]</a>
           </div>
         </>,
+        5000,
       )
     }
     if (info.file.status === 'removed') {
