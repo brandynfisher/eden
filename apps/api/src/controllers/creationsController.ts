@@ -251,9 +251,9 @@ export const creationDelete = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { id } = request.params as CreationsDeleteArguments
+  const { creationId } = request.params as CreationsDeleteArguments
 
-  const creation = await Creation.findById(id)
+  const creation = await Creation.findById(creationId)
 
   if (!creation) {
     return reply.status(404).send({
@@ -261,7 +261,7 @@ export const creationDelete = async (
     })
   }
 
-  if (creation.user.userId !== userId.toString()) {
+  if (creation.user.toString() !== userId.toString()) {
     return reply.status(401).send({
       message: 'User not authorized to delete this',
     })
@@ -298,8 +298,6 @@ export const creationUpdate = async (
       new: true,
     },
   )
-
-  console.log(creation)
 
   if (!creation) {
     return reply.status(404).send({

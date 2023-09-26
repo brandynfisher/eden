@@ -12,7 +12,7 @@ import { UserContext } from '@/providers/UserProvider'
 import { EllipsisOutlined } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
-import React, { useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
 
 const CreationCardToolsDropdown = ({
   creation,
@@ -22,12 +22,23 @@ const CreationCardToolsDropdown = ({
   onChange: (updatedCreation: Creation) => void
 }) => {
   const { user } = useContext(UserContext)
-  const handleOnChange = (visibilityUpdate: { private: boolean }) => {
+
+  const handleOnVisibilityChange = useCallback(
+    (visibilityUpdate: { private: boolean }) => {
+      onChange({
+        ...creation,
+        ...visibilityUpdate,
+      })
+    },
+    [creation, onChange],
+  )
+
+  const handleDelete = useCallback(() => {
     onChange({
       ...creation,
-      ...visibilityUpdate,
+      deleted: true,
     })
-  }
+  }, [creation, onChange])
 
   const imageCopyItems = [
     {
@@ -129,14 +140,14 @@ const CreationCardToolsDropdown = ({
                       creationId={creation._id}
                       variant="text"
                       label="Set Public"
-                      onChange={handleOnChange}
+                      onChange={handleOnVisibilityChange}
                     />
                   ) : (
                     <MakePrivateButton
                       creationId={creation._id}
                       variant="text"
                       label="Set Private"
-                      onChange={handleOnChange}
+                      onChange={handleOnVisibilityChange}
                     />
                   ),
                   key: '5-1',
@@ -147,6 +158,7 @@ const CreationCardToolsDropdown = ({
                       creationId={creation._id}
                       variant="text"
                       label="Delete"
+                      onChange={handleDelete}
                     />
                   ),
                   key: '5-2',

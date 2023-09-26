@@ -9,10 +9,12 @@ const DeleteButton = ({
   creationId,
   variant,
   label,
+  onChange,
 }: {
   creationId: string
   variant?: 'text'
   label?: string
+  onChange?: () => void
 }) => {
   const { message } = App.useApp()
   // const [ isLoading, setIsLoading ] = useState(false)
@@ -23,6 +25,7 @@ const DeleteButton = ({
       await axios.delete(`/api/creations/${creationId}`)
       message.destroy()
       message.success('Creation deleted')
+      onChange && onChange()
     } catch (err) {
       handleAxiosError(err, message)
     }
