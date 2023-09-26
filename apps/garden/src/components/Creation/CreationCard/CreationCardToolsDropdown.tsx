@@ -14,8 +14,20 @@ import { Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, { useContext } from 'react'
 
-const CreationCardToolsDropdown = ({ creation }: { creation: Creation }) => {
+const CreationCardToolsDropdown = ({
+  creation,
+  onChange,
+}: {
+  creation: Creation
+  onChange: (updatedCreation: Creation) => void
+}) => {
   const { user } = useContext(UserContext)
+  const handleOnChange = (visibilityUpdate: { private: boolean }) => {
+    onChange({
+      ...creation,
+      ...visibilityUpdate,
+    })
+  }
 
   const imageCopyItems = [
     {
@@ -115,12 +127,14 @@ const CreationCardToolsDropdown = ({ creation }: { creation: Creation }) => {
                       creationId={creation._id}
                       variant="text"
                       label="Set Public"
+                      onChange={handleOnChange}
                     />
                   ) : (
                     <MakePrivateButton
                       creationId={creation._id}
                       variant="text"
                       label="Set Private"
+                      onChange={handleOnChange}
                     />
                   ),
                   key: '5-1',

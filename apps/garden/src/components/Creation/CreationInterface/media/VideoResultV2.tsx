@@ -31,7 +31,7 @@ const VideoResult = ({
           className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg opacity-40 ${
             isLoaded ? '!opacity-100' : ''
           }`}
-          style={{ objectFit: 'contain', objectPosition: 'center' }}
+          style={{ objectFit: 'contain', objectPosition: 'top center' }}
           autoPlay={true}
           muted={true}
           loop={true}

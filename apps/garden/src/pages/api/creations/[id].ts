@@ -1,13 +1,11 @@
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
-import { Creation, EdenClient } from '@edenlabs/eden-sdk'
+import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
   const { id } = req.query
-
-  console.log(id, req.query)
 
   try {
     const eden = new EdenClient({
@@ -23,7 +21,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const { update } = req.body
       return updateCreation(
         id as string,
-        update as Partial<Creation>,
+        update as { private: boolean },
         req,
         res,
         eden,
@@ -55,7 +53,7 @@ const getCreation = async (
 
 const updateCreation = async (
   id: string,
-  updatePartial: Partial<Creation>,
+  updatePartial: { private: boolean },
   req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,

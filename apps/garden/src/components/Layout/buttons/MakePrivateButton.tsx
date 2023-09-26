@@ -9,10 +9,12 @@ const MakePrivateButton = ({
   creationId,
   variant,
   label,
+  onChange,
 }: {
   creationId: string
   variant?: 'text'
   label?: string
+  onChange?: (visibilityUpdate: { private: boolean }) => void
 }) => {
   const { message } = App.useApp()
   // const [ isLoading, setIsLoading ] = useState(false)
@@ -25,6 +27,7 @@ const MakePrivateButton = ({
       })
       message.destroy()
       message.success('Creation set to private')
+      onChange && onChange({ private: true })
     } catch (err) {
       handleAxiosError(err, message)
     }

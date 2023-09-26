@@ -32,10 +32,10 @@ const creationRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => listCreations(request, reply),
   })
 
-  server.get('/creations/:id', {
+  server.get('/creations/:creationId', {
     schema: {
       params: {
-        id: Type.String(),
+        creationId: Type.String(),
       },
       response: {
         200: {
@@ -47,10 +47,10 @@ const creationRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => getCreation(request, reply),
   })
 
-  server.patch('/creations/:id', {
+  server.patch('/creations/:creationId', {
     schema: {
       params: {
-        id: Type.String(),
+        creationId: Type.String(),
       },
       request: {
         update: Type.Object({
@@ -67,10 +67,10 @@ const creationRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => creationUpdate(request, reply),
   })
 
-  server.delete('/creations/:id', {
+  server.delete('/creations/:creationId', {
     schema: {
       params: {
-        id: Type.String(),
+        creationId: Type.String(),
       },
       response: {
         200: {

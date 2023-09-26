@@ -14,7 +14,7 @@ const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
         height="0"
         className="w-full h-full object-contain absolute z-10 inset-0"
         sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
-        style={{ objectFit: 'contain', objectPosition: 'center' }}
+        style={{ objectFit: 'contain', objectPosition: 'top center' }}
       />
       <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-70 text-gray-700" />
     </div>
@@ -81,7 +81,7 @@ const ImageResultZoomable = ({
             width="0"
             height="0"
             className="w-full h-full object-contain absolute z-10 inset-0"
-            style={{ objectFit: 'contain', objectPosition: 'center' }}
+            style={{ objectFit: 'contain', objectPosition: 'top center' }}
           />
         </div>
       ) : null}

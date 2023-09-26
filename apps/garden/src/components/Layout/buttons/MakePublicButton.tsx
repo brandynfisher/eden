@@ -1,6 +1,5 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { handleAxiosError } from '@/lib/fetcher'
-// import { useState } from 'react';
 import LockOpenIcon from '@mui/icons-material/LockOpen'
 import { App } from 'antd'
 import axios from 'axios'
@@ -9,10 +8,12 @@ const MakePublicButton = ({
   creationId,
   variant,
   label,
+  onChange,
 }: {
   creationId: string
   variant?: 'text'
   label?: string
+  onChange?: (visibilityUpdate: { private: boolean }) => void
 }) => {
   const { message } = App.useApp()
   // const [ isLoading, setIsLoading ] = useState(false)
@@ -25,6 +26,8 @@ const MakePublicButton = ({
       })
       message.destroy()
       message.success('Creation set to public')
+
+      onChange && onChange({ private: false })
     } catch (err) {
       handleAxiosError(err, message)
     }

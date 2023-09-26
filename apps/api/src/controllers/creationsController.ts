@@ -290,14 +290,16 @@ export const creationUpdate = async (
 
   const creation = await Creation.findOneAndUpdate(
     {
-      creationId,
+      _id: creationId,
       user: userId,
     },
-    update,
+    { private: update.private },
     {
       new: true,
     },
   )
+
+  console.log(creation)
 
   if (!creation) {
     return reply.status(404).send({

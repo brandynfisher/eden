@@ -100,7 +100,10 @@ const CreationCard: FC<{
             </div>
             <div className="flex items-center gap-4">
               {creation.private ? <LockPersonIcon fontSize="medium" /> : null}
-              <CreationCardToolsDropdown creation={creation} />
+              <CreationCardToolsDropdown
+                creation={creation}
+                onChange={setCreation}
+              />
             </div>
           </div>
           <div
