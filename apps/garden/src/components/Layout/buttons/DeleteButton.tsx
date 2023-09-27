@@ -6,12 +6,14 @@ import axios from 'axios'
 
 // import { useState } from 'react';
 const DeleteButton = ({
-  creationId,
+  itemId,
+  itemType,
   variant,
   label,
   onChange,
 }: {
-  creationId: string
+  itemId: string
+  itemType: 'creation' | 'concept'
   variant?: 'text'
   label?: string
   onChange?: () => void
@@ -22,9 +24,9 @@ const DeleteButton = ({
   const onButtonClick = async () => {
     // setIsLoading(true)
     try {
-      await axios.delete(`/api/creations/${creationId}`)
+      await axios.delete(`/api/${itemType}s/${itemId}`)
       message.destroy()
-      message.success('Creation deleted')
+      message.success(`${itemType} deleted`)
       onChange && onChange()
     } catch (err) {
       handleAxiosError(err, message)
@@ -37,7 +39,7 @@ const DeleteButton = ({
       <div
         onClick={() => onButtonClick()}
         className="flex items-center gap-2 w-full justify-between text-red-500"
-        title={'Delete creation'}
+        title={`Delete ${itemType}`}
       >
         <div>{label}</div>
         <DeleteForeverIcon fontSize="small" />
@@ -47,7 +49,7 @@ const DeleteButton = ({
 
   return (
     <CircleButton
-      title={'Delete creation'}
+      title={`Delete ${itemType}`}
       icon={<DeleteForeverIcon fontSize="medium" className="text-red-500" />}
       onClick={() => onButtonClick()}
     />

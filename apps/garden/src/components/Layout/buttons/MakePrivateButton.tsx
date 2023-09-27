@@ -6,12 +6,14 @@ import { App } from 'antd'
 import axios from 'axios'
 
 const MakePrivateButton = ({
-  creationId,
+  itemId,
+  itemType,
   variant,
   label,
   onChange,
 }: {
-  creationId: string
+  itemId: string
+  itemType: 'creation' | 'concept'
   variant?: 'text'
   label?: string
   onChange?: (visibilityUpdate: { private: boolean }) => void
@@ -22,11 +24,11 @@ const MakePrivateButton = ({
   const onButtonClick = async () => {
     // setIsLoading(true)
     try {
-      await axios.patch(`/api/creations/${creationId}`, {
+      await axios.patch(`/api/${itemType}s/${itemId}`, {
         update: { private: true },
       })
       message.destroy()
-      message.success('Creation set to private')
+      message.success(`${itemType} set to private`)
       onChange && onChange({ private: true })
     } catch (err) {
       handleAxiosError(err, message)
@@ -39,7 +41,7 @@ const MakePrivateButton = ({
       <div
         onClick={() => onButtonClick()}
         className="flex items-center gap-2 w-full justify-between"
-        title={'Make creation private'}
+        title={`Make ${itemType} private`}
       >
         <div>{label}</div>
         <LockPersonIcon fontSize="small" />
@@ -49,7 +51,7 @@ const MakePrivateButton = ({
 
   return (
     <CircleButton
-      title={'Make creation private'}
+      title={`Make ${itemType} private`}
       icon={<LockPersonIcon fontSize="medium" />}
       onClick={() => onButtonClick()}
     />

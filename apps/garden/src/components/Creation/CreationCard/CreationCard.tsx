@@ -1,6 +1,6 @@
+import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
-import CreationCardToolsDropdown from '@/components/Creation/CreationCard/CreationCardToolsDropdown'
 import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
@@ -21,7 +21,7 @@ const CreationCard: FC<{
 }> = ({ index, data, disableArrowNav }) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
-  const [creation, setCreation] = useState(data)
+  const [creation, setCreation] = useState<Creation>(data)
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false)
 
@@ -46,7 +46,15 @@ const CreationCard: FC<{
       usesUrl: true,
       originPageUrl: router.asPath,
     })
-  }, [index, data, router, disableArrowNav])
+  }, [
+    creation,
+    setCurrentIndex,
+    showModal,
+    index,
+    data,
+    router,
+    disableArrowNav,
+  ])
 
   const [createdDateString, setCreatedDateString] = useState('')
   const timeSinceCreation = timeAgo(creation.createdAt)
@@ -117,9 +125,12 @@ const CreationCard: FC<{
                   {creation.private ? (
                     <LockIcon fontSize="small" className="md:hidden" />
                   ) : null}
-                  <CreationCardToolsDropdown
-                    creation={creation}
-                    onChange={setCreation}
+                  <CardToolsDropdown
+                    item={creation}
+                    itemType={'creation'}
+                    onChange={updatedItem =>
+                      setCreation(updatedItem as Creation)
+                    }
                   />
                 </div>
               </div>

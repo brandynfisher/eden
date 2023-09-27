@@ -5,12 +5,14 @@ import { App } from 'antd'
 import axios from 'axios'
 
 const MakePublicButton = ({
-  creationId,
+  itemId,
+  itemType,
   variant,
   label,
   onChange,
 }: {
-  creationId: string
+  itemId: string
+  itemType: 'creation' | 'concept'
   variant?: 'text'
   label?: string
   onChange?: (visibilityUpdate: { private: boolean }) => void
@@ -21,11 +23,11 @@ const MakePublicButton = ({
   const onButtonClick = async () => {
     // setIsLoading(true)
     try {
-      await axios.patch(`/api/creations/${creationId}`, {
+      await axios.patch(`/api/${itemType}s/${itemId}`, {
         update: { private: false },
       })
       message.destroy()
-      message.success('Creation set to public')
+      message.success(`${itemType} set to public`)
 
       onChange && onChange({ private: false })
     } catch (err) {
@@ -39,7 +41,7 @@ const MakePublicButton = ({
       <div
         onClick={() => onButtonClick()}
         className="flex items-center gap-2 w-full justify-between"
-        title={'Make creation public'}
+        title={`Make ${itemType} public`}
       >
         <div>{label}</div>
         <LockOpenIcon fontSize="small" />
@@ -49,7 +51,7 @@ const MakePublicButton = ({
 
   return (
     <CircleButton
-      title={'Make creation public'}
+      title={`Make ${itemType} public`}
       icon={<LockOpenIcon fontSize="medium" />}
       onClick={() => onButtonClick()}
     />

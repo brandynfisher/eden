@@ -10,54 +10,54 @@ import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { EllipsisOutlined } from '@ant-design/icons'
-import { Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, { useCallback, useContext } from 'react'
 
-const CreationCardToolsDropdown = ({
-  creation,
+const CardToolsDropdown = ({
+  item,
+  itemType,
   onChange,
 }: {
-  creation: Creation
-  onChange: (updatedCreation: Creation) => void
+  item: Creation | Concept
+  itemType: 'creation' | 'concept'
+  onChange: (updatedItem: Creation | Concept) => void
 }) => {
   const { user } = useContext(UserContext)
 
   const handleOnVisibilityChange = useCallback(
     (visibilityUpdate: { private: boolean }) => {
       onChange({
-        ...creation,
+        ...item,
         ...visibilityUpdate,
       })
     },
-    [creation, onChange],
+    [item, onChange],
   )
 
   const handleDelete = useCallback(() => {
     onChange({
-      ...creation,
+      ...item,
       deleted: true,
     })
-  }, [creation, onChange])
+  }, [item, onChange])
 
   const imageCopyItems = [
     {
-      icon: <CopyImageButton url={creation.uri} variant="text" />,
+      icon: <CopyImageButton url={item.uri} variant="text" />,
       key: '1-1',
     },
   ]
 
   const otherTypeCopyItems = [
     {
-      icon: (
-        <CopyUrlButton url={creation.uri} variant="text" label="File URL" />
-      ),
+      icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
       key: '1-2',
     },
     {
       icon: (
         <CopyUrlButton
-          url={`${CONFIG.NEXT_PUBLIC_HOST}/creations/${creation.uri}`}
+          url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item.uri}`}
           variant="text"
           label="Page URL"
         />
@@ -67,7 +67,7 @@ const CreationCardToolsDropdown = ({
     {
       icon: (
         <CopyUrlButton
-          url={`${CONFIG.NEXT_PUBLIC_HOST}/create/creations?presetId=${creation._id}`}
+          url={`${CONFIG.NEXT_PUBLIC_HOST}/create/${itemType}s?presetId=${item._id}`}
           variant="text"
           label="Preset URL"
         />
@@ -76,7 +76,7 @@ const CreationCardToolsDropdown = ({
     },
   ]
 
-  const copyItems = isImageUrl(creation.uri)
+  const copyItems = isImageUrl(item.uri)
     ? [...imageCopyItems, ...otherTypeCopyItems]
     : otherTypeCopyItems
 
@@ -94,7 +94,7 @@ const CreationCardToolsDropdown = ({
           {
             icon: (
               <NewTabLinkButton
-                url={`${CONFIG.NEXT_PUBLIC_HOST}/creations/${creation._id}`}
+                url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
                 variant="text"
                 label="New Tab"
               />
@@ -110,7 +110,7 @@ const CreationCardToolsDropdown = ({
           {
             icon: (
               <UseAsPresetButton
-                creationId={creation._id}
+                creationId={item._id}
                 variant="text"
                 label="Preset"
               />
@@ -124,7 +124,7 @@ const CreationCardToolsDropdown = ({
     const hasUserFeatureFlagPrivate =
       user && user.featureFlags && user.featureFlags.includes('private')
     const creatorMenuItems =
-      hasUserFeatureFlagPrivate && user?.userId === creation.user.userId
+      hasUserFeatureFlagPrivate && user?.userId === item.user.userId
         ? [
             {
               key: '4',
@@ -135,16 +135,18 @@ const CreationCardToolsDropdown = ({
               key: '5',
               children: [
                 {
-                  icon: creation.private ? (
+                  icon: item.private ? (
                     <MakePublicButton
-                      creationId={creation._id}
+                      itemId={item._id}
+                      itemType={itemType}
                       variant="text"
                       label="Set Public"
                       onChange={handleOnVisibilityChange}
                     />
                   ) : (
                     <MakePrivateButton
-                      creationId={creation._id}
+                      itemId={item._id}
+                      itemType={itemType}
                       variant="text"
                       label="Set Private"
                       onChange={handleOnVisibilityChange}
@@ -155,7 +157,8 @@ const CreationCardToolsDropdown = ({
                 {
                   icon: (
                     <DeleteButton
-                      creationId={creation._id}
+                      itemId={item._id}
+                      itemType={itemType}
                       variant="text"
                       label="Delete"
                       onChange={handleDelete}
@@ -178,8 +181,8 @@ const CreationCardToolsDropdown = ({
       {
         icon: (
           <DownloadFileButton
-            url={creation.uri}
-            fileName={creation._id}
+            url={item.uri}
+            fileName={item._id}
             variant="text"
             label="Download"
           />
@@ -204,4 +207,4 @@ const CreationCardToolsDropdown = ({
   )
 }
 
-export default CreationCardToolsDropdown
+export default CardToolsDropdown
