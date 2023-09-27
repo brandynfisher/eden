@@ -1,4 +1,4 @@
-import {Creator, Task, PaginatedResponse, Reactions} from '.'
+import { Creator, Task, PaginatedResponse, Reactions } from '.'
 import {WebAPICallResult} from '../EdenClient'
 
 export type ConceptsListResponse = WebAPICallResult &
@@ -9,6 +9,16 @@ export type ConceptsListResponse = WebAPICallResult &
 export type ConceptsGetResponse = WebAPICallResult & {
   error?: string
   concept?: Concept
+}
+
+export type ConceptsUpdateResponse = WebAPICallResult & {
+  error?: string
+  concept?: Concept
+}
+
+export type ConceptsDeleteResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
 }
 
 export type Concept = {
@@ -31,4 +41,6 @@ export type Concept = {
   reactions?: Reactions
   createdAt: string
   updatedAt: string
+  private?: boolean,
+  deleted?: boolean
 }

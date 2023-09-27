@@ -1,6 +1,7 @@
 import { AxiosRequestConfig } from 'axios'
 import {
-  Creation,
+  ConceptsDeleteResponse,
+  ConceptsUpdateResponse,
   CreationsDeleteResponse,
   CreationsUpdateResponse,
   CreatorFollowersListResponse,
@@ -290,6 +291,14 @@ export abstract class Methods {
       this,
       conceptsGetRequestConfig,
     ),
+    update: bindApiCall<ConceptsUpdateArguments, ConceptsUpdateResponse>(
+      this,
+      conceptsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
+      this,
+      conceptsDeleteRequestConfig,
+    )
   }
 
   public readonly generators = {
@@ -548,6 +557,17 @@ export interface ConceptsListArguments
 
 export interface ConceptsGetArguments extends WebAPICallOptions {
   conceptId: string
+}
+
+export interface ConceptsDeleteArguments extends WebAPICallOptions {
+  conceptId: string
+}
+
+export interface ConceptsUpdateArguments extends WebAPICallOptions {
+  conceptId: string,
+  update: {
+    private: boolean
+  }
 }
 
 export interface CreatorsFollowArguments extends WebAPICallOptions {
@@ -973,6 +993,30 @@ const conceptsGetRequestConfig = (
   return {
     method: 'GET',
     url: `concepts/${args.conceptId}`,
+  }
+}
+
+const conceptsUpdateRequestConfig = (
+  args: ConceptsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `concepts/${args.conceptId}`,
+    data: {
+      ...args,
+    },
+  }
+}
+
+const conceptsDeleteRequestConfig = (
+  args: ConceptsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `concepts/${args.conceptId}`,
+    data: {
+      ...args,
+    },
   }
 }
 

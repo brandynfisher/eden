@@ -259,6 +259,13 @@ export const getConceptsFeed = async (
     userId: filterUserIds,
   })
 
+  const { userId: ownUserId } = request.user
+  const creatorId = creators.docs
+    ? creators.docs.map(creator => creator._id)[0].toString()
+    : undefined
+  const isUserRequestingOwnProfileFeed =
+    creatorId && ownUserId.toString() === creatorId
+
   const conceptRepository = new ConceptRepository(Concept)
 
   const sort = []
@@ -269,6 +276,10 @@ export const getConceptsFeed = async (
   // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
   if (orderBy !== 'createdAt') {
     sort.push(['createdAt', -1])
+  }
+
+  if (!isUserRequestingOwnProfileFeed) {
+    sortFilter['private'] = { $ne: true }
   }
 
   const concepts: PaginatedResponse<ConceptDocument> =
