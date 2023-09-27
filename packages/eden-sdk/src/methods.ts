@@ -440,6 +440,7 @@ export interface CharactersCreateArguments extends WebAPICallOptions {
   description?: string
   greeting?: string
   dialogue?: any[]
+  isPrivate?: boolean
 }
 
 export interface CharactersUpdateArguments extends WebAPICallOptions {
@@ -449,7 +450,8 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
   voice?: string
   description?: string
   greeting?: string
-  dialogue?: any[]
+  dialogue?: any[],
+  isPrivate?: boolean
 }
 
 export interface CharactersDeleteArguments extends WebAPICallOptions {
@@ -746,8 +748,8 @@ const charactersUpdateRequestConfig = (
   args: CharactersUpdateArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: 'characters/update',
+    method: 'PATCH',
+    url: `characters/${args.characterId}`,
     data: {
       ...args,
     },
@@ -758,8 +760,8 @@ const charactersDeleteRequestConfig = (
   args: CharactersDeleteArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: 'characters/delete',
+    method: 'DELETE',
+    url: `characters/${args.characterId}`,
     data: {
       ...args,
     },
