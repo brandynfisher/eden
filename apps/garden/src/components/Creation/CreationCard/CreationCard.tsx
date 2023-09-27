@@ -58,7 +58,9 @@ const CreationCard: FC<{
   return (
     <div ref={ref} className="mx-auto max-w-[500px] md:mx-0 md:max-w-none">
       {creation.deleted ? (
-        <div className="h-64 w-64">deleted</div>
+        <div className="h-64 w-64 dark:text-gray-500 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-lg">
+          deleted
+        </div>
       ) : (
         <>
           <div className="relative" key={index}>
@@ -89,7 +91,7 @@ const CreationCard: FC<{
                     hovered ? 'top-12' : ''
                   }`}
                 >
-                  <LockIcon fontSize="small" />
+                  <LockIcon fontSize="small" className="text-white" />
                 </div>
               ) : null}
               <div
