@@ -42,7 +42,7 @@ async function updateDefaultVersion(db) {
   const sdxl_generators = [
     'create', 'remix', 
     'blend', 'upscale',
-    'interrogate',
+    'interrogate', 'controlnet',
   ];
   const sdxl_generators_video = [
     'interpolate', 'real2real', 
