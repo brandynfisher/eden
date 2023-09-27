@@ -56,7 +56,7 @@ export type Creation = {
   bookmarked?: boolean
   reactions?: Reactions
   deleted?: boolean,
-  private?: boolean,
+  isPrivate?: boolean,
   createdAt: string
   updatedAt: string
 }

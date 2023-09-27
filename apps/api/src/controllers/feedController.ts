@@ -59,7 +59,7 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
             $match: {
               $and: [
                 { $expr: { $eq: ['$user', '$$followingId'] } },
-                { private: { $ne: true } },
+                { isPrivate: { $ne: true } },
               ],
             },
           },
@@ -154,7 +154,7 @@ export const getCreationsFeed = async (
     }
 
     if (!isUserRequestingOwnProfileFeed) {
-      sortFilter['private'] = { $ne: true }
+      sortFilter['isPrivate'] = { $ne: true }
     }
 
     creations = await creationRepository.query(
@@ -279,7 +279,7 @@ export const getConceptsFeed = async (
   }
 
   if (!isUserRequestingOwnProfileFeed) {
-    sortFilter['private'] = { $ne: true }
+    sortFilter['isPrivate'] = { $ne: true }
   }
 
   const concepts: PaginatedResponse<ConceptDocument> =

@@ -21,7 +21,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const { update } = req.body
       return updateCreation(
         id as string,
-        update as { private: boolean },
+        update as { isPrivate: boolean },
         req,
         res,
         eden,
@@ -53,14 +53,14 @@ const getCreation = async (
 
 const updateCreation = async (
   id: string,
-  updatePartial: { private: boolean },
+  updatePartial: { isPrivate: boolean },
   req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
   const response = await eden.creations.update({
     creationId: id,
-    update: updatePartial,
+    ...updatePartial,
   })
   return res.status(200).json({ creation: response.creation })
 }

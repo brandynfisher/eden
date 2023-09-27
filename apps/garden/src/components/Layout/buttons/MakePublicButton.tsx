@@ -15,7 +15,7 @@ const MakePublicButton = ({
   itemType: 'creation' | 'concept'
   variant?: 'text'
   label?: string
-  onChange?: (visibilityUpdate: { private: boolean }) => void
+  onChange?: (visibilityUpdate: { isPrivate: boolean }) => void
 }) => {
   const { message } = App.useApp()
   // const [ isLoading, setIsLoading ] = useState(false)
@@ -24,12 +24,12 @@ const MakePublicButton = ({
     // setIsLoading(true)
     try {
       await axios.patch(`/api/${itemType}s/${itemId}`, {
-        update: { private: false },
+        update: { isPrivate: false },
       })
       message.destroy()
       message.success(`${itemType} set to public`)
 
-      onChange && onChange({ private: false })
+      onChange && onChange({ isPrivate: false })
     } catch (err) {
       handleAxiosError(err, message)
     }

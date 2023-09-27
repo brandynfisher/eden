@@ -123,7 +123,7 @@ const creation = new Schema<CreationDocument>(
     deleteBy: {
       type: String,
     },
-    private: {
+    isPrivate: {
       type: Boolean,
       default: false,
     },
@@ -143,7 +143,6 @@ creation.index({ createdAt: 1 })
 creation.index({ user: 1 })
 
 creation.plugin(mongooseDelete, { overrideMethods: 'all' })
-
 creation.plugin(paginate)
 creation.plugin(aggregatePaginate)
 

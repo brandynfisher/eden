@@ -69,7 +69,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  {concept.private ? (
+                  {concept.isPrivate ? (
                     <LockIcon fontSize="small" className="md:hidden" />
                   ) : null}
                   <CardToolsDropdown

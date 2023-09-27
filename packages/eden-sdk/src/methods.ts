@@ -544,9 +544,7 @@ export interface CreationsDeleteArguments extends WebAPICallOptions {
 
 export interface CreationsUpdateArguments extends WebAPICallOptions {
   creationId: string,
-  update: {
-    private: boolean
-  }
+  isPrivate: boolean
 }
 
 export interface ConceptsListArguments
@@ -565,9 +563,7 @@ export interface ConceptsDeleteArguments extends WebAPICallOptions {
 
 export interface ConceptsUpdateArguments extends WebAPICallOptions {
   conceptId: string,
-  update: {
-    private: boolean
-  }
+  isPrivate: boolean
 }
 
 export interface CreatorsFollowArguments extends WebAPICallOptions {

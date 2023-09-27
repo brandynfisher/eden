@@ -8,10 +8,12 @@ export type CharactersCreateResponse = WebAPICallResult & {
 
 export type CharactersUpdateResponse = WebAPICallResult & {
   error?: string
+  character?: Character
 }
 
 export type CharactersDeleteResponse = WebAPICallResult & {
   error?: string
+  success?: boolean
 }
 
 export type CharactersListResponse = WebAPICallResult &

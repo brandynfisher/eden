@@ -162,9 +162,9 @@ export const conceptUpdate = async (
 ) => {
   const { userId } = request.user
   const { conceptId } = request.params as ConceptsUpdateArguments
-  const { update } = request.body as ConceptsUpdateArguments
+  const { isPrivate } = request.body as ConceptsUpdateArguments
 
-  if (!userId || !conceptId || !update) {
+  if (!userId || !conceptId || !isPrivate) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
@@ -175,7 +175,7 @@ export const conceptUpdate = async (
       _id: conceptId,
       user: userId,
     },
-    { private: update.private },
+    { isPrivate },
     {
       new: true,
     },

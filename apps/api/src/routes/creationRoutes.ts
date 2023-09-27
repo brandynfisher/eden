@@ -53,8 +53,8 @@ const creationRoutes: FastifyPluginAsync = async server => {
         creationId: Type.String(),
       },
       request: {
-        update: Type.Object({
-          private: Type.Boolean(),
+        body: Type.Object({
+          isPrivate: Type.Optional(Type.Boolean()),
         }),
       },
       response: {

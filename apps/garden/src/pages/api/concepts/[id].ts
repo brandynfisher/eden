@@ -60,7 +60,7 @@ const updateConcept = async (
 ) => {
   const response = await eden.concepts.update({
     conceptId: id,
-    update: updatePartial,
+    ...updatePartial,
   })
   return res.status(200).json({ concept: response.concept })
 }

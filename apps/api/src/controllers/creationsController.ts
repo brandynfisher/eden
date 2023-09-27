@@ -280,9 +280,9 @@ export const creationUpdate = async (
 ) => {
   const { userId } = request.user
   const { creationId } = request.params as CreationsUpdateArguments
-  const { update } = request.body as CreationsUpdateArguments
+  const { isPrivate } = request.body as CreationsUpdateArguments
 
-  if (!userId || !creationId || !update) {
+  if (!userId || !creationId || !isPrivate) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
@@ -293,7 +293,7 @@ export const creationUpdate = async (
       _id: creationId,
       user: userId,
     },
-    { private: update.private },
+    { isPrivate },
     {
       new: true,
     },

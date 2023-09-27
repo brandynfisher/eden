@@ -41,6 +41,6 @@ export type Concept = {
   reactions?: Reactions
   createdAt: string
   updatedAt: string
-  private?: boolean,
+  isPrivate?: boolean,
   deleted?: boolean
 }

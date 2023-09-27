@@ -103,7 +103,7 @@ const concept = new Schema<ConceptDocument>(
     deleteBy: {
       type: String,
     },
-    private: {
+    isPrivate: {
       type: Boolean,
       default: false,
     },

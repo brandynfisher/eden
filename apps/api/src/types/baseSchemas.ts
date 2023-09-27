@@ -1,4 +1,4 @@
 export interface VisibilitySchema {
-  private: boolean
+  isPrivate: boolean
   deleteBy?: string
 }

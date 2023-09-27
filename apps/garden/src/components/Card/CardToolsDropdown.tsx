@@ -26,7 +26,7 @@ const CardToolsDropdown = ({
   const { user } = useContext(UserContext)
 
   const handleOnVisibilityChange = useCallback(
-    (visibilityUpdate: { private: boolean }) => {
+    (visibilityUpdate: { isPrivate: boolean }) => {
       onChange({
         ...item,
         ...visibilityUpdate,
@@ -135,7 +135,7 @@ const CardToolsDropdown = ({
               key: '5',
               children: [
                 {
-                  icon: item.private ? (
+                  icon: item.isPrivate ? (
                     <MakePublicButton
                       itemId={item._id}
                       itemType={itemType}
