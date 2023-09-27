@@ -57,6 +57,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
+        isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {
         200: Type.Object({}),

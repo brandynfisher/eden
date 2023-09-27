@@ -3,9 +3,17 @@ import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
+export type ConceptUpdatePartial = {
+  isPrivate: boolean
+}
+
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
   const { id } = req.query
+
+  if (!authToken) {
+    return res.status(401).json({ error: 'Not authenticated' })
+  }
 
   try {
     const eden = new EdenClient({
@@ -21,7 +29,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const { update } = req.body
       return updateConcept(
         id as string,
-        update as { private: boolean },
+        update as ConceptUpdatePartial,
         req,
         res,
         eden,
@@ -53,7 +61,7 @@ const getConcept = async (
 
 const updateConcept = async (
   id: string,
-  updatePartial: { private: boolean },
+  updatePartial: ConceptUpdatePartial,
   req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
