@@ -66,5 +66,6 @@ export enum MediaType {
   Video = 'video',
   Text = 'text',
   Audio = 'audio',
+  Zip = 'zip',
   Unknown = 'unknown',
 }

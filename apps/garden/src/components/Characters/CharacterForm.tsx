@@ -514,7 +514,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             description: character?.description || '',
             greeting: character?.greeting || '',
             completion: '',
-            image: character?.image || '',
+            image: character?.image?.uri || '',
             voice: character?.voice || '',
           }
         : {

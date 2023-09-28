@@ -39,13 +39,15 @@ export const uploadMedia = async (
     buffer,
   )
 
-  const upload = new Upload({
-    user: request.user.userId,
-    uri,
-    mediaAttributes,
-  })
-
-  await upload.save()
+  let upload = await Upload.findOne({ uri })
+  if (!upload) {
+    upload = new Upload({
+      user: request.user.userId,
+      uri,
+      mediaAttributes,
+    })
+    await upload.save()
+  }
 
   return reply.status(200).send({
     uploadId: upload._id,

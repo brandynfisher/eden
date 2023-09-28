@@ -6,6 +6,7 @@ import paginate from 'mongoose-paginate-v2'
 import slug from 'mongoose-slug-plugin'
 
 import { UserDocument } from './Creator'
+import { UploadDocument } from './Upload'
 
 interface ChatSchema {
   sender: string
@@ -19,7 +20,7 @@ export interface CharacterSchema {
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
-  image?: string
+  image?: UploadDocument
   voice?: string
   createdAt?: Date
   updatedAt?: Date
@@ -31,7 +32,7 @@ export interface CharacterInput {
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
-  image?: string
+  image?: UploadDocument
   voice?: string
 }
 
@@ -65,7 +66,8 @@ const character = new Schema<CharacterDocument>(
       maxlength: 1000,
     },
     image: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: 'uploads',
       required: false,
     },
     voice: {
