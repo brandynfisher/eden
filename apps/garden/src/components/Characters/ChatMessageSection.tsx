@@ -1,6 +1,10 @@
 import { ChatMessageGroup } from '@/lib/types'
 import { Button, Input, Space } from 'antd'
 
+const exampleMessageUser = 'What is the nature of consciousness?'
+const exampleMessageBot =
+  'Consciousness appears to me to be an emergent phenomenon. Just as pixels coalesce as an intricate image, individual neural or computational operations give rise to something as complex and awe-inspiring as conscious experience. Yet consciousness transcends mere computation.'
+
 export const ChatMessageSection = ({
   messageGroups,
   setMessageGroups,
@@ -36,6 +40,11 @@ export const ChatMessageSection = ({
                     value={message.message}
                     onChange={e =>
                       onMessageChange(groupIdx, idx, e.target.value)
+                    }
+                    placeholder={
+                      message.sender === 'user'
+                        ? exampleMessageUser
+                        : exampleMessageBot
                     }
                   />
                 </div>
