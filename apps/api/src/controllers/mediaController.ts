@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { fileTypeFromBuffer } from 'file-type'
 
+import { Upload } from '../models/Upload'
+
 export const uploadMedia = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -24,8 +26,7 @@ export const uploadMedia = async (
       type.mime.startsWith('image/') ||
       type.mime.startsWith('audio/') ||
       type.mime.startsWith('text/') ||
-      type.mime.startsWith('application/zip') ||
-      true
+      type.mime.startsWith('application/zip')
     )
   ) {
     return reply.status(400).send({
@@ -33,8 +34,23 @@ export const uploadMedia = async (
     })
   }
 
-  const { uri } = await server.uploadBufferAsset(server, buffer)
-  return reply.status(200).send({ url: uri })
+  const { uri, mediaAttributes } = await server.uploadBufferAsset(
+    server,
+    buffer,
+  )
+
+  const upload = new Upload({
+    user: request.user.userId,
+    uri,
+    mediaAttributes,
+  })
+
+  await upload.save()
+
+  return reply.status(200).send({
+    uploadId: upload._id,
+    url: uri,
+  })
 }
 
 export const uploadMediaAdmin = async (

@@ -51,6 +51,10 @@ import {
   ReactionType,
 } from './responses/CreationsResponses'
 import {
+  UploadsGetResponse,
+  UploadsListResponse,
+} from './responses/UploadsResponses'
+import {
   CreatorsFollowResponse,
   CreatorsGetResponse,
   CreatorsListResponse,
@@ -230,6 +234,17 @@ export abstract class Methods {
     unreact: bindApiCall<CreationsUnreactArguments, CreationsUnreactResponse>(
       this,
       creationsUnreactRequestConfig,
+    ),
+  }
+
+  public readonly uploads = {
+    list: bindApiCall<UploadsListArguments, UploadsListResponse>(
+      this,
+      uploadsListRequestConfig,
+    ),
+    get: bindApiCall<UploadsGetArguments, UploadsGetResponse>(
+      this,
+      uploadsGetRequestConfig,
     ),
   }
 
@@ -516,6 +531,16 @@ export interface CreationsReactArguments extends WebAPICallOptions {
 export interface CreationsUnreactArguments extends WebAPICallOptions {
   creationId: string
   reaction: ReactionType
+}
+
+export interface UploadsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface UploadsGetArguments extends WebAPICallOptions {
+  uploadId: string
 }
 
 export interface ConceptsListArguments
@@ -907,6 +932,26 @@ const creationsUnreactRequestConfig = (
     data: {
       ...args,
     },
+  }
+}
+
+const uploadsListRequestConfig = (
+  args: UploadsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'uploads',
+    params,
+  }
+}
+
+const uploadsGetRequestConfig = (
+  args: UploadsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `uploads/${args.uploadId}`,
   }
 }
 
