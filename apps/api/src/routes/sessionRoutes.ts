@@ -25,7 +25,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createSession(request, reply),
   })
 
@@ -55,7 +55,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({}),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteSession(request, reply),
   })
 
@@ -78,7 +78,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         ),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listSessions(request, reply),
   })
 
@@ -96,7 +96,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getSession(request, reply),
   })
 
@@ -116,7 +116,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getSessionEvents(request, reply),
   })
 }

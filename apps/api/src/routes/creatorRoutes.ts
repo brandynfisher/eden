@@ -44,7 +44,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => listCreatorFollowers(request, reply),
   })
 
@@ -61,7 +61,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => listCreatorFollowing(request, reply),
   })
 
@@ -73,7 +73,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCreator(request, reply),
   })
 
@@ -91,7 +91,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateCreator(request, reply),
   })
 
@@ -108,7 +108,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => followCreator(request, reply),
   })
 
@@ -125,7 +125,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => unfollowCreator(request, reply),
   })
 }
