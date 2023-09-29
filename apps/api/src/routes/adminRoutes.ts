@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-import { createChallenge } from '../controllers/authController'
+import { createChallenge } from '../controllers/auth/web3Controller'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { isAdmin } from '../middleware/authMiddleware'
