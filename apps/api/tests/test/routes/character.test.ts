@@ -13,7 +13,6 @@ const createCharacter = async (server: FastifyInstance) => {
       name: 'Test Character',
       description: 'Test Description',
       greeting: 'Test Greeting',
-      dialogue: 'Test Dialogue',
     },
   })
   return response

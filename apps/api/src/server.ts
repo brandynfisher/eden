@@ -79,10 +79,6 @@ const createServer = async (
     await registerOpenai(server)
   }
 
-  // if (server.config.PLAYHT_API_KEY) {
-  //   await registerPlayHt(server)
-  // }
-
   if (server.config.ELEVENLABS_API_KEY) {
     await registerElevenLabs(server)
   }

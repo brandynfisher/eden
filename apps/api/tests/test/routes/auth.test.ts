@@ -60,6 +60,7 @@ test('User can login with Ethereum Wallet', async context => {
       signature,
     },
   })
+  console.log(response.json())
   expect(response.statusCode).toBe(200)
   expect(response.json()).toHaveProperty('token')
 })

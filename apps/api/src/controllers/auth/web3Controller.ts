@@ -2,13 +2,16 @@ import {
   AuthCreateChallengeArguments,
   AuthLoginArguments,
 } from '@edenlabs/eden-sdk'
-import { ethers } from 'ethers'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { SiweMessage, generateNonce } from 'siwe'
+import { generateNonce } from 'siwe'
 
 import Challenge from '../../models/Challenge'
-import { User, UserInput } from '../../models/Creator'
-import { createNewUser, getAuthAllowlist } from './authController'
+import { UserInput } from '../../models/Creator'
+import {
+  createNewUser,
+  getAuthAllowlist,
+  validateChallenge,
+} from './authController'
 
 export const web3login = async (
   server: FastifyInstance,
@@ -24,52 +27,9 @@ export const web3login = async (
     })
   }
 
-  // first, find the most recent challenge for this address
-  const challenge = await Challenge.findOne({
-    address,
-  }).sort({ createdAt: -1 })
-
-  if (!challenge) {
-    return reply.status(400).send({
-      message: 'No challenge found for this address',
-    })
-  }
-
-  // Verify the challenge has not expired
-  if (challenge.expiresAt < new Date()) {
-    return reply.status(400).send({
-      message: 'Challenge has expired',
-    })
-  }
-
-  // Verify the challenge has not been acknowledged
-  if (challenge.ack) {
-    return reply.status(400).send({
-      message: 'Challenge has already been used',
-    })
-  }
-
-  // verify the signature
-  const recovered = ethers.utils.verifyMessage(message, signature)
-
-  if (address.toLowerCase() !== recovered.toLowerCase()) {
-    return reply.status(400).send({
-      message: 'Signature is invalid',
-    })
-  }
-
-  // check that the nonce matches
-  const { nonce } = new SiweMessage(message)
-
-  if (nonce !== challenge.nonce) {
-    return reply.status(400).send({
-      message: 'Nonce does not match',
-    })
-  }
-
-  let authUser = await User.findOne({
-    userId: address,
-  })
+  const result = await validateChallenge(address, message, signature, reply)
+  let { authUser } = result
+  const { challenge } = result
 
   // create a new user if none found
   if (!authUser) {
@@ -101,7 +61,6 @@ export const createChallenge = async (
   reply: FastifyReply,
 ) => {
   const { address, isWeb2 } = request.body as AuthCreateChallengeArguments
-  console.log('address', address)
 
   const allowlist = getAuthAllowlist(server)
   if (allowlist && !allowlist.includes(address)) {

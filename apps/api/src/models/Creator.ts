@@ -8,6 +8,7 @@ export interface UserSchema {
   userId: string
   isWeb2: boolean
   isAdmin: boolean
+  provider?: string
   creations: CreationDocument[]
   collections: CollectionDocument[]
   followerCount: number
@@ -15,6 +16,7 @@ export interface UserSchema {
   featureFlags?: string[]
   username?: string
   userImage?: string
+  deleted?: boolean
   createdAt?: Date
   updatedAt?: Date
 }
@@ -45,6 +47,10 @@ const user = new Schema<UserDocument>(
     isAdmin: {
       type: Boolean,
       default: false,
+    },
+    provider: {
+      type: String,
+      maxlength: 42,
     },
     username: {
       type: String,
@@ -80,6 +86,10 @@ const user = new Schema<UserDocument>(
         type: String,
       },
     ],
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
