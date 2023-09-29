@@ -6,7 +6,6 @@ import config from './plugins/config'
 //import registerPlayHt from './plugins/playHtPlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerJwt from './plugins/jwtPlugin'
-import registerLucia from './plugins/luciaPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
@@ -61,7 +60,6 @@ const createServer = async (
   })
 
   await registerMongo(server, opts.mongoUri)
-  // await registerLucia(server)
   await registerChroma(server, opts.chromaUri)
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
