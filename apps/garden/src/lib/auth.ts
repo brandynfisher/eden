@@ -1,4 +1,5 @@
 import { message } from 'antd'
+import { NextApiRequest } from 'next'
 
 export const requireAuth = async (authenticate: () => void) => {
   try {
@@ -10,4 +11,8 @@ export const requireAuth = async (authenticate: () => void) => {
   } catch (error) {
     return
   }
+}
+
+export const getAuthToken = (req: NextApiRequest) => {
+  return req.session.token
 }

@@ -1,15 +1,17 @@
+import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const authToken = getAuthToken(req)
   const { creatorId } = req.query as { creatorId: string }
 
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
-      token: req.session.token,
+      token: authToken,
     })
     const response = await eden.creators.get({
       userId: creatorId,
