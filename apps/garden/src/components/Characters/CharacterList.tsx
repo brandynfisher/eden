@@ -7,7 +7,7 @@ import Link from 'next/link'
 const CharacterListItem = ({ character }: { character: Character }) => {
   return (
     <Link
-      href={`/characters/${character.slug}`}
+      href={`/characters/${character.id}`}
       passHref
       className="flex gap-4 cursor-pointer bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-black p-4 rounded-lg text-black dark:text-white"
     >

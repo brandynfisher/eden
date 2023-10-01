@@ -17,7 +17,7 @@ export const createCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, image, voice, description, greeting, dialogue } =
+  const { name, image, voice, description, greeting, dialogue, isPrivate } =
     request.body as CharactersCreateArguments
 
   const input = {
@@ -28,6 +28,7 @@ export const createCharacter = async (
     description,
     greeting,
     dialogue,
+    isPrivate,
   }
 
   const characterRepository = new CharacterRepository(Character)
@@ -44,14 +45,16 @@ export const updateCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { characterId, name, image, voice, description, greeting, dialogue } =
-    request.body as CharactersUpdateArguments
+  const { characterId } = request.params as CharactersUpdateArguments
 
   if (!characterId) {
     return reply.status(400).send({
-      message: 'You must provide an characterId',
+      message: 'You must provide a characterId',
     })
   }
+
+  const { name, image, voice, description, greeting, dialogue, isPrivate } =
+    request.body as CharactersUpdateArguments
 
   const character = await Character.findOne({
     _id: characterId,
@@ -71,6 +74,7 @@ export const updateCharacter = async (
     description,
     greeting,
     dialogue,
+    isPrivate,
   }
 
   await character.update(input)
@@ -137,6 +141,7 @@ export const listCharacters = async (
       description: character.description,
       greeting: character.greeting,
       dialogue: character.dialogue,
+      isPrivate: character.isPrivate,
     })),
   }
 
@@ -147,8 +152,8 @@ export const getCharacter = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { slug } = request.params as CharactersGetArguments
-  const character = await Character.findOne({ slug })
+  const { characterId } = request.params as CharactersGetArguments
+  const character = await Character.findOne({ characterId })
   if (!character) {
     return reply.status(404).send({
       message: 'Character not found',
@@ -165,6 +170,7 @@ export const getCharacter = async (
     description: character.description,
     greeting: character.greeting,
     dialogue: character.dialogue,
+    isPrivate: character.isPrivate,
   }
 
   return reply.status(200).send({ character: response })

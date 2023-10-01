@@ -12,7 +12,7 @@ import {
 import { isAuth } from '../middleware/authMiddleware'
 
 const characterRoutes: FastifyPluginAsync = async server => {
-  server.post('/characters/create', {
+  server.post('/characters', {
     schema: {
       body: Type.Object({
         name: Type.String(),
@@ -120,10 +120,10 @@ const characterRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => listCharacters(request, reply),
   })
 
-  server.get('/characters/:slug', {
+  server.get('/characters/:characterId', {
     schema: {
       params: Type.Object({
-        slug: Type.String(),
+        characterId: Type.String(),
       }),
       response: {
         200: Type.Object({

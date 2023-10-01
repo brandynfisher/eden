@@ -7,7 +7,7 @@ import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import { RobotOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
-import { App, Button, Form, Input, Select } from 'antd'
+import { App, Button, Form, Input, Select, Switch } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
@@ -454,6 +454,7 @@ interface CharacterFormInput {
   greeting: string
   completion: string
   dialogue?: string
+  isPrivate?: boolean
 }
 
 function coupledArray<T>(array: T[]): T[][] {
@@ -530,6 +531,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             completion: '',
             image: character?.image || '',
             voice: character?.voice || '',
+            isPrivate: character?.isPrivate || false,
           }
         : {
             name: EXAMPLE_CHARACTER.name,
@@ -538,6 +540,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             completion: '',
             image: '',
             voice: '',
+            isPrivate: false,
           }
 
     form.setFieldsValue(formValues)
@@ -585,12 +588,19 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       image: form.getFieldValue('image'),
       voice: form.getFieldValue('voice'),
       dialogue: messageGroups.flat(),
+      isPrivate: form.getFieldValue('isPrivate'),
     }
+
     try {
-      await axios.post(
-        `/api/characters/${mode}`,
-        mode === 'create' ? data : { ...data, characterId: character?.id },
-      )
+      if (mode === 'create') {
+        await axios.post(`/api/characters/create`, data)
+      } else {
+        await axios.patch(`/api/characters/${character?.id}`, {
+          ...data,
+          characterId: character?.id,
+        })
+      }
+
       refetch.characters()
       message.destroy()
       message.success(`Character '${data.name}' ${mode}d`)
@@ -645,6 +655,21 @@ const CharacterForm = ({ character }: { character?: Character }) => {
         >
           <Input.TextArea autoSize />
         </Form.Item>
+
+        <Form.Item
+          name="isPrivate"
+          valuePropName="checked"
+          label={
+            <FormLabel
+              text="Private"
+              description="Should this character be hidden from other users?"
+            />
+          }
+          labelCol={{ span: 24 }}
+        >
+          <Switch />
+        </Form.Item>
+
         <Form.Item
           label={
             <FormLabel

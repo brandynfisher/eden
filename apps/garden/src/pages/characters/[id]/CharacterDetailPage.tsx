@@ -14,8 +14,8 @@ export const CharacterContext = createContext<ICharacterContext>({
 
 const CharacterDetailPage = () => {
   const router = useRouter()
-  const { slug: characterSlug } = router.query
-  const { character } = useCharacter(characterSlug)
+  const { id } = router.query
+  const { character } = useCharacter(id as string)
 
   return (
     <CharacterContext.Provider value={{ character }}>

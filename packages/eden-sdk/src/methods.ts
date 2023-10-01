@@ -430,7 +430,7 @@ export interface CharactersListArguments
 }
 
 export interface CharactersGetArguments extends WebAPICallOptions {
-  slug: string
+  characterId: string
 }
 
 export interface CharactersCreateArguments extends WebAPICallOptions {
@@ -728,7 +728,7 @@ const charactersGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `characters/${args.slug}`,
+    url: `characters/${args.characterId}`,
   }
 }
 
@@ -737,7 +737,7 @@ const charactersCreateRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'characters/create',
+    url: 'characters',
     data: {
       ...args,
     },

@@ -36,4 +36,8 @@ export type Character = {
   dialogue?: any[]
   image?: string
   voice?: string
+  deleted?: boolean,
+  isPrivate?: boolean,
+  createdAt: string
+  updatedAt: string
 }

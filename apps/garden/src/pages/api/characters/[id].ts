@@ -66,7 +66,7 @@ const getCharacter = async (
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
-  const response = await eden.characters.get({ slug: id })
+  const response = await eden.characters.get({ characterId: id })
   return res.status(200).json({ character: response.character })
 }
 
