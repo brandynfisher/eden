@@ -15,7 +15,7 @@ import {
 import { downloadBuffer, downloadFile, randomId } from '../util'
 import { receiveTaskUpdate } from './edenHandlers'
 
-async function createThumbnailImage(
+async function createDialogueThumbnail(
   image1Url: string,
   image2Url: string,
   targetWidth: number,
@@ -146,10 +146,10 @@ async function pollForTask(
   maxPolls = 1000,
 ) {
   let retries = 0
-  let polls = 0
+  let poll = 0
   let status
 
-  while (polls < maxPolls) {
+  while (poll < maxPolls) {
     try {
       const response = await model.replicate.getPrediction(predictionId)
       status = response.status
@@ -170,7 +170,7 @@ async function pollForTask(
       }
     }
 
-    polls++
+    poll++
     if (status === 'starting') {
       await new Promise(resolve => setTimeout(resolve, startingPollInterval))
     }
@@ -210,14 +210,8 @@ async function generateVideoSegment(
       model.modelDetails.id,
       {
         mode: 'wav2lip',
-        face_url: faceUrl?.replace(
-          'http://localhost:9000',
-          'https://afcc-207-44-115-128.ngrok-free.app',
-        ),
-        speech_url: audioUrl?.replace(
-          'http://localhost:9000',
-          'https://afcc-207-44-115-128.ngrok-free.app',
-        ),
+        face_url: faceUrl,
+        speech_url: audioUrl,
         gfpgan: false,
         gfpgan_upscale: 1,
         width: targetWidth,
@@ -275,25 +269,22 @@ const runTask = async (
       const character = await Character.findOne({
         _id: new ObjectId(config.characterId),
       })
+
       if (!character) {
         throw new Error('Character not found')
       }
 
       const image = await Upload.findOne({ _id: character.image })
+
       if (!image) {
         throw new Error('Image not found')
       }
 
       const monologue = await logos.monologue(server, config)
+
       const videoUrl = await generateVideoSegment(server, monologue)
-      // const videoPath = tmp.tmpNameSync({ postfix: '.mp4' })
-      // await downloadFile(videoUrl, videoPath)
-      // const videoFile = fs.readFileSync(videoPath)
-      // const videoBuffer = Buffer.from(videoFile)
       const videoBuffer = await downloadBuffer(videoUrl)
       const { uri } = await uploadBufferAsset(server, videoBuffer)
-      // fs.unlinkSync(videoPath)
-      console.log('the uri', uri)
 
       const output_final = {
         files: [uri],
@@ -302,9 +293,6 @@ const runTask = async (
         progress: 1.0,
         isFinal: true,
       }
-
-      console.log('outptut')
-      console.log(output_final)
 
       const update = {
         id: task.id,
@@ -347,6 +335,7 @@ const runTask = async (
 
       const videoUrls: string[] = []
 
+      // generate video segments in parallel, max 4 concurrently
       async.eachLimit(
         dialogue,
         4,
@@ -376,7 +365,7 @@ const runTask = async (
             fs.unlinkSync(videoPath as string)
 
             // generate thumbnail
-            const thumbnailImage = await createThumbnailImage(
+            const thumbnailImage = await createDialogueThumbnail(
               image1.uri,
               image2.uri,
               targetWidth,
@@ -431,7 +420,7 @@ const getTransactionCost = (
   generatorVersion: any,
   config: any,
 ) => {
-  const cost = 5
+  const cost = 50
   return cost
 }
 
