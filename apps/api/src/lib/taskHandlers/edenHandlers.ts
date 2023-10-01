@@ -118,6 +118,7 @@ const handleUpdate = async (
           name: finalOutput.name,
           attributes: finalOutput.attributes,
           mediaAttributes: {},
+          isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
           const { uri, mediaAttributes } = await server.uploadUrlAsset(
@@ -181,6 +182,7 @@ const handleUpdate = async (
           training_images: task.config.lora_training_urls,
           uri: finalOutput.files[i],
           thumbnail: finalOutput.thumbnails[0],
+          isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
           const { uri, mediaAttributes } = await server.uploadUrlAsset(

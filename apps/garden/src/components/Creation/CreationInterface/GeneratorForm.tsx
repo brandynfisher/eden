@@ -455,7 +455,7 @@ const GeneratorForm = ({
           label={
             <FormLabel
               text="Private"
-              description="Should this creation be hidden from other users?"
+              description="Should this be hidden from other users?"
             />
           }
           labelCol={{ span: 24 }}
