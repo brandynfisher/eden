@@ -80,7 +80,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
                 </div>
               </div>
               <div
-                className="card-image relative rounded-lg overflow-hidden cursor-pointer mb-2"
+                className="card-image relative rounded-lg overflow-hidden cursor-pointer"
                 onClick={openDetailModal}
               >
                 <a
@@ -95,6 +95,15 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
                   />
                 </a>
               </div>
+              {concept.isPrivate ? (
+                <div
+                  className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
+                    hovered ? 'top-12' : ''
+                  }`}
+                >
+                  <LockIcon fontSize="small" className="text-white" />
+                </div>
+              ) : null}
               <div
                 className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${
                   hovered ? 'md:!visible' : 'md:hidden'
@@ -103,7 +112,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
                 <ConceptCardDetail concept={concept} />
               </div>
             </div>
-            <div className="absolute top-0.5 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
+            <div className="absolute bottom-11 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
               {trainingMode ? (
                 <Tag color="blue" className="first-letter:capitalize me-0">
                   {trainingMode}
