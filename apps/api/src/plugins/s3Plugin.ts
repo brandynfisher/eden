@@ -90,6 +90,8 @@ const getMediaAttributes = async (
     mediaAttributes.aspectRatio = metadata.width / metadata.height
   }
 
+  await fs.unlinkSync(tempFilePath)
+
   return mediaAttributes
 }
 

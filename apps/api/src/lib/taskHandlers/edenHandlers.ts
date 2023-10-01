@@ -11,15 +11,15 @@ import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
 import * as openai from './openai'
 import * as replicate from './replicate'
-import * as taskRunner from './taskRunner'
+import * as scenarioRunner from './scenarioRunner'
 
-type TaskProvider = 'openai' | 'replicate' | 'elevenPlay' | 'task-runner'
+type TaskProvider = 'openai' | 'replicate' | 'elevenPlay' | 'scenarioRunner'
 
 const providers = new Map<TaskProvider, any>([
   ['openai', openai],
   ['elevenPlay', elevenPlay],
   ['replicate', replicate],
-  ['task-runner', taskRunner],
+  ['scenarioRunner', scenarioRunner],
 ])
 
 type TaskStatus =
@@ -53,7 +53,6 @@ const submitTask = async (
   config: any,
 ) => {
   const { provider } = generatorVersion
-  console.log('submit Task', provider)
   const task = await providers
     .get(provider)
     .submitTask(server, generator, generatorVersion, config)
@@ -376,7 +375,7 @@ export const receiveTaskUpdate = async (
 
   switch (status) {
     case 'starting':
-      // await handleStarting(server, taskId);
+      // await handleStarting(server, taskId)
       break
     case 'processing':
       if (generatorName === 'zeroscope-v2-xl') {

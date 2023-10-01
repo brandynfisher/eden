@@ -1,5 +1,4 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
-import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
@@ -8,7 +7,7 @@ import { UserDocument } from './Creator'
 
 export interface UploadSchema {
   user: UserDocument
-  uri?: string
+  uri: string
   mediaAttributes: MediaAttributes
   createdAt?: Date
   updatedAt?: Date

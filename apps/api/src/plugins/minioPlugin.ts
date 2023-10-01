@@ -90,6 +90,8 @@ const getMediaAttributes = async (
     mediaAttributes.aspectRatio = metadata.width / metadata.height
   }
 
+  await fs.unlinkSync(tempFilePath)
+
   return mediaAttributes
 }
 
@@ -157,7 +159,6 @@ export const uploadBufferAsset = async (
     await client.putObject(MINIO_BUCKET, filename, buffer, metadata)
     console.log(` --> Uploaded to ${urlUpload}`)
   }
-
   const mediaAttributes = await getMediaAttributes(buffer, ext)
 
   return {
