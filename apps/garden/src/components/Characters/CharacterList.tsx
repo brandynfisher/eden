@@ -1,8 +1,10 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { SettingOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
+import LockIcon from '@mui/icons-material/Lock'
 import { Button, Empty } from 'antd'
 import Link from 'next/link'
+import React from 'react'
 
 const CharacterListItem = ({ character }: { character: Character }) => {
   return (
@@ -20,7 +22,12 @@ const CharacterListItem = ({ character }: { character: Character }) => {
         />
       </div>
       <div>
-        <div className="font-bold">{character.name}</div>
+        <div className="flex gap-2">
+          <div className="font-bold">{character.name}</div>
+          {character.isPrivate ? (
+            <LockIcon fontSize="small" className="text-white" />
+          ) : null}
+        </div>
         <div
           className="text-gray-500 line-clamp-2"
           title={character.description}

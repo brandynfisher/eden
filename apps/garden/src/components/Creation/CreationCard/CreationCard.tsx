@@ -93,7 +93,7 @@ const CreationCard: FC<{
                   />
                 </a>
               </div>
-              {creation.private ? (
+              {creation.isPrivate ? (
                 <div
                   className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
                     hovered ? 'top-12' : ''
@@ -122,7 +122,7 @@ const CreationCard: FC<{
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  {creation.private ? (
+                  {creation.isPrivate ? (
                     <LockIcon fontSize="small" className="md:hidden" />
                   ) : null}
                   <CardToolsDropdown
