@@ -2,6 +2,7 @@ import fastify from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerChroma from './plugins/chromaPlugin'
+import registerClerk from './plugins/clerkPlugin'
 import config from './plugins/config'
 //import registerPlayHt from './plugins/playHtPlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
@@ -49,7 +50,11 @@ const createServer = async (
     await registerSentry(server)
   }
 
-  await registerJwt(server)
+  if (server.config.FLAGS_CLERK_ENABLED) {
+    await registerClerk(server)
+  } else {
+    await registerJwt(server)
+  }
 
   await server.register(import('fastify-raw-body'), {
     field: 'rawBody',
