@@ -35,9 +35,9 @@ const MasonryInfinite = ({
   const containerRef = useRef(null)
   const [key, setKey] = useState(0)
 
-  const { isConnected, settings, address } = useContext(UserContext)
-  const isConnectedUser =
-    isConnected && query && query.userId && query.userId === address
+  const { isAuthenticated, settings, address } = useContext(UserContext)
+  const isAuthenticatedUser =
+    isAuthenticated && query && query.userId && query.userId === address
 
   const [orderBy, setOrderBy] = useState<OrderByParam>(
     hasSort ? hasSort[0] : OrderByDefaultParam,
@@ -142,7 +142,7 @@ const MasonryInfinite = ({
               <div className="flex flex-col items-center">
                 <div className="mb-4">Nothing here yet.</div>
 
-                {isConnectedUser && (
+                {isAuthenticatedUser && (
                   <Link href="/create/creations">
                     <Button
                       type="dashed"

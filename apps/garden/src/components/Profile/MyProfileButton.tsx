@@ -1,19 +1,15 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import ConnectButton from '@/components/ConnectButton'
+import { useWeb3State } from '@/hooks/useWeb3State'
 import { UserContext } from '@/providers/UserProvider'
 import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const MyProfileButton = () => {
-  const {
-    address,
-    user,
-    isConnected,
-    isAuthenticated,
-    authenticate,
-    isAuthenticating,
-  } = useContext(UserContext)
+  const { isConnected } = useWeb3State()
+  const { address, user, isAuthenticated, authenticate, isAuthenticating } =
+    useContext(UserContext)
 
   if (!isConnected) {
     return <ConnectButton />

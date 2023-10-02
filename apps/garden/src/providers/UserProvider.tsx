@@ -5,8 +5,6 @@ import { Character } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {
-  isConnected: boolean
-  isConnecting: boolean
   isAuthenticating: boolean
   isAuthenticated: boolean
   authError: string | null
@@ -29,8 +27,6 @@ export interface UserContextType {
 }
 
 const defaultUserState: UserContextType = {
-  isConnected: false,
-  isConnecting: false,
   isAuthenticating: false,
   isAuthenticated: false,
   authError: null,

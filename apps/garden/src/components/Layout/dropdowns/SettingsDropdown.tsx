@@ -1,5 +1,6 @@
 import ConnectButton from '@/components/ConnectButton'
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
+import { useWeb3State } from '@/hooks/useWeb3State'
 import { UserContext } from '@/providers/UserProvider'
 import {
   LoginOutlined,
@@ -15,8 +16,8 @@ import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 const LoginLogoutButton = () => {
-  const { isConnected, isAuthenticated, authenticate, logout } =
-    useContext(UserContext)
+  const { isConnected } = useWeb3State()
+  const { isAuthenticated, authenticate, logout } = useContext(UserContext)
   const router = useRouter()
 
   const handleAuthClick = useCallback(async () => {
@@ -167,7 +168,7 @@ const extraItems: ItemType[] = [
 ]
 
 const SettingsDropdown = () => {
-  const { isConnected } = useContext(UserContext)
+  const { isConnected } = useWeb3State()
   const [dropDownItems, setDropDownItems] = useState<ItemType[]>(items)
 
   useEffect(() => {

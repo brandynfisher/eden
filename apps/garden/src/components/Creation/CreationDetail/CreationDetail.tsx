@@ -26,8 +26,7 @@ const CreationDetail = ({
   isModal?: boolean
   loadSimilar?: boolean
 }) => {
-  const { isConnected, isAuthenticated, user, address } =
-    useContext(UserContext)
+  const { isAuthenticated, user, address } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
   const timeSinceCreation = timeAgo(creation.createdAt)
@@ -37,12 +36,12 @@ const CreationDetail = ({
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
-    if (isConnected && isAuthenticated && user?.userId === address) {
+    if (isAuthenticated && user?.userId === address) {
       setShowFollowControls(true)
     } else {
       setShowFollowControls(false)
     }
-  }, [isConnected, isAuthenticated, user?.userId, address])
+  }, [isAuthenticated, user?.userId, address])
 
   useEffect(() => {
     setCreationData(creation)

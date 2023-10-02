@@ -26,12 +26,11 @@ const ProfileHeader = dynamic(
 )
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
-  const { isConnected, isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
 
-  const sortButtons =
-    isConnected && isAuthenticated
-      ? [OrderByLatest, OrderByPraises, OrderByBookmarks]
-      : [OrderByLatest]
+  const sortButtons = isAuthenticated
+    ? [OrderByLatest, OrderByPraises, OrderByBookmarks]
+    : [OrderByLatest]
 
   return (
     <div className="mt-4">
@@ -75,8 +74,8 @@ const CollectionTabContent = ({
 
 const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   const { collections } = useCollections(creator.userId)
-  const { address, isConnected, featureFlags } = useContext(UserContext)
-  const isConnectedUser = isConnected && creator.userId === address
+  const { address, isAuthenticated, featureFlags } = useContext(UserContext)
+  const isAuthenticatedUser = isAuthenticated && creator.userId === address
   const isPreviewUser = featureFlags.includes('preview')
 
   const creatorPageTabs = [
@@ -150,7 +149,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
             creatorId={creator.userId}
             creator={creator}
             numCreations={creator?.creationsCount}
-            isConnectedUser={isConnectedUser}
+            isAuthenticatedUser={isAuthenticatedUser}
           />
           <Tabs defaultActiveKey="1" centered items={creatorPageTabs} />
         </Space>

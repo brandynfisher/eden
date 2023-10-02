@@ -5,10 +5,9 @@ import { UserContext } from '@/providers/UserProvider'
 import { useContext } from 'react'
 
 const ConceptsPage = () => {
-  const { isConnected, isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
 
-  const sortButtons =
-    isConnected && isAuthenticated ? [OrderByLatest] : [OrderByLatest]
+  const sortButtons = isAuthenticated ? [OrderByLatest] : [OrderByLatest]
 
   return (
     <div className={`flex flex-col`}>
