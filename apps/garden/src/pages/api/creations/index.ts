@@ -6,7 +6,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { creationId } = req.query
-  const authToken = getAuthToken(req)
+  const authToken = await getAuthToken(req)
 
   try {
     const eden = new EdenClient({

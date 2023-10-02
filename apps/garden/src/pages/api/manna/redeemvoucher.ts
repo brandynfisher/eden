@@ -5,7 +5,7 @@ import { EdenClient, MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = getAuthToken(req)
+  const authToken = await getAuthToken(req)
   const { code } = req.body as MannaVouchersRedeemArguments
 
   if (!authToken) {

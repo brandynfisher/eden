@@ -1,4 +1,5 @@
-import { useWeb3UserState } from '@/hooks/auth/useWeb3UserState'
+import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
+// import { useWeb3UserState } from '@/hooks/auth/useWeb3UserState'
 import { SettingName, Settings } from '@/hooks/useSettings'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Character } from '@edenlabs/eden-sdk'
@@ -65,7 +66,8 @@ const defaultUserState: UserContextType = {
 export const UserContext = createContext<UserContextType>(defaultUserState)
 
 function UserProvider({ children }: PropsWithChildren) {
-  const userState = useWeb3UserState()
+  const userState = useClerkUserState()
+  // const userState = useWeb3UserState()
 
   return (
     <UserContext.Provider value={userState}>{children}</UserContext.Provider>

@@ -47,11 +47,8 @@ const SimilarCreations = ({
         containerRef?.current.offsetTop <
       windowHeight
 
-    // console.log({isModal, isVisibleOnInitialRender})
-
     // modal disables body scroll and has its own scrollable container thus needs to handled differently
     if (isModal && isVisibleOnInitialRender) {
-      // console.log({isModal, isVisibleOnInitialRender})
       setShouldLoadSimilar(true)
       return
     }
@@ -61,7 +58,6 @@ const SimilarCreations = ({
         containerRef.current.getBoundingClientRect().top < 0
 
       if (hasWindowScrolled || isVisibleOnInitialRender) {
-        // console.log('hasWindowScrolled || isVisibleOnInitialRender', { hasWindowScrolled, isVisibleOnInitialRender})
         setShouldLoadSimilar(true)
       }
     }

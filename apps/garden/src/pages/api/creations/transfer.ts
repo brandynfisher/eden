@@ -5,7 +5,7 @@ import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = getAuthToken(req)
+  const authToken = await getAuthToken(req)
   const { address, message, signature } = req.body
 
   if (!authToken) {

@@ -5,7 +5,7 @@ import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = getAuthToken(req)
+  const authToken = await getAuthToken(req)
   const { name, description, creationIds } = req.body
 
   if (!authToken) {

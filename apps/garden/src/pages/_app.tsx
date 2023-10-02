@@ -1,5 +1,6 @@
 import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
+import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
 import EdenProvider from '@/providers/EdenProvider'
 import ModalProvider from '@/providers/ModalProvider'
@@ -8,7 +9,6 @@ import WalletProvider from '@/providers/WalletProvider'
 import '@/styles/globals.scss'
 import '@rainbow-me/rainbowkit/styles.css'
 import 'antd/dist/reset.css'
-import dotenv from 'dotenv'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
 import { Inter } from 'next/font/google'
@@ -16,11 +16,6 @@ import Head from 'next/head'
 import { ReactElement } from 'react'
 
 import { Page } from '../../types/page'
-
-// Load the environment file specified by the ENV_FILE variable
-if (process.env.DOTENV_PATH) {
-  dotenv.config({ path: process.env.DOTENV_PATH })
-}
 
 type Props = AppProps & {
   Component: Page
@@ -94,13 +89,15 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           <AntConfigWrapProvider>
             <WalletProvider>
               <EdenProvider>
-                <UserProvider>
-                  <CreationNotificationProvider>
-                    <ModalProvider>
-                      {getLayout(<Component {...pageProps} />)}
-                    </ModalProvider>
-                  </CreationNotificationProvider>
-                </UserProvider>
+                <ClerkWrapProvider>
+                  <UserProvider>
+                    <CreationNotificationProvider>
+                      <ModalProvider>
+                        {getLayout(<Component {...pageProps} />)}
+                      </ModalProvider>
+                    </CreationNotificationProvider>
+                  </UserProvider>
+                </ClerkWrapProvider>
               </EdenProvider>
             </WalletProvider>
           </AntConfigWrapProvider>

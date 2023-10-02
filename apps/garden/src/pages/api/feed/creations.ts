@@ -9,7 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
   const { userId, collectionId, page, limit, orderBy, direction } = req.query
-  const authToken = getAuthToken(req)
+  const authToken = await getAuthToken(req)
 
   const route = (limit: number, page: number) => {
     const basePath = `${CONFIG.API_URL}/feed/creations`

@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = getAuthToken(req)
+  const authToken = await getAuthToken(req)
   const { method } = req
 
   switch (method) {

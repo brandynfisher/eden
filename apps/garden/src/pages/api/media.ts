@@ -18,7 +18,7 @@ interface ParseResult {
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = getAuthToken(req)
+  const authToken = await getAuthToken(req)
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
   }

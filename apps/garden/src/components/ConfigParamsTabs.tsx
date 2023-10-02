@@ -117,9 +117,7 @@ const ConfigParamsTabs = ({ data }: { data: Concept | Creation }) => {
     },
   ]
 
-  const onConfigurationTabChange = () => {
-    // console.log('onConfigurationTabChange', key)
-  }
+  const onConfigurationTabChange = () => {}
 
   return (
     <>

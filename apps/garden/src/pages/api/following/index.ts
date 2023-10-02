@@ -8,7 +8,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
   const { userId, page, limit } = req.query
-  const authToken = getAuthToken(req)
+  const authToken = await getAuthToken(req)
 
   const route = (limit: number, page: number) => {
     const basePath = `${CONFIG.API_URL}/creators/${userId}/following`

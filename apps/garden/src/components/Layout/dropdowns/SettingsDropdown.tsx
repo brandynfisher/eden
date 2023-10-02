@@ -9,13 +9,14 @@ import {
   TableOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
+import { UserButton } from '@clerk/nextjs'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
-const LoginLogoutButton = () => {
+const Web3LoginLogoutButton = () => {
   const { isConnected } = useWeb3State()
   const { isAuthenticated, authenticate, logout } = useContext(UserContext)
   const router = useRouter()
@@ -162,7 +163,12 @@ const extraItems: ItemType[] = [
     type: 'divider',
   },
   {
-    label: <LoginLogoutButton />,
+    label:
+      process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'true' ? (
+        <UserButton afterSignOutUrl="/" />
+      ) : (
+        <Web3LoginLogoutButton />
+      ),
     key: '3',
   },
 ]
