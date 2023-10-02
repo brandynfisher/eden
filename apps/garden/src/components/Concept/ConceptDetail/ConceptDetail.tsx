@@ -11,6 +11,7 @@ import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept } from '@edenlabs/eden-sdk'
+import LockIcon from '@mui/icons-material/Lock'
 import { Button, Collapse, Divider } from 'antd'
 import Head from 'next/head'
 import Image from 'next/image'
@@ -205,6 +206,13 @@ const ConceptDetail = ({
                     //   setConceptImageLoaded(true)
                     // }}
                   />
+                  {conceptData.isPrivate ? (
+                    <div
+                      className={`flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
+                    >
+                      <LockIcon fontSize="small" className="text-white" />
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
