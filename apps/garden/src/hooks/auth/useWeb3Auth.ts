@@ -1,10 +1,12 @@
 import { App } from 'antd'
 import axios from 'axios'
+import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { SiweMessage } from 'siwe'
 import { useAccount, useNetwork, useSignMessage } from 'wagmi'
 
 export const useAuth = () => {
+  const router = useRouter()
   const { address, connector } = useAccount({
     // If the user disconnects their wallet, reset the auth state
     onDisconnect: async () => {
@@ -79,17 +81,17 @@ export const useAuth = () => {
 
   const logout = async () => {
     if (!isAuthenticated) {
-      return null
+      return
     }
     await axios.get(`/api/logout`)
     setIsAuthenticated(false)
   }
 
-  const authenticate = async () => {
+  const authenticate = async (afterSignInUrl?: string) => {
     setAuthError(null)
     if (!address || !chainId) {
       setAuthError('No wallet connected')
-      return null
+      return
     }
 
     setIsAuthenticating(true)
@@ -101,7 +103,7 @@ export const useAuth = () => {
     } catch (error) {
       setAuthError('Failed to create login challenge')
       setIsAuthenticating(false)
-      return null
+      return
     }
 
     // Create message for signing using ethers
@@ -123,13 +125,14 @@ export const useAuth = () => {
     } catch (error) {
       setAuthError('You must sign the login message to continue')
       setIsAuthenticating(false)
-      return null
+      return
     }
 
     try {
       await login(message, signature)
       setIsAuthenticated(true)
       setIsAuthenticating(false)
+      router.push(afterSignInUrl || '/')
     } catch (error) {
       setAuthError('Failed to login')
       setIsAuthenticating(false)

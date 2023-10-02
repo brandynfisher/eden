@@ -1,6 +1,6 @@
 import ConnectButton from '@/components/ConnectButton'
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
-import { useWeb3State } from '@/hooks/useWeb3State'
+import { useWeb3State } from '@/hooks/auth/useWeb3State'
 import { UserContext } from '@/providers/UserProvider'
 import {
   LoginOutlined,

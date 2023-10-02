@@ -35,9 +35,9 @@ const MasonryInfinite = ({
   const containerRef = useRef(null)
   const [key, setKey] = useState(0)
 
-  const { isAuthenticated, settings, address } = useContext(UserContext)
+  const { isAuthenticated, settings, userId } = useContext(UserContext)
   const isAuthenticatedUser =
-    isAuthenticated && query && query.userId && query.userId === address
+    isAuthenticated && query && query.userId && query.userId === userId
 
   const [orderBy, setOrderBy] = useState<OrderByParam>(
     hasSort ? hasSort[0] : OrderByDefaultParam,

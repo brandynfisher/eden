@@ -1,27 +1,43 @@
-import { useAuth } from '@/hooks/useAuth'
 import { useBalance } from '@/hooks/useBalance'
 import { useCreator } from '@/hooks/useCreator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCollections } from '@/hooks/useMyCollections'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
+import { useAuth, useClerk } from '@clerk/nextjs'
+import { useRouter } from 'next/router'
 import { useEffect } from 'react'
-import { useAccount } from 'wagmi'
 
-export const useWeb3UserState = () => {
-  const { address } = useAccount()
-  const { isAuthenticated, isAuthenticating, authenticate, logout, authError } =
-    useAuth()
+export const useClerkUserState = () => {
+  const router = useRouter()
+  const { isSignedIn, userId: clerkUid } = useAuth()
+  const { signOut, openSignIn } = useClerk()
+  const isAuthenticated = isSignedIn || false
+  const userId = clerkUid || null
   const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })
   const { characters, refetchMyCharacters } = useMyCharacters({
-    userId: address || '',
+    userId,
     isAuthenticated,
   })
   const { collections, refetchMyCollections } = useMyCollections({
-    userId: address || '',
+    userId,
     isAuthenticated,
   })
-  const { creator, mutate: refetchCreator } = useCreator(address || null)
+  const { creator, mutate: refetchCreator } = useCreator(userId || null)
+
+  const authenticate = async (afterSignInUrl?: string) => {
+    if (!isAuthenticated) {
+      await openSignIn(afterSignInUrl ? { afterSignInUrl } : undefined)
+    }
+  }
+
+  const logout = async () => {
+    if (isAuthenticated) {
+      await signOut()
+    }
+
+    await router.push('/')
+  }
 
   // reset user state on disconnect
   useEffect(() => {
@@ -30,28 +46,27 @@ export const useWeb3UserState = () => {
     refetchMyCharacters()
     refetchMyCollections()
   }, [isAuthenticated])
-
   const { settings, updateSetting } = useSettings()
 
   const user: UserContextType = {
-    isAuthenticating,
+    isAuthenticating: false,
+    authError: null,
     isAuthenticated,
-    authError,
+    userId,
     authenticate,
     logout,
-    userId: address,
     mannaBalance: manna,
     characters,
     collections,
+    settings,
+    updateSetting,
+    user: creator ? creator : undefined,
     refetch: {
       mannaBalance: refetchMannaBalance,
       characters: refetchMyCharacters,
       collections: refetchMyCollections,
       user: refetchCreator,
     },
-    settings,
-    updateSetting,
-    user: creator ? creator : undefined,
     featureFlags: creator?.featureFlags || [],
   }
   return user

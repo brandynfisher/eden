@@ -1,6 +1,6 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import ConnectButton from '@/components/ConnectButton'
-import { useWeb3State } from '@/hooks/useWeb3State'
+import { useWeb3State } from '@/hooks/auth/useWeb3State'
 import { UserContext } from '@/providers/UserProvider'
 import { Button } from 'antd'
 import Link from 'next/link'
@@ -8,7 +8,7 @@ import React, { useContext } from 'react'
 
 const MyProfileButton = () => {
   const { isConnected } = useWeb3State()
-  const { address, user, isAuthenticated, authenticate, isAuthenticating } =
+  const { userId, user, isAuthenticated, authenticate, isAuthenticating } =
     useContext(UserContext)
 
   if (!isConnected) {
@@ -41,7 +41,7 @@ const MyProfileButton = () => {
         className="font-mono flex justify-center items-center h-[32px] w-[32px] flex-shrink-0 flex-grow max-h-full hover:brightness-125 transition-all duration-200 nav-profile-image rounded-full overflow-hidden"
       >
         <CharacterAvatar
-          id={address || ''}
+          id={userId || ''}
           name={(user && user?.username) || ''}
           imageUri={(user && user?.userImage) || ''}
           size={'small'}

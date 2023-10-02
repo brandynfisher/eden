@@ -1,5 +1,5 @@
+import { useWeb3UserState } from '@/hooks/auth/useWeb3UserState'
 import { SettingName, Settings } from '@/hooks/useSettings'
-import { useWeb3UserState } from '@/hooks/useUserState'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Character } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, createContext } from 'react'
@@ -8,9 +8,9 @@ export interface UserContextType {
   isAuthenticating: boolean
   isAuthenticated: boolean
   authError: string | null
-  authenticate: () => Promise<null | undefined>
-  logout: () => Promise<null | undefined>
-  userId?: string
+  authenticate: (afterSignInUrl?: string) => Promise<void>
+  logout: () => Promise<void>
+  userId: string | null
   mannaBalance?: number
   characters?: Character[]
   collections?: Collection[]
@@ -30,13 +30,14 @@ const defaultUserState: UserContextType = {
   isAuthenticating: false,
   isAuthenticated: false,
   authError: null,
-  authenticate: async () => {
-    return null
+  authenticate: (afterSignInUrl?: string) => {
+    console.log(afterSignInUrl)
+    return new Promise<void>(resolve => resolve())
   },
   logout: async () => {
-    return null
+    return new Promise<void>(resolve => resolve())
   },
-  userId: undefined,
+  userId: null,
   mannaBalance: undefined,
   characters: undefined,
   collections: undefined,
