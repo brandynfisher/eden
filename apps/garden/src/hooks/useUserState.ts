@@ -8,7 +8,7 @@ import { UserContextType } from '@/providers/UserProvider'
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
-export const useUserState = () => {
+export const useWeb3UserState = () => {
   const { address } = useAccount()
   const { isAuthenticated, isAuthenticating, authenticate, logout, authError } =
     useAuth()
@@ -39,7 +39,7 @@ export const useUserState = () => {
     authError,
     authenticate,
     logout,
-    address,
+    userId: address,
     mannaBalance: manna,
     characters,
     collections,
