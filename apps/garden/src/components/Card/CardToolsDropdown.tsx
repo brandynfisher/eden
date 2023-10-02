@@ -64,7 +64,10 @@ const CardToolsDropdown = ({
       ),
       key: '1-3',
     },
-    {
+  ]
+
+  if (itemType === 'creation') {
+    otherTypeCopyItems.push({
       icon: (
         <CopyUrlButton
           url={`${CONFIG.NEXT_PUBLIC_HOST}/create/${itemType}s?presetId=${item._id}`}
@@ -73,8 +76,8 @@ const CardToolsDropdown = ({
         />
       ),
       key: '1-4',
-    },
-  ]
+    })
+  }
 
   const copyItems = isImageUrl(item.uri)
     ? [...imageCopyItems, ...otherTypeCopyItems]
@@ -103,7 +106,10 @@ const CardToolsDropdown = ({
           },
         ],
       },
-      {
+    ]
+
+    if (itemType === 'creation') {
+      defaultMenuItems.push({
         label: 'Use as...',
         key: '3',
         children: [
@@ -118,8 +124,8 @@ const CardToolsDropdown = ({
             key: '3-1',
           },
         ],
-      },
-    ]
+      })
+    }
 
     const hasUserFeatureFlagPrivate =
       user && user.featureFlags && user.featureFlags.includes('private')
