@@ -17,7 +17,7 @@ const CreationDetail = dynamic(
 
 const CreationDetailStaticModal = ({
   creation,
-  loadSimilar,
+  // loadSimilar,
   ...rest
 }: {
   creation: Creation
@@ -35,7 +35,7 @@ const CreationDetailStaticModal = ({
       <CreationDetail
         creation={creation}
         isModal={true}
-        loadSimilar={loadSimilar}
+        // loadSimilar={loadSimilar}
       />
     </Modal>
   )

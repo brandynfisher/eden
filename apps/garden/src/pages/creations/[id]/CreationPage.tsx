@@ -12,7 +12,12 @@ const CreationPage = ({ data }: { data: Creation }) => {
     return null
   }
 
-  return <CreationDetail creation={creationData || data} loadSimilar={true} />
+  return (
+    <CreationDetail
+      creation={creationData || data}
+      // loadSimilar={true}
+    />
+  )
 }
 
 export default CreationPage
