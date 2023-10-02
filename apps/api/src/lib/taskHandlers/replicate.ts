@@ -1,9 +1,13 @@
 import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
+
+import { Concept } from '../../models/Concept'
+import { GeneratorDocument } from '../../models/Generator'
 
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
 
-export const formatStableDiffusionConfigForReplicate = async (config: any) => {
+const formatConfigForReplicate = async (config: any) => {
   const newConfig = { ...config }
 
   // if no text input, use interpolation texts
@@ -43,7 +47,10 @@ export const formatStableDiffusionConfigForReplicate = async (config: any) => {
   }
 
   // if no lora selected, delete it
-  if (newConfig.lora == '(none)') {
+  if (newConfig.lora) {
+    const concept = await Concept.findOne({ _id: new ObjectId(newConfig.lora) })
+    newConfig.lora = concept?.uri
+  } else {
     delete newConfig.lora
   }
 
@@ -52,6 +59,7 @@ export const formatStableDiffusionConfigForReplicate = async (config: any) => {
 
 const submitTask = async (
   server: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: any,
   config: any,
 ) => {
@@ -68,7 +76,7 @@ const submitTask = async (
   }
   const modelId = generatorVersion.versionId
   try {
-    const preparedConfig = await formatStableDiffusionConfigForReplicate(config)
+    const preparedConfig = await formatConfigForReplicate(config)
     preparedConfig.mode = generatorVersion.mode
     // @ts-ignore
     const task = await replicate.startPrediction(
@@ -88,6 +96,7 @@ const submitTask = async (
 
 const getTransactionCost = (
   _: FastifyInstance,
+  generator: any,
   generatorVersion: any,
   config: any,
 ) => {

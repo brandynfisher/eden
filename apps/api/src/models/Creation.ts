@@ -37,6 +37,9 @@ export interface CreationInput {
   mediaAttributes?: {
     type: MediaType
     duration?: number
+    width?: number
+    height?: number
+    aspectRatio?: number
   }
 }
 
@@ -91,6 +94,15 @@ const creation = new Schema<CreationDocument>(
         required: true,
       },
       duration: {
+        type: Number,
+      },
+      width: {
+        type: Number,
+      },
+      height: {
+        type: Number,
+      },
+      aspectRatio: {
         type: Number,
       },
     },

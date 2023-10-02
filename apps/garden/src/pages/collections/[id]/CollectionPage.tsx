@@ -1,10 +1,10 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import {
   OrderByBookmarks,
   OrderByLatest,
   OrderByPraises,
-} from '@/components/OrderByButtons'
+} from '@/components/Layout/buttons/OrderByButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCollection } from '@/hooks/useCollection'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
@@ -30,10 +30,10 @@ const MasonryInfinite = dynamic(() => import('@/components/MasonryInfinite'), {
 
 const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()
-  const { isAuthenticated, address, user } = useContext(UserContext)
+  const { isAuthenticated, userId, user } = useContext(UserContext)
   const [deleteLoading, setDeleteLoading] = React.useState(false)
 
-  const isAuthUser = isAuthenticated && collection?.creatorId === address
+  const isAuthUser = isAuthenticated && collection?.creatorId === userId
 
   const onDeleteButtonClick = async () => {
     setDeleteLoading(true)

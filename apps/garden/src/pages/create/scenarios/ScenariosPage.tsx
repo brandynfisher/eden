@@ -23,6 +23,15 @@ const exampleScenarios: ScenarioWithPath[] = [
     path: '/scenarios/monologue',
     data: {},
   },
+  {
+    id: '3',
+    name: 'Dialogue',
+    description:
+      'Bring characters to life with an animated dialogue between two of them',
+    type: ScenarioType.DIALOGUE,
+    path: '/scenarios/dialogue',
+    data: {},
+  },
 ]
 
 const CreateMenu = dynamic(

@@ -1,6 +1,6 @@
 import ConfigParamsTabs from '@/components/ConfigParamsTabs'
 import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
-import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
+// import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import FollowControls from '@/components/FollowControls'
@@ -8,8 +8,8 @@ import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
-import { getFileExtension } from '@/lib/getFileExtension'
-import { isImageUrl } from '@/lib/string'
+import { getAspectRatio } from '@/lib/media'
+import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -20,40 +20,32 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 const CreationDetail = ({
   creation,
   isModal,
-  loadSimilar,
-}: {
+}: // loadSimilar,
+{
   creation: Creation
   isModal?: boolean
-  loadSimilar?: boolean
+  // loadSimilar?: boolean
 }) => {
-  const { isConnected, isAuthenticated, user, address } =
-    useContext(UserContext)
+  const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
   const timeSinceCreation = timeAgo(creation.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
-  const [creationImageLoaded, setCreationImageLoaded] = useState(false)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
-    if (isConnected && isAuthenticated && user?.userId === address) {
+    if (isAuthenticated && user?.userId === userId) {
       setShowFollowControls(true)
     } else {
       setShowFollowControls(false)
     }
-  }, [isConnected, isAuthenticated, user?.userId, address])
+  }, [isAuthenticated, user?.userId, userId])
 
   useEffect(() => {
     setCreationData(creation)
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
-
-  const isVideo = (creationUri: string) => {
-    if (!creationUri) return null
-    const extension = getFileExtension(creationUri)
-    return extension === 'mp4'
-  }
 
   const hideMediaViewer = () => {
     setZoomedInImageUrl(null)
@@ -72,7 +64,7 @@ const CreationDetail = ({
     <>
       <Head>
         <title>{`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}</title>
-        {isVideo(creation.uri) && (
+        {isVideoUrl(creation.uri) && (
           <>
             <meta property="og:type" content="video.other" />
             <meta
@@ -113,36 +105,44 @@ const CreationDetail = ({
 
       <div ref={containerRef}>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
-          <div className="relative mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
+          <div className="relative px-2 mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
             <div
               onClick={
                 isImageUrl(creation.uri)
                   ? () => handlePreviewClick(creation.uri)
                   : () => false
               }
-              className="relative flex justify-center lg:flex lg:flex-grow"
-              style={{ width: 'fit-content', margin: '0 auto' }}
+              className="relative flex justify-center flex flex-grow"
             >
               {isImageUrl(creation.uri) ? (
                 <MediaDisplay
+                  priority={true}
+                  aspectRatio={getAspectRatio(
+                    creation.mediaAttributes.width,
+                    creation.mediaAttributes.height,
+                  )}
                   creationUri={creationData?.uri}
                   previewUri={creationData?.uri}
-                  onLoad={() => {
-                    setCreationImageLoaded(true)
-                  }}
+                  thumbnailUri={creationData?.thumbnail}
                 />
               ) : (
                 <MediaDisplay
+                  aspectRatio={getAspectRatio(
+                    creation.mediaAttributes.width,
+                    creation.mediaAttributes.height,
+                  )}
                   creationUri={creationData?.uri}
-                  onLoad={() => {
-                    setCreationImageLoaded(true)
-                  }}
+                  thumbnailUri={creationData?.thumbnail}
                 />
               )}
             </div>
           </div>
 
-          <div className="mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
+          <div
+            className={`${
+              isModal ? 'px-2  md:px-0' : ''
+            } mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
+          >
             <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
               <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
                 <CreatorProfileLink
@@ -152,7 +152,7 @@ const CreationDetail = ({
                 />
               </div>
               {showFollowControls && (
-                <div className="flex items-center xl:w-full xl:mt-1 flex-shrink-0">
+                <div className="flex items-center flex-shrink-0">
                   <FollowControls
                     creatorId={creationData?.user?.userId}
                     showStats={false}
@@ -194,13 +194,13 @@ const CreationDetail = ({
             <ConfigParamsTabs data={creation} />
           </div>
         </div>
-        {loadSimilar && creationImageLoaded ? (
-          <SimilarCreations
-            creation={creation}
-            containerRef={containerRef}
-            isModal={isModal}
-          />
-        ) : null}
+        {/*{loadSimilar ? (*/}
+        {/*  <SimilarCreations*/}
+        {/*    creation={creation}*/}
+        {/*    containerRef={containerRef}*/}
+        {/*    isModal={isModal}*/}
+        {/*  />*/}
+        {/*) : null}*/}
       </div>
     </>
   )

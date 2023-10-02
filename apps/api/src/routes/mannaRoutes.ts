@@ -13,7 +13,7 @@ const mannaRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getBalance(request, reply),
   })
 
@@ -29,7 +29,7 @@ const mannaRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => redeemMannaVoucher(request, reply),
   })
 }

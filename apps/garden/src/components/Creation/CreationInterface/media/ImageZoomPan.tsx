@@ -48,8 +48,22 @@ const ImageZoomPan = ({
     }
   }, [contentRef, componentWrapRef])
 
+  const onEscHandler = useCallback(
+    (ev: React.KeyboardEvent<HTMLDivElement>) => {
+      if (ev.key === 'Escape') {
+        ev.stopPropagation()
+        onCloseHandler()
+      }
+    },
+    [onCloseHandler],
+  )
+
+  useEffect(() => {
+    contentRef.current?.focus()
+  }, [])
+
   return (
-    <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-10`}>
+    <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-30`}>
       <TransformWrapper
         minScale={0.1}
         maxScale={4}
@@ -58,7 +72,7 @@ const ImageZoomPan = ({
       >
         {({ zoomIn, zoomOut, centerView }) => (
           <>
-            <div className="absolute tools z-20 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
+            <div className="absolute tools z-30 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
               <Button.Group>
                 <Button type="text" onClick={() => zoomIn()}>
                   <ZoomInOutlined className="text-xl" />
@@ -78,15 +92,20 @@ const ImageZoomPan = ({
               </Button>
             </div>
             <TransformComponent wrapperClass="!w-full !h-full">
-              <img
+              <div
                 ref={contentRef}
-                src={imageUrl}
-                alt={imageUrl}
-                onLoad={() => {
-                  console.log('centerView', imageUrl)
-                  centerView(fitContentToWrapper())
-                }}
-              />
+                tabIndex={0}
+                onKeyDown={ev => onEscHandler(ev)}
+                className="outline-0"
+              >
+                <img
+                  src={imageUrl}
+                  alt={imageUrl}
+                  onLoad={() => {
+                    centerView(fitContentToWrapper())
+                  }}
+                />
+              </div>
             </TransformComponent>
           </>
         )}

@@ -1,42 +1,61 @@
 import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
-import CopyImageButton from '@/components/CopyImageButton'
-import CopyUrlButton from '@/components/CopyUrlButton'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
 import CreationReactions from '@/components/Creation/CreationReactions'
+import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
+import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
+import DownloadFileButton from '@/components/Layout/buttons/DownloadFileButton'
+import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
+import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { CONFIG } from '@/lib/config'
-import { getModalUrls } from '@/lib/modal'
+import { getAspectRatio } from '@/lib/media'
+import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
+import { MasonryContext } from '@/providers/MasonryProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { EllipsisOutlined } from '@ant-design/icons'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { Dropdown } from 'antd'
 import { useRouter } from 'next/router'
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useCallback, useContext, useEffect, useState } from 'react'
 
-const CreationCard: FC<{ index: number; data: Creation }> = ({
-  index,
-  data,
-}) => {
+const CreationCard: FC<{
+  index: number
+  data: Creation
+  disableArrowNav?: boolean
+}> = ({ index, data, disableArrowNav }) => {
   const router = useRouter()
   const { hovered, ref } = useHover()
   const [creation, setCreation] = useState(data)
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false)
 
-  const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation._id)
   const { showModal } = useModalContext()
+  const { setCurrentIndex } = useContext(MasonryContext)
 
-  const openDetailModal = async () => {
-    await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
+  const openDetailModal = useCallback(async () => {
+    // console.log({ 'routerAsPath': router.asPath })
+    if (disableArrowNav) {
+      // console.log('disabledArrow nav')
+      showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
+        creation,
+        loadSimilar: true,
+        usesUrl: true,
+        originPageUrl: router.asPath,
+      })
+
+      return
+    }
+
+    setCurrentIndex(index)
     showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
-      creation,
       loadSimilar: true,
       usesUrl: true,
+      originPageUrl: router.asPath,
     })
-  }
+  }, [index, data, router, disableArrowNav])
 
   const [createdDateString, setCreatedDateString] = useState('')
   const timeSinceCreation = timeAgo(creation.createdAt)
@@ -45,60 +64,98 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
+  const imageCopyItems = [
+    {
+      icon: <CopyImageButton url={creation.uri} variant="text" />,
+      key: '1-1',
+    },
+  ]
+  const otherTypeCopyItems = [
+    {
+      icon: (
+        <CopyUrlButton url={creation.uri} variant="text" label="File URL" />
+      ),
+      key: '1-2',
+    },
+    {
+      icon: (
+        <CopyUrlButton
+          url={`${CONFIG.NEXT_PUBLIC_HOST}/creations/${creation.uri}`}
+          variant="text"
+          label="Page URL"
+        />
+      ),
+      key: '1-3',
+    },
+    {
+      icon: (
+        <CopyUrlButton
+          url={`${CONFIG.NEXT_PUBLIC_HOST}/create/creations?presetId=${creation._id}`}
+          variant="text"
+          label="Preset URL"
+        />
+      ),
+      key: '1-4',
+    },
+  ]
+  const copyItems = isImageUrl(creation.uri)
+    ? [...imageCopyItems, ...otherTypeCopyItems]
+    : otherTypeCopyItems
+
   const getCardMenuItems = () => {
     return [
-      // {
-      //   label: (
-      //     <div
-      //       onClick={() =>
-      //         console.log('//@todo: copy creation url to clipboard')
-      //       }
-      //     >
-      //       Copy... creation url to clipboard
-      //     </div>
-      //   ),
-      //   key: '1',
-      // },
       {
         label: 'Copy...',
         key: '1',
+        children: copyItems,
+      },
+      {
+        label: 'Open in...',
+        key: '2',
         children: [
           {
-            icon: <CopyImageButton url={creation.uri} variant="text" />,
-            key: '1-1',
-          },
-          {
             icon: (
-              <CopyUrlButton
-                url={creation.uri}
+              <NewTabLinkButton
+                url={`${CONFIG.NEXT_PUBLIC_HOST}/creations/${creation._id}`}
                 variant="text"
-                label="Image URL"
+                label="New Tab"
               />
             ),
-            key: '1-2',
-          },
-          {
-            icon: (
-              <CopyUrlButton
-                url={`${CONFIG.NEXT_PUBLIC_HOST}${pageUrl || modalUrl}`}
-                variant="text"
-                label="Page URL"
-              />
-            ),
-            key: '1-3',
+            key: '2-1',
           },
         ],
       },
-      // {
-      //   label: (
-      //     <div
-      //       onClick={() => console.log('//@todo: copy image url to clipboard')}
-      //     >
-      //       Copy... image url to clipboard
-      //     </div>
-      //   ),
-      //   key: '3',
-      // },
+      {
+        label: 'Use as...',
+        key: '3',
+        children: [
+          {
+            icon: (
+              <UseAsPresetButton
+                creationId={creation._id}
+                variant="text"
+                label="Preset"
+              />
+            ),
+            key: '3-1',
+          },
+        ],
+      },
+      {
+        key: '4',
+        type: 'divider',
+      },
+      {
+        icon: (
+          <DownloadFileButton
+            url={creation.uri}
+            fileName={creation._id}
+            variant="text"
+            label="Download"
+          />
+        ),
+        key: '5',
+      },
     ]
   }
 
@@ -107,11 +164,31 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
       <div className="relative" key={index}>
         <div className="w-full flex justify-center flex-col">
           <div
-            className={` flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
+            className="card-image relative rounded-lg overflow-hidden cursor-pointer"
+            onClick={openDetailModal}
+          >
+            <a
+              onClick={ev => ev.preventDefault()}
+              href={`/creations/${creation._id}`}
+              target={'_blank'}
+              className="block"
+            >
+              <MediaPreview
+                creation={creation}
+                hovered={hovered}
+                aspectRatio={getAspectRatio(
+                  creation.mediaAttributes.width,
+                  creation.mediaAttributes.height,
+                )}
+              />
+            </a>
+          </div>
+          <div
+            className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
               hovered ? 'md:!visible' : 'md:hidden'
             }`}
           >
-            <div className="flex items-center pointer-events-auto">
+            <div className="flex items-center pointer-events-auto my-1">
               <CreatorProfileLink
                 creatorId={creation.user.userId}
                 creatorName={creation.user.username}
@@ -130,23 +207,12 @@ const CreationCard: FC<{ index: number; data: Creation }> = ({
               arrow={true}
               placement="bottomRight"
               menu={{ items: getCardMenuItems() }}
+              className="card-tools-dropdown"
             >
               <div className="flex items-center cursor-pointer pointer-events-auto">
                 <EllipsisOutlined className="text-xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
               </div>
             </Dropdown>
-          </div>
-          <div
-            className="card-image relative rounded-lg overflow-hidden cursor-pointer"
-            onClick={openDetailModal}
-          >
-            <a
-              onClick={ev => ev.preventDefault()}
-              href={`/creations/${creation._id}`}
-              target={'_blank'}
-            >
-              <MediaPreview creation={creation} hovered={hovered} />
-            </a>
           </div>
           <div
             className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${

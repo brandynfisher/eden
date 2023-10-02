@@ -1,3 +1,4 @@
+import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
@@ -5,8 +6,8 @@ import { CharactersCreateArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = req.session.token
-  const { name, image, description, greeting, dialogue } =
+  const authToken = await getAuthToken(req)
+  const { name, voice, image, description, greeting, dialogue } =
     req.body as CharactersCreateArguments
 
   if (!authToken) {
@@ -21,6 +22,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const response = await eden.characters.create({
       name,
       image,
+      voice,
       description,
       greeting,
       dialogue,

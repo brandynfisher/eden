@@ -24,6 +24,8 @@
   "author": "Eden Labs",
   "license": "MIT",
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^4.12.8",
+    "@clerk/fastify": "^0.6.9",
     "@edenlabs/config": "*",
     "@edenlabs/eden-sdk": "*",
     "@edenlabs/tsconfig": "*",
@@ -61,6 +63,7 @@
     "sharp": "^0.32.1",
     "siwe": "^2.1.4",
     "stripe": "^12.18.0",
+    "svix": "^1.12.0",
     "uuid": "^9.0.0",
     "vite": "^4.3.5"
   },

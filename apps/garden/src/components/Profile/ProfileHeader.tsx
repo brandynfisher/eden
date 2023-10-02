@@ -1,9 +1,9 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import CopyUrlButton from '@/components/CopyUrlButton'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FollowControls from '@/components/FollowControls'
+import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
+import ShareButton from '@/components/Layout/buttons/ShareButton'
 import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
-import ShareButton from '@/components/ShareButton'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
@@ -17,12 +17,12 @@ import React, { useEffect, useState } from 'react'
 const ProfileHeader = ({
   creatorId,
   creator,
-  isConnectedUser,
+  isAuthenticatedUser,
   numCreations,
 }: {
   creatorId: string
   creator: Creator | undefined
-  isConnectedUser: boolean
+  isAuthenticatedUser: boolean
   numCreations: number | undefined
 }) => {
   const { mutate: refetchCreator } = useCreator(creatorId)
@@ -78,11 +78,11 @@ const ProfileHeader = ({
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <div
             className={`w-[90px] h-[90px] rounded-full overflow-hidden ${
-              isConnectedUser
+              isAuthenticatedUser
                 ? 'hover:brightness-125 transition-all cursor-pointer'
                 : ''
             }`}
-            onClick={() => isConnectedUser && setShowImageUploader(true)}
+            onClick={() => isAuthenticatedUser && setShowImageUploader(true)}
           >
             <CharacterAvatar
               id={creatorId}
@@ -91,7 +91,7 @@ const ProfileHeader = ({
               size="auto"
             />
           </div>
-          {isConnectedUser && (
+          {isAuthenticatedUser && (
             <div
               ref={clickOutsideTargetRef}
               className="flex flex-col mt-2 relative"
@@ -152,7 +152,7 @@ const ProfileHeader = ({
           ) : (
             <div className="flex items-center flex-wrap md:flex-nowrap">
               <ProfileHeaderName
-                isOwnProfile={isConnectedUser}
+                isOwnProfile={isAuthenticatedUser}
                 displayName={displayName}
                 setDisplayName={setDisplayName}
               />

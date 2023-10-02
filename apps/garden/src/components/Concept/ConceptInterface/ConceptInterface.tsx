@@ -47,8 +47,8 @@ const ConceptInterface = () => {
   return (
     <div className="w-full">
       <h2 className="mb-4">Concept Trainer</h2>
-      <div className="w-full grid grid-cols-12" style={{ gap: '16px' }}>
-        <div className="flex flex-col space-y-4 col-span-12 lg:col-span-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="flex flex-col">
           {activeGenerator && (
             <GeneratorForm
               generator={activeGenerator}

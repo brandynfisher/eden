@@ -1,5 +1,6 @@
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
 import CreationDetailModal from '@/components/Modals/CreationDetailModal'
+import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
@@ -8,7 +9,7 @@ import { CloseOutlined } from '@ant-design/icons'
 import { Concept, Creation, Task } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
-import {
+import React, {
   PropsWithChildren,
   createContext,
   useCallback,
@@ -19,6 +20,7 @@ import {
 
 export enum MODAL_TYPES {
   CREATION_DETAIL_MODAL = 'CREATION_DETAIL_MODAL',
+  CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
   CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
@@ -29,6 +31,7 @@ export enum MODAL_TYPES {
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_MODAL]: CreationDetailModal,
+  [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
   [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
@@ -38,6 +41,9 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
 
 type BaseModalProps = Partial<ModalProps> & {
   usesUrl?: boolean
+  pageUrl?: string
+  modalUrl?: string
+  originPageUrl?: string
   className?: string
 }
 type ModalStore = {
@@ -65,6 +71,14 @@ const initialState: ModalContextType = {
 
 const ModalContext = createContext(initialState)
 export const useModalContext = () => useContext(ModalContext)
+
+export const CloseButton = () => {
+  return (
+    <div className="text-white text-xl">
+      <CloseOutlined />
+    </div>
+  )
+}
 
 function ModalProvider({ children }: PropsWithChildren) {
   const [store, setStore] = useState<ModalStore>()
@@ -97,22 +111,22 @@ function ModalProvider({ children }: PropsWithChildren) {
     })
   }
 
-  const CloseButton = () => {
-    return (
-      <div className="text-white text-xl">
-        <CloseOutlined />
-      </div>
-    )
-  }
-
   const defaultModalProps: ModalProps = {
     closeIcon: <CloseButton />,
     className:
       'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
-    onCancel: () => {
+    onCancel: async () => {
       hideModal()
       if (store?.modalProps?.usesUrl) {
-        router.back()
+        if (store?.modalProps?.originPageUrl) {
+          await router.push(
+            store?.modalProps?.originPageUrl,
+            store?.modalProps?.originPageUrl,
+            { shallow: true, scroll: false },
+          )
+        } else {
+          router.back()
+        }
       }
     },
     width: '',
@@ -145,6 +159,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       // @ts-ignore
       <ModalComponent
         {...({ ...defaultModalProps, ...store.modalProps } as ModalProps)}
+        handleCancel={store.modalProps?.onCancel}
         className={classNames}
       />
     )
@@ -184,7 +199,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       hideModal()
     }
   }, [])
-  //
+
   useEffect(() => {
     document.body.addEventListener('keydown', onEscHandler, false)
 
@@ -195,7 +210,7 @@ function ModalProvider({ children }: PropsWithChildren) {
 
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
-      <div tabIndex={0}>
+      <div tabIndex={0} className="outline-0">
         {renderComponent()}
         {children}
       </div>

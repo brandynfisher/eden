@@ -90,6 +90,7 @@ export const getTaskCost = async (
 
   const cost = server.getTransactionCost(
     server,
+    generator,
     generatorVersion,
     preparedConfig,
   )
@@ -148,6 +149,7 @@ export const createTask = async (
 
   const cost = server.getTransactionCost(
     server,
+    generator,
     generatorVersion,
     preparedConfig,
   )
@@ -160,6 +162,7 @@ export const createTask = async (
   // submit task
   const taskId = await server.submitTask(
     server,
+    generator,
     generatorVersion,
     preparedConfig,
   )
@@ -315,7 +318,7 @@ export const createChatCompletion = async (
 
   console.log(chatMessages)
 
-  const response = await server.llm.createChatCompletion({
+  const response = await server.openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
     messages: chatMessages,
     temperature: 1,

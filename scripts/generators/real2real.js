@@ -52,7 +52,6 @@ const params = [
     label: 'Concept',
     description:
       '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
-    default: '(none)',
     optional: true,
    },
    {
@@ -63,7 +62,7 @@ const params = [
     default: 0.8,
     minimum: 0.0,
     maximum: 1.2,
-    step: 0.1,
+    step: 0.01,
     optional: true,
   },
 
@@ -180,7 +179,7 @@ const params = [
     label: 'Init image min strength',
     description:
       'Min strength of the init_img during interpolation. Lower values will give the interpolation more freedom, leading to more visual changes at the cost of less smoothness',
-    default: 0.1,
+    default: 0.0,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
@@ -191,7 +190,7 @@ const params = [
     label: 'Init image max strength',
     description:
       'Max strength of the init_img during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
-    default: 0.9,
+    default: 0.95,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,

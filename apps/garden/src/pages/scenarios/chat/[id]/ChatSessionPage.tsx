@@ -12,16 +12,16 @@ const ChatSessionPage = ({
   data: { characters: Character[]; sessions: Session[] }
   activeSessionId?: string | undefined
 }) => {
-  const { isAuthenticated, address } = useContext(UserContext)
+  const { isAuthenticated, userId } = useContext(UserContext)
   const { characters: charactersData } = useMyCharacters({
-    userId: address ? address : null,
+    userId,
     isAuthenticated,
     options: {
       fallbackData: data ? data.characters : [],
     },
   })
   const { sessions: sessionsData } = useMySessions({
-    userId: address ? address : null,
+    userId,
     isAuthenticated,
     options: {
       fallbackData: data ? data.sessions : [],

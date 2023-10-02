@@ -73,6 +73,10 @@ def induct_creation(document):
     response = requests.get(uri)
     image = Image.open(BytesIO(response.content)).convert("RGB")
 
+    if not image.mode or not image.size:
+        print(f"skip creation {document['_id']}, invalid image")
+        return
+
     # aesthetic score
     if FAKE_DATA:
         score = random.random()
@@ -81,6 +85,10 @@ def induct_creation(document):
         score, features = aesthetic_regressor.predict_score(image)
         embedding = features.squeeze().numpy().tolist()
     
+    if not embedding:
+        print(f"skip creation {document['_id']}, no embedding")
+        return
+
     # update mongo
     creations.update_one(
         {'_id': document['_id']},

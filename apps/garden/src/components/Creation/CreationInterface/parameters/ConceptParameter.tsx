@@ -1,7 +1,8 @@
+import SelectCustom from '@/components/Forms/CustomSelect'
 import { useConcepts } from '@/hooks/useConcepts'
 import { UserContext } from '@/providers/UserProvider'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
-import { Form, FormInstance, Row, Select, Switch } from 'antd'
+import { Form, FormInstance, Row, Switch } from 'antd'
 import { useContext, useState } from 'react'
 
 const ConceptParameter = (props: {
@@ -15,20 +16,22 @@ const ConceptParameter = (props: {
   const { concepts } = useConcepts(conceptFilter)
 
   const options = [
-    { label: '(none)', value: '(none)' },
     ...(concepts
       ? concepts.map(concept => ({
           label: concept.publicName,
-          value: concept.uri,
+          value: concept._id,
+          thumbnail: concept.thumbnail,
+          conceptName: concept.conceptName,
+          checkpoint: concept.checkpoint,
         }))
       : []),
   ]
 
-  const onChange = (newValue: number | null) => {
-    if (newValue !== null) {
-      setValue(newValue)
-      props.form.setFieldsValue({ [props.parameter.name]: newValue })
-    }
+  const onChange = (newValue: string | null) => {
+    setValue(newValue)
+    props.form.setFieldsValue({
+      [props.parameter.name]: newValue === null ? '' : newValue,
+    })
   }
 
   const onSwitchChange = (newValue: boolean) => {
@@ -53,7 +56,7 @@ const ConceptParameter = (props: {
         {typeof props.parameter.default === 'boolean' ? (
           <Switch checked={value} onChange={onSwitchChange} />
         ) : (
-          <Select
+          <SelectCustom
             value={value}
             style={{ maxWidth: '95%' }}
             options={options}

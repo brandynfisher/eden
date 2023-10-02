@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { ApiKey } from '../models/ApiKey'
 import { User } from '../models/Creator'
@@ -32,26 +32,29 @@ const apiKeyVerify = async (request: FastifyRequest) => {
 const getCredential = async (
   server: FastifyInstance,
   request: FastifyRequest,
+  reply: FastifyReply,
 ) => {
   if (request.headers['x-api-key']) {
     await apiKeyVerify(request)
   } else {
-    await server.verifyUser(request)
+    await server.verifyUser(request, reply)
   }
 }
 
 export const isAuth = async (
   server: FastifyInstance,
   request: FastifyRequest,
+  reply: FastifyReply,
 ) => {
-  await getCredential(server, request)
+  await getCredential(server, request, reply)
 }
 
 export const isAdmin = async (
   server: FastifyInstance,
   request: FastifyRequest,
+  reply: FastifyReply,
 ) => {
-  await getCredential(server, request)
+  await getCredential(server, request, reply)
   if (!request.user.isAdmin) {
     throw new Error('Not authorized')
   }
@@ -60,9 +63,10 @@ export const isAdmin = async (
 export const maybeAuth = async (
   server: FastifyInstance,
   request: FastifyRequest,
+  reply: FastifyReply,
 ) => {
   try {
-    await getCredential(server, request)
+    await getCredential(server, request, reply)
   } catch (error) {
     // Ignore
   }
@@ -70,6 +74,6 @@ export const maybeAuth = async (
 
 declare module 'fastify' {
   interface FastifyInstance {
-    verifyUser: (request: FastifyRequest) => Promise<void>
+    verifyUser: (request: FastifyRequest, reply: FastifyReply) => Promise<void>
   }
 }

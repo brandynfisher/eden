@@ -20,8 +20,8 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 const { Panel } = Collapse
 type ProbedImage = {
   url: string
-  size: { width: number; height: number }
-  thumbnailSize: { width: number; height: number }
+  size: { width: number; height: number; aspectRatio: number }
+  thumbnailSize: { width: number; height: number; aspectRatio: number }
 }
 
 const probeImageForSize = async (
@@ -30,10 +30,14 @@ const probeImageForSize = async (
 ) => {
   const imageWithSize = {
     url: imageUrl,
-    size: { width: 0, height: 0 },
-    thumbnailSize: { width: 0, height: 0 },
+    size: { width: 0, height: 0, aspectRatio: 1 },
+    thumbnailSize: { width: 0, height: 0, aspectRatio: 1 },
   }
-  imageWithSize.size = await probe(imageUrl)
+  const probeResult = await probe(imageUrl)
+  imageWithSize.size = {
+    ...probeResult,
+    aspectRatio: (probeResult.height / probeResult.width) * 100,
+  }
 
   if (
     imageWithSize.size.height < maxThumbnailSize &&
@@ -55,6 +59,8 @@ const probeImageForSize = async (
     imageWithSize.thumbnailSize.width = maxThumbnailSize
   }
 
+  imageWithSize.thumbnailSize.aspectRatio = imageWithSize.size.aspectRatio
+
   return imageWithSize
 }
 
@@ -67,23 +73,27 @@ const ConceptDetail = ({
 }) => {
   const maxThumbnailSize = 96
 
-  const { isAuthenticated, user, address } = useContext(UserContext)
+  const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [conceptData, setConceptData] = useState<Concept>(concept)
   const timeSinceConcept = timeAgo(concept.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
   // const [conceptImageLoaded, setConceptImageLoaded] = useState(false)
   const [showFollowControls, setShowFollowControls] = useState(false)
-  const [displayImage, setDisplayImage] = useState({ url: '', thumbnail: '' })
+  const [displayImage, setDisplayImage] = useState({
+    url: '',
+    thumbnail: '',
+    aspectRatio: 100,
+  })
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
-    if (isAuthenticated && user?.userId === address) {
+    if (isAuthenticated && user?.userId === userId) {
       setShowFollowControls(true)
     } else {
       setShowFollowControls(false)
     }
-  }, [isAuthenticated, user?.userId, address])
+  }, [isAuthenticated, user?.userId, userId])
 
   const hideMediaViewer = () => {
     setZoomedInImageUrl(null)
@@ -103,10 +113,6 @@ const ConceptDetail = ({
     setCreatedDateString(new Date(concept.createdAt).toLocaleString())
   }, [concept])
 
-  // useEffect(() => {
-  //   setConceptImageLoaded(false)
-  // }, [concept.uri])
-
   const [probedImageUrls, setProbedImageUrls] = useState<ProbedImage[]>()
 
   useEffect(() => {
@@ -123,6 +129,7 @@ const ConceptDetail = ({
         setDisplayImage({
           url: imagesWithSizes[0].url,
           thumbnail: imagesWithSizes[0].url,
+          aspectRatio: imagesWithSizes[0].size.aspectRatio,
         })
       }
     }
@@ -175,103 +182,109 @@ const ConceptDetail = ({
       )}
 
       <div ref={containerRef} className="lg:flex lg:justify-center gap-4">
-        <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0">
-          <div className="mb-4">
-            <h3>Samples</h3>
-            <div className="relative">
-              <div
-                // onClick={showMediaViewer}
-                onClick={() => handlePreviewClick(conceptData.thumbnail)}
-                className="relative flex justify-center lg:flex lg:flex-grow"
-                style={{ width: 'fit-content', margin: '0 auto' }}
-              >
-                <MediaDisplay
-                  className={'media-display__main'}
-                  creationUri={
-                    conceptData && conceptData?.thumbnail
-                      ? conceptData?.thumbnail
-                      : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                  }
-                  previewUri={conceptData?.thumbnail}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0">
-          <h3>Training Images</h3>
-          <div className="relative overflow-hidden max-w-full">
-            {probedImageUrls && (
-              <>
-                <div className="flex items-center justify-center gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow mb-4">
-                  {probedImageUrls.map(trainingImage => (
-                    <div
-                      key={trainingImage.url}
-                      className={`flex w-[96px] h-[96px] overflow-hidden rounded-lg border border-solid ${
-                        trainingImage.url === displayImage.url
-                          ? 'border-gray-700 bg-gray-800'
-                          : 'cursor-pointer border-gray-800 hover:border-blue-600 '
-                      }`}
-                      onClick={() =>
-                        setDisplayImage({
-                          url: trainingImage.url,
-                          thumbnail: trainingImage.url,
-                        })
-                      }
-                    >
-                      <Image
-                        src={trainingImage.url}
-                        alt={trainingImage.url}
-                        width={trainingImage.thumbnailSize.width}
-                        height={trainingImage.thumbnailSize.height}
-                        className="rounded-lg w-full h-auto object-contain max-h-full"
-                      />
-                    </div>
-                  ))}
-                </div>
-
+        <div className="flex flex-col flex-grow items-center">
+          <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0 w-full">
+            <div className="mb-4">
+              <h3>Samples</h3>
+              <div className="relative flex justify-center">
                 <div
-                  onClick={() => handlePreviewClick(displayImage.url)}
-                  className="relative flex justify-center lg:flex lg:flex-grow"
-                  style={{ width: 'fit-content', margin: '0 auto' }}
+                  onClick={() => handlePreviewClick(conceptData.thumbnail)}
+                  className="relative flex justify-center flex flex-grow"
                 >
                   <MediaDisplay
+                    priority={true}
+                    aspectRatio={100}
                     className={'media-display__main'}
                     creationUri={
-                      displayImage?.thumbnail
-                        ? displayImage.thumbnail
+                      conceptData && conceptData?.thumbnail
+                        ? conceptData?.thumbnail
                         : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                     }
-                    previewUri={displayImage?.thumbnail}
+                    previewUri={conceptData?.thumbnail}
                     // onLoad={() => {
-                    //   setCreationImageLoaded(true)
+                    //   setConceptImageLoaded(true)
                     // }}
                   />
                 </div>
-              </>
-            )}
-            {conceptData?.training_images &&
-            conceptData?.training_images[0] &&
-            !isImageUrl(conceptData?.training_images[0]) ? (
-              <div className="flex items-center mb-4">
-                <div className="test-xs truncate">
-                  {conceptData?.training_images[0]}
-                </div>
-                <Button
-                  onClick={() =>
-                    conceptData?.training_images &&
-                    conceptData?.training_images[0] &&
-                    downloadFile(
-                      conceptData?.training_images[0],
-                      `concept_${conceptData._id}_0`,
-                    )
-                  }
-                >
-                  Download .zip archive
-                </Button>
               </div>
-            ) : null}
+            </div>
+          </div>
+
+          <div className="self-start max-w-sm lg:mx-0 mx-auto mb-4 lg:mx-0 w-full">
+            <h3>Training Images</h3>
+            <div className="relative overflow-hidden max-w-full">
+              {probedImageUrls && (
+                <>
+                  <div className="flex items-center justify-center gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow mb-4">
+                    {probedImageUrls.map(trainingImage => (
+                      <div
+                        key={trainingImage.url}
+                        className={`flex w-[96px] h-[96px] overflow-hidden rounded-lg border border-solid ${
+                          trainingImage.url === displayImage.url
+                            ? 'border-gray-700 bg-gray-800'
+                            : 'cursor-pointer border-gray-800 hover:border-blue-600 '
+                        }`}
+                        onClick={() =>
+                          setDisplayImage({
+                            url: trainingImage.url,
+                            thumbnail: trainingImage.url,
+                            aspectRatio: trainingImage.size.aspectRatio,
+                          })
+                        }
+                      >
+                        <Image
+                          src={trainingImage.url}
+                          alt={trainingImage.url}
+                          width={trainingImage.thumbnailSize.width}
+                          height={trainingImage.thumbnailSize.height}
+                          className="rounded-lg w-full h-auto object-contain max-h-full"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div
+                    onClick={() => handlePreviewClick(displayImage.url)}
+                    className="relative flex justify-center lg:flex lg:flex-grow"
+                  >
+                    <MediaDisplay
+                      aspectRatio={displayImage.aspectRatio}
+                      className={'media-display__main'}
+                      creationUri={
+                        displayImage?.thumbnail
+                          ? displayImage.thumbnail
+                          : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                      }
+                      previewUri={displayImage?.thumbnail}
+                      // onLoad={() => {
+                      //   setCreationImageLoaded(true)
+                      // }}
+                    />
+                  </div>
+                </>
+              )}
+              {conceptData?.training_images &&
+              conceptData?.training_images[0] &&
+              !isImageUrl(conceptData?.training_images[0]) ? (
+                <div className="flex items-center mb-4 gap-2">
+                  <Button
+                    onClick={() =>
+                      conceptData?.training_images &&
+                      conceptData?.training_images[0] &&
+                      downloadFile(
+                        conceptData?.training_images[0],
+                        `concept_${conceptData._id}_0`,
+                      )
+                    }
+                  >
+                    Download .zip archive
+                  </Button>
+                  <div className="test-xs truncate">
+                    {conceptData?.training_images[0]}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -285,7 +298,7 @@ const ConceptDetail = ({
               />
             </div>
             {showFollowControls && (
-              <div className="flex items-center xl:mt-1 flex-shrink-0 ">
+              <div className="flex items-center flex-shrink-0 ">
                 <FollowControls
                   creatorId={conceptData?.user?.userId}
                   showStats={false}

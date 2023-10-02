@@ -236,7 +236,6 @@ export const updateCreator = async (
   }
   if (username) {
     if (username.length < 3 || username.length > 32) {
-      console.log('xxx', username)
       if (username === creator.userId) {
         creator.username = username
       } else {

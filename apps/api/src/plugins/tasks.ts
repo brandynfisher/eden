@@ -1,21 +1,23 @@
-import { FastifyInstance, FastifyRequest } from 'fastify'
+import { FastifyInstance } from 'fastify'
 
 import {
   dummyGetTransactionCost,
   dummyReceiveTaskUpdate,
   dummySubmitTask,
 } from '../lib/taskHandlers/dummy'
-import { GeneratorVersionSchema } from '../models/Generator'
+import { GeneratorDocument, GeneratorVersionSchema } from '../models/Generator'
 
 export interface TaskHandlers {
   submitTask: (
     server: FastifyInstance,
+    generator: GeneratorDocument,
     generatorVersion: GeneratorVersionSchema,
     config: any,
   ) => Promise<string>
   receiveTaskUpdate: (server: FastifyInstance, update: any) => void
   getTransactionCost: (
     server: FastifyInstance,
+    generator: GeneratorDocument,
     generatorVersion: GeneratorVersionSchema,
     config: any,
   ) => number
@@ -41,12 +43,14 @@ declare module 'fastify' {
   interface FastifyInstance {
     submitTask: (
       server: FastifyInstance,
+      generator: GeneratorDocument,
       generatorVersion: GeneratorVersionSchema,
       config: any,
     ) => Promise<string>
     receiveTaskUpdate: (server: FastifyInstance, update: any) => void
     getTransactionCost: (
       server: FastifyInstance,
+      generator: GeneratorDocument,
       generatorVersion: GeneratorVersionSchema,
       config: any,
     ) => number
