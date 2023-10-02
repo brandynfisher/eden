@@ -8,7 +8,7 @@ export interface UserContextType {
   isAuthenticating: boolean
   isAuthenticated: boolean
   authError: string | null
-  authenticate: (afterSignInUrl?: string) => Promise<void>
+  authenticate: () => Promise<void>
   logout: () => Promise<void>
   userId: string | null
   mannaBalance?: number
@@ -30,8 +30,7 @@ const defaultUserState: UserContextType = {
   isAuthenticating: false,
   isAuthenticated: false,
   authError: null,
-  authenticate: (afterSignInUrl?: string) => {
-    console.log(afterSignInUrl)
+  authenticate: () => {
     return new Promise<void>(resolve => resolve())
   },
   logout: async () => {

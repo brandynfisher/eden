@@ -1,12 +1,10 @@
 import { App } from 'antd'
 import axios from 'axios'
-import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { SiweMessage } from 'siwe'
 import { useAccount, useNetwork, useSignMessage } from 'wagmi'
 
 export const useAuth = () => {
-  const router = useRouter()
   const { address, connector } = useAccount({
     // If the user disconnects their wallet, reset the auth state
     onDisconnect: async () => {
@@ -87,7 +85,7 @@ export const useAuth = () => {
     setIsAuthenticated(false)
   }
 
-  const authenticate = async (afterSignInUrl?: string) => {
+  const authenticate = async () => {
     setAuthError(null)
     if (!address || !chainId) {
       setAuthError('No wallet connected')
@@ -132,7 +130,6 @@ export const useAuth = () => {
       await login(message, signature)
       setIsAuthenticated(true)
       setIsAuthenticating(false)
-      router.push(afterSignInUrl || '/')
     } catch (error) {
       setAuthError('Failed to login')
       setIsAuthenticating(false)

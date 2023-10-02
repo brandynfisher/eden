@@ -25,9 +25,9 @@ export const useClerkUserState = () => {
   })
   const { creator, mutate: refetchCreator } = useCreator(userId || null)
 
-  const authenticate = async (afterSignInUrl?: string) => {
+  const authenticate = async () => {
     if (!isAuthenticated) {
-      await openSignIn(afterSignInUrl ? { afterSignInUrl } : undefined)
+      await openSignIn(undefined)
     }
   }
 
