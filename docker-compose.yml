@@ -10,7 +10,7 @@ services:
       - '27017:27017'
     volumes:
       - ./data:/data/db
-      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./scripts/migrations/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - ./scripts/generators:/docker-entrypoint-initdb.d/generators:ro
 
   minio:
@@ -31,7 +31,7 @@ services:
   createbuckets:
     build:
       context: .
-      dockerfile: ./scripts/mc.Dockerfile
+      dockerfile: ./scripts/migrations/mc.Dockerfile
     networks:
       - default
     depends_on:

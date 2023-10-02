@@ -20,6 +20,9 @@ import { Character } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { useContext, useEffect, useState } from 'react'
 
+// import Image from 'next/image'
+// import { CONFIG } from '@/lib/config';
+
 type ConversationEntry = {
   message: string
   speaker: 'bot' | 'user'
@@ -227,6 +230,16 @@ const ChatScenarioUI = ({
                   }`}
                 >
                   {entry.message}
+
+                  {/* //@todo: naiive base for showing images in chat messages */}
+                  {/*{entry.media && isBotSpeaking ?*/}
+                  {/*  <Image*/}
+                  {/*    width={120}*/}
+                  {/*    height={120}*/}
+                  {/*    src={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}*/}
+                  {/*    alt={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}/>*/}
+                  {/*  : null*/}
+                  {/*}*/}
                 </Message.CustomContent>
                 <Message.Footer
                   className={`!mt-0 ${

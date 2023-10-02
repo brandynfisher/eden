@@ -1,5 +1,5 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import ConnectButton from '@/components/ConnectButton'
+import ConnectButton from '@/components/Layout/buttons/ConnectButton'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useWeb3State } from '@/hooks/auth/useWeb3State'
 import { UserContext } from '@/providers/UserProvider'

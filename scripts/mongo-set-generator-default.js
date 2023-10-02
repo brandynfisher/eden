@@ -47,7 +47,9 @@ async function updateDefaultVersion(db) {
   const sdxl_generators_video = [
     'interpolate', 'real2real', 
   ];
-    
+  const task_runner_generators = [
+    'monologue', 'dialogue',
+  ];    
   if (cog === 'eden-sd-pipelines-sdxl') {
     for (const generatorName of sdxl_generators) {
       await db.collection('generators').updateOne(
@@ -69,6 +71,14 @@ async function updateDefaultVersion(db) {
       { generatorName: 'wav2lip' }, 
       { $set: { defaultVersionId: versionId } }
     );
+  }
+  else if (cog === 'task-runner') {
+    for (const generatorName of task_runner_generators) {
+      await db.collection('generators').updateOne(
+        { generatorName: generatorName }, 
+        { $set: { defaultVersionId: versionId } }      
+      );  
+    }
   }
   else if (cog === 'sdxl-lora-trainer') {
     await db.collection('generators').updateOne(

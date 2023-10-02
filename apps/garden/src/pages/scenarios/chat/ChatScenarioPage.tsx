@@ -1,4 +1,5 @@
 import ChatScenarioUI from '@/components/Scenarios/Chat/ChatScenarioUI'
+import SessionsGrid from '@/components/Scenarios/Chat/SessionsGrid'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMySessions } from '@/hooks/useMySessions'
 import { handleAxiosError } from '@/lib/fetcher'
@@ -11,7 +12,6 @@ import {
 } from '@edenlabs/eden-sdk'
 import { App, Button, Select } from 'antd'
 import axios from 'axios'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
@@ -83,25 +83,7 @@ const ChatScenarioPageContent = ({
     <div className="flex flex-col h-full">
       {!sessionId ? (
         <>
-          {/* @todo: re-enable/unhide when sessions is ready */}
-          {/* @todo: extract this to SessionSelector or something */}
-          <div className="mb-8 hidden">
-            {sessions && sessions.length && (
-              <>
-                <h2 className="mb-4">Previous Sessions</h2>
-                <div className="flex gap-4 flex-wrap">
-                  {sessions.map(session => (
-                    <Link
-                      key={session.id}
-                      href={`/scenarios/chat/${session.id}`}
-                    >
-                      {session.id}
-                    </Link>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+          <SessionsGrid sessions={sessions} />
           <div>
             <h2 className="mb-4">Start new session</h2>
             <label htmlFor="character-select">Select a Character:</label>

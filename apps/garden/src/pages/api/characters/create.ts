@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { name, image, description, greeting, dialogue } =
+  const { name, voice, image, description, greeting, dialogue } =
     req.body as CharactersCreateArguments
 
   if (!authToken) {
@@ -22,6 +22,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const response = await eden.characters.create({
       name,
       image,
+      voice,
       description,
       greeting,
       dialogue,

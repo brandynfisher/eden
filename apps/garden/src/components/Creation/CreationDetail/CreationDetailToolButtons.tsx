@@ -1,7 +1,7 @@
-import CopyImageButton from '@/components/CopyImageButton'
-import CopyUrlButton from '@/components/CopyUrlButton'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
-import ShareButton from '@/components/ShareButton'
+import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
+import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
+import ShareButton from '@/components/Layout/buttons/ShareButton'
 import { downloadFile } from '@/lib/files'
 import { getFileExtension } from '@/lib/getFileExtension'
 import {

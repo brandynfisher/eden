@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify'
 
 import { Concept } from '../../models/Concept'
 import { Creation } from '../../models/Creation'
-import { Generator } from '../../models/Generator'
+import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
@@ -48,6 +48,7 @@ interface TaskOutput {
 
 const submitTask = async (
   server: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: any,
   config: any,
 ) => {
@@ -55,7 +56,7 @@ const submitTask = async (
   console.log('submit Task', provider)
   const task = await providers
     .get(provider)
-    .submitTask(server, generatorVersion, config)
+    .submitTask(server, generator, generatorVersion, config)
   return task.id
 }
 
@@ -78,33 +79,19 @@ const handleUpdate = async (
   const intermediateOutputs = output.filter((o: TaskOutput) => !o.isFinal)
   const finalOutputs = output.filter((o: TaskOutput) => o.isFinal)
 
-  const isCompleted = finalOutputs.length > 0 && status == 'succeeded'
+  const isCompleted = finalOutputs.some(Boolean) && status == 'succeeded'
   const maxProgress = Math.max(
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
 
-  // only update status if not already completed/failed
-  const taskStatusUpdate = {
-    status: isCompleted ? 'completed' : 'running',
-    progress: isCompleted ? 1.0 : Math.max(maxProgress, task.progress || 0),
-  } as {
-    output?: TaskOutput[]
-    status: string
-    progress: number
+  const taskUpdate = {
+    status: 'running',
+    progress: Math.max(maxProgress, task.progress || 0),
   }
-  await Task.updateOne(
-    { taskId, status: { $nin: ['completed', 'failed'] } },
-    {
-      $set: taskStatusUpdate,
-    },
-  )
-
-  const taskUpdate = {}
 
   const filteredIntermediateOutputs = intermediateOutputs.filter(
     o => o.files && Array.isArray(o.files) && o.files.length > 0,
   )
-
   if (
     !task.intermediateOutputs ||
     filteredIntermediateOutputs.length > task.intermediateOutputs.length
@@ -121,7 +108,6 @@ const handleUpdate = async (
     const finalOutput = finalOutputs.slice(-1)[0]
     Object.assign(taskUpdate, { output: finalOutput })
     const generator = await Generator.findById(task.generator)
-
     if (generator?.output == 'creation') {
       for (let i = 0; i < finalOutput.files.length; i++) {
         const creationData = {
@@ -227,9 +213,13 @@ const handleUpdate = async (
     }
   }
 
+  console.log('Task Update')
+  console.log(taskUpdate)
+
   await Task.updateOne(
     {
       taskId,
+      status: { $nin: ['completed', 'failed'] },
     },
     {
       $set: taskUpdate,
@@ -251,17 +241,20 @@ const handleUpdateUniversal = async (
   }
 
   output = Array.isArray(output) ? output : [output]
-  const isCompleted = output.length > 0 && status == 'succeeded'
+  const isCompleted = output.some(Boolean) && status == 'succeeded'
 
   const taskUpdate = {
-    status: isCompleted ? 'completed' : 'running',
-    progress: isCompleted ? 1.0 : 0,
-  } as { output?: TaskOutput[]; status: string; progress: number }
+    status: 'running',
+    progress: 0,
+  }
 
   if (isCompleted) {
-    Object.assign(taskUpdate, { output })
+    Object.assign(taskUpdate, {
+      status: 'completed',
+      progress: 1.0,
+      output: output,
+    })
     const generator = await Generator.findById(task.generator)
-
     if (generator?.output == 'creation') {
       for (let i = 0; i < output.length; i++) {
         const creationData = {
@@ -302,6 +295,7 @@ const handleUpdateUniversal = async (
     },
     {
       $set: taskUpdate,
+      status: { $nin: ['completed', 'failed'] },
     },
   )
 }
@@ -411,13 +405,14 @@ export const receiveTaskUpdate = async (
 
 const getTransactionCost = (
   server: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: any,
   config: any,
 ) => {
   const { provider } = generatorVersion
   const cost = providers
     .get(provider)
-    .getTransactionCost(server, generatorVersion, config)
+    .getTransactionCost(server, generator, generatorVersion, config)
   return cost
 }
 

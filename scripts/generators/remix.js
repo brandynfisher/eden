@@ -75,7 +75,7 @@ const params = [
     default: 1.0,
     minimum: 1.0,
     maximum: 2.0,
-    step: 0.1,
+    step: 0.01,
     optional: true,
   },
 
@@ -137,7 +137,7 @@ const params = [
     default: 0.8,
     minimum: 0.0,
     maximum: 1.2,
-    step: 0.1,
+    step: 0.01,
     optional: true,
   },
   {

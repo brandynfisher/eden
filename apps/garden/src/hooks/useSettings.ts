@@ -3,10 +3,10 @@ import { useCallback, useState } from 'react'
 
 const GridSettingParams = {
   displayName: 'Grid Columns',
-  initialValue: 4,
+  initialValue: 5,
   defaultValue: 'auto',
   min: 1,
-  max: 12,
+  max: 8,
 }
 
 export type GridSetting = {

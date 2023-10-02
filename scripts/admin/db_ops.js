@@ -37,22 +37,25 @@ const addToFeatureFlags = async (db) => {
 };
 
 const iterateThroughCreations = async (db, db_backup) => {
-  const creationsCollection = await db.collection('creations');
-  const cursor = creationsCollection.find().sort({ createdAt: -1 }).allowDiskUse(true).batchSize(100);
+  const batchSize = 1000;
+  let d = 0;
+  const collection = await db.collection('tasks');
+  const concepts = await db.collection('concepts');
+  const cursor = collection.find({"config.lora": {$in: ["(none)", "none"]}}).sort({ createdAt: -1 }).allowDiskUse(true).batchSize(batchSize);
 
   while (await cursor.hasNext()) {
-    const creationsBatch = [];
+    const docsBatch = [];
     for (let i = 0; i < batchSize; i++) {
-      const creation = await cursor.next();
-      if(creation) {
-        creationsBatch.push(creation);
+      const doc = await cursor.next();
+      if(doc) {
+        docsBatch.push(doc);
       } else {
         break;
       }
     }
 
-    await Promise.all(creationsBatch.map(async (creation) => {
-      const creationId = creation._id;
+    await Promise.all(docsBatch.map(async (doc) => {
+      const docId = doc._id;      
     }));
   }
 };
@@ -63,7 +66,7 @@ async function main() {
     await client.connect();
     console.log(`Connected successfully to ${MONGO_URI}`);
     const db = await client.db(MONGO_DB_NAME);
-    // await addToFeatureFlags(db);
+    await iterateThroughCreations(db);
   } catch (err) {
     console.error('Failed to connect to the server:', err);
     throw err;

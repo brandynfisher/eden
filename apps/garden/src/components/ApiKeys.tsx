@@ -2,8 +2,9 @@ import { useApiKeys } from '@/hooks/useApiKeys'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { useClipboard } from '@mantine/hooks'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import { App, Breakpoint, Button, Card, Input, Space, Table } from 'antd'
 import axios from 'axios'
 import { useContext, useState } from 'react'
@@ -53,7 +54,7 @@ const TruncatedField = ({ name, text }: { name: string; text: string }) => {
         {text}
       </div>
       <div className="ml-auto">
-        {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+        {copied ? <CheckCircleOutlineIcon /> : <ContentCopyIcon />}
       </div>
     </Button>
   )

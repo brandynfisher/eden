@@ -52,6 +52,7 @@
     "react-blockies": "^1.4.1",
     "react-dom": "18.2.0",
     "react-zoom-pan-pinch": "^3.1.0",
+    "sharp": "^0.32.5",
     "siwe": "^2.1.4",
     "swr": "^2.1.5",
     "tailwindcss": "3.3.2",

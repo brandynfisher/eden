@@ -5,8 +5,9 @@ import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
-} from '@/components/OrderByButtons'
+} from '@/components/Layout/buttons/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
+import { MasonryContext } from '@/providers/MasonryProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { useViewportSize } from '@mantine/hooks'
 import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
@@ -19,7 +20,7 @@ import {
   useResizeObserver,
 } from 'masonic'
 import Link from 'next/link'
-import React, { useContext, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const MasonryInfinite = ({
   type,
@@ -32,6 +33,8 @@ const MasonryInfinite = ({
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
 }) => {
+  const { currentIndex, setCurrentItem, setTotalItems } =
+    useContext(MasonryContext)
   const containerRef = useRef(null)
   const [key, setKey] = useState(0)
 
@@ -60,8 +63,8 @@ const MasonryInfinite = ({
       isItemLoaded: (index, items) => {
         return !!items[index]
       },
-      minimumBatchSize: 5,
-      threshold: 16,
+      minimumBatchSize: 10,
+      threshold: 24,
     },
   )
 
@@ -84,8 +87,8 @@ const MasonryInfinite = ({
   const positioner = usePositioner(
     {
       width,
-      columnGutter: 16,
-      rowGutter: windowWidth < 768 ? 0 : 16,
+      columnGutter: 8,
+      rowGutter: windowWidth < 768 ? 0 : 8,
       columnCount:
         settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
@@ -95,11 +98,30 @@ const MasonryInfinite = ({
           ? 1
           : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
+          : windowWidth > 1920
+          ? 6
+          : windowWidth > 1440
+          ? 5
           : settings?.maxGridCols.params.initialValue,
     },
     [orderBy, width, query?.userId],
   )
   const resizeObserver = useResizeObserver(positioner)
+
+  useEffect(() => {
+    setTotalItems(items.length)
+  }, [items.length])
+
+  useEffect(() => {
+    if (currentIndex === null) return
+
+    setCurrentItem(items[currentIndex])
+
+    if (hasNextPage && currentIndex === items.length - 1) {
+      // console.log('reached last item, trigger maybeLoadMore')
+      maybeLoadMore(currentIndex, currentIndex + 10, items)
+    }
+  }, [currentIndex, hasNextPage])
 
   return (
     <div ref={ref}>
@@ -124,7 +146,7 @@ const MasonryInfinite = ({
               items={items}
               height={windowHeight}
               offset={offset}
-              overscanBy={2}
+              overscanBy={3}
               itemHeightEstimate={300}
               render={itemComponent}
               onRender={maybeLoadMore}

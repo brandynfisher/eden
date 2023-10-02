@@ -55,7 +55,7 @@ const params = [
     default: 0.8,
     minimum: 0.0,
     maximum: 1.2,
-    step: 0.1,
+    step: 0.01,
     optional: true,
   },
 
@@ -76,7 +76,7 @@ const params = [
     label: 'ControlNet',
     description: 'Which ControlNet to use',
     default: 'off',
-    allowedValues: ["off", "canny-edge", "depth"],
+    allowedValues: ["off", "luminance"],
     optional: true,
   },
   {

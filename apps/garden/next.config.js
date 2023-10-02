@@ -17,6 +17,22 @@ const imageDomains =
     : defaultImageDomains
 
 module.exports = withTM({
+  async redirects() {
+    return [
+      process.env.EDEN_MAINTENANCE_MODE === 'true' ?
+        {
+          source: "/((?!maintenance|downtime|android-chrome-192x192).*)",
+          destination: "/maintenance.html",
+          permanent: false,
+        }
+        :
+        {
+          source: "/maintenance.html",
+          destination: "/",
+          permanent: false,
+        },
+    ]
+  },
   swcMinify: true,
   output: 'standalone',
   experimental: {
@@ -27,11 +43,11 @@ module.exports = withTM({
   webpack: config => {
     config.resolve.fallback = { fs: false, net: false, tls: false }
     return config
-  },
+  }, 
   images: {
     // deviceSizes: [320, 640, 828, 1080, 1200, 1920, 2048, 3840],
     // imageSizes: [32, 64, 96, 128, 256, 300],
-    minimumCacheTTL: 3600,
+    minimumCacheTTL: 608400,
     domains: imageDomains,
     remotePatterns: [
       {

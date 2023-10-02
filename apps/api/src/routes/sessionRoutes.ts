@@ -42,7 +42,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAdmin(server, request)],
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => updateSession(request, reply),
   })
 

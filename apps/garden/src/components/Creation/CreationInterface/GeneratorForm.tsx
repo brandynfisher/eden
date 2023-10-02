@@ -5,6 +5,7 @@ import OptionParameter from '@/components/Creation/CreationInterface/parameters/
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/Creation/CreationInterface/parameters/StringParameter'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
+import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
@@ -74,6 +75,8 @@ const GeneratorForm = ({
   const router = useRouter()
   const { refetch, isAuthenticated, authenticate, mannaBalance } =
     useContext(UserContext)
+  const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
+    useTaskCost()
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -87,20 +90,7 @@ const GeneratorForm = ({
     GeneratorParameter[]
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState<boolean | null>(
-    null,
-  )
-  const [taskCost, setTaskCost] = useState<{ cost: number } | undefined>()
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
-  const [canAffordOperation, setCanAffordOperation] = useState(false)
-
-  useEffect(() => {
-    if (taskCost && mannaBalance) {
-      setCanAffordOperation(mannaBalance >= taskCost?.cost)
-    } else {
-      setCanAffordOperation(false)
-    }
-  }, [taskCost, mannaBalance])
 
   useEffect(() => {
     const transformConfig = () => {
@@ -211,50 +201,27 @@ const GeneratorForm = ({
 
   const handleGetTaskCost = useCallback(
     async (generatorParams?: GeneratorParameter[]) => {
-      setIsLoadingTaskCost(true)
+      const currentGeneratorParameters =
+        getCurrentGeneratorParameters(generator)
+      const requiredParams = currentGeneratorParameters?.filter(
+        parameter => parameter.isRequired,
+      )
 
-      if (!isAuthenticated) {
-        await requireAuth(authenticate)
+      let cleanedValues = getCleanedConfig(
+        generatorParams || form.getFieldsValue(),
+        undefined,
+      )
 
-        setIsLoadingTaskCost(false)
-        return
-      }
+      requiredParams?.map(reqParam => {
+        if (Array.isArray(reqParam['default'])) {
+          // @ts-ignore
+          cleanedValues[reqParam.name] = ['dummy field content']
+        } else {
+          cleanedValues[reqParam.name] = 'concept'
+        }
+      })
 
-      try {
-        message.destroy()
-
-        const currentGeneratorParameters =
-          getCurrentGeneratorParameters(generator)
-        const requiredParams = currentGeneratorParameters?.filter(
-          parameter => parameter.isRequired,
-        )
-
-        let cleanedValues = getCleanedConfig(
-          generatorParams || form.getFieldsValue(),
-          undefined,
-        )
-
-        requiredParams?.map(reqParam => {
-          if (Array.isArray(reqParam['default'])) {
-            // @ts-ignore
-            cleanedValues[reqParam.name] = ['dummy field content']
-          } else {
-            cleanedValues[reqParam.name] = 'concept'
-          }
-        })
-
-        const response = await axios.post('/api/tasks/cost', {
-          generatorName: generator.generatorName,
-          config: cleanedValues,
-        })
-
-        setTaskCost(response.data)
-      } catch (err) {
-        console.error(err)
-        message.error('Error fetching task cost estimate')
-      } finally {
-        setIsLoadingTaskCost(false)
-      }
+      await getTaskCost(generator.generatorName, cleanedValues)
     },
     [generator],
   )
@@ -464,7 +431,7 @@ const GeneratorForm = ({
                 )}
                 <MannaCostEstimate
                   isLoading={!!isLoadingTaskCost}
-                  cost={taskCost?.cost || 'n/a'}
+                  cost={taskCost || 'n/a'}
                 />
               </div>
               {uploadsInProgress ? (

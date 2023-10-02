@@ -44,35 +44,35 @@ const params = [
     default: 1.0,
     minimum: 1.0,
     maximum: 2.0,
-    step: 0.1,
+    step: 0.01,
     optional: true,
   },
 
   
   {
-   name: 'lora',
-   label: 'Concept',
-   description:
-     '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
+    name: 'lora',
+    label: 'Concept',
+    description:
+      '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
     optional: true,
   },
   {
-   name: 'lora_scale',
-   label: 'Concept scale',
-   description:
-     'How strongly to apply the Concept weights (0.0 will result in the base model)',
-   default: 0.8,
-   minimum: 0.0,
-   maximum: 1.5,
-   step: 0.1,
-  optional: true,
+    name: 'lora_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.5,
+    step: 0.01,
+    optional: true,
   },
   {
     name: 'init_image_data',
-    label: 'ControlNet or Init image',
+    label: 'Init image',
     default: null,
     description:
-      'Guidance image. If ControlNet is off, this drives colors and rough shapes. If ControlNet is canny-edge, this will guide edges and contours',
+      'Guidance image that will drive colors and rough shapes.',
     mediaUpload: 'image/png, image/jpeg, image/webp',
     optional: true,
   },
@@ -85,18 +85,10 @@ const params = [
     optional: true,
   },
   {
-    name: 'controlnet_type',
-    label: 'ControlNet',
-    description: 'Which ControlNet to use (or off to disable)',
-    default: 'off',
-    allowedValues: ["off", "canny-edge", "depth"],
-    optional: true,
-  },
-  {
     name: 'init_image_strength',
     label: 'Init image strength',
     description:
-      'How much influence the guidance image has on the creation. Recommended <0.2 with Controlnet off, >0.5 otherwise.',
+      'How much influence the guidance image has on the creation. Recommended <0.2',
     default: 0.4,
     minimum: 0.0,
     maximum: 1.0,

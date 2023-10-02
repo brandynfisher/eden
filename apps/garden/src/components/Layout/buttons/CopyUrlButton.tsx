@@ -30,7 +30,7 @@ const CopyUrlButton = ({
         title={'Copy URL to Clipboard'}
       >
         <div>{label}</div>
-        <LinkOutlined />
+        <LinkOutlined fontSize="small" />
       </div>
     )
   }

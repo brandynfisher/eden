@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { Concept } from '../../models/Concept'
+import { GeneratorDocument } from '../../models/Generator'
 
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
@@ -58,6 +59,7 @@ const formatConfigForReplicate = async (config: any) => {
 
 const submitTask = async (
   server: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: any,
   config: any,
 ) => {
@@ -94,6 +96,7 @@ const submitTask = async (
 
 const getTransactionCost = (
   _: FastifyInstance,
+  generator: any,
   generatorVersion: any,
   config: any,
 ) => {

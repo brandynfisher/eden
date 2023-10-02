@@ -1,9 +1,14 @@
 const params = [
   {
+    name: 'characterId',
+    label: 'Character',
+    description: 'Character giving monologue',
+    isRequired: true,
+  },
+  {
     name: 'prompt',
     label: 'Prompt',
     description: 'Prompt to complete with GPT-3',
-    default: null,
     isRequired: true,
   },
   {
@@ -24,7 +29,7 @@ const params = [
     maximum: 1.0,
     step: 0.01,
     optional: true,
-  },
+  }
 ]
 
 export default params;

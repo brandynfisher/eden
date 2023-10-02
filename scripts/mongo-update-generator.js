@@ -12,6 +12,7 @@ import blendParameters from './generators/blend.js';
 import upscaleParameters from './generators/upscale.js';
 import controlnetParameters from './generators/controlnet.js';
 import monologueParameters from './generators/monologue.js';
+import dialogueParameters from './generators/dialogue.js';
 import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
 
 const allowedCogs = [
@@ -236,9 +237,23 @@ async function updateVersion(db) {
       isDeprecated: false
     }
 
+    const dialogueVersion = {
+      provider: 'task-runner',
+      address: 'eden/dialogue',
+      versionId: versionId,
+      mode: 'dialogue',
+      parameters: dialogueParameters,
+      isDeprecated: false
+    }
+
     await db.collection('generators').updateOne(
       { generatorName: 'monologue' }, 
       { $addToSet: { versions: monologueVersion } }
+    );
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'dialogue' }, 
+      { $addToSet: { versions: dialogueVersion } }
     );
 
   }

@@ -3,7 +3,10 @@ import { FastifyInstance } from 'fastify'
 import { v4 as uuidv4 } from 'uuid'
 
 import { Creation } from '../../models/Creation'
-import { GeneratorVersionSchema } from '../../models/Generator'
+import {
+  GeneratorDocument,
+  GeneratorVersionSchema,
+} from '../../models/Generator'
 import { Task, TaskStatus } from '../../models/Task'
 import { TaskHandlers } from '../../plugins/tasks'
 
@@ -70,11 +73,12 @@ interface TaskUpdate {
 
 export const dummySubmitTask = async (
   _: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: GeneratorVersionSchema,
   config: any,
 ) => {
   console.log(
-    `Submitting task for generator ${
+    `Submitting task for generator version ${
       generatorVersion.versionId
     } with config ${JSON.stringify(config)}`,
   )
@@ -153,11 +157,12 @@ export const dummyReceiveTaskUpdate = async (
 
 export const dummyGetTransactionCost = (
   _: FastifyInstance,
+  generator: GeneratorDocument,
   generatorVersion: GeneratorVersionSchema,
   config: any,
 ) => {
   console.log(
-    `Getting transaction cost for generator ${
+    `Getting transaction cost for generator, version ${
       generatorVersion.versionId
     } with config ${JSON.stringify(config)}`,
   )
