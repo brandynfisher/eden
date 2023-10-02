@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:dummy": "NEXT_PUBLIC_DEV_TYPE=dummy next dev",
-    "dev:eden": "NEXT_PUBLIC_DEV_TYPE=eden next dev",
+    "dev:dummy": "DOTENV_PATH=.env.dummy.local NEXT_PUBLIC_DEV_TYPE=dummy next dev",
+    "dev:eden": "DOTENV_PATH=.env.eden.local NEXT_PUBLIC_DEV_TYPE=eden next dev",
     "build": "next build --debug",
     "start": "next start",
     "test": "vitest",

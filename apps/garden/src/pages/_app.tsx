@@ -8,6 +8,7 @@ import WalletProvider from '@/providers/WalletProvider'
 import '@/styles/globals.scss'
 import '@rainbow-me/rainbowkit/styles.css'
 import 'antd/dist/reset.css'
+import dotenv from 'dotenv'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
 import { Inter } from 'next/font/google'
@@ -15,6 +16,11 @@ import Head from 'next/head'
 import { ReactElement } from 'react'
 
 import { Page } from '../../types/page'
+
+// Load the environment file specified by the ENV_FILE variable
+if (process.env.DOTENV_PATH) {
+  dotenv.config({ path: process.env.DOTENV_PATH })
+}
 
 type Props = AppProps & {
   Component: Page
