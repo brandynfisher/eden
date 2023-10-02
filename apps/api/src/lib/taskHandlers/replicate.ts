@@ -3,12 +3,67 @@ import { ObjectId } from 'mongodb'
 
 import { Concept } from '../../models/Concept'
 import { GeneratorDocument } from '../../models/Generator'
+import { Upload } from '../../models/Upload'
+
+const substituteUploadUrl = async (object: string) => {
+  if (object.startsWith('http')) {
+    return object
+  }
+  const upload = await Upload.findOne({ _id: new ObjectId(object) })
+  if (!upload) {
+    throw new Error(`Upload ${object} not found`)
+  }
+  return upload.uri
+}
 
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
 
 const formatConfigForReplicate = async (config: any) => {
   const newConfig = { ...config }
+
+  // if it's a Concept training, remove any spaces, pipes, or underscores in the name
+  if (newConfig.lora_training_urls) {
+    newConfig.name = newConfig.name.replace(/ /g, '')
+    newConfig.name = newConfig.name.replace(/\|/g, '')
+    newConfig.name = newConfig.name.replace(/_/g, '')
+  }
+
+  // if there's any Uploads, substitute uri
+  if (newConfig.init_image_data) {
+    newConfig.init_image_data = await substituteUploadUrl(
+      newConfig.init_image_data,
+    )
+  }
+  if (newConfig.interpolation_init_images) {
+    newConfig.interpolation_init_images = await Promise.all(
+      newConfig.interpolation_init_images.map(substituteUploadUrl),
+    )
+  }
+  if (newConfig.voice_file_urls) {
+    newConfig.voice_file_urls = await Promise.all(
+      newConfig.voice_file_urls.map(substituteUploadUrl),
+    )
+  }
+  if (newConfig.lora_training_urls) {
+    newConfig.lora_training_urls = await Promise.all(
+      newConfig.lora_training_urls.map(substituteUploadUrl),
+    )
+  }
+  if (newConfig.face_url) {
+    newConfig.face_url = await substituteUploadUrl(newConfig.face_url)
+  }
+  if (newConfig.speech_url) {
+    newConfig.speech_url = await substituteUploadUrl(newConfig.speech_url)
+  }
+
+  // if no lora selected, delete it
+  if (newConfig.lora) {
+    const concept = await Concept.findOne({ _id: new ObjectId(newConfig.lora) })
+    newConfig.lora = concept?.uri
+  } else {
+    delete newConfig.lora
+  }
 
   // if no text input, use interpolation texts
   if (!newConfig.text_input) {
@@ -37,22 +92,6 @@ const formatConfigForReplicate = async (config: any) => {
     ? (newConfig.latent_blending_skip_f =
         newConfig.latent_blending_skip_f.join('|'))
     : null
-
-  // if it's a Concept training
-  if (newConfig.lora_training_urls) {
-    // remove any spaces, pipes, or underscores in the name
-    newConfig.name = newConfig.name.replace(/ /g, '')
-    newConfig.name = newConfig.name.replace(/\|/g, '')
-    newConfig.name = newConfig.name.replace(/_/g, '')
-  }
-
-  // if no lora selected, delete it
-  if (newConfig.lora) {
-    const concept = await Concept.findOne({ _id: new ObjectId(newConfig.lora) })
-    newConfig.lora = concept?.uri
-  } else {
-    delete newConfig.lora
-  }
 
   return newConfig
 }

@@ -16,6 +16,7 @@ import paymentRoutes from './paymentRoutes'
 import scenarioRoutes from './scenarioRoutes'
 import sessionRoutes from './sessionRoutes'
 import taskRoutes from './taskRoutes'
+import uploadRoutes from './uploadRoutes'
 
 export const paginatedResponse = (docs: TSchema) => {
   return Type.Object({
@@ -58,4 +59,5 @@ export const routes = [
   feedRoutes,
   sessionRoutes,
   paymentRoutes,
+  uploadRoutes,
 ]

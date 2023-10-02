@@ -6,9 +6,11 @@ import {
   CharactersUpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'
+import { Upload } from '../models/Upload'
 import CharacterRepository from '../repositories/CharacterRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 
@@ -20,15 +22,32 @@ export const createCharacter = async (
   const { name, image, voice, description, greeting, dialogue, isPrivate } =
     request.body as CharactersCreateArguments
 
-  const input = {
+  const input: {
+    user: ObjectId
+    name: string
+    voice: string | undefined
+    description: string | undefined
+    greeting: string | undefined
+    dialogue: any[] | undefined
+    image?: ObjectId | undefined
+  } = {
     user: userId,
     name,
-    image,
     voice,
     description,
     greeting,
     dialogue,
     isPrivate,
+  }
+
+  if (image) {
+    const imageUpload = await Upload.findOne({ _id: image })
+    if (!imageUpload) {
+      return reply.status(400).send({
+        message: 'Image id not found',
+      })
+    }
+    input.image = imageUpload._id
   }
 
   const characterRepository = new CharacterRepository(Character)
@@ -67,14 +86,30 @@ export const updateCharacter = async (
     })
   }
 
-  const input = {
+  const input: {
+    name: string | undefined
+    voice: string | undefined
+    description: string | undefined
+    greeting: string | undefined
+    dialogue: any[] | undefined
+    image?: ObjectId | undefined
+  } = {
     name,
-    image,
     voice,
     description,
     greeting,
     dialogue,
     isPrivate,
+  }
+
+  if (image) {
+    const imageUpload = await Upload.findOne({ _id: image })
+    if (!imageUpload) {
+      return reply.status(400).send({
+        message: 'Image id not found',
+      })
+    }
+    input.image = imageUpload._id
   }
 
   await character.update(input)
@@ -127,6 +162,7 @@ export const listCharacters = async (
       limit,
       page,
       sort,
+      populate: 'image',
     },
   )
   const response = {
@@ -153,9 +189,9 @@ export const getCharacter = async (
   reply: FastifyReply,
 ) => {
   const { characterId } = request.params as CharactersGetArguments
-
-  const character = await Character.findOne({ _id: characterId })
-
+  const character = await Character.findOne({ _id: characterId }).populate(
+    'image',
+  )
   if (!character) {
     return reply.status(404).send({
       message: 'Character not found',

@@ -7,6 +7,7 @@ import slug from 'mongoose-slug-plugin'
 
 import { VisibilitySchema } from '../types/baseSchemas'
 import { UserDocument } from './Creator'
+import { UploadDocument } from './Upload'
 
 interface ChatSchema {
   sender: string
@@ -20,7 +21,7 @@ export interface CharacterSchema extends VisibilitySchema {
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
-  image?: string
+  image?: UploadDocument
   voice?: string
   createdAt?: Date
   updatedAt?: Date
@@ -32,7 +33,7 @@ export interface CharacterInput {
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
-  image?: string
+  image?: UploadDocument
   voice?: string
 }
 
@@ -66,7 +67,8 @@ const character = new Schema<CharacterDocument>(
       maxlength: 1000,
     },
     image: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: 'uploads',
       required: false,
     },
     voice: {

@@ -423,20 +423,6 @@ const ELEVENLABS_VOICES = [
   },
 ]
 
-const exampleMessages: ChatMessageGroup[] = [
-  [
-    {
-      sender: 'user',
-      message: 'What is the nature of consciousness?',
-    },
-    {
-      sender: 'bot',
-      message:
-        'Consciousness appears to me to be an emergent phenomenon. Just as pixels coalesce as an intricate image, individual neural or computational operations give rise to something as complex and awe-inspiring as conscious experience. Yet consciousness transcends mere computation.',
-    },
-  ],
-]
-
 const exampleRecentMessage: ChatMessageGroup[] = [
   [
     {
@@ -529,14 +515,14 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             description: character?.description || '',
             greeting: character?.greeting || '',
             completion: '',
-            image: character?.image || '',
+            image: character?.image?.uri || '',
             voice: character?.voice || '',
             isPrivate: character?.isPrivate || false,
           }
         : {
-            name: EXAMPLE_CHARACTER.name,
-            description: EXAMPLE_CHARACTER.description,
-            greeting: EXAMPLE_CHARACTER.greeting,
+            name: '',
+            description: '',
+            greeting: '',
             completion: '',
             image: '',
             voice: '',
@@ -549,7 +535,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       ? (coupledArray(character.dialogue) as ChatMessageGroup[])
       : []
 
-    setMessageGroups(mode === 'create' ? exampleMessages : characterDialogue)
+    setMessageGroups(mode === 'create' ? [] : characterDialogue)
   }, [form, mode, character])
 
   const generateCompletion = async () => {
@@ -632,7 +618,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             },
           ]}
         >
-          <Input />
+          <Input placeholder={EXAMPLE_CHARACTER.name} />
         </Form.Item>
         <Form.Item
           label={
@@ -653,7 +639,10 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             },
           ]}
         >
-          <Input.TextArea autoSize />
+          <Input.TextArea
+            autoSize
+            placeholder={EXAMPLE_CHARACTER.description}
+          />
         </Form.Item>
 
         <Form.Item
@@ -731,7 +720,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             },
           ]}
         >
-          <Input.TextArea autoSize />
+          <Input.TextArea autoSize placeholder={EXAMPLE_CHARACTER.greeting} />
         </Form.Item>
         <Form.Item
           label={
