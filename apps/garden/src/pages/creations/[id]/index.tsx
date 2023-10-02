@@ -12,10 +12,14 @@ interface PageProps {
 }
 
 const fetchCreation = async (context: NextPageContext) => {
-  const { query } = context
+  const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations/${id}`)
+  const cookies = req ? req.headers.cookie : ''
+
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations/${id}`, {
+    headers: { cookie: cookies },
+  })
 }
 
 export const getServerSideProps = getServerSidePropsBase([

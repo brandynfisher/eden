@@ -153,11 +153,22 @@ export const getCharacter = async (
   reply: FastifyReply,
 ) => {
   const { characterId } = request.params as CharactersGetArguments
-  const character = await Character.findOne({ characterId })
+
+  const character = await Character.findOne({ _id: characterId })
+
   if (!character) {
     return reply.status(404).send({
       message: 'Character not found',
     })
+  }
+
+  if (character.isPrivate) {
+    if (character.user.toString() !== request.user?.userId.toString()) {
+      console.error('User not authorized to view this')
+      return reply.status(401).send({
+        message: 'User not authorized to view this',
+      })
+    }
   }
 
   const response = {

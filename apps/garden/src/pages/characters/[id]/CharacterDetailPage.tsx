@@ -1,7 +1,6 @@
 import CharacterForm from '@/components/Characters/CharacterForm'
 import { useCharacter } from '@/hooks/useCharacter'
 import { Character } from '@edenlabs/eden-sdk'
-import { useRouter } from 'next/router'
 import React, { createContext } from 'react'
 
 interface ICharacterContext {
@@ -12,10 +11,16 @@ export const CharacterContext = createContext<ICharacterContext>({
   character: undefined,
 })
 
-const CharacterDetailPage = () => {
-  const router = useRouter()
-  const { id } = router.query
-  const { character } = useCharacter(id as string)
+const CharacterDetailPage = ({ data }: { data: Character }) => {
+  const { character: characterData } = useCharacter(data ? data.id : null, {
+    fallbackData: data,
+  })
+
+  if (!data) {
+    return null
+  }
+
+  const character = characterData || data
 
   return (
     <CharacterContext.Provider value={{ character }}>

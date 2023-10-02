@@ -9,7 +9,7 @@ import {
   listCharacters,
   updateCharacter,
 } from '../controllers/characterController'
-import { isAuth } from '../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../middleware/authMiddleware'
 
 const characterRoutes: FastifyPluginAsync = async server => {
   server.post('/characters', {
@@ -83,6 +83,39 @@ const characterRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => deleteCharacter(request, reply),
   })
 
+  server.get('/characters/:characterId', {
+    schema: {
+      params: Type.Object({
+        characterId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          character: Type.Object({
+            id: Type.String(),
+            user: Type.String(),
+            name: Type.String(),
+            slug: Type.String(),
+            image: Type.Optional(Type.String()),
+            voice: Type.Optional(Type.String()),
+            description: Type.Optional(Type.String()),
+            greeting: Type.Optional(Type.String()),
+            dialogue: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  sender: Type.String(),
+                  message: Type.String(),
+                }),
+              ),
+            ),
+            isPrivate: Type.Optional(Type.Boolean()),
+          }),
+        }),
+      },
+    },
+    preHandler: [async request => maybeAuth(server, request)],
+    handler: (request, reply) => getCharacter(request, reply),
+  })
+
   server.get('/characters', {
     schema: {
       querystring: {
@@ -117,39 +150,8 @@ const characterRoutes: FastifyPluginAsync = async server => {
         ),
       },
     },
+    preHandler: [async request => maybeAuth(server, request)],
     handler: (request, reply) => listCharacters(request, reply),
-  })
-
-  server.get('/characters/:characterId', {
-    schema: {
-      params: Type.Object({
-        characterId: Type.String(),
-      }),
-      response: {
-        200: Type.Object({
-          character: Type.Object({
-            id: Type.String(),
-            user: Type.String(),
-            name: Type.String(),
-            slug: Type.String(),
-            image: Type.Optional(Type.String()),
-            voice: Type.Optional(Type.String()),
-            description: Type.Optional(Type.String()),
-            greeting: Type.Optional(Type.String()),
-            dialogue: Type.Optional(
-              Type.Array(
-                Type.Object({
-                  sender: Type.String(),
-                  message: Type.String(),
-                }),
-              ),
-            ),
-            isPrivate: Type.Optional(Type.Boolean()),
-          }),
-        }),
-      },
-    },
-    handler: (request, reply) => getCharacter(request, reply),
   })
 }
 

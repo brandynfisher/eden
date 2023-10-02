@@ -11,10 +11,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = req.session.token
   const { id } = req.query
 
-  if (!authToken) {
-    return res.status(401).json({ error: 'Not authenticated' })
-  }
-
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
@@ -23,6 +19,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (req.method === 'GET') {
       return getConcept(id as string, req, res, eden)
+    }
+
+    if (!authToken) {
+      return res.status(401).json({ error: 'Not authenticated' })
     }
 
     if (req.method === 'PATCH') {
