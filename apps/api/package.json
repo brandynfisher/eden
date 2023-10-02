@@ -25,7 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.12.8",
-    "@clerk/fastify": "^0.6.3",
+    "@clerk/fastify": "^0.6.11",
     "@edenlabs/config": "*",
     "@edenlabs/eden-sdk": "*",
     "@edenlabs/tsconfig": "*",

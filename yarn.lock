@@ -2824,7 +2824,7 @@
     snakecase-keys "3.2.1"
     tslib "2.4.1"
 
-"@clerk/fastify@^0.6.3":
+"@clerk/fastify@^0.6.11":
   version "0.6.11"
   resolved "https://registry.yarnpkg.com/@clerk/fastify/-/fastify-0.6.11.tgz#49ce77221c48e73f3e47428d9c2f37aa008ea6d6"
   integrity sha512-YtcQHnieXJm1bSd0DM7qSp8NqhOdcOvdcWsWHzvxxnpWyoe+xv/qiDX92IyPzYXNcUJbqfC6jGkr4UahQQZS3w==

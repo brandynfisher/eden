@@ -26,6 +26,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export default function App({ Component, pageProps }: Props): ReactElement {
   // use per-component layout if defined or fallback to the generic one
+  console.log('222', process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED)
   const getLayout =
     Component.getLayout ||
     ((page: AppProps['pageProps']) => (
