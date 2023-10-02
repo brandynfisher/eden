@@ -34,6 +34,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
 
   console.log('111', process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA)
   console.log('222', process.env.NEXT_PUBLIC_HOST)
+  console.log('333', process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED)
 
   return (
     <>
