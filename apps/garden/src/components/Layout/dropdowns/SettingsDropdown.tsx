@@ -229,7 +229,7 @@ export const SettingsDropdown = () => {
   const [dropDownItems, setDropDownItems] = useState<ItemType[]>(items)
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'true') {
+    if (process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes') {
       if (isAuthenticated) {
         setDropDownItems([...items, ...clerkExtraItems, ...clerkItems])
       } else {

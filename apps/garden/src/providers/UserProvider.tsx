@@ -67,7 +67,7 @@ export const UserContext = createContext<UserContextType>(defaultUserState)
 
 function UserProvider({ children }: PropsWithChildren) {
   const userStateFn =
-    process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'true'
+    process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes'
       ? useClerkUserState
       : useWeb3UserState
   const userState = userStateFn()

@@ -82,7 +82,7 @@ const LayoutHeader = () => {
         )}
 
         <SettingsDropdown />
-        {process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'true' ? (
+        {process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes' ? (
           <ClerkMyProfileButton />
         ) : (
           <Web3MyProfileButton />

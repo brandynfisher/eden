@@ -50,7 +50,7 @@ const createServer = async (
     await registerSentry(server)
   }
 
-  if (server.config.FLAGS_CLERK_ENABLED) {
+  if (server.config.FLAGS_CLERK_ENABLED === 'yes') {
     await registerClerk(server)
   } else {
     await registerJwt(server)

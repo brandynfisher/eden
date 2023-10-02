@@ -51,7 +51,7 @@ const ConfigSchema = Type.Strict(
     CLERK_PUBLISHABLE_KEY: Type.Optional(Type.String()),
     CLERK_SECRET_KEY: Type.Optional(Type.String()),
     CLERK_WEBHOOK_SECRET: Type.Optional(Type.String()),
-    FLAGS_CLERK_ENABLED: Type.Optional(Type.Boolean()),
+    FLAGS_CLERK_ENABLED: Type.Optional(Type.String()),
   }),
 )
 
