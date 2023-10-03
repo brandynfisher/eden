@@ -60,6 +60,7 @@ module.exports = withTM({
   },
   env: {
     XYZ: process.env.XYZ,
+    NEXT_PUBLIC_XYZ: process.env.XYZ,
   },
 })
 
