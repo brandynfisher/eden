@@ -29,6 +29,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
   console.log('111', process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
   console.log('222', process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED)
   console.log('333', process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA)
+  console.log('444', process.env.XYZ)
   const getLayout =
     Component.getLayout ||
     ((page: AppProps['pageProps']) => (

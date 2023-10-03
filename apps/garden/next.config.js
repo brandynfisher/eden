@@ -58,6 +58,9 @@ module.exports = withTM({
       },
     ],
   },
+  env: {
+    XYZ: process.env.XYZ,
+  },
 })
 
 const withNextPWA = require('next-pwa')({
