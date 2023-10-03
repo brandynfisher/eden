@@ -48,12 +48,19 @@ jobs:
             ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
             }}:latest
           build-args: |
+            "NEXT_PUBLIC_HOST=${{ secrets.NEXT_PUBLIC_HOST }}"
+            "NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA"="${{ secrets.NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA }}"
             "NEXT_PUBLIC_PARTICLE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_PARTICLE_PROJECT_ID }}"
             "NEXT_PUBLIC_PARTICLE_CLIENT_KEY=${{ secrets.NEXT_PUBLIC_PARTICLE_CLIENT_KEY }}"
             "NEXT_PUBLIC_PARTICLE_APP_ID=${{ secrets.NEXT_PUBLIC_PARTICLE_APP_ID }}"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}"
+            "NEXT_PUBLIC_CLERK_SIGN_IN_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}"
+            "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }}"
+            "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL"="${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+            "NEXT_PUBLIC_FLAG_CLERK_ENABLED=${{ secrets.NEXT_PUBLIC_FLAG_CLERK_ENABLED }}"
 
   deploy:
     name: Deploy
