@@ -1,5 +1,6 @@
 const path = require('path')
 const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
+const runtimeCaching = require('next-pwa/cache')
 
 const defaultImageDomains = [
   'https://minio.aws.abraham.fun/creations-stg/',
@@ -61,6 +62,7 @@ module.exports = withTM({
 
 const withNextPWA = require('next-pwa')({
   dest: 'public',
+  runtimeCaching,
   disable: process.env.NODE_ENV === 'development',
   register: true,
 })
