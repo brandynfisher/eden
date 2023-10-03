@@ -53,6 +53,7 @@ jobs:
             ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
             }}:latest
           build-args: |
+            "NEXT_PUBLIC_APP_ENV=production"
             "NEXT_PUBLIC_HOST=${{ secrets.NEXT_PUBLIC_HOST }}"
             "NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA"="${{ secrets.NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA }}"
             "NEXT_PUBLIC_PARTICLE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_PARTICLE_PROJECT_ID }}"
