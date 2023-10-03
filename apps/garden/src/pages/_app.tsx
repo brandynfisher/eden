@@ -25,16 +25,13 @@ type Props = AppProps & {
 const inter = Inter({ subsets: ['latin'] })
 
 export default function App({ Component, pageProps }: Props): ReactElement {
+  console.log('111', process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED)
   // use per-component layout if defined or fallback to the generic one
   const getLayout =
     Component.getLayout ||
     ((page: AppProps['pageProps']) => (
       <PageLayoutDefault>{page}</PageLayoutDefault>
     ))
-
-  console.log('111', process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA)
-  console.log('222', process.env.NEXT_PUBLIC_HOST)
-  console.log('333', process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED)
 
   return (
     <>

@@ -6,7 +6,6 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  console.log('111', authToken)
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
