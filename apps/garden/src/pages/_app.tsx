@@ -58,7 +58,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         <meta property="og:type" content="website" />
         <link rel="shortcut icon" href="/favicon.ico" />
         {/*<link rel="mask-icon" href="/icons/mask-icon.svg" color="#FFFFFF" />*/}
-        <meta name="theme-color" content="#64b77e" />
+        <meta name="theme-color" content="#030712" />
         <meta name="background-color" content="#030712" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
