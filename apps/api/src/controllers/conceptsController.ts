@@ -173,7 +173,7 @@ export const conceptUpdate = async (
   const { conceptId } = request.params as ConceptsUpdateArguments
   const { isPrivate } = request.body as ConceptsUpdateArguments
 
-  if (!userId || !conceptId || !isPrivate) {
+  if (!userId || !conceptId || typeof isPrivate === 'undefined') {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })

@@ -42,7 +42,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
   return (
     <div ref={ref} className="mx-auto max-w-[500px] md:mx-0 md:max-w-none">
       {concept.deleted ? (
-        <div className="h-64 w-64 dark:text-gray-500 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-lg">
+        <div className="h-64 w-64 max-w-full max-h-full dark:text-gray-500 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-lg">
           deleted
         </div>
       ) : (

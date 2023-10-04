@@ -291,7 +291,7 @@ export const creationUpdate = async (
   const { creationId } = request.params as CreationsUpdateArguments
   const { isPrivate } = request.body as CreationsUpdateArguments
 
-  if (!userId || !creationId || !isPrivate) {
+  if (!userId || !creationId || typeof isPrivate === 'undefined') {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
