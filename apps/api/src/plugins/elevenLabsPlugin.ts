@@ -421,15 +421,36 @@ export class ElevenLabs {
     }
   }
 
-  runTask = async (voice: string, text: string) => {
-    const speechDetails = await axios.request({
-      method: 'POST',
-      url: `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
-      headers: this.headers,
-      data: { text },
-      responseType: 'arraybuffer',
-    })
-    return speechDetails.data
+  runTask = async (
+    voice: string,
+    text: string,
+    maxRetries = 5,
+    retryDelay = 60000,
+  ) => {
+    let retries = 0
+    while (retries < maxRetries) {
+      try {
+        const speechDetails = await axios.request({
+          method: 'POST',
+          url: `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
+          headers: this.headers,
+          data: { text },
+          responseType: 'arraybuffer',
+        })
+        return speechDetails.data
+      } catch (error: any) {
+        if (error.response && error.response.status === 429) {
+          retries++
+          console.error(
+            `ElevenLabs rate limit hit. Retry attempt ${retries}. Waiting for 1 minute...`,
+          )
+          await new Promise(resolve => setTimeout(resolve, retryDelay))
+        } else {
+          throw error
+        }
+      }
+    }
+    throw new Error('Max retries reached for ElevenLabs API request')
   }
 }
 

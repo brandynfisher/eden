@@ -9,10 +9,10 @@ import {
   listCharacters,
   updateCharacter,
 } from '../controllers/characterController'
-import { isAuth } from '../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../middleware/authMiddleware'
 
 const characterRoutes: FastifyPluginAsync = async server => {
-  server.post('/characters/create', {
+  server.post('/characters', {
     schema: {
       body: Type.Object({
         name: Type.String(),
@@ -28,6 +28,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
+        isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {
         200: Type.Object({
@@ -40,10 +41,12 @@ const characterRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => createCharacter(request, reply),
   })
 
-  server.post('/characters/update', {
+  server.patch('/characters/:characterId', {
     schema: {
-      body: Type.Object({
+      params: {
         characterId: Type.String(),
+      },
+      body: Type.Object({
         name: Type.Optional(Type.String()),
         image: Type.Optional(Type.String()),
         voice: Type.Optional(Type.String()),
@@ -57,6 +60,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
+        isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {
         200: Type.Object({}),
@@ -66,17 +70,50 @@ const characterRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => updateCharacter(request, reply),
   })
 
-  server.post('/characters/delete', {
+  server.delete('/characters/:characterId', {
     schema: {
-      body: Type.Object({
+      params: {
         characterId: Type.String(),
-      }),
+      },
       response: {
         200: Type.Object({}),
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteCharacter(request, reply),
+  })
+
+  server.get('/characters/:characterId', {
+    schema: {
+      params: Type.Object({
+        characterId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          character: Type.Object({
+            id: Type.String(),
+            user: Type.String(),
+            name: Type.String(),
+            slug: Type.String(),
+            image: Type.Optional(Type.Any()),
+            voice: Type.Optional(Type.String()),
+            description: Type.Optional(Type.String()),
+            greeting: Type.Optional(Type.String()),
+            dialogue: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  sender: Type.String(),
+                  message: Type.String(),
+                }),
+              ),
+            ),
+            isPrivate: Type.Optional(Type.Boolean()),
+          }),
+        }),
+      },
+    },
+    preHandler: [async request => maybeAuth(server, request)],
+    handler: (request, reply) => getCharacter(request, reply),
   })
 
   server.get('/characters', {
@@ -96,7 +133,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             user: Type.String(),
             name: Type.String(),
             slug: Type.String(),
-            image: Type.Optional(Type.String()),
+            image: Type.Optional(Type.Any()),
             voice: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             greeting: Type.Optional(Type.String()),
@@ -108,42 +145,13 @@ const characterRoutes: FastifyPluginAsync = async server => {
                 }),
               ),
             ),
+            isPrivate: Type.Optional(Type.Boolean()),
           }),
         ),
       },
     },
+    preHandler: [async request => maybeAuth(server, request)],
     handler: (request, reply) => listCharacters(request, reply),
-  })
-
-  server.get('/characters/:slug', {
-    schema: {
-      params: Type.Object({
-        slug: Type.String(),
-      }),
-      response: {
-        200: Type.Object({
-          character: Type.Object({
-            id: Type.String(),
-            user: Type.String(),
-            name: Type.String(),
-            slug: Type.String(),
-            image: Type.Optional(Type.String()),
-            voice: Type.Optional(Type.String()),
-            description: Type.Optional(Type.String()),
-            greeting: Type.Optional(Type.String()),
-            dialogue: Type.Optional(
-              Type.Array(
-                Type.Object({
-                  sender: Type.String(),
-                  message: Type.String(),
-                }),
-              ),
-            ),
-          }),
-        }),
-      },
-    },
-    handler: (request, reply) => getCharacter(request, reply),
   })
 }
 

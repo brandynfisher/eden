@@ -24,6 +24,7 @@ const mediaTypeMap: Record<string, MediaType> = {
   jpeg: MediaType.Image,
   png: MediaType.Image,
   webp: MediaType.Image,
+  zip: MediaType.Zip,
 }
 
 const getMediaAttributes = async (
@@ -88,6 +89,8 @@ const getMediaAttributes = async (
     mediaAttributes.height = metadata.height
     mediaAttributes.aspectRatio = metadata.width / metadata.height
   }
+
+  await fs.unlinkSync(tempFilePath)
 
   return mediaAttributes
 }
@@ -156,7 +159,6 @@ export const uploadBufferAsset = async (
     await client.putObject(MINIO_BUCKET, filename, buffer, metadata)
     console.log(` --> Uploaded to ${urlUpload}`)
   }
-
   const mediaAttributes = await getMediaAttributes(buffer, ext)
 
   return {

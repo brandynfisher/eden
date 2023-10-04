@@ -7,6 +7,7 @@ import config from './plugins/config'
 //import registerPlayHt from './plugins/playHtPlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerJwt from './plugins/jwtPlugin'
+import registerLogos from './plugins/logosPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
@@ -83,6 +84,12 @@ const createServer = async (
   if (server.config.OPENAI_API_KEY) {
     await registerOpenai(server)
   }
+
+  await registerLogos(server)
+
+  // if (server.config.PLAYHT_API_KEY) {
+  //   await registerPlayHt(server)
+  // }
 
   if (server.config.ELEVENLABS_API_KEY) {
     await registerElevenLabs(server)

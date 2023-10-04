@@ -5,6 +5,7 @@ import OptionParameter from '@/components/Creation/CreationInterface/parameters/
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/Creation/CreationInterface/parameters/StringParameter'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
+import FormLabel from '@/components/Forms/FormLabel'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
@@ -22,7 +23,7 @@ import {
   Task,
 } from '@edenlabs/eden-sdk'
 import { debounce } from '@mui/material'
-import { App, Button, Card, Form } from 'antd'
+import { App, Button, Card, Form, Switch } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -73,7 +74,7 @@ const GeneratorForm = ({
   } = useContext(CreationNotificationContext)
   const { message } = App.useApp()
   const router = useRouter()
-  const { refetch, isAuthenticated, authenticate, mannaBalance } =
+  const { refetch, isAuthenticated, authenticate, mannaBalance, user } =
     useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
@@ -448,6 +449,21 @@ const GeneratorForm = ({
           </div>,
         ]}
       >
+        {user?.featureFlags?.includes('private') ? (
+          <Form.Item
+            name="isPrivate"
+            valuePropName="checked"
+            label={
+              <FormLabel
+                text="Private"
+                description="Should this be hidden from other users?"
+              />
+            }
+            labelCol={{ span: 24 }}
+          >
+            <Switch />
+          </Form.Item>
+        ) : null}
         {renderFormFields(requiredParameters, false)}
         {renderFormFields(optionalParameters, false)}
         {advancedParameters.length > 0 && (

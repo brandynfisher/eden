@@ -1,5 +1,9 @@
 import { AxiosRequestConfig } from 'axios'
 import {
+  ConceptsDeleteResponse,
+  ConceptsUpdateResponse,
+  CreationsDeleteResponse,
+  CreationsUpdateResponse,
   CreatorFollowersListResponse,
   CreatorFollowingListResponse,
   SessionEventsListResponse,
@@ -50,6 +54,10 @@ import {
   CreationsUnreactResponse,
   ReactionType,
 } from './responses/CreationsResponses'
+import {
+  UploadsGetResponse,
+  UploadsListResponse,
+} from './responses/UploadsResponses'
 import {
   CreatorsFollowResponse,
   CreatorsGetResponse,
@@ -231,6 +239,25 @@ export abstract class Methods {
       this,
       creationsUnreactRequestConfig,
     ),
+    update: bindApiCall<CreationsUpdateArguments, CreationsUpdateResponse>(
+      this,
+      creationsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<CreationsDeleteArguments, CreationsDeleteResponse>(
+      this,
+      creationsDeleteRequestConfig,
+    )
+  }
+
+  public readonly uploads = {
+    list: bindApiCall<UploadsListArguments, UploadsListResponse>(
+      this,
+      uploadsListRequestConfig,
+    ),
+    get: bindApiCall<UploadsGetArguments, UploadsGetResponse>(
+      this,
+      uploadsGetRequestConfig,
+    ),
   }
 
   public readonly creators = {
@@ -279,6 +306,14 @@ export abstract class Methods {
       this,
       conceptsGetRequestConfig,
     ),
+    update: bindApiCall<ConceptsUpdateArguments, ConceptsUpdateResponse>(
+      this,
+      conceptsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
+      this,
+      conceptsDeleteRequestConfig,
+    )
   }
 
   public readonly generators = {
@@ -410,7 +445,7 @@ export interface CharactersListArguments
 }
 
 export interface CharactersGetArguments extends WebAPICallOptions {
-  slug: string
+  characterId: string
 }
 
 export interface CharactersCreateArguments extends WebAPICallOptions {
@@ -420,6 +455,7 @@ export interface CharactersCreateArguments extends WebAPICallOptions {
   description?: string
   greeting?: string
   dialogue?: any[]
+  isPrivate?: boolean
 }
 
 export interface CharactersUpdateArguments extends WebAPICallOptions {
@@ -429,7 +465,8 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
   voice?: string
   description?: string
   greeting?: string
-  dialogue?: any[]
+  dialogue?: any[],
+  isPrivate?: boolean
 }
 
 export interface CharactersDeleteArguments extends WebAPICallOptions {
@@ -518,6 +555,15 @@ export interface CreationsUnreactArguments extends WebAPICallOptions {
   reaction: ReactionType
 }
 
+export interface CreationsDeleteArguments extends WebAPICallOptions {
+  creationId: string
+}
+
+export interface CreationsUpdateArguments extends WebAPICallOptions {
+  creationId: string,
+  isPrivate: boolean
+}
+
 export interface ConceptsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
@@ -526,6 +572,25 @@ export interface ConceptsListArguments
 
 export interface ConceptsGetArguments extends WebAPICallOptions {
   conceptId: string
+}
+
+export interface ConceptsDeleteArguments extends WebAPICallOptions {
+  conceptId: string
+}
+
+export interface ConceptsUpdateArguments extends WebAPICallOptions {
+  conceptId: string,
+  isPrivate: boolean
+}
+
+export interface UploadsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface UploadsGetArguments extends WebAPICallOptions {
+  uploadId: string
 }
 
 export interface CreatorsFollowArguments extends WebAPICallOptions {
@@ -688,7 +753,7 @@ const charactersGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `characters/${args.slug}`,
+    url: `characters/${args.characterId}`,
   }
 }
 
@@ -697,7 +762,7 @@ const charactersCreateRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'characters/create',
+    url: 'characters',
     data: {
       ...args,
     },
@@ -708,8 +773,8 @@ const charactersUpdateRequestConfig = (
   args: CharactersUpdateArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: 'characters/update',
+    method: 'PATCH',
+    url: `characters/${args.characterId}`,
     data: {
       ...args,
     },
@@ -720,8 +785,8 @@ const charactersDeleteRequestConfig = (
   args: CharactersDeleteArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: 'characters/delete',
+    method: 'DELETE',
+    url: `characters/${args.characterId}`,
     data: {
       ...args,
     },
@@ -910,6 +975,30 @@ const creationsUnreactRequestConfig = (
   }
 }
 
+const creationsUpdateRequestConfig = (
+  args: CreationsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `creations/${args.creationId}`,
+    data: {
+      ...args,
+    },
+  }
+}
+
+const creationsDeleteRequestConfig = (
+  args: CreationsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `creations/${args.creationId}`,
+    data: {
+      ...args,
+    },
+  }
+}
+
 const conceptsListRequestConfig = (
   args: ConceptsListArguments,
 ): AxiosRequestConfig => {
@@ -927,6 +1016,50 @@ const conceptsGetRequestConfig = (
   return {
     method: 'GET',
     url: `concepts/${args.conceptId}`,
+  }
+}
+
+const conceptsUpdateRequestConfig = (
+  args: ConceptsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `concepts/${args.conceptId}`,
+    data: {
+      ...args,
+    },
+  }
+}
+
+const conceptsDeleteRequestConfig = (
+  args: ConceptsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `concepts/${args.conceptId}`,
+    data: {
+      ...args,
+    },
+  }
+}
+
+const uploadsListRequestConfig = (
+  args: UploadsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'uploads',
+    params,
+  }
+}
+
+const uploadsGetRequestConfig = (
+  args: UploadsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `uploads/${args.uploadId}`,
   }
 }
 

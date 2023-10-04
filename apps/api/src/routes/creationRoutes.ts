@@ -4,8 +4,10 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
+  creationDelete,
   creationReact,
   creationUnreact,
+  creationUpdate,
   getCreation,
   getCreationSimilar,
   listCreations,
@@ -43,6 +45,41 @@ const creationRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCreation(request, reply),
+  })
+
+  server.patch('/creations/:creationId', {
+    schema: {
+      params: {
+        creationId: Type.String(),
+      },
+      request: {
+        body: Type.Object({
+          isPrivate: Type.Optional(Type.Boolean()),
+        }),
+      },
+      response: {
+        200: {
+          creation: Type.Any(),
+        },
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => creationUpdate(request, reply),
+  })
+
+  server.delete('/creations/:creationId', {
+    schema: {
+      params: {
+        creationId: Type.String(),
+      },
+      response: {
+        200: {
+          success: Type.Boolean(),
+        },
+      },
+    },
+    preHandler: [async request => isAuth(server, request)],
+    handler: (request, reply) => creationDelete(request, reply),
   })
 
   server.get('/creations/:creationId/similar', {

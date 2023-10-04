@@ -49,8 +49,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     )
 
-    const { url } = response.data
-    res.status(200).json({ fileUrl: url })
+    const { url, uploadId } = response.data
+    res.status(200).json({ fileUrl: url, uploadId: uploadId })
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' })
   }

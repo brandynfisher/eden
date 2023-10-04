@@ -21,7 +21,7 @@ const allowedCogs = [
   "character",
   "sdxl-lora-trainer",
   "zeroscope-v2-xl",
-  "task-runner",
+  "scenarioRunner",
 ]
 
 const env = process.argv[2];
@@ -226,10 +226,10 @@ async function updateVersion(db) {
 
   }
 
-  else if (cog === 'task-runner') {
+  else if (cog === 'scenarioRunner') {
 
     const monologueVersion = {
-      provider: 'task-runner',
+      provider: 'scenarioRunner',
       address: 'eden/monologue',
       versionId: versionId,
       mode: 'monologue',
@@ -238,7 +238,7 @@ async function updateVersion(db) {
     }
 
     const dialogueVersion = {
-      provider: 'task-runner',
+      provider: 'scenarioRunner',
       address: 'eden/dialogue',
       versionId: versionId,
       mode: 'dialogue',

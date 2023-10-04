@@ -38,6 +38,7 @@
     "@sinclair/typebox": "^0.23.5",
     "@stripe/stripe-js": "^2.1.0",
     "ajv": "^8.12.0",
+    "async": "^3.2.4",
     "aws-sdk": "^2.1454.0",
     "axios": "^1.4.0",
     "chromadb": "^1.5.5",
@@ -69,11 +70,13 @@
     "vite": "^4.3.5"
   },
   "devDependencies": {
+    "@types/async": "^3.2.21",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/minio": "^7.0.18",
     "@types/mongoose-aggregate-paginate-v2": "^1.0.9",
     "@types/mongoose-delete": "^0.5.9",
     "@types/node": "^18.16.6",
+    "@types/tmp": "^0.2.4",
     "@types/uuid": "^9.0.1",
     "esbuild": "^0.14.54",
     "eslint": "^8.40.0",

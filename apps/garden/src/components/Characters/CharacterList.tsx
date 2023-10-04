@@ -1,13 +1,15 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { SettingOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
+import LockIcon from '@mui/icons-material/Lock'
 import { Button, Empty } from 'antd'
 import Link from 'next/link'
+import React from 'react'
 
 const CharacterListItem = ({ character }: { character: Character }) => {
   return (
     <Link
-      href={`/characters/${character.slug}`}
+      href={`/characters/${character.id}`}
       passHref
       className="flex gap-4 cursor-pointer bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-black p-4 rounded-lg text-black dark:text-white"
     >
@@ -15,12 +17,17 @@ const CharacterListItem = ({ character }: { character: Character }) => {
         <CharacterAvatar
           id={character.id}
           name={character.name}
-          imageUri={character.image || ''}
+          imageUri={character.image?.uri || ''}
           size="large"
         />
       </div>
       <div>
-        <div className="font-bold">{character.name}</div>
+        <div className="flex gap-2">
+          <div className="font-bold">{character.name}</div>
+          {character.isPrivate ? (
+            <LockIcon fontSize="small" className="text-white" />
+          ) : null}
+        </div>
         <div
           className="text-gray-500 line-clamp-2"
           title={character.description}

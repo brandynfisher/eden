@@ -1,25 +1,27 @@
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
-import { SoftDeleteDocument } from 'mongoose-delete'
+import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
 import slug from 'mongoose-slug-plugin'
 
+import { VisibilitySchema } from '../types/baseSchemas'
 import { UserDocument } from './Creator'
+import { UploadDocument } from './Upload'
 
 interface ChatSchema {
   sender: string
   message: string[]
 }
 
-export interface CharacterSchema {
+export interface CharacterSchema extends VisibilitySchema {
   user: UserDocument
   name: string
   slug: string
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
-  image?: string
+  image?: UploadDocument
   voice?: string
   createdAt?: Date
   updatedAt?: Date
@@ -31,13 +33,13 @@ export interface CharacterInput {
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
-  image?: string
+  image?: UploadDocument
   voice?: string
 }
 
 export interface CharacterDocument
-  extends CharacterSchema,
-    SoftDeleteDocument {}
+  extends SoftDeleteDocument,
+    CharacterSchema {}
 
 const character = new Schema<CharacterDocument>(
   {
@@ -65,12 +67,24 @@ const character = new Schema<CharacterDocument>(
       maxlength: 1000,
     },
     image: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: 'uploads',
       required: false,
     },
     voice: {
       type: String,
       required: false,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    deleteBy: {
+      type: String,
+    },
+    isPrivate: {
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -86,6 +100,7 @@ character.pre<CharacterDocument>('save', function (next) {
 
 character.index({ user: 1, name: 1 }, { unique: true })
 
+character.plugin(mongooseDelete, { overrideMethods: 'all' })
 character.plugin(paginate)
 character.plugin(slug, { tmpl: '<%=name%>' })
 

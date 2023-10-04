@@ -68,7 +68,9 @@ const ImageZoomPan = ({
         minScale={0.1}
         maxScale={4}
         centerZoomedOut={false}
-        centerOnInit={true}
+        // centerOnInit={true}
+        // initialPositionY={componentWrapRef.current?.clientHeight}
+        // initialPositionX={componentWrapRef.current?.clientWidth}
       >
         {({ zoomIn, zoomOut, centerView }) => (
           <>

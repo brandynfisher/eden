@@ -7,12 +7,13 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { name, voice, image, description, greeting, dialogue } =
-    req.body as CharactersCreateArguments
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
   }
+
+  const { name, voice, image, description, greeting, dialogue, isPrivate } =
+    req.body as CharactersCreateArguments
 
   try {
     const eden = new EdenClient({
@@ -26,6 +27,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       description,
       greeting,
       dialogue,
+      isPrivate,
     })
     return res.status(200).json({ characterId: response.characterId })
   } catch (error) {
