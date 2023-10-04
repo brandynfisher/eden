@@ -59,7 +59,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => conceptUpdate(request, reply),
   })
 
@@ -74,7 +74,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => conceptDelete(request, reply),
   })
 }
