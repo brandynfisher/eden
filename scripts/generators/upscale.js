@@ -24,7 +24,7 @@ const params = [
     name: 'width',
     label: 'Width',
     description: 'Upscale uses [Width x Height] total number of pixels and adopts the aspect ratio of your provided image',
-    default: 1024,
+    default: 1600,
     minimum: 512,
     maximum: 2048,
     step: 64,
@@ -33,10 +33,17 @@ const params = [
     name: 'height',
     label: 'Height',
     description: 'Upscale uses [Width x Height] total number of pixels and adopts the aspect ratio of your provided image',
-    default: 1024,
+    default: 1600,
     minimum: 512,
     maximum: 2048,
     step: 64,
+  },
+  
+  {
+    name: 'text_input',
+    label: 'Prompt',
+    description: 'Text prompt for the upscale (leaving this empty will automatically find a prompt matching your image)',
+    default: null,
   },
 
 
@@ -49,15 +56,6 @@ const params = [
     description: 'Number of variations to create',
     default: 1,
     allowedValues: [1, 2, 4],
-    optional: true,
-  },
-  
-  
-  {
-    name: 'text_input',
-    label: 'Prompt',
-    description: 'Text prompt for the upscale (leaving this empty will trigger CLIP-interrogator to automatically find a prompt matching your image)',
-    default: null,
     optional: true,
   },
   
