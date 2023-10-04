@@ -72,7 +72,7 @@ export const ClerkMyProfileButton = () => {
           <Link
             href={userProfilePath}
             passHref
-            className="font-mono flex justify-center items-center h-[32px] w-[32px] flex-shrink-0 flex-grow max-h-full hover:brightness-125 transition-all duration-200 nav-profile-image"
+            className="font-mono flex justify-center items-center h-[32px] w-[32px] flex-shrink-0 flex-grow max-h-full hover:brightness-125 hover:scale-110 transition-all duration-200 nav-profile-image"
           >
             <CharacterAvatar
               id={userId || ''}

@@ -4,9 +4,18 @@ import { MessageInstance } from 'antd/es/message/interface'
 import axios, { AxiosError } from 'axios'
 
 // @ts-ignore
-export const fetcher = (...args) =>
+export const fetcher = async (...args) => {
   // @ts-ignore
-  fetch(...args).then(res => res.json())
+  const res = await fetch(...args)
+
+  console.log(res)
+
+  if (res.status === 401) {
+    return null
+  }
+
+  return res.json()
+}
 
 export const handleAxiosError = (
   error: AxiosError | unknown,
