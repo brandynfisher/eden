@@ -112,7 +112,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [async (request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCharacter(request, reply),
   })
 
@@ -150,7 +150,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         ),
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [async (request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => listCharacters(request, reply),
   })
 }

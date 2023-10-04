@@ -34,7 +34,7 @@ const uploadRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [async (request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getUpload(request, reply),
   })
 }

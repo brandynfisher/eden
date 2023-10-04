@@ -63,7 +63,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => creationUpdate(request, reply),
   })
 
@@ -78,7 +78,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => creationDelete(request, reply),
   })
 
