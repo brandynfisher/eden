@@ -5,6 +5,7 @@ import {
   CharactersListArguments,
   CharactersUpdateArguments,
 } from '@edenlabs/eden-sdk'
+import { booleanObjectType } from 'aws-sdk/clients/iam'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
@@ -30,6 +31,7 @@ export const createCharacter = async (
     greeting: string | undefined
     dialogue: any[] | undefined
     image?: ObjectId | undefined
+    isPrivate?: boolean
   } = {
     user: userId,
     name,
@@ -93,6 +95,7 @@ export const updateCharacter = async (
     greeting: string | undefined
     dialogue: any[] | undefined
     image?: ObjectId | undefined
+    isPrivate?: boolean
   } = {
     name,
     voice,
