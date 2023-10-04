@@ -24,6 +24,7 @@ export default function Custom500() {
                   Don't worry, though; even in the wilds of server issues, your
                   adventurous spirit shines bright.
                   <br />
+                  <br />
                   We're working tirelessly to restore the garden to its pristine
                   state.
                 </p>

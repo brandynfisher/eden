@@ -1,3 +1,4 @@
+import ErrorBoundary from '@/ErrorBoundary'
 import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
@@ -95,7 +96,11 @@ export default function App({ Component, pageProps }: Props): ReactElement {
                     <CreationNotificationProvider>
                       <MasonryProvider>
                         <ModalProvider>
-                          {getLayout(<Component {...pageProps} />)}
+                          {getLayout(
+                            <ErrorBoundary>
+                              <Component {...pageProps} />
+                            </ErrorBoundary>,
+                          )}
                         </ModalProvider>
                       </MasonryProvider>
                     </CreationNotificationProvider>
