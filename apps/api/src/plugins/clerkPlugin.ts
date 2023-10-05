@@ -19,6 +19,7 @@ export const registerClerk = async (fastify: FastifyInstance) => {
       if (!userId) {
         throw new Error('Clerk: Not authorized')
       }
+      console.log('Request from user', userId)
 
       const user = await User.findOne({
         userId,
