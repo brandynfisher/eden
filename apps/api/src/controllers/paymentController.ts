@@ -131,11 +131,8 @@ export const handlePaymentEvent = async (
       message: 'Raw body not configured',
     })
   }
-  console.log('000', request.rawBody)
 
   const sig = request.headers['stripe-signature'] as string
-  console.log('111', sig)
-  console.log('222', server.config.STRIPE_WEBHOOK_SECRET)
 
   const event = server.stripe.webhooks.constructEvent(
     request.rawBody,
