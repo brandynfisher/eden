@@ -74,7 +74,7 @@ const ProfileHeader = ({
   }
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
-      <div className="flex w-full items-center justify-start gap-4 items-stretch">
+      <div className="flex w-full justify-start gap-4 items-stretch">
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <div
             className={`w-[90px] h-[90px] rounded-full overflow-hidden ${
