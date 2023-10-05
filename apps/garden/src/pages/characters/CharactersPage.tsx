@@ -1,5 +1,4 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
-import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
@@ -71,14 +70,7 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
 }
 
 const CharactersPage = ({ data }: { data: Character[] }) => {
-  const { isAuthenticated, userId } = useContext(UserContext)
-  const { characters: charactersData } = useMyCharacters({
-    userId,
-    isAuthenticated,
-    options: {
-      fallbackData: data,
-    },
-  })
+  const { characters: charactersData } = useContext(UserContext)
 
   if (!data) {
     return null
