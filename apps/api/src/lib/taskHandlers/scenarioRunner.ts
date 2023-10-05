@@ -210,7 +210,7 @@ async function generateVideoSegment(
   targetHeight?: number,
 ) {
   try {
-    console.log('gi---')
+    console.log('gen video segment---')
     const { elevenLabs, replicate } = server
 
     if (!elevenLabs) throw new Error('Elevenlabs not initialized')
@@ -356,9 +356,10 @@ const runTask = async (
         throw new Error('Character not found')
       }
 
+      console.log('logos get dialogue', config)
       const dialogue = await logos.dialogue(server, config)
 
-      console.log('dialogue', dialogue)
+      console.log('dialogue!', dialogue)
 
       if (!character1.image) {
         throw new Error('Character 1 image not found')
@@ -377,6 +378,8 @@ const runTask = async (
         minH,
         avgAspectRatio,
       )
+
+      console.log('received', avgAspectRatio, targetWidth, targetHeight)
 
       const videoUrls: string[] = []
 
@@ -400,6 +403,9 @@ const runTask = async (
             throw new Error(`Error occurred in generating video: ${error}`)
           } else {
             // composite final video together
+
+            console.log('the video urls', videoUrls)
+
             const videoPath = await concatenateVideos(videoUrls)
             const videoFile = fs.readFileSync(videoPath as string)
             const videoBuffer = Buffer.from(videoFile)
