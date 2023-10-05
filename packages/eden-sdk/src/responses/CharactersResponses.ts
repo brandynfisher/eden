@@ -1,4 +1,4 @@
-import {Creator, PaginatedResponse, Upload} from '.'
+import {Creator, PaginatedResponse} from '.'
 import { WebAPICallResult } from '../EdenClient'
 
 export type CharactersCreateResponse = WebAPICallResult & {
@@ -34,7 +34,7 @@ export type Character = {
   description?: string
   greeting?: string
   dialogue?: any[]
-  image?: Upload
+  image?: string
   voice?: string
   deleted?: boolean,
   isPrivate?: boolean,

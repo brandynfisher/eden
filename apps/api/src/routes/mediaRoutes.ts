@@ -9,7 +9,6 @@ const mediaRoutes: FastifyPluginAsync = async server => {
     schema: {
       response: {
         200: Type.Object({
-          uploadId: Type.String(),
           url: Type.String(),
         }),
       },

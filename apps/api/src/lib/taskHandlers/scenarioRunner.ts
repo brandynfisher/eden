@@ -7,7 +7,6 @@ import sharp from 'sharp'
 import tmp from 'tmp'
 
 import { Character } from '../../models/Character'
-import { Upload } from '../../models/Upload'
 import {
   uploadBufferAsset,
   uploadThumbnailAsset,
@@ -201,9 +200,8 @@ async function generateVideoSegment(
     // const audioUrl = "https://minio.aws.abraham.fun/creations-stg/3a69700d2f9b8b9dd4c0effa366ac6bb41cb39bf06af92049b5be7bb5cc25f58.mp3"
 
     // generate wav2lip
-    const image = await Upload.findOne({ _id: message.character.image })
-    if (!image) throw new Error('Image not found')
-    const faceUrl = image.uri
+    if (!message.character.image) throw new Error('No image')
+    const faceUrl = message.character.image
 
     const model = await replicate.models.get('abraham-ai/character')
     const prediction = await model.replicate.startPrediction(
@@ -274,10 +272,8 @@ const runTask = async (
         throw new Error('Character not found')
       }
 
-      const image = await Upload.findOne({ _id: character.image })
-
-      if (!image) {
-        throw new Error('Image not found')
+      if (!character.image) {
+        throw new Error('No image')
       }
 
       const monologue = await logos.monologue(server, config)
@@ -288,7 +284,7 @@ const runTask = async (
 
       const output_final = {
         files: [uri],
-        thumbnails: [image.uri],
+        thumbnails: [character.image],
         name: config.prompt,
         progress: 1.0,
         isFinal: true,
@@ -317,16 +313,22 @@ const runTask = async (
 
       const dialogue = await logos.dialogue(server, config)
 
-      const image1 = await Upload.findOne({ _id: character1.image })
-      const image2 = await Upload.findOne({ _id: character2.image })
-
-      if (!image1 || !image2) {
-        throw new Error('Image not found')
-        // todo: make generic image
+      if (!character1.image) {
+        throw new Error('Character 1 image not found')
       }
+      if (!character2.image) {
+        throw new Error('Character 2 image not found')
+      }
+      // todo: make generic image
 
-      const avgAspectRatio = averageAspectRatio([image1, image2])
-      const [minW, minH] = smallestImageSize([image1, image2])
+      const avgAspectRatio = averageAspectRatio([
+        character1.image,
+        character2.image,
+      ])
+      const [minW, minH] = smallestImageSize([
+        character1.image,
+        character2.image,
+      ])
       const [targetWidth, targetHeight] = calculateTargetDimensions(
         minW,
         minH,
@@ -366,8 +368,8 @@ const runTask = async (
 
             // generate thumbnail
             const thumbnailImage = await createDialogueThumbnail(
-              image1.uri,
-              image2.uri,
+              character1.image!,
+              character2.image!,
               targetWidth,
               targetHeight,
             )
