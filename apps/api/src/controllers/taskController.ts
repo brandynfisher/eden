@@ -172,6 +172,15 @@ export const createTask = async (
     })
   }
 
+  console.log('===== task Id =====')
+  console.log(taskId)
+  console.log('----------')
+  console.log(config)
+  console.log('----------')
+  console.log(generatorVersion.parameters)
+  console.log('---------')
+  console.log(preparedConfig)
+
   // update db
   const taskData: TaskSchema = {
     taskId,
