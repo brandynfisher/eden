@@ -57,7 +57,7 @@ const CardToolsDropdown = ({
     {
       icon: (
         <CopyUrlButton
-          url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item.uri}`}
+          url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
           variant="text"
           label="Page URL"
         />

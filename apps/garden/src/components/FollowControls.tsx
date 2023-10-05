@@ -46,7 +46,6 @@ const FollowControls = ({
     setFollowerCount(creator?.followerCount || 0)
     setIsFollowingUser(creator?.isFollowing || false)
     setFollowingCount(creator?.followingCount || 0)
-    console.log('follow controls', isAuthenticated, userId, creatorId)
     setIsOwnProfile(isAuthenticated && userId === creatorId)
   }, [isAuthenticated, userId, creatorId, creator])
 
