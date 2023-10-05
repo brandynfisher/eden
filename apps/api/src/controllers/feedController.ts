@@ -104,17 +104,17 @@ export const getCreationsFeed = async (
     userId: filterUserIds,
   })
 
-  const { userId: ownUserId } = request.user
+  const ownUserId = request.user ? request.user.userId : undefined
   const creatorId = creators.docs
     ? creators.docs.map(creator => creator._id)[0].toString()
     : undefined
   const isUserRequestingOwnProfileFeed =
-    creatorId && ownUserId.toString() === creatorId
+    creatorId && ownUserId && ownUserId.toString() === creatorId
 
   const creationRepository = new CreationRepository(Creation)
   let creations: PaginatedResponse<CreationDocument>
 
-  if (orderBy === 'following') {
+  if (orderBy === 'following' && ownUserId) {
     const followCreationRepository = new CreationRepository(Follow) //@todo: this reads rather wonky
     const followAggregate = aggregateCreationsByFollowerId(ownUserId)
 
@@ -189,7 +189,7 @@ export const getCreationsFeed = async (
     populate: { path: 'generator', select: 'generatorName description output' },
   })
 
-  if (request.user?.userId) {
+  if (ownUserId) {
     // Get user's reactions and bookmarks
     const userId = request.user.userId
     const user = User.findOne({ userId })
@@ -259,12 +259,12 @@ export const getConceptsFeed = async (
     userId: filterUserIds,
   })
 
-  const { userId: ownUserId } = request.user
+  const ownUserId = request.user ? request.user.userId : undefined
   const creatorId = creators.docs
     ? creators.docs.map(creator => creator._id)[0].toString()
     : undefined
   const isUserRequestingOwnProfileFeed =
-    creatorId && ownUserId.toString() === creatorId
+    creatorId && ownUserId && ownUserId.toString() === creatorId
 
   const conceptRepository = new ConceptRepository(Concept)
 
