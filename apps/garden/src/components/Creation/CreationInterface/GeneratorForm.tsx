@@ -245,14 +245,6 @@ const GeneratorForm = ({
         stringArrayValues,
       )
 
-      console.log('----sddsfsdfdsf----')
-      console.log(form.getFieldsValue())
-      console.log('0000000')
-      console.log(stringArrayValues)
-      console.log('0000000')
-      console.log(cleanedValues)
-      console.log('0000000')
-
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
         config: cleanedValues,

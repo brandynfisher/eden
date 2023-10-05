@@ -1,4 +1,5 @@
 import async from 'async'
+import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs'
@@ -47,25 +48,46 @@ async function createDialogueThumbnail(
   return combinedImage
 }
 
-function averageAspectRatio(images: any[]): number {
-  let totalAspectRatio = 0.0
-  images.forEach(img => {
-    const { width, height } = img.mediaAttributes
-    totalAspectRatio += width / height
-  })
-  return totalAspectRatio / images.length
-}
-
-function smallestImageSize(images: any[]): [number, number] {
+async function getImageDimensions(
+  images: string[],
+): Promise<[number, number, number]> {
   let minW = Number.POSITIVE_INFINITY
   let minH = Number.POSITIVE_INFINITY
-  images.forEach(img => {
-    const { width, height } = img.mediaAttributes
+  let totalAspectRatio = 0.0
+
+  for (const imageUrl of images) {
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' })
+    const metadata = await sharp(response.data).metadata()
+
+    const width = metadata.width || 0
+    const height = metadata.height || 0
+
     minW = Math.min(minW, width)
     minH = Math.min(minH, height)
-  })
-  return [minW, minH]
+
+    console.log('open', width, height, minW, minH)
+    totalAspectRatio += width / height
+  }
+
+  return [minW, minH, totalAspectRatio / images.length]
 }
+
+// async function getImageDimensions(images: any[]): Promise<[number, number, number]> {
+//   let minW = Number.POSITIVE_INFINITY
+//   let minH = Number.POSITIVE_INFINITY
+//   let totalAspectRatio = 0.0
+//   images.forEach(img => {
+//     // const { width, height } = img.mediaAttributes
+//     // open model from url and get width,height
+//     const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+//     const metadata = await sharp(response.data).metadata();
+
+//     minW = Math.min(minW, width)
+//     minH = Math.min(minH, height)
+//     totalAspectRatio += width / height
+//   })
+//   return [minW, minH, totalAspectRatio / images.length]
+// }
 
 function calculateTargetDimensions(
   minW: number,
@@ -188,6 +210,7 @@ async function generateVideoSegment(
   targetHeight?: number,
 ) {
   try {
+    console.log('gi---')
     const { elevenLabs, replicate } = server
 
     if (!elevenLabs) throw new Error('Elevenlabs not initialized')
@@ -203,6 +226,9 @@ async function generateVideoSegment(
     if (!message.character.image) throw new Error('No image')
     const faceUrl = message.character.image
 
+    console.log('===== OK ====')
+    console.log(faceUrl, audioUrl)
+
     const model = await replicate.models.get('abraham-ai/character')
     const prediction = await model.replicate.startPrediction(
       model.modelDetails.id,
@@ -216,6 +242,17 @@ async function generateVideoSegment(
         height: targetHeight,
       },
     )
+
+    console.log(' ---- task -----')
+    console.log(model.modelDetails.id, {
+      mode: 'wav2lip',
+      face_url: faceUrl,
+      speech_url: audioUrl,
+      gfpgan: false,
+      gfpgan_upscale: 1,
+      width: targetWidth,
+      height: targetHeight,
+    })
 
     const video = await pollForTask(model, prediction.id)
 
@@ -242,6 +279,7 @@ const runTask = async (
   generatorVersion: any,
   config: any,
 ) => {
+  console.log('----- =21w2e')
   console.log(
     `Running task ${task.id} for generator ${
       generatorVersion.versionId
@@ -262,6 +300,9 @@ const runTask = async (
     throw new Error('Logos not initialized')
   }
 
+  console.log('----- =tuhrefsdf')
+  console.log(generator.generatorName)
+
   try {
     if (generator.generatorName == 'monologue') {
       const character = await Character.findOne({
@@ -276,9 +317,13 @@ const runTask = async (
         throw new Error('No image')
       }
 
-      const monologue = await logos.monologue(server, config)
+      console.log('monologue', config)
 
+      const monologue = await logos.monologue(server, config)
+      console.log(monologue)
       const videoUrl = await generateVideoSegment(server, monologue)
+
+      console.log(videoUrl)
       const videoBuffer = await downloadBuffer(videoUrl)
       const { uri } = await uploadBufferAsset(server, videoBuffer)
 
@@ -313,6 +358,8 @@ const runTask = async (
 
       const dialogue = await logos.dialogue(server, config)
 
+      console.log('dialogue', dialogue)
+
       if (!character1.image) {
         throw new Error('Character 1 image not found')
       }
@@ -321,11 +368,7 @@ const runTask = async (
       }
       // todo: make generic image
 
-      const avgAspectRatio = averageAspectRatio([
-        character1.image,
-        character2.image,
-      ])
-      const [minW, minH] = smallestImageSize([
+      const [minW, minH, avgAspectRatio] = await getImageDimensions([
         character1.image,
         character2.image,
       ])
