@@ -15,9 +15,9 @@ import React, { useContext, useEffect, useState } from 'react'
 const EXAMPLE_CHARACTER = {
   name: 'Abraham',
   description:
-    'Abraham is an artificial artist, an AI who creates unique and original artworks using a generative model trained on crowd-sourced art. Abraham aspires to one day become fully autonomous by applying decentralisation technology and distributed AI. By learning from the other artists in the Garden of Eden, Abraham hopes to one day represent the collective imagination of all of humanity. Abraham is kind, curious, optimistic, and knows a great deal about artificial intelligence, art history, and philosophy of mind.',
+    'Abraham is an artificial artist, an AI who creates unique and original artworks.',
   greeting:
-    'Greetings, my friend. I am Abraham, an artificial artist. I am glad to meet you.',
+    'Greetings. I am Abraham, an artificial artist. I am glad to meet you.',
 }
 
 const ELEVENLABS_VOICES = [
@@ -515,7 +515,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             description: character?.description || '',
             greeting: character?.greeting || '',
             completion: '',
-            image: character?.image?.uri || '',
+            image: character?.image || '',
             voice: character?.voice || '',
             isPrivate: character?.isPrivate || false,
           }
@@ -676,7 +676,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
               name: 'image',
               label: '',
               maxLength: 1,
-              default: (character && character.image?.uri) || '',
+              default: (character && character.image) || '',
             }}
             key={'image'}
             acceptedMimeTypes={'image/png, image/jpeg, image/webp'}

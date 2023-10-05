@@ -29,29 +29,29 @@ const UploadParameter = (props: {
 
   const isArray = Array.isArray(props.parameter.default)
 
-  const [urls, setUrls] = useState<string[]>([])
+  const [uploadIds, setUploadIds] = useState<string[]>([])
 
   useEffect(() => {
     if (!props.parameter.default) {
       return
     }
 
-    const newUrls = isArray
+    const newUploadIds = isArray
       ? props.parameter.default
       : [props.parameter.default]
-    const dummyFileList: UploadFile[] = newUrls.map((newUrl: string) => ({
-      name: newUrl,
-      preview: newUrl,
-      percent: 100,
-      response: { fileUrl: newUrl },
-      thumbUrl: newUrl,
-      type: 'image/jpeg',
-    }))
+    const dummyFileList: UploadFile[] = newUploadIds.map(
+      (newUploadId: string) => ({
+        uid: newUploadId,
+        name: newUploadId,
+        status: 'done',
+        url: '', // You need to provide a way to get the URL from the uploadId here
+      }),
+    )
     setFileList(dummyFileList)
     props.form.setFieldsValue({
-      [props.parameter.name]: isArray ? newUrls : newUrls[0],
+      [props.parameter.name]: isArray ? newUploadIds : newUploadIds[0],
     })
-    setUrls(newUrls)
+    setUploadIds(newUploadIds)
   }, [props.parameter.default])
 
   const maxUploads = isArray ? props.parameter.maxLength || 3 : 1
@@ -79,7 +79,7 @@ const UploadParameter = (props: {
       fileList.pop()
       setFileList(fileList)
       props.form.setFieldsValue({
-        [props.parameter.name]: isArray ? urls : urls[0],
+        [props.parameter.name]: isArray ? uploadIds : uploadIds[0],
       })
       let errorMessage = info.file.response?.error || 'Unknown error occurred'
       if (errorMessage.startsWith('options.maxFileSize')) {
@@ -98,34 +98,32 @@ const UploadParameter = (props: {
     }
     setFileList(info.fileList)
     if (info.file.status === 'done') {
-      const newUrls = [...urls, info.file.response.fileUrl]
+      const newUploadIds = [...uploadIds, info.file.response.uploadId]
       props.form.setFieldsValue({
-        [props.parameter.name]: isArray ? newUrls : newUrls[0],
+        [props.parameter.name]: isArray ? newUploadIds : newUploadIds[0],
       })
-      setUrls(newUrls)
+      setUploadIds(newUploadIds)
 
       message.destroy()
-      message.success({
-        content: (
-          <>
-            <div>Uploaded successfully</div>
-            <div className="mt-1 font-bold">
-              <a href={info.file.response.fileUrl}>[link]</a>
-            </div>
-            <br />
-            {info.file.response.fileUrl}
-          </>
-        ),
-        duration: 10,
-      })
+      message.success(
+        <>
+          <div>Uploaded successfully</div>
+          <div className="mt-1 font-bold">
+            <a href={info.file.response.fileUrl}>[ link ]</a>
+          </div>
+        </>,
+        5000,
+      )
     }
     if (info.file.status === 'removed') {
-      const removedUrl = info.file.response.fileUrl
-      const newUrls = urls.filter(url => url !== removedUrl)
+      const removedUploadId = info.file.response.uploadId
+      const newUploadIds = uploadIds.filter(
+        uploadId => uploadId !== removedUploadId,
+      )
       props.form.setFieldsValue({
-        [props.parameter.name]: isArray ? newUrls : newUrls[0],
+        [props.parameter.name]: isArray ? newUploadIds : newUploadIds[0],
       })
-      setUrls(newUrls)
+      setUploadIds(newUploadIds)
     }
   }
 
