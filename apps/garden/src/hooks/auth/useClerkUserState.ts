@@ -46,7 +46,28 @@ export const useClerkUserState = () => {
     refetchMyCharacters()
     refetchMyCollections()
   }, [isAuthenticated])
+
   const { settings, updateSetting } = useSettings()
+
+  // refetch data on tab focus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Refetch data here
+        refetchCreator()
+        refetchMannaBalance()
+        refetchMyCharacters()
+        refetchMyCollections()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Clean up event listener on component unmount
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
 
   const user: UserContextType = {
     isAuthenticating: false,
