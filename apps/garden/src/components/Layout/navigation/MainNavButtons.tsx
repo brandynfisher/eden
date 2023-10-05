@@ -1,10 +1,9 @@
-import { UserContext } from '@/providers/UserProvider'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import YardIcon from '@mui/icons-material/Yard'
 import { Button } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode } from 'react'
 
 type NavButtonItem = { text: string; path: string; icon: React.ReactNode }
 
@@ -39,38 +38,19 @@ const NavButton = ({
 
 const MainNavButtons = () => {
   const router = useRouter()
-  const { user } = useContext(UserContext)
-  const isPreviewUser =
-    user?.featureFlags && user.featureFlags.includes('preview')
-  // const [bookmarkCollectionPath, setBookmarkCollectionPath] = useState('')
 
-  // const { collections } = useContext(UserContext)
-
-  // useEffect(() => {
-  //   if (collections?.length) {
-  //     setBookmarkCollectionPath(`/collections/${collections[0]._id}`)
-  //   }
-  // }, [collections])
   const navItems: NavButtonItem[] = [
     {
       text: 'Creations',
       icon: <YardIcon fontSize="small" />,
       path: '/',
     },
-    // {
-    //   text: 'Collections',
-    //   icon: <TableOutlined />,
-    //   path: bookmarkCollectionPath,
-    // },
-  ]
-
-  if (isPreviewUser) {
-    navItems.push({
+    {
       text: 'Concepts',
       icon: <ModelTrainingIcon fontSize="small" />,
       path: '/concepts',
-    })
-  }
+    },
+  ]
 
   return (
     <div className="flex gap-2">
