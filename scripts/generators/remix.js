@@ -13,7 +13,7 @@ const params = [
     name: 'init_image_strength',
     label: 'Init image strength',
     description:
-      'How much to weight the input init image in the diffusion process. Recommended 0.1-0.3. Lower values will drift away from the input image more, but will imagine new details more easily, possibly leading to a more creative final image.',
+      'How much to weight the input image. Setting to 0 will try to reimagine the image. Higher values will stay closer to the original.',
     default: 0.05,
     minimum: 0.0,
     maximum: 1.0,
