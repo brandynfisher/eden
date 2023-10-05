@@ -17,7 +17,6 @@ import { Session, SessionDocument } from './Session'
 import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
-import { Upload, UploadDocument } from './Upload'
 import { UserMigration, UserMigrationDocument } from './UserMigration'
 
 export interface Database {
@@ -28,7 +27,6 @@ export interface Database {
   Follow: Model<FollowDocument>
   Task: Model<TaskDocument>
   Creation: Model<CreationDocument>
-  Upload: Model<UploadDocument>
   Concept: Model<ConceptDocument>
   Reaction: Model<ReactionDocument>
   Collection: Model<CollectionDocument>
@@ -50,7 +48,6 @@ export const models: Database = {
   Follow,
   Task,
   Creation,
-  Upload,
   Concept,
   Reaction,
   Collection,
