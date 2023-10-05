@@ -676,7 +676,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
               name: 'image',
               label: '',
               maxLength: 1,
-              default: (character && character.image) || '',
+              default: (character && character.image?.uri) || '',
             }}
             key={'image'}
             acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
