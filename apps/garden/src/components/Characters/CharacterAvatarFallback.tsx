@@ -13,10 +13,13 @@ const CharacterAvatarFallback = ({
   name,
   size,
 }: {
-  id: string
+  id?: string
   name: string
   size?: 'small' | 'medium' | 'large' | 'auto' | undefined
 }) => {
+  if (!id) {
+    return null
+  }
   const gradientStartColor = stringToHslColor(id, 30, 50)
   const gradientEndColor = stringToHslColor(id, 50, 80)
 
