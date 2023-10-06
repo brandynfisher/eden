@@ -72,23 +72,6 @@ async function getImageDimensions(
   return [minW, minH, totalAspectRatio / images.length]
 }
 
-// async function getImageDimensions(images: any[]): Promise<[number, number, number]> {
-//   let minW = Number.POSITIVE_INFINITY
-//   let minH = Number.POSITIVE_INFINITY
-//   let totalAspectRatio = 0.0
-//   images.forEach(img => {
-//     // const { width, height } = img.mediaAttributes
-//     // open model from url and get width,height
-//     const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-//     const metadata = await sharp(response.data).metadata();
-
-//     minW = Math.min(minW, width)
-//     minH = Math.min(minH, height)
-//     totalAspectRatio += width / height
-//   })
-//   return [minW, minH, totalAspectRatio / images.length]
-// }
-
 function calculateTargetDimensions(
   minW: number,
   minH: number,
@@ -227,9 +210,10 @@ async function generateVideoSegment(
     console.log(audioBuffer)
     const { uri: audioUrl } = await uploadBufferAsset(server, audioBuffer)
     console.log('got audio', audioUrl)
-    // const faceUrl = "https://eden-creations-stg.s3.us-east-1.amazonaws.com/660cd177a16b6176a02d3b4b58ea74c7a4b89b769905f093d7fc43f639cc903d.png"
-    // const audioUrl = "https://minio.aws.abraham.fun/creations-stg/3a69700d2f9b8b9dd4c0effa366ac6bb41cb39bf06af92049b5be7bb5cc25f58.mp3"
-    // const audioUrl = "https://minio.aws.abraham.fun/creations-stg/3a69700d2f9b8b9dd4c0effa366ac6bb41cb39bf06af92049b5be7bb5cc25f58.mp3"
+    const faceUrl2 =
+      'https://eden-creations-stg.s3.us-east-1.amazonaws.com/660cd177a16b6176a02d3b4b58ea74c7a4b89b769905f093d7fc43f639cc903d.png'
+    const audioUrl2 =
+      'https://minio.aws.abraham.fun/creations-stg/3a69700d2f9b8b9dd4c0effa366ac6bb41cb39bf06af92049b5be7bb5cc25f58.mp3'
 
     // generate wav2lip
     if (!message.character.image) throw new Error('No image')
@@ -279,10 +263,11 @@ async function generateVideoSegment(
     return video
   } catch (error: any) {
     console.log('AN ERROR OCCURREDDDD')
-    return {
-      error:
-        error instanceof Error ? error.message : 'An unknown error occurred',
-    }
+    // return {
+    //   error:
+    //     error instanceof Error ? error.message : 'An unknown error occurred',
+    // }
+    throw error
   }
 }
 
@@ -397,10 +382,10 @@ const runTask = async (
 
       const videoUrls: string[] = []
 
-      // generate video segments in parallel, max 4 concurrently
+      // generate video segments in parallel, max 3 concurrently
       async.eachLimit(
         dialogue,
-        1,
+        3,
         (message: any, callback: any) => {
           generateVideoSegment(server, message, targetWidth, targetHeight)
             .then(videoSegment => {

@@ -451,8 +451,15 @@ export class ElevenLabs {
           console.log(error.response.data)
         }
 
+        console.log('ERROR RESPONSE CODE')
+        console.log(error.response.status)
+        console.log('---- ok -----')
+
         if (error.response && error.response.status === 429) {
           retries++
+          console.log(
+            `ElevenLabs rate limit hit. Retry attempt ${retries}. Waiting for 1 minute...`,
+          )
           console.error(
             `ElevenLabs rate limit hit. Retry attempt ${retries}. Waiting for 1 minute...`,
           )
