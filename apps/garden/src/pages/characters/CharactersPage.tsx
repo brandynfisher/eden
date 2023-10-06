@@ -72,10 +72,6 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
 const CharactersPage = ({ data }: { data: Character[] }) => {
   const { characters: charactersData } = useContext(UserContext)
 
-  if (!data) {
-    return null
-  }
-
   return <CharactersPageContent characters={charactersData || data} />
 }
 
