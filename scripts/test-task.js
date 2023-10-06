@@ -6,6 +6,7 @@ import axios from 'axios';
 import { promisify } from 'util';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 
@@ -86,4 +87,4 @@ async function generateMonologue() {
   }
 }
 
-generateMonologue();
+// generateMonologue();

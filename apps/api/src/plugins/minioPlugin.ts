@@ -165,7 +165,6 @@ export const uploadBufferAsset = async (
   console.log('upload to ', urlUpload)
 
   console.log('the whole config')
-  console.log(server.config)
   console.log('0-00-')
   try {
     await client.statObject(MINIO_BUCKET, filename)
