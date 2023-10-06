@@ -14,7 +14,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     await axios.post(
-      CONFIG.API_URL + '/creators/migrate',
+      CONFIG.API_URL + '/auth/migrate',
       {
         address,
         message,
