@@ -2,17 +2,52 @@ import * as Sentry from '@sentry/nextjs'
 import { Button } from 'antd'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { ErrorInfo, ReactNode } from 'react'
+import { NextRouter, useRouter, withRouter } from 'next/router'
+import React, {
+  Dispatch,
+  ErrorInfo,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react'
 
 interface State {
   hasError: boolean
 }
 
 interface Props {
-  children: ReactNode
+  hasError?: boolean
+  setHasError?: Dispatch<SetStateAction<boolean>>
+  children?: ReactNode
+  router?: NextRouter
 }
 
-class ErrorBoundary extends React.Component<Props, State> {
+function ErrorBoundary({ children }: Props) {
+  const [hasError, setHasError] = useState(false)
+  const router = useRouter()
+  useEffect(() => {
+    const handleRouteChange = () => {
+      if (hasError) {
+        console.log('resetting hasError to false')
+        setHasError(false)
+      }
+    }
+
+    router.events.on('routeChangeStart', handleRouteChange)
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange)
+    }
+  }, [router.pathname, hasError])
+  return (
+    <ErrorBoundaryInner hasError={hasError} setHasError={setHasError}>
+      {children}
+    </ErrorBoundaryInner>
+  )
+}
+
+class ErrorBoundaryInner extends React.Component<Props, State> {
   public state: State = {
     hasError: false,
   }
@@ -21,21 +56,23 @@ class ErrorBoundary extends React.Component<Props, State> {
     super(props)
   }
 
-  static getDerivedStateFromError() {
-    // Update state so the next render will show the fallback UI
+  static getDerivedStateFromError(): State {
     return { hasError: true }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // You can use your own error logging service here
     console.log({ error, errorInfo })
     Sentry.captureException(error)
   }
 
+  componentDidUpdate(prevProps: Props) {
+    if (!this.props.hasError && prevProps.hasError) {
+      this.setState({ hasError: false })
+    }
+  }
+
   render() {
-    // Check if the error is thrown
     if (this.state.hasError) {
-      // Render custom fallback UI
       return (
         <section className="block">
           <div className="px-5 md:px-10">
@@ -86,9 +123,8 @@ class ErrorBoundary extends React.Component<Props, State> {
       )
     }
 
-    // Return children components in case of no error
     return this.props.children
   }
 }
 
-export default ErrorBoundary
+export default withRouter(ErrorBoundary)

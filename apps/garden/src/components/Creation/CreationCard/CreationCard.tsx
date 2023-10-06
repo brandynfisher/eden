@@ -63,6 +63,10 @@ const CreationCard: FC<{
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
+  if (!creation.user) {
+    console.log(creation._id, creation.user)
+  }
+
   return (
     <div ref={ref} className="mx-auto max-w-[500px] md:mx-0 md:max-w-none">
       {creation.deleted ? (
