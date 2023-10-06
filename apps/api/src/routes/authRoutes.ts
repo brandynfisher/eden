@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { receiveUserUpdate } from '../controllers/auth/clerkController'
 import { web3login } from '../controllers/auth/web3Controller'
+import { migrateCreator } from '../controllers/tempController'
 
 const authRoutes: FastifyPluginAsync = async server => {
   server.post('/auth/login', {
@@ -22,7 +23,20 @@ const authRoutes: FastifyPluginAsync = async server => {
   })
   server.post('/auth/clerk/update', {
     handler: (request, reply) => receiveUserUpdate(server, request, reply),
-  })
+  }),
+    server.post('/auth/migrate', {
+      schema: {
+        body: Type.Object({
+          address: Type.String(),
+          message: Type.String(),
+          signature: Type.String(),
+        }),
+        response: {
+          200: Type.Object({}),
+        },
+      },
+      handler: (request, reply) => migrateCreator(request, reply),
+    })
 }
 
 export default authRoutes
