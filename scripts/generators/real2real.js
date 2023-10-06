@@ -116,7 +116,7 @@ const params = [
     label: 'Denoising skip fractions (very advanced)',
     description:
       'Fraction of denoising to skip at the start/end of the animation. Higher values result in smoother video (will also render faster), too high values will look more like crossfading in pixel space.',
-    default: [0.15, 0.65],
+    default: [0.1, 0.65],
     minLength: 2,
     maxLength: 2,
     optional: true,
@@ -179,7 +179,7 @@ const params = [
     label: 'Init image min strength',
     description:
       'Min strength of the init_img during interpolation. Lower values will give the interpolation more freedom, leading to more visual changes at the cost of less smoothness',
-    default: 0.1,
+    default: 0.0,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
@@ -190,7 +190,7 @@ const params = [
     label: 'Init image max strength',
     description:
       'Max strength of the init_img during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
-    default: 0.9,
+    default: 0.95,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
