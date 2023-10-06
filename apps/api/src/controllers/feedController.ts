@@ -105,9 +105,10 @@ export const getCreationsFeed = async (
   })
 
   const ownUserId = request.user ? request.user.userId : undefined
-  const creatorId = creators.docs
-    ? creators.docs.map(creator => creator._id)[0].toString()
-    : undefined
+  const creatorId =
+    creators.docs && creators.docs.length
+      ? creators.docs.map(creator => creator._id)[0].toString()
+      : undefined
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId
 
@@ -260,9 +261,10 @@ export const getConceptsFeed = async (
   })
 
   const ownUserId = request.user ? request.user.userId : undefined
-  const creatorId = creators.docs
-    ? creators.docs.map(creator => creator._id)[0].toString()
-    : undefined
+  const creatorId =
+    creators.docs && creators.docs.length
+      ? creators.docs.map(creator => creator._id)[0].toString()
+      : undefined
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId
 
