@@ -30,8 +30,8 @@ export const getServerSideProps = getServerSidePropsBase(
   true,
 )
 
-const createCharacters: Page<PageProps> = ({ data }: PageProps) => {
-  return <CharactersPage data={data} />
+const createCharacters: Page<PageProps> = () => {
+  return <CharactersPage />
 }
 
 export default createCharacters
