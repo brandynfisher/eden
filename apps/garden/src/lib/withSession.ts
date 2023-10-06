@@ -1,4 +1,3 @@
-import { IronSessionData } from 'iron-session'
 import { withIronSessionApiRoute, withIronSessionSsr } from 'iron-session/next'
 import {
   GetServerSidePropsContext,
@@ -10,12 +9,6 @@ declare module 'iron-session' {
   interface IronSessionData {
     token?: string
     address?: string
-  }
-}
-
-declare module 'next' {
-  interface NextApiRequest {
-    session: IronSessionData
   }
 }
 

@@ -19,6 +19,12 @@ import {
   getReactions as getCreationReactions,
 } from './creationsController'
 
+interface CustomFastifyRequest extends FastifyRequest {
+  user?: {
+    userId: string
+  }
+}
+
 interface FeedGetArguments {
   userId?: string
   collectionId?: string
@@ -88,7 +94,7 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
 }
 
 export const getCreationsFeed = async (
-  request: FastifyRequest,
+  request: CustomFastifyRequest,
   reply: FastifyReply,
 ) => {
   const {
@@ -106,7 +112,7 @@ export const getCreationsFeed = async (
 
   const ownUserId = request.user ? request.user.userId : undefined
   const creatorId =
-    creators.docs && creators.docs.length
+    filterUserIds && creators.docs && creators.docs.length
       ? creators.docs.map(creator => creator._id)[0].toString()
       : undefined
   const isUserRequestingOwnProfileFeed =
@@ -117,7 +123,9 @@ export const getCreationsFeed = async (
 
   if (orderBy === 'following' && ownUserId) {
     const followCreationRepository = new CreationRepository(Follow) //@todo: this reads rather wonky
-    const followAggregate = aggregateCreationsByFollowerId(ownUserId)
+    const followAggregate = aggregateCreationsByFollowerId(
+      new ObjectId(ownUserId),
+    )
 
     creations = await followCreationRepository.aggregateQuery(followAggregate, {
       limit,
@@ -245,7 +253,7 @@ export const getCreationsFeed = async (
 }
 
 export const getConceptsFeed = async (
-  request: FastifyRequest,
+  request: CustomFastifyRequest,
   reply: FastifyReply,
 ) => {
   const {
@@ -262,7 +270,7 @@ export const getConceptsFeed = async (
 
   const ownUserId = request.user ? request.user.userId : undefined
   const creatorId =
-    creators.docs && creators.docs.length
+    filterUserIds && creators.docs && creators.docs.length
       ? creators.docs.map(creator => creator._id)[0].toString()
       : undefined
   const isUserRequestingOwnProfileFeed =
@@ -279,6 +287,14 @@ export const getConceptsFeed = async (
   if (orderBy !== 'createdAt') {
     sort.push(['createdAt', -1])
   }
+
+  console.log({
+    isUserRequestingOwnProfileFeed,
+    creators,
+    creatorId,
+    ownUserId,
+    filterUserIds,
+  })
 
   if (!isUserRequestingOwnProfileFeed) {
     sortFilter['isPrivate'] = { $ne: true }

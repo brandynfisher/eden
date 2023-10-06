@@ -98,7 +98,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
               {concept.isPrivate ? (
                 <div
                   className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
-                    hovered ? 'top-12' : ''
+                    hovered ? '!hidden' : ''
                   }`}
                 >
                   <LockIcon fontSize="small" className="text-white" />
