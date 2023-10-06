@@ -8,10 +8,10 @@ import sharp from 'sharp'
 import tmp from 'tmp'
 
 import { Character } from '../../models/Character'
-import {
-  uploadBufferAsset,
-  uploadThumbnailAsset,
-} from '../../plugins/minioPlugin'
+// import {
+//   uploadBufferAsset,
+//   uploadThumbnailAsset,
+// } from '../../plugins/minioPlugin'
 // import {
 //   uploadBufferAsset,
 //   uploadThumbnailAsset,
@@ -213,7 +213,10 @@ async function generateVideoSegment(
     console.log('got audio buffer', message.message.slice(0, 20))
     console.log(audioBuffer, message.message.slice(0, 20))
     console.log('upload audio Buffer to minio', message.message.slice(0, 20))
-    const { uri: audioUrl } = await uploadBufferAsset(server, audioBuffer)
+    const { uri: audioUrl } = await server.uploadBufferAsset(
+      server,
+      audioBuffer,
+    )
     console.log('got audio from minio', audioUrl, message.message.slice(0, 20))
     const faceUrl2 =
       'https://eden-creations-stg.s3.us-east-1.amazonaws.com/660cd177a16b6176a02d3b4b58ea74c7a4b89b769905f093d7fc43f639cc903d.png'
@@ -329,7 +332,7 @@ const runTask = async (
 
       console.log(videoUrl)
       const videoBuffer = await downloadBuffer(videoUrl)
-      const { uri } = await uploadBufferAsset(server, videoBuffer)
+      const { uri } = await server.uploadBufferAsset(server, videoBuffer)
 
       const output_final = {
         files: [uri],
@@ -385,39 +388,42 @@ const runTask = async (
 
       console.log('received', avgAspectRatio, targetWidth, targetHeight)
 
-      const videoUrls: string[] = []
-
-      // generate video segments in parallel, max 3 concurrently
-      await new Promise<void>((resolve, reject) => {
-        async.eachLimit(
-          dialogue,
-          3,
-          (message: any, callback: any) => {
-            generateVideoSegment(server, message, targetWidth, targetHeight)
-              .then(videoSegment => {
-                videoUrls.push(videoSegment)
-                callback()
-              })
-              .catch(error => {
-                callback(error)
-              })
-          },
-          (error: unknown) => {
-            if (error) {
-              console.error('A video segment failed to process', error)
-              reject(new Error(`Error occurred in generating video: ${error}`))
-            } else {
-              resolve()
-            }
-          },
-        )
-      })
+      const videoUrls: string[] = await new Promise<string[]>(
+        (resolve, reject) => {
+          async.mapLimit(
+            dialogue,
+            3,
+            (message: any, callback: any) => {
+              generateVideoSegment(server, message, targetWidth, targetHeight)
+                .then(videoSegment => {
+                  callback(null, videoSegment)
+                })
+                .catch(error => {
+                  callback(error)
+                })
+            },
+            (error: unknown, results: (string | undefined)[] | undefined) => {
+              if (error) {
+                console.error('A video segment failed to process', error)
+                reject(
+                  new Error(`Error occurred in generating video: ${error}`),
+                )
+              } else {
+                resolve(results as string[]) // Add type assertion here
+              }
+            },
+          )
+        },
+      )
 
       // If all video segments are successfully generated, the code reaches here
       const videoPath = await concatenateVideos(videoUrls)
       const videoFile = fs.readFileSync(videoPath as string)
       const videoBuffer = Buffer.from(videoFile)
-      const { uri: outputUri } = await uploadBufferAsset(server, videoBuffer)
+      const { uri: outputUri } = await server.uploadBufferAsset(
+        server,
+        videoBuffer,
+      )
       fs.unlinkSync(videoPath as string)
 
       // generate thumbnail
@@ -427,7 +433,10 @@ const runTask = async (
         targetWidth,
         targetHeight,
       )
-      const thumbnailUri = await uploadThumbnailAsset(server, thumbnailImage)
+      const thumbnailUri = await server.uploadThumbnailAsset(
+        server,
+        thumbnailImage,
+      )
 
       // send final update
       const output_final = {
