@@ -450,6 +450,7 @@ const runTask = async (
       )
     }
   } catch (error: any) {
+    console.log('FINALLY THIS ERROR HAPPENED FOR', task.id)
     const errorMessage =
       error instanceof Error ? error.message : 'An unknown error occurred'
 
@@ -460,6 +461,10 @@ const runTask = async (
       output: null,
       error: errorMessage,
     }
+
+    console.log(' =======444444======= ===444444=====')
+    console.log(update)
+    console.log(' =======444444======= ===444444=====')
 
     await receiveTaskUpdate(server, update)
   }

@@ -154,8 +154,19 @@ export const uploadBufferAsset = async (
   console.log('mine', ext, mime)
   const metadata = { 'Content-Type': mime, SHA: sha }
   const filename = `${sha}.${fileExtension || ext}`
+  //const urlUpload = minioUrl(server, filename)
   const urlUpload = minioUrl(server, filename)
+
+  const minioIS = server.config.MINIO_URI as string
+  console.log('minio is', minioIS)
+  const minioSB = `https://minio.aws.abraham.fun/creations-stg/${filename}`
+  console.log('should be', minioSB)
+
   console.log('upload to ', urlUpload)
+
+  console.log('the whole config')
+  console.log(server.config)
+  console.log('0-00-')
   try {
     await client.statObject(MINIO_BUCKET, filename)
     console.log(
@@ -168,6 +179,7 @@ export const uploadBufferAsset = async (
     console.log(' ----> yay done', buffer)
   }
   const mediaAttributes = await getMediaAttributes(buffer, ext)
+  console.log('got mediaAttributes', mediaAttributes)
 
   return {
     uri: urlUpload,
