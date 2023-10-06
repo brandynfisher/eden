@@ -32,17 +32,12 @@
     "vitest-mongodb": "^0.0.4"
   },
   "lint-staged": {
-    "apps/api/**/*.{ts,tsx}": [
-      "tsc-files -p apps/api/tsconfig.json --noEmit",
-      "prettier --write",
-      "eslint --fix"
-    ],
     "apps/garden/**/*.{ts,tsx}": [
       "tsc-files -p apps/garden/tsconfig.lint.json --noEmit",
       "prettier --write",
       "eslint --fix"
     ],
-    "apps/(embedder|task-runner)/**/*.{ts,tsx}": [
+    "apps/(api|embedder|task-runner)/**/*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
     ],
