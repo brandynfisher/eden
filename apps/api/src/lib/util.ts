@@ -24,7 +24,7 @@ export const getAdminHeaders = (server: FastifyInstance) => {
 
 export async function downloadBuffer(url: string): Promise<Buffer> {
   console.log('downloading buffer')
-  console.log(' -->', url)
+  console.log(' -->', url, 'url')
   try {
     const response = await axios({
       method: 'GET',
@@ -40,7 +40,7 @@ export async function downloadBuffer(url: string): Promise<Buffer> {
 
 export async function downloadFile(url: string, path: string) {
   console.log('downloading file')
-  console.log(' -->', url)
+  console.log(' -->', url, 'url')
   console.log(' ---->', path)
   try {
     const buffer = await downloadBuffer(url)

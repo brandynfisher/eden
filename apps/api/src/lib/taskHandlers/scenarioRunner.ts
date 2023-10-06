@@ -220,16 +220,32 @@ async function generateVideoSegment(
     const voiceId = message.character.voice || 'EXAVITQu4vr4xnSDxMaL'
     const audioBuffer = await elevenLabs.runTask(voiceId, message.message)
     const { uri: audioUrl } = await uploadBufferAsset(server, audioBuffer)
+    console.log('download audio', audioUrl)
+    // const faceUrl = "https://eden-creations-stg.s3.us-east-1.amazonaws.com/660cd177a16b6176a02d3b4b58ea74c7a4b89b769905f093d7fc43f639cc903d.png"
+    // const audioUrl = "https://minio.aws.abraham.fun/creations-stg/3a69700d2f9b8b9dd4c0effa366ac6bb41cb39bf06af92049b5be7bb5cc25f58.mp3"
     // const audioUrl = "https://minio.aws.abraham.fun/creations-stg/3a69700d2f9b8b9dd4c0effa366ac6bb41cb39bf06af92049b5be7bb5cc25f58.mp3"
 
     // generate wav2lip
     if (!message.character.image) throw new Error('No image')
     const faceUrl = message.character.image
+    console.log('face url', faceUrl)
 
     console.log('===== OK ====')
     console.log(faceUrl, audioUrl)
 
     const model = await replicate.models.get('abraham-ai/character')
+
+    console.log(' ---- task -----')
+    console.log(model.modelDetails.id, {
+      mode: 'wav2lip',
+      face_url: faceUrl,
+      speech_url: audioUrl,
+      gfpgan: false,
+      gfpgan_upscale: 1,
+      width: targetWidth,
+      height: targetHeight,
+    })
+
     const prediction = await model.replicate.startPrediction(
       model.modelDetails.id,
       {
@@ -243,17 +259,6 @@ async function generateVideoSegment(
       },
     )
 
-    console.log(' ---- task -----')
-    console.log(model.modelDetails.id, {
-      mode: 'wav2lip',
-      face_url: faceUrl,
-      speech_url: audioUrl,
-      gfpgan: false,
-      gfpgan_upscale: 1,
-      width: targetWidth,
-      height: targetHeight,
-    })
-
     const video = await pollForTask(model, prediction.id)
 
     console.log('===== OK ====')
@@ -263,8 +268,11 @@ async function generateVideoSegment(
       throw new Error('Video array is empty or has more than one element')
     }
 
+    console.log('finally return:', video)
+
     return video
   } catch (error: any) {
+    console.log('AN ERROR OCCURREDDDD')
     return {
       error:
         error instanceof Error ? error.message : 'An unknown error occurred',
@@ -404,7 +412,7 @@ const runTask = async (
           } else {
             // composite final video together
 
-            console.log('the video urls', videoUrls)
+            console.log('the video urls here:', videoUrls)
 
             const videoPath = await concatenateVideos(videoUrls)
             const videoFile = fs.readFileSync(videoPath as string)
