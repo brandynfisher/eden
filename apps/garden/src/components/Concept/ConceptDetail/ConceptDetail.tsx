@@ -86,6 +86,7 @@ const ConceptDetail = ({
     thumbnail: '',
     aspectRatio: 100,
   })
+
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
