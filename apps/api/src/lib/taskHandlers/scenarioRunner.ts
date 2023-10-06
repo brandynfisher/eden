@@ -221,8 +221,10 @@ async function generateVideoSegment(
     const voiceId = message.character.voice || 'EXAVITQu4vr4xnSDxMaL'
     console.log('gen video segment 3---')
     console.log(message.message)
+    console.log('go audio')
     const audioBuffer = await elevenLabs.runTask(voiceId, message.message)
     console.log('got audio buffer')
+    console.log(audioBuffer)
     const { uri: audioUrl } = await uploadBufferAsset(server, audioBuffer)
     console.log('got audio', audioUrl)
     // const faceUrl = "https://eden-creations-stg.s3.us-east-1.amazonaws.com/660cd177a16b6176a02d3b4b58ea74c7a4b89b769905f093d7fc43f639cc903d.png"

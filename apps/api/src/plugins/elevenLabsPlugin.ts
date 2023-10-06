@@ -430,7 +430,9 @@ export class ElevenLabs {
     let retries = 0
     while (retries < maxRetries) {
       try {
-        console.log('run 11')
+        console.log('run 11', voice)
+        console.log(text)
+        console.log(this.headers)
         const speechDetails = await axios.request({
           method: 'POST',
           url: `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
@@ -438,8 +440,10 @@ export class ElevenLabs {
           data: { text },
           responseType: 'arraybuffer',
         })
+        console.log('run 12')
         return speechDetails.data
       } catch (error: any) {
+        console.log('error 1')
         if (error.response && error.response.status === 429) {
           retries++
           console.error(
@@ -447,6 +451,7 @@ export class ElevenLabs {
           )
           await new Promise(resolve => setTimeout(resolve, retryDelay))
         } else {
+          console.log(' ===> erropr <===== ')
           throw error
         }
       }
