@@ -430,6 +430,7 @@ export class ElevenLabs {
     let retries = 0
     while (retries < maxRetries) {
       try {
+        console.log('run 11')
         const speechDetails = await axios.request({
           method: 'POST',
           url: `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,

@@ -210,17 +210,21 @@ async function generateVideoSegment(
   targetHeight?: number,
 ) {
   try {
-    console.log('gen video segment---')
+    console.log('gen video segment 1---')
     const { elevenLabs, replicate } = server
 
     if (!elevenLabs) throw new Error('Elevenlabs not initialized')
     if (!replicate) throw new Error('Replicate not initialized')
 
+    console.log('gen video segment 2---')
     // generate text-to-speech
     const voiceId = message.character.voice || 'EXAVITQu4vr4xnSDxMaL'
+    console.log('gen video segment 3---')
+    console.log(message.message)
     const audioBuffer = await elevenLabs.runTask(voiceId, message.message)
+    console.log('got audio buffer')
     const { uri: audioUrl } = await uploadBufferAsset(server, audioBuffer)
-    console.log('download audio', audioUrl)
+    console.log('got audio', audioUrl)
     // const faceUrl = "https://eden-creations-stg.s3.us-east-1.amazonaws.com/660cd177a16b6176a02d3b4b58ea74c7a4b89b769905f093d7fc43f639cc903d.png"
     // const audioUrl = "https://minio.aws.abraham.fun/creations-stg/3a69700d2f9b8b9dd4c0effa366ac6bb41cb39bf06af92049b5be7bb5cc25f58.mp3"
     // const audioUrl = "https://minio.aws.abraham.fun/creations-stg/3a69700d2f9b8b9dd4c0effa366ac6bb41cb39bf06af92049b5be7bb5cc25f58.mp3"
