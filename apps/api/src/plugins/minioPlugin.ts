@@ -140,24 +140,32 @@ export const uploadBufferAsset = async (
   buffer: Buffer,
   fileExtension: string | null = null,
 ): Promise<{ uri: string; mediaAttributes: MediaAttributes }> => {
+  console.log('let us upload this buffer')
+  console.log(buffer)
   const client = server.minio as MinioClient
   const MINIO_BUCKET = server.config.MINIO_BUCKET as string
   const sha = util.sha256(buffer)
+  console.log('got sha', sha)
   const fileType = await fileTypeFromBuffer(buffer)
+  console.log('got fileType', fileType)
   const { ext, mime } = fileType
     ? (fileType as { ext: string; mime: string })
     : { ext: 'txt', mime: 'text/plain' }
+  console.log('mine', ext, mime)
   const metadata = { 'Content-Type': mime, SHA: sha }
   const filename = `${sha}.${fileExtension || ext}`
   const urlUpload = minioUrl(server, filename)
+  console.log('upload to ', urlUpload)
   try {
     await client.statObject(MINIO_BUCKET, filename)
     console.log(
       ` --> Object ${filename} already exists in ${MINIO_BUCKET}, skipping upload`,
     )
   } catch (error) {
+    console.log(' ---> uploading buffer ', filename, metadata, buffer)
     await client.putObject(MINIO_BUCKET, filename, buffer, metadata)
     console.log(` --> Uploaded to ${urlUpload}`)
+    console.log(' ----> yay done', buffer)
   }
   const mediaAttributes = await getMediaAttributes(buffer, ext)
 

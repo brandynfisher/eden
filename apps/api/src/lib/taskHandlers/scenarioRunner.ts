@@ -193,23 +193,24 @@ async function generateVideoSegment(
   targetHeight?: number,
 ) {
   try {
-    console.log('gen video segment 1---')
+    console.log('gen video segment 1---', message.message.slice(0, 20))
     const { elevenLabs, replicate } = server
 
     if (!elevenLabs) throw new Error('Elevenlabs not initialized')
     if (!replicate) throw new Error('Replicate not initialized')
 
-    console.log('gen video segment 2---')
+    console.log('gen video segment 2---', message.message.slice(0, 20))
     // generate text-to-speech
     const voiceId = message.character.voice || 'EXAVITQu4vr4xnSDxMaL'
-    console.log('gen video segment 3---')
+    console.log('gen video segment 3---', message.message.slice(0, 20))
     console.log(message.message)
-    console.log('go audio')
+    console.log('go audio', message.message.slice(0, 20))
     const audioBuffer = await elevenLabs.runTask(voiceId, message.message)
-    console.log('got audio buffer')
-    console.log(audioBuffer)
+    console.log('got audio buffer', message.message.slice(0, 20))
+    console.log(audioBuffer, message.message.slice(0, 20))
+    console.log('upload audio Buffer to minio', message.message.slice(0, 20))
     const { uri: audioUrl } = await uploadBufferAsset(server, audioBuffer)
-    console.log('got audio', audioUrl)
+    console.log('got audio from minio', audioUrl, message.message.slice(0, 20))
     const faceUrl2 =
       'https://eden-creations-stg.s3.us-east-1.amazonaws.com/660cd177a16b6176a02d3b4b58ea74c7a4b89b769905f093d7fc43f639cc903d.png'
     const audioUrl2 =
@@ -385,7 +386,7 @@ const runTask = async (
       // generate video segments in parallel, max 3 concurrently
       async.eachLimit(
         dialogue,
-        3,
+        1,
         (message: any, callback: any) => {
           generateVideoSegment(server, message, targetWidth, targetHeight)
             .then(videoSegment => {
