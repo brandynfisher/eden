@@ -12,6 +12,10 @@ import {
   uploadBufferAsset,
   uploadThumbnailAsset,
 } from '../../plugins/minioPlugin'
+// import {
+//   uploadBufferAsset,
+//   uploadThumbnailAsset,
+// } from '../../plugins/s3Plugin'
 import { downloadBuffer, downloadFile, randomId } from '../util'
 import { receiveTaskUpdate } from './edenHandlers'
 
@@ -384,70 +388,65 @@ const runTask = async (
       const videoUrls: string[] = []
 
       // generate video segments in parallel, max 3 concurrently
-      async.eachLimit(
-        dialogue,
-        1,
-        (message: any, callback: any) => {
-          generateVideoSegment(server, message, targetWidth, targetHeight)
-            .then(videoSegment => {
-              videoUrls.push(videoSegment)
-              callback()
-            })
-            .catch(error => {
-              callback(error)
-            })
-        },
-        async (error: unknown) => {
-          if (error) {
-            console.error('A video segment failed to process', error)
-            throw new Error(`Error occurred in generating video: ${error}`)
-          } else {
-            // composite final video together
-
-            console.log('the video urls here:', videoUrls)
-
-            const videoPath = await concatenateVideos(videoUrls)
-            const videoFile = fs.readFileSync(videoPath as string)
-            const videoBuffer = Buffer.from(videoFile)
-            const { uri: outputUri } = await uploadBufferAsset(
-              server,
-              videoBuffer,
-            )
-            fs.unlinkSync(videoPath as string)
-
-            // generate thumbnail
-            const thumbnailImage = await createDialogueThumbnail(
-              character1.image!,
-              character2.image!,
-              targetWidth,
-              targetHeight,
-            )
-            const thumbnailUri = await uploadThumbnailAsset(
-              server,
-              thumbnailImage,
-            )
-
-            // send final update
-            const output_final = {
-              files: [outputUri],
-              thumbnails: [thumbnailUri],
-              name: config.prompt,
-              progress: 1.0,
-              isFinal: true,
+      await new Promise<void>((resolve, reject) => {
+        async.eachLimit(
+          dialogue,
+          3,
+          (message: any, callback: any) => {
+            generateVideoSegment(server, message, targetWidth, targetHeight)
+              .then(videoSegment => {
+                videoUrls.push(videoSegment)
+                callback()
+              })
+              .catch(error => {
+                callback(error)
+              })
+          },
+          (error: unknown) => {
+            if (error) {
+              console.error('A video segment failed to process', error)
+              reject(new Error(`Error occurred in generating video: ${error}`))
+            } else {
+              resolve()
             }
+          },
+        )
+      })
 
-            const update = {
-              id: task.id,
-              status: 'succeeded',
-              progress: 1,
-              output: output_final,
-              error: null,
-            }
+      // If all video segments are successfully generated, the code reaches here
+      const videoPath = await concatenateVideos(videoUrls)
+      const videoFile = fs.readFileSync(videoPath as string)
+      const videoBuffer = Buffer.from(videoFile)
+      const { uri: outputUri } = await uploadBufferAsset(server, videoBuffer)
+      fs.unlinkSync(videoPath as string)
 
-            await receiveTaskUpdate(server, update)
-          }
-        },
+      // generate thumbnail
+      const thumbnailImage = await createDialogueThumbnail(
+        character1.image!,
+        character2.image!,
+        targetWidth,
+        targetHeight,
       )
+      const thumbnailUri = await uploadThumbnailAsset(server, thumbnailImage)
+
+      // send final update
+      const output_final = {
+        files: [outputUri],
+        thumbnails: [thumbnailUri],
+        name: config.prompt,
+        progress: 1.0,
+        isFinal: true,
+      }
+
+      const update = {
+        id: task.id,
+        status: 'succeeded',
+        progress: 1,
+        output: output_final,
+        error: null,
+      }
+
+      await receiveTaskUpdate(server, update)
     }
   } catch (error: any) {
     console.log('FINALLY THIS ERROR HAPPENED FOR', task.id)
