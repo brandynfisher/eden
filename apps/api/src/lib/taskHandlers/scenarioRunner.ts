@@ -400,7 +400,7 @@ const runTask = async (
       // generate video segments in parallel, max 4 concurrently
       async.eachLimit(
         dialogue,
-        4,
+        1,
         (message: any, callback: any) => {
           generateVideoSegment(server, message, targetWidth, targetHeight)
             .then(videoSegment => {

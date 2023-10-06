@@ -444,6 +444,13 @@ export class ElevenLabs {
         return speechDetails.data
       } catch (error: any) {
         console.log('error 1')
+        console.log('the exact error message is')
+        console.log(error.message)
+        console.log(error)
+        if (error.response) {
+          console.log(error.response.data)
+        }
+
         if (error.response && error.response.status === 429) {
           retries++
           console.error(
