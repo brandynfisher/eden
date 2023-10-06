@@ -1,6 +1,7 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
 import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
 import FormLabel from '@/components/Forms/FormLabel'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCharacters } from '@/hooks/useCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
@@ -12,6 +13,7 @@ import { useViewportSize } from '@mantine/hooks'
 import { debounce } from '@mui/material'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import React, {
   useCallback,
@@ -21,6 +23,13 @@ import React, {
   useRef,
   useState,
 } from 'react'
+
+const CreateMenu = dynamic(
+  () => import('@/components/Layout/navigation/CreateMenu'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const DialogueScenarioPageContent = ({
   characters,
@@ -140,123 +149,130 @@ const DialogueScenarioPageContent = ({
   }, [activeCharacters])
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div>
-        <h2 className="mb-4">Scenario: Dialogue</h2>
-        <div>
-          <label htmlFor="character-select">
-            Select {MAX_ACTIVE_CHARACTERS} characters:
-          </label>
-          <div className="w-full flex flex-col mt-2 mb-4 gap-2">
-            {activeCharacters.map((activeCharacter, index) => (
-              <Select
-                key={`${activeCharacter ? activeCharacter.name : ''}_${index}`}
-                id="character-select"
-                value={activeCharacter ? activeCharacter.name : null}
-                onChange={newValue =>
-                  handleActiveCharacterChange(index, newValue)
-                }
-              >
-                {characters &&
-                  characters.length &&
-                  characters.map(character => (
-                    <Select.Option key={character.id} value={character.name}>
-                      {character.name}
-                    </Select.Option>
-                  ))}
-              </Select>
-            ))}
-          </div>
+    <>
+      <CreateMenu />
 
-          {isRequirementsMet ? (
-            <Form
-              form={form}
-              name="CharacterForm"
-              onFinish={handleSubmit}
-              onFieldsChange={debouncedHandleFormFieldsChange}
-              scrollToFirstError={true}
-            >
-              <Card
-                type="inner"
-                title={
-                  <div className="py-4">
-                    <h3>Generate Dialogue</h3>
-                    <span style={{ color: 'gray' }}>
-                      Uses two characters to generate an animated dialogue in
-                      response to a prompt
-                    </span>
-                  </div>
-                }
-                actions={[
-                  <div
-                    key={1}
-                    className="flex px-6 items-center justify-between flex-wrap"
-                  >
-                    <div className="flex gap-3 items-center">
-                      {isLoadingTaskCost === false && !canAffordOperation ? (
-                        <div className="text-orange-500">
-                          Insufficient Manna! ({mannaBalance}){' '}
-                          <Link href="/manna">Click here to get more</Link>
-                        </div>
-                      ) : (
-                        <Button
-                          type="primary"
-                          icon={<ExperimentOutlined />}
-                          htmlType="submit"
-                          size="large"
-                          className="font-mono capitalize"
-                          loading={isSubmitting ? { delay: 250 } : false}
-                          disabled={
-                            isSubmitting ||
-                            !isFormTouched ||
-                            !canAffordOperation
-                          }
-                        >
-                          Submit
-                        </Button>
-                      )}
-                      <MannaCostEstimate
-                        isLoading={!!isLoadingTaskCost}
-                        cost={taskCost || 'n/a'}
-                      />
-                    </div>
-                  </div>,
-                ]}
-              >
-                <Form.Item
-                  label={
-                    <FormLabel
-                      text="Prompt"
-                      description="Prompt which your characters should talk about"
-                    />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <h2 className="mb-4">Scenario: Dialogue</h2>
+          <div>
+            <label htmlFor="character-select">
+              Select {MAX_ACTIVE_CHARACTERS} characters:
+            </label>
+            <div className="w-full flex flex-col mt-2 mb-4 gap-2">
+              {activeCharacters.map((activeCharacter, index) => (
+                <Select
+                  key={`${
+                    activeCharacter ? activeCharacter.name : ''
+                  }_${index}`}
+                  id="character-select"
+                  value={activeCharacter ? activeCharacter.name : null}
+                  onChange={newValue =>
+                    handleActiveCharacterChange(index, newValue)
                   }
-                  className="label-auto-height"
-                  labelCol={{ span: 24 }}
-                  name="prompt"
-                  rules={[
-                    { required: true, message: 'Please input a prompt!' },
-                    {
-                      min: 1,
-                      max: 1000,
-                      message: 'Prompt must be between 1 and 1000 characters!',
-                    },
+                >
+                  {characters &&
+                    characters.length &&
+                    characters.map(character => (
+                      <Select.Option key={character.id} value={character.name}>
+                        {character.name}
+                      </Select.Option>
+                    ))}
+                </Select>
+              ))}
+            </div>
+
+            {isRequirementsMet ? (
+              <Form
+                form={form}
+                name="CharacterForm"
+                onFinish={handleSubmit}
+                onFieldsChange={debouncedHandleFormFieldsChange}
+                scrollToFirstError={true}
+              >
+                <Card
+                  type="inner"
+                  title={
+                    <div className="py-4">
+                      <h3>Generate Dialogue</h3>
+                      <span style={{ color: 'gray' }}>
+                        Uses two characters to generate an animated dialogue in
+                        response to a prompt
+                      </span>
+                    </div>
+                  }
+                  actions={[
+                    <div
+                      key={1}
+                      className="flex px-6 items-center justify-between flex-wrap"
+                    >
+                      <div className="flex gap-3 items-center">
+                        {isLoadingTaskCost === false && !canAffordOperation ? (
+                          <div className="text-orange-500">
+                            Insufficient Manna! ({mannaBalance}){' '}
+                            <Link href="/manna">Click here to get more</Link>
+                          </div>
+                        ) : (
+                          <Button
+                            type="primary"
+                            icon={<ExperimentOutlined />}
+                            htmlType="submit"
+                            size="large"
+                            className="font-mono capitalize"
+                            loading={isSubmitting ? { delay: 250 } : false}
+                            disabled={
+                              isSubmitting ||
+                              !isFormTouched ||
+                              !canAffordOperation
+                            }
+                          >
+                            Submit
+                          </Button>
+                        )}
+                        <MannaCostEstimate
+                          isLoading={!!isLoadingTaskCost}
+                          cost={taskCost || 'n/a'}
+                        />
+                      </div>
+                    </div>,
                   ]}
                 >
-                  <Input.TextArea autoSize />
-                </Form.Item>
-              </Card>
-            </Form>
-          ) : null}
+                  <Form.Item
+                    label={
+                      <FormLabel
+                        text="Prompt"
+                        description="Prompt which your characters should talk about"
+                      />
+                    }
+                    className="label-auto-height"
+                    labelCol={{ span: 24 }}
+                    name="prompt"
+                    rules={[
+                      { required: true, message: 'Please input a prompt!' },
+                      {
+                        min: 1,
+                        max: 1000,
+                        message:
+                          'Prompt must be between 1 and 1000 characters!',
+                      },
+                    ]}
+                  >
+                    <Input.TextArea autoSize />
+                  </Form.Item>
+                </Card>
+              </Form>
+            ) : null}
+          </div>
+        </div>
+        <div>
+          {isRequirementsMet ? (
+            <ResultPreview innerRef={resultPreviewRef} />
+          ) : (
+            <div>Choose characters to proceed</div>
+          )}
         </div>
       </div>
-      <div>
-        {isRequirementsMet ? (
-          <ResultPreview innerRef={resultPreviewRef} />
-        ) : (
-          <div>Choose characters to proceed</div>
-        )}
-      </div>
-    </div>
+    </>
   )
 }
 

@@ -19,12 +19,6 @@ import {
   getReactions as getCreationReactions,
 } from './creationsController'
 
-interface CustomFastifyRequest extends FastifyRequest {
-  user?: {
-    userId: string
-  }
-}
-
 interface FeedGetArguments {
   userId?: string
   collectionId?: string
@@ -94,7 +88,7 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
 }
 
 export const getCreationsFeed = async (
-  request: CustomFastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const {
@@ -253,7 +247,7 @@ export const getCreationsFeed = async (
 }
 
 export const getConceptsFeed = async (
-  request: CustomFastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const {
