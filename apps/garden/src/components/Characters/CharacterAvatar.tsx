@@ -32,7 +32,7 @@ const CharacterAvatar = ({
           alt={`${name}'s Avatar`}
           width={90}
           height={90}
-          style={{ maxWidth: '100%', maxHeight: '100%' }}
+          style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
         />
       ) : (
         <CharacterAvatarFallback id={id} name={name} size={size} />
