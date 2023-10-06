@@ -23,7 +23,11 @@ const CharacterList = dynamic(
   },
 )
 
-const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
+const CharactersPageContent = ({
+  characters,
+}: {
+  characters?: Character[]
+}) => {
   const router = useRouter()
   const { message } = App.useApp()
   const { isAuthenticated, authenticate } = useContext(UserContext)
@@ -40,6 +44,10 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
     } else {
       await router.push('/create/characters/new')
     }
+  }
+
+  if (!characters) {
+    return <LoadingIndicator />
   }
 
   return (
@@ -69,10 +77,10 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
   )
 }
 
-const CharactersPage = ({ data }: { data: Character[] }) => {
+const CharactersPage = () => {
   const { characters: charactersData } = useContext(UserContext)
 
-  return <CharactersPageContent characters={charactersData || data} />
+  return <CharactersPageContent characters={charactersData} />
 }
 
 export default CharactersPage

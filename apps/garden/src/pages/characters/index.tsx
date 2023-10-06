@@ -33,8 +33,8 @@ export const getServerSideProps = getServerSidePropsBase(
   true,
 )
 
-const characters: Page<PageProps> = ({ data }: PageProps) => {
-  return <CharactersPage data={data} />
+const characters: Page<PageProps> = () => {
+  return <CharactersPage />
 }
 
 export default characters
