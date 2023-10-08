@@ -54,7 +54,7 @@ const FollowControls = ({
     if (isFollowingUser) {
       try {
         await axios.post(`/api/creators/unfollow`, {
-          userId: userId,
+          userId: creatorId,
         })
         setFollowerCount(followerCount - 1)
         setIsFollowingUser(!isFollowingUser)
@@ -64,7 +64,7 @@ const FollowControls = ({
     } else {
       try {
         await axios.post(`/api/creators/follow`, {
-          userId: userId,
+          userId: creatorId,
         })
         setFollowerCount(followerCount + 1)
         setIsFollowingUser(!isFollowingUser)

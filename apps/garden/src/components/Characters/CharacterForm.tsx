@@ -646,20 +646,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
         </Form.Item>
 
         <Form.Item
-          name="isPrivate"
-          valuePropName="checked"
-          label={
-            <FormLabel
-              text="Private"
-              description="Should this character be hidden from other users?"
-            />
-          }
-          labelCol={{ span: 24 }}
-        >
-          <Switch />
-        </Form.Item>
-
-        <Form.Item
           label={
             <FormLabel
               text="Portrait"
@@ -788,6 +774,20 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             </div>
           </div>
         </div>
+
+        <Form.Item
+          name="isPrivate"
+          valuePropName="checked"
+          label={
+            <FormLabel
+              text="Private"
+              description="Should this be hidden from other users?"
+            />
+          }
+          labelCol={{ span: 24 }}
+        >
+          <Switch />
+        </Form.Item>
 
         <Form.Item>
           <div className="flex flex-wrap gap-4 items-center">

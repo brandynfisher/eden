@@ -282,14 +282,6 @@ export const getConceptsFeed = async (
     sort.push(['createdAt', -1])
   }
 
-  console.log({
-    isUserRequestingOwnProfileFeed,
-    creators,
-    creatorId,
-    ownUserId,
-    filterUserIds,
-  })
-
   if (!isUserRequestingOwnProfileFeed) {
     sortFilter['isPrivate'] = { $ne: true }
   }
