@@ -123,10 +123,8 @@ const CardToolsDropdown = ({
       })
     }
 
-    const hasUserFeatureFlagPrivate =
-      user && user.featureFlags && user.featureFlags.includes('private')
     const creatorMenuItems: MenuItem[] =
-      hasUserFeatureFlagPrivate && user?.userId === item.user.userId
+      user?.userId === item.user.userId
         ? [
             {
               key: '4',

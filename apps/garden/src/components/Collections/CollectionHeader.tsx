@@ -1,7 +1,8 @@
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection } from '@edenlabs/eden-sdk'
-import { Button } from 'antd'
+import { Button, Divider } from 'antd'
+import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const CollectionHeader = ({
@@ -28,19 +29,17 @@ const CollectionHeader = ({
           </div>
 
           <div className="dark:text-gray-400 text-sm">
-            <div>{collection.creations?.length || 0} Creations</div>
-            <div className="flex mt-2">
-              <div>
-                <div>Curated by </div>
-                <div className="mt-1">
-                  <CreatorProfileLink
-                    creatorId={collection.creatorId || ''}
-                    creatorName={collection.creatorName || ''}
-                    creatorImage={collection.creatorImage || ''}
-                  />
-                </div>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <div>Curated by </div>
+              <div className="mt-1">
+                <CreatorProfileLink
+                  creatorId={collection.creatorId || ''}
+                  creatorName={collection.creatorName || ''}
+                  creatorImage={collection.creatorImage || ''}
+                />
               </div>
             </div>
+            <div>{collection.creations?.length || 0} Creations</div>
           </div>
           {isAuthenticated && isAuthUser && !collection.isDefaultCollection && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
@@ -56,6 +55,22 @@ const CollectionHeader = ({
             </div>
           )}
         </div>
+      </div>
+      <Divider />
+      <div className="flex gap-2">
+        <Link href={`/creators/${collection.creatorName}`} passHref>
+          <Button className="font-mono flex items-center gap-2">
+            <div>User Profile</div>
+          </Button>
+        </Link>
+        <Link
+          href={`/creators/${collection.creatorName}#tab=collections`}
+          passHref
+        >
+          <Button className="font-mono flex items-center gap-2">
+            <div>User Collections</div>
+          </Button>
+        </Link>
       </div>
     </div>
   )

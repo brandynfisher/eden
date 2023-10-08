@@ -74,7 +74,7 @@ const GeneratorForm = ({
   } = useContext(CreationNotificationContext)
   const { message } = App.useApp()
   const router = useRouter()
-  const { refetch, isAuthenticated, authenticate, mannaBalance, user } =
+  const { refetch, isAuthenticated, authenticate, mannaBalance } =
     useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
@@ -452,21 +452,19 @@ const GeneratorForm = ({
         {renderFormFields(requiredParameters, false)}
         {renderFormFields(optionalParameters, false)}
 
-        {user?.featureFlags?.includes('private') ? (
-          <Form.Item
-            name="isPrivate"
-            valuePropName="checked"
-            label={
-              <FormLabel
-                text="Private"
-                description="Should this be hidden from other users?"
-              />
-            }
-            labelCol={{ span: 24 }}
-          >
-            <Switch />
-          </Form.Item>
-        ) : null}
+        <Form.Item
+          name="isPrivate"
+          valuePropName="checked"
+          label={
+            <FormLabel
+              text="Private"
+              description="Should this be hidden from other users?"
+            />
+          }
+          labelCol={{ span: 24 }}
+        >
+          <Switch />
+        </Form.Item>
 
         {advancedParameters.length > 0 && (
           <>
