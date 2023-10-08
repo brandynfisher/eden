@@ -17,10 +17,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       edenApiUrl: CONFIG.API_URL,
       token: authToken,
     })
-    const response = await eden.creators.follow({
+    await eden.creators.follow({
       userId,
     })
-    return res.status(200).json({ taskId: response.taskId })
+    return res.status(200).json({ follow: userId })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })
