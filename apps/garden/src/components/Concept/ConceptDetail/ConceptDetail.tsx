@@ -6,64 +6,15 @@ import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
-import { downloadFile } from '@/lib/files'
-import { isImageUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
-import { Button, Collapse, Divider } from 'antd'
+import { Collapse, Divider } from 'antd'
 import Head from 'next/head'
-import Image from 'next/image'
-import probe from 'probe-image-size'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const { Panel } = Collapse
-type ProbedImage = {
-  url: string
-  size: { width: number; height: number; aspectRatio: number }
-  thumbnailSize: { width: number; height: number; aspectRatio: number }
-}
-
-const probeImageForSize = async (
-  imageUrl: string,
-  maxThumbnailSize: number,
-) => {
-  const imageWithSize = {
-    url: imageUrl,
-    size: { width: 0, height: 0, aspectRatio: 1 },
-    thumbnailSize: { width: 0, height: 0, aspectRatio: 1 },
-  }
-  const probeResult = await probe(imageUrl)
-  imageWithSize.size = {
-    ...probeResult,
-    aspectRatio: (probeResult.height / probeResult.width) * 100,
-  }
-
-  if (
-    imageWithSize.size.height < maxThumbnailSize &&
-    imageWithSize.size.width < maxThumbnailSize
-  ) {
-    imageWithSize.thumbnailSize = imageWithSize.size
-    return imageWithSize
-  }
-
-  if (imageWithSize.size.height > imageWithSize.size.width) {
-    imageWithSize.thumbnailSize.width =
-      imageWithSize.size.width / (imageWithSize.size.height / maxThumbnailSize)
-    // limit height, scale width accordingly
-    imageWithSize.thumbnailSize.height = maxThumbnailSize
-  } else {
-    imageWithSize.thumbnailSize.height =
-      imageWithSize.size.height / (imageWithSize.size.width / maxThumbnailSize)
-    // limit width, scale height accordingly
-    imageWithSize.thumbnailSize.width = maxThumbnailSize
-  }
-
-  imageWithSize.thumbnailSize.aspectRatio = imageWithSize.size.aspectRatio
-
-  return imageWithSize
-}
 
 const ConceptDetail = ({
   concept,
@@ -72,8 +23,6 @@ const ConceptDetail = ({
   concept: Concept
   isModal?: boolean
 }) => {
-  const maxThumbnailSize = 96
-
   const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [conceptData, setConceptData] = useState<Concept>(concept)
@@ -81,12 +30,6 @@ const ConceptDetail = ({
   const [createdDateString, setCreatedDateString] = useState('')
   // const [conceptImageLoaded, setConceptImageLoaded] = useState(false)
   const [showFollowControls, setShowFollowControls] = useState(false)
-  const [displayImage, setDisplayImage] = useState({
-    url: '',
-    thumbnail: '',
-    aspectRatio: 100,
-  })
-
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
@@ -96,6 +39,11 @@ const ConceptDetail = ({
       setShowFollowControls(false)
     }
   }, [isAuthenticated, user?.userId, userId])
+
+  useEffect(() => {
+    setConceptData(concept)
+    setCreatedDateString(new Date(concept.createdAt).toLocaleString())
+  }, [concept])
 
   const hideMediaViewer = () => {
     setZoomedInImageUrl(null)
@@ -109,45 +57,6 @@ const ConceptDetail = ({
 
     setZoomedInImageUrl(url)
   }
-
-  useEffect(() => {
-    setConceptData(concept)
-    setCreatedDateString(new Date(concept.createdAt).toLocaleString())
-  }, [concept])
-
-  const [probedImageUrls, setProbedImageUrls] = useState<ProbedImage[]>()
-
-  useEffect(() => {
-    const probeImageSize = async (imageUrls: string[]) => {
-      const imagesWithSizes = await Promise.all(
-        imageUrls.map(async imageUrl => {
-          return probeImageForSize(imageUrl, maxThumbnailSize)
-        }),
-      )
-
-      setProbedImageUrls(imagesWithSizes)
-
-      if (imagesWithSizes.length) {
-        setDisplayImage({
-          url: imagesWithSizes[0].url,
-          thumbnail: imagesWithSizes[0].url,
-          aspectRatio: imagesWithSizes[0].size.aspectRatio,
-        })
-      }
-    }
-
-    if (conceptData.training_images) {
-      const imageUrls = conceptData?.training_images.filter((url: string) =>
-        isImageUrl(url),
-      )
-      if (imageUrls.length) {
-        probeImageSize(imageUrls)
-        return
-      }
-    }
-
-    setProbedImageUrls(undefined)
-  }, [conceptData.training_images])
 
   return (
     <>
@@ -216,83 +125,6 @@ const ConceptDetail = ({
                   ) : null}
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="self-start max-w-sm lg:mx-0 mx-auto mb-4 lg:mx-0 w-full">
-            <h3>Training Images</h3>
-            <div className="relative overflow-hidden max-w-full">
-              {probedImageUrls && (
-                <>
-                  <div className="flex items-center justify-center gap-2 flex-wrap mt-4 mx-auto md:max-w-[640px] lg:max-w-full lg:mx-0 xl:flex-grow mb-4">
-                    {probedImageUrls.map(trainingImage => (
-                      <div
-                        key={trainingImage.url}
-                        className={`flex w-[96px] h-[96px] overflow-hidden rounded-lg border border-solid ${
-                          trainingImage.url === displayImage.url
-                            ? 'border-gray-700 bg-gray-800'
-                            : 'cursor-pointer border-gray-800 hover:border-blue-600 '
-                        }`}
-                        onClick={() =>
-                          setDisplayImage({
-                            url: trainingImage.url,
-                            thumbnail: trainingImage.url,
-                            aspectRatio: trainingImage.size.aspectRatio,
-                          })
-                        }
-                      >
-                        <Image
-                          src={trainingImage.url}
-                          alt={trainingImage.url}
-                          width={trainingImage.thumbnailSize.width}
-                          height={trainingImage.thumbnailSize.height}
-                          className="rounded-lg w-full h-auto object-contain max-h-full"
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div
-                    onClick={() => handlePreviewClick(displayImage.url)}
-                    className="relative flex justify-center lg:flex lg:flex-grow"
-                  >
-                    <MediaDisplay
-                      aspectRatio={displayImage.aspectRatio}
-                      className={'media-display__main'}
-                      creationUri={
-                        displayImage?.thumbnail
-                          ? displayImage.thumbnail
-                          : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                      }
-                      previewUri={displayImage?.thumbnail}
-                      // onLoad={() => {
-                      //   setCreationImageLoaded(true)
-                      // }}
-                    />
-                  </div>
-                </>
-              )}
-              {conceptData?.training_images &&
-              conceptData?.training_images[0] &&
-              !isImageUrl(conceptData?.training_images[0]) ? (
-                <div className="flex items-center mb-4 gap-2">
-                  <Button
-                    onClick={() =>
-                      conceptData?.training_images &&
-                      conceptData?.training_images[0] &&
-                      downloadFile(
-                        conceptData?.training_images[0],
-                        `concept_${conceptData._id}_0`,
-                      )
-                    }
-                  >
-                    Download .zip archive
-                  </Button>
-                  <div className="test-xs truncate">
-                    {conceptData?.training_images[0]}
-                  </div>
-                </div>
-              ) : null}
             </div>
           </div>
         </div>
