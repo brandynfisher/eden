@@ -1,4 +1,5 @@
 import ErrorBoundary from '@/ErrorBoundary'
+import PasswordProtection from '@/components/Layout/PasswordPage'
 import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
@@ -86,31 +87,33 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         />
       </Head>
 
-      <main className={`${inter.className}`}>
-        <ThemeProvider attribute="class">
-          <AntConfigWrapProvider>
-            <WalletProvider>
-              <EdenProvider>
-                <ClerkWrapProvider>
-                  <UserProvider>
-                    <CreationNotificationProvider>
-                      <MasonryProvider>
-                        <ModalProvider>
-                          {getLayout(
-                            <ErrorBoundary>
-                              <Component {...pageProps} />
-                            </ErrorBoundary>,
-                          )}
-                        </ModalProvider>
-                      </MasonryProvider>
-                    </CreationNotificationProvider>
-                  </UserProvider>
-                </ClerkWrapProvider>
-              </EdenProvider>
-            </WalletProvider>
-          </AntConfigWrapProvider>
-        </ThemeProvider>
-      </main>
+      <PasswordProtection>
+        <main className={`${inter.className}`}>
+          <ThemeProvider attribute="class">
+            <AntConfigWrapProvider>
+              <WalletProvider>
+                <EdenProvider>
+                  <ClerkWrapProvider>
+                    <UserProvider>
+                      <CreationNotificationProvider>
+                        <MasonryProvider>
+                          <ModalProvider>
+                            {getLayout(
+                              <ErrorBoundary>
+                                <Component {...pageProps} />
+                              </ErrorBoundary>,
+                            )}
+                          </ModalProvider>
+                        </MasonryProvider>
+                      </CreationNotificationProvider>
+                    </UserProvider>
+                  </ClerkWrapProvider>
+                </EdenProvider>
+              </WalletProvider>
+            </AntConfigWrapProvider>
+          </ThemeProvider>
+        </main>
+      </PasswordProtection>
     </>
   )
 }
