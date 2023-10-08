@@ -12,7 +12,15 @@ import { UserContext } from '@/providers/UserProvider'
 import { EllipsisOutlined } from '@ant-design/icons'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
-import React, { useCallback, useContext } from 'react'
+import React, { ReactNode, useCallback, useContext } from 'react'
+
+type MenuItem = {
+  key: string
+  icon?: ReactNode
+  label?: string | ReactNode
+  children?: MenuItem[]
+  type?: string
+}
 
 const CardToolsDropdown = ({
   item,
@@ -42,14 +50,14 @@ const CardToolsDropdown = ({
     })
   }, [item, onChange])
 
-  const imageCopyItems = [
+  const imageCopyItems: MenuItem[] = [
     {
       icon: <CopyImageButton url={item.uri} variant="text" />,
       key: '1-1',
     },
   ]
 
-  const otherTypeCopyItems = [
+  const otherTypeCopyItems: MenuItem[] = [
     {
       icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
       key: '1-2',
@@ -84,52 +92,40 @@ const CardToolsDropdown = ({
     : otherTypeCopyItems
 
   const getCardMenuItems = () => {
-    const defaultMenuItems = [
+    const defaultMenuItems: MenuItem[] = [
       {
         label: 'Copy...',
         key: '1',
         children: copyItems,
       },
       {
-        label: 'Open in...',
         key: '2',
-        children: [
-          {
-            icon: (
-              <NewTabLinkButton
-                url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-                variant="text"
-                label="New Tab"
-              />
-            ),
-            key: '2-1',
-          },
-        ],
+        icon: (
+          <NewTabLinkButton
+            url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
+            variant="text"
+            label="To New Tab"
+          />
+        ),
       },
     ]
 
     if (itemType === 'creation') {
       defaultMenuItems.push({
-        label: 'Use as...',
         key: '3',
-        children: [
-          {
-            icon: (
-              <UseAsPresetButton
-                creationId={item._id}
-                variant="text"
-                label="Preset"
-              />
-            ),
-            key: '3-1',
-          },
-        ],
+        icon: (
+          <UseAsPresetButton
+            creationId={item._id}
+            variant="text"
+            label="Use as Preset"
+          />
+        ),
       })
     }
 
     const hasUserFeatureFlagPrivate =
       user && user.featureFlags && user.featureFlags.includes('private')
-    const creatorMenuItems =
+    const creatorMenuItems: MenuItem[] =
       hasUserFeatureFlagPrivate && user?.userId === item.user.userId
         ? [
             {
