@@ -449,6 +449,9 @@ const GeneratorForm = ({
           </div>,
         ]}
       >
+        {renderFormFields(requiredParameters, false)}
+        {renderFormFields(optionalParameters, false)}
+
         {user?.featureFlags?.includes('private') ? (
           <Form.Item
             name="isPrivate"
@@ -464,8 +467,7 @@ const GeneratorForm = ({
             <Switch />
           </Form.Item>
         ) : null}
-        {renderFormFields(requiredParameters, false)}
-        {renderFormFields(optionalParameters, false)}
+
         {advancedParameters.length > 0 && (
           <>
             {showOptional ? (
