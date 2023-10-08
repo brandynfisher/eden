@@ -41,6 +41,7 @@
     "async": "^3.2.4",
     "aws-sdk": "^2.1454.0",
     "axios": "^1.4.0",
+    "axios-retry": "^3.8.0",
     "chromadb": "^1.5.5",
     "dotenv": "^16.0.3",
     "env-schema": "^5.2.0",
