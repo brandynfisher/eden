@@ -2,6 +2,7 @@ import CircleButton from '@/components/Layout/buttons/CircleButton'
 import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import ShareButton from '@/components/Layout/buttons/ShareButton'
+import { CONFIG } from '@/lib/config'
 import { downloadFile } from '@/lib/files'
 import { getFileExtension } from '@/lib/getFileExtension'
 import {
@@ -26,8 +27,6 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const router = useRouter()
   const [toolItems, setToolItems] = useState<ToolButtonItem[]>([])
 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
-
   const handleCreate = async (generator: string | null, creation: Creation) => {
     const query: { presetId: string; generator?: string } = {
       presetId: creation._id,
@@ -46,11 +45,18 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
   const getItems = () => {
     const shareItem = {
       title: 'Share Creation',
-      icon: <ShareButton title={'Share Creation'} url={currentUrl} />,
+      icon: (
+        <ShareButton
+          title={'Share Creation'}
+          url={`${CONFIG.NEXT_PUBLIC_HOST}${router.asPath}`}
+        />
+      ),
     }
     const copyItem = {
       title: 'Copy URL',
-      icon: <CopyUrlButton url={currentUrl} />,
+      icon: (
+        <CopyUrlButton url={`${CONFIG.NEXT_PUBLIC_HOST}${router.asPath}`} />
+      ),
     }
 
     const copyImageItem = {
