@@ -21,7 +21,7 @@ const CollectionHeader = ({
       <div className="flex w-full items-center justify-start gap-4">
         <div>
           <h2 className="dark:text-white text-lg font-semibold">
-            {collection.name}
+            Collection: {collection.name}
           </h2>
           <div className="dark:text-white text-md font-semibold mb-2">
             {collection.description}

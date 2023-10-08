@@ -16,7 +16,8 @@ import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
-import React, { useContext } from 'react'
+import { useRouter } from 'next/router'
+import React, { useContext, useEffect, useState } from 'react'
 
 const ProfileHeader = dynamic(
   () => import('@/components/Profile/ProfileHeader'),
@@ -78,27 +79,47 @@ const CollectionTabContent = ({
 }
 
 const CreatorPageContent = ({ creator }: { creator: Creator }) => {
+  const router = useRouter()
   const { collections } = useCollections(creator.userId)
   const { userId, isAuthenticated } = useContext(UserContext)
   const isAuthenticatedUser = isAuthenticated && creator.userId === userId
+  const [activeTabKey, setActiveTabKey] = useState('creations')
+
+  useEffect(() => {
+    const hash = (router.asPath as string).split('#')[1]
+
+    if (!hash) {
+      setActiveTabKey('creations')
+      return
+    }
+
+    const parsedHash = new URLSearchParams(hash)
+    const tabHash = parsedHash.get('tab')
+
+    setActiveTabKey(tabHash || 'creations')
+  }, [router.asPath])
 
   const creatorPageTabs = [
     {
       label: 'Creations',
-      key: '1',
+      key: 'creations',
       children: <CreationTabContent creatorId={creator.userId} />,
     },
     {
       label: 'Concepts',
-      key: '2',
+      key: 'concepts',
       children: <ConceptTabContent creatorId={creator.userId} />,
     },
+    {
+      label: 'Collections',
+      key: 'collections',
+      children: <CollectionTabContent collections={collections} />,
+    },
   ]
-  creatorPageTabs.push({
-    label: 'Collections',
-    key: '3',
-    children: <CollectionTabContent collections={collections} />,
-  })
+
+  const handleTabClick = async (tabKey: string) => {
+    await router.push(`/creators/${creator.username}#tab=${tabKey}`)
+  }
 
   return (
     <>
@@ -151,7 +172,12 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
             numCreations={creator?.creationsCount}
             isAuthenticatedUser={isAuthenticatedUser}
           />
-          <Tabs defaultActiveKey="1" centered items={creatorPageTabs} />
+          <Tabs
+            activeKey={activeTabKey}
+            centered
+            items={creatorPageTabs}
+            onTabClick={handleTabClick}
+          />
         </Space>
       </div>
     </>
