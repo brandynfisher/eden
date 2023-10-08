@@ -1,13 +1,13 @@
 import axios from 'axios'
-import axiosRetry from 'axios-retry'
+// import axiosRetry from 'axios-retry'
 import type { FastifyInstance } from 'fastify'
 
-axiosRetry(axios, {
-  retries: 5,
-  retryDelay: retryCount => {
-    return retryCount * 15000 // 15 seconds, 30, 45, 60, 75
-  },
-})
+// axiosRetry(axios, {
+//   retries: 5,
+//   retryDelay: retryCount => {
+//     return retryCount * 15000 // 15 seconds, 30, 45, 60, 75
+//   },
+// })
 
 const ELEVENLABS_VOICES = [
   {
