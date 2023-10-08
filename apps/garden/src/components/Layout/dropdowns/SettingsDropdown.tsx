@@ -9,7 +9,7 @@ import {
   TableOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
-import { UserButton } from '@clerk/nextjs'
+// import { UserButton } from '@clerk/nextjs'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import Link from 'next/link'
@@ -210,10 +210,10 @@ const clerkExtraItems: ItemType[] = [
   {
     type: 'divider',
   },
-  {
-    label: <UserButton afterSignOutUrl="/" showName={true} />,
-    key: '3',
-  },
+  // {
+  //   label: <UserButton afterSignOutUrl="/" showName={true} />,
+  //   key: '3',
+  // },
 ]
 
 const web3Items: ItemType[] = [
