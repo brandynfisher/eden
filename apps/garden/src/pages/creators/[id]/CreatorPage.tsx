@@ -41,9 +41,10 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
   return (
     <div className="mt-4">
       <MasonryInfinite
+        key={`creations_${creatorId}`}
+        type="creations"
         query={{ userId: creatorId }}
         hasSort={sortButtons}
-        type="creations"
         itemComponent={CreationCard}
       />
     </div>
@@ -54,9 +55,10 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
   return (
     <div className="mt-4">
       <MasonryInfinite
+        key={`concepts_${creatorId}`}
+        type="concepts"
         query={{ userId: creatorId }}
         hasSort={[OrderByLatest]}
-        type="concepts"
         itemComponent={ConceptCard}
       />
     </div>
@@ -118,7 +120,11 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   ]
 
   const handleTabClick = async (tabKey: string) => {
-    await router.push(`/creators/${creator.username}#tab=${tabKey}`)
+    await router.push(
+      router.pathname,
+      { hash: `tab=${tabKey}` },
+      { shallow: true },
+    )
   }
 
   return (

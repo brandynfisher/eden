@@ -94,9 +94,10 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
           />
           <div className="mt-4">
             <MasonryInfinite
+              key={`collection_${collection._id}`}
+              type="creations"
               query={{ collectionId: collection._id }}
               hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
-              type="creations"
               itemComponent={CreationCard}
             />
           </div>

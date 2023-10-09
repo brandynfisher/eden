@@ -2,14 +2,12 @@ import ImageResultZoomable from '@/components/Creation/CreationInterface/media/I
 import { useState } from 'react'
 
 const VideoResultV2 = ({
-  key,
   resultUrl,
   thumbnailUrl,
   aspectRatio,
   disableControls,
   onLoad,
 }: {
-  key?: string
   resultUrl: string
   thumbnailUrl?: string
   aspectRatio: number
@@ -21,7 +19,6 @@ const VideoResultV2 = ({
   return (
     <>
       <ImageResultZoomable
-        key={key}
         thumbnailSizeUrl={thumbnailUrl}
         aspectRatio={aspectRatio}
         priority={true}

@@ -30,7 +30,6 @@ const ImageResultZoomable = ({
   priority,
   children,
 }: {
-  key?: string
   fullSizeUrl?: string
   previewSizeUrl?: string
   thumbnailSizeUrl?: string
