@@ -1,7 +1,7 @@
 import ImageResultZoomable from '@/components/Creation/CreationInterface/media/ImageResultZoomable'
 import { useState } from 'react'
 
-const VideoResult = ({
+const VideoResultV2 = ({
   key,
   resultUrl,
   thumbnailUrl,
@@ -33,7 +33,7 @@ const VideoResult = ({
           }`}
           style={{ objectFit: 'contain', objectPosition: 'top center' }}
           autoPlay={true}
-          muted={true}
+          muted={false}
           loop={true}
           controls={!disableControls}
           onPlay={() => {
@@ -46,4 +46,4 @@ const VideoResult = ({
   )
 }
 
-export default VideoResult
+export default VideoResultV2

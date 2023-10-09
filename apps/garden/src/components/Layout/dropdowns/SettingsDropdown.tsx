@@ -9,6 +9,7 @@ import {
   TableOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
+import { useViewportSize } from '@mantine/hooks'
 // import { UserButton } from '@clerk/nextjs'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
@@ -165,20 +166,6 @@ const DevToolsLink = () => {
   )
 }
 
-const items: ItemType[] = [
-  {
-    label: <ThemeToggleButton />,
-    key: '0',
-  },
-  {
-    type: 'divider',
-  },
-  {
-    label: <MaxColumnSelector />,
-    key: '1',
-  },
-]
-
 const extraItems: ItemType[] = [
   {
     type: 'divider',
@@ -226,6 +213,29 @@ const web3Items: ItemType[] = [
 export const SettingsDropdown = () => {
   const { isConnected } = useWeb3State()
   const { isAuthenticated } = useContext(UserContext)
+  const { width: windowWidth } = useViewportSize()
+
+  const items: ItemType[] = [
+    {
+      label: <ThemeToggleButton />,
+      key: '0',
+    },
+  ]
+
+  if (windowWidth > 768) {
+    const largeViewportItems: ItemType[] = [
+      {
+        type: 'divider',
+      },
+      {
+        label: <MaxColumnSelector />,
+        key: '1',
+      },
+    ]
+
+    items.push(...largeViewportItems)
+  }
+
   const [dropDownItems, setDropDownItems] = useState<ItemType[]>(items)
 
   useEffect(() => {

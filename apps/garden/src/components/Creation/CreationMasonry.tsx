@@ -35,13 +35,18 @@ const CreationMasonry = ({
   const positioner = usePositioner(
     {
       width,
-      columnGutter: 12,
+      columnGutter: 8,
+      rowGutter: windowWidth < 768 ? 0 : 8,
       columnCount:
-        settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
+        windowWidth < 768
+          ? 1
+          : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
           : undefined,
       maxColumnCount:
-        settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
+        windowWidth < 768
+          ? 1
+          : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
           : settings?.maxGridCols.params.initialValue,
     },
