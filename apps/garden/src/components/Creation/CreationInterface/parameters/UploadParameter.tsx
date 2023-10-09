@@ -1,10 +1,12 @@
 import { truncateText } from '@/lib/string'
-import { UploadOutlined } from '@ant-design/icons'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
+import { InboxOutlined } from '@mui/icons-material'
 import { Form, FormInstance, Modal, Row, Upload, message } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import React, { useEffect, useState } from 'react'
+
+const { Dragger } = Upload
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -163,9 +165,9 @@ const UploadParameter = (props: {
   return (
     <>
       {contextHolder}
-      <Row className=" flex-shrink-0 ">
+      <Row>
         <Form.Item
-          className="mb-2"
+          className="mb-2 max-w-full w-full"
           initialValue={props.parameter.default}
           label={props.parameter.label}
           name={props.parameter.name}
@@ -176,24 +178,36 @@ const UploadParameter = (props: {
             },
           ]}
         >
-          <Upload
+          <Dragger
             name="file"
             action="/api/media"
-            listType="picture-card"
             fileList={fileList}
+            listType="picture"
             onChange={handleChange}
-            onPreview={handlePreview}
             accept={props.acceptedMimeTypes ? props.acceptedMimeTypes : ''}
             multiple={maxUploads > 1}
             maxCount={maxUploads}
+            showUploadList={{ showDownloadIcon: true, showRemoveIcon: true }}
+            onPreview={handlePreview}
           >
-            {fileList.length >= maxUploads ? null : (
-              <div className="flex flex-shrink-0 p-2 px-4">
-                <UploadOutlined />
-                <div className="ml-1">Upload</div>
+            <div className="px-2">
+              <div className="ant-upload-drag-icon">
+                <InboxOutlined className="text-blue-500" />
               </div>
-            )}
-          </Upload>
+              <div className="ant-upload-text">
+                Click here or drag files to upload
+              </div>
+              <div className="ant-upload-hint text-xs text-gray-500">
+                <div>
+                  Max. files: <strong>{maxUploads}</strong> | Max.{' '}
+                  <strong>20 MB</strong> each
+                </div>
+                <div>
+                  Accepted Types: <strong>{props.acceptedMimeTypes}</strong>
+                </div>
+              </div>
+            </div>
+          </Dragger>
         </Form.Item>
       </Row>
       <Row>
