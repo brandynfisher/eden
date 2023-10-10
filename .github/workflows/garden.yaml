@@ -12,10 +12,10 @@ on:
     paths:
       - 'apps/garden/**'
       - '.github/workflows/garden.yaml'
-      
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+
+  env:
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push-to-ghcr:
@@ -65,7 +65,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-20.04
-    needs: [build]
+    needs: [build-and-push-to-ghcr]
     if: ${{ always() && (needs.build.result == 'success') }}
     steps:
       - name: Check out releases repo
