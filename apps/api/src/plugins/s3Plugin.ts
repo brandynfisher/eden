@@ -172,6 +172,7 @@ export const uploadBufferAsset = async (
         Key: filename,
         Body: buffer,
         Metadata: metadata,
+        ContentType: mime,
       })
       .promise()
     console.log(` --> Uploaded to ${urlUpload}`)
