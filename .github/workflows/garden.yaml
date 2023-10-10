@@ -22,7 +22,7 @@ jobs:
     name: Build
     runs-on: ubuntu-20.04
     permissions:
-      content: read
+      contents: read
       packages: write
     outputs:
       tag: ${{ steps.prep.outputs.tag }}
