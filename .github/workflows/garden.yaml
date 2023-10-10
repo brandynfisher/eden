@@ -34,7 +34,7 @@ jobs:
       - id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="${{ env.REGISTRY }}/edenartlab/mars-${{ env.ENV_GARDEN }}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/mars-garden2-${{ env.ENV_GARDEN }}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}
