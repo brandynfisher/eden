@@ -13,9 +13,9 @@ on:
       - 'apps/garden/**'
       - '.github/workflows/garden.yaml'
       
-  env:
-    REGISTRY: ghcr.io
-    IMAGE_NAME: ${{ github.repository }}
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push-to-ghcr:
