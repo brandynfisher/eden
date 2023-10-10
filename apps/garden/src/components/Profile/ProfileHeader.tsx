@@ -111,13 +111,14 @@ const ProfileHeader = ({
                     form={form}
                     name="creatorProfile"
                     onFinish={handleImageSubmit}
-                    className="flex gap-2 justify-center items-center creatorProfile"
+                    className="flex gap-2 justify-center items-center creatorProfile w-[260px]"
                   >
                     <UploadParameter
                       form={form}
                       parameter={{ name: 'userImage', label: '', maxLength: 1 }}
                       key={'userImage'}
                       acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+                      compact={true}
                     />
                     <div>
                       <Button

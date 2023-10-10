@@ -21,6 +21,7 @@ const UploadParameter = (props: {
   parameter: GeneratorParameter
   acceptedMimeTypes?: string
   onUploadInProgress?: (uploading: boolean) => void
+  compact?: boolean
 }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const showUploadInProgressMessage = async (messageKey: string) => {
@@ -197,15 +198,17 @@ const UploadParameter = (props: {
               <div className="ant-upload-text">
                 Click here or drag files to upload
               </div>
-              <div className="ant-upload-hint text-xs text-gray-500">
-                <div>
-                  Max. files: <strong>{maxUploads}</strong> | Max.{' '}
-                  <strong>20 MB</strong> each
+              {!props.compact ? (
+                <div className="ant-upload-hint text-xs text-gray-500">
+                  <div>
+                    Max. files: <strong>{maxUploads}</strong> | Max.{' '}
+                    <strong>20 MB</strong> each
+                  </div>
+                  <div>
+                    Accepted Types: <strong>{props.acceptedMimeTypes}</strong>
+                  </div>
                 </div>
-                <div>
-                  Accepted Types: <strong>{props.acceptedMimeTypes}</strong>
-                </div>
-              </div>
+              ) : null}
             </div>
           </Dragger>
         </Form.Item>

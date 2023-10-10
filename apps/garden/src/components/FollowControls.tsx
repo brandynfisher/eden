@@ -78,7 +78,7 @@ const FollowControls = ({
   return (
     <div className="flex dark:text-gray-400 gap-2 justify-between flex-wrap items-center h-full">
       {showStats && (
-        <div className="flex flex-shrink-0 gap-2">
+        <div className="flex flex-wrap gap-2">
           <div
             className="text-xs md:text-sm flex-shrink-0 hover:underline hover:brightness-125 cursor-pointer"
             onClick={() => onFollowersClickHandler()}
