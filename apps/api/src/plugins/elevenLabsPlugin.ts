@@ -12,7 +12,8 @@ axiosRetry(axios, {
   retries: 5,
   retryDelay: retryCount => {
     console.log(`Retrying request, count: ${retryCount}`)
-    return retryCount * 15000 // 15 seconds, 30, 45, 60, 75
+    // Add delay of 1-2 seconds between retries
+    return retryCount * 1000 + Math.random() * 5000
   },
   retryCondition: error => {
     console.log(`Retry condition called: ${JSON.stringify(error)}`)

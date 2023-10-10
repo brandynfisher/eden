@@ -384,19 +384,29 @@ const runTask = async (
 
       console.log('received', avgAspectRatio, targetWidth, targetHeight)
 
+      const delay = (ms: number) =>
+        new Promise(resolve => setTimeout(resolve, ms))
+
       const videoUrls: string[] = await new Promise<string[]>(
         (resolve, reject) => {
+          let delayTime = 0
           async.mapLimit(
             dialogue,
             3,
-            (message: any, callback: any) => {
-              generateVideoSegment(server, message, targetWidth, targetHeight)
-                .then(videoSegment => {
-                  callback(null, videoSegment)
-                })
-                .catch(error => {
-                  callback(error)
-                })
+            async (message: any, callback: any) => {
+              await delay(delayTime)
+              delayTime += 2000
+              try {
+                const videoSegment = await generateVideoSegment(
+                  server,
+                  message,
+                  targetWidth,
+                  targetHeight,
+                )
+                callback(null, videoSegment)
+              } catch (error) {
+                callback(error)
+              }
             },
             (error: unknown, results: (string | undefined)[] | undefined) => {
               if (error) {
