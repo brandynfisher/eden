@@ -6,17 +6,23 @@ import axios from 'axios';
 import { promisify } from 'util';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
+import Replicate from "replicate";
 
-dotenv.config();
+dotenv.config({path: ".env.local"});
 
 
 const EDEN_API_KEY = process.env.EDEN_API_KEY;
 const EDEN_API_SECRET = process.env.EDEN_API_SECRET;;
+const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 
 const eden = new EdenClient({
   edenApiUrl: "http://0.0.0.0:5050",
   apiKey: EDEN_API_KEY,
   apiSecret: EDEN_API_SECRET,
+});
+
+const replicate = new Replicate({
+  auth: REPLICATE_API_TOKEN,
 });
 
 // async function uploadFile(filePath) {
@@ -87,4 +93,33 @@ async function generateMonologue() {
   }
 }
 
-// generateMonologue();
+
+async function testReplicateDep() {
+    
+  const d = await replicate.models.list();
+  console.log(d);
+  const prediction = await replicate.deployments.predictions.create(
+    "abraham-ai",
+    "eden-sd-pipelines-sdxl-images",
+    {
+      input: {
+        mode: "generate"
+      }
+    }
+  );
+
+  console.log(prediction);
+
+  const prediction2 = await replicate.predictions.get(prediction.id);
+
+  console.log(prediction2)
+
+  // prediction = await replicate.wait(prediction);
+  // console.log(prediction.output);
+  
+  
+  console.log("dfsdf")
+}
+
+testReplicateDep();
+
