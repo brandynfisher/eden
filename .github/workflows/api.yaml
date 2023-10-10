@@ -6,11 +6,13 @@ on:
     paths:
       - 'apps/api/**'
       - '.github/workflows/api.yaml'
+
   pull_request:
     branches: [main]
     paths:
       - 'apps/garden/**'
       - '.github/workflows/server.yaml'
+      
   env:
     REGISTRY: ghcr.io
     IMAGE_NAME: ${{ github.repository }}
