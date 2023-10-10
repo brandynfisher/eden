@@ -429,56 +429,17 @@ export class ElevenLabs {
     }
   }
 
-  runTask = async (
-    voice: string,
-    text: string,
-    maxRetries = 5,
-    retryDelay = 60000,
-  ) => {
-    let retries = 0
-    while (retries < maxRetries) {
-      try {
-        console.log('run 11', voice)
-        console.log(text)
-        console.log(this.headers)
-        const speechDetails = await axios.request({
-          method: 'POST',
-          url: `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
-          headers: this.headers,
-          data: { text },
-          responseType: 'arraybuffer',
-        })
-        console.log('run 12')
-        return speechDetails.data
-      } catch (error: any) {
-        console.log('error 1')
-        console.log('the exact error message is')
-        console.log(error.message)
-        console.log(error)
-        if (error.response) {
-          console.log(error.response.data)
-        }
-
-        console.log('ERROR RESPONSE CODE')
-        console.log(error.response.status)
-        console.log('---- ok -----')
-
-        if (error.response && error.response.status === 429) {
-          retries++
-          console.log(
-            `ElevenLabs rate limit hit. Retry attempt ${retries}. Waiting for 1 minute...`,
-          )
-          console.error(
-            `ElevenLabs rate limit hit. Retry attempt ${retries}. Waiting for 1 minute...`,
-          )
-          await new Promise(resolve => setTimeout(resolve, retryDelay))
-        } else {
-          console.log(' ===> erropr <===== ')
-          throw error
-        }
-      }
-    }
-    throw new Error('Max retries reached for ElevenLabs API request')
+  runTask = async (voice: string, text: string) => {
+    console.log('run 11', text)
+    const speechDetails = await axios({
+      method: 'POST',
+      url: `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
+      headers: this.headers,
+      data: { text },
+      responseType: 'arraybuffer',
+    })
+    console.log('ran 11!', text)
+    return speechDetails.data
   }
 }
 

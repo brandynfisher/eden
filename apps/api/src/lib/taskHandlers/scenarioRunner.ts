@@ -271,10 +271,6 @@ async function generateVideoSegment(
     return video
   } catch (error: any) {
     console.log('AN ERROR OCCURREDDDD')
-    // return {
-    //   error:
-    //     error instanceof Error ? error.message : 'An unknown error occurred',
-    // }
     throw error
   }
 }
@@ -405,9 +401,7 @@ const runTask = async (
             (error: unknown, results: (string | undefined)[] | undefined) => {
               if (error) {
                 console.error('A video segment failed to process', error)
-                reject(
-                  new Error(`Error occurred in generating video: ${error}`),
-                )
+                reject(new Error(`Segment failed: ${error}`))
               } else {
                 resolve(results as string[]) // Add type assertion here
               }
