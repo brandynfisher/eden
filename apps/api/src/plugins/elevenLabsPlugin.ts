@@ -2,10 +2,21 @@ import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import type { FastifyInstance } from 'fastify'
 
+// axiosRetry(axios, {
+//   retries: 5,
+//   retryDelay: retryCount => {
+//     return retryCount * 15000 // 15 seconds, 30, 45, 60, 75
+//   },
+// })
 axiosRetry(axios, {
   retries: 5,
   retryDelay: retryCount => {
+    console.log(`Retrying request, count: ${retryCount}`)
     return retryCount * 15000 // 15 seconds, 30, 45, 60, 75
+  },
+  retryCondition: error => {
+    console.log(`Retry condition called: ${JSON.stringify(error)}`)
+    return true // Always retry as a test, not for production
   },
 })
 
