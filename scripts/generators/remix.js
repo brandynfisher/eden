@@ -39,6 +39,14 @@ const params = [
     step: 64,
   },
 
+  
+  {
+    name: 'text_input',
+    label: 'Prompt',
+    description: 'Optional text prompt for the remix (will try to remix the image in the direction of the prompt (style-transfer))',
+    default: null,
+  },
+
 
   ////////////////////////////////////////
   // optional generation args
@@ -48,14 +56,6 @@ const params = [
     description: 'Number of variations to create',
     default: 1,
     allowedValues: [1, 2, 4],
-    optional: true,
-  },
-  
-  {
-    name: 'text_input',
-    label: 'Prompt',
-    description: 'Text prompt for the remix (leaving this empty will trigger CLIP-interrogator to automatically find a prompt matching your image)',
-    default: null,
     optional: true,
   },
 
