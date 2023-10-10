@@ -64,7 +64,7 @@ const CollectionHeader = ({
           </Button>
         </Link>
         <Link
-          href={`/creators/${collection.creatorName}#tab=collections`}
+          href={`/creators/${collection.creatorName}?tab=collections`}
           passHref
         >
           <Button className="font-mono flex items-center gap-2">

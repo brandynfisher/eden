@@ -85,21 +85,20 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   const { collections } = useCollections(creator.userId)
   const { userId, isAuthenticated } = useContext(UserContext)
   const isAuthenticatedUser = isAuthenticated && creator.userId === userId
-  const [activeTabKey, setActiveTabKey] = useState('creations')
+  const [activeTabKey, setActiveTabKey] = useState(
+    (router.query.tab as string) || 'creations',
+  )
 
   useEffect(() => {
-    const hash = (router.asPath as string).split('#')[1]
+    const tabKey = router.query.tab as string
 
-    if (!hash) {
+    if (!tabKey) {
       setActiveTabKey('creations')
       return
     }
 
-    const parsedHash = new URLSearchParams(hash)
-    const tabHash = parsedHash.get('tab')
-
-    setActiveTabKey(tabHash || 'creations')
-  }, [router.asPath])
+    setActiveTabKey(tabKey)
+  }, [router.query])
 
   const creatorPageTabs = [
     {
@@ -121,9 +120,8 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
 
   const handleTabClick = async (tabKey: string) => {
     await router.push(
-      router.pathname,
-      { hash: `tab=${tabKey}` },
-      { shallow: true },
+      { pathname: '/creators/[id]', query: { tab: tabKey } },
+      { pathname: `/creators/${creator.username}`, query: { tab: tabKey } },
     )
   }
 
