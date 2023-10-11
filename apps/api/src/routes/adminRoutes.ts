@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-import { createChallenge } from '../controllers/authController'
+import { createChallenge } from '../controllers/auth/web3Controller'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { isAdmin } from '../middleware/authMiddleware'
@@ -28,7 +28,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => isAdmin(server, request)],
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => modifyManna(request, reply),
   })
 
@@ -46,7 +46,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => isAdmin(server, request)],
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => createMannaVoucher(request, reply),
   })
 
@@ -62,7 +62,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => isAdmin(server, request)],
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => createChallenge(server, request, reply),
   })
 
@@ -74,7 +74,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAdmin(server, request)],
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (req, reply) => uploadMediaAdmin(server, req, reply),
   })
 }

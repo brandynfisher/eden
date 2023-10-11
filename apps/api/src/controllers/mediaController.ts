@@ -24,8 +24,7 @@ export const uploadMedia = async (
       type.mime.startsWith('image/') ||
       type.mime.startsWith('audio/') ||
       type.mime.startsWith('text/') ||
-      type.mime.startsWith('application/zip') ||
-      true
+      type.mime.startsWith('application/zip')
     )
   ) {
     return reply.status(400).send({

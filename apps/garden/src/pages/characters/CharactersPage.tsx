@@ -1,5 +1,4 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
-import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
@@ -24,7 +23,11 @@ const CharacterList = dynamic(
   },
 )
 
-const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
+const CharactersPageContent = ({
+  characters,
+}: {
+  characters?: Character[]
+}) => {
   const router = useRouter()
   const { message } = App.useApp()
   const { isAuthenticated, authenticate } = useContext(UserContext)
@@ -41,6 +44,10 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
     } else {
       await router.push('/create/characters/new')
     }
+  }
+
+  if (!characters) {
+    return <LoadingIndicator />
   }
 
   return (
@@ -70,21 +77,10 @@ const CharactersPageContent = ({ characters }: { characters: Character[] }) => {
   )
 }
 
-const CharactersPage = ({ data }: { data: Character[] }) => {
-  const { isAuthenticated, address } = useContext(UserContext)
-  const { characters: charactersData } = useMyCharacters({
-    userId: address ? address : null,
-    isAuthenticated,
-    options: {
-      fallbackData: data,
-    },
-  })
+const CharactersPage = () => {
+  const { characters: charactersData } = useContext(UserContext)
 
-  if (!data) {
-    return null
-  }
-
-  return <CharactersPageContent characters={charactersData || data} />
+  return <CharactersPageContent characters={charactersData} />
 }
 
 export default CharactersPage

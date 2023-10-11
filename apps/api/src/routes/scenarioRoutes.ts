@@ -26,7 +26,7 @@ const scenarioRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createScenario(request, reply),
   })
 
@@ -44,7 +44,7 @@ const scenarioRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateScenario(request, reply),
   })
 
@@ -57,7 +57,7 @@ const scenarioRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({}),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteScenario(request, reply),
   })
 
@@ -82,7 +82,7 @@ const scenarioRoutes: FastifyPluginAsync = async server => {
         ),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listScenarios(request, reply),
   })
 
@@ -102,7 +102,7 @@ const scenarioRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getScenario(request, reply),
   })
 }

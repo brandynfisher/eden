@@ -8,7 +8,7 @@ const allowedCogs = [
   "character",
   "sdxl-lora-trainer",
   "zeroscope-v2-xl",
-  "task-runner",
+  "scenarioRunner",
 ]
 
 const env = process.argv[2];
@@ -47,7 +47,7 @@ async function updateDefaultVersion(db) {
   const sdxl_generators_video = [
     'interpolate', 'real2real', 
   ];
-  const task_runner_generators = [
+  const scenario_runner_generators = [
     'monologue', 'dialogue',
   ];    
   if (cog === 'eden-sd-pipelines-sdxl') {
@@ -72,8 +72,8 @@ async function updateDefaultVersion(db) {
       { $set: { defaultVersionId: versionId } }
     );
   }
-  else if (cog === 'task-runner') {
-    for (const generatorName of task_runner_generators) {
+  else if (cog === 'scenarioRunner') {
+    for (const generatorName of scenario_runner_generators) {
       await db.collection('generators').updateOne(
         { generatorName: generatorName }, 
         { $set: { defaultVersionId: versionId } }      

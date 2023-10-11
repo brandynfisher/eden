@@ -14,7 +14,7 @@ const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
         height="0"
         className="w-full h-full object-contain absolute z-10 inset-0"
         sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
-        style={{ objectFit: 'contain', objectPosition: 'center' }}
+        style={{ objectFit: 'contain', objectPosition: 'top center' }}
       />
       <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-70 text-gray-700" />
     </div>
@@ -57,7 +57,6 @@ const ImageResultZoomable = ({
 
   return (
     <div
-      key={previewSizeUrl}
       className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
@@ -66,12 +65,13 @@ const ImageResultZoomable = ({
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
-      {!isLoaded && thumbnailSizeUrl ? (
-        <ImagePlaceholder imageUrl={thumbnailSizeUrl} />
+      {thumbnailSizeUrl ? (
+        <ImagePlaceholder key={thumbnailSizeUrl} imageUrl={thumbnailSizeUrl} />
       ) : null}
       {previewSizeUrl ? (
         <div className="absolute inset-0">
           <Image
+            key={previewSizeUrl}
             src={previewSizeUrl}
             alt={previewSizeUrl}
             sizes={'(max-width: 1024px) 100vw, 50vw'}
@@ -80,7 +80,7 @@ const ImageResultZoomable = ({
             width="0"
             height="0"
             className="w-full h-full object-contain absolute z-10 inset-0"
-            style={{ objectFit: 'contain', objectPosition: 'center' }}
+            style={{ objectFit: 'contain', objectPosition: 'top center' }}
           />
         </div>
       ) : null}

@@ -1,5 +1,8 @@
+import ErrorBoundary from '@/ErrorBoundary'
+import PasswordProtection from '@/components/Layout/PasswordPage'
 import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
+import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
 import EdenProvider from '@/providers/EdenProvider'
 import MasonryProvider from '@/providers/MasonryProvider'
@@ -58,7 +61,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         <meta property="og:type" content="website" />
         <link rel="shortcut icon" href="/favicon.ico" />
         {/*<link rel="mask-icon" href="/icons/mask-icon.svg" color="#FFFFFF" />*/}
-        <meta name="theme-color" content="#64b77e" />
+        <meta name="theme-color" content="#030712" />
         <meta name="background-color" content="#030712" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
@@ -89,15 +92,23 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           <AntConfigWrapProvider>
             <WalletProvider>
               <EdenProvider>
-                <UserProvider>
-                  <CreationNotificationProvider>
-                    <MasonryProvider>
-                      <ModalProvider>
-                        {getLayout(<Component {...pageProps} />)}
-                      </ModalProvider>
-                    </MasonryProvider>
-                  </CreationNotificationProvider>
-                </UserProvider>
+                <ClerkWrapProvider>
+                  <UserProvider>
+                    <PasswordProtection>
+                      <CreationNotificationProvider>
+                        <MasonryProvider>
+                          <ModalProvider>
+                            {getLayout(
+                              <ErrorBoundary>
+                                <Component {...pageProps} />
+                              </ErrorBoundary>,
+                            )}
+                          </ModalProvider>
+                        </MasonryProvider>
+                      </CreationNotificationProvider>
+                    </PasswordProtection>
+                  </UserProvider>
+                </ClerkWrapProvider>
               </EdenProvider>
             </WalletProvider>
           </AntConfigWrapProvider>

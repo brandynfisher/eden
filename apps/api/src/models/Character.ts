@@ -1,10 +1,11 @@
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
-import { SoftDeleteDocument } from 'mongoose-delete'
+import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
 import slug from 'mongoose-slug-plugin'
 
+import { VisibilitySchema } from '../types/baseSchemas'
 import { UserDocument } from './Creator'
 
 interface ChatSchema {
@@ -12,7 +13,7 @@ interface ChatSchema {
   message: string[]
 }
 
-export interface CharacterSchema {
+export interface CharacterSchema extends VisibilitySchema {
   user: UserDocument
   name: string
   slug: string
@@ -36,8 +37,8 @@ export interface CharacterInput {
 }
 
 export interface CharacterDocument
-  extends CharacterSchema,
-    SoftDeleteDocument {}
+  extends SoftDeleteDocument,
+    CharacterSchema {}
 
 const character = new Schema<CharacterDocument>(
   {
@@ -72,6 +73,17 @@ const character = new Schema<CharacterDocument>(
       type: String,
       required: false,
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    deleteBy: {
+      type: String,
+    },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -86,6 +98,7 @@ character.pre<CharacterDocument>('save', function (next) {
 
 character.index({ user: 1, name: 1 }, { unique: true })
 
+character.plugin(mongooseDelete, { overrideMethods: 'all' })
 character.plugin(paginate)
 character.plugin(slug, { tmpl: '<%=name%>' })
 

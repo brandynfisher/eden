@@ -2,12 +2,14 @@ import { MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
+import { VisibilitySchema } from '../types/baseSchemas'
 import { UserDocument } from './Creator'
 import { TaskDocument } from './Task'
 
-export interface ConceptSchema {
+export interface ConceptSchema extends VisibilitySchema {
   user: UserDocument
   task: TaskDocument
   praiseCount: number
@@ -41,7 +43,7 @@ export interface ConceptInput {
   }
 }
 
-export interface ConceptDocument extends ConceptSchema, Document {}
+export interface ConceptDocument extends SoftDeleteDocument, ConceptSchema {}
 
 const concept = new Schema<ConceptDocument>(
   {
@@ -94,6 +96,17 @@ const concept = new Schema<ConceptDocument>(
       type: Schema.Types.Mixed,
       default: {},
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    deleteBy: {
+      type: String,
+    },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -108,6 +121,7 @@ concept.pre<ConceptDocument>('save', function (next) {
 
 concept.index({ createdAt: 1 })
 
+concept.plugin(mongooseDelete, { overrideMethods: 'all' })
 concept.plugin(paginate)
 concept.plugin(aggregatePaginate)
 

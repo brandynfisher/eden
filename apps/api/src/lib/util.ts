@@ -1,5 +1,7 @@
+import axios from 'axios'
 import crypto from 'crypto'
 import { FastifyInstance } from 'fastify'
+import { writeFile } from 'fs/promises'
 
 export const sha256 = (data: crypto.BinaryLike) => {
   const hashSum = crypto.createHash('sha256')
@@ -17,5 +19,34 @@ export const getAdminHeaders = (server: FastifyInstance) => {
   return {
     'X-Api-Key': server.config.EDEN_ADMIN_API_KEY,
     'X-Api-Secret': server.config.EDEN_ADMIN_API_SECRET,
+  }
+}
+
+export async function downloadBuffer(url: string): Promise<Buffer> {
+  console.log('downloading buffer')
+  console.log(' -->', url, 'url')
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: url,
+      responseType: 'arraybuffer',
+    })
+    return Buffer.from(response.data, 'binary')
+  } catch (error) {
+    console.error(`Error in downloadFile: ${error}`)
+    throw error
+  }
+}
+
+export async function downloadFile(url: string, path: string) {
+  console.log('downloading file')
+  console.log(' -->', url, 'url')
+  console.log(' ---->', path)
+  try {
+    const buffer = await downloadBuffer(url)
+    await writeFile(path, buffer)
+  } catch (error) {
+    console.error(`Error in downloadFile: ${error}`)
+    throw error
   }
 }

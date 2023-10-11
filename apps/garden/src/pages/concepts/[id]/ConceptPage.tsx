@@ -5,9 +5,9 @@ import React from 'react'
 
 const ConceptPage = ({ data }: { data: { concept: Concept } }) => {
   const { concept: conceptData } = useConcept(
-    data && data?.concept ? data?.concept?._id : null,
+    data && data.concept ? data?.concept._id : null,
     {
-      fallbackData: data?.concept,
+      fallbackData: data,
     },
   )
 
@@ -15,7 +15,7 @@ const ConceptPage = ({ data }: { data: { concept: Concept } }) => {
     return null
   }
 
-  return <ConceptDetail concept={conceptData || data?.concept} />
+  return <ConceptDetail concept={conceptData || data.concept} />
 }
 
 export default ConceptPage

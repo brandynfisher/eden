@@ -7,7 +7,6 @@ describe('Media Methods', () => {
     const filepath = `${__dirname}/../assets/logo.png`
     const media = await fs.readFileSync(filepath)
     const result = await client.media.upload({ media })
-    console.log(result)
     expect(result).toBeDefined()
     expect(result.url).toBeDefined()
   })

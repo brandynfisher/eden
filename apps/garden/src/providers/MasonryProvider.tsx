@@ -2,12 +2,8 @@ import { Concept, Creation } from '@edenlabs/eden-sdk'
 import React, { PropsWithChildren, createContext, useState } from 'react'
 
 export interface MasonryContextType {
-  currentIndex: number | null
-  setCurrentIndex: (newIndex: number | null) => void
-  totalItems: number
-  setTotalItems: (newItems: number) => void
-  currentItem: Creation | Concept | null
-  setCurrentItem: (newItem: Creation | Concept) => void
+  currentIndex: number
+  setCurrentIndex: (newIndex: number) => void
   items: Creation[] | Concept[]
   setItems: (items: Creation[] | Concept[]) => void
 }
@@ -15,10 +11,6 @@ export interface MasonryContextType {
 const defaultMasonryContextState: MasonryContextType = {
   currentIndex: 0,
   setCurrentIndex: () => null,
-  totalItems: 0,
-  setTotalItems: () => null,
-  currentItem: null,
-  setCurrentItem: () => null,
   items: [],
   setItems: () => null,
 }
@@ -28,11 +20,7 @@ export const MasonryContext = createContext<MasonryContextType>(
 )
 
 function MasonryProvider({ children }: PropsWithChildren) {
-  const [currentIndex, setCurrentIndex] = useState<number | null>(null)
-  const [currentItem, setCurrentItem] = useState<Creation | Concept | null>(
-    null,
-  )
-  const [totalItems, setTotalItems] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState<number>(0)
   const [items, setItems] = useState<Creation[] | Concept[]>([])
 
   return (
@@ -40,10 +28,6 @@ function MasonryProvider({ children }: PropsWithChildren) {
       value={{
         currentIndex,
         setCurrentIndex,
-        currentItem,
-        setCurrentItem,
-        totalItems,
-        setTotalItems,
         items,
         setItems,
       }}

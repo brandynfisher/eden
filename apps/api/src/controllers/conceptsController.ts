@@ -1,6 +1,8 @@
 import {
+  ConceptsDeleteArguments,
   ConceptsGetArguments,
   ConceptsListArguments,
+  ConceptsUpdateArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
@@ -95,6 +97,15 @@ export const getConcept = async (
     })
   }
 
+  if (concept.isPrivate) {
+    if (concept.user._id.toString() !== request.user?.userId.toString()) {
+      console.error('User not authorized to view this')
+      return reply.status(401).send({
+        message: 'User not authorized to view this',
+      })
+    }
+  }
+
   if (request.user?.userId) {
     // Get user's reactions and bookmarks
     const userId = request.user.userId
@@ -124,4 +135,68 @@ export const getConcept = async (
   }
 
   return await reply.status(200).send({ concept })
+}
+
+export const conceptDelete = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { conceptId } = request.params as ConceptsDeleteArguments
+
+  const concept = await Concept.findById(conceptId)
+
+  if (!concept) {
+    return reply.status(404).send({
+      message: 'Concept not found',
+    })
+  }
+
+  if (concept.user.toString() !== userId.toString()) {
+    return reply.status(401).send({
+      message: 'User not authorized to delete this',
+    })
+  }
+
+  await concept.delete({ deleteBy: 'user' })
+
+  return reply.status(200).send({
+    success: true,
+  })
+}
+
+export const conceptUpdate = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { conceptId } = request.params as ConceptsUpdateArguments
+  const { isPrivate } = request.body as ConceptsUpdateArguments
+
+  if (!userId || !conceptId || typeof isPrivate === 'undefined') {
+    return reply.status(422).send({
+      message: 'Missing parameters or malformed request body',
+    })
+  }
+
+  const concept = await Concept.findOneAndUpdate(
+    {
+      _id: conceptId,
+      user: userId,
+    },
+    { isPrivate },
+    {
+      new: true,
+    },
+  )
+
+  if (!concept) {
+    return reply.status(404).send({
+      message: 'Concept not found',
+    })
+  }
+
+  return reply.status(200).send({
+    concept,
+  })
 }

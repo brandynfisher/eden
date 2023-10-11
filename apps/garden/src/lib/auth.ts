@@ -1,4 +1,6 @@
+import { getAuth } from '@clerk/nextjs/server'
 import { message } from 'antd'
+import { NextApiRequest } from 'next'
 
 export const requireAuth = async (authenticate: () => void) => {
   try {
@@ -10,4 +12,13 @@ export const requireAuth = async (authenticate: () => void) => {
   } catch (error) {
     return
   }
+}
+
+export const getAuthToken = async (req: NextApiRequest) => {
+  if (process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes') {
+    const { getToken } = getAuth(req)
+    const authToken = await getToken()
+    return authToken || undefined
+  }
+  return req.session.token
 }

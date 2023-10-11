@@ -55,7 +55,15 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
         from: 'creations',
         let: { followingId: '$following' },
         pipeline: [
-          { $match: { $expr: { $eq: ['$user', '$$followingId'] } } },
+          {
+            $match: {
+              $and: [
+                { $expr: { $eq: ['$user', '$$followingId'] } },
+                { isPrivate: { $ne: true } },
+                { deleted: { $ne: true } },
+              ],
+            },
+          },
           {
             $project: {
               'embedding.embedding': 0,
@@ -97,12 +105,22 @@ export const getCreationsFeed = async (
     userId: filterUserIds,
   })
 
+  const ownUserId = request.user ? request.user.userId : undefined
+  const creatorId =
+    filterUserIds && creators.docs && creators.docs.length
+      ? creators.docs.map(creator => creator._id)[0].toString()
+      : undefined
+  const isUserRequestingOwnProfileFeed =
+    creatorId && ownUserId && ownUserId.toString() === creatorId
+
   const creationRepository = new CreationRepository(Creation)
   let creations: PaginatedResponse<CreationDocument>
 
-  if (orderBy === 'following') {
+  if (orderBy === 'following' && ownUserId) {
     const followCreationRepository = new CreationRepository(Follow) //@todo: this reads rather wonky
-    const followAggregate = aggregateCreationsByFollowerId(request.user.userId)
+    const followAggregate = aggregateCreationsByFollowerId(
+      new ObjectId(ownUserId),
+    )
 
     creations = await followCreationRepository.aggregateQuery(followAggregate, {
       limit,
@@ -139,6 +157,10 @@ export const getCreationsFeed = async (
       sortFilter['createdAt'] = { $gte: dateCutoff }
     }
 
+    if (!isUserRequestingOwnProfileFeed) {
+      sortFilter['isPrivate'] = { $ne: true }
+    }
+
     creations = await creationRepository.query(
       {
         _id: collectionCreations
@@ -171,7 +193,7 @@ export const getCreationsFeed = async (
     populate: { path: 'generator', select: 'generatorName description output' },
   })
 
-  if (request.user?.userId) {
+  if (ownUserId) {
     // Get user's reactions and bookmarks
     const userId = request.user.userId
     const user = User.findOne({ userId })
@@ -241,6 +263,14 @@ export const getConceptsFeed = async (
     userId: filterUserIds,
   })
 
+  const ownUserId = request.user ? request.user.userId : undefined
+  const creatorId =
+    filterUserIds && creators.docs && creators.docs.length
+      ? creators.docs.map(creator => creator._id)[0].toString()
+      : undefined
+  const isUserRequestingOwnProfileFeed =
+    creatorId && ownUserId && ownUserId.toString() === creatorId
+
   const conceptRepository = new ConceptRepository(Concept)
 
   const sort = []
@@ -251,6 +281,10 @@ export const getConceptsFeed = async (
   // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
   if (orderBy !== 'createdAt') {
     sort.push(['createdAt', -1])
+  }
+
+  if (!isUserRequestingOwnProfileFeed) {
+    sortFilter['isPrivate'] = { $ne: true }
   }
 
   const concepts: PaginatedResponse<ConceptDocument> =

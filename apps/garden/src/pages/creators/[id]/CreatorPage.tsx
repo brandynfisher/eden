@@ -16,7 +16,8 @@ import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
-import React, { useContext } from 'react'
+import { useRouter } from 'next/router'
+import React, { useContext, useEffect, useState } from 'react'
 
 const ProfileHeader = dynamic(
   () => import('@/components/Profile/ProfileHeader'),
@@ -26,25 +27,25 @@ const ProfileHeader = dynamic(
 )
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
-  const { isConnected, isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
 
-  const sortButtons =
-    isConnected && isAuthenticated
-      ? [
-          OrderByLatest,
-          // OrderByScore,
-          OrderByPraises,
-          OrderByBookmarks,
-        ]
-      : [OrderByLatest]
+  const sortButtons = isAuthenticated
+    ? [
+        OrderByLatest,
+        // OrderByScore,
+        OrderByPraises,
+        OrderByBookmarks,
+      ]
+    : [OrderByLatest]
 
   return (
     <div className="mt-4">
       <MasonryInfinite
+        key={`creations_${creatorId}`}
+        type="creations"
         query={{ userId: creatorId }}
         hasSort={sortButtons}
-        type="creations"
-        itemComponent={CreationCard}
+        ItemComponent={CreationCard}
       />
     </div>
   )
@@ -54,10 +55,11 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
   return (
     <div className="mt-4">
       <MasonryInfinite
+        key={`concepts_${creatorId}`}
+        type="concepts"
         query={{ userId: creatorId }}
         hasSort={[OrderByLatest]}
-        type="concepts"
-        itemComponent={ConceptCard}
+        ItemComponent={ConceptCard}
       />
     </div>
   )
@@ -79,32 +81,49 @@ const CollectionTabContent = ({
 }
 
 const CreatorPageContent = ({ creator }: { creator: Creator }) => {
+  const router = useRouter()
   const { collections } = useCollections(creator.userId)
-  const { address, isConnected, featureFlags } = useContext(UserContext)
-  const isConnectedUser = isConnected && creator.userId === address
-  const isPreviewUser = featureFlags.includes('preview')
+  const { userId, isAuthenticated } = useContext(UserContext)
+  const isAuthenticatedUser = isAuthenticated && creator.userId === userId
+  const [activeTabKey, setActiveTabKey] = useState(
+    (router.query.tab as string) || 'creations',
+  )
+
+  useEffect(() => {
+    const tabKey = router.query.tab as string
+
+    if (!tabKey) {
+      setActiveTabKey('creations')
+      return
+    }
+
+    setActiveTabKey(tabKey)
+  }, [router.query])
 
   const creatorPageTabs = [
     {
       label: 'Creations',
-      key: '1',
+      key: 'creations',
       children: <CreationTabContent creatorId={creator.userId} />,
+    },
+    {
+      label: 'Concepts',
+      key: 'concepts',
+      children: <ConceptTabContent creatorId={creator.userId} />,
+    },
+    {
+      label: 'Collections',
+      key: 'collections',
+      children: <CollectionTabContent collections={collections} />,
     },
   ]
 
-  if (isPreviewUser) {
-    creatorPageTabs.push({
-      label: 'Concepts',
-      key: '2',
-      children: <ConceptTabContent creatorId={creator.userId} />,
-    })
+  const handleTabClick = async (tabKey: string) => {
+    await router.push(
+      { pathname: '/creators/[id]', query: { tab: tabKey } },
+      { pathname: `/creators/${creator.username}`, query: { tab: tabKey } },
+    )
   }
-
-  creatorPageTabs.push({
-    label: 'Collections',
-    key: '3',
-    children: <CollectionTabContent collections={collections} />,
-  })
 
   return (
     <>
@@ -155,9 +174,14 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
             creatorId={creator.userId}
             creator={creator}
             numCreations={creator?.creationsCount}
-            isConnectedUser={isConnectedUser}
+            isAuthenticatedUser={isAuthenticatedUser}
           />
-          <Tabs defaultActiveKey="1" centered items={creatorPageTabs} />
+          <Tabs
+            activeKey={activeTabKey}
+            centered
+            items={creatorPageTabs}
+            onTabClick={handleTabClick}
+          />
         </Space>
       </div>
     </>

@@ -11,15 +11,15 @@ import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
 import * as openai from './openai'
 import * as replicate from './replicate'
-import * as taskRunner from './taskRunner'
+import * as scenarioRunner from './scenarioRunner'
 
-type TaskProvider = 'openai' | 'replicate' | 'elevenPlay' | 'task-runner'
+type TaskProvider = 'openai' | 'replicate' | 'elevenPlay' | 'scenarioRunner'
 
 const providers = new Map<TaskProvider, any>([
   ['openai', openai],
   ['elevenPlay', elevenPlay],
   ['replicate', replicate],
-  ['task-runner', taskRunner],
+  ['scenarioRunner', scenarioRunner],
 ])
 
 type TaskStatus =
@@ -53,7 +53,7 @@ const submitTask = async (
   config: any,
 ) => {
   const { provider } = generatorVersion
-  console.log('submit Task', provider)
+  console.log('GO!!!', provider)
   const task = await providers
     .get(provider)
     .submitTask(server, generator, generatorVersion, config)
@@ -118,6 +118,7 @@ const handleUpdate = async (
           name: finalOutput.name,
           attributes: finalOutput.attributes,
           mediaAttributes: {},
+          isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
           const { uri, mediaAttributes } = await server.uploadUrlAsset(
@@ -181,6 +182,7 @@ const handleUpdate = async (
           training_images: task.config.lora_training_urls,
           uri: finalOutput.files[i],
           thumbnail: finalOutput.thumbnails[0],
+          isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
           const { uri, mediaAttributes } = await server.uploadUrlAsset(
@@ -376,7 +378,7 @@ export const receiveTaskUpdate = async (
 
   switch (status) {
     case 'starting':
-      // await handleStarting(server, taskId);
+      // await handleStarting(server, taskId)
       break
     case 'processing':
       if (generatorName === 'zeroscope-v2-xl') {

@@ -236,7 +236,6 @@ export const updateCreator = async (
   }
   if (username) {
     if (username.length < 3 || username.length > 32) {
-      console.log('xxx', username)
       if (username === creator.userId) {
         creator.username = username
       } else {
@@ -285,8 +284,7 @@ export const followCreator = async (
   const { userId } = request.user
   const { userId: userIdToFollow } = request.body as CreatorsFollowArguments
 
-  const userToFollow = await User.findOne({ userId: userIdToFollow })
-  const user = await User.findById(userId)
+  const user = await User.findById(userId.toString())
 
   if (!user) {
     return reply.status(400).send({
@@ -294,20 +292,22 @@ export const followCreator = async (
     })
   }
 
+  const userToFollow = await User.findOne({ userId: userIdToFollow })
+
   if (!userToFollow) {
     return reply.status(400).send({
       message: 'User does not exist',
     })
   }
 
-  if (userId.toString() === userIdToFollow) {
+  if (user._id === userToFollow._id) {
     return reply.status(400).send({
       message: 'Cannot follow yourself',
     })
   }
 
   const followData = {
-    follower: userId,
+    follower: user._id,
     following: userToFollow._id,
   }
 
@@ -344,8 +344,7 @@ export const unfollowCreator = async (
   const { userId } = request.user
   const { userId: userIdToUnfollow } = request.body as CreatorsUnfollowArguments
 
-  const userToUnfollow = await User.findOne({ userId: userIdToUnfollow })
-  const user = await User.findById(userId)
+  const user = await User.findById(userId.toString())
 
   if (!user) {
     return reply.status(400).send({
@@ -353,20 +352,22 @@ export const unfollowCreator = async (
     })
   }
 
+  const userToUnfollow = await User.findOne({ userId: userIdToUnfollow })
+
   if (!userToUnfollow) {
     return reply.status(400).send({
       message: 'User does not exist',
     })
   }
 
-  if (userId.toString() === userIdToUnfollow) {
+  if (user._id === userToUnfollow._id) {
     return reply.status(400).send({
       message: 'Cannot follow yourself',
     })
   }
 
   const followData = {
-    follower: userId,
+    follower: user._id,
     following: userToUnfollow._id,
   }
 

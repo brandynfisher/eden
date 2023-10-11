@@ -10,6 +10,21 @@ const makeWebhookUrl = (server: FastifyInstance) =>
 const formatConfigForReplicate = async (config: any) => {
   const newConfig = { ...config }
 
+  // if it's a Concept training, remove any spaces, pipes, or underscores in the name
+  if (newConfig.lora_training_urls) {
+    newConfig.name = newConfig.name.replace(/ /g, '')
+    newConfig.name = newConfig.name.replace(/\|/g, '')
+    newConfig.name = newConfig.name.replace(/_/g, '')
+  }
+
+  // if no lora selected, delete it
+  if (newConfig.lora) {
+    const concept = await Concept.findOne({ _id: new ObjectId(newConfig.lora) })
+    newConfig.lora = concept?.uri
+  } else {
+    delete newConfig.lora
+  }
+
   // if no text input, use interpolation texts
   if (!newConfig.text_input) {
     newConfig.text_input =
@@ -37,22 +52,6 @@ const formatConfigForReplicate = async (config: any) => {
     ? (newConfig.latent_blending_skip_f =
         newConfig.latent_blending_skip_f.join('|'))
     : null
-
-  // if it's a Concept training
-  if (newConfig.lora_training_urls) {
-    // remove any spaces, pipes, or underscores in the name
-    newConfig.name = newConfig.name.replace(/ /g, '')
-    newConfig.name = newConfig.name.replace(/\|/g, '')
-    newConfig.name = newConfig.name.replace(/_/g, '')
-  }
-
-  // if no lora selected, delete it
-  if (newConfig.lora) {
-    const concept = await Concept.findOne({ _id: new ObjectId(newConfig.lora) })
-    newConfig.lora = concept?.uri
-  } else {
-    delete newConfig.lora
-  }
 
   return newConfig
 }

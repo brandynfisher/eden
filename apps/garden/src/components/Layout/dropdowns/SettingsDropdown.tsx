@@ -1,5 +1,6 @@
 import ConnectButton from '@/components/Layout/buttons/ConnectButton'
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
+import { useWeb3State } from '@/hooks/auth/useWeb3State'
 import { UserContext } from '@/providers/UserProvider'
 import {
   LoginOutlined,
@@ -8,15 +9,17 @@ import {
   TableOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
+import { useViewportSize } from '@mantine/hooks'
+// import { UserButton } from '@clerk/nextjs'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
-const LoginLogoutButton = () => {
-  const { isConnected, isAuthenticated, authenticate, logout } =
-    useContext(UserContext)
+const Web3LoginLogoutButton = () => {
+  const { isConnected } = useWeb3State()
+  const { isAuthenticated, authenticate, logout } = useContext(UserContext)
   const router = useRouter()
 
   const handleAuthClick = useCallback(async () => {
@@ -62,6 +65,34 @@ const LoginLogoutButton = () => {
           </div>
         )}
       </Button>
+    </div>
+  )
+}
+
+const ClerkLoginLogoutButton = () => {
+  const { isAuthenticated, authenticate, logout } = useContext(UserContext)
+
+  return (
+    <div>
+      <div className="w-full">
+        {isAuthenticated ? (
+          <Button
+            className="flex gap-2 justify-center font-mono w-full items-center"
+            onClick={async () => logout && (await logout())}
+          >
+            <LogoutOutlined />
+            <div>Sign out</div>
+          </Button>
+        ) : (
+          <Button
+            className="flex gap-2 justify-center font-mono w-full items-center"
+            onClick={async () => authenticate && (await authenticate())}
+          >
+            <LoginOutlined />
+            <div>Sign in</div>
+          </Button>
+        )}
+      </div>
     </div>
   )
 }
@@ -135,20 +166,6 @@ const DevToolsLink = () => {
   )
 }
 
-const items: ItemType[] = [
-  {
-    label: <ThemeToggleButton />,
-    key: '0',
-  },
-  {
-    type: 'divider',
-  },
-  {
-    label: <MaxColumnSelector />,
-    key: '1',
-  },
-]
-
 const extraItems: ItemType[] = [
   {
     type: 'divider',
@@ -160,23 +177,80 @@ const extraItems: ItemType[] = [
   {
     type: 'divider',
   },
+]
+
+const clerkItems: ItemType[] = [
   {
-    label: <LoginLogoutButton />,
-    key: '3',
+    label: <ClerkLoginLogoutButton />,
+    key: '4',
   },
 ]
 
-const SettingsDropdown = () => {
-  const { isConnected } = useContext(UserContext)
+const clerkExtraItems: ItemType[] = [
+  {
+    type: 'divider',
+  },
+  {
+    label: <DevToolsLink />,
+    key: '5',
+  },
+  {
+    type: 'divider',
+  },
+  // {
+  //   label: <UserButton afterSignOutUrl="/" showName={true} />,
+  //   key: '3',
+  // },
+]
+
+const web3Items: ItemType[] = [
+  {
+    label: <Web3LoginLogoutButton />,
+    key: '4',
+  },
+]
+
+export const SettingsDropdown = () => {
+  const { isConnected } = useWeb3State()
+  const { isAuthenticated } = useContext(UserContext)
+  const { width: windowWidth } = useViewportSize()
+
+  const items: ItemType[] = [
+    {
+      label: <ThemeToggleButton />,
+      key: '0',
+    },
+  ]
+
+  if (windowWidth > 768) {
+    const largeViewportItems: ItemType[] = [
+      {
+        type: 'divider',
+      },
+      {
+        label: <MaxColumnSelector />,
+        key: '1',
+      },
+    ]
+
+    items.push(...largeViewportItems)
+  }
+
   const [dropDownItems, setDropDownItems] = useState<ItemType[]>(items)
 
   useEffect(() => {
-    if (isConnected) {
-      setDropDownItems([...items, ...extraItems])
+    if (process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes') {
+      if (isAuthenticated) {
+        setDropDownItems([...items, ...clerkExtraItems, ...clerkItems])
+      } else {
+        setDropDownItems([...items, ...clerkItems])
+      }
+    } else if (isConnected) {
+      setDropDownItems([...items, ...extraItems, ...web3Items])
     } else {
       setDropDownItems(items)
     }
-  }, [isConnected])
+  }, [isConnected, isAuthenticated])
 
   return (
     <Dropdown

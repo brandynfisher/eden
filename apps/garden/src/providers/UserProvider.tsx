@@ -1,18 +1,17 @@
+import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
+import { useWeb3UserState } from '@/hooks/auth/useWeb3UserState'
 import { SettingName, Settings } from '@/hooks/useSettings'
-import { useUserState } from '@/hooks/useUserState'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Character } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {
-  isConnected: boolean
-  isConnecting: boolean
   isAuthenticating: boolean
   isAuthenticated: boolean
   authError: string | null
-  authenticate: () => Promise<null | undefined>
-  logout: () => Promise<null | undefined>
-  address?: `0x${string}`
+  authenticate: () => Promise<void>
+  logout: () => Promise<void>
+  userId: string | null
   mannaBalance?: number
   characters?: Character[]
   collections?: Collection[]
@@ -29,18 +28,16 @@ export interface UserContextType {
 }
 
 const defaultUserState: UserContextType = {
-  isConnected: false,
-  isConnecting: false,
   isAuthenticating: false,
   isAuthenticated: false,
   authError: null,
-  authenticate: async () => {
-    return null
+  authenticate: () => {
+    return new Promise<void>(resolve => resolve())
   },
   logout: async () => {
-    return null
+    return new Promise<void>(resolve => resolve())
   },
-  address: undefined,
+  userId: null,
   mannaBalance: undefined,
   characters: undefined,
   collections: undefined,
@@ -69,7 +66,11 @@ const defaultUserState: UserContextType = {
 export const UserContext = createContext<UserContextType>(defaultUserState)
 
 function UserProvider({ children }: PropsWithChildren) {
-  const userState = useUserState()
+  const userStateFn =
+    process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes'
+      ? useClerkUserState
+      : useWeb3UserState
+  const userState = userStateFn()
 
   return (
     <UserContext.Provider value={userState}>{children}</UserContext.Provider>

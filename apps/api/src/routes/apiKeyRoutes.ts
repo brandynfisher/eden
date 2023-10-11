@@ -24,7 +24,7 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createApiKey(request, reply),
   })
 
@@ -37,7 +37,7 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({}),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteApiKey(request, reply),
   })
 
@@ -61,7 +61,7 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
         ),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listApiKeys(request, reply),
   })
 }

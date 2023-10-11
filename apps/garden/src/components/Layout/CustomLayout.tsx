@@ -1,3 +1,4 @@
+import BannerManager from '@/components/Banners/BannerManager'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
 import ProgressBar from '@/components/Layout/ProgressBar'
 import { VerticalAlignTopOutlined } from '@ant-design/icons'
@@ -112,6 +113,7 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
       value={{ use: [myRequestCounterMiddlewareWrap(setRequestCount)] }}
     >
       <Layout className="min-h-screen flex flex-col">
+        <BannerManager />
         <LayoutHeader />
         <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>
         <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center">

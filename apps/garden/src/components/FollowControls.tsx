@@ -21,9 +21,8 @@ const FollowControls = ({
   const [isFollowingUser, setIsFollowingUser] = React.useState(false)
   const [isOwnProfile, setIsOwnProfile] = React.useState(false)
 
-  const userId = creatorId
-  const { creator } = useCreator(userId)
-  const { isAuthenticated, address } = useContext(UserContext)
+  const { creator } = useCreator(creatorId)
+  const { isAuthenticated, userId } = useContext(UserContext)
 
   const { showModal } = useModalContext()
 
@@ -47,15 +46,15 @@ const FollowControls = ({
     setFollowerCount(creator?.followerCount || 0)
     setIsFollowingUser(creator?.isFollowing || false)
     setFollowingCount(creator?.followingCount || 0)
-    setIsOwnProfile(isAuthenticated && userId === address)
-  }, [isAuthenticated, address, userId, creator])
+    setIsOwnProfile(isAuthenticated && userId === creatorId)
+  }, [isAuthenticated, userId, creatorId, creator])
 
   const onFollowButtonClick = async () => {
     setFollowLoading(true)
     if (isFollowingUser) {
       try {
         await axios.post(`/api/creators/unfollow`, {
-          userId: userId,
+          userId: creatorId,
         })
         setFollowerCount(followerCount - 1)
         setIsFollowingUser(!isFollowingUser)
@@ -65,7 +64,7 @@ const FollowControls = ({
     } else {
       try {
         await axios.post(`/api/creators/follow`, {
-          userId: userId,
+          userId: creatorId,
         })
         setFollowerCount(followerCount + 1)
         setIsFollowingUser(!isFollowingUser)
@@ -77,9 +76,9 @@ const FollowControls = ({
   }
 
   return (
-    <div className="flex dark:text-gray-400 items-center gap-2 justify-between flex-wrap items-center h-full">
+    <div className="flex dark:text-gray-400 gap-2 justify-between flex-wrap items-center h-full">
       {showStats && (
-        <div className="flex flex-shrink-0 gap-2">
+        <div className="flex flex-wrap gap-2">
           <div
             className="text-xs md:text-sm flex-shrink-0 hover:underline hover:brightness-125 cursor-pointer"
             onClick={() => onFollowersClickHandler()}

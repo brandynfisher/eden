@@ -1,3 +1,4 @@
+import AccountMigrationProfileBanner from '@/components/Banners/AccountMigrationProfileBanner'
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FollowControls from '@/components/FollowControls'
@@ -17,12 +18,12 @@ import React, { useEffect, useState } from 'react'
 const ProfileHeader = ({
   creatorId,
   creator,
-  isConnectedUser,
+  isAuthenticatedUser,
   numCreations,
 }: {
   creatorId: string
   creator: Creator | undefined
-  isConnectedUser: boolean
+  isAuthenticatedUser: boolean
   numCreations: number | undefined
 }) => {
   const { mutate: refetchCreator } = useCreator(creatorId)
@@ -32,6 +33,7 @@ const ProfileHeader = ({
   const [displayName, setDisplayName] = useState('')
   const [displayImage, setDisplayImage] = useState<string | undefined>()
   const [showImageUploader, setShowImageUploader] = useState(false)
+  const [userMigrated] = useState()
   const [form] = Form.useForm()
   const userImageFieldValue = Form.useWatch('userImage', form)
   const clickOutsideTargetRef = useClickOutside(() =>
@@ -74,15 +76,15 @@ const ProfileHeader = ({
   }
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
-      <div className="flex w-full items-center justify-start gap-4 items-stretch">
+      <div className="flex w-full justify-start gap-4 items-stretch">
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <div
             className={`w-[90px] h-[90px] rounded-full overflow-hidden ${
-              isConnectedUser
+              isAuthenticatedUser
                 ? 'hover:brightness-125 transition-all cursor-pointer'
                 : ''
             }`}
-            onClick={() => isConnectedUser && setShowImageUploader(true)}
+            onClick={() => isAuthenticatedUser && setShowImageUploader(true)}
           >
             <CharacterAvatar
               id={creatorId}
@@ -91,7 +93,7 @@ const ProfileHeader = ({
               size="auto"
             />
           </div>
-          {isConnectedUser && (
+          {isAuthenticatedUser && (
             <div
               ref={clickOutsideTargetRef}
               className="flex flex-col mt-2 relative"
@@ -109,13 +111,14 @@ const ProfileHeader = ({
                     form={form}
                     name="creatorProfile"
                     onFinish={handleImageSubmit}
-                    className="flex gap-2 justify-center items-center creatorProfile"
+                    className="flex gap-2 justify-center items-center creatorProfile w-[260px]"
                   >
                     <UploadParameter
                       form={form}
                       parameter={{ name: 'userImage', label: '', maxLength: 1 }}
                       key={'userImage'}
                       acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+                      compact={true}
                     />
                     <div>
                       <Button
@@ -152,7 +155,7 @@ const ProfileHeader = ({
           ) : (
             <div className="flex items-center flex-wrap md:flex-nowrap">
               <ProfileHeaderName
-                isOwnProfile={isConnectedUser}
+                isOwnProfile={isAuthenticatedUser}
                 displayName={displayName}
                 setDisplayName={setDisplayName}
               />
@@ -183,6 +186,9 @@ const ProfileHeader = ({
           </div>
         </div>
       </div>
+      {isAuthenticatedUser && !userMigrated ? (
+        <AccountMigrationProfileBanner />
+      ) : null}
     </div>
   )
 }
