@@ -188,10 +188,7 @@ export const getCreator = async (
 ) => {
   const { userId } = request.params as CreatorsGetArguments
   const creatorDoc = await User.findOne({
-    $or: [
-      { userId },
-      { username: { $regex: userId.toLowerCase(), $options: 'i' } },
-    ],
+    $or: [{ userId }, { username: { $eq: userId.toLowerCase() } }],
   })
   if (!creatorDoc) {
     return reply.status(404).send({
