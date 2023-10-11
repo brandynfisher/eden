@@ -4,11 +4,12 @@ const runtimeCaching = require('next-pwa/cache')
 
 const defaultImageDomains = [
   'https://minio.aws.abraham.fun/creations-stg/',
-  'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
   'https://eden-creations-prod.s3.us-east-1.amazonaws.com/',
+  'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
   'files.stripe.com',
   'img.clerk.com',
   'eden-creations-stg.s3.us-east-1.amazonaws.com',
+  'eden-creations-prod.s3.us-east-1.amazonaws.com',
 ]
 
 const devImageDomains = ['localhost']
