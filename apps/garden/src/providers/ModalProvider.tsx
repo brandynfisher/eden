@@ -112,13 +112,13 @@ function ModalProvider({ children }: PropsWithChildren) {
     // @todo ---end ugly---
   }
 
-  const hideModal = useCallback(() => {
+  const hideModal = () => {
     setStore({
       ...store,
       modalType: undefined,
       modalProps: {},
     })
-  }, [store])
+  }
 
   const defaultModalProps: ModalProps = {
     closeIcon: <CloseButton />,

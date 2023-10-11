@@ -154,7 +154,7 @@ const MasonryInfinite = ({
         },
       })
     },
-    [items, maybeLoadMore],
+    [items],
   )
 
   return (
