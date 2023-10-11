@@ -106,7 +106,7 @@ const params = [
   {
     name: 'guidance_scale',
     label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance',
+    description: 'Strength of the prompt (higher values usually increase saturation and constrast)',
     default: 7.5,
     minimum: 0.0,
     maximum: 20.0,
