@@ -18,13 +18,6 @@ const fetchCreator = async (context: NextPageContext) => {
   const { query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  console.log('id', id)
-  console.log('CONFIG.NEXT_PUBLIC_HOST', CONFIG.NEXT_PUBLIC_HOST)
-  console.log(
-    'fetcherFn',
-    `${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${id}`,
-  )
-  // lol
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${id}`)
 }
 
@@ -36,7 +29,6 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const Creator: Page<PageProps> = ({ data }: PageProps) => {
-  console.log(data)
   return <CreatorPage data={data} />
 }
 

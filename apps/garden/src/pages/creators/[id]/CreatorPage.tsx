@@ -193,10 +193,6 @@ const CreatorPage = ({ data }: { data: Creator }) => {
     fallbackData: data,
   })
 
-  console.log('hello from jmill')
-  console.log(data)
-  console.log(creatorData)
-
   if (!data) {
     return null
   }

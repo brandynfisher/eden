@@ -16,6 +16,10 @@ const CharacterDetailPage = ({ data }: { data: Character }) => {
     fallbackData: data,
   })
 
+  if (!data) {
+    return null
+  }
+
   const character = characterData || data
 
   return (
