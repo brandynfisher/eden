@@ -197,6 +197,10 @@ const CreatorPage = ({ data }: { data: Creator }) => {
   console.log(data)
   console.log(creatorData)
 
+  if (!data) {
+    return null
+  }
+
   return <CreatorPageContent creator={creatorData || data} />
 }
 
