@@ -76,7 +76,7 @@ const CreationMasonry = ({
                 <CreationCard
                   index={props.index}
                   data={props.data}
-                  disableArrowNav={true}
+                  // disableArrowNav={true}
                   // @todo: implement analog Infinite
                   onClick={() => null}
                 />
