@@ -18,6 +18,7 @@ const fetchCreator = async (context: NextPageContext) => {
   const { query } = context
   const id = query.id ? String(query.id).trim() : false
 
+  // lol
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${id}`)
 }
 
