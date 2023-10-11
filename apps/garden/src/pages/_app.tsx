@@ -1,5 +1,4 @@
 import ErrorBoundary from '@/ErrorBoundary'
-import PasswordProtection from '@/components/Layout/PasswordPage'
 import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
@@ -94,19 +93,17 @@ export default function App({ Component, pageProps }: Props): ReactElement {
               <EdenProvider>
                 <ClerkWrapProvider>
                   <UserProvider>
-                    <PasswordProtection>
-                      <CreationNotificationProvider>
-                        <MasonryProvider>
-                          <ModalProvider>
-                            {getLayout(
-                              <ErrorBoundary>
-                                <Component {...pageProps} />
-                              </ErrorBoundary>,
-                            )}
-                          </ModalProvider>
-                        </MasonryProvider>
-                      </CreationNotificationProvider>
-                    </PasswordProtection>
+                    <CreationNotificationProvider>
+                      <MasonryProvider>
+                        <ModalProvider>
+                          {getLayout(
+                            <ErrorBoundary>
+                              <Component {...pageProps} />
+                            </ErrorBoundary>,
+                          )}
+                        </ModalProvider>
+                      </MasonryProvider>
+                    </CreationNotificationProvider>
                   </UserProvider>
                 </ClerkWrapProvider>
               </EdenProvider>
