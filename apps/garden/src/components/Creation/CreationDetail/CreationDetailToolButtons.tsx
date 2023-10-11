@@ -53,14 +53,14 @@ const CreationDetailToolButtons = ({ creation }: { creation: Creation }) => {
       ),
     }
     const copyItem = {
-      title: 'Copy URL',
+      title: 'Copy URL to Clipboard',
       icon: (
         <CopyUrlButton url={`${CONFIG.NEXT_PUBLIC_HOST}${router.asPath}`} />
       ),
     }
 
     const copyImageItem = {
-      title: 'Copy Image',
+      title: 'Copy Image to Clipboard',
       icon: <CopyImageButton url={creation.uri} />,
     }
 
