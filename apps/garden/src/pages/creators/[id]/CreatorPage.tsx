@@ -193,9 +193,9 @@ const CreatorPage = ({ data }: { data: Creator }) => {
     fallbackData: data,
   })
 
-  if (!data) {
-    return null
-  }
+  console.log('hello from jmill')
+  console.log(data)
+  console.log(creatorData)
 
   return <CreatorPageContent creator={creatorData || data} />
 }
