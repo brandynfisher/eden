@@ -21,7 +21,7 @@ const params = [
   {
     name: 'mode',
     label: 'Training mode',
-    description: 'What are you trying to learn?',
+    description: 'What are you trying to learn? Concept generally refers to any kind of coherent object, character or thing. Face is specifically for learning a persons face (can also be tried for characters), style is to learn an aesthetic style thats consistent across diverse images.',
     default: 'concept',
     allowedValues: ['concept', 'face', 'style'],
     isRequired: true,

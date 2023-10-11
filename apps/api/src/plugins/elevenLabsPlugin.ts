@@ -1,5 +1,4 @@
 import axios from 'axios'
-import axiosRetry from 'axios-retry'
 import type { FastifyInstance } from 'fastify'
 
 // axiosRetry(axios, {
@@ -8,18 +7,6 @@ import type { FastifyInstance } from 'fastify'
 //     return retryCount * 15000 // 15 seconds, 30, 45, 60, 75
 //   },
 // })
-axiosRetry(axios, {
-  retries: 5,
-  retryDelay: retryCount => {
-    console.log(`Retrying request, count: ${retryCount}`)
-    // Add delay of 1-2 seconds between retries
-    return retryCount * 1000 + Math.random() * 5000
-  },
-  retryCondition: error => {
-    console.log(`Retry condition called: ${JSON.stringify(error)}`)
-    return true // Always retry as a test, not for production
-  },
-})
 
 const ELEVENLABS_VOICES = [
   {
@@ -457,7 +444,7 @@ export class ElevenLabs {
 
 export const registerElevenLabs = async (fastify: FastifyInstance) => {
   try {
-    const elevenLabs = new ElevenLabs(process.env.ELEVENLABS_API_KEY!)
+    const elevenLabs = new ElevenLabs(fastify.config.ELEVENLABS_API_KEY)
     fastify.decorate('elevenLabs', elevenLabs)
     fastify.log.info('Successfully registered ElevenLabsPlugin')
   } catch (err) {

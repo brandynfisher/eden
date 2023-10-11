@@ -13,8 +13,8 @@ const params = [
     name: 'init_image_strength',
     label: 'Init image strength',
     description:
-      'How much to weight the input init image in the diffusion process. Recommended 0.1-0.3. Lower values will drift away from the input image more, but will imagine new details more easily, possibly leading to a more creative final image.',
-    default: 0.2,
+      'How much to weight the input image. Setting to 0 will try to reimagine the image. Higher values will stay closer to the original.',
+    default: 0.05,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
@@ -39,6 +39,14 @@ const params = [
     step: 64,
   },
 
+  
+  {
+    name: 'text_input',
+    label: 'Prompt',
+    description: 'Optional text prompt for the remix (will try to remix the image in the direction of the prompt (style-transfer))',
+    default: null,
+  },
+
 
   ////////////////////////////////////////
   // optional generation args
@@ -48,14 +56,6 @@ const params = [
     description: 'Number of variations to create',
     default: 1,
     allowedValues: [1, 2, 4],
-    optional: true,
-  },
-  
-  {
-    name: 'text_input',
-    label: 'Prompt',
-    description: 'Text prompt for the remix (leaving this empty will trigger CLIP-interrogator to automatically find a prompt matching your image)',
-    default: null,
     optional: true,
   },
 

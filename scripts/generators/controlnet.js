@@ -54,7 +54,7 @@ const params = [
     label: 'ControlNet',
     description: 'Which ControlNet to use',
     default: 'luminance',
-    allowedValues: ["luminance"],
+    allowedValues: ["luminance", "canny-edge", "depth"],
   },
   ////////////////////////////////////////
   // optional generation args
