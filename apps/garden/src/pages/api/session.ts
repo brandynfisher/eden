@@ -10,7 +10,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (method) {
     case 'GET':
       try {
-        //  Check if session token exists
+        // Check if session token exists
         if (!authToken) {
           return res.status(200).json({ error: 'Unauthorized' })
         }
