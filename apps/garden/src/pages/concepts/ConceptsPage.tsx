@@ -14,7 +14,7 @@ const ConceptsPage = () => {
       <MasonryInfinite
         hasSort={sortButtons}
         type="concepts"
-        itemComponent={ConceptCard}
+        ItemComponent={ConceptCard}
       />
     </div>
   )

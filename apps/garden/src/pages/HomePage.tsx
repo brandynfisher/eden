@@ -30,7 +30,7 @@ const HomePage = () => {
       <MasonryInfinite
         hasSort={sortButtons}
         type="creations"
-        itemComponent={CreationCard}
+        ItemComponent={CreationCard}
       />
     </div>
   )

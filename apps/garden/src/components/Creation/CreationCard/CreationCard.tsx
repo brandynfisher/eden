@@ -6,55 +6,26 @@ import CreationReactions from '@/components/Creation/CreationReactions'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { getAspectRatio } from '@/lib/media'
 import { timeAgo } from '@/lib/time'
-import { MasonryContext } from '@/providers/MasonryProvider'
-import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
-import { useRouter } from 'next/router'
-import React, { FC, useCallback, useContext, useEffect, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 
 const CreationCard: FC<{
   index: number
   data: Creation
-  disableArrowNav?: boolean
-}> = ({ index, data, disableArrowNav }) => {
-  const router = useRouter()
+  // disableArrowNav?: boolean
+  onClick: () => void
+}> = ({
+  index,
+  data,
+  // disableArrowNav,
+  onClick,
+}) => {
   const { hovered, ref } = useHover()
   const [creation, setCreation] = useState<Creation>(data)
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false)
-
-  const { showModal } = useModalContext()
-  const { setCurrentIndex } = useContext(MasonryContext)
-
-  const openDetailModal = useCallback(async () => {
-    if (disableArrowNav) {
-      showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
-        creation,
-        loadSimilar: true,
-        usesUrl: true,
-        originPageUrl: router.asPath,
-      })
-
-      return
-    }
-
-    setCurrentIndex(index)
-    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL, {
-      loadSimilar: true,
-      usesUrl: true,
-      originPageUrl: router.asPath,
-    })
-  }, [
-    creation,
-    setCurrentIndex,
-    showModal,
-    index,
-    data,
-    router,
-    disableArrowNav,
-  ])
 
   const [createdDateString, setCreatedDateString] = useState('')
   const timeSinceCreation = timeAgo(creation.createdAt)
@@ -62,10 +33,6 @@ const CreationCard: FC<{
   useEffect(() => {
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
-
-  if (!creation.user) {
-    console.log(creation._id, creation.user)
-  }
 
   return (
     <div ref={ref} className="mx-auto max-w-[500px] md:mx-0 md:max-w-none">
@@ -79,7 +46,7 @@ const CreationCard: FC<{
             <div className="w-full flex justify-center flex-col">
               <div
                 className="card-image relative rounded-lg overflow-hidden cursor-pointer"
-                onClick={openDetailModal}
+                onClick={onClick}
               >
                 <a
                   onClick={ev => ev.preventDefault()}

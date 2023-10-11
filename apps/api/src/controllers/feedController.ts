@@ -60,6 +60,7 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
               $and: [
                 { $expr: { $eq: ['$user', '$$followingId'] } },
                 { isPrivate: { $ne: true } },
+                { deleted: { $ne: true } },
               ],
             },
           },

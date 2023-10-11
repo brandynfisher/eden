@@ -45,7 +45,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
         type="creations"
         query={{ userId: creatorId }}
         hasSort={sortButtons}
-        itemComponent={CreationCard}
+        ItemComponent={CreationCard}
       />
     </div>
   )
@@ -59,7 +59,7 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
         type="concepts"
         query={{ userId: creatorId }}
         hasSort={[OrderByLatest]}
-        itemComponent={ConceptCard}
+        ItemComponent={ConceptCard}
       />
     </div>
   )

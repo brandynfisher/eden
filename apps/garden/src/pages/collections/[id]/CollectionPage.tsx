@@ -98,7 +98,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
               type="creations"
               query={{ collectionId: collection._id }}
               hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
-              itemComponent={CreationCard}
+              ItemComponent={CreationCard}
             />
           </div>
         </Space>

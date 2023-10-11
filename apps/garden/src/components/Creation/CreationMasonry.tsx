@@ -77,6 +77,8 @@ const CreationMasonry = ({
                   index={props.index}
                   data={props.data}
                   disableArrowNav={true}
+                  // @todo: implement analog Infinite
+                  onClick={() => null}
                 />
               )}
               itemKey={data => data._id}

@@ -1,5 +1,5 @@
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
-import CreationDetailModal from '@/components/Modals/CreationDetailModal'
+import CreationDetailModalV2 from '@/components/Modals/CreationDetailModalV2'
 import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
@@ -19,7 +19,7 @@ import React, {
 } from 'react'
 
 export enum MODAL_TYPES {
-  CREATION_DETAIL_MODAL = 'CREATION_DETAIL_MODAL',
+  CREATION_DETAIL_MODAL_V2 = 'CREATION_DETAIL_MODAL_V2',
   CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
   CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
@@ -30,7 +30,7 @@ export enum MODAL_TYPES {
 
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
-  [MODAL_TYPES.CREATION_DETAIL_MODAL]: CreationDetailModal,
+  [MODAL_TYPES.CREATION_DETAIL_MODAL_V2]: CreationDetailModalV2,
   [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
   [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
@@ -46,10 +46,19 @@ type BaseModalProps = Partial<ModalProps> & {
   originPageUrl?: string
   className?: string
 }
+
+export type CreationDetailModalV2Props = Partial<
+  BaseModalProps & {
+    initialItem: Creation
+    maybeLoadMoreFn: (currentIndex: number, currentItems: Creation[]) => void
+  }
+>
+
 type ModalStore = {
   modalType: string | undefined
   modalProps?:
     | Partial<BaseModalProps & { creation?: Creation; loadSimilar?: boolean }>
+    | CreationDetailModalV2Props
     | Partial<BaseModalProps & { concept?: Concept }>
     | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })
     | (Partial<BaseModalProps> & { task?: Task })
@@ -103,13 +112,13 @@ function ModalProvider({ children }: PropsWithChildren) {
     // @todo ---end ugly---
   }
 
-  const hideModal = () => {
+  const hideModal = useCallback(() => {
     setStore({
       ...store,
       modalType: undefined,
       modalProps: {},
     })
-  }
+  }, [store])
 
   const defaultModalProps: ModalProps = {
     closeIcon: <CloseButton />,
