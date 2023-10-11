@@ -82,12 +82,9 @@ const buyMannaItems: ItemType[] = [
 ]
 
 const MannaDropdown = () => {
-  const { mannaBalance, isAuthenticated, user } = useContext(UserContext)
+  const { mannaBalance, isAuthenticated } = useContext(UserContext)
 
-  const items =
-    user && user.featureFlags && user.featureFlags.includes('preview')
-      ? [...defaultItems, ...buyMannaItems]
-      : defaultItems
+  const items = [...defaultItems, ...buyMannaItems]
 
   if (!isAuthenticated) {
     return null
