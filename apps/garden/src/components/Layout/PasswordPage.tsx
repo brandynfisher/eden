@@ -1,5 +1,5 @@
 import { useLocalStorage } from '@mantine/hooks'
-import { Alert, Button, Input } from 'antd'
+import { Alert, Input } from 'antd'
 import React, { PropsWithChildren, useEffect, useState } from 'react'
 
 const PasswordProtection = ({ children }: PropsWithChildren) => {
@@ -14,8 +14,6 @@ const PasswordProtection = ({ children }: PropsWithChildren) => {
     })
 
   const [access, setAccess] = useState<boolean | null>(null)
-
-  console.log({ localStoragePasswordCorrect })
 
   useEffect(() => {
     if (localStoragePasswordCorrect) {
@@ -82,9 +80,13 @@ const PasswordProtection = ({ children }: PropsWithChildren) => {
                       description="Find us on Discord to get access to this test"
                     />
                   ) : null}
-                  <Button type="primary" disabled={!password}>
+                  <button
+                    className="rounded-lg bg-blue-500 disabled:bg-gray-950 border-none py-2"
+                    type="submit"
+                    disabled={!password}
+                  >
                     Enter
-                  </Button>
+                  </button>
                 </form>
               </div>
             </div>
