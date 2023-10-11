@@ -87,10 +87,10 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         />
       </Head>
 
-      <PasswordProtection>
-        <main className={`${inter.className}`}>
-          <ThemeProvider attribute="class">
-            <AntConfigWrapProvider>
+      <main className={`${inter.className}`}>
+        <ThemeProvider attribute="class">
+          <AntConfigWrapProvider>
+            <PasswordProtection>
               <WalletProvider>
                 <EdenProvider>
                   <ClerkWrapProvider>
@@ -110,10 +110,10 @@ export default function App({ Component, pageProps }: Props): ReactElement {
                   </ClerkWrapProvider>
                 </EdenProvider>
               </WalletProvider>
-            </AntConfigWrapProvider>
-          </ThemeProvider>
-        </main>
-      </PasswordProtection>
+            </PasswordProtection>
+          </AntConfigWrapProvider>
+        </ThemeProvider>
+      </main>
     </>
   )
 }
