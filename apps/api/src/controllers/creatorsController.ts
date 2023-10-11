@@ -190,7 +190,7 @@ export const getCreator = async (
   const creatorDoc = await User.findOne({
     $or: [
       { userId },
-      { username: { $regex: userId.toLowerCase(), $options: 'i' } },
+      { username: { $eq: userId.toLowerCase(), $options: 'i' } },
     ],
   })
   if (!creatorDoc) {
