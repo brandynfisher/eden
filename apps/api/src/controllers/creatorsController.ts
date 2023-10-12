@@ -187,8 +187,12 @@ export const getCreator = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.params as CreatorsGetArguments
+  const lowerCaseUserId = userId.toLowerCase()
   const creatorDoc = await User.findOne({
-    $or: [{ userId }, { username: { $eq: userId.toLowerCase() } }],
+    $or: [
+      { userId: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
+      { username: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
+    ],
   })
   if (!creatorDoc) {
     return reply.status(404).send({
