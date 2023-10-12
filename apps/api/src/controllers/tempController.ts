@@ -167,16 +167,15 @@ export const migrateCreator = async (
   const newCollection = await Collection.findOne({ user: userId })
   if (oldCollection && newCollection) {
     const updatedCreations = [
-      ...newCollection.creations,
+      ...(newCollection.creations ? newCollection.creations : []),
       ...(oldCollection.creations ? oldCollection.creations : []),
     ]
     const updatedCreationsUnique = [...new Set(updatedCreations)]
     const updatedCollection = {
       ...newCollection,
       creations: updatedCreationsUnique,
-      displayImageUri: oldCollection.displayImageUri,
-      createdAt: oldCollection.createdAt,
-      updatedAt: oldCollection.updatedAt,
+      displayImageUri:
+        oldCollection.displayImageUri || newCollection.displayImageUri || '',
     }
     await Collection.updateOne(
       {
