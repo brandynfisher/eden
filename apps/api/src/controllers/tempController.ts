@@ -3,6 +3,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
+import { Collection } from '../models/Collection'
 import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
 import { Follow } from '../models/Follow'
@@ -160,6 +161,32 @@ export const migrateCreator = async (
       balance: maxBalance,
     },
   )
+
+  // migrate collections/bookmarks
+  const oldCollection = await Collection.findOne({ user: authUser._id })
+  const newCollection = await Collection.findOne({ user: userId })
+  if (oldCollection && newCollection) {
+    const updatedCreations = [
+      ...newCollection.creations,
+      ...(oldCollection.creations ? oldCollection.creations : []),
+    ]
+    const updatedCreationsUnique = [...new Set(updatedCreations)]
+    const updatedCollection = {
+      ...newCollection,
+      creations: updatedCreationsUnique,
+      displayImageUri: oldCollection.displayImageUri,
+      createdAt: oldCollection.createdAt,
+      updatedAt: oldCollection.updatedAt,
+    }
+    await Collection.updateOne(
+      {
+        _id: newCollection._id,
+      },
+      {
+        $set: updatedCollection,
+      },
+    )
+  }
 
   // record migration
   await UserMigration.create({
