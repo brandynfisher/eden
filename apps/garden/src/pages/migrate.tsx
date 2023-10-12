@@ -16,7 +16,6 @@ const MigratePage = () => {
   const [transferred, setTransferred] = useState(false)
   const { message: appMessage } = App.useApp()
   const { creator } = useCreator(address || '')
-  console.log(creator)
 
   const chainId = chain?.id
 
