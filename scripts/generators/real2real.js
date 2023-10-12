@@ -126,17 +126,6 @@ const params = [
   },
   
   {
-    name: 'latent_blending_skip_f',
-    label: 'Denoising skip fractions (very advanced)',
-    description:
-      'Fraction of denoising to skip at the start/end of the animation. Higher values result in smoother video (will also render faster), too high values will look more like crossfading in pixel space.',
-    default: [0.1, 0.65],
-    minLength: 2,
-    maxLength: 2,
-    optional: true,
-  },
-  
-  {
     name: 'n_film',
     label: 'FILM Iterations',
     description:
