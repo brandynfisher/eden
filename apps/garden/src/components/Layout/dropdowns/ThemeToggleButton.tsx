@@ -11,9 +11,13 @@ const ThemeToggleButton = () => {
   const [mounted, setMounted] = useState(false)
   const { resolvedTheme, setTheme } = useTheme()
 
-  const handleThemeToggleClick = useCallback(() => {
-    setTheme(toggleTheme(resolvedTheme))
-  }, [resolvedTheme, setTheme])
+  const handleThemeToggleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      event.stopPropagation()
+      setTheme(toggleTheme(resolvedTheme))
+    },
+    [resolvedTheme, setTheme],
+  )
 
   // prevent hydration mismatch errors - useEffect is only run client-side
   useEffect(() => {

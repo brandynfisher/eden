@@ -89,7 +89,7 @@ const params = [
     label: 'Init image strength',
     description:
       'How much influence the guidance image has on the creation. Recommended <0.2',
-    default: 0.4,
+    default: 0.2,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
@@ -106,7 +106,7 @@ const params = [
   {
     name: 'guidance_scale',
     label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance',
+    description: 'Strength of the prompt (higher values usually increase saturation and constrast)',
     default: 7.5,
     minimum: 0.0,
     maximum: 20.0,

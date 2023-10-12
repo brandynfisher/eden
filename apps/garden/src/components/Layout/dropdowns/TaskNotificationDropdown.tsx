@@ -203,11 +203,13 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
       <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
         {rightTruncatedString(task.config.text_input || '', 36)}
       </div>
-      <Progress
-        percent={task?.progress ? Math.round(task.progress * 100) : 0}
-        status={task?.status === 'pending' ? 'normal' : 'active'}
-        className="mt-1 flex items-center"
-      />
+      {task?.status === 'running' ? (
+        <Progress
+          percent={task?.progress ? Math.round(task.progress * 100) : 0}
+          status="active"
+          className="mt-1 flex items-center"
+        />
+      ) : null}
       <div className="text-xs text-gray-800 dark:text-gray-400 mb-1">
         <div className="flex justify-between">
           <div className="capitalize">

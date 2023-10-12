@@ -1,6 +1,7 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import ShareButton from '@/components/Layout/buttons/ShareButton'
+import { CONFIG } from '@/lib/config'
 import { downloadFile } from '@/lib/files'
 import { DownloadOutlined } from '@ant-design/icons'
 import { Concept } from '@edenlabs/eden-sdk'
@@ -16,11 +17,18 @@ const ConceptDetailToolButtons = ({ concept }: { concept: Concept }) => {
   const getItems = () => {
     const shareItem = {
       title: 'Share Concept',
-      icon: <ShareButton title={'Share Concept'} url={``} />,
+      icon: (
+        <ShareButton
+          title={'Share Concept'}
+          url={`${CONFIG.NEXT_PUBLIC_HOST}${router.asPath}`}
+        />
+      ),
     }
     const copyItem = {
       title: 'Copy URL',
-      icon: <CopyUrlButton url={``} />,
+      icon: (
+        <CopyUrlButton url={`${CONFIG.NEXT_PUBLIC_HOST}${router.asPath}`} />
+      ),
     }
 
     const items: ToolButtonItem[] = [

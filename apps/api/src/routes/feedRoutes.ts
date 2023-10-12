@@ -42,7 +42,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCreationsFeed(request, reply),
   })
 
@@ -79,7 +79,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getConceptsFeed(request, reply),
   })
 }

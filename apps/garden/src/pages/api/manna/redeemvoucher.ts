@@ -1,10 +1,11 @@
+import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient, MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = req.session.token
+  const authToken = await getAuthToken(req)
   const { code } = req.body as MannaVouchersRedeemArguments
 
   if (!authToken) {

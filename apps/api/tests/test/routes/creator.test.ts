@@ -148,7 +148,6 @@ test('Two users cannot have the same username', async context => {
     },
     headers,
   })
-  console.log(response.json())
   expect(response.statusCode).toBe(400)
   expect(response.json()).toHaveProperty('message')
   expect(response.json().message).toBe('Username already taken')

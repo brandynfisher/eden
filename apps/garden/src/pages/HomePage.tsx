@@ -10,28 +10,27 @@ import { UserContext } from '@/providers/UserProvider'
 import { useContext } from 'react'
 
 const HomePage = () => {
-  const { isConnected, isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated } = useContext(UserContext)
 
-  const sortButtons =
-    isConnected && isAuthenticated
-      ? [
-          // OrderByScore,
-          OrderByLatest,
-          OrderByPraises,
-          OrderByBookmarks,
-          OrderByFollowing,
-        ]
-      : [
-          // OrderByScore,
-          OrderByLatest,
-        ]
+  const sortButtons = isAuthenticated
+    ? [
+        // OrderByScore,
+        OrderByLatest,
+        OrderByPraises,
+        OrderByBookmarks,
+        OrderByFollowing,
+      ]
+    : [
+        // OrderByScore,
+        OrderByLatest,
+      ]
 
   return (
     <div className={`flex flex-col max-w-[calc(100vw_-_32px)]`}>
       <MasonryInfinite
         hasSort={sortButtons}
         type="creations"
-        itemComponent={CreationCard}
+        ItemComponent={CreationCard}
       />
     </div>
   )

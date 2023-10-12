@@ -45,7 +45,6 @@ export const useTaskCost = () => {
 
         setTaskCost(response.data?.cost || undefined)
       } catch (err) {
-        console.error(err)
         message.error('Error fetching task cost estimate')
       } finally {
         setIsLoadingTaskCost(false)

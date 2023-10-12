@@ -39,7 +39,7 @@ const FollowList = ({
                   creatorImage={listItem.userImage}
                   creatorName={listItem.username}
                 />
-                <div className="absolute self-center h-full right-2 bg-gray-800">
+                <div className="absolute self-center h-full right-2">
                   <FollowControls
                     creatorId={listItem.userId}
                     showStats={false}

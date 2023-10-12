@@ -39,9 +39,8 @@ const ChatScenarioUI = ({
 }) => {
   const MAX_CHAT_HISTORY = 6
 
-  // const { sessionEvents } = useSes
-  const { isAuthenticated, address } = useContext(UserContext)
-  const { creator } = useCreator(isAuthenticated && address ? address : null)
+  const { isAuthenticated, userId } = useContext(UserContext)
+  const { creator } = useCreator(isAuthenticated && userId ? userId : null)
 
   const [text, setText] = useState('')
   const [conversation, setConversation] = useState<ConversationEntry[]>([])

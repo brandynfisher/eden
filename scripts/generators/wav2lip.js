@@ -39,6 +39,22 @@ const params = [
     default: null,
     optional: true,
   },
+  {
+    name: 'width',
+    label: 'Force Width',
+    description: 'Override width of output video (if left blank, will be same as Face image file',
+    minimum: 128,
+    maximum: 2048,
+    optional: true,
+  },
+  {
+    name: 'height',
+    label: 'Force Height',
+    description: 'Override height of output video (if left blank, will be same as Face image file',
+    minimum: 128,
+    maximum: 2048,
+    optional: true,
+  },
 ]
 
 export default params;

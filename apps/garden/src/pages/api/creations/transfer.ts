@@ -1,10 +1,11 @@
+import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = req.session.token
+  const authToken = await getAuthToken(req)
   const { address, message, signature } = req.body
 
   if (!authToken) {
@@ -13,7 +14,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     await axios.post(
-      CONFIG.API_URL + '/creators/migrate',
+      CONFIG.API_URL + '/auth/migrate',
       {
         address,
         message,

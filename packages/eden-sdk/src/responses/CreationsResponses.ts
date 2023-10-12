@@ -26,6 +26,16 @@ export type CreationsUnreactResponse = WebAPICallResult & {
   success?: boolean
 }
 
+export type CreationsUpdateResponse = WebAPICallResult & {
+  error?: string
+  creation?: Creation
+}
+
+export type CreationsDeleteResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
+}
+
 export type Reactions = Record<string, boolean>
 
 export type Creation = {
@@ -45,6 +55,8 @@ export type Creation = {
   bookmarkCount?: number
   bookmarked?: boolean
   reactions?: Reactions
+  deleted?: boolean,
+  isPrivate?: boolean,
   createdAt: string
   updatedAt: string
 }
@@ -66,5 +78,6 @@ export enum MediaType {
   Video = 'video',
   Text = 'text',
   Audio = 'audio',
+  Zip = 'zip',
   Unknown = 'unknown',
 }

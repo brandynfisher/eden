@@ -5,7 +5,9 @@ export const registerSentry = async (fastify: FastifyInstance) => {
     fastify.register(import('@immobiliarelabs/fastify-sentry'), {
       dsn: process.env.SENTRY_DSN,
       environment: process.env.NODE_ENV,
-      enabled: process.env.NODE_ENV === 'production',
+      enabled:
+        process.env.NODE_ENV === 'production' ||
+        process.env.NODE_ENV === 'staging',
       release: '1.0.0',
     })
     fastify.log.info('Successfully registered Sentry Plugin')

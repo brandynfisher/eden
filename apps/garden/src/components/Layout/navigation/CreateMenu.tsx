@@ -1,4 +1,3 @@
-import { UserContext } from '@/providers/UserProvider'
 import { CommentOutlined, RobotOutlined } from '@ant-design/icons'
 import { DownOutlined } from '@ant-design/icons'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
@@ -6,7 +5,7 @@ import YardIcon from '@mui/icons-material/Yard'
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { useContext } from 'react'
+import React from 'react'
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -27,9 +26,6 @@ function getItem(
 
 const defaultItems: MenuItem[] = [
   getItem('Creations', '/create/creations', <YardIcon fontSize="inherit" />),
-]
-
-const featurePreviewItems: MenuItem[] = [
   getItem(
     'Concepts',
     '/create/concepts',
@@ -39,28 +35,9 @@ const featurePreviewItems: MenuItem[] = [
   getItem('Scenarios', '/create/scenarios', <CommentOutlined />),
 ]
 
-const createMenuItems = (
-  isAuthenticated: boolean,
-  username: string | undefined,
-  userFlags: string[],
-) => {
-  const isPreviewUser = userFlags.includes('preview')
-  const items = [...defaultItems]
-  if (isPreviewUser) {
-    items.push(...featurePreviewItems)
-  }
-  return items
-}
-
 const CreateMenu = () => {
   const router = useRouter()
-  const { isAuthenticated, user } = useContext(UserContext)
-
-  const menuItems = createMenuItems(
-    isAuthenticated,
-    user?.username,
-    user && user.featureFlags ? user.featureFlags : [],
-  )
+  const menuItems = defaultItems
 
   return (
     <div>

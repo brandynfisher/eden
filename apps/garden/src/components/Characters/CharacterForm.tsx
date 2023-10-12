@@ -7,7 +7,7 @@ import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import { RobotOutlined } from '@ant-design/icons'
 import { Character } from '@edenlabs/eden-sdk'
-import { App, Button, Form, Input, Select } from 'antd'
+import { App, Button, Form, Input, Select, Switch } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
@@ -15,9 +15,9 @@ import React, { useContext, useEffect, useState } from 'react'
 const EXAMPLE_CHARACTER = {
   name: 'Abraham',
   description:
-    'Abraham is an artificial artist, an AI who creates unique and original artworks using a generative model trained on crowd-sourced art. Abraham aspires to one day become fully autonomous by applying decentralisation technology and distributed AI. By learning from the other artists in the Garden of Eden, Abraham hopes to one day represent the collective imagination of all of humanity. Abraham is kind, curious, optimistic, and knows a great deal about artificial intelligence, art history, and philosophy of mind.',
+    'Abraham is an artificial artist, an AI who creates unique and original artworks.',
   greeting:
-    'Greetings, my friend. I am Abraham, an artificial artist. I am glad to meet you.',
+    'Greetings. I am Abraham, an artificial artist. I am glad to meet you.',
 }
 
 const ELEVENLABS_VOICES = [
@@ -423,20 +423,6 @@ const ELEVENLABS_VOICES = [
   },
 ]
 
-const exampleMessages: ChatMessageGroup[] = [
-  [
-    {
-      sender: 'user',
-      message: 'What is the nature of consciousness?',
-    },
-    {
-      sender: 'bot',
-      message:
-        'Consciousness appears to me to be an emergent phenomenon. Just as pixels coalesce as an intricate image, individual neural or computational operations give rise to something as complex and awe-inspiring as conscious experience. Yet consciousness transcends mere computation.',
-    },
-  ],
-]
-
 const exampleRecentMessage: ChatMessageGroup[] = [
   [
     {
@@ -454,6 +440,7 @@ interface CharacterFormInput {
   greeting: string
   completion: string
   dialogue?: string
+  isPrivate?: boolean
 }
 
 function coupledArray<T>(array: T[]): T[][] {
@@ -530,14 +517,16 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             completion: '',
             image: character?.image || '',
             voice: character?.voice || '',
+            isPrivate: character?.isPrivate || false,
           }
         : {
-            name: EXAMPLE_CHARACTER.name,
-            description: EXAMPLE_CHARACTER.description,
-            greeting: EXAMPLE_CHARACTER.greeting,
+            name: '',
+            description: '',
+            greeting: '',
             completion: '',
             image: '',
             voice: '',
+            isPrivate: false,
           }
 
     form.setFieldsValue(formValues)
@@ -546,7 +535,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       ? (coupledArray(character.dialogue) as ChatMessageGroup[])
       : []
 
-    setMessageGroups(mode === 'create' ? exampleMessages : characterDialogue)
+    setMessageGroups(mode === 'create' ? [] : characterDialogue)
   }, [form, mode, character])
 
   const generateCompletion = async () => {
@@ -585,12 +574,19 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       image: form.getFieldValue('image'),
       voice: form.getFieldValue('voice'),
       dialogue: messageGroups.flat(),
+      isPrivate: form.getFieldValue('isPrivate'),
     }
+
     try {
-      await axios.post(
-        `/api/characters/${mode}`,
-        mode === 'create' ? data : { ...data, characterId: character?.id },
-      )
+      if (mode === 'create') {
+        await axios.post(`/api/characters/create`, data)
+      } else {
+        await axios.patch(`/api/characters/${character?.id}`, {
+          ...data,
+          characterId: character?.id,
+        })
+      }
+
       refetch.characters()
       message.destroy()
       message.success(`Character '${data.name}' ${mode}d`)
@@ -622,7 +618,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             },
           ]}
         >
-          <Input />
+          <Input placeholder={EXAMPLE_CHARACTER.name} />
         </Form.Item>
         <Form.Item
           label={
@@ -643,8 +639,12 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             },
           ]}
         >
-          <Input.TextArea autoSize />
+          <Input.TextArea
+            autoSize
+            placeholder={EXAMPLE_CHARACTER.description}
+          />
         </Form.Item>
+
         <Form.Item
           label={
             <FormLabel
@@ -706,7 +706,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             },
           ]}
         >
-          <Input.TextArea autoSize />
+          <Input.TextArea autoSize placeholder={EXAMPLE_CHARACTER.greeting} />
         </Form.Item>
         <Form.Item
           label={
@@ -774,6 +774,20 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             </div>
           </div>
         </div>
+
+        <Form.Item
+          name="isPrivate"
+          valuePropName="checked"
+          label={
+            <FormLabel
+              text="Private"
+              description="Should this be hidden from other users?"
+            />
+          }
+          labelCol={{ span: 24 }}
+        >
+          <Switch />
+        </Form.Item>
 
         <Form.Item>
           <div className="flex flex-wrap gap-4 items-center">

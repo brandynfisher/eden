@@ -33,8 +33,8 @@ const params = [
     name: 'interpolation_init_images_min_strength',
     label: 'Init image min strength',
     description:
-      'Min strength of the init_img during blending. Lower values will give the blend more freedom to diverge from the source images',
-    default: 0.15,
+      'Min strength of the init_img during blending. Lower values will give the blend more freedom to diverge from the source images, higher values will try to keep color patterns and composition',
+    default: 0.05,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
@@ -74,7 +74,7 @@ const params = [
   {
     name: 'guidance_scale',
     label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance, higher values result in more saturated frames',
+    description: 'Strength of the prompt (higher values usually increase saturation and constrast)',
     default: 7.5,
     minimum: 0.0,
     maximum: 20.0,

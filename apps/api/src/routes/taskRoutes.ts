@@ -27,7 +27,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getTaskCost(server, request, reply),
   })
 
@@ -45,7 +45,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createTask(server, request, reply),
   })
 
@@ -63,7 +63,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createCompletion(server, request, reply),
   })
 
@@ -86,7 +86,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createChatCompletion(server, request, reply),
   })
 
@@ -105,7 +105,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listTasks(request, reply),
   })
 

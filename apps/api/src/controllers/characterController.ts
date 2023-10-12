@@ -5,7 +5,9 @@ import {
   CharactersListArguments,
   CharactersUpdateArguments,
 } from '@edenlabs/eden-sdk'
+import { booleanObjectType } from 'aws-sdk/clients/iam'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'
@@ -17,10 +19,19 @@ export const createCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, image, voice, description, greeting, dialogue } =
+  const { name, image, voice, description, greeting, dialogue, isPrivate } =
     request.body as CharactersCreateArguments
 
-  const input = {
+  const input: {
+    user: ObjectId
+    name: string
+    image: string | undefined
+    voice: string | undefined
+    description: string | undefined
+    greeting: string | undefined
+    dialogue: any[] | undefined
+    isPrivate?: boolean
+  } = {
     user: userId,
     name,
     image,
@@ -28,6 +39,7 @@ export const createCharacter = async (
     description,
     greeting,
     dialogue,
+    isPrivate,
   }
 
   const characterRepository = new CharacterRepository(Character)
@@ -44,14 +56,16 @@ export const updateCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { characterId, name, image, voice, description, greeting, dialogue } =
-    request.body as CharactersUpdateArguments
+  const { characterId } = request.params as CharactersUpdateArguments
 
   if (!characterId) {
     return reply.status(400).send({
-      message: 'You must provide an characterId',
+      message: 'You must provide a characterId',
     })
   }
+
+  const { name, image, voice, description, greeting, dialogue, isPrivate } =
+    request.body as CharactersUpdateArguments
 
   const character = await Character.findOne({
     _id: characterId,
@@ -64,13 +78,22 @@ export const updateCharacter = async (
     })
   }
 
-  const input = {
+  const input: {
+    name: string | undefined
+    image: string | undefined
+    voice: string | undefined
+    description: string | undefined
+    greeting: string | undefined
+    dialogue: any[] | undefined
+    isPrivate?: boolean
+  } = {
     name,
     image,
     voice,
     description,
     greeting,
     dialogue,
+    isPrivate,
   }
 
   await character.update(input)
@@ -137,6 +160,7 @@ export const listCharacters = async (
       description: character.description,
       greeting: character.greeting,
       dialogue: character.dialogue,
+      isPrivate: character.isPrivate,
     })),
   }
 
@@ -147,12 +171,21 @@ export const getCharacter = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { slug } = request.params as CharactersGetArguments
-  const character = await Character.findOne({ slug })
+  const { characterId } = request.params as CharactersGetArguments
+  const character = await Character.findOne({ _id: characterId })
   if (!character) {
     return reply.status(404).send({
       message: 'Character not found',
     })
+  }
+
+  if (character.isPrivate) {
+    if (character.user.toString() !== request.user?.userId.toString()) {
+      console.error('User not authorized to view this')
+      return reply.status(401).send({
+        message: 'User not authorized to view this',
+      })
+    }
   }
 
   const response = {
@@ -165,6 +198,7 @@ export const getCharacter = async (
     description: character.description,
     greeting: character.greeting,
     dialogue: character.dialogue,
+    isPrivate: character.isPrivate,
   }
 
   return reply.status(200).send({ character: response })

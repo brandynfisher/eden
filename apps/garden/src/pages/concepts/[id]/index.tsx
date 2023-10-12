@@ -12,18 +12,25 @@ interface PageProps {
 }
 
 const fetchConcept = async (context: NextPageContext) => {
-  const { query } = context
+  const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts?conceptId=${id}`)
+  const cookies = req ? req.headers.cookie : ''
+
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts/${id}`, {
+    headers: { cookie: cookies },
+  })
 }
 
-export const getServerSideProps = getServerSidePropsBase([
-  {
-    responseFieldName: 'concept',
-    dataFetcher: fetchConcept,
-  },
-])
+export const getServerSideProps = getServerSidePropsBase(
+  [
+    {
+      responseFieldName: 'concept',
+      dataFetcher: fetchConcept,
+    },
+  ],
+  true,
+)
 
 const Concept: Page<PageProps> = ({ data }: PageProps) => {
   return <ConceptPage data={data} />

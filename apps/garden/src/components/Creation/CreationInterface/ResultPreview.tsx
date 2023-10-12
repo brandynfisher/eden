@@ -64,7 +64,7 @@ const ResultPreview = ({
                       <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
                         {rightTruncatedString(
                           activeTask?.config.text_input || '',
-                          36,
+                          42,
                         )}
                       </div>
                     </div>
@@ -74,17 +74,17 @@ const ResultPreview = ({
                         <LoadingOutlined className="text-grey-800 dark:text-gray-200" />
                       }
                     />
-                    <Progress
-                      percent={
-                        activeTask?.progress
-                          ? Math.round(activeTask.progress * 100)
-                          : 0
-                      }
-                      status={
-                        activeTask?.status === 'pending' ? 'normal' : 'active'
-                      }
-                      className="mt-2 flex items-center"
-                    />
+                    {activeTask?.status === 'running' ? (
+                      <Progress
+                        percent={
+                          activeTask?.progress
+                            ? Math.round(activeTask.progress * 100)
+                            : 0
+                        }
+                        status="active"
+                        className="mt-2 flex items-center"
+                      />
+                    ) : null}
                   </div>
                   {activeTask && (
                     <div className="flex justify-between text-xs">

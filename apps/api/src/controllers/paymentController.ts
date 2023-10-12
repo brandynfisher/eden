@@ -133,6 +133,7 @@ export const handlePaymentEvent = async (
   }
 
   const sig = request.headers['stripe-signature'] as string
+
   const event = server.stripe.webhooks.constructEvent(
     request.rawBody,
     sig,

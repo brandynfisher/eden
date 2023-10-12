@@ -30,10 +30,10 @@ const MasonryInfinite = dynamic(() => import('@/components/MasonryInfinite'), {
 
 const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()
-  const { isAuthenticated, address, user } = useContext(UserContext)
+  const { isAuthenticated, userId, user } = useContext(UserContext)
   const [deleteLoading, setDeleteLoading] = React.useState(false)
 
-  const isAuthUser = isAuthenticated && collection?.creatorId === address
+  const isAuthUser = isAuthenticated && collection?.creatorId === userId
 
   const onDeleteButtonClick = async () => {
     setDeleteLoading(true)
@@ -94,10 +94,11 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
           />
           <div className="mt-4">
             <MasonryInfinite
+              key={`collection_${collection._id}`}
+              type="creations"
               query={{ collectionId: collection._id }}
               hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
-              type="creations"
-              itemComponent={CreationCard}
+              ItemComponent={CreationCard}
             />
           </div>
         </Space>

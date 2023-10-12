@@ -2,10 +2,12 @@ import fastify from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerChroma from './plugins/chromaPlugin'
+import registerClerk from './plugins/clerkPlugin'
 import config from './plugins/config'
 //import registerPlayHt from './plugins/playHtPlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerJwt from './plugins/jwtPlugin'
+import registerLogos from './plugins/logosPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
@@ -49,7 +51,11 @@ const createServer = async (
     await registerSentry(server)
   }
 
-  await registerJwt(server)
+  if (server.config.FLAGS_CLERK_ENABLED === 'yes') {
+    await registerClerk(server)
+  } else {
+    await registerJwt(server)
+  }
 
   await server.register(import('fastify-raw-body'), {
     field: 'rawBody',
@@ -78,6 +84,8 @@ const createServer = async (
   if (server.config.OPENAI_API_KEY) {
     await registerOpenai(server)
   }
+
+  await registerLogos(server)
 
   // if (server.config.PLAYHT_API_KEY) {
   //   await registerPlayHt(server)

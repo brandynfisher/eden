@@ -11,7 +11,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import { Modal, ModalProps } from 'antd'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import React, { useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 
 const CreationDetail = dynamic(
   () => import('@/components/Creation/CreationDetail/CreationDetail'),
@@ -20,46 +20,51 @@ const CreationDetail = dynamic(
   },
 )
 
-const CreationDetailModal = ({
-  // loadSimilar,
+const CreationDetailModalV2 = ({
+  maybeLoadMoreFn,
   ...rest
 }: {
-  loadSimilar?: boolean
+  maybeLoadMoreFn: (currentIndex: number, currentItems: Creation[]) => void
 }) => {
   const { onCancel } = rest as ModalProps
   const router = useRouter()
-  const { currentIndex, setCurrentIndex, totalItems, currentItem } =
-    useContext(MasonryContext)
-  const handlePrevItem = (index: number) => {
-    const prevIndex = index - 1
+  const { items, currentIndex, setCurrentIndex } = useContext(MasonryContext)
 
+  const handlePrevItem = useCallback(() => {
+    const prevIndex = currentIndex - 1
+
+    // console.log({ prevIndex })
     if (prevIndex < 0) {
       // @todo: UI feedback that end of list is reached
       // console.log('start of list')
     } else {
-      setCurrentIndex(prevIndex <= 0 ? 0 : prevIndex)
+      const newIndex = prevIndex <= 0 ? 0 : prevIndex
+      setCurrentIndex(newIndex)
+      maybeLoadMoreFn(newIndex, items as Creation[])
     }
-  }
+  }, [currentIndex, items])
 
-  const handleNextItem = (index: number) => {
-    const nextIndex = index + 1
+  const handleNextItem = useCallback(() => {
+    const nextIndex = currentIndex + 1
 
-    if (nextIndex >= totalItems) {
+    // console.log({ nextIndex })
+    if (nextIndex >= items.length) {
       // @todo: UI feedback that end of list is reached
       // console.log('end of list')
     } else {
       setCurrentIndex(nextIndex)
+      maybeLoadMoreFn(nextIndex, items as Creation[])
     }
-  }
+  }, [currentIndex, items])
 
   useEffect(() => {
     if (currentIndex === null) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft') {
-        handlePrevItem(currentIndex)
+        handlePrevItem()
       } else if (event.key === 'ArrowRight') {
-        handleNextItem(currentIndex)
+        handleNextItem()
       }
     }
 
@@ -67,25 +72,30 @@ const CreationDetailModal = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [currentIndex, totalItems, handlePrevItem, handleNextItem])
+  }, [currentIndex, handlePrevItem, handleNextItem])
 
   useEffect(() => {
-    if (currentItem) {
+    // console.log(currentIndex, items)
+    const handleRouteChange = async () => {
       const { pageUrl, modalUrl } = getModalUrls(
         router,
         'creation',
-        currentItem._id,
+        items[currentIndex]._id,
       )
       // console.log(currentItem._id, pageUrl, modalUrl)
-      router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
+      await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     }
-  }, [currentItem])
+
+    if (currentIndex !== null) {
+      handleRouteChange()
+    }
+  }, [currentIndex, items])
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">
-      {currentItem && (
+      {items[currentIndex] && (
         <CreationDetail
-          creation={currentItem as Creation}
+          creation={items[currentIndex] as Creation}
           isModal={true}
           // loadSimilar={loadSimilar}
         />
@@ -97,7 +107,7 @@ const CreationDetailModal = ({
               disabled={currentIndex - 1 < 0}
               title={'Prev'}
               icon={<KeyboardArrowLeftIcon fontSize="large" />}
-              onClick={() => handlePrevItem(currentIndex)}
+              onClick={handlePrevItem}
             />
           </div>
           <div className="pointer-events-auto md:hidden">
@@ -110,10 +120,10 @@ const CreationDetailModal = ({
           </div>
           <div className="justify-self-end pointer-events-auto">
             <CircleButton
-              disabled={currentIndex + 1 >= totalItems}
+              disabled={currentIndex + 1 >= items.length}
               title={'Next'}
               icon={<KeyboardArrowRightIcon fontSize="large" />}
-              onClick={() => handleNextItem(currentIndex)}
+              onClick={handleNextItem}
             />
           </div>
         </div>
@@ -122,4 +132,4 @@ const CreationDetailModal = ({
   )
 }
 
-export default CreationDetailModal
+export default CreationDetailModalV2

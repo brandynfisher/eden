@@ -21,7 +21,7 @@ const paymentRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createCheckoutSession(server, request, reply),
   })
 

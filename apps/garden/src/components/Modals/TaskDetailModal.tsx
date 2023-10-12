@@ -4,7 +4,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import { Task } from '@edenlabs/eden-sdk'
 import { Modal } from 'antd'
 import dynamic from 'next/dynamic'
-import React, { Suspense } from 'react'
+import React from 'react'
 
 const TaskDetail = dynamic(() => import('@/components/Tasks/TaskDetail'), {
   loading: () => <LoadingIndicator />,
@@ -13,9 +13,7 @@ const TaskDetail = dynamic(() => import('@/components/Tasks/TaskDetail'), {
 const TaskDetailModal = ({ task, ...rest }: { task: Task }) => {
   return (
     <Modal {...rest}>
-      <Suspense fallback={<div>Loading</div>}>
-        <TaskDetail task={task} />
-      </Suspense>
+      <TaskDetail task={task} />
     </Modal>
   )
 }

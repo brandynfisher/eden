@@ -1,24 +1,15 @@
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/auth/useWeb3Auth'
 import { useBalance } from '@/hooks/useBalance'
 import { useCreator } from '@/hooks/useCreator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCollections } from '@/hooks/useMyCollections'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
-export const useUserState = () => {
-  const { address, isConnected, isConnecting } = useAccount()
-  const [isDefinitelyConnected, setIsDefinitelyConnected] = useState(false)
-  useEffect(() => {
-    if (isConnected) {
-      setIsDefinitelyConnected(true)
-    } else {
-      setIsDefinitelyConnected(false)
-    }
-  }, [address])
-
+export const useWeb3UserState = () => {
+  const { address } = useAccount()
   const { isAuthenticated, isAuthenticating, authenticate, logout, authError } =
     useAuth()
   const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })
@@ -43,14 +34,12 @@ export const useUserState = () => {
   const { settings, updateSetting } = useSettings()
 
   const user: UserContextType = {
-    isConnected: isDefinitelyConnected,
-    isConnecting,
     isAuthenticating,
     isAuthenticated,
     authError,
     authenticate,
     logout,
-    address,
+    userId: address || null,
     mannaBalance: manna,
     characters,
     collections,

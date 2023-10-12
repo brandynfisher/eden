@@ -13,6 +13,7 @@ import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
+import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
 import Head from 'next/head'
 import React, { useContext, useEffect, useRef, useState } from 'react'
@@ -26,8 +27,7 @@ const CreationDetail = ({
   isModal?: boolean
   // loadSimilar?: boolean
 }) => {
-  const { isConnected, isAuthenticated, user, address } =
-    useContext(UserContext)
+  const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
   const timeSinceCreation = timeAgo(creation.createdAt)
@@ -36,12 +36,12 @@ const CreationDetail = ({
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
   useEffect(() => {
-    if (isConnected && isAuthenticated && user?.userId === address) {
+    if (isAuthenticated && user?.userId === userId) {
       setShowFollowControls(true)
     } else {
       setShowFollowControls(false)
     }
-  }, [isConnected, isAuthenticated, user?.userId, address])
+  }, [isAuthenticated, user?.userId, userId])
 
   useEffect(() => {
     setCreationData(creation)
@@ -136,6 +136,13 @@ const CreationDetail = ({
                   thumbnailUri={creationData?.thumbnail}
                 />
               )}
+              {creation.isPrivate ? (
+                <div
+                  className={`flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
+                >
+                  <LockIcon fontSize="small" className="text-white" />
+                </div>
+              ) : null}
             </div>
           </div>
 

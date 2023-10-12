@@ -4,8 +4,10 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
+  creationDelete,
   creationReact,
   creationUnreact,
+  creationUpdate,
   getCreation,
   getCreationSimilar,
   listCreations,
@@ -41,8 +43,43 @@ const creationRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCreation(request, reply),
+  })
+
+  server.patch('/creations/:creationId', {
+    schema: {
+      params: {
+        creationId: Type.String(),
+      },
+      request: {
+        body: Type.Object({
+          isPrivate: Type.Optional(Type.Boolean()),
+        }),
+      },
+      response: {
+        200: {
+          creation: Type.Any(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => creationUpdate(request, reply),
+  })
+
+  server.delete('/creations/:creationId', {
+    schema: {
+      params: {
+        creationId: Type.String(),
+      },
+      response: {
+        200: {
+          success: Type.Boolean(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => creationDelete(request, reply),
   })
 
   server.get('/creations/:creationId/similar', {
@@ -74,7 +111,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => creationReact(request, reply),
   })
 
@@ -92,7 +129,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async request => isAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => creationUnreact(request, reply),
   })
 }

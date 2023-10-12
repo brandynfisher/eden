@@ -66,14 +66,16 @@ const TaskDetail = ({ task }: { task: Task }) => {
               <div>{timeSinceTaskCreation}</div>
             </div>
           </div>
-          <Progress
-            percent={task?.progress ? Math.round(task.progress * 100) : 0}
-            status={task?.status === 'pending' ? 'normal' : 'active'}
-            className="mt-1 flex items-center"
-          />
+          {task?.status === 'running' ? (
+            <Progress
+              percent={task?.progress ? Math.round(task.progress * 100) : 0}
+              status="active"
+              className="mt-1 flex items-center"
+            />
+          ) : null}
           <div className="flex justify-between items-center">
             <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-              {rightTruncatedString(task.config.text_input || '', 30)}
+              {rightTruncatedString(task.config.text_input || '', 42)}
             </div>
             {CONFIG.DEV_TYPE === 'dummy' && (
               <TestGeneratorFinishButton taskId={task.taskId} />

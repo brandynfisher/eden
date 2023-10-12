@@ -13,10 +13,13 @@ interface PageProps {
 }
 
 const fetchCharacters = async (context: NextPageContext) => {
-  const userId = context?.req?.session.address
+  const { req } = context
+  const userId = req ? req.session.address : ''
+  const cookies = req ? req.headers.cookie : ''
 
   return fetcherFn(
     `${CONFIG.NEXT_PUBLIC_HOST}/api/characters/user?userId=${userId}`,
+    { headers: { cookie: cookies } },
   )
 }
 
@@ -30,8 +33,8 @@ export const getServerSideProps = getServerSidePropsBase(
   true,
 )
 
-const characters: Page<PageProps> = ({ data }: PageProps) => {
-  return <CharactersPage data={data} />
+const characters: Page<PageProps> = () => {
+  return <CharactersPage />
 }
 
 export default characters

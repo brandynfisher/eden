@@ -8,7 +8,9 @@ import OrderByButtons, {
 } from '@/components/Layout/buttons/OrderByButtons'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { MasonryContext } from '@/providers/MasonryProvider'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
 import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
 import { Button, Empty } from 'antd'
@@ -20,31 +22,34 @@ import {
   useResizeObserver,
 } from 'masonic'
 import Link from 'next/link'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/router'
+import React, { useCallback, useContext, useRef, useState } from 'react'
 
 const MasonryInfinite = ({
   type,
-  itemComponent,
+  ItemComponent,
   query,
   hasSort,
 }: {
   type: 'creations' | 'concepts'
-  itemComponent: typeof CreationCard | typeof ConceptCard
+  ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
 }) => {
-  const { currentIndex, setCurrentItem, setTotalItems } =
-    useContext(MasonryContext)
   const containerRef = useRef(null)
   const [key, setKey] = useState(0)
+  const router = useRouter()
 
-  const { isConnected, settings, address } = useContext(UserContext)
-  const isConnectedUser =
-    isConnected && query && query.userId && query.userId === address
+  const { showModal } = useModalContext()
+  const { setItems, setCurrentIndex } = useContext(MasonryContext)
+  const { isAuthenticated, settings, userId } = useContext(UserContext)
+  const isAuthenticatedUser =
+    isAuthenticated && query && query.userId && query.userId === userId
 
   const [orderBy, setOrderBy] = useState<OrderByParam>(
     hasSort ? hasSort[0] : OrderByDefaultParam,
   )
+
   const {
     items,
     maybeLoadMore: maybeLoadNextPage,
@@ -54,9 +59,9 @@ const MasonryInfinite = ({
   } = useFeedPaginated(type, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(
-    async () => {
+    () => {
       if (hasNextPage) {
-        await maybeLoadNextPage()
+        maybeLoadNextPage()
       }
     },
     {
@@ -90,7 +95,9 @@ const MasonryInfinite = ({
       columnGutter: 8,
       rowGutter: windowWidth < 768 ? 0 : 8,
       columnCount:
-        settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
+        windowWidth < 768
+          ? 1
+          : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
           : undefined,
       maxColumnCount:
@@ -108,20 +115,47 @@ const MasonryInfinite = ({
   )
   const resizeObserver = useResizeObserver(positioner)
 
-  useEffect(() => {
-    setTotalItems(items.length)
-  }, [items.length])
+  const handleCardClick = useCallback(
+    (item: Creation) => {
+      //@todo: move this to CreationMasonry (similarMasonry, as static)
+      // if (disableArrowNav) {
+      //   showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
+      //     creation,
+      //     loadSimilar: true,
+      //     usesUrl: true,
+      //     originPageUrl: router.asPath,
+      //   })
+      //
+      //   return
+      // }
+      setItems(items)
 
-  useEffect(() => {
-    if (currentIndex === null) return
+      const clickedItemIndex = items.findIndex(
+        searchItem => searchItem._id === item._id,
+      )
+      // console.log({clickedItemIndex})
+      setCurrentIndex(clickedItemIndex)
 
-    setCurrentItem(items[currentIndex])
-
-    if (hasNextPage && currentIndex === items.length - 1) {
-      // console.log('reached last item, trigger maybeLoadMore')
-      maybeLoadMore(currentIndex, currentIndex + 10, items)
-    }
-  }, [currentIndex, hasNextPage])
+      // console.log('handleCardClick', clickedItemIndex, item, items)
+      showModal(MODAL_TYPES.CREATION_DETAIL_MODAL_V2, {
+        initialItem: item,
+        usesUrl: true,
+        originPageUrl: router.asPath,
+        maybeLoadMoreFn: (
+          currentIndex: number,
+          currentItems: Creation[] | Concept[],
+        ) => {
+          // console.log({ currentIndex, items: currentItems.length })
+          if (currentIndex === currentItems.length - 1) {
+            // console.log('reached last item, trigger maybeLoadMore', currentIndex, currentIndex + 10)
+            maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
+          }
+          // console.log(currentItems.length)
+        },
+      })
+    },
+    [items],
+  )
 
   return (
     <div ref={ref}>
@@ -148,9 +182,18 @@ const MasonryInfinite = ({
               offset={offset}
               overscanBy={3}
               itemHeightEstimate={300}
-              render={itemComponent}
               onRender={maybeLoadMore}
               itemKey={(item, _index) => item?._id ?? _index}
+              render={props => {
+                return (
+                  <ItemComponent
+                    key={props.data._id}
+                    index={props.index}
+                    data={props.data}
+                    onClick={() => handleCardClick(props.data)}
+                  />
+                )
+              }}
             />
           )}
         </>
@@ -164,7 +207,7 @@ const MasonryInfinite = ({
               <div className="flex flex-col items-center">
                 <div className="mb-4">Nothing here yet.</div>
 
-                {isConnectedUser && (
+                {isAuthenticatedUser && (
                   <Link href="/create/creations">
                     <Button
                       type="dashed"

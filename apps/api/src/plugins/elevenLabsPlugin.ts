@@ -1,6 +1,13 @@
 import axios from 'axios'
 import type { FastifyInstance } from 'fastify'
 
+// axiosRetry(axios, {
+//   retries: 5,
+//   retryDelay: retryCount => {
+//     return retryCount * 15000 // 15 seconds, 30, 45, 60, 75
+//   },
+// })
+
 const ELEVENLABS_VOICES = [
   {
     id: '21m00Tcm4TlvDq8ikWAM',
@@ -422,20 +429,22 @@ export class ElevenLabs {
   }
 
   runTask = async (voice: string, text: string) => {
-    const speechDetails = await axios.request({
+    console.log('run 11', text)
+    const speechDetails = await axios({
       method: 'POST',
       url: `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
       headers: this.headers,
       data: { text },
       responseType: 'arraybuffer',
     })
+    console.log('ran 11!', text)
     return speechDetails.data
   }
 }
 
 export const registerElevenLabs = async (fastify: FastifyInstance) => {
   try {
-    const elevenLabs = new ElevenLabs(process.env.ELEVENLABS_API_KEY!)
+    const elevenLabs = new ElevenLabs(fastify.config.ELEVENLABS_API_KEY)
     fastify.decorate('elevenLabs', elevenLabs)
     fastify.log.info('Successfully registered ElevenLabsPlugin')
   } catch (err) {

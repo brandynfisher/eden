@@ -1,3 +1,4 @@
+import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { withSessionRoute } from '@/lib/withSession'
 import axios from 'axios'
@@ -17,7 +18,7 @@ interface ParseResult {
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = req.session.token
+  const authToken = await getAuthToken(req)
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
   }

@@ -1,5 +1,4 @@
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
-import { UserContext } from '@/providers/UserProvider'
 import {
   CommentOutlined,
   ExperimentOutlined,
@@ -10,7 +9,7 @@ import {
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { useContext } from 'react'
+import React from 'react'
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -29,45 +28,15 @@ function getItem(
   } as MenuItem
 }
 
-const authItems: MenuItem[] = [
-  // getItem('Logout', '/logout', <ToolOutlined />),
-]
-
 const defaultItems: MenuItem[] = [
   getItem('Create', '/create/creations', <ExperimentOutlined />),
-  // getItem('Tools', '/tools', <ToolOutlined />),
-]
-
-const characterItems: MenuItem[] = [
   getItem('Characters', '/characters', <RobotOutlined />),
   getItem('Scenarios', '/scenarios', <CommentOutlined />),
 ]
 
-const createMenuItems = (
-  isAuthenticated: boolean,
-  username: string | undefined,
-  userFlags: string[],
-) => {
-  const isPreviewUser = userFlags.includes('preview')
-  const items = [...defaultItems]
-  if (isAuthenticated) {
-    items.push(...authItems)
-  }
-  if (isPreviewUser) {
-    items.push(...characterItems)
-  }
-  return items
-}
-
 const LayoutMenu = ({ inDrawer }: { inDrawer?: boolean }) => {
   const router = useRouter()
-  const { isAuthenticated, user } = useContext(UserContext)
-
-  const menuItems = createMenuItems(
-    isAuthenticated,
-    user?.username,
-    user?.featureFlags || [],
-  )
+  const menuItems = defaultItems
 
   return (
     <div>

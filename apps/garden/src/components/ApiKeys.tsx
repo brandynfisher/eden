@@ -7,7 +7,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import { App, Breakpoint, Button, Card, Input, Space, Table } from 'antd'
 import axios from 'axios'
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 const ActionsButtons = ({
   apiKey,
@@ -17,7 +17,11 @@ const ActionsButtons = ({
   mutate: VoidFunction
 }) => {
   const { message } = App.useApp()
-  const handleDeleteApiKey = async () => {
+  const handleDeleteApiKey = async (ev: React.MouseEvent) => {
+    if (ev) {
+      ev.stopPropagation()
+    }
+
     try {
       await axios.post(`/api/apikeys/delete`, {
         apiKey,
@@ -85,20 +89,20 @@ const ApiKeys = () => {
   }
 
   const columns = [
-    {
-      title: 'API Key',
-      dataIndex: 'apiKey',
-      key: 'apiKey',
-      width: 120,
-      render: (val: string) => <TruncatedField name="API Key" text={val} />,
-    },
-    {
-      title: 'API Secret',
-      dataIndex: 'apiSecret',
-      key: 'apiSecret',
-      width: 120,
-      render: (val: string) => <TruncatedField name="API Secret" text={val} />,
-    },
+    // {
+    //   title: 'API Key',
+    //   dataIndex: 'apiKey',
+    //   key: 'apiKey',
+    //   width: 120,
+    //   render: (val: string) => <TruncatedField name="API Key" text={val} />,
+    // },
+    // {
+    //   title: 'API Secret',
+    //   dataIndex: 'apiSecret',
+    //   key: 'apiSecret',
+    //   width: 120,
+    //   render: (val: string) => <TruncatedField name="API Secret" text={val} />,
+    // },
     {
       title: 'Note',
       dataIndex: 'note',
@@ -128,7 +132,26 @@ const ApiKeys = () => {
   return (
     <div className="mb-4">
       {isAuthenticated ? (
-        <Table dataSource={data} columns={columns} size="middle" />
+        <Table
+          dataSource={data}
+          columns={columns}
+          size="middle"
+          expandable={{
+            expandRowByClick: true,
+            expandedRowRender: record => (
+              <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 items-center w-full">
+                  <div className="w-full">API Key</div>
+                  <TruncatedField name="API Key" text={record.apiKey} />
+                </div>
+                <div className="flex gap-2 items-center w-full">
+                  <div className="w-full">API Secret</div>
+                  <TruncatedField name="API Secret" text={record.apiSecret} />
+                </div>
+              </div>
+            ),
+          }}
+        />
       ) : (
         <Card>Not signed in.</Card>
       )}

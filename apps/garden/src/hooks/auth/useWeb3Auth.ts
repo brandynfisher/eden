@@ -79,7 +79,7 @@ export const useAuth = () => {
 
   const logout = async () => {
     if (!isAuthenticated) {
-      return null
+      return
     }
     await axios.get(`/api/logout`)
     setIsAuthenticated(false)
@@ -89,7 +89,7 @@ export const useAuth = () => {
     setAuthError(null)
     if (!address || !chainId) {
       setAuthError('No wallet connected')
-      return null
+      return
     }
 
     setIsAuthenticating(true)
@@ -101,7 +101,7 @@ export const useAuth = () => {
     } catch (error) {
       setAuthError('Failed to create login challenge')
       setIsAuthenticating(false)
-      return null
+      return
     }
 
     // Create message for signing using ethers
@@ -123,7 +123,7 @@ export const useAuth = () => {
     } catch (error) {
       setAuthError('You must sign the login message to continue')
       setIsAuthenticating(false)
-      return null
+      return
     }
 
     try {

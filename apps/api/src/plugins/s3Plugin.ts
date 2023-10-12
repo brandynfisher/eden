@@ -24,6 +24,7 @@ const mediaTypeMap: Record<string, MediaType> = {
   jpeg: MediaType.Image,
   png: MediaType.Image,
   webp: MediaType.Image,
+  zip: MediaType.Zip,
 }
 
 const getMediaAttributes = async (
@@ -89,6 +90,8 @@ const getMediaAttributes = async (
     mediaAttributes.aspectRatio = metadata.width / metadata.height
   }
 
+  await fs.unlinkSync(tempFilePath)
+
   return mediaAttributes
 }
 
@@ -137,34 +140,48 @@ export const uploadBufferAsset = async (
   buffer: Buffer,
   fileExtension: string | null = null,
 ): Promise<{ uri: string; mediaAttributes: MediaAttributes }> => {
+  console.log('let us upload this buffer')
+  console.log(buffer)
   const client = server.s3
   const S3_BUCKET = server.config.AWS_S3_BUCKET as string
   const sha = util.sha256(buffer)
+  console.log('got sha', sha)
   const fileType = await fileTypeFromBuffer(buffer)
+  console.log('got fileType', fileType)
   const { ext, mime } = fileType
     ? (fileType as { ext: string; mime: string })
     : { ext: 'txt', mime: 'text/plain' }
+  console.log('mine', ext, mime)
   const metadata = { 'Content-Type': mime, SHA: sha }
   const filename = `${sha}.${fileExtension || ext}`
   const urlUpload = s3Url(server, filename)
+  console.log('upload to ', urlUpload)
+
+  console.log('the whole config')
+  console.log('0-00-')
   try {
     await client.headObject({ Bucket: S3_BUCKET, Key: filename }).promise()
     console.log(
       ` --> Object ${filename} already exists in ${S3_BUCKET}, skipping upload`,
     )
   } catch (error) {
+    console.log(' ---> uploading buffer ', filename, metadata, buffer)
     await client
       .putObject({
         Bucket: S3_BUCKET,
         Key: filename,
         Body: buffer,
         Metadata: metadata,
+        ContentType: mime,
       })
       .promise()
     console.log(` --> Uploaded to ${urlUpload}`)
+    console.log(` --> Uploaded to ${urlUpload}`)
+    console.log(' ----> yay done', buffer)
   }
 
   const mediaAttributes = await getMediaAttributes(buffer, ext)
+  console.log('got mediaAttributes', mediaAttributes)
 
   return {
     uri: urlUpload,

@@ -1,9 +1,11 @@
 import {
+  CreationsDeleteArguments,
   CreationsGetArguments,
   CreationsGetSimilarArguments,
   CreationsListArguments,
   CreationsReactArguments,
   CreationsUnreactArguments,
+  CreationsUpdateArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -140,6 +142,15 @@ export const getCreation = async (
     })
   }
 
+  if (creation.isPrivate) {
+    if (creation.user._id.toString() !== request.user?.userId.toString()) {
+      console.error('User not authorized to view this')
+      return reply.status(401).send({
+        message: 'User not authorized to view this',
+      })
+    }
+  }
+
   if (request.user?.userId) {
     // Get user's reactions and bookmarks
     const userId = request.user.userId
@@ -242,6 +253,70 @@ export const getCreationSimilar = async (
   })
 
   return reply.status(200).send({ similarCreations })
+}
+
+export const creationDelete = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { creationId } = request.params as CreationsDeleteArguments
+
+  const creation = await Creation.findById(creationId)
+
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
+
+  if (creation.user.toString() !== userId.toString()) {
+    return reply.status(401).send({
+      message: 'User not authorized to delete this',
+    })
+  }
+
+  await creation.delete({ deleteBy: 'user' })
+
+  return reply.status(200).send({
+    success: true,
+  })
+}
+
+export const creationUpdate = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { creationId } = request.params as CreationsUpdateArguments
+  const { isPrivate } = request.body as CreationsUpdateArguments
+
+  if (!userId || !creationId || typeof isPrivate === 'undefined') {
+    return reply.status(422).send({
+      message: 'Missing parameters or malformed request body',
+    })
+  }
+
+  const creation = await Creation.findOneAndUpdate(
+    {
+      _id: creationId,
+      user: userId,
+    },
+    { isPrivate },
+    {
+      new: true,
+    },
+  )
+
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
+
+  return reply.status(200).send({
+    creation,
+  })
 }
 
 export const creationReact = async (

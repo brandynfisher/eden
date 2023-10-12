@@ -1,4 +1,4 @@
-import { PaginatedResponse } from '.'
+import {Creator, PaginatedResponse} from '.'
 import { WebAPICallResult } from '../EdenClient'
 
 export type CharactersCreateResponse = WebAPICallResult & {
@@ -8,10 +8,12 @@ export type CharactersCreateResponse = WebAPICallResult & {
 
 export type CharactersUpdateResponse = WebAPICallResult & {
   error?: string
+  character?: Character
 }
 
 export type CharactersDeleteResponse = WebAPICallResult & {
   error?: string
+  success?: boolean
 }
 
 export type CharactersListResponse = WebAPICallResult &
@@ -26,7 +28,7 @@ export type CharactersGetResponse = WebAPICallResult & {
 
 export type Character = {
   id: string
-  user: string
+  user: Creator
   name: string
   slug: string
   description?: string
@@ -34,4 +36,8 @@ export type Character = {
   dialogue?: any[]
   image?: string
   voice?: string
+  deleted?: boolean,
+  isPrivate?: boolean,
+  createdAt: string
+  updatedAt: string
 }
