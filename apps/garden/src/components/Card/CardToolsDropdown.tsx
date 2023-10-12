@@ -123,8 +123,10 @@ const CardToolsDropdown = ({
       })
     }
 
+    const hasUserFeatureFlagPrivate =
+      user && user.featureFlags && user.featureFlags.includes('private')
     const creatorMenuItems: MenuItem[] =
-      user?.userId === item.user.userId
+      hasUserFeatureFlagPrivate && user?.userId === item.user.userId
         ? [
             {
               key: '4',
@@ -154,18 +156,6 @@ const CardToolsDropdown = ({
                   ),
                   key: '5-1',
                 },
-                {
-                  icon: (
-                    <DeleteButton
-                      itemId={item._id}
-                      itemType={itemType}
-                      variant="text"
-                      label="Delete"
-                      onChange={handleDelete}
-                    />
-                  ),
-                  key: '5-2',
-                },
               ],
             },
           ]
@@ -174,6 +164,18 @@ const CardToolsDropdown = ({
     return [
       ...defaultMenuItems,
       ...creatorMenuItems,
+      {
+        icon: (
+          <DeleteButton
+            itemId={item._id}
+            itemType={itemType}
+            variant="text"
+            label="Delete"
+            onChange={handleDelete}
+          />
+        ),
+        key: '5-2',
+      },
       {
         key: '6',
         type: 'divider',

@@ -495,7 +495,7 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
 const CharacterForm = ({ character }: { character?: Character }) => {
   const mode = !character ? 'create' : 'update'
   const { message } = App.useApp()
-  const { refetch } = useContext(UserContext)
+  const { refetch, user } = useContext(UserContext)
   const router = useRouter()
   const [form] = Form.useForm()
   const [messageGroups, setMessageGroups] = useState<ChatMessageGroup[]>([])
@@ -775,19 +775,21 @@ const CharacterForm = ({ character }: { character?: Character }) => {
           </div>
         </div>
 
-        <Form.Item
-          name="isPrivate"
-          valuePropName="checked"
-          label={
-            <FormLabel
-              text="Private"
-              description="Should this be hidden from other users?"
-            />
-          }
-          labelCol={{ span: 24 }}
-        >
-          <Switch />
-        </Form.Item>
+        {user && user.featureFlags && user.featureFlags.includes('private') ? (
+          <Form.Item
+            name="isPrivate"
+            valuePropName="checked"
+            label={
+              <FormLabel
+                text="Private"
+                description="Should this be hidden from other users?"
+              />
+            }
+            labelCol={{ span: 24 }}
+          >
+            <Switch />
+          </Form.Item>
+        ) : null}
 
         <Form.Item>
           <div className="flex flex-wrap gap-4 items-center">
