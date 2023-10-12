@@ -11,7 +11,7 @@ const AccountMigrationBanner = () => {
   const [bannerDismissed, setBannerDismissed] = useLocalStorage<
     boolean | 'auto'
   >({
-    key: 'banner::account-migration--seen',
+    key: 'banner::account-migration2--seen',
     defaultValue: false,
   })
 

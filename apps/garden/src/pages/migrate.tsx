@@ -2,6 +2,7 @@ import ConnectButton from '@/components/Layout/buttons/ConnectButton'
 import { useCreator } from '@/hooks/useCreator'
 import { App, Button } from 'antd'
 import axios from 'axios'
+import Link from 'next/link'
 import React, { useState } from 'react'
 import { SiweMessage } from 'siwe'
 import { useAccount, useNetwork, useSignMessage } from 'wagmi'
@@ -11,6 +12,7 @@ const MigratePage = () => {
   const { chain } = useNetwork()
   const { signMessageAsync } = useSignMessage()
   const [isTransferring, setIsTransferring] = useState(false)
+  const [hasError, setHasError] = useState(false)
   const [transferred, setTransferred] = useState(false)
   const { message: appMessage } = App.useApp()
   const { creator } = useCreator(address || '')
@@ -64,6 +66,7 @@ const MigratePage = () => {
     } catch (error) {
       appMessage.error('Error creating challenge')
       setIsTransferring(false)
+      setHasError(true)
       return
     }
 
@@ -73,6 +76,7 @@ const MigratePage = () => {
     } catch (error) {
       appMessage.error('Error signing message')
       setIsTransferring(false)
+      setHasError(true)
       return
     }
 
@@ -85,6 +89,7 @@ const MigratePage = () => {
     } catch (error) {
       appMessage.error('Error transferring creations')
       setIsTransferring(false)
+      setHasError(true)
       return
     }
 
@@ -117,6 +122,16 @@ const MigratePage = () => {
         </>
       ) : (
         <p>No existing eden account found for the connected wallet.</p>
+      )}
+      {hasError && (
+        <p>
+          If you are having trouble migrating your account, please
+          <Link href="https://discord.gg/f7a83X4rjd">
+            {' '}
+            contact us on Discord
+          </Link>{' '}
+          with your new username and address you are attempting to migrate
+        </p>
       )}
     </>
   )
