@@ -10,6 +10,8 @@ RUN apt-get install -y --fix-missing \
     git build-essential cmake \
     libgl1-mesa-glx libglib2.0-0
 
+RUN apt upgrade -y libwebpdemux2
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN gdown 1Pm2apRxk9CbMspwve3Fir3WwX-vDWXoL
