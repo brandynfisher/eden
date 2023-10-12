@@ -59,14 +59,12 @@ const params = [
     optional: true,
   },
 
-
-  
   {
     name: 'init_image_data',
     label: 'Init image',
     default: null,
     description:
-      'Guidance image. This will guide the edges and contours of the creation',
+      'Guidance image. This will guide the interpolation (can be used with or without controlnet)',
     mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: false,
     optional: true,
@@ -91,9 +89,6 @@ const params = [
     optional: true,
   },
 
-  
-
-  
   {
     name: 'loop',
     label: 'Loop',
@@ -142,20 +137,9 @@ const params = [
     name: 'smooth',
     label: 'Smooth',
     description:
-      'Optimize video for perceptual smoothness between frames (if false, frames are linearly spaced in prompt conditioning space)',
+      'Use video smoothing (highly recommended), turning this off leads to a very different aesthetic with more frame flicker',
     default: true,
     allowedValues: [false, true],
-    optional: true,
-  },
-  
-  {
-    name: 'latent_blending_skip_f',
-    label: 'Denoising skip fractions (very advanced)',
-    description:
-      'What fraction of denoising steps to skip at the start and end of the render. Higher values result in smoother video (will also render faster), too high values will look more like crossfading in pixel space.',
-    default: [0.15, 0.65],
-    minLength: 2,
-    maxLength: 2,
     optional: true,
   },
   
@@ -193,26 +177,6 @@ const params = [
     description: 'Which model checkpoint to generate with',
     default: 'sdxl-v1.0',
     allowedValues: ['sdxl-v1.0'],
-    optional: true,
-  },
-
-  {
-    name: 'stream',
-    label: 'Stream',
-    description:
-      'Yield intermediate frames during creation process (if false, only final video is returned)',
-    default: false,
-    allowedValues: [false, true],
-    optional: true,
-  },
-  {
-    name: 'stream_every',
-    label: 'Stream every',
-    description:
-      'How often to yield intermediate results (when stream is true). In sampling steps for images, frames for video.',
-    default: 10,
-    minimum: 1,
-    maximum: 25,
     optional: true,
   },
 
