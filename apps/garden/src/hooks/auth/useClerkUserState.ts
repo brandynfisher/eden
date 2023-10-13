@@ -2,6 +2,7 @@ import { useBalance } from '@/hooks/useBalance'
 import { useCreator } from '@/hooks/useCreator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMyCollections } from '@/hooks/useMyCollections'
+import { usePendingTasks } from '@/hooks/usePendingTasks'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
 import { useAuth, useClerk } from '@clerk/nextjs'
@@ -23,7 +24,19 @@ export const useClerkUserState = () => {
     userId,
     isAuthenticated,
   })
+  const { pendingTasks, refetchPendingTasks } = usePendingTasks({
+    isAuthenticated,
+  })
+  console.log(pendingTasks)
   const { creator, mutate: refetchCreator } = useCreator(userId || null)
+
+  const reloadUserState = () => {
+    refetchCreator()
+    refetchMannaBalance()
+    refetchMyCharacters()
+    refetchMyCollections()
+    refetchPendingTasks()
+  }
 
   const authenticate = async () => {
     if (!isAuthenticated) {
@@ -41,10 +54,7 @@ export const useClerkUserState = () => {
 
   // reset user state on disconnect
   useEffect(() => {
-    refetchCreator()
-    refetchMannaBalance()
-    refetchMyCharacters()
-    refetchMyCollections()
+    reloadUserState()
   }, [isAuthenticated])
 
   const { settings, updateSetting } = useSettings()
@@ -53,11 +63,7 @@ export const useClerkUserState = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        // Refetch data here
-        refetchCreator()
-        refetchMannaBalance()
-        refetchMyCharacters()
-        refetchMyCollections()
+        reloadUserState()
       }
     }
 
@@ -79,6 +85,7 @@ export const useClerkUserState = () => {
     mannaBalance: manna,
     characters,
     collections,
+    pendingTasks,
     settings,
     updateSetting,
     user: creator ? creator : undefined,
@@ -87,6 +94,7 @@ export const useClerkUserState = () => {
       characters: refetchMyCharacters,
       collections: refetchMyCollections,
       user: refetchCreator,
+      pendingTasks: refetchPendingTasks,
     },
     featureFlags: creator?.featureFlags || [],
   }
