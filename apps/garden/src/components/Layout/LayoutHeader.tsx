@@ -2,10 +2,7 @@ import HeaderLogo from '@/components/Layout/HeaderLogo'
 import QuickCreateMenu from '@/components/Layout/dropdowns/QuickCreateMenu'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
-import {
-  ClerkMyProfileButton,
-  Web3MyProfileButton,
-} from '@/components/Profile/MyProfileButton'
+import { ClerkMyProfileButton } from '@/components/Profile/MyProfileButton'
 import { UserContext } from '@/providers/UserProvider'
 import theme from '@/styles/theme'
 import { useViewportSize } from '@mantine/hooks'
@@ -82,11 +79,7 @@ const LayoutHeader = () => {
         )}
 
         <SettingsDropdown />
-        {process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes' ? (
-          <ClerkMyProfileButton />
-        ) : (
-          <Web3MyProfileButton />
-        )}
+        <ClerkMyProfileButton />
       </div>
     </Header>
   )

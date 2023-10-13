@@ -258,6 +258,7 @@ const GeneratorForm = ({
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchPendingTasks && refetchPendingTasks()
       refetch.mannaBalance()
+      refetch.pendingTasks()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       message.error('Error creating task. Please try again.')
@@ -458,6 +459,7 @@ const GeneratorForm = ({
       >
         {renderFormFields(requiredParameters, false)}
         {renderFormFields(optionalParameters, false)}
+
         {advancedParameters.length > 0 && (
           <>
             {showOptional ? (

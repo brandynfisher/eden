@@ -6,11 +6,6 @@ on:
     paths:
       - 'apps/garden/**'
       - '.github/workflows/garden.yaml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'apps/garden/**'
-      - '.github/workflows/garden.yaml'
 
 jobs:
   build:
@@ -67,7 +62,6 @@ jobs:
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
             "NEXT_PUBLIC_FLAG_CLERK_ENABLED=${{ secrets.NEXT_PUBLIC_FLAG_CLERK_ENABLED }}"
-            "NEXT_PUBLIC_APP_PASSWORD=${{ secrets.NEXT_PUBLIC_APP_PASSWORD }}"
 
   deploy:
     name: Deploy

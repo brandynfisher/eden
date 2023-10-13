@@ -777,7 +777,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
         </div>
 
         <div className="flex flex-wrap gap-4 justify-between items-center">
-          <Form.Item className="!mb-0">
+          <Form.Item>
             <Button
               className="font-mono h-10"
               htmlType="submit"
