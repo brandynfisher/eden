@@ -22,3 +22,12 @@ export const getAuthToken = async (req: NextApiRequest) => {
   }
   return req.session.token
 }
+
+export const getAuthHeaders = async (req: NextApiRequest) => {
+  const authToken = req ? await getAuthToken(req) : ''
+
+  return {
+    cookie: req ? req.headers.cookie : '',
+    Authorization: authToken ? `Bearer ${authToken}` : '',
+  }
+}
