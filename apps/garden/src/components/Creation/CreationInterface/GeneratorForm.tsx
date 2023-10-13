@@ -5,7 +5,7 @@ import OptionParameter from '@/components/Creation/CreationInterface/parameters/
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/Creation/CreationInterface/parameters/StringParameter'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
-import FormLabel from '@/components/Forms/FormLabel'
+import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
@@ -23,7 +23,7 @@ import {
   Task,
 } from '@edenlabs/eden-sdk'
 import { debounce } from '@mui/material'
-import { App, Button, Card, Form, Switch } from 'antd'
+import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -401,12 +401,9 @@ const GeneratorForm = ({
           </div>
         }
         actions={[
-          <div
-            key={generator.generatorName}
-            className="flex px-6 items-center justify-between flex-wrap"
-          >
-            <div>
-              <div className="flex gap-3 items-center">
+          <div className="px-6 text-left" key={generator.generatorName}>
+            <div className="flex gap-4 items-center justify-between flex-wrap">
+              <div className="flex gap-2 items-center w-full sm:w-auto">
                 {isLoadingTaskCost === false && !canAffordOperation ? (
                   <div className="text-orange-500">
                     Insufficient Manna! ({mannaBalance}){' '}
@@ -418,7 +415,7 @@ const GeneratorForm = ({
                     icon={<ExperimentOutlined />}
                     htmlType="submit"
                     size="large"
-                    className="font-mono capitalize"
+                    className="font-mono capitalize w-full"
                     loading={isSubmitting ? { delay: 250 } : false}
                     disabled={
                       isSubmitting ||
@@ -430,44 +427,37 @@ const GeneratorForm = ({
                     {generator.generatorName}
                   </Button>
                 )}
-                <MannaCostEstimate
-                  isLoading={!!isLoadingTaskCost}
-                  cost={taskCost || 'n/a'}
-                />
               </div>
-              {uploadsInProgress ? (
-                <div className="text-orange-500 mt-4">
-                  <LoadingOutlined className="mr-2" />
-                  File upload still in progress. Please wait.{' '}
-                </div>
+
+              {user &&
+              user.featureFlags &&
+              user.featureFlags.includes('private') ? (
+                <PrivacyToggle />
               ) : null}
             </div>
 
-            <Button className="font-mono" type="text" onClick={resetForm}>
-              Reset {presetCreation ? '(using preset)' : ''}
-            </Button>
+            <div className="mt-4 flex flex-wrap w-full justify-between items-center">
+              <MannaCostEstimate
+                isLoading={!!isLoadingTaskCost}
+                cost={taskCost || 'n/a'}
+              />
+
+              <Button className="font-mono" onClick={resetForm}>
+                Reset Form {presetCreation ? '(using preset)' : ''}
+              </Button>
+            </div>
+
+            {uploadsInProgress ? (
+              <div className="text-orange-500 mt-2 w-full">
+                <LoadingOutlined className="mr-2" />
+                File upload still in progress. Please wait.{' '}
+              </div>
+            ) : null}
           </div>,
         ]}
       >
         {renderFormFields(requiredParameters, false)}
         {renderFormFields(optionalParameters, false)}
-
-        {user && user.featureFlags && user.featureFlags.includes('private') ? (
-          <Form.Item
-            name="isPrivate"
-            valuePropName="checked"
-            label={
-              <FormLabel
-                text="Private"
-                description="Should this be hidden from other users?"
-              />
-            }
-            labelCol={{ span: 24 }}
-          >
-            <Switch />
-          </Form.Item>
-        ) : null}
-
         {advancedParameters.length > 0 && (
           <>
             {showOptional ? (
