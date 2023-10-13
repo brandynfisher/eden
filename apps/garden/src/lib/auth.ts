@@ -15,10 +15,7 @@ export const requireAuth = async (authenticate: () => void) => {
 }
 
 export const getAuthToken = async (req: NextApiRequest) => {
-  if (process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes') {
-    const { getToken } = getAuth(req)
-    const authToken = await getToken()
-    return authToken || undefined
-  }
-  return req.session.token
+  const { getToken } = getAuth(req)
+  const authToken = await getToken()
+  return authToken || undefined
 }

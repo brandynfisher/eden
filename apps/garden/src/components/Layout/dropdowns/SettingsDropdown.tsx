@@ -1,6 +1,4 @@
-import ConnectButton from '@/components/Layout/buttons/ConnectButton'
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
-import { useWeb3State } from '@/hooks/auth/useWeb3State'
 import { UserContext } from '@/providers/UserProvider'
 import {
   LoginOutlined,
@@ -14,60 +12,59 @@ import { useViewportSize } from '@mantine/hooks'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
-const Web3LoginLogoutButton = () => {
-  const { isConnected } = useWeb3State()
-  const { isAuthenticated, authenticate, logout } = useContext(UserContext)
-  const router = useRouter()
+// const Web3LoginLogoutButton = () => {
+//   const { isConnected } = useWeb3State()
+//   const { isAuthenticated, authenticate, logout } = useContext(UserContext)
+//   const router = useRouter()
 
-  const handleAuthClick = useCallback(async () => {
-    if (!isAuthenticated) {
-      authenticate && (await authenticate())
-    } else {
-      logout && (await logout())
-      await router.push('/')
-    }
-  }, [logout, authenticate, isAuthenticated])
+//   const handleAuthClick = useCallback(async () => {
+//     if (!isAuthenticated) {
+//       authenticate && (await authenticate())
+//     } else {
+//       logout && (await logout())
+//       await router.push('/')
+//     }
+//   }, [logout, authenticate, isAuthenticated])
 
-  return (
-    <div>
-      <ConnectButton />
-      <Button
-        className="font-mono w-full flex items-center mt-2 "
-        onClick={handleAuthClick}
-      >
-        {isAuthenticated ? (
-          <div className="w-full">
-            <div className="flex justify-center">
-              <LogoutOutlined />
-              <div className="text-black dark:text-white ml-2">
-                Disconnect Wallet
-              </div>
-            </div>
-          </div>
-        ) : !isConnected ? (
-          <div className="w-full">
-            <div className="flex justify-center">
-              <LoginOutlined />
-              <div className="text-black dark:text-white ml-2">
-                Connect Wallet
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full">
-            <div className="flex justify-center">
-              <LoginOutlined />
-              <div className="text-black dark:text-white ml-2">Sign In</div>
-            </div>
-          </div>
-        )}
-      </Button>
-    </div>
-  )
-}
+//   return (
+//     <div>
+//       <ConnectButton />
+//       <Button
+//         className="font-mono w-full flex items-center mt-2 "
+//         onClick={handleAuthClick}
+//       >
+//         {isAuthenticated ? (
+//           <div className="w-full">
+//             <div className="flex justify-center">
+//               <LogoutOutlined />
+//               <div className="text-black dark:text-white ml-2">
+//                 Disconnect Wallet
+//               </div>
+//             </div>
+//           </div>
+//         ) : !isConnected ? (
+//           <div className="w-full">
+//             <div className="flex justify-center">
+//               <LoginOutlined />
+//               <div className="text-black dark:text-white ml-2">
+//                 Connect Wallet
+//               </div>
+//             </div>
+//           </div>
+//         ) : (
+//           <div className="w-full">
+//             <div className="flex justify-center">
+//               <LoginOutlined />
+//               <div className="text-black dark:text-white ml-2">Sign In</div>
+//             </div>
+//           </div>
+//         )}
+//       </Button>
+//     </div>
+//   )
+// }
 
 const ClerkLoginLogoutButton = () => {
   const { isAuthenticated, authenticate, logout } = useContext(UserContext)
@@ -166,19 +163,6 @@ const DevToolsLink = () => {
   )
 }
 
-const extraItems: ItemType[] = [
-  {
-    type: 'divider',
-  },
-  {
-    label: <DevToolsLink />,
-    key: '2',
-  },
-  {
-    type: 'divider',
-  },
-]
-
 const clerkItems: ItemType[] = [
   {
     label: <ClerkLoginLogoutButton />,
@@ -203,15 +187,7 @@ const clerkExtraItems: ItemType[] = [
   // },
 ]
 
-const web3Items: ItemType[] = [
-  {
-    label: <Web3LoginLogoutButton />,
-    key: '4',
-  },
-]
-
 export const SettingsDropdown = () => {
-  const { isConnected } = useWeb3State()
   const { isAuthenticated } = useContext(UserContext)
   const { width: windowWidth } = useViewportSize()
 
@@ -239,18 +215,12 @@ export const SettingsDropdown = () => {
   const [dropDownItems, setDropDownItems] = useState<ItemType[]>(items)
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes') {
-      if (isAuthenticated) {
-        setDropDownItems([...items, ...clerkExtraItems, ...clerkItems])
-      } else {
-        setDropDownItems([...items, ...clerkItems])
-      }
-    } else if (isConnected) {
-      setDropDownItems([...items, ...extraItems, ...web3Items])
+    if (isAuthenticated) {
+      setDropDownItems([...items, ...clerkExtraItems, ...clerkItems])
     } else {
-      setDropDownItems(items)
+      setDropDownItems([...items, ...clerkItems])
     }
-  }, [isConnected, isAuthenticated])
+  }, [isAuthenticated])
 
   return (
     <Dropdown
