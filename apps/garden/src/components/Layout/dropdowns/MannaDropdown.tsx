@@ -12,10 +12,8 @@ const MannaBalanceInfo = () => {
   const { mannaBalance } = useContext(UserContext)
 
   return (
-    <div>
-      <div className="mb-2">
-        You have <span className="font-bold">{mannaBalance}</span> Manna
-      </div>
+    <div className="text-gray-400">
+      You have <span className="font-bold">{mannaBalance}</span> Manna
     </div>
   )
 }
@@ -48,6 +46,7 @@ const defaultItems: ItemType[] = [
   {
     label: <MannaBalanceInfo />,
     key: '0',
+    disabled: true,
   },
   {
     label: (

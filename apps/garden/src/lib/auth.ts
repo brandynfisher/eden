@@ -19,3 +19,12 @@ export const getAuthToken = async (req: NextApiRequest) => {
   const authToken = await getToken()
   return authToken || undefined
 }
+
+export const getAuthHeaders = async (req: NextApiRequest) => {
+  const authToken = req ? await getAuthToken(req) : ''
+
+  return {
+    cookie: req ? req.headers.cookie : '',
+    Authorization: authToken ? `Bearer ${authToken}` : '',
+  }
+}

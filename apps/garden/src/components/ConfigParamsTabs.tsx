@@ -121,10 +121,10 @@ const ConfigParamsTabs = ({ data }: { data: Concept | Creation }) => {
 
   return (
     <>
-      <div className="flex w-full justify-center items-center mb-4">
+      <div className="flex w-full justify-start md:justify-center items-center mb-4 mt-4">
         <Button
           type="dashed"
-          className="dark:text-gray-400"
+          className="dark:text-gray-400 "
           onClick={() => setIsRevealed(!isRevealed)}
         >
           {isRevealed ? 'Hide' : 'Show'} configuration
