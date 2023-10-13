@@ -1,10 +1,11 @@
 import PageLayoutFullWidth from '@/components/Layout/layouts/PageLayoutFullWidth'
+import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import CreatorPage from '@/pages/creators/[id]/CreatorPage'
 import { Creator as CreatorType } from '@edenlabs/eden-sdk'
-import { NextPageContext } from 'next'
+import { NextApiRequest, NextPageContext } from 'next'
 import { AppProps } from 'next/app'
 
 import { Page } from '../../../../types/page'
@@ -15,10 +16,12 @@ interface PageProps {
 }
 
 const fetchCreator = async (context: NextPageContext) => {
-  const { query } = context
+  const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${id}`)
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${id}`, {
+    headers: await getAuthHeaders(req as NextApiRequest),
+  })
 }
 
 export const getServerSideProps = getServerSidePropsBase([

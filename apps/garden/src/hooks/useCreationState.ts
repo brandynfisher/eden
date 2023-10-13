@@ -1,8 +1,9 @@
 import { fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
+import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import useSWR from 'swr'
 
 export const useCreationState = () => {
@@ -12,14 +13,21 @@ export const useCreationState = () => {
   const [completedTasks, setCompletedTasks] = useState<Task[]>([])
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
-  const { data, mutate: refetchPendingTasks } = useSWR(
-    taskIds.length > 0
-      ? `/api/tasks/pending?taskIds=${taskIds.join(',')}`
-      : null,
+  const { data: pendingTaskData, mutate: refetchPendingTasks } = useSWR(
+    taskIds.length > 0 ? `/api/tasks/list?taskIds=${taskIds.join(',')}` : null,
     fetcher,
   )
+  const { pendingTasks: userPendingTasks } = useContext(UserContext)
 
-  const tasks = data?.tasks as Task[]
+  useEffect(() => {
+    if (userPendingTasks) {
+      const newTaskIds = userPendingTasks.map(task => task.taskId)
+      setTaskIds(newTaskIds)
+    }
+  }, [userPendingTasks])
+
+  const tasks = pendingTaskData?.tasks as Task[]
+
   const pendingTasks = tasks?.filter(
     task =>
       task.status === 'pending' ||

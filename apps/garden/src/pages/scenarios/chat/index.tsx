@@ -1,9 +1,10 @@
+import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import ChatScenarioPage from '@/pages/scenarios/chat/ChatScenarioPage'
 import { Character, Session } from '@edenlabs/eden-sdk'
-import { NextPageContext } from 'next'
+import { NextApiRequest, NextPageContext } from 'next'
 
 import { Page } from '../../../../types/page'
 
@@ -24,10 +25,14 @@ const fetchCharacters = async (context: NextPageContext) => {
 }
 
 const fetchSessions = async (context: NextPageContext) => {
+  const { req } = context
   const userId = context?.req?.session.address
 
   return fetcherFn(
     `${CONFIG.NEXT_PUBLIC_HOST}/api/sessions/user?userId=${userId}`,
+    {
+      headers: await getAuthHeaders(req as NextApiRequest),
+    },
   )
 }
 

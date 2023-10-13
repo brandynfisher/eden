@@ -8,7 +8,7 @@ const AuthChangeBanner = () => {
   const [bannerDismissed, setBannerDismissed] = useLocalStorage<
     boolean | 'auto'
   >({
-    key: 'banner::auth-change--seen',
+    key: 'banner::auth-change2--seen',
     defaultValue: false,
   })
 

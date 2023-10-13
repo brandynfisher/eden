@@ -15,10 +15,16 @@ export const requireAuth = async (authenticate: () => void) => {
 }
 
 export const getAuthToken = async (req: NextApiRequest) => {
-  if (process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes') {
-    const { getToken } = getAuth(req)
-    const authToken = await getToken()
-    return authToken || undefined
+  const { getToken } = getAuth(req)
+  const authToken = await getToken()
+  return authToken || undefined
+}
+
+export const getAuthHeaders = async (req: NextApiRequest) => {
+  const authToken = req ? await getAuthToken(req) : ''
+
+  return {
+    cookie: req ? req.headers.cookie : '',
+    Authorization: authToken ? `Bearer ${authToken}` : '',
   }
-  return req.session.token
 }
