@@ -40,7 +40,6 @@ const FailedTaskMenuItem = ({
 
   const handleCopyClick = async () => {
     await copy(task.taskId)
-
     message.destroy()
     message.success(`Copied Task ID to clipboard!`)
   }
