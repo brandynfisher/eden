@@ -1,8 +1,7 @@
 import BannerManager from '@/components/Banners/BannerManager'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
 import ProgressBar from '@/components/Layout/ProgressBar'
-import { VerticalAlignTopOutlined } from '@ant-design/icons'
-import { useWindowScroll } from '@mantine/hooks'
+import BackToTopButton from '@/components/Layout/buttons/BackToTopButton'
 import { Layout, Spin } from 'antd'
 import { Router } from 'next/router'
 import {
@@ -59,23 +58,6 @@ export const myRequestCounterMiddlewareWrap: (
   }
 }
 
-const BackToTopButton = () => {
-  const [scroll, scrollTo] = useWindowScroll()
-
-  if (scroll.y < 700) {
-    return null
-  }
-
-  return (
-    <div
-      className="dark:bg-gray-700 rounded cursor-pointer !bg-opacity-80"
-      onClick={() => scrollTo({ y: 0 })}
-    >
-      <VerticalAlignTopOutlined className="text-2xl p-1" />
-    </div>
-  )
-}
-
 const progress = new ProgressBar({
   size: 2,
   color: '#38a169',
@@ -116,7 +98,7 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
         <BannerManager />
         <LayoutHeader />
         <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>
-        <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center">
+        <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center z-50">
           <InfiniteLoadingIndicator isLoading={showLoading} />
           <BackToTopButton />
         </div>
