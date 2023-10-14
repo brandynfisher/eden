@@ -133,30 +133,24 @@ const CardToolsDropdown = ({
               type: 'divider',
             },
             {
-              label: 'Manage...',
               key: '5',
-              children: [
-                {
-                  icon: item.isPrivate ? (
-                    <MakePublicButton
-                      itemId={item._id}
-                      itemType={itemType}
-                      variant="text"
-                      label="Set Public"
-                      onChange={handleOnVisibilityChange}
-                    />
-                  ) : (
-                    <MakePrivateButton
-                      itemId={item._id}
-                      itemType={itemType}
-                      variant="text"
-                      label="Set Private"
-                      onChange={handleOnVisibilityChange}
-                    />
-                  ),
-                  key: '5-1',
-                },
-              ],
+              icon: item.isPrivate ? (
+                <MakePublicButton
+                  itemId={item._id}
+                  itemType={itemType}
+                  variant="text"
+                  label="Set Public"
+                  onChange={handleOnVisibilityChange}
+                />
+              ) : (
+                <MakePrivateButton
+                  itemId={item._id}
+                  itemType={itemType}
+                  variant="text"
+                  label="Set Private"
+                  onChange={handleOnVisibilityChange}
+                />
+              ),
             },
           ]
         : []
