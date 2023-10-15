@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import { Button } from 'antd'
 import Image from 'next/image'
-import Link from 'next/link'
 import { NextRouter, useRouter, withRouter } from 'next/router'
 import React, {
   Dispatch,
@@ -106,14 +105,14 @@ class ErrorBoundaryInner extends React.Component<Props, State> {
                     >
                       Try again?
                     </Button>
-                    <Link href="/" passHref>
+                    <a href="/">
                       <Button
                         className="font-mono"
                         onClick={() => this.setState({ hasError: false })}
                       >
                         Go back Home
                       </Button>
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
