@@ -1,6 +1,6 @@
-import { StyleProvider, createCache } from '@ant-design/cssinjs'
-import Document, {
-  DocumentContext,
+// import { StyleProvider, createCache } from '@ant-design/cssinjs'
+import {
+  // DocumentContext,
   Head,
   Html,
   Main,
@@ -8,7 +8,7 @@ import Document, {
 } from 'next/document'
 import React from 'react'
 
-import { doExtraStyle } from '../../scripts/generateAntdCss'
+// import { doExtraStyle } from '../../scripts/generateAntdCss'
 
 const CustomDocument = () => (
   <Html lang="en">
@@ -37,36 +37,36 @@ const CustomDocument = () => (
     </body>
   </Html>
 )
-
-CustomDocument.getInitialProps = async (ctx: DocumentContext) => {
-  const cache = createCache()
-  let fileName = ''
-  const originalRenderPage = ctx.renderPage
-  ctx.renderPage = () =>
-    originalRenderPage({
-      enhanceApp: App => props =>
-        (
-          <StyleProvider cache={cache}>
-            <App {...props} />
-          </StyleProvider>
-        ),
-    })
-
-  const initialProps = await Document.getInitialProps(ctx)
-  // 1.1 extract style which had been used
-  fileName = doExtraStyle({
-    cache,
-  })
-  return {
-    ...initialProps,
-    styles: (
-      <>
-        {initialProps.styles}
-        {/* 1.2 inject css */}
-        {fileName && <link rel="stylesheet" href={`/${fileName}`} />}
-      </>
-    ),
-  }
-}
+//
+// CustomDocument.getInitialProps = async (ctx: DocumentContext) => {
+//   const cache = createCache()
+//   let fileName = ''
+//   const originalRenderPage = ctx.renderPage
+//   ctx.renderPage = () =>
+//     originalRenderPage({
+//       enhanceApp: App => props =>
+//         (
+//           <StyleProvider cache={cache}>
+//             <App {...props} />
+//           </StyleProvider>
+//         ),
+//     })
+//
+//   const initialProps = await Document.getInitialProps(ctx)
+//   // 1.1 extract style which had been used
+//   fileName = doExtraStyle({
+//     cache,
+//   })
+//   return {
+//     ...initialProps,
+//     styles: (
+//       <>
+//         {initialProps.styles}
+//         {/* 1.2 inject css */}
+//         {fileName && <link rel="stylesheet" href={`/${fileName}`} />}
+//       </>
+//     ),
+//   }
+// }
 
 export default CustomDocument

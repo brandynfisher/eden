@@ -3,7 +3,7 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { Modal } from 'antd'
 import dynamic from 'next/dynamic'
-import React, { Suspense } from 'react'
+import React from 'react'
 
 const FollowList = dynamic(() => import('@/components/Profile/FollowList'), {
   loading: () => <LoadingIndicator />,
@@ -12,13 +12,7 @@ const FollowList = dynamic(() => import('@/components/Profile/FollowList'), {
 const FollowersModal = ({ creatorId, ...rest }: { creatorId: string }) => {
   return (
     <Modal {...rest}>
-      <Suspense fallback={<div>Loading</div>}>
-        <FollowList
-          creatorId={creatorId}
-          type={'following'}
-          title="Following"
-        />
-      </Suspense>
+      <FollowList creatorId={creatorId} type={'following'} title="Following" />
     </Modal>
   )
 }
