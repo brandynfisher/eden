@@ -22,6 +22,7 @@ import {
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
+import { LinkOutlined } from '@mui/icons-material'
 import { debounce } from '@mui/material'
 import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
@@ -398,7 +399,29 @@ const GeneratorForm = ({
         title={
           <div className="py-4">
             <h3>/{generator.generatorName}</h3>
-            <span style={{ color: 'gray' }}>{generator.description}</span>
+            <div className="flex justify-between flex-wrap">
+              <span style={{ color: 'gray' }}>{generator.description}</span>
+              {generator.output === 'creation' ? (
+                <a
+                  href="https://docs.eden.art/docs/guides/creation"
+                  target="_blank"
+                  className="flex gap-1 items-center"
+                >
+                  Learn about Creations
+                  <LinkOutlined />
+                </a>
+              ) : null}
+              {generator.output === 'concept' ? (
+                <a
+                  href="https://docs.eden.art/docs/guides/concepts"
+                  target="_blank"
+                  className="flex gap-1 items-center"
+                >
+                  Learn about Concepts
+                  <LinkOutlined />
+                </a>
+              ) : null}
+            </div>
           </div>
         }
         actions={[
