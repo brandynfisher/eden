@@ -5,7 +5,7 @@ module.exports = {
   ],
   darkMode: 'class',
   corePlugins: {
-    preflight: false,
+    preflight: true,
   },
   future: {
     hoverOnlyWhenSupported: true,

@@ -38,6 +38,7 @@ module.exports = withTM({
   swcMinify: true,
   output: 'standalone',
   experimental: {
+    optimizeCss: true, // enabling this will enable SSR for Tailwind
     scrollRestoration: true,
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
