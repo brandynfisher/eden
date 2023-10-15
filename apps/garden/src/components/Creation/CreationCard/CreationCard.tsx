@@ -42,7 +42,7 @@ const CreationCard: FC<{
         </div>
       ) : (
         <>
-          <div className="relative" key={index}>
+          <div className="relative" key={`${index}_${creation._id}`}>
             <div className="w-full flex justify-center flex-col">
               <div
                 className="card-image relative rounded-lg overflow-hidden cursor-pointer"
