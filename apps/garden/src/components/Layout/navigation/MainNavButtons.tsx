@@ -36,7 +36,7 @@ const NavButton = ({
   )
 }
 
-const MainNavButtons = ({ inDrawer }: { inDrawer: boolean }) => {
+const MainNavButtons = ({ inDrawer }: { inDrawer?: boolean }) => {
   const router = useRouter()
 
   const navItems: NavButtonItem[] = [
