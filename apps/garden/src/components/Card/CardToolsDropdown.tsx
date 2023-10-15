@@ -133,30 +133,42 @@ const CardToolsDropdown = ({
               type: 'divider',
             },
             {
-              label: 'Manage...',
               key: '5',
-              children: [
-                {
-                  icon: item.isPrivate ? (
-                    <MakePublicButton
-                      itemId={item._id}
-                      itemType={itemType}
-                      variant="text"
-                      label="Set Public"
-                      onChange={handleOnVisibilityChange}
-                    />
-                  ) : (
-                    <MakePrivateButton
-                      itemId={item._id}
-                      itemType={itemType}
-                      variant="text"
-                      label="Set Private"
-                      onChange={handleOnVisibilityChange}
-                    />
-                  ),
-                  key: '5-1',
-                },
-              ],
+              icon: item.isPrivate ? (
+                <MakePublicButton
+                  itemId={item._id}
+                  itemType={itemType}
+                  variant="text"
+                  label="Set Public"
+                  onChange={handleOnVisibilityChange}
+                />
+              ) : (
+                <MakePrivateButton
+                  itemId={item._id}
+                  itemType={itemType}
+                  variant="text"
+                  label="Set Private"
+                  onChange={handleOnVisibilityChange}
+                />
+              ),
+            },
+          ]
+        : []
+
+    const deleteItem: MenuItem[] =
+      user?.userId === item.user.userId
+        ? [
+            {
+              icon: (
+                <DeleteButton
+                  itemId={item._id}
+                  itemType={itemType}
+                  variant="text"
+                  label="Delete"
+                  onChange={handleDelete}
+                />
+              ),
+              key: '5-2',
             },
           ]
         : []
@@ -164,18 +176,7 @@ const CardToolsDropdown = ({
     return [
       ...defaultMenuItems,
       ...creatorMenuItems,
-      {
-        icon: (
-          <DeleteButton
-            itemId={item._id}
-            itemType={itemType}
-            variant="text"
-            label="Delete"
-            onChange={handleDelete}
-          />
-        ),
-        key: '5-2',
-      },
+      ...deleteItem,
       {
         key: '6',
         type: 'divider',

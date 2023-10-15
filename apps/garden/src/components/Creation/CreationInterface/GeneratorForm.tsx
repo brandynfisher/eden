@@ -443,8 +443,8 @@ const GeneratorForm = ({
                 cost={taskCost || 'n/a'}
               />
 
-              <Button className="font-mono" onClick={resetForm}>
-                Reset Form {presetCreation ? '(using preset)' : ''}
+              <Button className="font-mono text-sm" onClick={resetForm}>
+                Reset {presetCreation ? '(to preset)' : ''}
               </Button>
             </div>
 

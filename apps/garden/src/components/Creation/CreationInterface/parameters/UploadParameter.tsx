@@ -125,7 +125,7 @@ const UploadParameter = (props: {
 
       let errorMessage = info.file.response?.error || 'Unknown error occurred'
       if (errorMessage.startsWith('options.maxFileSize')) {
-        errorMessage = '20MB file size limit exceeded'
+        errorMessage = 'file size limit exceeded (100mb)'
       }
 
       showUploadErrorMessage(info.file.name, errorMessage)
@@ -199,14 +199,8 @@ const UploadParameter = (props: {
                 Click here or drag files to upload
               </div>
               {!props.compact ? (
-                <div className="ant-upload-hint text-xs text-gray-500">
-                  <div>
-                    Max. files: <strong>{maxUploads}</strong> | Max.{' '}
-                    <strong>20 MB</strong> each
-                  </div>
-                  <div>
-                    Accepted Types: <strong>{props.acceptedMimeTypes}</strong>
-                  </div>
+                <div className="ant-upload-hint text-xs text-gray-500 mt-2">
+                  <strong>{props.acceptedMimeTypes}</strong>
                 </div>
               ) : null}
             </div>
