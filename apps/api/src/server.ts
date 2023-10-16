@@ -6,7 +6,6 @@ import registerClerk from './plugins/clerkPlugin'
 import config from './plugins/config'
 //import registerPlayHt from './plugins/playHtPlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
-import registerJwt from './plugins/jwtPlugin'
 import registerLogos from './plugins/logosPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
@@ -51,11 +50,7 @@ const createServer = async (
     await registerSentry(server)
   }
 
-  if (server.config.FLAGS_CLERK_ENABLED === 'yes') {
-    await registerClerk(server)
-  } else {
-    await registerJwt(server)
-  }
+  await registerClerk(server)
 
   await server.register(import('fastify-raw-body'), {
     field: 'rawBody',
