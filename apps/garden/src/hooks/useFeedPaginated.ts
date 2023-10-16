@@ -29,7 +29,7 @@ export const useFeedPaginated = (
   query: PaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,
 ) => {
-  const pageLimit = query?.limit || 10
+  const pageLimit = query?.limit || 20
 
   const route = (limit: number, page: number) => {
     const basePath = `/api/feed/${type}`

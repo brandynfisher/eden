@@ -1,6 +1,5 @@
 import { CONFIG } from '@/lib/config'
 import { getAdminHeaders } from '@/lib/fetcher'
-import { withSessionRoute } from '@/lib/withSession'
 import * as Sentry from '@sentry/nextjs'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -33,4 +32,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 }
 
-export default withSessionRoute(handler)
+export default handler

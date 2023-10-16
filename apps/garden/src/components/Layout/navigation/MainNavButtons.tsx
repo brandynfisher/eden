@@ -36,7 +36,7 @@ const NavButton = ({
   )
 }
 
-const MainNavButtons = () => {
+const MainNavButtons = ({ inDrawer }: { inDrawer?: boolean }) => {
   const router = useRouter()
 
   const navItems: NavButtonItem[] = [
@@ -53,7 +53,7 @@ const MainNavButtons = () => {
   ]
 
   return (
-    <div className="flex gap-2">
+    <div className={`flex gap-2 ${inDrawer ? 'flex-col' : ''}`}>
       {navItems.map(item => (
         <NavButton
           key={item.path}

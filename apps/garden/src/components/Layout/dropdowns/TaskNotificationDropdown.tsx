@@ -246,8 +246,7 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
     failedTasks,
     setFailedTasks,
   } = useContext(CreationNotificationContext)
-
-  const { refetch } = useContext(UserContext)
+  const { refetchMe } = useContext(UserContext)
 
   const handleDismiss = async (
     taskId: string,
@@ -316,7 +315,7 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
 
   const failedTaskItems = []
   if (failedTasks?.length) {
-    refetch.mannaBalance()
+    refetchMe()
 
     failedTaskItems.push({
       label: (

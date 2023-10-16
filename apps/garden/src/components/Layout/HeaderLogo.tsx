@@ -5,7 +5,7 @@ import React from 'react'
 const HeaderLogo = () => {
   return (
     <div className="demo-logo">
-      <Link href="/">
+      <Link href="/" className="block h-full w-full">
         <Image
           width={32}
           height={32}

@@ -22,6 +22,7 @@ import {
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
+import { LinkOutlined } from '@mui/icons-material'
 import { debounce } from '@mui/material'
 import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
@@ -74,7 +75,7 @@ const GeneratorForm = ({
   } = useContext(CreationNotificationContext)
   const { message } = App.useApp()
   const router = useRouter()
-  const { refetch, isAuthenticated, authenticate, mannaBalance, user } =
+  const { isAuthenticated, authenticate, mannaBalance, user, refetchMe } =
     useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
@@ -257,8 +258,7 @@ const GeneratorForm = ({
       setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchPendingTasks && refetchPendingTasks()
-      refetch.mannaBalance()
-      refetch.pendingTasks()
+      refetchMe()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       message.error('Error creating task. Please try again.')
@@ -398,7 +398,29 @@ const GeneratorForm = ({
         title={
           <div className="py-4">
             <h3>/{generator.generatorName}</h3>
-            <span style={{ color: 'gray' }}>{generator.description}</span>
+            <div className="flex justify-between flex-wrap">
+              <span style={{ color: 'gray' }}>{generator.description}</span>
+              {generator.output === 'creation' ? (
+                <a
+                  href="https://docs.eden.art/docs/guides/creation"
+                  target="_blank"
+                  className="flex gap-1 items-center"
+                >
+                  Learn about Creations
+                  <LinkOutlined />
+                </a>
+              ) : null}
+              {generator.output === 'concept' ? (
+                <a
+                  href="https://docs.eden.art/docs/guides/concepts"
+                  target="_blank"
+                  className="flex gap-1 items-center"
+                >
+                  Learn about Concepts
+                  <LinkOutlined />
+                </a>
+              ) : null}
+            </div>
           </div>
         }
         actions={[
@@ -443,8 +465,8 @@ const GeneratorForm = ({
                 cost={taskCost || 'n/a'}
               />
 
-              <Button className="font-mono" onClick={resetForm}>
-                Reset Form {presetCreation ? '(using preset)' : ''}
+              <Button className="font-mono text-sm" onClick={resetForm}>
+                Reset {presetCreation ? '(to preset)' : ''}
               </Button>
             </div>
 

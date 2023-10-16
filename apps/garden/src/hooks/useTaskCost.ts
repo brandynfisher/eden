@@ -20,7 +20,7 @@ export const useTaskCost = () => {
     if (taskCost && mannaBalance) {
       setCanAffordOperation(mannaBalance >= taskCost)
     } else {
-      setCanAffordOperation(true)
+      setCanAffordOperation(false)
     }
   }, [taskCost, mannaBalance])
 

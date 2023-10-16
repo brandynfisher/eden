@@ -1,6 +1,5 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
-import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { CharactersCreateArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -36,4 +35,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 }
 
-export default withSessionRoute(handler)
+export default handler

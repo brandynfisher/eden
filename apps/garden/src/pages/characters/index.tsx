@@ -1,4 +1,4 @@
-import { getAuthHeaders } from '@/lib/auth'
+import { getAuthHeaders, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
@@ -15,7 +15,7 @@ interface PageProps {
 
 const fetchCharacters = async (context: NextPageContext) => {
   const { req } = context
-  const userId = req ? req.session.address : ''
+  const userId = await getAuthUserId(req as NextApiRequest)
 
   return fetcherFn(
     `${CONFIG.NEXT_PUBLIC_HOST}/api/characters/user?userId=${userId}`,
@@ -25,18 +25,15 @@ const fetchCharacters = async (context: NextPageContext) => {
   )
 }
 
-export const getServerSideProps = getServerSidePropsBase(
-  [
-    {
-      responseFieldName: 'characters',
-      dataFetcher: fetchCharacters,
-    },
-  ],
-  true,
-)
+export const getServerSideProps = getServerSidePropsBase([
+  {
+    responseFieldName: 'characters',
+    dataFetcher: fetchCharacters,
+  },
+])
 
-const characters: Page<PageProps> = () => {
-  return <CharactersPage />
+const characters: Page<PageProps> = ({ data }: PageProps) => {
+  return <CharactersPage data={data} />
 }
 
 export default characters

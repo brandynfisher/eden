@@ -1,8 +1,7 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
-  OrderByBookmarks,
   OrderByLatest,
-  OrderByPraises,
+  OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCollection } from '@/hooks/useCollection'
@@ -97,7 +96,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
               key={`collection_${collection._id}`}
               type="creations"
               query={{ collectionId: collection._id }}
-              hasSort={[OrderByLatest, OrderByPraises, OrderByBookmarks]}
+              hasSort={[OrderByLatest, OrderByPopularity]}
               ItemComponent={CreationCard}
             />
           </div>

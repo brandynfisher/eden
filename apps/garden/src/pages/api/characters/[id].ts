@@ -1,6 +1,5 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
-import { withSessionRoute } from '@/lib/withSession'
 import { CharactersUpdateArguments, EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -93,4 +92,4 @@ const deleteCharacter = async (
   return res.status(200).json({ success: true })
 }
 
-export default withSessionRoute(handler)
+export default handler

@@ -1,5 +1,5 @@
 import ResultPreviewDisplay from '@/components/Creation/CreationInterface/ResultPreviewDisplay'
-import { rightTruncatedString, truncatedAddress } from '@/lib/string'
+import { truncatedAddress } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import {
@@ -8,7 +8,7 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons'
 import { useClipboard } from '@mantine/hooks'
-import { App, Card, Progress, Spin } from 'antd'
+import { App, Card, Divider, Progress, Spin } from 'antd'
 import React, { RefObject, useContext } from 'react'
 
 const ResultPreview = ({
@@ -54,18 +54,14 @@ const ResultPreview = ({
               {!creationUri ? (
                 <div className="w-full">
                   <div className="text-center">
-                    <div className="text-gray-500 mb-2">
-                      Awaiting creation...{' '}
-                    </div>
                     <div className="mb-4">
-                      <div className="font-bold mb-2">
-                        /{activeTask?.generator.generatorName}
-                      </div>
-                      <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
-                        {rightTruncatedString(
-                          activeTask?.config.text_input || '',
-                          42,
-                        )}
+                      <div title={activeTask?.config.text_input || ''}>
+                        <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
+                          <strong className="dark:text-gray-200 mr-1">
+                            /{activeTask?.generator.generatorName}
+                          </strong>
+                          {activeTask?.config.text_input || ''}
+                        </span>
                       </div>
                     </div>
                     <Spin
@@ -113,6 +109,11 @@ const ResultPreview = ({
                       </div>
                     </div>
                   )}
+                  <Divider />
+                  <div className="text-center text-gray-400 mt-4 font-bold">
+                    You can continue using the app, run multiple tasks or close
+                    this tab. No need to wait.
+                  </div>
                 </div>
               ) : (
                 <ResultPreviewDisplay creationId={creationId} />

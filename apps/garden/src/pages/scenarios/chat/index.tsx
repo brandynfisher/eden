@@ -1,4 +1,4 @@
-import { getAuthHeaders } from '@/lib/auth'
+import { getAuthHeaders, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
@@ -17,16 +17,20 @@ interface PageProps {
 }
 
 const fetchCharacters = async (context: NextPageContext) => {
-  const userId = context?.req?.session.address
+  const { req } = context
+  const userId = await getAuthUserId(req as NextApiRequest)
 
   return fetcherFn(
     `${CONFIG.NEXT_PUBLIC_HOST}/api/characters/user?userId=${userId}`,
+    {
+      headers: await getAuthHeaders(req as NextApiRequest),
+    },
   )
 }
 
 const fetchSessions = async (context: NextPageContext) => {
   const { req } = context
-  const userId = context?.req?.session.address
+  const userId = await getAuthUserId(req as NextApiRequest)
 
   return fetcherFn(
     `${CONFIG.NEXT_PUBLIC_HOST}/api/sessions/user?userId=${userId}`,
@@ -36,19 +40,16 @@ const fetchSessions = async (context: NextPageContext) => {
   )
 }
 
-export const getServerSideProps = getServerSidePropsBase(
-  [
-    {
-      responseFieldName: 'characters',
-      dataFetcher: fetchCharacters,
-    },
-    {
-      responseFieldName: 'sessions',
-      dataFetcher: fetchSessions,
-    },
-  ],
-  true,
-)
+export const getServerSideProps = getServerSidePropsBase([
+  {
+    responseFieldName: 'characters',
+    dataFetcher: fetchCharacters,
+  },
+  {
+    responseFieldName: 'sessions',
+    dataFetcher: fetchSessions,
+  },
+])
 
 const chatScenario: Page<PageProps> = ({ data }: PageProps) => {
   return (

@@ -1,10 +1,9 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import OrderByButtons, {
-  OrderByBookmarks,
   OrderByLatest,
   OrderByParam,
-  OrderByPraises, // OrderByScore,
+  OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/MasonryInfinite'
@@ -28,27 +27,14 @@ const ProfileHeader = dynamic(
 )
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
-  const { isAuthenticated } = useContext(UserContext)
-
-  const sortButtons = isAuthenticated
-    ? [
-        OrderByLatest,
-        // OrderByScore,
-        OrderByPraises,
-        OrderByBookmarks,
-      ]
-    : [OrderByLatest]
-
-  const [activeSort, setActiveSort] = useState<OrderByParam>(sortButtons[0])
+  const [activeSort, setActiveSort] = useState<OrderByParam>(OrderByLatest)
 
   return (
     <div className="mt-4">
-      {sortButtons && (
-        <OrderByButtons
-          params={sortButtons}
-          onOrderChange={item => setActiveSort(item)}
-        />
-      )}
+      <OrderByButtons
+        params={[OrderByLatest, OrderByPopularity]}
+        onOrderChange={item => setActiveSort(item)}
+      />
 
       <MasonryWrap
         key={`creations_${creatorId}_${activeSort.label}`}
@@ -205,7 +191,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   )
 }
 
-const CreatorPage = ({ data }: { data: Creator }) => {
+const CreatorPageV2 = ({ data }: { data: Creator }) => {
   const { creator: creatorData } = useCreator(data ? data.userId : null, {
     fallbackData: data,
   })
@@ -217,4 +203,4 @@ const CreatorPage = ({ data }: { data: Creator }) => {
   return <CreatorPageContent creator={creatorData || data} />
 }
 
-export default CreatorPage
+export default CreatorPageV2
