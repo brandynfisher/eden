@@ -1,7 +1,6 @@
 import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
 import { SettingName, Settings } from '@/hooks/useSettings'
-import { Collection, Creator, Task } from '@edenlabs/eden-sdk'
-import { Character } from '@edenlabs/eden-sdk'
+import { Creator, Task } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {
@@ -12,16 +11,8 @@ export interface UserContextType {
   logout: () => Promise<void>
   userId: string | null
   mannaBalance?: number
-  characters?: Character[]
-  collections?: Collection[]
   pendingTasks?: Task[]
-  refetch: {
-    mannaBalance: VoidFunction
-    characters: VoidFunction
-    collections: VoidFunction
-    user: VoidFunction
-    pendingTasks: VoidFunction
-  }
+  refetchMe: VoidFunction
   settings?: Settings
   updateSetting: (settingName: SettingName, newValue: number | 'auto') => void
   user?: Creator
@@ -39,32 +30,16 @@ const defaultUserState: UserContextType = {
     return new Promise<void>(resolve => resolve())
   },
   userId: null,
+  user: undefined,
   mannaBalance: undefined,
-  characters: undefined,
-  collections: undefined,
   pendingTasks: undefined,
-  refetch: {
-    mannaBalance: () => {
-      return null
-    },
-    characters: () => {
-      return null
-    },
-    collections: () => {
-      return null
-    },
-    user: () => {
-      return null
-    },
-    pendingTasks: () => {
-      return null
-    },
+  refetchMe: () => {
+    return null
   },
   settings: undefined,
   updateSetting: () => {
     return null
   },
-  user: undefined,
   featureFlags: [],
 }
 

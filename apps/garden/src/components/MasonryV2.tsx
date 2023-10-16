@@ -14,8 +14,6 @@ const MasonryV2 = ({
   const router = useRouter()
 
   const handleCardClick = (item: Creation) => {
-    const clickedItemIndex = items.indexOf(item)
-    console.log('handleCardClick', clickedItemIndex, item)
     showModal(MODAL_TYPES.CREATION_DETAIL_MODAL_V2, {
       initialItem: item,
       usesUrl: true,

@@ -1,4 +1,4 @@
-import { PaginatedResponse } from 'src/responses'
+import { PaginatedResponse, Task } from 'src/responses'
 
 import { WebAPICallResult } from '../EdenClient'
 
@@ -19,13 +19,13 @@ export type CreatorsListResponse = WebAPICallResult &
 
 export type CreatorFollowersListResponse = WebAPICallResult &
   PaginatedResponse<Creator> & {
-  error?: string
-}
+    error?: string
+  }
 
 export type CreatorFollowingListResponse = WebAPICallResult &
   PaginatedResponse<Creator> & {
-  error?: string
-}
+    error?: string
+  }
 
 export type CreatorsGetResponse = WebAPICallResult & {
   error?: string
@@ -35,6 +35,13 @@ export type CreatorsGetResponse = WebAPICallResult & {
 export type CreatorsUpdateResponse = WebAPICallResult & {
   error?: string
   creator?: Creator
+}
+
+export type CreatorsGetMeResponse = WebAPICallResult & {
+  error?: string
+  creator?: Creator
+  balance?: number
+  pendingTasks?: Task[]
 }
 
 export type Creator = {

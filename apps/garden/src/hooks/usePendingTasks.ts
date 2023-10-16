@@ -1,4 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
+import { Task } from '@edenlabs/eden-sdk'
 import useSWR from 'swr'
 
 export const usePendingTasks = ({
@@ -12,10 +13,14 @@ export const usePendingTasks = ({
       : null,
     fetcher,
   )
-  console.log(data)
+  // filter to last day
+  const pendingTasks = data?.tasks as Task[]
+  const recentPendingTasks = pendingTasks?.filter(
+    task => Date.now() - new Date(task.createdAt).getTime() < 86400000,
+  )
 
   return {
-    pendingTasks: isAuthenticated ? data?.tasks : undefined,
+    pendingTasks: isAuthenticated ? recentPendingTasks : undefined,
     refetchPendingTasks: mutate,
   }
 }

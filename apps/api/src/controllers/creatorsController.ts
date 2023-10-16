@@ -13,6 +13,8 @@ import { ObjectId } from 'mongodb'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Follow, FollowDocument } from '../models/Follow'
+import { Manna } from '../models/Manna'
+import { Task } from '../models/Task'
 import CreatorRepository from '../repositories/CreatorRepository'
 import FollowerRepository from '../repositories/FollowerRepository'
 
@@ -396,4 +398,35 @@ export const unfollowCreator = async (
   return reply.status(200).send({
     success: true,
   })
+}
+
+export const getCreatorMe = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const user = await User.findById(userId.toString())
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User does not exist',
+    })
+  }
+
+  const manna = await Manna.findOne({ user: user._id })
+
+  const date = new Date()
+  date.setHours(date.getHours() - 24)
+
+  const pendingTasks = await Task.find({
+    user: user._id,
+    status: 'pending' || 'processing' || 'running',
+    createdAt: { $gte: date },
+  })
+
+  return {
+    creator: user,
+    balance: manna?.balance || 0,
+    pendingTasks,
+  }
 }

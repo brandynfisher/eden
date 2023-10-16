@@ -75,7 +75,7 @@ const GeneratorForm = ({
   } = useContext(CreationNotificationContext)
   const { message } = App.useApp()
   const router = useRouter()
-  const { refetch, isAuthenticated, authenticate, mannaBalance, user } =
+  const { isAuthenticated, authenticate, mannaBalance, user, refetchMe } =
     useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
@@ -258,8 +258,7 @@ const GeneratorForm = ({
       setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchPendingTasks && refetchPendingTasks()
-      refetch.mannaBalance()
-      refetch.pendingTasks()
+      refetchMe()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       message.error('Error creating task. Please try again.')

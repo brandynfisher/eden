@@ -62,10 +62,13 @@ const popularWallets = {
   wallets: [
     ...particleWallets,
     injectedWallet({ chains }),
-    rainbowWallet({ chains }),
-    coinbaseWallet({ appName: 'RainbowKit demo', chains }),
-    metaMaskWallet({ chains }),
-    walletConnectWallet({ chains }),
+    rainbowWallet({ chains, projectId: CONFIG.NEXT_PUBLIC_WALLETCONNECT_ID }),
+    coinbaseWallet({ appName: 'Eden', chains }),
+    metaMaskWallet({ chains, projectId: CONFIG.NEXT_PUBLIC_WALLETCONNECT_ID }),
+    walletConnectWallet({
+      chains,
+      projectId: CONFIG.NEXT_PUBLIC_WALLETCONNECT_ID,
+    }),
   ],
 }
 
@@ -74,11 +77,11 @@ const connectors = connectorsForWallets([
   {
     groupName: 'Other',
     wallets: [
-      argentWallet({ chains }),
-      trustWallet({ chains }),
-      omniWallet({ chains }),
-      imTokenWallet({ chains }),
-      ledgerWallet({ chains }),
+      argentWallet({ chains, projectId: CONFIG.NEXT_PUBLIC_WALLETCONNECT_ID }),
+      trustWallet({ chains, projectId: CONFIG.NEXT_PUBLIC_WALLETCONNECT_ID }),
+      omniWallet({ chains, projectId: CONFIG.NEXT_PUBLIC_WALLETCONNECT_ID }),
+      imTokenWallet({ chains, projectId: CONFIG.NEXT_PUBLIC_WALLETCONNECT_ID }),
+      ledgerWallet({ chains, projectId: CONFIG.NEXT_PUBLIC_WALLETCONNECT_ID }),
     ],
   },
 ])

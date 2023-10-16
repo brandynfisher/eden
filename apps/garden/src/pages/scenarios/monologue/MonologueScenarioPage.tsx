@@ -38,14 +38,9 @@ const MonologueScenarioPageContent = ({
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { message } = App.useApp()
   const [form] = Form.useForm()
-  const {
-    taskIds,
-    setTaskIds,
-    setActiveTaskId,
-    setHasChangedGenerator,
-    refetchPendingTasks,
-  } = useContext(CreationNotificationContext)
-  const { refetch, mannaBalance } = useContext(UserContext)
+  const { taskIds, setTaskIds, setActiveTaskId, setHasChangedGenerator } =
+    useContext(CreationNotificationContext)
+  const { mannaBalance, refetchMe } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -110,8 +105,7 @@ const MonologueScenarioPageContent = ({
       setActiveTaskId && setActiveTaskId(taskId)
       setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
-      refetchPendingTasks && refetchPendingTasks()
-      refetch.mannaBalance()
+      refetchMe()
       onSubmitSuccess()
     } catch (error) {
       handleAxiosError(error, message, 'Error requesting monologue generation')

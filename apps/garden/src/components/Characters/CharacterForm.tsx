@@ -453,7 +453,6 @@ function coupledArray<T>(array: T[]): T[][] {
 const CharacterToolButtons = ({ character }: { character: Character }) => {
   const { message } = App.useApp()
   const router = useRouter()
-  const { refetch } = useContext(UserContext)
 
   const handleDeleteCharacter = async () => {
     try {
@@ -462,7 +461,6 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
       })
       message.destroy()
       message.info(`Character '${character.name}' was deleted`)
-      refetch.characters()
       await router.push('/create/characters')
     } catch (error) {
       handleAxiosError(error, message)
@@ -496,7 +494,7 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
 const CharacterForm = ({ character }: { character?: Character }) => {
   const mode = !character ? 'create' : 'update'
   const { message } = App.useApp()
-  const { refetch, user } = useContext(UserContext)
+  const { user } = useContext(UserContext)
   const router = useRouter()
   const [form] = Form.useForm()
   const [messageGroups, setMessageGroups] = useState<ChatMessageGroup[]>([])
@@ -588,7 +586,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
         })
       }
 
-      refetch.characters()
       message.destroy()
       message.success(`Character '${data.name}' ${mode}d`)
       await router.push(`/characters`)

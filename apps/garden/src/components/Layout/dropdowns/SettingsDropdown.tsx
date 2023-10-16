@@ -4,14 +4,13 @@ import {
   LoginOutlined,
   LogoutOutlined,
   SettingOutlined,
-  TableOutlined,
-  ToolOutlined,
+  TableOutlined, // ToolOutlined,
 } from '@ant-design/icons'
 import { useViewportSize } from '@mantine/hooks'
 // import { UserButton } from '@clerk/nextjs'
 import { Button, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
-import Link from 'next/link'
+// import Link from 'next/link'
 import React, { useContext, useEffect, useState } from 'react'
 
 // const Web3LoginLogoutButton = () => {
@@ -150,18 +149,18 @@ const MaxColumnSelector = () => {
   )
 }
 
-const DevToolsLink = () => {
-  return (
-    <Link className="w-full" href="/tools">
-      <div className="flex items-center">
-        <ToolOutlined />
-        <div className="ml-2 flex gap-2 w-full justify-between font-mono">
-          Dev Tools
-        </div>
-      </div>
-    </Link>
-  )
-}
+// const DevToolsLink = () => {
+//   return (
+//     <Link className="w-full" href="/tools">
+//       <div className="flex items-center">
+//         <ToolOutlined />
+//         <div className="ml-2 flex gap-2 w-full justify-between font-mono">
+//           Dev Tools
+//         </div>
+//       </div>
+//     </Link>
+//   )
+// }
 
 const clerkItems: ItemType[] = [
   {
@@ -174,13 +173,13 @@ const clerkExtraItems: ItemType[] = [
   {
     type: 'divider',
   },
-  {
-    label: <DevToolsLink />,
-    key: '5',
-  },
-  {
-    type: 'divider',
-  },
+  // {
+  //   label: <DevToolsLink />,
+  //   key: '5',
+  // },
+  // {
+  //   type: 'divider',
+  // },
   // {
   //   label: <UserButton afterSignOutUrl="/" showName={true} />,
   //   key: '3',
