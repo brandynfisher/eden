@@ -21,8 +21,6 @@ import React, {
   useState,
 } from 'react'
 
-;`use client`
-
 type MenuItem = {
   key: string
   icon?: ReactNode

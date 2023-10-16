@@ -123,12 +123,11 @@ const MasonryInfinite = ({
   )
   const resizeObserver = useResizeObserver(positioner)
 
-  //
   useEffect(() => {
     setItems(items)
   }, [items.length, orderBy, query, type])
 
-  const handleCardClick = useCallback((index: number, item: Creation) => {
+  const handleCardClick = useCallback((index: number) => {
     //@todo: move this to CreationMasonry (similarMasonry, as static)
     // if (disableArrowNav) {
     //   showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
@@ -142,15 +141,9 @@ const MasonryInfinite = ({
     // }
     // setItems(items)
 
-    // const clickedItemIndex = items.findIndex(
-    //   searchItem => searchItem._id === item._id,
-    // )
-    // console.log({clickedItemIndex})
     setCurrentIndex(index)
 
-    // console.log('handleCardClick', clickedItemIndex, item, items)
     showModal(MODAL_TYPES.CREATION_DETAIL_MODAL_V2, {
-      initialItem: item,
       usesUrl: true,
       originPageUrl: router.asPath,
       maybeLoadMoreFn: (
@@ -173,7 +166,7 @@ const MasonryInfinite = ({
         key={props.data._id}
         index={props.index}
         data={props.data}
-        onClick={() => handleCardClick(props.index, props.data)}
+        onClick={() => handleCardClick(props.index)}
       />
     ),
     [],
