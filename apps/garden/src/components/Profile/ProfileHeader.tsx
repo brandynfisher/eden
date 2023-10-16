@@ -106,7 +106,7 @@ const ProfileHeader = ({
                 <UploadOutlined /> Set Image
               </Button>
               {showImageUploader && (
-                <div className="bg-gray-400 dark:bg-gray-800 p-2 rounded-lg top-8 absolute z-10">
+                <div className="bg-gray-400 dark:bg-gray-800 p-2 rounded-lg top-8 absolute z-50">
                   <Form
                     form={form}
                     name="creatorProfile"
