@@ -2,7 +2,6 @@ import {
   maybeRedirectIfConceptIdQuery,
   maybeRedirectIfCreationIdQuery,
 } from '@/lib/redirect'
-import { withSessionSsr } from '@/lib/withSession'
 import { NextPageContext } from 'next'
 
 type FieldRequest = {
@@ -10,11 +9,8 @@ type FieldRequest = {
   dataFetcher: (ctx: NextPageContext) => Promise<{ [key: string]: string }>
 }
 
-export const getServerSidePropsBase = (
-  fieldRequests: FieldRequest[],
-  useSessionSsr?: boolean,
-) => {
-  const getServerSideProps = async (ctx: NextPageContext) => {
+export const getServerSidePropsBase = (fieldRequests: FieldRequest[]) => {
+  return async (ctx: NextPageContext) => {
     const shouldRedirectToCreationDetail = await maybeRedirectIfCreationIdQuery(
       ctx,
     )
@@ -53,7 +49,4 @@ export const getServerSidePropsBase = (
       return { props: { data: null, error: 'Something went wrong' } }
     }
   }
-
-  //@ts-ignore
-  return useSessionSsr ? withSessionSsr(getServerSideProps) : getServerSideProps
 }
