@@ -1,9 +1,10 @@
+import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const authToken = req.session.token
+  const authToken = await getAuthToken(req)
 
   try {
     const eden = new EdenClient({

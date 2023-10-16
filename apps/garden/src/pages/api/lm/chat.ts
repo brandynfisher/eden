@@ -1,4 +1,4 @@
-import { getAuthToken } from '@/lib/auth'
+import { getAuthToken, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { ChatMessage } from '@/lib/types'
 import { EdenClient, SessionEventType } from '@edenlabs/eden-sdk'
@@ -14,6 +14,7 @@ type CharacterChatCompletionRequest = {
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const userId = await getAuthUserId(req)
   const authToken = await getAuthToken(req)
   const {
     sessionId,
@@ -63,7 +64,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         type: SessionEventType.USER_MESSAGE,
         data: {
           userMessage: {
-            userId: req.session.address,
+            userId: userId,
             message: message.message,
             completion: completion.id,
           },
