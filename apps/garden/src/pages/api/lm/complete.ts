@@ -1,12 +1,12 @@
-import { getAuthToken } from '@/lib/auth'
+import { getAuthToken, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { EdenClient, SessionEventType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const userId = await getAuthUserId(req)
   const authToken = await getAuthToken(req)
   const { sessionId, characterId, prompt } = req.body
-
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
   }
@@ -39,7 +39,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         type: SessionEventType.USER_MESSAGE,
         data: {
           userMessage: {
-            userId: req.session.address,
+            userId: userId,
             message: prompt,
             completion: completion.id,
           },
