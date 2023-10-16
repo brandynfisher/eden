@@ -5,6 +5,7 @@ import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
 import EdenProvider from '@/providers/EdenProvider'
+import MUIConfigWrapProvider from '@/providers/MUIConfigWrapProvider'
 import MasonryProvider from '@/providers/MasonryProvider'
 import ModalProvider from '@/providers/ModalProvider'
 import UserProvider from '@/providers/UserProvider'
@@ -89,29 +90,31 @@ export default function App({ Component, pageProps }: Props): ReactElement {
 
       <main className={`${inter.className}`}>
         <ThemeProvider attribute="class">
-          <AntConfigWrapProvider>
-            <WalletProvider>
-              <EdenProvider>
-                <ClerkWrapProvider>
-                  <UserProvider>
-                    <PasswordProtection>
-                      <CreationNotificationProvider>
-                        <MasonryProvider>
-                          <ModalProvider>
-                            {getLayout(
-                              <ErrorBoundary>
-                                <Component {...pageProps} />
-                              </ErrorBoundary>,
-                            )}
-                          </ModalProvider>
-                        </MasonryProvider>
-                      </CreationNotificationProvider>
-                    </PasswordProtection>
-                  </UserProvider>
-                </ClerkWrapProvider>
-              </EdenProvider>
-            </WalletProvider>
-          </AntConfigWrapProvider>
+          <MUIConfigWrapProvider>
+            <AntConfigWrapProvider>
+              <WalletProvider>
+                <EdenProvider>
+                  <ClerkWrapProvider>
+                    <UserProvider>
+                      <PasswordProtection>
+                        <CreationNotificationProvider>
+                          <MasonryProvider>
+                            <ModalProvider>
+                              {getLayout(
+                                <ErrorBoundary>
+                                  <Component {...pageProps} />
+                                </ErrorBoundary>,
+                              )}
+                            </ModalProvider>
+                          </MasonryProvider>
+                        </CreationNotificationProvider>
+                      </PasswordProtection>
+                    </UserProvider>
+                  </ClerkWrapProvider>
+                </EdenProvider>
+              </WalletProvider>
+            </AntConfigWrapProvider>
+          </MUIConfigWrapProvider>
         </ThemeProvider>
       </main>
     </>

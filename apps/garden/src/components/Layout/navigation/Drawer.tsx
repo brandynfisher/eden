@@ -1,21 +1,10 @@
 import HeaderLogo from '@/components/Layout/HeaderLogo'
-import MannaDropdown from '@/components/Layout/dropdowns/MannaDropdown'
 import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
 import NavBurgerButton from '@/components/Layout/navigation/NavBurgerButton'
 import SocialLinks from '@/components/Layout/navigation/SocialLinks'
-import LoadingIndicator from '@/components/LoadingIndicator'
-import { UserContext } from '@/providers/UserProvider'
 import { Drawer as AntDrawer, Divider } from 'antd'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import React, { useContext, useEffect, useState } from 'react'
-
-const TaskNotificationDropdown = dynamic(
-  () => import('@/components/Layout/dropdowns/TaskNotificationDropdown'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
+import React, { useEffect, useState } from 'react'
 
 const DrawerTitle = ({
   onClose,
@@ -35,22 +24,11 @@ const DrawerTitle = ({
 }
 
 const DrawerContent = () => {
-  const { isAuthenticated } = useContext(UserContext)
-
   return (
     <div className="dark:!bg-gray-900">
       <div className="px-4 py-2">
         <MainNavButtons inDrawer={true} />
       </div>
-      {isAuthenticated && (
-        <div className="flex flex-col">
-          <Divider />
-          <div className="flex items-center justify-between px-3 py-2">
-            <MannaDropdown />
-            <TaskNotificationDropdown inDrawer={true} />
-          </div>
-        </div>
-      )}
       <Divider />
       <SocialLinks />
     </div>

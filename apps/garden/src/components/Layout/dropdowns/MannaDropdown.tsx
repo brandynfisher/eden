@@ -50,14 +50,15 @@ const defaultItems: ItemType[] = [
   },
   {
     label: (
-      <Link
+      <a
         href="https://docs.eden.art/docs/overview/manna"
+        target="_blank"
         title="Learn about Manna"
         className="text-small hover:dark:text-gray-400"
       >
         Learn about Manna
         <InfoCircleOutlined className="ml-1" />
-      </Link>
+      </a>
     ),
     key: '1',
   },

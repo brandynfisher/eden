@@ -16,8 +16,15 @@ const Drawer = dynamic(() => import('@/components/Layout/navigation/Drawer'), {
   loading: () => <LoadingIndicator />,
 })
 
+// const TaskNotificationDropdown = dynamic(
+//   () => import('@/components/Layout/dropdowns/TaskNotificationDropdown'),
+//   {
+//     loading: () => <LoadingIndicator />,
+//   },
+// )
+
 const TaskNotificationDropdown = dynamic(
-  () => import('@/components/Layout/dropdowns/TaskNotificationDropdown'),
+  () => import('@/components/Layout/dropdowns/TaskNotificationDropdownMUI'),
   {
     loading: () => <LoadingIndicator />,
   },
@@ -41,6 +48,9 @@ const LayoutHeader = () => {
   const { width: viewportWidth } = useViewportSize()
   const { isAuthenticated } = useContext(UserContext)
   const [mountDrawer, setMountDrawer] = useState(true)
+  const [isSmallScreen, setIsSmallScreen] = useState(
+    viewportWidth < theme.screens.md,
+  )
 
   useEffect(() => {
     if (viewportWidth >= theme.screens.lg) {
@@ -50,36 +60,50 @@ const LayoutHeader = () => {
     }
   }, [viewportWidth])
 
+  useEffect(() => {
+    if (viewportWidth < theme.screens.md) {
+      setIsSmallScreen(true)
+    } else {
+      setIsSmallScreen(false)
+    }
+  }, [viewportWidth])
+
   return (
-    <Header
-      className={`flex gap-2 items-center px-4 bg-white dark:bg-gray-950`}
-    >
-      <HeaderLogo />
+    <Header className={`px-4 bg-white dark:bg-gray-950`}>
+      <div className="flex gap-2 items-center">
+        <HeaderLogo />
 
-      {mountDrawer && (
-        <div className="flex">
-          <Drawer />
-        </div>
-      )}
-
-      <div className="hidden md:flex w-full">
-        <MainNavButtons />
-      </div>
-
-      <div className="ml-auto md:ml-0 flex items-center gap-2">
-        <QuickCreateMenu />
-
-        {isAuthenticated && (
-          <>
-            <TaskNotificationDropdown />
-            <div className="hidden lg:flex">
-              <MannaDropdown />
-            </div>
-          </>
+        {mountDrawer && (
+          <div className="flex">
+            <Drawer />
+          </div>
         )}
 
-        <SettingsDropdown />
-        <ClerkMyProfileButton />
+        <div className="ml-auto flex items-center gap-2">
+          <QuickCreateMenu />
+
+          {!isSmallScreen && isAuthenticated ? (
+            <>
+              <TaskNotificationDropdown />
+              <MannaDropdown />
+            </>
+          ) : null}
+
+          <SettingsDropdown />
+          <ClerkMyProfileButton />
+        </div>
+      </div>
+
+      <div className="w-full flex">
+        <div className="hidden sm:flex w-full">
+          <MainNavButtons />
+        </div>
+        {isSmallScreen && isAuthenticated ? (
+          <div className="flex ml-auto">
+            <TaskNotificationDropdown />
+            <MannaDropdown />
+          </div>
+        ) : null}
       </div>
     </Header>
   )
