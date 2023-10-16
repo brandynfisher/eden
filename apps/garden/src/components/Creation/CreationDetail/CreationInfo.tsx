@@ -29,6 +29,10 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
       {creation.task.generator.output === 'creation' ? (
         <div className="flex gap-4 flex-wrap">
           <BaseParamGroup
+            label="Type"
+            value={<div>{creation.task.generator.generatorName}</div>}
+          />
+          <BaseParamGroup
             label="Size"
             value={
               <div>
@@ -43,10 +47,6 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
             value={
               <div>{new Date(creation.createdAt).toLocaleDateString()}</div>
             }
-          />
-          <BaseParamGroup
-            label="Type"
-            value={<div>{creation.task.generator.generatorName}</div>}
           />
         </div>
       ) : null}

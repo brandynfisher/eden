@@ -1,14 +1,28 @@
-import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
-import CreationReactions from '@/components/Creation/CreationReactions'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { getAspectRatio } from '@/lib/media'
 import { timeAgo } from '@/lib/time'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
+import dynamic from 'next/dynamic'
 import React, { FC, useEffect, useState } from 'react'
+
+const CardToolsDropdown = dynamic(
+  () => import('@/components/Card/CardToolsDropdown'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const CreationReactions = dynamic(
+  () => import('@/components/Creation/CreationReactions'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
 
 const CreationCard: FC<{
   index: number
