@@ -6,7 +6,7 @@ import React, { ReactNode, useCallback, useState } from 'react'
 
 const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
   return (
-    <div className="absolute inset-0 z-10">
+    <div className="absolute inset-0 z-10 max-h-[95vh]">
       <Image
         src={imageUrl}
         alt={''}
@@ -16,7 +16,7 @@ const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
         sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
         style={{ objectFit: 'contain', objectPosition: 'top center' }}
       />
-      <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-70 text-gray-700" />
+      <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-90 text-gray-400" />
     </div>
   )
 }
@@ -42,7 +42,6 @@ const ImageResultZoomable = ({
   const [isLoaded, setIsLoaded] = useState(false)
 
   const handleOnLoad = useCallback(() => {
-    // console.log('handleOnLoad')
     // if (!isLoaded) {
     setIsLoaded(true)
     // } else {
@@ -53,23 +52,23 @@ const ImageResultZoomable = ({
     if (onLoad) {
       onLoad()
     }
-  }, [onLoad, previewSizeUrl, setIsLoaded])
+  }, [onLoad, thumbnailSizeUrl, previewSizeUrl, setIsLoaded])
 
   return (
     <div
       className={`image-zoomable-wrap relative w-full h-fit overflow-hidden rounded-lg`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
-      {!isLoaded ? (
-        <div className="absolute inset-0 text-gray-500 opacity-80">
+      {previewSizeUrl && !isLoaded ? (
+        <div className="absolute inset-0 text-gray-500 opacity-80 max-h-[95vh]">
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
-      {thumbnailSizeUrl ? (
+      {!isLoaded && thumbnailSizeUrl && previewSizeUrl ? (
         <ImagePlaceholder key={thumbnailSizeUrl} imageUrl={thumbnailSizeUrl} />
       ) : null}
       {previewSizeUrl ? (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 max-h-[95vh]">
           <Image
             key={previewSizeUrl}
             src={previewSizeUrl}
