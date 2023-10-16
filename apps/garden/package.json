@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:dummy": "NEXT_PUBLIC_DEV_TYPE=dummy next dev",
-    "dev:eden": "NEXT_PUBLIC_DEV_TYPE=eden next dev",
+    "dev:dummy": "env-cmd -f .env.dummy.local next dev",
+    "dev:eden": "env-cmd -f .env.eden.local next dev",
     "build": "next build --debug",
     "start": "next start",
     "test": "vitest",
@@ -70,6 +70,7 @@
     "@types/react-dom": "18.2.4",
     "@types/stripe": "^8.0.417",
     "cssnano": "^6.0.1",
+    "env-cmd": "^10.1.0",
     "next-transpile-modules": "^10.0.0",
     "sass": "^1.64.1"
   }

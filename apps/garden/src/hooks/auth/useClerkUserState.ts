@@ -27,7 +27,6 @@ export const useClerkUserState = () => {
   const { pendingTasks, refetchPendingTasks } = usePendingTasks({
     isAuthenticated,
   })
-  console.log(pendingTasks)
   const { creator, mutate: refetchCreator } = useCreator(userId || null)
 
   const reloadUserState = () => {

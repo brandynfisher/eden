@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { NextRouter, useRouter, withRouter } from 'next/router'
 import React, {
   Dispatch,
-  ErrorInfo,
   ReactNode,
   SetStateAction,
   useEffect,
@@ -29,7 +28,6 @@ function ErrorBoundary({ children }: Props) {
   useEffect(() => {
     const handleRouteChange = () => {
       if (hasError) {
-        console.log('resetting hasError to false')
         setHasError(false)
       }
     }
@@ -60,8 +58,7 @@ class ErrorBoundaryInner extends React.Component<Props, State> {
     return { hasError: true }
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.log({ error, errorInfo })
+  componentDidCatch(error: Error) {
     Sentry.captureException(error)
   }
 
