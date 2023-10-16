@@ -40,7 +40,7 @@ const DrawerContent = () => {
   return (
     <div className="dark:!bg-gray-900">
       <div className="px-4 py-2">
-        <MainNavButtons />
+        <MainNavButtons inDrawer={true} />
       </div>
       {isAuthenticated && (
         <div className="flex flex-col">

@@ -9,13 +9,13 @@ export type DoExtraStyleOptions = {
   dir?: string
   baseFileName?: string
 }
-
 export function doExtraStyle({
   cache,
   dir = 'antd-output',
   baseFileName = 'antd.min',
 }: DoExtraStyleOptions) {
   const baseDir = path.resolve(__dirname, '../../static/css')
+
   const outputCssPath = path.join(baseDir, dir)
 
   if (!fs.existsSync(outputCssPath)) {
@@ -32,9 +32,7 @@ export function doExtraStyle({
 
   const res = `_next/static/css/${dir}/${fileName}`
 
-  if (fs.existsSync(fullPath)) {
-    return res
-  }
+  if (fs.existsSync(fullPath)) return res
 
   fs.writeFileSync(fullPath, css)
 
