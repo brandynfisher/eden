@@ -13,7 +13,13 @@ import { UserContext } from '@/providers/UserProvider'
 import { EllipsisOutlined } from '@ant-design/icons'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
-import React, { ReactNode, useCallback, useContext } from 'react'
+import React, {
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 
 ;`use client`
 
@@ -35,6 +41,13 @@ const CardToolsDropdown = ({
   onChange: (updatedItem: Creation | Concept) => void
 }) => {
   const { user } = useContext(UserContext)
+  const [hasNativeShare, setHasNativeShare] = useState(false)
+
+  useEffect(() => {
+    if (navigator && !!navigator.share) {
+      setHasNativeShare(true)
+    }
+  }, [])
 
   const handleOnVisibilityChange = useCallback(
     (visibilityUpdate: { isPrivate: boolean }) => {
@@ -94,21 +107,20 @@ const CardToolsDropdown = ({
     ? [...imageCopyItems, ...otherTypeCopyItems]
     : otherTypeCopyItems
 
-  const shareItems: MenuItem[] =
-    navigator && !!navigator.share
-      ? [
-          {
-            key: '2',
-            icon: (
-              <ShareLinkButton
-                url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-                variant="text"
-                label="Share"
-              />
-            ),
-          },
-        ]
-      : []
+  const shareItems: MenuItem[] = hasNativeShare
+    ? [
+        {
+          key: '2',
+          icon: (
+            <ShareLinkButton
+              url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
+              variant="text"
+              label="Share"
+            />
+          ),
+        },
+      ]
+    : []
 
   const getCardMenuItems = () => {
     const defaultMenuItems: MenuItem[] = [
