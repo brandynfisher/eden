@@ -21,15 +21,12 @@ const fetchConcept = async (context: NextPageContext) => {
   })
 }
 
-export const getServerSideProps = getServerSidePropsBase(
-  [
-    {
-      responseFieldName: 'concept',
-      dataFetcher: fetchConcept,
-    },
-  ],
-  true,
-)
+export const getServerSideProps = getServerSidePropsBase([
+  {
+    responseFieldName: 'concept',
+    dataFetcher: fetchConcept,
+  },
+])
 
 const Concept: Page<PageProps> = ({ data }: PageProps) => {
   return <ConceptPage data={data} />

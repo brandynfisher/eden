@@ -22,15 +22,12 @@ const fetchCharacter = async (context: NextPageContext) => {
   })
 }
 
-export const getServerSideProps = getServerSidePropsBase(
-  [
-    {
-      responseFieldName: 'character',
-      dataFetcher: fetchCharacter,
-    },
-  ],
-  true,
-)
+export const getServerSideProps = getServerSidePropsBase([
+  {
+    responseFieldName: 'character',
+    dataFetcher: fetchCharacter,
+  },
+])
 
 const characterDetail: Page<PageProps> = ({ data }: PageProps) => {
   return <CharacterDetailPage data={data} />
