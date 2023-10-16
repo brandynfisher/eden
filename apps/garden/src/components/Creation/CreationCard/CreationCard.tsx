@@ -1,5 +1,4 @@
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
-import AddToCollectionModal from '@/components/Collections/AddToCollectionModal'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import MediaPreview from '@/components/Creation/CreationInterface/media/MediaPreview'
 import CreationReactions from '@/components/Creation/CreationReactions'
@@ -24,8 +23,6 @@ const CreationCard: FC<{
 }) => {
   const { hovered, ref } = useHover()
   const [creation, setCreation] = useState<Creation>(data)
-  const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
-    useState(false)
 
   const [createdDateString, setCreatedDateString] = useState('')
   const timeSinceCreation = timeAgo(creation.createdAt)
@@ -115,11 +112,6 @@ const CreationCard: FC<{
               </div>
             </div>
           </div>
-          <AddToCollectionModal
-            open={addToCollectionModalOpen}
-            setOpen={setAddToCollectionModalOpen}
-            creation={creation}
-          />
         </>
       )}
     </div>
