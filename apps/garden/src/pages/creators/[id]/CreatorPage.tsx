@@ -2,9 +2,8 @@ import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
-  OrderByBookmarks,
   OrderByLatest,
-  OrderByPraises, // OrderByScore,
+  OrderByPopularity, // OrderByScore,
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/MasonryInfinite'
@@ -27,24 +26,13 @@ const ProfileHeader = dynamic(
 )
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
-  const { isAuthenticated } = useContext(UserContext)
-
-  const sortButtons = isAuthenticated
-    ? [
-        OrderByLatest,
-        // OrderByScore,
-        OrderByPraises,
-        OrderByBookmarks,
-      ]
-    : [OrderByLatest]
-
   return (
     <div className="mt-4">
       <MasonryInfinite
         key={`creations_${creatorId}`}
         type="creations"
         query={{ userId: creatorId }}
-        hasSort={sortButtons}
+        hasSort={[OrderByLatest, OrderByPopularity]}
         ItemComponent={CreationCard}
       />
     </div>

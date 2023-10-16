@@ -58,7 +58,7 @@ class RestfulRepository<T> implements IRepository<T> {
     }
 
     for (const prop in query) {
-      if (Array.isArray(query[prop])) {
+      if (prop !== '$or' && Array.isArray(query[prop])) {
         mongooseQuery[prop] = { $in: query[prop] }
       } else {
         mongooseQuery[prop] = query[prop]
