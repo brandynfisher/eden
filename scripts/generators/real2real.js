@@ -157,7 +157,7 @@ const params = [
     label: 'Init image min strength',
     description:
       'Min strength of the init_img during interpolation. Lower values will give the interpolation more freedom, leading to more visual changes at the cost of less smoothness. Higher values will look more like alpha-fading the images.',
-    default: 0.05,
+    default: 0.1,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
@@ -168,7 +168,7 @@ const params = [
     label: 'Init image max strength',
     description:
       'Strength of the real images during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
-    default: 0.95,
+    default: 0.8,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
