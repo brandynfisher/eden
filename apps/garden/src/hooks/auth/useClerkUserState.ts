@@ -34,22 +34,6 @@ export const useClerkUserState = () => {
 
   const { settings, updateSetting } = useSettings()
 
-  // refetch data on tab focus
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        refetchMe()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    // Clean up event listener on component unmount
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
-
   const userState: UserContextType = {
     isAuthenticating: false,
     authError: null,

@@ -1,8 +1,16 @@
 import { fetcher } from '@/lib/fetcher'
+import { useAuth } from '@clerk/nextjs'
 import useSWR from 'swr'
 
 export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
-  const { data, mutate } = useSWR(isAuthenticated ? `/api/me` : null, fetcher)
+  const { getToken } = useAuth()
+  const route = '/api/me'
+
+  const { data, mutate } = useSWR(isAuthenticated ? route : null, async () =>
+    fetcher(route, {
+      headers: { Authorization: `Bearer ${await getToken()}` },
+    }),
+  )
 
   return {
     user: isAuthenticated ? data?.creator : undefined,
