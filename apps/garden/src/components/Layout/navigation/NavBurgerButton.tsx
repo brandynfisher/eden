@@ -6,7 +6,7 @@ const NavBurgerButton = ({ open }: { open: boolean }) => {
 
   useEffect(() => {
     if (isOpen !== open) {
-      const timer = setTimeout(() => setOpen(open), 125)
+      const timer = setTimeout(() => setOpen(open), 150)
 
       return () => {
         if (timer) {

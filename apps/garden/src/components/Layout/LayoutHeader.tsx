@@ -3,39 +3,26 @@ import MannaDropdown from '@/components/Layout/dropdowns/MannaDropdown'
 import QuickCreateMenu from '@/components/Layout/dropdowns/QuickCreateMenu'
 import SettingsDropdown from '@/components/Layout/dropdowns/SettingsDropdown'
 import TaskNotificationDropdown from '@/components/Layout/dropdowns/TaskNotificationDropdownMUI'
-import LoadingIndicator from '@/components/LoadingIndicator'
+import Drawer from '@/components/Layout/navigation/Drawer'
 import { ClerkMyProfileButton } from '@/components/Profile/MyProfileButton'
 import { UserContext } from '@/providers/UserProvider'
 import theme from '@/styles/theme'
 import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
-import dynamic from 'next/dynamic'
 import React, { useContext, useEffect, useState } from 'react'
 
 const { Header } = Layout
 
-const Drawer = dynamic(() => import('@/components/Layout/navigation/Drawer'), {
-  loading: () => <LoadingIndicator />,
-})
-
 const LayoutHeader = () => {
-  const { width: viewportWidth } = useViewportSize()
   const { isAuthenticated } = useContext(UserContext)
-  const [mountDrawer, setMountDrawer] = useState(true)
+
+  const { width: viewportWidth } = useViewportSize()
   const [isSmallScreen, setIsSmallScreen] = useState(
-    viewportWidth < theme.screens.md,
+    viewportWidth < theme.screens.lg,
   )
 
   useEffect(() => {
-    if (viewportWidth >= theme.screens.lg) {
-      setMountDrawer(false)
-    } else {
-      setMountDrawer(true)
-    }
-  }, [viewportWidth])
-
-  useEffect(() => {
-    if (viewportWidth < theme.screens.md) {
+    if (viewportWidth < theme.screens.lg) {
       setIsSmallScreen(true)
     } else {
       setIsSmallScreen(false)
@@ -47,7 +34,7 @@ const LayoutHeader = () => {
       <div className="flex gap-2 items-center leading-[64px]">
         <HeaderLogo />
 
-        {mountDrawer && (
+        {isSmallScreen && (
           <div className="flex">
             <Drawer />
           </div>

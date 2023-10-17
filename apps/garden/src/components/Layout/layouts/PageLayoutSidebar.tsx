@@ -1,19 +1,40 @@
 import CustomLayout from '@/components/Layout/CustomLayout'
 import NavMenu from '@/components/Layout/navigation/NavMenu'
+import theme from '@/styles/theme'
+import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 const { Content } = Layout
 
 const PageLayoutSidebar = ({ children }: { children: ReactNode }) => {
+  const { width: viewportWidth } = useViewportSize()
+  const [isSmallScreen, setIsSmallScreen] = useState(
+    viewportWidth < theme.screens.lg,
+  )
+  const [isVisible, setIsVisible] = useState(!isSmallScreen)
+  const onCloseHandler = () => {
+    setIsVisible(false)
+  }
+
+  useEffect(() => {
+    if (viewportWidth < theme.screens.lg) {
+      setIsSmallScreen(true)
+    } else {
+      setIsSmallScreen(false)
+    }
+  }, [viewportWidth])
+
   return (
     <CustomLayout>
-      {/*<Layout hasSider={true}>*/}
-      {/*<div className="flex w-screen h-full">*/}
-      <NavMenu />
-      <Content className="w-full ml-[204px]">{children}</Content>
-      {/*</div>*/}
-      {/*</Layout>*/}
+      <Layout hasSider={!isSmallScreen}>
+        {!isSmallScreen ? (
+          <NavMenu isVisible={isVisible} onClose={onCloseHandler} />
+        ) : null}
+        <Content className={`w-full ${!isSmallScreen ? 'ml-[204px]' : ''}`}>
+          {children}
+        </Content>
+      </Layout>
     </CustomLayout>
   )
 }
