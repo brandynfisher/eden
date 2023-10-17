@@ -53,12 +53,13 @@ const MenuDropdownMUI = ({
         //   'aria-labelledby': 'basic-button',
         // }}
         // sx={{ width: 320, maxWidth: '100%' }}
+        // className="w-[320px] max-w-full"
       >
         {menuItems.map(item => (
           <MenuItem
             key={item.key}
             onClick={item.onClick ? item.onClick : undefined}
-            className="!border-solid !border-0 !border-b !border-gray-600"
+            className="!border-solid !border-0 !border-b !border-gray-600 last:!border-0 min-w-[240px] max-w-full"
           >
             {item.render ? (
               item.render

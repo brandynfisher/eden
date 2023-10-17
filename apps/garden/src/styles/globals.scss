@@ -470,3 +470,30 @@ body {
 .ant-upload-list-item-actions.picture {
     flex-shrink: 0;
 }
+
+// adjust ant inline menu styles to waste less space
+.ant-menu-inline {
+    .ant-menu-item-selected {
+        padding-left: 16px !important;
+    }
+
+    &>.ant-menu-item, .ant-menu-submenu.ant-menu-submenu-inline .ant-menu-submenu-title {
+        margin-inline: 8px;
+        margin-block: 4px;
+        width: calc(100% - 16px);
+    }
+
+    >.ant-menu-submenu>.ant-menu-submenu-title {
+        padding-left: 16px !important;
+    }
+
+    > .ant-menu-submenu-title {
+        padding-left: 32px !important;
+    }
+}
+
+.ant-menu.ant-menu-sub.ant-menu-inline {
+    .ant-menu-item {
+        padding-left: 32px !important;
+    }
+}

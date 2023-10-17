@@ -6,7 +6,7 @@ import React, { ReactNode, useCallback, useState } from 'react'
 
 const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
   return (
-    <div className="absolute inset-0 z-10 max-h-[95vh]">
+    <div className="absolute inset-0 z-10 max-h-[90vh]">
       <Image
         src={imageUrl}
         alt={''}
@@ -60,7 +60,7 @@ const ImageResultZoomable = ({
       style={{ paddingTop: `${aspectRatio}%` }}
     >
       {previewSizeUrl && !isLoaded ? (
-        <div className="absolute inset-0 text-gray-500 opacity-80 max-h-[95vh]">
+        <div className="absolute inset-0 text-gray-500 opacity-80 max-h-[90vh]">
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
@@ -68,7 +68,7 @@ const ImageResultZoomable = ({
         <ImagePlaceholder key={thumbnailSizeUrl} imageUrl={thumbnailSizeUrl} />
       ) : null}
       {previewSizeUrl ? (
-        <div className="absolute inset-0 max-h-[95vh]">
+        <div className="absolute inset-0 max-h-[90vh]">
           <Image
             key={previewSizeUrl}
             src={previewSizeUrl}

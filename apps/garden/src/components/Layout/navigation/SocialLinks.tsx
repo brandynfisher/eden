@@ -5,7 +5,7 @@ import React from 'react'
 
 const SocialLinks = () => {
   return (
-    <div className={`flex gap-4 px-4 py-3 items-center justify-center`}>
+    <div className={`flex gap-4 px-4 py-3 items-center justify-between`}>
       <a
         href="https://github.com/abraham-ai"
         target="_blank"

@@ -180,6 +180,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
             isAuthenticatedUser={isAuthenticatedUser}
           />
           <Tabs
+            destroyInactiveTabPane={true}
             activeKey={activeTabKey}
             centered
             items={creatorPageTabs}

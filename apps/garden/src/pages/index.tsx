@@ -1,4 +1,4 @@
-import PageLayoutFullWidth from '@/components/Layout/layouts/PageLayoutFullWidth'
+import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
 import HomePage from '@/pages/HomePage'
 import { AppProps } from 'next/app'
 
@@ -7,5 +7,5 @@ export default function Home() {
 }
 
 Home.getLayout = (page: AppProps['pageProps']) => (
-  <PageLayoutFullWidth>{page}</PageLayoutFullWidth>
+  <PageLayoutSidebar>{page}</PageLayoutSidebar>
 )

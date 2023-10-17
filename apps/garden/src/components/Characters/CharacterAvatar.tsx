@@ -27,6 +27,7 @@ const CharacterAvatar = ({
     >
       {imageUri ? (
         <Image
+          priority={true}
           key={id}
           src={imageUri}
           alt={`${name}'s Avatar`}

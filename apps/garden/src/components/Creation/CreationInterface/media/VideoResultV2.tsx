@@ -26,14 +26,13 @@ const VideoResultV2 = ({
       >
         <video
           src={resultUrl}
-          className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg max-h-[95vh]`}
+          className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg max-h-[90vh]`}
           style={{ objectFit: 'contain', objectPosition: 'top center' }}
           autoPlay={true}
           muted={false}
           loop={true}
           controls={!disableControls}
           onPlay={() => {
-            console.log('onPlay', resultUrl)
             // setIsLoaded(true)
             onLoad && onLoad()
           }}

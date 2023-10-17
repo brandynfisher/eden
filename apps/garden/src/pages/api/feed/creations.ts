@@ -1,5 +1,5 @@
 import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
-import { getAuthToken } from '@/lib/auth'
+import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -8,7 +8,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
   const { userId, collectionId, page, limit, orderBy, direction } = req.query
-  const authToken = await getAuthToken(req)
 
   const route = (limit: number, page: number) => {
     const basePath = `${CONFIG.API_URL}/feed/creations`
@@ -43,13 +42,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (method) {
     case 'GET':
       try {
-        const headers = authToken
-          ? {
-              Authorization: `Bearer ${authToken}`,
-            }
-          : {}
         const response = await axios.get(route(Number(limit), Number(page)), {
-          headers,
+          headers: await getAuthHeaders(req),
         })
         return res.status(200).json(response.data)
       } catch (_error) {

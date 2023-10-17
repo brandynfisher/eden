@@ -1,6 +1,8 @@
 import HeaderLogo from '@/components/Layout/HeaderLogo'
+import MannaDropdown from '@/components/Layout/dropdowns/MannaDropdown'
 import QuickCreateMenu from '@/components/Layout/dropdowns/QuickCreateMenu'
-import MainNavButtons from '@/components/Layout/navigation/MainNavButtons'
+import SettingsDropdown from '@/components/Layout/dropdowns/SettingsDropdown'
+import TaskNotificationDropdown from '@/components/Layout/dropdowns/TaskNotificationDropdownMUI'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { ClerkMyProfileButton } from '@/components/Profile/MyProfileButton'
 import { UserContext } from '@/providers/UserProvider'
@@ -15,34 +17,6 @@ const { Header } = Layout
 const Drawer = dynamic(() => import('@/components/Layout/navigation/Drawer'), {
   loading: () => <LoadingIndicator />,
 })
-
-// const TaskNotificationDropdown = dynamic(
-//   () => import('@/components/Layout/dropdowns/TaskNotificationDropdown'),
-//   {
-//     loading: () => <LoadingIndicator />,
-//   },
-// )
-
-const TaskNotificationDropdown = dynamic(
-  () => import('@/components/Layout/dropdowns/TaskNotificationDropdownMUI'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
-
-const MannaDropdown = dynamic(
-  () => import('@/components/Layout/dropdowns/MannaDropdown'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
-
-const SettingsDropdown = dynamic(
-  () => import('@/components/Layout/dropdowns/SettingsDropdown'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const LayoutHeader = () => {
   const { width: viewportWidth } = useViewportSize()
@@ -69,8 +43,8 @@ const LayoutHeader = () => {
   }, [viewportWidth])
 
   return (
-    <Header className={`px-4 bg-white dark:bg-gray-950`}>
-      <div className="flex gap-2 items-center">
+    <Header className={`px-4 bg-white dark:bg-gray-950 leading-none`}>
+      <div className="flex gap-2 items-center leading-[64px]">
         <HeaderLogo />
 
         {mountDrawer && (
@@ -95,9 +69,6 @@ const LayoutHeader = () => {
       </div>
 
       <div className="w-full flex">
-        <div className="hidden sm:flex w-full">
-          <MainNavButtons />
-        </div>
         {isSmallScreen && isAuthenticated ? (
           <div className="flex ml-auto">
             <TaskNotificationDropdown />

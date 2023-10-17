@@ -46,10 +46,10 @@ export const myRequestCounterMiddlewareWrap: (
 }
 
 const progress = new ProgressBar({
-  size: 3,
+  size: 2,
   color: '#38a169',
   className: 'bar-of-progress',
-  delay: 150,
+  delay: 200,
 })
 
 const CustomLayout = ({ children }: PropsWithChildren) => {
