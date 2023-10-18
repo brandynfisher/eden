@@ -17,7 +17,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  ENV_GARDEN: stage
+  ENV_GARDEN: prod
 
 jobs:
   build-and-push-to-ghcr:
@@ -34,7 +34,7 @@ jobs:
       - id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="${{ env.REGISTRY }}/edenartlab/mars-garden2-${{ env.ENV_GARDEN }}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/eden-garden-${{ env.ENV_GARDEN }}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}
@@ -88,7 +88,7 @@ jobs:
 
       - id: prep
         run: |
-          IMAGE="${{ env.REGISTRY }}/edenartlab/mars-${{ env.ENV_GARDEN }}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/eden-garden-${{ env.ENV_GARDEN }}"
           TAG="${{needs.build.outputs.tag}}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
@@ -97,7 +97,7 @@ jobs:
       - name: Bump Env
         uses: fjogeleit/yaml-update-action@main
         with:
-          valueFile: 'apps/mars/garden2/values.yaml'
+          valueFile: 'apps/eden/eden/values.yaml'
           updateFile: true
           propertyPath: '$.frontend_image'
           value: ${{ steps.prep.outputs.tagged_image }}

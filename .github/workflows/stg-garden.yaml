@@ -1,4 +1,4 @@
-name: 'Build and Deploy - Garden'
+name: 'Build and Deploy - Garden (Stage)'
 
 on:
   workflow_dispatch:

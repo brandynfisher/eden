@@ -11,13 +11,13 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'apps/garden/**'
-      - '.github/workflows/server.yaml'
+      - 'apps/api/**'
+      - '.github/workflows/api.yaml'
       
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  ENV_API: stage
+  ENV_API: prod
 
 jobs:
   build-and-push-to-ghcr:
@@ -34,7 +34,7 @@ jobs:
       - id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="${{ env.REGISTRY }}/edenartlab/mars-api-${{ env.ENV_API }}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/eden-api-${{ env.ENV_API }}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}
@@ -72,7 +72,7 @@ jobs:
 
       - id: prep
         run: |
-          IMAGE="${{ env.REGISTRY }}/edenartlab/mars-${{ env.ENV_API }}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/eden-api-${{ env.ENV_API }}"
           TAG="${{needs.build.outputs.tag}}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
@@ -81,7 +81,7 @@ jobs:
       - name: Bump Env
         uses: fjogeleit/yaml-update-action@main
         with:
-          valueFile: 'apps/mars/garden2/values.yaml'
+          valueFile: 'apps/eden/eden/values.yaml'
           updateFile: true
           propertyPath: '$.api_image'
           value: ${{ steps.prep.outputs.tagged_image }}
