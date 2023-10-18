@@ -13,7 +13,7 @@ on:
     paths:
       - 'apps/api/**'
       - '.github/workflows/api.yaml'
-      
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -61,7 +61,7 @@ jobs:
     name: Deploy
     runs-on: ubuntu-20.04
     needs: [build-and-push-to-ghcr]
-    if: ${{ always() && (needs.build.result == 'success') }}
+    if: ${{ always() && (needs.build-and-push-to-ghcr.result == 'success') }}
     steps:
       - name: Check out releases repo
         uses: actions/checkout@v2
@@ -73,7 +73,7 @@ jobs:
       - id: prep
         run: |
           IMAGE="${{ env.REGISTRY }}/edenartlab/eden-api-${{ env.ENV_API }}"
-          TAG="${{needs.build.outputs.tag}}"
+          TAG="${{needs.build-and-push-to-ghcr.outputs.tag}}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}

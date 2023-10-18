@@ -9,7 +9,7 @@ on:
       - '.github/workflows/garden.yaml'
 
 jobs:
-  build:
+  build-and-push-to-ghcr:
     name: Build
     runs-on: ubuntu-20.04
     outputs:
@@ -68,8 +68,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-20.04
-    needs: [build]
-    if: ${{ always() && (needs.build.result == 'success') }}
+    needs: [build-and-push-to-ghcr]
+    if: ${{ always() && (needs.build-and-push-to-ghcr.result == 'success') }}
     steps:
       - name: Check out releases repo
         uses: actions/checkout@v2
@@ -81,7 +81,7 @@ jobs:
       - id: prep
         run: |
           IMAGE="${{ secrets.REGISTRY_URL }}/abraham-ai/mars-${{ secrets.ENV_GARDEN }}"
-          TAG="${{needs.build.outputs.tag}}"
+          TAG="${{needs.build-and-push-to-ghcr.outputs.tag}}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}
