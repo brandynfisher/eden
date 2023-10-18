@@ -1,19 +1,17 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
 import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
 import FormLabel from '@/components/Forms/FormLabel'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCharacters } from '@/hooks/useCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { ExperimentOutlined } from '@ant-design/icons'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
-import { debounce } from '@mui/material'
+import { debounce } from '@mui/material/utils'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import React, {
   useCallback,
@@ -23,13 +21,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-
-const CreateMenu = dynamic(
-  () => import('@/components/Layout/navigation/CreateMenu'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const DialogueScenarioPageContent = ({
   characters,
@@ -43,7 +34,7 @@ const DialogueScenarioPageContent = ({
   const [form] = Form.useForm()
   const { taskIds, setTaskIds, setActiveTaskId, setHasChangedGenerator } =
     useContext(CreationNotificationContext)
-  const { mannaBalance, refetchMe } = useContext(UserContext)
+  const { mannaBalance, refetchMe, user } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -144,8 +135,6 @@ const DialogueScenarioPageContent = ({
 
   return (
     <>
-      <CreateMenu />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
           <h2 className="mb-4">Scenario: Dialogue</h2>
@@ -201,7 +190,10 @@ const DialogueScenarioPageContent = ({
                       className="flex px-6 items-center justify-between flex-wrap"
                     >
                       <div className="flex gap-3 items-center">
-                        {isLoadingTaskCost === false && !canAffordOperation ? (
+                        {user &&
+                        isLoadingTaskCost === false &&
+                        typeof mannaBalance !== 'undefined' &&
+                        !canAffordOperation ? (
                           <div className="text-orange-500">
                             Insufficient Manna! ({mannaBalance}){' '}
                             <Link href="/manna">Click here to get more</Link>

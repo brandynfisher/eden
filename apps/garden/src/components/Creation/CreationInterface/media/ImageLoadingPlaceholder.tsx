@@ -1,4 +1,4 @@
-import { ExperimentOutlined } from '@ant-design/icons'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Skeleton } from 'antd'
 import React from 'react'
 

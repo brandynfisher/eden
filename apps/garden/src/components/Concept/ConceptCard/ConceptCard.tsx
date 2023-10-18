@@ -12,6 +12,12 @@ import { Tag } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
+const trainingModeColorMap = {
+  style: 'lime',
+  face: 'blue',
+  concept: 'purple',
+}
+
 const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
   const [concept, setConcept] = useState<Concept>(data)
   const router = useRouter()
@@ -114,7 +120,10 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
             </div>
             <div className="absolute bottom-11 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
               {trainingMode ? (
-                <Tag color="blue" className="first-letter:capitalize me-0">
+                <Tag
+                  color={trainingModeColorMap[trainingMode]}
+                  className="first-letter:capitalize me-0"
+                >
                   {trainingMode}
                 </Tag>
               ) : null}

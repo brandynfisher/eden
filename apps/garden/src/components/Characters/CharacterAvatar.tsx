@@ -27,12 +27,13 @@ const CharacterAvatar = ({
     >
       {imageUri ? (
         <Image
+          priority={true}
           key={id}
           src={imageUri}
           alt={`${name}'s Avatar`}
           width={90}
           height={90}
-          style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
+          style={{ objectFit: 'cover', maxWidth: '100%', maxHeight: '100%' }}
         />
       ) : (
         <CharacterAvatarFallback id={id} name={name} size={size} />

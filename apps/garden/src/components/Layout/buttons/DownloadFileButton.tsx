@@ -1,6 +1,6 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { downloadFile } from '@/lib/files'
-import { DownloadOutlined } from '@ant-design/icons'
+import DownloadOutlined from '@ant-design/icons/DownloadOutlined'
 import { App } from 'antd'
 import React from 'react'
 

@@ -1,11 +1,9 @@
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
 import { UserContext } from '@/providers/UserProvider'
-import {
-  LoginOutlined,
-  LogoutOutlined,
-  SettingOutlined,
-  TableOutlined, // ToolOutlined,
-} from '@ant-design/icons'
+import LoginOutlined from '@ant-design/icons/LoginOutlined'
+import LogoutOutlined from '@ant-design/icons/LogoutOutlined'
+import SettingOutlined from '@ant-design/icons/SettingOutlined'
+import TableOutlined from '@ant-design/icons/TableOutlined'
 import { useViewportSize } from '@mantine/hooks'
 // import { UserButton } from '@clerk/nextjs'
 import { Button, Dropdown, Slider, Switch } from 'antd'

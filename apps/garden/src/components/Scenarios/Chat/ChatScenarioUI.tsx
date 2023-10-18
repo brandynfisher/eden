@@ -4,7 +4,7 @@ import { MessageMarker, compileMessage } from '@/lib/chat'
 import { timeAgo } from '@/lib/time'
 import { ChatMessage } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
-import { RobotOutlined } from '@ant-design/icons'
+import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import {
   Avatar,
   ChatContainer,

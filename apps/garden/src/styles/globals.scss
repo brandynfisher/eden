@@ -220,24 +220,11 @@ body {
     width: unset !important;
 }
 
-.ant-drawer-header {
-    height: 64px !important;
-    padding: 16px !important;
-}
-.ant-drawer-body {
-    padding: 0 !important;
 
-    .ant-divider {
-        margin: 0 !important;
-    }
-
-    .ant-menu-item {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        width: 100% !important;
-        border-radius: 0 !important;
-    }
+.ant-layout-header {
+    height: auto !important;
 }
+
 
 .ant-dropdown-menu {
     gap: 8px;
@@ -466,4 +453,51 @@ body {
 
 .ant-upload-list-item-actions.picture {
     flex-shrink: 0;
+}
+
+//adjust ant inline menu styles to waste less space
+.ant-menu-inline {
+    .ant-menu-item-selected {
+        padding-left: 16px !important;
+    }
+
+    &>.ant-menu-item, .ant-menu-submenu.ant-menu-submenu-inline .ant-menu-submenu-title {
+        margin-inline: 5px;
+        margin-block: 4px;
+        width: calc(100% - 10px);
+    }
+
+    >.ant-menu-submenu>.ant-menu-submenu-title,
+    >.ant-menu-item {
+        padding-left: 16px !important;
+    }
+
+    > .ant-menu-submenu-title {
+        padding-left: 32px !important;
+    }
+
+    .ant-menu.ant-menu-sub.ant-menu-inline {
+        .ant-menu-item {
+            padding-left: 32px !important;
+        }
+    }
+}
+
+.ant-layout.ant-layout-has-sider {
+    background-color: #ffffff !important;
+}
+
+.dark {
+    .ant-menu.ant-menu-sub.ant-menu-inline {
+        border-right: 1px solid #101827;
+    }
+
+    .ant-layout.ant-layout-has-sider {
+        background-color: #030712 !important;
+    }
+}
+
+
+.ant-layout-sider-children {
+    height: 100% !important;
 }

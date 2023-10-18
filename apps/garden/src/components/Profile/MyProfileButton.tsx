@@ -79,6 +79,7 @@ export const ClerkMyProfileButton = () => {
               name={(user && user?.username) || ''}
               imageUri={(user && user?.userImage) || ''}
               size={'small'}
+              shape="circle"
             />
           </Link>
         </SignedIn>

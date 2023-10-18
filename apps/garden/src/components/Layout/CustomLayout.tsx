@@ -49,7 +49,7 @@ const progress = new ProgressBar({
   size: 2,
   color: '#38a169',
   className: 'bar-of-progress',
-  delay: 100,
+  delay: 200,
 })
 
 const CustomLayout = ({ children }: PropsWithChildren) => {
@@ -81,10 +81,12 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
     <SWRConfig
       value={{ use: [myRequestCounterMiddlewareWrap(setRequestCount)] }}
     >
-      <Layout className="min-h-screen flex flex-col">
+      <Layout hasSider={false} className="min-h-screen flex flex-col">
         <BannerManager />
         <LayoutHeader />
-        <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>
+        <Layout hasSider={false} className="p-4 bg-white dark:bg-gray-950">
+          {children}
+        </Layout>
         <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center z-50">
           <FetchIndicator isLoading={showLoading} />
           <BackToTopButton />

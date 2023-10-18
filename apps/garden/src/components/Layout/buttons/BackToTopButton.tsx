@@ -1,4 +1,4 @@
-import { VerticalAlignTopOutlined } from '@ant-design/icons'
+import VerticalAlignTopOutlined from '@ant-design/icons/VerticalAlignTopOutlined'
 import { useWindowScroll } from '@mantine/hooks'
 
 const BackToTopButton = () => {

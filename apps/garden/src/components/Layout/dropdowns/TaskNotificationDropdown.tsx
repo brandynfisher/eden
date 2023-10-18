@@ -7,14 +7,12 @@ import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
-import {
-  CheckCircleOutlined,
-  CheckOutlined,
-  CloseOutlined,
-  CopyOutlined,
-  ExclamationOutlined,
-  LoadingOutlined,
-} from '@ant-design/icons'
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import CheckOutlined from '@ant-design/icons/CheckOutlined'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import CopyOutlined from '@ant-design/icons/CopyOutlined'
+import ExclamationOutlined from '@ant-design/icons/ExclamationOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Dropdown, Progress, Space, Spin } from 'antd'

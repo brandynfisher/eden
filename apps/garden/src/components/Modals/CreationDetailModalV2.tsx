@@ -42,7 +42,7 @@ const CreationDetailModalV2 = ({
       setCurrentIndex(newIndex)
       maybeLoadMoreFn(newIndex, items as Creation[])
     }
-  }, [currentIndex, items])
+  }, [currentIndex, items.length])
 
   const handleNextItem = useCallback(() => {
     const nextIndex = currentIndex + 1
@@ -55,7 +55,7 @@ const CreationDetailModalV2 = ({
       setCurrentIndex(nextIndex)
       maybeLoadMoreFn(nextIndex, items as Creation[])
     }
-  }, [currentIndex, items])
+  }, [currentIndex, items.length])
 
   useEffect(() => {
     if (currentIndex === null) return
@@ -89,7 +89,7 @@ const CreationDetailModalV2 = ({
     if (currentIndex !== null) {
       handleRouteChange()
     }
-  }, [currentIndex, items])
+  }, [router.asPath, currentIndex, items.length])
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">

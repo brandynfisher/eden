@@ -1,4 +1,3 @@
-import LoadingIndicator from '@/components/LoadingIndicator'
 import ChatScenarioUI from '@/components/Scenarios/Chat/ChatScenarioUI'
 import SessionsGrid from '@/components/Scenarios/Chat/SessionsGrid'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
@@ -13,16 +12,8 @@ import {
 } from '@edenlabs/eden-sdk'
 import { App, Button, Select } from 'antd'
 import axios from 'axios'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
-
-const CreateMenu = dynamic(
-  () => import('@/components/Layout/navigation/CreateMenu'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const ChatScenarioPageContent = ({
   characters,
@@ -92,8 +83,6 @@ const ChatScenarioPageContent = ({
     <div className="flex flex-col h-full">
       {!sessionId ? (
         <>
-          <CreateMenu />
-
           <SessionsGrid sessions={sessions} />
           <div>
             <h2 className="mb-4">Start new session</h2>

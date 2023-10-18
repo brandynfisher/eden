@@ -1,7 +1,7 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
-import { CheckCircleOutlined } from '@ant-design/icons'
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import { useClipboard } from '@mantine/hooks'
-import { LinkOutlined } from '@mui/icons-material'
+import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { App } from 'antd'
 
 const CopyUrlButton = ({

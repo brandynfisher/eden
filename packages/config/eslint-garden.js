@@ -57,6 +57,7 @@ module.exports = {
               "Import from 'lodash/<package>' directly to support tree-shaking.",
           },
         ],
+        "patterns": ["@mui/*/*/*"]
       },
     ],
     'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],

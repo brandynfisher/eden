@@ -65,6 +65,20 @@ module.exports = withTM({
     XYZ: process.env.XYZ,
     NEXT_PUBLIC_XYZ: process.env.XYZ,
   },
+  modularizeImports: {
+    '@ant-design/icons': {
+      transform: '@ant-design/icons/{{member}}',
+    },
+    'antd': {
+      transform: 'antd/lib/{{kebabCase member}}',
+    },
+    '@mui/icons-material': {
+      transform: '@mui/icons-material/{{member}}',
+    },
+    '@mui/material': {
+      transform: '@mui/material/{{member}}',
+    },
+  },
 })
 
 const withNextPWA = require('next-pwa')({
@@ -77,7 +91,10 @@ const withNextPWA = require('next-pwa')({
 // Injected content via Sentry wizard below
 
 const { withSentryConfig } = require('@sentry/nextjs')
-
+// const withBundleAnalyzer = require('@next/bundle-analyzer')({
+//   enabled: process.env.ANALYZE === 'true',
+// })
+// module.exports = withBundleAnalyzer(withNextPWA(
 module.exports = withNextPWA(
   withSentryConfig(
     module.exports,
@@ -111,3 +128,4 @@ module.exports = withNextPWA(
     },
   ),
 )
+// )
