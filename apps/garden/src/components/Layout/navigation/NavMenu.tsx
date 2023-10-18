@@ -3,9 +3,7 @@ import HeaderLogo from '@/components/Layout/HeaderLogo'
 import NavBurgerButton from '@/components/Layout/navigation/NavBurgerButton'
 import SocialLinks from '@/components/Layout/navigation/SocialLinks'
 import { UserContext } from '@/providers/UserProvider'
-import CommentOutlined from '@ant-design/icons/CommentOutlined'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
-import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import ExploreOutlined from '@mui/icons-material/ExploreOutlined'
 import ModelTraining from '@mui/icons-material/ModelTraining'
 import Yard from '@mui/icons-material/Yard'
@@ -192,18 +190,18 @@ const NavMenu = ({
           ),
           label: 'Concepts',
         },
-        {
-          key: '/create/characters',
-          icon: <RobotOutlined />,
-          label: 'Characters',
-          disabled: true,
-        },
-        {
-          key: '/create/scenarios',
-          icon: <CommentOutlined />,
-          label: 'Scenarios',
-          disabled: true,
-        },
+        // {
+        //   key: '/create/characters',
+        //   icon: <RobotOutlined />,
+        //   label: 'Characters',
+        //   disabled: true,
+        // },
+        // {
+        //   key: '/create/scenarios',
+        //   icon: <CommentOutlined />,
+        //   label: 'Scenarios',
+        //   disabled: true,
+        // },
       ],
     },
     {
@@ -324,11 +322,11 @@ const NavMenu = ({
           <div className="mt-auto">
             <SocialLinks />
             <div className="text-center text-gray-500">EdenLabs ©2023</div>
-            <div className="flex gap-2 flex-wrap text-xs justify-center my-2">
-              <a href="#">Terms of Use</a>
-              <span className="text-gray-500">|</span>
-              <a href="#">Privacy Policy</a>
-            </div>
+            {/*<div className="flex gap-2 flex-wrap text-xs justify-center my-2">*/}
+            {/*  <a href="#">Terms of Use</a>*/}
+            {/*  <span className="text-gray-500">|</span>*/}
+            {/*  <a href="#">Privacy Policy</a>*/}
+            {/*</div>*/}
           </div>
         </div>
       </div>
