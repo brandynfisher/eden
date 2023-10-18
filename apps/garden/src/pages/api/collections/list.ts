@@ -7,10 +7,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
   const { userId } = req.query as { userId: string }
 
-  if (!authToken) {
-    return res.status(401).json({ error: 'Not authenticated' })
-  }
-
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
