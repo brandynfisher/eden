@@ -1,6 +1,6 @@
 import ImageZoomable from '@/components/Creation/CreationInterface/media/ImageZoomable'
 import { Creation } from '@edenlabs/eden-sdk'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 const BaseParamGroup = ({
   label,
@@ -24,6 +24,12 @@ const BaseParamGroup = ({
 }
 
 const CreationInfo = ({ creation }: { creation: Creation }) => {
+  const [displayDate, setDisplayDate] = useState('')
+
+  useEffect(() => {
+    setDisplayDate(new Date(creation.createdAt).toLocaleDateString())
+  }, [creation.createdAt])
+
   return (
     <div>
       {creation.task.generator.output === 'creation' ? (
@@ -42,12 +48,7 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
               </div>
             }
           />
-          <BaseParamGroup
-            label="Date"
-            value={
-              <div>{new Date(creation.createdAt).toLocaleDateString()}</div>
-            }
-          />
+          <BaseParamGroup label="Date" value={<div>{displayDate}</div>} />
         </div>
       ) : null}
 

@@ -2,11 +2,9 @@ import ResultPreviewDisplay from '@/components/Creation/CreationInterface/Result
 import { truncatedAddress } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
-import {
-  CheckCircleOutlined,
-  CopyOutlined,
-  LoadingOutlined,
-} from '@ant-design/icons'
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import CopyOutlined from '@ant-design/icons/CopyOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { useClipboard } from '@mantine/hooks'
 import { App, Card, Divider, Progress, Spin } from 'antd'
 import React, { RefObject, useContext } from 'react'

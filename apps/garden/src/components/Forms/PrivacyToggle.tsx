@@ -1,4 +1,4 @@
-import { HelpOutline } from '@mui/icons-material'
+import HelpOutline from '@mui/icons-material/HelpOutline'
 import { Form, Popover, Switch } from 'antd'
 import React from 'react'
 

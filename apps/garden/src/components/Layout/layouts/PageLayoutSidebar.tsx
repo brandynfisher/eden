@@ -1,25 +1,40 @@
 import CustomLayout from '@/components/Layout/CustomLayout'
-import LayoutMenu from '@/components/Layout/navigation/LayoutMenu'
-import { UserContext } from '@/providers/UserProvider'
+import NavMenu from '@/components/Layout/navigation/NavMenu'
+import theme from '@/styles/theme'
+import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
-import { ReactNode, useContext } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
-const { Content, Sider } = Layout
+const { Content } = Layout
 
 const PageLayoutSidebar = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated } = useContext(UserContext)
+  const { width: viewportWidth } = useViewportSize()
+  const [showFixedMenu, setShowFixedMenu] = useState(
+    viewportWidth < theme.screens.lg,
+  )
+  const [isVisible, setIsVisible] = useState(showFixedMenu)
+  const onCloseHandler = () => {
+    setIsVisible(false)
+  }
+
+  useEffect(() => {
+    if (viewportWidth < theme.screens.lg) {
+      setShowFixedMenu(false)
+    } else {
+      setShowFixedMenu(true)
+    }
+  }, [viewportWidth])
 
   return (
     <CustomLayout>
-      {isAuthenticated && (
-        <Sider width={175} className="mr-4 hidden lg:block !bg-transparent">
-          <div className="rounded-lg overflow-hidden sticky top-4">
-            <LayoutMenu />
-          </div>
-        </Sider>
-      )}
-
-      <Content className="max-w-7xl mx-auto w-full">{children}</Content>
+      <Layout hasSider={showFixedMenu}>
+        {showFixedMenu ? (
+          <NavMenu isVisible={isVisible} onClose={onCloseHandler} />
+        ) : null}
+        <Content className={`w-full ${showFixedMenu ? 'ml-[204px]' : ''}`}>
+          {children}
+        </Content>
+      </Layout>
     </CustomLayout>
   )
 }

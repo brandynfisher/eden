@@ -1,5 +1,5 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
-import { KeyOutlined } from '@mui/icons-material'
+import KeyOutlined from '@mui/icons-material/KeyOutlined'
 import { Collapse } from 'antd'
 import dynamic from 'next/dynamic'
 import React from 'react'

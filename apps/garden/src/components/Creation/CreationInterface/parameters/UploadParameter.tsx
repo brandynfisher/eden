@@ -1,6 +1,6 @@
 import { truncateText } from '@/lib/string'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
-import { InboxOutlined } from '@mui/icons-material'
+import InboxOutlined from '@mui/icons-material/InboxOutlined'
 import { Form, FormInstance, Modal, Row, Upload, message } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'

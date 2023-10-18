@@ -7,7 +7,7 @@ import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { ExperimentOutlined } from '@ant-design/icons'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
 import { debounce } from '@mui/material'
@@ -43,7 +43,7 @@ const DialogueScenarioPageContent = ({
   const [form] = Form.useForm()
   const { taskIds, setTaskIds, setActiveTaskId, setHasChangedGenerator } =
     useContext(CreationNotificationContext)
-  const { mannaBalance, refetchMe } = useContext(UserContext)
+  const { mannaBalance, refetchMe, user } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -201,7 +201,10 @@ const DialogueScenarioPageContent = ({
                       className="flex px-6 items-center justify-between flex-wrap"
                     >
                       <div className="flex gap-3 items-center">
-                        {isLoadingTaskCost === false && !canAffordOperation ? (
+                        {user &&
+                        isLoadingTaskCost === false &&
+                        typeof mannaBalance !== 'undefined' &&
+                        !canAffordOperation ? (
                           <div className="text-orange-500">
                             Insufficient Manna! ({mannaBalance}){' '}
                             <Link href="/manna">Click here to get more</Link>

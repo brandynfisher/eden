@@ -10,20 +10,18 @@ import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import {
-  DownCircleOutlined,
-  ExperimentOutlined,
-  LoadingOutlined,
-  UpCircleOutlined,
-} from '@ant-design/icons'
+import DownCircleOutlined from '@ant-design/icons/DownCircleOutlined'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import UpCircleOutlined from '@ant-design/icons/UpCircleOutlined'
 import {
   Creation,
   Generator,
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
-import { LinkOutlined } from '@mui/icons-material'
-import { debounce } from '@mui/material'
+import LinkOutlined from '@mui/icons-material/LinkOutlined'
+import { debounce } from '@mui/material/utils'
 import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
@@ -427,7 +425,10 @@ const GeneratorForm = ({
           <div className="px-6 text-left" key={generator.generatorName}>
             <div className="flex gap-4 items-center justify-between flex-wrap">
               <div className="flex gap-2 items-center w-full sm:w-auto">
-                {isLoadingTaskCost === false && !canAffordOperation ? (
+                {user &&
+                isLoadingTaskCost === false &&
+                typeof mannaBalance !== 'undefined' &&
+                !canAffordOperation ? (
                   <div className="text-orange-500">
                     Insufficient Manna! ({mannaBalance}){' '}
                     <Link href="/manna">Click here to get more</Link>

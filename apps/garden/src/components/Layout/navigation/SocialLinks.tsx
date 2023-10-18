@@ -1,11 +1,12 @@
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
-import { GithubOutlined, TwitterOutlined } from '@ant-design/icons'
-import { Instagram } from '@mui/icons-material'
+import GithubOutlined from '@ant-design/icons/GithubOutlined'
+import TwitterOutlined from '@ant-design/icons/TwitterOutlined'
+import Instagram from '@mui/icons-material/Instagram'
 import React from 'react'
 
 const SocialLinks = () => {
   return (
-    <div className={`flex gap-4 px-4 py-3 items-center justify-center`}>
+    <div className={`flex gap-4 px-4 py-3 items-center justify-between`}>
       <a
         href="https://github.com/abraham-ai"
         target="_blank"
