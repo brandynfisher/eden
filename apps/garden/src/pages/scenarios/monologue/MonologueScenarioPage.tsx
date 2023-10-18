@@ -1,7 +1,6 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
 import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
 import FormLabel from '@/components/Forms/FormLabel'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
@@ -13,7 +12,6 @@ import { useViewportSize } from '@mantine/hooks'
 import { debounce } from '@mui/material/utils'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import React, {
   useCallback,
@@ -22,13 +20,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-
-const CreateMenu = dynamic(
-  () => import('@/components/Layout/navigation/CreateMenu'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const MonologueScenarioPageContent = ({
   characters,
@@ -128,8 +119,6 @@ const MonologueScenarioPageContent = ({
 
   return (
     <>
-      <CreateMenu />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
           <h2 className="mb-4">Scenario: Monologue</h2>

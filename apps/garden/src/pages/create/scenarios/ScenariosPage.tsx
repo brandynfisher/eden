@@ -34,13 +34,6 @@ const exampleScenarios: ScenarioWithPath[] = [
   },
 ]
 
-const CreateMenu = dynamic(
-  () => import('@/components/Layout/navigation/CreateMenu'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
-
 const ScenarioCard = dynamic(
   () => import('@/components/Scenarios/ScenarioCard'),
   {
@@ -56,8 +49,6 @@ const ScenariosPage = () => {
 
   return (
     <>
-      <CreateMenu />
-
       <h2 className="mb-4">Scenarios</h2>
       <div className="flex flex-col gap-4">
         {exampleScenarios.map(scenario => (
