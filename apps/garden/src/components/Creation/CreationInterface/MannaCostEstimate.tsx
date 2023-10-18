@@ -1,7 +1,6 @@
-import { LoadingOutlined } from '@ant-design/icons'
-import { HelpOutline } from '@mui/icons-material'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import HelpOutline from '@mui/icons-material/HelpOutline'
 import { Popover } from 'antd'
-import React from 'react'
 
 const MannaCostEstimate = ({
   isLoading,

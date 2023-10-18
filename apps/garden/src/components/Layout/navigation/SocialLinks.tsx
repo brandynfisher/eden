@@ -1,6 +1,6 @@
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
 import { GithubOutlined, TwitterOutlined } from '@ant-design/icons'
-import { Instagram } from '@mui/icons-material'
+import Instagram from '@mui/icons-material/Instagram'
 import React from 'react'
 
 const SocialLinks = () => {

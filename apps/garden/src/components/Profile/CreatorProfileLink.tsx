@@ -1,5 +1,4 @@
-import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import { truncatedAddress } from '@/lib/string'
+import CreatorProfileButton from '@/components/Profile/CreatorProfileButton'
 import Link from 'next/link'
 import React from 'react'
 
@@ -28,26 +27,11 @@ const CreatorProfileLink = ({
           : 'hover:text-gray-800 text-black dark:text-gray-300'
       }  hover:brightness-125 transition-all`}
     >
-      <div className="flex items-center justify-center h-[28px] w-[28px] flex-shrink-0 rounded-full overflow-hidden">
-        <CharacterAvatar
-          id={creatorId}
-          name={creatorName || ''}
-          imageUri={creatorImage || ''}
-          size={'small'}
-        />
-      </div>
-      <div
-        className="creator-profile-link-name ml-2 text-xs font-bold overflow-hidden whitespace-nowrap self-center truncate"
-        title={creatorName || ''}
-      >
-        {creatorName && (
-          <>
-            {creatorName.length > 32
-              ? truncatedAddress(creatorName)
-              : creatorName}
-          </>
-        )}
-      </div>
+      <CreatorProfileButton
+        creatorName={creatorName || ''}
+        creatorId={creatorId}
+        creatorImage={creatorImage || ''}
+      />
     </Link>
   )
 }

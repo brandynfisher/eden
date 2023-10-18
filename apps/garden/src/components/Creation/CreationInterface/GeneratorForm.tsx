@@ -10,19 +10,17 @@ import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import {
-  DownCircleOutlined,
-  ExperimentOutlined,
-  LoadingOutlined,
-  UpCircleOutlined,
-} from '@ant-design/icons'
+import DownCircleOutlined from '@ant-design/icons/DownCircleOutlined'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import UpCircleOutlined from '@ant-design/icons/UpCircleOutlined'
 import {
   Creation,
   Generator,
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
-import { LinkOutlined } from '@mui/icons-material'
+import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { debounce } from '@mui/material'
 import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
