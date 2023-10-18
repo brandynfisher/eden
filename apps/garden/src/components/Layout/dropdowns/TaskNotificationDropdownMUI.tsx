@@ -10,8 +10,10 @@ import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import CheckOutlined from '@ant-design/icons/CheckOutlined'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
+import ExclamationOutlined from '@ant-design/icons/ExclamationOutlined'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
@@ -266,7 +268,7 @@ const TaskNotificationDropdownMUI = () => {
       }))
     : []
 
-  const completedTaskItems = []
+  const completedTaskItems: MenuDropdownItem[] = []
   if (completedTasks?.length) {
     completedTaskItems.push({
       render: (
@@ -286,7 +288,7 @@ const TaskNotificationDropdownMUI = () => {
           </div>
         </div>
       ),
-      key: 0,
+      key: '0',
     })
 
     completedTaskItems.push(
@@ -305,7 +307,7 @@ const TaskNotificationDropdownMUI = () => {
     )
   }
 
-  const failedTaskItems = []
+  const failedTaskItems: MenuDropdownItem[] = []
   if (failedTasks?.length) {
     failedTaskItems.push({
       render: (
@@ -323,7 +325,7 @@ const TaskNotificationDropdownMUI = () => {
           </div>
         </div>
       ),
-      key: 0,
+      key: '0',
     })
 
     failedTaskItems.push(
@@ -351,116 +353,47 @@ const TaskNotificationDropdownMUI = () => {
   }
 
   return (
-    <div className="flex justify-between items-center gap-1">
-      {pendingTaskItems && pendingTaskItems.length ? (
+    <div className="flex justify-between items-center">
+      {pendingTasks && pendingTasks.length ? (
         <MenuDropdownMUI
           buttonLabel={
-            <>
+            <div className="font-mono text-grey-800 dark:text-gray-200 items-center flex">
               <Spin
                 indicator={
                   <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
                 }
               />
-              {pendingTaskItems.length}
-            </>
+              {pendingTasks.length}
+            </div>
           }
           menuItems={pendingTaskItems}
         />
       ) : null}
 
-      {pendingTaskItems && pendingTaskItems.length ? (
+      {failedTasks && failedTasks.length ? (
         <MenuDropdownMUI
           buttonLabel={
-            <>
-              <Spin
-                indicator={
-                  <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
-                }
-              />
-              {pendingTaskItems.length}
-            </>
+            <div className="font-mono text-red-500 items-center flex">
+              <ExclamationOutlined className="mr-2" />
+              {failedTasks.length}
+            </div>
           }
-          menuItems={pendingTaskItems}
+          menuItems={failedTaskItems}
         />
       ) : null}
 
-      {pendingTaskItems && pendingTaskItems.length ? (
+      {completedTasks && completedTasks.length ? (
         <MenuDropdownMUI
           buttonLabel={
-            <>
-              <Spin
-                indicator={
-                  <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
-                }
-              />
-              {pendingTaskItems.length}
-            </>
+            <div className="font-mono text-green-500 items-center flex">
+              <CheckOutlined className="mr-2" />
+              {completedTasks.length}
+            </div>
           }
-          menuItems={pendingTaskItems}
+          menuItems={completedTaskItems}
         />
       ) : null}
     </div>
-    // <Space
-    //   className={`max-w-3xl ${
-    //     inDrawer
-    //       ? 'py-2 flex justify-between items-center !flex'
-    //       : 'hidden sm:flex'
-    //   }`}
-    // >
-    //   <Button.Group className="flex items-center">
-    //     {pendingTaskItems.length > 0 && (
-    //       <Dropdown
-    //         trigger={['click']}
-    //         menu={{ items: pendingTaskItems }}
-    //         arrow={true}
-    //       >
-    //         <Button
-    //           type="text"
-    //           className="font-mono text-grey-800 dark:text-gray-200 items-center flex px-2"
-    //         >
-    //           <Spin
-    //             indicator={
-    //               <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
-    //             }
-    //           />
-    //           {pendingTaskItems.length}
-    //         </Button>
-    //       </Dropdown>
-    //     )}
-    //
-    //     {failedTasks && failedTasks.length > 0 && (
-    //       <Dropdown
-    //         trigger={['click']}
-    //         menu={{ items: failedTaskItems }}
-    //         arrow={true}
-    //       >
-    //         <Button
-    //           type="text"
-    //           className="font-mono text-red-500 items-center flex px-2"
-    //         >
-    //           <ExclamationOutlined className="mr-2" />
-    //           {failedTasks.length}
-    //         </Button>
-    //       </Dropdown>
-    //     )}
-    //
-    //     {completedTasks && completedTasks.length > 0 && (
-    //       <Dropdown
-    //         trigger={['click']}
-    //         menu={{ items: completedTaskItems }}
-    //         arrow={true}
-    //       >
-    //         <Button
-    //           type="text"
-    //           className="font-mono text-green-500 items-center flex px-2"
-    //         >
-    //           <CheckOutlined className="mr-2" />
-    //           {completedTasks.length}
-    //         </Button>
-    //       </Dropdown>
-    //     )}
-    //   </Button.Group>
-    // </Space>
   )
 }
 
