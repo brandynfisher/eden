@@ -9,29 +9,29 @@ const { Content } = Layout
 
 const PageLayoutSidebar = ({ children }: { children: ReactNode }) => {
   const { width: viewportWidth } = useViewportSize()
-  const [isSmallScreen, setIsSmallScreen] = useState(
+  const [showFixedMenu, setShowFixedMenu] = useState(
     viewportWidth < theme.screens.lg,
   )
-  const [isVisible, setIsVisible] = useState(!isSmallScreen)
+  const [isVisible, setIsVisible] = useState(showFixedMenu)
   const onCloseHandler = () => {
     setIsVisible(false)
   }
 
   useEffect(() => {
     if (viewportWidth < theme.screens.lg) {
-      setIsSmallScreen(true)
+      setShowFixedMenu(false)
     } else {
-      setIsSmallScreen(false)
+      setShowFixedMenu(true)
     }
   }, [viewportWidth])
 
   return (
     <CustomLayout>
-      <Layout hasSider={!isSmallScreen}>
-        {!isSmallScreen ? (
+      <Layout hasSider={showFixedMenu}>
+        {showFixedMenu ? (
           <NavMenu isVisible={isVisible} onClose={onCloseHandler} />
         ) : null}
-        <Content className={`w-full ${!isSmallScreen ? 'ml-[204px]' : ''}`}>
+        <Content className={`w-full ${showFixedMenu ? 'ml-[204px]' : ''}`}>
           {children}
         </Content>
       </Layout>

@@ -427,7 +427,9 @@ const GeneratorForm = ({
           <div className="px-6 text-left" key={generator.generatorName}>
             <div className="flex gap-4 items-center justify-between flex-wrap">
               <div className="flex gap-2 items-center w-full sm:w-auto">
-                {isLoadingTaskCost === false && !canAffordOperation ? (
+                {isLoadingTaskCost === false &&
+                typeof mannaBalance !== 'undefined' &&
+                !canAffordOperation ? (
                   <div className="text-orange-500">
                     Insufficient Manna! ({mannaBalance}){' '}
                     <Link href="/manna">Click here to get more</Link>

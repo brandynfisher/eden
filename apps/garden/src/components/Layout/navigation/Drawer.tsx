@@ -6,22 +6,23 @@ import React, { useEffect, useState } from 'react'
 
 const Drawer = () => {
   const router = useRouter()
-
-  useEffect(() => {
-    router.events.on('routeChangeComplete', () => {
-      onCloseHandler()
-    })
-  }, [])
-
   const [isVisible, setIsVisible] = useState(false)
 
+  useEffect(() => {
+    router.events.on('routeChangeComplete', onCloseHandler)
+
+    return () => {
+      router.events.off('routeChangeComplete', onCloseHandler)
+    }
+  }, [router])
+
   const onCloseHandler = () => {
-    setIsVisible(!isVisible)
+    setIsVisible(false)
   }
 
   return (
     <>
-      <div onClick={onCloseHandler}>
+      <div onClick={() => setIsVisible(true)}>
         <NavBurgerButton open={isVisible} />
       </div>
       <AntDrawer

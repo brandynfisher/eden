@@ -271,7 +271,7 @@ const TaskNotificationDropdownMUI = () => {
   const completedTaskItems = []
   if (completedTasks?.length) {
     completedTaskItems.push({
-      label: (
+      render: (
         <div className="flex items-center justify-between">
           <div>Completed Tasks</div>
           <div className="flex justify-center text-xs">
@@ -293,7 +293,7 @@ const TaskNotificationDropdownMUI = () => {
 
     completedTaskItems.push(
       ...completedTasks.map(task => ({
-        label: (
+        render: (
           <CompletedTaskMenuItem
             router={router}
             task={task}
@@ -310,7 +310,7 @@ const TaskNotificationDropdownMUI = () => {
   const failedTaskItems = []
   if (failedTasks?.length) {
     failedTaskItems.push({
-      label: (
+      render: (
         <div className="flex items-center justify-between">
           <div>Failed Tasks</div>
           <div className="flex justify-center text-xs">
@@ -330,7 +330,7 @@ const TaskNotificationDropdownMUI = () => {
 
     failedTaskItems.push(
       ...failedTasks.map(task => ({
-        label: (
+        render: (
           <FailedTaskMenuItem
             task={task}
             handleDismiss={() =>
@@ -353,20 +353,54 @@ const TaskNotificationDropdownMUI = () => {
   }
 
   return (
-    <div className="flex justify-between items-center flex">
-      <MenuDropdownMUI
-        buttonLabel={
-          <>
-            <Spin
-              indicator={
-                <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
-              }
-            />
-            {pendingTaskItems.length}
-          </>
-        }
-        menuItems={pendingTaskItems}
-      />
+    <div className="flex justify-between items-center gap-1">
+      {pendingTaskItems && pendingTaskItems.length ? (
+        <MenuDropdownMUI
+          buttonLabel={
+            <>
+              <Spin
+                indicator={
+                  <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
+                }
+              />
+              {pendingTaskItems.length}
+            </>
+          }
+          menuItems={pendingTaskItems}
+        />
+      ) : null}
+
+      {pendingTaskItems && pendingTaskItems.length ? (
+        <MenuDropdownMUI
+          buttonLabel={
+            <>
+              <Spin
+                indicator={
+                  <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
+                }
+              />
+              {pendingTaskItems.length}
+            </>
+          }
+          menuItems={pendingTaskItems}
+        />
+      ) : null}
+
+      {pendingTaskItems && pendingTaskItems.length ? (
+        <MenuDropdownMUI
+          buttonLabel={
+            <>
+              <Spin
+                indicator={
+                  <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
+                }
+              />
+              {pendingTaskItems.length}
+            </>
+          }
+          menuItems={pendingTaskItems}
+        />
+      ) : null}
     </div>
     // <Space
     //   className={`max-w-3xl ${

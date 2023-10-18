@@ -1,6 +1,6 @@
 import ErrorBoundary from '@/ErrorBoundary'
 import PasswordProtection from '@/components/Layout/PasswordPage'
-import PageLayoutDefault from '@/components/Layout/layouts/PageLayoutDefault'
+import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
@@ -28,11 +28,11 @@ type Props = AppProps & {
 const inter = Inter({ subsets: ['latin'] })
 
 export default function App({ Component, pageProps }: Props): ReactElement {
-  // use per-component layout if defined or fallback to the generic one
+  // use per-component layout if defined or fallback to a generic one
   const getLayout =
     Component.getLayout ||
     ((page: AppProps['pageProps']) => (
-      <PageLayoutDefault>{page}</PageLayoutDefault>
+      <PageLayoutSidebar>{page}</PageLayoutSidebar>
     ))
 
   return (

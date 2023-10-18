@@ -8,22 +8,21 @@ import {
 } from '@ant-design/icons'
 import {
   AccountCircleOutlined,
-  ExploreOutlined,
-  HomeOutlined,
+  ExploreOutlined, // HomeOutlined,
   ModelTraining,
   Yard,
 } from '@mui/icons-material'
 import { Layout, Menu } from 'antd'
 import { useTheme } from 'next-themes'
-import { useRouter } from 'next/router'
+// import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
 const menuItems = [
-  {
-    key: 'home',
-    icon: <HomeOutlined fontSize="medium" />,
-    label: 'Home',
-  },
+  // {
+  //   key: 'home',
+  //   icon: <HomeOutlined fontSize="medium" />,
+  //   label: 'Home',
+  // },
   {
     type: 'divider',
     key: 'd1',
@@ -113,7 +112,10 @@ const NavMenuHeader = ({
   isVisible: boolean
 }) => {
   return (
-    <div className="flex justify-between items-center py-4 pl-4 pr-1 h-[64px]">
+    <div
+      className="flex justify-between items-center py-4 pl-4 pr-1 h-[64px]"
+      style={{ borderInlineEnd: '1px solid rgba(5, 5, 5, 0.06)' }}
+    >
       <HeaderLogo />
       <div
         className={`block lg:hidden transition-opacity delay-75 duration-75 ${
@@ -134,21 +136,12 @@ const NavMenu = ({
   onClose?: () => void
   isVisible: boolean
 }) => {
-  const router = useRouter()
   const [menuTheme, setMenuTheme] = useState<'dark' | undefined>('dark')
   const { resolvedTheme } = useTheme()
 
   const onCloseHandler = () => {
     onClose && onClose()
   }
-
-  useEffect(() => {
-    router.events.on('routeChangeComplete', onCloseHandler)
-
-    return () => {
-      router.events.off('routeChangeComplete', onCloseHandler)
-    }
-  }, [])
 
   useEffect(() => {
     if (resolvedTheme && resolvedTheme === 'dark') {
