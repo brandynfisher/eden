@@ -10,7 +10,7 @@ import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
-import { EllipsisOutlined } from '@ant-design/icons'
+import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {

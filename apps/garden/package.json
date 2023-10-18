@@ -61,6 +61,7 @@
     "wagmi": "^1.4.3"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^13.5.5",
     "@types/formidable": "^2.0.6",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "20.2.5",

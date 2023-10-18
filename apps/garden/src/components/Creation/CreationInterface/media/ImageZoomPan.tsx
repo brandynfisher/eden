@@ -1,8 +1,6 @@
-import {
-  FullscreenOutlined,
-  ZoomInOutlined,
-  ZoomOutOutlined,
-} from '@ant-design/icons'
+import FullscreenOutlined from '@ant-design/icons/FullscreenOutlined'
+import ZoomInOutlined from '@ant-design/icons/ZoomInOutlined'
+import ZoomOutOutlined from '@ant-design/icons/ZoomOutOutlined'
 import { Button } from 'antd'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'

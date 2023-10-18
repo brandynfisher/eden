@@ -1,5 +1,5 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
-import { ShareAltOutlined } from '@ant-design/icons'
+import ShareAltOutlined from '@ant-design/icons/ShareAltOutlined'
 
 const ShareLinkButton = ({
   title,

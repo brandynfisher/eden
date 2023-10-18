@@ -1,4 +1,4 @@
-import { ExpandOutlined } from '@ant-design/icons'
+import ExpandOutlined from '@ant-design/icons/ExpandOutlined'
 import React from 'react'
 
 const ImagePreviewMask = () => {

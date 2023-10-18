@@ -5,11 +5,9 @@ import ShareButton from '@/components/Layout/buttons/ShareButton'
 import { CONFIG } from '@/lib/config'
 import { downloadFile } from '@/lib/files'
 import { getFileExtension } from '@/lib/getFileExtension'
-import {
-  DownloadOutlined,
-  EllipsisOutlined,
-  RetweetOutlined,
-} from '@ant-design/icons'
+import DownloadOutlined from '@ant-design/icons/DownloadOutlined'
+import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
+import RetweetOutlined from '@ant-design/icons/RetweetOutlined'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import { useRouter } from 'next/router'

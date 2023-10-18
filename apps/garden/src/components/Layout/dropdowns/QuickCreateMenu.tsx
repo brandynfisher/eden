@@ -1,5 +1,5 @@
 import { UserContext } from '@/providers/UserProvider'
-import { ExperimentOutlined } from '@ant-design/icons'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Button } from 'antd'
 import Link from 'next/link'
 import React, { useContext } from 'react'

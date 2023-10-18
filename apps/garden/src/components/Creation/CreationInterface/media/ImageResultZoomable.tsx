@@ -1,6 +1,6 @@
 import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/media/ImageLoadingPlaceholder'
 import ImagePreviewMask from '@/components/Creation/CreationInterface/media/ImagePreviewMask'
-import { LoadingOutlined } from '@ant-design/icons'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import Image from 'next/image'
 import React, { ReactNode, useCallback, useState } from 'react'
 

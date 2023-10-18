@@ -1,5 +1,6 @@
 import CodeBlock from '@/components/CodeBlock'
-import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { Concept, Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Tabs } from 'antd'

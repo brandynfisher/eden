@@ -1,4 +1,5 @@
-import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
+import MinusOutlined from '@ant-design/icons/MinusOutlined'
+import PlusOutlined from '@ant-design/icons/PlusOutlined'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Button, Col, Form, FormInstance, Input, Row } from 'antd'
 import React, { useState } from 'react'

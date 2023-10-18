@@ -1,4 +1,4 @@
-import { CheckOutlined } from '@ant-design/icons'
+import CheckOutlined from '@ant-design/icons/CheckOutlined'
 import { Button } from 'antd'
 import { useState } from 'react'
 import type { Stripe } from 'stripe'

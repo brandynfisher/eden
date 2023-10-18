@@ -9,12 +9,10 @@ import { rightTruncatedString, truncatedAddress } from '@/lib/string'
 import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
-import {
-  CheckCircleOutlined,
-  CloseOutlined,
-  CopyOutlined,
-  LoadingOutlined,
-} from '@ant-design/icons'
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import CopyOutlined from '@ant-design/icons/CopyOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { App, Button, Progress, Spin } from 'antd'

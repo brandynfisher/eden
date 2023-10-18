@@ -1,5 +1,6 @@
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
-import { GithubOutlined, TwitterOutlined } from '@ant-design/icons'
+import GithubOutlined from '@ant-design/icons/GithubOutlined'
+import TwitterOutlined from '@ant-design/icons/TwitterOutlined'
 import Instagram from '@mui/icons-material/Instagram'
 import React from 'react'
 

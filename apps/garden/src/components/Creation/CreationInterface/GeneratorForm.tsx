@@ -21,7 +21,7 @@ import {
   Task,
 } from '@edenlabs/eden-sdk'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
-import { debounce } from '@mui/material'
+import { debounce } from '@mui/material/utils'
 import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
@@ -425,7 +425,8 @@ const GeneratorForm = ({
           <div className="px-6 text-left" key={generator.generatorName}>
             <div className="flex gap-4 items-center justify-between flex-wrap">
               <div className="flex gap-2 items-center w-full sm:w-auto">
-                {isLoadingTaskCost === false &&
+                {user &&
+                isLoadingTaskCost === false &&
                 typeof mannaBalance !== 'undefined' &&
                 !canAffordOperation ? (
                   <div className="text-orange-500">
