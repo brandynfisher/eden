@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from "mongodb";
 
 const allowedCogs = [
   "eden-sd-pipelines-sdxl",
@@ -80,7 +80,7 @@ async function updateDefaultVersion(db) {
     for (const generatorName of sdxl_generators) {
       handleUpdateResult(
         await db.collection('generators').updateOne(
-          { generatorName: generatorName, 'version.versionId': versionId },
+          { generatorName: generatorName, 'versions.versionId': versionId },
           { $set: { defaultVersionId: versionId } }
         ),
         cog,
@@ -93,7 +93,7 @@ async function updateDefaultVersion(db) {
     for (const generatorName of sdxl_generators_video) {
       handleUpdateResult(
         await db.collection('generators').updateOne(
-          { generatorName: generatorName, 'version.versionId': versionId },
+          { generatorName: generatorName, 'versions.versionId': versionId },
           { $set: { defaultVersionId: versionId } }
         ),
         cog,
@@ -105,7 +105,7 @@ async function updateDefaultVersion(db) {
   else if (cog === 'character') {
     handleUpdateResult(
       await db.collection('generators').updateOne(
-        { generatorName: 'wav2lip', 'version.versionId': versionId },
+        { generatorName: 'wav2lip', 'versions.versionId': versionId },
         { $set: { defaultVersionId: versionId } }
       ),
       cog,
@@ -117,7 +117,7 @@ async function updateDefaultVersion(db) {
     for (const generatorName of scenario_runner_generators) {
       handleUpdateResult(
         await db.collection('generators').updateOne(
-          { generatorName: generatorName, 'version.versionId': versionId },
+          { generatorName: generatorName, 'versions.versionId': versionId },
           { $set: { defaultVersionId: versionId } }
         ),
         cog,
@@ -129,7 +129,7 @@ async function updateDefaultVersion(db) {
   else if (cog === 'sdxl-lora-trainer') {
     handleUpdateResult(
       await db.collection('generators').updateOne(
-        { generatorName: 'sdxl-lora-trainer', 'version.versionId': versionId },
+        { generatorName: 'sdxl-lora-trainer', 'versions.versionId': versionId },
         { $set: { defaultVersionId: versionId } }
       ),
       cog,
@@ -140,7 +140,7 @@ async function updateDefaultVersion(db) {
   else if (cog === 'zeroscope-v2-xl') {
     handleUpdateResult(
       await db.collection('generators').updateOne(
-        { generatorName: 'zeroscope-v2-xl', 'version.versionId': versionId },
+        { generatorName: 'zeroscope-v2-xl', 'versions.versionId': new ObjectId(versionId) },
         { $set: { defaultVersionId: versionId } }
       ),
       cog,
