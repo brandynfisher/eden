@@ -5,6 +5,7 @@ import { CreationNotificationContext } from '@/providers/CreationNotificationPro
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { useClipboard } from '@mantine/hooks'
+import Button from '@mui/material/Button'
 import { App, Card, Divider, Progress } from 'antd'
 import React, {
   RefObject,
@@ -107,7 +108,10 @@ const ResultPreview = ({
                         </span>
                       </div>
                     </div>
-                    <span className="loading loading-ring loading-xl"></span>
+                    <Button>
+                      <span className="absolute">5</span>
+                      <span className="loading loading-ring loading-xl"></span>
+                    </Button>
                     {activeTask?.status === 'running' ? (
                       <Progress
                         percent={
