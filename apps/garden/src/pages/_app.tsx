@@ -9,7 +9,7 @@ import MUIConfigWrapProvider from '@/providers/MUIConfigWrapProvider'
 import MasonryProvider from '@/providers/MasonryProvider'
 import ModalProvider from '@/providers/ModalProvider'
 import UserProvider from '@/providers/UserProvider'
-import WalletProvider from '@/providers/WalletProvider'
+// import WalletProvider from '@/providers/WalletProvider'
 import '@/styles/globals.scss'
 import '@rainbow-me/rainbowkit/styles.css'
 import 'antd/dist/reset.css'
@@ -92,27 +92,25 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         <ThemeProvider attribute="class">
           <MUIConfigWrapProvider>
             <AntConfigWrapProvider>
-              <WalletProvider>
-                <EdenProvider>
-                  <ClerkWrapProvider>
-                    <UserProvider>
-                      <PasswordProtection>
-                        <CreationNotificationProvider>
-                          <MasonryProvider>
-                            <ModalProvider>
-                              {getLayout(
-                                <ErrorBoundary>
-                                  <Component {...pageProps} />
-                                </ErrorBoundary>,
-                              )}
-                            </ModalProvider>
-                          </MasonryProvider>
-                        </CreationNotificationProvider>
-                      </PasswordProtection>
-                    </UserProvider>
-                  </ClerkWrapProvider>
-                </EdenProvider>
-              </WalletProvider>
+              <EdenProvider>
+                <ClerkWrapProvider>
+                  <UserProvider>
+                    <PasswordProtection>
+                      <CreationNotificationProvider>
+                        <MasonryProvider>
+                          <ModalProvider>
+                            {getLayout(
+                              <ErrorBoundary>
+                                <Component {...pageProps} />
+                              </ErrorBoundary>,
+                            )}
+                          </ModalProvider>
+                        </MasonryProvider>
+                      </CreationNotificationProvider>
+                    </PasswordProtection>
+                  </UserProvider>
+                </ClerkWrapProvider>
+              </EdenProvider>
             </AntConfigWrapProvider>
           </MUIConfigWrapProvider>
         </ThemeProvider>
