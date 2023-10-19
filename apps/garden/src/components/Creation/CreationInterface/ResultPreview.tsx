@@ -6,7 +6,21 @@ import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { useClipboard } from '@mantine/hooks'
 import { App, Card, Divider, Progress } from 'antd'
-import React, { RefObject, useContext } from 'react'
+import React, {
+  RefObject,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
+
+const noProgressGeneratorNames = [
+  'create',
+  'remix',
+  'blend',
+  'controlnet',
+  'upscale',
+]
 
 const ResultPreview = ({
   innerRef,
@@ -35,6 +49,37 @@ const ResultPreview = ({
     completedTask && completedTask.creation ? completedTask.creation.uri : false
   const creationId =
     completedTask && completedTask.creation ? completedTask.creation._id : false
+
+  const [fakeProgress, setFakeProgress] = useState(0)
+  const increaseFakeProgress = useCallback(
+    (increment: number, timerId: ReturnType<typeof setInterval>) => {
+      setFakeProgress(prevState => {
+        if (prevState + increment >= 100) {
+          clearInterval(timerId)
+          return 100
+        }
+
+        return prevState + increment
+      })
+    },
+    [],
+  )
+
+  useEffect(() => {
+    let timerId: ReturnType<typeof setInterval>
+    setFakeProgress(0)
+
+    if (
+      activeTask?.status === 'pending' &&
+      noProgressGeneratorNames.includes(activeTask?.generator.generatorName)
+    ) {
+      timerId = setInterval(() => increaseFakeProgress(3, timerId), 1000)
+    }
+
+    return () => {
+      clearInterval(timerId)
+    }
+  }, [activeTask])
 
   return (
     <div
@@ -66,7 +111,9 @@ const ResultPreview = ({
                     {activeTask?.status === 'running' ? (
                       <Progress
                         percent={
-                          activeTask?.progress
+                          fakeProgress > 0
+                            ? fakeProgress
+                            : activeTask?.progress
                             ? Math.round(activeTask.progress * 100)
                             : 0
                         }
