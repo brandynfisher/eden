@@ -23,13 +23,14 @@ const ResultPreview = ({
     message.success(`Copied Task ID to clipboard!`)
   }
 
-  const { hasChangedGenerator, pendingTasks, completedTasks, activeTaskId } =
-    useContext(CreationNotificationContext)
-
-  const activeTask = pendingTasks?.find(task => task.taskId === activeTaskId)
-  const completedTask = completedTasks?.find(
-    task => task.taskId === activeTaskId,
+  const { pendingTasks, completedTasks } = useContext(
+    CreationNotificationContext,
   )
+
+  const activeTask = pendingTasks && pendingTasks[pendingTasks.length - 1]
+  const completedTask =
+    completedTasks && completedTasks[completedTasks.length - 1]
+
   const creationUri =
     completedTask && completedTask.creation ? completedTask.creation.uri : false
   const creationId =
@@ -44,7 +45,7 @@ const ResultPreview = ({
         className={`lg:sticky lg:top-4 w-full min-h-[512px] h-fit flex justify-center items-center`}
       >
         <div className="flex justify-center items-center h-full">
-          {hasChangedGenerator || (!activeTask && !completedTask) ? (
+          {!activeTask && !completedTask ? (
             <div className={'text-gray-500'}>Results will appear here</div>
           ) : (
             <>
