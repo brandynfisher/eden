@@ -4,7 +4,8 @@ import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined'
 import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWalletOutlined'
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart'
 import RedeemIcon from '@mui/icons-material/Redeem'
-import { Button, Dropdown } from 'antd'
+import Button from '@mui/material/Button'
+import { Dropdown } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import Link from 'next/link'
 import React, { useContext } from 'react'
@@ -101,12 +102,9 @@ const MannaDropdown = () => {
       disabled={!isAuthenticated}
       arrow={true}
     >
-      <Button
-        type="text"
-        className="font-mono flex px-2 justify-center items-center"
-      >
-        <AccountBalanceWalletOutlined className="text-black dark:text-white !flex mr-2 text-xl" />
-        <div className="text-small text-left" style={{ minWidth: '26px' }}>
+      <Button>
+        <div className="font-mono flex items-center">
+          <AccountBalanceWalletOutlined className="!flex mr-2 text-xl" />
           {typeof mannaBalance === 'undefined' ? '---' : mannaBalance}
         </div>
       </Button>

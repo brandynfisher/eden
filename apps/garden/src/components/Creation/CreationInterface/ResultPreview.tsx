@@ -4,9 +4,8 @@ import { timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
-import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { useClipboard } from '@mantine/hooks'
-import { App, Card, Divider, Progress, Spin } from 'antd'
+import { App, Card, Divider, Progress } from 'antd'
 import React, { RefObject, useContext } from 'react'
 
 const ResultPreview = ({
@@ -62,12 +61,7 @@ const ResultPreview = ({
                         </span>
                       </div>
                     </div>
-                    <Spin
-                      size="large"
-                      indicator={
-                        <LoadingOutlined className="text-grey-800 dark:text-gray-200" />
-                      }
-                    />
+                    <span className="loading loading-ring loading-xl"></span>
                     {activeTask?.status === 'running' ? (
                       <Progress
                         percent={
@@ -78,7 +72,9 @@ const ResultPreview = ({
                         status="active"
                         className="mt-2 flex items-center"
                       />
-                    ) : null}
+                    ) : (
+                      <div className="mt-2">...</div>
+                    )}
                   </div>
                   {activeTask && (
                     <div className="flex justify-between text-xs">

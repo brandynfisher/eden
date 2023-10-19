@@ -1,5 +1,6 @@
 @use './animations'; //custom animations/keyframes
 @use './chat-ui-overrides'; // overrides for chat ui kit styles
+@use './_loading'; // loading spinner animations
 
 @tailwind base;
 @tailwind components;
@@ -482,9 +483,10 @@ body {
         }
     }
 }
-
-.ant-layout.ant-layout-has-sider {
-    background-color: #ffffff !important;
+.light {
+    .ant-layout {
+        background-color: #ffffff !important;
+    }
 }
 
 .dark {
@@ -492,7 +494,7 @@ body {
         border-right: 1px solid #101827;
     }
 
-    .ant-layout.ant-layout-has-sider {
+    .ant-layout {
         background-color: #030712 !important;
     }
 }

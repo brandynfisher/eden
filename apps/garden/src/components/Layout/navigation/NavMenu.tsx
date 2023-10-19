@@ -321,8 +321,8 @@ const NavMenu = ({
         >
           <div className="mt-auto">
             <SocialLinks />
-            <div className="text-center text-gray-500">EdenLabs ©2023</div>
-            {/*<div className="flex gap-2 flex-wrap text-xs justify-center my-2">*/}
+            <div className="text-center text-gray-500 mb-2">EdenLabs ©2023</div>
+            {/*<div className="flex gap-2 flex-wrap text-xs justify-center mb-2">*/}
             {/*  <a href="#">Terms of Use</a>*/}
             {/*  <span className="text-gray-500">|</span>*/}
             {/*  <a href="#">Privacy Policy</a>*/}

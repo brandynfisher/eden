@@ -10,14 +10,13 @@ import { durationBetweenDates, timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
-import CheckOutlined from '@ant-design/icons/CheckOutlined'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
-import ExclamationOutlined from '@ant-design/icons/ExclamationOutlined'
-import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
-import { App, Button, Progress, Spin } from 'antd'
+import TaskAlt from '@mui/icons-material/TaskAlt'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import { App, Button, Progress } from 'antd'
 import { NextRouter, useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
@@ -357,12 +356,8 @@ const TaskNotificationDropdownMUI = () => {
       {pendingTasks && pendingTasks.length ? (
         <MenuDropdownMUI
           buttonLabel={
-            <div className="font-mono text-grey-800 dark:text-gray-200 items-center flex">
-              <Spin
-                indicator={
-                  <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
-                }
-              />
+            <div className="font-mono items-center flex">
+              <span className="loading loading-ring loading-md mr-2"></span>
               {pendingTasks.length}
             </div>
           }
@@ -374,7 +369,7 @@ const TaskNotificationDropdownMUI = () => {
         <MenuDropdownMUI
           buttonLabel={
             <div className="font-mono text-red-500 items-center flex">
-              <ExclamationOutlined className="mr-2" />
+              <WarningAmberIcon className="mr-2" />
               {failedTasks.length}
             </div>
           }
@@ -386,7 +381,7 @@ const TaskNotificationDropdownMUI = () => {
         <MenuDropdownMUI
           buttonLabel={
             <div className="font-mono text-green-500 items-center flex">
-              <CheckOutlined className="mr-2" />
+              <TaskAlt className="mr-2" />
               {completedTasks.length}
             </div>
           }
