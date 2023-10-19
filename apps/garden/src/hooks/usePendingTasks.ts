@@ -9,7 +9,7 @@ export const usePendingTasks = ({
 }) => {
   const { data, mutate } = useSWR(
     isAuthenticated
-      ? `/api/tasks/list?status=pending,processing,running`
+      ? `/api/tasks/list?status=pending,processing,running,starting`
       : null,
     fetcher,
   )

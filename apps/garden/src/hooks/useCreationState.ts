@@ -32,7 +32,8 @@ export const useCreationState = () => {
     task =>
       task.status === 'pending' ||
       task.status === 'processing' ||
-      task.status === 'running',
+      task.status === 'running' ||
+      task.status === 'starting',
   )
 
   useEffect(() => {

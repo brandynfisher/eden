@@ -4,10 +4,24 @@ import { timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
-import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { useClipboard } from '@mantine/hooks'
-import { App, Card, Divider, Progress, Spin } from 'antd'
-import React, { RefObject, useContext } from 'react'
+import Button from '@mui/material/Button'
+import { App, Card, Divider, Progress } from 'antd'
+import React, {
+  RefObject,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
+
+const noProgressGeneratorNames = [
+  'create',
+  'remix',
+  'blend',
+  'controlnet',
+  'upscale',
+]
 
 const ResultPreview = ({
   innerRef,
@@ -24,17 +38,49 @@ const ResultPreview = ({
     message.success(`Copied Task ID to clipboard!`)
   }
 
-  const { hasChangedGenerator, pendingTasks, completedTasks, activeTaskId } =
-    useContext(CreationNotificationContext)
-
-  const activeTask = pendingTasks?.find(task => task.taskId === activeTaskId)
-  const completedTask = completedTasks?.find(
-    task => task.taskId === activeTaskId,
+  const { pendingTasks, completedTasks } = useContext(
+    CreationNotificationContext,
   )
+
+  const activeTask = pendingTasks && pendingTasks[pendingTasks.length - 1]
+  const completedTask =
+    completedTasks && completedTasks[completedTasks.length - 1]
+
   const creationUri =
     completedTask && completedTask.creation ? completedTask.creation.uri : false
   const creationId =
     completedTask && completedTask.creation ? completedTask.creation._id : false
+
+  const [fakeProgress, setFakeProgress] = useState(0)
+  const increaseFakeProgress = useCallback(
+    (increment: number, timerId: ReturnType<typeof setInterval>) => {
+      setFakeProgress(prevState => {
+        if (prevState + increment >= 100) {
+          clearInterval(timerId)
+          return 100
+        }
+
+        return prevState + increment
+      })
+    },
+    [],
+  )
+
+  useEffect(() => {
+    let timerId: ReturnType<typeof setInterval>
+    setFakeProgress(0)
+
+    if (
+      activeTask?.status === 'pending' &&
+      noProgressGeneratorNames.includes(activeTask?.generator.generatorName)
+    ) {
+      timerId = setInterval(() => increaseFakeProgress(3, timerId), 1000)
+    }
+
+    return () => {
+      clearInterval(timerId)
+    }
+  }, [activeTask])
 
   return (
     <div
@@ -45,7 +91,7 @@ const ResultPreview = ({
         className={`lg:sticky lg:top-4 w-full min-h-[512px] h-fit flex justify-center items-center`}
       >
         <div className="flex justify-center items-center h-full">
-          {hasChangedGenerator || (!activeTask && !completedTask) ? (
+          {!activeTask && !completedTask ? (
             <div className={'text-gray-500'}>Results will appear here</div>
           ) : (
             <>
@@ -62,23 +108,25 @@ const ResultPreview = ({
                         </span>
                       </div>
                     </div>
-                    <Spin
-                      size="large"
-                      indicator={
-                        <LoadingOutlined className="text-grey-800 dark:text-gray-200" />
-                      }
-                    />
+                    <Button>
+                      <span className="absolute">5</span>
+                      <span className="loading loading-ring loading-xl"></span>
+                    </Button>
                     {activeTask?.status === 'running' ? (
                       <Progress
                         percent={
-                          activeTask?.progress
+                          fakeProgress > 0
+                            ? fakeProgress
+                            : activeTask?.progress
                             ? Math.round(activeTask.progress * 100)
                             : 0
                         }
                         status="active"
                         className="mt-2 flex items-center"
                       />
-                    ) : null}
+                    ) : (
+                      <div className="mt-2">...</div>
+                    )}
                   </div>
                   {activeTask && (
                     <div className="flex justify-between text-xs">
