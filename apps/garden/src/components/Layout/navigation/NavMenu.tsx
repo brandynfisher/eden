@@ -319,9 +319,9 @@ const NavMenu = ({
           className="flex flex-col h-full"
           style={{ borderInlineEnd: '1px solid rgba(5, 5, 5, 0.06)' }}
         >
-          <div className="mt-auto">
+          <div className="mt-auto mb-4">
             <SocialLinks />
-            <div className="text-center text-gray-500 mb-2">EdenLabs ©2023</div>
+            {/*<div className="text-center text-gray-500 mb-2">Eden.art</div>*/}
             {/*<div className="flex gap-2 flex-wrap text-xs justify-center mb-2">*/}
             {/*  <a href="#">Terms of Use</a>*/}
             {/*  <span className="text-gray-500">|</span>*/}
