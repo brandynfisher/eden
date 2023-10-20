@@ -69,7 +69,7 @@ const ResultPreviewList = ({
   >(null)
 
   useEffect(() => {
-    console.log(tasks)
+    // console.log(tasks)
     if (tasks && tasks.length) {
       setTaskList(
         tasks.map(task => {
@@ -145,7 +145,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
       task?.status === 'running' &&
       noProgressGeneratorNames.includes(task?.generator.generatorName)
     ) {
-      timerId = setInterval(() => increaseFakeProgress(3, timerId), 1000)
+      timerId = setInterval(() => increaseFakeProgress(5, timerId), 1000)
     }
 
     return () => {
