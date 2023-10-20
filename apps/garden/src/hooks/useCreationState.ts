@@ -16,6 +16,7 @@ export const useCreationState = () => {
   const { data: pendingTaskData, mutate: refetchPendingTasks } = useSWR(
     taskIds.length > 0 ? `/api/tasks/list?taskIds=${taskIds.join(',')}` : null,
     fetcher,
+    { keepPreviousData: true },
   )
   const { pendingTasks: userPendingTasks } = useContext(UserContext)
 

@@ -8,19 +8,11 @@ import { CreationNotificationContext } from '@/providers/CreationNotificationPro
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
-import { useViewportSize } from '@mantine/hooks'
 import { debounce } from '@mui/material/utils'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 const DialogueScenarioPageContent = ({
   characters,
@@ -43,7 +35,6 @@ const DialogueScenarioPageContent = ({
   const [activeCharacters, setActiveCharacters] = useState<Character[]>([
     ...Array(MAX_ACTIVE_CHARACTERS),
   ])
-  const { width } = useViewportSize()
 
   const handleActiveCharacterChange = (
     index: number,
@@ -59,23 +50,6 @@ const DialogueScenarioPageContent = ({
     currentlyActive[index] = character
 
     setActiveCharacters([...currentlyActive])
-  }
-
-  const scrollResultPreviewIntoView = useCallback(() => {
-    if (width > 1024) {
-      return
-    }
-
-    if (resultPreviewRef && resultPreviewRef.current) {
-      resultPreviewRef.current.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      })
-    }
-  }, [resultPreviewRef, width])
-
-  const onSubmitSuccess = () => {
-    scrollResultPreviewIntoView()
   }
 
   const handleSubmit = async () => {
@@ -105,7 +79,6 @@ const DialogueScenarioPageContent = ({
       setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchMe()
-      onSubmitSuccess()
     } catch (error) {
       handleAxiosError(error, message, 'Error requesting dialogue generation')
     } finally {

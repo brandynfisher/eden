@@ -5,13 +5,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Generator } from '@edenlabs/eden-sdk'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const availableConceptGenerators = ['sdxl-lora-trainer']
 
@@ -31,15 +25,6 @@ const ConceptInterface = () => {
     setActiveGenerator(available?.[0])
   }, [generators])
 
-  const scrollResultPreviewIntoView = useCallback(() => {
-    if (resultPreviewRef && resultPreviewRef.current) {
-      resultPreviewRef.current.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      })
-    }
-  }, [resultPreviewRef])
-
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />
   }
@@ -49,12 +34,7 @@ const ConceptInterface = () => {
       <h2 className="mb-4">Concept Trainer</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="flex flex-col">
-          {activeGenerator && (
-            <GeneratorForm
-              generator={activeGenerator}
-              onSubmitSuccess={scrollResultPreviewIntoView}
-            />
-          )}
+          {activeGenerator && <GeneratorForm generator={activeGenerator} />}
         </div>
         <ResultPreview innerRef={resultPreviewRef} />
       </div>

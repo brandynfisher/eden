@@ -6,8 +6,10 @@ import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
-import Button from '@mui/material/Button'
-import { App, Card, Divider, Progress } from 'antd'
+import HourglassEmpty from '@mui/icons-material/HourglassEmpty'
+import TaskAlt from '@mui/icons-material/TaskAlt'
+import WarningAmber from '@mui/icons-material/WarningAmber'
+import { App, Card, Progress, Timeline } from 'antd'
 import React, {
   RefObject,
   useCallback,
@@ -24,6 +26,38 @@ const noProgressGeneratorNames = [
   'upscale',
 ]
 
+const getTimelineDot = (status: Task['status']) => {
+  switch (status) {
+    case 'starting':
+    case 'pending':
+      return (
+        <div className="flex bg-white text-gray-500 dark:bg-gray-950 rounded-full p-0.5">
+          <HourglassEmpty fontSize="small" className="animate-pulse" />
+        </div>
+      )
+    case 'running':
+      return (
+        <div className="flex bg-white dark:bg-gray-950 rounded-full p-0.5">
+          <span className="loading loading-ring loading-md"></span>
+        </div>
+      )
+    case 'completed':
+      return (
+        <div className="flex text-green-500 items-center bg-white dark:bg-gray-950 rounded-full p-0.5">
+          <TaskAlt fontSize="small" />
+        </div>
+      )
+    case 'failed':
+      return (
+        <div className="flex text-red-500 items-center bg-white dark:bg-gray-950 rounded-full p-0.5">
+          <WarningAmber fontSize="small" />
+        </div>
+      )
+    default:
+      return null
+  }
+}
+
 const ResultPreviewList = ({
   innerRef,
 }: {
@@ -33,33 +67,40 @@ const ResultPreviewList = ({
     CreationNotificationContext,
   )
 
-  const taskList = [...(pendingTasks || []), ...(completedTasks || [])]
+  console.log(pendingTasks, completedTasks)
+
+  const taskList = [...(pendingTasks || []), ...(completedTasks || [])].map(
+    task => {
+      return {
+        dot: getTimelineDot(task.status),
+        children: <ResultPreview task={task} />,
+      }
+    },
+  )
 
   return (
     <div>
-      {/*<Button>*/}
-      {/*  <span className="absolute">{pendingTasks?.length}</span>*/}
-      {/*  <span className="loading loading-ring loading-md"></span>*/}
-      {/*</Button>*/}
-      <div className="flex flex-col gap-4">
-        {taskList.map(task => (
-          <ResultPreview key={task._id} task={task} innerRef={innerRef} />
-        ))}
+      <div className="flex flex-col" ref={innerRef}>
+        <div className="flex items-center justify-between text-xs text-center text-gray-400 mb-4">
+          <div>
+            You can continue using the app, run multiple tasks or close this
+            tab. No need to wait.
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="relative flex items-center justify-center">
+              <span className="absolute">{pendingTasks?.length}</span>
+              <span className="loading loading-ring loading-lg"></span>
+            </div>
+            Tasks queued
+          </div>
+        </div>
+        <Timeline items={taskList} />
       </div>
     </div>
   )
 }
 
-const ResultPreview = ({
-  task,
-  innerRef,
-}: {
-  task: Task
-  innerRef: RefObject<HTMLDivElement>
-}) => {
-  // const activeTask = pendingTasks && pendingTasks[pendingTasks.length - 1]
-  // const completedTask =
-  //   completedTasks && completedTasks[completedTasks.length - 1]
+const ResultPreview = ({ task }: { task: Task }) => {
   const { message } = App.useApp()
   const { copied, copy } = useClipboard({ timeout: 750 })
 
@@ -105,23 +146,13 @@ const ResultPreview = ({
   }, [task])
 
   return (
-    <div
-      ref={innerRef}
-      className="result-preview relative w-full flex flex-col rounded-lg border border-0 border-solid"
-    >
-      <Card
-        className={`lg:sticky lg:top-4 w-full min-h-[512px] h-fit flex justify-center items-center`}
-      >
+    <div className="result-preview relative w-full flex flex-col rounded-lg border border-0 border-solid">
+      <Card className={`w-full h-fit flex justify-center items-center`}>
         <div className="flex justify-center items-center h-full">
-          {/*{*/}
-          {/*task.status !== 'running' &&*/}
-          {/*task.status !== 'completed' ? (*/}
-          {/*  <div className={'text-gray-500'}>Result will appear here</div>*/}
-          {/*) : (*/}
           <>
             {!creationUri ? (
               <div className="w-full">
-                <div className="text-center">
+                <div>
                   <div className="mb-4">
                     <div title={task?.config.text_input || ''}>
                       <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
@@ -132,10 +163,6 @@ const ResultPreview = ({
                       </span>
                     </div>
                   </div>
-                  <Button>
-                    {/*<span className="absolute">{pendingTasks?.length}</span>*/}
-                    <span className="loading loading-ring loading-xl"></span>
-                  </Button>
                   {task?.status === 'running' ? (
                     <Progress
                       percent={
@@ -149,7 +176,7 @@ const ResultPreview = ({
                       className="mt-2 flex items-center"
                     />
                   ) : (
-                    <div className="mt-2">...</div>
+                    <div className="mt-2 opacity-0">...</div>
                   )}
                 </div>
                 {task && (
@@ -161,35 +188,31 @@ const ResultPreview = ({
                       <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
                         Started {timeAgo(task.createdAt)}
                       </div>
-                      <div className="text-xs text-gray-800 dark:text-gray-400">
+                    </div>
+                    <div>
+                      <div
+                        className="flex items-center gap-2 cursor-copy mb-2"
+                        onClick={() => handleCopyClick(task.taskId)}
+                      >
+                        <div
+                          className="italic text-gray-800 dark:text-gray-400"
+                          title={task.taskId}
+                        >
+                          {truncatedAddress(task.taskId)}
+                        </div>
+                        {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+                      </div>
+                      <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
                         Cost: <strong>{task?.cost}</strong> Manna
                       </div>
                     </div>
-                    <div
-                      className="flex items-center gap-2 cursor-copy"
-                      onClick={() => handleCopyClick(task.taskId)}
-                    >
-                      <div
-                        className="italic text-gray-800 dark:text-gray-400"
-                        title={task.taskId}
-                      >
-                        {truncatedAddress(task.taskId)}
-                      </div>
-                      {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
-                    </div>
                   </div>
                 )}
-                <Divider />
-                <div className="text-center text-gray-400 mt-4 font-bold">
-                  You can continue using the app, run multiple tasks or close
-                  this tab. No need to wait.
-                </div>
               </div>
             ) : (
               <ResultPreviewDisplay creationId={creationId} />
             )}
           </>
-          {/*)}*/}
         </div>
       </Card>
     </div>

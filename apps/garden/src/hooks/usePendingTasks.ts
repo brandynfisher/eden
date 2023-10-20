@@ -12,6 +12,7 @@ export const usePendingTasks = ({
       ? `/api/tasks/list?status=pending,processing,running,starting`
       : null,
     fetcher,
+    { keepPreviousData: true },
   )
   // filter to last day
   const pendingTasks = data?.tasks as Task[]

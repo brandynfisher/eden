@@ -10,7 +10,7 @@ const BackToTopButton = () => {
 
   return (
     <div
-      className="dark:bg-gray-700 rounded cursor-pointer !bg-opacity-80"
+      className="bg-gray-400 dark:bg-gray-700 rounded cursor-pointer !bg-opacity-80"
       onClick={() => scrollTo({ y: 0 })}
     >
       <VerticalAlignTopOutlined className="text-2xl p-1" />

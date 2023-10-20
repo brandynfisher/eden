@@ -393,6 +393,7 @@ const GeneratorForm = ({
     >
       <Card
         type="inner"
+        className="mb-3"
         title={
           <div className="py-4">
             <h3>/{generator.generatorName}</h3>
@@ -422,7 +423,7 @@ const GeneratorForm = ({
           </div>
         }
         actions={[
-          <div className="px-6 text-left" key={generator.generatorName}>
+          <div className="px-4 text-left" key={generator.generatorName}>
             <div className="flex gap-4 items-center justify-between flex-wrap">
               <div className="flex gap-2 items-center w-full sm:w-auto">
                 {user &&
