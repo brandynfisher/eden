@@ -5,6 +5,8 @@ import { App } from 'antd'
 import axios from 'axios'
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+// import { useAuth } from '@clerk/nextjs'
+
 export const useTaskCost = () => {
   const { message } = App.useApp()
   const [taskCost, setTaskCost] = useState<number | undefined>()
@@ -12,8 +14,7 @@ export const useTaskCost = () => {
     null,
   )
   const [canAffordOperation, setCanAffordOperation] = useState(false)
-
-  const { mannaBalance, isAuthenticated, authenticate } =
+  const { userId, mannaBalance, isAuthenticated, authenticate } =
     useContext(UserContext)
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export const useTaskCost = () => {
     async (generatorName: string, config: Task['config']) => {
       setIsLoadingTaskCost(true)
 
-      if (!isAuthenticated) {
+      if (!userId && !isAuthenticated) {
         await requireAuth(authenticate)
 
         setIsLoadingTaskCost(false)
@@ -50,7 +51,7 @@ export const useTaskCost = () => {
         setIsLoadingTaskCost(false)
       }
     },
-    [],
+    [userId, isAuthenticated],
   )
 
   return {
