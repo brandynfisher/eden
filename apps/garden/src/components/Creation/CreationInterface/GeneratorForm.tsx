@@ -69,7 +69,7 @@ const GeneratorForm = ({
     setTaskIds,
     setActiveTaskId,
     setHasChangedGenerator,
-    refetchPendingTasks,
+    // refetchPendingTasks,
   } = useContext(CreationNotificationContext)
   const { message } = App.useApp()
   const router = useRouter()
@@ -255,7 +255,7 @@ const GeneratorForm = ({
       setActiveTaskId && setActiveTaskId(taskId)
       setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
-      refetchPendingTasks && refetchPendingTasks()
+      // refetchPendingTasks && refetchPendingTasks()
       refetchMe()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {

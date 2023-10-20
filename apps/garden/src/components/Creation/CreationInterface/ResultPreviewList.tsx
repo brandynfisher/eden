@@ -66,15 +66,20 @@ const ResultPreviewList = ({
   const { pendingTasks, completedTasks } = useContext(
     CreationNotificationContext,
   )
+  const [taskList, setTaskList] = useState<
+    null | { dot: React.ReactNode; children: React.ReactNode }[]
+  >(null)
 
-  const taskList = [...(completedTasks || []), ...(pendingTasks || [])].map(
-    task => {
-      return {
-        dot: getTimelineDot(task.status),
-        children: <ResultPreview task={task} />,
-      }
-    },
-  )
+  useEffect(() => {
+    setTaskList(
+      [...(completedTasks || []), ...(pendingTasks || [])].map(task => {
+        return {
+          dot: getTimelineDot(task.status),
+          children: <ResultPreview task={task} />,
+        }
+      }),
+    )
+  }, [completedTasks, pendingTasks])
 
   return (
     <div>
@@ -92,7 +97,7 @@ const ResultPreviewList = ({
             Tasks queued
           </div>
         </div>
-        <Timeline items={taskList} />
+        {taskList && taskList.length ? <Timeline items={taskList} /> : null}
       </div>
     </div>
   )

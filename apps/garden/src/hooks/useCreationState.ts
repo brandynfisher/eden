@@ -13,25 +13,19 @@ export const useCreationState = () => {
   const [completedTasks, setCompletedTasks] = useState<Task[]>([])
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
-  const { data: pendingTaskData, mutate: refetchPendingTasks } = useSWR(
-    taskIds.length > 0 ? `/api/tasks/list?taskIds=${taskIds.join(',')}` : null,
+  const { pendingTasks: userPendingTasks } = useContext(UserContext)
+
+  const { data: pendingTaskData, mutate: refetchPending } = useSWR(
+    `/api/tasks/list?status=running,starting,pending,completed`,
     fetcher,
     { keepPreviousData: true },
   )
-  const { pendingTasks: userPendingTasks } = useContext(UserContext)
 
   useEffect(() => {
-    if (!taskIds.length && userPendingTasks) {
-      const newTaskIds = userPendingTasks.map(task => task.taskId)
-      setTaskIds(newTaskIds)
-      // return
+    if (!taskIds.length && userPendingTasks && userPendingTasks.length) {
+      setTaskIds(userPendingTasks.map(task => task.taskId))
     }
-    //
-    // if (pendingTaskData) {
-    //   const newTaskIds = pendingTaskData.map((task: Task) => task.taskId)
-    //   setTaskIds(newTaskIds)
-    // }
-  }, [userPendingTasks, taskIds.length /*pendingTaskData*/])
+  }, [userPendingTasks])
 
   const tasks = pendingTaskData?.tasks as Task[]
 
@@ -44,7 +38,7 @@ export const useCreationState = () => {
   )
 
   useEffect(() => {
-    const intervalId = setInterval(refetchPendingTasks, 5000) // Refetch every 5 seconds
+    const intervalId = setInterval(refetchPending, 5000) // Refetch every 5 seconds
 
     // Cleanup function to remove completed tasks from taskIds
     const cleanupTasks = async () => {
@@ -106,7 +100,7 @@ export const useCreationState = () => {
     return () => {
       clearInterval(intervalId)
     }
-  }, [tasks, refetchPendingTasks, pendingTaskData])
+  }, [tasks, pendingTaskData])
 
   return {
     taskIds,
@@ -121,6 +115,6 @@ export const useCreationState = () => {
     setActiveTaskId,
     hasChangedGenerator,
     setHasChangedGenerator,
-    refetchPendingTasks,
+    // refetchPendingTasks,
   }
 }
