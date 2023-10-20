@@ -91,7 +91,9 @@ const ResultPreview = ({
         className={`lg:sticky lg:top-4 w-full min-h-[512px] h-fit flex justify-center items-center`}
       >
         <div className="flex justify-center items-center h-full">
-          {!activeTask && !completedTask ? (
+          {!(pendingTasks && pendingTasks?.length) &&
+          !activeTask &&
+          !completedTask ? (
             <div className={'text-gray-500'}>Results will appear here</div>
           ) : (
             <>
