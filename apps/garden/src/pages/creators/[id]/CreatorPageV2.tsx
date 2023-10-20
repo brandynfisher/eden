@@ -5,26 +5,18 @@ import OrderByButtons, {
   OrderByParam,
   OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import MasonryWrap from '@/components/MasonryWrap'
+import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
-import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
-
-const ProfileHeader = dynamic(
-  () => import('@/components/Profile/ProfileHeader'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
   const [activeSort, setActiveSort] = useState<OrderByParam>(OrderByLatest)

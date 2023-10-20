@@ -1,15 +1,8 @@
+import CreationInterface from '@/components/Creation/CreationInterface/CreationInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
-
-const CreationInterface = dynamic(
-  () => import('@/components/Creation/CreationInterface/CreationInterface'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const CreatePageWithPreset = ({
   generator,

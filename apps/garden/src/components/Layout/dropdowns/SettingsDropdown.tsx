@@ -5,11 +5,13 @@ import LogoutOutlined from '@ant-design/icons/LogoutOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import TableOutlined from '@ant-design/icons/TableOutlined'
 import { useViewportSize } from '@mantine/hooks'
-// import { UserButton } from '@clerk/nextjs'
-import { Button, Dropdown, Slider, Switch } from 'antd'
+import Button from '@mui/material/Button'
+import { Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
-// import Link from 'next/link'
 import React, { useContext, useEffect, useState } from 'react'
+
+// import { UserButton } from '@clerk/nextjs'
+// import Link from 'next/link'
 
 // const Web3LoginLogoutButton = () => {
 //   const { isConnected } = useWeb3State()
@@ -228,11 +230,10 @@ export const SettingsDropdown = () => {
       className="cursor-pointer"
       arrow={true}
     >
-      <Button
-        type="text"
-        className="flex px-2 justify-center items-center text-xl"
-      >
-        <SettingOutlined className="text-black dark:text-white" />
+      <Button>
+        <div className="flex items-center font-mono">
+          <SettingOutlined className="text-xl" />
+        </div>
       </Button>
     </Dropdown>
   )

@@ -190,7 +190,7 @@ const CardToolsDropdown = ({
         : []
 
     const deleteItem: MenuItem[] =
-      user?.userId === item.user.userId
+      user && user?.userId === item.user.userId
         ? [
             {
               icon: (

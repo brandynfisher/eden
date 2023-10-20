@@ -1,4 +1,3 @@
-import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
@@ -11,29 +10,20 @@ export const useTaskCost = () => {
   const [isLoadingTaskCost, setIsLoadingTaskCost] = useState<boolean | null>(
     null,
   )
-  const [canAffordOperation, setCanAffordOperation] = useState(false)
-
-  const { mannaBalance, isAuthenticated, authenticate } =
-    useContext(UserContext)
+  const [canAffordOperation, setCanAffordOperation] = useState<
+    boolean | undefined
+  >(undefined)
+  const { userId, mannaBalance, isAuthenticated } = useContext(UserContext)
 
   useEffect(() => {
     if (taskCost && mannaBalance) {
       setCanAffordOperation(mannaBalance >= taskCost)
-    } else {
-      setCanAffordOperation(false)
     }
   }, [taskCost, mannaBalance])
 
   const getTaskCost = useCallback(
     async (generatorName: string, config: Task['config']) => {
       setIsLoadingTaskCost(true)
-
-      if (!isAuthenticated) {
-        await requireAuth(authenticate)
-
-        setIsLoadingTaskCost(false)
-        return
-      }
 
       try {
         message.destroy()
@@ -50,7 +40,7 @@ export const useTaskCost = () => {
         setIsLoadingTaskCost(false)
       }
     },
-    [],
+    [userId, isAuthenticated],
   )
 
   return {

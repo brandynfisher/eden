@@ -1,12 +1,11 @@
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+import ResultPreviewList from '@/components/Creation/CreationInterface/ResultPreviewList'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
-import { useViewportSize } from '@mantine/hooks'
 import { Select } from 'antd'
 import React, {
   useCallback,
@@ -34,7 +33,6 @@ const CreationInterface = ({
 }) => {
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
-  const { width } = useViewportSize()
   const [activeGenerator, setActiveGenerator] = useState(
     generators?.[0] || undefined,
   )
@@ -63,19 +61,6 @@ const CreationInterface = ({
     setActiveGenerator(generators?.[0])
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
-  const scrollResultPreviewIntoView = useCallback(() => {
-    if (width > 1024) {
-      return
-    }
-
-    if (resultPreviewRef && resultPreviewRef.current) {
-      resultPreviewRef.current.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      })
-    }
-  }, [resultPreviewRef, width])
-
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />
   }
@@ -83,7 +68,7 @@ const CreationInterface = ({
   return (
     <div className="w-full">
       <h2 className="mb-4">Create</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
         <div className="flex flex-col">
           {presetCreation && <CreationPresetInfo creation={presetCreation} />}
           <label htmlFor="activeGenerator">Selected Generator:</label>
@@ -112,11 +97,10 @@ const CreationInterface = ({
             <GeneratorForm
               generator={activeGenerator}
               presetCreation={presetCreation}
-              onSubmitSuccess={scrollResultPreviewIntoView}
             />
           )}
         </div>
-        <ResultPreview innerRef={resultPreviewRef} />
+        <ResultPreviewList innerRef={resultPreviewRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}

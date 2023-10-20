@@ -420,7 +420,7 @@ export const getCreatorMe = async (
 
   const pendingTasks = await Task.find({
     user: user._id,
-    status: 'pending' || 'processing' || 'running',
+    status: 'pending' || 'processing' || 'running' || 'starting',
     createdAt: { $gte: date },
   })
 

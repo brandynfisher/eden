@@ -1,5 +1,5 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+import ResultPreview from '@/components/Creation/CreationInterface/ResultPreviewList'
 import FormLabel from '@/components/Forms/FormLabel'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
@@ -8,18 +8,11 @@ import { CreationNotificationContext } from '@/providers/CreationNotificationPro
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
-import { useViewportSize } from '@mantine/hooks'
 import { debounce } from '@mui/material/utils'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
-import React, {
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useContext, useMemo, useRef, useState } from 'react'
 
 const MonologueScenarioPageContent = ({
   characters,
@@ -29,8 +22,9 @@ const MonologueScenarioPageContent = ({
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { message } = App.useApp()
   const [form] = Form.useForm()
-  const { taskIds, setTaskIds, setActiveTaskId, setHasChangedGenerator } =
-    useContext(CreationNotificationContext)
+  const { refetchTasks, setActiveTaskId, setHasChangedGenerator } = useContext(
+    CreationNotificationContext,
+  )
   const { mannaBalance, refetchMe, user } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
@@ -43,31 +37,12 @@ const MonologueScenarioPageContent = ({
     activeCharacter && activeCharacter.name,
   )
 
-  const { width } = useViewportSize()
-
   const handleActiveCharacterChange = (characterName: string) => {
     const character = characters?.find(
       character => character.name === characterName,
     )
     setActiveCharacter(character as Character)
     setActiveCharacterName(character?.name as string)
-  }
-
-  const scrollResultPreviewIntoView = useCallback(() => {
-    if (width > 1024) {
-      return
-    }
-
-    if (resultPreviewRef && resultPreviewRef.current) {
-      resultPreviewRef.current.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      })
-    }
-  }, [resultPreviewRef, width])
-
-  const onSubmitSuccess = () => {
-    scrollResultPreviewIntoView()
   }
 
   const handleSubmit = async () => {
@@ -94,10 +69,9 @@ const MonologueScenarioPageContent = ({
       message.success(`Monologue Task created! (${taskId})`)
 
       setActiveTaskId && setActiveTaskId(taskId)
-      setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchMe()
-      onSubmitSuccess()
+      refetchTasks && refetchTasks()
     } catch (error) {
       handleAxiosError(error, message, 'Error requesting monologue generation')
     } finally {

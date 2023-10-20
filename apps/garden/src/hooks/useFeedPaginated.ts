@@ -82,10 +82,10 @@ export const useFeedPaginated = (
     isValidating,
   } = useSWRInfinite(getKey, fetcher, {
     revalidateOnFocus: false,
-    revalidateIfStale: false,
+    // revalidateIfStale: false,
     revalidateFirstPage: false,
     revalidateOnReconnect: false,
-    revalidateAll: false,
+    // revalidateAll: false,
   })
 
   const dataArray = data != null ? data.flat() : []
