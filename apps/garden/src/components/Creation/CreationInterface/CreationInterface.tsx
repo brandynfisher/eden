@@ -71,7 +71,7 @@ const CreationInterface = ({
     <div className="w-full">
       <h2 className="mb-4">Create</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
-        <div className="lg:sticky lg:top-4 flex flex-col max-h-screen pb-4">
+        <div className="lg:sticky lg:top-4 flex flex-col lg:max-h-screen pb-4">
           {presetCreation && <CreationPresetInfo creation={presetCreation} />}
           <label htmlFor="activeGenerator">Selected Generator:</label>
           <Select
@@ -95,7 +95,7 @@ const CreationInterface = ({
                 </Select.Option>
               ))}
           </Select>
-          <div className="lg:sticky max-h-screen overflow-auto">
+          <div className="lg:sticky lg:max-h-screen lg:overflow-auto">
             {activeGenerator && (
               <GeneratorForm
                 generator={activeGenerator}
