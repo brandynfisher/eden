@@ -1,5 +1,5 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+import ResultPreview from '@/components/Creation/CreationInterface/ResultPreviewList'
 import FormLabel from '@/components/Forms/FormLabel'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'

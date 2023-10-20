@@ -241,7 +241,10 @@ export const listTasks = async (
     {
       limit,
       page,
-      sort,
+      sort: {
+        ...sort,
+        createdAt: -1,
+      },
     },
   )
 

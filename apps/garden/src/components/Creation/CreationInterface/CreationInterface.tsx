@@ -1,6 +1,6 @@
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+import ResultPreviewList from '@/components/Creation/CreationInterface/ResultPreviewList'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
@@ -116,7 +116,7 @@ const CreationInterface = ({
             />
           )}
         </div>
-        <ResultPreview innerRef={resultPreviewRef} />
+        <ResultPreviewList innerRef={resultPreviewRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}

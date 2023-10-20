@@ -1,5 +1,5 @@
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+import ResultPreview from '@/components/Creation/CreationInterface/ResultPreviewList'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
