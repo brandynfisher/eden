@@ -63,41 +63,46 @@ const ResultPreviewList = ({
 }: {
   innerRef: RefObject<HTMLDivElement>
 }) => {
-  const { pendingTasks, completedTasks } = useContext(
-    CreationNotificationContext,
-  )
+  const { tasks, pendingTasks } = useContext(CreationNotificationContext)
   const [taskList, setTaskList] = useState<
     null | { dot: React.ReactNode; children: React.ReactNode }[]
   >(null)
 
   useEffect(() => {
-    setTaskList(
-      [...(completedTasks || []), ...(pendingTasks || [])].map(task => {
-        return {
-          dot: getTimelineDot(task.status),
-          children: <ResultPreview task={task} />,
-        }
-      }),
-    )
-  }, [completedTasks, pendingTasks])
+    console.log(tasks)
+    if (tasks && tasks.length) {
+      setTaskList(
+        tasks.map(task => {
+          return {
+            dot: getTimelineDot(task.status),
+            children: <ResultPreview task={task} />,
+          }
+        }),
+      )
+    }
+  }, [tasks])
 
   return (
     <div>
       <div className="flex flex-col" ref={innerRef}>
-        <div className="flex items-center justify-between text-xs text-gray-400 mb-4 gap-2">
-          <div>
-            You can continue using the app, run multiple tasks or close this
-            tab.
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <div className="relative flex items-center justify-center">
-              <span className="absolute">{pendingTasks?.length}</span>
-              <span className="loading loading-ring loading-lg"></span>
+        {taskList && taskList.length ? (
+          <>
+            <div className="flex items-center justify-between text-xs text-gray-400 mb-4 gap-2">
+              <div>
+                You can continue using the app, run multiple tasks or close this
+                tab.
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="relative flex items-center justify-center">
+                  <span className="absolute">{pendingTasks?.length}</span>
+                  <span className="loading loading-ring loading-lg"></span>
+                </div>
+                Tasks queued
+              </div>
             </div>
-            Tasks queued
-          </div>
-        </div>
-        {taskList && taskList.length ? <Timeline items={taskList} /> : null}
+            <Timeline items={taskList} />
+          </>
+        ) : null}
       </div>
     </div>
   )
@@ -121,9 +126,9 @@ const ResultPreview = ({ task }: { task: Task }) => {
   const increaseFakeProgress = useCallback(
     (increment: number, timerId: ReturnType<typeof setInterval>) => {
       setFakeProgress(prevState => {
-        if (prevState + increment >= 100) {
+        if (prevState + increment >= 99) {
           clearInterval(timerId)
-          return 100
+          return 95
         }
 
         return prevState + increment
@@ -189,7 +194,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
                         <strong>{task.status}</strong>
                       </div>
                       <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
-                        Started {timeAgo(task.createdAt)}
+                        {timeAgo(task.createdAt)}
                       </div>
                     </div>
                     <div>

@@ -1,6 +1,4 @@
-import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
-import { useAuth } from '@clerk/nextjs'
 import { Task } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
 import axios from 'axios'
@@ -12,17 +10,14 @@ export const useTaskCost = () => {
   const [isLoadingTaskCost, setIsLoadingTaskCost] = useState<boolean | null>(
     null,
   )
-  const [canAffordOperation, setCanAffordOperation] = useState(false)
-  const { userId, mannaBalance, isAuthenticated, authenticate } =
-    useContext(UserContext)
-
-  const { getToken } = useAuth()
+  const [canAffordOperation, setCanAffordOperation] = useState<
+    boolean | undefined
+  >(undefined)
+  const { userId, mannaBalance, isAuthenticated } = useContext(UserContext)
 
   useEffect(() => {
     if (taskCost && mannaBalance) {
       setCanAffordOperation(mannaBalance >= taskCost)
-    } else {
-      setCanAffordOperation(false)
     }
   }, [taskCost, mannaBalance])
 
@@ -30,26 +25,13 @@ export const useTaskCost = () => {
     async (generatorName: string, config: Task['config']) => {
       setIsLoadingTaskCost(true)
 
-      if (!userId && !isAuthenticated) {
-        await requireAuth(authenticate)
-
-        setIsLoadingTaskCost(false)
-        return
-      }
-
       try {
         message.destroy()
 
-        const response = await axios.post(
-          '/api/tasks/cost',
-          {
-            generatorName,
-            config,
-          },
-          {
-            headers: { Authorization: `Bearer ${await getToken()}` },
-          },
-        )
+        const response = await axios.post('/api/tasks/cost', {
+          generatorName,
+          config,
+        })
 
         setTaskCost(response.data?.cost || undefined)
       } catch (err) {

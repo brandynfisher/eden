@@ -6,7 +6,7 @@ import MenuDropdownMUI, {
 import { CONFIG } from '@/lib/config'
 import { getAspectRatio } from '@/lib/media'
 import { rightTruncatedString, truncatedAddress } from '@/lib/string'
-import { durationBetweenDates, timeAgo } from '@/lib/time'
+import { durationBetweenDates } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
@@ -165,8 +165,6 @@ const CompletedTaskMenuItem = ({
 }
 
 const PendingTaskMenuItem = ({ task }: { task: Task }) => {
-  const timeSinceTaskCreation = timeAgo(task.createdAt)
-
   const { message } = App.useApp()
   const { copied, copy } = useClipboard({ timeout: 750 })
 
@@ -208,7 +206,6 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           <div className="capitalize">
             <strong>{task?.status}</strong>
           </div>
-          <div>Started {timeSinceTaskCreation}</div>
         </div>
       </div>
       <div className="flex justify-between items-center">
@@ -219,7 +216,6 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           <TestGeneratorFinishButton taskId={task.taskId} />
         )}
       </div>
-      <div></div>
     </div>
   )
 }

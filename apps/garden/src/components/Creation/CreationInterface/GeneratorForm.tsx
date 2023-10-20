@@ -64,13 +64,9 @@ const GeneratorForm = ({
   presetCreation?: Creation
   onSubmitSuccess?: () => void
 }) => {
-  const {
-    taskIds,
-    setTaskIds,
-    setActiveTaskId,
-    setHasChangedGenerator,
-    // refetchPendingTasks,
-  } = useContext(CreationNotificationContext)
+  const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
+    CreationNotificationContext,
+  )
   const { message } = App.useApp()
   const router = useRouter()
   const { isAuthenticated, authenticate, mannaBalance, user, refetchMe } =
@@ -253,10 +249,10 @@ const GeneratorForm = ({
 
       const { taskId } = response.data
       setActiveTaskId && setActiveTaskId(taskId)
-      setTaskIds && setTaskIds([...taskIds, taskId])
+      // setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
-      // refetchPendingTasks && refetchPendingTasks()
       refetchMe()
+      refetchTasks && refetchTasks()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       message.error('Error creating task. Please try again.')
@@ -426,10 +422,7 @@ const GeneratorForm = ({
           <div className="px-4 text-left" key={generator.generatorName}>
             <div className="flex gap-4 items-center justify-between flex-wrap">
               <div className="flex gap-2 items-center w-full sm:w-auto">
-                {user &&
-                isLoadingTaskCost === false &&
-                typeof mannaBalance !== 'undefined' &&
-                !canAffordOperation ? (
+                {canAffordOperation === false ? (
                   <div className="text-orange-500">
                     Insufficient Manna! ({mannaBalance}){' '}
                     <Link href="/manna">Click here to get more</Link>

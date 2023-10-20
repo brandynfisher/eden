@@ -3,8 +3,8 @@ import { Task } from '@edenlabs/eden-sdk'
 import React, { PropsWithChildren, createContext } from 'react'
 
 export interface CreationNotificationContextType {
-  taskIds: string[]
-  setTaskIds?: (taskIds: string[]) => void
+  tasks: Task[]
+  setTasks?: (tasks: Task[]) => void
   pendingTasks?: Task[]
   completedTasks?: Task[]
   failedTasks?: Task[]
@@ -14,13 +14,13 @@ export interface CreationNotificationContextType {
   setActiveTaskId?: (taskId: string) => void
   hasChangedGenerator?: boolean
   setHasChangedGenerator?: (hasChangedGenerator: boolean) => void
-  refetchPendingTasks?: () => void
+  refetchTasks?: () => void
 }
 
 export const CreationNotificationContext =
   createContext<CreationNotificationContextType>({
-    taskIds: [],
-    setTaskIds: undefined,
+    tasks: [],
+    setTasks: undefined,
     pendingTasks: undefined,
     completedTasks: undefined,
     setCompletedTasks: undefined,
@@ -30,7 +30,7 @@ export const CreationNotificationContext =
     setActiveTaskId: undefined,
     hasChangedGenerator: undefined,
     setHasChangedGenerator: undefined,
-    refetchPendingTasks: undefined,
+    refetchTasks: undefined,
   })
 
 function CreationNotificationProvider({ children }: PropsWithChildren) {
