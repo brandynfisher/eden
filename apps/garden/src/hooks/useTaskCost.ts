@@ -1,11 +1,10 @@
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
+import { useAuth } from '@clerk/nextjs'
 import { Task } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
 import axios from 'axios'
 import { useCallback, useContext, useEffect, useState } from 'react'
-
-// import { useAuth } from '@clerk/nextjs'
 
 export const useTaskCost = () => {
   const { message } = App.useApp()
@@ -16,6 +15,8 @@ export const useTaskCost = () => {
   const [canAffordOperation, setCanAffordOperation] = useState(false)
   const { userId, mannaBalance, isAuthenticated, authenticate } =
     useContext(UserContext)
+
+  const { getToken } = useAuth()
 
   useEffect(() => {
     if (taskCost && mannaBalance) {
@@ -39,10 +40,16 @@ export const useTaskCost = () => {
       try {
         message.destroy()
 
-        const response = await axios.post('/api/tasks/cost', {
-          generatorName,
-          config,
-        })
+        const response = await axios.post(
+          '/api/tasks/cost',
+          {
+            generatorName,
+            config,
+          },
+          {
+            headers: { Authorization: `Bearer ${await getToken()}` },
+          },
+        )
 
         setTaskCost(response.data?.cost || undefined)
       } catch (err) {
