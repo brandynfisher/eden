@@ -23,8 +23,14 @@ export const useCreationState = () => {
     if (userPendingTasks) {
       const newTaskIds = userPendingTasks.map(task => task.taskId)
       setTaskIds(newTaskIds)
+      return
     }
-  }, [userPendingTasks])
+
+    if (pendingTaskData) {
+      const newTaskIds = pendingTaskData.map((task: Task) => task.taskId)
+      setTaskIds(newTaskIds)
+    }
+  }, [userPendingTasks, pendingTaskData?.length])
 
   const tasks = pendingTaskData?.tasks as Task[]
 
