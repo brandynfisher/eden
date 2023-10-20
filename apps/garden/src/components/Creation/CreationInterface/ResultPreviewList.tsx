@@ -67,9 +67,7 @@ const ResultPreviewList = ({
     CreationNotificationContext,
   )
 
-  console.log(pendingTasks, completedTasks)
-
-  const taskList = [...(pendingTasks || []), ...(completedTasks || [])].map(
+  const taskList = [...(completedTasks || []), ...(pendingTasks || [])].map(
     task => {
       return {
         dot: getTimelineDot(task.status),
