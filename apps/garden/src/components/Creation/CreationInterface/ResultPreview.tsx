@@ -111,7 +111,7 @@ const ResultPreview = ({
                       </div>
                     </div>
                     <Button>
-                      <span className="absolute">5</span>
+                      <span className="absolute">{pendingTasks?.length}</span>
                       <span className="loading loading-ring loading-xl"></span>
                     </Button>
                     {activeTask?.status === 'running' ? (
