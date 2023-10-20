@@ -22,8 +22,9 @@ const MonologueScenarioPageContent = ({
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { message } = App.useApp()
   const [form] = Form.useForm()
-  const { taskIds, setTaskIds, setActiveTaskId, setHasChangedGenerator } =
-    useContext(CreationNotificationContext)
+  const { refetchTasks, setActiveTaskId, setHasChangedGenerator } = useContext(
+    CreationNotificationContext,
+  )
   const { mannaBalance, refetchMe, user } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
@@ -68,9 +69,9 @@ const MonologueScenarioPageContent = ({
       message.success(`Monologue Task created! (${taskId})`)
 
       setActiveTaskId && setActiveTaskId(taskId)
-      setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchMe()
+      refetchTasks && refetchTasks()
     } catch (error) {
       handleAxiosError(error, message, 'Error requesting monologue generation')
     } finally {
