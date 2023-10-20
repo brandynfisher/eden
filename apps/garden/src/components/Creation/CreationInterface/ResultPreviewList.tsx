@@ -81,12 +81,12 @@ const ResultPreviewList = ({
   return (
     <div>
       <div className="flex flex-col" ref={innerRef}>
-        <div className="flex items-center justify-between text-xs text-center text-gray-400 mb-4">
+        <div className="flex items-center justify-between text-xs text-gray-400 mb-4 gap-2">
           <div>
             You can continue using the app, run multiple tasks or close this
-            tab. No need to wait.
+            tab.
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <div className="relative flex items-center justify-center">
               <span className="absolute">{pendingTasks?.length}</span>
               <span className="loading loading-ring loading-lg"></span>
