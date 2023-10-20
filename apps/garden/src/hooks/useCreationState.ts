@@ -31,7 +31,7 @@ export const useCreationState = () => {
       const newTaskIds = pendingTaskData.map((task: Task) => task.taskId)
       setTaskIds(newTaskIds)
     }
-  }, [userPendingTasks, pendingTaskData?.length])
+  }, [userPendingTasks, pendingTaskData])
 
   const tasks = pendingTaskData?.tasks as Task[]
 
@@ -106,7 +106,7 @@ export const useCreationState = () => {
     return () => {
       clearInterval(intervalId)
     }
-  }, [tasks, refetchPendingTasks])
+  }, [tasks, refetchPendingTasks, pendingTaskData])
 
   return {
     taskIds,
