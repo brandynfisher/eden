@@ -249,7 +249,6 @@ const GeneratorForm = ({
 
       const { taskId } = response.data
       setActiveTaskId && setActiveTaskId(taskId)
-      // setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchMe()
       refetchTasks && refetchTasks()
