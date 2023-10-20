@@ -25,6 +25,16 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
           onClick={openDetailModal}
           className="flex flex-col gap-4 cursor-pointer h-full w-full"
         >
+          <div className="mb-4">
+            <div title={creation.task?.config.text_input || ''}>
+              <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
+                <strong className="dark:text-gray-200 mr-1">
+                  /{creation.task?.generator.generatorName}
+                </strong>
+                {creation.task?.config.text_input || ''}
+              </span>
+            </div>
+          </div>
           <Button>Show Details</Button>
           <MediaDisplay
             creationUri={creation.uri}
