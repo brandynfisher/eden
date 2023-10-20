@@ -132,7 +132,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
     setFakeProgress(0)
 
     if (
-      task?.status === 'pending' &&
+      task?.status === 'running' &&
       noProgressGeneratorNames.includes(task?.generator.generatorName)
     ) {
       timerId = setInterval(() => increaseFakeProgress(3, timerId), 1000)
@@ -141,7 +141,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
     return () => {
       clearInterval(timerId)
     }
-  }, [task])
+  }, [task?.status, task?.generator.generatorName])
 
   return (
     <div className="result-preview relative w-full flex flex-col rounded-lg border border-0 border-solid">
