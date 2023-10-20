@@ -21,17 +21,17 @@ export const useCreationState = () => {
   const { pendingTasks: userPendingTasks } = useContext(UserContext)
 
   useEffect(() => {
-    if (userPendingTasks) {
+    if (!taskIds.length && userPendingTasks) {
       const newTaskIds = userPendingTasks.map(task => task.taskId)
       setTaskIds(newTaskIds)
-      return
+      // return
     }
-
-    if (pendingTaskData) {
-      const newTaskIds = pendingTaskData.map((task: Task) => task.taskId)
-      setTaskIds(newTaskIds)
-    }
-  }, [userPendingTasks, pendingTaskData])
+    //
+    // if (pendingTaskData) {
+    //   const newTaskIds = pendingTaskData.map((task: Task) => task.taskId)
+    //   setTaskIds(newTaskIds)
+    // }
+  }, [userPendingTasks, taskIds.length /*pendingTaskData*/])
 
   const tasks = pendingTaskData?.tasks as Task[]
 
