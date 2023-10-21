@@ -5,14 +5,17 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { userId } = req.query as { userId: string }
+  const { userId, creationId } = req.query as {
+    userId: string
+    creationId?: string
+  }
 
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
       token: authToken,
     })
-    const response = await eden.collections.list({ userId })
+    const response = await eden.collections.list({ userId, creationId })
     return res.status(200).json({ collections: response.docs })
   } catch (error) {
     console.error(error)

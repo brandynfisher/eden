@@ -1,3 +1,4 @@
+import AddToCollectionButton from '@/components/Layout/buttons/AddToCollectionButton'
 import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import DeleteButton from '@/components/Layout/buttons/DeleteButton'
@@ -132,6 +133,17 @@ const CardToolsDropdown = ({
         type: 'divider',
       },
       ...shareItems,
+      {
+        key: 'add-to-collection',
+        icon: (
+          <AddToCollectionButton
+            itemId={item._id}
+            // itemType={itemType}
+            variant="text"
+            label="Add to Collection"
+          />
+        ),
+      },
       {
         key: '3',
         icon: (

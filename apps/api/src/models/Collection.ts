@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
 
 import { enforceUserDocumentLimit } from '../lib/data'
@@ -68,5 +69,6 @@ collection.pre<CollectionDocument>('update', function (next) {
 })
 
 collection.plugin(paginate)
+collection.plugin(aggregatePaginate)
 
 export const Collection = model<CollectionDocument>('collections', collection)

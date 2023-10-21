@@ -14,13 +14,15 @@ const NewTabLinkButton = ({
   if (variant === 'text') {
     return (
       <Link
-        className="flex items-center gap-2 w-full justify-between"
+        className="p-2 w-full h-full"
         title={'Opens page in new tab'}
         href={url}
         target="_blank"
       >
-        <div>{label}</div>
-        <OpenInNewIcon fontSize="small" />
+        <div className="flex items-center gap-2 w-full justify-between">
+          <div>{label}</div>
+          <OpenInNewIcon fontSize="small" />
+        </div>
       </Link>
     )
   }
