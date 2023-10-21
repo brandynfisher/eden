@@ -19,7 +19,6 @@ const params = [
     maximum: 1.0,
     step: 0.01,
   },
-
   {
     name: 'width',
     label: 'Width',
@@ -46,7 +45,16 @@ const params = [
     description: 'Optional text prompt for the remix (will try to remix the image in the direction of the prompt (style-transfer))',
     default: null,
   },
-
+  {
+    name: 'ip_image_strength',
+    label: 'Image strength (vs prompt strength)',
+    description: 'How much to use the image (1.0) vs the prompt (0.0)',
+    default: 0.65,
+    minimum: 0.0,
+    maximum: 1.0,
+    step: 0.1,
+    optional: true,
+  },
 
   ////////////////////////////////////////
   // optional generation args
