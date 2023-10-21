@@ -188,32 +188,32 @@ function ModalProvider({ children }: PropsWithChildren) {
     )
   }
 
-  // useEffect(() => {
-  //   router.beforePopState(({ as }) => {
-  //     const currentPath = router.asPath
-  //     if (as !== currentPath) {
-  //       hideModal()
-  //     }
-  //     return true
-  //   })
-  //
-  //   return () => {
-  //     router.beforePopState(() => true)
-  //   }
-  // }, [router.asPath])
-  //
-  // useEffect(() => {
-  //   router.events.on('routeChangeStart', (url, { shallow }) => {
-  //     // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
-  //     if (!shallow) {
-  //       hideModal()
-  //     }
-  //   })
-  //
-  //   return () => {
-  //     router.events.off('routeChangeStart', () => {})
-  //   }
-  // }, [])
+  useEffect(() => {
+    router.beforePopState(({ as }) => {
+      const currentPath = router.asPath
+      if (store.length && as !== currentPath) {
+        hideModal(store[store.length - 1].modalType)
+      }
+      return true
+    })
+
+    return () => {
+      router.beforePopState(() => true)
+    }
+  }, [router.asPath])
+
+  useEffect(() => {
+    router.events.on('routeChangeStart', (url, { shallow }) => {
+      // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
+      if (store.length && !shallow) {
+        hideModal(store[store.length - 1].modalType)
+      }
+    })
+
+    return () => {
+      router.events.off('routeChangeStart', () => {})
+    }
+  }, [])
 
   const onEscHandler = useCallback(
     (ev: KeyboardEvent) => {
@@ -231,11 +231,9 @@ function ModalProvider({ children }: PropsWithChildren) {
   )
 
   useEffect(() => {
-    console.log('reg')
     document.body.addEventListener('keydown', onEscHandler, false)
 
     return () => {
-      console.log('dereg')
       document.body.removeEventListener('keydown', onEscHandler, false)
     }
   }, [onEscHandler])
