@@ -13,7 +13,7 @@ const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
         width="0"
         height="0"
         className="w-full h-full object-contain absolute z-10 inset-0"
-        sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
+        sizes={'(max-width: 1280px) 33vw, (max-width: 1024px) 50vw, 75vw'}
         style={{ objectFit: 'contain', objectPosition: 'top center' }}
       />
       <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-90 text-gray-400" />
@@ -73,7 +73,7 @@ const ImageResultZoomable = ({
             key={previewSizeUrl}
             src={previewSizeUrl}
             alt={previewSizeUrl}
-            sizes={'(max-width: 1024px) 100vw, 50vw'}
+            sizes={'(max-width: 1280px) 50vw, (max-width: 1024px) 75vw, 100vw'}
             onLoadingComplete={handleOnLoad}
             priority={priority}
             width="0"
