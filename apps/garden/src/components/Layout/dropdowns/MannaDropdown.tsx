@@ -14,9 +14,9 @@ const MannaBalanceInfo = () => {
   const { mannaBalance } = useContext(UserContext)
 
   return (
-    <div className="text-gray-400">
+    <Link href={'/manna'} className="flex items-center gap-2">
       You have <span className="font-bold">{mannaBalance}</span> Manna
-    </div>
+    </Link>
   )
 }
 

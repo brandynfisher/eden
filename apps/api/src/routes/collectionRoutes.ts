@@ -20,6 +20,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
         type: 'object',
         properties: {
           userId: { type: ['string', 'array'] },
+          creationId: Type.Optional(Type.String()),
           ...paginationProperties(),
         },
         required: [],

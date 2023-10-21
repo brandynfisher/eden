@@ -514,6 +514,7 @@ export interface CollectionsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+  creationId?: string | string[]
 }
 
 export interface CollectionsGetArguments extends WebAPICallOptions {
