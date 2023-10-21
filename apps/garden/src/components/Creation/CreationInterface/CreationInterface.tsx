@@ -4,6 +4,7 @@ import ResultPreviewList from '@/components/Creation/CreationInterface/ResultPre
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
+import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Select } from 'antd'
@@ -33,6 +34,7 @@ const CreationInterface = ({
 }) => {
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
+  const { pendingTasks } = useContext(CreationNotificationContext)
   const [activeGenerator, setActiveGenerator] = useState(
     generators?.[0] || undefined,
   )
@@ -69,7 +71,7 @@ const CreationInterface = ({
     <div className="w-full">
       <h2 className="mb-4">Create</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
-        <div className="flex flex-col">
+        <div className="lg:sticky lg:top-4 flex flex-col lg:max-h-screen pb-4">
           {presetCreation && <CreationPresetInfo creation={presetCreation} />}
           <label htmlFor="activeGenerator">Selected Generator:</label>
           <Select
@@ -93,12 +95,29 @@ const CreationInterface = ({
                 </Select.Option>
               ))}
           </Select>
-          {activeGenerator && (
-            <GeneratorForm
-              generator={activeGenerator}
-              presetCreation={presetCreation}
-            />
-          )}
+          <div className="lg:sticky lg:max-h-screen lg:overflow-auto">
+            {activeGenerator && (
+              <GeneratorForm
+                generator={activeGenerator}
+                presetCreation={presetCreation}
+              />
+            )}
+            {pendingTasks?.length ? (
+              <div className="flex items-center justify-between text-xs text-gray-400 mb-4 gap-2">
+                <div>
+                  You can continue using the app, run multiple tasks or close
+                  this tab.
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="relative flex items-center justify-center">
+                    <span className="absolute">{pendingTasks?.length}</span>
+                    <span className="loading loading-ring loading-lg"></span>
+                  </div>
+                  Tasks queued
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
         <ResultPreviewList innerRef={resultPreviewRef} />
       </div>

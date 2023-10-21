@@ -63,7 +63,7 @@ const ResultPreviewList = ({
 }: {
   innerRef: RefObject<HTMLDivElement>
 }) => {
-  const { tasks, pendingTasks } = useContext(CreationNotificationContext)
+  const { tasks } = useContext(CreationNotificationContext)
   const [taskList, setTaskList] = useState<
     null | { dot: React.ReactNode; children: React.ReactNode }[]
   >(null)
@@ -85,24 +85,7 @@ const ResultPreviewList = ({
   return (
     <div>
       <div className="flex flex-col" ref={innerRef}>
-        {taskList && taskList.length ? (
-          <>
-            <div className="flex items-center justify-between text-xs text-gray-400 mb-4 gap-2">
-              <div>
-                You can continue using the app, run multiple tasks or close this
-                tab.
-              </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <div className="relative flex items-center justify-center">
-                  <span className="absolute">{pendingTasks?.length}</span>
-                  <span className="loading loading-ring loading-lg"></span>
-                </div>
-                Tasks queued
-              </div>
-            </div>
-            <Timeline items={taskList} />
-          </>
-        ) : null}
+        {taskList && taskList.length ? <Timeline items={taskList} /> : null}
       </div>
     </div>
   )
@@ -156,72 +139,70 @@ const ResultPreview = ({ task }: { task: Task }) => {
   return (
     <div className="result-preview relative w-full flex flex-col rounded-lg border border-0 border-solid">
       <Card className={`w-full h-fit flex justify-center items-center`}>
-        <div className="flex justify-center items-center h-full">
-          <>
-            {!creationUri ? (
-              <div className="w-full">
-                <div>
-                  <div className="mb-4">
-                    <div title={task?.config.text_input || ''}>
-                      <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
-                        <strong className="dark:text-gray-200 mr-1">
-                          /{task?.generator.generatorName}
-                        </strong>
-                        {task?.config.text_input || ''}
-                      </span>
-                    </div>
+        <>
+          {!creationUri ? (
+            <div className="w-full">
+              <div>
+                <div className="mb-4">
+                  <div title={task?.config.text_input || ''}>
+                    <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
+                      <strong className="dark:text-gray-200 mr-1">
+                        /{task?.generator.generatorName}
+                      </strong>
+                      {task?.config.text_input || ''}
+                    </span>
                   </div>
-                  {task?.status === 'running' ? (
-                    <Progress
-                      percent={
-                        fakeProgress > 0
-                          ? fakeProgress
-                          : task?.progress
-                          ? Math.round(task.progress * 100)
-                          : 0
-                      }
-                      status="active"
-                      className="mt-2 flex items-center"
-                    />
-                  ) : (
-                    <div className="mt-2 opacity-0">...</div>
-                  )}
                 </div>
-                {task && (
-                  <div className="flex justify-between text-xs">
-                    <div>
-                      <div className="capitalize mb-2">
-                        <strong>{task.status}</strong>
-                      </div>
-                      <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
-                        {timeAgo(task.createdAt)}
-                      </div>
-                    </div>
-                    <div>
-                      <div
-                        className="flex items-center gap-2 cursor-copy mb-2"
-                        onClick={() => handleCopyClick(task.taskId)}
-                      >
-                        <div
-                          className="italic text-gray-800 dark:text-gray-400"
-                          title={task.taskId}
-                        >
-                          {truncatedAddress(task.taskId)}
-                        </div>
-                        {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
-                      </div>
-                      <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
-                        Cost: <strong>{task?.cost}</strong> Manna
-                      </div>
-                    </div>
-                  </div>
+                {task?.status === 'running' ? (
+                  <Progress
+                    percent={
+                      fakeProgress > 0
+                        ? fakeProgress
+                        : task?.progress
+                        ? Math.round(task.progress * 100)
+                        : 0
+                    }
+                    status="active"
+                    className="mt-2 flex items-center"
+                  />
+                ) : (
+                  <div className="mt-2 opacity-0">...</div>
                 )}
               </div>
-            ) : (
-              <ResultPreviewDisplay creationId={creationId} />
-            )}
-          </>
-        </div>
+              {task && (
+                <div className="flex justify-between text-xs">
+                  <div>
+                    <div className="capitalize mb-2">
+                      <strong>{task.status}</strong>
+                    </div>
+                    <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
+                      {timeAgo(task.createdAt)}
+                    </div>
+                  </div>
+                  <div>
+                    <div
+                      className="flex items-center gap-2 cursor-copy mb-2"
+                      onClick={() => handleCopyClick(task.taskId)}
+                    >
+                      <div
+                        className="italic text-gray-800 dark:text-gray-400"
+                        title={task.taskId}
+                      >
+                        {truncatedAddress(task.taskId)}
+                      </div>
+                      {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+                    </div>
+                    <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
+                      Cost: <strong>{task?.cost}</strong> Manna
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <ResultPreviewDisplay creationId={creationId} />
+          )}
+        </>
       </Card>
     </div>
   )
