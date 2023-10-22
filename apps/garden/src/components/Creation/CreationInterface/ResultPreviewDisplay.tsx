@@ -19,6 +19,11 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
 
   return (
     <>
+      {creation === null ? (
+        <div className="h-64 w-64 max-w-full max-h-full dark:text-gray-500 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-lg">
+          deleted
+        </div>
+      ) : null}
       {creation ? (
         <div>
           <div
@@ -47,15 +52,7 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
           </div>
         </div>
       ) : (
-        <>
-          {isLoading ? (
-            <LoadingIndicator />
-          ) : (
-            <div className="h-64 w-64 max-w-full max-h-full dark:text-gray-500 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-lg">
-              deleted
-            </div>
-          )}
-        </>
+        <>{isLoading ? <LoadingIndicator /> : null}</>
       )}
     </>
   )

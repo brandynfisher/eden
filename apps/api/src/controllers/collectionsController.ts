@@ -89,11 +89,20 @@ export const listCollections = async (
     userId,
   })
 
+  const creatorId = creators.docs[0]._id
+  const sortFilter: { [key: string]: unknown } = {}
+  const ownUserId = request.user ? request.user.userId : undefined
+  const isUserRequestingOwnProfileFeed =
+    creatorId && ownUserId && ownUserId.toString() === creatorId
+  if (!isUserRequestingOwnProfileFeed) {
+    sortFilter['isPrivate'] = { $ne: true }
+  }
+
   const collectionRepository = new CollectionRepository(Collection)
   const collections =
     userId && creationId
       ? await collectionRepository.aggregateQuery(
-          collectionsAggregate(creators.docs[0]._id, creationId as string),
+          collectionsAggregate(creatorId, creationId as string),
           {
             limit,
             page,
@@ -102,9 +111,7 @@ export const listCollections = async (
         )
       : await collectionRepository.query(
           {
-            user: creators.docs
-              ? creators.docs.map(creator => creator._id)
-              : undefined,
+            user: creatorId,
           },
           {
             limit,

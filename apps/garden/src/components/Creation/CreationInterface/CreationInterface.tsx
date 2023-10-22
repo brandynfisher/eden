@@ -7,6 +7,7 @@ import { CONFIG } from '@/lib/config'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
+import { useViewportSize } from '@mantine/hooks'
 import { Select } from 'antd'
 import React, {
   useCallback,
@@ -86,6 +87,7 @@ const CreationInterface = ({
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
   const { ref, position } = usePosition()
+  const { width } = useViewportSize()
 
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />
@@ -120,11 +122,15 @@ const CreationInterface = ({
               ))}
           </Select>
           <div
-            className="lg:sticky lg:max-h-screen lg:overflow-auto"
+            className="lg:sticky lg:!max-h-screen lg:overflow-auto"
             ref={ref}
-            style={{
-              maxHeight: `calc(100vh - ${position ? position.top : 0}px)`,
-            }}
+            style={
+              width > 1024
+                ? {
+                    maxHeight: `calc(100vh - ${position ? position.top : 0}px)`,
+                  }
+                : {}
+            }
           >
             {activeGenerator && (
               <GeneratorForm
