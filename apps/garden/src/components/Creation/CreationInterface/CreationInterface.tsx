@@ -92,11 +92,7 @@ const CreationInterface = ({
   }
 
   return (
-    <div
-      ref={ref}
-      style={{ maxHeight: `calc(100vh - ${position ? position.top : 0}px)` }}
-      className="w-full"
-    >
+    <div className="w-full">
       <h2 className="mb-4">Create</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
         <div className="lg:sticky lg:top-4 flex flex-col lg:max-h-screen">
@@ -123,7 +119,13 @@ const CreationInterface = ({
                 </Select.Option>
               ))}
           </Select>
-          <div className="lg:sticky lg:max-h-screen lg:overflow-auto">
+          <div
+            className="lg:sticky lg:max-h-screen lg:overflow-auto"
+            ref={ref}
+            style={{
+              maxHeight: `calc(100vh - ${position ? position.top : 0}px)`,
+            }}
+          >
             {activeGenerator && (
               <GeneratorForm
                 generator={activeGenerator}
