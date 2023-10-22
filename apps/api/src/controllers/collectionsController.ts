@@ -53,7 +53,6 @@ export const getCollection = async (
 }
 
 const collectionsAggregate = (userId: string, creationId: string) => {
-  console.log(new ObjectId(userId), creationId)
   return Collection.aggregate([
     {
       $match: {
@@ -113,8 +112,6 @@ export const listCollections = async (
             sort,
           },
         )
-
-  console.log(collections)
 
   return reply.status(200).send(collections)
 }

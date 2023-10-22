@@ -133,17 +133,21 @@ const CardToolsDropdown = ({
         type: 'divider',
       },
       ...shareItems,
-      {
-        key: 'add-to-collection',
-        icon: (
-          <AddToCollectionButton
-            itemId={item._id}
-            // itemType={itemType}
-            variant="text"
-            label="Add to Collection"
-          />
-        ),
-      },
+      ...(itemType === 'creation'
+        ? [
+            {
+              key: 'add-to-collection',
+              icon: (
+                <AddToCollectionButton
+                  itemId={item._id}
+                  // itemType={itemType}
+                  variant="text"
+                  label="Add to Collection"
+                />
+              ),
+            },
+          ]
+        : []),
       {
         key: '3',
         icon: (

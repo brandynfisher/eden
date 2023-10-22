@@ -42,21 +42,17 @@ export const useCreationState = () => {
     // Cleanup function to remove completed tasks from taskIds
     const cleanupTasks = async () => {
       if (tasks && tasks.length) {
-        if (tasks[tasks.length - 1].status === 'completed') {
+        if (tasks[0].status === 'completed') {
           message.destroy()
           message.success(
-            `Task ${truncatedAddress(
-              tasks[tasks.length - 1].taskId,
-            )} completed successfully!`,
+            `Task ${truncatedAddress(tasks[0].taskId)} completed successfully!`,
           )
         }
 
-        if (tasks[tasks.length - 1].status === 'failed') {
+        if (tasks[0].status === 'failed') {
           message.destroy()
           message.error(
-            `An error occured for Task ${truncatedAddress(
-              tasks[tasks.length - 1].taskId,
-            )}.`,
+            `An error occured for Task ${truncatedAddress(tasks[0].taskId)}.`,
           )
         }
       }

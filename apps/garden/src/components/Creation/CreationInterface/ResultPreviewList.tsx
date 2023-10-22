@@ -69,7 +69,7 @@ const ResultPreviewList = ({
   >(null)
 
   useEffect(() => {
-    console.log(tasks)
+    // console.log(tasks)
     if (tasks && tasks.length) {
       setTaskList(
         tasks.map(task => {
@@ -128,7 +128,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
       task?.status === 'running' &&
       noProgressGeneratorNames.includes(task?.generator.generatorName)
     ) {
-      timerId = setInterval(() => increaseFakeProgress(3, timerId), 1000)
+      timerId = setInterval(() => increaseFakeProgress(5, timerId), 1000)
     }
 
     return () => {
@@ -138,17 +138,28 @@ const ResultPreview = ({ task }: { task: Task }) => {
 
   return (
     <div className="result-preview relative w-full flex flex-col rounded-lg border border-0 border-solid">
-      <Card className={`w-full h-fit flex justify-center items-center`}>
+      <Card
+        className={`w-full h-fit flex justify-center items-center  dark:!bg-gray-900`}
+      >
         <>
           {!creationUri ? (
             <div className="w-full">
               <div>
-                <div className="mb-4">
+                <div>
+                  <div className="flex items-center">
+                    <strong className=" text-sm dark:text-gray-200 mr-1">
+                      /{task?.generator.generatorName}
+                    </strong>
+                    <div
+                      className="text-gray-700 dark:text-gray-400 text-xs"
+                      title={timeAgo(task.createdAt)}
+                    >
+                      <span className="mx-1">•</span>
+                      {timeAgo(task.createdAt)}
+                    </div>
+                  </div>
                   <div title={task?.config.text_input || ''}>
                     <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
-                      <strong className="dark:text-gray-200 mr-1">
-                        /{task?.generator.generatorName}
-                      </strong>
                       {task?.config.text_input || ''}
                     </span>
                   </div>
@@ -175,11 +186,11 @@ const ResultPreview = ({ task }: { task: Task }) => {
                     <div className="capitalize mb-2">
                       <strong>{task.status}</strong>
                     </div>
-                    <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
-                      {timeAgo(task.createdAt)}
-                    </div>
                   </div>
                   <div>
+                    <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
+                      Cost: <strong>{task?.cost}</strong> Manna
+                    </div>
                     <div
                       className="flex items-center gap-2 cursor-copy mb-2"
                       onClick={() => handleCopyClick(task.taskId)}
@@ -191,9 +202,6 @@ const ResultPreview = ({ task }: { task: Task }) => {
                         {truncatedAddress(task.taskId)}
                       </div>
                       {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
-                    </div>
-                    <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
-                      Cost: <strong>{task?.cost}</strong> Manna
                     </div>
                   </div>
                 </div>
