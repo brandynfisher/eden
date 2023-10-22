@@ -146,16 +146,21 @@ const ResultPreview = ({ task }: { task: Task }) => {
             <div className="w-full">
               <div>
                 <div>
-                  <div className="flex items-center">
-                    <strong className=" text-sm dark:text-gray-200 mr-1">
-                      /{task?.generator.generatorName}
-                    </strong>
-                    <div
-                      className="text-gray-700 dark:text-gray-400 text-xs"
-                      title={timeAgo(task.createdAt)}
-                    >
-                      <span className="mx-1">•</span>
-                      {timeAgo(task.createdAt)}
+                  <div className="flex items-center justify-between flex-wrap">
+                    <div className="flex items-center">
+                      <strong className=" text-sm dark:text-gray-200">
+                        /{task?.generator.generatorName}
+                      </strong>
+                      <div
+                        className="text-gray-700 dark:text-gray-400 text-xs"
+                        title={timeAgo(task.createdAt)}
+                      >
+                        <span className="mx-1">•</span>
+                        {timeAgo(task.createdAt)}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-800 dark:text-gray-400">
+                      <strong>{task?.cost}</strong> Manna
                     </div>
                   </div>
                   <div title={task?.config.text_input || ''}>
@@ -183,16 +188,13 @@ const ResultPreview = ({ task }: { task: Task }) => {
               {task && (
                 <div className="flex justify-between text-xs">
                   <div>
-                    <div className="capitalize mb-2">
+                    <div className="capitalize text-gray-800 dark:text-gray-400">
                       <strong>{task.status}</strong>
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-800 dark:text-gray-400 mb-2">
-                      Cost: <strong>{task?.cost}</strong> Manna
-                    </div>
                     <div
-                      className="flex items-center gap-2 cursor-copy mb-2"
+                      className="flex items-center gap-2 cursor-copy"
                       onClick={() => handleCopyClick(task.taskId)}
                     >
                       <div
@@ -208,7 +210,10 @@ const ResultPreview = ({ task }: { task: Task }) => {
               )}
             </div>
           ) : (
-            <ResultPreviewDisplay creationId={creationId} />
+            <ResultPreviewDisplay
+              creationId={creationId}
+              taskCost={task?.cost}
+            />
           )}
         </>
       </Card>
