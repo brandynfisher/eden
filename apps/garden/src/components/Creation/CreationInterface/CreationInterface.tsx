@@ -122,7 +122,7 @@ const CreationInterface = ({
               ))}
           </Select>
           <div
-            className="lg:sticky lg:!max-h-screen lg:overflow-auto"
+            className="lg:sticky lg:max-h-screen lg:overflow-auto"
             ref={ref}
             style={
               width > 1024
