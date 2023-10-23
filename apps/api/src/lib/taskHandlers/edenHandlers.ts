@@ -145,36 +145,6 @@ const handleUpdate = async (
           creationData.push(creationDocument)
         }),
       )
-      // for (let i = 0; i < finalOutput.files.length; i++) {
-      //   const creationId = new ObjectId()
-      //   const creationDocument: CreationInput = {
-      //     _id: creationId,
-      //     user: task.user._id,
-      //     task: task._id,
-      //     uri: finalOutput.files[i],
-      //     thumbnail: finalOutput.thumbnails[i],
-      //     name: finalOutput.name,
-      //     attributes: finalOutput.attributes,
-      //     isPrivate: task.config.isPrivate || false,
-      //   }
-      //
-      //   if (finalOutput.files[i]) {
-      //     const { uri, mediaAttributes } = await server.uploadUrlAsset(
-      //       server,
-      //       finalOutput.files[i],
-      //     )
-      //     creationDocument.uri = uri
-      //     creationDocument.mediaAttributes = mediaAttributes
-      //   }
-      //   if (finalOutput.thumbnails[i]) {
-      //     creationDocument.thumbnail = await server.uploadThumbnailAsset(
-      //       server,
-      //       finalOutput.thumbnails[i],
-      //     )
-      //   }
-      //
-      //   creationData.push(creationDocument)
-      // }
 
       await Promise.allSettled(
         creationData.map(async (creationInput, index) => {
@@ -186,8 +156,6 @@ const handleUpdate = async (
             ...creationInput,
             samples: otherCreationIds,
           })
-
-          console.log(creation)
         }),
       )
 
@@ -201,15 +169,15 @@ const handleUpdate = async (
       }
 
       // n_samples: add samples field with other creationIds
-      // if (
-      //   creationData.length > 1 &&
-      //   task.config.n_samples &&
-      //   task.config.n_samples > 1
-      // ) {
-      Object.assign(taskUpdate, {
-        samples: creationData.map(item => item._id),
-      })
-      // }
+      if (
+        creationData.length > 1 &&
+        task.config.n_samples &&
+        task.config.n_samples > 1
+      ) {
+        Object.assign(taskUpdate, {
+          samples: creationData.map(item => item._id),
+        })
+      }
 
       // update task -
       Object.assign(taskUpdate, {
