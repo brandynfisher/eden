@@ -526,9 +526,3 @@ body {
 .ant-card .ant-card-body {
     padding: 16px !important;
 }
-
-.grid-n_samples {
-    grid-template-columns: repeat(auto-fill, minmax(calc(50% - 8px), 100%));
-    grid-row-gap: 8px;
-    grid-column-gap: 8px;
-}

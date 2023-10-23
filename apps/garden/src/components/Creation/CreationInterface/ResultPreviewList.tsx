@@ -234,15 +234,18 @@ const ResultPreview = ({ task }: { task: Task }) => {
                 </span>
               </div>
 
-              {}
-              <div className="grid grid-n_samples">
+              {task.samples && task.samples.length ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <ResultPreviewDisplay creationId={creationId} />
+                  {task.samples && task.samples.length
+                    ? task.samples.map(id => (
+                        <ResultPreviewDisplay key={id} creationId={id} />
+                      ))
+                    : null}
+                </div>
+              ) : (
                 <ResultPreviewDisplay creationId={creationId} />
-                {task.samples && task.samples.length
-                  ? task.samples.map(id => (
-                      <ResultPreviewDisplay key={id} creationId={id} />
-                    ))
-                  : null}
-              </div>
+              )}
             </div>
           )}
         </>
