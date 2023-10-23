@@ -174,9 +174,7 @@ const handleUpdate = async (
         task.config.n_samples > 1
       ) {
         Object.assign(taskUpdate, {
-          samples: creationData
-            .filter(item => item._id === creationData[0]._id)
-            .map(item => item._id),
+          samples: creationData.map(item => item._id),
         })
       }
 
