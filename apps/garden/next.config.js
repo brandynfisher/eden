@@ -8,12 +8,14 @@ const defaultImageDomains = [
   'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
   'https://edenartlab-prod-data.s3.us-east-1.amazonaws.com',
   'https://edenartlab-stg-data.s3.us-east-1.amazonaws.com',
+  'https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/',
   'files.stripe.com',
   'img.clerk.com',
   'eden-creations-stg.s3.us-east-1.amazonaws.com',
   'eden-creations-prod.s3.us-east-1.amazonaws.com',
   'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
-  'edenartlab-stg-data.s3.us-east-1.amazonaws.com'
+  'edenartlab-stg-data.s3.us-east-1.amazonaws.com',
+  'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
 ]
 
 const devImageDomains = ['localhost']
