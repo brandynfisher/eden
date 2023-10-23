@@ -112,8 +112,8 @@ const handleUpdate = async (
     const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
-      const creationId = new ObjectId()
       for (let i = 0; i < finalOutput.files.length; i++) {
+        const creationId = new ObjectId()
         const creationDocument: CreationInput = {
           _id: creationId,
           user: task.user._id,
