@@ -52,11 +52,36 @@ export const getCollection = async (
   })
 }
 
+const collectionsAggregate = (userId: string, creationId: string) => {
+  return Collection.aggregate([
+    {
+      $match: {
+        user: new ObjectId(userId),
+      },
+    },
+    {
+      $addFields: {
+        creationCount: {
+          $size: '$creations',
+        },
+        hasItem: {
+          $in: [new ObjectId(creationId), '$creations'],
+        },
+      },
+    },
+    {
+      $sort: {
+        creationCount: -1,
+      },
+    },
+  ])
+}
+
 export const listCollections = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, limit, page, sort } =
+  const { userId, limit, page, sort, creationId } =
     request.query as CollectionsListArguments
 
   const creatorsRepository = new CreatorRepository(User)
@@ -64,19 +89,36 @@ export const listCollections = async (
     userId,
   })
 
+  const creatorId = creators.docs[0]._id
+  const sortFilter: { [key: string]: unknown } = {}
+  const ownUserId = request.user ? request.user.userId : undefined
+  const isUserRequestingOwnProfileFeed =
+    creatorId && ownUserId && ownUserId.toString() === creatorId
+  if (!isUserRequestingOwnProfileFeed) {
+    sortFilter['isPrivate'] = { $ne: true }
+  }
+
   const collectionRepository = new CollectionRepository(Collection)
-  const collections = await collectionRepository.query(
-    {
-      user: creators.docs
-        ? creators.docs.map(creator => creator._id)
-        : undefined,
-    },
-    {
-      limit,
-      page,
-      sort,
-    },
-  )
+  const collections =
+    userId && creationId
+      ? await collectionRepository.aggregateQuery(
+          collectionsAggregate(creatorId, creationId as string),
+          {
+            limit,
+            page,
+            sort,
+          },
+        )
+      : await collectionRepository.query(
+          {
+            user: creatorId,
+          },
+          {
+            limit,
+            page,
+            sort,
+          },
+        )
 
   return reply.status(200).send(collections)
 }

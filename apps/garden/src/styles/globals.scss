@@ -68,12 +68,23 @@ body {
     max-height: 72vh !important;
 }
 
+.modal-small {
+
+}
+
 @media (min-width: 768px) {
     .media-display .ant-image-img {
         max-height: 65vh !important;
     }
     .ant-modal-content {
-        padding: 20px 24px !important;
+        padding: 16px 24px !important;
+    }
+
+    .ant-modal {
+        .ant-modal-close {
+            top: 4px;
+            right: 5px;
+        }
     }
 }
 
@@ -238,7 +249,12 @@ body {
     min-width: 100px
 }
 .ant-dropdown-menu-item-only-child {
-    min-width: 120px
+    min-width: 120px;
+    padding: 0 !important;
+
+    > div {
+        padding: 8px;
+    }
 }
 
 .ant-message {

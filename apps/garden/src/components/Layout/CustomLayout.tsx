@@ -84,7 +84,10 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
       <Layout hasSider={false} className="min-h-screen flex flex-col">
         <BannerManager />
         <LayoutHeader />
-        <Layout hasSider={false} className="p-4 bg-white dark:bg-gray-950">
+        <Layout
+          hasSider={false}
+          className="p-4 !pb-0 bg-white dark:bg-gray-950"
+        >
           {children}
         </Layout>
         <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center z-50">

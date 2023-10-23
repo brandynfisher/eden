@@ -7,6 +7,7 @@ import { CONFIG } from '@/lib/config'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
+import { useViewportSize } from '@mantine/hooks'
 import { Select } from 'antd'
 import React, {
   useCallback,
@@ -24,6 +25,28 @@ const hiddenCreationGenerators = [
   'interrogate',
   'monologue',
 ]
+
+const usePosition = () => {
+  const ref = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!ref?.current) return
+      const { top, left } = ref.current.getBoundingClientRect()
+      setPosition({ top, left })
+    }
+
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  return { ref, position }
+}
 
 const CreationInterface = ({
   generatorName,
@@ -63,6 +86,9 @@ const CreationInterface = ({
     setActiveGenerator(generators?.[0])
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
+  const { ref, position } = usePosition()
+  const { width } = useViewportSize()
+
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />
   }
@@ -71,7 +97,7 @@ const CreationInterface = ({
     <div className="w-full">
       <h2 className="mb-4">Create</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
-        <div className="lg:sticky lg:top-4 flex flex-col lg:max-h-screen pb-4">
+        <div className="lg:sticky lg:top-4 flex flex-col lg:max-h-screen">
           {presetCreation && <CreationPresetInfo creation={presetCreation} />}
           <label htmlFor="activeGenerator">Selected Generator:</label>
           <Select
@@ -95,7 +121,17 @@ const CreationInterface = ({
                 </Select.Option>
               ))}
           </Select>
-          <div className="lg:sticky lg:max-h-screen lg:overflow-auto">
+          <div
+            className="lg:sticky lg:max-h-screen lg:overflow-auto"
+            ref={ref}
+            style={
+              width > 1024
+                ? {
+                    maxHeight: `calc(100vh - ${position ? position.top : 0}px)`,
+                  }
+                : {}
+            }
+          >
             {activeGenerator && (
               <GeneratorForm
                 generator={activeGenerator}

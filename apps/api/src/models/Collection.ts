@@ -1,12 +1,14 @@
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
 
 import { enforceUserDocumentLimit } from '../lib/data'
+import { VisibilitySchema } from '../types/baseSchemas'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 
-export interface CollectionSchema {
+export interface CollectionSchema extends VisibilitySchema {
   user: UserDocument
   name: string
   description?: string
@@ -55,6 +57,10 @@ const collection = new Schema<CollectionDocument>(
       type: String,
       maxLength: 1000,
     },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -68,5 +74,6 @@ collection.pre<CollectionDocument>('update', function (next) {
 })
 
 collection.plugin(paginate)
+collection.plugin(aggregatePaginate)
 
 export const Collection = model<CollectionDocument>('collections', collection)

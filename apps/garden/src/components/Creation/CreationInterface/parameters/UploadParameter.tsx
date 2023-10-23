@@ -143,6 +143,7 @@ const UploadParameter = (props: {
       showUploadSuccessMessage(info.file.name)
     }
     if (info.file.status === 'removed') {
+      if (!info.file.response) return
       const removedUrl = info.file.response.fileUrl
       const newUrls = urls.filter(url => url !== removedUrl)
       props.form.setFieldsValue({

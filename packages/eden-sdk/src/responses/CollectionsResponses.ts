@@ -43,4 +43,5 @@ export type Collection = {
   creatorId?: string
   creatorName?: string
   creatorImage?: string
+  hasItem?: boolean
 }
