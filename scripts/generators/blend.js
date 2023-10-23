@@ -31,9 +31,9 @@ const params = [
   
   {
     name: 'interpolation_init_images_min_strength',
-    label: 'Init image min strength',
+    label: 'Init image strength',
     description:
-      'Min strength of the init_img during blending. Lower values will give the blend more freedom to diverge from the source images, higher values will try to keep color patterns and composition',
+      'Strength of the init_img during blending. Low values (recommended) will give the blend more freedom, higher values will look more like alpha-blending of the original images. Recommended values are 0.0 - 0.1',
     default: 0.05,
     minimum: 0.0,
     maximum: 1.0,
