@@ -26,9 +26,11 @@ export interface CreationSchema extends VisibilitySchema {
   }
   createdAt?: Date
   updatedAt?: Date
+  samples?: CreationDocument[]
 }
 
 export interface CreationInput {
+  _id?: ObjectId
   user: ObjectId
   task: ObjectId
   delegate?: ObjectId
@@ -43,6 +45,8 @@ export interface CreationInput {
     height?: number
     aspectRatio?: number
   }
+  isPrivate?: boolean
+  samples?: ObjectId[]
 }
 
 export interface CreationDocument extends SoftDeleteDocument, CreationSchema {}
@@ -115,6 +119,16 @@ const creation = new Schema<CreationDocument>(
       score: {
         type: Number,
       },
+    },
+    samples: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'creations',
+          required: true,
+        },
+      ],
+      required: false,
     },
     deleted: {
       type: Boolean,

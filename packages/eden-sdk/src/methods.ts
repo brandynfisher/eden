@@ -525,6 +525,7 @@ export interface CreationsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+  taskId?: string
 }
 
 export interface CreationsGetArguments extends WebAPICallOptions {
