@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 import { Concept } from '../../models/Concept'
 import { Creation, CreationInput } from '../../models/Creation'
@@ -111,8 +112,10 @@ const handleUpdate = async (
     const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
+      const creationId = new ObjectId()
       for (let i = 0; i < finalOutput.files.length; i++) {
         const creationDocument: CreationInput = {
+          _id: creationId,
           user: task.user._id,
           task: task._id,
           uri: finalOutput.files[i],
@@ -145,10 +148,12 @@ const handleUpdate = async (
           const otherCreationIds = creationData
             .filter(dataItem => dataItem._id !== creationInput._id)
             .map(item => item._id)
+
           const creation = await Creation.create({
             ...creationInput,
             samples: otherCreationIds,
           })
+
           console.log(creation)
         }),
       )
