@@ -28,6 +28,7 @@ export interface TaskSchema {
   error?: string
   progress?: number
   output?: any
+  samples?: CreationDocument[]
   intermediateOutputs?: any[]
   createdAt?: Date
   updatedAt?: Date
@@ -100,6 +101,16 @@ const task = new Schema<TaskDocument>(
     output: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    samples: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'creations',
+          required: true,
+        },
+      ],
+      required: false,
     },
     intermediateOutputs: {
       type: [Schema.Types.Mixed],
