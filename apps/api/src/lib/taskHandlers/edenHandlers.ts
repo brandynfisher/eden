@@ -113,7 +113,7 @@ const handleUpdate = async (
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
 
-      await Promise.all(
+      await Promise.allSettled(
         finalOutput.files.map(async (files, index) => {
           const creationId = new ObjectId()
           const creationDocument: CreationInput = {
@@ -201,15 +201,15 @@ const handleUpdate = async (
       }
 
       // n_samples: add samples field with other creationIds
-      if (
-        creationData.length > 1 &&
-        task.config.n_samples &&
-        task.config.n_samples > 1
-      ) {
-        Object.assign(taskUpdate, {
-          samples: creationData.map(item => item._id),
-        })
-      }
+      // if (
+      //   creationData.length > 1 &&
+      //   task.config.n_samples &&
+      //   task.config.n_samples > 1
+      // ) {
+      Object.assign(taskUpdate, {
+        samples: creationData.map(item => item._id),
+      })
+      // }
 
       // update task -
       Object.assign(taskUpdate, {
