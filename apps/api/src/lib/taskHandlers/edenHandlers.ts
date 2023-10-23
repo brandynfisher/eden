@@ -112,36 +112,69 @@ const handleUpdate = async (
     const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
-      for (let i = 0; i < finalOutput.files.length; i++) {
-        const creationId = new ObjectId()
-        const creationDocument: CreationInput = {
-          _id: creationId,
-          user: task.user._id,
-          task: task._id,
-          uri: finalOutput.files[i],
-          thumbnail: finalOutput.thumbnails[i],
-          name: finalOutput.name,
-          attributes: finalOutput.attributes,
-          isPrivate: task.config.isPrivate || false,
-        }
 
-        if (finalOutput.files[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
-            server,
-            finalOutput.files[i],
-          )
-          creationDocument.uri = uri
-          creationDocument.mediaAttributes = mediaAttributes
-        }
-        if (finalOutput.thumbnails[i]) {
-          creationDocument.thumbnail = await server.uploadThumbnailAsset(
-            server,
-            finalOutput.thumbnails[i],
-          )
-        }
+      await Promise.all(
+        finalOutput.files.map(async (files, index) => {
+          const creationId = new ObjectId()
+          const creationDocument: CreationInput = {
+            _id: creationId,
+            user: task.user._id,
+            task: task._id,
+            uri: finalOutput.files[index],
+            thumbnail: finalOutput.thumbnails[index],
+            name: finalOutput.name,
+            attributes: finalOutput.attributes,
+            isPrivate: task.config.isPrivate || false,
+          }
 
-        creationData.push(creationDocument)
-      }
+          if (finalOutput.files[index]) {
+            const { uri, mediaAttributes } = await server.uploadUrlAsset(
+              server,
+              finalOutput.files[index],
+            )
+            creationDocument.uri = uri
+            creationDocument.mediaAttributes = mediaAttributes
+          }
+          if (finalOutput.thumbnails[index]) {
+            creationDocument.thumbnail = await server.uploadThumbnailAsset(
+              server,
+              finalOutput.thumbnails[index],
+            )
+          }
+
+          creationData.push(creationDocument)
+        }),
+      )
+      // for (let i = 0; i < finalOutput.files.length; i++) {
+      //   const creationId = new ObjectId()
+      //   const creationDocument: CreationInput = {
+      //     _id: creationId,
+      //     user: task.user._id,
+      //     task: task._id,
+      //     uri: finalOutput.files[i],
+      //     thumbnail: finalOutput.thumbnails[i],
+      //     name: finalOutput.name,
+      //     attributes: finalOutput.attributes,
+      //     isPrivate: task.config.isPrivate || false,
+      //   }
+      //
+      //   if (finalOutput.files[i]) {
+      //     const { uri, mediaAttributes } = await server.uploadUrlAsset(
+      //       server,
+      //       finalOutput.files[i],
+      //     )
+      //     creationDocument.uri = uri
+      //     creationDocument.mediaAttributes = mediaAttributes
+      //   }
+      //   if (finalOutput.thumbnails[i]) {
+      //     creationDocument.thumbnail = await server.uploadThumbnailAsset(
+      //       server,
+      //       finalOutput.thumbnails[i],
+      //     )
+      //   }
+      //
+      //   creationData.push(creationDocument)
+      // }
 
       await Promise.allSettled(
         creationData.map(async (creationInput, index) => {
