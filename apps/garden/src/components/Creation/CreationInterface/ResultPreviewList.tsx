@@ -210,10 +210,40 @@ const ResultPreview = ({ task }: { task: Task }) => {
               )}
             </div>
           ) : (
-            <ResultPreviewDisplay
-              creationId={creationId}
-              taskCost={task?.cost}
-            />
+            <div>
+              <div className="flex items-center justify-between flex-wrap mb-2">
+                <div className="flex items-center">
+                  <strong className=" text-sm dark:text-gray-200">
+                    /{task?.generator.generatorName}
+                  </strong>
+                  <div
+                    className="text-gray-700 dark:text-gray-400 text-xs"
+                    title={timeAgo(task.createdAt)}
+                  >
+                    <span className="mx-1">•</span>
+                    {timeAgo(task.createdAt)}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-800 dark:text-gray-400">
+                  <strong>{task.cost}</strong> Manna
+                </div>
+              </div>
+              <div title={task?.config.text_input || ''} className="mb-2">
+                <span className="relative first-letter:uppercase text-xs select-text cursor-text text-ellipsis dark:text-gray-400 break-words line-clamp-2">
+                  {task?.config.text_input || ''}
+                </span>
+              </div>
+
+              {}
+              <div className="grid grid-n_samples">
+                <ResultPreviewDisplay creationId={creationId} />
+                {task.samples && task.samples.length
+                  ? task.samples.map(id => (
+                      <ResultPreviewDisplay key={id} creationId={id} />
+                    ))
+                  : null}
+              </div>
+            </div>
           )}
         </>
       </Card>

@@ -37,6 +37,7 @@ export type Task = {
   output?: any
   intermediate_outputs?: any[]
   creation?: any
+  samples?: any[]
   concept?: string
   createdAt: string
   updatedAt: string
