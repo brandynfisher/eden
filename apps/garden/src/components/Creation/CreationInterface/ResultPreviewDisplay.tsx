@@ -25,21 +25,16 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
         </div>
       ) : null}
       {creation ? (
-        <div>
-          <div
-            onClick={openDetailModal}
-            className="flex flex-col gap-2 cursor-pointer h-full w-full"
-          >
-            <MediaDisplay
-              creationUri={creation.uri}
-              previewUri={creation.uri}
-              thumbnailUri={creation.thumbnail}
-              aspectRatio={getAspectRatio(
-                creation.mediaAttributes.width,
-                creation.mediaAttributes.height,
-              )}
-            />
-          </div>
+        <div onClick={openDetailModal} className="cursor-pointer h-full w-full">
+          <MediaDisplay
+            creationUri={creation.uri}
+            previewUri={creation.uri}
+            thumbnailUri={creation.thumbnail}
+            aspectRatio={getAspectRatio(
+              creation.mediaAttributes.width,
+              creation.mediaAttributes.height,
+            )}
+          />
         </div>
       ) : (
         <>{isLoading ? <LoadingIndicator /> : null}</>
