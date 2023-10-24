@@ -34,6 +34,7 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
               creation.mediaAttributes.width,
               creation.mediaAttributes.height,
             )}
+            priority={false}
           />
         </div>
       ) : (

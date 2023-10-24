@@ -78,6 +78,7 @@ const ImageResultZoomable = ({
             priority={priority}
             width="0"
             height="0"
+            loading={priority ? 'eager' : 'lazy'}
             className="w-full h-full object-contain absolute z-10 inset-0"
             style={{ objectFit: 'contain', objectPosition: 'top center' }}
           />
