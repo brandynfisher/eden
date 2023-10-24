@@ -1,34 +1,18 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+import ResultPreview from '@/components/Creation/CreationInterface/ResultPreviewList'
 import FormLabel from '@/components/Forms/FormLabel'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { ExperimentOutlined } from '@ant-design/icons'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
-import { useViewportSize } from '@mantine/hooks'
-import { debounce } from '@mui/material'
+import { debounce } from '@mui/material/utils'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import React, {
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-
-const CreateMenu = dynamic(
-  () => import('@/components/Layout/navigation/CreateMenu'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
+import React, { useContext, useMemo, useRef, useState } from 'react'
 
 const MonologueScenarioPageContent = ({
   characters,
@@ -38,14 +22,10 @@ const MonologueScenarioPageContent = ({
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { message } = App.useApp()
   const [form] = Form.useForm()
-  const {
-    taskIds,
-    setTaskIds,
-    setActiveTaskId,
-    setHasChangedGenerator,
-    refetchPendingTasks,
-  } = useContext(CreationNotificationContext)
-  const { refetch, mannaBalance } = useContext(UserContext)
+  const { refetchTasks, setActiveTaskId, setHasChangedGenerator } = useContext(
+    CreationNotificationContext,
+  )
+  const { mannaBalance, refetchMe, user } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -57,31 +37,12 @@ const MonologueScenarioPageContent = ({
     activeCharacter && activeCharacter.name,
   )
 
-  const { width } = useViewportSize()
-
   const handleActiveCharacterChange = (characterName: string) => {
     const character = characters?.find(
       character => character.name === characterName,
     )
     setActiveCharacter(character as Character)
     setActiveCharacterName(character?.name as string)
-  }
-
-  const scrollResultPreviewIntoView = useCallback(() => {
-    if (width > 1024) {
-      return
-    }
-
-    if (resultPreviewRef && resultPreviewRef.current) {
-      resultPreviewRef.current.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      })
-    }
-  }, [resultPreviewRef, width])
-
-  const onSubmitSuccess = () => {
-    scrollResultPreviewIntoView()
   }
 
   const handleSubmit = async () => {
@@ -108,11 +69,9 @@ const MonologueScenarioPageContent = ({
       message.success(`Monologue Task created! (${taskId})`)
 
       setActiveTaskId && setActiveTaskId(taskId)
-      setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
-      refetchPendingTasks && refetchPendingTasks()
-      refetch.mannaBalance()
-      onSubmitSuccess()
+      refetchMe()
+      refetchTasks && refetchTasks()
     } catch (error) {
       handleAxiosError(error, message, 'Error requesting monologue generation')
     } finally {
@@ -134,8 +93,6 @@ const MonologueScenarioPageContent = ({
 
   return (
     <>
-      <CreateMenu />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
           <h2 className="mb-4">Scenario: Monologue</h2>
@@ -182,7 +139,10 @@ const MonologueScenarioPageContent = ({
                       className="flex px-6 items-center justify-between flex-wrap"
                     >
                       <div className="flex gap-3 items-center">
-                        {isLoadingTaskCost === false && !canAffordOperation ? (
+                        {user &&
+                        isLoadingTaskCost === false &&
+                        typeof mannaBalance !== 'undefined' &&
+                        !canAffordOperation ? (
                           <div className="text-orange-500">
                             Insufficient Manna! ({mannaBalance}){' '}
                             <Link href="/manna">Click here to get more</Link>

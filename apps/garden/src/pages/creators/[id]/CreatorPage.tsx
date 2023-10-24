@@ -2,49 +2,29 @@ import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
-  OrderByBookmarks,
   OrderByLatest,
-  OrderByPraises, // OrderByScore,
+  OrderByPopularity, // OrderByScore,
 } from '@/components/Layout/buttons/OrderByButtons'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/MasonryInfinite'
+import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
-import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
-const ProfileHeader = dynamic(
-  () => import('@/components/Profile/ProfileHeader'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
-
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
-  const { isAuthenticated } = useContext(UserContext)
-
-  const sortButtons = isAuthenticated
-    ? [
-        OrderByLatest,
-        // OrderByScore,
-        OrderByPraises,
-        OrderByBookmarks,
-      ]
-    : [OrderByLatest]
-
   return (
     <div className="mt-4">
       <MasonryInfinite
         key={`creations_${creatorId}`}
         type="creations"
         query={{ userId: creatorId }}
-        hasSort={sortButtons}
+        hasSort={[OrderByLatest, OrderByPopularity]}
         ItemComponent={CreationCard}
       />
     </div>
@@ -177,6 +157,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
             isAuthenticatedUser={isAuthenticatedUser}
           />
           <Tabs
+            destroyInactiveTabPane={true}
             activeKey={activeTabKey}
             centered
             items={creatorPageTabs}

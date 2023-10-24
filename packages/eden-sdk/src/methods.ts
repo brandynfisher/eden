@@ -56,6 +56,7 @@ import {
 } from './responses/CreationsResponses'
 import {
   CreatorsFollowResponse,
+  CreatorsGetMeResponse,
   CreatorsGetResponse,
   CreatorsListResponse,
   CreatorsUnfollowResponse,
@@ -242,7 +243,7 @@ export abstract class Methods {
     delete: bindApiCall<CreationsDeleteArguments, CreationsDeleteResponse>(
       this,
       creationsDeleteRequestConfig,
-    )
+    ),
   }
 
   public readonly creators = {
@@ -265,6 +266,10 @@ export abstract class Methods {
     update: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
       this,
       creatorsUpdateRequestConfig,
+    ),
+    me: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
+      this,
+      creatorsGetMeRequestConfig,
     ),
   }
 
@@ -298,7 +303,7 @@ export abstract class Methods {
     delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
       this,
       conceptsDeleteRequestConfig,
-    )
+    ),
   }
 
   public readonly generators = {
@@ -337,7 +342,7 @@ export abstract class Methods {
       this,
       paymentsCreateRequestConfig,
     ),
-    products: bindApiCall<PaymentsProductsArguments, PaymentsProductsResponse>(
+    products: bindApiCall<WebAPICallOptions, PaymentsProductsResponse>(
       this,
       paymentsProductsRequestConfig,
     ),
@@ -450,7 +455,7 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
   voice?: string
   description?: string
   greeting?: string
-  dialogue?: any[],
+  dialogue?: any[]
   isPrivate?: boolean
 }
 
@@ -509,6 +514,7 @@ export interface CollectionsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+  creationId?: string | string[]
 }
 
 export interface CollectionsGetArguments extends WebAPICallOptions {
@@ -545,7 +551,7 @@ export interface CreationsDeleteArguments extends WebAPICallOptions {
 }
 
 export interface CreationsUpdateArguments extends WebAPICallOptions {
-  creationId: string,
+  creationId: string
   isPrivate: boolean
 }
 
@@ -564,7 +570,7 @@ export interface ConceptsDeleteArguments extends WebAPICallOptions {
 }
 
 export interface ConceptsUpdateArguments extends WebAPICallOptions {
-  conceptId: string,
+  conceptId: string
   isPrivate: boolean
 }
 
@@ -623,8 +629,6 @@ export interface PaymentsCreateArguments extends WebAPICallOptions {
   priceId: string
   paymentMode: 'payment' | 'subscription'
 }
-
-export interface PaymentsProductsArguments extends WebAPICallOptions {}
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
   name: string
@@ -1059,6 +1063,13 @@ const creatorsGetRequestConfig = (
   return {
     method: 'GET',
     url: `creators/${args.userId}`,
+  }
+}
+
+const creatorsGetMeRequestConfig = (): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `creators/me`,
   }
 }
 

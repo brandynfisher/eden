@@ -1,9 +1,9 @@
 import BannerManager from '@/components/Banners/BannerManager'
+import FetchIndicator from '@/components/Layout/FetchIndicator'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
 import ProgressBar from '@/components/Layout/ProgressBar'
-import { VerticalAlignTopOutlined } from '@ant-design/icons'
-import { useWindowScroll } from '@mantine/hooks'
-import { Layout, Spin } from 'antd'
+import BackToTopButton from '@/components/Layout/buttons/BackToTopButton'
+import { Layout } from 'antd'
 import { Router } from 'next/router'
 import {
   Dispatch,
@@ -14,20 +14,6 @@ import {
 } from 'react'
 import { Middleware } from 'swr'
 import { BareFetcher, SWRConfig } from 'swr'
-
-const InfiniteLoadingIndicator = ({ isLoading }: { isLoading: boolean }) => {
-  return (
-    <div
-      className={`${
-        isLoading ? 'anim-fade-in' : 'anim-fade-out'
-      } z-10 pointer-events-none bg-opacity-60`}
-    >
-      <div className="text-xs flex bg-gray-200 dark:bg-gray-800 p-2 !bg-opacity-80 rounded-lg">
-        <Spin size="small" />
-      </div>
-    </div>
-  )
-}
 
 type Args = []
 type Data = Promise<unknown[]>
@@ -59,28 +45,11 @@ export const myRequestCounterMiddlewareWrap: (
   }
 }
 
-const BackToTopButton = () => {
-  const [scroll, scrollTo] = useWindowScroll()
-
-  if (scroll.y < 700) {
-    return null
-  }
-
-  return (
-    <div
-      className="dark:bg-gray-700 rounded cursor-pointer !bg-opacity-80"
-      onClick={() => scrollTo({ y: 0 })}
-    >
-      <VerticalAlignTopOutlined className="text-2xl p-1" />
-    </div>
-  )
-}
-
 const progress = new ProgressBar({
   size: 2,
   color: '#38a169',
   className: 'bar-of-progress',
-  delay: 100,
+  delay: 200,
 })
 
 const CustomLayout = ({ children }: PropsWithChildren) => {
@@ -112,12 +81,17 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
     <SWRConfig
       value={{ use: [myRequestCounterMiddlewareWrap(setRequestCount)] }}
     >
-      <Layout className="min-h-screen flex flex-col">
+      <Layout hasSider={false} className="min-h-screen flex flex-col">
         <BannerManager />
         <LayoutHeader />
-        <Layout className="p-4 bg-white dark:bg-gray-950">{children}</Layout>
-        <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center">
-          <InfiniteLoadingIndicator isLoading={showLoading} />
+        <Layout
+          hasSider={false}
+          className="p-4 !pb-0 bg-white dark:bg-gray-950"
+        >
+          {children}
+        </Layout>
+        <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center z-50">
+          <FetchIndicator isLoading={showLoading} />
           <BackToTopButton />
         </div>
       </Layout>

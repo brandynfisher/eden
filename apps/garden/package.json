@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:dummy": "NEXT_PUBLIC_DEV_TYPE=dummy next dev",
-    "dev:eden": "NEXT_PUBLIC_DEV_TYPE=eden next dev",
+    "dev:dummy": "env-cmd -f .env.dummy.local next dev",
+    "dev:eden": "env-cmd -f .env.eden.local next dev",
     "build": "next build --debug",
     "start": "next start",
     "test": "vitest",
@@ -25,7 +25,7 @@
     "@mui/icons-material": "^5.14.3",
     "@mui/material": "^5.14.3",
     "@particle-network/rainbowkit-ext": "^0.13.5",
-    "@rainbow-me/rainbowkit": "^1.0.1",
+    "@rainbow-me/rainbowkit": "^1.1.2",
     "@sentry/nextjs": "^7.68.0",
     "antd": "^5.5.1",
     "autoprefixer": "10.4.14",
@@ -58,9 +58,10 @@
     "tailwindcss": "3.3.2",
     "typescript": "5.0.4",
     "viem": "^0.3.37",
-    "wagmi": "^1.0.8"
+    "wagmi": "^1.4.3"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^13.5.5",
     "@types/formidable": "^2.0.6",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "20.2.5",
@@ -69,7 +70,9 @@
     "@types/react-blockies": "^1.4.1",
     "@types/react-dom": "18.2.4",
     "@types/stripe": "^8.0.417",
+    "critters": "^0.0.20",
     "cssnano": "^6.0.1",
+    "env-cmd": "^10.1.0",
     "next-transpile-modules": "^10.0.0",
     "sass": "^1.64.1"
   }

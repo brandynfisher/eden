@@ -1,13 +1,14 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FormLabel from '@/components/Forms/FormLabel'
+import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { compilePrompt, messageGroupsToDialogueString } from '@/lib/chat'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
-import { RobotOutlined } from '@ant-design/icons'
+import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import { Character } from '@edenlabs/eden-sdk'
-import { App, Button, Form, Input, Select, Switch } from 'antd'
+import { App, Button, Form, Input, Select } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
@@ -452,7 +453,6 @@ function coupledArray<T>(array: T[]): T[][] {
 const CharacterToolButtons = ({ character }: { character: Character }) => {
   const { message } = App.useApp()
   const router = useRouter()
-  const { refetch } = useContext(UserContext)
 
   const handleDeleteCharacter = async () => {
     try {
@@ -461,7 +461,6 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
       })
       message.destroy()
       message.info(`Character '${character.name}' was deleted`)
-      refetch.characters()
       await router.push('/create/characters')
     } catch (error) {
       handleAxiosError(error, message)
@@ -495,7 +494,7 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
 const CharacterForm = ({ character }: { character?: Character }) => {
   const mode = !character ? 'create' : 'update'
   const { message } = App.useApp()
-  const { refetch } = useContext(UserContext)
+  const { user } = useContext(UserContext)
   const router = useRouter()
   const [form] = Form.useForm()
   const [messageGroups, setMessageGroups] = useState<ChatMessageGroup[]>([])
@@ -587,7 +586,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
         })
       }
 
-      refetch.characters()
       message.destroy()
       message.success(`Character '${data.name}' ${mode}d`)
       await router.push(`/characters`)
@@ -775,22 +773,8 @@ const CharacterForm = ({ character }: { character?: Character }) => {
           </div>
         </div>
 
-        <Form.Item
-          name="isPrivate"
-          valuePropName="checked"
-          label={
-            <FormLabel
-              text="Private"
-              description="Should this be hidden from other users?"
-            />
-          }
-          labelCol={{ span: 24 }}
-        >
-          <Switch />
-        </Form.Item>
-
-        <Form.Item>
-          <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex flex-wrap gap-4 justify-between items-center">
+          <Form.Item>
             <Button
               className="font-mono h-10"
               htmlType="submit"
@@ -799,8 +783,14 @@ const CharacterForm = ({ character }: { character?: Character }) => {
               {mode === 'create' ? 'Create' : 'Update'} Character
             </Button>
             {character && <CharacterToolButtons character={character} />}
-          </div>
-        </Form.Item>
+          </Form.Item>
+
+          {user &&
+          user.featureFlags &&
+          user.featureFlags.includes('private') ? (
+            <PrivacyToggle />
+          ) : null}
+        </div>
       </Form>
     </div>
   )

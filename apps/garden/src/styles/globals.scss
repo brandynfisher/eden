@@ -1,5 +1,6 @@
 @use './animations'; //custom animations/keyframes
 @use './chat-ui-overrides'; // overrides for chat ui kit styles
+@use './_loading'; // loading spinner animations
 
 @tailwind base;
 @tailwind components;
@@ -67,12 +68,23 @@ body {
     max-height: 72vh !important;
 }
 
+.modal-small {
+
+}
+
 @media (min-width: 768px) {
     .media-display .ant-image-img {
         max-height: 65vh !important;
     }
     .ant-modal-content {
-        padding: 20px 24px !important;
+        padding: 16px 24px !important;
+    }
+
+    .ant-modal {
+        .ant-modal-close {
+            top: 4px;
+            right: 5px;
+        }
     }
 }
 
@@ -220,24 +232,11 @@ body {
     width: unset !important;
 }
 
-.ant-drawer-header {
-    height: 64px !important;
-    padding: 16px !important;
-}
-.ant-drawer-body {
-    padding: 0 !important;
 
-    .ant-divider {
-        margin: 0 !important;
-    }
-
-    .ant-menu-item {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        width: 100% !important;
-        border-radius: 0 !important;
-    }
+.ant-layout-header {
+    height: auto !important;
 }
+
 
 .ant-dropdown-menu {
     gap: 8px;
@@ -250,7 +249,12 @@ body {
     min-width: 100px
 }
 .ant-dropdown-menu-item-only-child {
-    min-width: 120px
+    min-width: 120px;
+    padding: 0 !important;
+
+    > div {
+        padding: 8px;
+    }
 }
 
 .ant-message {
@@ -466,4 +470,59 @@ body {
 
 .ant-upload-list-item-actions.picture {
     flex-shrink: 0;
+}
+
+//adjust ant inline menu styles to waste less space
+.ant-menu-inline {
+    .ant-menu-item-selected {
+        padding-left: 16px !important;
+    }
+
+    &>.ant-menu-item, .ant-menu-submenu.ant-menu-submenu-inline .ant-menu-submenu-title {
+        margin-inline: 5px;
+        margin-block: 4px;
+        width: calc(100% - 10px);
+    }
+
+    >.ant-menu-submenu>.ant-menu-submenu-title,
+    >.ant-menu-item {
+        padding-left: 16px !important;
+    }
+
+    > .ant-menu-submenu-title {
+        padding-left: 32px !important;
+    }
+
+    .ant-menu.ant-menu-sub.ant-menu-inline {
+        .ant-menu-item {
+            padding-left: 32px !important;
+        }
+    }
+}
+.light {
+    .ant-layout {
+        background-color: #ffffff !important;
+    }
+}
+
+.dark {
+    .ant-menu.ant-menu-sub.ant-menu-inline {
+        border-right: 1px solid #101827;
+    }
+
+    .ant-layout {
+        background-color: #030712 !important;
+    }
+}
+
+
+.ant-layout-sider-children {
+    height: 100% !important;
+}
+
+.ant-timeline-item-head {
+    background-color: transparent !important;
+}
+.ant-card .ant-card-body {
+    padding: 16px !important;
 }

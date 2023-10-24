@@ -1,9 +1,8 @@
-import {
-  FullscreenOutlined,
-  ZoomInOutlined,
-  ZoomOutOutlined,
-} from '@ant-design/icons'
+import FullscreenOutlined from '@ant-design/icons/FullscreenOutlined'
+import ZoomInOutlined from '@ant-design/icons/ZoomInOutlined'
+import ZoomOutOutlined from '@ant-design/icons/ZoomOutOutlined'
 import { Button } from 'antd'
+import Image from 'next/image'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
@@ -93,19 +92,23 @@ const ImageZoomPan = ({
                 Close (ESC)
               </Button>
             </div>
-            <TransformComponent wrapperClass="!w-full !h-full">
+            <TransformComponent wrapperClass="!w-full !h-full justify-center items-center">
               <div
                 ref={contentRef}
                 tabIndex={0}
                 onKeyDown={ev => onEscHandler(ev)}
-                className="outline-0"
+                className="outline-0 relative"
               >
-                <img
+                <Image
+                  key={imageUrl}
                   src={imageUrl}
                   alt={imageUrl}
-                  onLoad={() => {
-                    centerView(fitContentToWrapper())
-                  }}
+                  sizes={'100vw'}
+                  onLoadingComplete={() => centerView(fitContentToWrapper())}
+                  width="0"
+                  height="0"
+                  className="w-full h-full text-center"
+                  style={{ objectPosition: 'center center' }}
                 />
               </div>
             </TransformComponent>

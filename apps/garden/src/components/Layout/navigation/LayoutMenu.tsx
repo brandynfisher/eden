@@ -1,11 +1,7 @@
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
-import {
-  CommentOutlined,
-  ExperimentOutlined,
-  GithubOutlined,
-  RobotOutlined,
-  TwitterOutlined,
-} from '@ant-design/icons'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
+import GithubOutlined from '@ant-design/icons/GithubOutlined'
+import TwitterOutlined from '@ant-design/icons/TwitterOutlined'
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -30,8 +26,6 @@ function getItem(
 
 const defaultItems: MenuItem[] = [
   getItem('Create', '/create/creations', <ExperimentOutlined />),
-  getItem('Characters', '/characters', <RobotOutlined />),
-  getItem('Scenarios', '/scenarios', <CommentOutlined />),
 ]
 
 const LayoutMenu = ({ inDrawer }: { inDrawer?: boolean }) => {

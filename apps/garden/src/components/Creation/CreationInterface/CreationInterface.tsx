@@ -1,9 +1,10 @@
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+import ResultPreviewList from '@/components/Creation/CreationInterface/ResultPreviewList'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
+import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
@@ -25,6 +26,28 @@ const hiddenCreationGenerators = [
   'monologue',
 ]
 
+const usePosition = () => {
+  const ref = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!ref?.current) return
+      const { top, left } = ref.current.getBoundingClientRect()
+      setPosition({ top, left })
+    }
+
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  return { ref, position }
+}
+
 const CreationInterface = ({
   generatorName,
   presetCreation,
@@ -34,7 +57,7 @@ const CreationInterface = ({
 }) => {
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
-  const { width } = useViewportSize()
+  const { pendingTasks } = useContext(CreationNotificationContext)
   const [activeGenerator, setActiveGenerator] = useState(
     generators?.[0] || undefined,
   )
@@ -63,18 +86,8 @@ const CreationInterface = ({
     setActiveGenerator(generators?.[0])
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
-  const scrollResultPreviewIntoView = useCallback(() => {
-    if (width > 1024) {
-      return
-    }
-
-    if (resultPreviewRef && resultPreviewRef.current) {
-      resultPreviewRef.current.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      })
-    }
-  }, [resultPreviewRef, width])
+  const { ref, position } = usePosition()
+  const { width } = useViewportSize()
 
   if (!generators || !activeGenerator) {
     return <LoadingIndicator />
@@ -83,8 +96,8 @@ const CreationInterface = ({
   return (
     <div className="w-full">
       <h2 className="mb-4">Create</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="flex flex-col">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
+        <div className="lg:sticky lg:top-4 flex flex-col lg:max-h-screen">
           {presetCreation && <CreationPresetInfo creation={presetCreation} />}
           <label htmlFor="activeGenerator">Selected Generator:</label>
           <Select
@@ -108,15 +121,41 @@ const CreationInterface = ({
                 </Select.Option>
               ))}
           </Select>
-          {activeGenerator && (
-            <GeneratorForm
-              generator={activeGenerator}
-              presetCreation={presetCreation}
-              onSubmitSuccess={scrollResultPreviewIntoView}
-            />
-          )}
+          <div
+            className="lg:sticky lg:max-h-screen lg:overflow-auto"
+            ref={ref}
+            style={
+              width > 1024
+                ? {
+                    maxHeight: `calc(100vh - ${position ? position.top : 0}px)`,
+                  }
+                : {}
+            }
+          >
+            {activeGenerator && (
+              <GeneratorForm
+                generator={activeGenerator}
+                presetCreation={presetCreation}
+              />
+            )}
+            {pendingTasks?.length ? (
+              <div className="flex items-center justify-between text-xs text-gray-400 mb-4 gap-2">
+                <div>
+                  You can continue using the app, run multiple tasks or close
+                  this tab.
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="relative flex items-center justify-center">
+                    <span className="absolute">{pendingTasks?.length}</span>
+                    <span className="loading loading-ring loading-lg"></span>
+                  </div>
+                  Tasks queued
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
-        <ResultPreview innerRef={resultPreviewRef} />
+        <ResultPreviewList innerRef={resultPreviewRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}

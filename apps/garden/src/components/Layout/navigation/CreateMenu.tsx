@@ -1,11 +1,13 @@
-import { CommentOutlined, RobotOutlined } from '@ant-design/icons'
-import { DownOutlined } from '@ant-design/icons'
+import { UserContext } from '@/providers/UserProvider'
+import CommentOutlined from '@ant-design/icons/CommentOutlined'
+import DownOutlined from '@ant-design/icons/DownOutlined'
+import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import YardIcon from '@mui/icons-material/Yard'
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React from 'react'
+import React, { useContext } from 'react'
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -31,13 +33,29 @@ const defaultItems: MenuItem[] = [
     '/create/concepts',
     <ModelTrainingIcon fontSize="small" />,
   ),
+]
+
+const createMenuItems = (userFlags: string[]) => {
+  const isPreviewUser = userFlags.includes('preview')
+  const items = [...defaultItems]
+  if (isPreviewUser) {
+    items.push(...featurePreviewItems)
+  }
+  return items
+}
+
+const featurePreviewItems: MenuItem[] = [
   getItem('Characters', '/create/characters', <RobotOutlined />),
   getItem('Scenarios', '/create/scenarios', <CommentOutlined />),
 ]
 
 const CreateMenu = () => {
   const router = useRouter()
-  const menuItems = defaultItems
+  const { user } = useContext(UserContext)
+
+  const menuItems = createMenuItems(
+    user && user.featureFlags ? user.featureFlags : [],
+  )
 
   return (
     <div>

@@ -1,5 +1,6 @@
 import ImageResultZoomable from '@/components/Creation/CreationInterface/media/ImageResultZoomable'
-import { useState } from 'react'
+
+// import { useState } from 'react'
 
 const VideoResultV2 = ({
   resultUrl,
@@ -14,7 +15,7 @@ const VideoResultV2 = ({
   disableControls?: boolean
   onLoad?: () => void
 }) => {
-  const [isLoaded, setIsLoaded] = useState(false)
+  // const [isLoaded, setIsLoaded] = useState(false)
 
   return (
     <>
@@ -25,16 +26,14 @@ const VideoResultV2 = ({
       >
         <video
           src={resultUrl}
-          className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg opacity-40 ${
-            isLoaded ? '!opacity-100' : ''
-          }`}
+          className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg max-h-[90vh]`}
           style={{ objectFit: 'contain', objectPosition: 'top center' }}
           autoPlay={true}
           muted={false}
           loop={true}
           controls={!disableControls}
           onPlay={() => {
-            setIsLoaded(true)
+            // setIsLoaded(true)
             onLoad && onLoad()
           }}
         />

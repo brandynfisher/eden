@@ -1,4 +1,5 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
+import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
@@ -8,13 +9,6 @@ import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const maxCharacters = 5
-
-const CreateMenu = dynamic(
-  () => import('@/components/Layout/navigation/CreateMenu'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const CharacterList = dynamic(
   () => import('@/components/Characters/CharacterList'),
@@ -52,8 +46,6 @@ const CharactersPageContent = ({
 
   return (
     <>
-      <CreateMenu />
-
       <h2 className="mb-4">Characters</h2>
       <CharacterList characters={characters} />
       <div className="flex gap-4 mt-8 flex-wrap justify-between">
@@ -77,8 +69,15 @@ const CharactersPageContent = ({
   )
 }
 
-const CharactersPage = () => {
-  const { characters: charactersData } = useContext(UserContext)
+const CharactersPage = ({ data }: { data: Character[] }) => {
+  const { isAuthenticated, userId } = useContext(UserContext)
+  const { characters: charactersData } = useMyCharacters({
+    userId,
+    isAuthenticated,
+    options: {
+      fallbackData: data,
+    },
+  })
 
   return <CharactersPageContent characters={charactersData} />
 }

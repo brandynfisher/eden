@@ -8,7 +8,8 @@ import ProfileHeaderName from '@/components/Profile/ProfileHeaderName'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
-import { LoadingOutlined, UploadOutlined } from '@ant-design/icons'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import UploadOutlined from '@ant-design/icons/UploadOutlined'
 import { Creator } from '@edenlabs/eden-sdk'
 import { useClickOutside } from '@mantine/hooks'
 import { App, Button, Form } from 'antd'
@@ -106,7 +107,7 @@ const ProfileHeader = ({
                 <UploadOutlined /> Set Image
               </Button>
               {showImageUploader && (
-                <div className="bg-gray-400 dark:bg-gray-800 p-2 rounded-lg top-8 absolute z-10">
+                <div className="bg-gray-400 dark:bg-gray-800 p-2 rounded-lg top-8 absolute z-50">
                   <Form
                     form={form}
                     name="creatorProfile"

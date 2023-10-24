@@ -1,3 +1,4 @@
+import AddToCollectionButton from '@/components/Layout/buttons/AddToCollectionButton'
 import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import DeleteButton from '@/components/Layout/buttons/DeleteButton'
@@ -5,14 +6,21 @@ import DownloadFileButton from '@/components/Layout/buttons/DownloadFileButton'
 import MakePrivateButton from '@/components/Layout/buttons/MakePrivateButton'
 import MakePublicButton from '@/components/Layout/buttons/MakePublicButton'
 import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
+import ShareLinkButton from '@/components/Layout/buttons/ShareLinkButton'
 import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
-import { EllipsisOutlined } from '@ant-design/icons'
+import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
-import React, { ReactNode, useCallback, useContext } from 'react'
+import React, {
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 
 type MenuItem = {
   key: string
@@ -32,6 +40,13 @@ const CardToolsDropdown = ({
   onChange: (updatedItem: Creation | Concept) => void
 }) => {
   const { user } = useContext(UserContext)
+  const [hasNativeShare, setHasNativeShare] = useState(false)
+
+  useEffect(() => {
+    if (navigator && !!navigator.share) {
+      setHasNativeShare(true)
+    }
+  }, [])
 
   const handleOnVisibilityChange = useCallback(
     (visibilityUpdate: { isPrivate: boolean }) => {
@@ -91,15 +106,50 @@ const CardToolsDropdown = ({
     ? [...imageCopyItems, ...otherTypeCopyItems]
     : otherTypeCopyItems
 
+  const shareItems: MenuItem[] = hasNativeShare
+    ? [
+        {
+          key: '2',
+          icon: (
+            <ShareLinkButton
+              url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
+              variant="text"
+              label="Share"
+            />
+          ),
+        },
+      ]
+    : []
+
   const getCardMenuItems = () => {
     const defaultMenuItems: MenuItem[] = [
       {
         label: 'Copy...',
-        key: '1',
+        key: '0',
         children: copyItems,
       },
       {
-        key: '2',
+        key: '1',
+        type: 'divider',
+      },
+      ...shareItems,
+      ...(itemType === 'creation'
+        ? [
+            {
+              key: 'add-to-collection',
+              icon: (
+                <AddToCollectionButton
+                  itemId={item._id}
+                  // itemType={itemType}
+                  variant="text"
+                  label="Add to Collection"
+                />
+              ),
+            },
+          ]
+        : []),
+      {
+        key: '3',
         icon: (
           <NewTabLinkButton
             url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
@@ -112,7 +162,7 @@ const CardToolsDropdown = ({
 
     if (itemType === 'creation') {
       defaultMenuItems.push({
-        key: '3',
+        key: '4',
         icon: (
           <UseAsPresetButton
             creationId={item._id}
@@ -123,50 +173,52 @@ const CardToolsDropdown = ({
       })
     }
 
+    const hasUserFeatureFlagPrivate =
+      user && user.featureFlags && user.featureFlags.includes('private')
     const creatorMenuItems: MenuItem[] =
-      user?.userId === item.user.userId
+      hasUserFeatureFlagPrivate && user?.userId === item.user.userId
         ? [
             {
-              key: '4',
+              key: '5',
               type: 'divider',
             },
             {
-              label: 'Manage...',
-              key: '5',
-              children: [
-                {
-                  icon: item.isPrivate ? (
-                    <MakePublicButton
-                      itemId={item._id}
-                      itemType={itemType}
-                      variant="text"
-                      label="Set Public"
-                      onChange={handleOnVisibilityChange}
-                    />
-                  ) : (
-                    <MakePrivateButton
-                      itemId={item._id}
-                      itemType={itemType}
-                      variant="text"
-                      label="Set Private"
-                      onChange={handleOnVisibilityChange}
-                    />
-                  ),
-                  key: '5-1',
-                },
-                {
-                  icon: (
-                    <DeleteButton
-                      itemId={item._id}
-                      itemType={itemType}
-                      variant="text"
-                      label="Delete"
-                      onChange={handleDelete}
-                    />
-                  ),
-                  key: '5-2',
-                },
-              ],
+              key: '6',
+              icon: item.isPrivate ? (
+                <MakePublicButton
+                  itemId={item._id}
+                  itemType={itemType}
+                  variant="text"
+                  label="Set Public"
+                  onChange={handleOnVisibilityChange}
+                />
+              ) : (
+                <MakePrivateButton
+                  itemId={item._id}
+                  itemType={itemType}
+                  variant="text"
+                  label="Set Private"
+                  onChange={handleOnVisibilityChange}
+                />
+              ),
+            },
+          ]
+        : []
+
+    const deleteItem: MenuItem[] =
+      user && user?.userId === item.user.userId
+        ? [
+            {
+              icon: (
+                <DeleteButton
+                  itemId={item._id}
+                  itemType={itemType}
+                  variant="text"
+                  label="Delete"
+                  onChange={handleDelete}
+                />
+              ),
+              key: '6-2',
             },
           ]
         : []
@@ -174,8 +226,9 @@ const CardToolsDropdown = ({
     return [
       ...defaultMenuItems,
       ...creatorMenuItems,
+      ...deleteItem,
       {
-        key: '6',
+        key: '7',
         type: 'divider',
       },
       {
@@ -187,7 +240,7 @@ const CardToolsDropdown = ({
             label="Download"
           />
         ),
-        key: '7',
+        key: '8',
       },
     ]
   }

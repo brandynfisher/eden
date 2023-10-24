@@ -1,22 +1,8 @@
+import CreationInterface from '@/components/Creation/CreationInterface/CreationInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
-
-const CreateMenu = dynamic(
-  () => import('@/components/Layout/navigation/CreateMenu'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
-
-const CreationInterface = dynamic(
-  () => import('@/components/Creation/CreationInterface/CreationInterface'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const CreatePageWithPreset = ({
   generator,
@@ -59,8 +45,6 @@ const CreateCreationsPage = () => {
 
   return (
     <div className={`flex flex-col`}>
-      <CreateMenu />
-
       {usesPreset ? (
         <CreatePageWithPreset
           generator={

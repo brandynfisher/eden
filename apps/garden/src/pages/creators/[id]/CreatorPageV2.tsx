@@ -1,54 +1,32 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import OrderByButtons, {
-  OrderByBookmarks,
   OrderByLatest,
   OrderByParam,
-  OrderByPraises, // OrderByScore,
+  OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import MasonryWrap from '@/components/MasonryWrap'
+import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Space, Tabs } from 'antd'
-import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
-const ProfileHeader = dynamic(
-  () => import('@/components/Profile/ProfileHeader'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
-
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
-  const { isAuthenticated } = useContext(UserContext)
-
-  const sortButtons = isAuthenticated
-    ? [
-        OrderByLatest,
-        // OrderByScore,
-        OrderByPraises,
-        OrderByBookmarks,
-      ]
-    : [OrderByLatest]
-
-  const [activeSort, setActiveSort] = useState<OrderByParam>(sortButtons[0])
+  const [activeSort, setActiveSort] = useState<OrderByParam>(OrderByLatest)
 
   return (
     <div className="mt-4">
-      {sortButtons && (
-        <OrderByButtons
-          params={sortButtons}
-          onOrderChange={item => setActiveSort(item)}
-        />
-      )}
+      <OrderByButtons
+        params={[OrderByLatest, OrderByPopularity]}
+        onOrderChange={item => setActiveSort(item)}
+      />
 
       <MasonryWrap
         key={`creations_${creatorId}_${activeSort.label}`}
@@ -194,6 +172,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
             isAuthenticatedUser={isAuthenticatedUser}
           />
           <Tabs
+            destroyInactiveTabPane={true}
             activeKey={activeTabKey}
             centered
             items={creatorPageTabs}
@@ -205,7 +184,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   )
 }
 
-const CreatorPage = ({ data }: { data: Creator }) => {
+const CreatorPageV2 = ({ data }: { data: Creator }) => {
   const { creator: creatorData } = useCreator(data ? data.userId : null, {
     fallbackData: data,
   })
@@ -217,4 +196,4 @@ const CreatorPage = ({ data }: { data: Creator }) => {
   return <CreatorPageContent creator={creatorData || data} />
 }
 
-export default CreatorPage
+export default CreatorPageV2

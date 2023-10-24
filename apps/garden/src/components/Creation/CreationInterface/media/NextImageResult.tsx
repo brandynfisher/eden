@@ -1,4 +1,5 @@
-import { ExpandOutlined, ExperimentOutlined } from '@ant-design/icons'
+import ExpandOutlined from '@ant-design/icons/ExpandOutlined'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Skeleton } from 'antd'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useRef, useState } from 'react'

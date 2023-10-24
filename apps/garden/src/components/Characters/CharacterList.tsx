@@ -1,5 +1,5 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import { SettingOutlined } from '@ant-design/icons'
+import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Button, Empty } from 'antd'

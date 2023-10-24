@@ -1,16 +1,16 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
-import { withSessionRoute } from '@/lib/withSession'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { taskIds } = req.query
-  if (!taskIds) {
-    return res.status(400).json({ error: 'Missing taskIds' })
+  const { taskIds, status } = req.query as {
+    taskIds?: string
+    status?: string
   }
-  const taskIdList = Array.isArray(taskIds) ? taskIds : taskIds.split(',')
+  const taskIdList = taskIds && taskIds.split(',')
+  const statusList = status && status.split(',')
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -22,6 +22,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       token: authToken,
     })
     const response = await eden.tasks.list({
+      status: statusList,
       taskId: taskIdList,
     })
     return res.status(200).json({ tasks: response.docs })
@@ -31,4 +32,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 }
 
-export default withSessionRoute(handler)
+export default handler

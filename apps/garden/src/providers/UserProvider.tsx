@@ -1,8 +1,6 @@
 import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
-import { useWeb3UserState } from '@/hooks/auth/useWeb3UserState'
 import { SettingName, Settings } from '@/hooks/useSettings'
-import { Collection, Creator } from '@edenlabs/eden-sdk'
-import { Character } from '@edenlabs/eden-sdk'
+import { Creator, Task } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {
@@ -13,14 +11,8 @@ export interface UserContextType {
   logout: () => Promise<void>
   userId: string | null
   mannaBalance?: number
-  characters?: Character[]
-  collections?: Collection[]
-  refetch: {
-    mannaBalance: VoidFunction
-    characters: VoidFunction
-    collections: VoidFunction
-    user: VoidFunction
-  }
+  pendingTasks?: Task[]
+  refetchMe: VoidFunction
   settings?: Settings
   updateSetting: (settingName: SettingName, newValue: number | 'auto') => void
   user?: Creator
@@ -38,39 +30,23 @@ const defaultUserState: UserContextType = {
     return new Promise<void>(resolve => resolve())
   },
   userId: null,
+  user: undefined,
   mannaBalance: undefined,
-  characters: undefined,
-  collections: undefined,
-  refetch: {
-    mannaBalance: () => {
-      return null
-    },
-    characters: () => {
-      return null
-    },
-    collections: () => {
-      return null
-    },
-    user: () => {
-      return null
-    },
+  pendingTasks: undefined,
+  refetchMe: () => {
+    return null
   },
   settings: undefined,
   updateSetting: () => {
     return null
   },
-  user: undefined,
   featureFlags: [],
 }
 
 export const UserContext = createContext<UserContextType>(defaultUserState)
 
 function UserProvider({ children }: PropsWithChildren) {
-  const userStateFn =
-    process.env.NEXT_PUBLIC_FLAG_CLERK_ENABLED === 'yes'
-      ? useClerkUserState
-      : useWeb3UserState
-  const userState = userStateFn()
+  const userState = useClerkUserState()
 
   return (
     <UserContext.Provider value={userState}>{children}</UserContext.Provider>

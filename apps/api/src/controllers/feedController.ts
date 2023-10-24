@@ -31,6 +31,7 @@ interface FeedGetArguments {
 type OrderByFieldName =
   | 'createdAt'
   | 'praiseCount'
+  | 'popularity'
   | 'bookmarkCount'
   | 'following'
   | 'embedding.score'
@@ -133,20 +134,32 @@ export const getCreationsFeed = async (
 
     const sort = []
     const sortFilter: { [key: string]: unknown } = {}
-    if (orderBy && direction) {
-      sort.push([orderBy, direction])
+
+    if (orderBy === 'popularity') {
+      sort.push(['praiseCount', direction])
+      sort.push(['bookmarkCount', direction])
+      sortFilter['$or'] = [
+        { bookmarkCount: { $gt: 0 } },
+        { praiseCount: { $gt: 0 } },
+      ]
+    } else {
+      if (orderBy && direction) {
+        sort.push([orderBy, direction])
+      }
+
+      // exclude zero count items when sorting by likes, bookmarks, etc
+      if (
+        orderBy === 'bookmarkCount' ||
+        orderBy === 'praiseCount' ||
+        orderBy === 'embedding.score'
+      ) {
+        sortFilter[orderBy] = { $gt: 0 }
+      }
     }
+
     // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
     if (orderBy !== 'createdAt') {
       sort.push(['createdAt', -1])
-    }
-    // exclude zero count items when sorting by likes, bookmarks, etc
-    if (
-      orderBy === 'bookmarkCount' ||
-      orderBy === 'praiseCount' ||
-      orderBy === 'embedding.score'
-    ) {
-      sortFilter[orderBy] = { $gt: 0 }
     }
 
     if (orderBy === 'embedding.score') {

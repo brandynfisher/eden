@@ -1,11 +1,9 @@
 import * as Sentry from '@sentry/nextjs'
 import { Button } from 'antd'
 import Image from 'next/image'
-import Link from 'next/link'
 import { NextRouter, useRouter, withRouter } from 'next/router'
 import React, {
   Dispatch,
-  ErrorInfo,
   ReactNode,
   SetStateAction,
   useEffect,
@@ -29,7 +27,6 @@ function ErrorBoundary({ children }: Props) {
   useEffect(() => {
     const handleRouteChange = () => {
       if (hasError) {
-        console.log('resetting hasError to false')
         setHasError(false)
       }
     }
@@ -60,8 +57,7 @@ class ErrorBoundaryInner extends React.Component<Props, State> {
     return { hasError: true }
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.log({ error, errorInfo })
+  componentDidCatch(error: Error) {
     Sentry.captureException(error)
   }
 
@@ -106,14 +102,14 @@ class ErrorBoundaryInner extends React.Component<Props, State> {
                     >
                       Try again?
                     </Button>
-                    <Link href="/" passHref>
+                    <a href="/">
                       <Button
                         className="font-mono"
                         onClick={() => this.setState({ hasError: false })}
                       >
                         Go back Home
                       </Button>
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>

@@ -7,7 +7,7 @@ import {
   deleteApiKey,
   listApiKeys,
 } from '../controllers/apiKeyController'
-import { isAuth } from '../middleware/authMiddleware'
+import { isAdmin, isAuth } from '../middleware/authMiddleware'
 
 const apiKeyRoutes: FastifyPluginAsync = async server => {
   server.post('/apikeys/create', {
@@ -24,7 +24,8 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    // preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => createApiKey(request, reply),
   })
 

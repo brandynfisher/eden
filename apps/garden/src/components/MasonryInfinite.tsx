@@ -23,7 +23,14 @@ import {
 } from 'masonic'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { useCallback, useContext, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 const MasonryInfinite = ({
   type,
@@ -58,20 +65,21 @@ const MasonryInfinite = ({
     hasNextPage,
   } = useFeedPaginated(type, query, orderBy)
 
-  const maybeLoadMore = useInfiniteLoader(
-    () => {
+  const loadMore = useMemo(() => {
+    return () => {
       if (hasNextPage) {
         maybeLoadNextPage()
       }
+    }
+  }, [maybeLoadNextPage])
+
+  const maybeLoadMore = useInfiniteLoader(loadMore, {
+    isItemLoaded: (index, items) => {
+      return !!items[index]
     },
-    {
-      isItemLoaded: (index, items) => {
-        return !!items[index]
-      },
-      minimumBatchSize: 10,
-      threshold: 24,
-    },
-  )
+    minimumBatchSize: 10,
+    threshold: 24,
+  })
 
   const handleOrderChange = (newOrderBy: OrderByParam) => {
     if (newOrderBy.field !== orderBy?.field) {
@@ -115,46 +123,53 @@ const MasonryInfinite = ({
   )
   const resizeObserver = useResizeObserver(positioner)
 
-  const handleCardClick = useCallback(
-    (item: Creation) => {
-      //@todo: move this to CreationMasonry (similarMasonry, as static)
-      // if (disableArrowNav) {
-      //   showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
-      //     creation,
-      //     loadSimilar: true,
-      //     usesUrl: true,
-      //     originPageUrl: router.asPath,
-      //   })
-      //
-      //   return
-      // }
-      setItems(items)
+  useEffect(() => {
+    setItems(items)
+  }, [items.length, orderBy, query, type])
 
-      const clickedItemIndex = items.findIndex(
-        searchItem => searchItem._id === item._id,
-      )
-      // console.log({clickedItemIndex})
-      setCurrentIndex(clickedItemIndex)
+  const handleCardClick = useCallback((index: number) => {
+    //@todo: move this to CreationMasonry (similarMasonry, as static)
+    // if (disableArrowNav) {
+    //   showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
+    //     creation,
+    //     loadSimilar: true,
+    //     usesUrl: true,
+    //     originPageUrl: router.asPath,
+    //   })
+    //
+    //   return
+    // }
+    // setItems(items)
 
-      // console.log('handleCardClick', clickedItemIndex, item, items)
-      showModal(MODAL_TYPES.CREATION_DETAIL_MODAL_V2, {
-        initialItem: item,
-        usesUrl: true,
-        originPageUrl: router.asPath,
-        maybeLoadMoreFn: (
-          currentIndex: number,
-          currentItems: Creation[] | Concept[],
-        ) => {
-          // console.log({ currentIndex, items: currentItems.length })
-          if (currentIndex === currentItems.length - 1) {
-            // console.log('reached last item, trigger maybeLoadMore', currentIndex, currentIndex + 10)
-            maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
-          }
-          // console.log(currentItems.length)
-        },
-      })
-    },
-    [items],
+    setCurrentIndex(index)
+
+    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL_V2, {
+      usesUrl: true,
+      originPageUrl: router.asPath,
+      maybeLoadMoreFn: (
+        currentIndex: number,
+        currentItems: Creation[] | Concept[],
+      ) => {
+        // console.log({ currentIndex, items: currentItems.length })
+        if (currentIndex === currentItems.length - 1) {
+          // console.log('reached last item, trigger maybeLoadMore', currentIndex, currentIndex + 10)
+          maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
+        }
+        // console.log(currentItems.length)
+      },
+    })
+  }, [])
+
+  const CardWithClick = useCallback(
+    (props: { data: Creation & Concept; index: number }) => (
+      <ItemComponent
+        key={props.data._id}
+        index={props.index}
+        data={props.data}
+        onClick={() => handleCardClick(props.index)}
+      />
+    ),
+    [],
   )
 
   return (
@@ -184,16 +199,7 @@ const MasonryInfinite = ({
               itemHeightEstimate={300}
               onRender={maybeLoadMore}
               itemKey={(item, _index) => item?._id ?? _index}
-              render={props => {
-                return (
-                  <ItemComponent
-                    key={props.data._id}
-                    index={props.index}
-                    data={props.data}
-                    onClick={() => handleCardClick(props.data)}
-                  />
-                )
-              }}
+              render={CardWithClick}
             />
           )}
         </>

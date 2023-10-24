@@ -5,6 +5,7 @@ import { paginatedResponse, paginationProperties } from '.'
 import {
   followCreator,
   getCreator,
+  getCreatorMe,
   listCreatorFollowers,
   listCreatorFollowing,
   listCreators,
@@ -127,6 +128,20 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => unfollowCreator(request, reply),
+  })
+
+  server.get('/creators/me', {
+    schema: {
+      response: {
+        200: Type.Object({
+          creator: Type.Optional(Type.Any()),
+          balance: Type.Number(),
+          pendingTasks: Type.Optional(Type.Any()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getCreatorMe(request, reply),
   })
 }
 

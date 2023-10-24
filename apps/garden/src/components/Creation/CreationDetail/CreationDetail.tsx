@@ -1,5 +1,6 @@
+import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConfigParamsTabs from '@/components/ConfigParamsTabs'
-import CreationDetailToolButtons from '@/components/Creation/CreationDetail/CreationDetailToolButtons'
+import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 // import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreationReactions from '@/components/Creation/CreationReactions'
@@ -10,7 +11,6 @@ import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getAspectRatio } from '@/lib/media'
 import { isImageUrl, isVideoUrl } from '@/lib/string'
-import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
@@ -30,8 +30,6 @@ const CreationDetail = ({
   const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [creationData, setCreationData] = useState<Creation>(creation)
-  const timeSinceCreation = timeAgo(creation.createdAt)
-  const [createdDateString, setCreatedDateString] = useState('')
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
@@ -45,7 +43,6 @@ const CreationDetail = ({
 
   useEffect(() => {
     setCreationData(creation)
-    setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
   const hideMediaViewer = () => {
@@ -113,7 +110,7 @@ const CreationDetail = ({
                   ? () => handlePreviewClick(creation.uri)
                   : () => false
               }
-              className="relative flex justify-center flex flex-grow"
+              className="relative flex justify-center flex flex-grow max-h-[90vh] overflow-hidden"
             >
               {isImageUrl(creation.uri) ? (
                 <MediaDisplay
@@ -169,34 +166,24 @@ const CreationDetail = ({
               )}
             </div>
 
-            <div className="col-span-12 px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900">
+            <div className="flex px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 justify-between">
               <CreationReactions
                 creation={creationData}
                 onChange={setCreationData}
               />
+              <CardToolsDropdown
+                item={creation}
+                itemType={'creation'}
+                onChange={() => console.log('onChange')}
+              />
             </div>
 
-            <div className="flex mb-2 min-w-0 px-4 py-1 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
-              <CreationDetailToolButtons creation={creation} />
-            </div>
-
-            <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 ">
+            <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
               <div style={{ wordWrap: 'break-word' }}>
-                <div className="flex justify-between items-center">
-                  <div className="font-bold">
-                    /{creation?.task?.generator?.generatorName}
-                  </div>
-                  <div
-                    className="text-gray-400 text-xs"
-                    title={createdDateString}
-                  >
-                    {timeSinceCreation}
-                  </div>
-                </div>
-                <Divider className="my-4" />
-
                 <TruncatedExpandableText text={creation?.name} />
+                <Divider className="my-4" />
               </div>
+              <CreationInfo creation={creation} />
             </div>
 
             <ConfigParamsTabs data={creation} />

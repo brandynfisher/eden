@@ -5,25 +5,24 @@ import OptionParameter from '@/components/Creation/CreationInterface/parameters/
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
 import StringParameter from '@/components/Creation/CreationInterface/parameters/StringParameter'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
-import FormLabel from '@/components/Forms/FormLabel'
+import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import {
-  DownCircleOutlined,
-  ExperimentOutlined,
-  LoadingOutlined,
-  UpCircleOutlined,
-} from '@ant-design/icons'
+import DownCircleOutlined from '@ant-design/icons/DownCircleOutlined'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
+import UpCircleOutlined from '@ant-design/icons/UpCircleOutlined'
 import {
   Creation,
   Generator,
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
-import { debounce } from '@mui/material'
-import { App, Button, Card, Form, Switch } from 'antd'
+import LinkOutlined from '@mui/icons-material/LinkOutlined'
+import { debounce } from '@mui/material/utils'
+import { App, Button, Card, Form } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -65,16 +64,12 @@ const GeneratorForm = ({
   presetCreation?: Creation
   onSubmitSuccess?: () => void
 }) => {
-  const {
-    taskIds,
-    setTaskIds,
-    setActiveTaskId,
-    setHasChangedGenerator,
-    refetchPendingTasks,
-  } = useContext(CreationNotificationContext)
+  const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
+    CreationNotificationContext,
+  )
   const { message } = App.useApp()
   const router = useRouter()
-  const { refetch, isAuthenticated, authenticate, mannaBalance } =
+  const { isAuthenticated, authenticate, mannaBalance, user, refetchMe } =
     useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
@@ -254,10 +249,9 @@ const GeneratorForm = ({
 
       const { taskId } = response.data
       setActiveTaskId && setActiveTaskId(taskId)
-      setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
-      refetchPendingTasks && refetchPendingTasks()
-      refetch.mannaBalance()
+      refetchMe()
+      refetchTasks && refetchTasks()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       message.error('Error creating task. Please try again.')
@@ -394,20 +388,40 @@ const GeneratorForm = ({
     >
       <Card
         type="inner"
+        className="mb-3"
         title={
           <div className="py-4">
             <h3>/{generator.generatorName}</h3>
-            <span style={{ color: 'gray' }}>{generator.description}</span>
+            <div className="flex justify-between flex-wrap">
+              <span style={{ color: 'gray' }}>{generator.description}</span>
+              {generator.output === 'creation' ? (
+                <a
+                  href="https://docs.eden.art/docs/guides/creation"
+                  target="_blank"
+                  className="flex gap-1 items-center"
+                >
+                  Learn about Creations
+                  <LinkOutlined />
+                </a>
+              ) : null}
+              {generator.output === 'concept' ? (
+                <a
+                  href="https://docs.eden.art/docs/guides/concepts"
+                  target="_blank"
+                  className="flex gap-1 items-center"
+                >
+                  Learn about Concepts
+                  <LinkOutlined />
+                </a>
+              ) : null}
+            </div>
           </div>
         }
         actions={[
-          <div
-            key={generator.generatorName}
-            className="flex px-6 items-center justify-between flex-wrap"
-          >
-            <div>
-              <div className="flex gap-3 items-center">
-                {isLoadingTaskCost === false && !canAffordOperation ? (
+          <div className="px-4 text-left" key={generator.generatorName}>
+            <div className="flex gap-4 items-center justify-between flex-wrap">
+              <div className="flex gap-2 items-center w-full sm:w-auto">
+                {canAffordOperation === false ? (
                   <div className="text-orange-500">
                     Insufficient Manna! ({mannaBalance}){' '}
                     <Link href="/manna">Click here to get more</Link>
@@ -418,7 +432,7 @@ const GeneratorForm = ({
                     icon={<ExperimentOutlined />}
                     htmlType="submit"
                     size="large"
-                    className="font-mono capitalize"
+                    className="font-mono capitalize w-full"
                     loading={isSubmitting ? { delay: 250 } : false}
                     disabled={
                       isSubmitting ||
@@ -430,41 +444,37 @@ const GeneratorForm = ({
                     {generator.generatorName}
                   </Button>
                 )}
-                <MannaCostEstimate
-                  isLoading={!!isLoadingTaskCost}
-                  cost={taskCost || 'n/a'}
-                />
               </div>
-              {uploadsInProgress ? (
-                <div className="text-orange-500 mt-4">
-                  <LoadingOutlined className="mr-2" />
-                  File upload still in progress. Please wait.{' '}
-                </div>
+
+              {user &&
+              user.featureFlags &&
+              user.featureFlags.includes('private') ? (
+                <PrivacyToggle />
               ) : null}
             </div>
 
-            <Button className="font-mono" type="text" onClick={resetForm}>
-              Reset {presetCreation ? '(using preset)' : ''}
-            </Button>
+            <div className="mt-4 flex flex-wrap w-full justify-between items-center">
+              <MannaCostEstimate
+                isLoading={!!isLoadingTaskCost}
+                cost={taskCost || 'n/a'}
+              />
+
+              <Button className="font-mono text-sm" onClick={resetForm}>
+                Reset {presetCreation ? '(to preset)' : ''}
+              </Button>
+            </div>
+
+            {uploadsInProgress ? (
+              <div className="text-orange-500 mt-2 w-full">
+                <LoadingOutlined className="mr-2" />
+                File upload still in progress. Please wait.{' '}
+              </div>
+            ) : null}
           </div>,
         ]}
       >
         {renderFormFields(requiredParameters, false)}
         {renderFormFields(optionalParameters, false)}
-
-        <Form.Item
-          name="isPrivate"
-          valuePropName="checked"
-          label={
-            <FormLabel
-              text="Private"
-              description="Should this be hidden from other users?"
-            />
-          }
-          labelCol={{ span: 24 }}
-        >
-          <Switch />
-        </Form.Item>
 
         {advancedParameters.length > 0 && (
           <>

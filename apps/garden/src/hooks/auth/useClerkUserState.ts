@@ -1,10 +1,8 @@
-import { useBalance } from '@/hooks/useBalance'
-import { useCreator } from '@/hooks/useCreator'
-import { useMyCharacters } from '@/hooks/useMyCharacters'
-import { useMyCollections } from '@/hooks/useMyCollections'
+import { useMe } from '@/hooks/auth/useMe'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
 import { useAuth, useClerk } from '@clerk/nextjs'
+import { useLocalStorage } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
@@ -14,16 +12,13 @@ export const useClerkUserState = () => {
   const { signOut, openSignIn } = useClerk()
   const isAuthenticated = isSignedIn || false
   const userId = clerkUid || null
-  const { manna, refetchMannaBalance } = useBalance({ isAuthenticated })
-  const { characters, refetchMyCharacters } = useMyCharacters({
-    userId,
-    isAuthenticated,
-  })
-  const { collections, refetchMyCollections } = useMyCollections({
-    userId,
-    isAuthenticated,
-  })
-  const { creator, mutate: refetchCreator } = useCreator(userId || null)
+  const { user, balance, pendingTasks, refetchMe } = useMe({ isAuthenticated })
+
+  const [localStoragePasswordCorrect, setLocalStoragePasswordCorrect] =
+    useLocalStorage<boolean>({
+      key: 'beta-password',
+      defaultValue: false,
+    })
 
   const authenticate = async () => {
     if (!isAuthenticated) {
@@ -32,6 +27,10 @@ export const useClerkUserState = () => {
   }
 
   const logout = async () => {
+    if (localStoragePasswordCorrect) {
+      setLocalStoragePasswordCorrect(false)
+    }
+
     if (isAuthenticated) {
       await signOut()
     }
@@ -41,54 +40,25 @@ export const useClerkUserState = () => {
 
   // reset user state on disconnect
   useEffect(() => {
-    refetchCreator()
-    refetchMannaBalance()
-    refetchMyCharacters()
-    refetchMyCollections()
+    refetchMe()
   }, [isAuthenticated])
 
   const { settings, updateSetting } = useSettings()
 
-  // refetch data on tab focus
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        // Refetch data here
-        refetchCreator()
-        refetchMannaBalance()
-        refetchMyCharacters()
-        refetchMyCollections()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    // Clean up event listener on component unmount
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
-
-  const user: UserContextType = {
+  const userState: UserContextType = {
     isAuthenticating: false,
     authError: null,
     isAuthenticated,
     userId,
     authenticate,
     logout,
-    mannaBalance: manna,
-    characters,
-    collections,
+    mannaBalance: balance,
+    pendingTasks,
     settings,
     updateSetting,
-    user: creator ? creator : undefined,
-    refetch: {
-      mannaBalance: refetchMannaBalance,
-      characters: refetchMyCharacters,
-      collections: refetchMyCollections,
-      user: refetchCreator,
-    },
-    featureFlags: creator?.featureFlags || [],
+    user: user ? user : undefined,
+    refetchMe,
+    featureFlags: user?.featureFlags || [],
   }
-  return user
+  return userState
 }

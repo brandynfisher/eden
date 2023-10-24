@@ -1,22 +1,22 @@
 import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/media/ImageLoadingPlaceholder'
 import ImagePreviewMask from '@/components/Creation/CreationInterface/media/ImagePreviewMask'
-import { LoadingOutlined } from '@ant-design/icons'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import Image from 'next/image'
 import React, { ReactNode, useCallback, useState } from 'react'
 
 const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
   return (
-    <div className="absolute inset-0 z-10">
+    <div className="absolute inset-0 z-10 max-h-[90vh]">
       <Image
         src={imageUrl}
         alt={''}
         width="0"
         height="0"
         className="w-full h-full object-contain absolute z-10 inset-0"
-        sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
+        sizes={'(max-width: 1280px) 33vw, (max-width: 1024px) 50vw, 75vw'}
         style={{ objectFit: 'contain', objectPosition: 'top center' }}
       />
-      <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-70 text-gray-700" />
+      <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-90 text-gray-400" />
     </div>
   )
 }
@@ -42,7 +42,6 @@ const ImageResultZoomable = ({
   const [isLoaded, setIsLoaded] = useState(false)
 
   const handleOnLoad = useCallback(() => {
-    // console.log('handleOnLoad')
     // if (!isLoaded) {
     setIsLoaded(true)
     // } else {
@@ -53,28 +52,28 @@ const ImageResultZoomable = ({
     if (onLoad) {
       onLoad()
     }
-  }, [onLoad, previewSizeUrl, setIsLoaded])
+  }, [onLoad, thumbnailSizeUrl, previewSizeUrl, setIsLoaded])
 
   return (
     <div
-      className={`image-zoomable-wrap relative w-full h-full overflow-hidden rounded-lg`}
+      className={`image-zoomable-wrap relative w-full h-fit overflow-hidden rounded-lg`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
-      {!isLoaded ? (
-        <div className="absolute inset-0 text-gray-500 opacity-80">
+      {previewSizeUrl && !isLoaded ? (
+        <div className="absolute inset-0 text-gray-500 opacity-80 max-h-[90vh]">
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
-      {thumbnailSizeUrl ? (
+      {!isLoaded && thumbnailSizeUrl && previewSizeUrl ? (
         <ImagePlaceholder key={thumbnailSizeUrl} imageUrl={thumbnailSizeUrl} />
       ) : null}
       {previewSizeUrl ? (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 max-h-[90vh]">
           <Image
             key={previewSizeUrl}
             src={previewSizeUrl}
             alt={previewSizeUrl}
-            sizes={'(max-width: 1024px) 100vw, 50vw'}
+            sizes={'(max-width: 1280px) 50vw, (max-width: 1024px) 75vw, 100vw'}
             onLoadingComplete={handleOnLoad}
             priority={priority}
             width="0"

@@ -1,7 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { EditOutlined } from '@ant-design/icons'
+import EditOutlined from '@ant-design/icons/EditOutlined'
 import { useUser } from '@clerk/nextjs'
 import { useClickOutside } from '@mantine/hooks'
 import { App, Button } from 'antd'

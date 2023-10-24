@@ -9,7 +9,7 @@ const MannaVoucherRedeem = () => {
   const { message } = App.useApp()
   const [voucherCode, setVoucherCode] = useState('')
   const [redeemingVoucher, setRedeemingVoucher] = useState(false)
-  const { refetch, isAuthenticated, authenticate } = useContext(UserContext)
+  const { isAuthenticated, authenticate, refetchMe } = useContext(UserContext)
 
   const redeemVoucher = async () => {
     if (!isAuthenticated) {
@@ -24,7 +24,7 @@ const MannaVoucherRedeem = () => {
       })
 
       message.success('Voucher redeemed!')
-      refetch.mannaBalance()
+      refetchMe()
     } catch (error) {
       handleAxiosError(error, message)
     }

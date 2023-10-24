@@ -1,5 +1,5 @@
 import SimilarCreationsMasonry from '@/components/Creation/CreationDetail/SimilarCreationsMasonry'
-import { LoadingOutlined } from '@ant-design/icons'
+import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import { Creation } from '@edenlabs/eden-sdk'
 import {
   useIntersection,

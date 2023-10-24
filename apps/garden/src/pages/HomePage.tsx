@@ -1,9 +1,8 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
-  OrderByBookmarks,
   OrderByFollowing,
   OrderByLatest,
-  OrderByPraises, // OrderByScore,
+  OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import { UserContext } from '@/providers/UserProvider'
@@ -16,13 +15,13 @@ const HomePage = () => {
     ? [
         // OrderByScore,
         OrderByLatest,
-        OrderByPraises,
-        OrderByBookmarks,
+        OrderByPopularity,
         OrderByFollowing,
       ]
     : [
         // OrderByScore,
         OrderByLatest,
+        OrderByPopularity,
       ]
 
   return (
@@ -35,5 +34,4 @@ const HomePage = () => {
     </div>
   )
 }
-
 export default HomePage

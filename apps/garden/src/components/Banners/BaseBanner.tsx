@@ -1,4 +1,4 @@
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Button } from 'antd'
 import { ReactNode } from 'react'
 

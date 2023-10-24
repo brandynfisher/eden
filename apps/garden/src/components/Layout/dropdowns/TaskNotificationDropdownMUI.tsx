@@ -1,24 +1,22 @@
 import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/TestGeneratorFinishButton'
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
+import MenuDropdownMUI, {
+  MenuDropdownItem,
+} from '@/components/Layout/dropdowns/MenuDropdownMUI'
 import { CONFIG } from '@/lib/config'
 import { getAspectRatio } from '@/lib/media'
 import { rightTruncatedString, truncatedAddress } from '@/lib/string'
-import { durationBetweenDates, timeAgo } from '@/lib/time'
+import { durationBetweenDates } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
-import { UserContext } from '@/providers/UserProvider'
-import {
-  CheckCircleOutlined,
-  CheckOutlined,
-  CloseOutlined,
-  CopyOutlined,
-  ExclamationOutlined,
-  LoadingOutlined,
-} from '@ant-design/icons'
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
+import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
-import { App, Button, Dropdown, Progress, Space, Spin } from 'antd'
-import { ItemType } from 'antd/es/menu/hooks/useItems'
+import TaskAlt from '@mui/icons-material/TaskAlt'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import { App, Button, Progress } from 'antd'
 import { NextRouter, useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
@@ -40,7 +38,6 @@ const FailedTaskMenuItem = ({
 
   const handleCopyClick = async () => {
     await copy(task.taskId)
-
     message.destroy()
     message.success(`Copied Task ID to clipboard!`)
   }
@@ -168,8 +165,6 @@ const CompletedTaskMenuItem = ({
 }
 
 const PendingTaskMenuItem = ({ task }: { task: Task }) => {
-  const timeSinceTaskCreation = timeAgo(task.createdAt)
-
   const { message } = App.useApp()
   const { copied, copy } = useClipboard({ timeout: 750 })
 
@@ -183,11 +178,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
   }
 
   return (
-    <div
-      className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
-      style={{ minWidth: '240px' }}
-      key={task._id}
-    >
+    <div className="w-full" key={task._id}>
       <div className="flex justify-between items-center">
         <strong>/{task.generator.generatorName}</strong>
         <div
@@ -215,7 +206,6 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           <div className="capitalize">
             <strong>{task?.status}</strong>
           </div>
-          <div className="hidden xs:flex">Started {timeSinceTaskCreation}</div>
         </div>
       </div>
       <div className="flex justify-between items-center">
@@ -226,12 +216,11 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           <TestGeneratorFinishButton taskId={task.taskId} />
         )}
       </div>
-      <div></div>
     </div>
   )
 }
 
-const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
+const TaskNotificationDropdownMUI = () => {
   const router = useRouter()
 
   const { showModal } = useModalContext()
@@ -247,8 +236,6 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
     failedTasks,
     setFailedTasks,
   } = useContext(CreationNotificationContext)
-
-  const { refetch } = useContext(UserContext)
 
   const handleDismiss = async (
     taskId: string,
@@ -268,18 +255,18 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
     setter([])
   }
 
-  const pendingTaskItems: ItemType[] = pendingTasks
+  const pendingTaskItems: MenuDropdownItem[] = pendingTasks
     ? pendingTasks.map(task => ({
-        label: <PendingTaskMenuItem key={task._id} task={task} />,
+        render: <PendingTaskMenuItem key={task._id} task={task} />,
         key: task._id,
         onClick: () => openDetailModal(task),
       }))
     : []
 
-  const completedTaskItems = []
+  const completedTaskItems: MenuDropdownItem[] = []
   if (completedTasks?.length) {
     completedTaskItems.push({
-      label: (
+      render: (
         <div className="flex items-center justify-between">
           <div>Completed Tasks</div>
           <div className="flex justify-center text-xs">
@@ -296,12 +283,12 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
           </div>
         </div>
       ),
-      key: 0,
+      key: '0',
     })
 
     completedTaskItems.push(
       ...completedTasks.map(task => ({
-        label: (
+        render: (
           <CompletedTaskMenuItem
             router={router}
             task={task}
@@ -315,12 +302,10 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
     )
   }
 
-  const failedTaskItems = []
+  const failedTaskItems: MenuDropdownItem[] = []
   if (failedTasks?.length) {
-    refetch.mannaBalance()
-
     failedTaskItems.push({
-      label: (
+      render: (
         <div className="flex items-center justify-between">
           <div>Failed Tasks</div>
           <div className="flex justify-center text-xs">
@@ -335,12 +320,12 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
           </div>
         </div>
       ),
-      key: 0,
+      key: '0',
     })
 
     failedTaskItems.push(
       ...failedTasks.map(task => ({
-        label: (
+        render: (
           <FailedTaskMenuItem
             task={task}
             handleDismiss={() =>
@@ -363,68 +348,44 @@ const TaskNotificationDropdown = ({ inDrawer }: { inDrawer?: boolean }) => {
   }
 
   return (
-    <Space
-      className={`max-w-3xl ${
-        inDrawer
-          ? 'py-2 flex justify-between items-center !flex'
-          : 'hidden sm:flex'
-      }`}
-    >
-      <Button.Group className="flex items-center">
-        {pendingTaskItems.length > 0 && (
-          <Dropdown
-            trigger={['click']}
-            menu={{ items: pendingTaskItems }}
-            arrow={true}
-          >
-            <Button
-              type="text"
-              className="font-mono text-grey-800 dark:text-gray-200 items-center flex px-2"
-            >
-              <Spin
-                indicator={
-                  <LoadingOutlined className="text-grey-800 dark:text-gray-200 mr-2" />
-                }
-              />
-              {pendingTaskItems.length}
-            </Button>
-          </Dropdown>
-        )}
+    <div className="flex justify-between items-center">
+      {pendingTasks && pendingTasks.length ? (
+        <MenuDropdownMUI
+          buttonLabel={
+            <div className="font-mono items-center flex">
+              <span className="loading loading-ring loading-md mr-2"></span>
+              {pendingTasks.length}
+            </div>
+          }
+          menuItems={pendingTaskItems}
+        />
+      ) : null}
 
-        {failedTasks && failedTasks.length > 0 && (
-          <Dropdown
-            trigger={['click']}
-            menu={{ items: failedTaskItems }}
-            arrow={true}
-          >
-            <Button
-              type="text"
-              className="font-mono text-red-500 items-center flex px-2"
-            >
-              <ExclamationOutlined className="mr-2" />
+      {failedTasks && failedTasks.length ? (
+        <MenuDropdownMUI
+          buttonLabel={
+            <div className="font-mono text-red-500 items-center flex">
+              <WarningAmberIcon className="mr-2" />
               {failedTasks.length}
-            </Button>
-          </Dropdown>
-        )}
+            </div>
+          }
+          menuItems={failedTaskItems}
+        />
+      ) : null}
 
-        {completedTasks && completedTasks.length > 0 && (
-          <Dropdown
-            trigger={['click']}
-            menu={{ items: completedTaskItems }}
-            arrow={true}
-          >
-            <Button
-              type="text"
-              className="font-mono text-green-500 items-center flex px-2"
-            >
-              <CheckOutlined className="mr-2" />
+      {completedTasks && completedTasks.length ? (
+        <MenuDropdownMUI
+          buttonLabel={
+            <div className="font-mono text-green-500 items-center flex">
+              <TaskAlt className="mr-2" />
               {completedTasks.length}
-            </Button>
-          </Dropdown>
-        )}
-      </Button.Group>
-    </Space>
+            </div>
+          }
+          menuItems={completedTaskItems}
+        />
+      ) : null}
+    </div>
   )
 }
 
-export default TaskNotificationDropdown
+export default TaskNotificationDropdownMUI

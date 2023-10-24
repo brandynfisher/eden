@@ -1,35 +1,18 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreview'
+import ResultPreview from '@/components/Creation/CreationInterface/ResultPreviewList'
 import FormLabel from '@/components/Forms/FormLabel'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCharacters } from '@/hooks/useCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { ExperimentOutlined } from '@ant-design/icons'
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
-import { useViewportSize } from '@mantine/hooks'
-import { debounce } from '@mui/material'
+import { debounce } from '@mui/material/utils'
 import { App, Button, Card, Form, Input, Select } from 'antd'
 import axios from 'axios'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-
-const CreateMenu = dynamic(
-  () => import('@/components/Layout/navigation/CreateMenu'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 const DialogueScenarioPageContent = ({
   characters,
@@ -41,14 +24,10 @@ const DialogueScenarioPageContent = ({
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { message } = App.useApp()
   const [form] = Form.useForm()
-  const {
-    taskIds,
-    setTaskIds,
-    setActiveTaskId,
-    setHasChangedGenerator,
-    refetchPendingTasks,
-  } = useContext(CreationNotificationContext)
-  const { refetch, mannaBalance } = useContext(UserContext)
+  const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
+    CreationNotificationContext,
+  )
+  const { mannaBalance, refetchMe, user } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
     useTaskCost()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -57,7 +36,6 @@ const DialogueScenarioPageContent = ({
   const [activeCharacters, setActiveCharacters] = useState<Character[]>([
     ...Array(MAX_ACTIVE_CHARACTERS),
   ])
-  const { width } = useViewportSize()
 
   const handleActiveCharacterChange = (
     index: number,
@@ -73,23 +51,6 @@ const DialogueScenarioPageContent = ({
     currentlyActive[index] = character
 
     setActiveCharacters([...currentlyActive])
-  }
-
-  const scrollResultPreviewIntoView = useCallback(() => {
-    if (width > 1024) {
-      return
-    }
-
-    if (resultPreviewRef && resultPreviewRef.current) {
-      resultPreviewRef.current.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      })
-    }
-  }, [resultPreviewRef, width])
-
-  const onSubmitSuccess = () => {
-    scrollResultPreviewIntoView()
   }
 
   const handleSubmit = async () => {
@@ -116,11 +77,9 @@ const DialogueScenarioPageContent = ({
       message.success(`Dialogue Task created! (${taskId})`)
 
       setActiveTaskId && setActiveTaskId(taskId)
-      setTaskIds && setTaskIds([...taskIds, taskId])
       setHasChangedGenerator && setHasChangedGenerator(false)
-      refetchPendingTasks && refetchPendingTasks()
-      refetch.mannaBalance()
-      onSubmitSuccess()
+      refetchMe()
+      refetchTasks && refetchTasks()
     } catch (error) {
       handleAxiosError(error, message, 'Error requesting dialogue generation')
     } finally {
@@ -150,8 +109,6 @@ const DialogueScenarioPageContent = ({
 
   return (
     <>
-      <CreateMenu />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
           <h2 className="mb-4">Scenario: Dialogue</h2>
@@ -207,7 +164,10 @@ const DialogueScenarioPageContent = ({
                       className="flex px-6 items-center justify-between flex-wrap"
                     >
                       <div className="flex gap-3 items-center">
-                        {isLoadingTaskCost === false && !canAffordOperation ? (
+                        {user &&
+                        isLoadingTaskCost === false &&
+                        typeof mannaBalance !== 'undefined' &&
+                        !canAffordOperation ? (
                           <div className="text-orange-500">
                             Insufficient Manna! ({mannaBalance}){' '}
                             <Link href="/manna">Click here to get more</Link>

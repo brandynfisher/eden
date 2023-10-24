@@ -6,10 +6,14 @@ const defaultImageDomains = [
   'https://minio.aws.abraham.fun/creations-stg/',
   'https://eden-creations-prod.s3.us-east-1.amazonaws.com/',
   'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
+  'https://edenartlab-prod-data.s3.us-east-1.amazonaws.com',
+  'https://edenartlab-stg-data.s3.us-east-1.amazonaws.com',
   'files.stripe.com',
   'img.clerk.com',
   'eden-creations-stg.s3.us-east-1.amazonaws.com',
   'eden-creations-prod.s3.us-east-1.amazonaws.com',
+  'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
+  'edenartlab-stg-data.s3.us-east-1.amazonaws.com'
 ]
 
 const devImageDomains = ['localhost']
@@ -38,6 +42,7 @@ module.exports = withTM({
   swcMinify: true,
   output: 'standalone',
   experimental: {
+    optimizeCss: true, // enabling this will enable SSR for Tailwind
     scrollRestoration: true,
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
@@ -64,6 +69,20 @@ module.exports = withTM({
     XYZ: process.env.XYZ,
     NEXT_PUBLIC_XYZ: process.env.XYZ,
   },
+  modularizeImports: {
+    '@ant-design/icons': {
+      transform: '@ant-design/icons/{{member}}',
+    },
+    'antd': {
+      transform: 'antd/lib/{{kebabCase member}}',
+    },
+    '@mui/icons-material': {
+      transform: '@mui/icons-material/{{member}}',
+    },
+    '@mui/material': {
+      transform: '@mui/material/{{member}}',
+    },
+  },
 })
 
 const withNextPWA = require('next-pwa')({
@@ -76,7 +95,10 @@ const withNextPWA = require('next-pwa')({
 // Injected content via Sentry wizard below
 
 const { withSentryConfig } = require('@sentry/nextjs')
-
+// const withBundleAnalyzer = require('@next/bundle-analyzer')({
+//   enabled: process.env.ANALYZE === 'true',
+// })
+// module.exports = withBundleAnalyzer(withNextPWA(
 module.exports = withNextPWA(
   withSentryConfig(
     module.exports,
@@ -97,7 +119,7 @@ module.exports = withNextPWA(
       widenClientFileUpload: true,
 
       // Transpiles SDK to be compatible with IE11 (increases bundle size)
-      transpileClientSDK: true,
+      transpileClientSDK: false,
 
       // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
       tunnelRoute: '/monitoring',
@@ -110,3 +132,4 @@ module.exports = withNextPWA(
     },
   ),
 )
+// )

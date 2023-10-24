@@ -1,3 +1,4 @@
+import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
 import CreationDetailModalV2 from '@/components/Modals/CreationDetailModalV2'
 import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
@@ -5,7 +6,7 @@ import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
 import TaskDetailModal from '@/components/Modals/TaskDetailModal'
-import { CloseOutlined } from '@ant-design/icons'
+import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import { Concept, Creation, Task } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
@@ -21,6 +22,7 @@ import React, {
 export enum MODAL_TYPES {
   CREATION_DETAIL_MODAL_V2 = 'CREATION_DETAIL_MODAL_V2',
   CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
+  COLLECTION_ADD_CREATION_MODAL = 'COLLECTION_ADD_CREATION_MODAL',
   CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
@@ -32,6 +34,7 @@ type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_MODAL_V2]: CreationDetailModalV2,
   [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
+  [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
   [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
@@ -54,11 +57,19 @@ export type CreationDetailModalV2Props = Partial<
   }
 >
 
+export type AddToCollectionModalProps = Partial<
+  BaseModalProps & {
+    creationId: string
+    centered: true
+  }
+>
+
 type ModalStore = {
   modalType: string | undefined
   modalProps?:
     | Partial<BaseModalProps & { creation?: Creation; loadSimilar?: boolean }>
     | CreationDetailModalV2Props
+    | AddToCollectionModalProps
     | Partial<BaseModalProps & { concept?: Concept }>
     | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })
     | (Partial<BaseModalProps> & { task?: Task })
@@ -70,7 +81,7 @@ export interface ModalContextType {
     modalType: ModalStore['modalType'],
     modalProps?: ModalStore['modalProps'],
   ) => void
-  hideModal: () => void
+  hideModal: (modalType: ModalStore['modalType']) => void
 }
 
 const initialState: ModalContextType = {
@@ -90,18 +101,14 @@ export const CloseButton = () => {
 }
 
 function ModalProvider({ children }: PropsWithChildren) {
-  const [store, setStore] = useState<ModalStore>()
+  const [store, setStore] = useState<ModalStore[]>([])
   const router = useRouter()
 
   const showModal = (
     modalType: ModalStore['modalType'],
     modalProps: ModalStore['modalProps'] = {},
   ) => {
-    setStore({
-      ...store,
-      modalType,
-      modalProps,
-    })
+    setStore([...store, { modalType, modalProps }])
 
     // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
     const modalWrapDomElement =
@@ -112,51 +119,57 @@ function ModalProvider({ children }: PropsWithChildren) {
     // @todo ---end ugly---
   }
 
-  const hideModal = () => {
-    setStore({
-      ...store,
-      modalType: undefined,
-      modalProps: {},
-    })
+  const hideModal = (modalType: ModalStore['modalType']) => {
+    setStore(store.filter(storeItem => storeItem.modalType !== modalType))
   }
 
-  const defaultModalProps: ModalProps = {
-    closeIcon: <CloseButton />,
-    className:
-      'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
-    onCancel: async () => {
-      hideModal()
-      if (store?.modalProps?.usesUrl) {
-        if (store?.modalProps?.originPageUrl) {
-          await router.push(
-            store?.modalProps?.originPageUrl,
-            store?.modalProps?.originPageUrl,
-            { shallow: true, scroll: false },
-          )
-        } else {
-          router.back()
-        }
-      }
-    },
-    width: '',
-    open: true,
-    title: null,
-    footer: null,
+  const renderComponents = () => {
+    return (
+      <>
+        {store && store.length
+          ? store.map(modal => renderComponent(modal))
+          : null}
+      </>
+    )
   }
-
-  const renderComponent = () => {
-    if (!store || !store.modalType) {
+  const renderComponent = (modal: ModalStore) => {
+    if (!modal || !modal.modalType) {
       return
     }
 
-    const ModalComponent = MODAL_COMPONENTS[store.modalType]
+    const ModalComponent = MODAL_COMPONENTS[modal.modalType]
     if (!ModalComponent) {
       return null
     }
 
+    const defaultModalProps = {
+      closeIcon: <CloseButton />,
+      className:
+        'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
+      onCancel: async () => {
+        hideModal(modal?.modalType)
+        if (modal?.modalProps?.usesUrl) {
+          if (modal?.modalProps?.originPageUrl) {
+            await router.push(
+              modal?.modalProps?.originPageUrl,
+              modal?.modalProps?.originPageUrl,
+              { shallow: true, scroll: false },
+            )
+          } else {
+            router.back()
+          }
+        }
+      },
+      width: '',
+      open: true,
+      title: null,
+      footer: null,
+      focusTriggerAfterClose: false,
+    }
+
     const defaultClassNames = defaultModalProps?.className?.split(' ')
-    const customClassNames = store?.modalProps?.className
-      ? store?.modalProps?.className.split(' ')
+    const customClassNames = modal?.modalProps?.className
+      ? modal?.modalProps?.className.split(' ')
       : []
     const classNames = customClassNames.length
       ? defaultClassNames?.concat(
@@ -167,8 +180,9 @@ function ModalProvider({ children }: PropsWithChildren) {
     return (
       // @ts-ignore
       <ModalComponent
-        {...({ ...defaultModalProps, ...store.modalProps } as ModalProps)}
-        handleCancel={store.modalProps?.onCancel}
+        key={modal.modalType}
+        {...({ ...defaultModalProps, ...modal.modalProps } as ModalProps)}
+        handleCancel={modal.modalProps?.onCancel}
         className={classNames}
       />
     )
@@ -177,8 +191,8 @@ function ModalProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     router.beforePopState(({ as }) => {
       const currentPath = router.asPath
-      if (as !== currentPath) {
-        hideModal()
+      if (store.length && as !== currentPath) {
+        hideModal(store[store.length - 1].modalType)
       }
       return true
     })
@@ -191,8 +205,8 @@ function ModalProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     router.events.on('routeChangeStart', (url, { shallow }) => {
       // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
-      if (!shallow) {
-        hideModal()
+      if (store.length && !shallow) {
+        hideModal(store[store.length - 1].modalType)
       }
     })
 
@@ -201,13 +215,20 @@ function ModalProvider({ children }: PropsWithChildren) {
     }
   }, [])
 
-  const onEscHandler = useCallback((ev: KeyboardEvent) => {
-    if (ev.key === 'Escape') {
-      ev.stopImmediatePropagation()
-      ev.stopPropagation()
-      hideModal()
-    }
-  }, [])
+  const onEscHandler = useCallback(
+    (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') {
+        console.log('escape')
+        ev.stopImmediatePropagation()
+        ev.stopPropagation()
+
+        if (store.length) {
+          hideModal(store[store.length - 1].modalType)
+        }
+      }
+    },
+    [store],
+  )
 
   useEffect(() => {
     document.body.addEventListener('keydown', onEscHandler, false)
@@ -220,7 +241,7 @@ function ModalProvider({ children }: PropsWithChildren) {
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
       <div tabIndex={0} className="outline-0">
-        {renderComponent()}
+        {renderComponents()}
         {children}
       </div>
     </ModalContext.Provider>

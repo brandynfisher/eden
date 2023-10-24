@@ -1,9 +1,11 @@
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { InfoCircleOutlined, WalletOutlined } from '@ant-design/icons'
+import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined'
+import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWalletOutlined'
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart'
 import RedeemIcon from '@mui/icons-material/Redeem'
-import { Button, Dropdown } from 'antd'
+import Button from '@mui/material/Button'
+import { Dropdown } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
 import Link from 'next/link'
 import React, { useContext } from 'react'
@@ -12,11 +14,9 @@ const MannaBalanceInfo = () => {
   const { mannaBalance } = useContext(UserContext)
 
   return (
-    <div>
-      <div className="mb-2">
-        You have <span className="font-bold">{mannaBalance}</span> Manna
-      </div>
-    </div>
+    <Link href={'/manna'} className="flex items-center gap-2">
+      You have <span className="font-bold">{mannaBalance}</span> Manna
+    </Link>
   )
 }
 
@@ -48,17 +48,19 @@ const defaultItems: ItemType[] = [
   {
     label: <MannaBalanceInfo />,
     key: '0',
+    disabled: true,
   },
   {
     label: (
-      <Link
+      <a
         href="https://docs.eden.art/docs/overview/manna"
+        target="_blank"
         title="Learn about Manna"
         className="text-small hover:dark:text-gray-400"
       >
         Learn about Manna
         <InfoCircleOutlined className="ml-1" />
-      </Link>
+      </a>
     ),
     key: '1',
   },
@@ -100,12 +102,9 @@ const MannaDropdown = () => {
       disabled={!isAuthenticated}
       arrow={true}
     >
-      <Button
-        type="text"
-        className="font-mono flex px-2 justify-center items-center"
-      >
-        <WalletOutlined className="text-black dark:text-white !flex mr-2 text-xl" />
-        <div className="text-small text-left" style={{ minWidth: '26px' }}>
+      <Button>
+        <div className="font-mono flex items-center">
+          <AccountBalanceWalletOutlined className="!flex mr-2 text-xl" />
           {typeof mannaBalance === 'undefined' ? '---' : mannaBalance}
         </div>
       </Button>

@@ -59,12 +59,10 @@ export const listGenerators = async (
       output: generator.output,
       description: generator.description,
       defaultVersionId: generator.defaultVersionId,
-      versions: generator.versions
-        .filter((version: GeneratorVersionSchema) => !version.isDeprecated)
-        .map((version: GeneratorVersionSchema) => ({
-          versionId: version.versionId,
-          parameters: version.parameters,
-        })),
+      versions: generator.versions.filter(
+        (version: GeneratorVersionSchema) =>
+          version.versionId === generator.defaultVersionId,
+      ),
     })),
   }
 
