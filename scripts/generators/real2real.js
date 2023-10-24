@@ -156,8 +156,8 @@ const params = [
     name: 'interpolation_init_images_min_strength',
     label: 'Init image min strength',
     description:
-      'Min strength of the init_img during interpolation. Lower values will give the interpolation more freedom, leading to more visual changes at the cost of less smoothness. Higher values will look more like alpha-fading the images.',
-    default: 0.1,
+      'Min strength of the real images during interpolation. Low values will give the AI more freedom, leading to more visual changes. Higher values will look more like alpha-fading the images.',
+    default: 0.05,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
