@@ -74,7 +74,7 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
           <BaseParamGroup
             label="Interpolation Images"
             value={
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 mt-1">
                 {creation.task.config['interpolation_init_images'].map(
                   (initImage: string) => (
                     <ImageZoomable
