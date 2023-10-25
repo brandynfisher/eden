@@ -4,10 +4,12 @@ import LoginOutlined from '@ant-design/icons/LoginOutlined'
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import TableOutlined from '@ant-design/icons/TableOutlined'
+import ToolOutlined from '@ant-design/icons/ToolOutlined'
 import { useViewportSize } from '@mantine/hooks'
 import Button from '@mui/material/Button'
 import { Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
+import Link from 'next/link'
 import React, { useContext, useEffect, useState } from 'react'
 
 // import { UserButton } from '@clerk/nextjs'
@@ -149,23 +151,23 @@ const MaxColumnSelector = () => {
   )
 }
 
-// const DevToolsLink = () => {
-//   return (
-//     <Link className="w-full" href="/tools">
-//       <div className="flex items-center">
-//         <ToolOutlined />
-//         <div className="ml-2 flex gap-2 w-full justify-between font-mono">
-//           Dev Tools
-//         </div>
-//       </div>
-//     </Link>
-//   )
-// }
+const DevToolsLink = () => {
+  return (
+    <Link className="w-full" href="/tools">
+      <div className="flex items-center">
+        <ToolOutlined />
+        <div className="ml-2 flex gap-2 w-full justify-between font-mono">
+          Dev Tools
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 const clerkItems: ItemType[] = [
   {
     label: <ClerkLoginLogoutButton />,
-    key: '4',
+    key: 'clerk-login-logout',
   },
 ]
 
@@ -186,14 +188,25 @@ const clerkExtraItems: ItemType[] = [
   // },
 ]
 
+const previewExtraItems: ItemType[] = [
+  {
+    type: 'divider',
+  },
+  {
+    label: <DevToolsLink />,
+    key: 'dev-tools',
+  },
+]
+
 export const SettingsDropdown = () => {
-  const { isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated, featureFlags } = useContext(UserContext)
   const { width: windowWidth } = useViewportSize()
+  const isPreviewUser = featureFlags?.includes('preview')
 
   const items: ItemType[] = [
     {
       label: <ThemeToggleButton />,
-      key: '0',
+      key: 'theme-toggle',
     },
   ]
 
@@ -204,7 +217,7 @@ export const SettingsDropdown = () => {
       },
       {
         label: <MaxColumnSelector />,
-        key: '1',
+        key: 'max-columns',
       },
     ]
 
@@ -215,7 +228,16 @@ export const SettingsDropdown = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      setDropDownItems([...items, ...clerkExtraItems, ...clerkItems])
+      if (isPreviewUser) {
+        setDropDownItems([
+          ...items,
+          ...previewExtraItems,
+          ...clerkExtraItems,
+          ...clerkItems,
+        ])
+      } else {
+        setDropDownItems([...items, ...clerkExtraItems, ...clerkItems])
+      }
     } else {
       setDropDownItems([...items, ...clerkItems])
     }
