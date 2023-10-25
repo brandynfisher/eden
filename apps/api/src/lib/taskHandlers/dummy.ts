@@ -9,6 +9,7 @@ import {
 } from '../../models/Generator'
 import { Task, TaskStatus } from '../../models/Task'
 import { TaskHandlers } from '../../plugins/tasks'
+import { submitMonologueTask } from './airflow'
 
 interface Output {
   result: string
@@ -72,17 +73,22 @@ interface TaskUpdate {
 }
 
 export const dummySubmitTask = async (
-  _: FastifyInstance,
+  server: FastifyInstance,
   generator: GeneratorDocument,
   generatorVersion: GeneratorVersionSchema,
   config: any,
 ) => {
-  console.log(
-    `Submitting task for generator version ${
-      generatorVersion.versionId
-    } with config ${JSON.stringify(config)}`,
-  )
-  return uuidv4()
+  if (generator.generatorName === 'monologue') {
+    const taskId = submitMonologueTask(server)
+    return taskId
+  } else if (generator.generatorName === 'test') {
+    console.log(
+      `Submitting task for generator version ${
+        generatorVersion.versionId
+      } with config ${JSON.stringify(config)}`,
+    )
+    return uuidv4()
+  }
 }
 
 export const dummyReceiveTaskUpdate = async (

@@ -128,6 +128,33 @@ const interrogateGeneratorDev = {
 
 db.generators.insertOne(interrogateGeneratorDev)
 
+const monologueParametersDev = [
+  {
+    name: 'prompt',
+    label: 'Prompt',
+    description: 'Prompt to generate from',
+    isRequired: true,
+  },
+]
+
+const monologueVersionDev = {
+  provider: 'airflow',
+  address: 'airflow/handler-monologue',
+  versionId: '0.0.1',
+  mode: 'monologue',
+  parameters: monologueParametersDev,
+  isDeprecated: false,
+}
+
+const monologueGeneratorDev = {
+  generatorName: 'monologue',
+  description: 'monologue',
+  output: 'creation',
+  versions: [monologueVersionDev],
+}
+
+db.generators.insertOne(monologueGeneratorDev)
+
 db = db.getSiblingDB('eden')
 
 db.createUser({
