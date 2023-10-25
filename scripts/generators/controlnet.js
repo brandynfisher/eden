@@ -20,6 +20,15 @@ const params = [
     step: 0.01,
     optional: false,
   },
+  
+  {
+    name: 'controlnet_type',
+    label: 'ControlNet mode',
+    description: 'Which ControlNet mode to use (we recommend canny-edge or luminance)',
+    default: 'canny-edge',
+    allowedValues: ["luminance", "canny-edge", "depth"],
+  },
+  
   {
     name: 'text_input',
     label: 'Prompt',
@@ -49,13 +58,6 @@ const params = [
     optional: false,
   },
 
-  {
-    name: 'controlnet_type',
-    label: 'ControlNet mode',
-    description: 'Which ControlNet mode to use (we recommend canny-edge and luminance)',
-    default: 'canny-edge',
-    allowedValues: ["luminance", "canny-edge", "depth"],
-  },
   ////////////////////////////////////////
   // optional generation args
   
