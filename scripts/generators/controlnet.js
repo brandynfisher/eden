@@ -1,19 +1,19 @@
 const params = [
   {
-    name: 'init_image_data',
-    label: 'Init image',
+    name: 'control_image',
+    label: 'Shape guidance image',
     default: null,
     description:
-      'Guidance image. This will guide the edges and contours of the creation',
+      'Shape guidance image. This will guide the edges and contours of the creation',
     mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: true,
     optional: false,
   },
   {
-    name: 'init_image_strength',
-    label: 'Init image strength',
+    name: 'control_image_strength',
+    label: 'Shape guidance image strength',
     description:
-      'How much influence the guidance image has on the creation. Recommended >0.5 with ControlNet',
+      'How much influence the guidance image has on the creation. Recommended >0.5',
     default: 0.6,
     minimum: 0.0,
     maximum: 1.0,
@@ -31,7 +31,7 @@ const params = [
   {
     name: 'width',
     label: 'Width',
-    description: 'Will generate [Width x Height] total number of pixels but adopts the aspect ratio of your provided image',
+    description: 'Will generate a total of [Width x Height] pixels but adopts the aspect ratio of your guidance image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -41,7 +41,7 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Will generate [Width x Height] total number of pixels but adopts the aspect ratio of your provided image',
+    description: 'Will generate a total of [Width x Height] pixels but adopts the aspect ratio of your guidance image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -51,9 +51,9 @@ const params = [
 
   {
     name: 'controlnet_type',
-    label: 'ControlNet',
-    description: 'Which ControlNet to use',
-    default: 'luminance',
+    label: 'ControlNet mode',
+    description: 'Which ControlNet mode to use (we recommend canny-edge and luminance)',
+    default: 'canny-edge',
     allowedValues: ["luminance", "canny-edge", "depth"],
   },
   ////////////////////////////////////////
@@ -89,7 +89,7 @@ const params = [
   {
     name: 'adopt_aspect_from_init_img',
     label: 'Adopt aspect ratio of Init image',
-    description: 'Make sure the creation has the same aspect ratio as the Init image.',
+    description: 'Make a creation with the same aspect ratio as the guidance image.',
     default: true,
     allowedValues: [false, true],
     optional: true,
