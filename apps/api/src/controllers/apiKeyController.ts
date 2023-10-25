@@ -5,8 +5,10 @@ import {
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
+import { checkUserFlags } from '../lib/data'
 import { randomId } from '../lib/util'
 import { ApiKey, ApiKeyInput } from '../models/ApiKey'
+import { FeatureFlag, User } from '../models/Creator'
 import ApiKeyRepository from '../repositories/ApiKeyRepository'
 
 export const createApiKey = async (
@@ -15,6 +17,20 @@ export const createApiKey = async (
 ) => {
   const { userId } = request.user
   const { note } = request.body as ApiKeysCreateArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  const hasApiAccess = await checkUserFlags(user, FeatureFlag.Preview)
+  if (!hasApiAccess) {
+    return reply.status(403).send({
+      message: 'API access not enabled',
+    })
+  }
 
   const apiKey = randomId(24)
   const apiSecret = randomId(24)
