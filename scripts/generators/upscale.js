@@ -1,7 +1,7 @@
 const params = [
 
   {
-    name: 'init_image_data',
+    name: 'init_image',
     label: 'Init image',
     description:
       'The image you want to upscale',
@@ -55,14 +55,14 @@ const params = [
     label: 'Samples',
     description: 'Number of variations to create',
     default: 1,
-    allowedValues: [1, 2, 4],
+    allowedValues: [1, 2, 3, 4],
     optional: true,
   },
   
   {
     name: 'adopt_aspect_from_init_img',
-    label: 'Adopt aspect ratio of Init image',
-    description: 'Make sure the creation has the same aspect ratio as the Init image.',
+    label: 'Adopt aspect ratio of starting image',
+    description: 'Make a creation with the same aspect ratio as the starting image',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -71,7 +71,7 @@ const params = [
   {
     name: 'uc_text',
     label: 'Negative prompt',
-    description: 'Unconditional (negative) prompt',
+    description: 'what you DONT want to see',
     default:
       'nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft',
     optional: true,
@@ -80,7 +80,7 @@ const params = [
     name: 'guidance_scale',
     label: 'Guidance scale',
     description: 'Strength of prompt conditioning guidance',
-    default: 7.5,
+    default: 6.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,
@@ -103,15 +103,6 @@ const params = [
     maximum: 70,
     optional: true,
   },
-    {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
-    optional: true,
-  },
-
   {
     name: 'seed',
     label: 'Seed',
