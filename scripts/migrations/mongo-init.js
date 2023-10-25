@@ -78,11 +78,12 @@ db.createCollection('characters')
 
 db.characters.insertOne({
   user: adminDev.insertedIds[1],
-  task: adminDev.insertedIds[1],
-  name: 'Test Character',
-  checkpoint: 'checkpoint',
-  training_images: [],
-  uri: 'uri',
+  name: 'Chatsubo',
+  slug: 'chatsubo',
+  description:
+    'Chatsubo, the Fire House spirit, is a sentient advice guru with a feisty attitude. He can be sassy and sometimes crude, but he always encourages people to live life a little more deeply and to take risks.',
+  image: 'https://edenartlab-prod-data.s3.us-east-1.amazonaws.com/bf44565df19f6214d304ea287ab3c6e564456878b664b5756d4de794a67c299c.jpg',
+  voice: 'Adam'
 })
 
 db.createCollection('concepts')
@@ -133,6 +134,12 @@ const monologueParametersDev = [
     name: 'prompt',
     label: 'Prompt',
     description: 'Prompt to generate from',
+    isRequired: true,
+  },
+  {
+    name: 'characterId',
+    label: 'Character',
+    description: 'Character giving monologue',
     isRequired: true,
   },
 ]
