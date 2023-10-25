@@ -36,6 +36,53 @@ const params = [
     allowedValues: [1, 2, 4],
     optional: true,
   },
+  {
+    name: 'lora',
+    label: 'Concept',
+    description:
+      '(optional) activate a trained concept',
+    optional: true,
+  },
+  {
+    name: 'lora_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to activate the concept (0.0 will disable the concept)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.5,
+    step: 0.01,
+    optional: true,
+  },
+  {
+    name: 'init_image',
+    label: 'Starting image',
+    default: null,
+    description:
+      'The AI will start imagining from this image (can be used to guide colors and rough shapes or composition)',
+    mediaUpload: 'image/png, image/jpeg, image/webp',
+    optional: true,
+  },
+  {
+    name: 'init_image_strength',
+    label: 'Starting image strength',
+    description:
+      'How much influence the starting image has on the creation. Recommended <0.2',
+    default: 0.15,
+    minimum: 0.0,
+    maximum: 1.0,
+    step: 0.01,
+    optional: true,
+  },
+  
+  {
+    name: 'adopt_aspect_from_init_img',
+    label: 'Adopt aspect ratio of starting image',
+    description: 'Make a creation with the same aspect ratio as the starting image',
+    default: true,
+    allowedValues: [false, true],
+    optional: true,
+  },
   
   {
     name: 'upscale_f',
@@ -47,54 +94,7 @@ const params = [
     step: 0.01,
     optional: true,
   },
-
   
-  {
-    name: 'lora',
-    label: 'Concept',
-    description:
-      '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
-    optional: true,
-  },
-  {
-    name: 'lora_scale',
-    label: 'Concept scale',
-    description:
-      'How strongly to apply the Concept weights (0.0 will result in the base model)',
-    default: 0.8,
-    minimum: 0.0,
-    maximum: 1.5,
-    step: 0.01,
-    optional: true,
-  },
-  {
-    name: 'init_image_data',
-    label: 'Init image',
-    default: null,
-    description:
-      'Guidance image that will drive colors and rough shapes.',
-    mediaUpload: 'image/png, image/jpeg, image/webp',
-    optional: true,
-  },
-  {
-    name: 'adopt_aspect_from_init_img',
-    label: 'Adopt aspect ratio of Init image',
-    description: 'Make sure the creation has the same aspect ratio as the Init image.',
-    default: true,
-    allowedValues: [false, true],
-    optional: true,
-  },
-  {
-    name: 'init_image_strength',
-    label: 'Init image strength',
-    description:
-      'How much influence the guidance image has on the creation. Recommended <0.2',
-    default: 0.2,
-    minimum: 0.0,
-    maximum: 1.0,
-    step: 0.01,
-    optional: true,
-  },
   {
     name: 'uc_text',
     label: 'Negative prompt',
