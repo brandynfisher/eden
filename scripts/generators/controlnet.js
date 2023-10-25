@@ -72,20 +72,21 @@ const params = [
     name: 'lora',
     label: 'Concept',
     description:
-     '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
+      '(optional) activate a trained concept',
     optional: true,
   },
   {
-   name: 'lora_scale',
-   label: 'Concept scale',
-   description:
-     'How strongly to apply the Concept weights (0.0 will result in the base model)',
-   default: 0.8,
-   minimum: 0.0,
-   maximum: 1.5,
-   step: 0.01,
-   optional: true,
+    name: 'lora_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to activate the concept (0.0 will disable the concept)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.5,
+    step: 0.01,
+    optional: true,
   },
+  
   {
     name: 'adopt_aspect_from_init_img',
     label: 'Adopt aspect ratio of Init image',
