@@ -54,21 +54,21 @@ const params = [
     name: 'lora',
     label: 'Concept',
     description:
-      '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
+      '(optional) activate a trained concept',
     optional: true,
-   },
-   {
+  },
+  {
     name: 'lora_scale',
     label: 'Concept scale',
     description:
-      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+      'How strongly to activate the concept (0.0 will disable the concept)',
     default: 0.8,
     minimum: 0.0,
-    maximum: 1.2,
+    maximum: 1.5,
     step: 0.01,
     optional: true,
   },
-
+  
   {
     name: 'interpolation_texts',
     label: 'Override prompts',
@@ -83,7 +83,7 @@ const params = [
   {
     name: 'uc_text',
     label: 'Negative prompt',
-    description: 'Unconditional (negative) prompt',
+    description: 'what you DONT want to see',
     default:
       'nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft',
     optional: true,
@@ -156,7 +156,7 @@ const params = [
     name: 'interpolation_init_images_min_strength',
     label: 'Init image min strength',
     description:
-      'Min strength of the real images during interpolation. Low values will give the AI more freedom, leading to more visual changes. Higher values will look more like alpha-fading the images.',
+      'Min strength of the real images during interpolation. Low values will give the AI more freedom, leading to a more interesting visual journey. Higher values will look more like alpha-fading the images.',
     default: 0.05,
     minimum: 0.0,
     maximum: 1.0,
@@ -167,7 +167,7 @@ const params = [
     name: 'interpolation_init_images_max_strength',
     label: 'Init image max strength',
     description:
-      'Strength of the real images during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
+      'Max strength of the real images during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
     default: 0.8,
     minimum: 0.0,
     maximum: 1.0,
