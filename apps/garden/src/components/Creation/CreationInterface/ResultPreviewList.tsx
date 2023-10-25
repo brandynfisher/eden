@@ -147,7 +147,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
               <div>
                 <div>
                   <div className="flex items-center justify-between flex-wrap">
-                    <div className="flex items-center">
+                    <div className="flex items-center mb-2">
                       <strong className=" text-sm dark:text-gray-200">
                         /{task?.generator.generatorName}
                       </strong>
@@ -163,7 +163,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
                       <strong>{task?.cost}</strong> Manna
                     </div>
                   </div>
-                  <div title={task?.config.text_input || ''}>
+                  <div title={task?.config.text_input || ''} className="mb-1">
                     <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
                       {task?.config.text_input || ''}
                     </span>

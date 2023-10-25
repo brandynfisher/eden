@@ -20,6 +20,7 @@ const MediaPreview = ({
         key={creation.thumbnail}
         previewSizeUrl={creation.thumbnail || ''}
         aspectRatio={aspectRatio}
+        limitHeight={false}
       />
     )
   } else if (isVideoUrl(creation.uri)) {

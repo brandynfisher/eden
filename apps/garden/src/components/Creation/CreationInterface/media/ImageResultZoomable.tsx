@@ -4,9 +4,17 @@ import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import Image from 'next/image'
 import React, { ReactNode, useCallback, useState } from 'react'
 
-const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
+const ImagePlaceholder = ({
+  imageUrl,
+  limitHeight,
+}: {
+  limitHeight?: boolean
+  imageUrl: string
+}) => {
   return (
-    <div className="absolute inset-0 z-10 max-h-[90vh]">
+    <div
+      className={`absolute inset-0 z-10 ${limitHeight ? 'max-h-[90vh]' : ''}`}
+    >
       <Image
         src={imageUrl}
         alt={''}
@@ -29,6 +37,7 @@ const ImageResultZoomable = ({
   onLoad,
   priority,
   children,
+  limitHeight = true,
 }: {
   fullSizeUrl?: string
   previewSizeUrl?: string
@@ -38,6 +47,7 @@ const ImageResultZoomable = ({
   onLoad?: () => void
   priority?: boolean
   children?: ReactNode
+  limitHeight?: boolean
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -60,15 +70,25 @@ const ImageResultZoomable = ({
       style={{ paddingTop: `${aspectRatio}%` }}
     >
       {previewSizeUrl && !isLoaded ? (
-        <div className="absolute inset-0 text-gray-500 opacity-80 max-h-[90vh]">
+        <div
+          className={`absolute inset-0 text-gray-500 opacity-80 ${
+            limitHeight ? 'max-h-[90vh]' : ''
+          }`}
+        >
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
       {!isLoaded && thumbnailSizeUrl && previewSizeUrl ? (
-        <ImagePlaceholder key={thumbnailSizeUrl} imageUrl={thumbnailSizeUrl} />
+        <ImagePlaceholder
+          key={thumbnailSizeUrl}
+          imageUrl={thumbnailSizeUrl}
+          limitHeight={limitHeight}
+        />
       ) : null}
       {previewSizeUrl ? (
-        <div className="absolute inset-0 max-h-[90vh]">
+        <div
+          className={`absolute inset-0 ${limitHeight ? 'max-h-[90vh]' : ''}`}
+        >
           <Image
             key={previewSizeUrl}
             src={previewSizeUrl}

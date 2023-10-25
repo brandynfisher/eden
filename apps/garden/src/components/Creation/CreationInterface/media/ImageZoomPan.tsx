@@ -65,7 +65,7 @@ const ImageZoomPan = ({
     <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-30`}>
       <TransformWrapper
         minScale={0.025}
-        maxScale={2}
+        maxScale={4}
         centerZoomedOut={false}
         // centerOnInit={true}
         // initialPositionY={componentWrapRef.current?.clientHeight}

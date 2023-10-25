@@ -5,6 +5,8 @@ import { getAspectRatio } from '@/lib/media'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import React from 'react'
 
+// import ResultTools from '@/components/Creation/CreationInterface/ResultTools'
+
 const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
   const { creation, isLoading } = useCreation(creationId)
   const { showModal } = useModalContext()
@@ -25,17 +27,23 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
         </div>
       ) : null}
       {creation ? (
-        <div onClick={openDetailModal} className="cursor-pointer h-full w-full">
-          <MediaDisplay
-            creationUri={creation.uri}
-            previewUri={creation.uri}
-            thumbnailUri={creation.thumbnail}
-            aspectRatio={getAspectRatio(
-              creation.mediaAttributes.width,
-              creation.mediaAttributes.height,
-            )}
-            priority={false}
-          />
+        <div>
+          <div
+            onClick={openDetailModal}
+            className="cursor-pointer h-full w-full"
+          >
+            <MediaDisplay
+              creationUri={creation.uri}
+              previewUri={creation.uri}
+              thumbnailUri={creation.thumbnail}
+              aspectRatio={getAspectRatio(
+                creation.mediaAttributes.width,
+                creation.mediaAttributes.height,
+              )}
+              priority={false}
+            />
+          </div>
+          {/*<ResultTools creation={creation}/>*/}
         </div>
       ) : (
         <>{isLoading ? <LoadingIndicator /> : null}</>
