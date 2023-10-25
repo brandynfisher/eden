@@ -11,6 +11,7 @@ export const registerAirflow = async (fastify: FastifyInstance) => {
       submitTask: async (opts: {
         dagId: string
         taskId: string
+        config?: any
         executionDate?: string
       }) => {
         try {
@@ -20,6 +21,7 @@ export const registerAirflow = async (fastify: FastifyInstance) => {
               execution_date: opts.executionDate,
               conf: {
                 taskId: opts.taskId,
+                config: opts.config,
               },
             },
             {
@@ -53,6 +55,7 @@ declare module 'fastify' {
       submitTask: (opts: {
         dagId: string
         taskId: string
+        config?: any
         executionDate?: string
       }) => Promise<string>
     }

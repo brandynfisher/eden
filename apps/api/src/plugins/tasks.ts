@@ -13,7 +13,7 @@ export interface TaskHandlers {
     generator: GeneratorDocument,
     generatorVersion: GeneratorVersionSchema,
     config: any,
-  ) => Promise<string>
+  ) => Promise<string | undefined>
   receiveTaskUpdate: (server: FastifyInstance, update: any) => void
   getTransactionCost: (
     server: FastifyInstance,

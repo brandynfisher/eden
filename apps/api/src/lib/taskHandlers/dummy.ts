@@ -79,7 +79,7 @@ export const dummySubmitTask = async (
   config: any,
 ) => {
   if (generator.generatorName === 'monologue') {
-    const taskId = submitMonologueTask(server)
+    const taskId = submitMonologueTask(server, config)
     return taskId
   } else if (generator.generatorName === 'test') {
     console.log(
