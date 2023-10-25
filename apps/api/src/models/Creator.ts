@@ -4,6 +4,10 @@ import paginate from 'mongoose-paginate-v2'
 import { CollectionDocument } from './Collection'
 import { CreationDocument } from './Creation'
 
+export enum FeatureFlag {
+  Preview = 'preview',
+}
+
 export interface UserSchema {
   userId: string
   isWeb2: boolean
@@ -13,7 +17,7 @@ export interface UserSchema {
   collections: CollectionDocument[]
   followerCount: number
   followingCount: number
-  featureFlags?: string[]
+  featureFlags?: FeatureFlag[]
   username?: string
   userImage?: string
   deleted?: boolean
@@ -84,6 +88,7 @@ const user = new Schema<UserDocument>(
     featureFlags: [
       {
         type: String,
+        enum: Object.values(FeatureFlag),
       },
     ],
     deleted: {
