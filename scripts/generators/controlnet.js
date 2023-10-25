@@ -66,7 +66,7 @@ const params = [
     label: 'Samples',
     description: 'Number of variations to create',
     default: 1,
-    allowedValues: [1, 2, 4],
+    allowedValues: [1, 2, 3, 4],
     optional: true,
   },
 
@@ -91,7 +91,7 @@ const params = [
   
   {
     name: 'adopt_aspect_from_init_img',
-    label: 'Adopt aspect ratio of Init image',
+    label: 'Adopt aspect ratio of guidance image',
     description: 'Make a creation with the same aspect ratio as the guidance image.',
     default: true,
     allowedValues: [false, true],
@@ -100,7 +100,7 @@ const params = [
   {
     name: 'uc_text',
     label: 'Negative prompt',
-    description: 'Unconditional (negative) prompt: what you DONT want to see',
+    description: 'What you DONT want to see',
     default:
       'watermark, text, nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, blurry, blurred, grainy, signature, cut off, draft',
     isRequired: false,
@@ -109,8 +109,8 @@ const params = [
   {
     name: 'guidance_scale',
     label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance',
-    default: 7.5,
+    description: 'Strength of the prompt (higher values result in more contrast and color saturation)',
+    default: 7.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,
@@ -131,14 +131,6 @@ const params = [
     default: 40,
     minimum: 5,
     maximum: 70,
-    optional: true,
-  },
-  {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
     optional: true,
   },
   {
