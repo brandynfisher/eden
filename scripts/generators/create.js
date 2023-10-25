@@ -85,20 +85,9 @@ const params = [
   },
   
   {
-    name: 'upscale_f',
-    label: 'Upscale Factor',
-    description: 'Up-scale your creation with this factor after generation',
-    default: 1.0,
-    minimum: 1.0,
-    maximum: 2.0,
-    step: 0.01,
-    optional: true,
-  },
-  
-  {
     name: 'uc_text',
     label: 'Negative prompt',
-    description: 'Unconditional (negative) prompt: what you DONT want to see',
+    description: 'what you DONT want to see',
     default:
       'watermark, text, nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, blurry, blurred, grainy, signature, cut off, draft',
     optional: true,
@@ -128,14 +117,6 @@ const params = [
     default: 40,
     minimum: 5,
     maximum: 70,
-    optional: true,
-  },
-  {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
     optional: true,
   },
   {
