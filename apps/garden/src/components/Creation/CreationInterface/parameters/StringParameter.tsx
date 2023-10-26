@@ -88,13 +88,6 @@ const StringParameter = (props: {
               </Row>
             </div>
           </Form.Item>
-          <Row>
-            <Col>
-              <span style={{ color: 'gray' }}>
-                {props.parameter.description}
-              </span>
-            </Col>
-          </Row>
         </>
       ) : (
         <>

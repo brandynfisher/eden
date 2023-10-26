@@ -107,7 +107,7 @@ const CreationInterface = ({
               key: 'tasks',
               label: 'Tasks',
               children: (
-                <div className="px-2 pt-2">
+                <div className="pl-2 pt-2">
                   <ResultPreviewList innerRef={resultPreviewRef} />
                 </div>
               ),
@@ -115,8 +115,8 @@ const CreationInterface = ({
           ]}
         />
       ) : (
-        <div className="h-full lg:grid lg:grid-cols-12 lg:gap-2 creation-interface">
-          <div className="col-span-6 xl:col-span-5 2xl:col-span-4 relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-200 dark:border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
+        <div className="h-full md:grid md:grid-cols-12 md:gap-2 creation-interface">
+          <div className="col-span-5 xl:col-span-4 2xl:col-span-3 relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-200 dark:border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
             <CreationWorkspace
               generators={availableGenerators}
               presetCreation={presetCreation}
@@ -125,7 +125,7 @@ const CreationInterface = ({
             />
           </div>
 
-          <div className="col-span-6 xl:col-span-7 2xl:col-span-8 overflow-y-auto px-2 pt-2">
+          <div className="col-span-7 xl:col-span-8 2xl:col-span-9 overflow-y-auto px-2 pt-2">
             <ResultPreviewList innerRef={resultPreviewRef} />
           </div>
 
