@@ -9,11 +9,18 @@ import Stripe from 'stripe'
 import { getAdminHeaders } from '../lib/util'
 import { User, UserDocument } from '../models/Creator'
 
+interface StripeDataObject {
+  userId: string
+  customerId: string
+  sessionId: string
+  productId: string
+}
+
 interface TopUpMetadata {
   manna: string
 }
 
-interface NewSubscriptionMetadata {
+interface SubscriptionMetadata {
   subscriptionTier: string
 }
 
@@ -93,7 +100,7 @@ const handleTopUp = async (
 
 const handleNewSubscription = async (
   reply: FastifyReply,
-  metadata: NewSubscriptionMetadata,
+  metadata: SubscriptionMetadata,
   user: UserDocument,
 ) => {
   const subscriptionTier = metadata.subscriptionTier
@@ -111,11 +118,84 @@ const handleNewSubscription = async (
   }
 }
 
+const handleSubscriptionUpdated = async (
+  server: FastifyInstance,
+  reply: FastifyReply,
+  { customerId, productId }: StripeDataObject,
+) => {
+  if (!server.stripe) {
+    return reply.status(500).send({
+      message: 'Stripe is not configured',
+    })
+  }
+
+  const user = await User.findOne({
+    stripeCustomerId: customerId,
+  })
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  const product = await server.stripe.products.retrieve(productId)
+  const metadata = {
+    subscriptionTier: product.metadata.subscriptionTier,
+  }
+
+  if (!metadata) {
+    return reply.status(400).send({
+      message: 'No metadata found',
+    })
+  }
+
+  if (metadata.subscriptionTier) {
+    await handleNewSubscription(reply, metadata, user)
+  } else {
+    return reply.status(400).send({
+      message: 'No subscription tier found',
+    })
+  }
+}
+
+const handleSubscriptionDeleted = async (
+  server: FastifyInstance,
+  reply: FastifyReply,
+  { customerId }: StripeDataObject,
+) => {
+  const user = await User.findOne({
+    stripeCustomerId: customerId,
+  })
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!server.stripe) {
+    return reply.status(500).send({
+      message: 'Stripe is not configured',
+    })
+  }
+
+  try {
+    user.subscriptionTier = undefined
+    await user.save()
+
+    return reply.status(200).send({})
+  } catch (error) {
+    return reply.status(500).send({
+      message: 'Error updating subscription',
+    })
+  }
+}
+
 const handlePaymentSuccess = async (
   server: FastifyInstance,
   reply: FastifyReply,
-  userId: string,
-  sessionId: string,
+  { userId, sessionId }: StripeDataObject,
 ) => {
   if (!server.stripe) {
     return reply.status(500).send({
@@ -151,7 +231,6 @@ const handlePaymentSuccess = async (
 
   // @ts-ignore
   const metadata = session.line_items.data[0].price.product.metadata
-  console.log('mmm', metadata)
   if (!metadata) {
     return reply.status(400).send({
       message: 'No metadata found',
@@ -161,11 +240,7 @@ const handlePaymentSuccess = async (
   if (metadata.manna) {
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
   } else if (metadata.subscriptionTier) {
-    await handleNewSubscription(
-      reply,
-      metadata as NewSubscriptionMetadata,
-      user,
-    )
+    await handleNewSubscription(reply, metadata as SubscriptionMetadata, user)
   }
 }
 
@@ -196,6 +271,9 @@ export const createCheckoutSession = async (
     })
   }
 
+  const customer_creation =
+    paymentMode === 'payment' && !user.stripeCustomerId ? 'always' : undefined
+
   const session = await server.stripe.checkout.sessions.create({
     mode: paymentMode,
     payment_method_types: ['card'],
@@ -205,7 +283,7 @@ export const createCheckoutSession = async (
         quantity: 1,
       },
     ],
-    customer_creation: user.stripeCustomerId ? undefined : 'always',
+    customer_creation,
     customer: user.stripeCustomerId,
     client_reference_id: user.userId,
     success_url: `${server.config.FRONTEND_URL}/order/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -277,21 +355,36 @@ export const handlePaymentEvent = async (
     sig,
     server.config.STRIPE_WEBHOOK_SECRET,
   )
-
+  const dataObject = event.data.object
   // @ts-ignore
-  const userId = event.data.object.client_reference_id
-
-  // Get the priceId
+  const userId = dataObject.client_reference_id
   // @ts-ignore
-  const sessionId = event.data.object.id
+  const customerId = dataObject.customer
+  // @ts-ignore
+  const sessionId = dataObject.id
+  // @ts-ignore
+  const productId = dataObject.items?.data[0]?.price?.product
+
+  const stripeDataObject: StripeDataObject = {
+    userId,
+    customerId,
+    sessionId,
+    productId,
+  }
 
   switch (event.type) {
+    // checkout events
     case 'checkout.session.completed':
-      await handlePaymentSuccess(server, reply, userId, sessionId)
+      await handlePaymentSuccess(server, reply, stripeDataObject)
       return
-    // case 'invoice.payment_succeeded':
-    //   await handlePaymentSuccess(server, reply, userId, sessionId)
-    //   return reply.status(200).send({})
+
+    // subscription events
+    case 'customer.subscription.updated':
+      await handleSubscriptionUpdated(server, reply, stripeDataObject)
+      return
+    case 'customer.subscription.deleted':
+      await handleSubscriptionDeleted(server, reply, stripeDataObject)
+      return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)
       return reply.status(200).send({})
