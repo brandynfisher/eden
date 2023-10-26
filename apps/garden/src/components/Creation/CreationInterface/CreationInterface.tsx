@@ -78,25 +78,28 @@ const CreationInterface = ({
             {
               key: 'workspace',
               label: 'Workspace',
+              className: 'h-full',
               children: (
-                <CreationWorkspace
-                  generators={generators.filter(
-                    generator =>
-                      !hiddenCreationGenerators.includes(
-                        generator.generatorName,
-                      ),
-                  )}
-                  presetCreation={presetCreation}
-                  activeGenerator={activeGenerator}
-                  handleGeneratorChange={handleGeneratorChange}
-                />
+                <div className="relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
+                  <CreationWorkspace
+                    generators={generators.filter(
+                      generator =>
+                        !hiddenCreationGenerators.includes(
+                          generator.generatorName,
+                        ),
+                    )}
+                    presetCreation={presetCreation}
+                    activeGenerator={activeGenerator}
+                    handleGeneratorChange={handleGeneratorChange}
+                  />
+                </div>
               ),
             },
             {
               key: 'tasks',
               label: 'Tasks',
               children: (
-                <div className="overflow-y-auto px-2 pt-2">
+                <div className="px-2 pt-2">
                   <ResultPreviewList innerRef={resultPreviewRef} />
                 </div>
               ),
@@ -104,7 +107,7 @@ const CreationInterface = ({
           ]}
         />
       ) : (
-        <div className="h-full lg:grid lg:grid-cols-2 lg:gap-4">
+        <div className="h-full lg:grid lg:grid-cols-2 lg:gap-2">
           <div className="relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
             <CreationWorkspace
               generators={generators.filter(
