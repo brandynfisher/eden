@@ -420,7 +420,7 @@ const GeneratorForm = ({
                 className="font-mono mb-4 mx-4"
               >
                 <UpCircleOutlined />
-                Hide optional settings
+                Hide settings
               </Button>
             ) : (
               <Button
