@@ -145,7 +145,11 @@ const CompletedTaskMenuItem = ({
                 </div>
               </div>
             </div>
-            <Button type="text" title="Dismiss" className="relative px-2">
+            <Button
+              type="text"
+              title="Dismiss"
+              className="relative px-2 right-[-8px]"
+            >
               <CloseOutlined
                 className="ml-auto cursor-pointer"
                 onClick={e => {

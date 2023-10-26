@@ -526,3 +526,14 @@ body {
 .ant-card .ant-card-body {
     padding: 16px !important;
 }
+
+
+.creation-interface {
+    &.ant-tabs {
+        height: 100%;
+    }
+    .ant-tabs-content-holder {
+        max-height: 100%;
+        overflow-y: auto;
+    }
+}
