@@ -52,7 +52,10 @@ const progress = new ProgressBar({
   delay: 200,
 })
 
-const CustomLayout = ({ children }: PropsWithChildren) => {
+const CustomLayout = ({
+  fixedHeight,
+  children,
+}: PropsWithChildren & { fixedHeight?: boolean }) => {
   const [requestCount, setRequestCount] = useState(0)
   const [showLoading, setShowLoading] = useState(false)
 
@@ -81,13 +84,15 @@ const CustomLayout = ({ children }: PropsWithChildren) => {
     <SWRConfig
       value={{ use: [myRequestCounterMiddlewareWrap(setRequestCount)] }}
     >
-      <Layout hasSider={false} className="min-h-screen flex flex-col">
+      <Layout
+        hasSider={false}
+        className={`min-h-screen flex flex-col ${
+          fixedHeight ? 'h-screen overflow-hidden' : ''
+        }`}
+      >
         <BannerManager />
         <LayoutHeader />
-        <Layout
-          hasSider={false}
-          className="p-4 !pb-0 bg-white dark:bg-gray-950"
-        >
+        <Layout hasSider={false} className="p-4 lg:!pb-0">
           {children}
         </Layout>
         <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center z-50">

@@ -44,7 +44,7 @@ const CreateCreationsPage = () => {
   }, [router.query])
 
   return (
-    <div className={`flex flex-col`}>
+    <>
       {usesPreset ? (
         <CreatePageWithPreset
           generator={
@@ -55,7 +55,7 @@ const CreateCreationsPage = () => {
       ) : (
         <CreatePageDefault />
       )}
-    </div>
+    </>
   )
 }
 
