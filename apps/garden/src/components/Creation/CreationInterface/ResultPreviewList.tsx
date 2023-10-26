@@ -138,9 +138,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
 
   return (
     <div className="result-preview relative w-full flex flex-col rounded-lg border border-0 border-solid">
-      <Card
-        className={`w-full h-fit flex justify-center items-center  dark:!bg-gray-900`}
-      >
+      <Card className={`w-full h-fit flex justify-center items-center`}>
         <>
           {!creationUri ? (
             <div className="w-full">

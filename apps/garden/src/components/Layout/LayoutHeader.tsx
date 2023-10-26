@@ -18,11 +18,11 @@ const LayoutHeader = () => {
 
   const { width: viewportWidth } = useViewportSize()
   const [isSmallScreen, setIsSmallScreen] = useState(
-    viewportWidth < theme.screens.lg,
+    viewportWidth && viewportWidth < theme.screens.lg,
   )
 
   useEffect(() => {
-    if (viewportWidth < theme.screens.lg) {
+    if (viewportWidth && viewportWidth < theme.screens.lg) {
       setIsSmallScreen(true)
     } else {
       setIsSmallScreen(false)

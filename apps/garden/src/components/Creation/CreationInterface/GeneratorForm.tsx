@@ -364,7 +364,7 @@ const GeneratorForm = ({
         return (
           <div
             key={parameter.name}
-            className={`p-4 mb-4 bg-gray-900 ${
+            className={`p-4 mb-4 ${
               !showOptional && isOptional ? 'hidden' : ''
             }`}
           >
@@ -387,7 +387,7 @@ const GeneratorForm = ({
       scrollToFirstError={true}
       className="h-full flex flex-col"
     >
-      <div className="p-4 bg-gray-800">
+      <div className="p-4 bg-gray-100 dark:bg-gray-800">
         <div className="flex justify-between flex-wrap">
           <span style={{ color: 'gray' }}>{generator.description}</span>
           {generator.output === 'creation' ? (
@@ -441,7 +441,10 @@ const GeneratorForm = ({
         <div>{renderFormFields(advancedParameters, true)}</div>
       </div>
 
-      <div className="p-4 text-left bg-gray-800" key={generator.generatorName}>
+      <div
+        className="p-4 text-left bg-gray-100 dark:bg-gray-800"
+        key={generator.generatorName}
+      >
         <div className="flex gap-4 items-center justify-between flex-wrap">
           <div className="flex gap-2 items-center w-full sm:w-auto">
             {canAffordOperation === false ? (
