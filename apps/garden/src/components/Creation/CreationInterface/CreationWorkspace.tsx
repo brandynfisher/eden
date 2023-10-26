@@ -19,7 +19,7 @@ const CreationWorkspace = ({
     <>
       <div className="w-full">
         {presetCreation && <CreationPresetInfo creation={presetCreation} />}
-        <div className="p-4 pb-0 flex bg-gray-800">
+        <div className="p-4 pb-0 flex bg-gray-100 dark:bg-gray-800">
           <Select
             id="activeGenerator"
             value={activeGenerator?.generatorName}

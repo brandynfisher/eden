@@ -247,7 +247,6 @@ const subscriberExtraItems: ItemType[] = [
 
 export const SettingsDropdown = () => {
   const { isAuthenticated, featureFlags, user } = useContext(UserContext)
-  console.log(user)
   const { width: windowWidth } = useViewportSize()
   const isPreviewUser = featureFlags?.includes('preview')
 
@@ -258,7 +257,7 @@ export const SettingsDropdown = () => {
     },
   ]
 
-  if (windowWidth > 768) {
+  if (windowWidth && windowWidth > 768) {
     const largeViewportItems: ItemType[] = [
       {
         type: 'divider',

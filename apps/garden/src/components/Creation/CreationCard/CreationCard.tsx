@@ -72,6 +72,7 @@ const CreationCard: FC<{
                       creation.mediaAttributes.width,
                       creation.mediaAttributes.height,
                     )}
+                    priority={true}
                   />
                 </a>
               </div>

@@ -4,7 +4,7 @@ import TestGeneratorInterface from '@/components/Creation/CreationInterface/Test
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
-import { Creation } from '@edenlabs/eden-sdk'
+import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
 import { Tabs } from 'antd/lib'
 import React, {
@@ -27,16 +27,21 @@ const hiddenCreationGenerators = [
 const CreationInterface = ({
   generatorName,
   presetCreation,
+  selectedGenerators,
 }: {
   generatorName?: string
   presetCreation?: Creation
+  selectedGenerators?: string[]
 }) => {
   const { width } = useViewportSize()
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
-  const [activeGenerator, setActiveGenerator] = useState(
-    generators?.[0] || undefined,
+  const [activeGenerator, setActiveGenerator] = useState<Generator | undefined>(
+    undefined,
   )
+  const [availableGenerators, setAvailableGenerators] = useState<
+    Generator[] | undefined
+  >(undefined)
 
   const handleGeneratorChange = useCallback(
     (value: string) => {
@@ -58,15 +63,23 @@ const CreationInterface = ({
       handleGeneratorChange(presetCreation.task.generator.generatorName)
       return
     }
-
-    setActiveGenerator(generators?.[0])
+    const available = !selectedGenerators
+      ? generators?.filter(
+          generator =>
+            !hiddenCreationGenerators.includes(generator.generatorName),
+        )
+      : generators?.filter(gen =>
+          selectedGenerators?.includes(gen.generatorName),
+        )
+    setAvailableGenerators(available)
+    setActiveGenerator(available?.[0])
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
-  if (!generators || !activeGenerator) {
+  if (!generators || !activeGenerator || !availableGenerators) {
     return <LoadingIndicator />
   }
 
-  const isSmallScreen = width <= 1024
+  const isSmallScreen = !width ? false : width <= 1024
 
   return (
     <>
@@ -82,12 +95,7 @@ const CreationInterface = ({
               children: (
                 <div className="relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
                   <CreationWorkspace
-                    generators={generators.filter(
-                      generator =>
-                        !hiddenCreationGenerators.includes(
-                          generator.generatorName,
-                        ),
-                    )}
+                    generators={availableGenerators}
                     presetCreation={presetCreation}
                     activeGenerator={activeGenerator}
                     handleGeneratorChange={handleGeneratorChange}
@@ -108,12 +116,9 @@ const CreationInterface = ({
         />
       ) : (
         <div className="h-full lg:grid lg:grid-cols-2 lg:gap-2">
-          <div className="relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
+          <div className="relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-200 dark:border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
             <CreationWorkspace
-              generators={generators.filter(
-                generator =>
-                  !hiddenCreationGenerators.includes(generator.generatorName),
-              )}
+              generators={availableGenerators}
               presetCreation={presetCreation}
               activeGenerator={activeGenerator}
               handleGeneratorChange={handleGeneratorChange}
