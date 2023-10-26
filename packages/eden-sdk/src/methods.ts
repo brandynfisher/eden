@@ -26,6 +26,7 @@ import { MediaUploadResponse } from 'src/responses/MediaResponses'
 import {
   PaymentsCreateResponse,
   PaymentsProductsResponse,
+  PaymentsSubscriptionResponse,
 } from 'src/responses/PaymentsResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
@@ -346,6 +347,10 @@ export abstract class Methods {
       this,
       paymentsProductsRequestConfig,
     ),
+    subscription: bindApiCall<
+      PaymentsSubscriptionArguments,
+      PaymentsSubscriptionResponse
+    >(this, paymentsSubscriptionRequestConfig),
   }
 
   public readonly scenarios = {
@@ -629,6 +634,10 @@ export interface MediaUploadArguments extends WebAPICallOptions {
 export interface PaymentsCreateArguments extends WebAPICallOptions {
   priceId: string
   paymentMode: 'payment' | 'subscription'
+}
+
+export interface PaymentsSubscriptionArguments extends WebAPICallOptions {
+  stripeCustomerId: string
 }
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
@@ -1173,6 +1182,18 @@ const paymentsProductsRequestConfig = (): AxiosRequestConfig => {
   return {
     method: 'GET',
     url: 'payments/products',
+  }
+}
+
+const paymentsSubscriptionRequestConfig = (
+  args: PaymentsSubscriptionArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'payments/subscription',
+    data: {
+      ...args,
+    },
   }
 }
 

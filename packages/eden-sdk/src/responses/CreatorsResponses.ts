@@ -55,4 +55,6 @@ export type Creator = {
   followingCount?: number
   isFollowing?: boolean
   featureFlags?: string[]
+  subscriptionTier?: string
+  stripeCustomerId?: string
 }
