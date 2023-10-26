@@ -357,10 +357,6 @@ const GeneratorForm = ({
           }
         }
 
-        if (!presetCreation && isOptional && !showOptional) {
-          return
-        }
-
         return (
           <div
             key={parameter.name}
@@ -378,11 +374,11 @@ const GeneratorForm = ({
 
   return (
     <Form
+      layout={'vertical'}
       form={form}
       name="generate"
       onFinish={handleFinish}
       key={generator.generatorName}
-      title={generator.generatorName}
       onFieldsChange={debouncedHandleFormFieldsChange}
       scrollToFirstError={true}
       className="h-full flex flex-col"
@@ -415,7 +411,6 @@ const GeneratorForm = ({
 
       <div className="flex flex-col flex-grow overflow-y-auto overflow-x-hidden pt-2">
         <div>{renderFormFields(requiredParameters, false)}</div>
-        <div>{renderFormFields(optionalParameters, false)}</div>
 
         {advancedParameters.length > 0 && (
           <>
@@ -433,11 +428,12 @@ const GeneratorForm = ({
                 className="font-mono mx-4"
               >
                 <DownCircleOutlined />
-                Show optional settings
+                Show settings
               </Button>
             )}
           </>
         )}
+        <div>{renderFormFields(optionalParameters, true)}</div>
         <div>{renderFormFields(advancedParameters, true)}</div>
       </div>
 

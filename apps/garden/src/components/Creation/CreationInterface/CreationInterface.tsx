@@ -115,7 +115,7 @@ const CreationInterface = ({
           ]}
         />
       ) : (
-        <div className="h-full lg:grid lg:grid-cols-2 lg:gap-2">
+        <div className="h-full lg:grid lg:grid-cols-2 lg:gap-2 creation-interface">
           <div className="relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-200 dark:border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
             <CreationWorkspace
               generators={availableGenerators}

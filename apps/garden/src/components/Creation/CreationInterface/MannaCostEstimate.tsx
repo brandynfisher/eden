@@ -27,7 +27,7 @@ const MannaCostEstimate = ({
               <div>Displays the estimated manna cost for this operation</div>
             }
             title="Manna Cost"
-            trigger="click"
+            trigger={['click', 'hover']}
           >
             <HelpOutline fontSize="small" className="hover:text-blue-400" />
           </Popover>

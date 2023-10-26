@@ -1,3 +1,4 @@
+import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Col, Form, FormInstance, InputNumber, Row, Slider } from 'antd'
 import { FocusEvent, useEffect } from 'react'
@@ -31,8 +32,13 @@ const SliderParameter = (props: {
       <Row>
         <Col flex="auto">
           <Form.Item
-            style={{ marginBottom: 5 }}
-            label={props.parameter.label}
+            label={
+              <ParameterLabel
+                text={props.parameter.label}
+                description={props.parameter.description}
+              />
+            }
+            className="mb-1"
             name={props.parameter.name}
             initialValue={props.parameter.default}
             rules={[
@@ -87,9 +93,6 @@ const SliderParameter = (props: {
             />
           </Form.Item>
         </Col>
-      </Row>
-      <Row>
-        <span style={{ color: 'gray' }}>{props.parameter.description}</span>
       </Row>
     </>
   )

@@ -1,5 +1,6 @@
+import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
-import { Form, FormInstance, Row, Select, Switch } from 'antd'
+import { Form, FormInstance, Select, Switch } from 'antd'
 import { useState } from 'react'
 
 const OptionParameter = (props: {
@@ -26,8 +27,13 @@ const OptionParameter = (props: {
   return (
     <>
       <Form.Item
-        style={{ marginBottom: 5 }}
-        label={props.parameter.label}
+        label={
+          <ParameterLabel
+            text={props.parameter.label}
+            description={props.parameter.description}
+          />
+        }
+        className="mb-1"
         name={props.parameter.name}
         initialValue={props.parameter.default}
         rules={[
@@ -49,9 +55,6 @@ const OptionParameter = (props: {
           />
         )}
       </Form.Item>
-      <Row>
-        <span style={{ color: 'gray' }}>{props.parameter.description}</span>
-      </Row>
     </>
   )
 }
