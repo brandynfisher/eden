@@ -233,13 +233,15 @@ const ResultPreview = ({ task }: { task: Task }) => {
               </div>
 
               {task.samples && task.samples.length ? (
-                <div className={`grid grid-cols-2 gap-2 2xl:grid-cols-4`}>
+                <div
+                  className={`grid grid-cols-2 gap-2 2xl:grid-cols-${task.samples.length}`}
+                >
                   {task.samples.map(id => (
                     <ResultPreviewDisplay key={id} creationId={id} />
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 2xl:grid-cols-4">
+                <div className="grid grid-cols-1 2xl:grid-cols-2">
                   <ResultPreviewDisplay creationId={creationId} />
                 </div>
               )}
