@@ -1,3 +1,4 @@
+import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import SelectCustom from '@/components/Forms/CustomSelect'
 import { useConcepts } from '@/hooks/useConcepts'
 import { UserContext } from '@/providers/UserProvider'
@@ -42,8 +43,13 @@ const ConceptParameter = (props: {
   return (
     <>
       <Form.Item
-        style={{ marginBottom: 5 }}
-        label={props.parameter.label}
+        label={
+          <ParameterLabel
+            text={props.parameter.label}
+            description={props.parameter.description}
+          />
+        }
+        className="mb-1"
         name={props.parameter.name}
         initialValue={props.parameter.default}
         rules={[
@@ -68,9 +74,6 @@ const ConceptParameter = (props: {
       <Row>
         <Switch checked={viewPublic} onChange={setViewPublic} />
         &nbsp;&nbsp;Search Public Concepts
-      </Row>
-      <Row>
-        <span style={{ color: 'gray' }}>{props.parameter.description}</span>
       </Row>
     </>
   )

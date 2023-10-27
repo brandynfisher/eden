@@ -302,7 +302,7 @@ export const SettingsDropdown = () => {
       className="cursor-pointer"
       arrow={true}
     >
-      <Button>
+      <Button className="min-w-[40px]">
         <div className="flex items-center font-mono">
           <SettingOutlined className="text-xl" />
         </div>

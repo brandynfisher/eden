@@ -41,6 +41,7 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
                 creation.mediaAttributes.height,
               )}
               priority={false}
+              limitHeight={false}
             />
           </div>
           {/*<ResultTools creation={creation}/>*/}

@@ -105,7 +105,9 @@ const ImageResultZoomable = ({
         </div>
       ) : null}
       {children ? children : null}
-      {fullSizeUrl && !showPreview && <ImagePreviewMask />}
+      {fullSizeUrl && !showPreview && (
+        <ImagePreviewMask limitHeight={limitHeight} />
+      )}
     </div>
   )
 }
