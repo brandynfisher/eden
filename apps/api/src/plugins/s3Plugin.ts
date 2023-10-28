@@ -189,6 +189,54 @@ export const uploadBufferAsset = async (
   }
 }
 
+export const getSignedDownloadUrl = (
+  server: FastifyInstance,
+  assetUrl: string,
+) => {
+  console.log('Generating Presigned Link ... ')
+  console.log(assetUrl)
+  console.log(s3Url(server, ''))
+  const assetPath = assetUrl.replace(s3Url(server, ''), '')
+  const params = {
+    Bucket: server.config.AWS_S3_BUCKET || '',
+    Key: assetPath,
+  }
+
+  console.log({ params })
+
+  return new Promise(function (resolve, reject) {
+    server.s3
+      .headObject(params)
+      .promise()
+      .then(function (data) {
+        console.log('s3 File exists' + data)
+        resolve(
+          createSignedDownloadUrl(server, {
+            ...params,
+            ResponseContentType: 'application/octet-stream',
+            Expires: 60 * 5, // URL will be valid for 5 minutes
+          }),
+        )
+      })
+      .catch(function (err) {
+        console.log('Generating Url Failed', err)
+        reject('Generating Url Failed: file does not exist')
+      })
+  })
+}
+
+export const createSignedDownloadUrl = (
+  server: FastifyInstance,
+  params: {
+    Bucket: string
+    Key: string
+    ResponseContentType: string
+    Expires: number
+  },
+) => {
+  return server.s3.getSignedUrl('getObject', params)
+}
+
 export const s3Url = (server: FastifyInstance, filename: string) =>
   `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com/${filename}`
 
@@ -203,6 +251,7 @@ export const registerS3 = async (fastify: FastifyInstance) => {
     fastify.decorate('uploadUrlAsset', uploadUrlAsset)
     fastify.decorate('uploadThumbnailAsset', uploadThumbnailAsset)
     fastify.decorate('uploadBufferAsset', uploadBufferAsset)
+    fastify.decorate('getSignedDownloadUrl', getSignedDownloadUrl)
     fastify.log.info('Successfully registered S3Plugin')
   } catch (err) {
     fastify.log.error('Plugin: S3, error on register', err)
@@ -227,6 +276,10 @@ declare module 'fastify' {
       buffer: Buffer,
       fileExtension?: string | null,
     ) => Promise<{ uri: string; mediaAttributes: MediaAttributes }>
+    getSignedDownloadUrl: (
+      server: FastifyInstance,
+      assetUrl: string,
+    ) => Promise<string>
   }
 }
 

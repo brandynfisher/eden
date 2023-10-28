@@ -39,7 +39,7 @@ const CardToolsDropdown = ({
   itemType: 'creation' | 'concept'
   onChange: (updatedItem: Creation | Concept) => void
 }) => {
-  const { user } = useContext(UserContext)
+  const { user, isAuthenticated } = useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)
 
   useEffect(() => {
@@ -223,25 +223,30 @@ const CardToolsDropdown = ({
           ]
         : []
 
+    const downloadItem: MenuItem[] = isAuthenticated
+      ? [
+          {
+            key: '7',
+            type: 'divider',
+          },
+          {
+            icon: (
+              <DownloadFileButton
+                url={item.uri}
+                variant="text"
+                label="Download"
+              />
+            ),
+            key: '8',
+          },
+        ]
+      : []
+
     return [
       ...defaultMenuItems,
       ...creatorMenuItems,
       ...deleteItem,
-      {
-        key: '7',
-        type: 'divider',
-      },
-      {
-        icon: (
-          <DownloadFileButton
-            url={item.uri}
-            fileName={item._id}
-            variant="text"
-            label="Download"
-          />
-        ),
-        key: '8',
-      },
+      ...downloadItem,
     ]
   }
 
