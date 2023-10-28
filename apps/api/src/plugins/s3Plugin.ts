@@ -193,23 +193,26 @@ export const getSignedDownloadUrl = (
   server: FastifyInstance,
   assetUrl: string,
 ) => {
-  console.log('Generating Presigned Link ... ')
-  console.log(assetUrl)
-  console.log(s3Url(server, ''))
-  const assetPath = assetUrl.replace(s3Url(server, ''), '')
+  // @todo: got assets floating on multiple buckets, thus this ugly solution of dissecting the url
+  // @todo: swap this back to use config/ENV values whenever we're living on a single bucket
+  // const currentBucketUrl = s3Url(server, '')
+  // const isLegacyBucket = !assetUrl.includes(currentBucketUrl)
+  const fileBucketUrlParts = assetUrl.split('/')
+  const bucketName = fileBucketUrlParts[2].split('.')[0]
+  const assetPath = fileBucketUrlParts[fileBucketUrlParts.length - 1]
+
   const params = {
-    Bucket: server.config.AWS_S3_BUCKET || '',
+    // Bucket: server.config.AWS_S3_BUCKET || '',
+    Bucket: bucketName,
     Key: assetPath,
   }
-
-  console.log({ params })
 
   return new Promise(function (resolve, reject) {
     server.s3
       .headObject(params)
       .promise()
-      .then(function (data) {
-        console.log('s3 File exists' + data)
+      .then(function () {
+        // console.log('s3 File exists')
         resolve(
           createSignedDownloadUrl(server, {
             ...params,
