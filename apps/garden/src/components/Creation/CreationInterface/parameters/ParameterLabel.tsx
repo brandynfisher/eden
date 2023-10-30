@@ -2,15 +2,17 @@ import HelpOutline from '@mui/icons-material/HelpOutline'
 import { Popover } from 'antd'
 
 const ParameterLabel = ({
+  name,
   text,
   description,
 }: {
+  name?: string
   text: string
   description?: string
 }) => {
   return (
     <div className="flex w-full items-center justify-between">
-      <div>{text}</div>
+      {name ? <label htmlFor={name}>{text}</label> : <div>{text}</div>}
       {description ? (
         <Popover
           content={<div>{description}</div>}

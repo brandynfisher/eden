@@ -21,7 +21,7 @@ const ImagePlaceholder = ({
         width="0"
         height="0"
         className="w-full h-full object-contain absolute z-10 inset-0"
-        sizes={'(max-width: 1280px) 33vw, (max-width: 1024px) 50vw, 75vw'}
+        sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 15vw'}
         style={{ objectFit: 'contain', objectPosition: 'top center' }}
       />
       <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-90 text-gray-400" />
@@ -38,6 +38,7 @@ const ImageResultZoomable = ({
   priority,
   children,
   limitHeight = true,
+  quality,
 }: {
   fullSizeUrl?: string
   previewSizeUrl?: string
@@ -48,6 +49,7 @@ const ImageResultZoomable = ({
   priority?: boolean
   children?: ReactNode
   limitHeight?: boolean
+  quality?: number
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -93,14 +95,15 @@ const ImageResultZoomable = ({
             key={previewSizeUrl}
             src={previewSizeUrl}
             alt={previewSizeUrl}
-            sizes={'(max-width: 1280px) 50vw, (max-width: 1024px) 75vw, 100vw'}
+            sizes={'(max-width: 1024px) 90vw, (max-width: 1280px) 50vw, 75vw'}
             onLoadingComplete={handleOnLoad}
             priority={priority}
             width="0"
             height="0"
-            loading={priority ? 'eager' : 'lazy'}
+            // loading={priority ? 'eager' : 'lazy'}
             className="w-full h-full object-contain absolute z-10 inset-0"
             style={{ objectFit: 'contain', objectPosition: 'top center' }}
+            quality={quality}
           />
         </div>
       ) : null}

@@ -532,6 +532,13 @@ body {
     &.ant-tabs {
         height: 100%;
     }
+
+    .ant-tabs-nav {
+        padding-left: 16px;
+        padding-right: 16px;
+        margin-bottom: 0;
+    }
+
     .ant-tabs-content {
         height: 100%;
     }

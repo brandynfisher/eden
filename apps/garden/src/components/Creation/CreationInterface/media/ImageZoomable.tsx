@@ -16,15 +16,15 @@ const ImageZoomable = ({
   const [showPlaceholder, setShowPlaceholder] = useState(true)
 
   const hideMediaViewer = () => {
-    console.log('hidemediaviewer')
+    // console.log('hidemediaviewer')
     setShowZoomedView(false)
   }
 
   const showMediaViewer = () => {
-    console.log('showMediaViewer')
+    // console.log('showMediaViewer')
     setShowZoomedView(true)
   }
-  console.log({ url, showZoomedView })
+  // console.log({ url, showZoomedView })
 
   const hidePlaceholder = () => {
     setShowPlaceholder(false)
