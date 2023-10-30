@@ -1,4 +1,3 @@
-import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { Select } from 'antd'
@@ -18,7 +17,6 @@ const CreationWorkspace = ({
   return (
     <>
       <div className="w-full">
-        {presetCreation && <CreationPresetInfo creation={presetCreation} />}
         <div className="p-4 pb-0 flex bg-gray-100 dark:bg-gray-800">
           <Select
             id="activeGenerator"

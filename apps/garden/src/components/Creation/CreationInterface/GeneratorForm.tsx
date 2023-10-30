@@ -1,3 +1,4 @@
+import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
@@ -453,6 +454,8 @@ const GeneratorForm = ({
         </div>
       </div>
 
+      {presetCreation && <CreationPresetInfo creation={presetCreation} />}
+
       <div className="flex flex-col flex-grow overflow-y-auto overflow-x-hidden pt-2">
         <div>{renderFormFields(requiredParameters)}</div>
 
@@ -510,7 +513,7 @@ const GeneratorForm = ({
         key={generator.generatorName}
       >
         <div className="flex gap-4 items-center justify-between flex-wrap">
-          <div className="flex gap-2 items-center w-full sm:w-auto">
+          <div className="flex gap-2 items-center w-auto">
             {canAffordOperation === false ? (
               <div className="text-orange-500">
                 Insufficient Manna! ({mannaBalance}){' '}
