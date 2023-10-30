@@ -11,7 +11,7 @@ html, body, image, video, main {
 }
 
 body {
-    min-height: calc(100vh + 1px); //cheap hack to force scroll bars to be always present
+    //min-height: calc(100vh + 1px); //cheap hack to force scroll bars to be always present
 }
 
 .ant-modal-mask {
@@ -77,7 +77,7 @@ body {
         max-height: 65vh !important;
     }
     .ant-modal-content {
-        padding: 16px 24px !important;
+        padding: 16px !important;
     }
 
     .ant-modal {
@@ -525,4 +525,35 @@ body {
 }
 .ant-card .ant-card-body {
     padding: 16px !important;
+}
+
+
+.creation-interface {
+    &.ant-tabs {
+        height: 100%;
+    }
+
+    .ant-tabs-nav {
+        padding-left: 16px;
+        padding-right: 16px;
+        margin-bottom: 0;
+    }
+
+    .ant-tabs-content {
+        height: 100%;
+    }
+    .ant-tabs-content-holder {
+        max-height: 100%;
+        overflow-y: auto;
+    }
+
+    .ant-form-item-label {
+        & > label {
+            width: 100%;
+
+            &::after {
+                content: "" !important;
+            }
+        }
+    }
 }

@@ -4,16 +4,24 @@ import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import Image from 'next/image'
 import React, { ReactNode, useCallback, useState } from 'react'
 
-const ImagePlaceholder = ({ imageUrl }: { imageUrl: string }) => {
+const ImagePlaceholder = ({
+  imageUrl,
+  limitHeight,
+}: {
+  limitHeight?: boolean
+  imageUrl: string
+}) => {
   return (
-    <div className="absolute inset-0 z-10 max-h-[90vh]">
+    <div
+      className={`absolute inset-0 z-10 ${limitHeight ? 'max-h-[90vh]' : ''}`}
+    >
       <Image
         src={imageUrl}
         alt={''}
         width="0"
         height="0"
         className="w-full h-full object-contain absolute z-10 inset-0"
-        sizes={'(max-width: 1280px) 33vw, (max-width: 1024px) 50vw, 75vw'}
+        sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 15vw'}
         style={{ objectFit: 'contain', objectPosition: 'top center' }}
       />
       <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-90 text-gray-400" />
@@ -29,6 +37,8 @@ const ImageResultZoomable = ({
   onLoad,
   priority,
   children,
+  limitHeight = true,
+  quality,
 }: {
   fullSizeUrl?: string
   previewSizeUrl?: string
@@ -38,6 +48,8 @@ const ImageResultZoomable = ({
   onLoad?: () => void
   priority?: boolean
   children?: ReactNode
+  limitHeight?: boolean
+  quality?: number
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -60,31 +72,45 @@ const ImageResultZoomable = ({
       style={{ paddingTop: `${aspectRatio}%` }}
     >
       {previewSizeUrl && !isLoaded ? (
-        <div className="absolute inset-0 text-gray-500 opacity-80 max-h-[90vh]">
+        <div
+          className={`absolute inset-0 text-gray-500 opacity-80 ${
+            limitHeight ? 'max-h-[90vh]' : ''
+          }`}
+        >
           <ImageLoadingPlaceholder />
         </div>
       ) : null}
       {!isLoaded && thumbnailSizeUrl && previewSizeUrl ? (
-        <ImagePlaceholder key={thumbnailSizeUrl} imageUrl={thumbnailSizeUrl} />
+        <ImagePlaceholder
+          key={thumbnailSizeUrl}
+          imageUrl={thumbnailSizeUrl}
+          limitHeight={limitHeight}
+        />
       ) : null}
       {previewSizeUrl ? (
-        <div className="absolute inset-0 max-h-[90vh]">
+        <div
+          className={`absolute inset-0 ${limitHeight ? 'max-h-[90vh]' : ''}`}
+        >
           <Image
             key={previewSizeUrl}
             src={previewSizeUrl}
             alt={previewSizeUrl}
-            sizes={'(max-width: 1280px) 50vw, (max-width: 1024px) 75vw, 100vw'}
+            sizes={'(max-width: 1024px) 90vw, (max-width: 1280px) 50vw, 75vw'}
             onLoadingComplete={handleOnLoad}
             priority={priority}
             width="0"
             height="0"
+            // loading={priority ? 'eager' : 'lazy'}
             className="w-full h-full object-contain absolute z-10 inset-0"
             style={{ objectFit: 'contain', objectPosition: 'top center' }}
+            quality={quality}
           />
         </div>
       ) : null}
       {children ? children : null}
-      {fullSizeUrl && !showPreview && <ImagePreviewMask />}
+      {fullSizeUrl && !showPreview && (
+        <ImagePreviewMask limitHeight={limitHeight} />
+      )}
     </div>
   )
 }

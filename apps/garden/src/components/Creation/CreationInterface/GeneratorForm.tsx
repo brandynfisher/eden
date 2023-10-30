@@ -22,7 +22,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { debounce } from '@mui/material/utils'
-import { App, Button, Card, Form } from 'antd'
+import { App, Button, Form } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -33,6 +33,8 @@ import React, {
   useMemo,
   useState,
 } from 'react'
+
+// import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 
 type FieldValues = { [key: string]: string }
 
@@ -87,6 +89,8 @@ const GeneratorForm = ({
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [stringArrayValues, setStringArrayValues] = useState({})
 
   useEffect(() => {
     const transformConfig = () => {
@@ -185,9 +189,6 @@ const GeneratorForm = ({
     }
   }, [generator, presetCreation])
 
-  const [showOptional, setShowOptional] = React.useState(false)
-  const [stringArrayValues, setStringArrayValues] = useState({})
-
   const onStringArrayChange = (parameterName: string, newValues: string[]) => {
     const newStringArrayValues = { ...stringArrayValues }
     //@ts-ignore
@@ -223,6 +224,7 @@ const GeneratorForm = ({
   )
 
   const handleFinish = async () => {
+    // console.log('handleFinish')
     setIsSubmitting(true)
 
     if (!isAuthenticated) {
@@ -235,10 +237,13 @@ const GeneratorForm = ({
     message.destroy()
 
     try {
+      // console.log(form.getFieldsValue())
       const cleanedValues = getCleanedConfig(
         form.getFieldsValue(),
         stringArrayValues,
       )
+
+      // console.log(cleanedValues)
 
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
@@ -274,7 +279,7 @@ const GeneratorForm = ({
   }
 
   const renderFormFields = useCallback(
-    (parameters: GeneratorParameter[], isOptional: boolean) => {
+    (parameters: GeneratorParameter[]) => {
       const renderParameter = (parameter: GeneratorParameter) => {
         if (
           (parameter.allowedValues && parameter.allowedValues.length > 0) ||
@@ -357,148 +362,205 @@ const GeneratorForm = ({
           }
         }
 
-        if (!presetCreation && isOptional && !showOptional) {
-          return
-        }
-
         return (
-          <div
-            key={parameter.name}
-            className={`bg-gray-100 dark:bg-gray-900 p-4 rounded-md mb-6 ${
-              !showOptional && isOptional ? 'hidden' : ''
-            }`}
-          >
+          <div key={parameter.name} className={`p-4 mb-4`}>
             {renderParameter(parameter)}
           </div>
         )
       })
     },
-    [presetConfig, showOptional],
+    [presetConfig],
   )
+
+  // const AspectRatioParameter = () => {
+  //   return (
+  //     <div>
+  //       <div>1024 x 1024 (1:1 Square)</div>
+  //     </div>
+  //   )
+  // }
+  //
+  // const parameterGroups = [
+  //   {
+  //     label: 'Aspect Ratio',
+  //     items: [
+  //       {
+  //         name: 'ui-aspect_ratio',
+  //         input: AspectRatioParameter,
+  //         label: '',
+  //         description: '',
+  //         setFields: ['generate_width', 'generate_height'],
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     label: 'Resolution',
+  //     items: [
+  //       {
+  //         name: 'generate_width',
+  //         input: SliderParameter,
+  //         label: 'Width',
+  //         description: 'Width of generation in pixels',
+  //         placeholder: '',
+  //         docsUrl: 'https://...'
+  //       },
+  //       {
+  //         name: 'generate_height',
+  //         input: SliderParameter,
+  //         label: 'Height',
+  //         description: 'Height of generation in pixels',
+  //         placeholder: '',
+  //         docsUrl: 'https://...'
+  //       }
+  //     ]
+  //   },
+  // ]
 
   return (
     <Form
+      layout={'vertical'}
       form={form}
       name="generate"
       onFinish={handleFinish}
       key={generator.generatorName}
-      title={generator.generatorName}
       onFieldsChange={debouncedHandleFormFieldsChange}
       scrollToFirstError={true}
+      className="h-full flex flex-col"
     >
-      <Card
-        type="inner"
-        className="mb-3"
-        title={
-          <div className="py-4">
-            <h3>/{generator.generatorName}</h3>
-            <div className="flex justify-between flex-wrap">
-              <span style={{ color: 'gray' }}>{generator.description}</span>
-              {generator.output === 'creation' ? (
-                <a
-                  href="https://docs.eden.art/docs/guides/creation"
-                  target="_blank"
-                  className="flex gap-1 items-center"
-                >
-                  Learn about Creations
-                  <LinkOutlined />
-                </a>
-              ) : null}
-              {generator.output === 'concept' ? (
-                <a
-                  href="https://docs.eden.art/docs/guides/concepts"
-                  target="_blank"
-                  className="flex gap-1 items-center"
-                >
-                  Learn about Concepts
-                  <LinkOutlined />
-                </a>
-              ) : null}
-            </div>
-          </div>
-        }
-        actions={[
-          <div className="px-4 text-left" key={generator.generatorName}>
-            <div className="flex gap-4 items-center justify-between flex-wrap">
-              <div className="flex gap-2 items-center w-full sm:w-auto">
-                {canAffordOperation === false ? (
-                  <div className="text-orange-500">
-                    Insufficient Manna! ({mannaBalance}){' '}
-                    <Link href="/manna">Click here to get more</Link>
-                  </div>
-                ) : (
-                  <Button
-                    type="primary"
-                    icon={<ExperimentOutlined />}
-                    htmlType="submit"
-                    size="large"
-                    className="font-mono capitalize w-full"
-                    loading={isSubmitting ? { delay: 250 } : false}
-                    disabled={
-                      isSubmitting ||
-                      !isFormTouched ||
-                      uploadsInProgress ||
-                      !canAffordOperation
-                    }
-                  >
-                    {generator.generatorName}
-                  </Button>
-                )}
-              </div>
+      <div className="p-4 bg-gray-100 dark:bg-gray-800">
+        <div className="flex justify-between flex-wrap">
+          <span style={{ color: 'gray' }}>{generator.description}</span>
+          {generator.output === 'creation' ? (
+            <a
+              href="https://docs.eden.art/docs/guides/creation"
+              target="_blank"
+              className="flex gap-1 items-center"
+            >
+              Learn about Creations
+              <LinkOutlined />
+            </a>
+          ) : null}
+          {generator.output === 'concept' ? (
+            <a
+              href="https://docs.eden.art/docs/guides/concepts"
+              target="_blank"
+              className="flex gap-1 items-center"
+            >
+              Learn about Concepts
+              <LinkOutlined />
+            </a>
+          ) : null}
+        </div>
+      </div>
 
-              {user &&
-              user.featureFlags &&
-              user.featureFlags.includes('private') ? (
-                <PrivacyToggle />
-              ) : null}
-            </div>
+      <div className="flex flex-col flex-grow overflow-y-auto overflow-x-hidden pt-2">
+        <div>{renderFormFields(requiredParameters)}</div>
 
-            <div className="mt-4 flex flex-wrap w-full justify-between items-center">
-              <MannaCostEstimate
-                isLoading={!!isLoadingTaskCost}
-                cost={taskCost || 'n/a'}
-              />
+        {/* start param groups --- */}
+        {/*<div >*/}
+        {/*  { parameterGroups.map(paramGroup =>*/}
+        {/*    <div key={paramGroup.label} className="pt-2 mb-2 border border-solid border-b-0 [&:last-of-type]:pb-2 [&:last-of-type]:border-b [&:last-of-type]:border-b-gray-800  border-t-gray-800 border-r-0 border-l-0">*/}
+        {/*      <div className="px-4">*/}
+        {/*        <div className="font-bold">{paramGroup.label}</div>*/}
+        {/*        <div className={`grid gap-4 grid-cols-${paramGroup.items.length > 1 ? '2' : '1'}`}>*/}
+        {/*          { paramGroup.items.map(groupItem => {*/}
+        {/*            const InputComponent = groupItem.input*/}
+        {/*            return (*/}
+        {/*              <div key={groupItem.name}>*/}
+        {/*                <InputComponent form={form} parameter={{ label: groupItem.label, name: groupItem.name, description: groupItem.description }} />*/}
+        {/*              </div>*/}
+        {/*            )*/}
+        {/*          })}*/}
+        {/*        </div>*/}
+        {/*      </div>*/}
+        {/*    </div>*/}
+        {/*  ) }*/}
+        {/*</div>*/}
+        {/* --- end param group */}
 
-              <Button className="font-mono text-sm" onClick={resetForm}>
-                Reset {presetCreation ? '(to preset)' : ''}
-              </Button>
-            </div>
-
-            {uploadsInProgress ? (
-              <div className="text-orange-500 mt-2 w-full">
-                <LoadingOutlined className="mr-2" />
-                File upload still in progress. Please wait.{' '}
-              </div>
-            ) : null}
-          </div>,
-        ]}
-      >
-        {renderFormFields(requiredParameters, false)}
-        {renderFormFields(optionalParameters, false)}
-
-        {advancedParameters.length > 0 && (
+        {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
           <>
-            {showOptional ? (
+            {showSettings ? (
               <Button
-                onClick={() => setShowOptional(false)}
-                className="font-mono mb-4"
+                onClick={() => setShowSettings(false)}
+                className="font-mono mb-4 mx-4"
               >
                 <UpCircleOutlined />
-                Hide optional settings
+                Hide settings
               </Button>
             ) : (
               <Button
-                onClick={() => setShowOptional(true)}
-                className="font-mono"
+                onClick={() => setShowSettings(true)}
+                className="font-mono mx-4"
               >
                 <DownCircleOutlined />
-                Show optional settings
+                Show settings
               </Button>
             )}
           </>
-        )}
-        {renderFormFields(advancedParameters, true)}
-      </Card>
+        ) : null}
+        <div className={`${!showSettings ? 'hidden' : ''}`}>
+          <div>{renderFormFields(optionalParameters)}</div>
+          <div>{renderFormFields(advancedParameters)}</div>
+        </div>
+      </div>
+
+      <div
+        className="p-4 text-left bg-gray-100 dark:bg-gray-800"
+        key={generator.generatorName}
+      >
+        <div className="flex gap-4 items-center justify-between flex-wrap">
+          <div className="flex gap-2 items-center w-full sm:w-auto">
+            {canAffordOperation === false ? (
+              <div className="text-orange-500">
+                Insufficient Manna! ({mannaBalance}){' '}
+                <Link href="/manna">Click here to get more</Link>
+              </div>
+            ) : (
+              <Button
+                type="primary"
+                icon={<ExperimentOutlined />}
+                htmlType="submit"
+                size="large"
+                className="font-mono capitalize w-full"
+                loading={isSubmitting ? { delay: 250 } : false}
+                disabled={
+                  isSubmitting ||
+                  !isFormTouched ||
+                  uploadsInProgress ||
+                  !canAffordOperation
+                }
+              >
+                {generator.generatorName}
+              </Button>
+            )}
+          </div>
+
+          {user &&
+          user.featureFlags &&
+          user.featureFlags.includes('private') ? (
+            <PrivacyToggle />
+          ) : null}
+        </div>
+
+        <div className="mt-4 flex flex-wrap w-full justify-between items-center">
+          <MannaCostEstimate
+            isLoading={!!isLoadingTaskCost}
+            cost={taskCost || 'n/a'}
+          />
+
+          <Button className="font-mono text-sm" onClick={resetForm}>
+            Reset {presetCreation ? '(to preset)' : ''}
+          </Button>
+        </div>
+
+        {uploadsInProgress ? (
+          <div className="text-orange-500 mt-2 w-full">
+            <LoadingOutlined className="mr-2" />
+            File upload still in progress. Please wait.{' '}
+          </div>
+        ) : null}
+      </div>
     </Form>
   )
 }

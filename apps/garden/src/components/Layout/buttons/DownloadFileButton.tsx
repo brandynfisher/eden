@@ -6,12 +6,10 @@ import React from 'react'
 
 const DownloadFileButton = ({
   url,
-  fileName,
   variant,
   label,
 }: {
   url: string
-  fileName: string
   variant?: 'text'
   label?: string
 }) => {
@@ -19,7 +17,7 @@ const DownloadFileButton = ({
   const handleClick = async (url: string) => {
     message.destroy()
     message.success(`Downloading file...`)
-    await downloadFile(url, fileName)
+    await downloadFile(url)
   }
 
   if (variant === 'text') {

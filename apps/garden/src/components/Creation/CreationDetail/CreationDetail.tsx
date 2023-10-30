@@ -1,6 +1,7 @@
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConfigParamsTabs from '@/components/ConfigParamsTabs'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
+import ResultPreviewDisplay from '@/components/Creation/CreationInterface/ResultPreviewDisplay'
 // import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreationReactions from '@/components/Creation/CreationReactions'
@@ -103,14 +104,18 @@ const CreationDetail = ({
 
       <div ref={containerRef}>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
-          <div className="relative px-2 mx-auto mb-4 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
+          <div
+            className={`relative ${
+              isModal ? 'px-2' : ''
+            } md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]`}
+          >
             <div
               onClick={
                 isImageUrl(creation.uri)
                   ? () => handlePreviewClick(creation.uri)
                   : () => false
               }
-              className="relative flex justify-center flex flex-grow max-h-[90vh] overflow-hidden"
+              className="relative flex justify-center flex-grow max-h-[90vh] overflow-hidden"
             >
               {isImageUrl(creation.uri) ? (
                 <MediaDisplay
@@ -186,6 +191,20 @@ const CreationDetail = ({
               <CreationInfo creation={creation} />
             </div>
 
+            {creation.samples && creation.samples.length ? (
+              <div>
+                <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
+                  <div className="text-gray-400 text-sm mb-2">Variations</div>
+                  <div className="grid grid-cols-2 gap-2 flex-wrap">
+                    {creation.samples.map(creationSampleId => (
+                      <div key={creationSampleId}>
+                        <ResultPreviewDisplay creationId={creationSampleId} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <ConfigParamsTabs data={creation} />
           </div>
         </div>

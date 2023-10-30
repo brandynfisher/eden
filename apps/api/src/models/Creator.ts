@@ -4,6 +4,15 @@ import paginate from 'mongoose-paginate-v2'
 import { CollectionDocument } from './Collection'
 import { CreationDocument } from './Creation'
 
+export enum FeatureFlag {
+  Preview = 'preview',
+}
+
+export enum SubscriptionTier {
+  Basic = 'basic',
+  Pro = 'pro',
+}
+
 export interface UserSchema {
   userId: string
   isWeb2: boolean
@@ -13,7 +22,10 @@ export interface UserSchema {
   collections: CollectionDocument[]
   followerCount: number
   followingCount: number
-  featureFlags?: string[]
+  featureFlags?: FeatureFlag[]
+  subscriptionTier?: SubscriptionTier
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
   username?: string
   userImage?: string
   deleted?: boolean
@@ -84,8 +96,19 @@ const user = new Schema<UserDocument>(
     featureFlags: [
       {
         type: String,
+        enum: Object.values(FeatureFlag),
       },
     ],
+    subscriptionTier: {
+      type: String,
+      enum: Object.values(SubscriptionTier),
+    },
+    stripeCustomerId: {
+      type: String,
+    },
+    stripeSubscriptionId: {
+      type: String,
+    },
     deleted: {
       type: Boolean,
       default: false,

@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 import { Concept } from '../../models/Concept'
-import { Creation } from '../../models/Creation'
+import { Creation, CreationInput } from '../../models/Creation'
 import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
@@ -107,49 +108,83 @@ const handleUpdate = async (
   if (isCompleted) {
     const finalOutput = finalOutputs.slice(-1)[0]
     Object.assign(taskUpdate, { output: finalOutput })
+
     const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
-      for (let i = 0; i < finalOutput.files.length; i++) {
-        const creationData = {
-          user: task.user,
-          task: task._id,
-          uri: finalOutput.files[i],
-          thumbnail: finalOutput.thumbnails[i],
-          name: finalOutput.name,
-          attributes: finalOutput.attributes,
-          mediaAttributes: {},
-          isPrivate: task.config.isPrivate || false,
-        }
-        if (finalOutput.files[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
-            server,
-            finalOutput.files[i],
-          )
-          creationData.uri = uri
-          creationData.mediaAttributes = mediaAttributes
-        }
-        if (finalOutput.thumbnails[i]) {
-          creationData.thumbnail = await server.uploadThumbnailAsset(
-            server,
-            finalOutput.thumbnails[i],
-          )
-        }
-        const creation = await Creation.create(creationData)
-        Object.assign(taskUpdate, {
-          creation: creation._id,
-          status: 'completed',
-          progress: 1.0,
-        })
-        // todo: maybe fire one webhook with all creations instead of per file
-        if (task.webhooks) {
-          task.webhooks.forEach(async (webhook: string) => {
-            await axios.post(webhook, {
-              taskId,
-              creation,
-            })
+      const creationData: CreationInput[] = []
+
+      await Promise.allSettled(
+        finalOutput.files.map(async (files, index) => {
+          const creationId = new ObjectId()
+          const creationDocument: CreationInput = {
+            _id: creationId,
+            user: task.user._id,
+            task: task._id,
+            uri: finalOutput.files[index],
+            thumbnail: finalOutput.thumbnails[index],
+            name: finalOutput.name,
+            attributes: finalOutput.attributes,
+            isPrivate: task.config.isPrivate || false,
+          }
+
+          if (finalOutput.files[index]) {
+            const { uri, mediaAttributes } = await server.uploadUrlAsset(
+              server,
+              finalOutput.files[index],
+            )
+            creationDocument.uri = uri
+            creationDocument.mediaAttributes = mediaAttributes
+          }
+          if (finalOutput.thumbnails[index]) {
+            creationDocument.thumbnail = await server.uploadThumbnailAsset(
+              server,
+              finalOutput.thumbnails[index],
+            )
+          }
+
+          creationData.push(creationDocument)
+        }),
+      )
+
+      await Promise.allSettled(
+        creationData.map(async (creationInput, index) => {
+          const otherCreationIds = creationData
+            .filter(dataItem => dataItem._id !== creationInput._id)
+            .map(item => item._id)
+
+          const creation = await Creation.create({
+            ...creationInput,
+            samples: otherCreationIds,
+          })
+        }),
+      )
+
+      if (task.webhooks) {
+        for (const webhook of task.webhooks) {
+          await axios.post(webhook, {
+            taskId,
+            creationData,
           })
         }
       }
+
+      // n_samples: add samples field with other creationIds
+      if (
+        creationData.length > 1 &&
+        task.config.n_samples &&
+        task.config.n_samples > 1
+      ) {
+        Object.assign(taskUpdate, {
+          samples: creationData.map(item => item._id),
+        })
+      }
+
+      // update task -
+      Object.assign(taskUpdate, {
+        creation: creationData[0]._id, // keep using only first creationId here to not break existing logic
+        status: 'completed',
+        progress: 1.0,
+      })
     } else if (generator?.output == 'concept') {
       for (let i = 0; i < finalOutput.files.length; i++) {
         // version the concept's public name (v2, v3, etc)

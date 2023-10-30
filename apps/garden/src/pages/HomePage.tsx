@@ -25,7 +25,7 @@ const HomePage = () => {
       ]
 
   return (
-    <div className={`flex flex-col max-w-[calc(100vw_-_32px)]`}>
+    <div className={`flex flex-col`}>
       <MasonryInfinite
         hasSort={sortButtons}
         type="creations"

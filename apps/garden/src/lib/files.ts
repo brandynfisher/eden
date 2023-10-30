@@ -1,4 +1,6 @@
-export const downloadFile = async (url: string, fileName: string) => {
+import axios from 'axios'
+
+export const downloadFileBlob = async (url: string, fileName: string) => {
   try {
     const response = await fetch(url)
     const blob = await response.blob()
@@ -12,6 +14,22 @@ export const downloadFile = async (url: string, fileName: string) => {
     document.body.removeChild(link)
 
     URL.revokeObjectURL(blobUrl)
+    return true
+  } catch (error) {
+    console.error('Error downloading creation:', error)
+    return false
+  }
+}
+
+export const downloadFile = async (url: string) => {
+  try {
+    const response = await axios.get(`/api/media/download?url=${url}`)
+    const link = document.createElement('a')
+    link.href = response.data.signedUrl
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
     return true
   } catch (error) {
     console.error('Error downloading creation:', error)

@@ -138,16 +138,14 @@ const ResultPreview = ({ task }: { task: Task }) => {
 
   return (
     <div className="result-preview relative w-full flex flex-col rounded-lg border border-0 border-solid">
-      <Card
-        className={`w-full h-fit flex justify-center items-center  dark:!bg-gray-900`}
-      >
+      <Card className={`w-full h-fit flex justify-center items-center`}>
         <>
           {!creationUri ? (
             <div className="w-full">
               <div>
                 <div>
                   <div className="flex items-center justify-between flex-wrap">
-                    <div className="flex items-center">
+                    <div className="flex items-center mb-2">
                       <strong className=" text-sm dark:text-gray-200">
                         /{task?.generator.generatorName}
                       </strong>
@@ -163,7 +161,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
                       <strong>{task?.cost}</strong> Manna
                     </div>
                   </div>
-                  <div title={task?.config.text_input || ''}>
+                  <div title={task?.config.text_input || ''} className="mb-1">
                     <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
                       {task?.config.text_input || ''}
                     </span>
@@ -210,10 +208,44 @@ const ResultPreview = ({ task }: { task: Task }) => {
               )}
             </div>
           ) : (
-            <ResultPreviewDisplay
-              creationId={creationId}
-              taskCost={task?.cost}
-            />
+            <div>
+              <div className="flex items-center justify-between flex-wrap mb-2">
+                <div className="flex items-center">
+                  <strong className=" text-sm dark:text-gray-200">
+                    /{task?.generator.generatorName}
+                  </strong>
+                  <div
+                    className="text-gray-700 dark:text-gray-400 text-xs"
+                    title={timeAgo(task.createdAt)}
+                  >
+                    <span className="mx-1">•</span>
+                    {timeAgo(task.createdAt)}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-800 dark:text-gray-400">
+                  <strong>{task.cost}</strong> Manna
+                </div>
+              </div>
+              <div title={task?.config.text_input || ''} className="mb-2">
+                <span className="relative first-letter:uppercase text-xs select-text cursor-text text-ellipsis dark:text-gray-400 break-words line-clamp-2">
+                  {task?.config.text_input || ''}
+                </span>
+              </div>
+
+              {task.samples && task.samples.length ? (
+                <div
+                  className={`grid grid-cols-2 gap-2 2xl:grid-cols-${task.samples.length}`}
+                >
+                  {task.samples.map(id => (
+                    <ResultPreviewDisplay key={id} creationId={id} />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 2xl:grid-cols-2">
+                  <ResultPreviewDisplay creationId={creationId} />
+                </div>
+              )}
+            </div>
           )}
         </>
       </Card>

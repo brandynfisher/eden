@@ -7,7 +7,13 @@ import { ReactNode, useEffect, useState } from 'react'
 
 const { Content } = Layout
 
-const PageLayoutSidebar = ({ children }: { children: ReactNode }) => {
+const PageLayoutSidebar = ({
+  fixedHeight,
+  children,
+}: {
+  fixedHeight?: boolean
+  children: ReactNode
+}) => {
   const { width: viewportWidth } = useViewportSize()
   const [showFixedMenu, setShowFixedMenu] = useState(
     viewportWidth < theme.screens.lg,
@@ -18,7 +24,7 @@ const PageLayoutSidebar = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    if (viewportWidth < theme.screens.lg) {
+    if (viewportWidth && viewportWidth < theme.screens.lg) {
       setShowFixedMenu(false)
     } else {
       setShowFixedMenu(true)
@@ -26,7 +32,7 @@ const PageLayoutSidebar = ({ children }: { children: ReactNode }) => {
   }, [viewportWidth])
 
   return (
-    <CustomLayout>
+    <CustomLayout fixedHeight={fixedHeight}>
       <Layout hasSider={showFixedMenu}>
         {showFixedMenu ? (
           <NavMenu isVisible={isVisible} onClose={onCloseHandler} />

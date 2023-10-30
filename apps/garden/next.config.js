@@ -1,6 +1,6 @@
 const path = require('path')
 const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
-const runtimeCaching = require('next-pwa/cache')
+// const runtimeCaching = require('next-pwa/cache')
 
 const defaultImageDomains = [
   'https://minio.aws.abraham.fun/creations-stg/',
@@ -8,12 +8,14 @@ const defaultImageDomains = [
   'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
   'https://edenartlab-prod-data.s3.us-east-1.amazonaws.com',
   'https://edenartlab-stg-data.s3.us-east-1.amazonaws.com',
+  'https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/',
   'files.stripe.com',
   'img.clerk.com',
   'eden-creations-stg.s3.us-east-1.amazonaws.com',
   'eden-creations-prod.s3.us-east-1.amazonaws.com',
   'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
-  'edenartlab-stg-data.s3.us-east-1.amazonaws.com'
+  'edenartlab-stg-data.s3.us-east-1.amazonaws.com',
+  'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
 ]
 
 const devImageDomains = ['localhost']
@@ -87,7 +89,7 @@ module.exports = withTM({
 
 const withNextPWA = require('next-pwa')({
   dest: 'public',
-  runtimeCaching,
+  // runtimeCaching,
   disable: process.env.NODE_ENV === 'development',
   register: true,
 })

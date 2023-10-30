@@ -10,6 +10,11 @@ export type PaymentsProductsResponse = WebAPICallResult & {
   products?: Product[]
 }
 
+export type PaymentsSubscriptionResponse = WebAPICallResult & {
+  error?: string
+  url?: string
+}
+
 export type Product = {
   id: string
   object: string
@@ -19,12 +24,13 @@ export type Product = {
   description: string
   images: string[]
   livemode: boolean
-  metadata: {}
+  metadata: any
   name: string
   package_dimensions: null
   displayPrice: {
     currency: string
     unit_amount: number
+    type: string
   }
   shippable: null
   statement_descriptor: null

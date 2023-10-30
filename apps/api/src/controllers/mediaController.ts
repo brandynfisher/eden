@@ -53,3 +53,21 @@ export const uploadMediaAdmin = async (
   const { uri } = await server.uploadBufferAsset(server, buffer)
   return reply.status(200).send({ url: uri })
 }
+
+export const getMediaDownloadUrl = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { url } = request.query as { url: string }
+
+  if (!url) {
+    return reply.status(500).send({
+      message: 'No url provided',
+    })
+  }
+
+  const signedUrl = await server.getSignedDownloadUrl(server, url)
+
+  return reply.status(200).send({ signedUrl })
+}

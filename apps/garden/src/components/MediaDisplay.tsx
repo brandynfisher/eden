@@ -12,6 +12,7 @@ const MediaDisplay = ({
   className,
   aspectRatio,
   priority,
+  limitHeight,
 }: {
   creationUri: string
   previewUri?: string
@@ -21,6 +22,7 @@ const MediaDisplay = ({
   className?: string
   aspectRatio: number
   priority?: boolean
+  limitHeight?: boolean
 }) => {
   // const [ adjustedAspectRatio, setAdjustedAspectRatio ] = useState(aspectRatio)
   // const { ref, width, height } = useElementSize();
@@ -60,6 +62,7 @@ const MediaDisplay = ({
           showPreview={showPreview}
           onLoad={onLoad}
           priority={priority}
+          limitHeight={limitHeight}
         />
       )
     } else if (isVideoUrl(creationUri)) {

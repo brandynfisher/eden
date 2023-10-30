@@ -59,7 +59,7 @@ const MenuDropdownMUI = ({
           <MenuItem
             key={item.key}
             onClick={item.onClick ? item.onClick : undefined}
-            className="!border-solid !border-0 !border-b !border-gray-600 last:!border-0 min-w-[240px] max-w-full"
+            className="!border-solid !border-0 !border-b !border-gray-600 last:!border-0 min-w-[265px] max-w-full"
           >
             {item.render ? (
               item.render
