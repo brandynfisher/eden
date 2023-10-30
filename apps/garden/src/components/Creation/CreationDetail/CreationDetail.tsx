@@ -104,14 +104,18 @@ const CreationDetail = ({
 
       <div ref={containerRef}>
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
-          <div className="relative px-2 md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]">
+          <div
+            className={`relative ${
+              isModal ? 'px-2' : ''
+            } md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]`}
+          >
             <div
               onClick={
                 isImageUrl(creation.uri)
                   ? () => handlePreviewClick(creation.uri)
                   : () => false
               }
-              className="relative flex justify-center flex flex-grow max-h-[90vh] overflow-hidden"
+              className="relative flex justify-center flex-grow max-h-[90vh] overflow-hidden"
             >
               {isImageUrl(creation.uri) ? (
                 <MediaDisplay

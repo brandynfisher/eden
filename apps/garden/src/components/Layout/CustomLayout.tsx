@@ -92,7 +92,10 @@ const CustomLayout = ({
       >
         <BannerManager />
         <LayoutHeader />
-        <Layout hasSider={false} className="p-4 lg:!pb-0">
+        <Layout
+          hasSider={false}
+          className={`${fixedHeight ? 'lg:p-4' : 'p-2 md:p-4'} lg:!pb-0`}
+        >
           {children}
         </Layout>
         <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center z-50">

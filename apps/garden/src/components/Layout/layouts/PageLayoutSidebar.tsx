@@ -24,7 +24,7 @@ const PageLayoutSidebar = ({
   }
 
   useEffect(() => {
-    if (viewportWidth < theme.screens.lg) {
+    if (viewportWidth && viewportWidth < theme.screens.lg) {
       setShowFixedMenu(false)
     } else {
       setShowFixedMenu(true)
