@@ -34,6 +34,8 @@ import React, {
   useState,
 } from 'react'
 
+// import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+
 type FieldValues = { [key: string]: string }
 
 const getCleanedConfig = (
@@ -87,6 +89,8 @@ const GeneratorForm = ({
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [stringArrayValues, setStringArrayValues] = useState({})
 
   useEffect(() => {
     const transformConfig = () => {
@@ -185,9 +189,6 @@ const GeneratorForm = ({
     }
   }, [generator, presetCreation])
 
-  const [showOptional, setShowOptional] = React.useState(false)
-  const [stringArrayValues, setStringArrayValues] = useState({})
-
   const onStringArrayChange = (parameterName: string, newValues: string[]) => {
     const newStringArrayValues = { ...stringArrayValues }
     //@ts-ignore
@@ -223,6 +224,7 @@ const GeneratorForm = ({
   )
 
   const handleFinish = async () => {
+    // console.log('handleFinish')
     setIsSubmitting(true)
 
     if (!isAuthenticated) {
@@ -235,10 +237,13 @@ const GeneratorForm = ({
     message.destroy()
 
     try {
+      // console.log(form.getFieldsValue())
       const cleanedValues = getCleanedConfig(
         form.getFieldsValue(),
         stringArrayValues,
       )
+
+      // console.log(cleanedValues)
 
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
@@ -274,7 +279,7 @@ const GeneratorForm = ({
   }
 
   const renderFormFields = useCallback(
-    (parameters: GeneratorParameter[], isOptional: boolean) => {
+    (parameters: GeneratorParameter[]) => {
       const renderParameter = (parameter: GeneratorParameter) => {
         if (
           (parameter.allowedValues && parameter.allowedValues.length > 0) ||
@@ -358,19 +363,58 @@ const GeneratorForm = ({
         }
 
         return (
-          <div
-            key={parameter.name}
-            className={`p-4 mb-4 ${
-              !showOptional && isOptional ? 'hidden' : ''
-            }`}
-          >
+          <div key={parameter.name} className={`p-4 mb-4`}>
             {renderParameter(parameter)}
           </div>
         )
       })
     },
-    [presetConfig, showOptional],
+    [presetConfig],
   )
+
+  // const AspectRatioParameter = () => {
+  //   return (
+  //     <div>
+  //       <div>1024 x 1024 (1:1 Square)</div>
+  //     </div>
+  //   )
+  // }
+  //
+  // const parameterGroups = [
+  //   {
+  //     label: 'Aspect Ratio',
+  //     items: [
+  //       {
+  //         name: 'ui-aspect_ratio',
+  //         input: AspectRatioParameter,
+  //         label: '',
+  //         description: '',
+  //         setFields: ['generate_width', 'generate_height'],
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     label: 'Resolution',
+  //     items: [
+  //       {
+  //         name: 'generate_width',
+  //         input: SliderParameter,
+  //         label: 'Width',
+  //         description: 'Width of generation in pixels',
+  //         placeholder: '',
+  //         docsUrl: 'https://...'
+  //       },
+  //       {
+  //         name: 'generate_height',
+  //         input: SliderParameter,
+  //         label: 'Height',
+  //         description: 'Height of generation in pixels',
+  //         placeholder: '',
+  //         docsUrl: 'https://...'
+  //       }
+  //     ]
+  //   },
+  // ]
 
   return (
     <Form
@@ -410,13 +454,35 @@ const GeneratorForm = ({
       </div>
 
       <div className="flex flex-col flex-grow overflow-y-auto overflow-x-hidden pt-2">
-        <div>{renderFormFields(requiredParameters, false)}</div>
+        <div>{renderFormFields(requiredParameters)}</div>
 
-        {advancedParameters.length > 0 && (
+        {/* start param groups --- */}
+        {/*<div >*/}
+        {/*  { parameterGroups.map(paramGroup =>*/}
+        {/*    <div key={paramGroup.label} className="pt-2 mb-2 border border-solid border-b-0 [&:last-of-type]:pb-2 [&:last-of-type]:border-b [&:last-of-type]:border-b-gray-800  border-t-gray-800 border-r-0 border-l-0">*/}
+        {/*      <div className="px-4">*/}
+        {/*        <div className="font-bold">{paramGroup.label}</div>*/}
+        {/*        <div className={`grid gap-4 grid-cols-${paramGroup.items.length > 1 ? '2' : '1'}`}>*/}
+        {/*          { paramGroup.items.map(groupItem => {*/}
+        {/*            const InputComponent = groupItem.input*/}
+        {/*            return (*/}
+        {/*              <div key={groupItem.name}>*/}
+        {/*                <InputComponent form={form} parameter={{ label: groupItem.label, name: groupItem.name, description: groupItem.description }} />*/}
+        {/*              </div>*/}
+        {/*            )*/}
+        {/*          })}*/}
+        {/*        </div>*/}
+        {/*      </div>*/}
+        {/*    </div>*/}
+        {/*  ) }*/}
+        {/*</div>*/}
+        {/* --- end param group */}
+
+        {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
           <>
-            {showOptional ? (
+            {showSettings ? (
               <Button
-                onClick={() => setShowOptional(false)}
+                onClick={() => setShowSettings(false)}
                 className="font-mono mb-4 mx-4"
               >
                 <UpCircleOutlined />
@@ -424,7 +490,7 @@ const GeneratorForm = ({
               </Button>
             ) : (
               <Button
-                onClick={() => setShowOptional(true)}
+                onClick={() => setShowSettings(true)}
                 className="font-mono mx-4"
               >
                 <DownCircleOutlined />
@@ -432,9 +498,11 @@ const GeneratorForm = ({
               </Button>
             )}
           </>
-        )}
-        <div>{renderFormFields(optionalParameters, true)}</div>
-        <div>{renderFormFields(advancedParameters, true)}</div>
+        ) : null}
+        <div className={`${!showSettings ? 'hidden' : ''}`}>
+          <div>{renderFormFields(optionalParameters)}</div>
+          <div>{renderFormFields(advancedParameters)}</div>
+        </div>
       </div>
 
       <div
