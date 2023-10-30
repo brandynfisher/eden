@@ -54,6 +54,18 @@ const CreationInterface = ({
   )
 
   useEffect(() => {
+    const available = !selectedGenerators
+      ? generators?.filter(
+          generator =>
+            !hiddenCreationGenerators.includes(generator.generatorName),
+        )
+      : generators?.filter(gen =>
+          selectedGenerators?.includes(gen.generatorName),
+        )
+
+    setAvailableGenerators(available)
+    setActiveGenerator(available?.[0])
+
     if (generatorName) {
       handleGeneratorChange(generatorName)
       return
@@ -63,23 +75,13 @@ const CreationInterface = ({
       handleGeneratorChange(presetCreation.task.generator.generatorName)
       return
     }
-    const available = !selectedGenerators
-      ? generators?.filter(
-          generator =>
-            !hiddenCreationGenerators.includes(generator.generatorName),
-        )
-      : generators?.filter(gen =>
-          selectedGenerators?.includes(gen.generatorName),
-        )
-    setAvailableGenerators(available)
-    setActiveGenerator(available?.[0])
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
+
+  const isSmallScreen = !width ? false : width <= 1024
 
   if (!generators || !activeGenerator || !availableGenerators) {
     return <LoadingIndicator />
   }
-
-  const isSmallScreen = !width ? false : width <= 1024
 
   return (
     <>
