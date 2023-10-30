@@ -117,7 +117,7 @@ const CreationCardMedia = ({
   if (isImageUrl(creation.uri)) {
     return (
       <CreationCardImage
-        uri={creation.thumbnail || creation.uri}
+        uri={creation.uri}
         width={creation.mediaAttributes.width || 0}
         height={creation.mediaAttributes.height || 0}
         priority={priority}
