@@ -151,6 +151,8 @@ const params = [
       'Random seeds. Must have 1 for each init image. If left blank, will be set randomly.',
     default: [],
     optional: true,
+    minLength: 2,
+    maxLength: 8,
   },
   {
     name: 'interpolation_init_images_min_strength',

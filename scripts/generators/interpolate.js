@@ -191,6 +191,8 @@ const params = [
       'Random seeds. Must have 1 for each prompt. If left blank, will be set randomly.',
     default: [],
     optional: true,
+    minLength: 2,
+    maxLength: 8,
   },
 
 ]
