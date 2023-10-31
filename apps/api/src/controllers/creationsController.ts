@@ -3,6 +3,7 @@ import {
   CreationsGetArguments,
   CreationsGetSimilarArguments,
   CreationsListArguments,
+  CreationsRatingArguments,
   CreationsReactArguments,
   CreationsUnreactArguments,
   CreationsUpdateArguments,
@@ -14,6 +15,7 @@ import { ObjectId } from 'mongodb'
 import { Collection } from '../models/Collection'
 import { Creation, CreationDocument } from '../models/Creation'
 import { User } from '../models/Creator'
+import { Rating } from '../models/Rating'
 import { Reaction } from '../models/Reaction'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
@@ -55,6 +57,22 @@ export const getReactions = async (
   }, {} as { [key: string]: ReactionType[] }) // explicitly set the type of the accumulator
 
   return reactionsMap
+}
+
+export const getRating = async (
+  userId: ObjectId,
+  creationId: ObjectId,
+): Promise<number> => {
+  const rating = await Rating.findOne({
+    user: userId,
+    creation: creationId,
+  })
+
+  if (!rating) {
+    return 0
+  }
+
+  return rating.rating
 }
 
 export const getBookmarks = async (
@@ -162,6 +180,7 @@ export const getCreation = async (
       })
     }
     const uid = new ObjectId(userId)
+    const userRating = await getRating(uid, creation._id)
     const reactionsMap = await getReactions(uid, [creation])
     const bookmarksMap = await getBookmarks(uid, [creation])
     console.log(reactionsMap)
@@ -173,6 +192,7 @@ export const getCreation = async (
       ...creation.toObject(),
       reactions: reactionsMap[creation._id.toString()],
       bookmarked: bookmarksMap[creation._id.toString()],
+      rating: userRating,
     }
 
     return reply.status(200).send({
@@ -317,6 +337,45 @@ export const creationUpdate = async (
 
   return reply.status(200).send({
     creation,
+  })
+}
+
+export const creationRate = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { creationId, rating } = request.body as CreationsRatingArguments
+
+  // check if reaction in ReactionType enum
+  if (rating < 0 || rating > 5) {
+    return reply.status(400).send({
+      message: 'Invalid rating',
+    })
+  }
+
+  const creation = await Creation.findById(creationId)
+
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
+
+  const ratingData = {
+    creation: creationId,
+    user: userId,
+    rating,
+  }
+
+  await Rating.findOneAndUpdate(
+    { creation: ratingData.creation, user: ratingData.user },
+    { rating: ratingData.rating },
+    { upsert: true },
+  )
+
+  return reply.status(200).send({
+    success: true,
   })
 }
 

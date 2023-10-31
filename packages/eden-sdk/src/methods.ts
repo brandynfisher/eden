@@ -3,6 +3,7 @@ import {
   ConceptsDeleteResponse,
   ConceptsUpdateResponse,
   CreationsDeleteResponse,
+  CreationsRatingResponse,
   CreationsUpdateResponse,
   CreatorFollowersListResponse,
   CreatorFollowingListResponse,
@@ -232,6 +233,10 @@ export abstract class Methods {
     react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
       this,
       creationsReactRequestConfig,
+    ),
+    rate: bindApiCall<CreationsRatingArguments, CreationsRatingResponse>(
+      this,
+      creationsRatingRequestConfig,
     ),
     unreact: bindApiCall<CreationsUnreactArguments, CreationsUnreactResponse>(
       this,
@@ -540,6 +545,11 @@ export interface CreationsGetArguments extends WebAPICallOptions {
 export interface CreationsGetSimilarArguments extends WebAPICallOptions {
   creationId: string
   n: number
+}
+
+export interface CreationsRatingArguments extends WebAPICallOptions {
+  creationId: string
+  rating: number
 }
 
 export interface CreationsReactArguments extends WebAPICallOptions {
@@ -937,6 +947,18 @@ const creationsGetSimilarRequestConfig = (
   return {
     method: 'GET',
     url: `creations/${args.creationId}/similar`,
+  }
+}
+
+const creationsRatingRequestConfig = (
+  args: CreationsRatingArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creations/rate',
+    data: {
+      ...args,
+    },
   }
 }
 

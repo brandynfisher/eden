@@ -9,17 +9,23 @@ import { UserContext } from '@/providers/UserProvider'
 import theme from '@/styles/theme'
 import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
+import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
 const { Header } = Layout
 
 const LayoutHeader = () => {
   const { isAuthenticated } = useContext(UserContext)
-
+  const router = useRouter()
   const { width: viewportWidth } = useViewportSize()
   const [isSmallScreen, setIsSmallScreen] = useState(
     viewportWidth && viewportWidth < theme.screens.lg,
   )
+  const [showQuickCreateButton, setShowQuickCreateButton] = useState(true)
+
+  useEffect(() => {
+    setShowQuickCreateButton(!router.pathname.includes('/create/'))
+  }, [router.pathname])
 
   useEffect(() => {
     if (viewportWidth && viewportWidth < theme.screens.lg) {
@@ -41,9 +47,9 @@ const LayoutHeader = () => {
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <QuickCreateMenu />
+          {showQuickCreateButton ? <QuickCreateMenu /> : null}
 
-          {!isSmallScreen && isAuthenticated ? (
+          {isAuthenticated && viewportWidth >= theme.screens.sm ? (
             <>
               <TaskNotificationDropdown />
               <MannaDropdown />
@@ -55,14 +61,12 @@ const LayoutHeader = () => {
         </div>
       </div>
 
-      <div className="w-full flex">
-        {isSmallScreen && isAuthenticated ? (
-          <div className="flex ml-auto">
-            <TaskNotificationDropdown />
-            <MannaDropdown />
-          </div>
-        ) : null}
-      </div>
+      {viewportWidth < theme.screens.sm && isAuthenticated ? (
+        <div className="w-full flex justify-between">
+          <TaskNotificationDropdown />
+          <MannaDropdown />
+        </div>
+      ) : null}
     </Header>
   )
 }

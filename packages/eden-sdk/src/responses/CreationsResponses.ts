@@ -16,6 +16,11 @@ export type CreationsGetSimilarResponse = WebAPICallResult & {
   similarCreations?: Creation[]
 }
 
+export type CreationsRatingResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
+}
+
 export type CreationsReactResponse = WebAPICallResult & {
   error?: string
   success?: boolean
@@ -52,6 +57,7 @@ export type Creation = {
   name: string
   attributes: any
   mediaAttributes: MediaAttributes
+  rating?: number
   praiseCount?: number
   bookmarkCount?: number
   bookmarked?: boolean

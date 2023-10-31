@@ -356,12 +356,6 @@ body {
 .ant-collapse-content {
     background-color: transparent !important;
 }
-.result-preview {
-    .ant-card-body {
-        width: 100%;
-        height: 100%;
-    }
-}
 
 .ant-menu-overflow-item.ant-menu-item {
     align-items: center;
@@ -527,6 +521,18 @@ body {
     padding: 16px !important;
 }
 
+.result-preview {
+    .ant-card-body {
+        width: 100%;
+        height: 100%;
+    }
+
+    .result-preview-success {
+        .ant-card-body {
+            padding-bottom: 4px !important;
+        }
+    }
+}
 
 .creation-interface {
     &.ant-tabs {
