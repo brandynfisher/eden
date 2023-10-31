@@ -557,3 +557,9 @@ body {
         }
     }
 }
+
+@media (max-width: 767px) {
+    .create-form-drawer {
+        box-shadow: 0px -2px 8px rgba(0, 0, 0, 0.35);
+    }
+}

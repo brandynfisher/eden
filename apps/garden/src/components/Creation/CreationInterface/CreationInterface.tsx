@@ -6,7 +6,6 @@ import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
-import { Tabs } from 'antd/lib'
 import React, {
   useCallback,
   useContext,
@@ -33,7 +32,6 @@ const CreationInterface = ({
   presetCreation?: Creation
   selectedGenerators?: string[]
 }) => {
-  const { width } = useViewportSize()
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
   const [activeGenerator, setActiveGenerator] = useState<Generator | undefined>(
@@ -52,6 +50,21 @@ const CreationInterface = ({
     },
     [generators],
   )
+
+  const { width } = useViewportSize()
+
+  useEffect(() => {
+    if (width && width > 0) {
+      if (width < 768) {
+        setUsesDrawer(true)
+      } else {
+        setUsesDrawer(false)
+      }
+    }
+  }, [width])
+
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [usesDrawer, setUsesDrawer] = useState(false)
 
   useEffect(() => {
     const available = !selectedGenerators
@@ -77,64 +90,75 @@ const CreationInterface = ({
     }
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
-  const isSmallScreen = !width ? false : width <= 768
+  const [settingsExpanded, setSettingsExpanded] = useState(false)
+
+  const handleMaskClick = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+  ) => {
+    if (event.target === event.currentTarget) {
+      setDrawerOpen(false)
+    }
+  }
+
+  const workspaceRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        workspaceRef.current &&
+        !workspaceRef.current.contains(event.target as Node)
+      ) {
+        setDrawerOpen(false)
+      }
+    }
+
+    if (drawerOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [drawerOpen])
 
   if (!generators || !activeGenerator || !availableGenerators) {
     return <LoadingIndicator />
   }
 
   return (
-    <>
-      {isSmallScreen ? (
-        <Tabs
-          className="creation-interface"
-          defaultActiveKey="workspace"
-          items={[
-            {
-              key: 'workspace',
-              label: 'Workspace',
-              className: 'h-full',
-              children: (
-                <div className="relative flex flex-col items-center overflow-hidden border border-gray-800 mb-4 h-full ">
-                  <CreationWorkspace
-                    generators={availableGenerators}
-                    presetCreation={presetCreation}
-                    activeGenerator={activeGenerator}
-                    handleGeneratorChange={handleGeneratorChange}
-                  />
-                </div>
-              ),
-            },
-            {
-              key: 'tasks',
-              label: 'Tasks',
-              children: (
-                <div className="pl-2 pt-4">
-                  <ResultPreviewList innerRef={resultPreviewRef} />
-                </div>
-              ),
-            },
-          ]}
+    <div className="relative h-full md:flex md:gap-2 creation-interface">
+      {usesDrawer && drawerOpen ? (
+        <div
+          className="fixed inset-0 z-10 md:hidden pointer-events-none"
+          onClick={handleMaskClick}
         />
-      ) : (
-        <div className="h-full md:flex md:gap-2 creation-interface ">
-          <div className="ml-2 min-w-[320px] max-w-[380px] w-full relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-200 dark:border-gray-800 mb-4 h-full md:max-h-[calc(100%_-_16px)]">
-            <CreationWorkspace
-              generators={availableGenerators}
-              presetCreation={presetCreation}
-              activeGenerator={activeGenerator}
-              handleGeneratorChange={handleGeneratorChange}
-            />
-          </div>
+      ) : null}
+      <div
+        ref={workspaceRef}
+        className={`fixed flex flex-col justify-end md:justify-normal ${
+          drawerOpen && settingsExpanded ? 'h-full' : ''
+        } ${
+          usesDrawer && drawerOpen ? 'max-h-[60vh]' : ''
+        } z-20 bottom-0 w-full create-form-drawer bg-gray-300 dark:bg-gray-950 rounded-lg rounded-b-none overflow-hidden md:bottom-auto md:relative md:ml-2 md:mb-4 md:min-w-[320px] md:max-w-[380px] md:max-h-[calc(100%_-_16px)] md:border md:rounded-b-lg md:border-solid md:border-gray-200 md:dark:border-gray-800`}
+      >
+        <CreationWorkspace
+          onSettingsToggle={setSettingsExpanded}
+          usesDrawer={usesDrawer}
+          onDrawerToggle={setDrawerOpen}
+          openedDrawer={drawerOpen}
+          generators={availableGenerators}
+          presetCreation={presetCreation}
+          activeGenerator={activeGenerator}
+          handleGeneratorChange={handleGeneratorChange}
+        />
+      </div>
 
-          <div className="w-full overflow-y-auto px-2 pt-2">
-            <ResultPreviewList innerRef={resultPreviewRef} />
-          </div>
+      <div className="w-full h-full md:h-auto overflow-y-auto px-2 pt-2">
+        <ResultPreviewList innerRef={resultPreviewRef} />
+      </div>
 
-          {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}
-        </div>
-      )}
-    </>
+      {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}
+    </div>
   )
 }
 
