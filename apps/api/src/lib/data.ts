@@ -1,6 +1,6 @@
 import mongoose, { ObjectId } from 'mongoose'
 
-import { FeatureFlag, User, UserDocument } from '../models/Creator'
+import { FeatureFlag, UserDocument } from '../models/Creator'
 
 export type IdInput = string | ObjectId
 

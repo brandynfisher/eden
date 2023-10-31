@@ -1,92 +1,182 @@
 import { AxiosRequestConfig } from 'axios'
+import { WebAPICallOptions, WebAPICallResult } from 'src/EdenClient'
 import {
+  ApiKeysCreateArguments,
+  ApiKeysCreateResponse,
+  ApiKeysDeleteArguments,
+  ApiKeysDeleteResponse,
+  ApiKeysListArguments,
+  ApiKeysListResponse,
+  CharactersCreateArguments,
+  CharactersCreateResponse,
+  CharactersDeleteArguments,
+  CharactersDeleteResponse,
+  CharactersGetArguments,
+  CharactersGetResponse,
+  CharactersListArguments,
+  CharactersListResponse,
+  CharactersUpdateArguments,
+  CharactersUpdateResponse,
+  CollectionsAddCreationsArguments,
+  CollectionsAddCreationsResponse,
+  CollectionsCreateArguments,
+  CollectionsCreateResponse,
+  CollectionsDeleteArguments,
+  CollectionsDeleteResponse,
+  CollectionsGetArguments,
+  CollectionsGetResponse,
+  CollectionsListArguments,
+  CollectionsListResponse,
+  CollectionsRemoveCreationsArguments,
+  CollectionsRemoveCreationsResponse,
+  CollectionsUpdateArguments,
+  CollectionsUpdateResponse,
+  ConceptsDeleteArguments,
   ConceptsDeleteResponse,
+  ConceptsGetArguments,
+  ConceptsGetResponse,
+  ConceptsListArguments,
+  ConceptsListResponse,
+  ConceptsUpdateArguments,
   ConceptsUpdateResponse,
+  CreationsDeleteArguments,
   CreationsDeleteResponse,
+  CreationsGetArguments,
+  CreationsGetResponse,
+  CreationsGetSimilarArguments,
+  CreationsGetSimilarResponse,
+  CreationsListArguments,
+  CreationsListResponse,
+  CreationsReactArguments,
+  CreationsReactResponse,
+  CreationsUnreactArguments,
+  CreationsUnreactResponse,
+  CreationsUpdateArguments,
   CreationsUpdateResponse,
+  CreatorFollowersListArguments,
   CreatorFollowersListResponse,
   CreatorFollowingListResponse,
-  SessionEventsListResponse,
-  SessionsCreateResponse,
-  SessionsDeleteResponse,
-  SessionsGetResponse,
-  SessionsListResponse,
-  SessionsUpdateResponse,
-} from 'src/responses'
-import {
-  CollectionsAddCreationsResponse,
-  CollectionsCreateResponse,
-  CollectionsDeleteResponse,
-  CollectionsGetResponse,
-  CollectionsListResponse,
-  CollectionsRemoveCreationsResponse,
-  CollectionsUpdateResponse,
-} from 'src/responses/CollectionsResponses'
-import { MediaUploadResponse } from 'src/responses/MediaResponses'
-import {
-  PaymentsCreateResponse,
-  PaymentsProductsResponse,
-  PaymentsSubscriptionResponse,
-} from 'src/responses/PaymentsResponses'
-
-import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
-import {
-  ApiKeysCreateResponse,
-  ApiKeysDeleteResponse,
-  ApiKeysListResponse,
-} from './responses/ApiKeysResponses'
-import { AuthLoginResponse } from './responses/AuthResponses'
-import {
-  CharactersCreateResponse,
-  CharactersDeleteResponse,
-  CharactersGetResponse,
-  CharactersListResponse,
-  CharactersUpdateResponse,
-} from './responses/CharactersResponses'
-import {
-  ConceptsGetResponse,
-  ConceptsListResponse,
-} from './responses/ConceptsResponses'
-import {
-  CreationsGetResponse,
-  CreationsGetSimilarResponse,
-  CreationsListResponse,
-  CreationsReactResponse,
-  CreationsUnreactResponse,
-  ReactionType,
-} from './responses/CreationsResponses'
-import {
+  CreatorsFollowArguments,
   CreatorsFollowResponse,
+  CreatorsGetArguments,
   CreatorsGetMeResponse,
   CreatorsGetResponse,
+  CreatorsListArguments,
   CreatorsListResponse,
+  CreatorsUnfollowArguments,
   CreatorsUnfollowResponse,
+  CreatorsUpdateArguments,
   CreatorsUpdateResponse,
-} from './responses/CreatorsResponses'
-import {
+  GeneratorsGetArguments,
   GeneratorsGetResponse,
+  GeneratorsListArguments,
   GeneratorsListResponse,
-} from './responses/GeneratorsResponses'
-import {
+  MannaBalanceGetArguments,
   MannaBalanceGetResponse,
   MannaVoucherRedeemResponse,
-} from './responses/MannaResponses'
-import {
-  ScenarioType,
+  MannaVouchersRedeemArguments,
+  PaymentsCreateArguments,
+  PaymentsCreateResponse,
+  PaymentsProductsResponse,
+  PaymentsSubscriptionArguments,
+  PaymentsSubscriptionResponse,
+  ScenariosCreateArguments,
   ScenariosCreateResponse,
+  ScenariosDeleteArguments,
   ScenariosDeleteResponse,
+  ScenariosGetArguments,
   ScenariosGetResponse,
+  ScenariosListArguments,
   ScenariosListResponse,
+  ScenariosUpdateArguments,
   ScenariosUpdateResponse,
-} from './responses/ScenariosResponses'
-import {
+  SessionEventsListArguments,
+  SessionEventsListResponse,
+  SessionsCreateArguments,
+  SessionsCreateResponse,
+  SessionsDeleteArguments,
+  SessionsDeleteResponse,
+  SessionsGetArguments,
+  SessionsGetResponse,
+  SessionsListArguments,
+  SessionsListResponse,
+  SessionsUpdateArguments,
+  SessionsUpdateResponse,
+  TasksChatCompleteArguments,
+  TasksCompleteArguments,
   TasksCompleteResponse,
+  TasksCreateArguments,
   TasksCreateResponse,
+  TasksGetArguments,
   TasksGetResponse,
+  TasksListArguments,
   TasksListResponse,
-} from './responses/TasksResponses'
+  apiKeysCreateRequestConfig,
+  apiKeysDeleteRequestConfig,
+  apiKeysListRequestConfig,
+  charactersCreateRequestConfig,
+  charactersDeleteRequestConfig,
+  charactersGetRequestConfig,
+  charactersListRequestConfig,
+  charactersUpdateRequestConfig,
+  collectionsAddCreationsRequestConfig,
+  collectionsCreateRequestConfig,
+  collectionsDeleteRequestConfig,
+  collectionsGetRequestConfig,
+  collectionsListRequestConfig,
+  collectionsRemoveCreationsRequestConfig,
+  collectionsUpdateRequestConfig,
+  conceptsDeleteRequestConfig,
+  conceptsGetRequestConfig,
+  conceptsListRequestConfig,
+  conceptsUpdateRequestConfig,
+  creationsDeleteRequestConfig,
+  creationsGetRequestConfig,
+  creationsGetSimilarRequestConfig,
+  creationsListRequestConfig,
+  creationsReactRequestConfig,
+  creationsUnreactRequestConfig,
+  creationsUpdateRequestConfig,
+  creatorFollowersListRequestConfig,
+  creatorFollowingListRequestConfig,
+  creatorsFollowRequestConfig,
+  creatorsGetMeRequestConfig,
+  creatorsGetRequestConfig,
+  creatorsListRequestConfig,
+  creatorsUnfollowRequestConfig,
+  creatorsUpdateRequestConfig,
+  generatorsGetRequestConfig,
+  generatorsListRequestConfig,
+  mannaBalanceGetRequestConfig,
+  mannaVouchersRedeemRequestConfig,
+  paymentsCreateRequestConfig,
+  paymentsProductsRequestConfig,
+  paymentsSubscriptionRequestConfig,
+  scenariosCreateRequestConfig,
+  scenariosDeleteRequestConfig,
+  scenariosGetRequestConfig,
+  scenariosListRequestConfig,
+  scenariosUpdateRequestConfig,
+  sessionEventsListRequestConfig,
+  sessionsCreateRequestConfig,
+  sessionsDeleteRequestConfig,
+  sessionsGetRequestConfig,
+  sessionsListRequestConfig,
+  sessionsUpdateRequestConfig,
+  tasksChatCompleteRequestConfig,
+  tasksCompleteRequestConfig,
+  tasksCostRequestConfig,
+  tasksCreateRequestConfig,
+  tasksGetRequestConfig,
+  tasksListRequestConfig,
+} from 'src/models'
+import {
+  MediaUploadArguments,
+  MediaUploadResponse,
+  mediaUploadRequestConfig,
+} from 'src/models/Media'
 
-const transformArgsIntoURLParams = (
+export const transformArgsIntoURLParams = (
   args: Record<string, any>,
 ): URLSearchParams => {
   const params = new URLSearchParams()
@@ -105,12 +195,6 @@ const transformArgsIntoURLParams = (
   }
 
   return params
-}
-
-interface ListQueryParams {
-  page?: number
-  limit?: number
-  sort?: object
 }
 
 export default interface Method<
@@ -173,13 +257,6 @@ export abstract class Methods {
     delete: bindApiCall<ApiKeysDeleteArguments, ApiKeysDeleteResponse>(
       this,
       apiKeysDeleteRequestConfig,
-    ),
-  }
-
-  public readonly auth = {
-    login: bindApiCall<AuthLoginArguments, AuthLoginResponse>(
-      this,
-      authLoginRequestConfig,
     ),
   }
 
@@ -275,17 +352,17 @@ export abstract class Methods {
   }
 
   public readonly followers = {
-    list: bindApiCall<FollowersListArguments, CreatorFollowersListResponse>(
-      this,
-      followersListRequestConfig,
-    ),
+    list: bindApiCall<
+      CreatorFollowersListArguments,
+      CreatorFollowersListResponse
+    >(this, creatorFollowersListRequestConfig),
   }
 
   public readonly following = {
-    list: bindApiCall<FollowersListArguments, CreatorFollowingListResponse>(
-      this,
-      followingListRequestConfig,
-    ),
+    list: bindApiCall<
+      CreatorFollowersListArguments,
+      CreatorFollowingListResponse
+    >(this, creatorFollowingListRequestConfig),
   }
 
   public readonly concepts = {
@@ -430,957 +507,5 @@ export abstract class Methods {
       this,
       tasksListRequestConfig,
     ),
-  }
-}
-
-export interface CharactersListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-}
-
-export interface CharactersGetArguments extends WebAPICallOptions {
-  characterId: string
-}
-
-export interface CharactersCreateArguments extends WebAPICallOptions {
-  name: string
-  image?: string
-  voice?: string
-  description?: string
-  greeting?: string
-  dialogue?: any[]
-  isPrivate?: boolean
-}
-
-export interface CharactersUpdateArguments extends WebAPICallOptions {
-  characterId: string
-  name?: string
-  image?: string
-  voice?: string
-  description?: string
-  greeting?: string
-  dialogue?: any[]
-  isPrivate?: boolean
-}
-
-export interface CharactersDeleteArguments extends WebAPICallOptions {
-  characterId: string
-}
-
-export type ApiKeysListArguments = WebAPICallOptions & ListQueryParams
-
-export interface ApiKeysCreateArguments extends WebAPICallOptions {
-  note?: string
-}
-
-export interface ApiKeysDeleteArguments extends WebAPICallOptions {
-  apiKey: string
-}
-
-export interface AuthLoginArguments extends WebAPICallOptions {
-  address: string
-  message: string
-  signature: string
-}
-
-export interface AuthCreateChallengeArguments extends WebAPICallOptions {
-  address: string
-  isWeb2: boolean
-}
-
-export interface CollectionsCreateArguments extends WebAPICallOptions {
-  name: string
-  description?: string
-  creationIds?: string[]
-}
-
-export interface CollectionsUpdateArguments extends WebAPICallOptions {
-  collectionId: string
-  name?: string
-  description?: string
-}
-
-export interface CollectionsDeleteArguments extends WebAPICallOptions {
-  collectionId: string
-}
-
-export interface CollectionsAddCreationsArguments extends WebAPICallOptions {
-  collectionId: string
-  creationIds: string[]
-}
-
-export interface CollectionsRemoveCreationsArguments extends WebAPICallOptions {
-  collectionId: string
-  creationIds: string[]
-}
-
-export interface CollectionsListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-  creationId?: string | string[]
-}
-
-export interface CollectionsGetArguments extends WebAPICallOptions {
-  collectionId: string
-}
-
-export interface CreationsListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-  taskId?: string
-}
-
-export interface CreationsGetArguments extends WebAPICallOptions {
-  creationId: string
-}
-
-export interface CreationsGetSimilarArguments extends WebAPICallOptions {
-  creationId: string
-  n: number
-}
-
-export interface CreationsReactArguments extends WebAPICallOptions {
-  creationId: string
-  reaction: ReactionType
-}
-
-export interface CreationsUnreactArguments extends WebAPICallOptions {
-  creationId: string
-  reaction: ReactionType
-}
-
-export interface CreationsDeleteArguments extends WebAPICallOptions {
-  creationId: string
-}
-
-export interface CreationsUpdateArguments extends WebAPICallOptions {
-  creationId: string
-  isPrivate: boolean
-}
-
-export interface ConceptsListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-}
-
-export interface ConceptsGetArguments extends WebAPICallOptions {
-  conceptId: string
-}
-
-export interface ConceptsDeleteArguments extends WebAPICallOptions {
-  conceptId: string
-}
-
-export interface ConceptsUpdateArguments extends WebAPICallOptions {
-  conceptId: string
-  isPrivate: boolean
-}
-
-export interface CreatorsFollowArguments extends WebAPICallOptions {
-  userId: string
-}
-
-export interface CreatorsUnfollowArguments extends WebAPICallOptions {
-  userId: string
-}
-
-export interface CreatorsListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-}
-
-export interface CreatorsGetArguments extends WebAPICallOptions {
-  userId: string
-}
-
-export interface CreatorsUpdateArguments extends WebAPICallOptions {
-  username?: string
-  userImage?: string
-}
-
-export interface FollowersListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId: string
-}
-
-export interface FollowingListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId: string
-}
-
-export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
-
-export interface GeneratorsGetArguments extends WebAPICallOptions {
-  generatorName: string
-}
-
-export type MannaBalanceGetArguments = WebAPICallOptions
-
-export interface MannaVouchersRedeemArguments extends WebAPICallOptions {
-  code: string
-}
-
-export interface MediaUploadArguments extends WebAPICallOptions {
-  media: Buffer
-}
-
-export interface PaymentsCreateArguments extends WebAPICallOptions {
-  priceId: string
-  paymentMode: 'payment' | 'subscription'
-}
-
-export interface PaymentsSubscriptionArguments extends WebAPICallOptions {
-  stripeCustomerId: string
-}
-
-export interface ScenariosCreateArguments extends WebAPICallOptions {
-  name: string
-  description: string
-  type: ScenarioType
-  data: any
-}
-
-export interface ScenariosUpdateArguments extends WebAPICallOptions {
-  scenarioId: string
-  name?: string
-  description?: string
-  data?: any
-}
-
-export interface ScenariosDeleteArguments extends WebAPICallOptions {
-  scenarioId: string
-}
-
-export interface ScenariosListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-}
-
-export interface SessionsCreateArguments extends WebAPICallOptions {
-  type: ScenarioType
-}
-
-export interface SessionsUpdateArguments extends WebAPICallOptions {
-  sessionId: string
-  data?: any
-}
-
-export interface SessionsDeleteArguments extends WebAPICallOptions {
-  sessionId: string
-}
-
-export interface SessionsListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-}
-
-export interface SessionsGetArguments extends WebAPICallOptions {
-  sessionId: string
-}
-
-export interface SessionEventsListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  sessionId: string
-}
-
-export interface ScenariosGetArguments extends WebAPICallOptions {
-  scenarioId: string
-}
-
-export interface TasksCreateArguments extends WebAPICallOptions {
-  generatorName: string
-  versionId?: string
-  config?: any
-  metadata?: any
-  webhooks?: string[]
-}
-
-export interface TasksCompleteArguments extends WebAPICallOptions {
-  prompt: string
-  config?: any
-}
-
-export interface TasksChatCompleteArguments extends WebAPICallOptions {
-  chat: any[]
-  config?: any
-}
-
-export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
-  status?: string | string[]
-  taskId?: string | string[]
-}
-
-export interface TasksGetArguments extends WebAPICallOptions {
-  taskId: string
-}
-
-const charactersListRequestConfig = (
-  args: CharactersListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams({
-    ...args,
-  })
-  return {
-    method: 'GET',
-    url: 'characters',
-    params,
-  }
-}
-
-const charactersGetRequestConfig = (
-  args: CharactersGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `characters/${args.characterId}`,
-  }
-}
-
-const charactersCreateRequestConfig = (
-  args: CharactersCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'characters',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const charactersUpdateRequestConfig = (
-  args: CharactersUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'PATCH',
-    url: `characters/${args.characterId}`,
-    data: {
-      ...args,
-    },
-  }
-}
-
-const charactersDeleteRequestConfig = (
-  args: CharactersDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'DELETE',
-    url: `characters/${args.characterId}`,
-    data: {
-      ...args,
-    },
-  }
-}
-
-const apiKeysListRequestConfig = (
-  args: ApiKeysListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams({
-    ...args,
-  })
-  return {
-    method: 'GET',
-    url: 'apikeys',
-    params,
-  }
-}
-
-const apiKeysCreateRequestConfig = (
-  args: ApiKeysCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'apikeys/create',
-    data: {
-      note: args.note,
-    },
-  }
-}
-
-const apiKeysDeleteRequestConfig = (
-  args: ApiKeysDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'apikeys/delete',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const authLoginRequestConfig = (
-  args: AuthLoginArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'auth/login',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const collectionsCreateRequestConfig = (
-  args: CollectionsCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'collections/create',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const collectionsUpdateRequestConfig = (
-  args: CollectionsUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'collections/update',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const collectionsDeleteRequestConfig = (
-  args: CollectionsDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'collections/delete',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const collectionsListRequestConfig = (
-  args: CollectionsListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'collections',
-    params,
-  }
-}
-
-const collectionsGetRequestConfig = (
-  args: CollectionsGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `collections/${args.collectionId}`,
-  }
-}
-
-const collectionsAddCreationsRequestConfig = (
-  args: CollectionsAddCreationsArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'collections/addcreations',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const collectionsRemoveCreationsRequestConfig = (
-  args: CollectionsRemoveCreationsArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'collections/removecreations',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const creationsListRequestConfig = (
-  args: CreationsListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'creations',
-    params,
-  }
-}
-
-const creationsGetRequestConfig = (
-  args: CreationsGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `creations/${args.creationId}`,
-  }
-}
-
-const creationsGetSimilarRequestConfig = (
-  args: CreationsGetSimilarArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `creations/${args.creationId}/similar`,
-  }
-}
-
-const creationsReactRequestConfig = (
-  args: CreationsReactArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'creations/react',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const creationsUnreactRequestConfig = (
-  args: CreationsUnreactArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'creations/unreact',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const creationsUpdateRequestConfig = (
-  args: CreationsUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'PATCH',
-    url: `creations/${args.creationId}`,
-    data: {
-      ...args,
-    },
-  }
-}
-
-const creationsDeleteRequestConfig = (
-  args: CreationsDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'DELETE',
-    url: `creations/${args.creationId}`,
-    data: {
-      ...args,
-    },
-  }
-}
-
-const conceptsListRequestConfig = (
-  args: ConceptsListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'concepts',
-    params,
-  }
-}
-
-const conceptsGetRequestConfig = (
-  args: ConceptsGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `concepts/${args.conceptId}`,
-  }
-}
-
-const conceptsUpdateRequestConfig = (
-  args: ConceptsUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'PATCH',
-    url: `concepts/${args.conceptId}`,
-    data: {
-      ...args,
-    },
-  }
-}
-
-const conceptsDeleteRequestConfig = (
-  args: ConceptsDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'DELETE',
-    url: `concepts/${args.conceptId}`,
-    data: {
-      ...args,
-    },
-  }
-}
-
-const creatorsFollowRequestConfig = (
-  args: CreatorsFollowArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'creators/follow',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const creatorsUnfollowRequestConfig = (
-  args: CreatorsUnfollowArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'creators/unfollow',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const creatorsListRequestConfig = (
-  args: CreatorsListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'creators',
-    params,
-  }
-}
-
-const creatorsGetRequestConfig = (
-  args: CreatorsGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `creators/${args.userId}`,
-  }
-}
-
-const creatorsGetMeRequestConfig = (): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `creators/me`,
-  }
-}
-
-const creatorsUpdateRequestConfig = (
-  args: CreatorsUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'creators/update',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const followersListRequestConfig = (
-  args: FollowersListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: `creators/${args.userId}/followers`,
-    params,
-  }
-}
-
-const followingListRequestConfig = (
-  args: FollowingListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: `creators/${args.userId}/following`,
-    params,
-  }
-}
-
-const generatorsListRequestConfig = (): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: 'generators',
-  }
-}
-
-const generatorsGetRequestConfig = (
-  args: GeneratorsGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `generators/${args.generatorName}`,
-  }
-}
-
-const mannaBalanceGetRequestConfig = (): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: 'manna/balance',
-  }
-}
-
-const mannaVouchersRedeemRequestConfig = (
-  args: MannaVouchersRedeemArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'manna/vouchers/redeem',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const mediaUploadRequestConfig = (args: MediaUploadArguments) => {
-  const blob = new Blob([args.media])
-  const form = new FormData()
-  form.append('file', blob)
-  return {
-    method: 'POST',
-    url: 'media/upload',
-    data: form,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }
-}
-
-const paymentsCreateRequestConfig = (
-  args: PaymentsCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'payments/create',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const paymentsProductsRequestConfig = (): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: 'payments/products',
-  }
-}
-
-const paymentsSubscriptionRequestConfig = (
-  args: PaymentsSubscriptionArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'payments/subscription',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const scenariosCreateRequestConfig = (
-  args: ScenariosCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'scenarios/create',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const scenariosUpdateRequestConfig = (
-  args: ScenariosUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'scenarios/update',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const scenariosDeleteRequestConfig = (
-  args: ScenariosDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'scenarios/delete',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const scenariosListRequestConfig = (
-  args: ScenariosListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'scenarios',
-    params,
-  }
-}
-
-const scenariosGetRequestConfig = (
-  args: ScenariosGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `scenarios/${args.scenarioId}`,
-  }
-}
-
-const sessionsCreateRequestConfig = (
-  args: SessionsCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'sessions/create',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const sessionsUpdateRequestConfig = (
-  args: SessionsUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'sessions/update',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const sessionsDeleteRequestConfig = (
-  args: SessionsDeleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'sessions/delete',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const sessionsListRequestConfig = (
-  args: SessionsListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'sessions',
-    params,
-  }
-}
-
-const sessionsGetRequestConfig = (
-  args: SessionsGetArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `sessions/${args.sessionId}`,
-  }
-}
-
-const sessionEventsListRequestConfig = (
-  args: SessionEventsListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: `sessions/${args.sessionId}/events`,
-    params,
-  }
-}
-
-const tasksCreateRequestConfig = (
-  args: TasksCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'tasks/create',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const tasksCostRequestConfig = (
-  args: TasksCreateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'tasks/cost',
-    data: {
-      ...args,
-    },
-  }
-}
-const tasksCompleteRequestConfig = (
-  args: TasksCompleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'tasks/complete',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const tasksChatCompleteRequestConfig = (
-  args: TasksChatCompleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'tasks/chat',
-    data: {
-      ...args,
-    },
-  }
-}
-
-const tasksListRequestConfig = (
-  args: TasksListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'tasks',
-    params,
-  }
-}
-
-const tasksGetRequestConfig = (args: TasksGetArguments): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `tasks/${args.taskId}`,
   }
 }

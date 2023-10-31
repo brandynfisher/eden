@@ -18,6 +18,25 @@ export interface WebAPICallOptions {
   [argument: string]: unknown
 }
 
+export interface ListQueryParams {
+  page?: number
+  limit?: number
+  sort?: object
+}
+
+export interface PaginatedResponse<T> {
+  docs?: T[]
+  total?: number
+  limit?: number
+  pages?: number
+  page?: number
+  pagingCounter?: number
+  hasPrevPage?: boolean
+  hasNextPage?: boolean
+  prevPage?: number
+  nextPage?: number
+}
+
 export class EdenClient extends Methods {
   public readonly edenApiUrl: string
   public readonly token?: string

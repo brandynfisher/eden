@@ -7,7 +7,7 @@ import {
   deleteApiKey,
   listApiKeys,
 } from '../controllers/apiKeyController'
-import { isAdmin, isAuth } from '../middleware/authMiddleware'
+import { isAuth } from '../middleware/authMiddleware'
 
 const apiKeyRoutes: FastifyPluginAsync = async server => {
   server.post('/apikeys/create', {
