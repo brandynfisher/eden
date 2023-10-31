@@ -7,7 +7,13 @@ import React from 'react'
 
 // import ResultTools from '@/components/Creation/CreationInterface/ResultTools'
 
-const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
+const ResultPreviewDisplay = ({
+  creationId,
+  priority,
+}: {
+  creationId: string
+  priority?: boolean
+}) => {
   const { creation, isLoading } = useCreation(creationId)
   const { showModal } = useModalContext()
 
@@ -40,7 +46,7 @@ const ResultPreviewDisplay = ({ creationId }: { creationId: string }) => {
                 creation.mediaAttributes.width,
                 creation.mediaAttributes.height,
               )}
-              priority={false}
+              priority={priority}
               limitHeight={false}
             />
           </div>

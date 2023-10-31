@@ -72,10 +72,10 @@ const ResultPreviewList = ({
     // console.log(tasks)
     if (tasks && tasks.length) {
       setTaskList(
-        tasks.map(task => {
+        tasks.map((task, index) => {
           return {
             dot: getTimelineDot(task.status),
-            children: <ResultPreview task={task} />,
+            children: <ResultPreview task={task} index={index} />,
           }
         }),
       )
@@ -91,7 +91,7 @@ const ResultPreviewList = ({
   )
 }
 
-const ResultPreview = ({ task }: { task: Task }) => {
+const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
   const { message } = App.useApp()
   const { copied, copy } = useClipboard({ timeout: 750 })
 
@@ -237,12 +237,19 @@ const ResultPreview = ({ task }: { task: Task }) => {
                   className={`grid grid-cols-2 gap-2 2xl:grid-cols-${task.samples.length}`}
                 >
                   {task.samples.map(id => (
-                    <ResultPreviewDisplay key={id} creationId={id} />
+                    <ResultPreviewDisplay
+                      key={id}
+                      creationId={id}
+                      priority={index < 2}
+                    />
                   ))}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 2xl:grid-cols-2">
-                  <ResultPreviewDisplay creationId={creationId} />
+                  <ResultPreviewDisplay
+                    creationId={creationId}
+                    priority={index < 2}
+                  />
                 </div>
               )}
             </div>
