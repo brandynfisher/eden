@@ -77,8 +77,8 @@ const MasonryInfinite = ({
     isItemLoaded: (index, items) => {
       return !!items[index]
     },
-    minimumBatchSize: 10,
-    threshold: 24,
+    minimumBatchSize: 25,
+    threshold: 50,
   })
 
   const handleOrderChange = (newOrderBy: OrderByParam) => {

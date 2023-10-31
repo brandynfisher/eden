@@ -77,7 +77,7 @@ const CreationInterface = ({
     }
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
 
-  const isSmallScreen = !width ? false : width <= 1024
+  const isSmallScreen = !width ? false : width <= 768
 
   if (!generators || !activeGenerator || !availableGenerators) {
     return <LoadingIndicator />
@@ -95,7 +95,7 @@ const CreationInterface = ({
               label: 'Workspace',
               className: 'h-full',
               children: (
-                <div className="relative flex flex-col items-center overflow-hidden border lg:rounded-lg lg:border-solid border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
+                <div className="relative flex flex-col items-center overflow-hidden border border-gray-800 mb-4 h-full ">
                   <CreationWorkspace
                     generators={availableGenerators}
                     presetCreation={presetCreation}
@@ -117,8 +117,8 @@ const CreationInterface = ({
           ]}
         />
       ) : (
-        <div className="h-full md:flex md:gap-2 creation-interface">
-          <div className="min-w-[320px] max-w-[380px] w-full relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-200 dark:border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
+        <div className="h-full md:flex md:gap-2 creation-interface ">
+          <div className="ml-2 min-w-[320px] max-w-[380px] w-full relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-200 dark:border-gray-800 mb-4 h-full md:max-h-[calc(100%_-_16px)]">
             <CreationWorkspace
               generators={availableGenerators}
               presetCreation={presetCreation}
