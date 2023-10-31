@@ -100,24 +100,26 @@ const CreationInterface = ({
     }
   }
 
-  const workspaceRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleTimelineClick = (event: MouseEvent) => {
+      console.log(event.target)
+
       if (
-        workspaceRef.current &&
-        !workspaceRef.current.contains(event.target as Node)
+        timelineRef.current &&
+        timelineRef.current.contains(event.target as Node)
       ) {
         setDrawerOpen(false)
       }
     }
 
     if (drawerOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleTimelineClick)
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('mousedown', handleTimelineClick)
     }
   }, [drawerOpen])
 
@@ -134,7 +136,6 @@ const CreationInterface = ({
         />
       ) : null}
       <div
-        ref={workspaceRef}
         className={`fixed flex flex-col justify-end md:justify-normal ${
           drawerOpen && settingsExpanded ? 'h-full' : ''
         } ${
@@ -153,7 +154,10 @@ const CreationInterface = ({
         />
       </div>
 
-      <div className="w-full h-full md:h-auto overflow-y-auto px-2 pt-2">
+      <div
+        ref={timelineRef}
+        className="w-full h-full md:h-auto overflow-y-auto px-2 pt-2 mt-2 md:mt-0"
+      >
         <ResultPreviewList innerRef={resultPreviewRef} />
       </div>
 
