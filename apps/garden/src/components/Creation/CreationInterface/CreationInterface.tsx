@@ -63,7 +63,7 @@ const CreationInterface = ({
     }
   }, [width])
 
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(true)
   const [usesDrawer, setUsesDrawer] = useState(false)
 
   useEffect(() => {
