@@ -86,9 +86,7 @@ const CreationCard: FC<{
               </div>
             </div>
             <div className="flex items-center gap-4">
-              {creation.isPrivate ? (
-                <LockIcon fontSize="small" className="md:hidden" />
-              ) : null}
+              {creation.isPrivate ? <LockIcon fontSize="small" /> : null}
               <CardToolsDropdown
                 onOpen={setDropdownActive}
                 item={creation}
