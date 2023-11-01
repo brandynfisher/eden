@@ -53,7 +53,9 @@ const LayoutHeader = () => {
       {viewportWidth < theme.screens.sm && isAuthenticated ? (
         <div className="w-full flex justify-between">
           <TaskNotificationDropdown />
-          <MannaDropdown />
+          <div className="ml-auto">
+            <MannaDropdown />
+          </div>
         </div>
       ) : null}
     </Header>
