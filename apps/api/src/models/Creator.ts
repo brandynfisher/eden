@@ -11,6 +11,7 @@ export enum FeatureFlag {
 export enum SubscriptionTier {
   Basic = 'basic',
   Pro = 'pro',
+  Free = 'free',
 }
 
 export interface UserSchema {

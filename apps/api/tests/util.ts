@@ -40,6 +40,13 @@ export const prepareUserHeaders = () => {
   }
 }
 
+export const prepareBasicUserHeaders = () => {
+  return {
+    'x-api-key': 'basicuser',
+    'x-api-secret': 'basicuser',
+  }
+}
+
 export const prepareAdminHeaders = () => {
   return {
     'x-api-key': 'admin',
