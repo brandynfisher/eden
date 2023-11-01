@@ -57,15 +57,17 @@ const CreationCard: FC<{
           hovered={hovered}
         />
       </a>
+      {creation.isPrivate ? (
+        <div
+          className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
+            hovered ? 'md:hidden' : ''
+          }`}
+        >
+          <LockIcon fontSize="small" className="text-white" />
+        </div>
+      ) : null}
       {width < 768 || hovered || dropdownActive ? (
         <>
-          {creation.isPrivate ? (
-            <div
-              className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
-            >
-              <LockIcon fontSize="small" className="text-white" />
-            </div>
-          ) : null}
           <div
             className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none`}
           >
