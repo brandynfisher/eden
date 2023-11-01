@@ -31,10 +31,12 @@ type MenuItem = {
 }
 
 const CardToolsDropdown = ({
+  onOpen,
   item,
   itemType,
   onChange,
 }: {
+  onOpen?: Function
   item: Creation | Concept
   itemType: 'creation' | 'concept'
   onChange: (updatedItem: Creation | Concept) => void
@@ -257,6 +259,7 @@ const CardToolsDropdown = ({
       placement="bottomRight"
       menu={{ items: getCardMenuItems() }}
       className="card-tools-dropdown"
+      onOpenChange={open => onOpen && onOpen(open)}
     >
       <div className="flex items-center cursor-pointer pointer-events-auto">
         <EllipsisOutlined className="text-xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
