@@ -11,7 +11,10 @@ html, body, image, video, main {
 }
 
 body {
-    //min-height: calc(100vh + 1px); //cheap hack to force scroll bars to be always present
+    //cheap hack to force scroll bars to be always present to prevent masonry weirdness/repositioning loops
+    &.force-scroll-y {
+        min-height: calc(100vh + 1px);
+    }
 }
 
 .ant-modal-mask {
