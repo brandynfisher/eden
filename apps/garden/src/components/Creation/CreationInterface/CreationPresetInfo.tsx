@@ -15,7 +15,7 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
   }
 
   return (
-    <div className="px-4 py-1 text-gray-500 dark:bg-gray-900">
+    <div className="px-4 py-2 text-gray-500 dark:bg-gray-950">
       <div className="flex items-center overflow-hidden">
         <div
           className="rounded-md w-12 h-12 mr-4 flex items-center overflow-hidden"

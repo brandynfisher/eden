@@ -20,6 +20,7 @@ const CreationCard: FC<{
 
   const [creation, setCreation] = useState<Creation>(data)
   const [createdDateString, setCreatedDateString] = useState('')
+  const [dropdownActive, setDropdownActive] = useState(false)
   const timeSinceCreation = timeAgo(creation.createdAt)
 
   useEffect(() => {
@@ -56,21 +57,19 @@ const CreationCard: FC<{
           hovered={hovered}
         />
       </a>
-      {width < 768 || hovered ? (
+      {creation.isPrivate ? (
+        <div
+          className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
+            hovered ? 'md:hidden' : ''
+          }`}
+        >
+          <LockIcon fontSize="small" className="text-white" />
+        </div>
+      ) : null}
+      {width < 768 || hovered || dropdownActive ? (
         <>
-          {creation.isPrivate ? (
-            <div
-              className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
-                hovered ? '!hidden' : ''
-              }`}
-            >
-              <LockIcon fontSize="small" className="text-white" />
-            </div>
-          ) : null}
           <div
-            className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
-              hovered ? 'md:!visible' : 'md:hidden'
-            }`}
+            className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none`}
           >
             <div className="flex items-center pointer-events-auto my-1">
               <CreatorProfileLink
@@ -87,10 +86,9 @@ const CreationCard: FC<{
               </div>
             </div>
             <div className="flex items-center gap-4">
-              {creation.isPrivate ? (
-                <LockIcon fontSize="small" className="md:hidden" />
-              ) : null}
+              {creation.isPrivate ? <LockIcon fontSize="small" /> : null}
               <CardToolsDropdown
+                onOpen={setDropdownActive}
                 item={creation}
                 itemType={'creation'}
                 onChange={updatedItem => setCreation(updatedItem as Creation)}
@@ -98,9 +96,7 @@ const CreationCard: FC<{
             </div>
           </div>
           <div
-            className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${
-              hovered ? 'md:!visible' : 'md:hidden'
-            }`}
+            className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none`}
           >
             <CreationReactions creation={creation} onChange={setCreation} />
             <CreationCardDetail creation={creation} />

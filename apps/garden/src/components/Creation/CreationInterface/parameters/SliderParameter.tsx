@@ -6,6 +6,7 @@ import { FocusEvent, useEffect, useState } from 'react'
 const SliderParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
+  onFieldChange?: Function
 }) => {
   const [fieldValue, setFieldValue] = useState<number | null>(
     props.parameter.default,
@@ -13,6 +14,7 @@ const SliderParameter = (props: {
 
   const onChange = (newValue: number | null) => {
     setFieldValue(newValue)
+    props.onFieldChange && props.onFieldChange()
   }
 
   const setFormValue = (newValue: number | null) => {

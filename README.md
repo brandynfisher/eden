@@ -40,3 +40,5 @@ This monorepo is composed of apps and packages.
 - `sdk` - this is the @edenlabs/eden-sdk package, which is a thin wrapper on the API and provides API input and response types to both `api` and `garden`
 - `config` - this contains some shared configuration files for all apps
 - `tsconfig` - this contains a base tsconfig, plus extensions for each app
+
+

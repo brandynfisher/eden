@@ -80,8 +80,7 @@ const GeneratorForm = ({
   const router = useRouter()
   const { isAuthenticated, authenticate, mannaBalance, user, refetchMe } =
     useContext(UserContext)
-  const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
-    useTaskCost()
+  const { getTaskCost, canAffordOperation, taskCost } = useTaskCost()
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -125,16 +124,16 @@ const GeneratorForm = ({
     transformConfig()
   }, [presetCreation])
 
-  const handleFormFieldsChange = async () => {
+  const handleFormFieldsChange = () => {
     setIsFormTouched(true)
 
     if (!uploadsInProgress) {
-      await handleGetTaskCost()
+      handleGetTaskCost()
     }
   }
 
   const debouncedHandleFormFieldsChange = useMemo(
-    () => debounce(handleFormFieldsChange, 500),
+    () => debounce(handleFormFieldsChange, 350),
     [handleFormFieldsChange],
   )
 
@@ -192,7 +191,7 @@ const GeneratorForm = ({
         ),
       )
 
-      handleGetTaskCost(currentGeneratorParams)
+      getTaskCost(generator.generatorName, form.getFieldsValue())
     }
   }, [generator, presetCreation])
 
@@ -204,15 +203,18 @@ const GeneratorForm = ({
   }
 
   const handleGetTaskCost = useCallback(
-    async (generatorParams?: GeneratorParameter[]) => {
+    (generatorParams?: GeneratorParameter[]) => {
       const currentGeneratorParameters =
         getCurrentGeneratorParameters(generator)
       const requiredParams = currentGeneratorParameters?.filter(
         parameter => parameter.isRequired,
       )
 
+      const paramValues: FieldValues = {}
+      generatorParams?.map(param => (paramValues[param.name] = param.default))
+
       let cleanedValues = getCleanedConfig(
-        generatorParams || form.getFieldsValue(),
+        generatorParams ? paramValues : form.getFieldsValue(),
         undefined,
       )
 
@@ -225,7 +227,7 @@ const GeneratorForm = ({
         }
       })
 
-      await getTaskCost(generator.generatorName, cleanedValues)
+      getTaskCost(generator.generatorName, cleanedValues)
     },
     [generator],
   )
@@ -323,6 +325,7 @@ const GeneratorForm = ({
               key={parameter.name}
               form={form}
               parameter={parameter}
+              onFieldChange={debouncedHandleFormFieldsChange}
             />
           )
         }
@@ -370,7 +373,7 @@ const GeneratorForm = ({
         }
 
         return (
-          <div key={parameter.name} className={`px-4 py-2 mb-4`}>
+          <div key={parameter.name} className={`px-4 py-2 mb-2`}>
             {renderParameter(parameter)}
           </div>
         )
@@ -465,8 +468,8 @@ const GeneratorForm = ({
       </div>
 
       <div
-        className={`flex flex-col flex-grow bg-gray-200 dark:bg-gray-900 overflow-y-auto overflow-x-hidden pt-2 ${
-          usesDrawer && !openedDrawer ? 'hidden' : ''
+        className={`flex-col flex-grow bg-gray-200 dark:bg-gray-900 overflow-y-auto overflow-x-hidden pt-2 ${
+          usesDrawer && !openedDrawer ? 'hidden' : 'flex'
         }`}
       >
         <div>{renderFormFields(requiredParameters)}</div>
@@ -555,10 +558,7 @@ const GeneratorForm = ({
                 }
               >
                 {generator.generatorName}
-                <MannaCostBadge
-                  isLoading={!!isLoadingTaskCost}
-                  cost={taskCost || 'n/a'}
-                />
+                <MannaCostBadge cost={taskCost || 'n/a'} />
               </Button>
             )}
           </div>

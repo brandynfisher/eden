@@ -1,20 +1,31 @@
 name: 'Build and Deploy - API'
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - 'apps/api/**'
       - '.github/workflows/api.yaml'
+
   pull_request:
     branches: [main]
     paths:
-      - 'apps/garden/**'
-      - '.github/workflows/server.yaml'
+      - 'apps/api/**'
+      - '.github/workflows/api.yaml'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  ENV_API: prod
+
 jobs:
-  build:
+  build-and-push-to-ghcr:
     name: Build
     runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      packages: write
     outputs:
       tag: ${{ steps.prep.outputs.tag }}
     steps:
@@ -23,28 +34,23 @@ jobs:
       - id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="${{ secrets.REGISTRY_URL }}/abraham-ai/mars-${{ secrets.ENV_API }}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/eden-api-${{ env.ENV_API }}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}
 
-      - name: Log in to Docker Hub
+      - name: Log in to ghcr
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
         with:
-          registry: ${{ secrets.REGISTRY_URL }}
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-      - run: docker context create builders
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-        with:
-          driver: docker
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
         uses: docker/build-push-action@v2
         with:
+          context: .
           file: ./apps/api/Dockerfile
           push: true
           tags:
@@ -54,20 +60,20 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-20.04
-    needs: [build]
-    if: ${{ always() && (needs.build.result == 'success') }}
+    needs: [build-and-push-to-ghcr]
+    if: ${{ always() && (needs.build-and-push-to-ghcr.result == 'success') }}
     steps:
       - name: Check out releases repo
         uses: actions/checkout@v2
         with:
-          repository: abraham-ai/releases
+          repository: edenartlab/releases
           ref: main
           token: ${{ secrets.GENEKOGAN_PAT }}
 
       - id: prep
         run: |
-          IMAGE="${{ secrets.REGISTRY_URL }}/abraham-ai/mars-${{ secrets.ENV_API }}"
-          TAG="${{needs.build.outputs.tag}}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/eden-api-${{ env.ENV_API }}"
+          TAG="${{needs.build-and-push-to-ghcr.outputs.tag}}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}
@@ -75,18 +81,18 @@ jobs:
       - name: Bump Env
         uses: fjogeleit/yaml-update-action@main
         with:
-          valueFile: 'apps/mars/garden2/values.yaml'
+          valueFile: 'apps/eden/eden/values.yaml'
           updateFile: true
           propertyPath: '$.api_image'
           value: ${{ steps.prep.outputs.tagged_image }}
-          repository: abraham-ai/releases
+          repository: edenartlab/releases
           branch: main
           targetBranch: main
           masterBranchName: main
           commitChange: true
           createPR: false
           message:
-            'Update ${{ secrets.ENV_API }} Image Version to ${{
+            'Update ${{ env.ENV_API }} Image Version to ${{
             steps.prep.outputs.tagged_image }}'
           token: ${{ secrets.GENEKOGAN_PAT }}
 
@@ -96,5 +102,5 @@ jobs:
         uses: Ilshidur/action-discord@master
         with:
           args:
-            '${{ secrets.ENV_API }} image ${{ steps.prep.outputs.tagged_image }} has
+            '${{ env.ENV_API }} image ${{ steps.prep.outputs.tagged_image }} has
             been deployed.'

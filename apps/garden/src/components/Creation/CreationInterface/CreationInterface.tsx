@@ -100,24 +100,24 @@ const CreationInterface = ({
     }
   }
 
-  const workspaceRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleTimelineClick = (event: MouseEvent) => {
       if (
-        workspaceRef.current &&
-        !workspaceRef.current.contains(event.target as Node)
+        timelineRef.current &&
+        timelineRef.current.contains(event.target as Node)
       ) {
         setDrawerOpen(false)
       }
     }
 
     if (drawerOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleTimelineClick)
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('mousedown', handleTimelineClick)
     }
   }, [drawerOpen])
 
@@ -126,7 +126,7 @@ const CreationInterface = ({
   }
 
   return (
-    <div className="relative h-full md:flex md:gap-2 creation-interface">
+    <div className="relative h-full md:flex md:gap-4 creation-interface mt-2">
       {usesDrawer && drawerOpen ? (
         <div
           className="fixed inset-0 z-10 md:hidden pointer-events-none"
@@ -134,12 +134,13 @@ const CreationInterface = ({
         />
       ) : null}
       <div
-        ref={workspaceRef}
         className={`fixed flex flex-col justify-end md:justify-normal ${
-          drawerOpen && settingsExpanded ? 'h-full' : ''
-        } ${
-          usesDrawer && drawerOpen ? 'max-h-[60vh]' : ''
-        } z-20 bottom-0 w-full create-form-drawer bg-gray-300 dark:bg-gray-950 rounded-lg rounded-b-none overflow-hidden md:bottom-auto md:relative md:ml-2 md:mb-4 md:min-w-[320px] md:max-w-[380px] md:max-h-[calc(100%_-_16px)] md:border md:rounded-b-lg md:border-solid md:border-gray-200 md:dark:border-gray-800`}
+          usesDrawer && drawerOpen
+            ? settingsExpanded
+              ? 'max-h-[70vh] h-full overflow-hidden'
+              : 'overflow-hidden'
+            : ''
+        } z-20 bottom-0 w-full create-form-drawer bg-gray-300 dark:bg-gray-950 rounded-lg rounded-b-none md:bottom-auto md:relative md:ml-4 md:mb-6 md:min-w-[320px] md:max-w-[380px] md:max-h-[calc(100%_-_16px)] md:border md:rounded-b-lg md:border-solid md:border-gray-200 md:dark:border-gray-800`}
       >
         <CreationWorkspace
           onSettingsToggle={setSettingsExpanded}
@@ -153,7 +154,10 @@ const CreationInterface = ({
         />
       </div>
 
-      <div className="w-full h-full md:h-auto overflow-y-auto px-2 pt-2">
+      <div
+        ref={timelineRef}
+        className="w-full h-full md:h-auto overflow-y-auto px-4 md:px-0 md:pr-4 md:mt-0"
+      >
         <ResultPreviewList innerRef={resultPreviewRef} />
       </div>
 

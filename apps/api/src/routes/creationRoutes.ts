@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify'
 import { paginatedResponse, paginationProperties } from '.'
 import {
   creationDelete,
+  creationRate,
   creationReact,
   creationUnreact,
   creationUpdate,
@@ -95,6 +96,24 @@ const creationRoutes: FastifyPluginAsync = async server => {
       },
     },
     handler: (request, reply) => getCreationSimilar(server, request, reply),
+  })
+
+  server.post('/creations/rate', {
+    schema: {
+      request: {
+        body: Type.Object({
+          creationId: Type.String(),
+          rating: Type.Strict(Type.Number()),
+        }),
+      },
+      response: {
+        200: {
+          success: Type.Boolean(),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => creationRate(request, reply),
   })
 
   server.post('/creations/react', {
