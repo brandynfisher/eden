@@ -3,6 +3,7 @@ export {
   WebClientOptions,
   WebAPICallOptions,
   WebAPICallResult,
+  PaginatedResponse,
 } from './EdenClient'
 
 export * from './methods'

@@ -1,11 +1,11 @@
 import {
+  CreatorFollowersListArguments,
+  CreatorFollowingListArguments,
   CreatorsFollowArguments,
   CreatorsGetArguments,
   CreatorsListArguments,
   CreatorsUnfollowArguments,
   CreatorsUpdateArguments,
-  FollowersListArguments,
-  FollowingListArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -131,8 +131,8 @@ export const listCreatorFollowers = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { limit, page } = request.query as FollowersListArguments
-  const { userId } = request.params as FollowersListArguments
+  const { limit, page } = request.query as CreatorFollowersListArguments
+  const { userId } = request.params as CreatorFollowersListArguments
   const creatorDoc = await User.findOne({ userId })
 
   if (!creatorDoc) {
@@ -159,8 +159,8 @@ export const listCreatorFollowing = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { limit, page } = request.query as FollowingListArguments
-  const { userId } = request.params as FollowersListArguments
+  const { limit, page } = request.query as CreatorFollowingListArguments
+  const { userId } = request.params as CreatorFollowersListArguments
 
   const creatorDoc = await User.findOne({ userId })
 
