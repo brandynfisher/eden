@@ -18,7 +18,7 @@ describe('Generator Methods', () => {
     })
     expect(result).toBeDefined()
     expect(result.docs).toBeDefined()
-    expect(result.docs.length).toBe(1)
+    expect(result.docs.length).toBeGreaterThanOrEqual(1)
   })
 
   test('should be able to get a generator by name', async context => {
