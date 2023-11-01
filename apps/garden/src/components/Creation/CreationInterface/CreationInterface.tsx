@@ -135,10 +135,10 @@ const CreationInterface = ({
       ) : null}
       <div
         className={`fixed flex flex-col justify-end md:justify-normal ${
-          drawerOpen && settingsExpanded ? 'h-full' : ''
+          drawerOpen && settingsExpanded ? 'h-full overflow-hidden' : ''
         } ${
-          usesDrawer && drawerOpen ? 'max-h-[60vh]' : ''
-        } z-20 bottom-0 w-full create-form-drawer bg-gray-300 dark:bg-gray-950 rounded-lg rounded-b-none overflow-hidden md:bottom-auto md:relative md:ml-4 md:mb-6 md:min-w-[320px] md:max-w-[380px] md:max-h-[calc(100%_-_16px)] md:border md:rounded-b-lg md:border-solid md:border-gray-200 md:dark:border-gray-800`}
+          usesDrawer && drawerOpen ? 'max-h-[70vh] overflow-hidden' : ''
+        } z-20 bottom-0 w-full create-form-drawer bg-gray-300 dark:bg-gray-950 rounded-lg rounded-b-none md:bottom-auto md:relative md:ml-4 md:mb-6 md:min-w-[320px] md:max-w-[380px] md:max-h-[calc(100%_-_16px)] md:border md:rounded-b-lg md:border-solid md:border-gray-200 md:dark:border-gray-800`}
       >
         <CreationWorkspace
           onSettingsToggle={setSettingsExpanded}
