@@ -80,7 +80,13 @@ const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
       task?.status === 'running' &&
       noProgressGeneratorNames.includes(task?.generator.generatorName)
     ) {
-      timerId = setInterval(() => increaseFakeProgress(5, timerId), 1000)
+      const increment = task?.config['n_samples']
+        ? 5 / task?.config['n_samples']
+        : 5
+      timerId = setInterval(
+        () => increaseFakeProgress(increment, timerId),
+        1000,
+      )
     }
 
     return () => {
