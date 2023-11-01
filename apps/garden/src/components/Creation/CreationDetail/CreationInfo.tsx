@@ -14,9 +14,9 @@ const BaseParamGroup = ({
       <div className="text-gray-400 text-xs mb-1">{label}</div>
       <div>
         {Array.isArray(value) ? (
-          <div>{JSON.stringify(value)}</div>
+          <div title={value?.toString()}>{JSON.stringify(value)}</div>
         ) : (
-          <div>{value}</div>
+          <div title={value?.toString()}>{value}</div>
         )}
       </div>
     </div>
@@ -24,10 +24,13 @@ const BaseParamGroup = ({
 }
 
 const CreationInfo = ({ creation }: { creation: Creation }) => {
-  const [displayDate, setDisplayDate] = useState('')
+  const [displayDateTime, setDisplayDateTime] = useState('')
 
   useEffect(() => {
-    setDisplayDate(new Date(creation.createdAt).toLocaleDateString())
+    const createdDate = new Date(creation.createdAt)
+    const dateString = createdDate.toLocaleDateString()
+    const timeString = createdDate.toLocaleTimeString().substring(0, 5)
+    setDisplayDateTime(`${dateString} ${timeString}`)
   }, [creation.createdAt])
 
   return (
@@ -48,7 +51,7 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
               </div>
             }
           />
-          <BaseParamGroup label="Date" value={<div>{displayDate}</div>} />
+          <BaseParamGroup label="Date" value={displayDateTime} />
         </div>
       ) : null}
 

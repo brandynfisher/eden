@@ -1,7 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import { Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import BookmarkAddTwoToneIcon from '@mui/icons-material/BookmarkAddTwoTone'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
@@ -18,8 +18,8 @@ const PraiseButton = ({
   creation,
   onChange,
 }: {
-  creation: Creation
-  onChange: (updatedCreation: Creation) => void
+  creation: Creation | Concept
+  onChange: (updatedCreation: Creation | Concept) => void
 }) => {
   const { message } = App.useApp()
   const { isAuthenticated, authenticate } = useContext(UserContext)
@@ -110,8 +110,8 @@ const SaveButton = ({
   creation,
   onChange,
 }: {
-  creation: Creation
-  onChange: (updatedCreation: Creation) => void
+  creation: Creation | Concept
+  onChange: (updatedCreation: Creation | Concept) => void
 }) => {
   const { isAuthenticated, authenticate } = useContext(UserContext)
   const { message } = App.useApp()
@@ -209,8 +209,8 @@ const SaveButtonMessageContent = () => {
 }
 
 export interface CreationReactionsProps {
-  creation: Creation
-  onChange: (updatedCreation: Creation) => void
+  creation: Creation | Concept
+  onChange: (updatedCreation: Creation | Concept) => void
 }
 
 const CreationReactions = ({ creation, onChange }: CreationReactionsProps) => {
