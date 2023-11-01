@@ -7,6 +7,7 @@ import {
   WebAPICallResult,
 } from '../EdenClient'
 import { transformArgsIntoURLParams } from '../methods'
+import { Generator } from './Generators'
 
 // Arguments
 
