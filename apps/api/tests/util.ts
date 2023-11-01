@@ -88,6 +88,7 @@ export const createGenerator = async (generatorName: string) => {
   const generator: GeneratorSchema = {
     generatorName,
     description: 'test',
+    defaultVersionId: '1.0.0',
     versions: [generatorVersionData],
     output: 'creation',
   }
