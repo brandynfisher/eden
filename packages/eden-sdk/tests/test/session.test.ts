@@ -59,7 +59,7 @@ describe('Session Methods', () => {
       limit: 1,
     })
     const sessionId = createResults.docs[0].id
-    const result = await client.sessions.events.list({
+    const result = await client.session.events.list({
       sessionId,
     })
     expect(result).toBeDefined()
