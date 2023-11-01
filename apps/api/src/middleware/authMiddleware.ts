@@ -56,7 +56,11 @@ export const isAdmin = async (
 ) => {
   await getCredential(server, request, reply)
   if (!request.user.isAdmin) {
-    throw new Error('Not authorized')
+    return reply.status(401).send({
+      statusCode: 401,
+      error: 'Unauthorized',
+      message: 'Unauthorized',
+    })
   }
 }
 
