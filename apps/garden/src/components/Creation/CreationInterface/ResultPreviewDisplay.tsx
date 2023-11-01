@@ -2,19 +2,33 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import MediaDisplay from '@/components/MediaDisplay'
 import { useCreation } from '@/hooks/useCreation'
 import { getAspectRatio } from '@/lib/media'
-import { timeAgo } from '@/lib/time'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
-import React from 'react'
+import StarOutline from '@mui/icons-material/StarOutline'
+import StarRate from '@mui/icons-material/StarRate'
+import Rating from '@mui/material/Rating'
+import { App } from 'antd'
+import axios from 'axios'
+import React, { useCallback, useEffect, useState } from 'react'
+
+// import ResultTools from '@/components/Creation/CreationInterface/ResultTools'
 
 const ResultPreviewDisplay = ({
   creationId,
-  taskCost,
+  priority,
 }: {
   creationId: string
-  taskCost: number
+  priority?: boolean
 }) => {
-  const { creation, isLoading } = useCreation(creationId)
+  const { creation, mutate: refetch, isLoading } = useCreation(creationId)
   const { showModal } = useModalContext()
+  const { message } = App.useApp()
+  const [ratingValue, setRatingValue] = useState(0)
+
+  useEffect(() => {
+    if (creation) {
+      setRatingValue(creation.rating || 0)
+    }
+  }, [creation])
 
   const openDetailModal = async () => {
     showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
@@ -23,6 +37,25 @@ const ResultPreviewDisplay = ({
       usesUrl: true,
     })
   }
+
+  const handleRatingSelect = useCallback(
+    async (newValue: number) => {
+      message.destroy()
+
+      try {
+        setRatingValue(newValue)
+        await axios.post('/api/creations/rate', {
+          creationId: creationId,
+          rating: newValue,
+        })
+        refetch()
+        message.success(`Rating updated`)
+      } catch (e) {
+        message.error(`Rating update failed`)
+      }
+    },
+    [creationId],
+  )
 
   return (
     <>
@@ -33,34 +66,7 @@ const ResultPreviewDisplay = ({
       ) : null}
       {creation ? (
         <div>
-          <div
-            onClick={openDetailModal}
-            className="flex flex-col gap-2 cursor-pointer h-full w-full"
-          >
-            <div>
-              <div className="flex items-center justify-between flex-wrap">
-                <div className="flex items-center">
-                  <strong className=" text-sm dark:text-gray-200">
-                    /{creation.task?.generator.generatorName}
-                  </strong>
-                  <div
-                    className="text-gray-700 dark:text-gray-400 text-xs"
-                    title={timeAgo(creation.task.createdAt)}
-                  >
-                    <span className="mx-1">•</span>
-                    {timeAgo(creation.task.createdAt)}
-                  </div>
-                </div>
-                <div className="text-xs text-gray-800 dark:text-gray-400">
-                  <strong>{taskCost}</strong> Manna
-                </div>
-              </div>
-              <div title={creation.task?.config.text_input || ''}>
-                <span className="relative first-letter:uppercase text-xs select-text cursor-text text-ellipsis dark:text-gray-400 break-words line-clamp-2">
-                  {creation.task?.config.text_input || ''}
-                </span>
-              </div>
-            </div>
+          <div onClick={openDetailModal} className="cursor-pointer w-full">
             <MediaDisplay
               creationUri={creation.uri}
               previewUri={creation.uri}
@@ -69,8 +75,24 @@ const ResultPreviewDisplay = ({
                 creation.mediaAttributes.width,
                 creation.mediaAttributes.height,
               )}
+              priority={priority}
+              limitHeight={false}
             />
           </div>
+          <Rating
+            className="mt-2"
+            name="rating-small"
+            value={ratingValue}
+            size="small"
+            icon={<StarRate className="text-gray-400" fontSize="small" />}
+            emptyIcon={
+              <StarOutline className="text-gray-700" fontSize="small" />
+            }
+            onChange={(event, newValue) => {
+              handleRatingSelect(newValue || 0)
+            }}
+          />
+          {/*<ResultTools creation={creation}/>*/}
         </div>
       ) : (
         <>{isLoading ? <LoadingIndicator /> : null}</>

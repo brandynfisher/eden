@@ -113,18 +113,15 @@ const CompletedTaskMenuItem = ({
   if (!task.creation) return null
 
   return (
-    <div key={task._id}>
-      <div
-        onClick={handleViewCreation}
-        className="p-2 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
-      >
+    <div className="w-full" key={task._id}>
+      <div onClick={handleViewCreation} className="cursor-pointer rounded-md">
         <div
-          className="flex w-full"
-          style={{ minWidth: '240px', maxWidth: '320px' }}
+          className="flex gap-2 relative w-full"
+          style={{ width: '265px', maxHeight: '58px' }}
         >
           <div
-            className="rounded-md w-12 h-12 mr-4 flex items-center overflow-hidden"
-            style={{ minWidth: '48px', minHeight: '48px' }}
+            className="rounded-md flex h-full items-center overflow-hidden"
+            style={{ minWidth: '58px', minHeight: '58px' }}
           >
             <ImageResult
               previewSizeUrl={task.creation?.thumbnail || ''}
@@ -134,9 +131,9 @@ const CompletedTaskMenuItem = ({
               )}
             />
           </div>
-          <div className="flex items-center justify-between min-w-0 w-full">
+          <div className="flex items-center justify-between min-w-0 w-full gap-2">
             <div className="flex flex-col gap-2 min-w-0 w-full">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center text-sm">
                 <strong>/{task.generator.generatorName}</strong>
                 <div className="text-xs text-gray-800 dark:text-gray-400 hidden xs:flex">
                   Took {taskRunDuration}
@@ -148,7 +145,11 @@ const CompletedTaskMenuItem = ({
                 </div>
               </div>
             </div>
-            <Button type="text" title="Dismiss" className="px-2">
+            <Button
+              type="text"
+              title="Dismiss"
+              className="relative px-2 right-[-8px]"
+            >
               <CloseOutlined
                 className="ml-auto cursor-pointer"
                 onClick={e => {
@@ -191,7 +192,7 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
         </div>
       </div>
-      <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
+      <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate mt-1">
         {rightTruncatedString(task.config.text_input || '', 36)}
       </div>
       {task?.status === 'running' ? (
@@ -201,21 +202,19 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
           className="mt-1 flex items-center"
         />
       ) : null}
-      <div className="text-xs text-gray-800 dark:text-gray-400 mb-1">
+      <div className="text-xs text-gray-800 dark:text-gray-400 mt-2">
         <div className="flex justify-between">
           <div className="capitalize">
             <strong>{task?.status}</strong>
           </div>
+          <div className="text-xs text-gray-800 dark:text-gray-400">
+            <strong>{task?.cost}</strong> Manna
+          </div>
         </div>
       </div>
-      <div className="flex justify-between items-center">
-        <div className="text-xs text-gray-800 dark:text-gray-400">
-          <strong>{task?.cost}</strong> Manna
-        </div>
-        {CONFIG.DEV_TYPE === 'dummy' && (
-          <TestGeneratorFinishButton taskId={task.taskId} />
-        )}
-      </div>
+      {CONFIG.DEV_TYPE === 'dummy' && (
+        <TestGeneratorFinishButton taskId={task.taskId} />
+      )}
     </div>
   )
 }
@@ -267,9 +266,9 @@ const TaskNotificationDropdownMUI = () => {
   if (completedTasks?.length) {
     completedTaskItems.push({
       render: (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 justify-between w-full">
           <div>Completed Tasks</div>
-          <div className="flex justify-center text-xs">
+          <div className="flex justify-between text-xs">
             <Button
               size="small"
               className="font-mono text-xs !px-4"

@@ -1,3 +1,4 @@
+import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Col, Form, FormInstance, InputNumber, Row } from 'antd'
 import { FocusEvent, useEffect } from 'react'
@@ -28,9 +29,13 @@ const NumberParameter = (props: {
       <Row>
         <Col style={{ marginLeft: 10 }} className="flex items-end w-full">
           <Form.Item
-            className="w-full"
-            style={{ marginBottom: 5 }}
-            label={`${props.parameter.label}`}
+            label={
+              <ParameterLabel
+                text={props.parameter.label}
+                description={props.parameter.description}
+              />
+            }
+            className="w-full mb-1"
             name={`${props.parameter.name}`}
             initialValue={props.parameter.default}
             rules={[
@@ -50,9 +55,6 @@ const NumberParameter = (props: {
             />
           </Form.Item>
         </Col>
-      </Row>
-      <Row>
-        <span style={{ color: 'gray' }}>{props.parameter.description}</span>
       </Row>
     </>
   )

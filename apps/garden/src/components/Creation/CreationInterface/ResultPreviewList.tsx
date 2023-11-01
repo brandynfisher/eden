@@ -6,10 +6,7 @@ import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
-import HourglassEmpty from '@mui/icons-material/HourglassEmpty'
-import TaskAlt from '@mui/icons-material/TaskAlt'
-import WarningAmber from '@mui/icons-material/WarningAmber'
-import { App, Card, Progress, Timeline } from 'antd'
+import { App, Card, Progress } from 'antd'
 import React, {
   RefObject,
   useCallback,
@@ -26,72 +23,27 @@ const noProgressGeneratorNames = [
   'upscale',
 ]
 
-const getTimelineDot = (status: Task['status']) => {
-  switch (status) {
-    case 'starting':
-    case 'pending':
-      return (
-        <div className="flex bg-white text-gray-500 dark:bg-gray-950 rounded-full p-0.5">
-          <HourglassEmpty fontSize="small" className="animate-pulse" />
-        </div>
-      )
-    case 'running':
-      return (
-        <div className="flex bg-white dark:bg-gray-950 rounded-full p-0.5">
-          <span className="loading loading-ring loading-md"></span>
-        </div>
-      )
-    case 'completed':
-      return (
-        <div className="flex text-green-500 items-center bg-white dark:bg-gray-950 rounded-full p-0.5">
-          <TaskAlt fontSize="small" />
-        </div>
-      )
-    case 'failed':
-      return (
-        <div className="flex text-red-500 items-center bg-white dark:bg-gray-950 rounded-full p-0.5">
-          <WarningAmber fontSize="small" />
-        </div>
-      )
-    default:
-      return null
-  }
-}
-
 const ResultPreviewList = ({
   innerRef,
 }: {
   innerRef: RefObject<HTMLDivElement>
 }) => {
   const { tasks } = useContext(CreationNotificationContext)
-  const [taskList, setTaskList] = useState<
-    null | { dot: React.ReactNode; children: React.ReactNode }[]
-  >(null)
-
-  useEffect(() => {
-    // console.log(tasks)
-    if (tasks && tasks.length) {
-      setTaskList(
-        tasks.map(task => {
-          return {
-            dot: getTimelineDot(task.status),
-            children: <ResultPreview task={task} />,
-          }
-        }),
-      )
-    }
-  }, [tasks])
 
   return (
     <div>
       <div className="flex flex-col" ref={innerRef}>
-        {taskList && taskList.length ? <Timeline items={taskList} /> : null}
+        {tasks && tasks.length
+          ? tasks.map((task, index) => (
+              <ResultPreview key={task._id} task={task} index={index} />
+            ))
+          : null}
       </div>
     </div>
   )
 }
 
-const ResultPreview = ({ task }: { task: Task }) => {
+const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
   const { message } = App.useApp()
   const { copied, copy } = useClipboard({ timeout: 750 })
 
@@ -137,9 +89,11 @@ const ResultPreview = ({ task }: { task: Task }) => {
   }, [task?.status, task?.generator.generatorName])
 
   return (
-    <div className="result-preview relative w-full flex flex-col rounded-lg border border-0 border-solid">
+    <div className="result-preview mb-4 relative w-full flex flex-col rounded-lg border-0">
       <Card
-        className={`w-full h-fit flex justify-center items-center  dark:!bg-gray-900`}
+        className={`w-full h-fit flex justify-center items-center ${
+          creationUri ? 'result-preview-success' : ''
+        }`}
       >
         <>
           {!creationUri ? (
@@ -147,7 +101,7 @@ const ResultPreview = ({ task }: { task: Task }) => {
               <div>
                 <div>
                   <div className="flex items-center justify-between flex-wrap">
-                    <div className="flex items-center">
+                    <div className="flex items-center mb-2">
                       <strong className=" text-sm dark:text-gray-200">
                         /{task?.generator.generatorName}
                       </strong>
@@ -155,15 +109,20 @@ const ResultPreview = ({ task }: { task: Task }) => {
                         className="text-gray-700 dark:text-gray-400 text-xs"
                         title={timeAgo(task.createdAt)}
                       >
-                        <span className="mx-1">•</span>
+                        <span className="text-xs text-gray-800 dark:text-gray-400 mx-1">
+                          •
+                        </span>
                         {timeAgo(task.createdAt)}
                       </div>
-                    </div>
-                    <div className="text-xs text-gray-800 dark:text-gray-400">
-                      <strong>{task?.cost}</strong> Manna
+                      <span className="text-xs text-gray-800 dark:text-gray-400 mx-1">
+                        •
+                      </span>
+                      <div className="text-xs text-gray-800 dark:text-gray-400">
+                        {task?.cost} Manna
+                      </div>
                     </div>
                   </div>
-                  <div title={task?.config.text_input || ''}>
+                  <div title={task?.config.text_input || ''} className="mb-1">
                     <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
                       {task?.config.text_input || ''}
                     </span>
@@ -210,10 +169,56 @@ const ResultPreview = ({ task }: { task: Task }) => {
               )}
             </div>
           ) : (
-            <ResultPreviewDisplay
-              creationId={creationId}
-              taskCost={task?.cost}
-            />
+            <div>
+              <div className="flex items-center justify-between flex-wrap mb-2">
+                <div className="flex items-center">
+                  <strong className=" text-sm dark:text-gray-200">
+                    /{task?.generator.generatorName}
+                  </strong>
+                  <span className=" text-gray-700 dark:text-gray-400 text-xs mx-1">
+                    •
+                  </span>
+                  <div
+                    className="text-gray-700 dark:text-gray-400 text-xs"
+                    title={timeAgo(task.createdAt)}
+                  >
+                    {timeAgo(task.createdAt)}
+                  </div>
+                  <span className="text-gray-700 dark:text-gray-400 text-xs mx-1">
+                    •
+                  </span>
+                  <div className="text-xs text-gray-800 dark:text-gray-400">
+                    {task.cost} Manna
+                  </div>
+                </div>
+              </div>
+              <div title={task?.config.text_input || ''} className="mb-2">
+                <span className="relative first-letter:uppercase text-xs select-text cursor-text text-ellipsis dark:text-gray-400 break-words line-clamp-2">
+                  {task?.config.text_input || ''}
+                </span>
+              </div>
+
+              {task.samples && task.samples.length ? (
+                <div
+                  className={`grid grid-cols-2 gap-2 2xl:grid-cols-${task.samples.length}`}
+                >
+                  {task.samples.map(id => (
+                    <ResultPreviewDisplay
+                      key={id}
+                      creationId={id}
+                      priority={index < 2}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 2xl:grid-cols-2">
+                  <ResultPreviewDisplay
+                    creationId={creationId}
+                    priority={index < 2}
+                  />
+                </div>
+              )}
+            </div>
           )}
         </>
       </Card>

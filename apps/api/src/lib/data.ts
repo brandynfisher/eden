@@ -1,6 +1,6 @@
 import mongoose, { ObjectId } from 'mongoose'
 
-import { UserDocument } from '../models/Creator'
+import { FeatureFlag, User, UserDocument } from '../models/Creator'
 
 export type IdInput = string | ObjectId
 
@@ -20,4 +20,15 @@ export const enforceUserDocumentLimit = async (
       )
     }
   }
+}
+
+export const checkUserFlags = async (
+  user: UserDocument,
+  flag: FeatureFlag,
+): Promise<boolean> => {
+  if (!user.featureFlags) {
+    return false
+  }
+
+  return user.featureFlags.includes(flag)
 }

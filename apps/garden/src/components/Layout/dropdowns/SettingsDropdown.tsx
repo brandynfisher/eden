@@ -1,13 +1,18 @@
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
+import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import LoginOutlined from '@ant-design/icons/LoginOutlined'
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import TableOutlined from '@ant-design/icons/TableOutlined'
+import ToolOutlined from '@ant-design/icons/ToolOutlined'
 import { useViewportSize } from '@mantine/hooks'
 import Button from '@mui/material/Button'
-import { Dropdown, Slider, Switch } from 'antd'
+import { App, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
+import axios from 'axios'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
 // import { UserButton } from '@clerk/nextjs'
@@ -93,6 +98,40 @@ const ClerkLoginLogoutButton = () => {
   )
 }
 
+const ManageSubscriptionButton = () => {
+  const { user } = useContext(UserContext)
+  const router = useRouter()
+  const { message } = App.useApp()
+
+  const onManageSubscriptionClick = async () => {
+    const customerId = user?.stripeCustomerId
+    if (!customerId) {
+      return
+    }
+    try {
+      const response = await axios.post('/api/billing/subscription', {
+        stripeCustomerId: customerId,
+      })
+      const { url } = response.data
+      await router.push(url)
+    } catch (error) {
+      handleAxiosError(error, message)
+    }
+  }
+
+  return (
+    <div className="flex items-center">
+      <ToolOutlined />
+      <div
+        className="ml-2 flex gap-2 w-full justify-between font-mono"
+        onClick={onManageSubscriptionClick}
+      >
+        Manage Subscription
+      </div>
+    </div>
+  )
+}
+
 const MaxColumnSelector = () => {
   const { settings, updateSetting } = useContext(UserContext)
   const currentSetting = settings?.maxGridCols
@@ -149,23 +188,26 @@ const MaxColumnSelector = () => {
   )
 }
 
-// const DevToolsLink = () => {
-//   return (
-//     <Link className="w-full" href="/tools">
-//       <div className="flex items-center">
-//         <ToolOutlined />
-//         <div className="ml-2 flex gap-2 w-full justify-between font-mono">
-//           Dev Tools
-//         </div>
-//       </div>
-//     </Link>
-//   )
-// }
+const DevToolsLink = () => {
+  return (
+    <Link className="w-full" href="/tools">
+      <div className="flex items-center">
+        <ToolOutlined />
+        <div className="ml-2 flex gap-2 w-full justify-between font-mono">
+          Dev Tools
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 const clerkItems: ItemType[] = [
   {
+    type: 'divider',
+  },
+  {
     label: <ClerkLoginLogoutButton />,
-    key: '4',
+    key: 'clerk-login-logout',
   },
 ]
 
@@ -186,25 +228,43 @@ const clerkExtraItems: ItemType[] = [
   // },
 ]
 
+const previewExtraItems: ItemType[] = [
+  {
+    label: <DevToolsLink />,
+    key: 'dev-tools',
+  },
+]
+
+const subscriberExtraItems: ItemType[] = [
+  {
+    type: 'divider',
+  },
+  {
+    label: <ManageSubscriptionButton />,
+    key: 'manage-subscription',
+  },
+]
+
 export const SettingsDropdown = () => {
-  const { isAuthenticated } = useContext(UserContext)
+  const { isAuthenticated, featureFlags, user } = useContext(UserContext)
   const { width: windowWidth } = useViewportSize()
+  const isPreviewUser = featureFlags?.includes('preview')
 
   const items: ItemType[] = [
     {
       label: <ThemeToggleButton />,
-      key: '0',
+      key: 'theme-toggle',
     },
   ]
 
-  if (windowWidth > 768) {
+  if (windowWidth && windowWidth > 768) {
     const largeViewportItems: ItemType[] = [
       {
         type: 'divider',
       },
       {
         label: <MaxColumnSelector />,
-        key: '1',
+        key: 'max-columns',
       },
     ]
 
@@ -214,12 +274,24 @@ export const SettingsDropdown = () => {
   const [dropDownItems, setDropDownItems] = useState<ItemType[]>(items)
 
   useEffect(() => {
+    let newDropDownItems = [...items]
+
     if (isAuthenticated) {
-      setDropDownItems([...items, ...clerkExtraItems, ...clerkItems])
-    } else {
-      setDropDownItems([...items, ...clerkItems])
+      newDropDownItems = [...newDropDownItems, ...clerkExtraItems]
+
+      if (isPreviewUser) {
+        newDropDownItems = [...newDropDownItems, ...previewExtraItems]
+      }
+
+      if (user?.subscriptionTier) {
+        newDropDownItems = [...newDropDownItems, ...subscriberExtraItems]
+      }
     }
-  }, [isAuthenticated])
+
+    newDropDownItems = [...newDropDownItems, ...clerkItems]
+
+    setDropDownItems(newDropDownItems)
+  }, [isAuthenticated, user])
 
   return (
     <Dropdown
@@ -230,7 +302,7 @@ export const SettingsDropdown = () => {
       className="cursor-pointer"
       arrow={true}
     >
-      <Button>
+      <Button className="min-w-[40px]">
         <div className="flex items-center font-mono">
           <SettingOutlined className="text-xl" />
         </div>

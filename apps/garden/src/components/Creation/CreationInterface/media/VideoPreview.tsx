@@ -6,7 +6,7 @@ import { Creation } from '@edenlabs/eden-sdk'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import { Badge } from 'antd'
 
-const VideoLengthBadge = ({ duration }: { duration?: number }) => {
+export const VideoLengthBadge = ({ duration }: { duration?: number }) => {
   return (
     <Badge className="rounded-full mx-2 mt-2 h-[32px] flex items-center pointer-events-none">
       <div className="text-xs text-gray-300 opacity-80 flex items-center bg-gray-950 px-2 py-1 rounded-xl">

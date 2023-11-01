@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify'
 
 import {
   createCheckoutSession,
+  createSubscriptionSession,
   getProducts,
   handlePaymentEvent,
 } from '../controllers/paymentController'
@@ -48,6 +49,22 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       },
     },
     handler: async (_, reply) => getProducts(server, reply),
+  })
+
+  server.post('/payments/subscription', {
+    schema: {
+      body: {
+        stripeCustomerId: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          url: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      createSubscriptionSession(server, request, reply),
   })
 }
 

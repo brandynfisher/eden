@@ -77,8 +77,8 @@ const MasonryInfinite = ({
     isItemLoaded: (index, items) => {
       return !!items[index]
     },
-    minimumBatchSize: 10,
-    threshold: 24,
+    minimumBatchSize: 25,
+    threshold: 50,
   })
 
   const handleOrderChange = (newOrderBy: OrderByParam) => {
@@ -101,21 +101,21 @@ const MasonryInfinite = ({
     {
       width,
       columnGutter: 8,
-      rowGutter: windowWidth < 768 ? 0 : 8,
+      rowGutter: windowWidth && windowWidth < 768 ? 0 : 8,
       columnCount:
-        windowWidth < 768
+        windowWidth && windowWidth < 768
           ? 1
           : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
           : undefined,
       maxColumnCount:
-        windowWidth < 768
+        windowWidth && windowWidth < 768
           ? 1
           : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
-          : windowWidth > 1920
+          : windowWidth && windowWidth > 1920
           ? 6
-          : windowWidth > 1440
+          : windowWidth && windowWidth > 1440
           ? 5
           : settings?.maxGridCols.params.initialValue,
     },

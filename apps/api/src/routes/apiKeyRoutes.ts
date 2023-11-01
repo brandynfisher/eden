@@ -24,8 +24,7 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    // preHandler: [(request, reply) => isAuth(server, request, reply)],
-    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createApiKey(request, reply),
   })
 

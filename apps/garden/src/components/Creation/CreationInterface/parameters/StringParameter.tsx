@@ -1,3 +1,4 @@
+import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import MinusOutlined from '@ant-design/icons/MinusOutlined'
 import PlusOutlined from '@ant-design/icons/PlusOutlined'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
@@ -30,7 +31,13 @@ const StringParameter = (props: {
       {isArray ? (
         <>
           <Form.Item
-            label={props.parameter.label}
+            label={
+              <ParameterLabel
+                text={props.parameter.label}
+                description={props.parameter.description}
+              />
+            }
+            className="mb-1"
             name={props.parameter.name}
             rules={[
               {
@@ -81,22 +88,19 @@ const StringParameter = (props: {
               </Row>
             </div>
           </Form.Item>
-          <Row>
-            <Col>
-              <span style={{ color: 'gray' }}>
-                {props.parameter.description}
-              </span>
-            </Col>
-          </Row>
         </>
       ) : (
         <>
           <Form.Item
-            style={{ marginBottom: 5 }}
-            label={props.parameter.label}
+            label={
+              <ParameterLabel
+                text={props.parameter.label}
+                description={props.parameter.description}
+              />
+            }
+            className="mb-1 font-mono"
             name={props.parameter.name}
             initialValue={props.parameter.default}
-            className="font-mono"
             rules={[
               {
                 required: props.parameter.isRequired,
@@ -106,9 +110,6 @@ const StringParameter = (props: {
           >
             <Input.TextArea autoSize />
           </Form.Item>
-          <Row>
-            <span style={{ color: 'gray' }}>{props.parameter.description}</span>
-          </Row>
         </>
       )}
     </>

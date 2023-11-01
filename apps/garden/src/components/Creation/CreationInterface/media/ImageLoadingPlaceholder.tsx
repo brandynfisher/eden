@@ -6,9 +6,9 @@ const ImageLoadingPlaceholder = () => {
   return (
     <Skeleton.Node
       active={true}
-      className="flex !min-h-[300px] image-loading-placeholder bg-gray-400 dark:bg-black"
+      className="flex image-loading-placeholder justify-center items-center bg-gray-400 dark:bg-black"
     >
-      <ExperimentOutlined className="text-2xl" />
+      <ExperimentOutlined className="text-xl" />
     </Skeleton.Node>
   )
 }

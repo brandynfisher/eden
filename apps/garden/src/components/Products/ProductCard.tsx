@@ -12,7 +12,9 @@ const ProductCard = ({
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
   const handleBuyProductClick = () => {
-    checkoutHandler(product.default_price, 'payment')
+    const paymentMode =
+      product.displayPrice.type === 'recurring' ? 'subscription' : 'payment'
+    checkoutHandler(product.default_price, paymentMode)
   }
 
   const renderDisplayPrice = (product: Product) => {

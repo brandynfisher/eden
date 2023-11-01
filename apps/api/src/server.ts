@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
+import registerAirflow from './plugins/airflowPlugin'
 import registerChroma from './plugins/chromaPlugin'
 import registerClerk from './plugins/clerkPlugin'
 import config from './plugins/config'
@@ -65,6 +66,10 @@ const createServer = async (
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
   await registerStripe(server)
+
+  if (server.config.AIRFLOW_BASE_URL) {
+    await registerAirflow(server)
+  }
 
   if (server.config.MINIO_URI) {
     await registerMinio(server)

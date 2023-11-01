@@ -8,10 +8,12 @@ const MediaPreview = ({
   creation,
   hovered,
   aspectRatio,
+  priority,
 }: {
   creation: Creation
   hovered?: boolean
   aspectRatio: number
+  priority?: boolean
 }) => {
   if (!creation.uri) return null
   if (isImageUrl(creation.uri)) {
@@ -20,6 +22,8 @@ const MediaPreview = ({
         key={creation.thumbnail}
         previewSizeUrl={creation.thumbnail || ''}
         aspectRatio={aspectRatio}
+        limitHeight={false}
+        priority={priority}
       />
     )
   } else if (isVideoUrl(creation.uri)) {

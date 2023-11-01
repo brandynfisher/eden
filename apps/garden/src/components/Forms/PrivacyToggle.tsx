@@ -22,7 +22,7 @@ const PrivacyToggle = () => {
           </div>
         }
         title="Privacy Toggle"
-        trigger="click"
+        trigger={['click', 'hover']}
       >
         <HelpOutline fontSize="small" className="hover:text-blue-400" />
       </Popover>

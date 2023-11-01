@@ -3,6 +3,7 @@ import {
   ConceptsDeleteResponse,
   ConceptsUpdateResponse,
   CreationsDeleteResponse,
+  CreationsRatingResponse,
   CreationsUpdateResponse,
   CreatorFollowersListResponse,
   CreatorFollowingListResponse,
@@ -26,6 +27,7 @@ import { MediaUploadResponse } from 'src/responses/MediaResponses'
 import {
   PaymentsCreateResponse,
   PaymentsProductsResponse,
+  PaymentsSubscriptionResponse,
 } from 'src/responses/PaymentsResponses'
 
 import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
@@ -232,6 +234,10 @@ export abstract class Methods {
       this,
       creationsReactRequestConfig,
     ),
+    rate: bindApiCall<CreationsRatingArguments, CreationsRatingResponse>(
+      this,
+      creationsRatingRequestConfig,
+    ),
     unreact: bindApiCall<CreationsUnreactArguments, CreationsUnreactResponse>(
       this,
       creationsUnreactRequestConfig,
@@ -346,6 +352,10 @@ export abstract class Methods {
       this,
       paymentsProductsRequestConfig,
     ),
+    subscription: bindApiCall<
+      PaymentsSubscriptionArguments,
+      PaymentsSubscriptionResponse
+    >(this, paymentsSubscriptionRequestConfig),
   }
 
   public readonly scenarios = {
@@ -525,6 +535,7 @@ export interface CreationsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+  taskId?: string
 }
 
 export interface CreationsGetArguments extends WebAPICallOptions {
@@ -534,6 +545,11 @@ export interface CreationsGetArguments extends WebAPICallOptions {
 export interface CreationsGetSimilarArguments extends WebAPICallOptions {
   creationId: string
   n: number
+}
+
+export interface CreationsRatingArguments extends WebAPICallOptions {
+  creationId: string
+  rating: number
 }
 
 export interface CreationsReactArguments extends WebAPICallOptions {
@@ -628,6 +644,10 @@ export interface MediaUploadArguments extends WebAPICallOptions {
 export interface PaymentsCreateArguments extends WebAPICallOptions {
   priceId: string
   paymentMode: 'payment' | 'subscription'
+}
+
+export interface PaymentsSubscriptionArguments extends WebAPICallOptions {
+  stripeCustomerId: string
 }
 
 export interface ScenariosCreateArguments extends WebAPICallOptions {
@@ -930,6 +950,18 @@ const creationsGetSimilarRequestConfig = (
   }
 }
 
+const creationsRatingRequestConfig = (
+  args: CreationsRatingArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creations/rate',
+    data: {
+      ...args,
+    },
+  }
+}
+
 const creationsReactRequestConfig = (
   args: CreationsReactArguments,
 ): AxiosRequestConfig => {
@@ -1172,6 +1204,18 @@ const paymentsProductsRequestConfig = (): AxiosRequestConfig => {
   return {
     method: 'GET',
     url: 'payments/products',
+  }
+}
+
+const paymentsSubscriptionRequestConfig = (
+  args: PaymentsSubscriptionArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'payments/subscription',
+    data: {
+      ...args,
+    },
   }
 }
 

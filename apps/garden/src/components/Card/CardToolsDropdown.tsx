@@ -31,15 +31,17 @@ type MenuItem = {
 }
 
 const CardToolsDropdown = ({
+  onOpen,
   item,
   itemType,
   onChange,
 }: {
+  onOpen?: Function
   item: Creation | Concept
   itemType: 'creation' | 'concept'
   onChange: (updatedItem: Creation | Concept) => void
 }) => {
-  const { user } = useContext(UserContext)
+  const { user, isAuthenticated } = useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)
 
   useEffect(() => {
@@ -223,25 +225,30 @@ const CardToolsDropdown = ({
           ]
         : []
 
+    const downloadItem: MenuItem[] = isAuthenticated
+      ? [
+          {
+            key: '7',
+            type: 'divider',
+          },
+          {
+            icon: (
+              <DownloadFileButton
+                url={item.uri}
+                variant="text"
+                label="Download"
+              />
+            ),
+            key: '8',
+          },
+        ]
+      : []
+
     return [
       ...defaultMenuItems,
       ...creatorMenuItems,
       ...deleteItem,
-      {
-        key: '7',
-        type: 'divider',
-      },
-      {
-        icon: (
-          <DownloadFileButton
-            url={item.uri}
-            fileName={item._id}
-            variant="text"
-            label="Download"
-          />
-        ),
-        key: '8',
-      },
+      ...downloadItem,
     ]
   }
 
@@ -252,6 +259,7 @@ const CardToolsDropdown = ({
       placement="bottomRight"
       menu={{ items: getCardMenuItems() }}
       className="card-tools-dropdown"
+      onOpenChange={open => onOpen && onOpen(open)}
     >
       <div className="flex items-center cursor-pointer pointer-events-auto">
         <EllipsisOutlined className="text-xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />

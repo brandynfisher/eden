@@ -202,9 +202,15 @@ export const getCreator = async (
     })
   }
 
-  const creationsCount = await Creation.count({ user: creatorDoc?._id })
-  const followers = await Follow.find({ following: creatorDoc?._id })
-  const following = await Follow.find({ follower: creatorDoc?._id })
+  const creationsCount = await Creation.countDocuments({
+    user: creatorDoc?._id,
+  })
+  const followerCount = await Follow.countDocuments({
+    following: creatorDoc?._id,
+  })
+  const followingCount = await Follow.countDocuments({
+    follower: creatorDoc?._id,
+  })
   let isFollowing = false
   if (request.user?.userId) {
     const followerQuery = await Follow.findOne({
@@ -216,8 +222,8 @@ export const getCreator = async (
   }
   const creator = {
     ...creatorDoc.toObject(),
-    followerCount: followers.length,
-    followingCount: following.length,
+    followerCount,
+    followingCount,
     creationsCount,
     isFollowing,
   }

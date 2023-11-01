@@ -1,3 +1,4 @@
+import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { truncateText } from '@/lib/string'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import InboxOutlined from '@mui/icons-material/InboxOutlined'
@@ -171,7 +172,12 @@ const UploadParameter = (props: {
         <Form.Item
           className="mb-2 max-w-full w-full"
           initialValue={props.parameter.default}
-          label={props.parameter.label}
+          label={
+            <ParameterLabel
+              text={props.parameter.label}
+              description={props.parameter.description}
+            />
+          }
           name={props.parameter.name}
           rules={[
             {
@@ -207,9 +213,6 @@ const UploadParameter = (props: {
             </div>
           </Dragger>
         </Form.Item>
-      </Row>
-      <Row>
-        <span style={{ color: 'gray' }}>{props.parameter.description}</span>
       </Row>
       <Modal
         open={previewOpen}

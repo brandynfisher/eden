@@ -1,10 +1,10 @@
-import {Creator, PaginatedResponse, Task} from '.'
-import {WebAPICallResult} from '../EdenClient'
+import { Creator, PaginatedResponse, Task } from '.'
+import { WebAPICallResult } from '../EdenClient'
 
 export type CreationsListResponse = WebAPICallResult &
   PaginatedResponse<Creation> & {
-  error?: string
-}
+    error?: string
+  }
 
 export type CreationsGetResponse = WebAPICallResult & {
   error?: string
@@ -14,6 +14,11 @@ export type CreationsGetResponse = WebAPICallResult & {
 export type CreationsGetSimilarResponse = WebAPICallResult & {
   error?: string
   similarCreations?: Creation[]
+}
+
+export type CreationsRatingResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
 }
 
 export type CreationsReactResponse = WebAPICallResult & {
@@ -43,6 +48,7 @@ export type Creation = {
   user: Creator
   userId?: string
   task: Task
+  samples?: string[]
   parent?: string
   delegateUser?: string
   delegateHasClaimed?: boolean
@@ -51,12 +57,13 @@ export type Creation = {
   name: string
   attributes: any
   mediaAttributes: MediaAttributes
+  rating?: number
   praiseCount?: number
   bookmarkCount?: number
   bookmarked?: boolean
   reactions?: Reactions
-  deleted?: boolean,
-  isPrivate?: boolean,
+  deleted?: boolean
+  isPrivate?: boolean
   createdAt: string
   updatedAt: string
 }
