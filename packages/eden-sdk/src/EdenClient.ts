@@ -75,9 +75,16 @@ export class EdenClient extends Methods {
     const requestConfig = configFn(options)
     requestConfig.headers = headers
 
-    const response = await this.makeRequest(requestConfig)
-    const result = await this.buildResult(response)
-    return result
+    try {
+      const response = await this.makeRequest(requestConfig)
+      const result = await this.buildResult(response)
+      return result
+    } catch (error) {
+      const message = error.response.data.message
+      return {
+        error: message,
+      }
+    }
   }
 
   private async makeRequest(
