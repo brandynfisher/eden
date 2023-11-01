@@ -111,7 +111,7 @@ export const listCollections = async (
         )
       : await collectionRepository.query(
           {
-            user: creatorId,
+            user: userId,
           },
           {
             limit,

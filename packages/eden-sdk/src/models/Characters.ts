@@ -99,8 +99,8 @@ export const charactersDeleteRequestConfig = (
   args: CharactersDeleteArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'DELETE',
-    url: `characters/${args.characterId}`,
+    method: 'POST',
+    url: 'characters/delete',
     data: {
       ...args,
     },
