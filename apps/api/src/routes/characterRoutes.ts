@@ -70,9 +70,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => updateCharacter(request, reply),
   })
 
-  server.delete('/characters/:characterId', {
+  server.post('/characters/delete', {
     schema: {
-      params: {
+      body: {
         characterId: Type.String(),
       },
       response: {
