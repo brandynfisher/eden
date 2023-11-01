@@ -18,29 +18,18 @@ const LayoutHeader = () => {
   const { isAuthenticated } = useContext(UserContext)
   const router = useRouter()
   const { width: viewportWidth } = useViewportSize()
-  const [isSmallScreen, setIsSmallScreen] = useState(
-    viewportWidth && viewportWidth < theme.screens.lg,
-  )
   const [showQuickCreateButton, setShowQuickCreateButton] = useState(true)
 
   useEffect(() => {
     setShowQuickCreateButton(!router.pathname.includes('/create/'))
   }, [router.pathname])
 
-  useEffect(() => {
-    if (viewportWidth && viewportWidth < theme.screens.lg) {
-      setIsSmallScreen(true)
-    } else {
-      setIsSmallScreen(false)
-    }
-  }, [viewportWidth])
-
   return (
     <Header className={`px-4 bg-white dark:bg-gray-950 leading-none`}>
       <div className="flex gap-2 items-center leading-[64px]">
         <HeaderLogo />
 
-        {isSmallScreen && (
+        {viewportWidth < theme.screens.lg && (
           <div className="flex">
             <Drawer />
           </div>
