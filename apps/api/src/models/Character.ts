@@ -96,7 +96,7 @@ character.pre<CharacterDocument>('save', function (next) {
   next()
 })
 
-character.index({ user: 1, name: 1 }, { unique: true })
+character.index({ user: 1, slug: 1 }, { unique: true })
 
 character.plugin(mongooseDelete, { overrideMethods: 'all' })
 character.plugin(paginate)

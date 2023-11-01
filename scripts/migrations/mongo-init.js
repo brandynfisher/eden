@@ -30,6 +30,15 @@ adminDev = db.users.insertMany([
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    userId: 'basicuser',
+    username: 'basicuser',
+    isWallet: false,
+    isAdmin: false,
+    subscriptionTier: 'basic',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ])
 
 db.createCollection('apikeys')
@@ -49,6 +58,15 @@ db.apikeys.insertMany([
     apiKey: 'user',
     apiSecret: 'user',
     note: 'User API key',
+    deleted: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    user: adminDev.insertedIds[2],
+    apiKey: 'basicuser',
+    apiSecret: 'basicuser',
+    note: 'Basic User API key',
     deleted: false,
     createdAt: new Date(),
     updatedAt: new Date(),

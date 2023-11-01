@@ -24,6 +24,7 @@ describe('Character Methods', () => {
       name: 'Test Character',
     })
     expect(result).toBeDefined()
+    console.log(result)
     expect(result.characterId).toBeDefined()
   })
 
