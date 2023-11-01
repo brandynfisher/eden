@@ -10,8 +10,12 @@ html, body, image, video, main {
     outline: 0;
 }
 
+html, body {
+    height: 100%;
+}
+
 body {
-    //cheap hack to force scroll bars to be always present to prevent masonry weirdness/repositioning loops
+    //cheap hack to force scroll bars to be always present to prevent masonry weirdness/repositioning loops :(
     &.force-scroll-y {
         min-height: calc(100vh + 1px);
     }

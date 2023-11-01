@@ -310,20 +310,27 @@ export const creationUpdate = async (
 ) => {
   const { userId } = request.user
   const { creationId } = request.params as CreationsUpdateArguments
-  const { isPrivate } = request.body as CreationsUpdateArguments
+  const { isPrivate, deleted } = request.body as CreationsUpdateArguments
 
-  if (!userId || !creationId || typeof isPrivate === 'undefined') {
+  if (
+    !userId ||
+    !creationId ||
+    (typeof isPrivate === 'undefined' && typeof deleted === 'undefined')
+  ) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
   }
 
-  const creation = await Creation.findOneAndUpdate(
+  const creation = await Creation.findOneAndUpdateWithDeleted(
     {
       _id: creationId,
       user: userId,
     },
-    { isPrivate },
+    {
+      isPrivate,
+      deleted,
+    },
     {
       new: true,
     },

@@ -3,11 +3,15 @@ import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardD
 import CreationCardMedia from '@/components/Creation/CreationCard/CreationCardMedia'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
+import { Button } from '@mui/material'
+import { App } from 'antd'
+import axios from 'axios'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 
 const CreationCard: FC<{
@@ -15,6 +19,7 @@ const CreationCard: FC<{
   data: Creation
   onClick: () => void
 }> = ({ index, data, onClick }) => {
+  const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
 
@@ -27,6 +32,23 @@ const CreationCard: FC<{
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
   }, [creation])
 
+  const onRestoreClick = useCallback(async () => {
+    try {
+      await axios.patch(`/api/creations/${creation._id}`, {
+        update: { deleted: false },
+      })
+      message.destroy()
+      message.success(`Creation restored`)
+
+      setCreation({
+        ...creation,
+        deleted: false,
+      })
+    } catch (err) {
+      handleAxiosError(err, message)
+    }
+  }, [creation])
+
   const cardClickHandler = useCallback(
     (ev: React.MouseEvent) => {
       ev.preventDefault()
@@ -35,21 +57,15 @@ const CreationCard: FC<{
     [onClick],
   )
 
-  if (creation.deleted) {
-    return (
-      <div className="w-full max-h-full dark:text-gray-500 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-lg">
-        deleted
-      </div>
-    )
-  }
-
   return (
-    <div ref={ref} className="w-full flex justify-center flex-col">
+    <div ref={ref} className={`w-full flex justify-center flex-col`}>
       <a
         onClick={cardClickHandler}
         href={`/creations/${creation._id}`}
         target={'_blank'}
-        className="card-image relative rounded-lg overflow-hidden cursor-pointer block"
+        className={`card-image relative rounded-lg overflow-hidden cursor-pointer block  ${
+          creation.deleted ? 'grayscale' : ''
+        }`}
       >
         <CreationCardMedia
           creation={creation}
@@ -57,7 +73,20 @@ const CreationCard: FC<{
           hovered={hovered}
         />
       </a>
-      {creation.isPrivate ? (
+      {creation.deleted ? (
+        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+          <Button
+            size="small"
+            variant="outlined"
+            color="warning"
+            className="bg-black bg-opacity-50"
+            onClick={onRestoreClick}
+          >
+            Restore
+          </Button>
+        </div>
+      ) : null}
+      {!creation.deleted && creation.isPrivate ? (
         <div
           className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
             hovered ? 'md:hidden' : ''
@@ -66,7 +95,7 @@ const CreationCard: FC<{
           <LockIcon fontSize="small" className="text-white" />
         </div>
       ) : null}
-      {width < 768 || hovered || dropdownActive ? (
+      {!creation.deleted && (width < 768 || hovered || dropdownActive) ? (
         <>
           <div
             className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none`}
