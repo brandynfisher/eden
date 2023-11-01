@@ -6,5 +6,5 @@ export {
 } from './EdenClient'
 
 export * from './methods'
-export * from './responses'
+export * from './models'
 export { default as Method } from './methods'

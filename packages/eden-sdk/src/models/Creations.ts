@@ -83,7 +83,7 @@ export const creationsReactRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'creations/react',
+    url: 'creations/reactions/add',
     data: {
       ...args,
     },
@@ -95,7 +95,7 @@ export const creationsUnreactRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'creations/unreact',
+    url: 'creations/reactions/remove',
     data: {
       ...args,
     },

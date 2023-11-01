@@ -1,6 +1,15 @@
 import { AxiosRequestConfig } from 'axios'
-import { WebAPICallOptions, WebAPICallResult } from 'src/EdenClient'
+
+import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
+  AdminAuthChallengeArguments,
+  AdminAuthChallengeResponse,
+  AdminMannaModifyArguments,
+  AdminMannaModifyResponse,
+  AdminMannaVouchersCreateArguments,
+  AdminMannaVouchersCreateResponse,
+  AdminMediaUploadArguments,
+  AdminMediaUploadResponse,
   ApiKeysCreateArguments,
   ApiKeysCreateResponse,
   ApiKeysDeleteArguments,
@@ -67,6 +76,10 @@ import {
   CreatorsUnfollowResponse,
   CreatorsUpdateArguments,
   CreatorsUpdateResponse,
+  FeedConceptsArguments,
+  FeedConceptsResponse,
+  FeedCreationsArguments,
+  FeedCreationsResponse,
   GeneratorsGetArguments,
   GeneratorsGetResponse,
   GeneratorsListArguments,
@@ -75,6 +88,8 @@ import {
   MannaBalanceGetResponse,
   MannaVoucherRedeemResponse,
   MannaVouchersRedeemArguments,
+  MediaUploadArguments,
+  MediaUploadResponse,
   PaymentsCreateArguments,
   PaymentsCreateResponse,
   PaymentsProductsResponse,
@@ -111,6 +126,10 @@ import {
   TasksGetResponse,
   TasksListArguments,
   TasksListResponse,
+  adminAuthChallengeRequestConfig,
+  adminMannaModifyRequestConfig,
+  adminMannaVouchersCreateRequestConfig,
+  adminMediaUploadRequestConfig,
   apiKeysCreateRequestConfig,
   apiKeysDeleteRequestConfig,
   apiKeysListRequestConfig,
@@ -145,10 +164,13 @@ import {
   creatorsListRequestConfig,
   creatorsUnfollowRequestConfig,
   creatorsUpdateRequestConfig,
+  feedConceptsRequestConfig,
+  feedCreationsRequestConfig,
   generatorsGetRequestConfig,
   generatorsListRequestConfig,
   mannaBalanceGetRequestConfig,
   mannaVouchersRedeemRequestConfig,
+  mediaUploadRequestConfig,
   paymentsCreateRequestConfig,
   paymentsProductsRequestConfig,
   paymentsSubscriptionRequestConfig,
@@ -169,12 +191,7 @@ import {
   tasksCreateRequestConfig,
   tasksGetRequestConfig,
   tasksListRequestConfig,
-} from 'src/models'
-import {
-  MediaUploadArguments,
-  MediaUploadResponse,
-  mediaUploadRequestConfig,
-} from 'src/models/Media'
+} from './models'
 
 export const transformArgsIntoURLParams = (
   args: Record<string, any>,
@@ -222,6 +239,48 @@ export abstract class Methods {
     options?: WebAPICallOptions,
   ): Promise<WebAPICallResult>
 
+  public readonly admin = {
+    manna: {
+      modify: bindApiCall<AdminMannaModifyArguments, AdminMannaModifyResponse>(
+        this,
+        adminMannaModifyRequestConfig,
+      ),
+      vouchers: {
+        create: bindApiCall<
+          AdminMannaVouchersCreateArguments,
+          AdminMannaVouchersCreateResponse
+        >(this, adminMannaVouchersCreateRequestConfig),
+      },
+    },
+    auth: {
+      challenge: bindApiCall<
+        AdminAuthChallengeArguments,
+        AdminAuthChallengeResponse
+      >(this, adminAuthChallengeRequestConfig),
+    },
+    media: {
+      upload: bindApiCall<AdminMediaUploadArguments, AdminMediaUploadResponse>(
+        this,
+        adminMediaUploadRequestConfig,
+      ),
+    },
+  }
+
+  public readonly apiKeys = {
+    list: bindApiCall<ApiKeysListArguments, ApiKeysListResponse>(
+      this,
+      apiKeysListRequestConfig,
+    ),
+    create: bindApiCall<ApiKeysCreateArguments, ApiKeysCreateResponse>(
+      this,
+      apiKeysCreateRequestConfig,
+    ),
+    delete: bindApiCall<ApiKeysDeleteArguments, ApiKeysDeleteResponse>(
+      this,
+      apiKeysDeleteRequestConfig,
+    ),
+  }
+
   public readonly characters = {
     create: bindApiCall<CharactersCreateArguments, CharactersCreateResponse>(
       this,
@@ -242,21 +301,6 @@ export abstract class Methods {
     get: bindApiCall<CharactersGetArguments, CharactersGetResponse>(
       this,
       charactersGetRequestConfig,
-    ),
-  }
-
-  public readonly apiKeys = {
-    list: bindApiCall<ApiKeysListArguments, ApiKeysListResponse>(
-      this,
-      apiKeysListRequestConfig,
-    ),
-    create: bindApiCall<ApiKeysCreateArguments, ApiKeysCreateResponse>(
-      this,
-      apiKeysCreateRequestConfig,
-    ),
-    delete: bindApiCall<ApiKeysDeleteArguments, ApiKeysDeleteResponse>(
-      this,
-      apiKeysDeleteRequestConfig,
     ),
   }
 
@@ -291,6 +335,25 @@ export abstract class Methods {
         CollectionsRemoveCreationsResponse
       >(this, collectionsRemoveCreationsRequestConfig),
     },
+  }
+
+  public readonly concepts = {
+    list: bindApiCall<ConceptsListArguments, ConceptsListResponse>(
+      this,
+      conceptsListRequestConfig,
+    ),
+    get: bindApiCall<ConceptsGetArguments, ConceptsGetResponse>(
+      this,
+      conceptsGetRequestConfig,
+    ),
+    update: bindApiCall<ConceptsUpdateArguments, ConceptsUpdateResponse>(
+      this,
+      conceptsUpdateRequestConfig,
+    ),
+    delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
+      this,
+      conceptsDeleteRequestConfig,
+    ),
   }
 
   public readonly creations = {
@@ -351,36 +414,26 @@ export abstract class Methods {
     ),
   }
 
-  public readonly followers = {
-    list: bindApiCall<
+  public readonly creator = {
+    followers: bindApiCall<
       CreatorFollowersListArguments,
       CreatorFollowersListResponse
     >(this, creatorFollowersListRequestConfig),
-  }
 
-  public readonly following = {
-    list: bindApiCall<
+    following: bindApiCall<
       CreatorFollowersListArguments,
       CreatorFollowingListResponse
     >(this, creatorFollowingListRequestConfig),
   }
 
-  public readonly concepts = {
-    list: bindApiCall<ConceptsListArguments, ConceptsListResponse>(
+  public readonly feed = {
+    creations: bindApiCall<FeedCreationsArguments, FeedCreationsResponse>(
       this,
-      conceptsListRequestConfig,
+      feedCreationsRequestConfig,
     ),
-    get: bindApiCall<ConceptsGetArguments, ConceptsGetResponse>(
+    concepts: bindApiCall<FeedConceptsArguments, FeedConceptsResponse>(
       this,
-      conceptsGetRequestConfig,
-    ),
-    update: bindApiCall<ConceptsUpdateArguments, ConceptsUpdateResponse>(
-      this,
-      conceptsUpdateRequestConfig,
-    ),
-    delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
-      this,
-      conceptsDeleteRequestConfig,
+      feedConceptsRequestConfig,
     ),
   }
 
@@ -474,6 +527,9 @@ export abstract class Methods {
       this,
       sessionsGetRequestConfig,
     ),
+  }
+
+  public readonly session = {
     events: {
       list: bindApiCall<SessionEventsListArguments, SessionEventsListResponse>(
         this,

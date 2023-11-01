@@ -111,7 +111,7 @@ export const collectionsAddCreationsRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'collections/addcreations',
+    url: 'collections/creations/add',
     data: {
       ...args,
     },
@@ -123,7 +123,7 @@ export const collectionsRemoveCreationsRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'collections/removecreations',
+    url: 'collections/creations/remove',
     data: {
       ...args,
     },
