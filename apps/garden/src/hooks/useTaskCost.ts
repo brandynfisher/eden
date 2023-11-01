@@ -1,19 +1,26 @@
 import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
-import { App } from 'antd'
-import axios from 'axios'
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+const costFactorParameterNames = ['n_samples', 'n_frames']
+
+const staticCostGenerators = [
+  {
+    generatorName: 'sdxl-lora-trainer',
+    cost: 100,
+  },
+  {
+    generatorName: 'dialogue',
+    cost: 50,
+  },
+]
+
 export const useTaskCost = () => {
-  const { message } = App.useApp()
   const [taskCost, setTaskCost] = useState<number | undefined>()
-  const [isLoadingTaskCost, setIsLoadingTaskCost] = useState<boolean | null>(
-    null,
-  )
   const [canAffordOperation, setCanAffordOperation] = useState<
     boolean | undefined
   >(undefined)
-  const { userId, mannaBalance, isAuthenticated } = useContext(UserContext)
+  const { mannaBalance } = useContext(UserContext)
 
   useEffect(() => {
     if (taskCost && mannaBalance) {
@@ -21,32 +28,40 @@ export const useTaskCost = () => {
     }
   }, [taskCost, mannaBalance])
 
-  const getTaskCost = useCallback(
-    async (generatorName: string, config: Task['config']) => {
-      setIsLoadingTaskCost(true)
+  const getTaskCostFake = useCallback(
+    (generatorName: string, config: Task['config']) => {
+      // console.log(generatorName, config)
 
-      try {
-        message.destroy()
-
-        const response = await axios.post('/api/tasks/cost', {
-          generatorName,
-          config,
-        })
-
-        setTaskCost(response.data?.cost || undefined)
-      } catch (err) {
-        message.error('Error fetching task cost estimate')
-      } finally {
-        setIsLoadingTaskCost(false)
+      const staticGenerator = staticCostGenerators.filter(
+        gen => gen.generatorName === generatorName,
+      )
+      if (staticGenerator.length > 0) {
+        setTaskCost(staticGenerator[0].cost)
+        return
       }
+
+      const configParamArray: [string, number][] = Object.entries(config)
+      const costFactorParams: [string, number][] = configParamArray.filter(
+        configParam => costFactorParameterNames.includes(configParam[0]),
+      )
+
+      if (costFactorParams.length > 0) {
+        const totalFactor = costFactorParams
+          .map(factor => factor[1])
+          .reduce((total, arr) => total + arr)
+        // console.log(generatorName, totalFactor)
+        setTaskCost(totalFactor)
+        return
+      }
+
+      setTaskCost(1)
     },
-    [userId, isAuthenticated],
+    [],
   )
 
   return {
-    getTaskCost,
+    getTaskCost: getTaskCostFake,
     taskCost,
-    isLoadingTaskCost,
     canAffordOperation,
   }
 }

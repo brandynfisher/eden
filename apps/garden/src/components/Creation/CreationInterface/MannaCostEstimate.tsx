@@ -6,7 +6,7 @@ const MannaCostEstimate = ({
   isLoading,
   cost,
 }: {
-  isLoading: boolean
+  isLoading?: boolean
   cost: string | number
 }) => {
   return (

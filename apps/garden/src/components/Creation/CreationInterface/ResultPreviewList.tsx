@@ -31,23 +31,21 @@ const ResultPreviewList = ({
   const { tasks } = useContext(CreationNotificationContext)
 
   return (
-    <div>
-      <div className="flex flex-col" ref={innerRef}>
-        {tasks && tasks.length ? (
-          tasks.map((task, index) => (
-            <ResultPreview key={task._id} task={task} index={index} />
-          ))
-        ) : (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={
-              <div className="flex flex-col items-center">
-                <div className="mb-4">No recent tasks found.</div>
-              </div>
-            }
-          />
-        )}
-      </div>
+    <div className="flex flex-col" ref={innerRef}>
+      {tasks && tasks.length ? (
+        tasks.map((task, index) => (
+          <ResultPreview key={task._id} task={task} index={index} />
+        ))
+      ) : (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            <div className="flex flex-col items-center">
+              <div className="mb-4">No recent tasks found.</div>
+            </div>
+          }
+        />
+      )}
     </div>
   )
 }

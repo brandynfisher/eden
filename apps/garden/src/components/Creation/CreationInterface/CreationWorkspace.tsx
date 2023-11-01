@@ -41,8 +41,8 @@ const CreationWorkspace = ({
           </Button>
         ) : null}
         <div
-          className={`flex px-4 pt-1 md:pt-2 md:mb-0 ${
-            usesDrawer && !openedDrawer ? 'hidden' : ''
+          className={`px-4 pt-1 md:pt-2 md:mb-0 ${
+            usesDrawer && !openedDrawer ? 'hidden' : 'flex'
           }`}
         >
           <Select
