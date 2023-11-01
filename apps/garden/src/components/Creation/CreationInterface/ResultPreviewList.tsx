@@ -6,7 +6,7 @@ import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
-import { App, Card, Progress } from 'antd'
+import { App, Card, Empty, Progress } from 'antd'
 import React, {
   RefObject,
   useCallback,
@@ -33,11 +33,20 @@ const ResultPreviewList = ({
   return (
     <div>
       <div className="flex flex-col" ref={innerRef}>
-        {tasks && tasks.length
-          ? tasks.map((task, index) => (
-              <ResultPreview key={task._id} task={task} index={index} />
-            ))
-          : null}
+        {tasks && tasks.length ? (
+          tasks.map((task, index) => (
+            <ResultPreview key={task._id} task={task} index={index} />
+          ))
+        ) : (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <div className="flex flex-col items-center">
+                <div className="mb-4">No recent tasks found.</div>
+              </div>
+            }
+          />
+        )}
       </div>
     </div>
   )
