@@ -15,8 +15,15 @@ export const useCreationState = () => {
   const { data: tasksData, mutate: refetchTasks } = useSWR(
     `/api/tasks/list?status=running,starting,pending,completed,failed`,
     fetcher,
+    { refreshInterval: 5000 },
   )
+  const [notificationCutOffDate, setNotificationCutOffDate] =
+    useState<number>(0)
   const tasks = tasksData?.tasks as Task[]
+
+  useEffect(() => {
+    setNotificationCutOffDate(Date.now())
+  }, [])
 
   useEffect(() => {
     if (tasks && tasks.length) {
@@ -37,11 +44,18 @@ export const useCreationState = () => {
   }, [tasks])
 
   useEffect(() => {
-    const intervalId = setInterval(refetchTasks, 5000) // Refetch every 5 seconds
-
     // Cleanup function to remove completed tasks from taskIds
-    const cleanupTasks = async () => {
+    const notify = async () => {
       if (tasks && tasks.length) {
+        // only show notifications for tasks that finished after the page was loaded
+        const isExpired =
+          new Date(tasks[0].updatedAt).getTime() - notificationCutOffDate <
+          10000
+
+        if (isExpired) {
+          return
+        }
+
         if (tasks[0].status === 'completed') {
           message.destroy()
           message.success(
@@ -58,12 +72,8 @@ export const useCreationState = () => {
       }
     }
 
-    cleanupTasks()
-
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [tasks])
+    notify()
+  }, [tasks, completedTasks])
 
   return {
     tasks,
