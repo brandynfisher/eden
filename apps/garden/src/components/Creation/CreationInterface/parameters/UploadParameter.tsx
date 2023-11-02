@@ -1,7 +1,7 @@
 import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { truncateText } from '@/lib/string'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
-import InboxOutlined from '@mui/icons-material/InboxOutlined'
+import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined'
 import { Form, FormInstance, Modal, Row, Upload, message } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
@@ -198,18 +198,14 @@ const UploadParameter = (props: {
             showUploadList={{ showDownloadIcon: true, showRemoveIcon: true }}
             onPreview={handlePreview}
           >
-            <div className="px-2">
-              <div className="ant-upload-drag-icon">
-                <InboxOutlined className="text-blue-500" />
-              </div>
-              <div className="ant-upload-text">
-                Click here or drag files to upload
-              </div>
-              {!props.compact ? (
-                <div className="ant-upload-hint text-xs text-gray-500 mt-2">
-                  <strong>{props.acceptedMimeTypes}</strong>
-                </div>
-              ) : null}
+            <div className="flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500">
+              <FileUploadOutlined />
+              <div>Click here or drag files to upload</div>
+              {/*{!props.compact ? (*/}
+              {/*  <div className="ant-upload-hint text-xs text-gray-500 mt-2">*/}
+              {/*    <strong>{props.acceptedMimeTypes}</strong>*/}
+              {/*  </div>*/}
+              {/*) : null}*/}
             </div>
           </Dragger>
         </Form.Item>

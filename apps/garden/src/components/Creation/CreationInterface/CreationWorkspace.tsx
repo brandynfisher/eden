@@ -26,7 +26,7 @@ const CreationWorkspace = ({
 }) => {
   return (
     <>
-      <div className="relative z-0 w-full md:pt-2 pb-0 bg-gray-100 dark:bg-gray-800">
+      <div className="relative z-0 w-full md:pt-2 pb-0 bg-gray-100 dark:bg-gray-800 rounded-t-lg">
         {usesDrawer && onDrawerToggle ? (
           <Button
             size="small"
@@ -65,7 +65,7 @@ const CreationWorkspace = ({
       </div>
 
       <div
-        className={`w-full h-full max-h-[calc(100%_-_68px)] md:max-h-[calc(100%_-_48px)]`}
+        className={`w-full md:h-full max-h-[62vh] md:max-h-[calc(100%_-_48px)]`}
       >
         {activeGenerator && (
           <GeneratorForm

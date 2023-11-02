@@ -11,10 +11,8 @@ import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import DownCircleOutlined from '@ant-design/icons/DownCircleOutlined'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
-import UpCircleOutlined from '@ant-design/icons/UpCircleOutlined'
 import {
   Creation,
   Generator,
@@ -23,7 +21,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { debounce } from '@mui/material/utils'
-import { App, Button, Form } from 'antd'
+import { App, Button, Collapse, Form } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -36,6 +34,7 @@ import React, {
 } from 'react'
 
 // import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+const { Panel } = Collapse
 
 type FieldValues = { [key: string]: string }
 
@@ -95,7 +94,6 @@ const GeneratorForm = ({
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
   const [stringArrayValues, setStringArrayValues] = useState({})
 
   useEffect(() => {
@@ -372,11 +370,7 @@ const GeneratorForm = ({
           }
         }
 
-        return (
-          <div key={parameter.name} className={`px-4 py-2 mb-2`}>
-            {renderParameter(parameter)}
-          </div>
-        )
+        return <div key={parameter.name}>{renderParameter(parameter)}</div>
       })
     },
     [presetConfig],
@@ -438,7 +432,7 @@ const GeneratorForm = ({
       className={`flex flex-col h-full`}
     >
       <div className={usesDrawer && !openedDrawer ? 'hidden' : ''}>
-        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800">
+        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 border-solid border-0 border-b border-gray-300 dark:border-gray-700">
           <div className="flex justify-between flex-wrap">
             <span style={{ color: 'gray' }}>{generator.description}</span>
             {generator.output === 'creation' ? (
@@ -468,11 +462,13 @@ const GeneratorForm = ({
       </div>
 
       <div
-        className={`flex-col flex-grow bg-gray-200 dark:bg-gray-900 overflow-y-auto overflow-x-hidden pt-2 ${
-          usesDrawer && !openedDrawer ? 'hidden' : 'flex'
-        }`}
+        className={`flex-col flex-grow bg-gray-100 dark:bg-gray-900 overflow-y-auto overflow-x-hidden ${
+          usesDrawer && openedDrawer ? 'max-h-[46vh]' : ''
+        } ${usesDrawer && !openedDrawer ? 'hidden' : 'flex'}`}
       >
-        <div>{renderFormFields(requiredParameters)}</div>
+        <div className={`p-4 bg-gray-100 dark:bg-gray-900`}>
+          {renderFormFields(requiredParameters)}
+        </div>
 
         {/* start param groups --- */}
         {/*<div >*/}
@@ -497,36 +493,27 @@ const GeneratorForm = ({
         {/* --- end param group */}
 
         {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
-          <>
-            {showSettings ? (
-              <Button
-                onClick={() => {
-                  setShowSettings(false)
-                  onSettingsToggle && onSettingsToggle(false)
-                }}
-                className="font-mono mb-4 mx-4"
-              >
-                <UpCircleOutlined />
-                Hide settings
-              </Button>
-            ) : (
-              <Button
-                onClick={() => {
-                  setShowSettings(true)
-                  onSettingsToggle && onSettingsToggle(true)
-                }}
-                className="font-mono mb-4 mx-4"
-              >
-                <DownCircleOutlined />
-                Show settings
-              </Button>
-            )}
-          </>
+          <Collapse
+            expandIconPosition="start"
+            onChange={key => onSettingsToggle && onSettingsToggle(key.length)}
+            className="generator-settings-collapse max-h-full"
+          >
+            {optionalParameters.length > 0 ? (
+              <Panel key={'1'} header={'Settings'}>
+                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                  {renderFormFields(optionalParameters)}
+                </div>
+              </Panel>
+            ) : null}
+            {advancedParameters.length > 0 ? (
+              <Panel key={'2'} header={'Advanced'}>
+                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                  {renderFormFields(advancedParameters)}
+                </div>
+              </Panel>
+            ) : null}
+          </Collapse>
         ) : null}
-        <div className={`${!showSettings ? 'hidden' : ''}`}>
-          <div>{renderFormFields(optionalParameters)}</div>
-          <div>{renderFormFields(advancedParameters)}</div>
-        </div>
       </div>
 
       <div
