@@ -189,20 +189,6 @@ function ModalProvider({ children }: PropsWithChildren) {
   }
 
   useEffect(() => {
-    router.beforePopState(({ as }) => {
-      const currentPath = router.asPath
-      if (store.length && as !== currentPath) {
-        hideModal(store[store.length - 1].modalType)
-      }
-      return true
-    })
-
-    return () => {
-      router.beforePopState(() => true)
-    }
-  }, [router.asPath])
-
-  useEffect(() => {
     router.events.on('routeChangeStart', (url, { shallow }) => {
       // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
       if (store.length && !shallow) {
@@ -213,7 +199,7 @@ function ModalProvider({ children }: PropsWithChildren) {
     return () => {
       router.events.off('routeChangeStart', () => {})
     }
-  }, [])
+  }, [store])
 
   const onEscHandler = useCallback(
     (ev: KeyboardEvent) => {

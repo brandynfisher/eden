@@ -1,25 +1,34 @@
 const params = [
   {
-    name: 'init_image_data',
-    label: 'Init image',
+    name: 'control_image',
+    label: 'Shape guidance image',
     default: null,
     description:
-      'Guidance image. This will guide the edges and contours of the creation',
+      'Shape guidance image. This will guide the edges and contours of the creation',
     mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: true,
     optional: false,
   },
   {
-    name: 'init_image_strength',
-    label: 'Init image strength',
+    name: 'control_image_strength',
+    label: 'Shape guidance image strength',
     description:
-      'How much influence the guidance image has on the creation. Recommended >0.5 with ControlNet',
+      'How much influence the guidance image has on the creation. Recommended >0.5',
     default: 0.6,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
     optional: false,
   },
+  
+  {
+    name: 'controlnet_type',
+    label: 'ControlNet mode',
+    description: 'Which ControlNet mode to use (we recommend canny-edge or luminance)',
+    default: 'canny-edge',
+    allowedValues: ["luminance", "canny-edge", "depth"],
+  },
+  
   {
     name: 'text_input',
     label: 'Prompt',
@@ -31,7 +40,7 @@ const params = [
   {
     name: 'width',
     label: 'Width',
-    description: 'Will generate [Width x Height] total number of pixels but adopts the aspect ratio of your provided image',
+    description: 'Will generate a total of [Width x Height] pixels but adopts the aspect ratio of your guidance image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -41,7 +50,7 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Will generate [Width x Height] total number of pixels but adopts the aspect ratio of your provided image',
+    description: 'Will generate a total of [Width x Height] pixels but adopts the aspect ratio of your guidance image',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -49,13 +58,6 @@ const params = [
     optional: false,
   },
 
-  {
-    name: 'controlnet_type',
-    label: 'ControlNet',
-    description: 'Which ControlNet to use',
-    default: 'luminance',
-    allowedValues: ["luminance", "canny-edge", "depth"],
-  },
   ////////////////////////////////////////
   // optional generation args
   
@@ -64,7 +66,7 @@ const params = [
     label: 'Samples',
     description: 'Number of variations to create',
     default: 1,
-    allowedValues: [1, 2, 4],
+    allowedValues: [1, 2, 3, 4],
     optional: true,
   },
 
@@ -72,24 +74,25 @@ const params = [
     name: 'lora',
     label: 'Concept',
     description:
-     '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
+      '(optional) activate a trained concept',
     optional: true,
   },
   {
-   name: 'lora_scale',
-   label: 'Concept scale',
-   description:
-     'How strongly to apply the Concept weights (0.0 will result in the base model)',
-   default: 0.8,
-   minimum: 0.0,
-   maximum: 1.5,
-   step: 0.01,
-   optional: true,
+    name: 'lora_scale',
+    label: 'Concept scale',
+    description:
+      'How strongly to activate the concept (0.0 will disable the concept)',
+    default: 0.8,
+    minimum: 0.0,
+    maximum: 1.5,
+    step: 0.01,
+    optional: true,
   },
+  
   {
     name: 'adopt_aspect_from_init_img',
-    label: 'Adopt aspect ratio of Init image',
-    description: 'Make sure the creation has the same aspect ratio as the Init image.',
+    label: 'Adopt aspect ratio of guidance image',
+    description: 'Make a creation with the same aspect ratio as the guidance image.',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -97,7 +100,7 @@ const params = [
   {
     name: 'uc_text',
     label: 'Negative prompt',
-    description: 'Unconditional (negative) prompt: what you DONT want to see',
+    description: 'What you DONT want to see',
     default:
       'watermark, text, nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, blurry, blurred, grainy, signature, cut off, draft',
     isRequired: false,
@@ -106,8 +109,8 @@ const params = [
   {
     name: 'guidance_scale',
     label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance',
-    default: 7.5,
+    description: 'Strength of the prompt (higher values result in more contrast and color saturation)',
+    default: 7.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,
@@ -128,14 +131,6 @@ const params = [
     default: 40,
     minimum: 5,
     maximum: 70,
-    optional: true,
-  },
-  {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
     optional: true,
   },
   {

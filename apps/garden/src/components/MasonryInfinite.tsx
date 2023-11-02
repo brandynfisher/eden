@@ -77,8 +77,8 @@ const MasonryInfinite = ({
     isItemLoaded: (index, items) => {
       return !!items[index]
     },
-    minimumBatchSize: 10,
-    threshold: 24,
+    minimumBatchSize: 25,
+    threshold: 50,
   })
 
   const handleOrderChange = (newOrderBy: OrderByParam) => {
@@ -126,6 +126,10 @@ const MasonryInfinite = ({
   useEffect(() => {
     setItems(items)
   }, [items.length, orderBy, query, type])
+
+  useEffect(() => {
+    document.body.classList.add('force-scroll-y')
+  }, [])
 
   const handleCardClick = useCallback((index: number) => {
     //@todo: move this to CreationMasonry (similarMasonry, as static)
@@ -187,6 +191,7 @@ const MasonryInfinite = ({
         <>
           {items.length > 0 && (
             <MasonryScroller
+              className="max-w-lg"
               style={{ outline: 'none' }}
               key={key}
               positioner={positioner}

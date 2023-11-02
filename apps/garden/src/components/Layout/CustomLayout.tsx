@@ -92,7 +92,7 @@ const CustomLayout = ({
         <LayoutHeader />
         <Layout
           hasSider={false}
-          className={`${fixedHeight ? 'lg:p-4' : 'p-2 md:p-4'} lg:!pb-0`}
+          className={`${fixedHeight ? '' : 'p-2 md:p-4'} lg:!pb-0`}
         >
           {children}
         </Layout>

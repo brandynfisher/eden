@@ -13,7 +13,7 @@ import { CONFIG } from '@/lib/config'
 import { getAspectRatio } from '@/lib/media'
 import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
-import { Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
 import Head from 'next/head'
@@ -30,7 +30,7 @@ const CreationDetail = ({
 }) => {
   const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [creationData, setCreationData] = useState<Creation>(creation)
+  const [creationData, setCreationData] = useState<Creation | Concept>(creation)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
@@ -179,7 +179,7 @@ const CreationDetail = ({
               <CardToolsDropdown
                 item={creation}
                 itemType={'creation'}
-                onChange={() => console.log('onChange')}
+                onChange={setCreationData}
               />
             </div>
 

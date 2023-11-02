@@ -18,12 +18,12 @@ import React, { useEffect, useState } from 'react'
 const ProfileHeader = ({
   creatorId,
   creator,
-  isAuthenticatedUser,
+  isOwnProfile,
   numCreations,
 }: {
   creatorId: string
   creator: Creator | undefined
-  isAuthenticatedUser: boolean
+  isOwnProfile: boolean
   numCreations: number | undefined
 }) => {
   const { mutate: refetchCreator } = useCreator(creatorId)
@@ -79,11 +79,11 @@ const ProfileHeader = ({
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <div
             className={`w-[90px] h-[90px] rounded-full overflow-hidden ${
-              isAuthenticatedUser
+              isOwnProfile
                 ? 'hover:brightness-125 transition-all cursor-pointer'
                 : ''
             }`}
-            onClick={() => isAuthenticatedUser && setShowImageUploader(true)}
+            onClick={() => isOwnProfile && setShowImageUploader(true)}
           >
             <CharacterAvatar
               id={creatorId}
@@ -92,7 +92,7 @@ const ProfileHeader = ({
               size="auto"
             />
           </div>
-          {isAuthenticatedUser && (
+          {isOwnProfile && (
             <div
               ref={clickOutsideTargetRef}
               className="flex flex-col mt-2 relative"
@@ -154,7 +154,7 @@ const ProfileHeader = ({
           ) : (
             <div className="flex items-center flex-wrap md:flex-nowrap">
               <ProfileHeaderName
-                isOwnProfile={isAuthenticatedUser}
+                isOwnProfile={isOwnProfile}
                 displayName={displayName}
                 setDisplayName={setDisplayName}
               />

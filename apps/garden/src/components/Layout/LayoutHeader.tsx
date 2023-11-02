@@ -9,41 +9,36 @@ import { UserContext } from '@/providers/UserProvider'
 import theme from '@/styles/theme'
 import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
+import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
 const { Header } = Layout
 
 const LayoutHeader = () => {
   const { isAuthenticated } = useContext(UserContext)
-
+  const router = useRouter()
   const { width: viewportWidth } = useViewportSize()
-  const [isSmallScreen, setIsSmallScreen] = useState(
-    viewportWidth && viewportWidth < theme.screens.lg,
-  )
+  const [showQuickCreateButton, setShowQuickCreateButton] = useState(true)
 
   useEffect(() => {
-    if (viewportWidth && viewportWidth < theme.screens.lg) {
-      setIsSmallScreen(true)
-    } else {
-      setIsSmallScreen(false)
-    }
-  }, [viewportWidth])
+    setShowQuickCreateButton(!router.pathname.includes('/create/'))
+  }, [router.pathname])
 
   return (
     <Header className={`px-4 bg-white dark:bg-gray-950 leading-none`}>
       <div className="flex gap-2 items-center leading-[64px]">
         <HeaderLogo />
 
-        {isSmallScreen && (
+        {viewportWidth < theme.screens.lg && (
           <div className="flex">
             <Drawer />
           </div>
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <QuickCreateMenu />
+          {showQuickCreateButton ? <QuickCreateMenu /> : null}
 
-          {!isSmallScreen && isAuthenticated ? (
+          {isAuthenticated && viewportWidth >= theme.screens.sm ? (
             <>
               <TaskNotificationDropdown />
               <MannaDropdown />
@@ -55,14 +50,14 @@ const LayoutHeader = () => {
         </div>
       </div>
 
-      <div className="w-full flex">
-        {isSmallScreen && isAuthenticated ? (
-          <div className="flex ml-auto">
-            <TaskNotificationDropdown />
+      {viewportWidth < theme.screens.sm && isAuthenticated ? (
+        <div className="w-full flex justify-between">
+          <TaskNotificationDropdown />
+          <div className="ml-auto">
             <MannaDropdown />
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </Header>
   )
 }

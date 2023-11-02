@@ -44,45 +44,66 @@ const params = [
     name: 'lora',
     label: 'Concept',
     description:
-      '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
+      '(optional) activate a trained concept',
     optional: true,
-   },
-   {
+  },
+  {
     name: 'lora_scale',
     label: 'Concept scale',
     description:
-      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+      'How strongly to activate the concept (0.0 will disable the concept)',
     default: 0.8,
     minimum: 0.0,
-    maximum: 1.2,
+    maximum: 1.5,
     step: 0.01,
     optional: true,
   },
 
   {
-    name: 'init_image_data',
-    label: 'Init image',
+    name: 'control_image',
+    label: 'Shape guidance image',
     default: null,
     description:
-      'Guidance image. This will guide the interpolation (can be used with or without controlnet)',
+      'Shape guidance image. This will guide the edges and contours of the creation. Make sure to set ControlNet mode when using this!!',
     mediaUpload: 'image/png, image/jpeg, image/webp',
-    isRequired: false,
     optional: true,
   },
   {
+    name: 'control_image_strength',
+    label: 'Shape guidance image strength',
+    description:
+      'How much influence the guidance image has on the creation. Recommended >0.5',
+    default: 0.6,
+    minimum: 0.0,
+    maximum: 1.0,
+    step: 0.01,
+    optional: true,
+  },
+  
+  {
     name: 'controlnet_type',
-    label: 'ControlNet',
-    description: 'Which ControlNet to use',
+    label: 'ControlNet mode',
+    description: 'Which ControlNet mode to use (we recommend canny-edge or luminance)',
     default: 'off',
     allowedValues: ["off", "luminance", "canny-edge", "depth"],
     optional: true,
   },
+
+  {
+    name: 'init_image',
+    label: 'Starting image',
+    default: null,
+    description:
+      'The AI will start imagining from this image (can be used to guide colors and rough shapes or composition)',
+    mediaUpload: 'image/png, image/jpeg, image/webp',
+    optional: true,
+  },
   {
     name: 'init_image_strength',
-    label: 'Init image strength',
+    label: 'Starting image strength',
     description:
-      'How much influence the guidance image has in the video. Recommended >0.5 with ControlNet on, <0.1 with ControlNet off',
-    default: 0.1,
+      'How much influence the starting image has on the creation. Recommended <0.1. Using this in combination with a shape guidance image is not recommended!',
+    default: 0.05,
     minimum: 0.0,
     maximum: 1.0,
     step: 0.01,
@@ -101,7 +122,7 @@ const params = [
   {
     name: 'uc_text',
     label: 'Negative prompt',
-    description: 'Unconditional (negative) prompt',
+    description: 'What you DONT want to see',
     default:
       'nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft',
     optional: true,
@@ -109,8 +130,8 @@ const params = [
   {
     name: 'guidance_scale',
     label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance, higher values result in more saturated frames',
-    default: 7.5,
+    description: 'Strength of the prompt (higher values result in more contrast and color saturation)',
+    default: 7.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,
@@ -119,7 +140,7 @@ const params = [
   {
     name: 'sampler',
     label: 'Sampler',
-    description: 'Sampler to use for generation (Euler recommended)',
+    description: 'Sampler to use for generation (Euler highly recommended)',
     default: 'euler',
     allowedValues: ["ddim", "ddpm", "klms", "euler"],
     optional: true,
@@ -137,7 +158,7 @@ const params = [
     name: 'smooth',
     label: 'Smooth',
     description:
-      'Use video smoothing (highly recommended), turning this off leads to a very different aesthetic with more frame flicker',
+      'Use video smoothing (highly recommended). Turning this off leads to a very different aesthetic with more frame flicker',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -147,15 +168,16 @@ const params = [
     name: 'n_film',
     label: 'FILM Iterations',
     description:
-      'Optionally apply FILM postprocessing to the generated frames to create a smoother video',
+      'Optionally apply FILM postprocessing to create a smoother video (1 = highly recommended)',
     default: 1,
     allowedValues: [0, 1, 2, 3],
     optional: true,
   },
+  
   {
     name: 'fps',
     label: 'FPS',
-    description: 'Frames per second of the output video (by default, will be 2x this with n_film=1)',
+    description: 'Frames per second of the output video',
     default: 12,
     minimum: 1,
     maximum: 30,
@@ -169,15 +191,8 @@ const params = [
       'Random seeds. Must have 1 for each prompt. If left blank, will be set randomly.',
     default: [],
     optional: true,
-  },
-
-  {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
-    optional: true,
+    minLength: 2,
+    maxLength: 8,
   },
 
 ]

@@ -1,6 +1,3 @@
-import CharacterAvatar from '@/components/Characters/CharacterAvatar'
-import HeaderLogo from '@/components/Layout/HeaderLogo'
-import NavBurgerButton from '@/components/Layout/navigation/NavBurgerButton'
 import SocialLinks from '@/components/Layout/navigation/SocialLinks'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
@@ -18,6 +15,9 @@ import React, {
   useEffect,
   useState,
 } from 'react'
+
+import NavMenuHeader from './NavMenuHeader'
+import NavMenuProfileLink from './NavMenuProfileLink'
 
 type ItemType = {
   key: string
@@ -54,57 +54,6 @@ function extractKeys(
   return keys
     .filter(key => key[0][0] === '/')
     .sort((a, b) => b[0].length - a[0].length)
-}
-
-const NavMenuHeader = ({
-  onClose,
-  isVisible,
-}: {
-  onClose: () => void
-  isVisible: boolean
-}) => {
-  return (
-    <div
-      className="flex justify-between items-center py-4 pl-4 pr-1 h-[64px]"
-      style={{ borderInlineEnd: '1px solid rgba(5, 5, 5, 0.06)' }}
-    >
-      <HeaderLogo />
-      <div
-        className={`block lg:hidden transition-opacity delay-75 duration-75 ${
-          !isVisible ? 'opacity-0' : 'opacity-100'
-        }`}
-        onClick={onClose}
-      >
-        <NavBurgerButton open={isVisible} />
-      </div>
-    </div>
-  )
-}
-
-const ProfileLink = ({
-  userId,
-  username,
-  userImage,
-}: {
-  userId: string | null
-  username: string | undefined
-  userImage: string | undefined
-}) => {
-  return (
-    <Link
-      href={username ? `/creators/${username?.toLowerCase()}` : '/'}
-      passHref
-      className="font-mono flex justify-center items-center h-[32px] w-[32px] mr-2"
-    >
-      <CharacterAvatar
-        id={userId || ''}
-        name={username || ''}
-        imageUri={userImage || ''}
-        size={'small'}
-        shape="circle"
-      />
-    </Link>
-  )
 }
 
 const NavMenu = ({
@@ -224,13 +173,13 @@ const NavMenu = ({
   const pathKeyMap = extractKeys(menuItems)
 
   useEffect(() => {
-    if (user && userId) {
+    if (user) {
       setVisibleMenuItems([
         ...menuItems,
         {
           key: '/profile',
           icon: (
-            <ProfileLink
+            <NavMenuProfileLink
               username={user.username}
               userId={userId}
               userImage={user.userImage}
@@ -242,7 +191,7 @@ const NavMenu = ({
     } else {
       setVisibleMenuItems(menuItems)
     }
-  }, [user, userId])
+  }, [user])
 
   const onCloseHandler = () => {
     onClose && onClose()
@@ -293,10 +242,6 @@ const NavMenu = ({
     },
     [openMenuItemKey],
   )
-
-  if (!activeMenuItemKey || !openMenuItemKey) {
-    return null
-  }
 
   return (
     <Layout.Sider

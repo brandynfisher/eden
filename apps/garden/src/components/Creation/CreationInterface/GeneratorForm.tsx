@@ -1,4 +1,5 @@
-import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
+import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
+import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
@@ -10,10 +11,8 @@ import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import DownCircleOutlined from '@ant-design/icons/DownCircleOutlined'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
-import UpCircleOutlined from '@ant-design/icons/UpCircleOutlined'
 import {
   Creation,
   Generator,
@@ -22,7 +21,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { debounce } from '@mui/material/utils'
-import { App, Button, Form } from 'antd'
+import { App, Button, Collapse, Form } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -35,6 +34,7 @@ import React, {
 } from 'react'
 
 // import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+const { Panel } = Collapse
 
 type FieldValues = { [key: string]: string }
 
@@ -58,10 +58,16 @@ const getCleanedConfig = (
 }
 
 const GeneratorForm = ({
+  onSettingsToggle,
+  usesDrawer,
+  openedDrawer,
   generator,
   presetCreation,
   onSubmitSuccess,
 }: {
+  onSettingsToggle?: Function
+  usesDrawer?: boolean
+  openedDrawer?: boolean
   generator: Generator
   presetCreation?: Creation
   onSubmitSuccess?: () => void
@@ -73,8 +79,7 @@ const GeneratorForm = ({
   const router = useRouter()
   const { isAuthenticated, authenticate, mannaBalance, user, refetchMe } =
     useContext(UserContext)
-  const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
-    useTaskCost()
+  const { getTaskCost, canAffordOperation, taskCost } = useTaskCost()
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
   const [isFormTouched, setIsFormTouched] = useState(false)
@@ -89,7 +94,6 @@ const GeneratorForm = ({
   >([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
   const [stringArrayValues, setStringArrayValues] = useState({})
 
   useEffect(() => {
@@ -118,16 +122,16 @@ const GeneratorForm = ({
     transformConfig()
   }, [presetCreation])
 
-  const handleFormFieldsChange = async () => {
+  const handleFormFieldsChange = () => {
     setIsFormTouched(true)
 
     if (!uploadsInProgress) {
-      await handleGetTaskCost()
+      handleGetTaskCost()
     }
   }
 
   const debouncedHandleFormFieldsChange = useMemo(
-    () => debounce(handleFormFieldsChange, 500),
+    () => debounce(handleFormFieldsChange, 350),
     [handleFormFieldsChange],
   )
 
@@ -185,7 +189,7 @@ const GeneratorForm = ({
         ),
       )
 
-      handleGetTaskCost(currentGeneratorParams)
+      getTaskCost(generator.generatorName, form.getFieldsValue())
     }
   }, [generator, presetCreation])
 
@@ -197,15 +201,18 @@ const GeneratorForm = ({
   }
 
   const handleGetTaskCost = useCallback(
-    async (generatorParams?: GeneratorParameter[]) => {
+    (generatorParams?: GeneratorParameter[]) => {
       const currentGeneratorParameters =
         getCurrentGeneratorParameters(generator)
       const requiredParams = currentGeneratorParameters?.filter(
         parameter => parameter.isRequired,
       )
 
+      const paramValues: FieldValues = {}
+      generatorParams?.map(param => (paramValues[param.name] = param.default))
+
       let cleanedValues = getCleanedConfig(
-        generatorParams || form.getFieldsValue(),
+        generatorParams ? paramValues : form.getFieldsValue(),
         undefined,
       )
 
@@ -218,7 +225,7 @@ const GeneratorForm = ({
         }
       })
 
-      await getTaskCost(generator.generatorName, cleanedValues)
+      getTaskCost(generator.generatorName, cleanedValues)
     },
     [generator],
   )
@@ -316,6 +323,7 @@ const GeneratorForm = ({
               key={parameter.name}
               form={form}
               parameter={parameter}
+              onFieldChange={debouncedHandleFormFieldsChange}
             />
           )
         }
@@ -362,11 +370,7 @@ const GeneratorForm = ({
           }
         }
 
-        return (
-          <div key={parameter.name} className={`p-4 mb-4`}>
-            {renderParameter(parameter)}
-          </div>
-        )
+        return <div key={parameter.name}>{renderParameter(parameter)}</div>
       })
     },
     [presetConfig],
@@ -425,36 +429,46 @@ const GeneratorForm = ({
       key={generator.generatorName}
       onFieldsChange={debouncedHandleFormFieldsChange}
       scrollToFirstError={true}
-      className="h-full flex flex-col"
+      className={`flex flex-col h-full`}
     >
-      <div className="p-4 bg-gray-100 dark:bg-gray-800">
-        <div className="flex justify-between flex-wrap">
-          <span style={{ color: 'gray' }}>{generator.description}</span>
-          {generator.output === 'creation' ? (
-            <a
-              href="https://docs.eden.art/docs/guides/creation"
-              target="_blank"
-              className="flex gap-1 items-center"
-            >
-              Learn about Creations
-              <LinkOutlined />
-            </a>
-          ) : null}
-          {generator.output === 'concept' ? (
-            <a
-              href="https://docs.eden.art/docs/guides/concepts"
-              target="_blank"
-              className="flex gap-1 items-center"
-            >
-              Learn about Concepts
-              <LinkOutlined />
-            </a>
-          ) : null}
+      <div className={usesDrawer && !openedDrawer ? 'hidden' : ''}>
+        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 border-solid border-0 border-b border-gray-300 dark:border-gray-700">
+          <div className="flex justify-between flex-wrap">
+            <span style={{ color: 'gray' }}>{generator.description}</span>
+            {generator.output === 'creation' ? (
+              <a
+                href="https://docs.eden.art/docs/guides/creation"
+                target="_blank"
+                className="flex gap-1 items-center"
+              >
+                Learn about Creations
+                <LinkOutlined />
+              </a>
+            ) : null}
+            {generator.output === 'concept' ? (
+              <a
+                href="https://docs.eden.art/docs/guides/concepts"
+                target="_blank"
+                className="flex gap-1 items-center"
+              >
+                Learn about Concepts
+                <LinkOutlined />
+              </a>
+            ) : null}
+          </div>
         </div>
+
+        {presetCreation && <CreationPresetInfo creation={presetCreation} />}
       </div>
 
-      <div className="flex flex-col flex-grow overflow-y-auto overflow-x-hidden pt-2">
-        <div>{renderFormFields(requiredParameters)}</div>
+      <div
+        className={`flex-col flex-grow bg-gray-100 dark:bg-gray-900 overflow-y-auto overflow-x-hidden ${
+          usesDrawer && openedDrawer ? 'max-h-[46vh]' : ''
+        } ${usesDrawer && !openedDrawer ? 'hidden' : 'flex'}`}
+      >
+        <div className={`p-4 bg-gray-100 dark:bg-gray-900`}>
+          {renderFormFields(requiredParameters)}
+        </div>
 
         {/* start param groups --- */}
         {/*<div >*/}
@@ -479,38 +493,37 @@ const GeneratorForm = ({
         {/* --- end param group */}
 
         {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
-          <>
-            {showSettings ? (
-              <Button
-                onClick={() => setShowSettings(false)}
-                className="font-mono mb-4 mx-4"
-              >
-                <UpCircleOutlined />
-                Hide settings
-              </Button>
-            ) : (
-              <Button
-                onClick={() => setShowSettings(true)}
-                className="font-mono mx-4"
-              >
-                <DownCircleOutlined />
-                Show settings
-              </Button>
-            )}
-          </>
+          <Collapse
+            expandIconPosition="start"
+            onChange={key => onSettingsToggle && onSettingsToggle(key.length)}
+            className="generator-settings-collapse max-h-full"
+          >
+            {optionalParameters.length > 0 ? (
+              <Panel key={'1'} header={'Settings'}>
+                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                  {renderFormFields(optionalParameters)}
+                </div>
+              </Panel>
+            ) : null}
+            {advancedParameters.length > 0 ? (
+              <Panel key={'2'} header={'Advanced'}>
+                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                  {renderFormFields(advancedParameters)}
+                </div>
+              </Panel>
+            ) : null}
+          </Collapse>
         ) : null}
-        <div className={`${!showSettings ? 'hidden' : ''}`}>
-          <div>{renderFormFields(optionalParameters)}</div>
-          <div>{renderFormFields(advancedParameters)}</div>
-        </div>
       </div>
 
       <div
-        className="p-4 text-left bg-gray-100 dark:bg-gray-800"
+        className={`p-4 text-left bg-gray-100 dark:bg-gray-800 ${
+          usesDrawer && !openedDrawer ? 'pt-2' : ''
+        }`}
         key={generator.generatorName}
       >
         <div className="flex gap-4 items-center justify-between flex-wrap">
-          <div className="flex gap-2 items-center w-full sm:w-auto">
+          <div className="flex gap-2 items-center w-auto">
             {canAffordOperation === false ? (
               <div className="text-orange-500">
                 Insufficient Manna! ({mannaBalance}){' '}
@@ -522,7 +535,7 @@ const GeneratorForm = ({
                 icon={<ExperimentOutlined />}
                 htmlType="submit"
                 size="large"
-                className="font-mono capitalize w-full"
+                className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !pr-2"
                 loading={isSubmitting ? { delay: 250 } : false}
                 disabled={
                   isSubmitting ||
@@ -532,6 +545,7 @@ const GeneratorForm = ({
                 }
               >
                 {generator.generatorName}
+                <MannaCostBadge cost={taskCost || 'n/a'} />
               </Button>
             )}
           </div>
@@ -541,17 +555,6 @@ const GeneratorForm = ({
           user.featureFlags.includes('private') ? (
             <PrivacyToggle />
           ) : null}
-        </div>
-
-        <div className="mt-4 flex flex-wrap w-full justify-between items-center">
-          <MannaCostEstimate
-            isLoading={!!isLoadingTaskCost}
-            cost={taskCost || 'n/a'}
-          />
-
-          <Button className="font-mono text-sm" onClick={resetForm}>
-            Reset {presetCreation ? '(to preset)' : ''}
-          </Button>
         </div>
 
         {uploadsInProgress ? (

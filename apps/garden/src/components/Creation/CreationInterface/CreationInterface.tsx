@@ -6,7 +6,6 @@ import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
-import { Tabs } from 'antd/lib'
 import React, {
   useCallback,
   useContext,
@@ -33,7 +32,6 @@ const CreationInterface = ({
   presetCreation?: Creation
   selectedGenerators?: string[]
 }) => {
-  const { width } = useViewportSize()
   const resultPreviewRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
   const [activeGenerator, setActiveGenerator] = useState<Generator | undefined>(
@@ -53,7 +51,34 @@ const CreationInterface = ({
     [generators],
   )
 
+  const { width } = useViewportSize()
+
   useEffect(() => {
+    if (width && width > 0) {
+      if (width < 768) {
+        setUsesDrawer(true)
+      } else {
+        setUsesDrawer(false)
+      }
+    }
+  }, [width])
+
+  const [drawerOpen, setDrawerOpen] = useState(true)
+  const [usesDrawer, setUsesDrawer] = useState(false)
+
+  useEffect(() => {
+    const available = !selectedGenerators
+      ? generators?.filter(
+          generator =>
+            !hiddenCreationGenerators.includes(generator.generatorName),
+        )
+      : generators?.filter(gen =>
+          selectedGenerators?.includes(gen.generatorName),
+        )
+
+    setAvailableGenerators(available)
+    setActiveGenerator(available?.[0])
+
     if (generatorName) {
       handleGeneratorChange(generatorName)
       return
@@ -63,76 +88,72 @@ const CreationInterface = ({
       handleGeneratorChange(presetCreation.task.generator.generatorName)
       return
     }
-    const available = !selectedGenerators
-      ? generators?.filter(
-          generator =>
-            !hiddenCreationGenerators.includes(generator.generatorName),
-        )
-      : generators?.filter(gen =>
-          selectedGenerators?.includes(gen.generatorName),
-        )
-    setAvailableGenerators(available)
-    setActiveGenerator(available?.[0])
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
+
+  const handleMaskClick = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+  ) => {
+    if (event.target === event.currentTarget) {
+      setDrawerOpen(false)
+    }
+  }
+
+  const timelineRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleTimelineClick = (event: MouseEvent) => {
+      if (
+        timelineRef.current &&
+        timelineRef.current.contains(event.target as Node)
+      ) {
+        setDrawerOpen(false)
+      }
+    }
+
+    if (drawerOpen) {
+      document.addEventListener('mousedown', handleTimelineClick)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleTimelineClick)
+    }
+  }, [drawerOpen])
 
   if (!generators || !activeGenerator || !availableGenerators) {
     return <LoadingIndicator />
   }
 
-  const isSmallScreen = !width ? false : width <= 1024
-
   return (
-    <>
-      {isSmallScreen ? (
-        <Tabs
-          className="creation-interface"
-          defaultActiveKey="workspace"
-          items={[
-            {
-              key: 'workspace',
-              label: 'Workspace',
-              className: 'h-full',
-              children: (
-                <div className="relative flex flex-col items-center overflow-hidden border lg:rounded-lg lg:border-solid border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
-                  <CreationWorkspace
-                    generators={availableGenerators}
-                    presetCreation={presetCreation}
-                    activeGenerator={activeGenerator}
-                    handleGeneratorChange={handleGeneratorChange}
-                  />
-                </div>
-              ),
-            },
-            {
-              key: 'tasks',
-              label: 'Tasks',
-              children: (
-                <div className="pl-2 pt-4">
-                  <ResultPreviewList innerRef={resultPreviewRef} />
-                </div>
-              ),
-            },
-          ]}
+    <div className="relative h-full md:flex md:gap-4 creation-interface mt-2">
+      {usesDrawer && drawerOpen ? (
+        <div
+          className="fixed inset-0 z-10 md:hidden pointer-events-none"
+          onClick={handleMaskClick}
         />
-      ) : (
-        <div className="h-full md:flex md:gap-2 creation-interface">
-          <div className="min-w-[320px] max-w-[380px] w-full relative flex flex-col items-center overflow-hidden border rounded-lg border-solid border-gray-200 dark:border-gray-800 mb-4 h-full lg:max-h-[calc(100%_-_16px)]">
-            <CreationWorkspace
-              generators={availableGenerators}
-              presetCreation={presetCreation}
-              activeGenerator={activeGenerator}
-              handleGeneratorChange={handleGeneratorChange}
-            />
-          </div>
+      ) : null}
+      <div
+        className={`fixed flex flex-col justify-end md:justify-normal overflow-hidden z-20 bottom-0 w-full create-form-drawer bg-gray-300 dark:bg-gray-950 rounded-lg rounded-b-none md:bottom-auto md:relative md:ml-4 md:mb-6 md:min-w-[320px] md:max-w-[380px] md:max-h-[calc(100%_-_16px)] md:border md:rounded-b-lg md:border-solid md:border-gray-200 md:dark:border-gray-800`}
+      >
+        <CreationWorkspace
+          usesDrawer={usesDrawer}
+          onDrawerToggle={setDrawerOpen}
+          openedDrawer={drawerOpen}
+          generators={availableGenerators}
+          presetCreation={presetCreation}
+          activeGenerator={activeGenerator}
+          handleGeneratorChange={handleGeneratorChange}
+        />
+      </div>
 
-          <div className="w-full overflow-y-auto px-2 pt-2">
-            <ResultPreviewList innerRef={resultPreviewRef} />
-          </div>
+      <div
+        ref={timelineRef}
+        className="w-full h-full md:h-auto overflow-y-auto px-4 md:px-0 md:pr-4 md:mt-0"
+      >
+        <ResultPreviewList innerRef={resultPreviewRef} />
+      </div>
 
-          {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}
-        </div>
-      )}
-    </>
+      {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}
+    </div>
   )
 }
 

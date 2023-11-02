@@ -6,7 +6,7 @@ const MannaCostEstimate = ({
   isLoading,
   cost,
 }: {
-  isLoading: boolean
+  isLoading?: boolean
   cost: string | number
 }) => {
   return (
@@ -14,11 +14,10 @@ const MannaCostEstimate = ({
       {(isLoading || cost) && (
         <div className="flex items-center gap-2 font-mono text-gray-400">
           <div className="cursor-default">
-            Cost:{' '}
             {isLoading ? (
               <LoadingOutlined />
             ) : (
-              <span className="font-bold">{cost}</span>
+              <span className="font-bold">-{cost}</span>
             )}{' '}
             Manna
           </div>
