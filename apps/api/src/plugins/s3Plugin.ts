@@ -217,7 +217,7 @@ export const getSignedDownloadUrl = (
           createSignedDownloadUrl(server, {
             ...params,
             ResponseContentType: 'application/octet-stream',
-            Expires: 60 * 5, // URL will be valid for 5 minutes
+            Expires: 60 * 60 * 48, // 2 days
           }),
         )
       })
