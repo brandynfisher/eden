@@ -13,7 +13,7 @@ const ImagePlaceholder = ({
 }) => {
   return (
     <div
-      className={`absolute inset-0 z-10 ${limitHeight ? 'max-h-[90vh]' : ''}`}
+      className={`absolute inset-0 z-10 ${limitHeight ? 'max-h-[80vh]' : ''}`}
     >
       <Image
         src={imageUrl}
@@ -74,7 +74,7 @@ const ImageResultZoomable = ({
       {previewSizeUrl && !isLoaded ? (
         <div
           className={`absolute inset-0 text-gray-500 opacity-80 ${
-            limitHeight ? 'max-h-[90vh]' : ''
+            limitHeight ? 'max-h-[80vh]' : ''
           }`}
         >
           <ImageLoadingPlaceholder />
@@ -89,7 +89,7 @@ const ImageResultZoomable = ({
       ) : null}
       {previewSizeUrl ? (
         <div
-          className={`absolute inset-0 ${limitHeight ? 'max-h-[90vh]' : ''}`}
+          className={`absolute inset-0 ${limitHeight ? 'max-h-[80vh]' : ''}`}
         >
           <Image
             key={previewSizeUrl}

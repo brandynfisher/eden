@@ -115,7 +115,7 @@ const CreationDetail = ({
                   ? () => handlePreviewClick(creation.uri)
                   : () => false
               }
-              className="relative flex justify-center flex-grow max-h-[90vh] overflow-hidden"
+              className="relative flex justify-center flex-grow max-h-[80vh] overflow-hidden"
             >
               {isImageUrl(creation.uri) ? (
                 <MediaDisplay
