@@ -1,4 +1,3 @@
-import AccountMigrationProfileBanner from '@/components/Banners/AccountMigrationProfileBanner'
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FollowControls from '@/components/FollowControls'
@@ -34,7 +33,6 @@ const ProfileHeader = ({
   const [displayName, setDisplayName] = useState('')
   const [displayImage, setDisplayImage] = useState<string | undefined>()
   const [showImageUploader, setShowImageUploader] = useState(false)
-  const [userMigrated] = useState()
   const [form] = Form.useForm()
   const userImageFieldValue = Form.useWatch('userImage', form)
   const clickOutsideTargetRef = useClickOutside(() =>
@@ -187,9 +185,6 @@ const ProfileHeader = ({
           </div>
         </div>
       </div>
-      {isAuthenticatedUser && !userMigrated ? (
-        <AccountMigrationProfileBanner />
-      ) : null}
     </div>
   )
 }
