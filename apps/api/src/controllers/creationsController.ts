@@ -173,7 +173,7 @@ export const getCreation = async (
   if (request.user?.userId) {
     // Get user's reactions and bookmarks
     const userId = request.user.userId
-    const user = User.findOne({ userId })
+    const user = await User.findOne({ _id: userId })
     if (!user) {
       return reply.status(404).send({
         message: 'User not found',
