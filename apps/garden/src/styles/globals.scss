@@ -588,6 +588,7 @@ body {
 
 .generator-settings-collapse {
     &.ant-collapse {
+        background-color: rgba(0, 0, 0, 0.1) !important;
         border-right: none !important;
         border-left: none !important;
         border-radius: 0;
@@ -598,6 +599,7 @@ body {
 
         .ant-collapse-item,
         .ant-collapse-header {
+            border-color:rgba(0, 0, 0, 0.1) !important;
             border-radius: 0 !important;
         }
 
@@ -613,6 +615,10 @@ body {
 
 .dark {
     .generator-settings-collapse {
+        &.ant-collapse {
+            background-color: rgba(255, 255, 255, 0.02) !important;
+        }
+
         .ant-collapse-item,
         .ant-collapse-header {
             border-color: #374151 !important;
