@@ -127,7 +127,12 @@ const CreationCard: FC<{
           <div
             className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none`}
           >
-            <CreationReactions creation={creation} onChange={setCreation} />
+            <CreationReactions
+              creation={creation}
+              onChange={updatedCreation =>
+                setCreation(updatedCreation as Creation)
+              }
+            />
             <CreationCardDetail creation={creation} />
           </div>
         </>
