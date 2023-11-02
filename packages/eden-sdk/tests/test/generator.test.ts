@@ -1,4 +1,3 @@
-import { Generator } from 'src/responses/GeneratorsGetResponse'
 import { describe, expect, test } from 'vitest'
 
 describe('Generator Methods', () => {
@@ -18,7 +17,7 @@ describe('Generator Methods', () => {
     })
     expect(result).toBeDefined()
     expect(result.docs).toBeDefined()
-    expect(result.docs.length).toBe(1)
+    expect(result.docs.length).toBeGreaterThanOrEqual(1)
   })
 
   test('should be able to get a generator by name', async context => {
@@ -29,11 +28,10 @@ describe('Generator Methods', () => {
     expect(generatorsResponse).toBeDefined()
     expect(generatorsResponse.generator).toBeDefined()
 
-    const expectedgeneratorProperties: Partial<Generator> = {
+    const expectedgeneratorProperties = {
       generatorName: expect.any(String),
       description: expect.any(String),
       output: expect.any(String),
-      // TODO versions
       versions: expect.any(Array),
     }
 

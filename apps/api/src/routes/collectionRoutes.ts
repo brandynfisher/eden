@@ -63,7 +63,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => updateCollection(request, reply),
   })
 
-  server.post('/collections/addcreations', {
+  server.post('/collections/creations/add', {
     schema: {
       request: {
         body: Type.Object({
@@ -79,7 +79,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => addCreationsToCollection(request, reply),
   })
 
-  server.post('/collections/removecreations', {
+  server.post('/collections/creations/remove', {
     schema: {
       request: {
         body: Type.Object({

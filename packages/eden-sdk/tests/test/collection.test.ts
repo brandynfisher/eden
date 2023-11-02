@@ -25,6 +25,7 @@ describe('Collection Methods', () => {
   test('should be able to get all collections', async context => {
     const { client } = context
     const result = await client.collections.list()
+    console.log(result)
     expect(result).toBeDefined()
     expect(result.docs).toBeDefined()
   })

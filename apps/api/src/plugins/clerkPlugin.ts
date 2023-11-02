@@ -2,7 +2,7 @@ import { Clerk } from '@clerk/backend'
 import { clerkPlugin, createClerkClient, getAuth } from '@clerk/fastify'
 import type { FastifyInstance, FastifyRequest } from 'fastify'
 
-import { User } from '../models/Creator'
+import { SubscriptionTier, User } from '../models/Creator'
 
 export const registerClerk = async (fastify: FastifyInstance) => {
   try {
@@ -30,6 +30,8 @@ export const registerClerk = async (fastify: FastifyInstance) => {
 
       request.user = {
         userId: user._id,
+        subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
+        featureFlags: user.featureFlags || [],
         isAdmin: user.isAdmin || false,
       }
     })

@@ -1,4 +1,3 @@
-import { NewApiKey } from 'src/responses/ApiKeysCreateResponse'
 import { describe, expect, test } from 'vitest'
 
 describe('API Key Methods', () => {
@@ -22,14 +21,14 @@ describe('API Key Methods', () => {
   })
 
   test('should create an API Key', async context => {
-    const { client } = context
-    const result = await client.apiKeys.create({
+    const { basicUserClient } = context
+    const result = await basicUserClient.apiKeys.create({
       note: 'test',
     })
     expect(result).toBeDefined()
     expect(result.apiKey).toBeDefined()
 
-    const expectedApiKeyProperties: Partial<NewApiKey> = {
+    const expectedApiKeyProperties = {
       apiKey: expect.any(String),
       apiSecret: expect.any(String),
     }
@@ -38,12 +37,12 @@ describe('API Key Methods', () => {
   })
 
   test('should delete an API Key', async context => {
-    const { client } = context
-    const createResults = await client.apiKeys.create({
+    const { basicUserClient } = context
+    const createResults = await basicUserClient.apiKeys.create({
       note: 'test',
     })
     const apiKey = createResults.apiKey.apiKey
-    const result = await client.apiKeys.delete({
+    const result = await basicUserClient.apiKeys.delete({
       apiKey,
     })
     expect(result).toBeDefined()

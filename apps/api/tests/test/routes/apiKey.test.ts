@@ -1,10 +1,13 @@
 import { FastifyInstance } from 'fastify'
 import { expect, test } from 'vitest'
 
-import { prepareUserHeaders } from '../../util'
+import { prepareBasicUserHeaders, prepareUserHeaders } from '../../util'
 
-const createApiKey = async (server: FastifyInstance) => {
-  const headers = prepareUserHeaders()
+const createApiKey = async (
+  server: FastifyInstance,
+  customHeaders?: Record<string, string>,
+) => {
+  const headers = customHeaders || prepareBasicUserHeaders()
   const response = await server.inject({
     method: 'POST',
     url: '/apikeys/create',
@@ -14,8 +17,11 @@ const createApiKey = async (server: FastifyInstance) => {
   return response
 }
 
-const listApiKeys = async (server: FastifyInstance) => {
-  const headers = prepareUserHeaders()
+const listApiKeys = async (
+  server: FastifyInstance,
+  customHeaders?: Record<string, string>,
+) => {
+  const headers = customHeaders || prepareBasicUserHeaders()
   const response = await server.inject({
     method: 'GET',
     url: '/apikeys',
@@ -24,8 +30,12 @@ const listApiKeys = async (server: FastifyInstance) => {
   return response
 }
 
-const deleteApiKey = async (server: FastifyInstance, apiKey: string) => {
-  const headers = prepareUserHeaders()
+const deleteApiKey = async (
+  server: FastifyInstance,
+  apiKey: string,
+  customHeaders?: Record<string, string>,
+) => {
+  const headers = customHeaders || prepareBasicUserHeaders()
   const response = await server.inject({
     method: 'POST',
     url: '/apikeys/delete',
@@ -37,14 +47,21 @@ const deleteApiKey = async (server: FastifyInstance, apiKey: string) => {
   return response
 }
 
-test('User can create an API Key', async context => {
+test('Non-free user can create an API Key', async context => {
   const { server } = context
   const response = await createApiKey(server)
+  console.log(response.json())
   expect(response.statusCode).toBe(200)
   const json = response.json()
   expect(json).toHaveProperty('apiKey')
   expect(json.apiKey).toHaveProperty('apiKey')
   expect(json.apiKey).toHaveProperty('apiSecret')
+})
+
+test('Free user cannot create an API Key', async context => {
+  const { server } = context
+  const response = await createApiKey(server, prepareUserHeaders())
+  expect(response.statusCode).toBe(401)
 })
 
 test('User can list their API Keys', async context => {

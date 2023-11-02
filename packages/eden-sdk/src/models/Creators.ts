@@ -1,0 +1,195 @@
+import { AxiosRequestConfig } from 'axios'
+import { Task } from 'src/models/Tasks'
+
+import {
+  ListQueryParams,
+  PaginatedResponse,
+  WebAPICallOptions,
+  WebAPICallResult,
+} from '../EdenClient'
+import { transformArgsIntoURLParams } from '../methods'
+
+// Arguments
+
+export interface CreatorsFollowArguments extends WebAPICallOptions {
+  userId: string
+}
+
+export interface CreatorsUnfollowArguments extends WebAPICallOptions {
+  userId: string
+}
+
+export interface CreatorsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface CreatorsGetArguments extends WebAPICallOptions {
+  userId: string
+}
+
+export interface CreatorsUpdateArguments extends WebAPICallOptions {
+  username?: string
+  userImage?: string
+}
+
+export interface CreatorFollowersListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId: string
+}
+
+export interface CreatorFollowingListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId: string
+}
+
+// Requests
+
+export const creatorsFollowRequestConfig = (
+  args: CreatorsFollowArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creators/follow',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const creatorsUnfollowRequestConfig = (
+  args: CreatorsUnfollowArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creators/unfollow',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const creatorsListRequestConfig = (
+  args: CreatorsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'creators',
+    params,
+  }
+}
+
+export const creatorsGetRequestConfig = (
+  args: CreatorsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `creators/${args.userId}`,
+  }
+}
+
+export const creatorsGetMeRequestConfig = (): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `creators/me`,
+  }
+}
+
+export const creatorsUpdateRequestConfig = (
+  args: CreatorsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'creators/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const creatorFollowersListRequestConfig = (
+  args: CreatorFollowersListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: `creators/${args.userId}/followers`,
+    params,
+  }
+}
+
+export const creatorFollowingListRequestConfig = (
+  args: CreatorFollowingListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: `creators/${args.userId}/following`,
+    params,
+  }
+}
+
+// Responses
+
+export type CreatorsFollowResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
+}
+
+export type CreatorsUnfollowResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
+}
+
+export type CreatorsListResponse = WebAPICallResult &
+  PaginatedResponse<Creator> & {
+    error?: string
+  }
+
+export type CreatorFollowersListResponse = WebAPICallResult &
+  PaginatedResponse<Creator> & {
+    error?: string
+  }
+
+export type CreatorFollowingListResponse = WebAPICallResult &
+  PaginatedResponse<Creator> & {
+    error?: string
+  }
+
+export type CreatorsGetResponse = WebAPICallResult & {
+  error?: string
+  creator?: Creator
+}
+
+export type CreatorsUpdateResponse = WebAPICallResult & {
+  error?: string
+  creator?: Creator
+}
+
+export type CreatorsGetMeResponse = WebAPICallResult & {
+  error?: string
+  creator?: Creator
+  balance?: number
+  pendingTasks?: Task[]
+}
+
+// Types
+
+export type Creator = {
+  userId: string
+  username?: string
+  userImage?: string
+  creations?: string[]
+  creationsCount?: number
+  collections?: string[]
+  followerCount?: number
+  followingCount?: number
+  isFollowing?: boolean
+  featureFlags?: string[]
+  subscriptionTier?: string
+  stripeCustomerId?: string
+}

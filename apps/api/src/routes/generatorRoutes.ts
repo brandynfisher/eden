@@ -61,53 +61,6 @@ const generatorRoutes: FastifyPluginAsync = async server => {
     },
     handler: (request, reply) => getGenerator(request, reply),
   })
-
-  // server.post('/generators/register', {
-  //   schema: {
-  //     request: {
-  //       body: Type.Object({
-  //         generatorName: Type.String(),
-  //         provider: Type.String(),
-  //         address: Type.String(),
-  //         versionId: Type.String(),
-  //         mode: Type.String(),
-  //         parameters: Type.Any(),
-  //         creationAttributes: Type.Array(Type.String()),
-  //       }),
-  //     },
-  //     response: {
-  //       200: Type.Object({
-  //         generator: Type.Object({
-  //           generatorName: Type.String(),
-  //           versionId: Type.String(),
-  //         }),
-  //       }),
-  //     },
-  //   },
-  //   preHandler: [async (request) => isAdmin(server, request)],
-  //   handler: (request, reply) => registerGenerator(request, reply),
-  // });
-
-  // server.post('/generators/deprecate', {
-  //   schema: {
-  //     request: {
-  //       body: Type.Object({
-  //         generatorName: Type.String(),
-  //         versionId: Type.String(),
-  //       }),
-  //     },
-  //     response: {
-  //       200: Type.Object({
-  //         generator: Type.Object({
-  //           generatorName: Type.String(),
-  //           versionId: Type.String(),
-  //         }),
-  //       }),
-  //     },
-  //   },
-  //   preHandler: [async (request) => isAdmin(server, request)],
-  //   handler: (request, reply) => deprecateGenerator(request, reply),
-  // });
 }
 
 export default generatorRoutes

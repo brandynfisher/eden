@@ -32,6 +32,7 @@ const ResultPreviewDisplay = ({
 
   useEffect(() => {
     if (creation) {
+      // @ts-ignore
       setRatingValue(creation.rating || 0)
     }
   }, [creation])

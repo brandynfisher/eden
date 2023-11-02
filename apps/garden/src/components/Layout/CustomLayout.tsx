@@ -1,4 +1,3 @@
-import BannerManager from '@/components/Banners/BannerManager'
 import FetchIndicator from '@/components/Layout/FetchIndicator'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
 import ProgressBar from '@/components/Layout/ProgressBar'
@@ -90,7 +89,6 @@ const CustomLayout = ({
           fixedHeight ? 'h-screen overflow-hidden' : ''
         }`}
       >
-        <BannerManager />
         <LayoutHeader />
         <Layout
           hasSider={false}

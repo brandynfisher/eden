@@ -1,4 +1,3 @@
-import exp from 'constants'
 import { ObjectId } from 'mongodb'
 import { expect, test } from 'vitest'
 
@@ -115,7 +114,7 @@ test('User can add a creation to a collection', async context => {
   const collectionId = listResponse.json().docs[0]._id
   const response = await server.inject({
     method: 'POST',
-    url: '/collections/addcreations',
+    url: '/collections/creations/add',
     payload: {
       collectionId,
       creationIds: [creationId],
@@ -135,7 +134,7 @@ test('If no collectionId is provided, the creations are added to the default col
   const creationId = creationResponse.json().docs[0]._id
   const response = await server.inject({
     method: 'POST',
-    url: '/collections/addcreations',
+    url: '/collections/creations/add',
     payload: {
       creationIds: [creationId],
     },
@@ -160,7 +159,7 @@ test('User can remove a creation from a collection', async context => {
   const collectionId = listResponse.json().docs[0]._id
   await server.inject({
     method: 'POST',
-    url: '/collections/addcreations',
+    url: '/collections/creations/add',
     payload: {
       collectionId,
       creationIds: [creationId],
@@ -169,7 +168,7 @@ test('User can remove a creation from a collection', async context => {
   })
   const response = await server.inject({
     method: 'POST',
-    url: '/collections/removecreations',
+    url: '/collections/creations/remove',
     payload: {
       collectionId,
       creationIds: [creationId],
@@ -196,7 +195,7 @@ test('User cannot add a non-existent creation to a collection', async context =>
   const collectionId = listResponse.json().docs[0]._id
   const response = await server.inject({
     method: 'POST',
-    url: '/collections/addcreations',
+    url: '/collections/creations/add',
     payload: {
       collectionId,
       creationIds: [new ObjectId(123)],

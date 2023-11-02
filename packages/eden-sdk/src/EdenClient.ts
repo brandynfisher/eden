@@ -18,6 +18,25 @@ export interface WebAPICallOptions {
   [argument: string]: unknown
 }
 
+export interface ListQueryParams {
+  page?: number
+  limit?: number
+  sort?: object
+}
+
+export interface PaginatedResponse<T> {
+  docs?: T[]
+  total?: number
+  limit?: number
+  pages?: number
+  page?: number
+  pagingCounter?: number
+  hasPrevPage?: boolean
+  hasNextPage?: boolean
+  prevPage?: number
+  nextPage?: number
+}
+
 export class EdenClient extends Methods {
   public readonly edenApiUrl: string
   public readonly token?: string
@@ -56,9 +75,16 @@ export class EdenClient extends Methods {
     const requestConfig = configFn(options)
     requestConfig.headers = headers
 
-    const response = await this.makeRequest(requestConfig)
-    const result = await this.buildResult(response)
-    return result
+    try {
+      const response = await this.makeRequest(requestConfig)
+      const result = await this.buildResult(response)
+      return result
+    } catch (error) {
+      const message = error.response.data.message
+      return {
+        error: message,
+      }
+    }
   }
 
   private async makeRequest(

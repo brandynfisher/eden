@@ -1,7 +1,6 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-import { createChallenge } from '../controllers/auth/web3Controller'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { isAdmin } from '../middleware/authMiddleware'
@@ -48,22 +47,6 @@ const adminRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => createMannaVoucher(request, reply),
-  })
-
-  server.post('/admin/auth/challenge', {
-    schema: {
-      body: Type.Object({
-        address: Type.String(),
-        isWeb2: Type.Boolean(),
-      }),
-      response: {
-        200: Type.Object({
-          nonce: Type.String(),
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAdmin(server, request, reply)],
-    handler: (request, reply) => createChallenge(server, request, reply),
   })
 
   server.post('/admin/media/upload', {

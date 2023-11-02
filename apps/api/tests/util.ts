@@ -40,6 +40,13 @@ export const prepareUserHeaders = () => {
   }
 }
 
+export const prepareBasicUserHeaders = () => {
+  return {
+    'x-api-key': 'basicuser',
+    'x-api-secret': 'basicuser',
+  }
+}
+
 export const prepareAdminHeaders = () => {
   return {
     'x-api-key': 'admin',
@@ -81,6 +88,7 @@ export const createGenerator = async (generatorName: string) => {
   const generator: GeneratorSchema = {
     generatorName,
     description: 'test',
+    defaultVersionId: '1.0.0',
     versions: [generatorVersionData],
     output: 'creation',
   }

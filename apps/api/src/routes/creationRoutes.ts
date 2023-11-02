@@ -116,7 +116,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => creationRate(request, reply),
   })
 
-  server.post('/creations/react', {
+  server.post('/creations/reactions/add', {
     schema: {
       request: {
         body: Type.Object({
@@ -134,7 +134,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => creationReact(request, reply),
   })
 
-  server.post('/creations/unreact', {
+  server.post('/creations/reactions/remove', {
     schema: {
       request: {
         body: Type.Object({

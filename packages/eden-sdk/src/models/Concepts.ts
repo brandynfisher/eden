@@ -1,0 +1,127 @@
+import { AxiosRequestConfig } from 'axios'
+import { Reactions } from 'src/models/Creations'
+import { Creator } from 'src/models/Creators'
+import { Task } from 'src/models/Tasks'
+
+import {
+  ListQueryParams,
+  PaginatedResponse,
+  WebAPICallOptions,
+  WebAPICallResult,
+} from '../EdenClient'
+import { transformArgsIntoURLParams } from '../methods'
+
+// Arguments
+
+export interface ConceptsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+}
+
+export interface ConceptsGetArguments extends WebAPICallOptions {
+  conceptId: string
+}
+
+export interface ConceptsDeleteArguments extends WebAPICallOptions {
+  conceptId: string
+}
+
+export interface ConceptsUpdateArguments extends WebAPICallOptions {
+  conceptId: string
+  isPrivate: boolean
+}
+
+// Requests
+
+export const conceptsListRequestConfig = (
+  args: ConceptsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'concepts',
+    params,
+  }
+}
+
+export const conceptsGetRequestConfig = (
+  args: ConceptsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `concepts/${args.conceptId}`,
+  }
+}
+
+export const conceptsUpdateRequestConfig = (
+  args: ConceptsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `concepts/${args.conceptId}`,
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const conceptsDeleteRequestConfig = (
+  args: ConceptsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `concepts/${args.conceptId}`,
+    data: {
+      ...args,
+    },
+  }
+}
+
+// Responses
+
+export type ConceptsListResponse = WebAPICallResult &
+  PaginatedResponse<Concept> & {
+    error?: string
+  }
+
+export type ConceptsGetResponse = WebAPICallResult & {
+  error?: string
+  concept?: Concept
+}
+
+export type ConceptsUpdateResponse = WebAPICallResult & {
+  error?: string
+  concept?: Concept
+}
+
+export type ConceptsDeleteResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
+}
+
+// Types
+
+export type Concept = {
+  _id: string
+  user: Creator
+  task: Task
+  userId?: string
+  parent?: string
+  uri: string
+  thumbnail?: string
+  training_images?: string[]
+  checkpoint?: string
+  name: string
+  publicName: string
+  conceptName: string
+  attributes: any
+  praiseCount?: number
+  bookmarkCount?: number
+  bookmarked?: boolean
+  reactions?: Reactions
+  createdAt: string
+  updatedAt: string
+  isPrivate?: boolean
+  deleted?: boolean
+}

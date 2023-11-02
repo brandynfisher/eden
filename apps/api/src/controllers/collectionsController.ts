@@ -89,7 +89,7 @@ export const listCollections = async (
     userId,
   })
 
-  const creatorId = creators.docs[0]._id
+  const creatorId = creators.docs[0]?._id
   const sortFilter: { [key: string]: unknown } = {}
   const ownUserId = request.user ? request.user.userId : undefined
   const isUserRequestingOwnProfileFeed =
@@ -111,7 +111,7 @@ export const listCollections = async (
         )
       : await collectionRepository.query(
           {
-            user: creatorId,
+            user: userId,
           },
           {
             limit,

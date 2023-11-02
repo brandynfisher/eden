@@ -64,9 +64,7 @@ const CreationWorkspace = ({
         </div>
       </div>
 
-      <div
-        className={`w-full md:h-full md:max-h-[calc(100%_-_48px)]`}
-      >
+      <div className={`w-full md:h-full md:max-h-[calc(100%_-_48px)]`}>
         {activeGenerator && (
           <GeneratorForm
             onSettingsToggle={onSettingsToggle}
