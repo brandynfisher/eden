@@ -28,6 +28,11 @@ export interface CreationsGetSimilarArguments extends WebAPICallOptions {
   n: number
 }
 
+export interface CreationsRatingArguments extends WebAPICallOptions {
+  creationId: string
+  rating: number
+}
+
 export interface CreationsReactArguments extends WebAPICallOptions {
   creationId: string
   reaction: ReactionType

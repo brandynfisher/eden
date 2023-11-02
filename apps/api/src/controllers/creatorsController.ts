@@ -196,7 +196,7 @@ export const getCreator = async (
       { username: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
     ],
   })
-  if (!creatorDoc) {
+  if (!creatorDoc || !creatorDoc?._id) {
     return reply.status(404).send({
       message: 'Creator not found',
     })
