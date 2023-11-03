@@ -49,24 +49,9 @@ const PasswordProtection = ({ children }: PropsWithChildren) => {
               />
               <div className="text-center">
                 <h2 className="font-bold mb-4 text-2xl md:text-4xl">
-                  Eden is on the move!
+                  The Garden 🌿
                 </h2>
-                <div className="mx-auto max-w-[528px] mb-5 md:mb-6 lg:mb-8">
-                  <p className="text-[#636262] max-[479px]:text-sm">
-                    The Garden 🌿 is going through a big migration today and
-                    needs beta testers!
-                    <br />
-                    If you're interested in testing, come to{' '}
-                    <strong>
-                      <a href="https://discord.com/invite/4dSYwDT">Discord</a>
-                    </strong>{' '}
-                    and message us.
-                    <br />
-                    It will be open for all again tomorrow.
-                  </p>
-                </div>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-                  <div>Beta testers can enter with a password: </div>
                   <Input
                     placeholder="Enter password"
                     type="password"
