@@ -60,10 +60,6 @@ jobs:
             "NEXT_PUBLIC_APP_ENV=staging"
             "NEXT_PUBLIC_HOST=https://staging.app.edendev.art"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STG }}"
-            "NEXT_PUBLIC_CLERK_SIGN_IN_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}"
-            "NEXT_PUBLIC_CLERK_SIGN_UP_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}"
-            "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }}"
-            "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL"="${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
