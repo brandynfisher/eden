@@ -364,25 +364,25 @@ export const subscribeTaskUpdates = async (
     userId?: string
   }
 
-  if (!taskId && !userId) {
-    return reply.status(400).send({
-      message: 'Must provide one or both of taskId and userId',
-    })
-  }
+  // if (!taskId && !userId) {
+  //   return reply.status(400).send({
+  //     message: 'Must provide one or both of taskId and userId',
+  //   })
+  // }
 
   reply.sse(
     (async function* () {
       for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
         const taskUpdate = event as TaskUpdateEvent
-        if (
-          (taskId && taskUpdate.taskId === taskId) ||
-          (userId && taskUpdate.userId === userId)
-        ) {
-          yield {
-            event: event.name,
-            data: JSON.stringify(event),
-          }
+        // if (
+        //   (taskId && taskUpdate.taskId === taskId) ||
+        //   (userId && taskUpdate.userId === userId)
+        // ) {
+        yield {
+          event: event.name,
+          data: JSON.stringify(event),
         }
+        // }
       }
     })(),
   )

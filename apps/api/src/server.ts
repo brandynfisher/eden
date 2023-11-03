@@ -49,7 +49,7 @@ const createServer = async (
   await server.register(config)
 
   await server.register(cors, {
-    origin: ['http://localhost:3000'],
+    origin: ['*'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'cache-control'],
     credentials: true,
