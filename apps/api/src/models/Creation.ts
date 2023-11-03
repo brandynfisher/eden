@@ -1,8 +1,11 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
-import { Schema, model } from 'mongoose'
+import { Model, Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
-import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { VisibilitySchema } from '../types/baseSchemas'
@@ -156,10 +159,14 @@ creation.pre<CreationDocument>('save', function (next) {
 creation.index({ createdAt: 1 })
 creation.index({ user: 1 })
 creation.index({ user: 1, deleted: 1, isPrivate: 1 })
+creation.index({ deleted: 1, isPrivate: 1 })
 creation.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1 })
 
 creation.plugin(mongooseDelete, { overrideMethods: 'all' })
 creation.plugin(paginate)
 creation.plugin(aggregatePaginate)
 
-export const Creation = model<CreationDocument>('creations', creation)
+export const Creation = model<CreationDocument>(
+  'creations',
+  creation,
+) as SoftDeleteModel<CreationDocument>

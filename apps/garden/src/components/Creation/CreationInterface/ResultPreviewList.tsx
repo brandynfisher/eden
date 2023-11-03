@@ -6,7 +6,7 @@ import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
-import { App, Card, Progress } from 'antd'
+import { App, Card, Empty, Progress } from 'antd'
 import React, {
   RefObject,
   useCallback,
@@ -31,14 +31,21 @@ const ResultPreviewList = ({
   const { tasks } = useContext(CreationNotificationContext)
 
   return (
-    <div>
-      <div className="flex flex-col" ref={innerRef}>
-        {tasks && tasks.length
-          ? tasks.map((task, index) => (
-              <ResultPreview key={task._id} task={task} index={index} />
-            ))
-          : null}
-      </div>
+    <div className="flex flex-col" ref={innerRef}>
+      {tasks && tasks.length ? (
+        tasks.map((task, index) => (
+          <ResultPreview key={task._id} task={task} index={index} />
+        ))
+      ) : (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            <div className="flex flex-col items-center">
+              <div className="mb-4">No recent tasks found.</div>
+            </div>
+          }
+        />
+      )}
     </div>
   )
 }
@@ -80,7 +87,13 @@ const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
       task?.status === 'running' &&
       noProgressGeneratorNames.includes(task?.generator.generatorName)
     ) {
-      timerId = setInterval(() => increaseFakeProgress(5, timerId), 1000)
+      const increment = task?.config['n_samples']
+        ? 5 / task?.config['n_samples']
+        : 5
+      timerId = setInterval(
+        () => increaseFakeProgress(increment, timerId),
+        1000,
+      )
     }
 
     return () => {

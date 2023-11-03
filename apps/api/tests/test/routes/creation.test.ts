@@ -36,7 +36,7 @@ test('User can react to a creation', async context => {
   const headers = prepareUserHeaders()
   const response = await server.inject({
     method: 'POST',
-    url: '/creations/react',
+    url: '/creations/reactions/add',
     payload: {
       creationId: creation.id,
       reaction: 'praise',
@@ -62,7 +62,7 @@ test('User cannot send the same reaction twice', async context => {
   const headers = prepareUserHeaders()
   const response = await server.inject({
     method: 'POST',
-    url: '/creations/react',
+    url: '/creations/reactions/add',
     payload: {
       creationId: creation.id,
       reaction: 'praise',
@@ -74,7 +74,7 @@ test('User cannot send the same reaction twice', async context => {
   expect(response.json().success).toBe(true)
   const response2 = await server.inject({
     method: 'POST',
-    url: '/creations/react',
+    url: '/creations/reactions/add',
     payload: {
       creationId: creation.id,
       reaction: 'praise',
@@ -92,7 +92,7 @@ test('User can unreact to a creation', async context => {
   const headers = prepareUserHeaders()
   const response = await server.inject({
     method: 'POST',
-    url: '/creations/react',
+    url: '/creations/reactions/add',
     payload: {
       creationId: creation.id,
       reaction: 'praise',
@@ -104,7 +104,7 @@ test('User can unreact to a creation', async context => {
   expect(response.json().success).toBe(true)
   const response2 = await server.inject({
     method: 'POST',
-    url: '/creations/unreact',
+    url: '/creations/reactions/remove',
     payload: {
       creationId: creation.id,
       reaction: 'praise',
@@ -129,7 +129,7 @@ test('User cannot unreact to a creation without reacting first', async context =
   const headers = prepareUserHeaders()
   const response = await server.inject({
     method: 'POST',
-    url: '/creations/unreact',
+    url: '/creations/reactions/remove',
     payload: {
       creationId: creation.id,
       reaction: 'praise',
@@ -147,7 +147,7 @@ test('User cannot send an invalid reaction', async context => {
   const headers = prepareUserHeaders()
   const response = await server.inject({
     method: 'POST',
-    url: '/creations/react',
+    url: '/creations/reactions/add',
     payload: {
       creationId: creation.id,
       reaction: 'invalid',

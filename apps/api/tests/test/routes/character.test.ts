@@ -44,9 +44,12 @@ const deleteCharacter = async (
 ) => {
   const headers = prepareUserHeaders()
   const response = await server.inject({
-    method: 'DELETE',
-    url: `/characters/${characterId}`,
+    method: 'POST',
+    url: '/characters/delete',
     headers,
+    payload: {
+      characterId,
+    },
   })
   return response
 }
@@ -76,6 +79,7 @@ test('User can delete an Character', async context => {
   const characters = getResponse.json().docs
   const character = characters[0].id
   const deleteResponse = await deleteCharacter(server, character)
+  console.log(deleteResponse.json())
   expect(deleteResponse.statusCode).toBe(200)
   const getResponse2 = await listCharacters(server)
   const json = getResponse2.json()

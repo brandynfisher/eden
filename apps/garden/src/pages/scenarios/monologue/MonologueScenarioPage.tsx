@@ -26,8 +26,7 @@ const MonologueScenarioPageContent = ({
     CreationNotificationContext,
   )
   const { mannaBalance, refetchMe, user } = useContext(UserContext)
-  const { getTaskCost, canAffordOperation, isLoadingTaskCost, taskCost } =
-    useTaskCost()
+  const { getTaskCost, canAffordOperation, taskCost } = useTaskCost()
   const [isFormTouched, setIsFormTouched] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeCharacter, setActiveCharacter] = useState<Character>(
@@ -140,7 +139,6 @@ const MonologueScenarioPageContent = ({
                     >
                       <div className="flex gap-3 items-center">
                         {user &&
-                        isLoadingTaskCost === false &&
                         typeof mannaBalance !== 'undefined' &&
                         !canAffordOperation ? (
                           <div className="text-orange-500">
@@ -164,10 +162,7 @@ const MonologueScenarioPageContent = ({
                             Submit
                           </Button>
                         )}
-                        <MannaCostEstimate
-                          isLoading={!!isLoadingTaskCost}
-                          cost={taskCost || 'n/a'}
-                        />
+                        <MannaCostEstimate cost={taskCost || 'n/a'} />
                       </div>
                     </div>,
                   ]}

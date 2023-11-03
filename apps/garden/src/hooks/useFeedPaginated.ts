@@ -83,7 +83,7 @@ export const useFeedPaginated = (
   } = useSWRInfinite(getKey, fetcher, {
     revalidateOnFocus: false,
     // revalidateIfStale: false,
-    // revalidateFirstPage: false,
+    revalidateFirstPage: false,
     // revalidateOnReconnect: false,
     // revalidateAll: false,
   })

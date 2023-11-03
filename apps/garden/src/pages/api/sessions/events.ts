@@ -16,7 +16,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       edenApiUrl: CONFIG.API_URL,
       token: authToken,
     })
-    const response = await eden.sessions.events.list({
+    const response = await eden.session.events.list({
       sessionId,
     })
     return res.status(200).json({ sessions: response.docs })

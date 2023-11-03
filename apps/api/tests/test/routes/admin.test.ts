@@ -1,16 +1,20 @@
 import { FastifyInstance } from 'fastify'
+import FormData from 'form-data'
+import fs from 'fs'
 import { ObjectId } from 'mongodb'
+import path from 'path'
 import { expect, test } from 'vitest'
 
 import { Transaction } from '../../../src/models/Transaction'
-import { prepareAdminHeaders } from '../../util'
+import { prepareAdminHeaders, prepareUserHeaders } from '../../util'
 
 const addMannaRequest = async (
   server: FastifyInstance,
   userId: string,
   amount: number,
+  customHeaders?: Record<string, string>,
 ) => {
-  const headers = prepareAdminHeaders()
+  const headers = customHeaders || prepareAdminHeaders()
   const response = await server.inject({
     method: 'POST',
     url: '/admin/manna/modify',
@@ -38,6 +42,17 @@ test('Admin can modify Manna', async context => {
   expect(transaction).not.toBe(null)
 })
 
+test('Non-admin cannot modify Manna', async context => {
+  const { server } = context
+  const response = await addMannaRequest(
+    server,
+    'user',
+    100,
+    prepareUserHeaders(),
+  )
+  expect(response.statusCode).toBe(401)
+})
+
 test('Admin can create a Manna voucher', async context => {
   const { server } = context
   const response = await server.inject({
@@ -52,17 +67,47 @@ test('Admin can create a Manna voucher', async context => {
   expect(response.json()).toHaveProperty('code')
 })
 
-test('Admin can create a challenge', async context => {
+test('Non-admin cannot create a Manna voucher', async context => {
   const { server } = context
   const response = await server.inject({
     method: 'POST',
-    url: '/admin/auth/challenge',
+    url: '/admin/manna/vouchers/create',
     payload: {
-      address: '0x123',
-      isWeb2: false,
+      amount: 100,
     },
-    headers: prepareAdminHeaders(),
+    headers: prepareUserHeaders(),
+  })
+  expect(response.statusCode).toBe(401)
+})
+
+test('Admin can use admin media upload', async context => {
+  const { server } = context
+  const form = new FormData()
+  const filePath = path.join(__dirname, '../..', 'assets', 'logo.png')
+  form.append('media', fs.createReadStream(filePath))
+
+  const response = await server.inject({
+    method: 'POST',
+    url: '/admin/media/upload',
+    headers: {
+      ...prepareAdminHeaders(),
+      ...form.getHeaders(),
+    },
+    payload: form,
   })
   expect(response.statusCode).toBe(200)
-  expect(response.json()).toHaveProperty('nonce')
+  expect(response.json()).toHaveProperty('url')
+})
+
+test('Non-admin cannot use admin media upload', async context => {
+  const { server } = context
+  const response = await server.inject({
+    method: 'POST',
+    url: '/admin/media/upload',
+    payload: {
+      media: 'test',
+    },
+    headers: prepareUserHeaders(),
+  })
+  expect(response.statusCode).toBe(401)
 })

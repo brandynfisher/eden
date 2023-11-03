@@ -3,7 +3,7 @@ import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import MonologueScenarioPage from '@/pages/scenarios/monologue/MonologueScenarioPage'
-import { Character as CharacterType } from '@edenlabs/eden-sdk/dist/responses/CharactersResponses'
+import { Character as CharacterType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
 
 import { Page } from '../../../../types/page'

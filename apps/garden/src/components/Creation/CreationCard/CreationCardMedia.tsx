@@ -1,44 +1,8 @@
 import { VideoLengthBadge } from '@/components/Creation/CreationInterface/media/VideoPreview'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
+import { ResponsiveImage } from '@/components/Media/ResponsiveImage'
 import { isImageUrl } from '@/lib/string'
 import { Creation } from '@edenlabs/eden-sdk'
-import Image from 'next/image'
-import { ReactNode } from 'react'
-
-const ResponsiveImage = ({
-  src,
-  alt,
-  aspectRatio,
-  sizes,
-  priority,
-  children,
-}: {
-  src: string
-  alt: string
-  aspectRatio: number
-  sizes?: string
-  priority?: boolean
-  children?: ReactNode
-}) => {
-  return (
-    <div
-      className="relative w-full bg-gray-100 dark:bg-gray-800"
-      style={{ aspectRatio: aspectRatio }}
-    >
-      <Image
-        src={src}
-        alt={alt}
-        sizes={sizes}
-        width={0}
-        height={0}
-        // quality={35}
-        priority={priority}
-        className="rounded-lg h-full w-full object-contain"
-      />
-      {children}
-    </div>
-  )
-}
 
 const CreationCardImage = ({
   uri,
@@ -56,7 +20,7 @@ const CreationCardImage = ({
       src={uri}
       alt={uri}
       aspectRatio={width / height}
-      sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 15vw'}
+      sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
       priority={priority}
     />
   )
@@ -84,7 +48,7 @@ const CreationCardVideo = ({
       src={thumbnail}
       alt={thumbnail}
       aspectRatio={width / height}
-      sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 15vw'}
+      sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
       priority={priority}
     >
       <>

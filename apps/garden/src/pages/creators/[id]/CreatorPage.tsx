@@ -12,7 +12,7 @@ import { useCreator } from '@/hooks/useCreator'
 import { CONFIG } from '@/lib/config'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
-import { Space, Tabs } from 'antd'
+import { Tabs } from 'antd'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
@@ -64,7 +64,7 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
   const router = useRouter()
   const { collections } = useCollections(creator.userId)
   const { userId, isAuthenticated } = useContext(UserContext)
-  const isAuthenticatedUser = isAuthenticated && creator.userId === userId
+  const isOwnProfile = isAuthenticated && creator.userId === userId
   const [activeTabKey, setActiveTabKey] = useState(
     (router.query.tab as string) || 'creations',
   )
@@ -148,22 +148,20 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
         />
       </Head>
 
-      <div className={`flex flex-col`}>
-        <Space direction="vertical">
-          <ProfileHeader
-            creatorId={creator.userId}
-            creator={creator}
-            numCreations={creator?.creationsCount}
-            isAuthenticatedUser={isAuthenticatedUser}
-          />
-          <Tabs
-            destroyInactiveTabPane={true}
-            activeKey={activeTabKey}
-            centered
-            items={creatorPageTabs}
-            onTabClick={handleTabClick}
-          />
-        </Space>
+      <div className={`flex flex-col gap-2`}>
+        <ProfileHeader
+          creatorId={creator.userId}
+          creator={creator}
+          numCreations={creator?.creationsCount}
+          isOwnProfile={isOwnProfile}
+        />
+        <Tabs
+          destroyInactiveTabPane={true}
+          activeKey={activeTabKey}
+          centered
+          items={creatorPageTabs}
+          onTabClick={handleTabClick}
+        />
       </div>
     </>
   )

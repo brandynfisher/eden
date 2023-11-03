@@ -5,7 +5,7 @@ import { setup, teardown } from 'vitest-mongodb'
 
 import { ApiKey, ApiKeyInput } from '../../src/models/ApiKey'
 import { Collection } from '../../src/models/Collection'
-import { User, UserInput } from '../../src/models/Creator'
+import { SubscriptionTier, User, UserInput } from '../../src/models/Creator'
 import { Manna } from '../../src/models/Manna'
 import { createCreation, createGenerator, getDefaultUserId } from '../util'
 
@@ -28,7 +28,7 @@ const createAdmin = async () => {
   await apiKey.save()
 }
 
-const createUser = async () => {
+const createFreeUser = async () => {
   const userData: UserInput = {
     userId: 'user',
     username: 'user',
@@ -41,6 +41,33 @@ const createUser = async () => {
   const apiKeyData: ApiKeyInput = {
     apiKey: 'user',
     apiSecret: 'user',
+    user: user._id,
+  }
+  const apiKey = new ApiKey(apiKeyData)
+  await apiKey.save()
+
+  const userManna = {
+    user: user._id,
+    balance: 1000,
+  }
+  const manna = new Manna(userManna)
+  await manna.save()
+}
+
+const createBasicUser = async () => {
+  const userData: UserInput = {
+    userId: 'basicuser',
+    username: 'basicuser',
+    isWeb2: false,
+    isAdmin: false,
+  }
+  const user = new User(userData)
+  user.subscriptionTier = SubscriptionTier.Basic
+  await user.save()
+
+  const apiKeyData: ApiKeyInput = {
+    apiKey: 'basicuser',
+    apiSecret: 'basicuser',
     user: user._id,
   }
   const apiKey = new ApiKey(apiKeyData)
@@ -95,7 +122,8 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await createAdmin()
-  await createUser()
+  await createFreeUser()
+  await createBasicUser()
   await createGenerator('test')
   await createCreation()
   await createCollection()

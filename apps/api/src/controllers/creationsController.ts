@@ -3,7 +3,6 @@ import {
   CreationsGetArguments,
   CreationsGetSimilarArguments,
   CreationsListArguments,
-  CreationsRatingArguments,
   CreationsReactArguments,
   CreationsUnreactArguments,
   CreationsUpdateArguments,
@@ -106,8 +105,7 @@ export const listCreations = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, taskId, limit, page, sort } =
-    request.query as CreationsListArguments
+  const { userId, limit, page, sort } = request.query as CreationsListArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId,
@@ -116,9 +114,10 @@ export const listCreations = async (
   const creationRepository = new CreationRepository(Creation)
   const creations = await creationRepository.query(
     {
-      user: creators.docs
-        ? creators.docs.map(creator => creator._id)
-        : undefined,
+      user:
+        creators.docs.length > 0
+          ? creators.docs.map(creator => creator._id)
+          : undefined,
     },
     {
       limit,
@@ -173,7 +172,7 @@ export const getCreation = async (
   if (request.user?.userId) {
     // Get user's reactions and bookmarks
     const userId = request.user.userId
-    const user = User.findOne({ userId })
+    const user = await User.findOne({ _id: userId })
     if (!user) {
       return reply.status(404).send({
         message: 'User not found',
@@ -310,20 +309,27 @@ export const creationUpdate = async (
 ) => {
   const { userId } = request.user
   const { creationId } = request.params as CreationsUpdateArguments
-  const { isPrivate } = request.body as CreationsUpdateArguments
+  const { isPrivate, deleted } = request.body as CreationsUpdateArguments
 
-  if (!userId || !creationId || typeof isPrivate === 'undefined') {
+  if (
+    !userId ||
+    !creationId ||
+    (typeof isPrivate === 'undefined' && typeof deleted === 'undefined')
+  ) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
   }
 
-  const creation = await Creation.findOneAndUpdate(
+  const creation = await Creation.findOneAndUpdateWithDeleted(
     {
       _id: creationId,
       user: userId,
     },
-    { isPrivate },
+    {
+      isPrivate,
+      deleted,
+    },
     {
       new: true,
     },
@@ -345,7 +351,10 @@ export const creationRate = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { creationId, rating } = request.body as CreationsRatingArguments
+  const { creationId, rating } = request.body as {
+    creationId: string
+    rating: number
+  }
 
   // check if reaction in ReactionType enum
   if (rating < 0 || rating > 5) {

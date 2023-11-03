@@ -1,4 +1,3 @@
-import AccountMigrationProfileBanner from '@/components/Banners/AccountMigrationProfileBanner'
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FollowControls from '@/components/FollowControls'
@@ -19,12 +18,12 @@ import React, { useEffect, useState } from 'react'
 const ProfileHeader = ({
   creatorId,
   creator,
-  isAuthenticatedUser,
+  isOwnProfile,
   numCreations,
 }: {
   creatorId: string
   creator: Creator | undefined
-  isAuthenticatedUser: boolean
+  isOwnProfile: boolean
   numCreations: number | undefined
 }) => {
   const { mutate: refetchCreator } = useCreator(creatorId)
@@ -34,7 +33,6 @@ const ProfileHeader = ({
   const [displayName, setDisplayName] = useState('')
   const [displayImage, setDisplayImage] = useState<string | undefined>()
   const [showImageUploader, setShowImageUploader] = useState(false)
-  const [userMigrated] = useState()
   const [form] = Form.useForm()
   const userImageFieldValue = Form.useWatch('userImage', form)
   const clickOutsideTargetRef = useClickOutside(() =>
@@ -81,11 +79,11 @@ const ProfileHeader = ({
         <div className="flex flex-col items-center h-full flex-shrink-0 w-min">
           <div
             className={`w-[90px] h-[90px] rounded-full overflow-hidden ${
-              isAuthenticatedUser
+              isOwnProfile
                 ? 'hover:brightness-125 transition-all cursor-pointer'
                 : ''
             }`}
-            onClick={() => isAuthenticatedUser && setShowImageUploader(true)}
+            onClick={() => isOwnProfile && setShowImageUploader(true)}
           >
             <CharacterAvatar
               id={creatorId}
@@ -94,7 +92,7 @@ const ProfileHeader = ({
               size="auto"
             />
           </div>
-          {isAuthenticatedUser && (
+          {isOwnProfile && (
             <div
               ref={clickOutsideTargetRef}
               className="flex flex-col mt-2 relative"
@@ -156,7 +154,7 @@ const ProfileHeader = ({
           ) : (
             <div className="flex items-center flex-wrap md:flex-nowrap">
               <ProfileHeaderName
-                isOwnProfile={isAuthenticatedUser}
+                isOwnProfile={isOwnProfile}
                 displayName={displayName}
                 setDisplayName={setDisplayName}
               />
@@ -187,9 +185,6 @@ const ProfileHeader = ({
           </div>
         </div>
       </div>
-      {isAuthenticatedUser && !userMigrated ? (
-        <AccountMigrationProfileBanner />
-      ) : null}
     </div>
   )
 }

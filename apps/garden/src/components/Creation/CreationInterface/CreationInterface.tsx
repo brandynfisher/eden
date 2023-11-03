@@ -63,7 +63,7 @@ const CreationInterface = ({
     }
   }, [width])
 
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(true)
   const [usesDrawer, setUsesDrawer] = useState(false)
 
   useEffect(() => {
@@ -89,8 +89,6 @@ const CreationInterface = ({
       return
     }
   }, [generators, presetCreation, generatorName, handleGeneratorChange])
-
-  const [settingsExpanded, setSettingsExpanded] = useState(false)
 
   const handleMaskClick = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
@@ -134,14 +132,9 @@ const CreationInterface = ({
         />
       ) : null}
       <div
-        className={`fixed flex flex-col justify-end md:justify-normal ${
-          drawerOpen && settingsExpanded ? 'h-full' : ''
-        } ${
-          usesDrawer && drawerOpen ? 'max-h-[60vh]' : ''
-        } z-20 bottom-0 w-full create-form-drawer bg-gray-300 dark:bg-gray-950 rounded-lg rounded-b-none overflow-hidden md:bottom-auto md:relative md:ml-4 md:mb-6 md:min-w-[320px] md:max-w-[380px] md:max-h-[calc(100%_-_16px)] md:border md:rounded-b-lg md:border-solid md:border-gray-200 md:dark:border-gray-800`}
+        className={`fixed flex flex-col justify-end md:justify-normal overflow-hidden z-20 bottom-0 w-full create-form-drawer bg-gray-300 dark:bg-gray-950 rounded-lg rounded-b-none md:bottom-auto md:relative md:ml-4 md:mb-6 md:min-w-[320px] md:max-w-[380px] md:max-h-[calc(100%_-_16px)] md:border md:rounded-b-lg md:border-solid md:border-gray-200 md:dark:border-gray-800`}
       >
         <CreationWorkspace
-          onSettingsToggle={setSettingsExpanded}
           usesDrawer={usesDrawer}
           onDrawerToggle={setDrawerOpen}
           openedDrawer={drawerOpen}

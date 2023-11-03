@@ -119,9 +119,10 @@ export const listSessions = async (
   const sessionRepository = new SessionRepository(Session)
   const sessionPaginatedResponse = await sessionRepository.query(
     {
-      user: creators.docs
-        ? creators.docs.map(creator => creator._id)
-        : undefined,
+      user:
+        creators.docs.length > 0
+          ? creators.docs.map(creator => creator._id)
+          : undefined,
     },
     {
       limit,

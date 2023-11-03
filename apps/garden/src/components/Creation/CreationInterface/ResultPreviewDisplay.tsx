@@ -19,13 +19,20 @@ const ResultPreviewDisplay = ({
   creationId: string
   priority?: boolean
 }) => {
-  const { creation, mutate: refetch, isLoading } = useCreation(creationId)
+  const {
+    creation,
+    mutate: refetch,
+    isLoading,
+  } = useCreation(creationId, {
+    shouldRetryOnError: false,
+  })
   const { showModal } = useModalContext()
   const { message } = App.useApp()
   const [ratingValue, setRatingValue] = useState(0)
 
   useEffect(() => {
     if (creation) {
+      // @ts-ignore
       setRatingValue(creation.rating || 0)
     }
   }, [creation])
@@ -88,8 +95,8 @@ const ResultPreviewDisplay = ({
             emptyIcon={
               <StarOutline className="text-gray-700" fontSize="small" />
             }
-            onChange={(event, newValue) => {
-              handleRatingSelect(newValue || 0)
+            onChange={async (event, newValue) => {
+              await handleRatingSelect(newValue || 0)
             }}
           />
           {/*<ResultTools creation={creation}/>*/}

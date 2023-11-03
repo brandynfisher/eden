@@ -10,8 +10,15 @@ html, body, image, video, main {
     outline: 0;
 }
 
+html, body {
+    height: 100%;
+}
+
 body {
-    //min-height: calc(100vh + 1px); //cheap hack to force scroll bars to be always present
+    //cheap hack to force scroll bars to be always present to prevent masonry weirdness/repositioning loops :(
+    &.force-scroll-y {
+        min-height: calc(100vh + 1px);
+    }
 }
 
 .ant-modal-mask {
@@ -509,7 +516,6 @@ body {
     }
 }
 
-
 .ant-layout-sider-children {
     height: 100% !important;
 }
@@ -567,5 +573,54 @@ body {
 @media (max-width: 767px) {
     .create-form-drawer {
         box-shadow: 0px -2px 8px rgba(0, 0, 0, 0.35);
+    }
+}
+.ant-upload.ant-upload-drag {
+    background: #ffffff;
+}
+
+.dark {
+    .ant-upload.ant-upload-drag {
+        background: #141414;
+    }
+}
+
+.generator-settings-collapse {
+    &.ant-collapse {
+        background-color: rgba(0, 0, 0, 0.1) !important;
+        border-right: none !important;
+        border-left: none !important;
+        border-radius: 0;
+
+        .ant-collapse-header {
+            padding: 12px 8px !important;
+        }
+
+        .ant-collapse-item,
+        .ant-collapse-header {
+            border-color:rgba(0, 0, 0, 0.1) !important;
+            border-radius: 0 !important;
+        }
+
+        .ant-collapse-content {
+            border-top: none !important;
+        }
+
+        .ant-collapse-content-box {
+            padding: 0 !important;
+        }
+    }
+}
+
+.dark {
+    .generator-settings-collapse {
+        &.ant-collapse {
+            background-color: rgba(255, 255, 255, 0.02) !important;
+        }
+
+        .ant-collapse-item,
+        .ant-collapse-header {
+            border-color: #374151 !important;
+        }
     }
 }
