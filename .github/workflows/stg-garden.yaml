@@ -1,4 +1,4 @@
-name: 'Build and Deploy - Garden (Stage)'
+name: 'Build and Deploy - Garden'
 
 on:
   workflow_dispatch:
@@ -8,10 +8,24 @@ on:
       - 'apps/garden/**'
       - '.github/workflows/garden.yaml'
 
+  pull_request:
+    branches: [staging]
+    paths:
+      - 'apps/garden/**'
+      - '.github/workflows/garden.yaml'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  ENV_GARDEN: stg
+
 jobs:
   build-and-push-to-ghcr:
     name: Build
     runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      packages: write
     outputs:
       tag: ${{ steps.prep.outputs.tag }}
     steps:
@@ -20,24 +34,18 @@ jobs:
       - id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="${{ secrets.REGISTRY_URL }}/abraham-ai/mars-${{ secrets.ENV_GARDEN }}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/eden-garden-${{ env.ENV_GARDEN }}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}
 
-      - name: Log in to Docker Hub
+      - name: Log in to GHCR
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
         with:
-          registry: ${{ secrets.REGISTRY_URL }}
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-      - run: docker context create builders
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-        with:
-          driver: docker
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
         uses: docker/build-push-action@v2
@@ -50,11 +58,7 @@ jobs:
             }}:latest
           build-args: |
             "NEXT_PUBLIC_APP_ENV=staging"
-            "NEXT_PUBLIC_HOST=https://staging.app.eden.art"
-            "NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA"="${{ secrets.NEXT_PUBLIC_ALCHEMY_API_KEY_SEPOLIA }}"
-            "NEXT_PUBLIC_PARTICLE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_PARTICLE_PROJECT_ID }}"
-            "NEXT_PUBLIC_PARTICLE_CLIENT_KEY=${{ secrets.NEXT_PUBLIC_PARTICLE_CLIENT_KEY }}"
-            "NEXT_PUBLIC_PARTICLE_APP_ID=${{ secrets.NEXT_PUBLIC_PARTICLE_APP_ID }}"
+            "NEXT_PUBLIC_HOST=https://staging.app.edendev.art"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STG }}"
             "NEXT_PUBLIC_CLERK_SIGN_IN_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}"
             "NEXT_PUBLIC_CLERK_SIGN_UP_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}"
@@ -62,8 +66,6 @@ jobs:
             "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL"="${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
-            "NEXT_PUBLIC_WALLETCONNECT_ID=${{ secrets.NEXT_PUBLIC_WALLETCONNECT_ID }}"
-            "NEXT_PUBLIC_APP_PASSWORD=${{ secrets.NEXT_PUBLIC_APP_PASSWORD }}"
 
   deploy:
     name: Deploy
@@ -74,13 +76,13 @@ jobs:
       - name: Check out releases repo
         uses: actions/checkout@v2
         with:
-          repository: abraham-ai/releases
+          repository: edenartlab/releases
           ref: main
           token: ${{ secrets.GENEKOGAN_PAT }}
 
       - id: prep
         run: |
-          IMAGE="${{ secrets.REGISTRY_URL }}/abraham-ai/mars-${{ secrets.ENV_GARDEN }}"
+          IMAGE="${{ env.REGISTRY }}/edenartlab/eden-garden-${{ env.ENV_GARDEN }}"
           TAG="${{needs.build-and-push-to-ghcr.outputs.tag}}"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
@@ -89,18 +91,18 @@ jobs:
       - name: Bump Env
         uses: fjogeleit/yaml-update-action@main
         with:
-          valueFile: 'apps/mars/eden-app-stg/values.yaml'
+          valueFile: 'apps/eden/eden-stg/values.yaml'
           updateFile: true
           propertyPath: '$.frontend_image'
           value: ${{ steps.prep.outputs.tagged_image }}
-          repository: abraham-ai/releases
+          repository: edenartlab/releases
           branch: main
           targetBranch: main
           masterBranchName: main
           commitChange: true
           createPR: false
           message:
-            'Update ${{ secrets.ENV_GARDEN }} Image Version to ${{
+            'Update ${{ env.ENV_GARDEN }} Image Version to ${{
             steps.prep.outputs.tagged_image }}'
           token: ${{ secrets.GENEKOGAN_PAT }}
 
@@ -110,5 +112,5 @@ jobs:
         uses: Ilshidur/action-discord@master
         with:
           args:
-            '${{ secrets.ENV_GARDEN }} image ${{ steps.prep.outputs.tagged_image }} has
+            '${{ env.ENV_GARDEN }} image ${{ steps.prep.outputs.tagged_image }} has
             been deployed.'

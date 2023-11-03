@@ -3,7 +3,6 @@ import {
   CreationsGetArguments,
   CreationsGetSimilarArguments,
   CreationsListArguments,
-  CreationsRatingArguments,
   CreationsReactArguments,
   CreationsUnreactArguments,
   CreationsUpdateArguments,
@@ -352,7 +351,10 @@ export const creationRate = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { creationId, rating } = request.body as CreationsRatingArguments
+  const { creationId, rating } = request.body as {
+    creationId: string
+    rating: number
+  }
 
   // check if reaction in ReactionType enum
   if (rating < 0 || rating > 5) {
