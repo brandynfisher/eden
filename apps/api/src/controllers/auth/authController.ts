@@ -25,9 +25,3 @@ export const createNewUser = async (input: UserInput) => {
   await newManna.save()
   return newUser
 }
-
-export const getAuthAllowlist = (server: FastifyInstance) => {
-  const allowlist = server.config.AUTH_ALLOWLIST
-  if (!allowlist) return null
-  return allowlist.split(',')
-}
