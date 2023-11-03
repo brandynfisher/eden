@@ -44,6 +44,25 @@ export const useCreationState = () => {
   }, [tasks])
 
   useEffect(() => {
+    const eventSource = new EventSource('http://localhost:5050/tasks/events')
+
+    eventSource.onmessage = event => {
+      const data = JSON.parse(event.data)
+      // Do something with the data
+      console.log(data)
+    }
+
+    eventSource.onerror = error => {
+      console.error('EventSource failed:', error)
+    }
+
+    // Close the connection when the component unmounts
+    return () => {
+      eventSource.close()
+    }
+  }, [])
+
+  useEffect(() => {
     // Cleanup function to remove completed tasks from taskIds
     const notify = async () => {
       if (tasks && tasks.length) {

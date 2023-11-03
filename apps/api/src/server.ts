@@ -1,3 +1,4 @@
+import cors from '@fastify/cors'
 import fastify from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
@@ -46,6 +47,13 @@ const createServer = async (
   })
 
   await server.register(config)
+
+  await server.register(cors, {
+    origin: ['http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'cache-control'],
+    credentials: true,
+  })
 
   if (server.config.NODE_ENV !== 'development') {
     await registerSentry(server)
