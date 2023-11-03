@@ -3,6 +3,7 @@ import {
   TasksGetArguments,
   TasksListArguments,
 } from '@edenlabs/eden-sdk'
+import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ChatCompletionRequestMessage } from 'openai'
 
@@ -350,4 +351,21 @@ export const createChatCompletion = async (
       text: completionText,
     },
   })
+}
+
+export const subscribeTaskUpdates = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  reply.sse(
+    (async function* () {
+      for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
+        yield {
+          event: event.name,
+          data: JSON.stringify(event),
+        }
+      }
+    })(),
+  )
 }

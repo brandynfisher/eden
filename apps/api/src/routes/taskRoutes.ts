@@ -10,6 +10,7 @@ import {
   getTaskCost,
   listTasks,
   receiveTaskUpdate,
+  subscribeTaskUpdates,
 } from '../controllers/taskController'
 import { isAuth } from '../middleware/authMiddleware'
 
@@ -130,6 +131,10 @@ const taskRoutes: FastifyPluginAsync = async server => {
       },
     },
     handler: (request, reply) => receiveTaskUpdate(server, request, reply),
+  })
+
+  server.get('/tasks/events', {
+    handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
   })
 }
 

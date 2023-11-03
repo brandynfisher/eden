@@ -6,6 +6,7 @@ import registerChroma from './plugins/chromaPlugin'
 import registerClerk from './plugins/clerkPlugin'
 import config from './plugins/config'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
+import registerEventEmitter from './plugins/eventEmitterPlugin'
 import registerLogos from './plugins/logosPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
@@ -65,6 +66,7 @@ const createServer = async (
   await registerMultipart(server)
   await registerTaskHandlers(server, opts.taskHandlers)
   await registerStripe(server)
+  await registerEventEmitter(server)
 
   if (server.config.AIRFLOW_BASE_URL) {
     await registerAirflow(server)
