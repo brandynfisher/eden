@@ -1,4 +1,4 @@
-import fastify from 'fastify'
+import fastify, { FastifyRequest } from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerAirflow from './plugins/airflowPlugin'
@@ -47,15 +47,19 @@ const createServer = async (
 
   await server.register(config)
 
-  server.register(import('@fastify/cors'), instance => {
-    return (req: any, callback: any) => {
+  server.register(import('@fastify/cors'), () => {
+    return (req: FastifyRequest, callback: any) => {
       let corsOptions = {}
       if (req.url === '/tasks/events') {
         console.log('setting no cors for', req.url)
-        corsOptions = { origin: '*' }
+        corsOptions = {
+          origin: ['http://localhost:3000'],
+          methods: ['GET', 'POST', 'PUT', 'DELETE'],
+          allowedHeaders: ['Content-Type', 'Authorization', 'cache-control'],
+          credentials: true,
+        }
       }
 
-      // callback expects two parameters: error and options
       callback(null, corsOptions)
     }
   })
