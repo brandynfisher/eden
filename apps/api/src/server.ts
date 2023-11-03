@@ -50,8 +50,7 @@ const createServer = async (
   server.register(import('@fastify/cors'), () => {
     return (req: FastifyRequest, callback: any) => {
       let corsOptions = {}
-      if (req.url === '/tasks/events') {
-        console.log('setting no cors for', req.url)
+      if (req.url.startsWith('/tasks/events')) {
         corsOptions = {
           origin: ['*'],
           methods: ['GET'],

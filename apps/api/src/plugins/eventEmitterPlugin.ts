@@ -1,11 +1,12 @@
 import EventEmitter from 'events'
 import type { FastifyInstance } from 'fastify'
 import { FastifySSEPlugin } from 'fastify-sse-v2'
+import { ObjectId } from 'mongodb'
 
 import { TaskStatus } from '../models/Task'
 
 export interface TaskUpdateEvent {
-  userId: string
+  userId: ObjectId
   taskId: string
   status: TaskStatus
   progress?: number

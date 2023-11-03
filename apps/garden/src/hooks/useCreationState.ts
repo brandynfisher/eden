@@ -1,12 +1,15 @@
 import { fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
+import { useAuth } from '@clerk/nextjs'
 import { Task } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
+import { EventSourcePolyfill } from 'event-source-polyfill'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
 export const useCreationState = () => {
   const { message } = App.useApp()
+  const { userId, getToken } = useAuth()
   const [activeTaskId, setActiveTaskId] = useState<string>()
   const [completedTasks, setCompletedTasks] = useState<Task[]>([])
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
@@ -44,23 +47,36 @@ export const useCreationState = () => {
   }, [tasks])
 
   useEffect(() => {
-    const eventSource = new EventSource('http://localhost:5050/tasks/events')
+    const setupEventSource = async () => {
+      if (userId) {
+        const token = await getToken()
 
-    eventSource.onmessage = event => {
-      const data = JSON.parse(event.data)
-      // Do something with the data
-      console.log(data)
+        const eventSource = new EventSourcePolyfill(
+          'http://localhost:5050/tasks/events',
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        )
+
+        eventSource.onmessage = event => {
+          const data = JSON.parse(event.data)
+          console.log(data)
+        }
+
+        eventSource.onerror = error => {
+          console.error('EventSource failed:', error)
+        }
+
+        return () => {
+          eventSource.close()
+        }
+      }
     }
 
-    eventSource.onerror = error => {
-      console.error('EventSource failed:', error)
-    }
-
-    // Close the connection when the component unmounts
-    return () => {
-      eventSource.close()
-    }
-  }, [])
+    setupEventSource()
+  }, [userId, getToken])
 
   useEffect(() => {
     // Cleanup function to remove completed tasks from taskIds

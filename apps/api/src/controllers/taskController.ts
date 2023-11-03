@@ -359,30 +359,25 @@ export const subscribeTaskUpdates = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { taskId, userId } = request.query as {
+  const { userId } = request.user
+  const { taskId } = request.query as {
     taskId?: string
-    userId?: string
   }
-
-  // if (!taskId && !userId) {
-  //   return reply.status(400).send({
-  //     message: 'Must provide one or both of taskId and userId',
-  //   })
-  // }
+  console.log(`Subscribing to task updates for user ${userId}`)
 
   reply.sse(
     (async function* () {
       for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
         const taskUpdate = event as TaskUpdateEvent
-        // if (
-        //   (taskId && taskUpdate.taskId === taskId) ||
-        //   (userId && taskUpdate.userId === userId)
-        // ) {
-        yield {
-          event: event.name,
-          data: JSON.stringify(event),
+        if (
+          taskUpdate.userId.toString() === userId.toString() &&
+          (!taskId || taskUpdate.taskId === taskId)
+        ) {
+          yield {
+            event: event.name,
+            data: JSON.stringify(event),
+          }
         }
-        // }
       }
     })(),
   )

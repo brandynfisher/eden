@@ -139,6 +139,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
         taskId: Type.Optional(Type.String()),
       },
     },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
   })
 }
