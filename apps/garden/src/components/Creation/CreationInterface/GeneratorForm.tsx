@@ -96,6 +96,14 @@ const GeneratorForm = ({
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
   const [stringArrayValues, setStringArrayValues] = useState({})
 
+  const submitButtonDisabledProd =
+    isSubmitting || !isFormTouched || uploadsInProgress || !canAffordOperation
+  const submitButtonDisabledDev = false
+  const submitButtonDisabled =
+    process.env.NODE_ENV === 'production'
+      ? submitButtonDisabledProd
+      : submitButtonDisabledDev
+
   useEffect(() => {
     const transformConfig = () => {
       if (!presetCreation) {
@@ -537,12 +545,7 @@ const GeneratorForm = ({
                 size="large"
                 className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !pr-2"
                 loading={isSubmitting ? { delay: 250 } : false}
-                disabled={
-                  isSubmitting ||
-                  !isFormTouched ||
-                  uploadsInProgress ||
-                  !canAffordOperation
-                }
+                disabled={submitButtonDisabled}
               >
                 {generator.generatorName}
                 <MannaCostBadge cost={taskCost || 'n/a'} />
