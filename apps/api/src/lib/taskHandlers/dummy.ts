@@ -118,6 +118,7 @@ export const dummyReceiveTaskUpdate = async (
   )
 
   server.eventEmitter.emit('taskUpdate', {
+    userId: task.user,
     taskId,
     status: TaskStatus.Pending,
     progress: 0.5,
@@ -154,10 +155,11 @@ export const dummyReceiveTaskUpdate = async (
   )
 
   server.eventEmitter.emit('taskUpdate', {
+    userId: task.user,
     taskId,
-    status: 'completed',
+    status: TaskStatus.Completed,
     progress: 1.0,
-    creation: creation._id,
+    creation: asset.uri,
   })
 
   if (task.webhooks) {

@@ -22,6 +22,7 @@ import {
 import { Manna } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
+import { TaskUpdateEvent } from '../plugins/eventEmitterPlugin'
 import TaskRepository from '../repositories/TaskRepository'
 
 const getGeneratorVersion = (
@@ -358,12 +359,29 @@ export const subscribeTaskUpdates = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  const { taskId, userId } = request.query as {
+    taskId?: string
+    userId?: string
+  }
+
+  if (!taskId && !userId) {
+    return reply.status(400).send({
+      message: 'Must provide one or both of taskId and userId',
+    })
+  }
+
   reply.sse(
     (async function* () {
       for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
-        yield {
-          event: event.name,
-          data: JSON.stringify(event),
+        const taskUpdate = event as TaskUpdateEvent
+        if (
+          (taskId && taskUpdate.taskId === taskId) ||
+          (userId && taskUpdate.userId === userId)
+        ) {
+          yield {
+            event: event.name,
+            data: JSON.stringify(event),
+          }
         }
       }
     })(),

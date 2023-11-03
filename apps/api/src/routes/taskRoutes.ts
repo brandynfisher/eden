@@ -134,6 +134,11 @@ const taskRoutes: FastifyPluginAsync = async server => {
   })
 
   server.get('/tasks/events', {
+    schema: {
+      querystring: {
+        taskId: Type.Optional(Type.String()),
+      },
+    },
     handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
   })
 }
