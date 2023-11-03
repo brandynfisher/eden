@@ -1,5 +1,3 @@
-import { FastifyInstance } from 'fastify'
-
 import { Collection } from '../../models/Collection'
 import { User, UserInput } from '../../models/Creator'
 import { Manna } from '../../models/Manna'
