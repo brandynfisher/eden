@@ -1,4 +1,3 @@
-import cors from '@fastify/cors'
 import fastify from 'fastify'
 
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
@@ -48,11 +47,17 @@ const createServer = async (
 
   await server.register(config)
 
-  await server.register(cors, {
-    origin: ['*'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'cache-control'],
-    credentials: true,
+  server.register(import('@fastify/cors'), instance => {
+    return (req: any, callback: any) => {
+      let corsOptions = {}
+      if (req.url === '/tasks/events') {
+        console.log('setting no cors for', req.url)
+        corsOptions = { origin: '*' }
+      }
+
+      // callback expects two parameters: error and options
+      callback(null, corsOptions)
+    }
   })
 
   if (server.config.NODE_ENV !== 'development') {

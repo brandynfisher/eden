@@ -141,15 +141,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
     },
     handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
   })
-
-  // server.options('/tasks/events', {
-  //   handler: (request, reply) => {
-  //     reply.header('Access-Control-Allow-Origin', '*')
-  //     reply.header('Access-Control-Allow-Headers', '*')
-  //     reply.header('Access-Control-Allow-Methods', '*')
-  //     reply.send()
-  //   },
-  // })
 }
 
 export default taskRoutes
