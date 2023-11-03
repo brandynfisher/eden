@@ -53,8 +53,8 @@ const createServer = async (
       if (req.url === '/tasks/events') {
         console.log('setting no cors for', req.url)
         corsOptions = {
-          origin: ['http://localhost:3000'],
-          methods: ['GET', 'POST', 'PUT', 'DELETE'],
+          origin: ['*'],
+          methods: ['GET'],
           allowedHeaders: ['Content-Type', 'Authorization', 'cache-control'],
           credentials: true,
         }
