@@ -1,7 +1,7 @@
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConfigParamsTabs from '@/components/ConfigParamsTabs'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
-import ResultPreviewDisplay from '@/components/Creation/CreationInterface/ResultPreviewDisplay'
+import ResultPreviewDisplay from '@/components/Creation/CreationInterface/Timeline/ResultPreviewDisplay'
 // import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreationReactions from '@/components/Creation/CreationReactions'

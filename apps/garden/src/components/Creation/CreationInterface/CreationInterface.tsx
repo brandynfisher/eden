@@ -1,11 +1,11 @@
 import CreationWorkspace from '@/components/Creation/CreationInterface/CreationWorkspace'
-import ResultPreviewList from '@/components/Creation/CreationInterface/ResultPreviewList'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
+import dynamic from 'next/dynamic'
 import React, {
   useCallback,
   useContext,
@@ -13,6 +13,17 @@ import React, {
   useRef,
   useState,
 } from 'react'
+
+const ResultPreviewList = dynamic(
+  () =>
+    import(
+      '@/components/Creation/CreationInterface/Timeline/ResultPreviewList'
+    ),
+  {
+    loading: () => <LoadingIndicator />,
+    ssr: false,
+  },
+)
 
 const hiddenCreationGenerators = [
   'complete',
