@@ -278,7 +278,7 @@ const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
   return (
     <div className="result-preview mb-4 relative w-full flex flex-col rounded-lg border-0 md:items-center">
       <Card
-        className={`w-full h-fit flex justify-center items-center md:max-w-[500px]`}
+        className={`w-full h-fit flex justify-center items-center md:max-w-[640px]`}
       >
         <ResultPreviewDisplayWrap task={task} listIndex={index} />
       </Card>
