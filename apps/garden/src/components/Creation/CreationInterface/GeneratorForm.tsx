@@ -122,6 +122,14 @@ const GeneratorForm = ({
         })
         return
       }
+
+      if (!router.query.generator && router.query.presetId) {
+        setPresetConfig({
+          ...presetCreation.task.config,
+          seed: '',
+        })
+        return
+      }
       // else assume preset mode
       // transform config in whatever way
       setPresetConfig(presetCreation.task.config)
@@ -504,17 +512,17 @@ const GeneratorForm = ({
           <Collapse
             expandIconPosition="start"
             onChange={key => onSettingsToggle && onSettingsToggle(key.length)}
-            className="generator-settings-collapse max-h-full"
+            className={`generator-settings-collapse max-h-full`}
           >
             {optionalParameters.length > 0 ? (
-              <Panel key={'1'} header={'Settings'}>
+              <Panel key={'1'} header={'Settings'} forceRender={true}>
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(optionalParameters)}
                 </div>
               </Panel>
             ) : null}
             {advancedParameters.length > 0 ? (
-              <Panel key={'2'} header={'Advanced'}>
+              <Panel key={'2'} header={'Advanced'} forceRender={true}>
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(advancedParameters)}
                 </div>

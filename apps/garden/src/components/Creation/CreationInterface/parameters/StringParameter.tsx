@@ -3,17 +3,22 @@ import MinusOutlined from '@ant-design/icons/MinusOutlined'
 import PlusOutlined from '@ant-design/icons/PlusOutlined'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Button, Col, Form, FormInstance, Input, Row } from 'antd'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const StringParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
   onStringArrayChange: (parameterName: string, newValues: string[]) => void
 }) => {
-  // const [value, setValue] = useState('')
   const [values, setValues] = useState(
     new Array(props.parameter.minLength || 1).fill(props.parameter.default),
   )
+
+  useEffect(() => {
+    if (props.parameter.default.length) {
+      handleChange(props.parameter.default)
+    }
+  }, [props.parameter.default.length])
 
   const handleAddInput = () => {
     setValues([...values, ''])
@@ -22,6 +27,7 @@ const StringParameter = (props: {
   const handleChange = (newValue: string[]) => {
     setValues(newValue)
     props.onStringArrayChange(props.parameter.name, newValue)
+    props.form.setFieldsValue({ [props.parameter.name]: newValue })
   }
 
   const isArray = Array.isArray(props.parameter.default)
