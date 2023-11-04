@@ -10,7 +10,7 @@ import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import { useClipboard } from '@mantine/hooks'
 import { CircularProgress } from '@mui/material'
-import { App, Card, Empty } from 'antd'
+import { Alert, App, Card, Empty } from 'antd'
 import React, {
   RefObject,
   useCallback,
@@ -255,7 +255,7 @@ const ResultPreviewList = ({
   const { tasks } = useContext(CreationNotificationContext)
 
   return (
-    <div className="flex flex-col" ref={innerRef}>
+    <div className="flex flex-col pb-[104px] md:pb-0" ref={innerRef}>
       {tasks && tasks.length ? (
         tasks.map((task, index) => (
           <ResultPreview key={task._id} task={task} index={index} />
@@ -277,6 +277,13 @@ const ResultPreviewList = ({
 const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
   return (
     <div className="result-preview mb-4 relative w-full flex flex-col rounded-lg border-0 md:items-center">
+      {index === 0 &&
+      (task.status === 'pending' || task.status === 'running') ? (
+        <Alert
+          className={`w-full h-fit flex justify-center items-center md:max-w-[640px] mb-2 px-4 py-2 text-gray-500`}
+          description="Tasks are being processed on our servers. You can keep using the app or close it."
+        />
+      ) : null}
       <Card
         className={`w-full h-fit flex justify-center items-center md:max-w-[640px]`}
       >
