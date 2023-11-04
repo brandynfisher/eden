@@ -3,6 +3,7 @@ import {
   TasksGetArguments,
   TasksListArguments,
 } from '@edenlabs/eden-sdk'
+import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ChatCompletionRequestMessage } from 'openai'
 
@@ -21,6 +22,7 @@ import {
 import { Manna } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
+import { TaskUpdateEvent } from '../plugins/eventEmitterPlugin'
 import TaskRepository from '../repositories/TaskRepository'
 
 const getGeneratorVersion = (
@@ -350,4 +352,33 @@ export const createChatCompletion = async (
       text: completionText,
     },
   })
+}
+
+export const subscribeTaskUpdates = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { taskId } = request.query as {
+    taskId?: string
+  }
+  console.log(`Subscribing to task updates for user ${userId}`)
+
+  reply.sse(
+    (async function* () {
+      for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
+        const taskUpdate = event as TaskUpdateEvent
+        if (
+          taskUpdate.userId.toString() === userId.toString() &&
+          (!taskId || taskUpdate.taskId === taskId)
+        ) {
+          yield {
+            event: event.name,
+            data: JSON.stringify(event),
+          }
+        }
+      }
+    })(),
+  )
 }

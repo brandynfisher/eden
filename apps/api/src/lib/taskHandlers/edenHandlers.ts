@@ -6,7 +6,7 @@ import { Concept } from '../../models/Concept'
 import { Creation, CreationInput } from '../../models/Creation'
 import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
-import { Task } from '../../models/Task'
+import { Task, TaskStatus } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
 import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
@@ -22,20 +22,6 @@ const providers = new Map<TaskProvider, any>([
   ['replicate', replicate],
   ['scenarioRunner', scenarioRunner],
 ])
-
-type TaskStatus =
-  | 'starting'
-  | 'processing'
-  | 'succeeded'
-  | 'failed'
-  | 'cancelled'
-
-interface TaskUpdate {
-  id: string
-  status: TaskStatus
-  output: any[]
-  error: string
-}
 
 interface TaskOutput {
   result: string
@@ -248,10 +234,14 @@ const handleUpdate = async (
         }
       }
     }
-  }
 
-  console.log('Task Update')
-  console.log(taskUpdate)
+    server.eventEmitter.emit('taskUpdate', {
+      userId: task.user,
+      taskId,
+      status: TaskStatus.Completed,
+      progress: 1.0,
+    })
+  }
 
   await Task.updateOne(
     {
@@ -324,6 +314,13 @@ const handleUpdateUniversal = async (
         }
       }
     }
+
+    server.eventEmitter.emit('taskUpdate', {
+      userId: task.user,
+      taskId,
+      status: TaskStatus.Completed,
+      progress: 1.0,
+    })
   }
 
   await Task.updateOne(
@@ -337,7 +334,11 @@ const handleUpdateUniversal = async (
   )
 }
 
-const handleFailure = async (taskId: string, error: string) => {
+const handleFailure = async (
+  server: FastifyInstance,
+  taskId: string,
+  error: string,
+) => {
   const task = await Task.findOne({
     taskId,
   })
@@ -383,6 +384,13 @@ const handleFailure = async (taskId: string, error: string) => {
     manna: manna._id,
     task: task._id,
     amount: task.cost,
+  })
+
+  server.eventEmitter.emit('taskUpdate', {
+    userId: task.user,
+    taskId,
+    status: TaskStatus.Failed,
+    progress: 1.0,
   })
 }
 
@@ -430,10 +438,10 @@ export const receiveTaskUpdate = async (
       }
       break
     case 'failed':
-      await handleFailure(taskId, error)
+      await handleFailure(server, taskId, error)
       break
     case 'cancelled':
-      await handleFailure(taskId, 'Cancelled')
+      await handleFailure(server, taskId, 'Cancelled')
       break
     default:
       throw new Error(`Unknown status ${status}`)
