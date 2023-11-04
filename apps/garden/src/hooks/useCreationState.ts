@@ -1,3 +1,4 @@
+import { CONFIG } from '@/lib/config'
 import { fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
 import { useAuth } from '@clerk/nextjs'
@@ -69,7 +70,7 @@ export const useCreationState = () => {
         const token = await getToken()
 
         const eventSource = new EventSourcePolyfill(
-          'http://localhost:5050/tasks/events',
+          `${CONFIG.API_URL}/tasks/events`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

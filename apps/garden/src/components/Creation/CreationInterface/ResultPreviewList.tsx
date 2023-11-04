@@ -29,7 +29,6 @@ const ResultPreviewList = ({
   innerRef: RefObject<HTMLDivElement>
 }) => {
   const { tasks } = useContext(CreationNotificationContext)
-  console.log(tasks)
 
   return (
     <div className="flex flex-col" ref={innerRef}>
