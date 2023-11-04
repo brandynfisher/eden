@@ -70,7 +70,7 @@ export const useCreationState = () => {
         const token = await getToken()
 
         const eventSource = new EventSourcePolyfill(
-          `${CONFIG.API_URL}/tasks/events`,
+          `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/tasks/events`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
