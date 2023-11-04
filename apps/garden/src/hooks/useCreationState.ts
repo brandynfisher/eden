@@ -7,6 +7,14 @@ import { EventSourcePolyfill } from 'event-source-polyfill'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
+interface TaskUpdateEvent {
+  userId: string
+  taskId: string
+  status: string
+  progress?: number
+  result?: string
+}
+
 export const useCreationState = () => {
   const { message } = App.useApp()
   const { userId, getToken } = useAuth()
@@ -41,7 +49,7 @@ export const useCreationState = () => {
 
   // Set up event listener
   useEffect(() => {
-    const handleTaskUpdate = (event: Task) => {
+    const handleTaskUpdate = (event: TaskUpdateEvent) => {
       const taskId = event.taskId
       if (event.status === 'completed') {
         refetchTasks()
@@ -72,6 +80,10 @@ export const useCreationState = () => {
         eventSource.onmessage = event => {
           const data = JSON.parse(event.data)
           handleTaskUpdate(data)
+        }
+
+        eventSource.onerror = error => {
+          console.error(error)
         }
 
         return () => {

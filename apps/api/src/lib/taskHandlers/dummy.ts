@@ -159,7 +159,7 @@ export const dummyReceiveTaskUpdate = async (
     taskId,
     status: TaskStatus.Completed,
     progress: 1.0,
-    creation: asset.uri,
+    result: asset.uri,
   })
 
   if (task.webhooks) {
