@@ -23,20 +23,6 @@ const providers = new Map<TaskProvider, any>([
   ['scenarioRunner', scenarioRunner],
 ])
 
-type TaskStatus =
-  | 'starting'
-  | 'processing'
-  | 'succeeded'
-  | 'failed'
-  | 'cancelled'
-
-interface TaskUpdate {
-  id: string
-  status: TaskStatus
-  output: any[]
-  error: string
-}
-
 interface TaskOutput {
   result: string
   files: string[]
