@@ -3,12 +3,12 @@ import MediaDisplay from '@/components/MediaDisplay'
 import { useCreation } from '@/hooks/useCreation'
 import { getAspectRatio } from '@/lib/media'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
-import StarOutline from '@mui/icons-material/StarOutline'
-import StarRate from '@mui/icons-material/StarRate'
-import Rating from '@mui/material/Rating'
-import { App } from 'antd'
-import axios from 'axios'
-import React, { useCallback, useEffect, useState } from 'react'
+// import StarOutline from '@mui/icons-material/StarOutline'
+// import StarRate from '@mui/icons-material/StarRate'
+// import Rating from '@mui/material/Rating'
+// import { App } from 'antd'
+// import axios from 'axios'
+import React from 'react'
 
 // import ResultTools from '@/components/Creation/CreationInterface/ResultTools'
 
@@ -21,21 +21,21 @@ const ResultPreviewDisplay = ({
 }) => {
   const {
     creation,
-    mutate: refetch,
+    // mutate: refetch,
     isLoading,
   } = useCreation(creationId, {
     shouldRetryOnError: false,
   })
   const { showModal } = useModalContext()
-  const { message } = App.useApp()
-  const [ratingValue, setRatingValue] = useState(0)
+  // const { message } = App.useApp()
+  // const [ratingValue, setRatingValue] = useState(0)
 
-  useEffect(() => {
-    if (creation) {
-      // @ts-ignore
-      setRatingValue(creation.rating || 0)
-    }
-  }, [creation])
+  // useEffect(() => {
+  //   if (creation) {
+  //     // @ts-ignore
+  //     setRatingValue(creation.rating || 0)
+  //   }
+  // }, [creation])
 
   const openDetailModal = async () => {
     showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
@@ -45,24 +45,24 @@ const ResultPreviewDisplay = ({
     })
   }
 
-  const handleRatingSelect = useCallback(
-    async (newValue: number) => {
-      message.destroy()
-
-      try {
-        setRatingValue(newValue)
-        await axios.post('/api/creations/rate', {
-          creationId: creationId,
-          rating: newValue,
-        })
-        refetch()
-        message.success(`Rating updated`)
-      } catch (e) {
-        message.error(`Rating update failed`)
-      }
-    },
-    [creationId],
-  )
+  // const handleRatingSelect = useCallback(
+  //   async (newValue: number) => {
+  //     message.destroy()
+  //
+  //     try {
+  //       setRatingValue(newValue)
+  //       await axios.post('/api/creations/rate', {
+  //         creationId: creationId,
+  //         rating: newValue,
+  //       })
+  //       refetch()
+  //       message.success(`Rating updated`)
+  //     } catch (e) {
+  //       message.error(`Rating update failed`)
+  //     }
+  //   },
+  //   [creationId],
+  // )
 
   return (
     <>
@@ -86,19 +86,19 @@ const ResultPreviewDisplay = ({
               limitHeight={false}
             />
           </div>
-          <Rating
-            className="mt-2"
-            name="rating-small"
-            value={ratingValue}
-            size="small"
-            icon={<StarRate className="text-gray-400" fontSize="small" />}
-            emptyIcon={
-              <StarOutline className="text-gray-700" fontSize="small" />
-            }
-            onChange={async (event, newValue) => {
-              await handleRatingSelect(newValue || 0)
-            }}
-          />
+          {/*<Rating*/}
+          {/*  className="mt-2"*/}
+          {/*  name="rating-small"*/}
+          {/*  value={ratingValue}*/}
+          {/*  size="small"*/}
+          {/*  icon={<StarRate className="text-gray-400" fontSize="small" />}*/}
+          {/*  emptyIcon={*/}
+          {/*    <StarOutline className="text-gray-700" fontSize="small" />*/}
+          {/*  }*/}
+          {/*  onChange={async (event, newValue) => {*/}
+          {/*    await handleRatingSelect(newValue || 0)*/}
+          {/*  }}*/}
+          {/*/>*/}
           {/*<ResultTools creation={creation}/>*/}
         </div>
       ) : (
