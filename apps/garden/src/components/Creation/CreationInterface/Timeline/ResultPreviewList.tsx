@@ -280,7 +280,7 @@ const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
       {index === 0 &&
       (task.status === 'pending' || task.status === 'running') ? (
         <Alert
-          className={`w-full h-fit flex justify-center items-center md:max-w-[640px] mb-2 px-4 py-2 text-gray-500`}
+          className={`w-full h-fit flex justify-center items-center md:max-w-[640px] mb-4 px-4 py-2 text-gray-500`}
           description="Tasks are being processed on our servers. You can keep using the app or close it."
         />
       ) : null}
