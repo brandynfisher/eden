@@ -233,7 +233,7 @@ const ResultPreviewDisplayWrap = ({
         </>
       )}
 
-      {task ? (
+      {task && !creationUri ? (
         <TimelineItemFooter
           task={task}
           progress={
