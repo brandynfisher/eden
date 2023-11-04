@@ -14,6 +14,7 @@ export const registerEventEmitter = async (fastify: FastifyInstance) => {
   try {
     await fastify.register(FastifySSEPlugin)
     const eventEmitter = new EventEmitter()
+    eventEmitter.setMaxListeners(100 * 1000)
     fastify.decorate('eventEmitter', eventEmitter)
     fastify.log.info('Successfully registered EventEmitterPlugin')
   } catch (err) {
