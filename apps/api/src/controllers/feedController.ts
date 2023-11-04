@@ -1,7 +1,6 @@
 import { PaginatedResponse, ReactionType } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-import { performance } from 'perf_hooks'
 
 import { Collection } from '../models/Collection'
 import { Concept, ConceptDocument } from '../models/Concept'
@@ -94,9 +93,6 @@ export const getCreationsFeed = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  performance.clearMeasures()
-  performance.clearMarks()
-
   const {
     userId: filterUserIds,
     collectionId,
@@ -106,18 +102,12 @@ export const getCreationsFeed = async (
     direction,
   } = request.query as FeedGetArguments
 
-  performance.mark('A')
   const creatorsRepository = new CreatorRepository(User)
   const creators = filterUserIds
     ? await creatorsRepository.query({
         userId: filterUserIds,
       })
     : { docs: [] }
-  performance.mark('B')
-  if (filterUserIds) {
-    performance.measure('creatorsRepository.query', 'A', 'B')
-  }
-
   const ownUserId = request.user ? request.user.userId : undefined
   const creatorId =
     filterUserIds && creators.docs && creators.docs.length
@@ -130,7 +120,6 @@ export const getCreationsFeed = async (
   let creations: PaginatedResponse<CreationDocument>
 
   if (orderBy === 'following' && ownUserId) {
-    performance.mark('C')
     const followCreationRepository = new CreationRepository(Follow) //@todo: this reads rather wonky
     const followAggregate = aggregateCreationsByFollowerId(
       new ObjectId(ownUserId),
@@ -141,20 +130,12 @@ export const getCreationsFeed = async (
       page,
       sort: { createdAt: -1 },
     })
-    performance.mark('D')
-    performance.measure('aggregateCreationsByFollowerId', 'C', 'D')
   } else {
-    performance.mark('E')
     const collection = collectionId
       ? await Collection.findById(collectionId)
       : undefined
     const collectionCreations =
       collection && collection?.creations ? collection.creations : undefined
-    performance.mark('F')
-
-    if (collection) {
-      performance.measure('Collection.findById', 'E', 'F')
-    }
 
     const sort = []
     const sortFilter: { [key: string]: unknown } = {}
@@ -198,7 +179,6 @@ export const getCreationsFeed = async (
       sortFilter['isPrivate'] = { $ne: true }
     }
 
-    performance.mark('G')
     creations = await creationRepository.query(
       {
         _id: collectionCreations
@@ -219,33 +199,17 @@ export const getCreationsFeed = async (
         select: '-embedding.embedding',
       },
     )
-    performance.mark('H')
-    performance.measure('creationRepository.query', 'G', 'H')
   }
 
-  performance.mark('populate-user-start')
   await creationRepository.model.populate(creations.docs, {
     path: 'user',
     select: 'userId username userImage',
   })
-  performance.mark('populate-user-end')
-  performance.mark('populate-task-start')
   await creationRepository.model.populate(creations.docs, {
     path: 'task',
     select: 'config status generator',
     populate: { path: 'generator', select: 'generatorName description output' },
   })
-  performance.mark('populate-task-end')
-  performance.measure(
-    'populate.task',
-    'populate-task-start',
-    'populate-task-end',
-  )
-  performance.measure(
-    'populate.user',
-    'populate-user-start',
-    'populate-user-end',
-  )
 
   if (ownUserId) {
     interface CreationDocumentExtension {
@@ -268,12 +232,8 @@ export const getCreationsFeed = async (
 
     if (creations.docs) {
       const uid = new ObjectId(ownUserId)
-      performance.mark('reactions-find-start')
       const reactionsMap = await getCreationReactions(uid, creations.docs)
-      performance.mark('reactions-find-end')
-      performance.mark('bookmarks-find-start')
       const bookmarksMap = await getCreationBookmarks(uid, creations.docs)
-      performance.mark('bookmarks-find-end')
 
       const extendedDocs = creations.docs.map(creation => {
         return {
@@ -288,33 +248,10 @@ export const getCreationsFeed = async (
       feed.reactions = reactionsMap
       feed.bookmarks = bookmarksMap
     }
-    performance.measure(
-      'getCreationBookmarks',
-      'bookmarks-find-start',
-      'bookmarks-find-end',
-    )
-    performance.measure(
-      'getCreationReactions',
-      'reactions-find-start',
-      'reactions-find-end',
-    )
-    const timingValues = performance
-      .getEntriesByType('measure')
-      .map(entry => `db;dur=${entry.duration};desc="${entry.name}"`)
-      .join(',')
-
-    return reply.header('Server-Timing', timingValues).status(200).send(feed)
+    return reply.status(200).send(feed)
   } else {
-    const timingValues = performance
-      .getEntriesByType('measure')
-      .map(entry => `db;dur=${entry.duration};desc="${entry.name}"`)
-      .join(',')
-
     // No user, so no reactions or bookmarks
-    return reply
-      .header('Server-Timing', timingValues)
-      .status(200)
-      .send(creations)
+    return reply.status(200).send(creations)
   }
 }
 
