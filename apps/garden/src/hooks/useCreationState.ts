@@ -68,11 +68,9 @@ export const useCreationState = () => {
     const setupEventSource = async () => {
       if (userId) {
         const token = await getToken()
-        console.log(CONFIG)
 
         const eventSource = new EventSourcePolyfill(
-          `https://staging.api.edendev.art/tasks/events`,
-          // `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/tasks/events`,
+          `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/tasks/events`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
