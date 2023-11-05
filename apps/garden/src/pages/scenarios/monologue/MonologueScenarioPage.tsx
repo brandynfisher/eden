@@ -1,5 +1,5 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
-import ResultPreview from '@/components/Creation/CreationInterface/Timeline/TimelineList'
+import TimelineList from '@/components/Creation/CreationInterface/Timeline/TimelineList'
 import FormLabel from '@/components/Forms/FormLabel'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
@@ -19,7 +19,7 @@ const MonologueScenarioPageContent = ({
 }: {
   characters: Character[]
 }) => {
-  const resultPreviewRef = useRef<HTMLDivElement>(null)
+  const timelineListRef = useRef<HTMLDivElement>(null)
   const { message } = App.useApp()
   const [form] = Form.useForm()
   const { refetchTasks, setActiveTaskId, setHasChangedGenerator } = useContext(
@@ -196,7 +196,7 @@ const MonologueScenarioPageContent = ({
         </div>
         <div>
           {activeCharacter ? (
-            <ResultPreview innerRef={resultPreviewRef} />
+            <TimelineList innerRef={timelineListRef} />
           ) : (
             <div>Choose a character to proceed</div>
           )}

@@ -269,7 +269,7 @@ const ResultPreviewDisplayWrap = ({
   )
 }
 
-const TimelineList = ({
+const TimelineListWrap = ({
   innerRef,
 }: {
   innerRef: RefObject<HTMLDivElement>
@@ -280,7 +280,7 @@ const TimelineList = ({
     <div className="flex flex-col pb-[104px] md:pb-0" ref={innerRef}>
       {tasks && tasks.length ? (
         tasks.map((task, index) => (
-          <ResultPreview key={task._id} task={task} index={index} />
+          <TimelineList key={task._id} task={task} index={index} />
         ))
       ) : (
         <Empty
@@ -296,7 +296,7 @@ const TimelineList = ({
   )
 }
 
-const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
+const TimelineList = ({ task, index }: { task: Task; index: number }) => {
   return (
     <div className="result-preview mb-4 relative w-full flex flex-col rounded-lg border-0 md:items-center">
       {index === 0 &&
@@ -315,4 +315,4 @@ const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
   )
 }
 
-export default TimelineList
+export default TimelineListWrap

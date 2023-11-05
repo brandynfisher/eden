@@ -40,7 +40,7 @@ const CreationInterface = ({
   presetCreation?: Creation
   selectedGenerators?: string[]
 }) => {
-  const resultPreviewRef = useRef<HTMLDivElement>(null)
+  const timelineListRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
   const [activeGenerator, setActiveGenerator] = useState<Generator | undefined>(
     undefined,
@@ -157,7 +157,7 @@ const CreationInterface = ({
         ref={timelineRef}
         className="w-full h-full md:h-auto overflow-y-auto px-4 md:px-0 md:pr-4 md:mt-0"
       >
-        <TimelineList innerRef={resultPreviewRef} />
+        <TimelineList innerRef={timelineListRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}

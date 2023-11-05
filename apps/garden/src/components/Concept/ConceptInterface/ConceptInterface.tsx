@@ -1,6 +1,6 @@
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
-import ResultPreview from '@/components/Creation/CreationInterface/Timeline/TimelineList'
+import TimelineList from '@/components/Creation/CreationInterface/Timeline/TimelineList'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
@@ -10,7 +10,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 const availableConceptGenerators = ['sdxl-lora-trainer']
 
 const ConceptInterface = () => {
-  const resultPreviewRef = useRef<HTMLDivElement>(null)
+  const timelineListRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
   const [availableGenerators, setAvailableGenerators] = useState<Generator[]>()
   const [activeGenerator, setActiveGenerator] = useState(
@@ -36,7 +36,7 @@ const ConceptInterface = () => {
         <div className="flex flex-col">
           {activeGenerator && <GeneratorForm generator={activeGenerator} />}
         </div>
-        <ResultPreview innerRef={resultPreviewRef} />
+        <TimelineList innerRef={timelineListRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' && <TestGeneratorInterface />}
