@@ -83,7 +83,7 @@ const TimelineItemSample = ({
 
   if (isLoading) {
     return (
-      <div className="relative">
+      <div className="relative w-full h-full">
         <ProgressCard task={task} />
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 rounded-lg text-2xl">
           <LoadingIndicator />
@@ -255,7 +255,9 @@ const ResultPreviewDisplayWrap = ({
         <TimelineItemMedia task={task} listIndex={listIndex} />
       ) : (
         <>
-          {task.status === 'running' || task.status === 'pending' ? (
+          {task.status === 'running' ||
+          task.status === 'pending' ||
+          task.status === 'completed' ? (
             <TimelineItemMediaPlaceholder
               task={task}
               progress={
