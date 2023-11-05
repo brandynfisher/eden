@@ -1,5 +1,7 @@
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import TimelineItemMediaPlaceholder from '@/components/Creation/CreationInterface/Timeline/TimelineItemMediaPlaceholder'
+import TimelineItemMediaPlaceholder, {
+  ProgressCard,
+} from '@/components/Creation/CreationInterface/Timeline/TimelineItemMediaPlaceholder'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
 import { truncatedAddress } from '@/lib/string'
@@ -60,9 +62,11 @@ const TimelineItemPrompt = ({ text }: { text?: string }) => {
 }
 
 const TimelineItemSample = ({
+  task,
   creationId,
   listIndex,
 }: {
+  task: Task
   creationId: string
   listIndex: number
 }) => {
@@ -78,11 +82,18 @@ const TimelineItemSample = ({
   }, [creation])
 
   if (isLoading) {
-    return <LoadingIndicator />
+    return (
+      <div className="relative">
+        <ProgressCard task={task} />
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 rounded-lg text-2xl">
+          <LoadingIndicator />
+        </div>
+      </div>
+    )
   }
 
   if (!creation) {
-    return <div>n/a</div>
+    return <div>not found</div>
   }
 
   return (
@@ -108,6 +119,7 @@ const TimelineItemMedia = ({
           {task.samples.map(id => (
             <TimelineItemSample
               key={id}
+              task={task}
               creationId={id}
               listIndex={listIndex || 0}
             />
@@ -116,6 +128,7 @@ const TimelineItemMedia = ({
       ) : (
         <div className="grid grid-cols-1">
           <TimelineItemSample
+            task={task}
             creationId={task.creation._id}
             listIndex={listIndex || 0}
           />

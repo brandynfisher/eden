@@ -2,7 +2,7 @@ import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Task } from '@edenlabs/eden-sdk'
 import React from 'react'
 
-const ProgressCard = ({ task }: { task: Task }) => {
+export const ProgressCard = ({ task }: { task: Task }) => {
   return (
     <div
       className={`relative rounded-lg overflow-hidden ${
