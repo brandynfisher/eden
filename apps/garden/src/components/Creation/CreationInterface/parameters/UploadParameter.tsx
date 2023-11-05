@@ -136,8 +136,12 @@ const UploadParameter = (props: {
     setFileList(info.fileList)
 
     if (info.file.status === 'done' || info.file.status === 'success') {
+      console.log(info.file)
       const newUrls = [...urls, info.file.response.fileUrl]
       props.form.setFieldsValue({
+        [props.parameter.name]: isArray ? newUrls : newUrls[0],
+      })
+      console.log({
         [props.parameter.name]: isArray ? newUrls : newUrls[0],
       })
       setUrls(newUrls)

@@ -175,6 +175,7 @@ const CreationDetail = ({
               <CreationReactions
                 creation={creationData}
                 onChange={setCreationData}
+                showCounts={true}
               />
               <CardToolsDropdown
                 item={creation}

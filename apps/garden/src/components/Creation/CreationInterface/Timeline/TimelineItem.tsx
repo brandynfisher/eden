@@ -62,7 +62,7 @@ const TimelineItem = ({
 
   return (
     <div>
-      <div className="flex items-center justify-between flex-wrap mb-2">
+      <div className="flex items-center justify-between flex-wrap mb-1 md:mb-2">
         <TimelineItemHeaderInfo task={task} />
         <div className="ml-auto"></div>
       </div>

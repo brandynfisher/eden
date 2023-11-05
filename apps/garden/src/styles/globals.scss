@@ -289,6 +289,16 @@ body {
     flex-grow: 1
 }
 
+@media (max-width: 767px) {
+    .ant-card.compact-card {
+        border: none !important;
+        background: none !important;
+        & > .ant-card-body {
+            padding: 4px 0 !important;
+        }
+    }
+}
+
 .scaled-canvas {
     transform: scale(0.5) translate(-18px, -18px);
     transform-origin: center;
