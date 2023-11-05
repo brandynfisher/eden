@@ -1,10 +1,11 @@
-import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
-import ResultPreviewDisplay from '@/components/Creation/CreationInterface/Timeline/ResultPreviewDisplay'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import TimelineItemMediaPlaceholder from '@/components/Creation/CreationInterface/Timeline/TimelineItemMediaPlaceholder'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
 import { truncatedAddress } from '@/lib/string'
 import { timeAgo } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import CopyOutlined from '@ant-design/icons/CopyOutlined'
 import { Task } from '@edenlabs/eden-sdk'
@@ -58,13 +59,46 @@ const TimelineItemPrompt = ({ text }: { text?: string }) => {
   )
 }
 
-const TimelineItemMedia = ({
-  task,
+const TimelineItemSample = ({
   creationId,
   listIndex,
 }: {
-  task: Task
   creationId: string
+  listIndex: number
+}) => {
+  const { creation, isLoading } = useCreation(creationId)
+  const { showModal } = useModalContext()
+
+  const handleCardClick = useCallback(() => {
+    showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
+      creation: creation ? creation : undefined,
+      loadSimilar: false,
+      usesUrl: true,
+    })
+  }, [creation])
+
+  if (isLoading) {
+    return <LoadingIndicator />
+  }
+
+  if (!creation) {
+    return <div>n/a</div>
+  }
+
+  return (
+    <CreationCard
+      index={listIndex || 0}
+      data={creation}
+      onClick={handleCardClick}
+    />
+  )
+}
+
+const TimelineItemMedia = ({
+  task,
+  listIndex,
+}: {
+  task: Task
   listIndex?: number
 }) => {
   return (
@@ -72,18 +106,18 @@ const TimelineItemMedia = ({
       {task.samples && task.samples.length ? (
         <div className={`grid grid-cols-2 gap-2`}>
           {task.samples.map(id => (
-            <ResultPreviewDisplay
+            <TimelineItemSample
               key={id}
               creationId={id}
-              priority={listIndex ? listIndex < 2 : false}
+              listIndex={listIndex || 0}
             />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-1">
-          <ResultPreviewDisplay
-            creationId={creationId}
-            priority={listIndex ? listIndex < 2 : false}
+          <TimelineItemSample
+            creationId={task.creation._id}
+            listIndex={listIndex || 0}
           />
         </div>
       )}
@@ -158,9 +192,6 @@ const ResultPreviewDisplayWrap = ({
   listIndex?: number
 }) => {
   const creationUri = task && task.creation ? task.creation.uri : false
-  const creationId = task && task.creation ? task.creation._id : false
-
-  const { creation, mutate: refetch } = useCreation(creationId)
 
   const [fakeProgress, setFakeProgress] = useState(0)
   const increaseFakeProgress = useCallback(
@@ -186,9 +217,12 @@ const ResultPreviewDisplayWrap = ({
       noProgressGeneratorNames.includes(task?.generator.generatorName)
     ) {
       const increment = task?.config['n_samples']
-        ? 2 / task?.config['n_samples']
-        : 2
-      timerId = setInterval(() => increaseFakeProgress(increment, timerId), 500)
+        ? 4 / task?.config['n_samples']
+        : 4
+      timerId = setInterval(
+        () => increaseFakeProgress(increment, timerId),
+        1000,
+      )
     }
 
     return () => {
@@ -200,24 +234,12 @@ const ResultPreviewDisplayWrap = ({
     <div>
       <div className="flex items-center justify-between flex-wrap mb-2">
         <TimelineItemHeaderInfo task={task} />
-        <div className="ml-auto">
-          {creation ? (
-            <CardToolsDropdown
-              item={creation}
-              itemType={'creation'}
-              onChange={() => refetch()}
-            />
-          ) : null}
-        </div>
+        <div className="ml-auto"></div>
       </div>
       <TimelineItemPrompt text={task?.config.text_input} />
 
       {creationUri ? (
-        <TimelineItemMedia
-          creationId={creationId}
-          task={task}
-          listIndex={listIndex}
-        />
+        <TimelineItemMedia task={task} listIndex={listIndex} />
       ) : (
         <>
           {task.status === 'running' || task.status === 'pending' ? (
@@ -247,7 +269,7 @@ const ResultPreviewDisplayWrap = ({
   )
 }
 
-const ResultPreviewList = ({
+const TimelineList = ({
   innerRef,
 }: {
   innerRef: RefObject<HTMLDivElement>
@@ -293,4 +315,4 @@ const ResultPreview = ({ task, index }: { task: Task; index: number }) => {
   )
 }
 
-export default ResultPreviewList
+export default TimelineList

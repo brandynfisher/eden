@@ -1,6 +1,6 @@
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
-import ResultPreview from '@/components/Creation/CreationInterface/Timeline/ResultPreviewList'
+import ResultPreview from '@/components/Creation/CreationInterface/Timeline/TimelineList'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'

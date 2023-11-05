@@ -14,11 +14,8 @@ import React, {
   useState,
 } from 'react'
 
-const ResultPreviewList = dynamic(
-  () =>
-    import(
-      '@/components/Creation/CreationInterface/Timeline/ResultPreviewList'
-    ),
+const TimelineList = dynamic(
+  () => import('@/components/Creation/CreationInterface/Timeline/TimelineList'),
   {
     loading: () => <LoadingIndicator />,
     ssr: false,
@@ -160,7 +157,7 @@ const CreationInterface = ({
         ref={timelineRef}
         className="w-full h-full md:h-auto overflow-y-auto px-4 md:px-0 md:pr-4 md:mt-0"
       >
-        <ResultPreviewList innerRef={resultPreviewRef} />
+        <TimelineList innerRef={resultPreviewRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}

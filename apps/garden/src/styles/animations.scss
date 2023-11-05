@@ -104,8 +104,8 @@
   background-image:
     linear-gradient(
                     to right,
-                    rgb(255 255 255 / var(--border-trace-opacity)),
-                    rgb(255 255 255 / var(--border-trace-opacity))
+                    rgb(0 0 0 / var(--border-trace-opacity)),
+                    rgb(0 0 0 / var(--border-trace-opacity))
     ),
     conic-gradient(
                     from var(--border-trace-angle),

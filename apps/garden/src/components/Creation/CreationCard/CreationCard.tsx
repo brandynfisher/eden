@@ -58,7 +58,7 @@ const CreationCard: FC<{
   )
 
   return (
-    <div ref={ref} className={`w-full flex justify-center flex-col`}>
+    <div ref={ref} className={`w-full flex justify-center flex-col relative`}>
       <a
         onClick={cardClickHandler}
         href={`/creations/${creation._id}`}
