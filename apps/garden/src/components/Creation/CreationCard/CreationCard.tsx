@@ -18,7 +18,8 @@ const CreationCard: FC<{
   index: number
   data: Creation
   onClick: () => void
-}> = ({ index, data, onClick }) => {
+  hidePrompt?: boolean
+}> = ({ index, data, onClick, hidePrompt }) => {
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
@@ -100,21 +101,25 @@ const CreationCard: FC<{
           <div
             className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none`}
           >
-            <div className="flex items-center pointer-events-auto my-1">
-              <CreatorProfileLink
-                creatorId={creation.user.userId}
-                creatorName={creation.user.username}
-                creatorImage={creation.user.userImage}
-              />
-              <div
-                className="text-gray-700 dark:text-gray-400 text-xs"
-                title={createdDateString}
-              >
-                <span className="mx-1">•</span>
-                {timeSinceCreation}
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
+            {!hidePrompt ? (
+              <>
+                <div className="flex items-center pointer-events-auto my-1">
+                  <CreatorProfileLink
+                    creatorId={creation.user.userId}
+                    creatorName={creation.user.username}
+                    creatorImage={creation.user.userImage}
+                  />
+                  <div
+                    className="text-gray-700 dark:text-gray-400 text-xs"
+                    title={createdDateString}
+                  >
+                    <span className="mx-1">•</span>
+                    {timeSinceCreation}
+                  </div>
+                </div>
+              </>
+            ) : null}
+            <div className="flex items-center gap-4 ml-auto my-1">
               {creation.isPrivate ? <LockIcon fontSize="small" /> : null}
               <CardToolsDropdown
                 onOpen={setDropdownActive}
@@ -133,7 +138,7 @@ const CreationCard: FC<{
                 setCreation(updatedCreation as Creation)
               }
             />
-            <CreationCardDetail creation={creation} />
+            {!hidePrompt ? <CreationCardDetail creation={creation} /> : null}
           </div>
         </>
       ) : null}

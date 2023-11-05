@@ -46,6 +46,7 @@ const TimelineItemSample = ({
       index={listIndex || 0}
       data={creation}
       onClick={handleCardClick}
+      hidePrompt={true}
     />
   )
 }
