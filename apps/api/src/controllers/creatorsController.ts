@@ -18,6 +18,15 @@ import { Task } from '../models/Task'
 import CreatorRepository from '../repositories/CreatorRepository'
 import FollowerRepository from '../repositories/FollowerRepository'
 
+const removePrivateFields = (creator: any) => {
+  const creatorObject = creator.toObject()
+  delete creatorObject.featureFlags
+  delete creatorObject.subscriptionTier
+  delete creatorObject.isAdmin
+  delete creatorObject.isWeb2
+  return creatorObject
+}
+
 export const listCreators = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -35,6 +44,10 @@ export const listCreators = async (
       sort,
     },
   )
+
+  creators.docs = creators.docs.map(creator => {
+    return removePrivateFields(creator)
+  })
 
   return reply.status(200).send(creators)
 }
@@ -220,8 +233,9 @@ export const getCreator = async (
 
     isFollowing = !!followerQuery
   }
-  const creator = {
-    ...creatorDoc.toObject(),
+  let creator = removePrivateFields(creatorDoc)
+  creator = {
+    ...creator,
     followerCount,
     followingCount,
     creationsCount,
