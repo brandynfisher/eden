@@ -3,7 +3,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ApiKey } from '../models/ApiKey'
 import { SubscriptionTier, User } from '../models/Creator'
 
-const apiKeyVerify = async (request: FastifyRequest) => {
+const apiKeyVerify = async (request: FastifyRequest, reply: FastifyReploy) => {
   if (!request.headers['x-api-secret']) {
     throw new Error('Missing API secret')
   }
@@ -14,13 +14,19 @@ const apiKeyVerify = async (request: FastifyRequest) => {
   })
 
   if (!apiKey) {
-    throw new Error('Invalid API key or secret')
+    return reply.status(401).send({
+      error: 'Unauthorized',
+      message: 'Invalid API key or secret provided.',
+    })
   }
 
   const user = await User.findById(apiKey.user)
 
   if (!user) {
-    throw new Error('User not found')
+    return reply.status(401).send({
+      error: 'Unauthorized',
+      message: 'User not found.',
+    })
   }
 
   request.user = {
@@ -37,7 +43,7 @@ const getCredential = async (
   reply: FastifyReply,
 ) => {
   if (request.headers['x-api-key']) {
-    await apiKeyVerify(request)
+    await apiKeyVerify(request, reply)
   } else {
     await server.verifyUser(request, reply)
   }

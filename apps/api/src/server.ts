@@ -54,7 +54,13 @@ const createServer = async (
         corsOptions = {
           origin: ['*'],
           methods: ['GET'],
-          allowedHeaders: ['Content-Type', 'Authorization', 'cache-control'],
+          allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'cache-control',
+            'X-Api-Key',
+            'X-Api-Secret',
+          ],
           credentials: true,
         }
       }
