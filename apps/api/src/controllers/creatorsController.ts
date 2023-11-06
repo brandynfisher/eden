@@ -12,19 +12,19 @@ import { ObjectId } from 'mongodb'
 
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
-import { CreatorDocument } from '../models/Creator'
 import { Follow, FollowDocument } from '../models/Follow'
 import { Manna } from '../models/Manna'
 import { Task } from '../models/Task'
 import CreatorRepository from '../repositories/CreatorRepository'
 import FollowerRepository from '../repositories/FollowerRepository'
 
-const removePrivateFields = (creator: CreatorDocument) => {
-  delete creator.featureFlags
-  delete creator.subscriptionTier
-  delete creator.isAdmin
-  delete creator.isWeb2
-  return creator
+const removePrivateFields = (creator: any) => {
+  const creatorObject = creator.toObject()
+  delete creatorObject.featureFlags
+  delete creatorObject.subscriptionTier
+  delete creatorObject.isAdmin
+  delete creatorObject.isWeb2
+  return creatorObject
 }
 
 export const listCreators = async (
@@ -45,8 +45,8 @@ export const listCreators = async (
     },
   )
 
-  creators.docs.forEach(creator => {
-    removePrivateFields(creator)
+  creators.docs = creators.docs.map(creator => {
+    return removePrivateFields(creator)
   })
 
   return reply.status(200).send(creators)
@@ -233,14 +233,14 @@ export const getCreator = async (
 
     isFollowing = !!followerQuery
   }
-  let creator = {
-    ...creatorDoc.toObject(),
+  let creator = removePrivateFields(creatorDoc)
+  creator = {
+    ...creator,
     followerCount,
     followingCount,
     creationsCount,
     isFollowing,
   }
-  creator = removePrivateFields(creator)
   return reply.status(200).send({ creator })
 }
 

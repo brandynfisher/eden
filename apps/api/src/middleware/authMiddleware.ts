@@ -3,7 +3,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ApiKey } from '../models/ApiKey'
 import { SubscriptionTier, User } from '../models/Creator'
 
-const apiKeyVerify = async (request: FastifyRequest, reply: FastifyReploy) => {
+const apiKeyVerify = async (request: FastifyRequest, reply: FastifyReply) => {
   if (!request.headers['x-api-secret']) {
     throw new Error('Missing API secret')
   }
