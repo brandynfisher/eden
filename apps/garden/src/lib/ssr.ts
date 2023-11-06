@@ -46,6 +46,7 @@ export const getServerSidePropsBase = (fieldRequests: FieldRequest[]) => {
 
       return { props: { data: allFieldResults[0] } }
     } catch (err) {
+      console.log(err)
       return { props: { data: null, error: 'Something went wrong' } }
     }
   }
