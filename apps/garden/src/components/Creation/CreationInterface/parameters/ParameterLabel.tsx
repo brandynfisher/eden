@@ -11,7 +11,7 @@ const ParameterLabel = ({
   description?: string
 }) => {
   return (
-    <div className="flex w-full items-center justify-between">
+    <div className="flex w-full gap-2 items-center">
       {name ? <label htmlFor={name}>{text}</label> : <div>{text}</div>}
       {description ? (
         <Popover

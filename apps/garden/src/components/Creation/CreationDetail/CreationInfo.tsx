@@ -1,5 +1,8 @@
 import ImageZoomable from '@/components/Creation/CreationInterface/media/ImageZoomable'
+import LoadingIndicator from '@/components/LoadingIndicator'
+import { useConcept } from '@/hooks/useConcept'
 import { Creation } from '@edenlabs/eden-sdk'
+import Link from 'next/link'
 import React, { ReactNode, useEffect, useState } from 'react'
 
 const BaseParamGroup = ({
@@ -16,7 +19,9 @@ const BaseParamGroup = ({
         {Array.isArray(value) ? (
           <div title={value?.toString()}>{JSON.stringify(value)}</div>
         ) : (
-          <div title={value?.toString()}>{value}</div>
+          <div title={typeof value === 'string' ? value?.toString() : ''}>
+            {value}
+          </div>
         )}
       </div>
     </div>
@@ -25,6 +30,10 @@ const BaseParamGroup = ({
 
 const CreationInfo = ({ creation }: { creation: Creation }) => {
   const [displayDateTime, setDisplayDateTime] = useState('')
+
+  const { concept, isLoading } = useConcept(
+    creation.task.config['lora'] || null,
+  )
 
   useEffect(() => {
     const createdDate = new Date(creation.createdAt)
@@ -52,6 +61,36 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
             }
           />
           <BaseParamGroup label="Date" value={displayDateTime} />
+        </div>
+      ) : null}
+
+      {creation.task.config['lora'] ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Concept"
+            value={
+              isLoading ? (
+                <LoadingIndicator />
+              ) : concept ? (
+                <div>
+                  <Link
+                    href={`/concepts/${concept._id}`}
+                    className="block mb-2"
+                  >
+                    {concept.user.username}:{concept.conceptName}
+                  </Link>
+                  <ImageZoomable
+                    key={concept.thumbnail}
+                    url={concept.thumbnail}
+                    width={132}
+                    height={132}
+                  />
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500">n/a</div>
+              )
+            }
+          />
         </div>
       ) : null}
 

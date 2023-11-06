@@ -92,3 +92,57 @@
   /*animation-fill-mode: backwards;*/
   /*animation-direction: alternate;*/
 }
+
+:root {
+  --border-trace-size: 0.075rem;
+  --border-trace-opacity: 0.5;
+  --border-trace-angle: 45deg;
+}
+
+.border-trace {
+  border: var(--border-trace-size) dotted transparent;
+  background-image:
+    linear-gradient(
+                    to right,
+                    rgb(0 0 0 / var(--border-trace-opacity)),
+                    rgb(0 0 0 / var(--border-trace-opacity))
+    ),
+    conic-gradient(
+                    from var(--border-trace-angle),
+                    transparent 180deg,
+                    rgba(77, 121, 189, 0.5) 360deg
+    );
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* Animate when Houdini is available */
+@supports (background: paint(houdini)) {
+  @property --border-trace-opacity {
+    syntax: "<number>";
+    initial-value: 0.5;
+    inherits: false;
+  }
+
+  @property --border-trace-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @keyframes opacityChange {
+    to {
+      --border-trace-opacity: 1;
+    }
+  }
+
+  @keyframes rotate {
+    to {
+      --border-trace-angle: 360deg;
+    }
+  }
+
+  .border-trace {
+    animation: rotate 4s linear infinite, opacityChange 2s linear alternate;
+  }
+}

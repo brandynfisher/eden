@@ -10,6 +10,7 @@ import {
   getTaskCost,
   listTasks,
   receiveTaskUpdate,
+  subscribeTaskUpdates,
 } from '../controllers/taskController'
 import { isAuth } from '../middleware/authMiddleware'
 
@@ -130,6 +131,16 @@ const taskRoutes: FastifyPluginAsync = async server => {
       },
     },
     handler: (request, reply) => receiveTaskUpdate(server, request, reply),
+  })
+
+  server.get('/tasks/events', {
+    schema: {
+      querystring: {
+        taskId: Type.Optional(Type.String()),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
   })
 }
 

@@ -96,6 +96,14 @@ const GeneratorForm = ({
   const [uploadsInProgress, setUploadsInProgress] = useState(false)
   const [stringArrayValues, setStringArrayValues] = useState({})
 
+  const submitButtonDisabledProd =
+    isSubmitting || !isFormTouched || uploadsInProgress || !canAffordOperation
+  const submitButtonDisabledDev = false
+  const submitButtonDisabled =
+    process.env.NODE_ENV === 'production'
+      ? submitButtonDisabledProd
+      : submitButtonDisabledDev
+
   useEffect(() => {
     const transformConfig = () => {
       if (!presetCreation) {
@@ -110,6 +118,14 @@ const GeneratorForm = ({
           ...presetCreation.task.config,
           init_image_strength: 0.175,
           init_image_data: presetCreation.uri,
+          seed: '',
+        })
+        return
+      }
+
+      if (!router.query.generator && router.query.presetId) {
+        setPresetConfig({
+          ...presetCreation.task.config,
           seed: '',
         })
         return
@@ -496,17 +512,17 @@ const GeneratorForm = ({
           <Collapse
             expandIconPosition="start"
             onChange={key => onSettingsToggle && onSettingsToggle(key.length)}
-            className="generator-settings-collapse max-h-full"
+            className={`generator-settings-collapse max-h-full`}
           >
             {optionalParameters.length > 0 ? (
-              <Panel key={'1'} header={'Settings'}>
+              <Panel key={'1'} header={'Settings'} forceRender={true}>
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(optionalParameters)}
                 </div>
               </Panel>
             ) : null}
             {advancedParameters.length > 0 ? (
-              <Panel key={'2'} header={'Advanced'}>
+              <Panel key={'2'} header={'Advanced'} forceRender={true}>
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(advancedParameters)}
                 </div>
@@ -537,12 +553,7 @@ const GeneratorForm = ({
                 size="large"
                 className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !pr-2"
                 loading={isSubmitting ? { delay: 250 } : false}
-                disabled={
-                  isSubmitting ||
-                  !isFormTouched ||
-                  uploadsInProgress ||
-                  !canAffordOperation
-                }
+                disabled={submitButtonDisabled}
               >
                 {generator.generatorName}
                 <MannaCostBadge cost={taskCost || 'n/a'} />

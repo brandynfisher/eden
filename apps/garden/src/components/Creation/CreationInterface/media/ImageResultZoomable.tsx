@@ -2,14 +2,16 @@ import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/med
 import ImagePreviewMask from '@/components/Creation/CreationInterface/media/ImagePreviewMask'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import Image from 'next/image'
-import React, { ReactNode, useCallback, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useState } from 'react'
 
 const ImagePlaceholder = ({
   imageUrl,
   limitHeight,
+  onLoadingComplete,
 }: {
   limitHeight?: boolean
   imageUrl: string
+  onLoadingComplete: () => void
 }) => {
   return (
     <div
@@ -23,6 +25,7 @@ const ImagePlaceholder = ({
         className="w-full h-full object-contain absolute z-10 inset-0"
         sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 15vw'}
         style={{ objectFit: 'contain', objectPosition: 'top center' }}
+        onLoadingComplete={onLoadingComplete}
       />
       <LoadingOutlined className="absolute text-2xl z-10 top-4 right-4 opacity-90 text-gray-400" />
     </div>
@@ -52,26 +55,45 @@ const ImageResultZoomable = ({
   quality?: number
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoadedPlaceholder, setIsLoadedPlaceholder] = useState(false)
+  const [needsLoadingIndicator, setNeedsLoadingIndicator] = useState(false)
 
   const handleOnLoad = useCallback(() => {
-    // if (!isLoaded) {
     setIsLoaded(true)
-    // } else {
-    // console.log('-- unload')
-    // setIsLoaded(false)
-    // }
 
     if (onLoad) {
       onLoad()
     }
   }, [onLoad, thumbnailSizeUrl, previewSizeUrl, setIsLoaded])
 
+  const handleOnLoadPlaceholder = useCallback(() => {
+    setIsLoadedPlaceholder(true)
+  }, [thumbnailSizeUrl, previewSizeUrl])
+
+  const timerHandler = useCallback(() => {
+    if (!isLoaded || !isLoadedPlaceholder) {
+      setNeedsLoadingIndicator(true)
+    }
+  }, [isLoaded, isLoadedPlaceholder])
+
+  useEffect(() => {
+    if (isLoaded || isLoadedPlaceholder) return
+
+    const timerId = setInterval(timerHandler, 250)
+
+    return () => {
+      clearInterval(timerId)
+    }
+  }, [timerHandler, isLoaded, isLoadedPlaceholder])
+
   return (
     <div
       className={`image-zoomable-wrap relative w-full h-fit overflow-hidden rounded-lg`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
-      {previewSizeUrl && !isLoaded ? (
+      {needsLoadingIndicator &&
+      !(isLoadedPlaceholder || isLoaded) &&
+      previewSizeUrl ? (
         <div
           className={`absolute inset-0 text-gray-500 opacity-80 ${
             limitHeight ? 'max-h-[80vh]' : ''
@@ -85,6 +107,7 @@ const ImageResultZoomable = ({
           key={thumbnailSizeUrl}
           imageUrl={thumbnailSizeUrl}
           limitHeight={limitHeight}
+          onLoadingComplete={handleOnLoadPlaceholder}
         />
       ) : null}
       {previewSizeUrl ? (

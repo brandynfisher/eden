@@ -129,6 +129,10 @@ const MasonryInfinite = ({
 
   useEffect(() => {
     document.body.classList.add('force-scroll-y')
+
+    return () => {
+      document.body.classList.remove('force-scroll-y')
+    }
   }, [])
 
   const handleCardClick = useCallback((index: number) => {

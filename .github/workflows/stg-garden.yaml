@@ -51,7 +51,8 @@ jobs:
             }}:latest
           build-args: |
             "NEXT_PUBLIC_APP_ENV=staging"
-            "NEXT_PUBLIC_HOST=https://staging.app.edendev.art"
+            "NEXT_PUBLIC_HOST=https://staging.app.eden.art"
+            "NEXT_PUBLIC_EDEN_API_URL=https://staging.api.eden.art"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STG }}"
             "NEXT_PUBLIC_APP_PASSWORD=${{ secrets.NEXT_PUBLIC_APP_PASSWORD_STG }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"

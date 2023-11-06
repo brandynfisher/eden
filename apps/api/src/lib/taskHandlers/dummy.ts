@@ -117,6 +117,13 @@ export const dummyReceiveTaskUpdate = async (
     },
   )
 
+  server.eventEmitter.emit('taskUpdate', {
+    userId: task.user,
+    taskId,
+    status: TaskStatus.Pending,
+    progress: 0.5,
+  })
+
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
   const asset = await server.uploadUrlAsset(server, image.result)
   const thumbnail = await server.uploadThumbnailAsset(server, image.thumbnail)
@@ -146,6 +153,14 @@ export const dummyReceiveTaskUpdate = async (
       $set: taskUpdate,
     },
   )
+
+  server.eventEmitter.emit('taskUpdate', {
+    userId: task.user,
+    taskId,
+    status: TaskStatus.Completed,
+    progress: 1.0,
+    result: asset.uri,
+  })
 
   if (task.webhooks) {
     await Promise.all(

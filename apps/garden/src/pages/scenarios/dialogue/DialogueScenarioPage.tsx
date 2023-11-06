@@ -1,5 +1,5 @@
 import MannaCostEstimate from '@/components/Creation/CreationInterface/MannaCostEstimate'
-import ResultPreview from '@/components/Creation/CreationInterface/ResultPreviewList'
+import TimelineList from '@/components/Creation/CreationInterface/Timeline/TimelineList'
 import FormLabel from '@/components/Forms/FormLabel'
 import { useCharacters } from '@/hooks/useCharacters'
 import { useTaskCost } from '@/hooks/useTaskCost'
@@ -21,7 +21,7 @@ const DialogueScenarioPageContent = ({
 }) => {
   const MAX_ACTIVE_CHARACTERS = 2
 
-  const resultPreviewRef = useRef<HTMLDivElement>(null)
+  const timelineListRef = useRef<HTMLDivElement>(null)
   const { message } = App.useApp()
   const [form] = Form.useForm()
   const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
@@ -221,7 +221,7 @@ const DialogueScenarioPageContent = ({
         </div>
         <div>
           {isRequirementsMet ? (
-            <ResultPreview innerRef={resultPreviewRef} />
+            <TimelineList innerRef={timelineListRef} />
           ) : (
             <div>Choose characters to proceed</div>
           )}

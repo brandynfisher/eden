@@ -1,11 +1,11 @@
 import CreationWorkspace from '@/components/Creation/CreationInterface/CreationWorkspace'
-import ResultPreviewList from '@/components/Creation/CreationInterface/ResultPreviewList'
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
+import dynamic from 'next/dynamic'
 import React, {
   useCallback,
   useContext,
@@ -13,6 +13,14 @@ import React, {
   useRef,
   useState,
 } from 'react'
+
+const TimelineList = dynamic(
+  () => import('@/components/Creation/CreationInterface/Timeline/TimelineList'),
+  {
+    loading: () => <LoadingIndicator />,
+    ssr: false,
+  },
+)
 
 const hiddenCreationGenerators = [
   'complete',
@@ -32,7 +40,7 @@ const CreationInterface = ({
   presetCreation?: Creation
   selectedGenerators?: string[]
 }) => {
-  const resultPreviewRef = useRef<HTMLDivElement>(null)
+  const timelineListRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)
   const [activeGenerator, setActiveGenerator] = useState<Generator | undefined>(
     undefined,
@@ -147,9 +155,9 @@ const CreationInterface = ({
 
       <div
         ref={timelineRef}
-        className="w-full h-full md:h-auto overflow-y-auto px-4 md:px-0 md:pr-4 md:mt-0"
+        className="w-full h-full md:h-auto overflow-y-auto px-2 md:px-0 md:pr-4 md:mt-0"
       >
-        <ResultPreviewList innerRef={resultPreviewRef} />
+        <TimelineList innerRef={timelineListRef} />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}

@@ -17,9 +17,11 @@ import React, { useContext } from 'react'
 const PraiseButton = ({
   creation,
   onChange,
+  showCounts,
 }: {
   creation: Creation | Concept
   onChange: (updatedCreation: Creation | Concept) => void
+  showCounts?: boolean
 }) => {
   const { message } = App.useApp()
   const { isAuthenticated, authenticate } = useContext(UserContext)
@@ -71,12 +73,18 @@ const PraiseButton = ({
 
   return (
     <div
-      className={`flex items-center justify-center w-10 h-10 text-black dark:text-white cursor-pointer font-mono`}
+      className={`flex items-center justify-start w-10 h-10 cursor-pointer font-mono`}
       role="button"
       onClick={onPraiseButtonClick}
       ref={ref}
     >
-      <div className="flex gap-2 items-center">
+      <div
+        className={`flex gap-2 items-center ${
+          creation.reactions?.praise
+            ? 'dark:text-gray-300'
+            : 'dark:text-gray-500'
+        }`}
+      >
         <div
           className="text-2xl flex items-center"
           role="img"
@@ -100,7 +108,8 @@ const PraiseButton = ({
             </>
           )}
         </div>
-        <div>{creation.praiseCount || 0}</div>
+        {showCounts ? <div>{creation.praiseCount || 0}</div> : null}
+        {/*<div>{creation.praiseCount || 0}</div>*/}
       </div>
     </div>
   )
@@ -166,7 +175,9 @@ const SaveButton = ({
   const { hovered, ref } = useHover()
   return (
     <div
-      className={`flex w-10 h-10 items-center justify-end text-black dark:text-white font-mono cursor-pointer`}
+      className={`flex w-10 h-10 items-center justify-end text-black font-mono cursor-pointer ${
+        creation.bookmarked ? 'dark:text-gray-300' : 'dark:text-gray-500'
+      }`}
       onClick={onSaveButtonClick}
       ref={ref}
       title={creation.bookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
@@ -211,14 +222,23 @@ const SaveButtonMessageContent = () => {
 export interface CreationReactionsProps {
   creation: Creation | Concept
   onChange: (updatedCreation: Creation | Concept) => void
+  showCounts?: boolean
 }
 
-const CreationReactions = ({ creation, onChange }: CreationReactionsProps) => {
+const CreationReactions = ({
+  creation,
+  onChange,
+  showCounts,
+}: CreationReactionsProps) => {
   return (
     <div className="relative flex justify-between">
       <div>
         <div className="flex pointer-events-auto">
-          <PraiseButton creation={creation} onChange={onChange} />
+          <PraiseButton
+            creation={creation}
+            onChange={onChange}
+            showCounts={showCounts}
+          />
         </div>
       </div>
       <div className="pointer-events-auto">
