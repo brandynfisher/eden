@@ -194,7 +194,7 @@ const DevToolsLink = () => {
       <div className="flex items-center">
         <ToolOutlined />
         <div className="ml-2 flex gap-2 w-full justify-between font-mono">
-          Dev Tools
+          Devtools
         </div>
       </div>
     </Link>
