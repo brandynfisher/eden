@@ -16,6 +16,7 @@ interface PageProps {
 const fetchCreator = async (context: NextPageContext) => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
+  console.log('fetchCreator', id)
 
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${id}`, {
     headers: await getAuthHeaders(req as NextApiRequest),
