@@ -1,12 +1,12 @@
 import TimelineItem from '@/components/Creation/CreationInterface/Timeline/TimelineItem'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { Task } from '@edenlabs/eden-sdk'
-import { Alert, Card, Empty } from 'antd'
+import { Alert, Card, Divider, Empty } from 'antd'
 import React, { RefObject, useContext } from 'react'
 
 const TimelineListItem = ({ task, index }: { task: Task; index: number }) => {
   return (
-    <div className="result-preview mb-4 relative w-full flex flex-col rounded-lg border-0 md:items-center">
+    <div className="result-preview mb-2 md:mb-4 relative w-full flex flex-col rounded-lg border-0 md:items-center">
       {index === 0 &&
       (task.status === 'pending' || task.status === 'running') ? (
         <Alert
@@ -19,6 +19,7 @@ const TimelineListItem = ({ task, index }: { task: Task; index: number }) => {
       >
         <TimelineItem task={task} listIndex={index} />
       </Card>
+      <Divider className="mt-2 mb-0 md:hidden" />
     </div>
   )
 }

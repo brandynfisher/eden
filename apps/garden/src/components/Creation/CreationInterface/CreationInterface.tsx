@@ -155,7 +155,7 @@ const CreationInterface = ({
 
       <div
         ref={timelineRef}
-        className="w-full h-full md:h-auto overflow-y-auto px-2 mdpx-4 md:px-0 md:pr-4 md:mt-0"
+        className="w-full h-full md:h-auto overflow-y-auto px-2 md:px-0 md:pr-4 md:mt-0"
       >
         <TimelineList innerRef={timelineListRef} />
       </div>
