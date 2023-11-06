@@ -11,6 +11,8 @@ export const requireAuth = async (authenticate: () => void) => {
 
 export const getAuthToken = async (req: NextApiRequest) => {
   const { getToken } = getAuth(req)
+  console.log('getting auth token')
+  console.log(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
   const authToken = await getToken()
   return authToken || undefined
 }
@@ -21,6 +23,7 @@ export const getAuthUserId = async (req: NextApiRequest) => {
 }
 
 export const getAuthHeaders = async (req: NextApiRequest) => {
+  console.log('getting auth headers')
   const authToken = req ? await getAuthToken(req) : ''
 
   return {
