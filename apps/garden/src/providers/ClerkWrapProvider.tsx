@@ -6,6 +6,7 @@ import React, { ReactNode, useEffect, useState } from 'react'
 const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
   const { resolvedTheme } = useTheme()
   const [baseTheme, setBaseTheme] = useState<typeof dark | undefined>(dark)
+  console.log('ClerkWrapProvider', process.env.CLERK_PUBLISHABLE_KEY)
 
   useEffect(() => {
     if (resolvedTheme && resolvedTheme === 'dark') {
@@ -17,6 +18,7 @@ const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ClerkProvider
+      publishableKey={process.env.CLERK_PUBLISHABLE_KEY}
       appearance={{
         baseTheme,
         layout: {
