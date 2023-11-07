@@ -137,6 +137,7 @@ const CreationCard: FC<{
               onChange={updatedCreation =>
                 setCreation(updatedCreation as Creation)
               }
+              showCounts={true}
             />
             {!hidePrompt ? <CreationCardDetail creation={creation} /> : null}
           </div>
