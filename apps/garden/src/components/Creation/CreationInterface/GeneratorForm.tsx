@@ -523,7 +523,6 @@ const GeneratorForm = ({
                 type="primary"
                 icon={<ExperimentOutlined />}
                 htmlType="submit"
-                size="large"
                 className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !pr-2"
                 loading={isSubmitting ? { delay: 250 } : false}
                 disabled={submitButtonDisabled}
