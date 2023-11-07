@@ -65,7 +65,7 @@ const GeneratorSelectModalTrigger = ({
       // color="primary"
       // size="small"
       onClick={handleClickOpen}
-      className="w-full bg-gray-300 hover:!bg-gray-300 dark:bg-gray-900 dark:hover:!bg-gray-950 bg-opacity-50 hover:!bg-opacity-70 normal-case"
+      className="w-full bg-gray-300 hover:!bg-gray-300 dark:bg-gray-900 dark:hover:!bg-gray-950 bg-opacity-50 hover:!bg-opacity-70 !normal-case"
     >
       <div className="w-full flex items-center gap-2">
         {generatorOutputType === 'image' ? (
