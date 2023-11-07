@@ -1,8 +1,8 @@
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
+import GeneratorSelectModalTrigger from '@/components/Creation/CreationInterface/GeneratorSelectModalTrigger'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import { Button } from '@mui/material'
-import { Select } from 'antd'
 import React from 'react'
 
 const CreationWorkspace = ({
@@ -26,11 +26,11 @@ const CreationWorkspace = ({
 }) => {
   return (
     <>
-      <div className="relative z-0 w-full md:pt-2 pb-0 bg-gray-100 dark:bg-gray-800 rounded-t-lg">
+      <div className="relative z-0 w-full pb-0 bg-gray-100 dark:bg-gray-800 rounded-t-lg flex-shrink-0">
         {usesDrawer && onDrawerToggle ? (
           <Button
             size="small"
-            className={`md:hidden cursor-pointer hover:text-blue-500 w-full`}
+            className={`md:hidden cursor-pointer text-gray-500 hover:text-blue-500 w-full`}
             onClick={() => onDrawerToggle(!openedDrawer)}
           >
             {openedDrawer ? '' : 'Expand'}{' '}
@@ -41,26 +41,15 @@ const CreationWorkspace = ({
           </Button>
         ) : null}
         <div
-          className={`px-4 pt-1 md:pt-2 md:mb-0 ${
-            usesDrawer && !openedDrawer ? 'hidden' : 'flex'
+          className={`p-2 ${
+            usesDrawer && !openedDrawer ? 'hidden' : 'flex gap-2 items-center'
           }`}
         >
-          <Select
-            id="activeGenerator"
-            value={activeGenerator?.generatorName}
+          <GeneratorSelectModalTrigger
+            generators={generators}
+            activeGenerator={activeGenerator}
             onChange={handleGeneratorChange}
-            placeholder="Generators"
-            className="w-full"
-          >
-            {generators.map(generator => (
-              <Select.Option
-                key={generator.generatorName}
-                value={generator.generatorName}
-              >
-                /{generator.generatorName}
-              </Select.Option>
-            ))}
-          </Select>
+          />
         </div>
       </div>
 

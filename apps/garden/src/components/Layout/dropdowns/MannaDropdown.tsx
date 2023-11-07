@@ -14,7 +14,7 @@ const MannaBalanceInfo = () => {
   const { mannaBalance } = useContext(UserContext)
 
   return (
-    <Link href={'/manna'} className="flex items-center gap-2">
+    <Link href={'/manna'} className="flex items-center gap-2 p-2">
       You have <span className="font-bold">{mannaBalance}</span> Manna
     </Link>
   )
@@ -28,7 +28,7 @@ const MannaRefillModalTrigger = () => {
   }
 
   return (
-    <div onClick={onClickHandler} className="flex items-center gap-2">
+    <div onClick={onClickHandler} className="flex items-center gap-2 p-2">
       <RedeemIcon />
       Redeem Voucher
     </div>
@@ -37,7 +37,7 @@ const MannaRefillModalTrigger = () => {
 
 const MannaBuyLink = () => {
   return (
-    <Link href={'/manna'} className="flex items-center gap-2">
+    <Link href={'/manna'} className="flex items-center gap-2 p-2">
       <AddShoppingCartIcon fontSize="medium" />
       Buy Manna
     </Link>
@@ -56,7 +56,7 @@ const defaultItems: ItemType[] = [
         href="https://docs.eden.art/docs/overview/manna"
         target="_blank"
         title="Learn about Manna"
-        className="text-small hover:dark:text-gray-400"
+        className="block text-small p-2"
       >
         Learn about Manna
         <InfoCircleOutlined className="ml-1" />

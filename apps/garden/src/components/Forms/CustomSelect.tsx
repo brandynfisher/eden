@@ -2,6 +2,7 @@ import { CONFIG } from '@/lib/config'
 import { Select, SelectProps } from 'antd'
 import Image from 'next/image'
 import { DefaultOptionType } from 'rc-select/lib/Select'
+import { ReactNode } from 'react'
 
 type ExtendedOptionType = DefaultOptionType & { thumbnail?: string }
 
@@ -23,17 +24,17 @@ const filterSort = (
     .localeCompare((String(optionB?.searchableText) ?? '').toLowerCase())
 }
 
-const CustomOption = ({
+export const CustomOption = ({
   label,
   thumbnail,
   description,
 }: {
   label: string
-  thumbnail: string
-  description: string
+  thumbnail?: string
+  description: string | ReactNode
 }) => {
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-2 items-center">
       {thumbnail ? (
         <Image
           width={40}
@@ -44,8 +45,8 @@ const CustomOption = ({
         />
       ) : null}
       <div>
-        <div className="text-gray-500">{label}</div>
-        <div>{description}</div>
+        <div>{label}</div>
+        <div className="text-xs text-gray-500">{description}</div>
       </div>
     </div>
   )

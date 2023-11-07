@@ -120,7 +120,7 @@ const ManageSubscriptionButton = () => {
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center p-2">
       <ToolOutlined />
       <div
         className="ml-2 flex gap-2 w-full justify-between font-mono"
@@ -145,7 +145,7 @@ const MaxColumnSelector = () => {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full p-2">
       <div className="flex items-center">
         <TableOutlined />
         <div className="ml-2 flex gap-2 w-full justify-between font-mono">
@@ -190,7 +190,7 @@ const MaxColumnSelector = () => {
 
 const DevToolsLink = () => {
   return (
-    <Link className="w-full" href="/tools">
+    <Link className="w-full p-2 flex" href="/tools">
       <div className="flex items-center">
         <ToolOutlined />
         <div className="ml-2 flex gap-2 w-full justify-between font-mono">

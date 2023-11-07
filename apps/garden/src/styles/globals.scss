@@ -22,8 +22,8 @@ body {
 }
 
 .ant-modal-mask {
-    background-color: rgba(0, 0, 0, 0.75) !important;
-    backdrop-filter: blur(20px);
+    background-color: rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(16px);
 }
 
 .dark .ant-modal-content {
@@ -50,10 +50,6 @@ body {
     }
 }
 
-//.media-display .ant-image {
-//    display: flex !important;
-//    justify-content: center !important;
-//}
 .image-wrap .image-preview-mask {
     transition: all 200ms;
     opacity: 0;
@@ -61,22 +57,12 @@ body {
 }
 
 .media-display .ant-image-img {
-//    //object-fit: contain !important;
-//    overflow: hidden !important;
-//    width: auto !important;
-//    height: auto !important;
-//    max-width: 100% !important;
     max-height: 65vh;
     margin: auto !important;
-//    border-radius: 8px !important;
 }
 
 .ant-modal-body .media-display .ant-image-img {
     max-height: 72vh !important;
-}
-
-.modal-small {
-
 }
 
 @media (min-width: 768px) {
@@ -111,25 +97,11 @@ body {
         flex-grow: 1 !important;
     }
     .ant-modal-body .media-display .ant-image-img {
-        //min-width: 50vw !important;
-        //object-position: center !important;
         max-height: 90vh !important;
     }
 }
 
-//@media (min-width: 1280px) {
-//    .ant-modal-body .media-display .ant-image-img {
-//        //width: 63vw !important;
-//    }
-//}
-
 .media-display {
-    //&.media-display__small {
-    //    .ant-image-img {
-    //        max-height: 128px !important;
-    //    }
-    //}
-
     .image-zoomable-wrap {
         img {
             border-radius: 8px;
@@ -156,10 +128,21 @@ body {
 
 .modal-small {
     .ant-modal-content {
-        min-width: 284px !important;
+        position: relative !important;
+        width: 100% !important;
+        padding: 0 !important;
     }
     .ant-modal-close {
         top: 0 !important;
+        position: absolute !important;
+        right: 0 !important;
+    }
+
+    .ant-card {
+        .ant-card-head {
+            min-height: 44px !important;
+            padding: 0 16px
+        }
     }
 }
 
@@ -167,6 +150,15 @@ body {
     .modal-small {
         .ant-modal-content {
             min-width: 480px !important;
+        }
+
+        //.ant-modal-close {
+        //    position: absolute !important;
+        //    right: 0 !important;
+        //}
+        .ant-modal-close {
+            top: -22px !important;
+            right: -22px !important;
         }
     }
 }
@@ -453,6 +445,12 @@ body {
     .ant-modal-body {
         width: 100%;
     }
+
+    .ant-modal,
+    .ant-modal-wrap,
+    .ant-modal-content {
+        overflow-x: hidden !important;
+    }
 }
 
 @media (max-width: 768px) {
@@ -466,12 +464,6 @@ body {
             padding-top: 8px !important;
         }
     }
-}
-
-.ant-modal,
-.ant-modal-wrap,
-.ant-modal-content {
-    overflow-x: hidden !important;
 }
 
 .react-transform-wrapper {

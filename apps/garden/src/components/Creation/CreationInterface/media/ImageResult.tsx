@@ -34,7 +34,7 @@ const ImageResult = ({
   }, [previewSizeUrl, previewImageRef?.current, isLoaded])
 
   return (
-    <div className={`w-full`}>
+    <div className={`w-full h-full`}>
       <div
         className={`relative w-full h-full rounded-lg overflow-hidden inline-flex`}
         style={{ paddingTop: `${aspectRatio}%` }}

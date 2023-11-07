@@ -19,7 +19,6 @@ import {
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
-import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { debounce } from '@mui/material/utils'
 import { App, Button, Collapse, Form } from 'antd'
 import axios from 'axios'
@@ -448,32 +447,6 @@ const GeneratorForm = ({
       className={`flex flex-col h-full`}
     >
       <div className={usesDrawer && !openedDrawer ? 'hidden' : ''}>
-        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 border-solid border-0 border-b border-gray-300 dark:border-gray-700">
-          <div className="flex justify-between flex-wrap">
-            <span style={{ color: 'gray' }}>{generator.description}</span>
-            {generator.output === 'creation' ? (
-              <a
-                href="https://docs.eden.art/docs/guides/creation"
-                target="_blank"
-                className="flex gap-1 items-center"
-              >
-                Learn about Creations
-                <LinkOutlined />
-              </a>
-            ) : null}
-            {generator.output === 'concept' ? (
-              <a
-                href="https://docs.eden.art/docs/guides/concepts"
-                target="_blank"
-                className="flex gap-1 items-center"
-              >
-                Learn about Concepts
-                <LinkOutlined />
-              </a>
-            ) : null}
-          </div>
-        </div>
-
         {presetCreation && <CreationPresetInfo creation={presetCreation} />}
       </div>
 
