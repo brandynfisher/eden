@@ -17,10 +17,7 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
   return (
     <div className="px-4 py-2 text-gray-500 dark:bg-gray-950">
       <div className="flex items-center overflow-hidden">
-        <div
-          className="rounded-md w-12 h-12 mr-4 flex items-center overflow-hidden"
-          style={{ minWidth: '64px', minHeight: '64px' }}
-        >
+        <div className="rounded-md w-10 h-10 mr-2 flex items-center overflow-hidden">
           {creation.thumbnail ? (
             <ImageResult
               previewSizeUrl={creation.thumbnail}
@@ -34,7 +31,7 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
           )}
         </div>
         <div className="min-w-0 w-full flex gap-2 items-center justify-between flex-wrap">
-          <div className="flex gap-1 items-center lg:w-full">
+          <div className="flex gap-1 items-center">
             <Link href={`/creations/${creation._id}`}>
               <strong>/{creation.task.generator.generatorName}</strong>
             </Link>
@@ -48,7 +45,7 @@ const CreationPresetInfo = ({ creation }: { creation: Creation }) => {
             </div>
           </div>
           <Button size={'small'} onClick={() => handleRemoveClick()}>
-            Remove preset
+            Remove
           </Button>
         </div>
       </div>

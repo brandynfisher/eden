@@ -4,10 +4,11 @@ import CreationDetailModalV2 from '@/components/Modals/CreationDetailModalV2'
 import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
+import GeneratorSelectModal from '@/components/Modals/GeneratorSelectModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
 import TaskDetailModal from '@/components/Modals/TaskDetailModal'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
-import { Concept, Creation, Task } from '@edenlabs/eden-sdk'
+import { Concept, Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, {
@@ -28,6 +29,7 @@ export enum MODAL_TYPES {
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
   FOLLOWING_MODAL = 'FOLLOWING_MODAL',
   TASK_DETAIL_MODAL = 'TASK_DETAIL_MODAL',
+  GENERATOR_SELECT_MODAL = 'GENERATOR_SELECT_MODAL',
 }
 
 type GenericModalParams = unknown
@@ -40,6 +42,7 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
   [MODAL_TYPES.FOLLOWING_MODAL]: FollowingModal,
   [MODAL_TYPES.TASK_DETAIL_MODAL]: TaskDetailModal,
+  [MODAL_TYPES.GENERATOR_SELECT_MODAL]: GeneratorSelectModal,
 }
 
 type BaseModalProps = Partial<ModalProps> & {
@@ -49,6 +52,14 @@ type BaseModalProps = Partial<ModalProps> & {
   originPageUrl?: string
   className?: string
 }
+
+export type GeneratorSelectModalProps = Partial<
+  BaseModalProps & {
+    activeGenerator: Generator
+    generators: Generator[]
+    onChange: (generator: Generator) => void
+  }
+>
 
 export type CreationDetailModalV2Props = Partial<
   BaseModalProps & {
@@ -70,6 +81,7 @@ type ModalStore = {
     | Partial<BaseModalProps & { creation?: Creation; loadSimilar?: boolean }>
     | CreationDetailModalV2Props
     | AddToCollectionModalProps
+    | GeneratorSelectModalProps
     | Partial<BaseModalProps & { concept?: Concept }>
     | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })
     | (Partial<BaseModalProps> & { task?: Task })

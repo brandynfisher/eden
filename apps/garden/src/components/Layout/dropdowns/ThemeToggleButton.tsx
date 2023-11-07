@@ -29,7 +29,10 @@ const ThemeToggleButton = () => {
   }
 
   return (
-    <Space onClick={handleThemeToggleClick} className="justify-between w-full">
+    <Space
+      onClick={handleThemeToggleClick}
+      className="justify-between w-full p-2"
+    >
       <div className="flex">
         <div>☾ </div>
         <div className="font-mono ml-2 text-black dark:text-white">
