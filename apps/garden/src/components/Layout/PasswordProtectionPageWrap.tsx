@@ -25,7 +25,11 @@ const PasswordProtectionPage = ({ children }: PropsWithChildren) => {
   const [access, setAccess] = useState<boolean | undefined>(undefined)
 
   useEffect(() => {
-    setAccess(localStoragePasswordCorrect)
+    setAccess(
+      typeof localStoragePasswordCorrect !== 'undefined'
+        ? localStoragePasswordCorrect
+        : false,
+    )
   }, [localStoragePasswordCorrect])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

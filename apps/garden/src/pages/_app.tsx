@@ -90,10 +90,10 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         <ThemeProvider attribute="class">
           <MUIConfigWrapProvider>
             <AntConfigWrapProvider>
-              <EdenProvider>
-                <ClerkWrapProvider>
-                  <UserProvider>
-                    <PasswordProtectionPageWrap>
+              <PasswordProtectionPageWrap>
+                <EdenProvider>
+                  <ClerkWrapProvider>
+                    <UserProvider>
                       <CreationNotificationProvider>
                         <MasonryProvider>
                           <ModalProvider>
@@ -105,10 +105,10 @@ export default function App({ Component, pageProps }: Props): ReactElement {
                           </ModalProvider>
                         </MasonryProvider>
                       </CreationNotificationProvider>
-                    </PasswordProtectionPageWrap>
-                  </UserProvider>
-                </ClerkWrapProvider>
-              </EdenProvider>
+                    </UserProvider>
+                  </ClerkWrapProvider>
+                </EdenProvider>
+              </PasswordProtectionPageWrap>
             </AntConfigWrapProvider>
           </MUIConfigWrapProvider>
         </ThemeProvider>
