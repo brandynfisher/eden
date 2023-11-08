@@ -24,7 +24,7 @@ export const useClerkUserState = () => {
       await signOut()
     }
 
-    await router.push('/')
+    await router.push('/sign-in')
   }
 
   // reset user state on disconnect
