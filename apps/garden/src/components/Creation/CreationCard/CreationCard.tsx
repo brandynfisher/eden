@@ -97,7 +97,11 @@ const CreationCard: FC<{
         </div>
       ) : null}
       {!creation.deleted && (width < 768 || hovered || dropdownActive) ? (
-        <>
+        <div
+          className={`opacity-0 transition-opacity duration-300 ${
+            width ? 'opacity-100' : ''
+          }`}
+        >
           <div
             className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none`}
           >
@@ -140,7 +144,7 @@ const CreationCard: FC<{
             />
             {!hidePrompt ? <CreationCardDetail creation={creation} /> : null}
           </div>
-        </>
+        </div>
       ) : null}
     </div>
   )
