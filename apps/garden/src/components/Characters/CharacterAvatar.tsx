@@ -1,6 +1,6 @@
 import CharacterAvatarFallback from '@/components/Characters/CharacterAvatarFallback'
 import Image from 'next/image'
-import React from 'react'
+import React, { useState } from 'react'
 
 const CharacterAvatar = ({
   id,
@@ -15,6 +15,7 @@ const CharacterAvatar = ({
   size?: 'small' | 'medium' | 'large' | 'auto' | undefined
   shape?: 'square' | 'circle'
 }) => {
+  const [imgError, setImgError] = useState(false)
   return (
     <div
       className={`relative overflow-hidden flex items-center justify-center flex-shrink-0 bg-gray-900 h-full ${
@@ -25,7 +26,7 @@ const CharacterAvatar = ({
         shape === 'square' ? 'rounded ' : 'rounded-full'
       }`}
     >
-      {imageUri ? (
+      {imageUri && !imgError ? (
         <Image
           priority={true}
           key={id}
@@ -34,6 +35,7 @@ const CharacterAvatar = ({
           width={90}
           height={90}
           style={{ objectFit: 'cover', maxWidth: '100%', maxHeight: '100%' }}
+          onError={() => setImgError(true)}
         />
       ) : (
         <CharacterAvatarFallback id={id} name={name} size={size} />
