@@ -528,7 +528,7 @@ const GeneratorForm = ({
                 loading={isSubmitting ? { delay: 250 } : false}
                 disabled={submitButtonDisabled}
               >
-                {generator.generatorName}
+                Create
                 <MannaCostBadge cost={taskCost || 'n/a'} />
               </Button>
             )}
