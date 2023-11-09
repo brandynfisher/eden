@@ -1,7 +1,7 @@
 import {
   sdxl_generators_image,
   sdxl_generators_video,
-} from '@/components/Creation/CreationInterface/GeneratorSelectModalTrigger'
+} from '@/components/Creation/CreationInterface/CreationWorkspace'
 import { Generator } from '@edenlabs/eden-sdk'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import MovieFilter from '@mui/icons-material/MovieFilter'

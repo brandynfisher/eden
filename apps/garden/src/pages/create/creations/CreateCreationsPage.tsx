@@ -12,9 +12,7 @@ const CreatePageWithPreset = ({
   presetId: string
 }) => {
   const { creation } = useCreation(presetId, {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
+    revalidateAll: false,
   })
 
   if (!creation) {

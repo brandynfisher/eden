@@ -3,7 +3,24 @@ import GeneratorSelectModalTrigger from '@/components/Creation/CreationInterface
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import { Button } from '@mui/material'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+
+export type OutputType = 'image' | 'text' | 'video'
+
+export const sdxl_generators_image = [
+  'create',
+  'remix',
+  'blend',
+  'upscale',
+  'controlnet',
+]
+export const sdxl_generators_video = [
+  'interpolate',
+  'real2real',
+  'dialogue',
+  'monologue',
+  'wav2lip',
+]
 
 const CreationWorkspace = ({
   onSettingsToggle,
@@ -24,6 +41,18 @@ const CreationWorkspace = ({
   activeGenerator: Generator
   handleGeneratorChange: (generatorName: Generator['generatorName']) => void
 }) => {
+  const [outputType, setOutputType] = useState<OutputType>()
+
+  useEffect(() => {
+    setOutputType(
+      sdxl_generators_image.includes(activeGenerator.generatorName)
+        ? 'image'
+        : sdxl_generators_video.includes(activeGenerator.generatorName)
+        ? 'video'
+        : 'text',
+    )
+  }, [activeGenerator])
+
   return (
     <>
       <div className="relative z-0 w-full pb-0 bg-gray-100 dark:bg-gray-800 rounded-t-lg flex-shrink-0">
@@ -46,6 +75,7 @@ const CreationWorkspace = ({
           }`}
         >
           <GeneratorSelectModalTrigger
+            outputType={outputType}
             generators={generators}
             activeGenerator={activeGenerator}
             onChange={handleGeneratorChange}
@@ -56,6 +86,7 @@ const CreationWorkspace = ({
       <div className={`w-full md:h-full md:max-h-[calc(100%_-_48px)]`}>
         {activeGenerator && (
           <GeneratorForm
+            outputType={outputType}
             onSettingsToggle={onSettingsToggle}
             usesDrawer={usesDrawer}
             openedDrawer={openedDrawer}
