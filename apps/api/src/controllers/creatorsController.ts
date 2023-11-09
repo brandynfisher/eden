@@ -27,6 +27,17 @@ const removePrivateFields = (creator: any) => {
   return creatorObject
 }
 
+const findCreatorByIdOrUsername = async (userId: string) => {
+  const lowerCaseUserId = userId.toLowerCase()
+  const creatorDoc = await User.findOne({
+    $or: [
+      { userId: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
+      { username: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
+    ],
+  })
+  return creatorDoc
+}
+
 export const listCreators = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -146,7 +157,7 @@ export const listCreatorFollowers = async (
 ) => {
   const { limit, page } = request.query as CreatorFollowersListArguments
   const { userId } = request.params as CreatorFollowersListArguments
-  const creatorDoc = await User.findOne({ userId })
+  const creatorDoc = await findCreatorByIdOrUsername(userId)
 
   if (!creatorDoc) {
     return reply.status(404).send({
@@ -175,7 +186,7 @@ export const listCreatorFollowing = async (
   const { limit, page } = request.query as CreatorFollowingListArguments
   const { userId } = request.params as CreatorFollowersListArguments
 
-  const creatorDoc = await User.findOne({ userId })
+  const creatorDoc = await findCreatorByIdOrUsername(userId)
 
   if (!creatorDoc) {
     return reply.status(404).send({
@@ -202,13 +213,7 @@ export const getCreator = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.params as CreatorsGetArguments
-  const lowerCaseUserId = userId.toLowerCase()
-  const creatorDoc = await User.findOne({
-    $or: [
-      { userId: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
-      { username: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
-    ],
-  })
+  const creatorDoc = await findCreatorByIdOrUsername(userId)
   if (!creatorDoc || !creatorDoc?._id) {
     return reply.status(404).send({
       message: 'Creator not found',
