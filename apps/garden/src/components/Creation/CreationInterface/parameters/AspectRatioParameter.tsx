@@ -59,26 +59,25 @@ export const presetResolutions: PresetResolution[] = [
 
 const AspectRatioParameter = ({
   form,
-  onChange,
+  name,
 }: {
   form: FormInstance
-  onChange: (newVal: PresetResolution) => void
+  name: string
 }) => {
   const [displayValue, setDisplayValue] = useState<string>()
 
   useEffect(() => {
     if (!form) return
-    const currentValue = form.getFieldValue('ui-aspect-ratio')
+    const currentValue = form.getFieldValue(name)
     if (typeof currentValue !== 'undefined') {
-      setDisplayValue(
-        presetResolutions[form.getFieldValue('ui-aspect-ratio')].aspectRatio,
-      )
+      setDisplayValue(presetResolutions[form.getFieldValue(name)].aspectRatio)
     }
   }, [form])
 
   const onChangeHandler = (newVal: PresetResolution) => {
     setDisplayValue(newVal.aspectRatio)
-    onChange && onChange(newVal)
+    form.setFieldsValue({ ['width']: newVal.width })
+    form.setFieldsValue({ ['height']: newVal.height })
   }
 
   return (
@@ -93,13 +92,14 @@ const AspectRatioParameter = ({
         </Popover>
       </div>
       <Form.Item
-        name="ui-aspect-ratio"
+        name={name}
         className="mt-0 mb-0"
         dependencies={['width', 'height']}
         rules={[
           () => ({
             validator(rule, incomingValue) {
               setDisplayValue(presetResolutions[incomingValue].aspectRatio)
+              return Promise.resolve()
             },
           }),
         ]}

@@ -1,7 +1,7 @@
 import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, Select, Switch } from 'antd'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const OptionParameter = (props: {
   form: FormInstance
@@ -12,17 +12,30 @@ const OptionParameter = (props: {
   const allowedValues = props.parameter.allowedValues
   const options = allowedValues ? allowedValues.map(value => ({ value })) : []
 
+  // provides initial / preset values to decorative parameters
+  const specialChangeHandler = (newValue: number | boolean) => {
+    if (props.parameter.name === 'n_samples') {
+      props.form.setFieldsValue({ 'ui-samples': newValue })
+    }
+  }
+
   const onChange = (newValue: number | null) => {
     if (newValue !== null) {
       setValue(newValue)
-      props.form.setFieldsValue({ [props.parameter.name]: newValue })
+      props.form.setFieldsValue({ [props.parameter.name]: newValue.toString() })
+      specialChangeHandler(newValue)
     }
   }
 
   const onSwitchChange = (newValue: boolean) => {
     setValue(newValue)
     props.form.setFieldsValue({ [props.parameter.name]: newValue })
+    specialChangeHandler(newValue)
   }
+
+  useEffect(() => {
+    specialChangeHandler(props.parameter.default)
+  }, [props.parameter.default])
 
   return (
     <>
