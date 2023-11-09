@@ -7,7 +7,7 @@ import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import MovieFilter from '@mui/icons-material/MovieFilter'
 import Wallpaper from '@mui/icons-material/Wallpaper'
 import Image from 'next/image'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const ListItem = ({
   title,
@@ -22,6 +22,12 @@ const ListItem = ({
   selected?: boolean
   onClick?: () => void
 }) => {
+  const [imgSrc, setImgSrc] = useState(imageUrl)
+
+  useEffect(() => {
+    setImgSrc(imageUrl)
+  }, [imageUrl])
+
   return (
     <div
       onClick={() => onClick && onClick()}
@@ -31,17 +37,21 @@ const ListItem = ({
           : 'hover:!bg-gray-200 hover:dark:!bg-gray-800'
       } hover:border-blue-400  hover:dark:border-blue-600 hover:dark:bg-gray-950 rounded-lg font-mono `}
     >
-      <div className="relative flex gap-4 px-2 py-3">
-        <div className="flex items-center">
+      <div className="relative flex sm:gap-4 sm:px-2 sm:py-3 flex-col sm:flex-row">
+        <div className="flex items-center justify-center relative">
           <Image
-            width={44}
-            height={44}
-            src={imageUrl ? imageUrl : '/placeholder.png'}
-            alt={imageUrl}
+            width={170}
+            height={138}
+            src={imgSrc}
+            alt={imgSrc}
+            onError={() => {
+              setImgSrc('/placeholder.png')
+            }}
+            className="object-contain"
           />
         </div>
-        <div className="w-full">
-          <div className="font-bold mb-1 dark:text-gray-200 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-0 pb-4 sm:pb-0">
+          <div className="font-bold mb-1 dark:text-gray-200 flex items-center justify-between flex-wrap">
             <div>/{title}</div>
             {selected ? <div className="text-blue-500">active</div> : null}
           </div>
@@ -101,7 +111,7 @@ const GeneratorList = ({
                   key={generator.generatorName}
                   title={generator.generatorName}
                   text={generator.description}
-                  imageUrl={'/placeholder.png'}
+                  imageUrl={`/images/${generator.generatorName}.png`}
                   selected={
                     generator.generatorName === activeGenerator.generatorName
                   }
