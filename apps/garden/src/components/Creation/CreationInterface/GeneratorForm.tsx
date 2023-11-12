@@ -1,5 +1,7 @@
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
+import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
+import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
@@ -32,7 +34,10 @@ import React, {
   useState,
 } from 'react'
 
-// import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+import SamplesParameter from './parameters/SamplesParameter'
+
+// import UpscaleParameter from './parameters/UpscaleParameter'
+
 const { Panel } = Collapse
 
 type FieldValues = { [key: string]: string }
@@ -56,6 +61,30 @@ const getCleanedConfig = (
     }, {})
 }
 
+// const parameterGroups = [
+// {
+//   label: 'Resolution',
+//   items: [
+//     {
+//       name: 'generate_width',
+//       input: SliderParameter,
+//       label: 'Width',
+//       description: 'Width of generation in pixels',
+//       placeholder: '',
+//       docsUrl: 'https://...'
+//     },
+//     {
+//       name: 'generate_height',
+//       input: SliderParameter,
+//       label: 'Height',
+//       description: 'Height of generation in pixels',
+//       placeholder: '',
+//       docsUrl: 'https://...'
+//     }
+//   ]
+// },
+// ]
+
 const GeneratorForm = ({
   onSettingsToggle,
   usesDrawer,
@@ -63,6 +92,7 @@ const GeneratorForm = ({
   generator,
   presetCreation,
   onSubmitSuccess,
+  outputType,
 }: {
   onSettingsToggle?: Function
   usesDrawer?: boolean
@@ -70,6 +100,7 @@ const GeneratorForm = ({
   generator: Generator
   presetCreation?: Creation
   onSubmitSuccess?: () => void
+  outputType?: OutputType
 }) => {
   const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
     CreationNotificationContext,
@@ -391,50 +422,6 @@ const GeneratorForm = ({
     [presetConfig],
   )
 
-  // const AspectRatioParameter = () => {
-  //   return (
-  //     <div>
-  //       <div>1024 x 1024 (1:1 Square)</div>
-  //     </div>
-  //   )
-  // }
-  //
-  // const parameterGroups = [
-  //   {
-  //     label: 'Aspect Ratio',
-  //     items: [
-  //       {
-  //         name: 'ui-aspect_ratio',
-  //         input: AspectRatioParameter,
-  //         label: '',
-  //         description: '',
-  //         setFields: ['generate_width', 'generate_height'],
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     label: 'Resolution',
-  //     items: [
-  //       {
-  //         name: 'generate_width',
-  //         input: SliderParameter,
-  //         label: 'Width',
-  //         description: 'Width of generation in pixels',
-  //         placeholder: '',
-  //         docsUrl: 'https://...'
-  //       },
-  //       {
-  //         name: 'generate_height',
-  //         input: SliderParameter,
-  //         label: 'Height',
-  //         description: 'Height of generation in pixels',
-  //         placeholder: '',
-  //         docsUrl: 'https://...'
-  //       }
-  //     ]
-  //   },
-  // ]
-
   return (
     <Form
       layout={'vertical'}
@@ -443,7 +430,6 @@ const GeneratorForm = ({
       onFinish={handleFinish}
       key={generator.generatorName}
       onFieldsChange={debouncedHandleFormFieldsChange}
-      scrollToFirstError={true}
       className={`flex flex-col h-full`}
     >
       <div className={usesDrawer && !openedDrawer ? 'hidden' : ''}>
@@ -457,6 +443,21 @@ const GeneratorForm = ({
       >
         <div className={`p-4 bg-gray-100 dark:bg-gray-900`}>
           {renderFormFields(requiredParameters)}
+
+          {/* decorative / extra params linked to the actual param input */}
+          {outputType === 'image' || outputType === 'video' ? (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex gap-2">
+                {outputType === 'image' ? (
+                  <SamplesParameter form={form} name="ui-samples" />
+                ) : (
+                  <div>frames</div>
+                )}
+                {/*<UpscaleParameter form={form} name="ui-upscale"/>*/}
+              </div>
+              <AspectRatioParameter form={form} name="ui-aspect-ratio" />
+            </div>
+          ) : null}
         </div>
 
         {/* start param groups --- */}
@@ -527,7 +528,7 @@ const GeneratorForm = ({
                 loading={isSubmitting ? { delay: 250 } : false}
                 disabled={submitButtonDisabled}
               >
-                {generator.generatorName}
+                Create
                 <MannaCostBadge cost={taskCost || 'n/a'} />
               </Button>
             )}

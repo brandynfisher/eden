@@ -11,7 +11,7 @@ const TimelineListItem = ({ task, index }: { task: Task; index: number }) => {
       (task.status === 'pending' || task.status === 'running') ? (
         <Alert
           className={`w-full h-fit flex justify-center items-center md:max-w-[640px] 3xl:max-w-[840px] mb-4 px-4 py-2 text-gray-500`}
-          description="Tasks are being processed on our servers. You can keep using the app or close it."
+          description="Your tasks are being processed and will appear here and on your profile once complete. It is safe to close this window."
         />
       ) : null}
       <Card

@@ -1,5 +1,5 @@
 import ErrorBoundary from '@/ErrorBoundary'
-import PasswordProtection from '@/components/Layout/PasswordPage'
+import PasswordProtectionPageWrap from '@/components/Layout/PasswordProtectionPageWrap'
 import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
@@ -90,10 +90,10 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         <ThemeProvider attribute="class">
           <MUIConfigWrapProvider>
             <AntConfigWrapProvider>
-              <EdenProvider>
-                <ClerkWrapProvider>
-                  <UserProvider>
-                    <PasswordProtection>
+              <PasswordProtectionPageWrap>
+                <EdenProvider>
+                  <ClerkWrapProvider>
+                    <UserProvider>
                       <CreationNotificationProvider>
                         <MasonryProvider>
                           <ModalProvider>
@@ -105,10 +105,10 @@ export default function App({ Component, pageProps }: Props): ReactElement {
                           </ModalProvider>
                         </MasonryProvider>
                       </CreationNotificationProvider>
-                    </PasswordProtection>
-                  </UserProvider>
-                </ClerkWrapProvider>
-              </EdenProvider>
+                    </UserProvider>
+                  </ClerkWrapProvider>
+                </EdenProvider>
+              </PasswordProtectionPageWrap>
             </AntConfigWrapProvider>
           </MUIConfigWrapProvider>
         </ThemeProvider>

@@ -1,9 +1,10 @@
 import CustomLayout from '@/components/Layout/CustomLayout'
 import NavMenu from '@/components/Layout/navigation/NavMenu'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import theme from '@/styles/theme'
 import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
-import { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 const { Content } = Layout
 
@@ -15,10 +16,10 @@ const PageLayoutSidebar = ({
   children: ReactNode
 }) => {
   const { width: viewportWidth } = useViewportSize()
-  const [showFixedMenu, setShowFixedMenu] = useState(
-    viewportWidth < theme.screens.lg,
+  const [showFixedMenu, setShowFixedMenu] = useState<boolean | undefined>(
+    undefined,
   )
-  const [isVisible, setIsVisible] = useState(showFixedMenu)
+  const [isVisible, setIsVisible] = useState(false)
   const onCloseHandler = () => {
     setIsVisible(false)
   }
@@ -30,6 +31,14 @@ const PageLayoutSidebar = ({
       setShowFixedMenu(true)
     }
   }, [viewportWidth])
+
+  if (!viewportWidth || typeof showFixedMenu === 'undefined') {
+    return (
+      <div className="absolute inset-0">
+        <LoadingIndicator />
+      </div>
+    )
+  }
 
   return (
     <CustomLayout fixedHeight={fixedHeight}>

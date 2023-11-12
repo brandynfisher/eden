@@ -51,6 +51,10 @@ const CreationInterface = ({
 
   const handleGeneratorChange = useCallback(
     (value: string) => {
+      // @todo: persist settings for current generator in local storage before swapping
+
+      // @todo: restore settings (if present) of newly activated generator (make sure to not get overridden by preset etc)
+
       const selectedGenerator = generators?.find(
         generator => generator.generatorName === value,
       )

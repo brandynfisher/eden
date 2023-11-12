@@ -2,7 +2,6 @@ import { useMe } from '@/hooks/auth/useMe'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
 import { useAuth, useClerk } from '@clerk/nextjs'
-import { useLocalStorage } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
@@ -14,28 +13,18 @@ export const useClerkUserState = () => {
   const userId = clerkUid || null
   const { user, balance, pendingTasks, refetchMe } = useMe({ isAuthenticated })
 
-  const [localStoragePasswordCorrect, setLocalStoragePasswordCorrect] =
-    useLocalStorage<boolean>({
-      key: 'beta-password',
-      defaultValue: false,
-    })
-
   const authenticate = async () => {
     if (!isAuthenticated) {
-      await openSignIn(undefined)
+      openSignIn(undefined)
     }
   }
 
   const logout = async () => {
-    if (localStoragePasswordCorrect) {
-      setLocalStoragePasswordCorrect(false)
-    }
-
     if (isAuthenticated) {
       await signOut()
     }
 
-    await router.push('/')
+    await router.push('/sign-in')
   }
 
   // reset user state on disconnect
