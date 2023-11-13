@@ -36,12 +36,20 @@ const getCredential = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  if (request.headers['x-api-key']) {
+    await apiKeyVerify(request)
+  } else {
+    await server.verifyUser(request, reply)
+  }
+}
+
+export const isAuth = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   try {
-    if (request.headers['x-api-key']) {
-      await apiKeyVerify(request)
-    } else {
-      await server.verifyUser(request, reply)
-    }
+    await getCredential(server, request, reply)
   } catch (error: any) {
     return reply.status(401).send({
       statusCode: 401,
@@ -51,20 +59,20 @@ const getCredential = async (
   }
 }
 
-export const isAuth = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  await getCredential(server, request, reply)
-}
-
 export const isAdmin = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  await getCredential(server, request, reply)
+  try {
+    await getCredential(server, request, reply)
+  } catch (error: any) {
+    return reply.status(401).send({
+      statusCode: 401,
+      error: 'Unauthorized',
+      message: error.message,
+    })
+  }
   if (!request.user.isAdmin) {
     return reply.status(401).send({
       statusCode: 401,
