@@ -14,6 +14,7 @@ import controlnetParameters from './generators/controlnet.js';
 import monologueParameters from './generators/monologue.js';
 import dialogueParameters from './generators/dialogue.js';
 import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
+import comfyuiParameters from './generators/comfyui.js';
 
 const allowedCogs = [
   "eden-sd-pipelines-sdxl",
@@ -22,6 +23,7 @@ const allowedCogs = [
   "sdxl-lora-trainer",
   "zeroscope-v2-xl",
   "scenarioRunner",
+  "eden-comfyui"
 ]
 
 const env = process.argv[2];
@@ -204,6 +206,24 @@ async function updateVersion(db) {
     await db.collection('generators').updateOne(
       { generatorName: 'sdxl-lora-trainer' }, 
       { $addToSet: { versions: conceptGeneratorVersion } }
+    );
+
+  }
+
+  else if (cog === 'eden-comfyui') {
+
+    const comfyuiVersion = {
+      provider: 'replicate',
+      address: 'abraham-ai/eden-comfyui',
+      versionId: versionId,
+      mode: 'comfyui_create',
+      parameters: comfyuiParameters,
+      isDeprecated: false
+    }
+
+    await db.collection('generators').updateOne(
+      { generatorName: 'comfyui_create' }, 
+      { $addToSet: { versions: comfyuiVersion } }
     );
 
   }
