@@ -15,8 +15,9 @@ export const sdxl_generators_image = [
   'controlnet',
 ]
 export const sdxl_generators_video = [
-  'interpolate',
   'real2real',
+  'animatediff_comfyui',
+  'interpolate',
   'dialogue',
   'monologue',
   'wav2lip',
