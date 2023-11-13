@@ -6,6 +6,7 @@ const params = [
     description: 'Source video (driving shape/content)',
     default: null,
     isRequired: true,
+    mediaUpload: "video/mp4"
   },
   
   {
