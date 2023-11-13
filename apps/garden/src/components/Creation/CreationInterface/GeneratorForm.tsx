@@ -53,7 +53,7 @@ const getCleanedConfig = (
 
   // filter out temporary preset form values
   return Object.keys(consolidatedFieldValues)
-    .filter(key => !key.endsWith('--preset'))
+    .filter(key => !key.endsWith('--preset') && !key.startsWith('ui-'))
     .reduce((obj: FieldValues, key) => {
       // @ts-ignore
       obj[key] = consolidatedFieldValues[key]
