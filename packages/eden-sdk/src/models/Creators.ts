@@ -192,4 +192,5 @@ export type Creator = {
   featureFlags?: string[]
   subscriptionTier?: string
   stripeCustomerId?: string
+  discordId?: string
 }
