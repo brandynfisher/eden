@@ -37,11 +37,11 @@ const ListItem = ({
           : 'hover:!bg-gray-200 hover:dark:!bg-gray-800'
       } hover:border-blue-400  hover:dark:border-blue-600 hover:dark:bg-gray-950 rounded-lg font-mono `}
     >
-      <div className="relative flex sm:gap-2 flex-col sm:flex-row">
+      <div className="relative flex gap-2 flex-col sm:flex-row">
         <div className="flex items-center justify-center relative">
           <Image
-            width={170}
-            height={120}
+            width={198}
+            height={140}
             src={imgSrc}
             alt={imgSrc}
             onError={() => {

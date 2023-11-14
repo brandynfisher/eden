@@ -19,7 +19,7 @@ const GeneratorSelectModal = ({
   return (
     <Modal
       {...rest}
-      className="modal-small max-w-4xl flex flex-col w-full items-center justify-center"
+      className="modal-small max-w-6xl flex flex-col w-full items-center justify-center"
     >
       <div className="flex justify-between items-center bg-gray-300 dark:bg-gray-800 rounded-t-lg h-14 px-4 py-2 flex-wrap">
         <div className="font-bold flex-shrink-0">Select Generator</div>

@@ -71,6 +71,8 @@ const AspectRatioParameter = ({
     const currentValue = form.getFieldValue(name)
     if (typeof currentValue !== 'undefined') {
       setDisplayValue(presetResolutions[form.getFieldValue(name)].aspectRatio)
+    } else {
+      setDisplayValue(presetResolutions[4].aspectRatio)
     }
   }, [form])
 
