@@ -180,6 +180,7 @@ export const getCreationsFeed = async (
       !isUserRequestingOwnProfileFeed &&
       !(
         collection &&
+        collection.user &&
         ownUserId &&
         collection.user.toString() === ownUserId.toString()
       )
