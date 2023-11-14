@@ -9,7 +9,7 @@ const SamplesParameter = ({
   name: string
 }) => {
   const onChangeHandler = (newVal: number) => {
-    form.setFieldsValue({ ['n_samples']: newVal })
+    form.setFieldsValue({ ['n_samples']: Number(newVal) })
   }
 
   return (

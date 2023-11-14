@@ -24,7 +24,7 @@ const OptionParameter = (props: {
   const onChange = (newValue: number | null) => {
     if (newValue !== null) {
       setValue(newValue)
-      props.form.setFieldsValue({ [props.parameter.name]: newValue.toString() })
+      props.form.setFieldsValue({ [props.parameter.name]: newValue })
       specialChangeHandler(newValue)
     }
   }
