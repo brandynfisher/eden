@@ -54,7 +54,6 @@ const params = [
     minimum: 0.0,
     maximum: 1.0,
     step: 0.1,
-    optional: true,
   },
 
   ////////////////////////////////////////
