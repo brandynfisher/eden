@@ -31,17 +31,17 @@ const ListItem = ({
   return (
     <div
       onClick={() => onClick && onClick()}
-      className={`cursor-pointer border border-solid border-gray-700 bg-gray-50 dark:bg-gray-950 ${
+      className={`cursor-pointer border border-solid border-gray-700 bg-gray-50 dark:bg-gray-950 overflow-hidden ${
         selected
           ? '!bg-gray-300 dark:!bg-gray-900 border-green-800'
           : 'hover:!bg-gray-200 hover:dark:!bg-gray-800'
       } hover:border-blue-400  hover:dark:border-blue-600 hover:dark:bg-gray-950 rounded-lg font-mono `}
     >
-      <div className="relative flex sm:gap-4 sm:px-2 sm:py-3 flex-col sm:flex-row">
+      <div className="relative flex sm:gap-2 flex-col sm:flex-row">
         <div className="flex items-center justify-center relative">
           <Image
             width={170}
-            height={138}
+            height={120}
             src={imgSrc}
             alt={imgSrc}
             onError={() => {
@@ -50,7 +50,7 @@ const ListItem = ({
             className="object-contain"
           />
         </div>
-        <div className="w-full px-4 sm:px-0 pb-4 sm:pb-0">
+        <div className="w-full px-4 pb-4 sm:pb-0 sm:px-2 sm:py-2">
           <div className="font-bold mb-1 dark:text-gray-200 flex items-center justify-between flex-wrap">
             <div>/{title}</div>
             {selected ? <div className="text-blue-500">active</div> : null}
@@ -99,7 +99,7 @@ const GeneratorList = ({
         {generatorGroups.map(group => (
           <div
             key={group.title}
-            className="lg:flex gap-4 mb-4 border-0 lg:border-b lg:border-solid border-gray-300 dark:border-gray-800 last:border-b-0"
+            className="lg:flex lg:flex-col gap-4 mb-4 border-0 lg:border-b lg:border-solid border-gray-300 dark:border-gray-800 last:border-b-0"
           >
             <h3 className="flex self-start items-center gap-2">
               {group.icon}
