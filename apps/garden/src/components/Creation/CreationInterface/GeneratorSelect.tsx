@@ -99,7 +99,7 @@ const GeneratorList = ({
         {generatorGroups.map(group => (
           <div
             key={group.title}
-            className="lg:flex lg:flex-col gap-4 mb-4 border-0 lg:border-b lg:border-solid border-gray-300 dark:border-gray-800 last:border-b-0"
+            className="lg:flex lg:flex-col gap-2 mb-4 border-0 lg:border-b lg:border-solid border-gray-300 dark:border-gray-800 last:border-b-0"
           >
             <h3 className="flex self-start items-center gap-2">
               {group.icon}
