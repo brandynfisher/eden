@@ -17,21 +17,21 @@ const OptionParameter = (props: {
   // provides initial / preset values to decorative parameters
   const specialChangeHandler = (newValue: number | boolean) => {
     if (props.parameter.name === 'n_samples') {
-      props.form.setFieldsValue({ 'ui-samples': newValue })
+      props.form.setFieldsValue({ 'ui-samples': Number(newValue) })
     }
   }
 
   const onChange = (newValue: number | null) => {
     if (newValue !== null) {
       setValue(newValue)
-      props.form.setFieldsValue({ [props.parameter.name]: newValue })
+      props.form.setFieldsValue({ [props.parameter.name]: Number(newValue) })
       specialChangeHandler(newValue)
     }
   }
 
   const onSwitchChange = (newValue: boolean) => {
     setValue(newValue)
-    props.form.setFieldsValue({ [props.parameter.name]: newValue })
+    props.form.setFieldsValue({ [props.parameter.name]: Number(newValue) })
     specialChangeHandler(newValue)
   }
 

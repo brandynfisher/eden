@@ -1,27 +1,11 @@
-import { presetResolutions } from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
+import {
+  closest,
+  presetItems,
+} from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, InputNumber, Slider } from 'antd'
 import { FocusEvent, useEffect, useState } from 'react'
-
-function closest(needle: number, haystack: number[]) {
-  return haystack.reduce((a, b) => {
-    let aDiff = Math.abs(a - needle)
-    let bDiff = Math.abs(b - needle)
-
-    if (aDiff == bDiff) {
-      return a > b ? a : b
-    } else {
-      return bDiff < aDiff ? b : a
-    }
-  })
-}
-
-const presetItems = {
-  width: presetResolutions.map(pres => pres.width),
-  height: presetResolutions.map(pres => pres.height),
-  aspectRatio: presetResolutions.map(pres => pres.width / pres.height),
-}
 
 const SliderParameter = (props: {
   form: FormInstance
@@ -34,8 +18,8 @@ const SliderParameter = (props: {
 
   const onChange = (newValue: number | null) => {
     setFieldValue(newValue)
-    specialChangeHandler()
     props.onFieldChange && props.onFieldChange()
+    specialChangeHandler()
   }
 
   const setFormValue = (newValue: number | null) => {
