@@ -19,7 +19,8 @@ const CreationCard: FC<{
   data: Creation
   onClick: () => void
   hidePrompt?: boolean
-}> = ({ index, data, onClick, hidePrompt }) => {
+  sizes?: string
+}> = ({ index, data, onClick, hidePrompt, sizes }) => {
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
@@ -72,6 +73,7 @@ const CreationCard: FC<{
           creation={creation}
           priority={index < 20}
           hovered={hovered}
+          sizes={sizes}
         />
       </a>
       {creation.deleted ? (
