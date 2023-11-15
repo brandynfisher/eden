@@ -53,7 +53,7 @@ const getCleanedConfig = (
 
   // filter out temporary preset form values
   return Object.keys(consolidatedFieldValues)
-    .filter(key => !key.endsWith('--preset'))
+    .filter(key => !key.endsWith('--preset') && !key.startsWith('ui-'))
     .reduce((obj: FieldValues, key) => {
       // @ts-ignore
       obj[key] = consolidatedFieldValues[key]
@@ -422,6 +422,29 @@ const GeneratorForm = ({
     [presetConfig],
   )
 
+  const getInitialValue = useCallback(
+    (parameterName: string) => {
+      const currentGeneratorParams = getCurrentGeneratorParameters(generator)
+
+      if (presetConfig) {
+        const presetParameter = Object.entries(presetConfig).filter(
+          ([key]) => key === parameterName,
+        )[0]
+
+        if (presetParameter) {
+          return presetParameter[1]
+        }
+      }
+
+      const currentParamDefault = currentGeneratorParams?.filter(
+        param => param.name === parameterName,
+      )[0]
+
+      return currentParamDefault ? currentParamDefault.default : 0
+    },
+    [generator, presetConfig],
+  )
+
   return (
     <Form
       layout={'vertical'}
@@ -448,14 +471,26 @@ const GeneratorForm = ({
           {outputType === 'image' || outputType === 'video' ? (
             <div className="grid grid-cols-2 gap-2">
               <div className="flex gap-2">
-                {outputType === 'image' ? (
-                  <SamplesParameter form={form} name="ui-samples" />
+                {outputType === 'image' &&
+                generator.generatorName !== 'blend' ? (
+                  <SamplesParameter
+                    form={form}
+                    name="ui-samples"
+                    initialValue={getInitialValue('n_samples')}
+                  />
                 ) : (
                   <div>frames</div>
                 )}
                 {/*<UpscaleParameter form={form} name="ui-upscale"/>*/}
               </div>
-              <AspectRatioParameter form={form} name="ui-aspect-ratio" />
+              <AspectRatioParameter
+                form={form}
+                name="ui-aspect-ratio"
+                initialValue={{
+                  width: getInitialValue('width'),
+                  height: getInitialValue('height'),
+                }}
+              />
             </div>
           ) : null}
         </div>

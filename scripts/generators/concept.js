@@ -19,9 +19,9 @@ const params = [
     isRequired: true,
   },
   {
-    name: 'mode',
+    name: 'concept_mode',
     label: 'Training mode',
-    description: 'What are you trying to learn? Object generally refers to any kind of coherent object, character or thing. Face is specifically for learning a persons face (can also be tried for characters), style is to learn an aesthetic style thats consistent across diverse images.',
+    description: 'What are you trying to learn? Object generally refers to any kind of coherent object, character or thing. Face is specifically for learning a face (can be a person of character), style is to learn an aesthetic style thats consistent across diverse images.',
     default: 'object',
     allowedValues: ['object', 'face', 'style'],
     isRequired: true,

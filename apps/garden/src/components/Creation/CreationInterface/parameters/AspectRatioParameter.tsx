@@ -9,6 +9,19 @@ type PresetResolution = {
   aspectRatio: string //'21:9'
 }
 
+export function closest(needle: number, haystack: number[]) {
+  return haystack.reduce((a, b) => {
+    let aDiff = Math.abs(a - needle)
+    let bDiff = Math.abs(b - needle)
+
+    if (aDiff == bDiff) {
+      return a > b ? a : b
+    } else {
+      return bDiff < aDiff ? b : a
+    }
+  })
+}
+
 export const presetResolutions: PresetResolution[] = [
   {
     width: 1536,
@@ -57,14 +70,31 @@ export const presetResolutions: PresetResolution[] = [
   },
 ]
 
+export const presetItems = {
+  width: presetResolutions.map(pres => pres.width),
+  height: presetResolutions.map(pres => pres.height),
+  aspectRatio: presetResolutions.map(pres => pres.width / pres.height),
+}
+
+const getPresetResolutionIndex = (width: number, height: number) => {
+  const aspectRatio = width / height
+  const aspectIndex = presetItems['aspectRatio'].indexOf(
+    closest(aspectRatio || 0, presetItems['aspectRatio']),
+  )
+  return aspectIndex
+}
+
 const AspectRatioParameter = ({
   form,
   name,
+  initialValue,
 }: {
   form: FormInstance
   name: string
+  initialValue?: { width: number; height: number }
 }) => {
   const [displayValue, setDisplayValue] = useState<string>()
+  const [initialFieldValue, setInitialFieldValue] = useState<number>()
 
   useEffect(() => {
     if (!form) return
@@ -73,6 +103,21 @@ const AspectRatioParameter = ({
       setDisplayValue(presetResolutions[form.getFieldValue(name)].aspectRatio)
     }
   }, [form])
+
+  useEffect(() => {
+    console.log({ initialValue })
+    if (!initialValue) {
+      setDisplayValue(presetResolutions[4].aspectRatio)
+      return
+    }
+    const presetIndex = getPresetResolutionIndex(
+      initialValue.width,
+      initialValue.height,
+    )
+    console.log({ presetIndex })
+    setInitialFieldValue(presetIndex)
+    setDisplayValue(presetResolutions[presetIndex].aspectRatio)
+  }, [initialValue])
 
   const onChangeHandler = (newVal: PresetResolution) => {
     setDisplayValue(newVal.aspectRatio)
@@ -95,6 +140,7 @@ const AspectRatioParameter = ({
         name={name}
         className="mt-0 mb-0"
         dependencies={['width', 'height']}
+        initialValue={initialFieldValue}
         rules={[
           () => ({
             validator(rule, incomingValue) {

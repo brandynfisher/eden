@@ -12,17 +12,19 @@ const OptionParameter = (props: {
   const allowedValues = props.parameter.allowedValues
   const options = allowedValues ? allowedValues.map(value => ({ value })) : []
 
+  const isVisible = props.parameter.name !== 'n_samples'
+
   // provides initial / preset values to decorative parameters
   const specialChangeHandler = (newValue: number | boolean) => {
     if (props.parameter.name === 'n_samples') {
-      props.form.setFieldsValue({ 'ui-samples': newValue })
+      props.form.setFieldsValue({ 'ui-samples': Number(newValue) })
     }
   }
 
   const onChange = (newValue: number | null) => {
     if (newValue !== null) {
       setValue(newValue)
-      props.form.setFieldsValue({ [props.parameter.name]: newValue.toString() })
+      props.form.setFieldsValue({ [props.parameter.name]: newValue })
       specialChangeHandler(newValue)
     }
   }
@@ -46,7 +48,7 @@ const OptionParameter = (props: {
             description={props.parameter.description}
           />
         }
-        className="mb-1"
+        className={`mb-1 ${isVisible ? '' : 'hidden'}`}
         name={props.parameter.name}
         initialValue={props.parameter.default}
         rules={[
