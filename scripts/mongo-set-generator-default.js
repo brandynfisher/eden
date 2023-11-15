@@ -77,7 +77,7 @@ async function updateDefaultVersion(db) {
     'monologue', 'dialogue',
   ];
   const comfyui_generators = [
-    'comfyui_create'
+    'animatediff_comfyui'
   ]
 
   if (cog === 'eden-sd-pipelines-sdxl') {

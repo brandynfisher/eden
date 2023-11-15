@@ -26,8 +26,18 @@ node mongo-set-generator-default.js ENV COG VERSIONID
 For example
 
 ```
-node mongo-update-generator.js eden-sd-pipelines-sdxl stage 62f5c82490640b448545c4e82751472e0459904629d52cb98a581105edb7d9c0
-node mongo-set-generator-default.js eden-sd-pipelines-sdxl stage 62f5c82490640b448545c4e82751472e0459904629d52cb98a581105edb7d9c0
+node mongo-update-generator.js stage eden-sd-pipelines-sdxl 62f5c82490640b448545c4e82751472e0459904629d52cb98a581105edb7d9c0
+node mongo-set-generator-default.js stage eden-sd-pipelines-sdxl 62f5c82490640b448545c4e82751472e0459904629d52cb98a581105edb7d9c0
+
+
+node mongo-update-generator.js stage eden-comfyui 4787e5ee4d766b965e548c53dc7c846706df6a96a07c0e391373b5267138d2f6
+node mongo-set-generator-default.js stage eden-comfyui 4787e5ee4d766b965e548c53dc7c846706df6a96a07c0e391373b5267138d2f6
+
+
+node mongo-update-generator.js stage sdxl-lora-trainer e063e410c8cfa8972f3372f8fa1c3290f3a2b6de732c5f226eba918c4cf9e585
+node mongo-set-generator-default.js stage sdxl-lora-trainer e063e410c8cfa8972f3372f8fa1c3290f3a2b6de732c5f226eba918c4cf9e585
+
+
 ```
 
 will register [this version of the SDXL cog](https://replicate.com/abraham-ai/eden-sd-pipelines-sdxl/versions/62f5c82490640b448545c4e82751472e0459904629d52cb98a581105edb7d9c0) along all image (not video) endpoints on stage. 
