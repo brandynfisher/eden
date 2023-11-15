@@ -286,18 +286,20 @@ const TaskNotificationDropdownMUI = () => {
     })
 
     completedTaskItems.push(
-      ...completedTasks.map(task => ({
-        render: (
-          <CompletedTaskMenuItem
-            router={router}
-            task={task}
-            handleDismiss={() =>
-              handleDismiss(task._id, completedTasks, setCompletedTasks)
-            }
-          />
-        ),
-        key: task._id,
-      })),
+      ...completedTasks
+        .filter(task => !!task.creation)
+        .map(task => ({
+          render: (
+            <CompletedTaskMenuItem
+              router={router}
+              task={task}
+              handleDismiss={() =>
+                handleDismiss(task._id, completedTasks, setCompletedTasks)
+              }
+            />
+          ),
+          key: task._id,
+        })),
     )
   }
 
