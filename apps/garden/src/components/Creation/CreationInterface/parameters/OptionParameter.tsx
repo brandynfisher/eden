@@ -24,14 +24,14 @@ const OptionParameter = (props: {
   const onChange = (newValue: number | null) => {
     if (newValue !== null) {
       setValue(newValue)
-      props.form.setFieldsValue({ [props.parameter.name]: Number(newValue) })
+      props.form.setFieldsValue({ [props.parameter.name]: newValue })
       specialChangeHandler(newValue)
     }
   }
 
   const onSwitchChange = (newValue: boolean) => {
     setValue(newValue)
-    props.form.setFieldsValue({ [props.parameter.name]: Number(newValue) })
+    props.form.setFieldsValue({ [props.parameter.name]: newValue })
     specialChangeHandler(newValue)
   }
 
