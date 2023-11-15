@@ -97,31 +97,27 @@ const CreationCard: FC<{
         </div>
       ) : null}
       {!creation.deleted && (width < 768 || hovered || dropdownActive) ? (
-        <div
-          className={`opacity-0 transition-opacity duration-300 ${
-            width ? 'opacity-100' : ''
-          }`}
-        >
+        <>
           <div
-            className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none`}
+            className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none opacity-0 transition-opacity duration-300 ${
+              width ? 'opacity-100' : ''
+            }`}
           >
             {!hidePrompt ? (
-              <>
-                <div className="flex items-center pointer-events-auto my-1">
-                  <CreatorProfileLink
-                    creatorId={creation.user.userId}
-                    creatorName={creation.user.username}
-                    creatorImage={creation.user.userImage}
-                  />
-                  <div
-                    className="text-gray-700 dark:text-gray-400 text-xs"
-                    title={createdDateString}
-                  >
-                    <span className="mx-1">•</span>
-                    {timeSinceCreation}
-                  </div>
+              <div className="flex items-center pointer-events-auto my-1">
+                <CreatorProfileLink
+                  creatorId={creation.user.userId}
+                  creatorName={creation.user.username}
+                  creatorImage={creation.user.userImage}
+                />
+                <div
+                  className="text-gray-700 dark:text-gray-400 text-xs"
+                  title={createdDateString}
+                >
+                  <span className="mx-1">•</span>
+                  {timeSinceCreation}
                 </div>
-              </>
+              </div>
             ) : null}
             <div className="flex items-center gap-4 ml-auto my-1">
               {creation.isPrivate ? <LockIcon fontSize="small" /> : null}
@@ -145,7 +141,7 @@ const CreationCard: FC<{
             />
             {!hidePrompt ? <CreationCardDetail creation={creation} /> : null}
           </div>
-        </div>
+        </>
       ) : null}
     </div>
   )
