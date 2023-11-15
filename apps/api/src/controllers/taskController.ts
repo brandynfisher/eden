@@ -319,24 +319,27 @@ export const createChatCompletion = async (
 
   const chatMessages: ChatCompletionRequestMessage[] = chat.map(m => {
     return {
-      role: m.sender == 'bot' ? 'assistant' : m.sender,
+      role: m.sender == 'bot' ? 'assistant' : 'user',
       content: m.message,
     } as ChatCompletionRequestMessage
   })
 
-  console.log(chatMessages)
-
-  const response = await server.openai.createChatCompletion({
+  const response = await server.openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
     messages: chatMessages,
     temperature: 1,
-    max_tokens: 256,
+    max_tokens: 10,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
   })
 
-  const completionText = response?.data?.choices[0].message?.content || 'error'
+  const completionText = response?.choices[0]?.message.content
+  if (!completionText) {
+    return reply.status(500).send({
+      message: 'Failed to create completion',
+    })
+  }
 
   const prompt = chatMessages.map(m => `${m.role}: ${m.content}`).join('\n')
 
