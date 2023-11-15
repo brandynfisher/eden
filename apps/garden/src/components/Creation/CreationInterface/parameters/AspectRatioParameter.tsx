@@ -95,18 +95,21 @@ const AspectRatioParameter = ({
 }) => {
   const [displayValue, setDisplayValue] = useState<string>()
   const [initialFieldValue, setInitialFieldValue] = useState<number>()
+  const [fieldValue, setFieldValue] = useState<number>()
 
   useEffect(() => {
     if (!form) return
     const currentValue = form.getFieldValue(name)
     if (typeof currentValue !== 'undefined') {
-      setDisplayValue(presetResolutions[form.getFieldValue(name)].aspectRatio)
+      setFieldValue(currentValue)
+      setDisplayValue(presetResolutions[currentValue].aspectRatio)
     }
   }, [form])
 
   useEffect(() => {
     console.log({ initialValue })
     if (!initialValue) {
+      setFieldValue(4)
       setDisplayValue(presetResolutions[4].aspectRatio)
       return
     }
@@ -116,6 +119,7 @@ const AspectRatioParameter = ({
     )
     console.log({ presetIndex })
     setInitialFieldValue(presetIndex)
+    setFieldValue(presetIndex)
     setDisplayValue(presetResolutions[presetIndex].aspectRatio)
   }, [initialValue])
 
@@ -151,6 +155,7 @@ const AspectRatioParameter = ({
         ]}
       >
         <Slider
+          value={fieldValue}
           trackStyle={{ display: 'none' }}
           step={1}
           min={0}
