@@ -1,6 +1,6 @@
 import ErrorBoundary from '@/ErrorBoundary'
-import PasswordProtectionPageWrap from '@/components/Layout/PasswordProtectionPageWrap'
 import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
+import PasswordProtection from '@/components/PasswordProtection'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
@@ -34,7 +34,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
     ))
 
   return (
-    <>
+    <PasswordProtection>
       <Head>
         <title>Garden of Eden</title>
         <meta
@@ -90,29 +90,27 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         <ThemeProvider attribute="class">
           <MUIConfigWrapProvider>
             <AntConfigWrapProvider>
-              <PasswordProtectionPageWrap>
-                <EdenProvider>
-                  <ClerkWrapProvider>
-                    <UserProvider>
-                      <CreationNotificationProvider>
-                        <MasonryProvider>
-                          <ModalProvider>
-                            {getLayout(
-                              <ErrorBoundary>
-                                <Component {...pageProps} />
-                              </ErrorBoundary>,
-                            )}
-                          </ModalProvider>
-                        </MasonryProvider>
-                      </CreationNotificationProvider>
-                    </UserProvider>
-                  </ClerkWrapProvider>
-                </EdenProvider>
-              </PasswordProtectionPageWrap>
+              <EdenProvider>
+                <ClerkWrapProvider>
+                  <UserProvider>
+                    <CreationNotificationProvider>
+                      <MasonryProvider>
+                        <ModalProvider>
+                          {getLayout(
+                            <ErrorBoundary>
+                              <Component {...pageProps} />
+                            </ErrorBoundary>,
+                          )}
+                        </ModalProvider>
+                      </MasonryProvider>
+                    </CreationNotificationProvider>
+                  </UserProvider>
+                </ClerkWrapProvider>
+              </EdenProvider>
             </AntConfigWrapProvider>
           </MUIConfigWrapProvider>
         </ThemeProvider>
       </main>
-    </>
+    </PasswordProtection>
   )
 }

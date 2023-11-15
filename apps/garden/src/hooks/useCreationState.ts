@@ -99,12 +99,15 @@
 //     refetchTasks,
 //   }
 // }
+import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
+import { getFeedPageRoute } from '@/hooks/useFeedPaginated'
 import { fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
+import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
-import { useEffect, useState } from 'react'
-import useSWR from 'swr'
+import { useContext, useEffect, useState } from 'react'
+import useSWR, { useSWRConfig } from 'swr'
 
 export const useCreationState = () => {
   const { message } = App.useApp()
@@ -118,6 +121,8 @@ export const useCreationState = () => {
     fetcher,
     { refreshInterval: 5000 },
   )
+  const { mutate: mutateGlobal } = useSWRConfig()
+  const { userId } = useContext(UserContext)
   const [notificationCutOffDate, setNotificationCutOffDate] =
     useState<number>(0)
   const tasks = tasksData?.tasks as Task[]
@@ -138,11 +143,26 @@ export const useCreationState = () => {
         ),
       )
 
-      setCompletedTasks(tasks?.filter(task => task.status === 'completed'))
+      const completed = tasks?.filter(task => task.status === 'completed')
+      setCompletedTasks(prevState => {
+        if (completed.length > prevState.length) {
+          // probably got a new finished task, trigger mutate on own profile (first page) to force a refresh
+          const ownCreatorFeedPageRoute = getFeedPageRoute(
+            'creations',
+            { userId: userId || '' },
+            25,
+            1,
+            OrderByLatest,
+          )
+          mutateGlobal(ownCreatorFeedPageRoute, undefined)
+        }
+
+        return completed
+      })
 
       setFailedTasks(tasks?.filter(task => task.status === 'failed'))
     }
-  }, [tasks])
+  }, [mutateGlobal, tasks, userId])
 
   useEffect(() => {
     // Cleanup function to remove completed tasks from taskIds
