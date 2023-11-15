@@ -47,6 +47,7 @@ const TimelineItemSample = ({
       data={creation}
       onClick={handleCardClick}
       hidePrompt={true}
+      sizes={'(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 30vw)'}
     />
   )
 }

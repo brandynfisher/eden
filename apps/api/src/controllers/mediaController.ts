@@ -17,11 +17,12 @@ export const uploadMedia = async (
   const buffer = await data.toBuffer()
   const type = await fileTypeFromBuffer(buffer)
 
-  // Allow images, audio, text, and .bin files
+  // Allow images, video, audio, text, and .bin files
   if (
     !type ||
     !(
       type.mime.startsWith('image/') ||
+      type.mime.startsWith('video/') ||
       type.mime.startsWith('audio/') ||
       type.mime.startsWith('text/') ||
       type.mime.startsWith('application/zip')

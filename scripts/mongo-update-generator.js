@@ -1,3 +1,5 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
 
@@ -15,7 +17,8 @@ import monologueParameters from './generators/monologue.js';
 import dialogueParameters from './generators/dialogue.js';
 import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
 import comfyuiParameters from './generators/comfyui.js';
-
+import animatediffParameters from './generators/animatediff.js';
+ 
 const allowedCogs = [
   "eden-sd-pipelines-sdxl",
   "eden-sd-pipelines-sdxl-video",
@@ -30,6 +33,12 @@ const env = process.argv[2];
 dotenv.config({ path: `./.env.${env}` });
 const MONGO_URI = process.env.MONGO_URI;
 const MONGO_DB_NAME = process.env.MONGO_DB_NAME;
+
+console.log("-------------------------------");
+console.log(process.env.MONGO_URI);
+console.log("-------------------------------");
+
+
 if (!MONGO_URI) {
   throw new Error('MONGO_URI environment variable is missing');
 }
@@ -216,13 +225,13 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-comfyui',
       versionId: versionId,
-      mode: 'comfyui_create',
-      parameters: comfyuiParameters,
+      mode: 'animatediff_comfyui',
+      parameters: animatediffParameters,
       isDeprecated: false
     }
 
     await db.collection('generators').updateOne(
-      { generatorName: 'comfyui_create' }, 
+      { generatorName: 'animatediff_comfyui' }, 
       { $addToSet: { versions: comfyuiVersion } }
     );
 
