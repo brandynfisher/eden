@@ -94,7 +94,6 @@ const AspectRatioParameter = ({
   initialValue?: { width: number; height: number }
 }) => {
   const [displayValue, setDisplayValue] = useState<string>()
-  const [initialFieldValue, setInitialFieldValue] = useState<number>()
   const [fieldValue, setFieldValue] = useState<number>()
 
   useEffect(() => {
@@ -118,7 +117,6 @@ const AspectRatioParameter = ({
       initialValue.height,
     )
     console.log({ presetIndex })
-    setInitialFieldValue(presetIndex)
     setFieldValue(presetIndex)
     setDisplayValue(presetResolutions[presetIndex].aspectRatio)
   }, [initialValue])
@@ -144,7 +142,6 @@ const AspectRatioParameter = ({
         name={name}
         className="mt-0 mb-0"
         dependencies={['width', 'height']}
-        initialValue={initialFieldValue}
         rules={[
           () => ({
             validator(rule, incomingValue) {
