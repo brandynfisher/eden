@@ -41,6 +41,7 @@ module.exports = withTM({
           },
     ]
   },
+  trailingSlash: false,
   swcMinify: true,
   output: 'standalone',
   experimental: {
