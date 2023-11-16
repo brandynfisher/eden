@@ -1,4 +1,5 @@
 import {
+  InteractionEvent,
   ScenarioType,
   SessionEventsListArguments,
   SessionsCreateArguments,
@@ -7,7 +8,7 @@ import {
   SessionsListArguments,
   SessionsUpdateArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { User } from '../models/Creator'
 import { Session } from '../models/Session'
@@ -196,4 +197,35 @@ export const getSessionEvents = async (
   }
 
   return reply.status(200).send(response)
+}
+
+export interface SessionInteractArguments {
+  userId: string
+  sessionId: string
+  interaction: InteractionEvent
+}
+
+export const interactSession = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId, sessionId, interaction } =
+    request.body as SessionInteractArguments
+
+  const session = await Session.findById(sessionId)
+  if (!session) {
+    return reply.status(404).send({
+      message: 'Session not found',
+    })
+  }
+
+  // TODO: Check if user is allowed to interact with session
+
+  const { type, data } = await server.handleInteraction(server, interaction)
+
+  reply.status(200).send({
+    type,
+    data,
+  })
 }

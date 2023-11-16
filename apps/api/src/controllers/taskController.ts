@@ -5,7 +5,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { ChatCompletionRequestMessage } from 'openai'
+import { ChatCompletionMessageParam } from 'openai/resources'
 
 import {
   getDefaultGeneratorVersion,
@@ -317,12 +317,12 @@ export const createChatCompletion = async (
 ) => {
   const { chat } = request.body as { chat: ChatMessage[] }
 
-  const chatMessages: ChatCompletionRequestMessage[] = chat.map(m => {
+  const chatMessages = chat.map(m => {
     return {
-      role: m.sender == 'bot' ? 'assistant' : 'user',
+      role: m.sender === 'bot' ? 'assistant' : 'user',
       content: m.message,
-    } as ChatCompletionRequestMessage
-  })
+    }
+  }) as ChatCompletionMessageParam[]
 
   const response = await server.openai.chat.completions.create({
     model: 'gpt-3.5-turbo',

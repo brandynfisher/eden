@@ -1,3 +1,8 @@
+import {
+  InteractionEvent,
+  SessionEventResponseType,
+  SessionEventType,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { v4 as uuidv4 } from 'uuid'
@@ -8,7 +13,7 @@ import {
   GeneratorVersionSchema,
 } from '../../models/Generator'
 import { Task, TaskStatus } from '../../models/Task'
-import { TaskHandlers } from '../../plugins/tasks'
+import { LogosResponse, TaskHandlers } from '../../plugins/tasks'
 import { submitMonologueTask } from './airflow'
 
 interface Output {
@@ -190,8 +195,60 @@ export const dummyGetTransactionCost = (
   return 1
 }
 
+const parseInteractionResponseType = (
+  interaction: InteractionEvent,
+): SessionEventResponseType => {
+  if (interaction.message.startsWith('Create:')) {
+    return SessionEventType.CREATION_RESPONSE
+  }
+  return SessionEventType.CHAT_RESPONSE
+}
+
+const createCreationResponse = () => {
+  return {
+    creations: [
+      {
+        uri: 'https://edenartlab-prod-data.s3.us-east-1.amazonaws.com/5e7d6267b3e8cb9314cc26f5b79cb7f37d8e180f4befc08f80839d9220c4e73f.jpg',
+      },
+    ],
+    message: 'Your creation awaits.',
+  }
+}
+
+const createChatResponse = () => {
+  return {
+    message: 'I am a brainless chatbot.',
+  }
+}
+
+const createResponseContent = (
+  type: SessionEventResponseType,
+): LogosResponse['data'] => {
+  switch (type) {
+    case SessionEventType.CHAT_RESPONSE:
+      return createChatResponse()
+    case SessionEventType.CREATION_RESPONSE:
+      return createCreationResponse()
+    default:
+      throw new Error('Invalid response type')
+  }
+}
+
+const dummyHandleInteraction = async (
+  server: FastifyInstance,
+  interaction: InteractionEvent,
+) => {
+  const type = parseInteractionResponseType(interaction)
+  const data = createResponseContent(type)
+  return {
+    type,
+    data,
+  }
+}
+
 export const dummyTaskHandlers: TaskHandlers = {
   submitTask: dummySubmitTask,
   receiveTaskUpdate: dummyReceiveTaskUpdate,
   getTransactionCost: dummyGetTransactionCost,
+  handleInteraction: dummyHandleInteraction,
 }

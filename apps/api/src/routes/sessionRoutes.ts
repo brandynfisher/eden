@@ -8,6 +8,7 @@ import {
   deleteSession,
   getSession,
   getSessionEvents,
+  interactSession,
   listSessions,
   updateSession,
 } from '../controllers/sessionController'
@@ -57,6 +58,35 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteSession(request, reply),
+  })
+
+  server.post('/sessions/interact', {
+    schema: {
+      body: Type.Object({
+        userId: Type.String(),
+        sessionId: Type.String(),
+        interaction: Type.Object({
+          message: Type.String(),
+          context: Type.Optional(
+            Type.Array(
+              Type.Object({
+                key: Type.String(),
+                value: Type.String(),
+              }),
+            ),
+          ),
+          addressedCharacterIds: Type.Optional(Type.Array(Type.String())),
+        }),
+      }),
+      response: {
+        200: Type.Object({
+          type: Type.Enum(SessionEventType),
+          data: Type.Any(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => interactSession(server, request, reply),
   })
 
   server.get('/sessions', {

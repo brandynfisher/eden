@@ -113,6 +113,8 @@ import {
   SessionsDeleteResponse,
   SessionsGetArguments,
   SessionsGetResponse,
+  SessionsInteractArguments,
+  SessionsInteractResponse,
   SessionsListArguments,
   SessionsListResponse,
   SessionsUpdateArguments,
@@ -183,6 +185,7 @@ import {
   sessionsCreateRequestConfig,
   sessionsDeleteRequestConfig,
   sessionsGetRequestConfig,
+  sessionsInteractRequestConfig,
   sessionsListRequestConfig,
   sessionsUpdateRequestConfig,
   tasksChatCompleteRequestConfig,
@@ -526,6 +529,10 @@ export abstract class Methods {
     get: bindApiCall<SessionsGetArguments, SessionsGetResponse>(
       this,
       sessionsGetRequestConfig,
+    ),
+    interact: bindApiCall<SessionsInteractArguments, SessionsInteractResponse>(
+      this,
+      sessionsInteractRequestConfig,
     ),
   }
 

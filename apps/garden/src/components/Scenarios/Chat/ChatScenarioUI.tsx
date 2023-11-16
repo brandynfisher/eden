@@ -2,7 +2,6 @@ import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { useCreator } from '@/hooks/useCreator'
 import { MessageMarker, compileMessage } from '@/lib/chat'
 import { timeAgo } from '@/lib/time'
-import { ChatMessage } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import {
@@ -16,8 +15,9 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
-import { Character } from '@edenlabs/eden-sdk'
+import { Character, SessionsInteractResponse } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import Image from 'next/image'
 import { useContext, useEffect, useState } from 'react'
 
 // import Image from 'next/image'
@@ -25,6 +25,7 @@ import { useContext, useEffect, useState } from 'react'
 
 type ConversationEntry = {
   message: string
+  uris?: string[]
   speaker: 'bot' | 'user'
   date: Date
   id?: string
@@ -37,8 +38,6 @@ const ChatScenarioUI = ({
   activeCharacter: Character
   sessionId: string
 }) => {
-  const MAX_CHAT_HISTORY = 6
-
   const { isAuthenticated, userId } = useContext(UserContext)
   const { creator } = useCreator(isAuthenticated && userId ? userId : null)
 
@@ -71,19 +70,19 @@ const ChatScenarioUI = ({
   }, [activeCharacter, creator])
 
   const submit = async () => {
-    const previousMessages: ChatMessage[] = conversation
-      .slice(-MAX_CHAT_HISTORY)
-      .map(entry => {
-        return {
-          sender: entry.speaker,
-          message: entry.message,
-        }
-      })
+    // const previousMessages: ChatMessage[] = conversation
+    //   .slice(-MAX_CHAT_HISTORY)
+    //   .map(entry => {
+    //     return {
+    //       sender: entry.speaker,
+    //       message: entry.message,
+    //     }
+    //   })
 
-    const message: ChatMessage = {
-      sender: 'user',
-      message: text,
-    }
+    // const message: ChatMessage = {
+    //   sender: 'user',
+    //   message: text,
+    // }
     setConversation(state => [
       ...state,
       {
@@ -94,22 +93,25 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      let completion: string
-      const res = await axios.post(`/api/lm/chat`, {
+      const res = await axios.post(`/api/sessions/interact`, {
         sessionId,
-        characterId: activeCharacter.id,
-        description: activeCharacter.description,
-        dialogue: activeCharacter.dialogue,
-        previousMessages,
-        message,
+        userId,
+        interaction: {
+          message: text,
+        },
       })
-      completion = res.data.completion as string
+      const { data } = res.data as SessionsInteractResponse
+      const completion = data?.message
+      if (!completion) {
+        throw new Error('No completion returned from GPT-3')
+      }
       setConversation(state => [
         ...state,
         {
           message: creator?.username
             ? compileMessage(completion, messageMarkers)
             : completion.trim(),
+          uris: data?.creations?.map(creation => creation.uri),
           speaker: 'bot',
           date: new Date(),
         },
@@ -229,17 +231,21 @@ const ChatScenarioUI = ({
                       : 'bg-gray-300 dark:!bg-gray-800 rounded-tl-lg'
                   }`}
                 >
+                  {entry.uris && isBotSpeaking
+                    ? entry.uris.map((uri, index) => {
+                        return (
+                          <div key={index}>
+                            <Image
+                              width={120}
+                              height={120}
+                              src={uri}
+                              alt={uri}
+                            />
+                          </div>
+                        )
+                      })
+                    : null}
                   {entry.message}
-
-                  {/* //@todo: naiive base for showing images in chat messages */}
-                  {/*{entry.media && isBotSpeaking ?*/}
-                  {/*  <Image*/}
-                  {/*    width={120}*/}
-                  {/*    height={120}*/}
-                  {/*    src={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}*/}
-                  {/*    alt={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}/>*/}
-                  {/*  : null*/}
-                  {/*}*/}
                 </Message.CustomContent>
                 <Message.Footer
                   className={`!mt-0 ${

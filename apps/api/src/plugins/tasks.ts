@@ -1,11 +1,18 @@
+import { InteractionEvent, SessionEventType } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 
-import {
-  dummyGetTransactionCost,
-  dummyReceiveTaskUpdate,
-  dummySubmitTask,
-} from '../lib/taskHandlers/dummy'
+import { dummyTaskHandlers } from '../lib/taskHandlers/dummy'
 import { GeneratorDocument, GeneratorVersionSchema } from '../models/Generator'
+
+export interface LogosResponse {
+  type: SessionEventType
+  data: {
+    message?: string
+    creations?: {
+      uri: string
+    }[]
+  }
+}
 
 export interface TaskHandlers {
   submitTask: (
@@ -21,22 +28,21 @@ export interface TaskHandlers {
     generatorVersion: GeneratorVersionSchema,
     config: any,
   ) => number
-}
-
-const dummyHandlers: TaskHandlers = {
-  submitTask: dummySubmitTask,
-  receiveTaskUpdate: dummyReceiveTaskUpdate,
-  getTransactionCost: dummyGetTransactionCost,
+  handleInteraction: (
+    server: FastifyInstance,
+    interaction: InteractionEvent,
+  ) => Promise<LogosResponse>
 }
 
 export const registerTaskHandlers = (
   server: FastifyInstance,
   taskHandlers: TaskHandlers | undefined,
 ) => {
-  const handlers = taskHandlers || dummyHandlers
+  const handlers = taskHandlers || dummyTaskHandlers
   server.decorate('submitTask', handlers.submitTask)
   server.decorate('receiveTaskUpdate', handlers.receiveTaskUpdate)
   server.decorate('getTransactionCost', handlers.getTransactionCost)
+  server.decorate('handleInteraction', handlers.handleInteraction)
 }
 
 declare module 'fastify' {
@@ -54,5 +60,9 @@ declare module 'fastify' {
       generatorVersion: GeneratorVersionSchema,
       config: any,
     ) => number
+    handleInteraction: (
+      server: FastifyInstance,
+      interaction: InteractionEvent,
+    ) => Promise<LogosResponse>
   }
 }

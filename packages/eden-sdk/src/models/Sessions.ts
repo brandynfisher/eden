@@ -40,6 +40,12 @@ export interface SessionEventsListArguments
   sessionId: string
 }
 
+export interface SessionsInteractArguments extends WebAPICallOptions {
+  sessionId: string
+  userId: string
+  interaction: InteractionEvent
+}
+
 // Requests
 
 export const sessionsCreateRequestConfig = (
@@ -98,6 +104,18 @@ export const sessionsGetRequestConfig = (
   }
 }
 
+export const sessionsInteractRequestConfig = (
+  args: SessionsInteractArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/interact',
+    data: {
+      ...args,
+    },
+  }
+}
+
 export const sessionEventsListRequestConfig = (
   args: SessionEventsListArguments,
 ): AxiosRequestConfig => {
@@ -135,6 +153,17 @@ export type SessionsGetResponse = WebAPICallResult & {
   scenario: Session
 }
 
+export type SessionsInteractResponse = WebAPICallResult & {
+  error?: string
+  type?: string
+  data?: {
+    message?: string
+    creations?: {
+      uri: string
+    }[]
+  }
+}
+
 export type SessionEventsListResponse = WebAPICallResult &
   PaginatedResponse<SessionEvent> & {
     error?: string
@@ -143,29 +172,64 @@ export type SessionEventsListResponse = WebAPICallResult &
 // Types
 
 export enum SessionEventType {
-  CREATE = 'create',
-  END = 'end',
+  END_SESSION = 'end_session',
   USER_ADD = 'user_add',
-  USER_REMOVE = 'user_remove',
   CHARACTER_ADD = 'character_add',
-  CHARACTER_REMOVE = 'character_remove',
-  USER_MESSAGE = 'user_message',
-  CHARACTER_MESSAGE = 'character_message',
-  CREATION_REQUEST = 'creation_request',
-  CREATION_RETURN = 'creation_return',
+  INTERACTION = 'interaction',
+  CHAT_RESPONSE = 'chat_response',
+  CREATION_RESPONSE = 'creation_response',
+  ERROR_RESPONSE = 'error_response',
 }
+
+export type SessionEventResponseType =
+  | SessionEventType.CHAT_RESPONSE
+  | SessionEventType.CREATION_RESPONSE
+  | SessionEventType.ERROR_RESPONSE
 
 export type Session = {
   id: string
-  type: string
-  creator: string
+  user: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface ChatMessage {
+  sender: string
+  message: string
+}
+
+export interface InteractionEvent {
+  message: string
+  context?: ChatMessage[]
+  addressedCharacters?: string[]
+}
+
+export interface ChatResponseEvent {
+  interaction: string
+  message: string
+}
+
+export interface CreationResponseEvent {
+  interaction: string
+  task: string
+  creations?: {
+    id: string
+    uri: string
+  }[]
+  message?: string
+}
+
+export interface ErrorResponseEvent {
+  interaction: string
+  message: string
+  task?: string
 }
 
 export type SessionEvent = {
-  id: string
-  session: string
-  type: SessionEventType
-  data: {
+  id?: string
+  session?: string
+  type?: SessionEventType
+  data?: {
     userAdded?: {
       user: string
     }
@@ -178,12 +242,11 @@ export type SessionEvent = {
     characterRemoved?: {
       character: string
     }
-    userMessage?: {
+    chatRequest?: {
       user: string
       message: string
-      completion: string
     }
-    characterMessage?: {
+    chatResponse?: {
       character: string
       message: string
       completion: string
@@ -193,7 +256,7 @@ export type SessionEvent = {
       character: string
       task: string
     }
-    creationReturn?: {
+    creationResponse?: {
       user: string
       character: string
       creation: string
