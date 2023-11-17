@@ -1,8 +1,16 @@
 const params = [
 
   {
+    name: 'render_mode',
+    label: 'Animation mode',
+    description: 'text-to-video or video-to-video (style transfer)',
+    default: 'txt2vid',
+    allowedValues: ["txt2vid", "vid2vid"],
+  },
+  
+  {
     name: 'input_video_path',
-    label: 'input video',
+    label: 'input video (only used by vid2vid mode)',
     description: 'Source video (driving shape/content)',
     default: null,
     isRequired: true,
@@ -48,7 +56,7 @@ const params = [
   {
     name: 'controlnet_type',
     label: 'ControlNet mode',
-    description: 'Which ControlNet mode to use (we recommend canny-edge or luminance)',
+    description: 'Which ControlNet mode to use for vid2vid mode (we recommend canny-edge or luminance)',
     default: 'qr_monster',
     allowedValues: ["qr_monster", "canny-edge"],
   },
