@@ -12,11 +12,26 @@ const SliderParameter = (props: {
   parameter: GeneratorParameter
   onFieldChange?: Function
 }) => {
-  const [fieldValue, setFieldValue] = useState<number | null>(
-    props.parameter.default,
+  const [fieldValue, setFieldValue] = useState<number>(
+    props.parameter.default || 0,
   )
 
+  const sliderValue = Form.useWatch(props.parameter.name, props.form)
+
+  useEffect(() => {
+    console.log({ sliderValue, fieldValue })
+    // if (sliderValue !== fieldValue) {
+    //   return
+    // }
+
+    // console.log('useEffect', sliderValue, fieldValue)
+    setFieldValue(prev => (prev === sliderValue ? sliderValue : prev))
+    setFormValue(fieldValue !== sliderValue ? sliderValue : fieldValue)
+  }, [sliderValue])
+
   const onChange = (newValue: number | null) => {
+    console.log('onchange', newValue)
+    if (!newValue) return
     setFieldValue(newValue)
     props.onFieldChange && props.onFieldChange()
     specialChangeHandler()
@@ -79,7 +94,7 @@ const SliderParameter = (props: {
       <div className="flex items-center w-full">
         <Slider
           className="flex-grow"
-          value={fieldValue || 0}
+          value={fieldValue}
           min={props.parameter.minimum}
           max={props.parameter.maximum}
           step={props.parameter.step ? props.parameter.step : 1}
