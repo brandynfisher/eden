@@ -15,10 +15,10 @@ const StringParameter = (props: {
   )
 
   useEffect(() => {
-    if (props.parameter.default.length) {
+    if (props.parameter.default && props.parameter.default.length) {
       handleChange(props.parameter.default)
     }
-  }, [props.parameter.default.length])
+  }, [props.parameter.default])
 
   const handleAddInput = () => {
     setValues([...values, ''])
