@@ -94,14 +94,21 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
         </div>
       ) : null}
 
-      {creation.task.config['init_image_data'] ? (
+      {creation.task.config['init_image_data'] ||
+      creation.task.config['init_image'] ? (
         <div className="mt-4">
           <BaseParamGroup
             label="Init Image"
             value={
               <ImageZoomable
-                key={creation.task.config['init_image_data']}
-                url={creation.task.config['init_image_data']}
+                key={
+                  creation.task.config['init_image_data'] ||
+                  creation.task.config['init_image']
+                }
+                url={
+                  creation.task.config['init_image_data'] ||
+                  creation.task.config['init_image']
+                }
                 width={132}
                 height={132}
               />
