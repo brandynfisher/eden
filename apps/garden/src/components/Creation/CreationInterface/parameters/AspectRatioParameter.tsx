@@ -125,7 +125,11 @@ const AspectRatioParameter = ({
       initialValue.width,
       initialValue.height,
     )
-    console.log({ presetIndex })
+    console.log({
+      presetIndex,
+      presetResolutions,
+      idx: presetResolutions[presetIndex],
+    })
     setFieldValue(presetIndex)
     setDisplayValue(presetResolutions[presetIndex].aspectRatio)
   }, [initialValue])
