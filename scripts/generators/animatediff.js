@@ -6,6 +6,7 @@ const params = [
     description: 'text-to-video or video-to-video (style transfer)',
     default: 'txt2vid',
     allowedValues: ["txt2vid", "vid2vid"],
+    isRequired: true,
   },
   
   {
