@@ -76,17 +76,18 @@ export const presetItems = {
   aspectRatio: presetResolutions.map(pres => pres.width / pres.height),
 }
 
-// const getPresetResolutionIndex = (width: number, height: number) => {
-//   const aspectRatio = width / height
-//   const aspectIndex = presetItems['aspectRatio'].indexOf(
-//     closest(aspectRatio || 0, presetItems['aspectRatio']),
-//   )
-//   return aspectIndex
-// }
+const getPresetResolutionIndex = (width: number, height: number) => {
+  const aspectRatio = width / height
+  const aspectIndex = presetItems['aspectRatio'].indexOf(
+    closest(aspectRatio || 0, presetItems['aspectRatio']),
+  )
+  return aspectIndex
+}
 
 const AspectRatioParameter = ({
   form,
   name,
+  initialValue,
 }: {
   form: FormInstance
   name: string
@@ -100,26 +101,34 @@ const AspectRatioParameter = ({
 
   useEffect(() => {
     if (typeof aspectRatioValue !== 'undefined') {
-      setFieldValue(aspectRatioValue)
-      setDisplayValue(presetResolutions[aspectRatioValue].aspectRatio)
+      console.log(
+        'setting from Form.watch',
+        aspectRatioValue,
+        presetResolutions[aspectRatioValue],
+      )
+      setTimeout(() => {
+        setFieldValue(aspectRatioValue)
+        setDisplayValue(presetResolutions[aspectRatioValue].aspectRatio)
+      }, 0)
     }
   }, [aspectRatioValue])
 
-  // useEffect(() => {
-  //   console.log({ initialValue })
-  //   if (!initialValue) {
-  //     setFieldValue(4)
-  //     setDisplayValue(presetResolutions[4].aspectRatio)
-  //     return
-  //   }
-  //   const presetIndex = getPresetResolutionIndex(
-  //     initialValue.width,
-  //     initialValue.height,
-  //   )
-  //   console.log({ presetIndex })
-  //   setFieldValue(presetIndex)
-  //   setDisplayValue(presetResolutions[presetIndex].aspectRatio)
-  // }, [name, form, initialValue])
+  useEffect(() => {
+    console.log({ initialValue })
+    if (!initialValue) {
+      // setFieldValue(4)
+      // setDisplayValue(presetResolutions[4].aspectRatio)
+      return
+    }
+    console.log('setting from initialValue', initialValue)
+    const presetIndex = getPresetResolutionIndex(
+      initialValue.width,
+      initialValue.height,
+    )
+    console.log({ presetIndex })
+    setFieldValue(presetIndex)
+    setDisplayValue(presetResolutions[presetIndex].aspectRatio)
+  }, [initialValue])
 
   const onChangeHandler = (newVal: PresetResolution) => {
     setDisplayValue(newVal.aspectRatio)
