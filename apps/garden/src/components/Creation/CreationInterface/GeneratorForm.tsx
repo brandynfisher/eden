@@ -468,7 +468,11 @@ const GeneratorForm = ({
           {renderFormFields(requiredParameters)}
 
           {/* decorative / extra params linked to the actual param input */}
-          {outputType === 'image' || outputType === 'video' ? (
+          {outputType === 'image' ||
+          (outputType === 'video' &&
+            generator.generatorName !== 'dialogue' &&
+            generator.generatorName !== 'monologue' &&
+            generator.generatorName !== 'wav2lip') ? (
             <div className="grid grid-cols-2 gap-2">
               <div className="flex gap-2">
                 {outputType === 'image' &&
