@@ -94,7 +94,7 @@ const AspectRatioParameter = ({
   initialValue?: { width: number; height: number }
 }) => {
   const [displayValue, setDisplayValue] = useState<string>()
-  const [fieldValue, setFieldValue] = useState<number>()
+  const [fieldValue, setFieldValue] = useState<number>(4)
 
   useEffect(() => {
     if (!form) return
@@ -102,6 +102,9 @@ const AspectRatioParameter = ({
     if (typeof currentValue !== 'undefined') {
       setFieldValue(currentValue)
       setDisplayValue(presetResolutions[currentValue].aspectRatio)
+    } else {
+      setFieldValue(4)
+      setDisplayValue(presetResolutions[4].aspectRatio)
     }
   }, [form])
 
