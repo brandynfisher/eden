@@ -127,6 +127,7 @@ const CompletedTaskMenuItem = ({
               src={task.creation?.thumbnail}
               alt={task._id}
               aspectRatio={task.creation?.mediaAttributes.aspectRatio}
+              className="max-w-full"
             />
           </div>
           <div className="flex items-center justify-between min-w-0 w-full gap-2">
