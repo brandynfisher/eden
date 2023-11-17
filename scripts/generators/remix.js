@@ -37,18 +37,16 @@ const params = [
     maximum: 2048,
     step: 64,
   },
-
-  
   {
     name: 'text_input',
-    label: 'Prompt',
+    label: 'Remix prompt',
     description: 'Optional text prompt for the remix (will try to remix the image in the direction of the prompt (style-transfer))',
     default: null,
   },
   
   {
     name: 'ip_image_strength',
-    label: 'Image strength (vs prompt strength)',
+    label: 'Image strength (vs remix prompt strength)',
     description: 'How much to use the image (1.0) vs the prompt (0.0)',
     default: 0.65,
     minimum: 0.0,
