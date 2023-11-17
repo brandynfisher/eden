@@ -43,7 +43,7 @@ const formatConfigForReplicate = async (config: any) => {
     : null
   newConfig.interpolation_seeds && newConfig.interpolation_seeds.length
     ? (newConfig.interpolation_seeds = newConfig.interpolation_seeds
-        .filter((text: string) => !!text.trim())
+        .filter((seed: number) => !!seed)
         .join('|'))
     : null
   newConfig.interpolation_init_images &&
