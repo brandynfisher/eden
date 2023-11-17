@@ -146,9 +146,13 @@ const AspectRatioParameter = ({
         className="mt-0 mb-0"
         dependencies={['width', 'height']}
         rules={[
+          {
+            required: false,
+          },
           () => ({
             validator(rule, incomingValue) {
               setDisplayValue(presetResolutions[incomingValue].aspectRatio)
+              setFieldValue(incomingValue)
               return Promise.resolve()
             },
           }),
