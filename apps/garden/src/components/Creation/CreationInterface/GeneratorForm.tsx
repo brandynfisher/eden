@@ -483,7 +483,7 @@ const GeneratorForm = ({
                     initialValue={getInitialValue('n_samples')}
                   />
                 ) : (
-                  <div>frames</div>
+                  <div className="hidden">frames</div>
                 )}
                 {/*<UpscaleParameter form={form} name="ui-upscale"/>*/}
               </div>
