@@ -2,6 +2,7 @@ import CreationWorkspace from '@/components/Creation/CreationInterface/CreationW
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
+import { hiddenGenerators } from '@/lib/generator'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
@@ -21,15 +22,6 @@ const TimelineList = dynamic(
     ssr: false,
   },
 )
-
-const hiddenCreationGenerators = [
-  'complete',
-  'tts',
-  'tts_fast',
-  'sdxl-lora-trainer',
-  'interrogate',
-  'monologue',
-]
 
 const CreationInterface = ({
   generatorName,
@@ -80,8 +72,7 @@ const CreationInterface = ({
   useEffect(() => {
     const available = !selectedGenerators
       ? generators?.filter(
-          generator =>
-            !hiddenCreationGenerators.includes(generator.generatorName),
+          generator => !hiddenGenerators.includes(generator.generatorName),
         )
       : generators?.filter(gen =>
           selectedGenerators?.includes(gen.generatorName),
