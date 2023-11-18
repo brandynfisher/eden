@@ -32,7 +32,7 @@ const formatConfigForReplicate = async (config: any) => {
         ? newConfig.interpolation_texts
             ?.filter((text: string) => !!text.trim())
             .join('|')
-        : null
+        : ''
   }
 
   // convert lists into |-separated strings
