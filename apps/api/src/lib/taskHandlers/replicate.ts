@@ -30,6 +30,10 @@ const formatConfigForReplicate = async (config: any) => {
     newConfig.text_input = newConfig.interpolation_texts?.join(' to ') || ''
   }
 
+  if (typeof newConfig.init_image !== 'undefined' && !newConfig.init_image) {
+    newConfig.init_image = null
+  }
+
   // convert lists into |-separated strings
   newConfig.interpolation_texts
     ? (newConfig.interpolation_texts = newConfig.interpolation_texts.join('|'))
