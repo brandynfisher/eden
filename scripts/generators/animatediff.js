@@ -14,7 +14,6 @@ const params = [
     label: 'input video (only used by vid2vid mode)',
     description: 'Source video (driving shape/content)',
     default: null,
-    isRequired: true,
     mediaUpload: "video/mp4, image/gif",
   },
   
