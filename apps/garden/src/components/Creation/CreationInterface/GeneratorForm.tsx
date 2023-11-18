@@ -1,7 +1,7 @@
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
-import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
+// import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
@@ -487,14 +487,14 @@ const GeneratorForm = ({
                 )}
                 {/*<UpscaleParameter form={form} name="ui-upscale"/>*/}
               </div>
-              <AspectRatioParameter
-                form={form}
-                name="ui-aspect-ratio"
-                initialValue={{
-                  width: getInitialValue('width'),
-                  height: getInitialValue('height'),
-                }}
-              />
+              {/*<AspectRatioParameter*/}
+              {/*  form={form}*/}
+              {/*  name="ui-aspect-ratio"*/}
+              {/*  initialValue={{*/}
+              {/*    width: getInitialValue('width'),*/}
+              {/*    height: getInitialValue('height'),*/}
+              {/*  }}*/}
+              {/*/>*/}
             </div>
           ) : null}
         </div>
