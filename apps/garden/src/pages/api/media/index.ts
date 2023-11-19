@@ -42,6 +42,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       formData,
       {
         headers: {
+          ...formData.getHeaders(),
           Authorization: `Bearer ${authToken}`,
           'Content-Type': 'multipart/form-data',
         },
