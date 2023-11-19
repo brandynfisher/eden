@@ -1,6 +1,7 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import axios from 'axios'
+import FormData from 'form-data'
 import formidable, { Fields, Files } from 'formidable'
 import fs from 'fs'
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -33,9 +34,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const file = files.file as formidable.File
     const buffer = fs.readFileSync(file.filepath)
-    const blob = new Blob([buffer])
     const formData = new FormData()
-    formData.append('file', blob)
+    formData.append('file', buffer, file.newFilename)
 
     const response = await axios.post(
       `${CONFIG.API_URL}/media/upload`,
@@ -49,7 +49,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     )
 
     const { url } = response.data
-    res.status(200).json({ fileUrl: url })
+    return res.status(200).json({ fileUrl: url })
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' })
   }
