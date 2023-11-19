@@ -47,7 +47,7 @@ const params = [
     name: 'lora_scale',
     label: 'Concept scale',
     description:
-      'How strongly to activate the concept (0.0 will disable the concept)',
+      'How strongly to activate the concept, lower this value if your prompt is being ignored and all creations look too similar to your training images (0.0 will disable the concept)',
     default: 0.8,
     minimum: 0.0,
     maximum: 1.5,
