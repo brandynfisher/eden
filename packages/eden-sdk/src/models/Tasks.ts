@@ -17,6 +17,7 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   config?: any
   metadata?: any
   webhooks?: string[]
+  attributes?: TaskAttributes
 }
 
 export interface TasksCompleteArguments extends WebAPICallOptions {
@@ -149,6 +150,7 @@ export type Task = {
   creation?: any
   samples?: any[]
   concept?: string
+  attributes?: TaskAttributes
   createdAt: string
   updatedAt: string
 }
@@ -156,4 +158,9 @@ export type Task = {
 export type Completion = {
   id: string
   text: string
+}
+
+export interface TaskAttributes {
+  discordId?: string
+  delegateUserId?: string
 }

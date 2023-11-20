@@ -111,3 +111,20 @@ test('Non-admin cannot use admin media upload', async context => {
   })
   expect(response.statusCode).toBe(401)
 })
+
+test('Admin can add attributes to a task', async context => {
+  const { server } = context
+  const response = await server.inject({
+    method: 'POST',
+    url: `/admin/tasks/create`,
+    headers: prepareAdminHeaders(),
+    payload: {
+      generatorName: 'test',
+      attributes: {
+        test: 'test',
+      },
+    },
+  })
+  console.log('222', response.json())
+  expect(response.statusCode).toBe(200)
+})

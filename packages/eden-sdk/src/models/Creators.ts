@@ -23,6 +23,7 @@ export interface CreatorsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+  discordId?: string | string[]
 }
 
 export interface CreatorsGetArguments extends WebAPICallOptions {

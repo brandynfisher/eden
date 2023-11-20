@@ -2,6 +2,7 @@ import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { Collection } from '../../models/Collection'
+import { Creation } from '../../models/Creation'
 import { User, UserInput } from '../../models/Creator'
 import { Manna } from '../../models/Manna'
 
@@ -86,6 +87,19 @@ export const discordOAuth = async (
     user.discordId = discordId
     await user.save()
 
+    // Give delegated creations to the user
+    const creations = await Creation.find({
+      'attributes.discordId': discordId.toString(),
+      userId: { $ne: user._id },
+    })
+    console.log('111', creations)
+    await Promise.all(
+      creations.map(async creation => {
+        creation.user = user._id
+        await creation.save()
+      }),
+    )
+
     return reply.redirect(`${server.config.FRONTEND_URL}/tools`)
   } catch (error) {
     console.error(error)
@@ -93,4 +107,24 @@ export const discordOAuth = async (
       .status(500)
       .send({ message: 'Failed to exchange code for token' })
   }
+}
+
+export const disconnectDiscord = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+
+  const user = await User.findById(userId)
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  user.discordId = undefined
+  await user.save()
+
+  return reply.status(200).send({})
 }

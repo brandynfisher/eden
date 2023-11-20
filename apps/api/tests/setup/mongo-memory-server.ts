@@ -24,8 +24,17 @@ const createAdmin = async () => {
     apiSecret: 'admin',
     user: user._id,
   }
+
   const apiKey = new ApiKey(apiKeyData)
   await apiKey.save()
+
+  const adminManna = {
+    user: user._id,
+    balance: 1000,
+  }
+
+  const manna = new Manna(adminManna)
+  await manna.save()
 }
 
 const createFreeUser = async () => {

@@ -105,9 +105,16 @@ export const createTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
-  const { generatorName, versionId, config, webhooks } =
+  const { userId, isAdmin } = request.user
+  const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
+  console.log('attributes:', attributes)
+
+  if (!isAdmin && attributes) {
+    return reply.status(401).send({
+      message: 'Only admins can set attributes',
+    })
+  }
 
   // get generator
   const generator = await Generator.findOne({
@@ -183,6 +190,7 @@ export const createTask = async (
     versionId: generatorVersion.versionId,
     config: preparedConfig,
     webhooks,
+    attributes,
     cost,
   }
   const task = new Task(taskData)

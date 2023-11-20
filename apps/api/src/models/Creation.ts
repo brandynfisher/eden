@@ -1,6 +1,6 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
-import { Model, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import mongooseDelete, {
   SoftDeleteDocument,

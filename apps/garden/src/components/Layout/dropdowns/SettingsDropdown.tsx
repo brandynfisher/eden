@@ -203,6 +203,10 @@ const DevToolsLink = () => {
 
 const clerkItems: ItemType[] = [
   {
+    label: <DevToolsLink />,
+    key: 'dev-tools',
+  },
+  {
     type: 'divider',
   },
   {
@@ -214,24 +218,6 @@ const clerkItems: ItemType[] = [
 const clerkExtraItems: ItemType[] = [
   {
     type: 'divider',
-  },
-  // {
-  //   label: <DevToolsLink />,
-  //   key: '5',
-  // },
-  // {
-  //   type: 'divider',
-  // },
-  // {
-  //   label: <UserButton afterSignOutUrl="/" showName={true} />,
-  //   key: '3',
-  // },
-]
-
-const previewExtraItems: ItemType[] = [
-  {
-    label: <DevToolsLink />,
-    key: 'dev-tools',
   },
 ]
 
@@ -246,9 +232,8 @@ const subscriberExtraItems: ItemType[] = [
 ]
 
 export const SettingsDropdown = () => {
-  const { isAuthenticated, featureFlags, user } = useContext(UserContext)
+  const { isAuthenticated, user } = useContext(UserContext)
   const { width: windowWidth } = useViewportSize()
-  const isPreviewUser = featureFlags?.includes('preview')
 
   const items: ItemType[] = [
     {
@@ -278,10 +263,6 @@ export const SettingsDropdown = () => {
 
     if (isAuthenticated) {
       newDropDownItems = [...newDropDownItems, ...clerkExtraItems]
-
-      if (isPreviewUser) {
-        newDropDownItems = [...newDropDownItems, ...previewExtraItems]
-      }
 
       if (user?.subscriptionTier) {
         newDropDownItems = [...newDropDownItems, ...subscriberExtraItems]

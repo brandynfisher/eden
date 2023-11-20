@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
 import { v4 as uuidv4 } from 'uuid'
 
 import { Creation } from '../../models/Creation'
@@ -128,13 +129,17 @@ export const dummyReceiveTaskUpdate = async (
   const asset = await server.uploadUrlAsset(server, image.result)
   const thumbnail = await server.uploadThumbnailAsset(server, image.thumbnail)
 
+  const creationUser = task.attributes?.delegateUserId
+    ? new ObjectId(task.attributes.delegateUserId)
+    : task.user
+
   const creationData = {
-    user: task.user,
+    user: creationUser,
     task: task._id,
     uri: asset.uri,
     thumbnail,
     name: 'Test Image',
-    attributes: {},
+    attributes: task.attributes,
     mediaAttributes: asset.mediaAttributes,
   }
   const creation = await Creation.create(creationData)
