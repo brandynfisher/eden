@@ -1,4 +1,4 @@
-// components/DiscordAuthButton.tsx
+import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
@@ -33,9 +33,11 @@ const DiscordAuthButton: React.FC = () => {
   return (
     <>
       {user?.discordId ? (
-        <div>
-          <div className="text-white">Connected with Discord</div>
+        <div className="flex flex-col justify-center">
+          <div className="mb-2">Linked {user?.discordId}</div>
           <Button
+            danger
+            type="dashed"
             className="font-mono bg-black text-white h-10"
             onClick={handleDisconnect}
           >
@@ -44,10 +46,11 @@ const DiscordAuthButton: React.FC = () => {
         </div>
       ) : (
         <Button
-          className="font-mono bg-black text-white h-10"
+          className="font-mono bg-black text-white h-10 flex items-center gap-3"
           onClick={handleClick}
         >
-          Connect with Discord
+          <SvgDiscord />
+          <span>Connect with Discord</span>
         </Button>
       )}
     </>
