@@ -36,8 +36,8 @@ const ToolsPage = () => {
             </Collapse>
           </div>
         )}
+        <DiscordAuthButton />
       </div>
-      <DiscordAuthButton />
     </>
   )
 }
