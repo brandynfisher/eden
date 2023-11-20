@@ -34,7 +34,7 @@ export interface CreationSchema extends VisibilitySchema {
 
 export interface CreationInput {
   _id?: ObjectId
-  user: ObjectId
+  user: ObjectId | UserDocument
   task: ObjectId
   delegate?: ObjectId
   uri?: string

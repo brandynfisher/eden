@@ -125,6 +125,5 @@ test('Admin can add attributes to a task', async context => {
       },
     },
   })
-  console.log('222', response.json())
   expect(response.statusCode).toBe(200)
 })

@@ -101,11 +101,6 @@ const AspectRatioParameter = ({
 
   useEffect(() => {
     if (typeof aspectRatioValue !== 'undefined') {
-      console.log(
-        'setting from Form.watch',
-        aspectRatioValue,
-        presetResolutions[aspectRatioValue],
-      )
       setTimeout(() => {
         setFieldValue(aspectRatioValue)
         setDisplayValue(presetResolutions[aspectRatioValue].aspectRatio)
@@ -114,22 +109,15 @@ const AspectRatioParameter = ({
   }, [aspectRatioValue])
 
   useEffect(() => {
-    console.log({ initialValue })
     if (!initialValue) {
       // setFieldValue(4)
       // setDisplayValue(presetResolutions[4].aspectRatio)
       return
     }
-    console.log('setting from initialValue', initialValue)
     const presetIndex = getPresetResolutionIndex(
       initialValue.width,
       initialValue.height,
     )
-    console.log({
-      presetIndex,
-      presetResolutions,
-      idx: presetResolutions[presetIndex],
-    })
     setFieldValue(presetIndex)
     setDisplayValue(presetResolutions[presetIndex].aspectRatio)
   }, [initialValue])

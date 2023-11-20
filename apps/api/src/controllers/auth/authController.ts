@@ -92,7 +92,6 @@ export const discordOAuth = async (
       'attributes.discordId': discordId.toString(),
       userId: { $ne: user._id },
     })
-    console.log('111', creations)
     await Promise.all(
       creations.map(async creation => {
         creation.user = user._id

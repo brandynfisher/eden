@@ -429,7 +429,6 @@ export class ElevenLabs {
   }
 
   runTask = async (voice: string, text: string) => {
-    console.log('run 11', text)
     const speechDetails = await axios({
       method: 'POST',
       url: `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
@@ -437,7 +436,6 @@ export class ElevenLabs {
       data: { text },
       responseType: 'arraybuffer',
     })
-    console.log('ran 11!', text)
     return speechDetails.data
   }
 }

@@ -94,7 +94,6 @@ test('User can delete a collection', async context => {
     },
     headers,
   })
-  console.log(response.json())
   expect(response.statusCode).toBe(200)
 })
 

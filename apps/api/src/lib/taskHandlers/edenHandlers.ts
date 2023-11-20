@@ -102,14 +102,17 @@ const handleUpdate = async (
       await Promise.allSettled(
         finalOutput.files.map(async (files, index) => {
           const creationId = new ObjectId()
+          const creationUser = task.attributes?.delegateUserId
+            ? new ObjectId(task.attributes.delegateUserId)
+            : task.user
           const creationDocument: CreationInput = {
             _id: creationId,
-            user: task.user._id,
+            user: creationUser,
             task: task._id,
             uri: finalOutput.files[index],
             thumbnail: finalOutput.thumbnails[index],
             name: finalOutput.name,
-            attributes: finalOutput.attributes,
+            attributes: { ...task.attributes, ...finalOutput.attributes },
             isPrivate: task.config.isPrivate || false,
           }
 
@@ -133,12 +136,12 @@ const handleUpdate = async (
       )
 
       await Promise.allSettled(
-        creationData.map(async (creationInput, index) => {
+        creationData.map(async creationInput => {
           const otherCreationIds = creationData
             .filter(dataItem => dataItem._id !== creationInput._id)
             .map(item => item._id)
 
-          const creation = await Creation.create({
+          await Creation.create({
             ...creationInput,
             samples: otherCreationIds,
           })
@@ -284,13 +287,16 @@ const handleUpdateUniversal = async (
     const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       for (let i = 0; i < output.length; i++) {
+        const creationUser = task.attributes?.delegateUserId
+          ? new ObjectId(task.attributes.delegateUserId)
+          : task.user
         const creationData = {
-          user: task.user,
+          user: creationUser,
           task: task._id,
           uri: output[i],
           thumbnail: null,
           name: task.config.prompt,
-          attributes: null,
+          attributes: task.attributes,
           mediaAttributes: {},
         }
         if (output[i]) {

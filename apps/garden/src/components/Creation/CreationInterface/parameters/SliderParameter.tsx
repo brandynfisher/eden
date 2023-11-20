@@ -19,7 +19,6 @@ const SliderParameter = (props: {
   const sliderValue = Form.useWatch(props.parameter.name, props.form)
 
   useEffect(() => {
-    console.log({ sliderValue, fieldValue })
     // if (sliderValue !== fieldValue) {
     //   return
     // }
@@ -30,7 +29,6 @@ const SliderParameter = (props: {
   }, [sliderValue])
 
   const onChange = (newValue: number | null) => {
-    console.log('onchange', newValue)
     if (!newValue) return
     setFieldValue(newValue)
     props.onFieldChange && props.onFieldChange()
