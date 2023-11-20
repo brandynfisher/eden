@@ -1,6 +1,6 @@
 import CreationInterface from '@/components/Creation/CreationInterface/CreationInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
-import { useCreation } from '@/hooks/useCreation'
+import { useCreationImmutable } from '@/hooks/useCreationImmutable'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
@@ -11,9 +11,7 @@ const CreatePageWithPreset = ({
   generator?: string
   presetId: string
 }) => {
-  const { creation } = useCreation(presetId, {
-    revalidateAll: false,
-  })
+  const { creation } = useCreationImmutable(presetId)
 
   if (!creation) {
     return <LoadingIndicator />

@@ -9,6 +9,7 @@ const allowedCogs = [
   "sdxl-lora-trainer",
   "zeroscope-v2-xl",
   "scenarioRunner",
+  "eden-comfyui"
 ]
 
 const env = process.argv[2];
@@ -70,11 +71,14 @@ async function updateDefaultVersion(db) {
     'interrogate', 'controlnet',
   ];
   const sdxl_generators_video = [
-    'interpolate', 'real2real',
+    'interpolate', 'real2real'
   ];
   const scenario_runner_generators = [
     'monologue', 'dialogue',
   ];
+  const comfyui_generators = [
+    'animatediff_comfyui'
+  ]
 
   if (cog === 'eden-sd-pipelines-sdxl') {
     for (const generatorName of sdxl_generators) {
@@ -115,6 +119,19 @@ async function updateDefaultVersion(db) {
   }
   else if (cog === 'scenarioRunner') {
     for (const generatorName of scenario_runner_generators) {
+      handleUpdateResult(
+        await db.collection('generators').updateOne(
+          { generatorName: generatorName, 'versions.versionId': versionId },
+          { $set: { defaultVersionId: versionId } }
+        ),
+        cog,
+        generatorName,
+        versionId
+      )
+    }
+  }
+  else if (cog === 'eden-comfyui') {
+    for (const generatorName of comfyui_generators) {
       handleUpdateResult(
         await db.collection('generators').updateOne(
           { generatorName: generatorName, 'versions.versionId': versionId },

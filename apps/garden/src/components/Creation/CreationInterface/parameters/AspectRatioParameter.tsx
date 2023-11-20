@@ -9,6 +9,19 @@ type PresetResolution = {
   aspectRatio: string //'21:9'
 }
 
+export function closest(needle: number, haystack: number[]) {
+  return haystack.reduce((a, b) => {
+    let aDiff = Math.abs(a - needle)
+    let bDiff = Math.abs(b - needle)
+
+    if (aDiff == bDiff) {
+      return a > b ? a : b
+    } else {
+      return bDiff < aDiff ? b : a
+    }
+  })
+}
+
 export const presetResolutions: PresetResolution[] = [
   {
     width: 1536,
@@ -57,22 +70,69 @@ export const presetResolutions: PresetResolution[] = [
   },
 ]
 
+export const presetItems = {
+  width: presetResolutions.map(pres => pres.width),
+  height: presetResolutions.map(pres => pres.height),
+  aspectRatio: presetResolutions.map(pres => pres.width / pres.height),
+}
+
+const getPresetResolutionIndex = (width: number, height: number) => {
+  const aspectRatio = width / height
+  const aspectIndex = presetItems['aspectRatio'].indexOf(
+    closest(aspectRatio || 0, presetItems['aspectRatio']),
+  )
+  return aspectIndex
+}
+
 const AspectRatioParameter = ({
   form,
   name,
+  initialValue,
 }: {
   form: FormInstance
   name: string
+  initialValue?: { width: number; height: number }
 }) => {
   const [displayValue, setDisplayValue] = useState<string>()
+  const [fieldValue, setFieldValue] = useState<number>()
+
+  const aspectRatioValue = Form.useWatch('ui-aspect-ratio', form)
+  // console.log({ aspectRatioValue })
 
   useEffect(() => {
-    if (!form) return
-    const currentValue = form.getFieldValue(name)
-    if (typeof currentValue !== 'undefined') {
-      setDisplayValue(presetResolutions[form.getFieldValue(name)].aspectRatio)
+    if (typeof aspectRatioValue !== 'undefined') {
+      console.log(
+        'setting from Form.watch',
+        aspectRatioValue,
+        presetResolutions[aspectRatioValue],
+      )
+      setTimeout(() => {
+        setFieldValue(aspectRatioValue)
+        setDisplayValue(presetResolutions[aspectRatioValue].aspectRatio)
+      }, 0)
     }
-  }, [form])
+  }, [aspectRatioValue])
+
+  useEffect(() => {
+    console.log({ initialValue })
+    if (!initialValue) {
+      // setFieldValue(4)
+      // setDisplayValue(presetResolutions[4].aspectRatio)
+      return
+    }
+    console.log('setting from initialValue', initialValue)
+    const presetIndex = getPresetResolutionIndex(
+      initialValue.width,
+      initialValue.height,
+    )
+    console.log({
+      presetIndex,
+      presetResolutions,
+      idx: presetResolutions[presetIndex],
+    })
+    setFieldValue(presetIndex)
+    setDisplayValue(presetResolutions[presetIndex].aspectRatio)
+  }, [initialValue])
 
   const onChangeHandler = (newVal: PresetResolution) => {
     setDisplayValue(newVal.aspectRatio)
@@ -92,10 +152,14 @@ const AspectRatioParameter = ({
         </Popover>
       </div>
       <Form.Item
+        initialValue={fieldValue}
         name={name}
         className="mt-0 mb-0"
         dependencies={['width', 'height']}
         rules={[
+          {
+            required: false,
+          },
           () => ({
             validator(rule, incomingValue) {
               setDisplayValue(presetResolutions[incomingValue].aspectRatio)
@@ -105,6 +169,7 @@ const AspectRatioParameter = ({
         ]}
       >
         <Slider
+          value={fieldValue}
           trackStyle={{ display: 'none' }}
           step={1}
           min={0}

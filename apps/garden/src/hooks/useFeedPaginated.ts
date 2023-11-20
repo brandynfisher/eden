@@ -24,6 +24,43 @@ export type PaginatedFeedQuery = {
 
 export type FeedType = 'creations' | 'concepts'
 
+export const getFeedPageRoute = (
+  type: FeedType,
+  query: PaginatedFeedQuery,
+  limit: number,
+  page: number,
+  orderBy?: OrderByParam,
+) => {
+  const basePath = `/api/feed/${type}`
+  const params: FeedRouteQueryParams = {}
+
+  if (limit && page) {
+    params.page = page
+    params.limit = limit
+  }
+
+  if (query?.userId) {
+    params.userId = query.userId
+  }
+  if (query?.collectionId) {
+    params.collectionId = query.collectionId
+  }
+  if (query?.creationId) {
+    params.creationId = query.creationId
+  }
+  if (orderBy) {
+    params.orderBy = orderBy.field
+    params.direction = orderBy.direction
+  }
+
+  const queryString = Object.keys(params)
+    //@ts-ignore
+    .map(key => `${key}=${params[key]}`)
+    .join('&')
+
+  return queryString ? `${basePath}?${queryString}` : basePath
+}
+
 export const useFeedPaginated = (
   type: FeedType,
   query: PaginatedFeedQuery = {},
@@ -31,46 +68,15 @@ export const useFeedPaginated = (
 ) => {
   const pageLimit = query?.limit || 25
 
-  const route = (limit: number, page: number) => {
-    const basePath = `/api/feed/${type}`
-    const params: FeedRouteQueryParams = {}
-
-    if (pageLimit && page) {
-      params.page = page
-      params.limit = pageLimit
-    }
-
-    if (query?.userId) {
-      params.userId = query.userId
-    }
-    if (query?.collectionId) {
-      params.collectionId = query.collectionId
-    }
-    if (query?.creationId) {
-      params.creationId = query.creationId
-    }
-    if (orderBy) {
-      params.orderBy = orderBy.field
-      params.direction = orderBy.direction
-    }
-
-    const queryString = Object.keys(params)
-      //@ts-ignore
-      .map(key => `${key}=${params[key]}`)
-      .join('&')
-
-    return queryString ? `${basePath}?${queryString}` : basePath
-  }
-
   const getKey = useCallback(
     (pageIndex: number, previousPageData: Creation[]): string | null => {
       if ((pageIndex === 0 && previousPageData === null) || pageIndex !== 0) {
-        return route(pageLimit, pageIndex + 1)
+        return getFeedPageRoute(type, query, pageLimit, pageIndex + 1, orderBy)
       }
 
       return null
     },
-    [query, pageLimit, orderBy],
+    [type, query, pageLimit, orderBy],
   )
 
   const {

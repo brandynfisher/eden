@@ -26,7 +26,7 @@ const VideoResultV2 = ({
       >
         <video
           src={resultUrl}
-          className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg max-h-[90vh]`}
+          className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg max-h-[80vh]`}
           style={{ objectFit: 'contain', objectPosition: 'top center' }}
           autoPlay={true}
           muted={false}

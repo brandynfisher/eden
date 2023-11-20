@@ -4,12 +4,14 @@ import React from 'react'
 const SamplesParameter = ({
   form,
   name,
+  initialValue,
 }: {
   form: FormInstance
   name: string
+  initialValue?: number
 }) => {
   const onChangeHandler = (newVal: number) => {
-    form.setFieldsValue({ ['n_samples']: newVal })
+    form.setFieldsValue({ ['n_samples']: Number(newVal) })
   }
 
   return (
@@ -19,6 +21,7 @@ const SamplesParameter = ({
         name={name}
         className="mt-0 mb-0"
         dependencies={['n_samples']}
+        initialValue={initialValue}
         rules={[
           () => ({
             // validator(rule, incomingValue) {

@@ -19,9 +19,9 @@ const params = [
     isRequired: true,
   },
   {
-    name: 'mode',
+    name: 'concept_mode',
     label: 'Training mode',
-    description: 'What are you trying to learn? Object generally refers to any kind of coherent object, character or thing. Face is specifically for learning a persons face (can also be tried for characters), style is to learn an aesthetic style thats consistent across diverse images.',
+    description: 'What are you trying to learn? Object generally refers to any kind of coherent object, character or thing. Face is specifically for learning a face (can be a person of character), style is to learn an aesthetic style thats consistent across diverse images.',
     default: 'object',
     allowedValues: ['object', 'face', 'style'],
     isRequired: true,
@@ -37,7 +37,7 @@ const params = [
     description: 'More steps can lead to a better fit of your concept, but too much training will lose your ability to "prompt" the concept and often causes visual artifacts',
     default: 800,
     minimum: 200,
-    maximum: 1200,
+    maximum: 2000,
     optional: true,
   },
   {
@@ -46,16 +46,6 @@ const params = [
     description: 'Always turn on, except for faces you can try turning this off',
     default: true,
     allowedValues: [false, true],
-    optional: true,
-  },
-  {
-    name: 'lora_lr',
-    label: 'learning rate for the LORA matrices',
-    description: 'learning rate for the LORA matrices. This is the most important setting of the entire process (recommended to keep at default unless you know what youre doing)',
-    default: 2e-4,
-    minimum: 3e-5,
-    maximum: 3e-4,
-    step: 1e-5,
     optional: true,
   },
   {
@@ -72,17 +62,9 @@ const params = [
     name: 'lora_rank',
     label: 'LORA rank',
     description: 'Rank of LoRa matrices. Dont change unless you know what youre doing.',
-    default: 4,
-    minimum: 1,
+    default: 5,
+    minimum: 4,
     maximum: 16,
-    optional: true,
-  },
-  {
-    name: 'caption_prefix',
-    label: 'trigger text',
-    description:
-      'A short sentence that describes & triggers the concept to be learned (eg "man with mustache" or "cartoon of a yellow superhero"). When empty, chatgpt takes care of this (recommended)',
-    default: "",
     optional: true,
   },
   {
@@ -102,14 +84,6 @@ const params = [
     default: 2,
     minimum: 1,
     maximum: 3,
-    optional: true,
-  },
-  {
-    name: 'checkpoint',
-    label: 'SDXL checkpoint',
-    description: 'Which base model to start from',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
     optional: true,
   },
   

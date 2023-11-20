@@ -177,11 +177,13 @@ const CreationDetail = ({
                 onChange={setCreationData}
                 showCounts={true}
               />
-              <CardToolsDropdown
-                item={creation}
-                itemType={'creation'}
-                onChange={setCreationData}
-              />
+              {creationData ? (
+                <CardToolsDropdown
+                  item={creationData}
+                  itemType={'creation'}
+                  onChange={setCreationData}
+                />
+              ) : null}
             </div>
 
             <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">

@@ -9,18 +9,20 @@ const CreationCardImage = ({
   width,
   height,
   priority,
+  sizes,
 }: {
   uri: string
   width: number
   height: number
   priority?: boolean
+  sizes?: string
 }) => {
   return (
     <ResponsiveImage
       src={uri}
       alt={uri}
       aspectRatio={width / height}
-      sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
+      sizes={sizes || '(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
       priority={priority}
     />
   )
@@ -34,6 +36,7 @@ const CreationCardVideo = ({
   duration,
   priority,
   hovered = false,
+  sizes,
 }: {
   thumbnail: string
   uri: string
@@ -42,13 +45,14 @@ const CreationCardVideo = ({
   duration: number
   priority?: boolean
   hovered?: boolean
+  sizes?: string
 }) => {
   return (
     <ResponsiveImage
       src={thumbnail}
       alt={thumbnail}
       aspectRatio={width / height}
-      sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
+      sizes={sizes || '(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
       priority={priority}
     >
       <>
@@ -73,10 +77,12 @@ const CreationCardMedia = ({
   creation,
   hovered,
   priority,
+  sizes,
 }: {
   creation: Creation
   hovered?: boolean
   priority?: boolean
+  sizes?: string //media query like string for next/image.sizes
 }) => {
   if (isImageUrl(creation.uri)) {
     return (
@@ -85,6 +91,7 @@ const CreationCardMedia = ({
         width={creation.mediaAttributes.width || 0}
         height={creation.mediaAttributes.height || 0}
         priority={priority}
+        sizes={sizes}
       />
     )
   }
@@ -98,6 +105,7 @@ const CreationCardMedia = ({
       width={creation.mediaAttributes.width || 0}
       height={creation.mediaAttributes.height || 0}
       priority={priority}
+      sizes={sizes}
     />
   )
 }

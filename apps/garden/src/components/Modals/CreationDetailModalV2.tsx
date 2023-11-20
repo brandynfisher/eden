@@ -33,7 +33,6 @@ const CreationDetailModalV2 = ({
   const handlePrevItem = useCallback(() => {
     const prevIndex = currentIndex - 1
 
-    // console.log({ prevIndex })
     if (prevIndex < 0) {
       // @todo: UI feedback that end of list is reached
       // console.log('start of list')

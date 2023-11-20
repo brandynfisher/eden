@@ -1,41 +1,40 @@
-import { presetResolutions } from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
+import {
+  closest,
+  presetItems,
+} from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, InputNumber, Slider } from 'antd'
 import { FocusEvent, useEffect, useState } from 'react'
-
-function closest(needle: number, haystack: number[]) {
-  return haystack.reduce((a, b) => {
-    let aDiff = Math.abs(a - needle)
-    let bDiff = Math.abs(b - needle)
-
-    if (aDiff == bDiff) {
-      return a > b ? a : b
-    } else {
-      return bDiff < aDiff ? b : a
-    }
-  })
-}
-
-const presetItems = {
-  width: presetResolutions.map(pres => pres.width),
-  height: presetResolutions.map(pres => pres.height),
-  aspectRatio: presetResolutions.map(pres => pres.width / pres.height),
-}
 
 const SliderParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
   onFieldChange?: Function
 }) => {
-  const [fieldValue, setFieldValue] = useState<number | null>(
-    props.parameter.default,
+  const [fieldValue, setFieldValue] = useState<number>(
+    props.parameter.default || 0,
   )
 
+  const sliderValue = Form.useWatch(props.parameter.name, props.form)
+
+  useEffect(() => {
+    console.log({ sliderValue, fieldValue })
+    // if (sliderValue !== fieldValue) {
+    //   return
+    // }
+
+    // console.log('useEffect', sliderValue, fieldValue)
+    setFieldValue(prev => (prev === sliderValue ? sliderValue : prev))
+    setFormValue(fieldValue !== sliderValue ? sliderValue : fieldValue)
+  }, [sliderValue])
+
   const onChange = (newValue: number | null) => {
+    console.log('onchange', newValue)
+    if (!newValue) return
     setFieldValue(newValue)
-    specialChangeHandler()
     props.onFieldChange && props.onFieldChange()
+    specialChangeHandler()
   }
 
   const setFormValue = (newValue: number | null) => {
@@ -95,7 +94,7 @@ const SliderParameter = (props: {
       <div className="flex items-center w-full">
         <Slider
           className="flex-grow"
-          value={fieldValue || 0}
+          value={fieldValue}
           min={props.parameter.minimum}
           max={props.parameter.maximum}
           step={props.parameter.step ? props.parameter.step : 1}

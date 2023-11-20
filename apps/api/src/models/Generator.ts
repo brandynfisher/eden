@@ -148,35 +148,32 @@ export interface GeneratorInput {
 
 export interface GeneratorDocument extends GeneratorSchema, Document {}
 
-const generator = new Schema<GeneratorDocument>({
-  generatorName: {
-    type: String,
-    required: true,
+const generator = new Schema<GeneratorDocument>(
+  {
+    generatorName: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    output: {
+      type: String,
+      required: true,
+    },
+    defaultVersionId: {
+      type: String,
+    },
+    versions: {
+      type: [generatorVersion],
+      default: [],
+    },
   },
-  description: {
-    type: String,
-    required: true,
+  {
+    timestamps: true,
   },
-  output: {
-    type: String,
-    required: true,
-  },
-  defaultVersionId: {
-    type: String,
-  },
-  versions: {
-    type: [generatorVersion],
-    default: [],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-})
+)
 
 generator.pre<GeneratorDocument>('save', function (next) {
   this.updatedAt = new Date()

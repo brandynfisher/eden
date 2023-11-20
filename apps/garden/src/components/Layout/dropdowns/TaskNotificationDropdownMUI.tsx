@@ -1,10 +1,9 @@
 import TestGeneratorFinishButton from '@/components/Creation/CreationInterface/TestGeneratorFinishButton'
-import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import MenuDropdownMUI, {
   MenuDropdownItem,
 } from '@/components/Layout/dropdowns/MenuDropdownMUI'
+import { ResponsiveImage } from '@/components/Media/ResponsiveImage'
 import { CONFIG } from '@/lib/config'
-import { getAspectRatio } from '@/lib/media'
 import { rightTruncatedString, truncatedAddress } from '@/lib/string'
 import { durationBetweenDates } from '@/lib/time'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
@@ -120,15 +119,15 @@ const CompletedTaskMenuItem = ({
           style={{ width: '265px', maxHeight: '58px' }}
         >
           <div
-            className="rounded-md flex h-full items-center overflow-hidden"
-            style={{ minWidth: '58px', minHeight: '58px' }}
+            className="rounded flex justify-center"
+            style={{ minWidth: '58px', maxWidth: '64px', minHeight: '58px' }}
           >
-            <ImageResult
-              previewSizeUrl={task.creation?.thumbnail || ''}
-              aspectRatio={getAspectRatio(
-                task.creation?.mediaAttributes.width,
-                task.creation?.mediaAttributes.height,
-              )}
+            <ResponsiveImage
+              sizes={'96px'}
+              src={task.creation?.thumbnail}
+              alt={task._id}
+              aspectRatio={task.creation?.mediaAttributes.aspectRatio}
+              className="max-w-full"
             />
           </div>
           <div className="flex items-center justify-between min-w-0 w-full gap-2">
@@ -286,18 +285,20 @@ const TaskNotificationDropdownMUI = () => {
     })
 
     completedTaskItems.push(
-      ...completedTasks.map(task => ({
-        render: (
-          <CompletedTaskMenuItem
-            router={router}
-            task={task}
-            handleDismiss={() =>
-              handleDismiss(task._id, completedTasks, setCompletedTasks)
-            }
-          />
-        ),
-        key: task._id,
-      })),
+      ...completedTasks
+        .filter(task => !!task.creation)
+        .map(task => ({
+          render: (
+            <CompletedTaskMenuItem
+              router={router}
+              task={task}
+              handleDismiss={() =>
+                handleDismiss(task._id, completedTasks, setCompletedTasks)
+              }
+            />
+          ),
+          key: task._id,
+        })),
     )
   }
 

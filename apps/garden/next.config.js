@@ -41,6 +41,7 @@ module.exports = withTM({
           },
     ]
   },
+  trailingSlash: false,
   swcMinify: true,
   output: 'standalone',
   experimental: {
@@ -56,7 +57,7 @@ module.exports = withTM({
   images: {
     // deviceSizes: [320, 640, 828, 1080, 1200, 1920, 2048, 3840],
     // imageSizes: [32, 64, 96, 128, 256, 300],
-    minimumCacheTTL: 608400,
+    minimumCacheTTL: 2433600,
     domains: imageDomains,
     remotePatterns: [
       {

@@ -83,7 +83,7 @@ const ResultPreviewDisplay = ({
                 creation.mediaAttributes.height,
               )}
               priority={priority}
-              limitHeight={false}
+              limitHeight={true}
             />
           </div>
           {/*<Rating*/}

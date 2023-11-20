@@ -113,6 +113,7 @@ export const getCreationsFeed = async (
     filterUserIds && creators.docs && creators.docs.length
       ? creators.docs.map(creator => creator._id)[0].toString()
       : undefined
+
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId
 
@@ -175,7 +176,15 @@ export const getCreationsFeed = async (
       sortFilter['createdAt'] = { $gte: dateCutoff }
     }
 
-    if (!isUserRequestingOwnProfileFeed) {
+    if (
+      !isUserRequestingOwnProfileFeed &&
+      !(
+        collection &&
+        collection.user &&
+        ownUserId &&
+        collection.user.toString() === ownUserId.toString()
+      )
+    ) {
       sortFilter['isPrivate'] = { $ne: true }
     }
 
