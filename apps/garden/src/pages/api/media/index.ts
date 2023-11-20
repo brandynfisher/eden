@@ -1,5 +1,6 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
+import * as Sentry from '@sentry/nextjs'
 import axios from 'axios'
 import FormData from 'form-data'
 import formidable, { Fields, Files } from 'formidable'
@@ -52,6 +53,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { url } = response.data
     return res.status(200).json({ fileUrl: url })
   } catch (error) {
+    Sentry.captureException(error)
     return res.status(500).json({ error: 'Internal server error' })
   }
 }
