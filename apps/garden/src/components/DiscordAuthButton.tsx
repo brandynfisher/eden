@@ -38,7 +38,7 @@ const DiscordAuthButton: React.FC = () => {
           <Button
             danger
             type="dashed"
-            className="font-mono bg-black text-white h-10"
+            className="font-mono h-10"
             onClick={handleDisconnect}
           >
             Disconnect
@@ -46,7 +46,7 @@ const DiscordAuthButton: React.FC = () => {
         </div>
       ) : (
         <Button
-          className="font-mono bg-black text-white h-10 flex items-center gap-3"
+          className="font-mono h-10 flex items-center gap-3"
           onClick={handleClick}
         >
           <SvgDiscord />
