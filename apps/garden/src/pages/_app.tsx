@@ -34,7 +34,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
     ))
 
   return (
-    <PasswordProtection>
+    <>
       <Head>
         <title>Garden of Eden</title>
         <meta
@@ -86,31 +86,33 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         />
       </Head>
 
-      <main className={`${inter.className}`}>
-        <ThemeProvider attribute="class">
-          <MUIConfigWrapProvider>
-            <AntConfigWrapProvider>
-              <EdenProvider>
-                <ClerkWrapProvider>
-                  <UserProvider>
-                    <CreationNotificationProvider>
-                      <MasonryProvider>
-                        <ModalProvider>
-                          {getLayout(
-                            <ErrorBoundary>
-                              <Component {...pageProps} />
-                            </ErrorBoundary>,
-                          )}
-                        </ModalProvider>
-                      </MasonryProvider>
-                    </CreationNotificationProvider>
-                  </UserProvider>
-                </ClerkWrapProvider>
-              </EdenProvider>
-            </AntConfigWrapProvider>
-          </MUIConfigWrapProvider>
-        </ThemeProvider>
-      </main>
-    </PasswordProtection>
+      <PasswordProtection>
+        <main className={`${inter.className}`}>
+          <ThemeProvider attribute="class">
+            <MUIConfigWrapProvider>
+              <AntConfigWrapProvider>
+                <EdenProvider>
+                  <ClerkWrapProvider>
+                    <UserProvider>
+                      <CreationNotificationProvider>
+                        <MasonryProvider>
+                          <ModalProvider>
+                            {getLayout(
+                              <ErrorBoundary>
+                                <Component {...pageProps} />
+                              </ErrorBoundary>,
+                            )}
+                          </ModalProvider>
+                        </MasonryProvider>
+                      </CreationNotificationProvider>
+                    </UserProvider>
+                  </ClerkWrapProvider>
+                </EdenProvider>
+              </AntConfigWrapProvider>
+            </MUIConfigWrapProvider>
+          </ThemeProvider>
+        </main>
+      </PasswordProtection>
+    </>
   )
 }

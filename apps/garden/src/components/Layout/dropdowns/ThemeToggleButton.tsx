@@ -1,3 +1,4 @@
+import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { Space, Switch } from 'antd'
 import { useTheme } from 'next-themes'
 import { UseThemeProps } from 'next-themes/dist/types'
@@ -34,7 +35,7 @@ const ThemeToggleButton = () => {
       className="justify-between w-full p-2"
     >
       <div className="flex">
-        <div>☾ </div>
+        <DarkModeIcon fontSize="small" />
         <div className="font-mono ml-2 text-black dark:text-white">
           Dark Mode
         </div>

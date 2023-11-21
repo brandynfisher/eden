@@ -164,7 +164,6 @@ test('Two users cannot have the same username with a different casing', async co
     },
     headers,
   })
-  console.log(response.json())
   expect(response.statusCode).toBe(400)
   expect(response.json()).toHaveProperty('message')
   expect(response.json().message).toBe('Username already taken')

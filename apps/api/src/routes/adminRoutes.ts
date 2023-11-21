@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
+import { createTask } from '../controllers/taskController'
 import { isAdmin } from '../middleware/authMiddleware'
 
 export interface MannaModifyRequestBody {
@@ -59,6 +60,30 @@ const adminRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (req, reply) => uploadMediaAdmin(server, req, reply),
+  })
+
+  server.post('/admin/tasks/create', {
+    schema: {
+      body: {
+        generatorName: Type.String(),
+        versionId: Type.Optional(Type.String()),
+        config: Type.Optional(Type.Any()),
+        webhooks: Type.Optional(Type.Array(Type.String())),
+        attributes: Type.Optional(
+          Type.Object({
+            discordId: Type.Optional(Type.String()),
+            delegateUserId: Type.Optional(Type.String()),
+          }),
+        ),
+      },
+      response: {
+        200: Type.Object({
+          taskId: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => createTask(server, request, reply),
   })
 }
 

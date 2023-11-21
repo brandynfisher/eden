@@ -21,6 +21,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         type: 'object',
         properties: {
           userId: { type: ['string', 'array'] },
+          discordId: { type: ['string', 'array'] },
           ...paginationProperties(),
         },
         required: [],
