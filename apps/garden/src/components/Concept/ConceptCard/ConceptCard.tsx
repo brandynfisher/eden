@@ -41,6 +41,8 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
     setCreatedDateString(new Date(concept.createdAt).toLocaleString())
     const mode = concept?.task?.config?.mode
       ? concept?.task?.config?.mode
+      : concept?.task?.config?.concept_mode
+      ? concept?.task?.config?.concept_mode
       : null
     setTrainingMode(mode)
   }, [concept])
@@ -119,7 +121,7 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
               </div>
             </div>
             <div className="absolute bottom-11 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
-              {trainingMode ? (
+              {!hovered && trainingMode ? (
                 <Tag
                   color={trainingModeColorMap[trainingMode]}
                   className="first-letter:capitalize me-0"
