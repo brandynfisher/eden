@@ -204,10 +204,6 @@ const ManageAccountLink = () => {
 
 const clerkItems: ItemType[] = [
   {
-    label: <ManageAccountLink />,
-    key: 'dev-tools',
-  },
-  {
     type: 'divider',
   },
   {
@@ -216,10 +212,17 @@ const clerkItems: ItemType[] = [
   },
 ]
 
-const subscriberExtraItems: ItemType[] = [
+const authItems: ItemType[] = [
   {
     type: 'divider',
   },
+  {
+    label: <ManageAccountLink />,
+    key: 'dev-tools',
+  },
+]
+
+const subscriberExtraItems: ItemType[] = [
   {
     label: <ManageSubscriptionButton />,
     key: 'manage-subscription',
@@ -257,6 +260,8 @@ export const SettingsDropdown = () => {
     let newDropDownItems = [...items]
 
     if (isAuthenticated) {
+      newDropDownItems = [...newDropDownItems, ...authItems]
+
       if (user?.subscriptionTier) {
         newDropDownItems = [...newDropDownItems, ...subscriberExtraItems]
       }

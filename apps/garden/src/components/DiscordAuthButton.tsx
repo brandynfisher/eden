@@ -1,4 +1,5 @@
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
+import { requireAuth } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
@@ -8,8 +9,14 @@ import React, { useContext } from 'react'
 
 const DiscordAuthButton: React.FC = () => {
   const { message } = App.useApp()
-  const { userId, user, refetchMe } = useContext(UserContext)
-  const handleClick = () => {
+  const { userId, user, refetchMe, isAuthenticated, authenticate } =
+    useContext(UserContext)
+  const handleClick = async () => {
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+      return
+    }
+
     try {
       window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${
         CONFIG.NEXT_PUBLIC_DISCORD_CLIENT_ID
@@ -22,6 +29,11 @@ const DiscordAuthButton: React.FC = () => {
   }
 
   const handleDisconnect = async () => {
+    if (!isAuthenticated) {
+      await requireAuth(authenticate)
+      return
+    }
+
     try {
       await axios.get('/api/auth/discord/disconnect')
       refetchMe()
@@ -38,7 +50,7 @@ const DiscordAuthButton: React.FC = () => {
           <Button
             danger
             type="dashed"
-            className="font-mono bg-black text-white h-10"
+            className="font-mono h-10"
             onClick={handleDisconnect}
           >
             Disconnect
@@ -46,7 +58,7 @@ const DiscordAuthButton: React.FC = () => {
         </div>
       ) : (
         <Button
-          className="font-mono bg-black text-white h-10 flex items-center gap-3"
+          className="font-mono h-10 flex items-center gap-3"
           onClick={handleClick}
         >
           <SvgDiscord />
