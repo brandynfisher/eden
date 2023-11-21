@@ -56,6 +56,7 @@ export type PaymentsCreateResponse = WebAPICallResult & {
 export type PaymentsProductsResponse = WebAPICallResult & {
   error?: string
   products?: Product[]
+  subscriptions?: Product[]
 }
 
 export type PaymentsSubscriptionResponse = WebAPICallResult & {

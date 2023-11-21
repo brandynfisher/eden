@@ -4,6 +4,21 @@ import Image from 'next/image'
 
 const { Meta } = Card
 
+export const renderDisplayPrice = (product: Product) => {
+  const { displayPrice } = product
+  return (
+    <div>
+      {displayPrice.currency.toUpperCase()}{' '}
+      <strong>
+        {(displayPrice?.unit_amount
+          ? displayPrice?.unit_amount / 100
+          : 0
+        ).toFixed(2)}
+      </strong>
+    </div>
+  )
+}
+
 const ProductCard = ({
   product,
   checkoutHandler,
@@ -12,24 +27,7 @@ const ProductCard = ({
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
   const handleBuyProductClick = () => {
-    const paymentMode =
-      product.displayPrice.type === 'recurring' ? 'subscription' : 'payment'
-    checkoutHandler(product.default_price, paymentMode)
-  }
-
-  const renderDisplayPrice = (product: Product) => {
-    const { displayPrice } = product
-    return (
-      <div>
-        {displayPrice.currency.toUpperCase()}{' '}
-        <strong>
-          {(displayPrice?.unit_amount
-            ? displayPrice?.unit_amount / 100
-            : 0
-          ).toFixed(2)}
-        </strong>
-      </div>
-    )
+    checkoutHandler(product.default_price, 'payment')
   }
 
   return (
@@ -51,10 +49,9 @@ const ProductCard = ({
       actions={[
         <div
           key={product.id}
-          className="px-6 flex gap-2 justify-between items-center"
-          onClick={handleBuyProductClick}
+          className="px-4 flex gap-2 justify-between items-center"
         >
-          <Button>Buy</Button>
+          <Button onClick={handleBuyProductClick}>Buy</Button>
           {renderDisplayPrice(product)}
         </div>,
       ]}
