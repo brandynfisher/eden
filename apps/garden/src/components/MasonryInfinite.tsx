@@ -159,7 +159,6 @@ const MasonryInfinite = ({
         currentItems: Creation[] | Concept[],
       ) => {
         if (currentIndex === currentItems.length - 1) {
-          // console.log('reached last item, trigger maybeLoadMore', currentIndex, currentIndex + 10)
           maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
         }
         // console.log(currentItems.length)
