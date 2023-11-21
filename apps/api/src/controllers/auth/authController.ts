@@ -84,6 +84,15 @@ export const discordOAuth = async (
       })
     }
 
+    // Check to make sure this discordId isn't already in use
+    await User.findOne({ discordId }).then(existingUser => {
+      if (existingUser) {
+        return reply.status(400).send({
+          message: 'Discord already in use',
+        })
+      }
+    })
+
     user.discordId = discordId
     await user.save()
 
