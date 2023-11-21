@@ -35,7 +35,6 @@ const CreationDetailModalV2 = ({
 
     if (prevIndex < 0) {
       // @todo: UI feedback that end of list is reached
-      // console.log('start of list')
     } else {
       const newIndex = prevIndex <= 0 ? 0 : prevIndex
       setCurrentIndex(newIndex)
