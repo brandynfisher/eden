@@ -43,6 +43,7 @@ const createServer = async (
     logger: {
       level: process.env.LOG_LEVEL,
     },
+    pluginTimeout: 0,
   })
 
   await server.register(config)

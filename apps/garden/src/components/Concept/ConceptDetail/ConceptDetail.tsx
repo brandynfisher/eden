@@ -100,7 +100,7 @@ const ConceptDetail = ({
               <div className="relative flex justify-center">
                 <div
                   onClick={() => handlePreviewClick(conceptData.thumbnail)}
-                  className="relative flex justify-center flex flex-grow"
+                  className="relative flex justify-center flex-grow"
                 >
                   <MediaDisplay
                     priority={true}

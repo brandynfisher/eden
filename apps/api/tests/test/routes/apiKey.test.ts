@@ -50,7 +50,6 @@ const deleteApiKey = async (
 test('Non-free user can create an API Key', async context => {
   const { server } = context
   const response = await createApiKey(server)
-  console.log(response.json())
   expect(response.statusCode).toBe(200)
   const json = response.json()
   expect(json).toHaveProperty('apiKey')
