@@ -45,7 +45,6 @@ const CreationDetailModalV2 = ({
   const handleNextItem = useCallback(() => {
     const nextIndex = currentIndex + 1
 
-    // console.log({ nextIndex })
     if (nextIndex >= items.length) {
       // @todo: UI feedback that end of list is reached
       // console.log('end of list')
