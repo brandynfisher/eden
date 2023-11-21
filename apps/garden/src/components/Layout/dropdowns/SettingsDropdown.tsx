@@ -214,6 +214,9 @@ const clerkItems: ItemType[] = [
 
 const authItems: ItemType[] = [
   {
+    type: 'divider',
+  },
+  {
     label: <ManageAccountLink />,
     key: 'dev-tools',
   },
