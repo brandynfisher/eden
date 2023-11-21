@@ -32,19 +32,16 @@ const MannaVoucherRedeem = () => {
   }
 
   return (
-    <div>
-      <div>
-        <h3 className="text-l">Redeem Manna Voucher</h3>
-        <Input
-          placeholder="Voucher Code"
-          value={voucherCode}
-          style={{ width: '50%', marginTop: 10, marginBottom: 10 }}
-          onChange={e => setVoucherCode(e.target.value)}
-        />
-      </div>
+    <div className="flex gap-2 flex-wrap">
+      <Input
+        className="max-w-xs"
+        placeholder="Voucher Code"
+        value={voucherCode}
+        onChange={e => setVoucherCode(e.target.value)}
+      />
 
       <Button
-        className="font-mono bg-black text-white h-10"
+        className="font-mono bg-black text-white"
         onClick={redeemVoucher}
         disabled={redeemingVoucher}
         loading={redeemingVoucher}
