@@ -58,7 +58,7 @@ export const discordOAuth = async (
         client_id: server.config.DISCORD_CLIENT_ID as string,
         client_secret: server.config.DISCORD_CLIENT_SECRET as string,
         code,
-        redirect_uri: `https://j.eden.ngrok.dev/auth/discord/callback`,
+        redirect_uri: `${server.config.API_URL}/auth/discord/callback`,
         grant_type: 'authorization_code',
         scope: 'identify',
       }),
