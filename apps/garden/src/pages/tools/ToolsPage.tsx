@@ -5,6 +5,7 @@ import { UserContext } from '@/providers/UserProvider'
 import KeyOutlined from '@mui/icons-material/KeyOutlined'
 import { Collapse } from 'antd'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const { Panel } = Collapse
@@ -12,22 +13,6 @@ const { Panel } = Collapse
 const ApiKeys = dynamic(() => import('@/components/ApiKeys'), {
   loading: () => <LoadingIndicator />,
 })
-
-const ApiKeyPanelExtra = () => (
-  <KeyOutlined
-    onClick={event => {
-      event.stopPropagation()
-    }}
-  />
-)
-
-const DiscordPanelExtra = () => (
-  <SvgDiscord
-    onClick={event => {
-      event.stopPropagation()
-    }}
-  />
-)
 
 const ToolsPage = () => {
   const { featureFlags } = useContext(UserContext)
@@ -41,7 +26,7 @@ const ToolsPage = () => {
             <Panel
               key={'discord'}
               header={'Discord Account'}
-              extra={DiscordPanelExtra()}
+              extra={<SvgDiscord />}
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -56,15 +41,16 @@ const ToolsPage = () => {
                 <DiscordAuthButton />
               </div>
             </Panel>
-            {isPreviewUser && (
-              <Panel
-                key={'apiKeys'}
-                header={'API Keys'}
-                extra={ApiKeyPanelExtra()}
-              >
+            <Panel key={'apiKeys'} header={'API Keys'} extra={<KeyOutlined />}>
+              {!isPreviewUser ? (
                 <ApiKeys />
-              </Panel>
-            )}
+              ) : (
+                <div className="text-gray-500">
+                  Upgrade your <Link href="/manna">subscription</Link> for API
+                  access.
+                </div>
+              )}
+            </Panel>
           </Collapse>
         </div>
       </div>
