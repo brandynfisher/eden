@@ -42,7 +42,7 @@ const ToolsPage = () => {
               </div>
             </Panel>
             <Panel key={'apiKeys'} header={'API Keys'} extra={<KeyOutlined />}>
-              {!isPreviewUser ? (
+              {isPreviewUser ? (
                 <ApiKeys />
               ) : (
                 <div className="text-gray-500">
