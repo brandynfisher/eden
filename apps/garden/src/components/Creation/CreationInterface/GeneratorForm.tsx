@@ -575,7 +575,7 @@ const GeneratorForm = ({
 
           {user &&
           user.featureFlags &&
-          user.featureFlags.includes('private') ? (
+          user.featureFlags.includes('preview') ? (
             <PrivacyToggle />
           ) : null}
         </div>
