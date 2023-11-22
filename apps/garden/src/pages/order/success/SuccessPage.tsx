@@ -1,16 +1,20 @@
 import { UserContext } from '@/providers/UserProvider'
 import { Button, Result } from 'antd'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const OrderSuccessPage = () => {
+  const router = useRouter()
+  const { session_id } = router.query
+
   const { user } = useContext(UserContext)
 
   const order = {
     product: {
-      name: 'dummy',
+      name: '',
     },
-    id: '123123',
+    id: session_id || 'n/a',
   }
 
   return (
@@ -18,7 +22,7 @@ const OrderSuccessPage = () => {
       <Result
         className="mb-0 pb-12"
         status="success"
-        title={`Successfully purchased '${order.product.name}'`}
+        title={`Successfully purchased '${order.product.name}' !`}
         subTitle={
           <div>
             <h1>Thanks for your order, {user?.username}!</h1>
@@ -29,9 +33,9 @@ const OrderSuccessPage = () => {
       <Link key="create" href="/create/creations">
         <Button
           type="primary"
-          className="flex items-center border border-transparent rounded-md text-center font-medium"
+          className="flex border border-transparent rounded-md font-medium"
         >
-          <div>Start creating</div>
+          Start creating
         </Button>
       </Link>
     </div>

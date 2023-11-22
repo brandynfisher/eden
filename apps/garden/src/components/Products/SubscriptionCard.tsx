@@ -65,12 +65,12 @@ const CardComponent = ({
         {/*<p className="absolute top-0 py-1.5 px-4 bg-emerald-500 text-white dark:text-black rounded-full text-xs font-semibold uppercase tracking-wide  transform -translate-y-1/2">*/}
         {/*  Most popular*/}
         {/*</p>*/}
-        <p className="mt-4 flex items-baseline ">
+        <div className="mt-4 flex items-baseline ">
           <span className="text-4xl font-extrabold tracking-tight">
             {renderDisplayPrice(subscription)}
           </span>
           <span className="ml-1 text-xl font-semibold">/ month</span>
-        </p>
+        </div>
         <p className="mt-4">{subscription.description}</p>
         <SubscriptionFeatures features={features} />
       </div>
