@@ -2,6 +2,9 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import SubscriptionCard from '@/components/Subscriptions/SubscriptionCard'
 import { useSubscriptions } from '@/hooks/useSubscriptions'
 
+/**
+ * @deprecated
+ */
 const SubscriptionsList = ({
   checkoutHandler,
 }: {

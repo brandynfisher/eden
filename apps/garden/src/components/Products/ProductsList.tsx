@@ -16,6 +16,21 @@ const sortByPrice = (a: Product, b: Product) => {
   return aPrice > bPrice ? 1 : -1
 }
 
+const dummyFeatures: { [key: string]: string[] } = {
+  basic: [
+    '1000 Manna / month',
+    'Powered by GPT-4 (more accurate)',
+    'API access',
+  ],
+  pro: [
+    '5000 Manna / month',
+    'Powered by GPT-4 (more accurate)',
+    'API access',
+    'Private Creations',
+    'Fast Generations',
+  ],
+}
+
 const ProductsList = ({
   checkoutHandler,
 }: {
@@ -42,17 +57,32 @@ const ProductsList = ({
         {!subscriptions || !subscriptions.length ? (
           <LoadingIndicator />
         ) : (
-          <div className="flex gap-4 flex-wrap">
-            {subscriptionsSortedByPrice.map(product => (
-              <SubscriptionCard
-                key={product.id}
-                subscription={product}
-                checkoutHandler={checkoutHandler}
-                isActive={
-                  activeSubscriptionTier === product.metadata.subscriptionTier
-                }
-              />
-            ))}
+          <div>
+            <div className="mb-2">
+              {activeSubscriptionTier ? (
+                <div>
+                  Your current plan:{' '}
+                  <span className="capitalize font-bold">
+                    {activeSubscriptionTier}
+                  </span>
+                </div>
+              ) : (
+                'No active plan'
+              )}
+            </div>
+            <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
+              {subscriptionsSortedByPrice.map(product => (
+                <SubscriptionCard
+                  key={product.id}
+                  features={dummyFeatures[product.metadata.subscriptionTier]}
+                  subscription={product}
+                  checkoutHandler={checkoutHandler}
+                  isActive={
+                    activeSubscriptionTier === product.metadata.subscriptionTier
+                  }
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>

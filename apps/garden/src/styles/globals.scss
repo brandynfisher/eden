@@ -632,3 +632,9 @@ body {
         }
     }
 }
+
+.product-card {
+    .ant-card-actions > li > span {
+        cursor: initial !important;
+    }
+}

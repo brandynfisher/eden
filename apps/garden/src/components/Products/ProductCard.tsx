@@ -32,7 +32,7 @@ const ProductCard = ({
 
   return (
     <Card
-      className="w-64"
+      className="w-64 product-card"
       cover={
         <Image
           width={256}
