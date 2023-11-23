@@ -21,7 +21,7 @@ const params = [
   {
     name: 'concept_mode',
     label: 'Training mode',
-    description: 'What are you trying to learn? Object generally refers to any kind of coherent object, character or thing. Face is specifically for learning a face (can be a person of character), style is to learn an aesthetic style thats consistent across diverse images.',
+    description: 'What are you trying to learn? Object generally refers to any kind of coherent object, character or thing. Face is specifically for learning a face (can be a person or a character), style is to learn an aesthetic style thats consistent across diverse images.',
     default: 'object',
     allowedValues: ['object', 'face', 'style'],
     isRequired: true,
@@ -50,8 +50,8 @@ const params = [
   },
   {
     name: 'prodigy_d_coef',
-    label: 'Multiplier for internal learning rate of Prodigy optimizer',
-    description: 'Multiplier for internal learning rate of Prodigy optimizer (recommended to keep at default unless you know what youre doing)',
+    label: 'Learning rate multiplier',
+    description: 'Multiplier for internal learning rate of the optimizer (recommended to keep at default unless you know what youre doing)',
     default: 0.5,
     minimum: 0.1,
     maximum: 1.0,
@@ -61,7 +61,7 @@ const params = [
   {
     name: 'ti_lr',
     label: 'learning rate for textual inversion',
-    description: 'learning rate for textual inversion phase. (recommended to keep at default unless you know what youre doing)',
+    description: 'learning rate for learning the new token. (recommended to keep at default unless you know what youre doing)',
     default: 2e-3,
     minimum: 5e-4,
     maximum: 4e-3,
@@ -71,7 +71,7 @@ const params = [
   {
     name: 'lora_rank',
     label: 'LORA rank',
-    description: 'Rank of LoRa matrices. Dont change unless you know what youre doing.',
+    description: 'Rank of the LoRa matrices. (recommended to keep at default unless you know what youre doing)',
     default: 6,
     minimum: 4,
     maximum: 16,
@@ -81,7 +81,7 @@ const params = [
     name: 'resolution',
     label: 'Resolution',
     description:
-      'Image resolution used for training',
+      'Image resolution used for training (recommended to keep at default)',
     default: 1024,
     minimum: 640,
     maximum: 1024,
