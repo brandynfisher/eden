@@ -21,11 +21,15 @@ export const downloadFileBlob = async (url: string, fileName: string) => {
   }
 }
 
-export const downloadFile = async (url: string) => {
+export const downloadFile = async (url: string, fileName: string) => {
   try {
     const response = await axios.get(`/api/media/download?url=${url}`)
     const link = document.createElement('a')
+    const parsedUrl = new URL(url)
+    const extension = parsedUrl.pathname.split('.').pop()
+    link.download = `${fileName}.${extension}`
     link.href = response.data.signedUrl
+
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

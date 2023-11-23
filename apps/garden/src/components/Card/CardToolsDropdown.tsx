@@ -235,6 +235,7 @@ const CardToolsDropdown = ({
             icon: (
               <DownloadFileButton
                 url={item.uri}
+                fileName={item._id}
                 variant="text"
                 label="Download"
               />
