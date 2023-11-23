@@ -28,6 +28,8 @@ const BaseParamGroup = ({
   )
 }
 
+const thumbnailSize = 132
+
 const CreationInfo = ({ creation }: { creation: Creation }) => {
   const [displayDateTime, setDisplayDateTime] = useState('')
 
@@ -82,8 +84,8 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
                   <ImageZoomable
                     key={concept.thumbnail}
                     url={concept.thumbnail}
-                    width={132}
-                    height={132}
+                    width={thumbnailSize}
+                    height={thumbnailSize}
                   />
                 </div>
               ) : (
@@ -109,8 +111,40 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
                   creation.task.config['init_image_data'] ||
                   creation.task.config['init_image']
                 }
-                width={132}
-                height={132}
+                width={thumbnailSize}
+                height={thumbnailSize}
+              />
+            }
+          />
+        </div>
+      ) : null}
+
+      {creation.task.config['control_image'] ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Control Image"
+            value={
+              <ImageZoomable
+                key={creation.task.config['control_image']}
+                url={creation.task.config['control_image']}
+                width={thumbnailSize}
+                height={thumbnailSize}
+              />
+            }
+          />
+        </div>
+      ) : null}
+
+      {creation.task.config['ip_image'] ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Ip Image"
+            value={
+              <ImageZoomable
+                key={creation.task.config['ip_image']}
+                url={creation.task.config['ip_image']}
+                width={thumbnailSize}
+                height={thumbnailSize}
               />
             }
           />
@@ -129,8 +163,8 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
                     <ImageZoomable
                       key={initImage}
                       url={initImage}
-                      width={134}
-                      height={134}
+                      width={thumbnailSize}
+                      height={thumbnailSize}
                     />
                   ),
                 )}
