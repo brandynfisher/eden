@@ -216,11 +216,13 @@ const handleUpdate = async (
           conceptData.uri = uri
         }
         if (finalOutput.thumbnails[i]) {
-          conceptData.thumbnail = await server.uploadThumbnailAsset(
+          const { uri, mediaAttributes } = await server.uploadUrlAsset(
             server,
             finalOutput.thumbnails[i],
           )
+          conceptData.thumbnail = uri
         }
+
         const concept = await Concept.create(conceptData)
         Object.assign(taskUpdate, {
           concept: concept._id,
