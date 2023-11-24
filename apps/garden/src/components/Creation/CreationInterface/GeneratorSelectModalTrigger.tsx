@@ -1,8 +1,10 @@
 import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
+import { conceptGenerator } from '@/lib/generator'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Generator } from '@edenlabs/eden-sdk'
 import Article from '@mui/icons-material/Article'
 import MenuIcon from '@mui/icons-material/Menu'
+import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import MovieFilter from '@mui/icons-material/MovieFilter'
 import Wallpaper from '@mui/icons-material/Wallpaper'
 import Button from '@mui/material/Button'
@@ -51,11 +53,16 @@ const GeneratorSelectModalTrigger = ({
           <Wallpaper fontSize="medium" />
         ) : outputType === 'video' ? (
           <MovieFilter fontSize="medium" />
+        ) : activeGenerator.generatorName === conceptGenerator.name ? (
+          <ModelTrainingIcon fontSize="medium" />
         ) : (
           <Article fontSize="medium" />
         )}
         <div className="mr-auto h-[24px] font-mono">
-          /{activeGenerator.generatorName}
+          /
+          {activeGenerator.generatorName === conceptGenerator.name
+            ? conceptGenerator.displayName
+            : activeGenerator.generatorName}
         </div>
 
         {generators.length > 1 ? <MenuIcon fontSize="medium" /> : null}
