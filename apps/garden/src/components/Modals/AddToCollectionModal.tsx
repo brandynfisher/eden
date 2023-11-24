@@ -103,7 +103,7 @@ const AddToCollectionModal = ({
       {...rest}
       className="modal-small max-w-4xl flex flex-col w-full items-center justify-center"
     >
-      <div className="p-4 md:p-0">
+      <div className="p-4">
         <Combobox
           title="Add to collection"
           items={collections}
