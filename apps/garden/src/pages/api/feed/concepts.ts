@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
-  const { userId, page, limit, orderBy, direction } = req.query
+  const { userId, name, page, limit, orderBy, direction } = req.query
 
   const route = (limit: number, page: number) => {
     const basePath = `${CONFIG.API_URL}/feed/concepts`
@@ -21,6 +21,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (userId) {
       params.userId = String(userId)
     }
+
+    if (name && name.length > 0) {
+      params.name = String(name)
+    }
+
     if (orderBy) {
       params.orderBy = String(orderBy)
     }

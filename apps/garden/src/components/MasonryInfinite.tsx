@@ -6,6 +6,7 @@ import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
 } from '@/components/Layout/buttons/OrderByButtons'
+import MasonrySearch from '@/components/MasonrySearch'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { MasonryContext } from '@/providers/MasonryProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
@@ -45,6 +46,7 @@ const MasonryInfinite = ({
 }) => {
   const containerRef = useRef(null)
   const [key, setKey] = useState(0)
+  const [searchTerm, setSearchTerm] = useState<string | undefined>(undefined)
   const router = useRouter()
 
   const { showModal } = useModalContext()
@@ -59,11 +61,12 @@ const MasonryInfinite = ({
 
   const {
     items,
+    refetchFeed,
     maybeLoadMore: maybeLoadNextPage,
     setSize,
     isEmpty,
     hasNextPage,
-  } = useFeedPaginated(type, query, orderBy)
+  } = useFeedPaginated(type, { ...query, name: searchTerm }, orderBy)
 
   const loadMore = useMemo(() => {
     return () => {
@@ -88,6 +91,18 @@ const MasonryInfinite = ({
       setKey(key + 1)
     }
   }
+
+  const handleSearch = (value: string) => {
+    // Reset the pagination and trigger a new query with the search term
+    setSearchTerm(value)
+    setSize(1)
+    setKey(key + 1)
+  }
+
+  // refetchFeed when query changes
+  useEffect(() => {
+    refetchFeed()
+  }, [query])
 
   const [ref, rect] = useResizeObserverMantine()
   const { width: windowWidth, height: windowHeight } = useViewportSize()
@@ -186,6 +201,7 @@ const MasonryInfinite = ({
           onOrderChange={item => handleOrderChange(item)}
         />
       )}
+      <MasonrySearch onSearch={handleSearch} />
 
       {items.length && typeof items[0] === 'undefined' ? (
         <div>error fetching list</div>

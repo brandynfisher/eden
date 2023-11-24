@@ -10,6 +10,7 @@ export type FeedRouteQueryParams = {
   userId?: string
   collectionId?: string
   creationId?: string
+  name?: string
   orderBy?: string
   direction?: number
 }
@@ -18,6 +19,7 @@ export type PaginatedFeedQuery = {
   // isAuthenticated?: boolean
   userId?: string
   collectionId?: string
+  name?: string
   creationId?: string
   limit?: number
 }
@@ -41,6 +43,9 @@ export const getFeedPageRoute = (
 
   if (query?.userId) {
     params.userId = query.userId
+  }
+  if (query?.name && query.name.length > 0) {
+    params.name = query.name
   }
   if (query?.collectionId) {
     params.collectionId = query.collectionId

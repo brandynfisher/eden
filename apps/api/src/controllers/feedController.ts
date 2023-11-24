@@ -1,4 +1,9 @@
-import { PaginatedResponse, ReactionType } from '@edenlabs/eden-sdk'
+import {
+  FeedConceptsArguments,
+  FeedCreationsResponse,
+  PaginatedResponse,
+  ReactionType,
+} from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
@@ -18,23 +23,6 @@ import {
   getBookmarks as getCreationBookmarks,
   getReactions as getCreationReactions,
 } from './creationsController'
-
-interface FeedGetArguments {
-  userId?: string
-  collectionId?: string
-  limit?: number
-  page?: number
-  orderBy?: OrderByFieldName
-  direction?: number
-}
-
-type OrderByFieldName =
-  | 'createdAt'
-  | 'praiseCount'
-  | 'popularity'
-  | 'bookmarkCount'
-  | 'following'
-  | 'embedding.score'
 
 const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
   return Follow.aggregate([
@@ -96,11 +84,12 @@ export const getCreationsFeed = async (
   const {
     userId: filterUserIds,
     collectionId,
+    name,
     limit,
     page,
     orderBy,
     direction,
-  } = request.query as FeedGetArguments
+  } = request.query as FeedCreationsResponse
 
   const creatorsRepository = new CreatorRepository(User)
   const creators = filterUserIds
@@ -200,6 +189,7 @@ export const getCreationsFeed = async (
             ? creators.docs.map(creator => creator._id)
             : undefined,
         ...sortFilter,
+        ...(name ? { $text: { $search: name } } : {}),
       },
       {
         limit,
@@ -270,11 +260,12 @@ export const getConceptsFeed = async (
 ) => {
   const {
     userId: filterUserIds,
+    name,
     limit,
     page,
     orderBy,
     direction,
-  } = request.query as FeedGetArguments
+  } = request.query as FeedConceptsArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId: filterUserIds,
@@ -312,6 +303,7 @@ export const getConceptsFeed = async (
             ? creators.docs.map(creator => creator._id)
             : undefined,
         ...sortFilter,
+        ...(name ? { $text: { $search: name } } : {}),
       },
       {
         limit,
