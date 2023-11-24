@@ -1,6 +1,6 @@
 import { MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
@@ -120,6 +120,8 @@ concept.pre<ConceptDocument>('save', function (next) {
 })
 
 concept.index({ createdAt: 1 })
+
+concept.index({ conceptName: 'text' })
 
 concept.plugin(mongooseDelete, { overrideMethods: 'all' })
 concept.plugin(paginate)

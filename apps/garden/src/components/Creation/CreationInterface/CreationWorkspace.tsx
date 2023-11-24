@@ -24,7 +24,6 @@ export const sdxl_generators_video = [
 ]
 
 const CreationWorkspace = ({
-  onSettingsToggle,
   usesDrawer,
   openedDrawer,
   onDrawerToggle,
@@ -33,7 +32,6 @@ const CreationWorkspace = ({
   activeGenerator,
   handleGeneratorChange,
 }: {
-  onSettingsToggle?: Function
   usesDrawer?: boolean
   openedDrawer?: boolean
   onDrawerToggle?: Function
@@ -88,7 +86,6 @@ const CreationWorkspace = ({
         {activeGenerator && (
           <GeneratorForm
             outputType={outputType}
-            onSettingsToggle={onSettingsToggle}
             usesDrawer={usesDrawer}
             openedDrawer={openedDrawer}
             generator={activeGenerator}

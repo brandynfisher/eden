@@ -1,5 +1,6 @@
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
 import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
+import ConceptSelectModal from '@/components/Modals/ConceptSelectModal'
 import CreationDetailModalV2 from '@/components/Modals/CreationDetailModalV2'
 import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
@@ -25,6 +26,7 @@ export enum MODAL_TYPES {
   CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
   COLLECTION_ADD_CREATION_MODAL = 'COLLECTION_ADD_CREATION_MODAL',
   CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
+  CONCEPT_SELECT_MODAL = 'CONCEPT_SELECT_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
   FOLLOWING_MODAL = 'FOLLOWING_MODAL',
@@ -38,6 +40,7 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
   [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
   [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
+  [MODAL_TYPES.CONCEPT_SELECT_MODAL]: ConceptSelectModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
   [MODAL_TYPES.FOLLOWING_MODAL]: FollowingModal,
@@ -58,6 +61,12 @@ export type GeneratorSelectModalProps = Partial<
     activeGenerator: Generator
     generators: Generator[]
     onChange: (generator: Generator) => void
+  }
+>
+
+export type ConceptSelectModalProps = Partial<
+  BaseModalProps & {
+    onChange: (concept: Concept) => void
   }
 >
 
@@ -82,6 +91,7 @@ type ModalStore = {
     | CreationDetailModalV2Props
     | AddToCollectionModalProps
     | GeneratorSelectModalProps
+    | ConceptSelectModalProps
     | Partial<BaseModalProps & { concept?: Concept }>
     | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })
     | (Partial<BaseModalProps> & { task?: Task })

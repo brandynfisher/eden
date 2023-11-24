@@ -17,6 +17,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
         type: 'object',
         properties: {
           userId: { type: ['string', 'array'] },
+          conceptName: { type: 'string' },
           ...paginationProperties(),
         },
         required: [],

@@ -1,3 +1,4 @@
+import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
@@ -11,6 +12,7 @@ import UploadParameter from '@/components/Creation/CreationInterface/parameters/
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
+import { parameterGroups, supportsGroup } from '@/lib/generator'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
@@ -37,7 +39,6 @@ import React, {
 import SamplesParameter from './parameters/SamplesParameter'
 
 // import UpscaleParameter from './parameters/UpscaleParameter'
-
 const { Panel } = Collapse
 
 type FieldValues = { [key: string]: string }
@@ -86,7 +87,6 @@ const getCleanedConfig = (
 // ]
 
 const GeneratorForm = ({
-  onSettingsToggle,
   usesDrawer,
   openedDrawer,
   generator,
@@ -94,7 +94,6 @@ const GeneratorForm = ({
   onSubmitSuccess,
   outputType,
 }: {
-  onSettingsToggle?: Function
   usesDrawer?: boolean
   openedDrawer?: boolean
   generator: Generator
@@ -275,6 +274,9 @@ const GeneratorForm = ({
     },
     [generator],
   )
+
+  const supportsConcepts = supportsGroup(advancedParameters, 'concept')
+  const supportsInitImage = supportsGroup(advancedParameters, 'init_image')
 
   const handleFinish = async () => {
     // console.log('handleFinish')
@@ -524,7 +526,6 @@ const GeneratorForm = ({
         {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
           <Collapse
             expandIconPosition="start"
-            onChange={key => onSettingsToggle && onSettingsToggle(key.length)}
             className={`generator-settings-collapse max-h-full`}
           >
             {optionalParameters.length > 0 ? (
@@ -534,10 +535,39 @@ const GeneratorForm = ({
                 </div>
               </Panel>
             ) : null}
+            {supportsConcepts ? (
+              <Panel key={'3'} header={'Concept'} forceRender={true}>
+                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                  <ConceptSelectModalTrigger onChange={() => {}} />
+                  {renderFormFields(
+                    advancedParameters.filter(p =>
+                      parameterGroups['concept'].includes(p.name),
+                    ),
+                  )}
+                </div>
+              </Panel>
+            ) : null}
+            {supportsInitImage ? (
+              <Panel key={'4'} header={'Starting Image'} forceRender={true}>
+                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                  {renderFormFields(
+                    advancedParameters.filter(p =>
+                      parameterGroups['init_image'].includes(p.name),
+                    ),
+                  )}
+                </div>
+              </Panel>
+            ) : null}
             {advancedParameters.length > 0 ? (
               <Panel key={'2'} header={'Advanced'} forceRender={true}>
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
-                  {renderFormFields(advancedParameters)}
+                  {renderFormFields(
+                    advancedParameters.filter(
+                      p =>
+                        !parameterGroups['concept'].includes(p.name) &&
+                        !parameterGroups['init_image'].includes(p.name),
+                    ),
+                  )}
                 </div>
               </Panel>
             ) : null}
