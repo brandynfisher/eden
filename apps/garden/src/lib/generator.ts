@@ -11,19 +11,8 @@ export const hiddenGenerators = [
   'wav2lip',
 ]
 
-// export const parameterGroups = [
-//   {
-//     name: 'concept',
-//     items: ['lora', 'lora_scale'],
-//   },
-//   {
-//     name: 'init_image',
-//     items: ['init_image', 'init_image_strength', 'adopt_aspect_ratio'],
-//   },
-// ]
-
 export const parameterGroups: { [key: string]: string[] } = {
-  concept: ['lora', 'lora_scale'],
+  concept: ['lora_scale'],
   init_image: ['init_image', 'init_image_strength', 'adopt_aspect_ratio'],
 }
 
