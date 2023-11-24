@@ -22,6 +22,8 @@ const GeneratorSelectModalTrigger = ({
   const { showModal, hideModal } = useModalContext()
 
   const handleClickOpen = () => {
+    if (generators.length === 1) return
+
     showModal(MODAL_TYPES.GENERATOR_SELECT_MODAL, {
       generators,
       activeGenerator,
@@ -38,7 +40,11 @@ const GeneratorSelectModalTrigger = ({
     <Button
       variant="outlined"
       onClick={handleClickOpen}
-      className="w-full bg-gray-300 hover:!bg-gray-300 dark:bg-gray-900 dark:hover:!bg-gray-950 bg-opacity-50 hover:!bg-opacity-70 !normal-case"
+      className={`w-full bg-gray-300 dark:bg-gray-900 bg-opacity-50 !normal-case ${
+        generators.length > 1
+          ? 'hover:!bg-gray-300 dark:hover:!bg-gray-950 hover:!bg-opacity-70 '
+          : 'pointer-events-none !cursor-auto'
+      }`}
     >
       <div className="w-full flex items-center gap-2">
         {outputType === 'image' ? (
@@ -52,7 +58,7 @@ const GeneratorSelectModalTrigger = ({
           /{activeGenerator.generatorName}
         </div>
 
-        <MenuIcon fontSize="medium" />
+        {generators.length > 1 ? <MenuIcon fontSize="medium" /> : null}
       </div>
     </Button>
   )

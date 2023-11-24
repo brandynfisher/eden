@@ -463,7 +463,9 @@ const GeneratorForm = ({
 
       {generator.generatorName === conceptGenerator.name ? (
         <div className="px-4 py-2">
-          <div>{conceptGenerator.description}</div>
+          <div className="text-gray-600 dark:text-gray-400">
+            {conceptGenerator.description}
+          </div>
           <div>
             <DocsLink generator={generator} />
           </div>
