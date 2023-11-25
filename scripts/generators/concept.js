@@ -36,8 +36,8 @@ const params = [
     label: 'Number of training steps',
     description: '1000 is usually more than enough (even too much for simple concepts), you can try to increase for complex styles with many images',
     default: 1000,
-    minimum: 600,
-    maximum: 3000,
+    minimum: 200,
+    maximum: 2000,
     optional: true,
   },
   {
