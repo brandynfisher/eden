@@ -56,7 +56,7 @@ const params = [
     label: 'Concept scale',
     description:
       'How strongly to apply the Concept weights (0.0 will result in the base model)',
-    default: 0.8,
+    default: 0.7,
     minimum: 0.0,
     maximum: 1.2,
     step: 0.01,
@@ -117,14 +117,6 @@ const params = [
     optional: true,
     minLength: 2,
     maxLength: 2,
-  },
-  {
-    name: 'checkpoint',
-    label: 'Checkpoint',
-    description: 'Which model checkpoint to generate with',
-    default: 'sdxl-v1.0',
-    allowedValues: ['sdxl-v1.0'],
-    optional: true,
   },
 
 ]

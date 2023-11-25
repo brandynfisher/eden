@@ -31,10 +31,10 @@ const params = [
   {
     name: 'n_frames',
     label: 'Frames',
-    description: 'Number of frames in the video (increase when you use many images)',
+    description: 'Total number of frames in the video (increase when you use many images)',
     default: 60,
     minimum: 10,
-    maximum: 600,
+    maximum: 400,
   },
 
   ////////////////////////////////////////
@@ -62,7 +62,7 @@ const params = [
     label: 'Concept scale',
     description:
       'How strongly to activate the concept (0.0 will disable the concept)',
-    default: 0.8,
+    default: 0.7,
     minimum: 0.0,
     maximum: 1.5,
     step: 0.01,
@@ -156,9 +156,9 @@ const params = [
   },
   {
     name: 'interpolation_init_images_min_strength',
-    label: 'Init image min strength',
+    label: 'fading smoothness',
     description:
-      'Min strength of the real images during interpolation. Low values will give the AI more freedom, leading to a more interesting visual journey. Higher values will look more like alpha-fading the images.',
+      'Low values will result in a rich visual journey, higher values will look more like alpha-fading but will also be smoother. Values above 0.4 are almost never needed',
     default: 0.05,
     minimum: 0.0,
     maximum: 1.0,
@@ -167,9 +167,9 @@ const params = [
   },
   {
     name: 'interpolation_init_images_max_strength',
-    label: 'Init image max strength',
+    label: '(real) keyframe strength',
     description:
-      'Max strength of the real images during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, but also causes a slight flicker',
+      'Strength of the real images during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, lower values will allow the video to drift away from your uploaded images',
     default: 0.8,
     minimum: 0.0,
     maximum: 1.0,

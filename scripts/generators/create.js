@@ -33,7 +33,7 @@ const params = [
     label: 'Samples',
     description: 'Number of variations to create',
     default: 1,
-    allowedValues: [1, 2, 4],
+    allowedValues: [1, 2, 3, 4],
     optional: true,
   },
   {
@@ -47,11 +47,11 @@ const params = [
     name: 'lora_scale',
     label: 'Concept scale',
     description:
-      'How strongly to activate the concept, lower this value if your prompt is being ignored and all creations look too similar to your training images (0.0 will disable the concept)',
+      'How strongly to activate the concept, lower this value if your prompt is being ignored and all creations look too similar to your training images',
     default: 0.7,
     minimum: 0.0,
     maximum: 1.2,
-    step: 0.01,
+    step: 0.02,
     optional: true,
   },
   {
@@ -59,7 +59,7 @@ const params = [
     label: 'Starting image',
     default: null,
     description:
-      'The AI will start imagining from this image (can be used to guide colors and rough shapes or composition)',
+      'Will use a blurry version of this image as starting point (can be used to guide colors and rough shapes or composition)',
     mediaUpload: 'image/png, image/jpeg, image/webp',
     optional: true,
   },
@@ -67,7 +67,7 @@ const params = [
     name: 'init_image_strength',
     label: 'Starting image strength',
     description:
-      'How much influence the starting image has on the creation. Recommended <0.2',
+      'How much influence the starting image (if there is one) has on the creation. Recommended <0.2',
     default: 0.15,
     minimum: 0.0,
     maximum: 1.0,
@@ -116,7 +116,7 @@ const params = [
     description: 'Number of denoising steps (recommended to use >30)',
     default: 35,
     minimum: 5,
-    maximum: 70,
+    maximum: 50,
     optional: true,
   },
   {

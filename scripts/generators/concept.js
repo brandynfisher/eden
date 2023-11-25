@@ -11,11 +11,11 @@ const params = [
     name: 'lora_training_urls',
     label: 'Training images',
     description:
-      'images to train on (can also be a .zip file containing your images)',
+      'images to train on (can also be a .zip file containing many images and optionally even a prompt per image (format: filename.jpg --> filename.txt))',
     mediaUpload: 'image/png, image/jpeg, image/webp, application/zip',
     default: [],
     minLength: 1,
-    maxLength: 8,
+    maxLength: 20,
     isRequired: true,
   },
   {
@@ -72,9 +72,9 @@ const params = [
     name: 'lora_rank',
     label: 'LORA rank',
     description: 'Rank of the LoRa matrices. (recommended to keep at default unless you know what youre doing)',
-    default: 6,
+    default: 12,
     minimum: 4,
-    maximum: 16,
+    maximum: 32,
     optional: true,
   },
   {
