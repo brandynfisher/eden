@@ -48,7 +48,7 @@ const params = [
     label: 'Concept scale',
     description:
       'How strongly to activate the concept, lower this value if your prompt is being ignored and all creations look too similar to your training images',
-    default: 0.7,
+    default: 0.65,
     minimum: 0.0,
     maximum: 1.2,
     step: 0.02,

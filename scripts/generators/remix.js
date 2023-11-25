@@ -132,7 +132,7 @@ const params = [
     label: 'Concept scale',
     description:
       'How strongly to activate the concept (0.0 will disable the concept)',
-    default: 0.7,
+    default: 0.65,
     minimum: 0.0,
     maximum: 1.5,
     step: 0.01,
