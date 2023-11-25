@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
@@ -124,6 +125,7 @@ const SaveButton = ({
 }) => {
   const { isAuthenticated, authenticate } = useContext(UserContext)
   const { message } = App.useApp()
+  const { showModal } = useModalContext()
 
   const onSaveButtonClick = async (
     ev:
@@ -152,9 +154,19 @@ const SaveButton = ({
       }
 
       if (!creation.bookmarked) {
-        message.success({
-          content: <SaveButtonMessageContent />,
-        })
+        message.success(
+          {
+            content: <SaveButtonMessageContent />,
+            key: `add-collection-bookmarks-${creation._id}`,
+            onClick: () => {
+              message.destroy(`add-collection-bookmarks-${creation._id}`)
+              showModal(MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL, {
+                creationId: creation._id,
+              })
+            },
+          },
+          4,
+        )
       }
 
       const newBookMarkCount =
@@ -211,9 +223,12 @@ const SaveButton = ({
 
 const SaveButtonMessageContent = () => {
   return (
-    <div className="block">
-      <div className="flex items-center justify-between">
-        <div>Saved to Bookmarks</div>
+    <div className="block cursor-pointer hover:bg-blend-darken ml-2">
+      <div className="flex flex-col items-center justify-between">
+        <div className="mb-1">Saved to Bookmarks</div>
+        <div className="font-mono text-blue-500">
+          Click to change collection
+        </div>
       </div>
     </div>
   )

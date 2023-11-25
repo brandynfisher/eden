@@ -1,5 +1,6 @@
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
+import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelect'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
@@ -11,6 +12,7 @@ import UploadParameter from '@/components/Creation/CreationInterface/parameters/
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
+import { conceptGenerator } from '@/lib/generator'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
@@ -459,6 +461,17 @@ const GeneratorForm = ({
         {presetCreation && <CreationPresetInfo creation={presetCreation} />}
       </div>
 
+      {generator.generatorName === conceptGenerator.name ? (
+        <div className="px-4 py-2">
+          <div className="text-gray-600 dark:text-gray-400">
+            {conceptGenerator.description}
+          </div>
+          <div>
+            <DocsLink generator={generator} />
+          </div>
+        </div>
+      ) : null}
+
       <div
         className={`flex-col flex-grow bg-gray-100 dark:bg-gray-900 overflow-y-auto overflow-x-hidden ${
           usesDrawer && openedDrawer ? 'max-h-[46vh]' : ''
@@ -575,7 +588,7 @@ const GeneratorForm = ({
 
           {user &&
           user.featureFlags &&
-          user.featureFlags.includes('private') ? (
+          user.featureFlags.includes('preview') ? (
             <PrivacyToggle />
           ) : null}
         </div>

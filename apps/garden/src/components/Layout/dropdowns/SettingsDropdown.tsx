@@ -107,6 +107,7 @@ const ManageSubscriptionButton = () => {
   const onManageSubscriptionClick = async () => {
     const customerId = user?.stripeCustomerId
     if (!customerId) {
+      await router.push('/manna')
       return
     }
     try {

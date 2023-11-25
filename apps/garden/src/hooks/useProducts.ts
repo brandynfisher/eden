@@ -7,6 +7,7 @@ export const useProducts = () => {
 
   return {
     products: (data?.products as Product[]) || null,
+    subscriptions: (data?.subscriptions as Product[]) || null,
     mutate,
     isLoading,
     error,

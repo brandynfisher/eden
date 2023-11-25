@@ -9,6 +9,9 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const availableConceptGenerators = ['sdxl-lora-trainer']
 
+/**
+ * @deprecated
+ */
 const ConceptInterface = () => {
   const timelineListRef = useRef<HTMLDivElement>(null)
   const { generators } = useContext(EdenContext)

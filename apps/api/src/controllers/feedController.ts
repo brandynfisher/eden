@@ -168,6 +168,7 @@ export const getCreationsFeed = async (
       sort.push(['createdAt', -1])
     }
 
+    // When filtering by aesthetic score, limit results with date cut off
     if (orderBy === 'embedding.score') {
       const hoursAgo = 20
       const dateCutoff = new Date(

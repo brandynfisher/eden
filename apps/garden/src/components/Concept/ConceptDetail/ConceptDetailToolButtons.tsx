@@ -2,7 +2,7 @@ import CircleButton from '@/components/Layout/buttons/CircleButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import ShareButton from '@/components/Layout/buttons/ShareButton'
 import { CONFIG } from '@/lib/config'
-import { downloadFileBlob } from '@/lib/files'
+import { downloadFile } from '@/lib/files'
 import DownloadOutlined from '@ant-design/icons/DownloadOutlined'
 import { Concept } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/router'
@@ -37,7 +37,7 @@ const ConceptDetailToolButtons = ({ concept }: { concept: Concept }) => {
         title: 'Download',
         icon: <DownloadOutlined className="text-xl" />,
         onClick: async () => {
-          await downloadFileBlob(concept.uri, concept._id)
+          await downloadFile(concept.uri, concept._id)
         },
       },
     ]

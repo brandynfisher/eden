@@ -176,7 +176,7 @@ const CardToolsDropdown = ({
     }
 
     const hasUserFeatureFlagPrivate =
-      user && user.featureFlags && user.featureFlags.includes('private')
+      user && user.featureFlags && user.featureFlags.includes('preview')
     const creatorMenuItems: MenuItem[] =
       hasUserFeatureFlagPrivate && user?.userId === item.user.userId
         ? [
@@ -235,6 +235,7 @@ const CardToolsDropdown = ({
             icon: (
               <DownloadFileButton
                 url={item.uri}
+                fileName={item._id}
                 variant="text"
                 label="Download"
               />
