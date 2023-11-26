@@ -1,5 +1,6 @@
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Concept } from '@edenlabs/eden-sdk'
+import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import Button from '@mui/material/Button'
 import React from 'react'
 
@@ -25,9 +26,10 @@ const ConceptSelectModalTrigger = ({
     <Button
       variant="outlined"
       onClick={handleClickOpen}
-      className="w-full bg-gray-300 hover:!bg-gray-300 dark:bg-gray-900 dark:hover:!bg-gray-950 bg-opacity-50 hover:!bg-opacity-70 !normal-case"
+      className="w-full flex items-center gap-2 bg-gray-300 hover:!bg-gray-300 dark:bg-gray-900 dark:hover:!bg-gray-950 bg-opacity-50 hover:!bg-opacity-70 !normal-case"
     >
-      Select Concept
+      <ModelTrainingIcon fontSize="small" />
+      <div>Select Concept</div>
     </Button>
   )
 }

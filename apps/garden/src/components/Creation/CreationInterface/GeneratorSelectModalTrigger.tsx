@@ -1,8 +1,8 @@
-import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
+import { GeneratorOutputType } from '@/lib/generator'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Generator } from '@edenlabs/eden-sdk'
+import { MenuOpenOutlined } from '@mui/icons-material'
 import Article from '@mui/icons-material/Article'
-import MenuIcon from '@mui/icons-material/Menu'
 import MovieFilter from '@mui/icons-material/MovieFilter'
 import Wallpaper from '@mui/icons-material/Wallpaper'
 import Button from '@mui/material/Button'
@@ -14,7 +14,7 @@ const GeneratorSelectModalTrigger = ({
   activeGenerator,
   onChange,
 }: {
-  outputType?: OutputType
+  outputType?: GeneratorOutputType
   generators: Generator[]
   activeGenerator: Generator
   onChange: (generatorName: string) => void
@@ -52,7 +52,7 @@ const GeneratorSelectModalTrigger = ({
           /{activeGenerator.generatorName}
         </div>
 
-        <MenuIcon fontSize="medium" />
+        <MenuOpenOutlined fontSize="medium" />
       </div>
     </Button>
   )
