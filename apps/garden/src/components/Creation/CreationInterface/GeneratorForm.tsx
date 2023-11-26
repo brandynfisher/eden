@@ -501,32 +501,10 @@ const GeneratorForm = ({
           ) : null}
         </div>
 
-        {/* start param groups --- */}
-        {/*<div >*/}
-        {/*  { parameterGroups.map(paramGroup =>*/}
-        {/*    <div key={paramGroup.label} className="pt-2 mb-2 border border-solid border-b-0 [&:last-of-type]:pb-2 [&:last-of-type]:border-b [&:last-of-type]:border-b-gray-800  border-t-gray-800 border-r-0 border-l-0">*/}
-        {/*      <div className="px-4">*/}
-        {/*        <div className="font-bold">{paramGroup.label}</div>*/}
-        {/*        <div className={`grid gap-4 grid-cols-${paramGroup.items.length > 1 ? '2' : '1'}`}>*/}
-        {/*          { paramGroup.items.map(groupItem => {*/}
-        {/*            const InputComponent = groupItem.input*/}
-        {/*            return (*/}
-        {/*              <div key={groupItem.name}>*/}
-        {/*                <InputComponent form={form} parameter={{ label: groupItem.label, name: groupItem.name, description: groupItem.description }} />*/}
-        {/*              </div>*/}
-        {/*            )*/}
-        {/*          })}*/}
-        {/*        </div>*/}
-        {/*      </div>*/}
-        {/*    </div>*/}
-        {/*  ) }*/}
-        {/*</div>*/}
-        {/* --- end param group */}
-
         {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
           <Collapse
             expandIconPosition="start"
-            className={`generator-settings-collapse max-h-full`}
+            className={`generator-settings-collapse`}
           >
             {optionalParameters.length > 0 ? (
               <Panel key={'1'} header={'Settings'} forceRender={true}>
