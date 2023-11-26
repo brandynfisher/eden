@@ -31,7 +31,7 @@ const ListItem = ({
   return (
     <div
       onClick={() => onClick && onClick()}
-      className={`cursor-pointer border border-solid border-gray-700 bg-gray-50 dark:bg-gray-950 overflow-hidden ${
+      className={`cursor-pointer border border-solid border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-hidden ${
         selected
           ? '!bg-gray-300 dark:!bg-gray-900 border-green-800'
           : 'hover:!bg-gray-200 hover:dark:!bg-gray-800'

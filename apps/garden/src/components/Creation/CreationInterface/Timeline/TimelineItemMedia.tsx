@@ -22,9 +22,9 @@ const TimelineItemSample = ({
     showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
       creation: creation ? creation : undefined,
       loadSimilar: false,
-      usesUrl: true,
+      usesUrl: false,
     })
-  }, [creation])
+  }, [showModal, creation])
 
   if (isLoading) {
     return (

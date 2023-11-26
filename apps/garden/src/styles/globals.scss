@@ -167,8 +167,11 @@ body {
 .ant-modal-close {
     width: 44px !important;
     height: 44px !important;
-    background: rgb(0,0,0,0.5) !important;
+    background: rgb(32,32,32,0.6) !important;
     z-index: 20 !important;
+    border-radius: 0 !important;
+    border-top-right-radius: 8px !important;
+    border-bottom-left-radius: 8px !important;
 }
 
 .ant-modal-close:hover {
@@ -177,6 +180,7 @@ body {
 
 @media (min-width: 1024px) {
     .ant-modal-close {
+        border-radius: 8px !important;
         opacity: 0;
         animation: fadeIn 350ms;
         animation-delay: 450ms;
@@ -636,5 +640,11 @@ body {
 .product-card {
     .ant-card-actions > li > span {
         cursor: initial !important;
+    }
+}
+
+.modal-grow {
+    .ant-modal-content {
+        flex-grow: 1
     }
 }
