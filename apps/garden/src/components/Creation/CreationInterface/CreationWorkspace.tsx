@@ -1,30 +1,16 @@
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
 import GeneratorSelectModalTrigger from '@/components/Creation/CreationInterface/GeneratorSelectModalTrigger'
+import {
+  GeneratorOutputType,
+  sdxl_generators_image,
+  sdxl_generators_video,
+} from '@/lib/generator'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import { Button } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 
-export type OutputType = 'image' | 'text' | 'video'
-
-export const sdxl_generators_image = [
-  'create',
-  'remix',
-  'blend',
-  'upscale',
-  'controlnet',
-]
-export const sdxl_generators_video = [
-  'real2real',
-  'animatediff_comfyui',
-  'interpolate',
-  'dialogue',
-  'monologue',
-  'wav2lip',
-]
-
 const CreationWorkspace = ({
-  onSettingsToggle,
   usesDrawer,
   openedDrawer,
   onDrawerToggle,
@@ -33,7 +19,6 @@ const CreationWorkspace = ({
   activeGenerator,
   handleGeneratorChange,
 }: {
-  onSettingsToggle?: Function
   usesDrawer?: boolean
   openedDrawer?: boolean
   onDrawerToggle?: Function
@@ -42,7 +27,7 @@ const CreationWorkspace = ({
   activeGenerator: Generator
   handleGeneratorChange: (generatorName: Generator['generatorName']) => void
 }) => {
-  const [outputType, setOutputType] = useState<OutputType>()
+  const [outputType, setOutputType] = useState<GeneratorOutputType>()
 
   useEffect(() => {
     setOutputType(
@@ -88,7 +73,6 @@ const CreationWorkspace = ({
         {activeGenerator && (
           <GeneratorForm
             outputType={outputType}
-            onSettingsToggle={onSettingsToggle}
             usesDrawer={usesDrawer}
             openedDrawer={openedDrawer}
             generator={activeGenerator}

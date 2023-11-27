@@ -17,6 +17,7 @@ export interface FeedCreationsArguments
     ListQueryParams {
   userId?: string | string[]
   collectionId?: string | string[]
+  name?: string
 }
 
 export interface FeedConceptsArguments
@@ -24,6 +25,7 @@ export interface FeedConceptsArguments
     ListQueryParams {
   userId?: string | string[]
   collectionId?: string | string[]
+  name?: string
 }
 
 // Requests

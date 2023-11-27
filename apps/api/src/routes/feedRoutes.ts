@@ -16,6 +16,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         properties: {
           userId: { type: ['string', 'array'] },
           collectionId: { type: ['string', 'array'] },
+          name: { type: 'string' },
           ...paginationProperties(),
         },
         required: [],
@@ -53,6 +54,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         properties: {
           userId: { type: ['string', 'array'] },
           collectionId: { type: ['string', 'array'] },
+          name: { type: 'string' },
           ...paginationProperties(),
         },
         required: [],

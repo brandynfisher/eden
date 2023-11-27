@@ -4,13 +4,11 @@ import React, { ReactNode, useState } from 'react'
 
 const Combobox = ({
   items,
-  title,
   footer,
   hasSearch,
   onItemChange,
 }: {
   items?: Collection[]
-  title?: ReactNode | string
   footer?: ReactNode | string
   hasSearch?: boolean
   onItemChange?: (item: Collection) => void
@@ -28,8 +26,6 @@ const Combobox = ({
 
   return (
     <div>
-      {title ? <h3 className="mb-2">{title}</h3> : null}
-
       {hasSearch ? <div>search box</div> : null}
 
       <div className="overflow-auto max-h-[500px]">

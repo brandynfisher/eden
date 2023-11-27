@@ -4,6 +4,7 @@ import {
   OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
+import MasonryInfinite from '@/components/MasonryInfinite'
 import { useCollection } from '@/hooks/useCollection'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
@@ -22,10 +23,6 @@ const CollectionHeader = dynamic(
     loading: () => <LoadingIndicator />,
   },
 )
-
-const MasonryInfinite = dynamic(() => import('@/components/MasonryInfinite'), {
-  loading: () => <LoadingIndicator />,
-})
 
 const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()

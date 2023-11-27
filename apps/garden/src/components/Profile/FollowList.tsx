@@ -2,15 +2,16 @@ import FollowControls from '@/components/FollowControls'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { useFollowingPaginated } from '@/hooks/useFollowingPaginated'
 import { Button, Empty } from 'antd'
+import { useEffect } from 'react'
 
 const FollowList = ({
   creatorId,
   type,
-  title,
+  setItemCount,
 }: {
   creatorId: string
   type: 'followers' | 'following'
-  title: string
+  setItemCount: (count: number) => void
 }) => {
   const {
     items: listItems,
@@ -21,11 +22,12 @@ const FollowList = ({
     totalItemCount,
   } = useFollowingPaginated({ userId: creatorId, type })
 
+  useEffect(() => {
+    setItemCount(totalItemCount)
+  }, [setItemCount, totalItemCount])
+
   return (
     <div>
-      <h3 className="mb-4">
-        {title} ({totalItemCount})
-      </h3>
       <div className="flex flex-col w-full">
         {listItems && listItems.length > 0 ? (
           <>

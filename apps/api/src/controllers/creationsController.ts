@@ -105,7 +105,8 @@ export const listCreations = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, limit, page, sort } = request.query as CreationsListArguments
+  const { userId, name, limit, page, sort } =
+    request.query as CreationsListArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId,
@@ -115,21 +116,35 @@ export const listCreations = async (
   const creations = await creationRepository.query(
     {
       user:
-        creators.docs.length > 0
+        userId && creators.docs
           ? creators.docs.map(creator => creator._id)
           : undefined,
+      ...(name ? { $text: { $search: name } } : {}),
     },
     {
       limit,
       page,
       sort,
     },
-    {
-      'embedding.embedding': 0,
-    },
   )
 
-  return reply.status(200).send(creations)
+  const creationsWithPublicName = await Promise.all(
+    creations.docs.map(async doc => {
+      const user = await User.findById(doc.user._id)
+      const publicName = `${user?.username}:${doc.name}`
+      return {
+        ...doc.toObject(),
+        publicName,
+      }
+    }),
+  )
+
+  const response = {
+    ...creations,
+    docs: creationsWithPublicName,
+  }
+
+  return reply.status(200).send(response)
 }
 
 export const getCreation = async (
