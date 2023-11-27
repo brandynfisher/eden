@@ -17,6 +17,7 @@ export interface ConceptsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+  name?: string
 }
 
 export interface ConceptsGetArguments extends WebAPICallOptions {

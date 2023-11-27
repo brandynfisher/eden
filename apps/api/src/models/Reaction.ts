@@ -1,6 +1,8 @@
 import { ReactionType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import paginate from 'mongoose-paginate-v2'
 
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
@@ -44,6 +46,8 @@ const reaction = new Schema<ReactionDocument>(
 )
 
 reaction.index({ user: 1, creation: 1, reaction: 1 }, { unique: true })
-reaction.index({ createdAt: 1 })
+reaction.index({ createdAt: -1 })
+reaction.plugin(paginate)
+reaction.plugin(aggregatePaginate)
 
 export const Reaction = model<ReactionDocument>('reactions', reaction)

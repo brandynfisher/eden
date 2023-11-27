@@ -122,6 +122,7 @@ db.concepts.insertOne({
   user: adminDev.insertedIds[1],
   task: adminDev.insertedIds[1],
   name: 'Test Character',
+  conceptName: 'Test Character',
   checkpoint: 'checkpoint',
   training_images: [],
   uri: 'uri',

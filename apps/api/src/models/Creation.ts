@@ -162,6 +162,8 @@ creation.index({ user: 1, deleted: 1, isPrivate: 1 })
 creation.index({ deleted: 1, isPrivate: 1 })
 creation.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1 })
 
+creation.index({ name: 'text' })
+
 creation.plugin(mongooseDelete, { overrideMethods: 'all' })
 creation.plugin(paginate)
 creation.plugin(aggregatePaginate)

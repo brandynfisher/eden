@@ -20,7 +20,8 @@ const CreationCard: FC<{
   onClick: () => void
   hidePrompt?: boolean
   sizes?: string
-}> = ({ index, data, onClick, hidePrompt, sizes }) => {
+  className?: string
+}> = ({ index, data, onClick, hidePrompt, sizes, className }) => {
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
@@ -60,7 +61,12 @@ const CreationCard: FC<{
   )
 
   return (
-    <div ref={ref} className={`w-full flex justify-center flex-col relative`}>
+    <div
+      ref={ref}
+      className={`w-full flex justify-center flex-col relative ${
+        className || ''
+      }`}
+    >
       <a
         onClick={cardClickHandler}
         href={`/creations/${creation._id}`}

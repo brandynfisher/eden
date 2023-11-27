@@ -2,40 +2,41 @@ import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
 import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
-import { getModalUrls } from '@/lib/modal'
+import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
-import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Concept } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
+import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
-import { Tag } from 'antd'
-import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
+import { Button } from '@mui/material'
+import { App, Tag } from 'antd'
+import axios from 'axios'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 
-const trainingModeColorMap = {
+export type TrainingMode = 'style' | 'face' | 'object'
+
+export const trainingModeColorMap: { [key: string]: string } = {
   style: 'lime',
   face: 'blue',
   concept: 'purple',
 }
 
-const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
-  const [concept, setConcept] = useState<Concept>(data)
-  const router = useRouter()
-  const { pageUrl, modalUrl } = getModalUrls(router, 'concept', concept._id)
-  const { showModal } = useModalContext()
+const ConceptCard: FC<{
+  index: number
+  data: Concept
+  onClick: (concept: Concept) => void
+  hidePrompt?: boolean
+  className?: string
+}> = ({ index, data, onClick, hidePrompt, className }) => {
+  const { message } = App.useApp()
   const { hovered, ref } = useHover()
+  const { width } = useViewportSize()
 
-  const openDetailModal = async () => {
-    await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-    showModal(MODAL_TYPES.CONCEPT_DETAIL_MODAL, {
-      concept: concept,
-      usesUrl: true,
-    })
-  }
-
-  const [createdDateString, setCreatedDateString] = useState('')
+  const [concept, setConcept] = useState<Concept>(data)
   const [trainingMode, setTrainingMode] = useState(null)
-  const timeSinceCreation = timeAgo(concept.createdAt)
+  const [createdDateString, setCreatedDateString] = useState('')
+  const [dropdownActive, setDropdownActive] = useState(false)
+  const timeSinceConcept = timeAgo(concept.createdAt)
 
   useEffect(() => {
     setCreatedDateString(new Date(concept.createdAt).toLocaleString())
@@ -47,92 +48,142 @@ const ConceptCard = ({ index, data }: { index: number; data: Concept }) => {
     setTrainingMode(mode)
   }, [concept])
 
+  const onRestoreClick = useCallback(async () => {
+    try {
+      await axios.patch(`/api/concepts/${concept._id}`, {
+        update: { deleted: false },
+      })
+      message.destroy()
+      message.success(`Concept restored`)
+
+      setConcept({
+        ...concept,
+        deleted: false,
+      })
+    } catch (err) {
+      handleAxiosError(err, message)
+    }
+  }, [concept])
+
+  // const cardClickHandler = useCallback(
+  //   (ev: React.MouseEvent) => {
+  //     console.log()
+  //     ev.preventDefault()
+  //     // console.log(concept)
+  //     onClick()
+  //   },
+  //   [concept, index, onClick],
+  // )
+
+  const cardClickHandler = useCallback(
+    (ev: React.MouseEvent) => {
+      ev.preventDefault()
+      onClick(concept)
+    },
+    [concept, onClick],
+  )
+
   return (
-    <div ref={ref} className="mx-auto max-w-[500px] md:mx-0 md:max-w-none">
+    <div
+      ref={ref}
+      className={`w-full flex justify-center flex-col relative ${
+        className || ''
+      }`}
+    >
+      <a
+        onClick={cardClickHandler}
+        href={`/concepts/${concept._id}`}
+        target={'_blank'}
+        className={`card-image relative rounded-lg overflow-hidden cursor-pointer block  ${
+          concept.deleted ? 'grayscale' : ''
+        }`}
+      >
+        <ImageResult
+          previewSizeUrl={concept.thumbnail || ''}
+          aspectRatio={100}
+          priority={index < 10}
+        />
+      </a>
       {concept.deleted ? (
-        <div className="h-64 w-64 max-w-full max-h-full dark:text-gray-500 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-lg">
-          deleted
+        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+          <Button
+            size="small"
+            variant="outlined"
+            color="warning"
+            className="bg-black bg-opacity-50"
+            onClick={onRestoreClick}
+          >
+            Restore
+          </Button>
         </div>
-      ) : (
+      ) : null}
+      {!concept.deleted && concept.isPrivate ? (
+        <div
+          className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
+            hovered ? 'md:hidden' : ''
+          }`}
+        >
+          <LockIcon fontSize="small" className="text-white" />
+        </div>
+      ) : null}
+      {!concept.deleted && (width < 768 || hovered || dropdownActive) ? (
         <>
-          <div className="relative" key={index}>
-            <div className="w-full flex justify-center flex-col">
-              <div
-                className={` flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none ${
-                  hovered ? 'md:!visible' : 'md:hidden'
-                }`}
-              >
-                <div className="flex items-center pointer-events-auto my-1">
-                  <CreatorProfileLink
-                    creatorId={concept.user.userId}
-                    creatorName={concept.user.username}
-                    creatorImage={concept.user.userImage}
-                  />
-                  <div
-                    className="text-gray-700 dark:text-gray-400 text-xs"
-                    title={createdDateString}
-                  >
-                    <span className="mx-1">•</span>
-                    {timeSinceCreation}
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  {concept.isPrivate ? (
-                    <LockIcon fontSize="small" className="md:hidden" />
-                  ) : null}
-                  <CardToolsDropdown
-                    item={concept}
-                    itemType={'concept'}
-                    onChange={updatedItem => setConcept(updatedItem as Concept)}
-                  />
-                </div>
-              </div>
-              <div
-                className="card-image relative rounded-lg overflow-hidden cursor-pointer"
-                onClick={openDetailModal}
-              >
-                <a
-                  onClick={ev => ev.preventDefault()}
-                  href={`/concepts/${concept._id}`}
-                  target={'_blank'}
-                  className="block"
-                >
-                  <ImageResult
-                    previewSizeUrl={concept.thumbnail || ''}
-                    aspectRatio={100}
-                  />
-                </a>
-              </div>
-              {concept.isPrivate ? (
+          <div
+            className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:py-1 md:px-2 pointer-events-none opacity-0 transition-opacity duration-300 ${
+              width ? 'opacity-100' : ''
+            }`}
+          >
+            {!hidePrompt ? (
+              <div className="flex items-center pointer-events-auto my-1">
+                <CreatorProfileLink
+                  creatorId={concept.user.userId}
+                  creatorName={concept.user.username}
+                  creatorImage={concept.user.userImage}
+                />
                 <div
-                  className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
-                    hovered ? '!hidden' : ''
-                  }`}
+                  className="text-gray-700 dark:text-gray-400 text-xs"
+                  title={createdDateString}
                 >
-                  <LockIcon fontSize="small" className="text-white" />
+                  <span className="mx-1">•</span>
+                  {timeSinceConcept}
                 </div>
-              ) : null}
-              <div
-                className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none ${
-                  hovered ? 'md:!visible' : 'md:hidden'
-                }`}
-              >
-                <ConceptCardDetail concept={concept} />
               </div>
-            </div>
-            <div className="absolute bottom-11 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
-              {!hovered && trainingMode ? (
-                <Tag
-                  color={trainingModeColorMap[trainingMode]}
-                  className="first-letter:capitalize me-0"
-                >
-                  {trainingMode}
-                </Tag>
-              ) : null}
+            ) : null}
+            <div className="flex items-center gap-4 ml-auto my-1">
+              {concept.isPrivate ? <LockIcon fontSize="small" /> : null}
+              <CardToolsDropdown
+                onOpen={setDropdownActive}
+                item={concept}
+                itemType={'concept'}
+                onChange={updatedItem => setConcept(updatedItem as Concept)}
+              />
             </div>
           </div>
+          <div
+            className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none`}
+          >
+            {/*<CreationReactions*/}
+            {/*  creation={concept}*/}
+            {/*  onChange={updatedConcept =>*/}
+            {/*    setConcept(updatedConcept as Concept)*/}
+            {/*  }*/}
+            {/*  showCounts={true}*/}
+            {/*/>*/}
+            {!hidePrompt ? <ConceptCardDetail concept={concept} /> : null}
+          </div>
         </>
-      )}
+      ) : null}
+
+      <div className="absolute bottom-11 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
+        {!hovered && trainingMode ? (
+          <Tag
+            color={trainingModeColorMap[trainingMode]}
+            className="first-letter:capitalize me-0"
+          >
+            {trainingMode}
+          </Tag>
+        ) : null}
+      </div>
     </div>
   )
 }

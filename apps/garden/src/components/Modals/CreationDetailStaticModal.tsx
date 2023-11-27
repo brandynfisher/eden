@@ -17,18 +17,25 @@ const CreationDetail = dynamic(
 
 const CreationDetailStaticModal = ({
   creation,
+  usesUrl,
   // loadSimilar,
   ...rest
 }: {
   creation: Creation
+  usesUrl: boolean
   loadSimilar?: boolean
 }) => {
   const router = useRouter()
-
   useEffect(() => {
-    const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation._id)
-    router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
-  }, [creation])
+    if (usesUrl) {
+      const { pageUrl, modalUrl } = getModalUrls(
+        router,
+        'creation',
+        creation._id,
+      )
+      router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
+    }
+  }, [router, usesUrl, creation])
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">

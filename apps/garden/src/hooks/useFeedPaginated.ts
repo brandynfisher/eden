@@ -1,7 +1,7 @@
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { fetcher } from '@/lib/fetcher'
-import { Creation } from '@edenlabs/eden-sdk'
-import { useCallback } from 'react'
+import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
+import { useCallback, useMemo } from 'react'
 import useSWRInfinite from 'swr/infinite'
 
 export type FeedRouteQueryParams = {
@@ -10,14 +10,15 @@ export type FeedRouteQueryParams = {
   userId?: string
   collectionId?: string
   creationId?: string
+  name?: string
   orderBy?: string
   direction?: number
 }
 
 export type PaginatedFeedQuery = {
-  // isAuthenticated?: boolean
   userId?: string
   collectionId?: string
+  name?: string
   creationId?: string
   limit?: number
 }
@@ -41,6 +42,9 @@ export const getFeedPageRoute = (
 
   if (query?.userId) {
     params.userId = query.userId
+  }
+  if (query?.name && query.name.length > 0) {
+    params.name = query.name
   }
   if (query?.collectionId) {
     params.collectionId = query.collectionId
@@ -69,12 +73,20 @@ export const useFeedPaginated = (
   const pageLimit = query?.limit || 25
 
   const getKey = useCallback(
-    (pageIndex: number, previousPageData: Creation[]): string | null => {
-      if ((pageIndex === 0 && previousPageData === null) || pageIndex !== 0) {
-        return getFeedPageRoute(type, query, pageLimit, pageIndex + 1, orderBy)
+    (
+      pageIndex: number,
+      previousPageData: PaginatedResponse<Creation[]>,
+    ): string | null => {
+      if (
+        (pageIndex > 0 && !previousPageData) ||
+        (previousPageData && !previousPageData.hasNextPage)
+      ) {
+        // console.log('reached the END')
+        return null
       }
 
-      return null
+      // console.log('getKey', {pageIndex, previousPageData})
+      return getFeedPageRoute(type, query, pageLimit, pageIndex + 1, orderBy)
     },
     [type, query, pageLimit, orderBy],
   )
@@ -90,39 +102,55 @@ export const useFeedPaginated = (
     revalidateOnFocus: false,
     // revalidateIfStale: false,
     revalidateFirstPage: false,
-    // revalidateOnReconnect: false,
+    persistSize: true,
+    revalidateOnReconnect: false,
     // revalidateAll: false,
+    initialSize: 1,
   })
-
-  const dataArray = data != null ? data.flat() : []
 
   const isLoadingMore =
     isLoading ||
     (size > 0 && data != null && typeof data[size - 1] === 'undefined')
   const isEmpty = data?.[0]?.total === 0 || data?.[0]?.length === 0
 
-  const maybeLoadMore = async () => {
-    if (isValidating) return
-    if (isLoading || isLoadingMore) return
-    if (isEmpty || (data && data.length >= data?.[0]?.pages)) return
-    if (!data?.[data?.length - 1]?.hasNextPage) return
+  const maybeLoadMore = useMemo(() => {
+    return () => {
+      if (!data) return
+      // console.log('maybeLoadMore')
+      if (isValidating) return
+      if (isLoading || isLoadingMore) return
 
-    await setSize(prevSize => prevSize + 1)
-  }
+      const { hasNextPage: dataHasNextPage } = data[0]
 
-  const creationDocs = (
-    dataArray
-      ? [...dataArray.map(pageData => (pageData ? pageData.docs : []))]
-      : []
-  ).flat()
+      if (dataHasNextPage) {
+        setSize(prevSize => {
+          // console.log('maybeLoadNextPage', {size: prevSize + 1, dataHasNextPage, isLoading, isLoadingMore, isValidating, docsLength: docs.length})
+          return prevSize + 1
+        })
+      }
+    }
+  }, [isValidating, isLoading, isLoadingMore, data])
+
+  const { docs, totalItems } = useMemo(() => {
+    if (data) {
+      const flatData = data.flatMap(page => page)
+      return {
+        docs: flatData.map(page => page.docs),
+        totalItems: flatData[0].total,
+      }
+    }
+    return { docs: [], totalItems: null }
+  }, [data])
 
   return {
-    hasNextPage: !!data?.[data?.length - 1]?.hasNextPage,
-    items: creationDocs,
+    hasNextPage: data ? !!data[0]?.hasNextPage : false,
+    totalItems: totalItems,
+    items: data ? ([] as Creation[]).concat(...docs) : [],
     refetchFeed,
     size,
     setSize,
     isEmpty,
+    isLoading,
     maybeLoadMore,
   }
 }

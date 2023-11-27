@@ -1,9 +1,9 @@
+import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
-import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
 import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelect'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
+import ConceptParameterV2 from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
-import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
@@ -12,10 +12,14 @@ import UploadParameter from '@/components/Creation/CreationInterface/parameters/
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
-import { conceptGenerator } from '@/lib/generator'
+import {
+  GeneratorOutputType,
+  conceptGenerator,
+  parameterGroups,
+  supportsGroup,
+} from '@/lib/generator'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import {
   Creation,
@@ -23,6 +27,12 @@ import {
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
+import {
+  AddPhotoAlternateOutlined,
+  Settings,
+  SettingsSuggest,
+} from '@mui/icons-material'
+import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import { debounce } from '@mui/material/utils'
 import { App, Button, Collapse, Form } from 'antd'
 import axios from 'axios'
@@ -39,7 +49,6 @@ import React, {
 import SamplesParameter from './parameters/SamplesParameter'
 
 // import UpscaleParameter from './parameters/UpscaleParameter'
-
 const { Panel } = Collapse
 
 type FieldValues = { [key: string]: string }
@@ -58,37 +67,15 @@ const getCleanedConfig = (
     .filter(key => !key.endsWith('--preset') && !key.startsWith('ui-'))
     .reduce((obj: FieldValues, key) => {
       // @ts-ignore
-      obj[key] = consolidatedFieldValues[key]
+      if (consolidatedFieldValues[key]) {
+        // @ts-ignore
+        obj[key] = consolidatedFieldValues[key]
+      }
       return obj
     }, {})
 }
 
-// const parameterGroups = [
-// {
-//   label: 'Resolution',
-//   items: [
-//     {
-//       name: 'generate_width',
-//       input: SliderParameter,
-//       label: 'Width',
-//       description: 'Width of generation in pixels',
-//       placeholder: '',
-//       docsUrl: 'https://...'
-//     },
-//     {
-//       name: 'generate_height',
-//       input: SliderParameter,
-//       label: 'Height',
-//       description: 'Height of generation in pixels',
-//       placeholder: '',
-//       docsUrl: 'https://...'
-//     }
-//   ]
-// },
-// ]
-
 const GeneratorForm = ({
-  onSettingsToggle,
   usesDrawer,
   openedDrawer,
   generator,
@@ -96,13 +83,12 @@ const GeneratorForm = ({
   onSubmitSuccess,
   outputType,
 }: {
-  onSettingsToggle?: Function
   usesDrawer?: boolean
   openedDrawer?: boolean
   generator: Generator
   presetCreation?: Creation
   onSubmitSuccess?: () => void
-  outputType?: OutputType
+  outputType?: GeneratorOutputType
 }) => {
   const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
     CreationNotificationContext,
@@ -278,6 +264,9 @@ const GeneratorForm = ({
     [generator],
   )
 
+  const supportsConcepts = supportsGroup(advancedParameters, 'concept')
+  const supportsInitImage = supportsGroup(advancedParameters, 'init_image')
+
   const handleFinish = async () => {
     // console.log('handleFinish')
     setIsSubmitting(true)
@@ -390,7 +379,7 @@ const GeneratorForm = ({
         }
         if (parameter.name === 'lora') {
           return (
-            <ConceptParameter
+            <ConceptParameterV2
               key={parameter.name}
               form={form}
               parameter={parameter}
@@ -477,7 +466,7 @@ const GeneratorForm = ({
           usesDrawer && openedDrawer ? 'max-h-[46vh]' : ''
         } ${usesDrawer && !openedDrawer ? 'hidden' : 'flex'}`}
       >
-        <div className={`p-4 bg-gray-100 dark:bg-gray-900`}>
+        <div className={`p-4 py-3 bg-gray-100 dark:bg-gray-900`}>
           {renderFormFields(requiredParameters)}
 
           {/* decorative / extra params linked to the actual param input */}
@@ -512,45 +501,98 @@ const GeneratorForm = ({
           ) : null}
         </div>
 
-        {/* start param groups --- */}
-        {/*<div >*/}
-        {/*  { parameterGroups.map(paramGroup =>*/}
-        {/*    <div key={paramGroup.label} className="pt-2 mb-2 border border-solid border-b-0 [&:last-of-type]:pb-2 [&:last-of-type]:border-b [&:last-of-type]:border-b-gray-800  border-t-gray-800 border-r-0 border-l-0">*/}
-        {/*      <div className="px-4">*/}
-        {/*        <div className="font-bold">{paramGroup.label}</div>*/}
-        {/*        <div className={`grid gap-4 grid-cols-${paramGroup.items.length > 1 ? '2' : '1'}`}>*/}
-        {/*          { paramGroup.items.map(groupItem => {*/}
-        {/*            const InputComponent = groupItem.input*/}
-        {/*            return (*/}
-        {/*              <div key={groupItem.name}>*/}
-        {/*                <InputComponent form={form} parameter={{ label: groupItem.label, name: groupItem.name, description: groupItem.description }} />*/}
-        {/*              </div>*/}
-        {/*            )*/}
-        {/*          })}*/}
-        {/*        </div>*/}
-        {/*      </div>*/}
-        {/*    </div>*/}
-        {/*  ) }*/}
-        {/*</div>*/}
-        {/* --- end param group */}
-
         {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
           <Collapse
-            expandIconPosition="start"
-            onChange={key => onSettingsToggle && onSettingsToggle(key.length)}
-            className={`generator-settings-collapse max-h-full`}
+            expandIconPosition="end"
+            className={`generator-settings-collapse`}
           >
-            {optionalParameters.length > 0 ? (
-              <Panel key={'1'} header={'Settings'} forceRender={true}>
+            <Panel
+              key={'1'}
+              header={
+                <div className="flex gap-2 items-center">
+                  <Settings fontSize="small" />
+                  <span>Settings</span>
+                </div>
+              }
+              forceRender={true}
+            >
+              {optionalParameters.length > 0 ? (
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(optionalParameters)}
                 </div>
+              ) : null}
+              {advancedParameters.length > 0 ? (
+                <Collapse
+                  expandIconPosition="end"
+                  className={`generator-settings-collapse`}
+                >
+                  <Panel
+                    key={'2'}
+                    header={
+                      <div className="flex gap-2 items-center">
+                        <SettingsSuggest fontSize="small" />
+                        <span>Advanced</span>
+                      </div>
+                    }
+                    forceRender={true}
+                  >
+                    <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                      {renderFormFields(
+                        advancedParameters.filter(
+                          p =>
+                            !parameterGroups['concept'].includes(p.name) &&
+                            !parameterGroups['init_image'].includes(p.name),
+                        ),
+                      )}
+                    </div>
+                  </Panel>
+                </Collapse>
+              ) : null}
+            </Panel>
+            {supportsConcepts ? (
+              <Panel
+                key={'3'}
+                header={
+                  <div className="flex gap-2 items-center">
+                    <ModelTrainingIcon fontSize="small" />
+                    <span>Concept</span>
+                  </div>
+                }
+                forceRender={true}
+              >
+                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                  <ConceptSelectModalTrigger
+                    onChange={concept => {
+                      form.setFieldsValue({
+                        ['lora']: concept ? concept._id : null,
+                      })
+                    }}
+                  />
+                  {renderFormFields(
+                    advancedParameters.filter(p =>
+                      parameterGroups['concept'].includes(p.name),
+                    ),
+                  )}
+                </div>
               </Panel>
             ) : null}
-            {advancedParameters.length > 0 ? (
-              <Panel key={'2'} header={'Advanced'} forceRender={true}>
+            {supportsInitImage ? (
+              <Panel
+                key={'4'}
+                header={
+                  <div className="flex gap-2 items-center">
+                    <AddPhotoAlternateOutlined fontSize="small" />
+                    <span>Starting Image</span>
+                  </div>
+                }
+                forceRender={true}
+              >
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
-                  {renderFormFields(advancedParameters)}
+                  {renderFormFields(
+                    advancedParameters.filter(p =>
+                      parameterGroups['init_image'].includes(p.name),
+                    ),
+                  )}
                 </div>
               </Panel>
             ) : null}
@@ -559,7 +601,7 @@ const GeneratorForm = ({
       </div>
 
       <div
-        className={`p-4 text-left bg-gray-100 dark:bg-gray-800 ${
+        className={`p-4 py-2 px-2 md:px-4 text-left bg-gray-100 dark:bg-gray-700 ${
           usesDrawer && !openedDrawer ? 'pt-2' : ''
         }`}
         key={generator.generatorName}
@@ -574,9 +616,8 @@ const GeneratorForm = ({
             ) : (
               <Button
                 type="primary"
-                icon={<ExperimentOutlined />}
                 htmlType="submit"
-                className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !pr-2"
+                className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !px-2 !pr-1"
                 loading={isSubmitting ? { delay: 250 } : false}
                 disabled={submitButtonDisabled}
               >

@@ -1,20 +1,28 @@
 'use client'
 
-import LoadingIndicator from '@/components/LoadingIndicator'
+import ModalTitle from '@/components/Modals/ModalTitle'
+import FollowList from '@/components/Profile/FollowList'
 import { Modal } from 'antd'
-import dynamic from 'next/dynamic'
-import React from 'react'
+import React, { useState } from 'react'
 
-const FollowList = dynamic(() => import('@/components/Profile/FollowList'), {
-  loading: () => <LoadingIndicator />,
-})
+const FollowingModal = ({ creatorId, ...rest }: { creatorId: string }) => {
+  const [itemCount, setItemCount] = useState(0)
 
-const FollowersModal = ({ creatorId, ...rest }: { creatorId: string }) => {
   return (
-    <Modal {...rest}>
-      <FollowList creatorId={creatorId} type={'following'} title="Following" />
+    <Modal
+      {...rest}
+      className="modal-small max-w-md flex flex-col w-full items-center justify-center"
+    >
+      <ModalTitle title={`Following (${itemCount})`} />
+      <div className="p-2">
+        <FollowList
+          creatorId={creatorId}
+          type={'following'}
+          setItemCount={setItemCount}
+        />
+      </div>
     </Modal>
   )
 }
 
-export default FollowersModal
+export default FollowingModal

@@ -1,6 +1,7 @@
 'use client'
 
 import Combobox from '@/components/Forms/Combobox'
+import ModalTitle from '@/components/Modals/ModalTitle'
 import { useCollections } from '@/hooks/useCollections'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
@@ -101,16 +102,16 @@ const AddToCollectionModal = ({
   return (
     <Modal
       {...rest}
-      className="modal-small max-w-4xl flex flex-col w-full items-center justify-center"
+      className="modal-small max-w-md flex flex-col w-full items-center justify-center"
     >
-      <div className="p-4">
+      <ModalTitle title="Add to Collection" />
+      <div className="pt-2 p-4">
         <Combobox
-          title="Add to collection"
           items={collections}
           onItemChange={handleItemChanged}
           footer={
             <div>
-              <Divider className="m-0 mt-2 mb-2" />
+              <Divider className="m-0 mt-2 mb-3" />
               {showForm ? (
                 <div>
                   <TextField

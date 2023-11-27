@@ -12,7 +12,7 @@ const ConceptDetail = dynamic(
     loading: () => <LoadingIndicator />,
   },
 )
-
+/** @deprecated **/
 const ConceptDetailModal = ({ concept, ...rest }: { concept: Concept }) => {
   return (
     <Modal {...rest} className="modal-full max-w-7xl">

@@ -31,7 +31,8 @@ export const listConcepts = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, limit, page, sort } = request.query as ConceptsListArguments
+  const { userId, limit, page, sort, name } =
+    request.query as ConceptsListArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId,
@@ -44,6 +45,7 @@ export const listConcepts = async (
         userId && creators.docs
           ? creators.docs.map(creator => creator._id)
           : undefined,
+      ...(name ? { $text: { $search: name } } : {}),
     },
     {
       limit,

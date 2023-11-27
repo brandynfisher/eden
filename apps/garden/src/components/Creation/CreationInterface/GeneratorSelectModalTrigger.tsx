@@ -1,9 +1,9 @@
-import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
+import { GeneratorOutputType } from '@/lib/generator'
 import { conceptGenerator } from '@/lib/generator'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Generator } from '@edenlabs/eden-sdk'
+import { MenuOpenOutlined } from '@mui/icons-material'
 import Article from '@mui/icons-material/Article'
-import MenuIcon from '@mui/icons-material/Menu'
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import MovieFilter from '@mui/icons-material/MovieFilter'
 import Wallpaper from '@mui/icons-material/Wallpaper'
@@ -16,7 +16,7 @@ const GeneratorSelectModalTrigger = ({
   activeGenerator,
   onChange,
 }: {
-  outputType?: OutputType
+  outputType?: GeneratorOutputType
   generators: Generator[]
   activeGenerator: Generator
   onChange: (generatorName: string) => void
@@ -42,9 +42,9 @@ const GeneratorSelectModalTrigger = ({
     <Button
       variant="outlined"
       onClick={handleClickOpen}
-      className={`w-full bg-gray-300 dark:bg-gray-900 bg-opacity-50 !normal-case ${
+      className={`w-full flex !py-1 !px-2 items-center gap-2 !bg-gray-300 dark:!bg-gray-950 bg-opacity-50 !normal-case ${
         generators.length > 1
-          ? 'hover:!bg-gray-300 dark:hover:!bg-gray-950 hover:!bg-opacity-70 '
+          ? 'hover:!bg-gray-400 dark:hover:!bg-gray-950 hover:!bg-opacity-70 '
           : 'pointer-events-none !cursor-auto'
       }`}
     >
@@ -65,7 +65,7 @@ const GeneratorSelectModalTrigger = ({
             : activeGenerator.generatorName}
         </div>
 
-        {generators.length > 1 ? <MenuIcon fontSize="medium" /> : null}
+        {generators.length > 1 ? <MenuOpenOutlined fontSize="medium" /> : null}
       </div>
     </Button>
   )

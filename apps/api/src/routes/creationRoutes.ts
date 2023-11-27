@@ -22,6 +22,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         type: 'object',
         properties: {
           userId: { type: ['string', 'array'] },
+          name: { type: 'string' },
           ...paginationProperties(),
         },
         required: [],

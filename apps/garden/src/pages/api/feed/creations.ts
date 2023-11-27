@@ -7,7 +7,8 @@ import { NextApiRequest, NextApiResponse } from 'next'
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
-  const { userId, collectionId, page, limit, orderBy, direction } = req.query
+  const { userId, name, collectionId, page, limit, orderBy, direction } =
+    req.query
 
   const route = (limit: number, page: number) => {
     const basePath = `${CONFIG.API_URL}/feed/creations`
@@ -21,6 +22,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (userId) {
       params.userId = String(userId)
     }
+
+    if (name && name.length > 0) {
+      params.name = String(name)
+    }
+
     if (collectionId) {
       params.collectionId = String(collectionId)
     }
@@ -42,6 +48,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (method) {
     case 'GET':
       try {
+        // console.log('333', route(Number(limit), Number(page)))
         const response = await axios.get(route(Number(limit), Number(page)), {
           headers: await getAuthHeaders(req),
         })

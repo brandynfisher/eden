@@ -3751,7 +3751,7 @@
   dependencies:
     "@react-hook/latest" "^1.0.2"
 
-"@react-hook/event@^1.2.1", "@react-hook/event@^1.2.3":
+"@react-hook/event@^1.2.1", "@react-hook/event@^1.2.3", "@react-hook/event@^1.2.6":
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/@react-hook/event/-/event-1.2.6.tgz#52f91578add934acc1203328ca09ab14fc7ee58e"
   integrity sha512-JUL5IluaOdn5w5Afpe/puPa1rj8X6udMlQ9dt4hvMuKmTrBS1Ya6sb4sVgvfe2eU4yDuOfAhik8xhbcCekbg9Q==
@@ -5458,15 +5458,10 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001406, caniuse-lite@^1.0.30001464, caniuse-lite@^1.0.30001489:
-  version "1.0.30001491"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001491.tgz#eab0e0f392de6f7411751d148de9b5bd6b203e46"
-  integrity sha512-17EYIi4TLnPiTzVKMveIxU5ETlxbSO3B6iPvMbprqnKh4qJsQGk5Nh1Lp4jIMAE0XfrujsJuWZAM3oJdMHaKBA==
-
-caniuse-lite@^1.0.30001517:
-  version "1.0.30001527"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001527.tgz#813826554828245ccee776c850566dce12bdeaba"
-  integrity sha512-YkJi7RwPgWtXVSgK4lG9AHH57nSzvvOp9MesgXmw4Q7n0C3H04L0foHqfxcmSAm5AcWb8dW9AYj2tR7/5GnddQ==
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001406, caniuse-lite@^1.0.30001464, caniuse-lite@^1.0.30001489, caniuse-lite@^1.0.30001517:
+  version "1.0.30001564"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001564.tgz"
+  integrity sha512-DqAOf+rhof+6GVx1y+xzbFPeOumfQnhYzVnZD6LAXijR77yPtm9mfOcqOnT3mpnJiZVT+kwLAFnRlZcIz+c6bg==
 
 chai@^4.3.7:
   version "4.3.7"
@@ -9233,6 +9228,17 @@ mimic-response@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/mimic-response/-/mimic-response-3.1.0.tgz#2d1d59af9c1b129815accc2c46a022a5ce1fa3c9"
   integrity sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==
+
+mini-virtual-list@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/mini-virtual-list/-/mini-virtual-list-0.3.2.tgz#256f0d83d8883ff4abff9674f14aee387e70021c"
+  integrity sha512-NWTgjGenrnaabzTxaeYIzwovXe5V8g/GWmFGA0rP2fecPsuWz4E8UYx4qmOCeA2m+qrDHhpDlBryclGOdzwj2g==
+  dependencies:
+    "@essentials/memoize-one" "^1.1.0"
+    "@essentials/request-timeout" "^1.3.0"
+    "@react-hook/event" "^1.2.6"
+    "@react-hook/passive-layout-effect" "^1.2.1"
+    "@react-hook/throttle" "^2.2.0"
 
 minimalistic-assert@^1.0.0:
   version "1.0.1"

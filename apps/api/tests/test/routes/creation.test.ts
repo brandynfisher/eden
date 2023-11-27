@@ -158,3 +158,38 @@ test('User cannot send an invalid reaction', async context => {
   expect(response.json()).toHaveProperty('message')
   expect(response.json().message).toBe('Invalid reaction')
 })
+
+test('User can search creations', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'GET',
+    url: '/creations',
+    headers,
+    query: {
+      name: 'test',
+    },
+  })
+  expect(response.statusCode).toBe(200)
+  const json = response.json()
+  expect(json).toHaveProperty('docs')
+  expect(json.docs.length).toBeGreaterThan(0)
+  expect(json.docs[0].name).toBe('test')
+})
+
+test('User cannot find non-existing creation', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'GET',
+    url: '/creations',
+    headers,
+    query: {
+      name: 'Non-existing Creation',
+    },
+  })
+  expect(response.statusCode).toBe(200)
+  const json = response.json()
+  expect(json).toHaveProperty('docs')
+  expect(json.docs.length).toBe(0)
+})

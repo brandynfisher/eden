@@ -1,8 +1,8 @@
-import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+import { ParameterAddon } from '@/components/Creation/CreationInterface/parameters/SamplesParameter'
 import MinusOutlined from '@ant-design/icons/MinusOutlined'
 import PlusOutlined from '@ant-design/icons/PlusOutlined'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
-import { Button, Col, Form, FormInstance, Input, Row } from 'antd'
+import { Badge, Button, Col, Form, FormInstance, Input, Row } from 'antd'
 import React, { useEffect, useState } from 'react'
 
 const StringParameter = (props: {
@@ -33,17 +33,18 @@ const StringParameter = (props: {
   const isArray = Array.isArray(props.parameter.default)
 
   return (
-    <>
+    <div className="h-full w-full relative">
       {isArray ? (
         <>
+          <div className="w-full md:w-auto">
+            <ParameterAddon
+              title={props.parameter.label}
+              info={`(max. ${props.parameter.maxLength})`}
+              textArea={true}
+            />
+          </div>
           <Form.Item
-            label={
-              <ParameterLabel
-                text={props.parameter.label}
-                description={props.parameter.description}
-              />
-            }
-            className="mb-1"
+            className="mb-1 w-full"
             name={props.parameter.name}
             rules={[
               {
@@ -52,59 +53,61 @@ const StringParameter = (props: {
               },
             ]}
           >
-            <div>
+            <>
               {values.map((value, index) => (
                 <Row key={index} className="mb-2">
-                  <Col flex="auto" className="mr-1">
-                    <Input.TextArea
-                      autoSize
-                      className="font-mono"
-                      defaultValue={props.parameter.default[index]}
-                      onChange={event => {
-                        const newValues = [...values]
-                        newValues[index] = event.target.value
-                        handleChange(newValues)
-                      }}
-                    />
-                  </Col>
-                  <Col>
-                    {values.length > (props.parameter.minLength || 1) && (
-                      <Button
-                        onClick={() => {
+                  <Badge
+                    className="flex w-full pointer-events-none"
+                    count={index + 1}
+                    color={'#A4A4A4'}
+                  >
+                    <Col flex="auto" className="pointer-events-auto">
+                      <Input.TextArea
+                        autoSize
+                        className="font-mono !rounded-tr-none"
+                        defaultValue={props.parameter.default[index]}
+                        onChange={event => {
                           const newValues = [...values]
-                          newValues.splice(index, 1)
+                          newValues[index] = event.target.value
                           handleChange(newValues)
                         }}
-                      >
-                        <MinusOutlined />
-                      </Button>
-                    )}
-                  </Col>
+                      />
+                    </Col>
+                    <Col className="pointer-events-auto">
+                      {values.length > (props.parameter.minLength || 1) && (
+                        <Button
+                          className="!px-2 bg-gray-100 dark:bg-gray-950 rounded-bl-none rounded-tl-none border-l-0"
+                          onClick={() => {
+                            const newValues = [...values]
+                            newValues.splice(index, 1)
+                            handleChange(newValues)
+                          }}
+                        >
+                          <MinusOutlined />
+                        </Button>
+                      )}
+                    </Col>
+                  </Badge>
                 </Row>
               ))}
               <Row>
                 <Col>
                   {!props.parameter.maxLength ||
                     (values.length < props.parameter.maxLength && (
-                      <Button onClick={handleAddInput}>
+                      <Button onClick={handleAddInput} className="!px-2">
                         <PlusOutlined />
                       </Button>
                     ))}
                 </Col>
               </Row>
-            </div>
+            </>
           </Form.Item>
         </>
       ) : (
-        <>
+        <div className="">
+          <ParameterAddon title={props.parameter.label} textArea={true} />
           <Form.Item
-            label={
-              <ParameterLabel
-                text={props.parameter.label}
-                description={props.parameter.description}
-              />
-            }
-            className="mb-1 font-mono"
+            className="mb-1 font-mono w-full"
             name={props.parameter.name}
             initialValue={props.parameter.default}
             rules={[
@@ -114,11 +117,11 @@ const StringParameter = (props: {
               },
             ]}
           >
-            <Input.TextArea autoSize />
+            <Input.TextArea autoSize className="with-addon" />
           </Form.Item>
-        </>
+        </div>
       )}
-    </>
+    </div>
   )
 }
 
