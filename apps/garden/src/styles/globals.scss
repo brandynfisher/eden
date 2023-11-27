@@ -6,6 +6,10 @@
 @tailwind components;
 @tailwind utilities;
 
+$primary-blue: #90caf9;
+$bg-gray-200: rgb(229 231 235/ 1);
+$bg-gray-700: rgb(55 65 81 / 1);
+
 html, body, image, video, main {
     outline: 0;
 }
@@ -604,6 +608,22 @@ body {
 
         .ant-collapse-header {
             padding: 8px 8px !important;
+
+            color:darken($bg-gray-700, 30) !important;
+            &:hover {
+                color:$bg-gray-700 !important;
+                background-color: rgba(0, 0, 0, 0.2) !important;
+            }
+        }
+
+        .ant-collapse-item-active {
+            & > .ant-collapse-header {
+                color:darken($primary-blue, 30) !important;
+                &:hover {
+                    color: darken($primary-blue, 45) !important;
+                    background-color: rgba(0, 0, 0, 0.15) !important;
+                }
+            }
         }
 
         .ant-collapse-item,
@@ -637,6 +657,26 @@ body {
         .ant-collapse-item,
         .ant-collapse-header {
             border-color: #374151 !important;
+        }
+
+        .ant-collapse-header {
+            padding: 8px 8px !important;
+
+            color:darken($bg-gray-200, 15) !important;
+            &:hover {
+                color:$bg-gray-200 !important;
+                background-color: rgba(0, 0, 0, 0.175) !important;
+            }
+        }
+
+        .ant-collapse-item-active {
+            & > .ant-collapse-header {
+                color: $primary-blue !important;
+                &:hover {
+                    color:darken($primary-blue, 15) !important;
+                    background-color: rgba(0, 0, 0, 0.175) !important;
+                }
+            }
         }
     }
 }

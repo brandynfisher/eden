@@ -24,7 +24,7 @@ const ConceptSelectModal = ({
 
   const handleSearchSubmit = useCallback(
     (name: string, showPublic: boolean) => {
-      console.log('handleSearch', name, showPublic, userId)
+      // console.log('handleSearch', name, showPublic, userId)
 
       setQuery(prev => ({
         ...prev,
