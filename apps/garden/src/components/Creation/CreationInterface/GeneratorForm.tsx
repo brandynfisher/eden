@@ -20,7 +20,6 @@ import {
 } from '@/lib/generator'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
-import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import {
   Creation,
@@ -467,7 +466,7 @@ const GeneratorForm = ({
           usesDrawer && openedDrawer ? 'max-h-[46vh]' : ''
         } ${usesDrawer && !openedDrawer ? 'hidden' : 'flex'}`}
       >
-        <div className={`p-4 bg-gray-100 dark:bg-gray-900`}>
+        <div className={`p-4 py-3 bg-gray-100 dark:bg-gray-900`}>
           {renderFormFields(requiredParameters)}
 
           {/* decorative / extra params linked to the actual param input */}
@@ -602,7 +601,7 @@ const GeneratorForm = ({
       </div>
 
       <div
-        className={`p-4 text-left bg-gray-100 dark:bg-gray-800 ${
+        className={`p-4 py-2 px-2 md:px-4 text-left bg-gray-100 dark:bg-gray-700 ${
           usesDrawer && !openedDrawer ? 'pt-2' : ''
         }`}
         key={generator.generatorName}
@@ -617,9 +616,8 @@ const GeneratorForm = ({
             ) : (
               <Button
                 type="primary"
-                icon={<ExperimentOutlined />}
                 htmlType="submit"
-                className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !pr-2"
+                className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !px-2 !pr-1"
                 loading={isSubmitting ? { delay: 250 } : false}
                 disabled={submitButtonDisabled}
               >

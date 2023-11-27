@@ -8,7 +8,9 @@
 
 $primary-blue: #90caf9;
 $bg-gray-200: rgb(229 231 235/ 1);
+$bg-gray-400: rgb(164 164 164/ 1);
 $bg-gray-700: rgb(55 65 81 / 1);
+$bg-gray-800: rgb(32 32 32 / 1);
 
 html, body, image, video, main {
     outline: 0;
@@ -691,4 +693,66 @@ body {
     .ant-modal-content {
         flex-grow: 1
     }
+}
+
+.with-addon {
+    &.ant-select {
+        .ant-select-selector {
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+        }
+    }
+
+    &.ant-input {
+        border-top-left-radius: 0 !important;
+        border-top-right-radius: 0!important;
+    }
+}
+
+.parameter {
+    height: 100%;
+    .parameter__addon {
+        cursor: pointer !important;
+
+        /* Standard */
+        &:disabled::placeholder {
+            overflow: visible !important;
+            white-space: pre-wrap;
+            height: 100% !important;
+            color: $bg-gray-800 !important;
+        }
+    }
+
+    &.parameter--textarea {
+        .parameter__addon {
+
+        }
+    }
+}
+
+.dark {
+    .parameter {
+        .parameter__addon {
+            height: 32px;
+            /* Standard */
+            &:disabled {
+                &::placeholder {
+                    color: $bg-gray-400 !important;
+                }
+
+                &:hover {
+                    &::placeholder {
+                        color: $bg-gray-200 !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.ant-badge-count {
+    min-width: 14px !important;
+    height: 14px !important;
+    line-height: 14px !important;
+    font-size: 10px;
 }
