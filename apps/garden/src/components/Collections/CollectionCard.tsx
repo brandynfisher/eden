@@ -5,13 +5,17 @@ import React from 'react'
 
 const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
   if (!imageUri) {
-    return (
-      <div className="image-placeholder w-full h-full min-h-[148px] h-full" />
-    )
+    return <div className="image-placeholder w-full h-full min-h-[148px]" />
   }
 
   return (
-    <Image alt="example" src={imageUri} preview={false} placeholder={true} />
+    <Image
+      alt="example"
+      src={imageUri}
+      preview={false}
+      placeholder={true}
+      className={'max-h-[300px] max-w-[300px] object-cover'}
+    />
   )
 }
 

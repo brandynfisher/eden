@@ -1,5 +1,6 @@
 import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
+import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelect'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
 import ConceptParameterV2 from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
@@ -13,6 +14,7 @@ import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
 import {
   GeneratorOutputType,
+  conceptGenerator,
   parameterGroups,
   supportsGroup,
 } from '@/lib/generator'
@@ -448,6 +450,17 @@ const GeneratorForm = ({
       <div className={usesDrawer && !openedDrawer ? 'hidden' : ''}>
         {presetCreation && <CreationPresetInfo creation={presetCreation} />}
       </div>
+
+      {generator.generatorName === conceptGenerator.name ? (
+        <div className="px-4 py-2">
+          <div className="text-gray-600 dark:text-gray-400">
+            {conceptGenerator.description}
+          </div>
+          <div>
+            <DocsLink generator={generator} />
+          </div>
+        </div>
+      ) : null}
 
       <div
         className={`flex-col flex-grow bg-gray-100 dark:bg-gray-900 overflow-y-auto overflow-x-hidden ${

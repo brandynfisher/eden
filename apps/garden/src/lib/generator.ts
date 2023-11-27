@@ -13,6 +13,13 @@ export const hiddenGenerators = [
 
 export type GeneratorOutputType = 'image' | 'text' | 'video'
 
+export const conceptGenerator = {
+  name: 'sdxl-lora-trainer',
+  displayName: 'concept-trainer',
+  description:
+    'Create concept fine-tunings (also known as LoRA) that you can use for your creations.',
+}
+
 export const sdxl_generators_image = [
   'create',
   'remix',
