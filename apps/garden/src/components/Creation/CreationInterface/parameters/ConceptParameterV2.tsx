@@ -1,11 +1,13 @@
+import { trainingModeColorMap } from '@/components/Concept/ConceptCard/ConceptCard'
 import LoadingIndicator from '@/components/LoadingIndicator'
+import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { useConcept } from '@/hooks/useConcept'
 import { CONFIG } from '@/lib/config'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Button } from '@mui/material'
-import { Form, FormInstance, Input } from 'antd'
+import { Form, FormInstance, Input, Tag } from 'antd'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const ConceptParameterV2 = (props: {
   form: FormInstance
@@ -50,7 +52,7 @@ const ConceptParameterV2 = (props: {
         <Input value={value} disabled={true} />
       </Form.Item>
       {loraId ? (
-        <div className="bg-gray-800 rounded-md flex w-full h-16">
+        <div className="bg-gray-300 dark:bg-gray-800 rounded-md flex w-full h-16">
           {concept ? (
             <div className="pr-2 flex gap-4 items-center w-full">
               {concept.thumbnail ? (
@@ -65,10 +67,33 @@ const ConceptParameterV2 = (props: {
                   className="rounded"
                 />
               ) : null}
-              <div className="w-full">
-                <div>{`${concept.conceptName} - ${concept.checkpoint}`}</div>
-                <div className="text-xs text-gray-500">
-                  {concept.conceptName}
+              <div className="w-full flex flex-col justify-around h-full py-0.5">
+                <div className="flex gap-2">
+                  <div>{`${concept.conceptName}`}</div>
+                  <Tag
+                    color={
+                      trainingModeColorMap[
+                        concept?.task?.config?.mode ||
+                          concept?.task?.config?.concept_mode
+                      ]
+                    }
+                    className="first-letter:capitalize me-0"
+                  >
+                    {concept?.task?.config?.mode ||
+                      concept?.task?.config?.concept_mode}
+                  </Tag>
+                </div>
+                <div className="flex gap-1 text-xs text-gray-700 dark:text-gray-500 items-center">
+                  <div>{concept.name}</div>
+                  <div className="text-gray-400">•</div>
+                  <div>{concept.checkpoint}</div>
+                </div>
+                <div className="flex gap-1">
+                  <span className="text-xs dark:text-gray-300">by</span>{' '}
+                  <CreatorProfileLink
+                    creatorId={concept.user.userId}
+                    creatorName={concept.user.username}
+                  />
                 </div>
               </div>
               <Button

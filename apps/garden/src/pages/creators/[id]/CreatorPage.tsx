@@ -11,8 +11,7 @@ import { UserContext } from '@/providers/UserProvider'
 import { Collection, Creator } from '@edenlabs/eden-sdk'
 import { Tabs } from 'antd'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext } from 'react'
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
   return (
@@ -58,24 +57,9 @@ const CollectionTabContent = ({
 }
 
 const CreatorPageContent = ({ creator }: { creator: Creator }) => {
-  const router = useRouter()
   const { collections } = useCollections(creator.userId)
   const { userId, isAuthenticated } = useContext(UserContext)
   const isOwnProfile = isAuthenticated && creator.userId === userId
-  const [activeTabKey, setActiveTabKey] = useState(
-    (router.query.tab as string) || 'creations',
-  )
-
-  useEffect(() => {
-    const tabKey = router.query.tab as string
-
-    if (!tabKey) {
-      setActiveTabKey('creations')
-      return
-    }
-
-    setActiveTabKey(tabKey)
-  }, [router.query])
 
   const creatorPageTabs = [
     {
@@ -94,13 +78,6 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       children: <CollectionTabContent collections={collections} />,
     },
   ]
-
-  const handleTabClick = async (tabKey: string) => {
-    await router.push(
-      { pathname: '/creators/[id]', query: { tab: tabKey } },
-      { pathname: `/creators/${creator.username}`, query: { tab: tabKey } },
-    )
-  }
 
   return (
     <>
@@ -153,11 +130,10 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
           isOwnProfile={isOwnProfile}
         />
         <Tabs
-          destroyInactiveTabPane={true}
-          activeKey={activeTabKey}
+          defaultActiveKey="1"
           centered
           items={creatorPageTabs}
-          onTabClick={handleTabClick}
+          destroyInactiveTabPane={true}
         />
       </div>
     </>

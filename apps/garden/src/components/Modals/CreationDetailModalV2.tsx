@@ -1,7 +1,7 @@
 'use client'
 
+import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -9,16 +9,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import { Modal, ModalProps } from 'antd'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect } from 'react'
-
-const CreationDetail = dynamic(
-  () => import('@/components/Creation/CreationDetail/CreationDetail'),
-  {
-    loading: () => <LoadingIndicator />,
-  },
-)
 
 const CreationDetailModalV2 = ({
   maybeLoadMoreFn,

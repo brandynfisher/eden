@@ -8,9 +8,9 @@ const ConceptCardDetail = ({ concept }: { concept: Concept }) => {
       <div className="text-sm" title={concept.conceptName}>
         <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
           <strong className="dark:text-gray-200 mr-1">
-            /{concept.task?.generator?.generatorName}
+            {concept.conceptName}
           </strong>
-          {concept.conceptName}
+          {concept.name}
         </span>
       </div>
       <Divider className="mt-4 mb-5 md:hidden" />

@@ -10,13 +10,15 @@ import { MasonryContext } from '@/providers/MasonryProvider'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
-import { useViewportSize } from '@mantine/hooks'
-import { useResizeObserver as useResizeObserverMantine } from '@mantine/hooks'
+import {
+  useResizeObserver as useResizeObserverMantine,
+  useViewportSize,
+} from '@mantine/hooks'
 import { Button, Empty } from 'antd'
-import { useInfiniteLoader } from 'masonic'
 import {
   MasonryScroller,
   useContainerPosition,
+  useInfiniteLoader,
   usePositioner,
   useResizeObserver,
 } from 'masonic'
@@ -143,19 +145,24 @@ const MasonryInfinite = ({
 
     setCurrentIndex(index)
 
-    showModal(MODAL_TYPES.CREATION_DETAIL_MODAL_V2, {
-      usesUrl: true,
-      originPageUrl: router.asPath,
-      maybeLoadMoreFn: (
-        currentIndex: number,
-        currentItems: Creation[] | Concept[],
-      ) => {
-        if (currentIndex === currentItems.length - 1) {
-          maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
-        }
-        // console.log(currentItems.length)
+    showModal(
+      type === 'creations'
+        ? MODAL_TYPES.CREATION_DETAIL_MODAL_V2
+        : MODAL_TYPES.CONCEPT_DETAIL_MODAL,
+      {
+        usesUrl: true,
+        originPageUrl: router.asPath,
+        maybeLoadMoreFn: (
+          currentIndex: number,
+          currentItems: Creation[] | Concept[],
+        ) => {
+          if (currentIndex === currentItems.length - 1) {
+            maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
+          }
+          // console.log(currentItems.length)
+        },
       },
-    })
+    )
   }, [])
 
   const CardWithClick = useCallback(

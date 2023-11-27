@@ -1,5 +1,5 @@
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
-import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
+import ConceptDetailModalV2 from '@/components/Modals/ConceptDetailModalV2'
 import ConceptSelectModal from '@/components/Modals/ConceptSelectModal'
 import CreationDetailModalV2 from '@/components/Modals/CreationDetailModalV2'
 import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
@@ -39,7 +39,7 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.CREATION_DETAIL_MODAL_V2]: CreationDetailModalV2,
   [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
   [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
-  [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
+  [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModalV2,
   [MODAL_TYPES.CONCEPT_SELECT_MODAL]: ConceptSelectModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,

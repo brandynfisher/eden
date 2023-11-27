@@ -5,6 +5,7 @@ import MasonryInfiniteScrollable from '@/components/MasonryInfiniteScrollable'
 import ModalTitle from '@/components/Modals/ModalTitle'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
+import { Concept } from '@edenlabs/eden-sdk'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { debounce } from '@mui/material/utils'
 import { Input, Modal, Switch } from 'antd'
@@ -14,7 +15,7 @@ const ConceptSelectModal = ({
   onChange,
   ...rest
 }: {
-  onChange: () => void
+  onChange: (concept: Concept) => void
 }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchPublic, setSearchPublic] = useState(true)
@@ -90,7 +91,8 @@ const ConceptSelectModal = ({
           type="concepts"
           ItemComponent={ConceptCard}
           query={query}
-          onCardClick={onChange}
+          onCardClick={concept => onChange(concept as Concept)}
+          hover={true}
         />
       </div>
     </Modal>

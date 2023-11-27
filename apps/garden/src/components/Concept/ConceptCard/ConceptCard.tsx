@@ -9,32 +9,43 @@ import { useHover } from '@mantine/hooks'
 import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
 import { Button } from '@mui/material'
-import { App } from 'antd'
+import { App, Tag } from 'antd'
 import axios from 'axios'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 
+export type TrainingMode = 'style' | 'face' | 'object'
+
+export const trainingModeColorMap: { [key: string]: string } = {
+  style: 'lime',
+  face: 'blue',
+  concept: 'purple',
+}
+
 const ConceptCard: FC<{
-  // index: number
+  index: number
   data: Concept
   onClick: (concept: Concept) => void
   hidePrompt?: boolean
-}> = ({
-  // index,
-  data,
-  onClick,
-  hidePrompt,
-}) => {
+  className?: string
+}> = ({ index, data, onClick, hidePrompt, className }) => {
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
 
   const [concept, setConcept] = useState<Concept>(data)
+  const [trainingMode, setTrainingMode] = useState(null)
   const [createdDateString, setCreatedDateString] = useState('')
   const [dropdownActive, setDropdownActive] = useState(false)
   const timeSinceConcept = timeAgo(concept.createdAt)
 
   useEffect(() => {
     setCreatedDateString(new Date(concept.createdAt).toLocaleString())
+    const mode = concept?.task?.config?.mode
+      ? concept?.task?.config?.mode
+      : concept?.task?.config?.concept_mode
+      ? concept?.task?.config?.concept_mode
+      : null
+    setTrainingMode(mode)
   }, [concept])
 
   const onRestoreClick = useCallback(async () => {
@@ -54,17 +65,31 @@ const ConceptCard: FC<{
     }
   }, [concept])
 
+  // const cardClickHandler = useCallback(
+  //   (ev: React.MouseEvent) => {
+  //     console.log()
+  //     ev.preventDefault()
+  //     // console.log(concept)
+  //     onClick()
+  //   },
+  //   [concept, index, onClick],
+  // )
+
   const cardClickHandler = useCallback(
     (ev: React.MouseEvent) => {
       ev.preventDefault()
-      // console.log(concept)
       onClick(concept)
     },
     [concept, onClick],
   )
 
   return (
-    <div ref={ref} className={`w-full flex justify-center flex-col relative`}>
+    <div
+      ref={ref}
+      className={`w-full flex justify-center flex-col relative ${
+        className || ''
+      }`}
+    >
       <a
         onClick={cardClickHandler}
         href={`/concepts/${concept._id}`}
@@ -76,6 +101,7 @@ const ConceptCard: FC<{
         <ImageResult
           previewSizeUrl={concept.thumbnail || ''}
           aspectRatio={100}
+          priority={index < 10}
         />
       </a>
       {concept.deleted ? (
@@ -147,6 +173,17 @@ const ConceptCard: FC<{
           </div>
         </>
       ) : null}
+
+      <div className="absolute bottom-11 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
+        {!hovered && trainingMode ? (
+          <Tag
+            color={trainingModeColorMap[trainingMode]}
+            className="first-letter:capitalize me-0"
+          >
+            {trainingMode}
+          </Tag>
+        ) : null}
+      </div>
     </div>
   )
 }

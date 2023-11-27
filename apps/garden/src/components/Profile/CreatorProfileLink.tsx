@@ -30,7 +30,7 @@ const CreatorProfileLink = ({
       <CreatorProfileButton
         creatorName={creatorName || ''}
         creatorId={creatorId}
-        creatorImage={creatorImage || ''}
+        creatorImage={creatorImage}
       />
     </Link>
   )

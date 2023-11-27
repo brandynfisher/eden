@@ -30,12 +30,14 @@ const MasonryInfiniteScrollable = ({
   query,
   hasSort,
   onCardClick,
+  hover,
 }: {
   type: 'creations' | 'concepts'
   ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
   onCardClick?: (item: Concept | Creation) => void
+  hover?: boolean
 }) => {
   const [orderBy /*setOrderBy*/] = useState<OrderByParam>(
     hasSort ? hasSort[0] : OrderByDefaultParam,
@@ -84,11 +86,16 @@ const MasonryInfiniteScrollable = ({
         key={props.data._id}
         index={props.index}
         data={props.data}
+        className={
+          hover
+            ? `hover:border-2 rounded-lg hover:border-solid hover:border-blue-500 transition-all`
+            : 'transition-all'
+        }
         //@ts-ignore
         onClick={onCardClick}
       />
     ),
-    [onCardClick],
+    [hover, ItemComponent, onCardClick],
   )
 
   return (
