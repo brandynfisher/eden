@@ -1,7 +1,10 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
+import {
+  OrderByLatest,
+  OrderByLikedByMe,
+} from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfinite from '@/components/MasonryInfinite'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
@@ -20,7 +23,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
         key={`creations_${creatorId}`}
         type="creations"
         query={{ userId: creatorId }}
-        hasSort={[OrderByLatest]}
+        hasSort={[OrderByLatest, OrderByLikedByMe]}
         ItemComponent={CreationCard}
       />
     </div>

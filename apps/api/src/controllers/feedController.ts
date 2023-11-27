@@ -7,13 +7,13 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { PipelineStage } from 'mongoose'
-import { use } from 'msw/lib/types/utils/internal/requestHandlerUtils'
 
 import { Collection } from '../models/Collection'
 import { Concept, ConceptDocument } from '../models/Concept'
 import { Creation, CreationDocument } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Follow } from '../models/Follow'
+import { Reaction } from '../models/Reaction'
 import ConceptRepository from '../repositories/ConceptRepository'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
@@ -79,6 +79,63 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
   ])
 }
 
+const aggregateCreationsByUserLikes = (userId: ObjectId) => {
+  return Reaction.aggregate([
+    {
+      $match: {
+        user: {
+          $eq: new ObjectId(userId),
+        },
+      },
+    },
+    {
+      $sort: { createdAt: -1 },
+    },
+    {
+      $project: {
+        _id: 0,
+        user: 1,
+        creation: 1,
+      },
+    },
+    {
+      $lookup: {
+        from: 'creations',
+        let: { reactionsCreationId: '$creation' },
+        pipeline: [
+          {
+            $match: {
+              $and: [
+                { $expr: { $eq: ['$_id', '$$reactionsCreationId'] } },
+                { isPrivate: { $ne: true } },
+                { deleted: { $ne: true } },
+              ],
+            },
+          },
+          {
+            $project: {
+              'embedding.embedding': 0,
+            },
+          },
+          { $sort: { createdAt: -1 } },
+          { $limit: 1 },
+        ],
+        as: 'creations',
+      },
+    },
+    {
+      $unwind: {
+        path: '$creations',
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$creations',
+      },
+    },
+  ])
+}
+
 export const getCreationsFeed = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -122,6 +179,20 @@ export const getCreationsFeed = async (
       page,
       sort: { createdAt: -1 },
     })
+  } else if (orderBy === 'liked' && ownUserId) {
+    const reactionCreationRepository = new CreationRepository(Reaction) //@todo: this reads rather wonky
+    const userReactionAggregate = aggregateCreationsByUserLikes(
+      new ObjectId(ownUserId),
+    )
+
+    creations = await reactionCreationRepository.aggregateQuery(
+      userReactionAggregate,
+      {
+        limit,
+        page,
+        sort: { createdAt: -1 },
+      },
+    )
   } else {
     const collection = collectionId
       ? await Collection.findById(collectionId)
