@@ -2,7 +2,10 @@ import { MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
-import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { VisibilitySchema } from '../types/baseSchemas'
@@ -120,11 +123,20 @@ concept.pre<ConceptDocument>('save', function (next) {
 })
 
 concept.index({ createdAt: 1 })
-
+concept.index({ user: 1 })
+concept.index({ user: 1, deleted: 1, isPrivate: 1 })
+concept.index({ deleted: 1, isPrivate: 1 })
+concept.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1 })
 concept.index({ conceptName: 'text' })
 
-concept.plugin(mongooseDelete, { overrideMethods: 'all' })
+// concept.plugin(mongooseDelete, { overrideMethods: 'all' })
+concept.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 concept.plugin(paginate)
 concept.plugin(aggregatePaginate)
 
-export const Concept = model<ConceptDocument>('concepts', concept)
+export const Concept = model<ConceptDocument>(
+  'concepts',
+  concept,
+) as SoftDeleteModel<ConceptDocument>

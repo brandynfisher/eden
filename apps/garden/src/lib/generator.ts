@@ -30,7 +30,7 @@ export const sdxl_generators_video = [
 ]
 
 export const parameterGroups: { [key: string]: string[] } = {
-  concept: ['lora_scale'],
+  concept: ['lora', 'lora_scale'],
   init_image: [
     'init_image',
     'init_image_strength',

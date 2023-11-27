@@ -1,9 +1,8 @@
 import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
-import { OutputType } from '@/components/Creation/CreationInterface/CreationWorkspace'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
+import ConceptParameterV2 from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
-import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
@@ -12,7 +11,11 @@ import UploadParameter from '@/components/Creation/CreationInterface/parameters/
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
-import { parameterGroups, supportsGroup } from '@/lib/generator'
+import {
+  GeneratorOutputType,
+  parameterGroups,
+  supportsGroup,
+} from '@/lib/generator'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
@@ -23,6 +26,12 @@ import {
   GeneratorParameter,
   Task,
 } from '@edenlabs/eden-sdk'
+import {
+  AddPhotoAlternateOutlined,
+  Settings,
+  SettingsSuggest,
+} from '@mui/icons-material'
+import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import { debounce } from '@mui/material/utils'
 import { App, Button, Collapse, Form } from 'antd'
 import axios from 'axios'
@@ -57,34 +66,13 @@ const getCleanedConfig = (
     .filter(key => !key.endsWith('--preset') && !key.startsWith('ui-'))
     .reduce((obj: FieldValues, key) => {
       // @ts-ignore
-      obj[key] = consolidatedFieldValues[key]
+      if (consolidatedFieldValues[key]) {
+        // @ts-ignore
+        obj[key] = consolidatedFieldValues[key]
+      }
       return obj
     }, {})
 }
-
-// const parameterGroups = [
-// {
-//   label: 'Resolution',
-//   items: [
-//     {
-//       name: 'generate_width',
-//       input: SliderParameter,
-//       label: 'Width',
-//       description: 'Width of generation in pixels',
-//       placeholder: '',
-//       docsUrl: 'https://...'
-//     },
-//     {
-//       name: 'generate_height',
-//       input: SliderParameter,
-//       label: 'Height',
-//       description: 'Height of generation in pixels',
-//       placeholder: '',
-//       docsUrl: 'https://...'
-//     }
-//   ]
-// },
-// ]
 
 const GeneratorForm = ({
   usesDrawer,
@@ -99,7 +87,7 @@ const GeneratorForm = ({
   generator: Generator
   presetCreation?: Creation
   onSubmitSuccess?: () => void
-  outputType?: OutputType
+  outputType?: GeneratorOutputType
 }) => {
   const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
     CreationNotificationContext,
@@ -390,7 +378,7 @@ const GeneratorForm = ({
         }
         if (parameter.name === 'lora') {
           return (
-            <ConceptParameter
+            <ConceptParameterV2
               key={parameter.name}
               form={form}
               parameter={parameter}
@@ -503,20 +491,71 @@ const GeneratorForm = ({
 
         {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
           <Collapse
-            expandIconPosition="start"
+            expandIconPosition="end"
             className={`generator-settings-collapse`}
           >
-            {optionalParameters.length > 0 ? (
-              <Panel key={'1'} header={'Settings'} forceRender={true}>
+            <Panel
+              key={'1'}
+              header={
+                <div className="flex gap-2 items-center">
+                  <Settings fontSize="small" />
+                  <span>Settings</span>
+                </div>
+              }
+              forceRender={true}
+            >
+              {optionalParameters.length > 0 ? (
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(optionalParameters)}
                 </div>
-              </Panel>
-            ) : null}
+              ) : null}
+              {advancedParameters.length > 0 ? (
+                <Collapse
+                  expandIconPosition="end"
+                  className={`generator-settings-collapse`}
+                >
+                  <Panel
+                    key={'2'}
+                    header={
+                      <div className="flex gap-2 items-center">
+                        <SettingsSuggest fontSize="small" />
+                        <span>Advanced</span>
+                      </div>
+                    }
+                    forceRender={true}
+                  >
+                    <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                      {renderFormFields(
+                        advancedParameters.filter(
+                          p =>
+                            !parameterGroups['concept'].includes(p.name) &&
+                            !parameterGroups['init_image'].includes(p.name),
+                        ),
+                      )}
+                    </div>
+                  </Panel>
+                </Collapse>
+              ) : null}
+            </Panel>
             {supportsConcepts ? (
-              <Panel key={'3'} header={'Concept'} forceRender={true}>
+              <Panel
+                key={'3'}
+                header={
+                  <div className="flex gap-2 items-center">
+                    <ModelTrainingIcon fontSize="small" />
+                    <span>Concept</span>
+                  </div>
+                }
+                forceRender={true}
+              >
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
-                  <ConceptSelectModalTrigger onChange={() => {}} />
+                  <ConceptSelectModalTrigger
+                    onChange={concept => {
+                      form.setFieldsValue({
+                        ['lora']: concept ? concept._id : null,
+                      })
+                    }}
+                  />
                   {renderFormFields(
                     advancedParameters.filter(p =>
                       parameterGroups['concept'].includes(p.name),
@@ -526,24 +565,20 @@ const GeneratorForm = ({
               </Panel>
             ) : null}
             {supportsInitImage ? (
-              <Panel key={'4'} header={'Starting Image'} forceRender={true}>
+              <Panel
+                key={'4'}
+                header={
+                  <div className="flex gap-2 items-center">
+                    <AddPhotoAlternateOutlined fontSize="small" />
+                    <span>Starting Image</span>
+                  </div>
+                }
+                forceRender={true}
+              >
                 <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(
                     advancedParameters.filter(p =>
                       parameterGroups['init_image'].includes(p.name),
-                    ),
-                  )}
-                </div>
-              </Panel>
-            ) : null}
-            {advancedParameters.length > 0 ? (
-              <Panel key={'2'} header={'Advanced'} forceRender={true}>
-                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
-                  {renderFormFields(
-                    advancedParameters.filter(
-                      p =>
-                        !parameterGroups['concept'].includes(p.name) &&
-                        !parameterGroups['init_image'].includes(p.name),
                     ),
                   )}
                 </div>

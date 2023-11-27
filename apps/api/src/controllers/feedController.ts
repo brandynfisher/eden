@@ -6,6 +6,8 @@ import {
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+import { PipelineStage } from 'mongoose'
+import { use } from 'msw/lib/types/utils/internal/requestHandlerUtils'
 
 import { Collection } from '../models/Collection'
 import { Concept, ConceptDocument } from '../models/Concept'
@@ -254,6 +256,60 @@ export const getCreationsFeed = async (
   }
 }
 
+const conceptsAggregate = (
+  searchText: string,
+  userId: string,
+  filter?: {
+    isPrivate?: { $ne?: boolean }
+    deleted?: { $ne?: boolean }
+  },
+  options?: { limit?: number; page?: number },
+) => {
+  const pipelines: PipelineStage[] = [
+    {
+      $search: {
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: searchText,
+                path: 'name',
+              },
+            },
+            {
+              autocomplete: {
+                query: searchText,
+                path: 'conceptName',
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+        },
+      },
+    },
+  ]
+
+  if (userId || filter) {
+    pipelines.push({
+      $match: {
+        userId: userId ? userId : undefined,
+        ...filter,
+      },
+    })
+  }
+
+  if (options && options.page && options.limit) {
+    pipelines.push({
+      $limit: options.limit,
+    })
+    pipelines.push({
+      $skip: options.limit * (options.page - 1),
+    })
+  }
+
+  return Concept.aggregate(pipelines)
+}
+
 export const getConceptsFeed = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -295,15 +351,31 @@ export const getConceptsFeed = async (
     sortFilter['isPrivate'] = { $ne: true }
   }
 
-  const concepts: PaginatedResponse<ConceptDocument> =
-    await conceptRepository.query(
+  let concepts: PaginatedResponse<ConceptDocument>
+  // use atlas search query
+  if (name) {
+    const aggregate = conceptsAggregate(name, creatorId, {
+      ...sortFilter,
+      deleted: { $ne: true },
+    })
+    console.log(JSON.stringify(aggregate))
+    const sortObj = Object.fromEntries(sort)
+    console.log(sortObj)
+    concepts = await conceptRepository.aggregateQuery(aggregate, {
+      limit,
+      page,
+      sort: sortObj,
+    })
+    console.log(concepts)
+    // use flat query
+  } else {
+    concepts = await conceptRepository.query(
       {
         user:
           filterUserIds && creators.docs
             ? creators.docs.map(creator => creator._id)
             : undefined,
         ...sortFilter,
-        ...(name ? { $text: { $search: name } } : {}),
       },
       {
         limit,
@@ -311,6 +383,7 @@ export const getConceptsFeed = async (
         sort,
       },
     )
+  }
 
   await conceptRepository.model.populate(concepts.docs, {
     path: 'user',
@@ -318,20 +391,11 @@ export const getConceptsFeed = async (
   })
   await conceptRepository.model.populate(concepts.docs, {
     path: 'task',
-    select: 'status config',
+    select: 'status config generator',
     populate: { path: 'generator', select: 'generatorName output' },
   })
 
-  if (request.user?.userId) {
-    // Get user's reactions and bookmarks
-    const userId = request.user.userId
-    const user = await User.findOne({ _id: userId })
-    if (!user) {
-      return reply.status(404).send({
-        message: 'User not found',
-      })
-    }
-
+  if (ownUserId) {
     interface ConceptDocumentExtension {
       reactions: Map<ReactionType, boolean>
       bookmarked: boolean
@@ -351,7 +415,7 @@ export const getConceptsFeed = async (
     }
 
     if (concepts.docs) {
-      const uid = new ObjectId(userId)
+      const uid = new ObjectId(ownUserId)
       const reactionsMap = await getConceptReactions(uid, concepts.docs)
       const bookmarksMap = await getConceptBookmarks(uid, concepts.docs)
 

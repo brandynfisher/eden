@@ -40,8 +40,12 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
   useEffect(() => {
     const createdDate = new Date(creation.createdAt)
     const dateString = createdDate.toLocaleDateString()
-    const timeString = createdDate.toLocaleTimeString().substring(0, 5)
-    setDisplayDateTime(`${dateString} ${timeString}`)
+    const timeString = createdDate.toLocaleTimeString()
+    const timeStringFormatted = timeString.substring(
+      0,
+      timeString.lastIndexOf(':'),
+    )
+    setDisplayDateTime(`${dateString} ${timeStringFormatted}`)
   }, [creation.createdAt])
 
   return (
@@ -173,8 +177,6 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
           />
         </div>
       ) : null}
-
-      {/*{ baseParams.map(([key, val]) => <CreationInfoParam key={key} label={key} val={val} />)}*/}
     </div>
   )
 }

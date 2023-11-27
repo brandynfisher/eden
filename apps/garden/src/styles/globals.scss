@@ -157,8 +157,8 @@ body {
         //    right: 0 !important;
         //}
         .ant-modal-close {
-            top: -22px !important;
-            right: -22px !important;
+            top: -16px !important;
+            right: -16px !important;
         }
     }
 }
@@ -433,7 +433,7 @@ body {
 
 .ant-modal {
     top: 16px !important;
-    min-height: calc(100% - 16px) !important;
+    min-height: calc(100% - 28px) !important;
 }
 
 .modal-full {
