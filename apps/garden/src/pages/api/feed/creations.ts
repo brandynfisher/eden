@@ -48,7 +48,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (method) {
     case 'GET':
       try {
-        console.log('333', route(Number(limit), Number(page)))
+        // console.log('333', route(Number(limit), Number(page)))
         const response = await axios.get(route(Number(limit), Number(page)), {
           headers: await getAuthHeaders(req),
         })

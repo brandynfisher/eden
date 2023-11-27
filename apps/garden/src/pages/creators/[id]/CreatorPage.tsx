@@ -17,13 +17,19 @@ import Head from 'next/head'
 import React, { useContext } from 'react'
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
+  const { isAuthenticated, userId } = useContext(UserContext)
+
   return (
     <div className="mt-4">
       <MasonryInfinite
         key={`creations_${creatorId}`}
         type="creations"
         query={{ userId: creatorId }}
-        hasSort={[OrderByLatest, OrderByLikedByMe]}
+        hasSort={
+          isAuthenticated && userId === creatorId
+            ? [OrderByLatest, OrderByLikedByMe]
+            : [OrderByLatest]
+        }
         ItemComponent={CreationCard}
       />
     </div>
