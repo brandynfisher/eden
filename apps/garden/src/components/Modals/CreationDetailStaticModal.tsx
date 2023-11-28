@@ -35,7 +35,7 @@ const CreationDetailStaticModal = ({
       )
       router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     }
-  }, [router, usesUrl, creation])
+  }, [usesUrl, creation])
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">
