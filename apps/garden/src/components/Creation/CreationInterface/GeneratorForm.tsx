@@ -67,7 +67,7 @@ const getCleanedConfig = (
     .filter(key => !key.endsWith('--preset') && !key.startsWith('ui-'))
     .reduce((obj: FieldValues, key) => {
       // @ts-ignore
-      if (consolidatedFieldValues[key]) {
+      if (typeof consolidatedFieldValues[key] !== 'undefined') {
         // @ts-ignore
         obj[key] = consolidatedFieldValues[key]
       }

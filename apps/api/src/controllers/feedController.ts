@@ -364,20 +364,20 @@ const conceptsAggregate = (
   if (userId || filter) {
     pipelines.push({
       $match: {
-        userId: userId ? userId : undefined,
+        user: userId ? new ObjectId(userId) : undefined,
         ...filter,
       },
     })
   }
 
-  if (options && options.page && options.limit) {
-    pipelines.push({
-      $limit: options.limit,
-    })
-    pipelines.push({
-      $skip: options.limit * (options.page - 1),
-    })
-  }
+  // if (options && options.page && options.limit) {
+  //   pipelines.push({
+  //     $limit: options.limit,
+  //   })
+  //   pipelines.push({
+  //     $skip: options.limit * (options.page - 1),
+  //   })
+  // }
 
   return Concept.aggregate(pipelines)
 }
