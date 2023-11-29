@@ -19,6 +19,7 @@ export const trainingModeColorMap: { [key: string]: string } = {
   style: 'lime',
   face: 'blue',
   concept: 'purple',
+  object: 'cyan',
 }
 
 const ConceptCard: FC<{
