@@ -33,7 +33,7 @@ const CreationCard: FC<{
 
   useEffect(() => {
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
-  }, [creation])
+  }, [])
 
   const onRestoreClick = useCallback(async () => {
     try {
@@ -84,7 +84,7 @@ const CreationCard: FC<{
         />
       </a>
       {creation.deleted ? (
-        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center">
           <Button
             size="small"
             variant="outlined"

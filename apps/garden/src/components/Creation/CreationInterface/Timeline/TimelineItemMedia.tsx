@@ -19,7 +19,8 @@ const TimelineItemSample = ({
     revalidateOnFocus: false,
     revalidateIfStale: false,
     revalidateAll: false,
-    retryOnError: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: false,
   })
   const { showModal } = useModalContext()
 
@@ -48,7 +49,7 @@ const TimelineItemSample = ({
 
   return (
     <CreationCard
-      index={listIndex || 0}
+      index={listIndex < 3 ? listIndex : 9999}
       data={creation}
       onClick={handleCardClick}
       hidePrompt={true}

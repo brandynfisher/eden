@@ -152,10 +152,14 @@ export const getCreation = async (
   reply: FastifyReply,
 ) => {
   const { creationId } = request.params as CreationsGetArguments
+  const { userId } = request.user
 
-  const creation = (await Creation.findById(creationId, {
-    'embedding.embedding': 0,
-  })
+  const creation = (await Creation.findOneWithDeleted(
+    { _id: creationId },
+    {
+      'embedding.embedding': 0,
+    },
+  )
     .populate({
       path: 'task',
       select: 'config status generator',
@@ -163,13 +167,19 @@ export const getCreation = async (
     })
     .populate({
       path: 'user',
-      select: 'userId username userImage',
+      select: '_id userId username userImage',
     })) as CreationDocument & {
     reactions?: Map<ReactionType, boolean>
     bookmarked?: boolean
   }
 
-  if (!creation) {
+  // nothing found or it was deleted and the user is not the owner
+  if (
+    !creation ||
+    (userId &&
+      creation.deleted &&
+      creation.user._id.toString() !== userId.toString())
+  ) {
     return reply.status(404).send({
       message: 'Creation not found',
     })
@@ -348,6 +358,7 @@ export const creationUpdate = async (
   }
 
   if (
+    typeof isPrivate !== 'undefined' &&
     !isPrivate &&
     creation.attributes &&
     creation.attributes.nsfw_score &&
