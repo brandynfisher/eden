@@ -1,7 +1,7 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { handleAxiosError } from '@/lib/fetcher'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
-import { App, Popover } from 'antd'
+import { App, Tooltip } from 'antd'
 import axios from 'axios'
 import React from 'react'
 
@@ -48,10 +48,9 @@ const MakePublicButton = ({
     return (
       <>
         {isNsfw ? (
-          <Popover
-            style={{ zIndex: 1051 }}
-            title="NSFW"
-            content={'Creations flagged as NSFW can not be made public'}
+          <Tooltip
+            // style={{ position: 'absolute', zIndex: 1051 }}
+            title="Creations flagged as NSFW can not be made public"
             trigger={['click', 'hover']}
           >
             <div
@@ -62,7 +61,7 @@ const MakePublicButton = ({
               <div>{label}</div>
               <LockOpenIcon fontSize="small" />
             </div>
-          </Popover>
+          </Tooltip>
         ) : (
           <div
             onClick={() => onButtonClick()}
