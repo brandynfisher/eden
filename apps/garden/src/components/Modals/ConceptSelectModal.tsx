@@ -29,7 +29,7 @@ const ConceptSelectModal = ({
       setQuery(prev => ({
         ...prev,
         name: name || undefined,
-        userId: (!showPublic && userId) || undefined,
+        userId: !showPublic ? userId || undefined : undefined,
       }))
     },
     [userId, setQuery],

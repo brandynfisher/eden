@@ -361,11 +361,26 @@ const conceptsAggregate = (
     },
   ]
 
-  if (userId || filter) {
+  if (userId) {
     pipelines.push({
       $match: {
-        user: userId ? new ObjectId(userId) : undefined,
-        ...filter,
+        user: new ObjectId(userId),
+      },
+    })
+  }
+
+  if (filter?.isPrivate) {
+    pipelines.push({
+      $match: {
+        isPrivate: filter.isPrivate,
+      },
+    })
+  }
+
+  if (filter?.deleted) {
+    pipelines.push({
+      $match: {
+        deleted: filter.deleted,
       },
     })
   }
@@ -379,6 +394,7 @@ const conceptsAggregate = (
   //   })
   // }
 
+  console.log(pipelines)
   return Concept.aggregate(pipelines)
 }
 

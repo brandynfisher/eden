@@ -16,7 +16,7 @@ const MasonrySearch: React.FC<MasonrySearchProps> = ({ onSearch }) => {
 
   return (
     <Input.Search
-      placeholder="Search"
+      placeholder="Search by name"
       value={searchTerm}
       onChange={e => setSearchTerm(e.target.value)}
       onSearch={handleSearch}
