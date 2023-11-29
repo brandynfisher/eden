@@ -71,8 +71,8 @@ const MasonryInfiniteScrollable = ({
   const positioner = usePositioner(
     {
       width: containerWidth,
-      columnGutter: 12,
-      rowGutter: 8,
+      columnGutter: 24,
+      rowGutter: 20,
       maxColumnCount: 4,
     },
     [items.length],
