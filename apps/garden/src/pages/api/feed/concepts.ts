@@ -9,7 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
   const route = createPaginationRoute(
-    `${CONFIG.API_URL}/feed/creations`,
+    `${CONFIG.API_URL}/feed/concepts`,
     req.query as FeedRouteQueryParams,
   )
 
