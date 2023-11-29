@@ -369,8 +369,12 @@ export const creationUpdate = async (
     })
   }
 
-  creation.isPrivate = isPrivate
-  creation.deleted = !!deleted
+  if (typeof isPrivate !== 'undefined') {
+    creation.isPrivate = isPrivate
+  }
+  if (typeof deleted !== 'undefined') {
+    creation.deleted = !!deleted
+  }
 
   creation.save()
 
