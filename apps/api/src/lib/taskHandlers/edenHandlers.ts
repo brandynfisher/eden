@@ -202,7 +202,7 @@ const handleUpdate = async (
           task: task._id,
           name: publicName,
           conceptName: finalOutput.name,
-          checkpoint: 'sdxl-v1.0', //task.config.checkpoint,
+          checkpoint: task.config.checkpoint || 'sdxl-v1.0', //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
           uri: finalOutput.files[i],
           thumbnail: finalOutput.thumbnails[0],
