@@ -1,8 +1,9 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { handleAxiosError } from '@/lib/fetcher'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
-import { App } from 'antd'
+import { App, Popover } from 'antd'
 import axios from 'axios'
+import React from 'react'
 
 const MakePublicButton = ({
   itemId,
@@ -45,14 +46,34 @@ const MakePublicButton = ({
 
   if (variant === 'text') {
     return (
-      <div
-        onClick={() => onButtonClick()}
-        className="flex items-center gap-2 w-full justify-between"
-        title={`Make ${itemType} public`}
-      >
-        <div>{label}</div>
-        <LockOpenIcon fontSize="small" />
-      </div>
+      <>
+        {isNsfw ? (
+          <Popover
+            style={{ zIndex: 1051 }}
+            title="NSFW"
+            content={'Creations flagged as NSFW can not be made public'}
+            trigger={['click', 'hover']}
+          >
+            <div
+              onClick={() => onButtonClick()}
+              className="flex items-center gap-2 w-full justify-between"
+              title={`Make ${itemType} public`}
+            >
+              <div>{label}</div>
+              <LockOpenIcon fontSize="small" />
+            </div>
+          </Popover>
+        ) : (
+          <div
+            onClick={() => onButtonClick()}
+            className="flex items-center gap-2 w-full justify-between"
+            title={`Make ${itemType} public`}
+          >
+            <div>{label}</div>
+            <LockOpenIcon fontSize="small" />
+          </div>
+        )}
+      </>
     )
   }
 

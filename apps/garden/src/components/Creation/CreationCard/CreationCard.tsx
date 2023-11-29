@@ -142,7 +142,19 @@ const CreationCard: FC<{
               </div>
             ) : null}
             <div className="flex items-center gap-4 ml-auto my-1">
-              {creation.isPrivate ? <LockIcon fontSize="small" /> : null}
+              <>
+                {creation.attributes &&
+                creation.attributes.nsfw_score &&
+                creation.attributes.nsfw_score > 0.5 ? (
+                  <Tag
+                    color={'warning'}
+                    className={`text-xs ${hovered ? 'md:hidden' : ''}`}
+                  >
+                    NSFW
+                  </Tag>
+                ) : null}
+                {creation.isPrivate ? <LockIcon fontSize="small" /> : null}
+              </>
               <CardToolsDropdown
                 onOpen={setDropdownActive}
                 item={creation}
