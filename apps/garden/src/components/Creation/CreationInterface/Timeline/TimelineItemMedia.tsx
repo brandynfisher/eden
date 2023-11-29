@@ -19,6 +19,7 @@ const TimelineItemSample = ({
     revalidateOnFocus: false,
     revalidateIfStale: false,
     revalidateAll: false,
+    retryOnError: false,
   })
   const { showModal } = useModalContext()
 
