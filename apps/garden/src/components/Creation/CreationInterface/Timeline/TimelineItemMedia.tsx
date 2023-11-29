@@ -15,7 +15,11 @@ const TimelineItemSample = ({
   creationId: string
   listIndex: number
 }) => {
-  const { creation, isLoading } = useCreation(creationId)
+  const { creation, isLoading } = useCreation(creationId, {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+    revalidateAll: false,
+  })
   const { showModal } = useModalContext()
 
   const handleCardClick = useCallback(() => {
