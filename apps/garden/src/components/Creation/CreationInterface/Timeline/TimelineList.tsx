@@ -153,14 +153,14 @@ const TimelineList = ({
       maxColumnCount: 1,
       columnCount: 1,
     },
-    [],
+    [items.length],
   )
 
   const resizeObserver = useResizeObserver(positioner)
 
   return (
     <div
-      className="flex flex-col max-h-[calc(100vh_-_72px)] pb-[104px] w-full overflow-hidden md:pb-0"
+      className="flex flex-col max-h-[calc(100vh_-_72px)] pb-[80px] w-full overflow-hidden md:pb-0"
       ref={innerRef}
     >
       {isLoading ? <LoadingIndicator /> : null}
