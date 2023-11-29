@@ -176,7 +176,7 @@ const TimelineList = ({
           />
         </div>
       )}
-      {items && items.length ? (
+      {items && items.length && typeof items[0] !== 'undefined' ? (
         <div
           ref={containerRef}
           className="h-[calc(100%_-_72px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
@@ -195,7 +195,9 @@ const TimelineList = ({
             onRender={maybeLoadMoreTasks}
           />
         </div>
-      ) : null}
+      ) : (
+        <div>error fetching list</div>
+      )}
     </div>
   )
 }
