@@ -10,17 +10,24 @@ const MakePublicButton = ({
   variant,
   label,
   onChange,
+  isNsfw,
 }: {
   itemId: string
   itemType: 'creation' | 'concept'
   variant?: 'text'
   label?: string
   onChange?: (visibilityUpdate: { isPrivate: boolean }) => void
+  isNsfw?: boolean
 }) => {
   const { message } = App.useApp()
   // const [ isLoading, setIsLoading ] = useState(false)
 
   const onButtonClick = async () => {
+    if (isNsfw) {
+      message.warning(`Item is marked NSFW. Can not make it public.`)
+      return
+    }
+
     // setIsLoading(true)
     try {
       await axios.patch(`/api/${itemType}s/${itemId}`, {

@@ -184,7 +184,7 @@ export type Creation = {
   uri: string
   thumbnail?: string
   name: string
-  attributes: any
+  attributes: CreationAttributes
   mediaAttributes: MediaAttributes
   praiseCount?: number
   bookmarkCount?: number
@@ -202,6 +202,11 @@ export interface MediaAttributes {
   width?: number
   height?: number
   aspectRatio?: number
+}
+
+export interface CreationAttributes {
+  nsfw_score?: number
+  interrogation?: string
 }
 
 export enum ReactionType {

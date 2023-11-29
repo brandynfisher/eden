@@ -1,6 +1,7 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { EdenClient } from '@edenlabs/eden-sdk'
+import axios, { AxiosError } from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export type CreationUpdatePartial = {
@@ -66,11 +67,21 @@ const updateCreation = async (
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
-  const response = await eden.creations.update({
-    creationId: id,
-    ...updatePartial,
-  })
-  return res.status(200).json({ creation: response.creation })
+  try {
+    const response = await eden.creations.update({
+      creationId: id,
+      ...updatePartial,
+    })
+    return res.status(200).json({ creation: response.creation })
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      const axiosError = e.toJSON() as AxiosError
+      return res
+        .status(axiosError.status || 500)
+        .json({ message: 'Item is flagged as NSFW. Can not make public' })
+    }
+    return res.status(500).json({ error: e })
+  }
 }
 
 const deleteCreation = async (

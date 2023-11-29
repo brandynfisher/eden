@@ -105,6 +105,15 @@ const handleUpdate = async (
           const creationUser = task.attributes?.delegateUserId
             ? new ObjectId(task.attributes.delegateUserId)
             : task.user
+
+          const nsfwScore =
+            finalOutput.attributes &&
+            finalOutput.attributes['nsfw_scores'] &&
+            finalOutput.attributes['nsfw_scores'].length
+              ? finalOutput.attributes['nsfw_scores'][index]
+              : 0
+          const isNsfw = nsfwScore && nsfwScore > 0.5
+
           const creationDocument: CreationInput = {
             _id: creationId,
             user: creationUser,
@@ -112,8 +121,12 @@ const handleUpdate = async (
             uri: finalOutput.files[index],
             thumbnail: finalOutput.thumbnails[index],
             name: finalOutput.name,
-            attributes: { ...task.attributes, ...finalOutput.attributes },
-            isPrivate: task.config.isPrivate || false,
+            attributes: {
+              ...task.attributes,
+              ...finalOutput.attributes,
+              nsfw_score: nsfwScore,
+            },
+            isPrivate: isNsfw ? true : task.config.isPrivate || false,
           }
 
           if (finalOutput.files[index]) {

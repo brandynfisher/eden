@@ -1,4 +1,8 @@
-import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
+import {
+  CreationAttributes,
+  MediaAttributes,
+  MediaType,
+} from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -21,7 +25,7 @@ export interface CreationSchema extends VisibilitySchema {
   uri?: string
   thumbnail?: string
   name?: string
-  attributes?: any
+  attributes?: CreationAttributes
   mediaAttributes: MediaAttributes
   embedding?: {
     embedding?: number[]

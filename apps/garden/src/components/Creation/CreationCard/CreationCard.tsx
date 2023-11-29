@@ -10,7 +10,7 @@ import { useHover } from '@mantine/hooks'
 import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
 import { Button } from '@mui/material'
-import { App } from 'antd'
+import { App, Tag } from 'antd'
 import axios from 'axios'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 
@@ -48,6 +48,7 @@ const CreationCard: FC<{
         deleted: false,
       })
     } catch (err) {
+      console.log(err)
       handleAxiosError(err, message)
     }
   }, [creation])
@@ -97,11 +98,24 @@ const CreationCard: FC<{
       ) : null}
       {!creation.deleted && creation.isPrivate ? (
         <div
-          className={`hidden md:flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
+          className={`md:flex items-center absolute right-1 top-1 hidden ${
             hovered ? 'md:hidden' : ''
           }`}
         >
-          <LockIcon fontSize="small" className="text-white" />
+          {creation.attributes &&
+          creation.attributes.nsfw_score &&
+          creation.attributes.nsfw_score > 0.5 ? (
+            <Tag color={'warning'} className="text-xs">
+              NSFW
+            </Tag>
+          ) : null}
+          <div
+            className={`flex z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
+              hovered ? 'md:hidden' : ''
+            }`}
+          >
+            <LockIcon fontSize="small" className="text-white" />
+          </div>
         </div>
       ) : null}
       {!creation.deleted && (width < 768 || hovered || dropdownActive) ? (
@@ -128,7 +142,18 @@ const CreationCard: FC<{
               </div>
             ) : null}
             <div className="flex items-center gap-4 ml-auto my-1">
-              {creation.isPrivate ? <LockIcon fontSize="small" /> : null}
+              {creation.isPrivate ? (
+                <>
+                  {creation.attributes &&
+                  creation.attributes.nsfw_score &&
+                  creation.attributes.nsfw_score > 0.5 ? (
+                    <Tag color={'warning'} className="text-xs">
+                      NSFW
+                    </Tag>
+                  ) : null}
+                  <LockIcon fontSize="small" />
+                </>
+              ) : null}
               <CardToolsDropdown
                 onOpen={setDropdownActive}
                 item={creation}

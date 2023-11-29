@@ -336,25 +336,32 @@ export const creationUpdate = async (
     })
   }
 
-  const creation = await Creation.findOneAndUpdateWithDeleted(
-    {
-      _id: creationId,
-      user: userId,
-    },
-    {
-      isPrivate,
-      deleted,
-    },
-    {
-      new: true,
-    },
-  )
+  const creation = await Creation.findOneWithDeleted({
+    _id: creationId,
+    user: userId,
+  })
 
   if (!creation) {
     return reply.status(404).send({
       message: 'Creation not found',
     })
   }
+
+  if (
+    !isPrivate &&
+    creation.attributes &&
+    creation.attributes.nsfw_score &&
+    creation.attributes.nsfw_score > 0.5
+  ) {
+    return reply.status(403).send({
+      message: 'Creation has NSFW flag and can not be made public.',
+    })
+  }
+
+  creation.isPrivate = isPrivate
+  creation.deleted = !!deleted
+
+  creation.save()
 
   return reply.status(200).send({
     creation,

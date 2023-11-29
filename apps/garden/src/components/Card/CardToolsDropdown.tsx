@@ -28,6 +28,7 @@ type MenuItem = {
   label?: string | ReactNode
   children?: MenuItem[]
   type?: string
+  disabled?: boolean
 }
 
 const CardToolsDropdown = ({
@@ -177,6 +178,12 @@ const CardToolsDropdown = ({
 
     const hasUserFeatureFlagPrivate =
       user && user.featureFlags && user.featureFlags.includes('preview')
+
+    const isNsfw =
+      item.attributes &&
+      item.attributes.nsfw_score &&
+      item.attributes.nsfw_score > 0.5
+
     const creatorMenuItems: MenuItem[] =
       hasUserFeatureFlagPrivate && user?.userId === item.user.userId
         ? [
@@ -193,6 +200,7 @@ const CardToolsDropdown = ({
                   variant="text"
                   label="Set Public"
                   onChange={handleOnVisibilityChange}
+                  isNsfw={isNsfw}
                 />
               ) : (
                 <MakePrivateButton
@@ -203,6 +211,7 @@ const CardToolsDropdown = ({
                   onChange={handleOnVisibilityChange}
                 />
               ),
+              disabled: isNsfw,
             },
           ]
         : []
