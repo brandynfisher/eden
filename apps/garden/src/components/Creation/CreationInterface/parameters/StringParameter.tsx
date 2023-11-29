@@ -117,7 +117,11 @@ const StringParameter = (props: {
               },
             ]}
           >
-            <Input.TextArea autoSize className="with-addon" />
+            <Input.TextArea
+              autoSize
+              className="with-addon"
+              spellCheck={false}
+            />
           </Form.Item>
         </div>
       )}
