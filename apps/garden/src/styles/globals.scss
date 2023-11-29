@@ -712,12 +712,10 @@ body {
 .parameter {
     height: 100%;
     .parameter__addon {
+        height: 32px;
         cursor: pointer !important;
 
-        /* Standard */
         &:disabled::placeholder {
-            overflow: visible !important;
-            white-space: pre-wrap;
             height: 100% !important;
             color: $bg-gray-800 !important;
         }
@@ -728,13 +726,23 @@ body {
 
         }
     }
+
+    &.parameter--slider {
+        .ant-input-number {
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+            width: 70px !important;
+        }
+
+        .ant-input-number-input {
+            padding-left: 8px !important;
+        }
+    }
 }
 
 .dark {
     .parameter {
         .parameter__addon {
-            height: 32px;
-            /* Standard */
             &:disabled {
                 &::placeholder {
                     color: $bg-gray-400 !important;

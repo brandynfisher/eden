@@ -1,7 +1,7 @@
-import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+import { ParameterAddon } from '@/components/Creation/CreationInterface/parameters/SamplesParameter'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
-import { Col, Form, FormInstance, InputNumber, Row } from 'antd'
-import { FocusEvent, useEffect } from 'react'
+import { Form, FormInstance, InputNumber } from 'antd'
+import React, { FocusEvent, useEffect } from 'react'
 
 const NumberParameter = (props: {
   form: FormInstance
@@ -25,38 +25,31 @@ const NumberParameter = (props: {
   }, [props.parameter.default])
 
   return (
-    <>
-      <Row>
-        <Col style={{ marginLeft: 10 }} className="flex items-end w-full">
-          <Form.Item
-            label={
-              <ParameterLabel
-                text={props.parameter.label}
-                description={props.parameter.description}
-              />
-            }
-            className="w-full mb-1"
-            name={`${props.parameter.name}`}
-            initialValue={props.parameter.default}
-            rules={[
-              {
-                required: props.parameter.isRequired,
-                message: `${props.parameter.label} required`,
-              },
-            ]}
-          >
-            <InputNumber
-              className="self-end"
-              style={{ marginBottom: 5 }}
-              min={props.parameter.minimum}
-              max={props.parameter.maximum}
-              onChange={onChange}
-              onBlur={onBlur}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-    </>
+    <div className="parameter parameter--slider flex items-center">
+      <ParameterAddon
+        title={props.parameter.name}
+        description={props.parameter.description}
+      />
+      <Form.Item
+        className="my-0 w-full"
+        name={props.parameter.name}
+        initialValue={props.parameter.default}
+        rules={[
+          {
+            required: props.parameter.isRequired,
+            message: `${props.parameter.label} required`,
+          },
+        ]}
+      >
+        <InputNumber
+          className="w-full"
+          min={props.parameter.minimum}
+          max={props.parameter.maximum}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      </Form.Item>
+    </div>
   )
 }
 

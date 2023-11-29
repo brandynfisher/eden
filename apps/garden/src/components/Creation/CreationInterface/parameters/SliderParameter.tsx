@@ -2,10 +2,10 @@ import {
   closest,
   presetItems,
 } from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
-import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+import { ParameterAddon } from '@/components/Creation/CreationInterface/parameters/SamplesParameter'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, InputNumber, Slider } from 'antd'
-import { FocusEvent, useEffect, useState } from 'react'
+import React, { FocusEvent, useEffect, useState } from 'react'
 
 const SliderParameter = (props: {
   form: FormInstance
@@ -81,15 +81,12 @@ const SliderParameter = (props: {
   }
 
   return (
-    <div className="flex items-center">
-      <div>
-        <ParameterLabel
-          name={props.parameter.name}
-          text={props.parameter.label}
-          description={props.parameter.description}
-        />
-      </div>
-      <div className="flex items-center w-full">
+    <div className="parameter parameter--slider flex items-center">
+      <ParameterAddon
+        title={props.parameter.label}
+        description={props.parameter.description}
+      />
+      <div className="flex items-center w-full parameter__addon !bg-stone-300 dark:!bg-stone-950 border border-r-0 border-solid rounded-tr-md rounded-br-md border-gray-400 dark:border-gray-700">
         <Slider
           className="flex-grow"
           value={fieldValue}
@@ -99,7 +96,7 @@ const SliderParameter = (props: {
           onChange={onChange}
         />
         <Form.Item
-          className="mb-1"
+          className="my-0"
           name={props.parameter.name}
           initialValue={props.parameter.default}
           rules={[

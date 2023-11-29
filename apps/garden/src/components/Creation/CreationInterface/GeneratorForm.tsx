@@ -466,7 +466,7 @@ const GeneratorForm = ({
           usesDrawer && openedDrawer ? 'max-h-[46vh]' : ''
         } ${usesDrawer && !openedDrawer ? 'hidden' : 'flex'}`}
       >
-        <div className={`p-4 py-3 bg-gray-100 dark:bg-gray-900`}>
+        <div className={`p-2 py-3 bg-gray-100 dark:bg-gray-900`}>
           {renderFormFields(requiredParameters)}
 
           {/* decorative / extra params linked to the actual param input */}

@@ -11,15 +11,19 @@ const InputAddon = ({
   textArea?: boolean
 }) => {
   return (
-    <div className={`parameter ${textArea ? 'parameter--textarea' : ''}`}>
+    <div
+      className={`parameter ${
+        textArea ? 'parameter--textarea' : ''
+      } hover:brightness-125 cursor-help hover:text-blue-500`}
+    >
       <Input
         style={{
           width: !textArea ? 68 : '100%',
           borderTopRightRadius: textArea ? '6px' : 0,
           borderBottomRightRadius: 0,
-          // pointerEvents: 'none'
+          pointerEvents: 'none',
         }}
-        className={`parameter__addon h-full !px-2 !m-0 text-xs !bg-stone-400 dark:!bg-stone-900 ${
+        className={`parameter__addon h-full !px-2 !m-0 text-xs !bg-stone-400 dark:!bg-stone-900 min-w-[105px] ${
           textArea
             ? '!border-b-0 rounded-bl-none rounded-b-none rounded-br-none'
             : 'border-r-0'
@@ -44,7 +48,7 @@ export const ParameterAddon = ({
 }) => {
   if (!description) {
     return (
-      <div className="h-full">
+      <div className="h-full min-w-16">
         <InputAddon title={title} info={info} textArea={textArea} />
       </div>
     )
@@ -52,7 +56,7 @@ export const ParameterAddon = ({
 
   return (
     <Popover
-      content={<div>{description}</div>}
+      content={<div className="max-w-sm">{description}</div>}
       title={title}
       trigger={['click', 'hover']}
     >
@@ -84,7 +88,7 @@ const SamplesParameter = ({
       />
       <Form.Item
         name={name}
-        className="mt-0 mb-0"
+        className="my-0"
         dependencies={['n_samples']}
         initialValue={initialValue}
         rules={[
