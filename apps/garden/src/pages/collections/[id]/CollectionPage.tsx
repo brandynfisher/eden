@@ -4,7 +4,7 @@ import {
   OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
-import MasonryInfinite from '@/components/MasonryInfinite'
+import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import { useCollection } from '@/hooks/useCollection'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'

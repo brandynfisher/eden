@@ -4,52 +4,58 @@ import { CONFIG } from '@/lib/config'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
+export const createPaginationRoute = (
+  baseUrl: string,
+  query: FeedRouteQueryParams,
+) => {
+  const basePath = baseUrl
+  const params: FeedRouteQueryParams = {}
+
+  if (query.limit && query.page) {
+    params.page = query.page
+    params.limit = query.limit
+  }
+
+  if (query.userId) {
+    params.userId = String(query.userId)
+  }
+
+  if (query.name && query.name.length > 0) {
+    params.name = String(query.name)
+  }
+
+  if (query.collectionId) {
+    params.collectionId = String(query.collectionId)
+  }
+
+  if (query.orderBy) {
+    params.orderBy = String(query.orderBy)
+  }
+  if (query.direction) {
+    params.direction = Number(query.direction)
+  }
+
+  const queryString = Object.keys(params)
+    //@ts-ignore
+    .map(key => `${key}=${params[key]}`)
+    .join('&')
+
+  return queryString ? `${basePath}?${queryString}` : basePath
+}
+
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
-  const { userId, name, collectionId, page, limit, orderBy, direction } =
-    req.query
-
-  const route = (limit: number, page: number) => {
-    const basePath = `${CONFIG.API_URL}/feed/creations`
-    const params: FeedRouteQueryParams = {}
-
-    if (limit && page) {
-      params.page = page
-      params.limit = limit
-    }
-
-    if (userId) {
-      params.userId = String(userId)
-    }
-
-    if (name && name.length > 0) {
-      params.name = String(name)
-    }
-
-    if (collectionId) {
-      params.collectionId = String(collectionId)
-    }
-    if (orderBy) {
-      params.orderBy = String(orderBy)
-    }
-    if (direction) {
-      params.direction = Number(direction)
-    }
-
-    const queryString = Object.keys(params)
-      //@ts-ignore
-      .map(key => `${key}=${params[key]}`)
-      .join('&')
-
-    return queryString ? `${basePath}?${queryString}` : basePath
-  }
+  const route = createPaginationRoute(
+    `${CONFIG.API_URL}/feed/creations`,
+    req.query as FeedRouteQueryParams,
+  )
 
   switch (method) {
     case 'GET':
       try {
         // console.log('333', route(Number(limit), Number(page)))
-        const response = await axios.get(route(Number(limit), Number(page)), {
+        const response = await axios.get(route, {
           headers: await getAuthHeaders(req),
         })
         return res.status(200).json(response.data)

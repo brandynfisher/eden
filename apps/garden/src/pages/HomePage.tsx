@@ -4,7 +4,7 @@ import {
   OrderByLatest,
   OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
-import MasonryInfinite from '@/components/MasonryInfinite'
+import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import { UserContext } from '@/providers/UserProvider'
 import { useContext } from 'react'
 

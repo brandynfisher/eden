@@ -1,7 +1,7 @@
 'use client'
 
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import MasonryInfiniteScrollable from '@/components/MasonryInfiniteScrollable'
+import MasonryInfiniteScrollable from '@/components/Masonry/MasonryInfiniteScrollable'
 import ModalTitle from '@/components/Modals/ModalTitle'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'

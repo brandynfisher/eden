@@ -5,7 +5,7 @@ import {
   OrderByLatest,
   OrderByLikedByMe,
 } from '@/components/Layout/buttons/OrderByButtons'
-import MasonryInfinite from '@/components/MasonryInfinite'
+import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
 import { useCreator } from '@/hooks/useCreator'

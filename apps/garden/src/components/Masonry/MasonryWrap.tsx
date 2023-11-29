@@ -1,5 +1,5 @@
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
-import MasonryV2 from '@/components/MasonryV2'
+import MasonryV2 from '@/components/Masonry/MasonryV2'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 
 const MasonryWrap = ({

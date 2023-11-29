@@ -4,15 +4,18 @@ import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
 import { useCallback, useMemo } from 'react'
 import useSWRInfinite from 'swr/infinite'
 
-export type FeedRouteQueryParams = {
+export type PaginatedRouteQueryParams = {
   page?: number
   limit?: number
+  orderBy?: string
+  direction?: number
+}
+
+export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
   userId?: string
   collectionId?: string
   creationId?: string
   name?: string
-  orderBy?: string
-  direction?: number
 }
 
 export type PaginatedFeedQuery = {
