@@ -57,7 +57,7 @@ const useTasksPaginated = ({ limit }: { limit: number }) => {
     [limit],
   )
 
-  const { data, size, setSize, mutate, isValidating, isLoading } =
+  const { data, size, setSize, mutate, isValidating, isLoading, error } =
     useSWRInfinite(getKey, fetcher, { refreshInterval: 5000 })
 
   const isLoadingMore =
@@ -104,6 +104,7 @@ const useTasksPaginated = ({ limit }: { limit: number }) => {
     isLoading,
     isLoadingMore,
     maybeLoadMore,
+    error,
   }
 }
 
@@ -127,6 +128,7 @@ const TimelineList = ({
     maybeLoadMore,
     isEmpty,
     isLoading,
+    error,
   } = useTasksPaginated({ limit })
 
   const maybeLoadMoreTasks = useInfiniteLoader(maybeLoadMore, {
@@ -195,9 +197,8 @@ const TimelineList = ({
             onRender={maybeLoadMoreTasks}
           />
         </div>
-      ) : (
-        <div>error fetching list</div>
-      )}
+      ) : null}
+      {error ? <div>{error}</div> : null}
     </div>
   )
 }
