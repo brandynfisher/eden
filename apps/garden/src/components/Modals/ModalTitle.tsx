@@ -8,7 +8,7 @@ const ModalTitle = ({
   link?: ReactElement
 }) => {
   return (
-    <div className="flex justify-between items-center bg-gray-300 dark:bg-gray-800 !bg-opacity-50 rounded-t-lg h-11 lg:h-14 px-4 py-2 flex-wrap">
+    <div className="flex justify-between items-center bg-gray-300 dark:bg-gray-800 !bg-opacity-50 rounded-t-lg h-11 lg:h-14 px-4 flex-wrap">
       <div className="font-bold flex-shrink-0">{title}</div>
       {link ? (
         <div className="flex justify-end flex-shrink-0 mr-10 lg:mr-6">

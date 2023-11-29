@@ -13,8 +13,6 @@ import { App, Tag } from 'antd'
 import axios from 'axios'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 
-export type TrainingMode = 'style' | 'face' | 'object'
-
 export const trainingModeColorMap: { [key: string]: string } = {
   style: 'lime',
   face: 'blue',
