@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { ApiKey } from '../models/ApiKey'
-import { SubscriptionTier, User } from '../models/Creator'
+import { FeatureFlag, SubscriptionTier, User } from '../models/Creator'
 
 const apiKeyVerify = async (request: FastifyRequest) => {
   if (!request.headers['x-api-secret']) {
@@ -82,19 +82,15 @@ export const isAdmin = async (
   }
 }
 
-export const isSubscriber = async (
-  server: FastifyInstance,
+export const isSubscriber = async (request: FastifyRequest) => {
+  return request.user.subscriptionTier !== SubscriptionTier.Free
+}
+
+export const hasFeatureFlag = async (
   request: FastifyRequest,
-  reply: FastifyReply,
+  featureFlag: FeatureFlag,
 ) => {
-  await getCredential(server, request, reply)
-  if (request.user.subscriptionTier === SubscriptionTier.Free) {
-    return reply.status(401).send({
-      statusCode: 401,
-      error: 'Unauthorized',
-      message: 'This feature is only available to subscribers.',
-    })
-  }
+  return request.user.featureFlags.includes(featureFlag)
 }
 
 export const maybeAuth = async (

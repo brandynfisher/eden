@@ -95,8 +95,9 @@ const MasonryInfinite = ({
   const positioner = usePositioner(
     {
       width,
-      columnGutter: 8,
-      rowGutter: windowWidth && windowWidth < 768 ? 0 : 8,
+      columnGutter: type === 'creations' ? 8 : 20,
+      rowGutter:
+        windowWidth && windowWidth < 768 ? 0 : type === 'creations' ? 8 : 24,
       columnCount:
         windowWidth && windowWidth < 768
           ? 1
