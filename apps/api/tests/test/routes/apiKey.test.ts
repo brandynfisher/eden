@@ -1,7 +1,11 @@
 import { FastifyInstance } from 'fastify'
 import { expect, test } from 'vitest'
 
-import { prepareBasicUserHeaders, prepareUserHeaders } from '../../util'
+import {
+  prepareBasicUserHeaders,
+  preparePreviewUserHeaders,
+  prepareUserHeaders,
+} from '../../util'
 
 const createApiKey = async (
   server: FastifyInstance,
@@ -50,6 +54,16 @@ const deleteApiKey = async (
 test('Non-free user can create an API Key', async context => {
   const { server } = context
   const response = await createApiKey(server)
+  expect(response.statusCode).toBe(200)
+  const json = response.json()
+  expect(json).toHaveProperty('apiKey')
+  expect(json.apiKey).toHaveProperty('apiKey')
+  expect(json.apiKey).toHaveProperty('apiSecret')
+})
+
+test('Preview user can create an API Key', async context => {
+  const { server } = context
+  const response = await createApiKey(server, preparePreviewUserHeaders())
   expect(response.statusCode).toBe(200)
   const json = response.json()
   expect(json).toHaveProperty('apiKey')
