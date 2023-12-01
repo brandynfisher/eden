@@ -32,6 +32,10 @@ const apiKey = new Schema<ApiKeyDocument>(
       ref: 'users',
       required: true,
     },
+    character: {
+      type: Schema.Types.ObjectId,
+      ref: 'characters',
+    },
     apiKey: {
       type: String,
       required: true,

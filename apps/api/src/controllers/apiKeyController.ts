@@ -10,7 +10,7 @@ import { ApiKey, ApiKeyInput } from '../models/ApiKey'
 import { User } from '../models/Creator'
 import ApiKeyRepository from '../repositories/ApiKeyRepository'
 
-export const generateApiKey = async () => {
+export const generateApiKey = () => {
   const apiKey = randomId(24)
   const apiSecret = randomId(24)
   return {
@@ -33,7 +33,7 @@ export const createApiKey = async (
     })
   }
 
-  const { apiKey, apiSecret } = await generateApiKey()
+  const { apiKey, apiSecret } = generateApiKey()
 
   const input: ApiKeyInput = {
     user: userId,

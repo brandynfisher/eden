@@ -13,11 +13,13 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 
 import { VisibilitySchema } from '../types/baseSchemas'
+import { CharacterDocument } from './Character'
 import { UserDocument } from './Creator'
 import { TaskDocument } from './Task'
 
 export interface CreationSchema extends VisibilitySchema {
   user: UserDocument
+  character?: CharacterDocument
   task: TaskDocument
   praiseCount: number
   bookmarkCount: number
@@ -39,6 +41,7 @@ export interface CreationSchema extends VisibilitySchema {
 export interface CreationInput {
   _id?: ObjectId
   user: ObjectId | UserDocument
+  character?: ObjectId | CharacterDocument
   task: ObjectId
   delegate?: ObjectId
   uri?: string
@@ -64,6 +67,10 @@ const creation = new Schema<CreationDocument>(
       type: Schema.Types.ObjectId,
       ref: 'users',
       required: true,
+    },
+    character: {
+      type: Schema.Types.ObjectId,
+      ref: 'characters',
     },
     task: {
       type: Schema.Types.ObjectId,

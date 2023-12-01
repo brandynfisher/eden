@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
+import { CharacterDocument } from './Character'
 import { ConceptDocument } from './Concept'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
@@ -17,6 +18,7 @@ export enum TaskStatus {
 
 export interface TaskSchema {
   user: UserDocument
+  character?: CharacterDocument
   generator: GeneratorDocument
   versionId: string
   config: Record<string, any>
@@ -38,6 +40,7 @@ export interface TaskSchema {
 
 export interface TaskInput {
   creator: ObjectId
+  character?: ObjectId
   generator: ObjectId
   version: ObjectId
   cost: number
@@ -53,6 +56,10 @@ const task = new Schema<TaskDocument>(
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users',
+    },
+    character: {
+      type: Schema.Types.ObjectId,
+      ref: 'characters',
     },
     generator: {
       type: Schema.Types.ObjectId,

@@ -105,14 +105,14 @@ export const createTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, isAdmin } = request.user
+  const { userId, character } = request.user
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
   console.log('attributes:', attributes)
 
-  if (!isAdmin && attributes) {
+  if (!character && attributes) {
     return reply.status(401).send({
-      message: 'Only admins can set attributes',
+      message: 'Only characters can set attributes',
     })
   }
 
