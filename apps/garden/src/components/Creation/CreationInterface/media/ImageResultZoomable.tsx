@@ -88,7 +88,7 @@ const ImageResultZoomable = ({
 
   return (
     <div
-      className={`image-zoomable-wrap relative w-full h-fit overflow-hidden rounded-lg`}
+      className={`relative w-full h-fit overflow-hidden rounded-lg`}
       style={{ paddingTop: `${aspectRatio}%` }}
     >
       {needsLoadingIndicator &&
