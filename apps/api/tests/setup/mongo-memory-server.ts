@@ -5,7 +5,12 @@ import { setup, teardown } from 'vitest-mongodb'
 
 import { ApiKey, ApiKeyInput } from '../../src/models/ApiKey'
 import { Collection } from '../../src/models/Collection'
-import { SubscriptionTier, User, UserInput } from '../../src/models/Creator'
+import {
+  FeatureFlag,
+  SubscriptionTier,
+  User,
+  UserInput,
+} from '../../src/models/Creator'
 import { Manna } from '../../src/models/Manna'
 import { createCreation, createGenerator, getDefaultUserId } from '../util'
 
@@ -90,6 +95,33 @@ const createBasicUser = async () => {
   await manna.save()
 }
 
+const createPreviewUser = async () => {
+  const userData: UserInput = {
+    userId: 'previewUser',
+    username: 'previewUser',
+    isWeb2: false,
+    isAdmin: false,
+  }
+  const user = new User(userData)
+  user.featureFlags = [FeatureFlag.Preview]
+  await user.save()
+
+  const apiKeyData: ApiKeyInput = {
+    apiKey: 'previewuser',
+    apiSecret: 'previewuser',
+    user: user._id,
+  }
+  const apiKey = new ApiKey(apiKeyData)
+  await apiKey.save()
+
+  const userManna = {
+    user: user._id,
+    balance: 1000,
+  }
+  const manna = new Manna(userManna)
+  await manna.save()
+}
+
 const createCollection = async () => {
   const user = await getDefaultUserId()
   const collection = {
@@ -133,6 +165,7 @@ beforeEach(async () => {
   await createAdmin()
   await createFreeUser()
   await createBasicUser()
+  await createPreviewUser()
   await createGenerator('test')
   await createCreation()
   await createCollection()
