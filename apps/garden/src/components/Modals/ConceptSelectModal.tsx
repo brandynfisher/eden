@@ -17,10 +17,12 @@ const ConceptSelectModal = ({
 }: {
   onChange: (concept: Concept) => void
 }) => {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [searchPublic, setSearchPublic] = useState(true)
-  const [query, setQuery] = useState<PaginatedFeedQuery>({})
   const { userId } = useContext(UserContext)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchPublic, setSearchPublic] = useState(false)
+  const [query, setQuery] = useState<PaginatedFeedQuery>({
+    userId: userId || undefined,
+  })
 
   const handleSearchSubmit = useCallback(
     (name: string, showPublic: boolean) => {
