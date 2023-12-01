@@ -1,5 +1,7 @@
+import CharactersPage from '@/pages/characters/CharactersPage'
+
 const characters = () => {
-  return <div>Characters Feed</div>
+  return <CharactersPage />
 }
 
 export default characters

@@ -2,7 +2,7 @@ import { getAuthHeaders, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
-import CharactersPage from '@/pages/create/characters/CharactersPage'
+import MyCharactersPage from '@/pages/create/characters/MyCharactersPage'
 import { Character as CharacterType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
 
@@ -33,7 +33,7 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const createCharacters: Page<PageProps> = ({ data }: PageProps) => {
-  return <CharactersPage data={data} />
+  return <MyCharactersPage data={data} />
 }
 
 export default createCharacters

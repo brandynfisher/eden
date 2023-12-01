@@ -13,6 +13,7 @@ export type PaginatedRouteQueryParams = {
 
 export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
   userId?: string
+  characterId?: string
   collectionId?: string
   creationId?: string
   name?: string
@@ -20,6 +21,7 @@ export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
 
 export type PaginatedFeedQuery = {
   userId?: string
+  characterId?: string
   collectionId?: string
   name?: string
   creationId?: string
@@ -46,6 +48,10 @@ export const getFeedPageRoute = (
   if (query?.userId) {
     params.userId = query.userId
   }
+  if (query?.characterId) {
+    params.characterId = query.characterId
+  }
+
   if (query?.name && query.name.length > 0) {
     params.name = query.name
   }
