@@ -2,7 +2,7 @@ import { getAuthHeaders, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
-import CharactersPage from '@/pages/characters/CharactersPage'
+import CharactersPage from '@/pages/create/characters/CharactersPage'
 import { Character as CharacterType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
 
