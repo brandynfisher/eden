@@ -111,4 +111,17 @@ test('Character can add attributes to a task', async context => {
     },
   })
   expect(response.statusCode).toBe(200)
+  const { taskId } = response.json()
+  expect(taskId).toBeDefined()
+
+  const taskGetResponse = await server.inject({
+    method: 'GET',
+    url: `/tasks/${taskId}`,
+    headers: prepareCharacterHeaders(),
+  })
+
+  expect(taskGetResponse.statusCode).toBe(200)
+  const { task } = taskGetResponse.json()
+  expect(task).toBeDefined()
+  expect(task).toHaveProperty('character')
 })

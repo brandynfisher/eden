@@ -186,6 +186,7 @@ export const createTask = async (
     taskId,
     status: TaskStatus.Pending,
     user,
+    character,
     generator: generator._id,
     versionId: generatorVersion.versionId,
     config: preparedConfig,
