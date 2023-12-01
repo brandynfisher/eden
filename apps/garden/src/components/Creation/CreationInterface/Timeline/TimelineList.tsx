@@ -155,7 +155,7 @@ const TimelineList = ({
       maxColumnCount: 1,
       columnCount: 1,
     },
-    [items.length],
+    [items.length, containerWidth],
   )
 
   const resizeObserver = useResizeObserver(positioner)
@@ -192,7 +192,7 @@ const TimelineList = ({
             height={containerHeight}
             scrollTop={scrollTop}
             isScrolling={isScrolling}
-            overscanBy={2}
+            overscanBy={3}
             render={TimelineListItem}
             onRender={maybeLoadMoreTasks}
           />

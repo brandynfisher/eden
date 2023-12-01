@@ -152,8 +152,6 @@ export const getCreation = async (
   reply: FastifyReply,
 ) => {
   const { creationId } = request.params as CreationsGetArguments
-  const { userId } = request.user
-
   const creation = (await Creation.findOneWithDeleted(
     { _id: creationId },
     {
@@ -176,9 +174,9 @@ export const getCreation = async (
   // nothing found or it was deleted and the user is not the owner
   if (
     !creation ||
-    (userId &&
+    (request.user?.userId &&
       creation.deleted &&
-      creation.user._id.toString() !== userId.toString())
+      creation.user._id.toString() !== request.user?.userId.toString())
   ) {
     return reply.status(404).send({
       message: 'Creation not found',
