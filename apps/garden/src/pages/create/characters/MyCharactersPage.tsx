@@ -46,7 +46,7 @@ const CharactersPageContent = ({
 
   return (
     <>
-      <h2 className="mb-4">Characters</h2>
+      <h2 className="mb-4">My Characters</h2>
       <CharacterList characters={characters} />
       <div className="flex gap-4 mt-8 flex-wrap justify-between">
         <Button

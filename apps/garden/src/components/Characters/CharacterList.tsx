@@ -37,9 +37,11 @@ const CharacterListItem = ({ character }: { character: Character }) => {
         </div>
       </div>
       <div className="flex items-center">
-        <Button>
-          <SettingOutlined />
-        </Button>
+        <Link href={`/create/characters/${character.id}`}>
+          <Button>
+            <SettingOutlined />
+          </Button>
+        </Link>
       </div>
     </Link>
   )
