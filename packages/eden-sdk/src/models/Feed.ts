@@ -16,6 +16,7 @@ export interface FeedCreationsArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+  characterId?: string | string[]
   collectionId?: string | string[]
   name?: string
 }

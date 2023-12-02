@@ -1,6 +1,6 @@
 import {
   FeedConceptsArguments,
-  FeedCreationsResponse,
+  FeedCreationsArguments,
   PaginatedResponse,
   ReactionType,
 } from '@edenlabs/eden-sdk'
@@ -142,13 +142,14 @@ export const getCreationsFeed = async (
 ) => {
   const {
     userId: filterUserIds,
+    characterId,
     collectionId,
     name,
     limit,
     page,
     orderBy,
     direction,
-  } = request.query as FeedCreationsResponse
+  } = request.query as FeedCreationsArguments
 
   const creatorsRepository = new CreatorRepository(User)
   const creators = filterUserIds
@@ -161,9 +162,14 @@ export const getCreationsFeed = async (
     filterUserIds && creators.docs && creators.docs.length
       ? creators.docs.map(creator => creator._id)[0].toString()
       : undefined
-
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId
+
+  const characterIds = characterId
+    ? Array.isArray(characterId)
+      ? characterId.map(id => new ObjectId(id))
+      : new ObjectId(characterId)
+    : undefined
 
   const creationRepository = new CreationRepository(Creation)
   let creations: PaginatedResponse<CreationDocument>
@@ -264,6 +270,11 @@ export const getCreationsFeed = async (
             : undefined,
         ...sortFilter,
         ...(name ? { $text: { $search: name } } : {}),
+        character: filterUserIds
+          ? { $exists: false }
+          : characterIds
+          ? { $in: characterIds }
+          : undefined,
       },
       {
         limit,

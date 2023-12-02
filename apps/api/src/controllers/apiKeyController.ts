@@ -10,6 +10,15 @@ import { ApiKey, ApiKeyInput } from '../models/ApiKey'
 import { User } from '../models/Creator'
 import ApiKeyRepository from '../repositories/ApiKeyRepository'
 
+export const generateApiKey = () => {
+  const apiKey = randomId(24)
+  const apiSecret = randomId(24)
+  return {
+    apiKey,
+    apiSecret,
+  }
+}
+
 export const createApiKey = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -23,8 +32,8 @@ export const createApiKey = async (
       message: 'User not found',
     })
   }
-  const apiKey = randomId(24)
-  const apiSecret = randomId(24)
+
+  const { apiKey, apiSecret } = generateApiKey()
 
   const input: ApiKeyInput = {
     user: userId,

@@ -20,6 +20,10 @@ export const createPaginationRoute = (
     params.userId = String(query.userId)
   }
 
+  if (query.characterId) {
+    params.characterId = String(query.characterId)
+  }
+
   if (query.name && query.name.length > 0) {
     params.name = String(query.name)
   }

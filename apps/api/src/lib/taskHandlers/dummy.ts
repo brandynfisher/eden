@@ -135,6 +135,7 @@ export const dummyReceiveTaskUpdate = async (
 
   const creationData = {
     user: creationUser,
+    character: task.character,
     task: task._id,
     uri: asset.uri,
     thumbnail,
