@@ -1,8 +1,11 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import CircleButton from '@/components/Layout/buttons/CircleButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import ShareButton from '@/components/Layout/buttons/ShareButton'
 import { CONFIG } from '@/lib/config'
+import CommentOutlined from '@ant-design/icons/CommentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
+import { useRouter } from 'next/router'
 import React from 'react'
 
 const CharacterProfileHeader = ({
@@ -12,23 +15,13 @@ const CharacterProfileHeader = ({
   character?: Character
   numCreations?: number
 }) => {
+  const router = useRouter()
   const displayName = character ? character.name : ''
   const displayImage = character ? character.image : ''
 
-  // useEffect(() => {
-  //   setIsLoading(true)
-  //   if (!creator) {
-  //     return
-  //   }
-
-  //   if (creator.username) {
-  //     setDisplayName(creator.username)
-  //   } else {
-  //     setDisplayName(creatorId)
-  //   }
-  //   setDisplayImage(creator?.userImage)
-  //   setIsLoading(false)
-  // }, [creator, creatorId])
+  const handleChat = () => {
+    router.push(`/characters/chat`)
+  }
 
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
@@ -51,7 +44,7 @@ const CharacterProfileHeader = ({
             >
               <div className="text-lg truncate">{displayName}</div>
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1 ml-auto">
               <CopyUrlButton
                 url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}
               />
@@ -61,6 +54,11 @@ const CharacterProfileHeader = ({
                   url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}
                 />
               )}
+              <CircleButton
+                title={'Chat'}
+                icon={<CommentOutlined className="text-xl" />}
+                onClick={handleChat}
+              />
             </div>
           </div>
           <div>

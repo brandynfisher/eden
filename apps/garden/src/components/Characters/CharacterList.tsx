@@ -1,4 +1,5 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import CommentOutlined from '@ant-design/icons/CommentOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
@@ -36,7 +37,12 @@ const CharacterListItem = ({ character }: { character: Character }) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center space-x-4">
+        <Link href={`/characters/chat`}>
+          <Button>
+            <CommentOutlined />
+          </Button>
+        </Link>
         <Link href={`/create/characters/${character.id}`}>
           <Button>
             <SettingOutlined />

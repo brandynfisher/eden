@@ -73,7 +73,7 @@ const ChatScenarioPageContent = ({
       }
       await axios.post('/api/sessions/update', characterAddEvent)
       setSessionId(sessionId)
-      await router.push('', `/scenarios/chat/${sessionId}`)
+      await router.push('', `/characters/chat/${sessionId}`)
     } catch (error) {
       handleAxiosError(error, message)
     }
