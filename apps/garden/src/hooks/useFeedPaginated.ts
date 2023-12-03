@@ -138,7 +138,7 @@ export const useFeedPaginated = (
     if (data) {
       const flatData = data.flatMap(page => page)
       return {
-        docs: flatData.map(page => page.docs),
+        docs: flatData.map(page => (page ? page.docs : [])),
         totalItems: flatData[0].total,
       }
     }
