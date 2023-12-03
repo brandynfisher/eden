@@ -100,7 +100,9 @@ const TimelineItem = ({
           progress={
             noProgressGeneratorNames.includes(task?.generator.generatorName)
               ? fakeProgress
-              : task.progress || 0
+              : task.progress
+              ? task.progress * 100
+              : 0
           }
         />
       ) : null}

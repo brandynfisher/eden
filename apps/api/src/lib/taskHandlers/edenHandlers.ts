@@ -114,6 +114,10 @@ const handleUpdate = async (
               : 0
           const isNsfw = nsfwScore && nsfwScore > 0.5
 
+          if (finalOutput.attributes) {
+            delete finalOutput.attributes.nsfw_scores
+          }
+
           const creationDocument: CreationInput = {
             _id: creationId,
             user: creationUser,
