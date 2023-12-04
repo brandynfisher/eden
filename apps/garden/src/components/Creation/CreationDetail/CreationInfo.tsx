@@ -5,7 +5,7 @@ import { Creation } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
 import React, { ReactNode, useEffect, useState } from 'react'
 
-const BaseParamGroup = ({
+export const BaseParamGroup = ({
   label,
   value,
 }: {
@@ -51,7 +51,7 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
   return (
     <div>
       {creation.task.generator.output === 'creation' ? (
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-4 flex-wrap justify-between">
           <BaseParamGroup
             label="Type"
             value={<div>{creation.task.generator.generatorName}</div>}

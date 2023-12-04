@@ -149,7 +149,7 @@ const CreationReactions = ({
           <PraiseButton
             item={creation}
             type={'creation'}
-            onChange={onChange as Dispatch<SetStateAction<Concept | Creation>>}
+            onChange={onChange}
             showCounts={showCounts}
           />
         </div>

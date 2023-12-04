@@ -17,7 +17,14 @@ import { Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
 import Head from 'next/head'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 const CreationDetail = ({
   creation,
@@ -107,7 +114,7 @@ const CreationDetail = ({
           <div
             className={`relative ${
               isModal ? 'px-2' : ''
-            } md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]`}
+            } md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-col xl:min-w-[320px]`}
           >
             <div
               onClick={
@@ -138,7 +145,7 @@ const CreationDetail = ({
                   thumbnailUri={creationData?.thumbnail}
                 />
               )}
-              {creation.isPrivate ? (
+              {creationData.isPrivate ? (
                 <div
                   className={`flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
                 >
@@ -174,14 +181,22 @@ const CreationDetail = ({
             <div className="flex px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 justify-between">
               <CreationReactions
                 creation={creationData}
-                onChange={setCreationData}
+                onChange={
+                  setCreationData as Dispatch<
+                    SetStateAction<Concept | Creation>
+                  >
+                }
                 showCounts={true}
               />
               {creationData ? (
                 <CardToolsDropdown
                   item={creationData}
                   itemType={'creation'}
-                  onChange={setCreationData}
+                  onChange={
+                    setCreationData as Dispatch<
+                      SetStateAction<Concept | Creation>
+                    >
+                  }
                 />
               ) : null}
             </div>

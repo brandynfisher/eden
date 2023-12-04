@@ -1,7 +1,7 @@
 import { PraiseButton } from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import CodeBlock from '@/components/CodeBlock'
-import ConceptDetailToolButtons from '@/components/Concept/ConceptDetail/ConceptDetailToolButtons'
+import ConceptInfo from '@/components/Concept/ConceptDetail/ConceptInfo'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import FollowControls from '@/components/FollowControls'
 import MediaDisplay from '@/components/MediaDisplay'
@@ -34,10 +34,8 @@ const ConceptDetail = ({
   const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [conceptData, setConceptData] = useState<Concept>(concept)
-  const [createdDateString, setCreatedDateString] = useState('')
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
-  const [displayDateTime, setDisplayDateTime] = useState('')
 
   useEffect(() => {
     if (isAuthenticated && user?.userId === userId) {
@@ -48,19 +46,7 @@ const ConceptDetail = ({
   }, [isAuthenticated, user?.userId, userId])
 
   useEffect(() => {
-    const createdDate = new Date(concept.createdAt)
-    const dateString = createdDate.toLocaleDateString()
-    const timeString = createdDate.toLocaleTimeString()
-    const timeStringFormatted = timeString.substring(
-      0,
-      timeString.lastIndexOf(':'),
-    )
-    setDisplayDateTime(`${dateString} ${timeStringFormatted}`)
-  }, [concept.createdAt])
-
-  useEffect(() => {
     setConceptData(concept)
-    setCreatedDateString(new Date(concept.createdAt).toLocaleString())
   }, [concept])
 
   const hideMediaViewer = () => {
@@ -115,7 +101,7 @@ const ConceptDetail = ({
           <div
             className={`relative ${
               isModal ? 'px-2' : ''
-            } md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]`}
+            } md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-col xl:min-w-[320px]`}
           >
             <div>
               <h3>Samples</h3>
@@ -149,104 +135,96 @@ const ConceptDetail = ({
               </div>
             </div>
           </div>
-        </div>
 
-        <div
-          className={`${
-            isModal ? 'px-2  md:px-0' : ''
-          } mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
-        >
-          <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
-            <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
-              <CreatorProfileLink
-                creatorId={conceptData?.user?.userId}
-                creatorName={conceptData?.user?.username}
-                creatorImage={conceptData?.user?.userImage || ''}
-              />
-            </div>
-            {showFollowControls && (
-              <div className="flex items-center flex-shrink-0">
-                <FollowControls
+          <div
+            className={`${
+              isModal ? 'px-2  md:px-0' : ''
+            } mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
+          >
+            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
+              <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
+                <CreatorProfileLink
                   creatorId={conceptData?.user?.userId}
-                  showStats={false}
+                  creatorName={conceptData?.user?.username}
+                  creatorImage={conceptData?.user?.userImage || ''}
                 />
               </div>
-            )}
-          </div>
-
-          <div className="flex px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 justify-between">
-            <div className="relative flex justify-between">
-              <div>
-                <div className="flex pointer-events-auto">
-                  <PraiseButton
-                    item={conceptData}
-                    type={'concept'}
-                    onChange={
-                      setConceptData as Dispatch<
-                        SetStateAction<Concept | Creation>
-                      >
-                    }
-                    showCounts={true}
+              {showFollowControls && (
+                <div className="flex items-center flex-shrink-0">
+                  <FollowControls
+                    creatorId={conceptData?.user?.userId}
+                    showStats={false}
                   />
                 </div>
-              </div>
+              )}
             </div>
-            {conceptData ? (
-              <CardToolsDropdown
-                item={conceptData}
-                itemType={'concept'}
-                onChange={
-                  setConceptData as Dispatch<SetStateAction<Concept | Creation>>
-                }
-              />
-            ) : null}
-          </div>
 
-          <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
-            <div style={{ wordWrap: 'break-word' }}>
-              <div className="flex justify-between items-center">
-                <div className="font-bold">/concept</div>
-                <div
-                  className="text-gray-400 text-xs"
-                  title={createdDateString}
-                >
-                  {displayDateTime}
+            <div className="flex px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 justify-between">
+              <div className="relative flex justify-between">
+                <div>
+                  <div className="flex pointer-events-auto">
+                    <PraiseButton
+                      item={conceptData}
+                      type={'concept'}
+                      onChange={
+                        setConceptData as Dispatch<
+                          SetStateAction<Concept | Creation>
+                        >
+                      }
+                      showCounts={true}
+                    />
+                  </div>
                 </div>
               </div>
-              <Divider className="my-4" />
-              <TruncatedExpandableText text={conceptData?.name} />
+              {conceptData ? (
+                <CardToolsDropdown
+                  item={conceptData}
+                  itemType={'concept'}
+                  onChange={
+                    setConceptData as Dispatch<
+                      SetStateAction<Concept | Creation>
+                    >
+                  }
+                />
+              ) : null}
             </div>
-          </div>
 
-          <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
-            <div className="w-full">
-              <div className="flex gap-2 justify-between">
-                <div>Training Images</div>
-                {conceptData?.training_images?.length || 0}
+            {/*<div*/}
+            {/*  className='col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4'>*/}
+            {/*  <div style={{ wordWrap: 'break-word' }}>*/}
+            {/*    <div className='flex justify-between items-center'>*/}
+            {/*      <div className='font-bold'>/concept</div>*/}
+            {/*      <div*/}
+            {/*        className='text-gray-400 text-xs'*/}
+            {/*        title={createdDateString}*/}
+            {/*      >*/}
+            {/*        {displayDateTime}*/}
+            {/*      </div>*/}
+            {/*    </div>*/}
+            {/*    <Divider className='my-4' />*/}
+            {/*    <TruncatedExpandableText text={conceptData?.name} />*/}
+            {/*  </div>*/}
+            {/*</div>*/}
+
+            <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
+              <div style={{ wordWrap: 'break-word' }}>
+                <TruncatedExpandableText text={concept?.name} />
+                <Divider className="my-4" />
               </div>
-              <div className="flex gap-2 justify-between">
-                <div>Checkpoint</div>
-                <div>{conceptData?.checkpoint}</div>
-              </div>
+              <ConceptInfo concept={concept} />
             </div>
+
+            <Collapse expandIconPosition="start" className="mb-2">
+              <Panel key={'1'} header={'Raw JSON'}>
+                <CodeBlock
+                  code={JSON.stringify(conceptData, null, 2)}
+                  language="javascript"
+                />
+              </Panel>
+            </Collapse>
           </div>
-
-          <div className="flex mb-4 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg flex-wrap gap-4">
-            <ConceptDetailToolButtons concept={concept} />
-          </div>
-
-          {/* //@todo add config params and eden sdk for this once we have some prod data */}
-          {/*<ConfigParamsTabs data={concept} />*/}
-
-          <Collapse expandIconPosition="start" className="mb-2">
-            <Panel key={'1'} header={'Raw JSON'}>
-              <CodeBlock
-                code={JSON.stringify(conceptData, null, 2)}
-                language="javascript"
-              />
-            </Panel>
-          </Collapse>
         </div>
+
         {/*{loadSimilar && creationImageLoaded && (*/}
         {/*  <SimilarConcepts*/}
         {/*    creation={creation}*/}
