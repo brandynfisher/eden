@@ -1,12 +1,12 @@
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import CreationReactions from '@/components/Creation/CreationReactions'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
-import React from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 
 export interface CreationCardHoverOverlayProps {
   creation: Creation
   handlers: {
-    onChange: (updatedCreation: Creation | Concept) => void
+    onChange: Dispatch<SetStateAction<Concept | Creation>>
   }
 }
 
