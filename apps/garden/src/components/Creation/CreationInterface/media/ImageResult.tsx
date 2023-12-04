@@ -7,11 +7,13 @@ const ImageResult = ({
   aspectRatio,
   onLoad,
   priority,
+  sizes,
 }: {
   previewSizeUrl: string
   aspectRatio: number
   onLoad?: () => void
   priority?: boolean
+  sizes?: string
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const previewImageRef = useRef<HTMLImageElement>(null)
@@ -44,7 +46,9 @@ const ImageResult = ({
           alt={previewSizeUrl}
           fill={true}
           placeholder="empty"
-          sizes={'(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'}
+          sizes={
+            sizes || '(max-width: 768px) 100vw, (max-width: 895px) 33vw, 20vw'
+          }
           style={{
             maxWidth: '100%',
             zIndex: 1,

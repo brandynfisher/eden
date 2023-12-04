@@ -33,7 +33,7 @@ const CreationCard: FC<{
 
   useEffect(() => {
     setCreatedDateString(new Date(creation.createdAt).toLocaleString())
-  }, [])
+  }, [creation.createdAt])
 
   const onRestoreClick = useCallback(async () => {
     try {

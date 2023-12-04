@@ -15,7 +15,9 @@ import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
+  Dispatch,
   ReactNode,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -40,7 +42,7 @@ const CardToolsDropdown = ({
   onOpen?: Function
   item: Creation | Concept
   itemType: 'creation' | 'concept'
-  onChange: (updatedItem: Creation | Concept) => void
+  onChange: Dispatch<SetStateAction<Concept | Creation>>
 }) => {
   const { user, isAuthenticated } = useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)

@@ -46,6 +46,10 @@ import {
   ConceptsGetResponse,
   ConceptsListArguments,
   ConceptsListResponse,
+  ConceptsReactArguments,
+  ConceptsReactResponse,
+  ConceptsUnreactArguments,
+  ConceptsUnreactResponse,
   ConceptsUpdateArguments,
   ConceptsUpdateResponse,
   CreationsDeleteArguments,
@@ -148,6 +152,8 @@ import {
   conceptsDeleteRequestConfig,
   conceptsGetRequestConfig,
   conceptsListRequestConfig,
+  conceptsReactRequestConfig,
+  conceptsUnreactRequestConfig,
   conceptsUpdateRequestConfig,
   creationsDeleteRequestConfig,
   creationsGetRequestConfig,
@@ -353,6 +359,14 @@ export abstract class Methods {
     delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
       this,
       conceptsDeleteRequestConfig,
+    ),
+    react: bindApiCall<ConceptsReactArguments, ConceptsReactResponse>(
+      this,
+      conceptsReactRequestConfig,
+    ),
+    unreact: bindApiCall<ConceptsUnreactArguments, ConceptsUnreactResponse>(
+      this,
+      conceptsUnreactRequestConfig,
     ),
   }
 

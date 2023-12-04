@@ -1,3 +1,5 @@
+import { PraiseButton } from '@/components/Card/CardReactions'
+import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import CodeBlock from '@/components/CodeBlock'
 import ConceptDetailToolButtons from '@/components/Concept/ConceptDetail/ConceptDetailToolButtons'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
@@ -6,31 +8,36 @@ import MediaDisplay from '@/components/MediaDisplay'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
-import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept } from '@edenlabs/eden-sdk'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Collapse, Divider } from 'antd'
 import Head from 'next/head'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 const { Panel } = Collapse
 
 const ConceptDetail = ({
   concept,
-}: // isModal,
-{
+  isModal,
+}: {
   concept: Concept
   isModal?: boolean
 }) => {
   const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [conceptData, setConceptData] = useState<Concept>(concept)
-  const timeSinceConcept = timeAgo(concept.createdAt)
   const [createdDateString, setCreatedDateString] = useState('')
-  // const [conceptImageLoaded, setConceptImageLoaded] = useState(false)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
+  const [displayDateTime, setDisplayDateTime] = useState('')
 
   useEffect(() => {
     if (isAuthenticated && user?.userId === userId) {
@@ -39,6 +46,17 @@ const ConceptDetail = ({
       setShowFollowControls(false)
     }
   }, [isAuthenticated, user?.userId, userId])
+
+  useEffect(() => {
+    const createdDate = new Date(concept.createdAt)
+    const dateString = createdDate.toLocaleDateString()
+    const timeString = createdDate.toLocaleTimeString()
+    const timeStringFormatted = timeString.substring(
+      0,
+      timeString.lastIndexOf(':'),
+    )
+    setDisplayDateTime(`${dateString} ${timeStringFormatted}`)
+  }, [concept.createdAt])
 
   useEffect(() => {
     setConceptData(concept)
@@ -61,11 +79,11 @@ const ConceptDetail = ({
   return (
     <>
       <Head>
-        <title>{`/${conceptData?.task?.generator?.generatorName} by ${conceptData?.user?.username} | Garden of Eden`}</title>
+        <title>{`/concept by ${conceptData?.user?.username} | Garden of Eden`}</title>
         <meta
           property="og:title"
           key="title"
-          content={`/${conceptData?.task?.generator?.generatorName} by ${conceptData?.user?.username} | Garden of Eden`}
+          content={`/concept by ${conceptData?.user?.username} | Garden of Eden`}
         />
         <meta
           property="og:description"
@@ -76,7 +94,7 @@ const ConceptDetail = ({
         <meta property="og:image:secure_url" content={conceptData.thumbnail} />
         <meta
           property="og:image:alt"
-          content={`/${conceptData?.task?.generator?.generatorName} by ${conceptData?.user?.username} | Garden of Eden`}
+          content={`/concept by ${conceptData?.user?.username} | Garden of Eden`}
         />
         <meta property="og:image:type" content="image/jpeg" />
         <meta
@@ -92,15 +110,19 @@ const ConceptDetail = ({
         />
       )}
 
-      <div ref={containerRef} className="lg:flex lg:justify-center gap-4">
-        <div className="flex flex-col flex-grow items-center">
-          <div className="mx-auto mb-4 md:max-w-[640px] lg:mx-0 w-full">
-            <div className="mb-4">
+      <div ref={containerRef}>
+        <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
+          <div
+            className={`relative ${
+              isModal ? 'px-2' : ''
+            } md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-grow xl:flex xl:flex-col xl:min-w-[320px]`}
+          >
+            <div>
               <h3>Samples</h3>
               <div className="relative flex justify-center">
                 <div
                   onClick={() => handlePreviewClick(conceptData.thumbnail)}
-                  className="relative flex justify-center flex-grow"
+                  className="relative flex justify-center flex-grow max-h-[80vh] overflow-hidden"
                 >
                   <MediaDisplay
                     priority={true}
@@ -129,8 +151,12 @@ const ConceptDetail = ({
           </div>
         </div>
 
-        <div className="mx-auto lg:mx-0 md:max-w-[640px]  lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]">
-          <div className="mb-4 col-span-4 xl:col-span-12 flex gap-2 min-w-0 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap">
+        <div
+          className={`${
+            isModal ? 'px-2  md:px-0' : ''
+          } mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
+        >
+          <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
             <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
               <CreatorProfileLink
                 creatorId={conceptData?.user?.userId}
@@ -139,7 +165,7 @@ const ConceptDetail = ({
               />
             </div>
             {showFollowControls && (
-              <div className="flex items-center flex-shrink-0 ">
+              <div className="flex items-center flex-shrink-0">
                 <FollowControls
                   creatorId={conceptData?.user?.userId}
                   showStats={false}
@@ -148,21 +174,46 @@ const ConceptDetail = ({
             )}
           </div>
 
+          <div className="flex px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 justify-between">
+            <div className="relative flex justify-between">
+              <div>
+                <div className="flex pointer-events-auto">
+                  <PraiseButton
+                    item={conceptData}
+                    type={'concept'}
+                    onChange={
+                      setConceptData as Dispatch<
+                        SetStateAction<Concept | Creation>
+                      >
+                    }
+                    showCounts={true}
+                  />
+                </div>
+              </div>
+            </div>
+            {conceptData ? (
+              <CardToolsDropdown
+                item={conceptData}
+                itemType={'concept'}
+                onChange={
+                  setConceptData as Dispatch<SetStateAction<Concept | Creation>>
+                }
+              />
+            ) : null}
+          </div>
+
           <div className="col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 relative mb-4">
             <div style={{ wordWrap: 'break-word' }}>
               <div className="flex justify-between items-center">
-                <div className="font-bold">
-                  /{conceptData?.task?.generator?.generatorName}
-                </div>
+                <div className="font-bold">/concept</div>
                 <div
                   className="text-gray-400 text-xs"
                   title={createdDateString}
                 >
-                  {timeSinceConcept}
+                  {displayDateTime}
                 </div>
               </div>
               <Divider className="my-4" />
-
               <TruncatedExpandableText text={conceptData?.name} />
             </div>
           </div>
@@ -187,7 +238,7 @@ const ConceptDetail = ({
           {/* //@todo add config params and eden sdk for this once we have some prod data */}
           {/*<ConfigParamsTabs data={concept} />*/}
 
-          <Collapse expandIconPosition="start" className="mb-4">
+          <Collapse expandIconPosition="start" className="mb-2">
             <Panel key={'1'} header={'Raw JSON'}>
               <CodeBlock
                 code={JSON.stringify(conceptData, null, 2)}

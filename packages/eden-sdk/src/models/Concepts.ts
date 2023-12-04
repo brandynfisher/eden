@@ -1,5 +1,9 @@
 import { AxiosRequestConfig } from 'axios'
-import { Reactions } from 'src/models/Creations'
+import {
+  CreationsReactArguments,
+  ReactionType,
+  Reactions,
+} from 'src/models/Creations'
 import { Creator } from 'src/models/Creators'
 import { Task } from 'src/models/Tasks'
 
@@ -22,6 +26,16 @@ export interface ConceptsListArguments
 
 export interface ConceptsGetArguments extends WebAPICallOptions {
   conceptId: string
+}
+
+export interface ConceptsReactArguments extends WebAPICallOptions {
+  conceptId: string
+  reaction: ReactionType
+}
+
+export interface ConceptsUnreactArguments extends WebAPICallOptions {
+  conceptId: string
+  reaction: ReactionType
 }
 
 export interface ConceptsDeleteArguments extends WebAPICallOptions {
@@ -52,6 +66,30 @@ export const conceptsGetRequestConfig = (
   return {
     method: 'GET',
     url: `concepts/${args.conceptId}`,
+  }
+}
+
+export const conceptsReactRequestConfig = (
+  args: ConceptsReactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'concepts/reactions/add',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const conceptsUnreactRequestConfig = (
+  args: ConceptsUnreactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'concepts/reactions/remove',
+    data: {
+      ...args,
+    },
   }
 }
 
@@ -89,6 +127,16 @@ export type ConceptsListResponse = WebAPICallResult &
 export type ConceptsGetResponse = WebAPICallResult & {
   error?: string
   concept?: Concept
+}
+
+export type ConceptsReactResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
+}
+
+export type ConceptsUnreactResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
 }
 
 export type ConceptsUpdateResponse = WebAPICallResult & {

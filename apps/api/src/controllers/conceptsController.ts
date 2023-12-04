@@ -2,14 +2,20 @@ import {
   ConceptsDeleteArguments,
   ConceptsGetArguments,
   ConceptsListArguments,
+  ConceptsReactArguments,
+  ConceptsUnreactArguments,
   ConceptsUpdateArguments,
+  CreationsReactArguments,
+  CreationsUnreactArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { Concept, ConceptDocument } from '../models/Concept'
+import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
+import { Reaction } from '../models/Reaction'
 import ConceptRepository from '../repositories/ConceptRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 
@@ -17,7 +23,39 @@ export const getReactions = async (
   userId: ObjectId,
   concepts: ConceptDocument[],
 ): Promise<{ [key: string]: Map<ReactionType, boolean> }> => {
-  return {}
+  const reactions = await Reaction.aggregate([
+    {
+      $match: {
+        user: userId,
+        concept: {
+          $in: concepts.map(concept => concept._id),
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: 'concepts',
+        localField: 'concept',
+        foreignField: '_id',
+        as: 'concept',
+      },
+    },
+    {
+      $unwind: '$concept',
+    },
+  ])
+
+  // Convert reactions to a map for easy lookup
+  const reactionsMap = reactions.reduce((map, reaction) => {
+    const conceptId = reaction.concept._id.toString()
+    if (!map[conceptId]) {
+      map[conceptId] = {}
+    }
+    map[conceptId][reaction.reaction] = true
+    return map
+  }, {} as { [key: string]: ReactionType[] }) // explicitly set the type of the accumulator
+
+  return reactionsMap
 }
 
 export const getBookmarks = async (
@@ -200,5 +238,103 @@ export const conceptUpdate = async (
 
   return reply.status(200).send({
     concept,
+  })
+}
+
+export const conceptReact = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { conceptId, reaction } = request.body as ConceptsReactArguments
+
+  // check if reaction in ReactionType enum
+  if (!Object.values(ReactionType).includes(reaction)) {
+    return reply.status(400).send({
+      message: 'Invalid reaction',
+    })
+  }
+
+  const concept = await Concept.findById(conceptId)
+
+  if (!concept) {
+    return reply.status(404).send({
+      message: 'Concept not found',
+    })
+  }
+
+  const reactionData = {
+    concept: conceptId,
+    user: userId,
+    reaction,
+  }
+
+  const existingReaction = await Reaction.findOne(reactionData)
+
+  if (existingReaction) {
+    return reply.status(400).send({
+      message: 'Reaction already exists',
+    })
+  }
+
+  await Reaction.create(reactionData)
+
+  await concept.updateOne({
+    $inc: {
+      praiseCount: reaction === ReactionType.Praise ? 1 : 0,
+    },
+  })
+
+  return reply.status(200).send({
+    success: true,
+  })
+}
+
+export const conceptUnreact = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { conceptId, reaction } = request.body as ConceptsUnreactArguments
+
+  // check if reaction in ReactionType enum
+  if (!Object.values(ReactionType).includes(reaction)) {
+    return reply.status(400).send({
+      message: 'Invalid reaction',
+    })
+  }
+
+  const concept = await Concept.findById(conceptId)
+
+  if (!concept) {
+    return reply.status(404).send({
+      message: 'Concept not found',
+    })
+  }
+
+  const reactionData = {
+    concept: conceptId,
+    user: userId,
+    reaction,
+  }
+
+  const existingReaction = await Reaction.findOne(reactionData)
+
+  if (!existingReaction) {
+    return reply.status(400).send({
+      message: 'Reaction does not exist',
+    })
+  }
+
+  await existingReaction.remove()
+
+  await concept.updateOne({
+    $inc: {
+      praiseCount: reaction === ReactionType.Praise ? -1 : 0,
+    },
+  })
+
+  return reply.status(200).send({
+    success: true,
   })
 }
