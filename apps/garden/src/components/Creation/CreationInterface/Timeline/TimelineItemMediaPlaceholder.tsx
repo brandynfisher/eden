@@ -3,12 +3,14 @@ import { Task } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 export const ProgressCard = ({ task }: { task: Task }) => {
+  const aspectRatio = task.config.width / task.config.height
+
   return (
     <div
       className={`relative rounded-lg overflow-hidden ${
         task.status === 'running' ? 'border-trace' : ''
       }`}
-      style={{ aspectRatio: task.config.width / task.config.height }}
+      style={{ aspectRatio: aspectRatio || 1 }}
     >
       <div className="flex flex-col h-full w-full bg-gray-200 dark:bg-gray-900">
         <div className="relative overflow-hidden bg-gray-200 dark:bg-gray-800 animate-pulse flex flex-col h-full w-full  justify-center items-center !bg-opacity-30">
