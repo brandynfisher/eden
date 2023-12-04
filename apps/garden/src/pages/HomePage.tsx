@@ -3,6 +3,7 @@ import {
   OrderByFollowing,
   OrderByLatest,
   OrderByPopularity,
+  OrderByScore, // OrderByScore,
 } from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import { UserContext } from '@/providers/UserProvider'
@@ -12,17 +13,8 @@ const HomePage = () => {
   const { isAuthenticated } = useContext(UserContext)
 
   const sortButtons = isAuthenticated
-    ? [
-        // OrderByScore,
-        OrderByLatest,
-        OrderByPopularity,
-        OrderByFollowing,
-      ]
-    : [
-        // OrderByScore,
-        OrderByLatest,
-        OrderByPopularity,
-      ]
+    ? [OrderByScore, OrderByLatest, OrderByPopularity, OrderByFollowing]
+    : [OrderByScore, OrderByLatest, OrderByPopularity]
 
   return (
     <div className={`flex flex-col`}>

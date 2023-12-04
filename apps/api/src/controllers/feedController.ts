@@ -257,6 +257,9 @@ export const getCreationsFeed = async (
       sortFilter['isPrivate'] = { $ne: true }
     }
 
+    // needed to not end up with duplicates in aggregations wtf mongo
+    sort.push(['_id', -1])
+
     creations = await creationRepository.query(
       {
         _id: collectionCreations
@@ -450,6 +453,9 @@ export const getConceptsFeed = async (
     sortFilter['isPrivate'] = { $ne: true }
   }
 
+  // needed to not end up with duplicates in aggregations wtf mongo
+  sort.push(['_id', -1])
+
   let concepts: PaginatedResponse<ConceptDocument>
   // use atlas search query
   if (name) {
@@ -457,15 +463,15 @@ export const getConceptsFeed = async (
       ...sortFilter,
       deleted: { $ne: true },
     })
-    console.log(JSON.stringify(aggregate))
+    // console.log(JSON.stringify(aggregate))
     const sortObj = Object.fromEntries(sort)
-    console.log(sortObj)
+    // console.log(sortObj)
     concepts = await conceptRepository.aggregateQuery(aggregate, {
       limit,
       page,
       sort: sortObj,
     })
-    console.log(concepts)
+    // console.log(concepts)
     // use flat query
   } else {
     concepts = await conceptRepository.query(

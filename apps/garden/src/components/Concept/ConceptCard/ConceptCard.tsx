@@ -1,6 +1,6 @@
+import CardImage from '@/components/Card/CardImage'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
-import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
@@ -95,9 +95,10 @@ const ConceptCard: FC<{
           concept.deleted ? 'grayscale' : ''
         }`}
       >
-        <ImageResult
-          previewSizeUrl={concept.thumbnail || ''}
-          aspectRatio={100}
+        <CardImage
+          uri={concept.thumbnail || ''}
+          width={0}
+          height={0}
           priority={index < 10}
           sizes={sizes}
         />
@@ -160,15 +161,26 @@ const ConceptCard: FC<{
             </div>
           </div>
           <div
-            className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none`}
+            className={`md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:px-2 pointer-events-none md:hidden ${
+              hovered ? 'md:!block' : ''
+            }`}
           >
-            {/*<CreationReactions*/}
-            {/*  creation={concept}*/}
-            {/*  onChange={updatedConcept =>*/}
-            {/*    setConcept(updatedConcept as Concept)*/}
-            {/*  }*/}
-            {/*  showCounts={true}*/}
-            {/*/>*/}
+            <div className="relative flex justify-between">
+              <div className="h-10">
+                <div className="flex pointer-events-auto">
+                  {/*      <PraiseButton*/}
+                  {/*        item={conceptData}*/}
+                  {/*        type={'concept'}*/}
+                  {/*        onChange={*/}
+                  {/*          setConceptData as Dispatch<*/}
+                  {/*            SetStateAction<Concept | Creation>*/}
+                  {/*          >*/}
+                  {/*        }*/}
+                  {/*        showCounts={true}*/}
+                  {/*      />*/}
+                </div>
+              </div>
+            </div>
             <ConceptCardDetail concept={concept} />
           </div>
         </>
