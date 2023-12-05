@@ -99,7 +99,7 @@ const concept = new Schema<ConceptDocument>(
     },
     num_training_images: {
       type: Number,
-      required: true,
+      required: false,
     },
     attributes: {
       type: Schema.Types.Mixed,
