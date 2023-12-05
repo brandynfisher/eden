@@ -1,4 +1,4 @@
-import { ParameterAddon } from '@/components/Creation/CreationInterface/parameters/SamplesParameter'
+import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, Select, Switch } from 'antd'
 import React, { useEffect, useState } from 'react'

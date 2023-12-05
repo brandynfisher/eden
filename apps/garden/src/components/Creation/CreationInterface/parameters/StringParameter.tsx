@@ -1,4 +1,4 @@
-import { ParameterAddon } from '@/components/Creation/CreationInterface/parameters/SamplesParameter'
+import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import MinusOutlined from '@ant-design/icons/MinusOutlined'
 import PlusOutlined from '@ant-design/icons/PlusOutlined'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'

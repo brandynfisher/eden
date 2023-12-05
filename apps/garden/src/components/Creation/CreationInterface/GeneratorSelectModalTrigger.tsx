@@ -42,7 +42,7 @@ const GeneratorSelectModalTrigger = ({
     <Button
       variant="outlined"
       onClick={handleClickOpen}
-      className={`w-full flex !py-1 !px-2 items-center gap-2 !bg-gray-300 dark:!bg-gray-950 bg-opacity-50 !normal-case ${
+      className={`w-full flex !py-1 !px-2 items-center gap-2 !bg-gray-200 dark:!bg-gray-950 bg-opacity-50 !normal-case font-bold ${
         generators.length > 1
           ? 'hover:!bg-gray-400 dark:hover:!bg-gray-950 hover:!bg-opacity-70 '
           : 'pointer-events-none !cursor-auto'

@@ -602,8 +602,9 @@ body {
 }
 
 .generator-settings-collapse {
+
     &.ant-collapse {
-        background-color: rgba(0, 0, 0, 0.15) !important;
+        background-color: rgba(0, 0, 0, 0.05) !important;
         border-right: none !important;
         border-left: none !important;
         border-radius: 0;
@@ -611,19 +612,19 @@ body {
         .ant-collapse-header {
             padding: 8px 8px !important;
 
-            color:darken($bg-gray-700, 30) !important;
+            color:darken($bg-gray-700, 15) !important;
             &:hover {
                 color:$bg-gray-700 !important;
-                background-color: rgba(0, 0, 0, 0.2) !important;
+                background-color: rgba(0, 0, 0, 0.1) !important;
             }
         }
 
         .ant-collapse-item-active {
             & > .ant-collapse-header {
-                color:darken($primary-blue, 30) !important;
+                color:darken($primary-blue, 15) !important;
                 &:hover {
-                    color: darken($primary-blue, 45) !important;
-                    background-color: rgba(0, 0, 0, 0.15) !important;
+                    color: darken($primary-blue, 30) !important;
+                    background-color: rgba(0, 0, 0, 0.05) !important;
                 }
             }
         }

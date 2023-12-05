@@ -517,7 +517,7 @@ const GeneratorForm = ({
               forceRender={true}
             >
               {optionalParameters.length > 0 ? (
-                <div className="px-2 flex flex-col gap-2 py-4 bg-gray-200 dark:bg-gray-900">
+                <div className="px-2 flex flex-col gap-2 py-4 bg-gray-100 dark:bg-gray-900">
                   {renderFormFields(optionalParameters)}
                 </div>
               ) : null}
@@ -536,7 +536,7 @@ const GeneratorForm = ({
                     }
                     forceRender={true}
                   >
-                    <div className="px-2 flex flex-col gap-2 py-4 bg-gray-200 dark:bg-gray-900">
+                    <div className="px-2 flex flex-col gap-2 py-4 bg-gray-100 dark:bg-gray-900">
                       {renderFormFields(
                         advancedParameters.filter(
                           p =>
@@ -560,7 +560,7 @@ const GeneratorForm = ({
                 }
                 forceRender={true}
               >
-                <div className="px-2 flex flex-col gap-2 py-4 bg-gray-200 dark:bg-gray-900">
+                <div className="px-2 flex flex-col gap-2 py-4 bg-gray-100 dark:bg-gray-900">
                   <ConceptSelectModalTrigger
                     onChange={concept => {
                       form.setFieldsValue({
@@ -587,7 +587,7 @@ const GeneratorForm = ({
                 }
                 forceRender={true}
               >
-                <div className="px-3 flex flex-col gap-2 py-4 bg-gray-200 dark:bg-gray-900">
+                <div className="px-3 flex flex-col gap-2 py-4 bg-gray-100 dark:bg-gray-900">
                   {renderFormFields(
                     advancedParameters.filter(p =>
                       parameterGroups['init_image'].includes(p.name),
@@ -617,7 +617,7 @@ const GeneratorForm = ({
               <Button
                 type="primary"
                 htmlType="submit"
-                className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !px-2 !pr-1"
+                className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !px-2 !pr-0.5"
                 loading={isSubmitting ? { delay: 250 } : false}
                 disabled={submitButtonDisabled}
               >

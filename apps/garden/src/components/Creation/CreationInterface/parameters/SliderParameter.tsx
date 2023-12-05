@@ -2,7 +2,7 @@ import {
   closest,
   presetItems,
 } from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
-import { ParameterAddon } from '@/components/Creation/CreationInterface/parameters/SamplesParameter'
+import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, InputNumber, Slider } from 'antd'
 import React, { FocusEvent, useEffect, useState } from 'react'
@@ -86,7 +86,7 @@ const SliderParameter = (props: {
         title={props.parameter.label}
         description={props.parameter.description}
       />
-      <div className="flex items-center w-full parameter__addon !bg-stone-300 dark:!bg-stone-950 border border-r-0 border-solid rounded-tr-md rounded-br-md border-gray-400 dark:border-gray-700">
+      <div className="flex items-center w-full parameter__addon !bg-stone-50 dark:!bg-stone-950 border border-r-0 border-solid rounded-tr-md rounded-br-md border-gray-200 dark:border-gray-700">
         <Slider
           className="flex-grow"
           value={fieldValue}
