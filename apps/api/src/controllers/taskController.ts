@@ -241,8 +241,18 @@ export const listTasks = async (
 
   const typeQuery = type
     ? type === 'creations'
-      ? { creation: { $ne: null } }
-      : { concept: { $ne: null } }
+      ? {
+          $or: [
+            { creation: { $ne: null } },
+            { 'config.concept_mode': { $exists: false } },
+          ],
+        }
+      : {
+          $or: [
+            { concept: { $ne: null } },
+            { 'config.concept_mode': { $exists: true } },
+          ],
+        }
     : {}
 
   const tasksRepository = new TaskRepository(Task)

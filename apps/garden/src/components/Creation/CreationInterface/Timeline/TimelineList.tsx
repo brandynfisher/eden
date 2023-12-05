@@ -93,7 +93,7 @@ const useTasksPaginated = ({
       const flatData = data.flatMap(page => page)
       return {
         docs: flatData ? flatData.map(page => (page ? page.docs : [])) : [],
-        totalItems: flatData ? flatData[0].total : 0,
+        totalItems: flatData && flatData[0] ? flatData[0].total : 0,
       }
     }
     return { docs: [], totalItems: null }
@@ -127,7 +127,6 @@ const TimelineList = ({
 }) => {
   const limit = 10
 
-  console.log(type)
   const {
     items,
     // size,
