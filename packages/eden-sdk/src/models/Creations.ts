@@ -175,6 +175,7 @@ export type Reactions = Record<string, boolean>
 export type Creation = {
   _id: string
   user: Creator
+  character?: string
   userId?: string
   task: Task
   samples?: string[]

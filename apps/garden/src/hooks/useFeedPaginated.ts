@@ -13,6 +13,7 @@ export type PaginatedRouteQueryParams = {
 
 export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
   userId?: string
+  characterId?: string
   collectionId?: string
   creationId?: string
   name?: string
@@ -20,6 +21,7 @@ export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
 
 export type PaginatedFeedQuery = {
   userId?: string
+  characterId?: string
   collectionId?: string
   name?: string
   creationId?: string
@@ -46,6 +48,10 @@ export const getFeedPageRoute = (
   if (query?.userId) {
     params.userId = query.userId
   }
+  if (query?.characterId) {
+    params.characterId = query.characterId
+  }
+
   if (query?.name && query.name.length > 0) {
     params.name = query.name
   }
@@ -138,8 +144,8 @@ export const useFeedPaginated = (
     if (data) {
       const flatData = data.flatMap(page => page)
       return {
-        docs: flatData.map(page => (page ? page.docs : [])),
-        totalItems: flatData[0].total,
+        docs: flatData ? flatData.map(page => (page ? page.docs : [])) : [],
+        totalItems: flatData ? flatData[0].total : 0,
       }
     }
     return { docs: [], totalItems: null }

@@ -13,7 +13,7 @@ const CreationCardDetail = ({ creation }: { creation: Creation }) => {
           {creation.name}
         </span>
       </div>
-      <Divider className="mt-4 mb-5 md:hidden" />
+      <Divider className="my-4 md:hidden" />
     </div>
   )
 }

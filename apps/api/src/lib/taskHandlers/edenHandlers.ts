@@ -121,6 +121,7 @@ const handleUpdate = async (
           const creationDocument: CreationInput = {
             _id: creationId,
             user: creationUser,
+            character: task.character,
             task: task._id,
             uri: finalOutput.files[index],
             thumbnail: finalOutput.thumbnails[index],
@@ -311,6 +312,7 @@ const handleUpdateUniversal = async (
           : task.user
         const creationData = {
           user: creationUser,
+          character: task.character,
           task: task._id,
           uri: output[i],
           thumbnail: null,

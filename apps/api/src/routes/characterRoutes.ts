@@ -9,7 +9,8 @@ import {
   listCharacters,
   updateCharacter,
 } from '../controllers/characterController'
-import { isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { createTask } from '../controllers/taskController'
+import { isAuth, isCharacter, maybeAuth } from '../middleware/authMiddleware'
 
 const characterRoutes: FastifyPluginAsync = async server => {
   server.post('/characters', {
@@ -152,6 +153,30 @@ const characterRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => listCharacters(request, reply),
+  })
+
+  server.post('/characters/tasks/create', {
+    schema: {
+      body: {
+        generatorName: Type.String(),
+        versionId: Type.Optional(Type.String()),
+        config: Type.Optional(Type.Any()),
+        webhooks: Type.Optional(Type.Array(Type.String())),
+        attributes: Type.Optional(
+          Type.Object({
+            discordId: Type.Optional(Type.String()),
+            delegateUserId: Type.Optional(Type.String()),
+          }),
+        ),
+      },
+      response: {
+        200: Type.Object({
+          taskId: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isCharacter(server, request, reply)],
+    handler: (request, reply) => createTask(server, request, reply),
   })
 }
 

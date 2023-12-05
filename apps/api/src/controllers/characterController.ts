@@ -5,14 +5,16 @@ import {
   CharactersListArguments,
   CharactersUpdateArguments,
 } from '@edenlabs/eden-sdk'
-import { booleanObjectType } from 'aws-sdk/clients/iam'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'
+import ApiKeyRepository from '../repositories/ApiKeyRepository'
 import CharacterRepository from '../repositories/CharacterRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
+import { generateApiKey } from './apiKeyController'
 
 export const createCharacter = async (
   request: FastifyRequest,
@@ -44,6 +46,18 @@ export const createCharacter = async (
 
   const characterRepository = new CharacterRepository(Character)
   const character = await characterRepository.create(input)
+
+  // Create API Key for character
+  const { apiKey, apiSecret } = generateApiKey()
+  const apiKeyInput = {
+    user: userId,
+    character: character._id,
+    apiKey,
+    apiSecret,
+  }
+
+  const apiKeyRepository = new ApiKeyRepository(ApiKey)
+  await apiKeyRepository.create(apiKeyInput)
 
   return reply.status(200).send({
     characterId: character._id,

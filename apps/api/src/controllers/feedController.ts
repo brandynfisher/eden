@@ -1,6 +1,6 @@
 import {
   FeedConceptsArguments,
-  FeedCreationsResponse,
+  FeedCreationsArguments,
   PaginatedResponse,
   ReactionType,
 } from '@edenlabs/eden-sdk'
@@ -142,13 +142,14 @@ export const getCreationsFeed = async (
 ) => {
   const {
     userId: filterUserIds,
+    characterId,
     collectionId,
     name,
     limit,
     page,
     orderBy,
     direction,
-  } = request.query as FeedCreationsResponse
+  } = request.query as FeedCreationsArguments
 
   const creatorsRepository = new CreatorRepository(User)
   const creators = filterUserIds
@@ -161,9 +162,14 @@ export const getCreationsFeed = async (
     filterUserIds && creators.docs && creators.docs.length
       ? creators.docs.map(creator => creator._id)[0].toString()
       : undefined
-
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId
+
+  const characterIds = characterId
+    ? Array.isArray(characterId)
+      ? characterId.map(id => new ObjectId(id))
+      : new ObjectId(characterId)
+    : undefined
 
   const creationRepository = new CreationRepository(Creation)
   let creations: PaginatedResponse<CreationDocument>
@@ -251,6 +257,9 @@ export const getCreationsFeed = async (
       sortFilter['isPrivate'] = { $ne: true }
     }
 
+    // needed to not end up with duplicates in aggregations wtf mongo
+    sort.push(['_id', -1])
+
     creations = await creationRepository.query(
       {
         _id: collectionCreations
@@ -264,6 +273,11 @@ export const getCreationsFeed = async (
             : undefined,
         ...sortFilter,
         ...(name ? { $text: { $search: name } } : {}),
+        character: filterUserIds
+          ? { $exists: false }
+          : characterIds
+          ? { $in: characterIds }
+          : undefined,
       },
       {
         limit,
@@ -439,6 +453,9 @@ export const getConceptsFeed = async (
     sortFilter['isPrivate'] = { $ne: true }
   }
 
+  // needed to not end up with duplicates in aggregations wtf mongo
+  sort.push(['_id', -1])
+
   let concepts: PaginatedResponse<ConceptDocument>
   // use atlas search query
   if (name) {
@@ -446,15 +463,15 @@ export const getConceptsFeed = async (
       ...sortFilter,
       deleted: { $ne: true },
     })
-    console.log(JSON.stringify(aggregate))
+    // console.log(JSON.stringify(aggregate))
     const sortObj = Object.fromEntries(sort)
-    console.log(sortObj)
+    // console.log(sortObj)
     concepts = await conceptRepository.aggregateQuery(aggregate, {
       limit,
       page,
       sort: sortObj,
     })
-    console.log(concepts)
+    // console.log(concepts)
     // use flat query
   } else {
     concepts = await conceptRepository.query(

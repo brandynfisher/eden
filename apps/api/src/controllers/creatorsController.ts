@@ -224,6 +224,7 @@ export const getCreator = async (
 
   const creationsCount = await Creation.countDocuments({
     user: creatorDoc?._id,
+    character: null,
   })
   const followerCount = await Follow.countDocuments({
     following: creatorDoc?._id,

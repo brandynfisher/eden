@@ -1,32 +1,9 @@
+import CardImage from '@/components/Card/CardImage'
 import { VideoLengthBadge } from '@/components/Creation/CreationInterface/media/VideoPreview'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { ResponsiveImage } from '@/components/Media/ResponsiveImage'
 import { isImageUrl } from '@/lib/string'
 import { Creation } from '@edenlabs/eden-sdk'
-
-const CreationCardImage = ({
-  uri,
-  width,
-  height,
-  priority,
-  sizes,
-}: {
-  uri: string
-  width: number
-  height: number
-  priority?: boolean
-  sizes?: string
-}) => {
-  return (
-    <ResponsiveImage
-      src={uri}
-      alt={uri}
-      aspectRatio={width / height}
-      sizes={sizes || '(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
-      priority={priority}
-    />
-  )
-}
 
 const CreationCardVideo = ({
   thumbnail,
@@ -86,7 +63,7 @@ const CreationCardMedia = ({
 }) => {
   if (isImageUrl(creation.uri)) {
     return (
-      <CreationCardImage
+      <CardImage
         uri={creation.uri}
         width={creation.mediaAttributes.width || 0}
         height={creation.mediaAttributes.height || 0}

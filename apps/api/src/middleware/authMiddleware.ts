@@ -25,6 +25,7 @@ const apiKeyVerify = async (request: FastifyRequest) => {
 
   request.user = {
     userId: user._id,
+    character: apiKey.character,
     subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
     featureFlags: user.featureFlags || [],
     isAdmin: user.isAdmin || false,
@@ -74,6 +75,29 @@ export const isAdmin = async (
     })
   }
   if (!request.user.isAdmin) {
+    return reply.status(401).send({
+      statusCode: 401,
+      error: 'Unauthorized',
+      message: 'Unauthorized',
+    })
+  }
+}
+
+export const isCharacter = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    await getCredential(server, request, reply)
+  } catch (error: any) {
+    return reply.status(401).send({
+      statusCode: 401,
+      error: 'Unauthorized',
+      message: error.message,
+    })
+  }
+  if (!request.user.character) {
     return reply.status(401).send({
       statusCode: 401,
       error: 'Unauthorized',

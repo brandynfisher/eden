@@ -1,17 +1,24 @@
+import CardImage from '@/components/Card/CardImage'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
-import ImageResult from '@/components/Creation/CreationInterface/media/ImageResult'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
-import { Concept } from '@edenlabs/eden-sdk'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
 import { Button } from '@mui/material'
 import { App, Tag } from 'antd'
 import axios from 'axios'
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import React, {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
 
 export const trainingModeColorMap: { [key: string]: string } = {
   style: 'lime',
@@ -23,10 +30,11 @@ export const trainingModeColorMap: { [key: string]: string } = {
 const ConceptCard: FC<{
   index: number
   data: Concept
-  onClick: (concept: Concept) => void
+  onClick: () => void
   hidePrompt?: boolean
+  sizes?: string
   className?: string
-}> = ({ index, data, onClick, hidePrompt, className }) => {
+}> = ({ index, data, onClick, hidePrompt, sizes, className }) => {
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
@@ -64,22 +72,12 @@ const ConceptCard: FC<{
     }
   }, [concept])
 
-  // const cardClickHandler = useCallback(
-  //   (ev: React.MouseEvent) => {
-  //     console.log()
-  //     ev.preventDefault()
-  //     // console.log(concept)
-  //     onClick()
-  //   },
-  //   [concept, index, onClick],
-  // )
-
   const cardClickHandler = useCallback(
     (ev: React.MouseEvent) => {
       ev.preventDefault()
-      onClick(concept)
+      onClick()
     },
-    [concept, onClick],
+    [onClick],
   )
 
   return (
@@ -97,10 +95,12 @@ const ConceptCard: FC<{
           concept.deleted ? 'grayscale' : ''
         }`}
       >
-        <ImageResult
-          previewSizeUrl={concept.thumbnail || ''}
-          aspectRatio={100}
+        <CardImage
+          uri={concept.thumbnail || ''}
+          width={0}
+          height={0}
           priority={index < 10}
+          sizes={sizes}
         />
       </a>
       {concept.deleted ? (
@@ -154,21 +154,34 @@ const ConceptCard: FC<{
                 onOpen={setDropdownActive}
                 item={concept}
                 itemType={'concept'}
-                onChange={updatedItem => setConcept(updatedItem as Concept)}
+                onChange={
+                  setConcept as Dispatch<SetStateAction<Concept | Creation>>
+                }
               />
             </div>
           </div>
           <div
-            className={`mt-1 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:pb-2 md:px-2 pointer-events-none`}
+            className={`md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:px-2 pointer-events-none md:hidden ${
+              hovered ? 'md:!block' : ''
+            }`}
           >
-            {/*<CreationReactions*/}
-            {/*  creation={concept}*/}
-            {/*  onChange={updatedConcept =>*/}
-            {/*    setConcept(updatedConcept as Concept)*/}
-            {/*  }*/}
-            {/*  showCounts={true}*/}
-            {/*/>*/}
-            {!hidePrompt ? <ConceptCardDetail concept={concept} /> : null}
+            <div className="relative flex justify-between">
+              <div className="h-10">
+                <div className="flex pointer-events-auto">
+                  {/*      <PraiseButton*/}
+                  {/*        item={conceptData}*/}
+                  {/*        type={'concept'}*/}
+                  {/*        onChange={*/}
+                  {/*          setConceptData as Dispatch<*/}
+                  {/*            SetStateAction<Concept | Creation>*/}
+                  {/*          >*/}
+                  {/*        }*/}
+                  {/*        showCounts={true}*/}
+                  {/*      />*/}
+                </div>
+              </div>
+            </div>
+            <ConceptCardDetail concept={concept} />
           </div>
         </>
       ) : null}

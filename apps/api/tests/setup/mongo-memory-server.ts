@@ -12,7 +12,12 @@ import {
   UserInput,
 } from '../../src/models/Creator'
 import { Manna } from '../../src/models/Manna'
-import { createCreation, createGenerator, getDefaultUserId } from '../util'
+import {
+  createCharacter,
+  createCreation,
+  createGenerator,
+  getDefaultUserId,
+} from '../util'
 
 const createAdmin = async () => {
   const userData: UserInput = {
@@ -169,6 +174,7 @@ beforeEach(async () => {
   await createGenerator('test')
   await createCreation()
   await createCollection()
+  await createCharacter()
 })
 
 afterEach(async () => {

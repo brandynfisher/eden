@@ -1,3 +1,4 @@
+import { PraiseButton } from '@/components/Card/CardReactions'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
@@ -8,115 +9,11 @@ import BookmarkAddTwoToneIcon from '@mui/icons-material/BookmarkAddTwoTone'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove'
 import Bookmarks from '@mui/icons-material/Bookmarks'
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
-import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined'
-import FavoriteTwoToneIcon from '@mui/icons-material/FavoriteTwoTone'
 import { App } from 'antd'
 import axios from 'axios'
-import React, { useContext } from 'react'
+import React, { Dispatch, SetStateAction, useContext } from 'react'
 
-const PraiseButton = ({
-  creation,
-  onChange,
-  showCounts,
-}: {
-  creation: Creation | Concept
-  onChange: (updatedCreation: Creation | Concept) => void
-  showCounts?: boolean
-}) => {
-  const { message } = App.useApp()
-  const { isAuthenticated, authenticate } = useContext(UserContext)
-  const { hovered, ref } = useHover()
-
-  const onPraiseButtonClick = async (
-    ev:
-      | React.MouseEvent<HTMLAnchorElement, MouseEvent>
-      | React.MouseEvent<HTMLButtonElement, MouseEvent>
-      | React.MouseEvent<HTMLDivElement, MouseEvent>,
-  ) => {
-    ev.stopPropagation()
-
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
-
-    try {
-      if (creation.reactions?.praise) {
-        await axios.post('/api/creations/unreact', {
-          creationId: creation._id,
-          reaction: 'praise',
-        })
-      } else {
-        await axios.post('/api/creations/react', {
-          creationId: creation._id,
-          reaction: 'praise',
-        })
-      }
-
-      const newPraiseCount =
-        typeof creation.praiseCount !== 'undefined'
-          ? creation.praiseCount + (creation.reactions?.praise ? -1 : 1)
-          : 0
-
-      onChange({
-        ...creation,
-        praiseCount: newPraiseCount,
-        reactions: {
-          ...creation.reactions,
-          praise: !creation.reactions?.praise,
-        },
-      })
-    } catch (error) {
-      handleAxiosError(error, message)
-    }
-  }
-
-  return (
-    <div
-      className={`flex items-center justify-start w-10 h-10 cursor-pointer font-mono`}
-      role="button"
-      onClick={onPraiseButtonClick}
-      ref={ref}
-    >
-      <div
-        className={`flex gap-2 items-center ${
-          creation.reactions?.praise
-            ? 'dark:text-gray-300'
-            : 'dark:text-gray-500'
-        }`}
-      >
-        <div
-          className="text-2xl flex items-center"
-          role="img"
-          aria-label="Like"
-        >
-          {creation.reactions?.praise ? (
-            <>
-              {hovered ? (
-                <FavoriteOutlinedIcon fontSize="inherit" />
-              ) : (
-                <FavoriteOutlinedIcon fontSize="inherit" />
-              )}
-            </>
-          ) : (
-            <>
-              {hovered ? (
-                <FavoriteTwoToneIcon fontSize="inherit" />
-              ) : (
-                <FavoriteBorderIcon fontSize="inherit" />
-              )}
-            </>
-          )}
-        </div>
-        {showCounts ? <div>{creation.praiseCount || 0}</div> : null}
-        {/*<div>{creation.praiseCount || 0}</div>*/}
-      </div>
-    </div>
-  )
-}
-
-const SaveButton = ({
+export const SaveButton = ({
   creation,
   onChange,
 }: {
@@ -236,7 +133,7 @@ const SaveButtonMessageContent = () => {
 
 export interface CreationReactionsProps {
   creation: Creation | Concept
-  onChange: (updatedCreation: Creation | Concept) => void
+  onChange: Dispatch<SetStateAction<Concept | Creation>>
   showCounts?: boolean
 }
 
@@ -250,7 +147,8 @@ const CreationReactions = ({
       <div>
         <div className="flex pointer-events-auto">
           <PraiseButton
-            creation={creation}
+            item={creation}
+            type={'creation'}
             onChange={onChange}
             showCounts={showCounts}
           />

@@ -86,8 +86,8 @@ const useTasksPaginated = ({ limit }: { limit: number }) => {
     if (data) {
       const flatData = data.flatMap(page => page)
       return {
-        docs: flatData.map(page => page.docs),
-        totalItems: flatData[0].total,
+        docs: flatData ? flatData.map(page => (page ? page.docs : [])) : [],
+        totalItems: flatData ? flatData[0].total : 0,
       }
     }
     return { docs: [], totalItems: null }

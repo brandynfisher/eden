@@ -97,7 +97,7 @@ const MasonryInfinite = ({
       width,
       columnGutter: type === 'creations' ? 8 : 20,
       rowGutter:
-        windowWidth && windowWidth < 768 ? 0 : type === 'creations' ? 8 : 24,
+        windowWidth && windowWidth < 768 ? 0 : type === 'creations' ? 8 : 20,
       columnCount:
         windowWidth && windowWidth < 768
           ? 1

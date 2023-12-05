@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { creationId, reaction } = req.body
+  const { id, reaction } = req.body
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -17,7 +17,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       token: authToken,
     })
     const response = await eden.creations.unreact({
-      creationId,
+      creationId: id,
       reaction,
     })
     return res.status(200).json({ taskId: response.taskId })
