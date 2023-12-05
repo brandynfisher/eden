@@ -123,8 +123,6 @@ export const listCollections = async (
           },
         )
 
-  console.log('collections', collections)
-
   return reply.status(200).send(collections)
 }
 
