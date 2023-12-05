@@ -103,33 +103,31 @@ const ConceptDetail = ({
               isModal ? 'px-2' : ''
             } md:px-0 mx-auto mb-2 lg:mb-0 lg:flex lg:flex-grow xl:mx-0 xl:flex-col xl:min-w-[320px]`}
           >
-            <div className="relative flex justify-center">
-              <div
-                onClick={() => handlePreviewClick(conceptData.thumbnail)}
-                className="relative flex justify-center flex-grow max-h-[80vh] overflow-hidden"
-              >
-                <MediaDisplay
-                  priority={true}
-                  aspectRatio={100}
-                  className={'media-display__main'}
-                  creationUri={
-                    conceptData && conceptData?.thumbnail
-                      ? conceptData?.thumbnail
-                      : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                  }
-                  previewUri={conceptData?.thumbnail}
-                  // onLoad={() => {
-                  //   setConceptImageLoaded(true)
-                  // }}
-                />
-                {conceptData.isPrivate ? (
-                  <div
-                    className={`flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
-                  >
-                    <LockIcon fontSize="small" className="text-white" />
-                  </div>
-                ) : null}
-              </div>
+            <div
+              onClick={() => handlePreviewClick(conceptData.thumbnail)}
+              className="relative flex justify-center flex-grow max-h-[80vh] overflow-hidden"
+            >
+              <MediaDisplay
+                priority={true}
+                aspectRatio={100}
+                className={'media-display__main'}
+                creationUri={
+                  conceptData && conceptData?.thumbnail
+                    ? conceptData?.thumbnail
+                    : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                }
+                previewUri={conceptData?.thumbnail}
+                // onLoad={() => {
+                //   setConceptImageLoaded(true)
+                // }}
+              />
+              {conceptData.isPrivate ? (
+                <div
+                  className={`flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
+                >
+                  <LockIcon fontSize="small" className="text-white" />
+                </div>
+              ) : null}
             </div>
           </div>
 
