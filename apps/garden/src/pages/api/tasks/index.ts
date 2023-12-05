@@ -6,7 +6,8 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { taskIds, status, page, limit } = req.query as {
+  const { type, taskIds, status, page, limit } = req.query as {
+    type?: 'concepts' | 'creations'
     taskIds?: string
     status?: string
   } & PaginatedRouteQueryParams
@@ -25,6 +26,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const response = await eden.tasks.list({
       status: statusList,
       taskId: taskIdList,
+      type,
       page,
       limit,
     })

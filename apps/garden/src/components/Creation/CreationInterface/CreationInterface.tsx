@@ -2,7 +2,7 @@ import CreationWorkspace from '@/components/Creation/CreationInterface/CreationW
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
-import { hiddenGenerators } from '@/lib/generator'
+import { conceptGenerator, hiddenGenerators } from '@/lib/generator'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
@@ -151,7 +151,14 @@ const CreationInterface = ({
         ref={timelineRef}
         className="w-full h-full md:h-auto pl-2 md:px-0 md:mt-0"
       >
-        <TimelineList innerRef={timelineListRef} />
+        <TimelineList
+          innerRef={timelineListRef}
+          type={
+            activeGenerator.generatorName === conceptGenerator.name
+              ? 'concepts'
+              : 'creations'
+          }
+        />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}

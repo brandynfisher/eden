@@ -229,7 +229,7 @@ export const listTasks = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { status, taskId, limit, page, sort } =
+  const { type, status, taskId, limit, page, sort } =
     request.query as TasksListArguments
 
   const user = await User.findById(userId)
@@ -238,6 +238,12 @@ export const listTasks = async (
       message: 'User not found',
     })
   }
+
+  const typeQuery = type
+    ? type === 'creations'
+      ? { creation: { $ne: null } }
+      : { concept: { $ne: null } }
+    : {}
 
   const tasksRepository = new TaskRepository(Task)
   const tasks = await tasksRepository.query(
@@ -248,6 +254,7 @@ export const listTasks = async (
       createdAt: {
         $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
       },
+      ...typeQuery,
     },
     {
       limit,

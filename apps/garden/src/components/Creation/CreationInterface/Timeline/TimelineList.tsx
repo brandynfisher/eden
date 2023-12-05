@@ -35,7 +35,13 @@ const TimelineListItem = ({ data, index }: { data: Task; index: number }) => {
   )
 }
 
-const useTasksPaginated = ({ limit }: { limit: number }) => {
+const useTasksPaginated = ({
+  type,
+  limit,
+}: {
+  type: 'concepts' | 'creations'
+  limit: number
+}) => {
   const getKey = useCallback(
     (
       pageIndex: number,
@@ -50,11 +56,11 @@ const useTasksPaginated = ({ limit }: { limit: number }) => {
       }
 
       // console.log('getKey', {pageIndex, previousPageData})
-      return `/api/tasks?status=running,starting,pending,completed,failed&page=${
+      return `/api/tasks?type=${type}&status=running,starting,pending,completed,failed&page=${
         pageIndex + 1
       }&limit=${limit}`
     },
-    [limit],
+    [type, limit],
   )
 
   const { data, size, setSize, mutate, isValidating, isLoading, error } =
@@ -113,12 +119,15 @@ const MasonryHookWrap: FC<UseMasonryOptions<Task>> = props => {
 }
 
 const TimelineList = ({
+  type,
   innerRef,
 }: {
+  type: 'concepts' | 'creations'
   innerRef: RefObject<HTMLDivElement>
 }) => {
   const limit = 10
 
+  console.log(type)
   const {
     items,
     // size,
@@ -129,7 +138,7 @@ const TimelineList = ({
     isEmpty,
     isLoading,
     error,
-  } = useTasksPaginated({ limit })
+  } = useTasksPaginated({ type, limit })
 
   const maybeLoadMoreTasks = useInfiniteLoader(maybeLoadMore, {
     isItemLoaded: (index, items) => {

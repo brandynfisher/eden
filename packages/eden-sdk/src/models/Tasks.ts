@@ -33,6 +33,7 @@ export interface TasksChatCompleteArguments extends WebAPICallOptions {
 export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
   status?: string | string[]
   taskId?: string | string[]
+  type?: 'concepts' | 'creations'
 }
 
 export interface TasksGetArguments extends WebAPICallOptions {
