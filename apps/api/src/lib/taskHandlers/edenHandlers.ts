@@ -222,6 +222,7 @@ const handleUpdate = async (
           conceptName: finalOutput.name,
           checkpoint: task.config.checkpoint || 'sdxl-v1.0', //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
+          num_training_images: task.config.num_training_images,
           uri: finalOutput.files[i],
           thumbnail: finalOutput.thumbnails[0],
           isPrivate: task.config.isPrivate || false,

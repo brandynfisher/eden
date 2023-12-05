@@ -103,10 +103,10 @@ const getTransactionCost = (
   config: any,
 ) => {
   if (generatorVersion.mode === 'concept') {
-    return 100
+    return 75
   }
 
-  const baseCost = config.n_frames || 1
+  const baseCost = Math.round(config.n_frames * 0.75) || 1
   const samples = config.n_samples || 1
   const cost = baseCost * samples
   return cost

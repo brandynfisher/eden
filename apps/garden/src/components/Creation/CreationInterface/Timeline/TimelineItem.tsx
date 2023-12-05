@@ -79,7 +79,7 @@ const TimelineItem = ({
                 noProgressGeneratorNames.includes(task?.generator.generatorName)
                   ? fakeProgress
                   : task.progress
-                  ? task.progress * 100
+                  ? Math.floor(task.progress * 100)
                   : 0
               }
             />
@@ -101,7 +101,7 @@ const TimelineItem = ({
             noProgressGeneratorNames.includes(task?.generator.generatorName)
               ? fakeProgress
               : task.progress
-              ? task.progress * 100
+              ? Math.floor(task.progress * 100)
               : 0
           }
         />

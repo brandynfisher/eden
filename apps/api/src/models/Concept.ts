@@ -24,6 +24,7 @@ export interface ConceptSchema extends VisibilitySchema {
   conceptName: string
   checkpoint: string
   training_images: string[]
+  num_training_images: number
   attributes?: any
   createdAt?: Date
   updatedAt?: Date
@@ -39,6 +40,7 @@ export interface ConceptInput {
   conceptName: string
   checkpoint: string
   training_images: string[]
+  num_training_images: number
   attributes?: Record<string, any>
   mediaAttributes?: {
     type: MediaType
@@ -93,6 +95,10 @@ const concept = new Schema<ConceptDocument>(
     },
     training_images: {
       type: [String],
+      required: true,
+    },
+    num_training_images: {
+      type: Number,
       required: true,
     },
     attributes: {
