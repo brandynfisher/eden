@@ -23,7 +23,7 @@ const InputAddon = ({
           borderBottomRightRadius: 0,
           pointerEvents: 'none',
         }}
-        className={`parameter__addon h-full !px-2 !m-0 text-xs !bg-stone-400 dark:!bg-stone-900 min-w-[105px] ${
+        className={`parameter__addon h-full !px-2 !m-0 text-xs !bg-stone-400 dark:!bg-stone-900 min-w-[115px] ${
           textArea
             ? '!border-b-0 rounded-bl-none rounded-b-none rounded-br-none'
             : 'border-r-0'

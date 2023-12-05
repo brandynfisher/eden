@@ -76,7 +76,7 @@ const StringParameter = (props: {
                     <Col className="pointer-events-auto">
                       {values.length > (props.parameter.minLength || 1) && (
                         <Button
-                          className="!px-2 bg-gray-100 dark:bg-gray-950 rounded-bl-none rounded-tl-none border-l-0"
+                          className="!px-1 bg-gray-100 dark:bg-gray-950 rounded-bl-none rounded-tl-none border-l-0"
                           onClick={() => {
                             const newValues = [...values]
                             newValues.splice(index, 1)
