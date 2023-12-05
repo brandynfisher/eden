@@ -23,7 +23,11 @@ const ConceptInfo = ({ concept }: { concept: Concept }) => {
       <BaseParamGroup label="Date" value={displayDateTime} />
       <BaseParamGroup
         label={'Training Images'}
-        value={concept.training_images?.length || 0}
+        value={
+          concept.num_training_images
+            ? concept.num_training_images
+            : concept.training_images?.length || 0
+        }
       />
     </div>
   )

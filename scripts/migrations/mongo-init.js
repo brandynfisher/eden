@@ -125,6 +125,7 @@ db.concepts.insertOne({
   conceptName: 'Test Character',
   checkpoint: 'checkpoint',
   training_images: [],
+  num_training_images: 1,
   uri: 'uri',
 })
 

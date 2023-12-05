@@ -517,7 +517,7 @@ const GeneratorForm = ({
               forceRender={true}
             >
               {optionalParameters.length > 0 ? (
-                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                <div className="px-2 flex flex-col gap-2 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(optionalParameters)}
                 </div>
               ) : null}
@@ -536,7 +536,7 @@ const GeneratorForm = ({
                     }
                     forceRender={true}
                   >
-                    <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                    <div className="px-2 flex flex-col gap-2 py-4 bg-gray-200 dark:bg-gray-900">
                       {renderFormFields(
                         advancedParameters.filter(
                           p =>
@@ -560,7 +560,7 @@ const GeneratorForm = ({
                 }
                 forceRender={true}
               >
-                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                <div className="px-2 flex flex-col gap-2 py-4 bg-gray-200 dark:bg-gray-900">
                   <ConceptSelectModalTrigger
                     onChange={concept => {
                       form.setFieldsValue({
@@ -587,7 +587,7 @@ const GeneratorForm = ({
                 }
                 forceRender={true}
               >
-                <div className="px-3 flex flex-col gap-4 py-4 bg-gray-200 dark:bg-gray-900">
+                <div className="px-3 flex flex-col gap-2 py-4 bg-gray-200 dark:bg-gray-900">
                   {renderFormFields(
                     advancedParameters.filter(p =>
                       parameterGroups['init_image'].includes(p.name),
@@ -606,7 +606,7 @@ const GeneratorForm = ({
         }`}
         key={generator.generatorName}
       >
-        <div className="flex gap-4 items-center justify-between flex-wrap">
+        <div className="flex gap-2 items-center justify-between flex-wrap">
           <div className="flex gap-2 items-center w-auto">
             {canAffordOperation === false ? (
               <div className="text-orange-500">

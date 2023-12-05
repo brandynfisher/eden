@@ -2,12 +2,14 @@ import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+const baseCostPerVideoFrame = 0.75
+
 const costFactorParameterNames = ['n_samples', 'n_frames']
 
 const staticCostGenerators = [
   {
     generatorName: 'sdxl-lora-trainer',
-    cost: 100,
+    cost: 75,
   },
   {
     generatorName: 'dialogue',
@@ -47,9 +49,13 @@ export const useTaskCost = () => {
 
       if (costFactorParams.length > 0) {
         const totalFactor = costFactorParams
-          .map(factor => factor[1])
+          .map(factor => {
+            if (factor[0] === 'n_frames') {
+              return Math.round(factor[1] * baseCostPerVideoFrame) || 1
+            }
+            return factor[1]
+          })
           .reduce((total, arr) => total + arr)
-        // console.log(generatorName, totalFactor)
         setTaskCost(totalFactor)
         return
       }

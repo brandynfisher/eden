@@ -160,6 +160,7 @@ export type Concept = {
   uri: string
   thumbnail?: string
   training_images?: string[]
+  num_training_images?: number
   checkpoint?: string
   name: string
   publicName: string

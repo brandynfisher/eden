@@ -30,7 +30,7 @@ export const trainingModeColorMap: { [key: string]: string } = {
 const ConceptCard: FC<{
   index: number
   data: Concept
-  onClick: () => void
+  onClick: (concept: Concept) => void
   hidePrompt?: boolean
   sizes?: string
   className?: string
@@ -75,7 +75,7 @@ const ConceptCard: FC<{
   const cardClickHandler = useCallback(
     (ev: React.MouseEvent) => {
       ev.preventDefault()
-      onClick()
+      onClick(concept)
     },
     [onClick],
   )
