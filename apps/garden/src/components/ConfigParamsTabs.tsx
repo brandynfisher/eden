@@ -122,7 +122,7 @@ const ConfigParamsTabs = ({ data }: { data: Concept | Creation }) => {
 
   return (
     <>
-      <div className="flex w-full justify-start md:justify-center items-center mb-4 mt-4">
+      <div className="flex w-full justify-start md:justify-center items-center my-2">
         <Button
           type="dashed"
           className="dark:text-gray-400 "
@@ -143,7 +143,7 @@ const ConfigParamsTabs = ({ data }: { data: Concept | Creation }) => {
             />
           </div>
 
-          <div className="flex w-full justify-center items-center my-4">
+          <div className="flex w-full  justify-start md:justify-center items-center my-2">
             <Button
               type="dashed"
               className="dark:text-gray-400"
