@@ -124,6 +124,7 @@ const SliderParameter = (props: {
             max={props.parameter.maximum}
             onChange={onChange}
             onBlur={onBlur}
+            step={props.parameter.step ? props.parameter.step : 1}
           />
         </Form.Item>
       </div>
