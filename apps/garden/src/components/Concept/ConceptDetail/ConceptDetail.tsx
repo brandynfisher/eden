@@ -208,10 +208,11 @@ const ConceptDetail = ({
                 />
               </Panel>
             </Collapse>
-
-            <ConceptCreations concept={concept} />
           </div>
         </div>
+      </div>
+      <div className="px-2 md:px-0">
+        <ConceptCreations concept={concept} />
       </div>
     </>
   )
