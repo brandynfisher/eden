@@ -444,9 +444,20 @@ export const getConceptsFeed = async (
 
   const sort = []
   const sortFilter: { [key: string]: unknown } = {}
+
+  // exclude zero count items when sorting by likes, bookmarks, etc
+  if (
+    orderBy === 'creationCount' ||
+    orderBy === 'bookmarkCount' ||
+    orderBy === 'praiseCount'
+  ) {
+    sortFilter[orderBy] = { $gt: 0 }
+  }
+
   if (orderBy && direction) {
     sort.push([orderBy, direction])
   }
+
   // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
   if (orderBy !== 'createdAt') {
     sort.push(['createdAt', -1])
