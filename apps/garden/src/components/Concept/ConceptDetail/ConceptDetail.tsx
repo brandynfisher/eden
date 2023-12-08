@@ -211,7 +211,7 @@ const ConceptDetail = ({
           </div>
         </div>
       </div>
-      <div className="px-2 md:px-0">
+      <div className="px-2 md:px-0 md:mt-2">
         <ConceptCreations concept={concept} />
       </div>
     </>

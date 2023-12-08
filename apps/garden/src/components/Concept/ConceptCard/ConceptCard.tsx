@@ -157,7 +157,7 @@ const ConceptCard: FC<{
             </div>
           </div>
           <div
-            className={`pt-2 md:pt-0 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80  md:px-2 pointer-events-none md:hidden ${
+            className={`pt-2 md:pt-0 md:absolute md:z-10 md:w-full md:bottom-10 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80  md:px-2 pointer-events-none md:hidden ${
               hovered ? 'md:!block' : ''
             }`}
           >
