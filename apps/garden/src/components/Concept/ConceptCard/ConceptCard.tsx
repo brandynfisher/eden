@@ -1,6 +1,7 @@
 import CardImage from '@/components/Card/CardImage'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
+import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
@@ -9,7 +10,7 @@ import { useHover } from '@mantine/hooks'
 import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
 import { Button } from '@mui/material'
-import { App, Tag } from 'antd'
+import { App } from 'antd'
 import axios from 'axios'
 import React, {
   Dispatch,
@@ -40,19 +41,12 @@ const ConceptCard: FC<{
   const { width } = useViewportSize()
 
   const [concept, setConcept] = useState<Concept>(data)
-  const [trainingMode, setTrainingMode] = useState(null)
   const [createdDateString, setCreatedDateString] = useState('')
   const [dropdownActive, setDropdownActive] = useState(false)
   const timeSinceConcept = timeAgo(concept.createdAt)
 
   useEffect(() => {
     setCreatedDateString(new Date(concept.createdAt).toLocaleString())
-    const mode = concept?.task?.config?.mode
-      ? concept?.task?.config?.mode
-      : concept?.task?.config?.concept_mode
-      ? concept?.task?.config?.concept_mode
-      : null
-    setTrainingMode(mode)
   }, [concept])
 
   const onRestoreClick = useCallback(async () => {
@@ -83,15 +77,16 @@ const ConceptCard: FC<{
   return (
     <div
       ref={ref}
-      className={`w-full flex justify-center flex-col relative ${
+      onClick={cardClickHandler}
+      className={`relative w-full flex justify-center flex-col cursor-pointer ${
         className || ''
       }`}
     >
+      {/*<div className="flex flex-col md:block relative">*/}
       <a
-        onClick={cardClickHandler}
         href={`/concepts/${concept._id}`}
         target={'_blank'}
-        className={`card-image relative rounded-lg overflow-hidden cursor-pointer block  ${
+        className={`card-image relative overflow-hidden block  ${
           concept.deleted ? 'grayscale' : ''
         }`}
       >
@@ -101,6 +96,7 @@ const ConceptCard: FC<{
           height={0}
           priority={index < 10}
           sizes={sizes}
+          className="!rounded-none !rounded-t-lg"
         />
       </a>
       {concept.deleted ? (
@@ -161,11 +157,11 @@ const ConceptCard: FC<{
             </div>
           </div>
           <div
-            className={`md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:px-2 pointer-events-none md:hidden ${
+            className={`pt-2 md:pt-0 md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80  md:px-2 pointer-events-none md:hidden ${
               hovered ? 'md:!block' : ''
             }`}
           >
-            <div className="relative flex justify-between">
+            <div className="relative hidden md:flex justify-between">
               <div className="h-10">
                 <div className="flex pointer-events-auto">
                   {/*      <PraiseButton*/}
@@ -185,16 +181,8 @@ const ConceptCard: FC<{
           </div>
         </>
       ) : null}
-
-      <div className="absolute bottom-11 right-0 z-10 md:top-auto md:bottom-4 md:right-2">
-        {!hovered && trainingMode ? (
-          <Tag
-            color={trainingModeColorMap[trainingMode]}
-            className="first-letter:capitalize me-0"
-          >
-            {trainingMode}
-          </Tag>
-        ) : null}
+      <div className="absolute flex gap-2 z-10 me-0 bottom-6 right-0 md:bg-gray-100 md:dark:bg-gray-900 md:rounded-b-lg md:bottom-auto md:py-2 md:relative md:w-full md:flex md:justify-between md:px-2">
+        <ConceptCardFooter concept={concept} />
       </div>
     </div>
   )

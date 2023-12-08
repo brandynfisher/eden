@@ -18,6 +18,7 @@ export interface FeedCreationsArguments
   userId?: string | string[]
   characterId?: string | string[]
   collectionId?: string | string[]
+  conceptId?: string | string[]
   name?: string
 }
 

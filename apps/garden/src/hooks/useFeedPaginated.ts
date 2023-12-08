@@ -17,6 +17,7 @@ export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
   collectionId?: string
   creationId?: string
   name?: string
+  conceptId?: string
 }
 
 export type PaginatedFeedQuery = {
@@ -25,6 +26,7 @@ export type PaginatedFeedQuery = {
   collectionId?: string
   name?: string
   creationId?: string
+  conceptId?: string
   limit?: number
 }
 
@@ -51,7 +53,6 @@ export const getFeedPageRoute = (
   if (query?.characterId) {
     params.characterId = query.characterId
   }
-
   if (query?.name && query.name.length > 0) {
     params.name = query.name
   }
@@ -60,6 +61,9 @@ export const getFeedPageRoute = (
   }
   if (query?.creationId) {
     params.creationId = query.creationId
+  }
+  if (query?.conceptId) {
+    params.conceptId = query.conceptId
   }
   if (orderBy) {
     params.orderBy = orderBy.field

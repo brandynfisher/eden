@@ -1,3 +1,4 @@
+import { ReactionType } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -134,6 +135,14 @@ const handleUpdate = async (
             isPrivate: isNsfw ? true : task.config.isPrivate || false,
           }
 
+          if (task.concept) {
+            creationDocument.concept = task.concept
+          }
+
+          if (task.generator) {
+            creationDocument.generator = task.generator
+          }
+
           if (finalOutput.files[index]) {
             const { uri, mediaAttributes } = await server.uploadUrlAsset(
               server,
@@ -152,6 +161,18 @@ const handleUpdate = async (
           creationData.push(creationDocument)
         }),
       )
+
+      if (task.concept) {
+        const concept = await Concept.findById(task.concept)
+
+        if (concept) {
+          await concept.updateOne({
+            $inc: {
+              creationCount: task.config.n_samples ? task.config.n_samples : 1,
+            },
+          })
+        }
+      }
 
       await Promise.allSettled(
         creationData.map(async creationInput => {

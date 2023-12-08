@@ -22,6 +22,7 @@ export interface CharacterSchema extends VisibilitySchema {
   dialogue?: ChatSchema[]
   image?: string
   voice?: string
+  creationCount?: number
   createdAt?: Date
   updatedAt?: Date
 }
@@ -72,6 +73,10 @@ const character = new Schema<CharacterDocument>(
     voice: {
       type: String,
       required: false,
+    },
+    creationCount: {
+      type: Number,
+      default: 0,
     },
     deleted: {
       type: Boolean,

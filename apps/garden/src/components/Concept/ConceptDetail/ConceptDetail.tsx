@@ -1,6 +1,8 @@
 // import { PraiseButton } from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import CodeBlock from '@/components/CodeBlock'
+import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
+import ConceptCreations from '@/components/Concept/ConceptDetail/ConceptCreations'
 import ConceptInfo from '@/components/Concept/ConceptDetail/ConceptInfo'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import FollowControls from '@/components/FollowControls'
@@ -134,30 +136,12 @@ const ConceptDetail = ({
           <div
             className={`${
               isModal ? 'px-2  md:px-0' : ''
-            } mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
+            } lg:mx-0 xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
           >
-            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-2 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
-              <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
-                <CreatorProfileLink
-                  creatorId={conceptData?.user?.userId}
-                  creatorName={conceptData?.user?.username}
-                  creatorImage={conceptData?.user?.userImage || ''}
-                />
-              </div>
-              {showFollowControls && (
-                <div className="flex items-center flex-shrink-0">
-                  <FollowControls
-                    creatorId={conceptData?.user?.userId}
-                    showStats={false}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="flex px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 justify-between">
+            <div className="flex px-2 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
               <div className="relative flex justify-between">
                 <div className="h-10">
-                  <div className="flex pointer-events-auto">
+                  <div className="hidden md:flex pointer-events-auto">
                     {/*      <PraiseButton*/}
                     {/*        item={conceptData}*/}
                     {/*        type={'concept'}*/}
@@ -184,15 +168,39 @@ const ConceptDetail = ({
               ) : null}
             </div>
 
-            <div className="relative mb-2 col-span-8 p-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
-              <div style={{ wordWrap: 'break-word' }}>
-                <TruncatedExpandableText text={concept?.name} />
-                <Divider className="my-4" />
+            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-2 py-2 border border-gray-300 dark:border-gray-800 border-solid bg-gray-100 dark:bg-gray-900 rounded-lg justify-between">
+              <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
+                <CreatorProfileLink
+                  creatorId={conceptData?.user?.userId}
+                  creatorName={conceptData?.user?.username}
+                  creatorImage={conceptData?.user?.userImage || ''}
+                />
               </div>
+              {showFollowControls && (
+                <div className="flex items-center flex-shrink-0">
+                  <FollowControls
+                    creatorId={conceptData?.user?.userId}
+                    showStats={false}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="relative mb-2 col-span-8 p-2 pt-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
+              <div className="flex gap-2 items-center justify-between">
+                <TruncatedExpandableText text={concept?.name} />
+                <div className="flex gap-2">
+                  <ConceptCardFooter concept={concept} />
+                </div>
+              </div>
+              <Divider className="my-4" />
               <ConceptInfo concept={concept} />
             </div>
 
-            <Collapse expandIconPosition="start" className="mb-2">
+            <Collapse
+              expandIconPosition="start"
+              className="mb-2 border border-gray-300 dark:border-gray-800 border-solid bg-gray-100 dark:bg-gray-900"
+            >
               <Panel key={'1'} header={'Raw JSON'}>
                 <CodeBlock
                   code={JSON.stringify(conceptData, null, 2)}
@@ -200,16 +208,10 @@ const ConceptDetail = ({
                 />
               </Panel>
             </Collapse>
+
+            <ConceptCreations concept={concept} />
           </div>
         </div>
-
-        {/*{loadSimilar && creationImageLoaded && (*/}
-        {/*  <SimilarConcepts*/}
-        {/*    creation={creation}*/}
-        {/*    containerRef={containerRef}*/}
-        {/*    isModal={isModal}*/}
-        {/*  />*/}
-        {/*)}*/}
       </div>
     </>
   )

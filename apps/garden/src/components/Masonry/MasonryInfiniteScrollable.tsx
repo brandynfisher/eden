@@ -71,7 +71,7 @@ const MasonryInfiniteScrollable = ({
   const positioner = usePositioner(
     {
       width: containerWidth,
-      columnGutter: 24,
+      columnGutter: 20,
       rowGutter: 20,
       maxColumnCount: 4,
     },
@@ -88,8 +88,8 @@ const MasonryInfiniteScrollable = ({
         data={props.data}
         className={
           hover
-            ? `hover:border-2 rounded-lg hover:border-solid hover:border-blue-500 transition-all`
-            : 'transition-all'
+            ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
+            : ''
         }
         //@ts-ignore
         onClick={onCardClick}
@@ -100,7 +100,8 @@ const MasonryInfiniteScrollable = ({
 
   return (
     <div>
-      <div className="flex flex-col max-h-[calc(100vh_-_190px)] w-full overflow-hidden">
+      {/*<div className="flex flex-col max-h-[calc(100vh_-_190px)] w-full overflow-hidden">*/}
+      <div className="flex flex-col w-full">
         {isLoading ? <LoadingIndicator /> : null}
         {isEmpty && !items.length && (
           <div className="flex flex-col items-center">
@@ -119,7 +120,8 @@ const MasonryInfiniteScrollable = ({
         ) : (
           <div
             ref={containerRef}
-            className="h-[calc(100vh_-_190px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
+            // className="h-[calc(100vh_-_190px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
+            className="mx-auto mb-0 w-full pr-3"
           >
             <MasonryHookWrap
               positioner={positioner}

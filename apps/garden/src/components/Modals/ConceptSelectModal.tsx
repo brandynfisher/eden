@@ -70,7 +70,7 @@ const ConceptSelectModal = ({
           </a>
         }
       />
-      <div className="p-4 pb-0 bg-gray-200 dark:bg-gray-950 !rounded-xl">
+      <div className="p-4 pb-0 dark:bg-gray-950 !rounded-xl">
         <div className="mb-4">
           <Input.Search
             className="mb-4"

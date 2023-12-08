@@ -5,8 +5,6 @@ import {
   ConceptsReactArguments,
   ConceptsUnreactArguments,
   ConceptsUpdateArguments,
-  CreationsReactArguments,
-  CreationsUnreactArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'

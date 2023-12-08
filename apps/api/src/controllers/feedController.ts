@@ -144,6 +144,7 @@ export const getCreationsFeed = async (
     userId: filterUserIds,
     characterId,
     collectionId,
+    conceptId,
     name,
     limit,
     page,
@@ -169,6 +170,12 @@ export const getCreationsFeed = async (
     ? Array.isArray(characterId)
       ? characterId.map(id => new ObjectId(id))
       : new ObjectId(characterId)
+    : undefined
+
+  const conceptIds = conceptId
+    ? Array.isArray(conceptId)
+      ? conceptId.map(id => new ObjectId(id))
+      : new ObjectId(conceptId)
     : undefined
 
   const creationRepository = new CreationRepository(Creation)
@@ -260,32 +267,28 @@ export const getCreationsFeed = async (
     // needed to not end up with duplicates in aggregations wtf mongo
     sort.push(['_id', -1])
 
-    creations = await creationRepository.query(
-      {
-        _id: collectionCreations
-          ? {
-              $in: collectionCreations,
-            }
+    const query = {
+      _id: collectionCreations ? { $in: collectionCreations } : undefined,
+      concept: conceptIds ? { $in: conceptIds } : undefined,
+      user:
+        filterUserIds && creators.docs
+          ? creators.docs.map(creator => creator._id)
           : undefined,
-        user:
-          filterUserIds && creators.docs
-            ? creators.docs.map(creator => creator._id)
-            : undefined,
-        ...sortFilter,
-        ...(name ? { $text: { $search: name } } : {}),
-        character: filterUserIds
-          ? { $exists: false }
-          : characterIds
-          ? { $in: characterIds }
-          : undefined,
-      },
-      {
-        limit,
-        page,
-        sort,
-        select: '-embedding.embedding',
-      },
-    )
+      ...sortFilter,
+      ...(name ? { $text: { $search: name } } : {}),
+      character: filterUserIds
+        ? { $exists: false }
+        : characterIds
+        ? { $in: characterIds }
+        : undefined,
+    }
+
+    creations = await creationRepository.query(query, {
+      limit,
+      page,
+      sort,
+      select: '-embedding.embedding',
+    })
   }
 
   await creationRepository.model.populate(creations.docs, {

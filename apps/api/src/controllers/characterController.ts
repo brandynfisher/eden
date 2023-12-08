@@ -174,6 +174,7 @@ export const listCharacters = async (
       description: character.description,
       greeting: character.greeting,
       dialogue: character.dialogue,
+      creationCount: character.creationCount,
       isPrivate: character.isPrivate,
     })),
   }
@@ -212,6 +213,7 @@ export const getCharacter = async (
     description: character.description,
     greeting: character.greeting,
     dialogue: character.dialogue,
+    creationCount: character.creationCount,
     isPrivate: character.isPrivate,
   }
 

@@ -146,6 +146,7 @@ export type Character = {
   dialogue?: any[]
   image?: string
   voice?: string
+  creationCount?: number
   deleted?: boolean
   isPrivate?: boolean
   createdAt: string
