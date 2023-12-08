@@ -95,13 +95,13 @@ class ErrorBoundaryInner extends React.Component<Props, State> {
                     </p>
                   </div>
                   <div className="flex gap-4 justify-center">
-                    <Button
-                      type="primary"
-                      className="font-mono"
-                      onClick={() => this.setState({ hasError: false })}
-                    >
-                      Try again?
-                    </Button>
+                    {/*<Button*/}
+                    {/*  type="primary"*/}
+                    {/*  className="font-mono"*/}
+                    {/*  onClick={() => this.setState({ hasError: false })}*/}
+                    {/*>*/}
+                    {/*  Try again?*/}
+                    {/*</Button>*/}
                     <a href="/">
                       <Button
                         className="font-mono"

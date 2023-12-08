@@ -1,9 +1,6 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import OrderByButtons, {
-  OrderByDefaultParam,
-  OrderByParam,
-} from '@/components/Layout/buttons/OrderByButtons'
+import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { MasonryContext } from '@/providers/MasonryProvider'
@@ -24,27 +21,20 @@ import {
 } from 'masonic'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
 const MasonryInfinite = ({
   type,
   ItemComponent,
   query,
-  hasSort,
+  orderBy,
 }: {
   type: 'creations' | 'concepts'
   ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
-  hasSort?: OrderByParam[]
+  orderBy: OrderByParam
 }) => {
   const containerRef = useRef(null)
-  const [key, setKey] = useState(0)
   const router = useRouter()
 
   const { showModal } = useModalContext()
@@ -53,16 +43,12 @@ const MasonryInfinite = ({
   const isAuthenticatedUser =
     isAuthenticated && query && query.userId && query.userId === userId
 
-  const [orderBy, setOrderBy] = useState<OrderByParam>(
-    hasSort ? hasSort[0] : OrderByDefaultParam,
-  )
-
   const {
     items,
     // refetchFeed,
     maybeLoadMore: maybeLoadNextPage,
     // size,
-    setSize,
+    // setSize,
     isEmpty,
     // hasNextPage,
     isLoading,
@@ -76,14 +62,6 @@ const MasonryInfinite = ({
     threshold: 50,
   })
 
-  const handleOrderChange = (newOrderBy: OrderByParam) => {
-    if (newOrderBy.field !== orderBy?.field) {
-      setOrderBy(newOrderBy)
-      setSize(1)
-      setKey(key + 1)
-    }
-  }
-
   const [ref, rect] = useResizeObserverMantine()
   const { width: windowWidth, height: windowHeight } = useViewportSize()
   const { offset, width } = useContainerPosition(containerRef, [
@@ -94,7 +72,7 @@ const MasonryInfinite = ({
 
   const positioner = usePositioner(
     {
-      width,
+      width: width || windowWidth,
       columnGutter: type === 'creations' ? 8 : 20,
       rowGutter:
         windowWidth && windowWidth < 768 ? 0 : type === 'creations' ? 8 : 20,
@@ -115,12 +93,12 @@ const MasonryInfinite = ({
           ? 5
           : settings?.maxGridCols.params.initialValue,
     },
-    [orderBy, width, query?.userId],
+    [width, query?.userId],
   )
   const resizeObserver = useResizeObserver(positioner)
   useEffect(() => {
     setItems(items)
-  }, [items.length, orderBy, query, type])
+  }, [items.length])
 
   useEffect(() => {
     document.body.classList.add('force-scroll-y')
@@ -180,12 +158,6 @@ const MasonryInfinite = ({
 
   return (
     <div ref={ref}>
-      {hasSort && (
-        <OrderByButtons
-          params={hasSort}
-          onOrderChange={item => handleOrderChange(item)}
-        />
-      )}
       {isLoading && !items.length ? <LoadingIndicator /> : null}
 
       {items.length && typeof items[0] === 'undefined' ? (
@@ -195,7 +167,7 @@ const MasonryInfinite = ({
           {items.length > 0 && (
             <MasonryScroller
               style={{ outline: 'none' }}
-              key={key}
+              key={orderBy.field}
               positioner={positioner}
               resizeObserver={resizeObserver}
               containerRef={containerRef}

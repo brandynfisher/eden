@@ -3,25 +3,25 @@ import {
   OrderByFollowing,
   OrderByLatest,
   OrderByPopularity,
-  OrderByScore, // OrderByScore,
+  OrderByScore,
 } from '@/components/Layout/buttons/OrderByButtons'
-import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
+import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 import { UserContext } from '@/providers/UserProvider'
-import { useContext } from 'react'
+import React, { useContext } from 'react'
 
 const HomePage = () => {
   const { isAuthenticated } = useContext(UserContext)
 
-  const sortButtons = isAuthenticated
+  const filters = isAuthenticated
     ? [OrderByScore, OrderByLatest, OrderByPopularity, OrderByFollowing]
     : [OrderByScore, OrderByLatest, OrderByPopularity]
 
   return (
     <div className={`flex flex-col`}>
-      <MasonryInfinite
-        hasSort={sortButtons}
+      <MasonryInfiniteContainer
         type="creations"
         ItemComponent={CreationCard}
+        filters={filters}
       />
     </div>
   )

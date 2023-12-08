@@ -168,12 +168,12 @@ creation.pre<CreationDocument>('save', function (next) {
 })
 
 creation.index({ createdAt: 1 })
-creation.index({ user: 1 })
+// creation.index({ user: 1 })
 creation.index({ user: 1, deleted: 1, isPrivate: 1 })
 creation.index({ deleted: 1, isPrivate: 1 })
-creation.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1 })
-
-creation.index({ name: 'text' })
+creation.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1, _id: -1 })
+creation.index({ createdAt: -1, _id: -1, 'embedding.score': -1 })
+creation.index({ createdAt: -1, _id: -1 })
 
 creation.plugin(mongooseDelete, { overrideMethods: 'all' })
 creation.plugin(paginate)

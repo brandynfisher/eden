@@ -160,25 +160,7 @@ const CreationDetail = ({
               isModal ? 'px-2  md:px-0' : ''
             } lg:mx-0 xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
           >
-            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
-              <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
-                <CreatorProfileLink
-                  creatorId={creationData?.user?.userId}
-                  creatorName={creationData?.user?.username}
-                  creatorImage={creationData?.user?.userImage || ''}
-                />
-              </div>
-              {showFollowControls && (
-                <div className="flex items-center flex-shrink-0">
-                  <FollowControls
-                    creatorId={creationData?.user?.userId}
-                    showStats={false}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="flex px-4 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg bg-gray-100 dark:bg-gray-900 justify-between">
+            <div className="flex px-2 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
               <CreationReactions
                 creation={creationData}
                 onChange={
@@ -201,7 +183,25 @@ const CreationDetail = ({
               ) : null}
             </div>
 
-            <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
+            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-2 py-2 border border-gray-300 dark:border-gray-800 border-solid bg-gray-100 dark:bg-gray-900 rounded-lg justify-between">
+              <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
+                <CreatorProfileLink
+                  creatorId={creationData?.user?.userId}
+                  creatorName={creationData?.user?.username}
+                  creatorImage={creationData?.user?.userImage || ''}
+                />
+              </div>
+              {showFollowControls && (
+                <div className="flex items-center flex-shrink-0">
+                  <FollowControls
+                    creatorId={creationData?.user?.userId}
+                    showStats={false}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="relative mb-2 col-span-8 p-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
               <div style={{ wordWrap: 'break-word' }}>
                 <TruncatedExpandableText text={creation?.name} />
                 <Divider className="my-4" />
@@ -211,7 +211,7 @@ const CreationDetail = ({
 
             {creation.samples && creation.samples.length ? (
               <div>
-                <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
+                <div className="relative mb-2 col-span-8 p-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
                   <div className="text-gray-400 text-sm mb-2">Variations</div>
                   <div className="grid grid-cols-2 gap-2 flex-wrap">
                     {creation.samples.map(creationSampleId => (

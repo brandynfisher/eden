@@ -129,11 +129,9 @@ concept.pre<ConceptDocument>('save', function (next) {
 })
 
 concept.index({ createdAt: 1 })
-concept.index({ user: 1 })
 concept.index({ user: 1, deleted: 1, isPrivate: 1 })
 concept.index({ deleted: 1, isPrivate: 1 })
-concept.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1 })
-concept.index({ conceptName: 'text' })
+concept.index({ createdAt: -1, praiseCount: -1, bookmarkCount: -1 })
 
 // concept.plugin(mongooseDelete, { overrideMethods: 'all' })
 concept.plugin(mongooseDelete, {

@@ -45,7 +45,7 @@ const CreationWorkspace = ({
         {usesDrawer && onDrawerToggle ? (
           <Button
             size="small"
-            className={`md:hidden cursor-pointer text-gray-500 hover:text-blue-500 w-full`}
+            className={`md:hidden cursor-pointer text-gray-500 hover:text-blue-500 w-full border-b-0`}
             onClick={() => onDrawerToggle(!openedDrawer)}
           >
             {openedDrawer ? '' : 'Expand'}{' '}

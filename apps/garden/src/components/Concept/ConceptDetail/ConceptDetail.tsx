@@ -136,7 +136,7 @@ const ConceptDetail = ({
               isModal ? 'px-2  md:px-0' : ''
             } mx-auto lg:mx-0 md:max-w-[640px] xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
           >
-            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
+            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-2 py-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
               <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
                 <CreatorProfileLink
                   creatorId={conceptData?.user?.userId}
@@ -184,7 +184,7 @@ const ConceptDetail = ({
               ) : null}
             </div>
 
-            <div className="relative mb-2 col-span-8 p-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
+            <div className="relative mb-2 col-span-8 p-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
               <div style={{ wordWrap: 'break-word' }}>
                 <TruncatedExpandableText text={concept?.name} />
                 <Divider className="my-4" />
