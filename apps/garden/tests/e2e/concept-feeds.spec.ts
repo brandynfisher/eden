@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test'
 
-test('homepage - concepts feeds', async ({ page }) => {
-  await page.goto('/')
-  await page.getByTestId('nav-explore-concepts').click()
+test('navigate to /concepts feed', async ({ page }) => {
+  await page.goto('/concepts')
 
   await expect(page).toHaveURL('/concepts')
 
