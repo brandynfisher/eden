@@ -1,13 +1,10 @@
 'use client'
 
 import ConceptDetail from '@/components/Concept/ConceptDetail/ConceptDetail'
-import CircleButton from '@/components/Layout/buttons/CircleButton'
+import ArrowNavigationButtons from '@/components/Modals/ArrowNavigationButtons'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
 import { Concept } from '@edenlabs/eden-sdk'
-import CloseIcon from '@mui/icons-material/Close'
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import { Modal, ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect } from 'react'
@@ -90,32 +87,13 @@ const ConceptDetailModalV2 = ({
         />
       )}
       {currentIndex !== null ? (
-        <div className="fixed bottom-4 w-fit left-[calc(50%_-_77px)] md:bottom-auto flex md:justify-between md:top-1/2 md:w-[calc(100vw_-_32px)] md:left-2 gap-4 bg-gray-200 dark:bg-gray-950 rounded-full border border-solid border-gray-600 md:border-none md:p-0 md:!bg-transparent md:dark!bg-transparent opacity-0 anim-fade-in shadow-2xl md:shadow-none z-10 pointer-events-none">
-          <div className="justify-self-start pointer-events-auto">
-            <CircleButton
-              disabled={currentIndex - 1 < 0}
-              title={'Prev'}
-              icon={<KeyboardArrowLeftIcon fontSize="large" />}
-              onClick={handlePrevItem}
-            />
-          </div>
-          <div className="pointer-events-auto md:hidden">
-            <CircleButton
-              title={'Close'}
-              icon={<CloseIcon fontSize="large" />}
-              //@ts-ignore
-              onClick={onCancel}
-            />
-          </div>
-          <div className="justify-self-end pointer-events-auto">
-            <CircleButton
-              disabled={currentIndex + 1 >= items.length}
-              title={'Next'}
-              icon={<KeyboardArrowRightIcon fontSize="large" />}
-              onClick={handleNextItem}
-            />
-          </div>
-        </div>
+        <ArrowNavigationButtons
+          items={items}
+          currentIndex={currentIndex}
+          handlePrev={handlePrevItem}
+          handleNext={handleNextItem}
+          handleCancel={onCancel}
+        />
       ) : null}
     </Modal>
   )
