@@ -280,7 +280,7 @@ const CardToolsDropdown = ({
       }}
     >
       <div className="flex items-center cursor-pointer pointer-events-auto">
-        <EllipsisOutlined className="text-xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
+        <EllipsisOutlined className="text-2xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
       </div>
     </Dropdown>
   )
