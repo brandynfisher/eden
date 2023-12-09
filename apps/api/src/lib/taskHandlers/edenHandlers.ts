@@ -135,8 +135,8 @@ const handleUpdate = async (
             isPrivate: isNsfw ? true : task.config.isPrivate || false,
           }
 
-          if (task.concept) {
-            creationDocument.concept = task.concept
+          if (task.config.lora) {
+            creationDocument.concept = task.config.lora
           }
 
           if (task.generator) {
@@ -162,8 +162,8 @@ const handleUpdate = async (
         }),
       )
 
-      if (task.concept) {
-        const concept = await Concept.findById(task.concept)
+      if (task.config.lora) {
+        const concept = await Concept.findById(task.config.lora)
 
         if (concept) {
           await concept.updateOne({
