@@ -1,9 +1,10 @@
 import CardImage from '@/components/Card/CardImage'
+import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
+import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import CreationCardMedia from '@/components/Creation/CreationCard/CreationCardMedia'
-import CreationReactions from '@/components/Creation/CreationReactions'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
@@ -181,6 +182,7 @@ const Card: FC<CardWithTypeProps> = ({
                 ) : null}
                 {itemData.isPrivate ? <LockIcon fontSize="small" /> : null}
               </>
+
               <CardToolsDropdown
                 onOpen={setDropdownActive}
                 item={itemData}
@@ -192,15 +194,21 @@ const Card: FC<CardWithTypeProps> = ({
           <div
             className={`md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:px-2 pointer-events-none md:hidden ${
               hovered ? 'md:!block' : ''
+            } ${
+              itemType !== 'creation'
+                ? 'pt-2 md:pt-0 md:bottom-10 md:rounded-b-lg'
+                : ''
             }`}
           >
-            <CreationReactions
-              creation={itemData}
+            <CardReactions
+              item={itemData}
+              itemType={itemType}
               onChange={updatedCreation =>
                 setItemData(updatedCreation as Creation)
               }
               showCounts={true}
             />
+
             {!hidePrompt ? (
               itemType === 'creation' ? (
                 <CreationCardDetail creation={itemData as Creation} />
@@ -210,6 +218,12 @@ const Card: FC<CardWithTypeProps> = ({
             ) : null}
           </div>
         </>
+      ) : null}
+
+      {itemType === 'concept' ? (
+        <div className="absolute flex gap-2 z-10 me-0 bottom-6 right-0 md:bg-gray-100 md:dark:bg-gray-900 md:rounded-b-lg md:bottom-auto md:py-2 md:relative md:w-full md:flex md:justify-between md:px-2">
+          <ConceptCardFooter concept={itemData as Concept} />
+        </div>
       ) : null}
     </div>
   )

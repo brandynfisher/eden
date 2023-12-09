@@ -1,4 +1,4 @@
-import Card from '@/components/Card/Card'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { ProgressCard } from '@/components/Creation/CreationInterface/Timeline/TimelineItemMediaPlaceholder'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
@@ -48,8 +48,7 @@ const TimelineCreationSample = ({
   }
 
   return (
-    <Card
-      itemType="creation"
+    <CreationCard
       index={listIndex < 3 ? listIndex : 9999}
       data={creation}
       onClick={handleCardClick}

@@ -1,4 +1,4 @@
-import { SaveButton } from '@/components/Creation/CreationReactions'
+import SaveButton from '@/components/Card/SaveButton'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ItemType } from '@/providers/ModalProvider'
@@ -118,7 +118,7 @@ export const PraiseButton = ({
 
 export interface CardReactionProps {
   item: Creation | Concept
-  itemType: 'creation' | 'concept'
+  itemType: ItemType
   onChange: Dispatch<SetStateAction<Concept | Creation>>
   showCounts?: boolean
 }
@@ -129,20 +129,41 @@ const CardReactions = ({
   onChange,
   showCounts,
 }: CardReactionProps) => {
-  return (
+  return itemType === 'creation' ? (
     <div className="relative flex justify-between">
-      <div>
+      {itemType === 'creation' ? (
+        <>
+          <div>
+            <div className="flex pointer-events-auto">
+              <PraiseButton
+                item={item}
+                itemType={itemType}
+                onChange={onChange}
+                showCounts={showCounts}
+              />
+            </div>
+          </div>
+          <div className="pointer-events-auto">
+            <SaveButton creation={item} onChange={onChange} />
+          </div>
+        </>
+      ) : null}
+    </div>
+  ) : (
+    <div className="relative hidden md:flex justify-between">
+      <div className="h-2">
         <div className="flex pointer-events-auto">
-          <PraiseButton
-            item={item}
-            itemType={itemType}
-            onChange={onChange}
-            showCounts={showCounts}
-          />
+          {/*      <PraiseButton*/}
+          {/*        item={conceptData}*/}
+          {/*        type={'concept'}*/}
+          {/*        onChange={*/}
+          {/*          setConceptData as Dispatch<*/}
+          {/*            SetStateAction<Concept | Creation>*/}
+          {/*          >*/}
+          {/*        }*/}
+          {/*        showCounts={true}*/}
+          {/*      />*/}
         </div>
-      </div>
-      <div className="pointer-events-auto">
-        <SaveButton creation={item} onChange={onChange} />
       </div>
     </div>
   )

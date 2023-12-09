@@ -1,10 +1,10 @@
+import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConfigParamsTabs from '@/components/ConfigParamsTabs'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 import ResultPreviewDisplay from '@/components/Creation/CreationInterface/Timeline/ResultPreviewDisplay'
 // import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
-import CreationReactions from '@/components/Creation/CreationReactions'
 import CreatorSection from '@/components/DetailPage/CreatorSection'
 import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
@@ -160,8 +160,9 @@ const CreationDetail = ({
             } lg:mx-0 xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
           >
             <div className="flex px-2 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
-              <CreationReactions
-                creation={creationData}
+              <CardReactions
+                itemType="creation"
+                item={creationData}
                 onChange={
                   setCreationData as Dispatch<
                     SetStateAction<Concept | Creation>

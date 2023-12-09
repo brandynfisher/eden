@@ -1,6 +1,6 @@
 'use client'
 
-import Card from '@/components/Card/Card'
+import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
@@ -73,8 +73,7 @@ const CreationMasonry = ({
               overscanBy={2}
               itemHeightEstimate={300}
               render={props => (
-                <Card
-                  itemType="creation"
+                <CreationCard
                   index={props.index}
                   data={props.data}
                   // disableArrowNav={true}
