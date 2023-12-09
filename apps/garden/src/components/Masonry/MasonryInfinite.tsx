@@ -124,24 +124,20 @@ const MasonryInfinite = ({
 
     setCurrentIndex(index)
 
-    showModal(
-      type === 'creations'
-        ? MODAL_TYPES.CREATION_DETAIL_MODAL_V2
-        : MODAL_TYPES.CONCEPT_DETAIL_MODAL,
-      {
-        usesUrl: true,
-        originPageUrl: router.asPath,
-        maybeLoadMoreFn: (
-          currentIndex: number,
-          currentItems: Creation[] | Concept[],
-        ) => {
-          if (currentIndex === currentItems.length - 1) {
-            maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
-          }
-          // console.log(currentItems.length)
-        },
+    showModal(MODAL_TYPES.DETAIL_MODAL, {
+      type: type === 'creations' ? 'creation' : 'concept',
+      usesUrl: true,
+      originPageUrl: router.asPath,
+      maybeLoadMoreFn: (
+        currentIndex: number,
+        currentItems: Creation[] | Concept[],
+      ) => {
+        if (currentIndex === currentItems.length - 1) {
+          maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
+        }
+        // console.log(currentItems.length)
       },
-    )
+    })
   }, [])
 
   const CardWithClick = useCallback(

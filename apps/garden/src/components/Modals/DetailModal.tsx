@@ -1,19 +1,25 @@
 'use client'
 
+import ConceptDetail from '@/components/Concept/ConceptDetail/ConceptDetail'
 import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
 import ArrowNavigationButtons from '@/components/Modals/ArrowNavigationButtons'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
-import { Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Modal, ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect } from 'react'
 
-const CreationDetailModalV2 = ({
+const DetailModal = ({
+  type,
   maybeLoadMoreFn,
   ...rest
 }: {
-  maybeLoadMoreFn: (currentIndex: number, currentItems: Creation[]) => void
+  type: 'creation' | 'concept'
+  maybeLoadMoreFn: (
+    currentIndex: number,
+    currentItems: Creation[] | Concept[],
+  ) => void
 }) => {
   const { onCancel } = rest as ModalProps
   const router = useRouter()
@@ -65,7 +71,7 @@ const CreationDetailModalV2 = ({
     const handleRouteChange = async () => {
       const { pageUrl, modalUrl } = getModalUrls(
         router,
-        'creation',
+        type,
         items[currentIndex]._id,
       )
       // console.log(currentItem._id, pageUrl, modalUrl)
@@ -79,13 +85,20 @@ const CreationDetailModalV2 = ({
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">
-      {items[currentIndex] && (
-        <CreationDetail
-          creation={items[currentIndex] as Creation}
-          isModal={true}
-          // loadSimilar={loadSimilar}
-        />
-      )}
+      {items[currentIndex] &&
+        (type === 'creation' ? (
+          <CreationDetail
+            creation={items[currentIndex] as Creation}
+            isModal={true}
+            // loadSimilar={loadSimilar}
+          />
+        ) : (
+          <ConceptDetail
+            concept={items[currentIndex] as Concept}
+            isModal={true}
+            // loadSimilar={loadSimilar}
+          />
+        ))}
       {currentIndex !== null ? (
         <ArrowNavigationButtons
           items={items}
@@ -99,4 +112,4 @@ const CreationDetailModalV2 = ({
   )
 }
 
-export default CreationDetailModalV2
+export default DetailModal
