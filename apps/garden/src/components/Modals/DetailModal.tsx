@@ -1,7 +1,5 @@
 'use client'
 
-import ConceptDetail from '@/components/Concept/ConceptDetail/ConceptDetail'
-import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
 import ArrowNavigationButtons from '@/components/Modals/ArrowNavigationButtons'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
@@ -10,6 +8,8 @@ import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { App, Modal, ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect } from 'react'
+
+import Details from '../Detail/Details'
 
 const DetailModal = ({
   itemType,
@@ -86,20 +86,13 @@ const DetailModal = ({
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">
-      {items[currentIndex] &&
-        (itemType === 'creation' ? (
-          <CreationDetail
-            creation={items[currentIndex] as Creation}
-            isModal={true}
-            // loadSimilar={loadSimilar}
-          />
-        ) : (
-          <ConceptDetail
-            concept={items[currentIndex] as Concept}
-            isModal={true}
-            // loadSimilar={loadSimilar}
-          />
-        ))}
+      {items[currentIndex] ? (
+        <Details
+          itemType={itemType}
+          item={items[currentIndex]}
+          isModal={true}
+        />
+      ) : null}
       {currentIndex !== null ? (
         <ArrowNavigationButtons
           items={items}

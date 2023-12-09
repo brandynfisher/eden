@@ -153,7 +153,7 @@ const Card: FC<CardWithTypeProps> = ({
             }`}
           >
             {!hidePrompt ? (
-              <div className="flex items-center pointer-events-auto my-1">
+              <div className="flex items-center pointer-events-auto">
                 <CreatorProfileLink
                   creatorId={itemData.user.userId}
                   creatorName={itemData.user.username}

@@ -1,16 +1,19 @@
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
+import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
+import ConceptCreations from '@/components/Concept/ConceptDetail/ConceptCreations'
+import ConceptInfo from '@/components/Concept/ConceptDetail/ConceptInfo'
+import ConceptMedia from '@/components/Concept/ConceptDetail/ConceptMedia'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
-import ResultPreviewDisplay from '@/components/Creation/CreationInterface/Timeline/ResultPreviewDisplay'
+import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
+import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
 // import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
-import ConfigParamsTabs from '@/components/DetailPage/ConfigParamsTabs'
-import CreatorSection from '@/components/DetailPage/CreatorSection'
-import MediaDisplay from '@/components/MediaDisplay'
+import CreatorSection from '@/components/Detail/CreatorSection'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
-import { getAspectRatio } from '@/lib/media'
-import { isImageUrl, isVideoUrl } from '@/lib/string'
+import { isImageUrl } from '@/lib/string'
+import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
@@ -25,20 +28,31 @@ import React, {
   useState,
 } from 'react'
 
-const CreationDetail = ({
-  creation,
+const getItemMediaUrl = (itemType: ItemType, item: Creation | Concept) => {
+  if (itemType === 'creation') {
+    return item.uri
+  }
+
+  return item.thumbnail || ''
+}
+
+const Details = ({
+  item,
+  itemType,
   isModal,
 }: // loadSimilar,
 {
-  creation: Creation
+  item: Creation | Concept
+  itemType: ItemType
   isModal?: boolean
   // loadSimilar?: boolean
 }) => {
-  const { isAuthenticated, user, userId } = useContext(UserContext)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [creationData, setCreationData] = useState<Creation | Concept>(creation)
+  const [itemData, setItemData] = useState<Creation | Concept>(item)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
+
+  const { isAuthenticated, user, userId } = useContext(UserContext)
 
   useEffect(() => {
     if (isAuthenticated && user?.userId === userId) {
@@ -49,8 +63,8 @@ const CreationDetail = ({
   }, [isAuthenticated, user?.userId, userId])
 
   useEffect(() => {
-    setCreationData(creation)
-  }, [creation])
+    setItemData(item)
+  }, [item])
 
   const hideMediaViewer = () => {
     setZoomedInImageUrl(null)
@@ -68,36 +82,32 @@ const CreationDetail = ({
   return (
     <>
       <Head>
-        <title>{`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}</title>
-        {isVideoUrl(creation.uri) && (
-          <>
-            <meta property="og:type" content="video.other" />
-            <meta
-              property="og:video:duration"
-              content={String(creation.mediaAttributes.duration)}
-            />
-          </>
-        )}
+        <title>{`/${itemType} by ${item?.user?.username} | Garden of Eden`}</title>
+        {/*{itemType === 'creation' && isVideoUrl(item.uri) &&  (*/}
+        {/*  <>*/}
+        {/*    <meta property='og:type' content='video.other' />*/}
+        {/*    <meta*/}
+        {/*      property='og:video:duration'*/}
+        {/*      content={String(item.mediaAttributes.duration)}*/}
+        {/*    />*/}
+        {/*  </>*/}
+        {/*)}*/}
         <meta
           property="og:title"
           key="title"
-          content={`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}
+          content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
         />
-        <meta
-          property="og:description"
-          content={creation.name}
-          key="description"
-        />
-        <meta property="og:image" content={creation.thumbnail} key="image" />
-        <meta property="og:image:secure_url" content={creation.thumbnail} />
+        <meta property="og:description" content={item.name} key="description" />
+        <meta property="og:image" content={item.thumbnail} key="image" />
+        <meta property="og:image:secure_url" content={item.thumbnail} />
         <meta
           property="og:image:alt"
-          content={`/${creation?.task?.generator?.generatorName} by ${creation?.user?.username} | Garden of Eden`}
+          content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
         />
         <meta property="og:image:type" content="image/jpeg" />
         <meta
           property="og:url"
-          content={`${CONFIG.NEXT_PUBLIC_HOST}/creations/${creation._id}`}
+          content={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
         />
       </Head>
 
@@ -117,34 +127,18 @@ const CreationDetail = ({
           >
             <div
               onClick={
-                isImageUrl(creation.uri)
-                  ? () => handlePreviewClick(creation.uri)
+                isImageUrl(getItemMediaUrl(itemType, item))
+                  ? () => handlePreviewClick(getItemMediaUrl(itemType, item))
                   : () => false
               }
               className="relative flex justify-center flex-grow max-h-[80vh] overflow-hidden"
             >
-              {isImageUrl(creation.uri) ? (
-                <MediaDisplay
-                  priority={true}
-                  aspectRatio={getAspectRatio(
-                    creation.mediaAttributes.width,
-                    creation.mediaAttributes.height,
-                  )}
-                  creationUri={creationData?.uri}
-                  previewUri={creationData?.uri}
-                  thumbnailUri={creationData?.thumbnail}
-                />
+              {itemType === 'creation' ? (
+                <CreationMedia creation={item as Creation} />
               ) : (
-                <MediaDisplay
-                  aspectRatio={getAspectRatio(
-                    creation.mediaAttributes.width,
-                    creation.mediaAttributes.height,
-                  )}
-                  creationUri={creationData?.uri}
-                  thumbnailUri={creationData?.thumbnail}
-                />
+                <ConceptMedia concept={item as Concept} />
               )}
-              {creationData.isPrivate ? (
+              {itemData.isPrivate ? (
                 <div
                   className={`flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
                 >
@@ -159,58 +153,50 @@ const CreationDetail = ({
               isModal ? 'px-2  md:px-0' : ''
             } lg:mx-0 xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
           >
-            <div className="flex px-2 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
+            <div className="flex items-center h-10 px-2 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
               <CardReactions
                 itemType="creation"
-                item={creationData}
+                item={itemData}
                 onChange={
-                  setCreationData as Dispatch<
-                    SetStateAction<Concept | Creation>
-                  >
+                  setItemData as Dispatch<SetStateAction<Concept | Creation>>
                 }
                 showCounts={true}
               />
-              {creationData ? (
+              {itemData ? (
                 <CardToolsDropdown
-                  item={creationData}
+                  item={itemData}
                   itemType="creation"
                   onChange={
-                    setCreationData as Dispatch<
-                      SetStateAction<Concept | Creation>
-                    >
+                    setItemData as Dispatch<SetStateAction<Concept | Creation>>
                   }
                 />
               ) : null}
             </div>
 
             <CreatorSection
-              user={creationData.user}
+              user={itemData.user}
               showFollowControls={showFollowControls}
             />
 
             <div className="relative mb-2 col-span-8 p-2 pt-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
-              <div style={{ wordWrap: 'break-word' }}>
-                <TruncatedExpandableText text={creation?.name} />
-                <Divider className="my-4" />
-              </div>
-              <CreationInfo creation={creation} />
-            </div>
-
-            {creation.samples && creation.samples.length ? (
-              <div>
-                <div className="relative mb-2 col-span-8 p-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
-                  <div className="text-gray-400 text-sm mb-2">Variations</div>
-                  <div className="grid grid-cols-2 gap-2 flex-wrap">
-                    {creation.samples.map(creationSampleId => (
-                      <div key={creationSampleId}>
-                        <ResultPreviewDisplay creationId={creationSampleId} />
-                      </div>
-                    ))}
+              <div className="flex gap-2 items-center justify-between">
+                <TruncatedExpandableText text={item?.name} />
+                {itemType === 'concept' ? (
+                  <div className="flex gap-2">
+                    <ConceptCardFooter concept={item as Concept} />
                   </div>
-                </div>
+                ) : null}
               </div>
+              <Divider className="my-4" />
+              {itemType === 'creation' ? (
+                <CreationInfo creation={item as Creation} />
+              ) : (
+                <ConceptInfo concept={item as Concept} />
+              )}
+            </div>
+            {itemType === 'creation' ? (
+              <CreationSamples creation={item as Creation} />
             ) : null}
-            <ConfigParamsTabs data={creation} />
           </div>
         </div>
         {/*{loadSimilar ? (*/}
@@ -221,8 +207,13 @@ const CreationDetail = ({
         {/*  />*/}
         {/*) : null}*/}
       </div>
+      {itemType === 'concept' ? (
+        <div className="px-2 md:px-0 md:mt-2">
+          <ConceptCreations concept={item as Concept} />
+        </div>
+      ) : null}
     </>
   )
 }
 
-export default CreationDetail
+export default Details

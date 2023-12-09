@@ -275,7 +275,7 @@ const CardToolsDropdown = ({
       arrow={true}
       placement="bottomRight"
       menu={{ items: getCardMenuItems(), onClick: onItemClick }}
-      className="card-tools-dropdown"
+      className="card-tools-dropdown ml-auto"
       onOpenChange={open => {
         onOpen && onOpen(open)
       }}
