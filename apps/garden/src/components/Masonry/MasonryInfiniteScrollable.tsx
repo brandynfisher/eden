@@ -6,6 +6,7 @@ import {
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
+import { ItemType } from '@/providers/ModalProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
 import { Empty } from 'antd'
@@ -25,14 +26,14 @@ const MasonryHookWrap: FC<UseMasonryOptions<Concept | Creation>> = props => {
 }
 
 const MasonryInfiniteScrollable = ({
-  type,
+  itemType,
   ItemComponent,
   query,
   hasSort,
   onCardClick,
   hover,
 }: {
-  type: 'creations' | 'concepts'
+  itemType: ItemType
   ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
@@ -50,7 +51,7 @@ const MasonryInfiniteScrollable = ({
     // size,
     isEmpty,
     isLoading,
-  } = useFeedPaginated(type, query, orderBy)
+  } = useFeedPaginated(itemType, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
     isItemLoaded: (index, items) => {

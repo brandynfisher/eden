@@ -158,7 +158,7 @@ const CreationCard: FC<{
               <CardToolsDropdown
                 onOpen={setDropdownActive}
                 item={creation}
-                itemType={'creation'}
+                itemType="creation"
                 onChange={updatedItem => setCreation(updatedItem as Creation)}
               />
             </div>

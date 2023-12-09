@@ -1,6 +1,7 @@
 import { SaveButton } from '@/components/Creation/CreationReactions'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
+import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
@@ -13,12 +14,12 @@ import React, { Dispatch, SetStateAction, useContext } from 'react'
 
 export const PraiseButton = ({
   item,
-  type,
+  itemType,
   onChange,
   showCounts,
 }: {
   item: Creation | Concept
-  type: 'creation' | 'concept'
+  itemType: ItemType
   onChange: Dispatch<SetStateAction<Concept | Creation>>
   showCounts?: boolean
 }) => {
@@ -46,11 +47,11 @@ export const PraiseButton = ({
 
     try {
       if (item.reactions?.praise) {
-        await axios.post(`/api/${type}s/unreact`, {
+        await axios.post(`/api/${itemType}s/unreact`, {
           ...reactionData,
         })
       } else {
-        await axios.post(`/api/${type}s/react`, {
+        await axios.post(`/api/${itemType}s/react`, {
           ...reactionData,
         })
       }
@@ -117,14 +118,14 @@ export const PraiseButton = ({
 
 export interface CardReactionProps {
   item: Creation | Concept
-  type: 'creation' | 'concept'
+  itemType: 'creation' | 'concept'
   onChange: Dispatch<SetStateAction<Concept | Creation>>
   showCounts?: boolean
 }
 
 const CardReactions = ({
   item,
-  type,
+  itemType,
   onChange,
   showCounts,
 }: CardReactionProps) => {
@@ -134,7 +135,7 @@ const CardReactions = ({
         <div className="flex pointer-events-auto">
           <PraiseButton
             item={item}
-            type={type}
+            itemType={itemType}
             onChange={onChange}
             showCounts={showCounts}
           />

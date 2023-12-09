@@ -4,7 +4,11 @@ import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { MasonryContext } from '@/providers/MasonryProvider'
-import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
+import {
+  ItemType,
+  MODAL_TYPES,
+  useModalContext,
+} from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import {
@@ -24,12 +28,12 @@ import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
 const MasonryInfinite = ({
-  type,
+  itemType,
   ItemComponent,
   query,
   orderBy,
 }: {
-  type: 'creations' | 'concepts'
+  itemType: ItemType
   ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   orderBy: OrderByParam
@@ -52,7 +56,7 @@ const MasonryInfinite = ({
     isEmpty,
     // hasNextPage,
     isLoading,
-  } = useFeedPaginated(type, query, orderBy)
+  } = useFeedPaginated(itemType, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
     isItemLoaded: (index, items) => {
@@ -73,9 +77,9 @@ const MasonryInfinite = ({
   const positioner = usePositioner(
     {
       width: width || windowWidth,
-      columnGutter: type === 'creations' ? 8 : 20,
+      columnGutter: itemType === 'creation' ? 8 : 20,
       rowGutter:
-        windowWidth && windowWidth < 768 ? 0 : type === 'creations' ? 8 : 20,
+        windowWidth && windowWidth < 768 ? 0 : itemType === 'creation' ? 8 : 20,
       columnCount:
         windowWidth && windowWidth < 768
           ? 1
@@ -125,7 +129,7 @@ const MasonryInfinite = ({
     setCurrentIndex(index)
 
     showModal(MODAL_TYPES.DETAIL_MODAL, {
-      type: type === 'creations' ? 'creation' : 'concept',
+      itemType: itemType,
       usesUrl: true,
       originPageUrl: router.asPath,
       maybeLoadMoreFn: (

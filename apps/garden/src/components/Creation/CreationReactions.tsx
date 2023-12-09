@@ -148,7 +148,7 @@ const CreationReactions = ({
         <div className="flex pointer-events-auto">
           <PraiseButton
             item={creation}
-            type={'creation'}
+            itemType="creation"
             onChange={onChange}
             showCounts={showCounts}
           />

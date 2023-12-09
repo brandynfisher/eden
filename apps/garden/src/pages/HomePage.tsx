@@ -19,7 +19,7 @@ const HomePage = () => {
   return (
     <div className={`flex flex-col`}>
       <MasonryInfiniteContainer
-        type="creations"
+        itemType="creation"
         ItemComponent={CreationCard}
         filters={filters}
       />

@@ -173,7 +173,7 @@ const CreationDetail = ({
               {creationData ? (
                 <CardToolsDropdown
                   item={creationData}
-                  itemType={'creation'}
+                  itemType="creation"
                   onChange={
                     setCreationData as Dispatch<
                       SetStateAction<Concept | Creation>

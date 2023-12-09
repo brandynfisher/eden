@@ -1,5 +1,6 @@
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { fetcher } from '@/lib/fetcher'
+import { ItemType } from '@/providers/ModalProvider'
 import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
 import { useCallback, useMemo } from 'react'
 import useSWRInfinite from 'swr/infinite'
@@ -30,16 +31,14 @@ export type PaginatedFeedQuery = {
   limit?: number
 }
 
-export type FeedType = 'creations' | 'concepts'
-
 export const getFeedPageRoute = (
-  type: FeedType,
+  itemType: ItemType,
   query: PaginatedFeedQuery,
   limit: number,
   page: number,
   orderBy?: OrderByParam,
 ) => {
-  const basePath = `/api/feed/${type}`
+  const basePath = `/api/feed/${itemType}s`
   const params: FeedRouteQueryParams = {}
 
   if (limit && page) {
@@ -79,7 +78,7 @@ export const getFeedPageRoute = (
 }
 
 export const useFeedPaginated = (
-  type: FeedType,
+  itemType: ItemType,
   query: PaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,
 ) => {
@@ -99,9 +98,15 @@ export const useFeedPaginated = (
       }
 
       // console.log('getKey', {pageIndex, previousPageData})
-      return getFeedPageRoute(type, query, pageLimit, pageIndex + 1, orderBy)
+      return getFeedPageRoute(
+        itemType,
+        query,
+        pageLimit,
+        pageIndex + 1,
+        orderBy,
+      )
     },
-    [type, query, pageLimit, orderBy],
+    [itemType, query, pageLimit, orderBy],
   )
 
   const {

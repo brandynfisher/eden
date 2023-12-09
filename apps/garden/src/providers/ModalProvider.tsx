@@ -67,9 +67,11 @@ export type ConceptSelectModalProps = Partial<
   }
 >
 
+export type ItemType = 'creation' | 'concept' | 'character' | 'creator'
+
 export type DetailModalProps = Partial<
   BaseModalProps & {
-    type: 'creation' | 'concept'
+    itemType: ItemType
     initialItem: Creation | Concept
     maybeLoadMoreFn: (
       currentIndex: number,

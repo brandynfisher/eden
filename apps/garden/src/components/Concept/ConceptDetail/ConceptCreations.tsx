@@ -9,7 +9,7 @@ const ConceptCreations = ({ concept }: { concept: Concept }) => {
       <div className="px-2 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
         <div className="my-2 text-gray-400 text-xs">Latest Creations</div>
         <MasonryInfiniteScrollable
-          type="creations"
+          itemType="creation"
           ItemComponent={CreationCard}
           query={{ conceptId: concept._id }}
           // onCardClick={concept => onChange(concept as Concept)}

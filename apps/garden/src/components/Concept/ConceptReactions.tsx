@@ -19,7 +19,7 @@ const ConceptReactions = ({
         <div className="flex pointer-events-auto">
           <PraiseButton
             item={concept}
-            type={'concept'}
+            itemType={'concept'}
             onChange={onChange as Dispatch<SetStateAction<Creation | Concept>>}
             showCounts={showCounts}
           />
