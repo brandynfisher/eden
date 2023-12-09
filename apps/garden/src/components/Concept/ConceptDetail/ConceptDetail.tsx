@@ -1,4 +1,5 @@
 // import { PraiseButton } from '@/components/Card/CardReactions'
+import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import CodeBlock from '@/components/CodeBlock'
 import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
@@ -138,22 +139,14 @@ const ConceptDetail = ({
             } lg:mx-0 xl:flex-grow xl:flex xl:flex-col lg:ml-4 lg:min-w-[320px] lg:max-w-[320px]`}
           >
             <div className="flex px-2 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
-              <div className="relative flex justify-between">
-                <div className="h-10">
-                  <div className="hidden md:flex pointer-events-auto">
-                    {/*      <PraiseButton*/}
-                    {/*        item={conceptData}*/}
-                    {/*        type={'concept'}*/}
-                    {/*        onChange={*/}
-                    {/*          setConceptData as Dispatch<*/}
-                    {/*            SetStateAction<Concept | Creation>*/}
-                    {/*          >*/}
-                    {/*        }*/}
-                    {/*        showCounts={true}*/}
-                    {/*      />*/}
-                  </div>
-                </div>
-              </div>
+              <CardReactions
+                itemType="concept"
+                item={conceptData}
+                onChange={
+                  setConceptData as Dispatch<SetStateAction<Concept | Creation>>
+                }
+                showCounts={true}
+              />
               {conceptData ? (
                 <CardToolsDropdown
                   item={conceptData}

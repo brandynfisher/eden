@@ -88,9 +88,9 @@ const Card: FC<CardWithTypeProps> = ({
         onClick={cardClickHandler}
         href={`/${itemType}s/${itemData._id}`}
         target={'_blank'}
-        className={`card-image relative rounded-lg overflow-hidden cursor-pointer block  ${
+        className={`card-image relative overflow-hidden cursor-pointer block  ${
           itemData.deleted ? 'grayscale' : ''
-        }`}
+        } ${itemType === 'concept' ? '' : 'rounded-lg '}`}
       >
         {itemType === 'creation' ? (
           <CreationCardMedia

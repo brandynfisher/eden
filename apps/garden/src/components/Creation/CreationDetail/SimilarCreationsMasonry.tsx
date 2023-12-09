@@ -1,4 +1,4 @@
-import CreationMasonry from '@/components/Creation/CreationMasonry'
+import CreationMasonry from '@/components/Creation/CreationDetail/CreationMasonry'
 import { useCreationsSimilar } from '@/hooks/useCreationsSimilar'
 
 const SimilarCreationsMasonry = ({ creationId }: { creationId: string }) => {
