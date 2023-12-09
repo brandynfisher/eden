@@ -6,15 +6,16 @@ import OrderByButtons, {
 } from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
+import { ItemType } from '@/providers/ModalProvider'
 import React, { useCallback, useEffect, useState } from 'react'
 
 const MasonryInfiniteContainer = ({
-  type,
+  itemType,
   ItemComponent,
   filters,
   query,
 }: {
-  type: 'creations' | 'concepts'
+  itemType: ItemType
   ItemComponent: typeof CreationCard | typeof ConceptCard
   filters?: OrderByParam[]
   query?: PaginatedFeedQuery
@@ -53,7 +54,7 @@ const MasonryInfiniteContainer = ({
       <MasonryInfinite
         key={key}
         orderBy={orderBy}
-        type={type}
+        itemType={itemType}
         query={query}
         ItemComponent={ItemComponent}
       />

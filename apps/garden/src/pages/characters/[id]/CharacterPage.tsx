@@ -14,7 +14,7 @@ const CreationTabContent = ({ characterId }: { characterId: string }) => {
     <div className="mt-4">
       <MasonryInfiniteContainer
         key={`creations_${characterId}`}
-        type="creations"
+        itemType="creation"
         ItemComponent={CreationCard}
         query={{ characterId: characterId }}
         filters={[OrderByLatest]}

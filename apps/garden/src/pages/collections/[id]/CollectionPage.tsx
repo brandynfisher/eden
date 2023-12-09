@@ -91,7 +91,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
           <div className="mt-4">
             <MasonryInfiniteContainer
               key={`collection_${collection._id}`}
-              type="creations"
+              itemType="creation"
               query={{ collectionId: collection._id }}
               filters={[OrderByLatest, OrderByPopularity]}
               ItemComponent={CreationCard}

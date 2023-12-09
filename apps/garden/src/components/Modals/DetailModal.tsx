@@ -1,29 +1,37 @@
 'use client'
 
-import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
 import ArrowNavigationButtons from '@/components/Modals/ArrowNavigationButtons'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
-import { Creation } from '@edenlabs/eden-sdk'
-import { Modal, ModalProps } from 'antd'
+import { ItemType } from '@/providers/ModalProvider'
+import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { App, Modal, ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect } from 'react'
 
-const CreationDetailModalV2 = ({
+import Details from '../Detail/Details'
+
+const DetailModal = ({
+  itemType,
   maybeLoadMoreFn,
   ...rest
 }: {
-  maybeLoadMoreFn: (currentIndex: number, currentItems: Creation[]) => void
+  itemType: ItemType
+  maybeLoadMoreFn: (
+    currentIndex: number,
+    currentItems: Creation[] | Concept[],
+  ) => void
 }) => {
+  const { message } = App.useApp()
   const { onCancel } = rest as ModalProps
   const router = useRouter()
   const { items, currentIndex, setCurrentIndex } = useContext(MasonryContext)
 
-  const handlePrevItem = useCallback(() => {
+  const handlePrevItem = useCallback(async () => {
     const prevIndex = currentIndex - 1
 
     if (prevIndex < 0) {
-      // @todo: UI feedback that end of list is reached
+      message.info('Reached first item')
     } else {
       const newIndex = prevIndex <= 0 ? 0 : prevIndex
       setCurrentIndex(newIndex)
@@ -31,12 +39,11 @@ const CreationDetailModalV2 = ({
     }
   }, [currentIndex, items.length])
 
-  const handleNextItem = useCallback(() => {
+  const handleNextItem = useCallback(async () => {
     const nextIndex = currentIndex + 1
 
     if (nextIndex >= items.length) {
-      // @todo: UI feedback that end of list is reached
-      // console.log('end of list')
+      message.info('Reached last item')
     } else {
       setCurrentIndex(nextIndex)
       maybeLoadMoreFn(nextIndex, items as Creation[])
@@ -46,11 +53,11 @@ const CreationDetailModalV2 = ({
   useEffect(() => {
     if (currentIndex === null) return
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft') {
-        handlePrevItem()
+        await handlePrevItem()
       } else if (event.key === 'ArrowRight') {
-        handleNextItem()
+        await handleNextItem()
       }
     }
 
@@ -65,7 +72,7 @@ const CreationDetailModalV2 = ({
     const handleRouteChange = async () => {
       const { pageUrl, modalUrl } = getModalUrls(
         router,
-        'creation',
+        itemType,
         items[currentIndex]._id,
       )
       // console.log(currentItem._id, pageUrl, modalUrl)
@@ -79,13 +86,13 @@ const CreationDetailModalV2 = ({
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">
-      {items[currentIndex] && (
-        <CreationDetail
-          creation={items[currentIndex] as Creation}
+      {items[currentIndex] ? (
+        <Details
+          itemType={itemType}
+          item={items[currentIndex]}
           isModal={true}
-          // loadSimilar={loadSimilar}
         />
-      )}
+      ) : null}
       {currentIndex !== null ? (
         <ArrowNavigationButtons
           items={items}
@@ -99,4 +106,4 @@ const CreationDetailModalV2 = ({
   )
 }
 
-export default CreationDetailModalV2
+export default DetailModal
