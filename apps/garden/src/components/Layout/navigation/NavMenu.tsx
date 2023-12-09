@@ -82,7 +82,7 @@ const NavMenu = ({
     {
       key: '/',
       icon: (
-        <Link href="/">
+        <Link href="/" data-testid="nav-explore-creations">
           <Yard fontSize="small" />
         </Link>
       ),
@@ -91,7 +91,7 @@ const NavMenu = ({
     {
       key: '/concepts',
       icon: (
-        <Link href="/concepts">
+        <Link href="/concepts" data-testid="nav-explore-concepts">
           <ModelTraining fontSize="small" />
         </Link>
       ),
@@ -102,7 +102,7 @@ const NavMenu = ({
           {
             key: '/characters',
             icon: (
-              <Link href="/characters">
+              <Link href="/characters" data-testid="nav-explore-characters">
                 <ChatBubbleOutline fontSize="small" />
               </Link>
             ),
@@ -116,7 +116,7 @@ const NavMenu = ({
     {
       key: '/create/creations',
       icon: (
-        <Link href="/create/creations">
+        <Link href="/create/creations" data-testid="nav-create-creations">
           <Yard fontSize="small" />
         </Link>
       ),
@@ -125,7 +125,7 @@ const NavMenu = ({
     {
       key: '/create/concepts',
       icon: (
-        <Link href="/create/concepts">
+        <Link href="/create/concepts" data-testid="nav-create-concepts">
           <ModelTraining fontSize="small" />
         </Link>
       ),
@@ -136,7 +136,10 @@ const NavMenu = ({
           {
             key: '/create/characters',
             icon: (
-              <Link href="/create/characters">
+              <Link
+                href="/create/characters"
+                data-testid="nav-create-characters"
+              >
                 <ChatBubbleOutline fontSize="small" />
               </Link>
             ),

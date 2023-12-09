@@ -98,7 +98,7 @@ const ConceptDetail = ({
         />
       )}
 
-      <div ref={containerRef}>
+      <div ref={containerRef} data-testid="concept-detail">
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
           <div
             className={`relative ${

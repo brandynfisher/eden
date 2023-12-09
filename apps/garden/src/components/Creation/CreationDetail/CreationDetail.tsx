@@ -109,7 +109,7 @@ const CreationDetail = ({
         />
       )}
 
-      <div ref={containerRef}>
+      <div ref={containerRef} data-testid="creation-detail">
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
           <div
             className={`relative ${

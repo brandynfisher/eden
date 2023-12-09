@@ -33,6 +33,7 @@ const ThemeToggleButton = () => {
     <Space
       onClick={handleThemeToggleClick}
       className="justify-between w-full p-2"
+      data-testid="theme-toggle-button"
     >
       <div className="flex">
         <DarkModeIcon fontSize="small" />
