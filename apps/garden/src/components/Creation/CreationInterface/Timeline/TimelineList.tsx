@@ -170,7 +170,7 @@ const TimelineList = ({
 
   return (
     <div
-      className="flex flex-col max-h-[calc(100vh_-_72px)] pb-[80px] w-full overflow-hidden md:pb-0"
+      className="flex flex-col max-h-[calc(100vh_-_72px)] pb-[105px] w-full overflow-hidden md:pb-0"
       ref={innerRef}
     >
       {isLoading ? <LoadingIndicator /> : null}
@@ -189,7 +189,7 @@ const TimelineList = ({
       {items && items.length && typeof items[0] !== 'undefined' ? (
         <div
           ref={containerRef}
-          className="h-[calc(100%_-_72px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
+          className="h-[calc(100%_-_72px)] md:h-full mx-auto mb-0 w-full pr-3 overflow-y-scroll overflow-x-hidden"
         >
           <MasonryHookWrap
             positioner={positioner}
@@ -206,7 +206,7 @@ const TimelineList = ({
           />
         </div>
       ) : null}
-      {error ? <div>{error}</div> : null}
+      {error ? <div>{JSON.stringify(error)}</div> : null}
     </div>
   )
 }

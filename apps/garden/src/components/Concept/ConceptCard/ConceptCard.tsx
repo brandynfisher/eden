@@ -162,7 +162,7 @@ const ConceptCard: FC<{
             }`}
           >
             <div className="relative hidden md:flex justify-between">
-              <div className="h-10">
+              <div className="h-2">
                 <div className="flex pointer-events-auto">
                   {/*      <PraiseButton*/}
                   {/*        item={conceptData}*/}
