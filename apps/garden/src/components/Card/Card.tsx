@@ -145,7 +145,7 @@ const Card: FC<CardWithTypeProps> = ({
           </div>
         </div>
       ) : null}
-      {!itemData.deleted && (width < 768 || true || dropdownActive) ? (
+      {!itemData.deleted && (width < 768 || hovered || dropdownActive) ? (
         <>
           <div
             className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:pb-1 md:pt-0.5 md:px-2 pointer-events-none opacity-0 transition-opacity duration-300 ${
@@ -196,7 +196,7 @@ const Card: FC<CardWithTypeProps> = ({
               hovered ? 'md:!block' : ''
             } ${
               itemType !== 'creation'
-                ? 'pt-2 md:pt-0 md:bottom-10 md:rounded-b-lg'
+                ? 'pt-2 md:pt-0 md:bottom-10 md:rounded-b-none'
                 : ''
             }`}
           >
