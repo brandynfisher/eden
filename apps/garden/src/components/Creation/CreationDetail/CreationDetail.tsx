@@ -5,9 +5,8 @@ import ResultPreviewDisplay from '@/components/Creation/CreationInterface/Timeli
 // import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreationReactions from '@/components/Creation/CreationReactions'
-import FollowControls from '@/components/FollowControls'
+import CreatorSection from '@/components/DetailPage/CreatorSection'
 import MediaDisplay from '@/components/MediaDisplay'
-import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getAspectRatio } from '@/lib/media'
@@ -183,23 +182,10 @@ const CreationDetail = ({
               ) : null}
             </div>
 
-            <div className="mb-2 col-span-4 xl:col-span-12 flex gap-2 min-w-0 px-2 py-2 border border-gray-300 dark:border-gray-800 border-solid bg-gray-100 dark:bg-gray-900 rounded-lg justify-between">
-              <div className="overflow-hidden flex items-center flex-shrink-0 flex-grow max-w-full">
-                <CreatorProfileLink
-                  creatorId={creationData?.user?.userId}
-                  creatorName={creationData?.user?.username}
-                  creatorImage={creationData?.user?.userImage || ''}
-                />
-              </div>
-              {showFollowControls && (
-                <div className="flex items-center flex-shrink-0">
-                  <FollowControls
-                    creatorId={creationData?.user?.userId}
-                    showStats={false}
-                  />
-                </div>
-              )}
-            </div>
+            <CreatorSection
+              user={creationData.user}
+              showFollowControls={showFollowControls}
+            />
 
             <div className="relative mb-2 col-span-8 p-2 pt-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
               <div style={{ wordWrap: 'break-word' }}>
