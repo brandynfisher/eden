@@ -136,7 +136,7 @@ const handleUpdate = async (
           }
 
           if (task.config.lora) {
-            creationDocument.concept = task.config.lora
+            creationDocument.concept = new ObjectId(task.config.lora)
           }
 
           if (task.generator) {
