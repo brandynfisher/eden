@@ -18,7 +18,9 @@ const ConceptCreations = ({ concept }: { concept: Concept }) => {
   return (
     <div className="mt-2 md:mt-4">
       <div className="px-2 mb-2 md:mb-0 rounded-lg justify-between">
-        <div className="my-2 text-gray-400 text-xs">Latest Creations</div>
+        <div className="my-2 text-gray-400 text-xs">
+          Latest Public Creations
+        </div>
         <MasonryInfiniteScrollable
           itemType="creation"
           ItemComponent={CreationCard}
