@@ -208,7 +208,7 @@ const Details = ({
         {/*) : null}*/}
       </div>
       {itemType === 'concept' ? (
-        <div className="px-2 md:px-0 md:mt-2">
+        <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
           <ConceptCreations concept={item as Concept} />
         </div>
       ) : null}

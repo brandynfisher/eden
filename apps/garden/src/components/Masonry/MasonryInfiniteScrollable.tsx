@@ -6,6 +6,7 @@ import {
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
+import MasonryProvider from '@/providers/MasonryProvider'
 import { ItemType } from '@/providers/ModalProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
@@ -100,47 +101,53 @@ const MasonryInfiniteScrollable = ({
   )
 
   return (
-    <div>
-      {/*<div className="flex flex-col max-h-[calc(100vh_-_190px)] w-full overflow-hidden">*/}
-      <div className="flex flex-col w-full">
-        {isLoading ? <LoadingIndicator /> : null}
-        {isEmpty && !items.length && (
-          <div className="flex flex-col items-center">
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={
-                <div className="flex flex-col items-center">
-                  <div className="mb-4">Nothing here yet.</div>
-                </div>
-              }
-            />
-          </div>
-        )}
-        {items.length && typeof items[0] === 'undefined' ? (
-          <div>error fetching list</div>
-        ) : (
-          <div
-            ref={containerRef}
-            // className="h-[calc(100vh_-_190px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
-            className="mx-auto mb-0 w-full pr-3"
-          >
-            <MasonryHookWrap
-              positioner={positioner}
-              resizeObserver={resizeObserver}
-              items={items}
-              itemHeightEstimate={207}
-              height={containerHeight}
-              scrollTop={scrollTop}
-              isScrolling={isScrolling}
-              overscanBy={3}
-              //@ts-ignore
-              render={CardWithClick}
-              onRender={maybeLoadMore}
-            />
-          </div>
-        )}
+    <MasonryProvider>
+      <div>
+        {/*<div className="flex flex-col max-h-[calc(100vh_-_190px)] w-full overflow-hidden">*/}
+        <div className="flex flex-col w-full">
+          {isLoading ? (
+            <div>
+              <LoadingIndicator />{' '}
+            </div>
+          ) : null}
+          {isEmpty && !items.length && (
+            <div className="flex flex-col items-center">
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={
+                  <div className="flex flex-col items-center">
+                    <div className="mb-4">Nothing here yet.</div>
+                  </div>
+                }
+              />
+            </div>
+          )}
+          {items.length && typeof items[0] === 'undefined' ? (
+            <div>error fetching list</div>
+          ) : (
+            <div
+              ref={containerRef}
+              // className="h-[calc(100vh_-_190px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
+              className="mx-auto mb-0 w-full pr-3 min-h-[237px]"
+            >
+              <MasonryHookWrap
+                positioner={positioner}
+                resizeObserver={resizeObserver}
+                items={items}
+                itemHeightEstimate={207}
+                height={containerHeight}
+                scrollTop={scrollTop}
+                isScrolling={isScrolling}
+                overscanBy={3}
+                //@ts-ignore
+                render={CardWithClick}
+                onRender={maybeLoadMore}
+              />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </MasonryProvider>
   )
 }
 
