@@ -1,4 +1,5 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
+import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FormLabel from '@/components/Forms/FormLabel'
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
@@ -619,64 +620,87 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     <ConfirmProvider>
       <div>
         <Form form={form} name="CharacterForm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ">
-            <div>
-              <Form.Item
-                label={
-                  <FormLabel
-                    text="Name"
-                    description="What should your character be called?"
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 ">
+            <div className="p-4 bg-gray-100 dark:bg-stone-950 rounded-lg border border-solid border-stone-900">
+              <h3 className="font-mono font-bold text-lg">
+                Build Your Character
+              </h3>
+              <div>
+                <div className="parameter parameter--text flex">
+                  <ParameterAddon
+                    title={'Name'}
+                    description={'What should your character be called?'}
                   />
-                }
-                className="label-auto-height"
-                labelCol={{ span: 24 }}
-                name="name"
-                rules={[
-                  { required: true, message: 'Please input a character name!' },
-                  {
-                    min: 3,
-                    max: 20,
-                    message:
-                      'Character name must be between 3 and 20 characters!',
-                  },
-                ]}
-              >
-                <Input placeholder={EXAMPLE_CHARACTER.name} />
-              </Form.Item>
-              <Form.Item
-                label={
-                  <FormLabel
-                    text="Description"
-                    description="Describe your character and shape its personality"
-                  />
-                }
-                className="label-auto-height"
-                labelCol={{ span: 24 }}
-                name="description"
-                rules={[
-                  { required: true, message: 'Please input a description!' },
-                  {
-                    min: 3,
-                    max: 1000,
-                    message:
-                      'Description must be between 3 and 1000 characters!',
-                  },
-                ]}
-              >
-                <Input.TextArea
-                  autoSize
-                  placeholder={EXAMPLE_CHARACTER.description}
+                  <Form.Item
+                    // label={
+                    //   <FormLabel
+                    //     description="What should your character be called?"
+                    //   />
+                    // }
+                    className="mb-4 font-mono w-full"
+                    // labelCol={{ span: 24 }}
+                    name="name"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input a character name!',
+                      },
+                      {
+                        min: 3,
+                        max: 20,
+                        message:
+                          'Character name must be between 3 and 20 characters!',
+                      },
+                    ]}
+                  >
+                    <Input
+                      className="with-addon"
+                      spellCheck={false}
+                      placeholder={EXAMPLE_CHARACTER.name}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+
+              <div>
+                <ParameterAddon
+                  title={'Description'}
+                  textArea={true}
+                  description={
+                    'Describe your character and shape its personality'
+                  }
                 />
-              </Form.Item>
+                <Form.Item
+                  className="mb-4 font-mono w-full"
+                  name="description"
+                  rules={[
+                    { required: true, message: 'Please input a description!' },
+                    {
+                      min: 3,
+                      max: 1000,
+                      message:
+                        'Description must be between 3 and 1000 characters!',
+                    },
+                  ]}
+                >
+                  <Input.TextArea
+                    autoSize
+                    placeholder={EXAMPLE_CHARACTER.description}
+                    className="with-addon"
+                  />
+                </Form.Item>
+              </div>
 
               <Form.Item
                 label={
-                  <FormLabel
-                    text="Portrait"
-                    description="Used as an avatar for your character. If mouth is visible, it will be animated when your character speaks. Portrait orientation recommended."
-                  />
+                  <div className={'mb-4'}>
+                    <FormLabel
+                      text="Portrait"
+                      description="Used as an avatar for your character. If mouth is visible, it will be animated when your character speaks. Portrait orientation recommended."
+                    />
+                  </div>
                 }
-                className="label-auto-height"
+                className="mb-4"
                 labelCol={{ span: 24 }}
                 name="image"
               >
@@ -692,49 +716,59 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
                 />
               </Form.Item>
-              <Form.Item
-                label={
-                  <FormLabel
-                    text="Voice"
-                    description="(Optional) Your character will speak with this voice. Voices provided by ElevenLabs."
-                  />
-                }
-                className="label-auto-height"
-                labelCol={{ span: 24 }}
-                name="voice"
-              >
-                <Select>
-                  {ELEVENLABS_VOICES.map(voice => (
-                    <Select.Option key={voice.id} value={voice.id}>
-                      {voice.name}, {voice.accent}, {voice.age}, {voice.gender},{' '}
-                      {voice.description}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item
-                label={
-                  <FormLabel
-                    text="Greeting"
-                    description="Your Character will introduce themselves with this message when entering a conversation"
-                  />
-                }
-                className="label-auto-height"
-                labelCol={{ span: 24 }}
-                name="greeting"
-                rules={[
-                  {
-                    min: 3,
-                    max: 1000,
-                    message: 'Greeting must be between 3 and 1000 characters!',
-                  },
-                ]}
-              >
-                <Input.TextArea
-                  autoSize
-                  placeholder={EXAMPLE_CHARACTER.greeting}
+
+              <div className="flex">
+                <ParameterAddon
+                  title={'Voice'}
+                  info={'(optional)'}
+                  description={
+                    'Your character will speak with this voice. Voices provided by ElevenLabs.'
+                  }
                 />
-              </Form.Item>
+                <Form.Item
+                  className="mb-4 w-full"
+                  labelCol={{ span: 24 }}
+                  name="voice"
+                >
+                  <Select className="with-addon w-full">
+                    {ELEVENLABS_VOICES.map(voice => (
+                      <Select.Option key={voice.id} value={voice.id}>
+                        {voice.name}, {voice.accent}, {voice.age},{' '}
+                        {voice.gender}, {voice.description}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+
+              <div>
+                <ParameterAddon
+                  title={'Greeting'}
+                  textArea={true}
+                  description={
+                    'Your Character will introduce themselves with this message when entering a conversation'
+                  }
+                />
+                <Form.Item
+                  className="mb-4 font-mono w-full"
+                  name="greeting"
+                  rules={[
+                    {
+                      min: 3,
+                      max: 1000,
+                      message:
+                        'Greeting must be between 3 and 1000 characters!',
+                    },
+                  ]}
+                >
+                  <Input.TextArea
+                    className="with-addon"
+                    autoSize
+                    placeholder={EXAMPLE_CHARACTER.greeting}
+                  />
+                </Form.Item>
+              </div>
+
               <Form.Item
                 label={
                   <FormLabel
@@ -771,8 +805,8 @@ const CharacterForm = ({ character }: { character?: Character }) => {
               </div>
             </div>
 
-            <div className="self-center">
-              <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg mb-4">
+            <div>
+              <div className="sticky top-4 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg mb-4">
                 <h3 className="font-mono font-bold text-lg">
                   Test Your Character
                 </h3>
