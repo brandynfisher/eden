@@ -10,6 +10,7 @@ import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import { App, Button, Form, Input, Select } from 'antd'
 import axios from 'axios'
+import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
@@ -454,6 +455,22 @@ function coupledArray<T>(array: T[]): T[][] {
 const CharacterToolButtons = ({ character }: { character: Character }) => {
   const { message } = App.useApp()
   const router = useRouter()
+  const confirm = useConfirm()
+
+  const confirmDelete = () => {
+    confirm({
+      description: (
+        <div>
+          This will permanently delete the character{' '}
+          <strong>{character.name}</strong>.
+        </div>
+      ),
+      confirmationText: 'Delete',
+      confirmationButtonProps: { color: 'warning' },
+    })
+      .then(() => handleDeleteCharacter())
+      .catch(() => console.log('Deletion cancelled.'))
+  }
 
   const handleDeleteCharacter = async () => {
     try {
@@ -468,23 +485,23 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
     }
   }
 
-  const handleCancel = async () => {
-    await router.push('/create/characters')
-  }
+  // const handleCancel = async () => {
+  //   await router.push('/create/characters')
+  // }
 
   return (
     <div className="flex flex-grow justify-between gap-2">
-      <div className="flex gap-2">
-        <Button type="text" className="font-mono" onClick={handleCancel}>
-          Back to list
-        </Button>
-      </div>
+      {/*<div className="flex gap-2">*/}
+      {/*  <Button type="text" className="font-mono" onClick={handleCancel}>*/}
+      {/*    Back to list*/}
+      {/*  </Button>*/}
+      {/*</div>*/}
 
       <Button
         type="text"
-        className="font-mono"
+        className="font-mono ml-auto"
         danger
-        onClick={handleDeleteCharacter}
+        onClick={confirmDelete}
       >
         Delete character
       </Button>
@@ -598,260 +615,272 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     }
   }
 
-  console.log(characterImageFieldValue)
-
   return (
-    <div>
-      <Form form={form} name="CharacterForm">
-        <Form.Item
-          label={
-            <FormLabel
-              text="Name"
-              description="What should your character be called?"
-            />
-          }
-          className="label-auto-height"
-          labelCol={{ span: 24 }}
-          name="name"
-          rules={[
-            { required: true, message: 'Please input a character name!' },
-            {
-              min: 3,
-              max: 20,
-              message: 'Character name must be between 3 and 20 characters!',
-            },
-          ]}
-        >
-          <Input placeholder={EXAMPLE_CHARACTER.name} />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormLabel
-              text="Description"
-              description="Describe your character and shape its personality"
-            />
-          }
-          className="label-auto-height"
-          labelCol={{ span: 24 }}
-          name="description"
-          rules={[
-            { required: true, message: 'Please input a description!' },
-            {
-              min: 3,
-              max: 1000,
-              message: 'Description must be between 3 and 1000 characters!',
-            },
-          ]}
-        >
-          <Input.TextArea
-            autoSize
-            placeholder={EXAMPLE_CHARACTER.description}
-          />
-        </Form.Item>
-
-        <Form.Item
-          label={
-            <FormLabel
-              text="Portrait"
-              description="Used as an avatar for your character. If mouth is visible, it will be animated when your character speaks. Portrait orientation recommended."
-            />
-          }
-          className="label-auto-height"
-          labelCol={{ span: 24 }}
-          name="image"
-        >
-          <UploadParameter
-            form={form}
-            parameter={{
-              name: 'image',
-              label: '',
-              maxLength: 1,
-              default: (character && character.image) || '',
-            }}
-            key={'image'}
-            acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
-          />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormLabel
-              text="Voice"
-              description="(Optional) Your character will speak with this voice. Voices provided by ElevenLabs."
-            />
-          }
-          className="label-auto-height"
-          labelCol={{ span: 24 }}
-          name="voice"
-        >
-          <Select>
-            {ELEVENLABS_VOICES.map(voice => (
-              <Select.Option key={voice.id} value={voice.id}>
-                {voice.name}, {voice.accent}, {voice.age}, {voice.gender},{' '}
-                {voice.description}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormLabel
-              text="Greeting"
-              description="Your Character will introduce themselves with this message when entering a conversation"
-            />
-          }
-          className="label-auto-height"
-          labelCol={{ span: 24 }}
-          name="greeting"
-          rules={[
-            {
-              min: 3,
-              max: 1000,
-              message: 'Greeting must be between 3 and 1000 characters!',
-            },
-          ]}
-        >
-          <Input.TextArea autoSize placeholder={EXAMPLE_CHARACTER.greeting} />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormLabel
-              text="Example Messages"
-              description="Add sample dialogs to further refine the personality of your character"
-            />
-          }
-          className="label-auto-height"
-          labelCol={{ span: 24 }}
-          name="messages"
-        >
-          <ChatCapabilityMessageSection
-            messageGroups={messageGroups}
-            setMessageGroups={setMessageGroups}
-          />
-        </Form.Item>
-
-        <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg mb-4">
-          <h3 className="font-mono font-bold text-lg">Test Your Character</h3>
-          <div>
-            <Form.Item
-              labelCol={{ span: 24 }}
-              style={{ marginBottom: 0 }}
-              name="recent"
-            >
-              <ChatCapabilityMessageSection
-                messageGroups={recentMessage}
-                setMessageGroups={setRecentMessage}
-                showControls={false}
-              />
-            </Form.Item>
-            <Form.Item className="mb-0">
-              <Button
-                className="font-mono"
-                onClick={generateCompletion}
-                loading={completing}
+    <ConfirmProvider>
+      <div>
+        <Form form={form} name="CharacterForm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ">
+            <div>
+              <Form.Item
+                label={
+                  <FormLabel
+                    text="Name"
+                    description="What should your character be called?"
+                  />
+                }
+                className="label-auto-height"
+                labelCol={{ span: 24 }}
+                name="name"
+                rules={[
+                  { required: true, message: 'Please input a character name!' },
+                  {
+                    min: 3,
+                    max: 20,
+                    message:
+                      'Character name must be between 3 and 20 characters!',
+                  },
+                ]}
               >
-                Generate Response
-              </Button>
-            </Form.Item>
+                <Input placeholder={EXAMPLE_CHARACTER.name} />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormLabel
+                    text="Description"
+                    description="Describe your character and shape its personality"
+                  />
+                }
+                className="label-auto-height"
+                labelCol={{ span: 24 }}
+                name="description"
+                rules={[
+                  { required: true, message: 'Please input a description!' },
+                  {
+                    min: 3,
+                    max: 1000,
+                    message:
+                      'Description must be between 3 and 1000 characters!',
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  autoSize
+                  placeholder={EXAMPLE_CHARACTER.description}
+                />
+              </Form.Item>
 
-            <div
-              className={`border border-solid border-gray-700 bg-gray-200 dark:bg-stone-900 rounded-md p-4 gap-2 mt-4 flex`}
-            >
-              <div>
-                <div className="flex gap-2 items-center">
-                  <div
-                    title="Character Generated Response"
-                    className="flex items-center justify-center cursor-pointer w-16 h-16"
+              <Form.Item
+                label={
+                  <FormLabel
+                    text="Portrait"
+                    description="Used as an avatar for your character. If mouth is visible, it will be animated when your character speaks. Portrait orientation recommended."
+                  />
+                }
+                className="label-auto-height"
+                labelCol={{ span: 24 }}
+                name="image"
+              >
+                <UploadParameter
+                  form={form}
+                  parameter={{
+                    name: 'image',
+                    label: '',
+                    maxLength: 1,
+                    default: (character && character.image) || '',
+                  }}
+                  key={'image'}
+                  acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+                />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormLabel
+                    text="Voice"
+                    description="(Optional) Your character will speak with this voice. Voices provided by ElevenLabs."
+                  />
+                }
+                className="label-auto-height"
+                labelCol={{ span: 24 }}
+                name="voice"
+              >
+                <Select>
+                  {ELEVENLABS_VOICES.map(voice => (
+                    <Select.Option key={voice.id} value={voice.id}>
+                      {voice.name}, {voice.accent}, {voice.age}, {voice.gender},{' '}
+                      {voice.description}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormLabel
+                    text="Greeting"
+                    description="Your Character will introduce themselves with this message when entering a conversation"
+                  />
+                }
+                className="label-auto-height"
+                labelCol={{ span: 24 }}
+                name="greeting"
+                rules={[
+                  {
+                    min: 3,
+                    max: 1000,
+                    message: 'Greeting must be between 3 and 1000 characters!',
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  autoSize
+                  placeholder={EXAMPLE_CHARACTER.greeting}
+                />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormLabel
+                    text="Example Messages"
+                    description="Add sample dialogs to further refine the personality of your character"
+                  />
+                }
+                className="label-auto-height"
+                labelCol={{ span: 24 }}
+                name="messages"
+              >
+                <ChatCapabilityMessageSection
+                  messageGroups={messageGroups}
+                  setMessageGroups={setMessageGroups}
+                />
+              </Form.Item>
+
+              <div className="flex flex-wrap gap-4 justify-between items-center">
+                <Form.Item className="mb-0">
+                  <Button
+                    className="font-mono h-10"
+                    htmlType="submit"
+                    onClick={handleSubmit}
                   >
-                    {characterImageFieldValue &&
-                    typeof characterImageFieldValue === 'string' ? (
-                      <Image
-                        src={characterImageFieldValue}
-                        width={64}
-                        height={64}
-                        alt="character-avatar"
-                        className="object-cover rounded-full"
-                      />
-                    ) : (
-                      <RobotOutlined className="text-6xl text-gray-600" />
-                    )}
+                    {mode === 'create' ? 'Create' : 'Update'} Character
+                  </Button>
+                </Form.Item>
+                {user &&
+                user.featureFlags &&
+                user.featureFlags.includes('preview') ? (
+                  <PrivacyToggle />
+                ) : null}
+                {character && <CharacterToolButtons character={character} />}
+              </div>
+            </div>
+
+            <div className="self-center">
+              <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg mb-4">
+                <h3 className="font-mono font-bold text-lg">
+                  Test Your Character
+                </h3>
+                <div>
+                  <Form.Item
+                    labelCol={{ span: 24 }}
+                    style={{ marginBottom: 0 }}
+                    name="recent"
+                  >
+                    <ChatCapabilityMessageSection
+                      messageGroups={recentMessage}
+                      setMessageGroups={setRecentMessage}
+                      showControls={false}
+                    />
+                  </Form.Item>
+                  <Form.Item className="mb-0">
+                    <Button
+                      className="font-mono"
+                      onClick={generateCompletion}
+                      loading={completing}
+                    >
+                      Generate Response
+                    </Button>
+                  </Form.Item>
+
+                  <div
+                    className={`border border-solid border-gray-700 bg-gray-200 dark:bg-stone-900 rounded-md p-4 gap-2 mt-4 flex`}
+                  >
+                    <div>
+                      <div className="flex gap-2 items-center">
+                        <div
+                          title="Character Generated Response"
+                          className="flex items-center justify-center cursor-pointer w-16 h-16"
+                        >
+                          {characterImageFieldValue &&
+                          typeof characterImageFieldValue === 'string' ? (
+                            <Image
+                              src={characterImageFieldValue}
+                              width={64}
+                              height={64}
+                              alt="character-avatar"
+                              className="object-cover rounded-full"
+                            />
+                          ) : (
+                            <RobotOutlined className="text-6xl text-gray-600" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-full">
+                      <div>{characterName}</div>
+                      {!completing && !usedCompletion ? (
+                        <div className="text-xs text-gray-500 mt-1">...zZZ</div>
+                      ) : null}
+                      {completing ? (
+                        <div className="w-fit mt-1 bg-gray-600 h-8 items-center rounded-md rounded-tl-none text-center font-black px-2 flex gap-0.5">
+                          <span
+                            className="animate-bounce"
+                            style={{
+                              animationDelay: '0ms',
+                              animationDuration: '750ms',
+                            }}
+                          >
+                            .
+                          </span>
+                          <span
+                            className="animate-bounce"
+                            style={{
+                              animationDelay: '125ms',
+                              animationDuration: '750ms',
+                            }}
+                          >
+                            .
+                          </span>
+                          <span
+                            className="animate-bounce"
+                            style={{
+                              animationDelay: '250ms',
+                              animationDuration: '750ms',
+                            }}
+                          >
+                            .
+                          </span>
+                        </div>
+                      ) : null}
+                      <Form.Item
+                        labelCol={{ span: 24 }}
+                        name="completion"
+                        className={`mb-1 w-full ${
+                          !completing && usedCompletion ? '' : 'hidden'
+                        }`}
+                      >
+                        <Input.TextArea
+                          className="w-fullborder-none mt-1 bg-blue-200 dark:!bg-indigo-900 !border-none !rounded-lg !rounded-tl-none"
+                          readOnly
+                          autoSize
+                          disabled={completing}
+                        />
+                      </Form.Item>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="w-full">
-                <div>{characterName}</div>
-                {!completing && !usedCompletion ? (
-                  <div className="text-xs text-gray-500 mt-1">...zZZ</div>
-                ) : null}
-                {completing ? (
-                  <div className="w-fit mt-1 bg-gray-600 h-8 items-center rounded-md rounded-tl-none text-center font-black px-2 flex gap-0.5">
-                    <span
-                      className="animate-bounce"
-                      style={{
-                        animationDelay: '0ms',
-                        animationDuration: '750ms',
-                      }}
-                    >
-                      .
-                    </span>
-                    <span
-                      className="animate-bounce"
-                      style={{
-                        animationDelay: '125ms',
-                        animationDuration: '750ms',
-                      }}
-                    >
-                      .
-                    </span>
-                    <span
-                      className="animate-bounce"
-                      style={{
-                        animationDelay: '250ms',
-                        animationDuration: '750ms',
-                      }}
-                    >
-                      .
-                    </span>
-                  </div>
-                ) : null}
-                <Form.Item
-                  labelCol={{ span: 24 }}
-                  name="completion"
-                  className={`mb-1 w-full ${
-                    !completing && usedCompletion ? '' : 'hidden'
-                  }`}
-                >
-                  <Input.TextArea
-                    className="w-fullborder-none mt-1 bg-blue-200 dark:!bg-indigo-900 !border-none !rounded-lg !rounded-tl-none"
-                    readOnly
-                    autoSize
-                    disabled={completing}
-                  />
-                </Form.Item>
-              </div>
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-wrap gap-4 justify-between items-center">
-          <Form.Item>
-            <Button
-              className="font-mono h-10"
-              htmlType="submit"
-              onClick={handleSubmit}
-            >
-              {mode === 'create' ? 'Create' : 'Update'} Character
-            </Button>
-            {character && <CharacterToolButtons character={character} />}
-          </Form.Item>
-
-          {user &&
-          user.featureFlags &&
-          user.featureFlags.includes('preview') ? (
-            <PrivacyToggle />
-          ) : null}
-        </div>
-      </Form>
-    </div>
+        </Form>
+      </div>
+    </ConfirmProvider>
   )
 }
 
