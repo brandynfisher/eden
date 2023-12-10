@@ -93,7 +93,7 @@ const MasonryInfiniteScrollable = ({
             : ''
         }
         //@ts-ignore
-        onClick={onCardClick}
+        onClick={() => onCardClick(props.data)}
       />
     ),
     [hover, ItemComponent, onCardClick],
