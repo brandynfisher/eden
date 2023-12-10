@@ -10,6 +10,7 @@ import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import { App, Button, Form, Input, Select } from 'antd'
 import axios from 'axios'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
@@ -505,6 +506,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
 
   const characterName = Form.useWatch('name', form)
   const description = Form.useWatch('description', form)
+  const characterImageFieldValue = Form.useWatch('image', form) as {} | string
 
   useEffect(() => {
     const formValues: CharacterFormInput =
@@ -538,6 +540,8 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   }, [form, mode, character])
 
   const generateCompletion = async () => {
+    console.log(messageGroups)
+
     setUsedCompletion(true)
     setCompleting(true)
     try {
@@ -593,6 +597,8 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       handleAxiosError(error, message, 'Error creating/updating character')
     }
   }
+
+  console.log(characterImageFieldValue)
 
   return (
     <div>
@@ -737,7 +743,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 showControls={false}
               />
             </Form.Item>
-            <Form.Item>
+            <Form.Item className="mb-0">
               <Button
                 className="font-mono"
                 onClick={generateCompletion}
@@ -747,28 +753,81 @@ const CharacterForm = ({ character }: { character?: Character }) => {
               </Button>
             </Form.Item>
 
-            <div className={`${!usedCompletion ? 'hidden' : ''}`}>
-              <div className="flex gap-2 items-center">
-                <div>{characterName}</div>
-                <div
-                  title="Character Generated Response"
-                  className="flex items-center cursor-pointer"
-                >
-                  <RobotOutlined />
+            <div
+              className={`border border-solid border-gray-700 bg-gray-200 dark:bg-stone-900 rounded-md p-4 gap-2 mt-4 flex`}
+            >
+              <div>
+                <div className="flex gap-2 items-center">
+                  <div
+                    title="Character Generated Response"
+                    className="flex items-center justify-center cursor-pointer w-16 h-16"
+                  >
+                    {characterImageFieldValue &&
+                    typeof characterImageFieldValue === 'string' ? (
+                      <Image
+                        src={characterImageFieldValue}
+                        width={64}
+                        height={64}
+                        alt="character-avatar"
+                        className="object-cover rounded-full"
+                      />
+                    ) : (
+                      <RobotOutlined className="text-6xl text-gray-600" />
+                    )}
+                  </div>
                 </div>
               </div>
-              <Form.Item
-                labelCol={{ span: 24 }}
-                name="completion"
-                className={`mb-0`}
-              >
-                <Input.TextArea
-                  className="border-none mt-1 bg-blue-200 dark:!bg-indigo-900 !rounded-lg !rounded-tl-none"
-                  readOnly
-                  autoSize
-                  disabled={completing}
-                />
-              </Form.Item>
+              <div className="w-full">
+                <div>{characterName}</div>
+                {!completing && !usedCompletion ? (
+                  <div className="text-xs text-gray-500 mt-1">...zZZ</div>
+                ) : null}
+                {completing ? (
+                  <div className="w-fit mt-1 bg-gray-600 h-8 items-center rounded-md rounded-tl-none text-center font-black px-2 flex gap-0.5">
+                    <span
+                      className="animate-bounce"
+                      style={{
+                        animationDelay: '0ms',
+                        animationDuration: '750ms',
+                      }}
+                    >
+                      .
+                    </span>
+                    <span
+                      className="animate-bounce"
+                      style={{
+                        animationDelay: '125ms',
+                        animationDuration: '750ms',
+                      }}
+                    >
+                      .
+                    </span>
+                    <span
+                      className="animate-bounce"
+                      style={{
+                        animationDelay: '250ms',
+                        animationDuration: '750ms',
+                      }}
+                    >
+                      .
+                    </span>
+                  </div>
+                ) : null}
+                <Form.Item
+                  labelCol={{ span: 24 }}
+                  name="completion"
+                  className={`mb-1 w-full ${
+                    !completing && usedCompletion ? '' : 'hidden'
+                  }`}
+                >
+                  <Input.TextArea
+                    className="w-fullborder-none mt-1 bg-blue-200 dark:!bg-indigo-900 !border-none !rounded-lg !rounded-tl-none"
+                    readOnly
+                    autoSize
+                    disabled={completing}
+                  />
+                </Form.Item>
+              </div>
             </div>
           </div>
         </div>
