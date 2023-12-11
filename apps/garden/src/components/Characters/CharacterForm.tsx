@@ -336,7 +336,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 />
               </Form.Item>
 
-              <div className="flex">
+              <div className="flex max-w-full">
                 <ParameterAddon
                   title={'Voice'}
                   info={'(optional)'}
@@ -345,11 +345,11 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   }
                 />
                 <Form.Item
-                  className="mb-4 w-full"
+                  className="mb-4 w-full min-w-0"
                   labelCol={{ span: 24 }}
                   name="voice"
                 >
-                  <Select className="with-addon w-full">
+                  <Select className="with-addon">
                     {ELEVENLABS_VOICES.map(voice => (
                       <Select.Option key={voice.id} value={voice.id}>
                         {voice.name}, {voice.accent}, {voice.age},{' '}
