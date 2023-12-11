@@ -148,7 +148,7 @@ export const useCreationState = () => {
         if (completed.length > prevState.length) {
           // probably got a new finished task, trigger mutate on own profile (first page) to force a refresh
           const ownCreatorFeedPageRoute = getFeedPageRoute(
-            'creations',
+            'creation',
             { userId: userId || '' },
             25,
             1,

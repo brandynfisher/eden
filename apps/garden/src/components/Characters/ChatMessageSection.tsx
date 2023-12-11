@@ -68,15 +68,17 @@ export const ChatMessageSection = ({
             >
               +
             </Button>
-            <Button
-              onClick={() => {
-                setMessageGroups(messageGroups.slice(0, -1))
-              }}
-              className="font-mono "
-              danger
-            >
-              -
-            </Button>
+            {messageGroups && messageGroups.length ? (
+              <Button
+                onClick={() => {
+                  setMessageGroups(messageGroups.slice(0, -1))
+                }}
+                className="font-mono "
+                danger
+              >
+                -
+              </Button>
+            ) : null}
           </Space>
         )}
       </div>

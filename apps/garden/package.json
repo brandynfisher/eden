@@ -38,6 +38,7 @@
     "hamburger-react": "^2.5.0",
     "jsonwebtoken": "^9.0.0",
     "masonic": "^3.7.0",
+    "material-ui-confirm": "^3.0.9",
     "mini-virtual-list": "^0.3.2",
     "nanoid": "^4.0.2",
     "next": "13.4.4",

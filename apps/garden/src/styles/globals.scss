@@ -702,11 +702,11 @@ body {
             border-bottom-left-radius: 0 !important;
         }
     }
+}
 
-    &.ant-input {
-        border-top-left-radius: 0 !important;
-        border-top-right-radius: 0!important;
-    }
+textarea.with-addon {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0!important;
 }
 
 .parameter {
@@ -721,9 +721,14 @@ body {
         }
     }
 
-    &.parameter--textarea {
+    &.parameter--text {
         .parameter__addon {
 
+        }
+
+        .ant-input.with-addon {
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
         }
     }
 

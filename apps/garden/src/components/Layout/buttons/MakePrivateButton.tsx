@@ -1,5 +1,6 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { handleAxiosError } from '@/lib/fetcher'
+import { ItemType } from '@/providers/ModalProvider'
 // import { useState } from 'react';
 import LockPersonIcon from '@mui/icons-material/LockPerson'
 import { App } from 'antd'
@@ -13,7 +14,7 @@ const MakePrivateButton = ({
   onChange,
 }: {
   itemId: string
-  itemType: 'creation' | 'concept'
+  itemType: ItemType
   variant?: 'text'
   label?: string
   onChange?: (visibilityUpdate: { isPrivate: boolean }) => void

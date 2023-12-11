@@ -4,6 +4,7 @@ import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
   OrderByLatest,
   OrderByLikedByMe,
+  OrderByUsage,
 } from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
@@ -23,7 +24,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfiniteContainer
         key={`creations_${creatorId}`}
-        type="creations"
+        itemType="creation"
         query={{ userId: creatorId }}
         filters={
           isAuthenticated && userId === creatorId
@@ -41,9 +42,9 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
     <div className="mt-4">
       <MasonryInfiniteContainer
         key={`concepts_${creatorId}`}
-        type="concepts"
+        itemType="concept"
         query={{ userId: creatorId }}
-        filters={[OrderByLatest]}
+        filters={[OrderByLatest, OrderByUsage]}
         ItemComponent={ConceptCard}
       />
     </div>

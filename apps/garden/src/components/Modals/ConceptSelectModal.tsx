@@ -90,7 +90,7 @@ const ConceptSelectModal = ({
           </div>
         </div>
         <MasonryInfiniteScrollable
-          type="concepts"
+          itemType="concept"
           ItemComponent={ConceptCard}
           query={query}
           onCardClick={concept => onChange(concept as Concept)}

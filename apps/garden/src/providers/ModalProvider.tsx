@@ -1,8 +1,7 @@
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
-import ConceptDetailModalV2 from '@/components/Modals/ConceptDetailModalV2'
 import ConceptSelectModal from '@/components/Modals/ConceptSelectModal'
-import CreationDetailModalV2 from '@/components/Modals/CreationDetailModalV2'
 import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
+import DetailModal from '@/components/Modals/DetailModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import GeneratorSelectModal from '@/components/Modals/GeneratorSelectModal'
@@ -22,10 +21,9 @@ import React, {
 } from 'react'
 
 export enum MODAL_TYPES {
-  CREATION_DETAIL_MODAL_V2 = 'CREATION_DETAIL_MODAL_V2',
+  DETAIL_MODAL = 'DETAIL_MODAL',
   CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
   COLLECTION_ADD_CREATION_MODAL = 'COLLECTION_ADD_CREATION_MODAL',
-  CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
   CONCEPT_SELECT_MODAL = 'CONCEPT_SELECT_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
@@ -36,10 +34,9 @@ export enum MODAL_TYPES {
 
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
-  [MODAL_TYPES.CREATION_DETAIL_MODAL_V2]: CreationDetailModalV2,
+  [MODAL_TYPES.DETAIL_MODAL]: DetailModal,
   [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
   [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
-  [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModalV2,
   [MODAL_TYPES.CONCEPT_SELECT_MODAL]: ConceptSelectModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
@@ -70,10 +67,16 @@ export type ConceptSelectModalProps = Partial<
   }
 >
 
-export type CreationDetailModalV2Props = Partial<
+export type ItemType = 'creation' | 'concept' | 'character' | 'creator'
+
+export type DetailModalProps = Partial<
   BaseModalProps & {
-    initialItem: Creation
-    maybeLoadMoreFn: (currentIndex: number, currentItems: Creation[]) => void
+    itemType: ItemType
+    initialItem: Creation | Concept
+    maybeLoadMoreFn: (
+      currentIndex: number,
+      currentItems: Creation[] | Concept[],
+    ) => void
   }
 >
 
@@ -88,7 +91,7 @@ type ModalStore = {
   modalType: string | undefined
   modalProps?:
     | Partial<BaseModalProps & { creation?: Creation; loadSimilar?: boolean }>
-    | CreationDetailModalV2Props
+    | DetailModalProps
     | AddToCollectionModalProps
     | GeneratorSelectModalProps
     | ConceptSelectModalProps

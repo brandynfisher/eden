@@ -9,7 +9,7 @@ const ConceptsPage = () => {
   return (
     <div className={`flex flex-col`}>
       <MasonryInfiniteContainer
-        type="concepts"
+        itemType="concept"
         ItemComponent={ConceptCard}
         filters={[OrderByUsage, OrderByLatest]}
       />

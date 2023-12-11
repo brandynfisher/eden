@@ -10,6 +10,7 @@ import ShareLinkButton from '@/components/Layout/buttons/ShareLinkButton'
 import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
+import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
@@ -41,7 +42,7 @@ const CardToolsDropdown = ({
 }: {
   onOpen?: Function
   item: Creation | Concept
-  itemType: 'creation' | 'concept'
+  itemType: ItemType
   onChange: Dispatch<SetStateAction<Concept | Creation>>
 }) => {
   const { user, isAuthenticated } = useContext(UserContext)
@@ -274,7 +275,7 @@ const CardToolsDropdown = ({
       arrow={true}
       placement="bottomRight"
       menu={{ items: getCardMenuItems(), onClick: onItemClick }}
-      className="card-tools-dropdown"
+      className="card-tools-dropdown ml-auto"
       onOpenChange={open => {
         onOpen && onOpen(open)
       }}

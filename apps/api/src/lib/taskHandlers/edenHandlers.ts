@@ -100,6 +100,10 @@ const handleUpdate = async (
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
 
+      const { nsfw_scores, ...remainingAttributes } =
+        finalOutput.attributes || {}
+      const finalOutputAttributes = { ...remainingAttributes }
+
       await Promise.allSettled(
         finalOutput.files.map(async (files, index) => {
           const creationId = new ObjectId()
@@ -108,16 +112,8 @@ const handleUpdate = async (
             : task.user
 
           const nsfwScore =
-            finalOutput.attributes &&
-            finalOutput.attributes['nsfw_scores'] &&
-            finalOutput.attributes['nsfw_scores'].length
-              ? finalOutput.attributes['nsfw_scores'][index]
-              : 0
+            nsfw_scores && nsfw_scores.length ? nsfw_scores[index] : 0
           const isNsfw = nsfwScore && nsfwScore > 0.5
-
-          if (finalOutput.attributes) {
-            delete finalOutput.attributes.nsfw_scores
-          }
 
           const creationDocument: CreationInput = {
             _id: creationId,
@@ -129,7 +125,7 @@ const handleUpdate = async (
             name: finalOutput.name,
             attributes: {
               ...task.attributes,
-              ...finalOutput.attributes,
+              ...finalOutputAttributes,
               nsfw_score: nsfwScore,
             },
             isPrivate: isNsfw ? true : task.config.isPrivate || false,
