@@ -135,13 +135,15 @@ function ModalProvider({ children }: PropsWithChildren) {
   ) => {
     setStore([...store, { modalType, modalProps }])
 
-    // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
+    // // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
     const modalWrapDomElement =
       document.getElementsByClassName('ant-modal-wrap')
+
+    // console.log({ modalWrapDomElement })
     if (modalWrapDomElement && modalWrapDomElement.length) {
       modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     }
-    // @todo ---end ugly---
+    // // @todo ---end ugly---
   }
 
   const hideModal = (modalType: ModalStore['modalType']) => {
@@ -172,6 +174,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       className:
         'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
       onCancel: async () => {
+        // console.log('onCancel', modal)
         hideModal(modal?.modalType)
         if (modal?.modalProps?.usesUrl) {
           if (modal?.modalProps?.originPageUrl) {
@@ -252,8 +255,8 @@ function ModalProvider({ children }: PropsWithChildren) {
     <ModalContext.Provider value={{ showModal, hideModal }}>
       <div tabIndex={0} className="outline-0">
         {renderComponents()}
-        {children}
       </div>
+      {children}
     </ModalContext.Provider>
   )
 }

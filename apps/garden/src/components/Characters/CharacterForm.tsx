@@ -251,13 +251,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     description={'What should your character be called?'}
                   />
                   <Form.Item
-                    // label={
-                    //   <FormLabel
-                    //     description="What should your character be called?"
-                    //   />
-                    // }
                     className="mb-4 font-mono w-full"
-                    // labelCol={{ span: 24 }}
                     name="name"
                     rules={[
                       {
@@ -290,7 +284,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   }
                 />
                 <Form.Item
-                  className="mb-4 font-mono w-full"
+                  className="mb-4 w-full"
                   name="description"
                   rules={[
                     { required: true, message: 'Please input a description!' },
@@ -310,31 +304,27 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 </Form.Item>
               </div>
 
-              <Form.Item
-                label={
-                  <div className={'mb-4'}>
-                    <FormLabel
-                      text="Portrait"
-                      description="Used as an avatar for your character. If mouth is visible, it will be animated when your character speaks. Portrait orientation recommended."
-                    />
-                  </div>
-                }
-                className="mb-4"
-                labelCol={{ span: 24 }}
-                name="image"
-              >
-                <UploadParameter
-                  form={form}
-                  parameter={{
-                    name: 'image',
-                    label: '',
-                    maxLength: 1,
-                    default: (character && character.image) || '',
-                  }}
-                  key={'image'}
-                  acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+              <div>
+                <ParameterAddon
+                  title={'Portrait'}
+                  description={
+                    'Used as an avatar for your character. If mouth is visible, it will be animated when your character speaks. Portrait orientation recommended.'
+                  }
                 />
-              </Form.Item>
+                <Form.Item className="mb-4 w-full" name="image">
+                  <UploadParameter
+                    form={form}
+                    parameter={{
+                      name: 'image',
+                      label: '',
+                      maxLength: 1,
+                      default: (character && character.image) || '',
+                    }}
+                    key={'image'}
+                    acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+                  />
+                </Form.Item>
+              </div>
 
               <div className="flex max-w-full">
                 <ParameterAddon
@@ -344,11 +334,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     'Your character will speak with this voice. Voices provided by ElevenLabs.'
                   }
                 />
-                <Form.Item
-                  className="mb-4 w-full min-w-0"
-                  labelCol={{ span: 24 }}
-                  name="voice"
-                >
+                <Form.Item className="mb-4 w-full min-w-0" name="voice">
                   <Select className="with-addon">
                     {ELEVENLABS_VOICES.map(voice => (
                       <Select.Option key={voice.id} value={voice.id}>

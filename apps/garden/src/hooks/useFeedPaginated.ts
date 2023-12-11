@@ -128,17 +128,22 @@ export const useFeedPaginated = (
 
   const isLoadingMore =
     isLoading ||
-    (size > 0 && data != null && typeof data[size - 1] === 'undefined')
+    (size > 0 &&
+      data != null &&
+      typeof data[size - 1] === 'undefined' &&
+      data &&
+      data[data.length - 1] &&
+      typeof data[data.length - 1] !== 'undefined' &&
+      data[data.length - 1]?.hasNextPage)
   const isEmpty = data?.[0]?.total === 0 || data?.[0]?.length === 0
 
   const maybeLoadMore = useMemo(() => {
     return () => {
       if (!data) return
-      // console.log('maybeLoadMore')
       if (isValidating) return
       if (isLoading || isLoadingMore) return
 
-      const { hasNextPage: dataHasNextPage } = data[0]
+      const { hasNextPage: dataHasNextPage } = data[data.length - 1]
 
       if (dataHasNextPage) {
         setSize(prevSize => {
@@ -161,7 +166,7 @@ export const useFeedPaginated = (
   }, [data])
 
   return {
-    hasNextPage: data ? !!data[0]?.hasNextPage : false,
+    hasNextPage: data ? !!data[size - 1]?.hasNextPage : false,
     totalItems: totalItems,
     items: data ? ([] as Creation[]).concat(...docs) : [],
     refetchFeed,
@@ -169,6 +174,7 @@ export const useFeedPaginated = (
     setSize,
     isEmpty,
     isLoading,
+    isLoadingMore,
     maybeLoadMore,
   }
 }
