@@ -347,8 +347,6 @@ export const createChatCompletion = async (
     } as ChatCompletionRequestMessage
   })
 
-  console.log(chatMessages)
-
   const response = await server.openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
     messages: chatMessages,

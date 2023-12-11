@@ -29,6 +29,8 @@ export interface CharactersCreateArguments extends WebAPICallOptions {
   description?: string
   greeting?: string
   dialogue?: any[]
+  concept?: string
+  logosData?: LogosData
   isPrivate?: boolean
 }
 
@@ -40,6 +42,8 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
   description?: string
   greeting?: string
   dialogue?: any[]
+  concept?: string
+  logosData?: LogosData
   isPrivate?: boolean
 }
 
@@ -144,6 +148,8 @@ export type Character = {
   description?: string
   greeting?: string
   dialogue?: any[]
+  concept?: string
+  logosData?: LogosData
   image?: string
   voice?: string
   creationCount?: number
@@ -151,4 +157,11 @@ export type Character = {
   isPrivate?: boolean
   createdAt: string
   updatedAt: string
+}
+
+export type LogosData = {
+  documentation?: string
+  documentationPrompt?: string
+  creatorPrompt?: string
+  routerPrompt?: string
 }

@@ -48,7 +48,6 @@ const CreationCard: FC<{
         deleted: false,
       })
     } catch (err) {
-      console.log(err)
       handleAxiosError(err, message)
     }
   }, [creation])

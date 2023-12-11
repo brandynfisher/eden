@@ -411,7 +411,6 @@ const conceptsAggregate = (
   //   })
   // }
 
-  console.log(pipelines)
   return Concept.aggregate(pipelines)
 }
 
