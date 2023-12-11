@@ -88,7 +88,7 @@ const MasonryInfiniteScrollable = ({
       rowGutter: 20,
       maxColumnCount: 4,
     },
-    [query?.conceptId, query?.userId, containerWidth],
+    [query?.name, query?.conceptId, query?.userId, containerWidth],
   )
 
   const resizeObserver = useResizeObserver(positioner)
