@@ -18,9 +18,11 @@ import { App, Tag } from 'antd'
 import axios from 'axios'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 
+export type CardData = Creation | Concept
+
 export interface CardProps {
   index: number
-  data: Creation | Concept
+  data: CardData
   onClick: () => void
   hidePrompt?: boolean
   sizes?: string
@@ -42,7 +44,7 @@ const Card: FC<CardWithTypeProps> = ({
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
 
-  const [itemData, setItemData] = useState<Creation | Concept>(data)
+  const [itemData, setItemData] = useState<CardData>(data)
   const [createdDateString, setCreatedDateString] = useState('')
   const [dropdownActive, setDropdownActive] = useState(false)
   const timeSinceCreation = timeAgo(itemData.createdAt)

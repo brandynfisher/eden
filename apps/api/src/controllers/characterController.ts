@@ -162,11 +162,17 @@ export const listCharacters = async (
       sort,
     },
   )
+
+  await characterRepository.model.populate(characterPaginatedResponse.docs, {
+    path: 'user',
+    select: 'userId username userImage',
+  })
+
   const response = {
     ...characterPaginatedResponse,
     docs: characterPaginatedResponse.docs.map(character => ({
       id: character._id.toString(),
-      user: character.user.toString(),
+      user: character.user,
       name: character.name,
       slug: character.slug,
       image: character.image,
