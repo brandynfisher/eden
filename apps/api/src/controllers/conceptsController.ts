@@ -156,8 +156,6 @@ export const getConcept = async (
     const uid = new ObjectId(userId)
     const reactionsMap = await getReactions(uid, [concept])
     const bookmarksMap = await getBookmarks(uid, [concept])
-    console.log(reactionsMap)
-    console.log(bookmarksMap)
 
     // concept.reactions = reactionsMap[concept._id.toString()]
     // concept.bookmarked = bookmarksMap[concept._id.toString()]

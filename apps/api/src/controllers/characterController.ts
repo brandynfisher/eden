@@ -21,8 +21,17 @@ export const createCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, image, voice, description, greeting, dialogue, isPrivate } =
-    request.body as CharactersCreateArguments
+  const {
+    name,
+    image,
+    voice,
+    description,
+    greeting,
+    dialogue,
+    concept,
+    logosData,
+    isPrivate,
+  } = request.body as CharactersCreateArguments
 
   const input: {
     user: ObjectId
@@ -32,6 +41,8 @@ export const createCharacter = async (
     description: string | undefined
     greeting: string | undefined
     dialogue: any[] | undefined
+    concept: string | undefined
+    logosData: any | undefined
     isPrivate?: boolean
   } = {
     user: userId,
@@ -41,6 +52,8 @@ export const createCharacter = async (
     description,
     greeting,
     dialogue,
+    concept,
+    logosData,
     isPrivate,
   }
 
@@ -78,8 +91,17 @@ export const updateCharacter = async (
     })
   }
 
-  const { name, image, voice, description, greeting, dialogue, isPrivate } =
-    request.body as CharactersUpdateArguments
+  const {
+    name,
+    image,
+    voice,
+    description,
+    greeting,
+    dialogue,
+    concept,
+    logosData,
+    isPrivate,
+  } = request.body as CharactersUpdateArguments
 
   const character = await Character.findOne({
     _id: characterId,
@@ -99,6 +121,8 @@ export const updateCharacter = async (
     description: string | undefined
     greeting: string | undefined
     dialogue: any[] | undefined
+    concept: string | undefined
+    logosData: any | undefined
     isPrivate?: boolean
   } = {
     name,
@@ -107,6 +131,8 @@ export const updateCharacter = async (
     description,
     greeting,
     dialogue,
+    concept,
+    logosData,
     isPrivate,
   }
 
@@ -180,6 +206,7 @@ export const listCharacters = async (
       description: character.description,
       greeting: character.greeting,
       dialogue: character.dialogue,
+      concept: character.concept,
       creationCount: character.creationCount,
       isPrivate: character.isPrivate,
     })),
@@ -219,6 +246,8 @@ export const getCharacter = async (
     description: character.description,
     greeting: character.greeting,
     dialogue: character.dialogue,
+    concept: character.concept,
+    logosData: character.logosData,
     creationCount: character.creationCount,
     isPrivate: character.isPrivate,
   }

@@ -205,8 +205,6 @@ export const getCreation = async (
     const userRating = await getRating(uid, creation._id)
     const reactionsMap = await getReactions(uid, [creation])
     const bookmarksMap = await getBookmarks(uid, [creation])
-    console.log(reactionsMap)
-    console.log(bookmarksMap)
 
     // creation.reactions = reactionsMap[creation._id.toString()]
     // creation.bookmarked = bookmarksMap[creation._id.toString()]
