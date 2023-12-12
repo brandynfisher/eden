@@ -117,7 +117,6 @@ export const useCreationState = () => {
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
   const [pendingTasks, setPendingTasks] = useState<Task[]>()
-  const [tasks, setTasks] = useState<Task[]>()
 
   const [dismissedTaskIds, setDismissedTaskIds] = useLocalStorage<string[]>({
     key: 'tasks::dismissed',
@@ -136,6 +135,8 @@ export const useCreationState = () => {
     fetcher,
     { refreshInterval: 5000 },
   )
+  const tasks = tasksData?.tasks as Task[]
+
   const { mutate: mutateGlobal } = useSWRConfig()
   const { userId } = useContext(UserContext)
   const [notificationCutOffDate, setNotificationCutOffDate] =
@@ -143,16 +144,14 @@ export const useCreationState = () => {
 
   useEffect(() => {
     if (dismissedTaskIds && dismissedTaskIds.length) {
-      setTasks(
-        tasksData?.tasks.filter(
-          (task: Task) => !dismissedTaskIds.includes(task._id),
-        ),
+      setCompletedTasks(prev =>
+        prev.filter(item => !dismissedTaskIds.includes(item._id)),
       )
-      return
+      setFailedTasks(prev =>
+        prev.filter(item => !dismissedTaskIds.includes(item._id)),
+      )
     }
-
-    setTasks(tasksData?.tasks)
-  }, [tasksData, dismissedTaskIds])
+  }, [dismissedTaskIds])
 
   useEffect(() => {
     setNotificationCutOffDate(Date.now())
@@ -184,10 +183,15 @@ export const useCreationState = () => {
           mutateGlobal(ownCreatorFeedPageRoute, undefined)
         }
 
-        return completed
+        return completed.filter(item => !dismissedTaskIds.includes(item._id))
       })
 
-      setFailedTasks(tasks?.filter(task => task.status === 'failed'))
+      setFailedTasks(
+        tasks?.filter(
+          task =>
+            task.status === 'failed' && dismissedTaskIds.includes(task._id),
+        ),
+      )
     }
   }, [mutateGlobal, tasks, userId])
 
