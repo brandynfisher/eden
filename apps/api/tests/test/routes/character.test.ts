@@ -1,7 +1,11 @@
 import { FastifyInstance } from 'fastify'
 import { expect, test } from 'vitest'
 
-import { prepareCharacterHeaders, prepareUserHeaders } from '../../util'
+import {
+  prepareBasicUserHeaders,
+  prepareCharacterHeaders,
+  prepareUserHeaders,
+} from '../../util'
 
 const createCharacter = async (server: FastifyInstance) => {
   const headers = prepareUserHeaders()
@@ -124,4 +128,38 @@ test('Character can add attributes to a task', async context => {
   const { task } = taskGetResponse.json()
   expect(task).toBeDefined()
   expect(task).toHaveProperty('character')
+})
+
+test('Basic user cannot create a private character', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/characters',
+    headers,
+    payload: {
+      name: 'Test Character',
+      description: 'Test Description',
+      greeting: 'Test Greeting',
+      isPrivate: true,
+    },
+  })
+  expect(response.statusCode).toBe(401)
+})
+
+test('Subscription user can create a private character', async context => {
+  const { server } = context
+  const headers = prepareBasicUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/characters',
+    headers,
+    payload: {
+      name: 'Test Character',
+      description: 'Test Description',
+      greeting: 'Test Greeting',
+      isPrivate: true,
+    },
+  })
+  expect(response.statusCode).toBe(200)
 })

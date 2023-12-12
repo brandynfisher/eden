@@ -4,10 +4,12 @@ import {
   CharactersGetArguments,
   CharactersListArguments,
   CharactersUpdateArguments,
+  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'
@@ -32,6 +34,16 @@ export const createCharacter = async (
     logosData,
     isPrivate,
   } = request.body as CharactersCreateArguments
+
+  if (
+    isPrivate &&
+    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
+  ) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
   const input: {
     user: ObjectId

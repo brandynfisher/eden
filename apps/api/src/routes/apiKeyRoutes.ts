@@ -1,11 +1,6 @@
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
-import {
-  FastifyInstance,
-  FastifyPluginAsync,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify'
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
@@ -25,7 +20,7 @@ const apiKeyCreatePreHandler = async (
 ) => {
   const subscriber = await hasMinimumSubscriptionTier(
     request,
-    SubscriptionTier.Basic,
+    SubscriptionTier.Pro,
   )
   const previewUser = await hasFeatureFlag(request, FeatureFlag.Preview)
   if (!subscriber && !previewUser) {

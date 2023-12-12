@@ -1,4 +1,5 @@
 import {
+  SubscriptionTier,
   TasksCreateArguments,
   TasksGetArguments,
   TasksListArguments,
@@ -12,6 +13,7 @@ import {
   getLatestGeneratorVersion,
   prepareConfig,
 } from '../lib/generator'
+import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
 import { Completion, CompletionInput } from '../models/Completion'
 import { User } from '../models/Creator'
 import {
@@ -109,13 +111,19 @@ export const createTask = async (
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
-  const isCharacter = character !== undefined
+  const isUser = !isAdmin && !character
 
-  if (attributes && !(isAdmin || isCharacter)) {
+  if (
+    isUser &&
+    config?.isPrivate &&
+    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
+  ) {
     return reply.status(401).send({
-      message: 'Only admin/characters can set attributes',
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
     })
   }
+
   // get generator
   const generator = await Generator.findOne({
     generatorName,

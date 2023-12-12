@@ -220,6 +220,8 @@ beforeEach(async () => {
   await createAdmin()
   await createFreeUser()
   await createBasicUser()
+  await createProUser()
+  await createBelieverUser()
   await createPreviewUser()
   await createGenerator('test')
   await createCreation()

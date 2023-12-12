@@ -107,14 +107,14 @@ export const isCharacter = async (
   }
 }
 
-export const hasMinimumSubscriptionTier = async (
+export const hasMinimumSubscriptionTier = (
   request: FastifyRequest,
   minimumTier: SubscriptionTier,
 ) => {
   return request.user.subscriptionTier >= minimumTier
 }
 
-export const hasFeatureFlag = async (
+export const hasFeatureFlag = (
   request: FastifyRequest,
   featureFlag: FeatureFlag,
 ) => {
