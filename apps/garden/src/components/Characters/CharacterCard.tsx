@@ -33,9 +33,9 @@ const CharacterCard: FC<{
         <Image
           src={character.image}
           alt={character.name}
-          width={320}
-          height={320}
-          className="object-cover w-full h-auto"
+          width={256}
+          height={256}
+          className="object-contain w-full max-h-[256px]"
         />
       ) : (
         <RobotOutlined className="text-6xl text-gray-600" />
@@ -47,19 +47,29 @@ const CharacterCard: FC<{
         </div>
         <div className="w-full mb-2">
           <div className="flex gap-2">
-            {character.voice ? (
-              <div className="flex items-center px-2 py-1 border border-solid border-gray-700 bg-gray-800 rounded-md">
-                <span className="text-gray-400 mr-1.5 text-xs">Voice</span>
-                <CheckOutlined className="text-green-400" />
-              </div>
-            ) : null}
-            {/*{ character.voice ?*/}
             <div className="flex items-center px-2 py-1 border border-solid border-gray-700 bg-gray-800 rounded-md">
-              <span className="text-gray-400 mr-1.5 text-xs">Discord</span>
-              <CloseOutlined className="text-red-400" />
+              <span className="text-gray-400 mr-1.5 text-xs">Voice</span>
+              {character.voice ? (
+                <CheckOutlined className="text-green-400" />
+              ) : (
+                <CloseOutlined className="text-red-400" />
+              )}
             </div>
-            {/*: null*/}
-            {/*}*/}
+            {/*<div className="flex items-center px-2 py-1 border border-solid border-gray-700 bg-gray-800 rounded-md">*/}
+            {/*  <span className="text-gray-400 mr-1.5 text-xs">Discord</span>*/}
+            {/*  {character.discord*/}
+            {/*    ? <CheckOutlined className="text-green-400" />*/}
+            {/*    : <CloseOutlined className="text-red-400" />*/}
+            {/*  }*/}
+            {/*</div>*/}
+            <div className="flex items-center px-2 py-1 border border-solid border-gray-700 bg-gray-800 rounded-md">
+              <span className="text-gray-400 mr-1.5 text-xs">Concept</span>
+              {character.concept ? (
+                <CheckOutlined className="text-green-400" />
+              ) : (
+                <CloseOutlined className="text-red-400" />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -71,7 +81,7 @@ const CharacterCard: FC<{
           creatorName={character.user.username}
           creatorImage={character.user.userImage}
         />
-        <div>creations: {character.creationCount}</div>
+        {/*<div>creations: {character.creationCount}</div>*/}
       </div>
     </div>
   )

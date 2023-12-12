@@ -54,8 +54,7 @@ const MasonryInfinite = ({
     // size,
     // setSize,
     isEmpty,
-    // hasNextPage,
-    isLoading,
+    isLoadingMore,
   } = useFeedPaginated(itemType, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
@@ -104,14 +103,6 @@ const MasonryInfinite = ({
     setItems(items)
   }, [items.length])
 
-  useEffect(() => {
-    document.body.classList.add('force-scroll-y')
-
-    return () => {
-      document.body.classList.remove('force-scroll-y')
-    }
-  }, [])
-
   const handleCardClick = useCallback((index: number) => {
     //@todo: move this to CreationMasonry (similarMasonry, as static)
     // if (disableArrowNav) {
@@ -158,8 +149,6 @@ const MasonryInfinite = ({
 
   return (
     <div ref={ref}>
-      {isLoading && !items.length ? <LoadingIndicator /> : null}
-
       {items.length && typeof items[0] === 'undefined' ? (
         <div>error fetching list</div>
       ) : (
@@ -184,6 +173,12 @@ const MasonryInfinite = ({
           )}
         </>
       )}
+
+      {isLoadingMore ? (
+        <div className="my-4 py-2">
+          <LoadingIndicator />
+        </div>
+      ) : null}
 
       {isEmpty && !items.length && (
         <div className="flex flex-col items-center">

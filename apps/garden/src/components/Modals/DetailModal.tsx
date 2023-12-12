@@ -5,9 +5,10 @@ import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
 import { ItemType } from '@/providers/ModalProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { useElementSize } from '@mantine/hooks'
 import { App, Modal, ModalProps } from 'antd'
 import { useRouter } from 'next/router'
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
 import Details from '../Detail/Details'
 
@@ -75,34 +76,91 @@ const DetailModal = ({
         itemType,
         items[currentIndex]._id,
       )
-      // console.log(currentItem._id, pageUrl, modalUrl)
+      // console.log('push', items[currentIndex]._id, pageUrl, modalUrl)
       await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     }
 
     if (currentIndex !== null) {
+      // console.log('changing route')
       handleRouteChange()
     }
   }, [router.asPath, currentIndex, items.length])
 
+  const { ref: containerRef, height: containerHeight } = useElementSize()
+
+  const modalContainerRef = useRef<HTMLDivElement | null>(null)
+
+  // other code...
+
+  useEffect(() => {
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'childList') {
+          const modalWrap = (mutation.target as HTMLElement).querySelector(
+            '.ant-modal-wrap',
+          )
+          if (modalWrap) {
+            containerRef.current = modalWrap as HTMLDivElement
+            // console.log(containerRef.current); // You can now access .ant-modal-wrap here
+          }
+        }
+      })
+    })
+
+    if (modalContainerRef.current) {
+      observer.observe(modalContainerRef.current, { childList: true })
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth
+    document.body.style.paddingRight = `${scrollbarWidth}px`
+    document.body.style.overflow = 'hidden'
+    document.body.classList.add('relative')
+    document.body.classList.add('overflow-hidden')
+
+    return () => {
+      document.body.style.paddingRight = ''
+      document.body.style.overflow = ''
+      document.body.classList.remove('relative')
+      document.body.classList.remove('overflow-hidden')
+    }
+  }, [])
+
   return (
-    <Modal {...rest} className="modal-full max-w-7xl">
-      {items[currentIndex] ? (
-        <Details
-          itemType={itemType}
-          item={items[currentIndex]}
-          isModal={true}
-        />
-      ) : null}
-      {currentIndex !== null ? (
-        <ArrowNavigationButtons
-          items={items}
-          currentIndex={currentIndex}
-          handlePrev={handlePrevItem}
-          handleNext={handleNextItem}
-          handleCancel={onCancel}
-        />
-      ) : null}
-    </Modal>
+    <div ref={modalContainerRef}>
+      <Modal
+        {...rest}
+        className="modal-full max-w-7xl"
+        getContainer={() =>
+          modalContainerRef?.current || document.createElement('div')
+        }
+      >
+        {items[currentIndex] ? (
+          <Details
+            isModal={true}
+            modalContainerRef={containerRef}
+            modalContainerHeight={containerHeight}
+            itemType={itemType}
+            item={items[currentIndex]}
+          />
+        ) : null}
+        {currentIndex !== null ? (
+          <ArrowNavigationButtons
+            items={items}
+            currentIndex={currentIndex}
+            handlePrev={handlePrevItem}
+            handleNext={handleNextItem}
+            handleCancel={onCancel}
+          />
+        ) : null}
+      </Modal>
+    </div>
   )
 }
 

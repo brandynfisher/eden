@@ -24,7 +24,6 @@ import React, {
   SetStateAction,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from 'react'
 
@@ -40,14 +39,17 @@ const Details = ({
   item,
   itemType,
   isModal,
+  modalContainerRef,
+  modalContainerHeight,
 }: // loadSimilar,
 {
   item: Creation | Concept
   itemType: ItemType
   isModal?: boolean
+  modalContainerRef?: React.MutableRefObject<HTMLDivElement>
+  modalContainerHeight?: number
   // loadSimilar?: boolean
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
   const [itemData, setItemData] = useState<Creation | Concept>(item)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
@@ -118,7 +120,7 @@ const Details = ({
         />
       )}
 
-      <div ref={containerRef} data-testid="creation-detail">
+      <div data-testid="creation-detail">
         <div className="lg:flex lg:flex-grow xl:flex xl:justify-center">
           <div
             className={`relative ${
@@ -209,7 +211,11 @@ const Details = ({
       </div>
       {itemType === 'concept' ? (
         <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
-          <ConceptCreations concept={item as Concept} />
+          <ConceptCreations
+            concept={item as Concept}
+            modalContainerRef={modalContainerRef}
+            modalContainerHeight={modalContainerHeight}
+          />
         </div>
       ) : null}
     </>

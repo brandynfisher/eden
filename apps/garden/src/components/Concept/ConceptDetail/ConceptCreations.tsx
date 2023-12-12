@@ -4,7 +4,15 @@ import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import React from 'react'
 
-const ConceptCreations = ({ concept }: { concept: Concept }) => {
+const ConceptCreations = ({
+  concept,
+  modalContainerRef,
+  modalContainerHeight,
+}: {
+  concept: Concept
+  modalContainerRef?: React.MutableRefObject<HTMLDivElement>
+  modalContainerHeight?: number
+}) => {
   const { showModal } = useModalContext()
 
   const openDetailModal = async (creation: Creation) => {
@@ -26,6 +34,8 @@ const ConceptCreations = ({ concept }: { concept: Concept }) => {
           ItemComponent={CreationCard}
           query={{ conceptId: concept._id }}
           onCardClick={creation => openDetailModal(creation as Creation)}
+          modalContainerRef={modalContainerRef}
+          modalContainerHeight={modalContainerHeight}
         />
       </div>
     </div>

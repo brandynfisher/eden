@@ -60,9 +60,12 @@ import React from 'react'
 const MyCharacterCard = ({ character }: { character: Character }) => {
   return (
     <div key={character.id}>
-      <CharacterCard character={character} className="!rounded-b-none" />
-      <div className="absolute flex gap-2 z-10 me-0 bottom-6 right-0 md:bg-gray-100 md:dark:bg-gray-900 md:rounded-b-lg md:bottom-auto md:py-2 md:relative md:w-full md:flex md:justify-between md:px-2">
-        <div className="flex items-center mt-2 mb-2 w-full justify-between">
+      <CharacterCard
+        character={character}
+        className="!rounded-b-none !border-b-0"
+      />
+      <div className="absolute flex gap-2 z-10 me-0 bottom-6 right-0 md:bg-gray-100 md:dark:bg-gray-800 md:rounded-b-lg md:bottom-auto md:py-2 md:relative md:w-full md:flex md:justify-between md:px-2">
+        <div className="flex items-center w-full justify-between">
           <Link href={`/characters/chat`}>
             <Button type="primary">
               <CommentOutlined />
