@@ -111,7 +111,12 @@ export const hasMinimumSubscriptionTier = (
   request: FastifyRequest,
   minimumTier: SubscriptionTier,
 ) => {
-  return request.user.subscriptionTier >= minimumTier
+  return (
+    request.user.subscriptionTier >= minimumTier ||
+    // Admin user and preview user are equivalent to having the highest tier
+    request.user.isAdmin ||
+    request.user.featureFlags.includes('preview')
+  )
 }
 
 export const hasFeatureFlag = (
