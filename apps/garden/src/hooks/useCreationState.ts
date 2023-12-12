@@ -125,7 +125,7 @@ export const useCreationState = () => {
 
   const addDismissedTaskIds = (taskIds: string[]) => {
     setDismissedTaskIds(prev => [
-      ...prev,
+      ...prev.slice(-100),
       ...taskIds.filter(taskId => !prev.includes(taskId)),
     ])
   }

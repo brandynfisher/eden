@@ -148,14 +148,12 @@ const CompletedTaskMenuItem = ({
               type="text"
               title="Dismiss"
               className="relative px-2 right-[-8px]"
+              onClick={e => {
+                e.stopPropagation()
+                handleDismiss(task._id)
+              }}
             >
-              <CloseOutlined
-                className="ml-auto cursor-pointer"
-                onClick={e => {
-                  e.stopPropagation()
-                  handleDismiss(task._id)
-                }}
-              />
+              <CloseOutlined className="ml-auto cursor-pointer" />
             </Button>
           </div>
         </div>
