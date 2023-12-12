@@ -143,9 +143,7 @@ export const useFeedPaginated = (
       if (isValidating) return
       if (isLoading || isLoadingMore) return
 
-      const { hasNextPage: dataHasNextPage } = data[data.length - 1]
-
-      if (dataHasNextPage) {
+      if (data && data.length && data[data.length - 1].hasNextPage) {
         setSize(prevSize => {
           // console.log('maybeLoadNextPage', {size: prevSize + 1, dataHasNextPage, isLoading, isLoadingMore, isValidating, docsLength: docs.length})
           return prevSize + 1

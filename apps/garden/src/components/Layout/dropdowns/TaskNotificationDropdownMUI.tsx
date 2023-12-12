@@ -233,6 +233,7 @@ const TaskNotificationDropdownMUI = () => {
     setCompletedTasks,
     failedTasks,
     setFailedTasks,
+    addDismissedTaskIds,
   } = useContext(CreationNotificationContext)
 
   const handleDismiss = async (
@@ -243,6 +244,7 @@ const TaskNotificationDropdownMUI = () => {
     if (!items || !setter) return
     const newTasks = items.filter(t => t._id !== taskId)
     setter(newTasks)
+    addDismissedTaskIds([taskId])
   }
 
   const handleDismissAll = async (
@@ -251,6 +253,7 @@ const TaskNotificationDropdownMUI = () => {
   ) => {
     if (!items || !setter) return
     setter([])
+    addDismissedTaskIds(items.map(item => item._id))
   }
 
   const pendingTaskItems: MenuDropdownItem[] = pendingTasks

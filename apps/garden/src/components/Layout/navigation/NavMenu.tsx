@@ -230,10 +230,10 @@ const NavMenu = ({
   }, [router, user, userId])
 
   useEffect(() => {
-    if (resolvedTheme && resolvedTheme === 'dark') {
-      setMenuTheme('dark')
-    } else {
+    if (resolvedTheme && resolvedTheme === 'light') {
       setMenuTheme(undefined)
+    } else {
+      setMenuTheme('dark')
     }
   }, [resolvedTheme])
 

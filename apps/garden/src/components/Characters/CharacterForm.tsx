@@ -237,10 +237,10 @@ const CharacterForm = ({ character }: { character?: Character }) => {
 
   return (
     <ConfirmProvider>
-      <div>
+      <div className="mb-4">
         <Form form={form} name="CharacterForm">
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 ">
-            <div className="p-4 bg-gray-100 dark:bg-stone-950 rounded-lg border border-solid border-stone-900">
+            <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg border border-solid border-stone-800">
               <h3 className="font-mono font-bold text-lg">
                 Build Your Character
               </h3>
@@ -445,7 +445,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             </div>
 
             <div>
-              <div className="sticky top-4 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg mb-4">
+              <div className="sticky top-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg mb-4 border border-solid border-stone-800">
                 <h3 className="font-mono font-bold text-lg">
                   Test Your Character
                 </h3>

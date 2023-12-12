@@ -105,6 +105,7 @@ import { fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
+import { useLocalStorage } from '@mantine/hooks'
 import { App } from 'antd'
 import { useContext, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
@@ -116,6 +117,20 @@ export const useCreationState = () => {
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
   const [pendingTasks, setPendingTasks] = useState<Task[]>()
+  const [tasks, setTasks] = useState<Task[]>()
+
+  const [dismissedTaskIds, setDismissedTaskIds] = useLocalStorage<string[]>({
+    key: 'tasks::dismissed',
+    defaultValue: [],
+  })
+
+  const addDismissedTaskIds = (taskIds: string[]) => {
+    setDismissedTaskIds(prev => [
+      ...prev,
+      ...taskIds.filter(taskId => !prev.includes(taskId)),
+    ])
+  }
+
   const { data: tasksData, mutate: refetchTasks } = useSWR(
     `/api/tasks/list?status=running,starting,pending,completed,failed`,
     fetcher,
@@ -125,7 +140,19 @@ export const useCreationState = () => {
   const { userId } = useContext(UserContext)
   const [notificationCutOffDate, setNotificationCutOffDate] =
     useState<number>(0)
-  const tasks = tasksData?.tasks as Task[]
+
+  useEffect(() => {
+    if (dismissedTaskIds && dismissedTaskIds.length) {
+      setTasks(
+        tasksData?.tasks.filter(
+          (task: Task) => !dismissedTaskIds.includes(task._id),
+        ),
+      )
+      return
+    }
+
+    setTasks(tasksData?.tasks)
+  }, [tasksData, dismissedTaskIds])
 
   useEffect(() => {
     setNotificationCutOffDate(Date.now())
@@ -194,7 +221,7 @@ export const useCreationState = () => {
     }
 
     notify()
-  }, [tasks, completedTasks])
+  }, [notificationCutOffDate, tasks, completedTasks])
 
   return {
     tasks,
@@ -203,6 +230,8 @@ export const useCreationState = () => {
     setCompletedTasks,
     failedTasks,
     setFailedTasks,
+    dismissedTaskIds,
+    addDismissedTaskIds,
     activeTaskId,
     setActiveTaskId,
     hasChangedGenerator,
