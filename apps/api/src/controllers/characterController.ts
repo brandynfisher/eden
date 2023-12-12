@@ -22,7 +22,7 @@ export const createCharacter = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId, featureFlags } = request.user
   const {
     name,
     image,
@@ -37,7 +37,8 @@ export const createCharacter = async (
 
   if (
     isPrivate &&
-    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
+    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic) &&
+    !featureFlags.includes('preview')
   ) {
     return reply.status(401).send({
       message:

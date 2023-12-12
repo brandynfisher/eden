@@ -1,7 +1,11 @@
 import { FastifyInstance } from 'fastify'
 import { expect, test } from 'vitest'
 
-import { prepareBasicUserHeaders, prepareUserHeaders } from '../../util'
+import {
+  prepareBasicUserHeaders,
+  preparePreviewUserHeaders,
+  prepareUserHeaders,
+} from '../../util'
 
 const createTask = async (server: FastifyInstance) => {
   const headers = prepareUserHeaders()
@@ -115,4 +119,21 @@ test('User cannot add attributes to a task', async context => {
   const json2 = response2.json()
   expect(json2).toHaveProperty('task')
   expect(json2.task).not.toHaveProperty('attributes')
+})
+
+test('Preview user can create a private task', async context => {
+  const { server } = context
+  const headers = preparePreviewUserHeaders()
+  const response = await server.inject({
+    method: 'POST',
+    url: '/tasks/create',
+    headers,
+    payload: {
+      generatorName: 'test',
+      config: {
+        isPrivate: true,
+      },
+    },
+  })
+  expect(response.statusCode).toBe(200)
 })

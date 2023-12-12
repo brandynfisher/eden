@@ -107,7 +107,7 @@ export const createTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, isAdmin, character } = request.user
+  const { userId, isAdmin, character, featureFlags } = request.user
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
@@ -116,7 +116,8 @@ export const createTask = async (
   if (
     isUser &&
     config?.isPrivate &&
-    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
+    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic) &&
+    !featureFlags.includes('preview')
   ) {
     return reply.status(401).send({
       message:
