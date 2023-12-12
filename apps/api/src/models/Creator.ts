@@ -1,18 +1,9 @@
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
 import { CollectionDocument } from './Collection'
 import { CreationDocument } from './Creation'
-
-export enum FeatureFlag {
-  Preview = 'preview',
-}
-
-export enum SubscriptionTier {
-  Basic = 'basic',
-  Pro = 'pro',
-  Free = 'free',
-}
 
 export interface UserSchema {
   userId: string

@@ -1,3 +1,4 @@
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { MongoClient } from 'mongodb'
 import mongoose from 'mongoose'
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
@@ -5,12 +6,7 @@ import { setup, teardown } from 'vitest-mongodb'
 
 import { ApiKey, ApiKeyInput } from '../../src/models/ApiKey'
 import { Collection } from '../../src/models/Collection'
-import {
-  FeatureFlag,
-  SubscriptionTier,
-  User,
-  UserInput,
-} from '../../src/models/Creator'
+import { User, UserInput } from '../../src/models/Creator'
 import { Manna } from '../../src/models/Manna'
 import {
   createCharacter,
@@ -87,6 +83,60 @@ const createBasicUser = async () => {
   const apiKeyData: ApiKeyInput = {
     apiKey: 'basicuser',
     apiSecret: 'basicuser',
+    user: user._id,
+  }
+  const apiKey = new ApiKey(apiKeyData)
+  await apiKey.save()
+
+  const userManna = {
+    user: user._id,
+    balance: 1000,
+  }
+  const manna = new Manna(userManna)
+  await manna.save()
+}
+
+const createProUser = async () => {
+  const userData: UserInput = {
+    userId: 'prouser',
+    username: 'prouser',
+    isWeb2: false,
+    isAdmin: false,
+  }
+  const user = new User(userData)
+  user.subscriptionTier = SubscriptionTier.Pro
+  await user.save()
+
+  const apiKeyData: ApiKeyInput = {
+    apiKey: 'prouser',
+    apiSecret: 'prouser',
+    user: user._id,
+  }
+  const apiKey = new ApiKey(apiKeyData)
+  await apiKey.save()
+
+  const userManna = {
+    user: user._id,
+    balance: 1000,
+  }
+  const manna = new Manna(userManna)
+  await manna.save()
+}
+
+const createBelieverUser = async () => {
+  const userData: UserInput = {
+    userId: 'believeruser',
+    username: 'believeruser',
+    isWeb2: false,
+    isAdmin: false,
+  }
+  const user = new User(userData)
+  user.subscriptionTier = SubscriptionTier.Believer
+  await user.save()
+
+  const apiKeyData: ApiKeyInput = {
+    apiKey: 'believeruser',
+    apiSecret: 'believeruser',
     user: user._id,
   }
   const apiKey = new ApiKey(apiKeyData)

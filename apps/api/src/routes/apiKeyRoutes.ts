@@ -1,3 +1,4 @@
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import {
   FastifyInstance,
@@ -14,16 +15,18 @@ import {
 } from '../controllers/apiKeyController'
 import {
   hasFeatureFlag,
+  hasMinimumSubscriptionTier,
   isAuth,
-  isSubscriber,
 } from '../middleware/authMiddleware'
-import { FeatureFlag } from '../models/Creator'
 
 const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const subscriber = await isSubscriber(request)
+  const subscriber = await hasMinimumSubscriptionTier(
+    request,
+    SubscriptionTier.Basic,
+  )
   const previewUser = await hasFeatureFlag(request, FeatureFlag.Preview)
   if (!subscriber && !previewUser) {
     return reply.status(401).send({
