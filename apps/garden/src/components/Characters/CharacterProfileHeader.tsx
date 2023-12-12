@@ -48,12 +48,12 @@ const CharacterProfileHeader = ({
               <CopyUrlButton
                 url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}
               />
-              {navigator && !!navigator.share && (
-                <ShareButton
-                  title={'Share Creation'}
-                  url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}
-                />
-              )}
+              {/* {navigator && !!navigator.share && ( */}
+              <ShareButton
+                title={'Share Creation'}
+                url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}
+              />
+              {/* )} */}
               <CircleButton
                 title={'Chat'}
                 icon={<CommentOutlined className="text-xl" />}

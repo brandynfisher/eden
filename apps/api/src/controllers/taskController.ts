@@ -109,7 +109,9 @@ export const createTask = async (
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
-  if (attributes && (isAdmin || character)) {
+  const isCharacter = character !== undefined
+
+  if (attributes && !(isAdmin || isCharacter)) {
     return reply.status(401).send({
       message: 'Only admin/characters can set attributes',
     })
@@ -184,6 +186,7 @@ export const createTask = async (
     taskId,
     status: TaskStatus.Pending,
     user,
+    character,
     generator: generator._id,
     versionId: generatorVersion.versionId,
     config: preparedConfig,

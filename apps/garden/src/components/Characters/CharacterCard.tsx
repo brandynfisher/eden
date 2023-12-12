@@ -6,6 +6,7 @@ import { Character } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
 import Image from 'next/image'
+import Link from 'next/link'
 import React, { FC } from 'react'
 
 const CharacterCard: FC<{
@@ -29,17 +30,19 @@ const CharacterCard: FC<{
           <LockIcon fontSize="small" className="text-white" />
         </div>
       ) : null}
-      {character.image ? (
-        <Image
-          src={character.image}
-          alt={character.name}
-          width={256}
-          height={256}
-          className="object-contain w-full max-h-[256px]"
-        />
-      ) : (
-        <RobotOutlined className="text-6xl text-gray-600" />
-      )}
+      <Link href={`/characters/${character.id}`}>
+        {character.image ? (
+          <Image
+            src={character.image}
+            alt={character.name}
+            width={256}
+            height={256}
+            className="object-contain w-full max-h-[256px]"
+          />
+        ) : (
+          <RobotOutlined className="text-6xl text-gray-600" />
+        )}
+      </Link>
       <div className="px-4 py-2 w-full">
         <div className="flex gap-2 flex-col self-start mb-4">
           <div className="font-bold text-center">{character.name}</div>
