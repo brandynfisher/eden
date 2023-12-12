@@ -207,7 +207,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       image: form.getFieldValue('image'),
       voice: form.getFieldValue('voice'),
       dialogue: messageGroups.flat(),
-      concept: form.getFieldValue('concept'),
+      concept: form.getFieldValue('concept') || undefined,
       logosData: {
         documentation: form.getFieldValue('logosDocumentation'),
         documentationPrompt: form.getFieldValue('logosDocumentationPrompt'),
