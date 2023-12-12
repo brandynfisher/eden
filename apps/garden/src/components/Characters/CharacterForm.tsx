@@ -296,9 +296,9 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     { required: true, message: 'Please input a description!' },
                     {
                       min: 3,
-                      max: 1000,
+                      max: 9999,
                       message:
-                        'Description must be between 3 and 1000 characters!',
+                        'Description must be between 3 and 9999 characters!',
                     },
                   ]}
                 >
