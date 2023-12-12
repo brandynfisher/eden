@@ -186,12 +186,11 @@ export const useCreationState = () => {
         return completed.filter(item => !dismissedTaskIds.includes(item._id))
       })
 
-      setFailedTasks(
-        tasks?.filter(
-          task =>
-            task.status === 'failed' && dismissedTaskIds.includes(task._id),
-        ),
+      const failed = tasks?.filter(
+        task =>
+          task.status === 'failed' && !dismissedTaskIds.includes(task._id),
       )
+      setFailedTasks(failed)
     }
   }, [mutateGlobal, tasks, userId])
 
@@ -205,6 +204,10 @@ export const useCreationState = () => {
           10000
 
         if (isExpired) {
+          return
+        }
+
+        if (dismissedTaskIds.includes(tasks[0]._id)) {
           return
         }
 
@@ -225,7 +228,7 @@ export const useCreationState = () => {
     }
 
     notify()
-  }, [notificationCutOffDate, tasks, completedTasks])
+  }, [notificationCutOffDate, tasks, completedTasks.length, dismissedTaskIds])
 
   return {
     tasks,
