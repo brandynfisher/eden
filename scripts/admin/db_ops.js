@@ -55,7 +55,7 @@ const updateConceptAndGenerator = async (db, db_backup) => {
   const creations = await db.collection('creations');
   const tasks = await db.collection('tasks');
 
-  const cursor = creations.find().sort({ createdAt: -1 }).limit(20).allowDiskUse(true).batchSize(batchSize);
+  const cursor = creations.find().sort({ createdAt: -1 }).allowDiskUse(true).batchSize(batchSize);
 
   while (await cursor.hasNext()) {
     const docsBatch = [];
@@ -75,11 +75,38 @@ const updateConceptAndGenerator = async (db, db_backup) => {
       const generator = task.generator ? ObjectId(task.generator) : null;
       const lora = config.lora ? ObjectId(config.lora) : null;
 
-      console.log(generator);
-      console.log(lora);
-      
       await creations.updateOne({ _id: doc._id }, { $set: { concept: lora, generator: generator } });
 
+      }
+    ));
+  }
+};
+
+
+const updateCreationCounts = async (db, db_backup) => {
+  const batchSize = 1000;
+  const creations = await db.collection('creations');
+  const concepts = await db.collection('concepts');
+
+  const cursor = concepts.find().sort({ createdAt: -1 }).allowDiskUse(true).batchSize(batchSize);
+
+  while (await cursor.hasNext()) {
+    const docsBatch = [];
+    for (let i = 0; i < batchSize; i++) {
+      const doc = await cursor.next();
+      if(doc) {
+        docsBatch.push(doc);
+      } else {
+        break;
+      }
+    }
+  
+    await Promise.all(docsBatch.map(async (doc) => {
+      console.log("THE CONCEPT", doc._id, doc.name)
+      const conceptCreations = await creations.find({concept: doc._id});
+      const count = await conceptCreations.count();
+      console.log("count is", count);
+      await concepts.updateOne({ _id: doc._id }, { $set: { creationCount: count } });
       }
     ));
   }
@@ -116,6 +143,8 @@ async function main() {
     console.log(`Connected successfully to ${MONGO_URI}`);
     const db = await client.db(MONGO_DB_NAME);
     // await resetTasks(db);
+    await updateCreationCounts(db);
+    // await updateConceptAndGenerator(db);
   } catch (err) {
     console.error('Failed to connect to the server:', err);
     throw err;
