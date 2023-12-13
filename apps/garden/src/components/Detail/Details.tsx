@@ -157,7 +157,7 @@ const Details = ({
           >
             <div className="flex items-center h-10 px-2 mb-2 border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between">
               <CardReactions
-                itemType="creation"
+                itemType={itemType}
                 item={itemData}
                 onChange={
                   setItemData as Dispatch<SetStateAction<Concept | Creation>>
@@ -167,7 +167,7 @@ const Details = ({
               {itemData ? (
                 <CardToolsDropdown
                   item={itemData}
-                  itemType="creation"
+                  itemType={itemType}
                   onChange={
                     setItemData as Dispatch<SetStateAction<Concept | Creation>>
                   }
