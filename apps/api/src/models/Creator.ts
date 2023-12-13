@@ -93,7 +93,7 @@ const user = new Schema<UserDocument>(
       },
     ],
     subscriptionTier: {
-      type: String,
+      type: Number,
       enum: Object.values(SubscriptionTier),
     },
     stripeCustomerId: {

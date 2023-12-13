@@ -197,10 +197,10 @@ export type Creator = {
 }
 
 export enum SubscriptionTier {
-  Free = 1,
-  Basic = 2,
-  Pro = 3,
-  Believer = 4,
+  Free = 0,
+  Basic = 1,
+  Pro = 2,
+  Believer = 3,
 }
 
 export enum FeatureFlag {

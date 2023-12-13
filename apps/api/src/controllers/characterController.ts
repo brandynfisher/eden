@@ -34,7 +34,12 @@ export const createCharacter = async (
     isPrivate,
   } = request.body as CharactersCreateArguments
 
-  characterPrivacyPermissionCheck(request, reply)
+  if (characterPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
   const input: {
     user: ObjectId
@@ -94,7 +99,12 @@ export const updateCharacter = async (
     })
   }
 
-  characterPrivacyPermissionCheck(request, reply)
+  if (characterPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
   const {
     name,

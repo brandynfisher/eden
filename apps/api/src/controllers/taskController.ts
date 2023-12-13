@@ -7,7 +7,10 @@ import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ChatCompletionRequestMessage } from 'openai'
 
-import { taskPrivacyPermissionCheck } from '../lib/authorization'
+import {
+  maximumTasksInProgressPermissionCheck,
+  taskPrivacyPermissionCheck,
+} from '../lib/authorization'
 import {
   getDefaultGeneratorVersion,
   getLatestGeneratorVersion,
@@ -110,7 +113,21 @@ export const createTask = async (
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
-  taskPrivacyPermissionCheck(request, reply)
+  if (taskPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
+
+  const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
+  if (submittedMaxTasks) {
+    return reply.status(401).send({
+      message: `You have reached the maximum number of tasks in progress. Please wait for them to complete before creating more, or upgrade your subscription to increase your limit.`,
+    })
+  }
+
+  console.log('but were continuing tho?')
 
   // get generator
   const generator = await Generator.findOne({

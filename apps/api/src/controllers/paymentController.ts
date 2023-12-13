@@ -23,6 +23,7 @@ interface TopUpMetadata {
 
 interface SubscriptionMetadata {
   subscriptionTier: string
+  manna: string
 }
 
 const discountMap = (
@@ -34,6 +35,16 @@ const discountMap = (
     [SubscriptionTier.Basic]: server.config.STRIPE_DISCOUNT_CODE_BASIC,
     [SubscriptionTier.Pro]: server.config.STRIPE_DISCOUNT_CODE_PRO,
     [SubscriptionTier.Believer]: server.config.STRIPE_DISCOUNT_CODE_BELIEVER,
+  }
+  return map[subscriptionTier || SubscriptionTier.Free]
+}
+
+const mannaTierMap = (subscriptionTier?: SubscriptionTier) => {
+  const map = {
+    [SubscriptionTier.Free]: 0,
+    [SubscriptionTier.Basic]: 1000,
+    [SubscriptionTier.Pro]: 3500,
+    [SubscriptionTier.Believer]: 8000,
   }
   return map[subscriptionTier || SubscriptionTier.Free]
 }
@@ -113,15 +124,46 @@ const handleTopUp = async (
 }
 
 const handleNewSubscription = async (
+  server: FastifyInstance,
   reply: FastifyReply,
   metadata: SubscriptionMetadata,
   user: UserDocument,
 ) => {
-  const subscriptionTier = metadata.subscriptionTier
+  const subscriptionTier = parseInt(metadata.subscriptionTier)
+  let mannaAmountInt: number
+
   try {
     await user.updateOne({
       subscriptionTier,
     })
+
+    try {
+      const previousTierManna = mannaTierMap(user.subscriptionTier || undefined)
+      const newTierManna = mannaTierMap(subscriptionTier)
+      mannaAmountInt = newTierManna - previousTierManna
+    } catch (error) {
+      return reply.status(400).send({
+        message: 'Invalid manna amount',
+      })
+    }
+    if (mannaAmountInt > 0) {
+      try {
+        await axios.post(
+          `${server.config.API_URL}/admin/manna/modify`,
+          {
+            userId: user.userId,
+            amount: mannaAmountInt,
+          },
+          {
+            headers: getAdminHeaders(server),
+          },
+        )
+      } catch (error) {
+        return reply.status(500).send({
+          message: 'Error adding manna',
+        })
+      }
+    }
 
     return reply.status(200).send({})
   } catch (error) {
@@ -156,6 +198,7 @@ const handleSubscriptionUpdated = async (
   const product = await server.stripe.products.retrieve(productId)
   const metadata = {
     subscriptionTier: product.metadata.subscriptionTier,
+    manna: product.metadata.manna,
   }
 
   if (!metadata) {
@@ -165,43 +208,10 @@ const handleSubscriptionUpdated = async (
   }
 
   if (metadata.subscriptionTier) {
-    await handleNewSubscription(reply, metadata, user)
+    await handleNewSubscription(server, reply, metadata, user)
   } else {
     return reply.status(400).send({
       message: 'No subscription tier found',
-    })
-  }
-}
-
-const handleSubscriptionDeleted = async (
-  server: FastifyInstance,
-  reply: FastifyReply,
-  { customerId }: StripeDataObject,
-) => {
-  const user = await User.findOne({
-    stripeCustomerId: customerId,
-  })
-
-  if (!user) {
-    return reply.status(400).send({
-      message: 'User not found',
-    })
-  }
-
-  if (!server.stripe) {
-    return reply.status(500).send({
-      message: 'Stripe is not configured',
-    })
-  }
-
-  try {
-    user.subscriptionTier = undefined
-    await user.save()
-
-    return reply.status(200).send({})
-  } catch (error) {
-    return reply.status(500).send({
-      message: 'Error updating subscription',
     })
   }
 }
@@ -251,10 +261,15 @@ const handlePaymentSuccess = async (
     })
   }
 
-  if (metadata.manna) {
+  if (metadata.subscriptionTier) {
+    await handleNewSubscription(
+      server,
+      reply,
+      metadata as SubscriptionMetadata,
+      user,
+    )
+  } else {
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
-  } else if (metadata.subscriptionTier) {
-    await handleNewSubscription(reply, metadata as SubscriptionMetadata, user)
   }
 }
 
@@ -401,9 +416,6 @@ export const handlePaymentEvent = async (
     // subscription events
     case 'customer.subscription.updated':
       await handleSubscriptionUpdated(server, reply, stripeDataObject)
-      return
-    case 'customer.subscription.deleted':
-      await handleSubscriptionDeleted(server, reply, stripeDataObject)
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)

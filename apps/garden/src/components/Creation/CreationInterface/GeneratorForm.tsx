@@ -12,6 +12,7 @@ import UploadParameter from '@/components/Creation/CreationInterface/parameters/
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
+import { handleAxiosError } from '@/lib/fetcher'
 import {
   GeneratorOutputType,
   conceptGenerator,
@@ -303,7 +304,7 @@ const GeneratorForm = ({
       refetchTasks && refetchTasks()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
-      message.error('Error creating task. Please try again.')
+      handleAxiosError(error, message)
     } finally {
       setIsSubmitting(false)
     }

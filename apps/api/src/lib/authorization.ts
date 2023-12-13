@@ -8,6 +8,7 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
+import { Task, TaskStatus } from '../models/Task'
 
 export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
@@ -40,10 +41,7 @@ export const characterRoutePreHandler = async (
   }
 }
 
-export const taskPrivacyPermissionCheck = (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
+export const taskPrivacyPermissionCheck = (request: FastifyRequest) => {
   const { isAdmin, character } = request.user
   const { config } = request.body as TasksCreateArguments
 
@@ -54,68 +52,90 @@ export const taskPrivacyPermissionCheck = (
     config?.isPrivate &&
     !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
   ) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
+    true
   }
+
+  return false
 }
 
-export const characterPrivacyPermissionCheck = (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
+export const characterPrivacyPermissionCheck = (request: FastifyRequest) => {
   const { isPrivate } = request.body as CharactersUpdateArguments
 
   if (
     isPrivate &&
     !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
   ) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
+    return true
   }
+
+  return false
 }
 
-export const creationPrivacyPermissionCheck = (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
+export const creationPrivacyPermissionCheck = (request: FastifyRequest) => {
   const { isPrivate } = request.body as CreationsUpdateArguments
 
   if (
     isPrivate &&
     !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
   ) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
+    return true
   }
+
+  return false
 }
 
-export const conceptPrivacyPermissionCheck = (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
+export const conceptPrivacyPermissionCheck = (request: FastifyRequest) => {
   const { isPrivate } = request.body as ConceptsUpdateArguments
 
   if (
     isPrivate &&
     !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
   ) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
+    return true
   }
+
+  return false
 }
 
 export const conceptExportPermissionCheck = (
   request: FastifyRequest,
 ): boolean => {
   if (hasMinimumSubscriptionTier(request, SubscriptionTier.Pro)) {
+    return true
+  }
+
+  return false
+}
+
+const maximumTasksInProgressMap: Record<SubscriptionTier, number> = {
+  [SubscriptionTier.Free]: 1,
+  [SubscriptionTier.Basic]: 3,
+  [SubscriptionTier.Pro]: 6,
+  [SubscriptionTier.Believer]: 15,
+}
+
+export const maximumTasksInProgressPermissionCheck = async (
+  request: FastifyRequest,
+) => {
+  const { userId, subscriptionTier } = request.user
+  console.log(`userId: ${userId}`)
+  console.log(`subscriptionTier: ${subscriptionTier}`)
+  const maximumTasksInProgress =
+    maximumTasksInProgressMap[
+      (subscriptionTier as SubscriptionTier) || SubscriptionTier.Free
+    ]
+  console.log(`maximumTasksInProgress: ${maximumTasksInProgress}`)
+
+  const inProgressStatus: TaskStatus[] = [
+    TaskStatus.Pending,
+    TaskStatus.Running,
+  ]
+  const tasksInProgress = await Task.find({
+    userId,
+    status: { $in: inProgressStatus },
+  })
+
+  if (tasksInProgress.length >= maximumTasksInProgress) {
     return true
   }
 

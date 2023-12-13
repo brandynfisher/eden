@@ -52,44 +52,40 @@ const ProductsList = ({
 
   return (
     <div>
-      {/* //@todo: temporarily hide subscription UI for all users without a set tier  - REMOVE CONDITION WHEN ROLLING OUT*/}
-      {activeSubscriptionTier ? (
-        <div className="mb-8">
-          <h3 className="font-mono font-bold">Subscriptions</h3>
-          {!subscriptions || !subscriptions.length ? (
-            <LoadingIndicator />
-          ) : (
-            <div>
-              <div className="mb-2">
-                {activeSubscriptionTier ? (
-                  <div>
-                    Your current plan:{' '}
-                    <span className="capitalize font-bold">
-                      {activeSubscriptionTier}
-                    </span>
-                  </div>
-                ) : (
-                  'No active plan'
-                )}
-              </div>
-              <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
-                {subscriptionsSortedByPrice.map(product => (
-                  <SubscriptionCard
-                    key={product.id}
-                    features={dummyFeatures[product.metadata.subscriptionTier]}
-                    subscription={product}
-                    checkoutHandler={checkoutHandler}
-                    isActive={
-                      activeSubscriptionTier ===
-                      product.metadata.subscriptionTier
-                    }
-                  />
-                ))}
-              </div>
+      <div className="mb-8">
+        <h3 className="font-mono font-bold">Subscriptions</h3>
+        {!subscriptions || !subscriptions.length ? (
+          <LoadingIndicator />
+        ) : (
+          <div>
+            <div className="mb-2">
+              {activeSubscriptionTier ? (
+                <div>
+                  Your current plan:{' '}
+                  <span className="capitalize font-bold">
+                    {activeSubscriptionTier}
+                  </span>
+                </div>
+              ) : (
+                'No active plan'
+              )}
             </div>
-          )}
-        </div>
-      ) : null}
+            <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
+              {subscriptionsSortedByPrice.map(product => (
+                <SubscriptionCard
+                  key={product.id}
+                  features={dummyFeatures[product.metadata.subscriptionTier]}
+                  subscription={product}
+                  checkoutHandler={checkoutHandler}
+                  isActive={
+                    activeSubscriptionTier === product.metadata.subscriptionTier
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <div>
         <h3 className="font-mono font-bold">Products</h3>
