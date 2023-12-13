@@ -1,5 +1,6 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { handleAxiosError } from '@/lib/fetcher'
+import { ItemType } from '@/providers/ModalProvider'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
 import { App, Tooltip } from 'antd'
 import axios from 'axios'
@@ -14,7 +15,7 @@ const MakePublicButton = ({
   isNsfw,
 }: {
   itemId: string
-  itemType: 'creation' | 'concept'
+  itemType: ItemType
   variant?: 'text'
   label?: string
   onChange?: (visibilityUpdate: { isPrivate: boolean }) => void

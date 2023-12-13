@@ -31,6 +31,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         description,
         greeting,
         dialogue,
+        logosData,
+        concept,
         isPrivate,
       } = req.body as CharactersUpdateArguments
 
@@ -43,6 +45,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         description,
         greeting,
         dialogue,
+        logosData,
+        concept,
         isPrivate,
       }
 

@@ -15,6 +15,7 @@ import { TaskDocument } from './Task'
 export interface ConceptSchema extends VisibilitySchema {
   user: UserDocument
   task: TaskDocument
+  creationCount: number
   praiseCount: number
   bookmarkCount: number
   delegate?: UserDocument
@@ -61,6 +62,10 @@ const concept = new Schema<ConceptDocument>(
       type: Schema.Types.ObjectId,
       ref: 'tasks',
       required: true,
+    },
+    creationCount: {
+      type: Number,
+      default: 0,
     },
     praiseCount: {
       type: Number,
@@ -129,11 +134,14 @@ concept.pre<ConceptDocument>('save', function (next) {
 })
 
 concept.index({ createdAt: 1 })
-concept.index({ user: 1 })
 concept.index({ user: 1, deleted: 1, isPrivate: 1 })
 concept.index({ deleted: 1, isPrivate: 1 })
-concept.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1 })
-concept.index({ conceptName: 'text' })
+concept.index({
+  createdAt: -1,
+  creationCount: -1,
+  praiseCount: -1,
+  bookmarkCount: -1,
+})
 
 // concept.plugin(mongooseDelete, { overrideMethods: 'all' })
 concept.plugin(mongooseDelete, {

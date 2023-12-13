@@ -8,7 +8,8 @@
     "build": "next build --debug",
     "start": "next start",
     "test": "vitest",
-    "lint": "eslint src --fix"
+    "lint": "eslint src --fix",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^1.10.1",
@@ -37,6 +38,7 @@
     "hamburger-react": "^2.5.0",
     "jsonwebtoken": "^9.0.0",
     "masonic": "^3.7.0",
+    "material-ui-confirm": "^3.0.9",
     "mini-virtual-list": "^0.3.2",
     "nanoid": "^4.0.2",
     "next": "13.4.4",
@@ -57,6 +59,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^13.5.5",
+    "@playwright/test": "^1.40.1",
     "@types/event-source-polyfill": "^1.0.3",
     "@types/formidable": "^2.0.6",
     "@types/jsonwebtoken": "^9.0.2",

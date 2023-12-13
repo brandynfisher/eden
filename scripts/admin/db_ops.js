@@ -69,11 +69,11 @@ const updateConceptAndGenerator = async (db, db_backup) => {
     }
   
     await Promise.all(docsBatch.map(async (doc) => {
-      const task = await tasks.findOne({_id: ObjectId(doc.task)});
+      const task = await tasks.findOne({_id: new ObjectId(doc.task)});
       const config = task.config;
       
-      const generator = task.generator ? ObjectId(task.generator) : null;
-      const lora = config.lora ? ObjectId(config.lora) : null;
+      const generator = task.generator ? new ObjectId(task.generator) : null;
+      const lora = config.lora ? new ObjectId(config.lora) : null;
 
       await creations.updateOne({ _id: doc._id }, { $set: { concept: lora, generator: generator } });
 

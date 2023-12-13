@@ -1,5 +1,6 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { handleAxiosError } from '@/lib/fetcher'
+import { ItemType } from '@/providers/ModalProvider'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { App } from 'antd'
 import axios from 'axios'
@@ -13,7 +14,7 @@ const DeleteButton = ({
   onChange,
 }: {
   itemId: string
-  itemType: 'creation' | 'concept'
+  itemType: ItemType
   variant?: 'text'
   label?: string
   onChange?: () => void

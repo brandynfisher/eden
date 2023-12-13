@@ -105,13 +105,15 @@ export const createTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, isAdmin } = request.user
+  const { userId, isAdmin, character } = request.user
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
-  if (!isAdmin && attributes) {
+  const isCharacter = character !== undefined
+
+  if (attributes && !(isAdmin || isCharacter)) {
     return reply.status(401).send({
-      message: 'Only admins can set attributes',
+      message: 'Only admin/characters can set attributes',
     })
   }
   // get generator
@@ -184,6 +186,7 @@ export const createTask = async (
     taskId,
     status: TaskStatus.Pending,
     user,
+    character,
     generator: generator._id,
     versionId: generatorVersion.versionId,
     config: preparedConfig,
@@ -346,8 +349,6 @@ export const createChatCompletion = async (
       content: m.message,
     } as ChatCompletionRequestMessage
   })
-
-  console.log(chatMessages)
 
   const response = await server.openai.createChatCompletion({
     model: 'gpt-3.5-turbo',

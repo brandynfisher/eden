@@ -5,7 +5,7 @@ import { UseThemeProps } from 'next-themes/dist/types'
 import React, { useCallback, useEffect, useState } from 'react'
 
 const toggleTheme = (theme: UseThemeProps['theme']): 'light' | 'dark' => {
-  return theme === 'dark' ? 'light' : 'dark'
+  return theme === 'light' ? 'light' : 'dark'
 }
 
 const ThemeToggleButton = () => {
@@ -33,6 +33,7 @@ const ThemeToggleButton = () => {
     <Space
       onClick={handleThemeToggleClick}
       className="justify-between w-full p-2"
+      data-testid="theme-toggle-button"
     >
       <div className="flex">
         <DarkModeIcon fontSize="small" />

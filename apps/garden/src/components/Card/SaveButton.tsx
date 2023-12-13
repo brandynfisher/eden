@@ -1,4 +1,3 @@
-import { PraiseButton } from '@/components/Card/CardReactions'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
@@ -11,7 +10,7 @@ import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove'
 import Bookmarks from '@mui/icons-material/Bookmarks'
 import { App } from 'antd'
 import axios from 'axios'
-import React, { Dispatch, SetStateAction, useContext } from 'react'
+import React, { useContext } from 'react'
 
 export const SaveButton = ({
   creation,
@@ -131,34 +130,4 @@ const SaveButtonMessageContent = () => {
   )
 }
 
-export interface CreationReactionsProps {
-  creation: Creation | Concept
-  onChange: Dispatch<SetStateAction<Concept | Creation>>
-  showCounts?: boolean
-}
-
-const CreationReactions = ({
-  creation,
-  onChange,
-  showCounts,
-}: CreationReactionsProps) => {
-  return (
-    <div className="relative flex justify-between">
-      <div>
-        <div className="flex pointer-events-auto">
-          <PraiseButton
-            item={creation}
-            type={'creation'}
-            onChange={onChange}
-            showCounts={showCounts}
-          />
-        </div>
-      </div>
-      <div className="pointer-events-auto">
-        <SaveButton creation={creation} onChange={onChange} />
-      </div>
-    </div>
-  )
-}
-
-export default CreationReactions
+export default SaveButton

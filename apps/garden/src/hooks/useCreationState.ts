@@ -105,6 +105,7 @@ import { fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
+import { useLocalStorage } from '@mantine/hooks'
 import { App } from 'antd'
 import { useContext, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
@@ -116,16 +117,41 @@ export const useCreationState = () => {
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
   const [pendingTasks, setPendingTasks] = useState<Task[]>()
+
+  const [dismissedTaskIds, setDismissedTaskIds] = useLocalStorage<string[]>({
+    key: 'tasks::dismissed',
+    defaultValue: [],
+  })
+
+  const addDismissedTaskIds = (taskIds: string[]) => {
+    setDismissedTaskIds(prev => [
+      ...prev.slice(-100),
+      ...taskIds.filter(taskId => !prev.includes(taskId)),
+    ])
+  }
+
   const { data: tasksData, mutate: refetchTasks } = useSWR(
     `/api/tasks/list?status=running,starting,pending,completed,failed`,
     fetcher,
     { refreshInterval: 5000 },
   )
+  const tasks = tasksData?.tasks as Task[]
+
   const { mutate: mutateGlobal } = useSWRConfig()
   const { userId } = useContext(UserContext)
   const [notificationCutOffDate, setNotificationCutOffDate] =
     useState<number>(0)
-  const tasks = tasksData?.tasks as Task[]
+
+  useEffect(() => {
+    if (dismissedTaskIds && dismissedTaskIds.length) {
+      setCompletedTasks(prev =>
+        prev.filter(item => !dismissedTaskIds.includes(item._id)),
+      )
+      setFailedTasks(prev =>
+        prev.filter(item => !dismissedTaskIds.includes(item._id)),
+      )
+    }
+  }, [dismissedTaskIds])
 
   useEffect(() => {
     setNotificationCutOffDate(Date.now())
@@ -148,7 +174,7 @@ export const useCreationState = () => {
         if (completed.length > prevState.length) {
           // probably got a new finished task, trigger mutate on own profile (first page) to force a refresh
           const ownCreatorFeedPageRoute = getFeedPageRoute(
-            'creations',
+            'creation',
             { userId: userId || '' },
             25,
             1,
@@ -157,10 +183,14 @@ export const useCreationState = () => {
           mutateGlobal(ownCreatorFeedPageRoute, undefined)
         }
 
-        return completed
+        return completed.filter(item => !dismissedTaskIds.includes(item._id))
       })
 
-      setFailedTasks(tasks?.filter(task => task.status === 'failed'))
+      const failed = tasks?.filter(
+        task =>
+          task.status === 'failed' && !dismissedTaskIds.includes(task._id),
+      )
+      setFailedTasks(failed)
     }
   }, [mutateGlobal, tasks, userId])
 
@@ -174,6 +204,10 @@ export const useCreationState = () => {
           10000
 
         if (isExpired) {
+          return
+        }
+
+        if (dismissedTaskIds.includes(tasks[0]._id)) {
           return
         }
 
@@ -194,7 +228,7 @@ export const useCreationState = () => {
     }
 
     notify()
-  }, [tasks, completedTasks])
+  }, [notificationCutOffDate, tasks, completedTasks.length, dismissedTaskIds])
 
   return {
     tasks,
@@ -203,6 +237,8 @@ export const useCreationState = () => {
     setCompletedTasks,
     failedTasks,
     setFailedTasks,
+    dismissedTaskIds,
+    addDismissedTaskIds,
     activeTaskId,
     setActiveTaskId,
     hasChangedGenerator,

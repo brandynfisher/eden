@@ -7,10 +7,10 @@ const CodeBlock = ({ code, language }: { code: string; language: string }) => {
   const [isDarkMode, setIsDarkMode] = useState(true)
 
   useEffect(() => {
-    if (resolvedTheme && resolvedTheme === 'dark') {
-      setIsDarkMode(true)
-    } else {
+    if (resolvedTheme && resolvedTheme === 'light') {
       setIsDarkMode(false)
+    } else {
+      setIsDarkMode(true)
     }
   }, [resolvedTheme])
 

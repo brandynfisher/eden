@@ -29,6 +29,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
+        concept: Type.Optional(Type.String()),
+        logosData: Type.Optional(
+          Type.Object({
+            documentation: Type.Optional(Type.String()),
+            documentationPrompt: Type.Optional(Type.String()),
+            creatorPrompt: Type.Optional(Type.String()),
+            routerPrompt: Type.Optional(Type.String()),
+          }),
+        ),
         isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {
@@ -60,6 +69,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
               message: Type.String(),
             }),
           ),
+        ),
+        concept: Type.Optional(Type.String()),
+        logosData: Type.Optional(
+          Type.Object({
+            documentation: Type.Optional(Type.String()),
+            documentationPrompt: Type.Optional(Type.String()),
+            creatorPrompt: Type.Optional(Type.String()),
+            routerPrompt: Type.Optional(Type.String()),
+          }),
         ),
         isPrivate: Type.Optional(Type.Boolean()),
       }),
@@ -93,12 +111,13 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           character: Type.Object({
             id: Type.String(),
-            user: Type.String(),
+            user: Type.Any(),
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
             voice: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
+            creationCount: Type.Optional(Type.Number()),
             greeting: Type.Optional(Type.String()),
             dialogue: Type.Optional(
               Type.Array(
@@ -107,6 +126,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
                   message: Type.String(),
                 }),
               ),
+            ),
+            concept: Type.Optional(Type.String()),
+            logosData: Type.Optional(
+              Type.Object({
+                documentation: Type.Optional(Type.String()),
+                documentationPrompt: Type.Optional(Type.String()),
+                creatorPrompt: Type.Optional(Type.String()),
+                routerPrompt: Type.Optional(Type.String()),
+              }),
             ),
             isPrivate: Type.Optional(Type.Boolean()),
           }),
@@ -131,12 +159,13 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             id: Type.String(),
-            user: Type.String(),
+            user: Type.Any(),
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
             voice: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
+            creationCount: Type.Optional(Type.Number()),
             greeting: Type.Optional(Type.String()),
             dialogue: Type.Optional(
               Type.Array(
@@ -145,6 +174,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
                   message: Type.String(),
                 }),
               ),
+            ),
+            concept: Type.Optional(Type.String()),
+            logosData: Type.Optional(
+              Type.Object({
+                documentation: Type.Optional(Type.String()),
+                documentationPrompt: Type.Optional(Type.String()),
+                creatorPrompt: Type.Optional(Type.String()),
+                routerPrompt: Type.Optional(Type.String()),
+              }),
             ),
             isPrivate: Type.Optional(Type.Boolean()),
           }),

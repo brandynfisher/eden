@@ -1,5 +1,6 @@
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { fetcher } from '@/lib/fetcher'
+import { ItemType } from '@/providers/ModalProvider'
 import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
 import { useCallback, useMemo } from 'react'
 import useSWRInfinite from 'swr/infinite'
@@ -17,6 +18,7 @@ export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
   collectionId?: string
   creationId?: string
   name?: string
+  conceptId?: string
 }
 
 export type PaginatedFeedQuery = {
@@ -25,19 +27,18 @@ export type PaginatedFeedQuery = {
   collectionId?: string
   name?: string
   creationId?: string
+  conceptId?: string
   limit?: number
 }
 
-export type FeedType = 'creations' | 'concepts'
-
 export const getFeedPageRoute = (
-  type: FeedType,
+  itemType: ItemType,
   query: PaginatedFeedQuery,
   limit: number,
   page: number,
   orderBy?: OrderByParam,
 ) => {
-  const basePath = `/api/feed/${type}`
+  const basePath = `/api/feed/${itemType}s`
   const params: FeedRouteQueryParams = {}
 
   if (limit && page) {
@@ -51,7 +52,6 @@ export const getFeedPageRoute = (
   if (query?.characterId) {
     params.characterId = query.characterId
   }
-
   if (query?.name && query.name.length > 0) {
     params.name = query.name
   }
@@ -60,6 +60,9 @@ export const getFeedPageRoute = (
   }
   if (query?.creationId) {
     params.creationId = query.creationId
+  }
+  if (query?.conceptId) {
+    params.conceptId = query.conceptId
   }
   if (orderBy) {
     params.orderBy = orderBy.field
@@ -75,7 +78,7 @@ export const getFeedPageRoute = (
 }
 
 export const useFeedPaginated = (
-  type: FeedType,
+  itemType: ItemType,
   query: PaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,
 ) => {
@@ -95,9 +98,15 @@ export const useFeedPaginated = (
       }
 
       // console.log('getKey', {pageIndex, previousPageData})
-      return getFeedPageRoute(type, query, pageLimit, pageIndex + 1, orderBy)
+      return getFeedPageRoute(
+        itemType,
+        query,
+        pageLimit,
+        pageIndex + 1,
+        orderBy,
+      )
     },
-    [type, query, pageLimit, orderBy],
+    [itemType, query, pageLimit, orderBy],
   )
 
   const {
@@ -119,19 +128,22 @@ export const useFeedPaginated = (
 
   const isLoadingMore =
     isLoading ||
-    (size > 0 && data != null && typeof data[size - 1] === 'undefined')
+    (size > 0 &&
+      data != null &&
+      typeof data[size - 1] === 'undefined' &&
+      data &&
+      data[data.length - 1] &&
+      typeof data[data.length - 1] !== 'undefined' &&
+      data[data.length - 1]?.hasNextPage)
   const isEmpty = data?.[0]?.total === 0 || data?.[0]?.length === 0
 
   const maybeLoadMore = useMemo(() => {
     return () => {
       if (!data) return
-      // console.log('maybeLoadMore')
       if (isValidating) return
       if (isLoading || isLoadingMore) return
 
-      const { hasNextPage: dataHasNextPage } = data[0]
-
-      if (dataHasNextPage) {
+      if (data && data.length && data[data.length - 1].hasNextPage) {
         setSize(prevSize => {
           // console.log('maybeLoadNextPage', {size: prevSize + 1, dataHasNextPage, isLoading, isLoadingMore, isValidating, docsLength: docs.length})
           return prevSize + 1
@@ -152,7 +164,7 @@ export const useFeedPaginated = (
   }, [data])
 
   return {
-    hasNextPage: data ? !!data[0]?.hasNextPage : false,
+    hasNextPage: data ? !!data[size - 1]?.hasNextPage : false,
     totalItems: totalItems,
     items: data ? ([] as Creation[]).concat(...docs) : [],
     refetchFeed,
@@ -160,6 +172,7 @@ export const useFeedPaginated = (
     setSize,
     isEmpty,
     isLoading,
+    isLoadingMore,
     maybeLoadMore,
   }
 }

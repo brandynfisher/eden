@@ -4,13 +4,13 @@ import React, { ReactNode, useEffect, useState } from 'react'
 
 const AntConfigWrapProvider = ({ children }: { children: ReactNode }) => {
   const { resolvedTheme } = useTheme()
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(true)
 
   useEffect(() => {
-    if (resolvedTheme && resolvedTheme === 'dark') {
-      setIsDarkMode(true)
-    } else {
+    if (resolvedTheme && resolvedTheme === 'light') {
       setIsDarkMode(false)
+    } else {
+      setIsDarkMode(true)
     }
   }, [resolvedTheme])
 

@@ -15,23 +15,21 @@ export const createPaginationRoute = (
     params.page = query.page
     params.limit = query.limit
   }
-
   if (query.userId) {
     params.userId = String(query.userId)
   }
-
   if (query.characterId) {
     params.characterId = String(query.characterId)
   }
-
+  if (query.conceptId) {
+    params.conceptId = String(query.conceptId)
+  }
   if (query.name && query.name.length > 0) {
     params.name = String(query.name)
   }
-
   if (query.collectionId) {
     params.collectionId = String(query.collectionId)
   }
-
   if (query.orderBy) {
     params.orderBy = String(query.orderBy)
   }

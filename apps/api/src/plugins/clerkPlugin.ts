@@ -19,10 +19,6 @@ export const registerClerk = async (fastify: FastifyInstance) => {
       async (request: FastifyRequest, reply: FastifyReply) => {
         const { userId } = getAuth(request)
         if (!userId) {
-          // return reply.status(401).send({
-          //   error: 'Unauthorized',
-          //   message: 'Invalid session',
-          // })
           throw new Error('Invalid session')
         }
 
@@ -31,10 +27,6 @@ export const registerClerk = async (fastify: FastifyInstance) => {
         })
 
         if (!user) {
-          // return reply.status(401).send({
-          //   error: 'Unauthorized',
-          //   message: 'User not found',
-          // })
           throw new Error('User not found')
         }
 

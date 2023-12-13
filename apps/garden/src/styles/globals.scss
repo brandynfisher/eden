@@ -32,6 +32,10 @@ body {
     backdrop-filter: blur(16px);
 }
 
+.ant-modal-wrap {
+    overflow-x: hidden !important;
+}
+
 .dark .ant-modal-content {
     border: solid;
     border-radius: 0.75rem !important;
@@ -702,11 +706,11 @@ body {
             border-bottom-left-radius: 0 !important;
         }
     }
+}
 
-    &.ant-input {
-        border-top-left-radius: 0 !important;
-        border-top-right-radius: 0!important;
-    }
+textarea.with-addon {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0!important;
 }
 
 .parameter {
@@ -721,9 +725,14 @@ body {
         }
     }
 
-    &.parameter--textarea {
+    &.parameter--text {
         .parameter__addon {
 
+        }
+
+        .ant-input.with-addon {
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
         }
     }
 
@@ -763,4 +772,8 @@ body {
     height: 14px !important;
     line-height: 14px !important;
     font-size: 10px;
+}
+
+div[role='grid'] {
+    outline: none;
 }

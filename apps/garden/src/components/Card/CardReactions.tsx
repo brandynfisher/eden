@@ -1,6 +1,7 @@
-import { SaveButton } from '@/components/Creation/CreationReactions'
+import SaveButton from '@/components/Card/SaveButton'
 import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
+import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
@@ -13,12 +14,12 @@ import React, { Dispatch, SetStateAction, useContext } from 'react'
 
 export const PraiseButton = ({
   item,
-  type,
+  itemType,
   onChange,
   showCounts,
 }: {
   item: Creation | Concept
-  type: 'creation' | 'concept'
+  itemType: ItemType
   onChange: Dispatch<SetStateAction<Concept | Creation>>
   showCounts?: boolean
 }) => {
@@ -46,11 +47,11 @@ export const PraiseButton = ({
 
     try {
       if (item.reactions?.praise) {
-        await axios.post(`/api/${type}s/unreact`, {
+        await axios.post(`/api/${itemType}s/unreact`, {
           ...reactionData,
         })
       } else {
-        await axios.post(`/api/${type}s/react`, {
+        await axios.post(`/api/${itemType}s/react`, {
           ...reactionData,
         })
       }
@@ -117,31 +118,52 @@ export const PraiseButton = ({
 
 export interface CardReactionProps {
   item: Creation | Concept
-  type: 'creation' | 'concept'
+  itemType: ItemType
   onChange: Dispatch<SetStateAction<Concept | Creation>>
   showCounts?: boolean
 }
 
 const CardReactions = ({
   item,
-  type,
+  itemType,
   onChange,
   showCounts,
 }: CardReactionProps) => {
-  return (
+  return itemType === 'creation' ? (
     <div className="relative flex justify-between">
-      <div>
+      {itemType === 'creation' ? (
+        <>
+          <div>
+            <div className="flex pointer-events-auto">
+              <PraiseButton
+                item={item}
+                itemType={itemType}
+                onChange={onChange}
+                showCounts={showCounts}
+              />
+            </div>
+          </div>
+          <div className="pointer-events-auto">
+            <SaveButton creation={item} onChange={onChange} />
+          </div>
+        </>
+      ) : null}
+    </div>
+  ) : (
+    <div className="relative hidden md:flex justify-between">
+      <div className="h-2">
         <div className="flex pointer-events-auto">
-          <PraiseButton
-            item={item}
-            type={type}
-            onChange={onChange}
-            showCounts={showCounts}
-          />
+          {/*      <PraiseButton*/}
+          {/*        item={conceptData}*/}
+          {/*        type={'concept'}*/}
+          {/*        onChange={*/}
+          {/*          setConceptData as Dispatch<*/}
+          {/*            SetStateAction<Concept | Creation>*/}
+          {/*          >*/}
+          {/*        }*/}
+          {/*        showCounts={true}*/}
+          {/*      />*/}
         </div>
-      </div>
-      <div className="pointer-events-auto">
-        <SaveButton creation={item} onChange={onChange} />
       </div>
     </div>
   )

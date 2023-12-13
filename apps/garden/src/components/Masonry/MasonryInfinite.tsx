@@ -1,13 +1,14 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import OrderByButtons, {
-  OrderByDefaultParam,
-  OrderByParam,
-} from '@/components/Layout/buttons/OrderByButtons'
+import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { MasonryContext } from '@/providers/MasonryProvider'
-import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
+import {
+  ItemType,
+  MODAL_TYPES,
+  useModalContext,
+} from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import {
@@ -24,27 +25,20 @@ import {
 } from 'masonic'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
 const MasonryInfinite = ({
-  type,
+  itemType,
   ItemComponent,
   query,
-  hasSort,
+  orderBy,
 }: {
-  type: 'creations' | 'concepts'
+  itemType: ItemType
   ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
-  hasSort?: OrderByParam[]
+  orderBy: OrderByParam
 }) => {
   const containerRef = useRef(null)
-  const [key, setKey] = useState(0)
   const router = useRouter()
 
   const { showModal } = useModalContext()
@@ -53,20 +47,15 @@ const MasonryInfinite = ({
   const isAuthenticatedUser =
     isAuthenticated && query && query.userId && query.userId === userId
 
-  const [orderBy, setOrderBy] = useState<OrderByParam>(
-    hasSort ? hasSort[0] : OrderByDefaultParam,
-  )
-
   const {
     items,
     // refetchFeed,
     maybeLoadMore: maybeLoadNextPage,
     // size,
-    setSize,
+    // setSize,
     isEmpty,
-    // hasNextPage,
-    isLoading,
-  } = useFeedPaginated(type, query, orderBy)
+    isLoadingMore,
+  } = useFeedPaginated(itemType, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
     isItemLoaded: (index, items) => {
@@ -75,14 +64,6 @@ const MasonryInfinite = ({
     minimumBatchSize: 25,
     threshold: 50,
   })
-
-  const handleOrderChange = (newOrderBy: OrderByParam) => {
-    if (newOrderBy.field !== orderBy?.field) {
-      setOrderBy(newOrderBy)
-      setSize(1)
-      setKey(key + 1)
-    }
-  }
 
   const [ref, rect] = useResizeObserverMantine()
   const { width: windowWidth, height: windowHeight } = useViewportSize()
@@ -94,10 +75,10 @@ const MasonryInfinite = ({
 
   const positioner = usePositioner(
     {
-      width,
-      columnGutter: type === 'creations' ? 8 : 20,
+      width: width || windowWidth,
+      columnGutter: itemType === 'creation' ? 8 : 20,
       rowGutter:
-        windowWidth && windowWidth < 768 ? 0 : type === 'creations' ? 8 : 20,
+        windowWidth && windowWidth < 768 ? 0 : itemType === 'creation' ? 8 : 20,
       columnCount:
         windowWidth && windowWidth < 768
           ? 1
@@ -115,20 +96,12 @@ const MasonryInfinite = ({
           ? 5
           : settings?.maxGridCols.params.initialValue,
     },
-    [orderBy, width, query?.userId],
+    [width, query?.userId],
   )
   const resizeObserver = useResizeObserver(positioner)
   useEffect(() => {
     setItems(items)
-  }, [items.length, orderBy, query, type])
-
-  useEffect(() => {
-    document.body.classList.add('force-scroll-y')
-
-    return () => {
-      document.body.classList.remove('force-scroll-y')
-    }
-  }, [])
+  }, [items.length])
 
   const handleCardClick = useCallback((index: number) => {
     //@todo: move this to CreationMasonry (similarMasonry, as static)
@@ -146,24 +119,20 @@ const MasonryInfinite = ({
 
     setCurrentIndex(index)
 
-    showModal(
-      type === 'creations'
-        ? MODAL_TYPES.CREATION_DETAIL_MODAL_V2
-        : MODAL_TYPES.CONCEPT_DETAIL_MODAL,
-      {
-        usesUrl: true,
-        originPageUrl: router.asPath,
-        maybeLoadMoreFn: (
-          currentIndex: number,
-          currentItems: Creation[] | Concept[],
-        ) => {
-          if (currentIndex === currentItems.length - 1) {
-            maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
-          }
-          // console.log(currentItems.length)
-        },
+    showModal(MODAL_TYPES.DETAIL_MODAL, {
+      itemType: itemType,
+      usesUrl: true,
+      originPageUrl: router.asPath,
+      maybeLoadMoreFn: (
+        currentIndex: number,
+        currentItems: Creation[] | Concept[],
+      ) => {
+        if (currentIndex === currentItems.length - 1) {
+          maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
+        }
+        // console.log(currentItems.length)
       },
-    )
+    })
   }, [])
 
   const CardWithClick = useCallback(
@@ -180,14 +149,6 @@ const MasonryInfinite = ({
 
   return (
     <div ref={ref}>
-      {hasSort && (
-        <OrderByButtons
-          params={hasSort}
-          onOrderChange={item => handleOrderChange(item)}
-        />
-      )}
-      {isLoading && !items.length ? <LoadingIndicator /> : null}
-
       {items.length && typeof items[0] === 'undefined' ? (
         <div>error fetching list</div>
       ) : (
@@ -195,7 +156,7 @@ const MasonryInfinite = ({
           {items.length > 0 && (
             <MasonryScroller
               style={{ outline: 'none' }}
-              key={key}
+              key={orderBy.field}
               positioner={positioner}
               resizeObserver={resizeObserver}
               containerRef={containerRef}
@@ -212,6 +173,12 @@ const MasonryInfinite = ({
           )}
         </>
       )}
+
+      {isLoadingMore ? (
+        <div className="my-4 py-2">
+          <LoadingIndicator />
+        </div>
+      ) : null}
 
       {isEmpty && !items.length && (
         <div className="flex flex-col items-center">
