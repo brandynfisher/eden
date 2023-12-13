@@ -123,7 +123,7 @@ const ChatScenarioPage = ({
   data,
   activeSessionId,
 }: {
-  data: { characters: Character[]; sessions: Session[] }
+  data?: { characters: Character[]; sessions: Session[] }
   activeSessionId?: string
 }) => {
   const { isAuthenticated, userId } = useContext(UserContext)

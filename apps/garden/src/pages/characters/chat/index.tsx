@@ -52,11 +52,7 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const chatScenario: Page<PageProps> = ({ data }: PageProps) => {
-  return (
-    <ChatScenarioPage
-      data={{ characters: data.characters, sessions: data.sessions }}
-    />
-  )
+  return <ChatScenarioPage data={data} />
 }
 
 export default chatScenario
