@@ -109,11 +109,11 @@ async function totalUniqueUsersOverTime(db, startTime, endTime, grouping) {
 }
 
 async function stats(db) {
-  const startTime = new Date('2021-08-17T00:00:00.000Z');
-  const endTime = new Date('2023-10-01T00:00:00.000Z');
-  const data_monthly = await creationsMadeOverTime(db, startTime, endTime, "month");
+  const startTime = new Date('2023-09-01T00:00:00.000Z');
+  const endTime = new Date('2023-12-08T00:00:00.000Z');
+  //const data_monthly = await creationsMadeOverTime(db, startTime, endTime, "month");
   //toCSV(data_monthly, 'creations_monthly.csv');
-  // const data_monthly = await totalUniqueUsersOverTime(db, startTime, endTime, "month");
+  const data_monthly = await totalUniqueUsersOverTime(db, startTime, endTime, "day");
   // todo -- loop through weeks
   //const userCreationCounts = await uniqueUsersMakingCreations(db, startTime, endTime);
   console.log(data_monthly);
