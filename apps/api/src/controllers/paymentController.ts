@@ -299,7 +299,10 @@ export const createCheckoutSession = async (
         quantity: 1,
       },
     ],
-    discounts: discountCode ? [{ coupon: discountCode }] : undefined,
+    discounts:
+      paymentMode === 'payment' && discountCode
+        ? [{ coupon: discountCode }]
+        : undefined,
     customer_creation,
     customer: user.stripeCustomerId,
     client_reference_id: user.userId,
