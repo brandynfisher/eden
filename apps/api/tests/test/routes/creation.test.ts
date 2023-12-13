@@ -159,6 +159,21 @@ test('User cannot send an invalid reaction', async context => {
   expect(response.json().message).toBe('Invalid reaction')
 })
 
+test('Free user cannot make a creation private', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const creation = await createCreation()
+  const response = await server.inject({
+    method: 'PATCH',
+    url: `/creations/${creation.id}`,
+    headers,
+    payload: {
+      isPrivate: true,
+    },
+  })
+  expect(response.statusCode).toBe(401)
+})
+
 // TODO: $text index locally
 // test('User can search creations', async context => {
 //   const { server } = context

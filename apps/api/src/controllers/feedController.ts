@@ -8,6 +8,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { PipelineStage } from 'mongoose'
 
+import { conceptExportPermissionCheck } from '../lib/authorization'
 import { Collection } from '../models/Collection'
 import { Concept, ConceptDocument } from '../models/Concept'
 import { Creation, CreationDocument } from '../models/Creation'
@@ -512,6 +513,15 @@ export const getConceptsFeed = async (
     select: 'status config generator',
     populate: { path: 'generator', select: 'generatorName output' },
   })
+
+  const hasConceptExportPermission = conceptExportPermissionCheck(request)
+  if (!hasConceptExportPermission) {
+    // @ts-ignore
+    concepts.docs = concepts.docs.map(concept => {
+      const { uri, ...conceptWithoutUri } = concept.toObject()
+      return conceptWithoutUri
+    })
+  }
 
   if (ownUserId) {
     interface ConceptDocumentExtension {

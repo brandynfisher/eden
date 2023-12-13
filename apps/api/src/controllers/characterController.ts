@@ -4,13 +4,11 @@ import {
   CharactersGetArguments,
   CharactersListArguments,
   CharactersUpdateArguments,
-  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { characterPrivacyPermissionCheck } from '../lib/authorization'
-import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'

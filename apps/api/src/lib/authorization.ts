@@ -1,35 +1,29 @@
 import {
   CharactersUpdateArguments,
-  FeatureFlag,
+  ConceptsUpdateArguments,
+  CreationsUpdateArguments,
   SubscriptionTier,
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import {
-  hasFeatureFlag,
-  hasMinimumSubscriptionTier,
-} from '../middleware/authMiddleware'
+import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
 
 export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const subscriber = await hasMinimumSubscriptionTier(
-    request,
-    SubscriptionTier.Pro,
-  )
-  const previewUser = await hasFeatureFlag(request, FeatureFlag.Preview)
-  if (!subscriber && !previewUser) {
+  const subscriber = hasMinimumSubscriptionTier(request, SubscriptionTier.Pro)
+  if (!subscriber) {
     return reply.status(401).send({
       statusCode: 401,
-      error: 'Unauthorized',
-      message: 'Unauthorized',
+      message:
+        'Only pro+ subscribers can create API keys. Please upgrade your subscription.',
     })
   }
 }
 
-export const taskPrivacyPermissionCheck = async (
+export const taskPrivacyPermissionCheck = (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -50,7 +44,7 @@ export const taskPrivacyPermissionCheck = async (
   }
 }
 
-export const characterPrivacyPermissionCheck = async (
+export const characterPrivacyPermissionCheck = (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -65,4 +59,48 @@ export const characterPrivacyPermissionCheck = async (
         'Only subscribers can use privacy features. Please upgrade your subscription.',
     })
   }
+}
+
+export const creationPrivacyPermissionCheck = (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { isPrivate } = request.body as CreationsUpdateArguments
+
+  if (
+    isPrivate &&
+    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
+  ) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
+}
+
+export const conceptPrivacyPermissionCheck = (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { isPrivate } = request.body as ConceptsUpdateArguments
+
+  if (
+    isPrivate &&
+    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
+  ) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
+}
+
+export const conceptExportPermissionCheck = (
+  request: FastifyRequest,
+): boolean => {
+  if (hasMinimumSubscriptionTier(request, SubscriptionTier.Pro)) {
+    return true
+  }
+
+  return false
 }

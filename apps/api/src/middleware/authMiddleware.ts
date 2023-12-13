@@ -111,6 +111,9 @@ export const hasMinimumSubscriptionTier = (
   request: FastifyRequest,
   minimumTier: SubscriptionTier,
 ) => {
+  if (!request.user) {
+    return false
+  }
   return (
     request.user.subscriptionTier >= minimumTier ||
     // Admin user and preview user are equivalent to having the highest tier
