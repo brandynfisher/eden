@@ -107,7 +107,7 @@ import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
 import { useLocalStorage } from '@mantine/hooks'
 import { App } from 'antd'
-import { useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 
 export const useCreationState = () => {
@@ -171,7 +171,7 @@ export const useCreationState = () => {
 
       const completed = tasks?.filter(task => task.status === 'completed')
       setCompletedTasks(prevState => {
-        if (completed.length > prevState.length) {
+        if (completed.length !== prevState.length) {
           // probably got a new finished task, trigger mutate on own profile (first page) to force a refresh
           const ownCreatorFeedPageRoute = getFeedPageRoute(
             'creation',
@@ -181,6 +181,13 @@ export const useCreationState = () => {
             OrderByLatest,
           )
           mutateGlobal(ownCreatorFeedPageRoute, undefined)
+          notify(
+            completed.filter(
+              item =>
+                !dismissedTaskIds.includes(item._id) &&
+                prevState.filter(prevItem => prevItem._id !== item._id).length,
+            ),
+          )
         }
 
         return completed.filter(item => !dismissedTaskIds.includes(item._id))
@@ -194,41 +201,73 @@ export const useCreationState = () => {
     }
   }, [mutateGlobal, tasks, userId])
 
-  useEffect(() => {
-    // Cleanup function to remove completed tasks from taskIds
-    const notify = async () => {
-      if (tasks && tasks.length) {
-        // only show notifications for tasks that finished after the page was loaded
-        const isExpired =
-          new Date(tasks[0].updatedAt).getTime() - notificationCutOffDate <
-          10000
+  const notify = useCallback(
+    async (items: Task[]) => {
+      if (items && items.length) {
+        items.map(item => {
+          // only show notifications for tasks that finished after the page was loaded
+          const isExpired =
+            new Date(item.updatedAt).getTime() - notificationCutOffDate < 0
 
-        if (isExpired) {
-          return
-        }
+          if (isExpired) {
+            return
+          }
 
-        if (dismissedTaskIds.includes(tasks[0]._id)) {
-          return
-        }
+          if (item.status === 'completed') {
+            message.destroy()
+            message.success(
+              `Task ${truncatedAddress(item.taskId)} completed successfully!`,
+            )
+          }
 
-        if (tasks[0].status === 'completed') {
-          message.destroy()
-          message.success(
-            `Task ${truncatedAddress(tasks[0].taskId)} completed successfully!`,
-          )
-        }
-
-        if (tasks[0].status === 'failed') {
-          message.destroy()
-          message.error(
-            `An error occured for Task ${truncatedAddress(tasks[0].taskId)}.`,
-          )
-        }
+          if (item.status === 'failed') {
+            message.destroy()
+            message.error(
+              `An error occured for Task ${truncatedAddress(item.taskId)}.`,
+            )
+          }
+        })
       }
-    }
+      setNotificationCutOffDate(Date.now())
+    },
+    [notificationCutOffDate],
+  )
 
-    notify()
-  }, [notificationCutOffDate, tasks, completedTasks.length, dismissedTaskIds])
+  // useEffect(() => {
+  //   // Cleanup function to remove completed tasks from taskIds
+  //   const notify = async () => {
+  //     if (notifications && notifications.length) {
+  //       // only show notifications for tasks that finished after the page was loaded
+  //       const isExpired =
+  //         new Date(notifications[notifications.length - 1].updatedAt).getTime() - notificationCutOffDate <
+  //         10000
+  //
+  //       if (isExpired) {
+  //         return
+  //       }
+  //       //
+  //       // if (dismissedTaskIds.includes(tasks[0]._id)) {
+  //       //   return
+  //       // }
+  //
+  //       if (notifications[notifications.length].status === 'completed') {
+  //         message.destroy()
+  //         message.success(
+  //           `Task ${truncatedAddress(tasks[0].taskId)} completed successfully!`,
+  //         )
+  //       }
+  //
+  //       if (tasks[0].status === 'failed') {
+  //         message.destroy()
+  //         message.error(
+  //           `An error occured for Task ${truncatedAddress(tasks[0].taskId)}.`,
+  //         )
+  //       }
+  //     }
+  //   }
+  //
+  //   notify()
+  // }, [notificationCutOffDate, notifications])
 
   return {
     tasks,
