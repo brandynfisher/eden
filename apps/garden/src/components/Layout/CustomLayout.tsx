@@ -96,7 +96,7 @@ const CustomLayout = ({
         >
           {children}
         </Layout>
-        <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center z-50">
+        <div className="flex flex-col gap-4 fixed bottom-8 right-8 items-center z-[9999]">
           <FetchIndicator isLoading={showLoading} />
           <BackToTopButton />
         </div>

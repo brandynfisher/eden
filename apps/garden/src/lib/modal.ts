@@ -1,3 +1,4 @@
+import { ItemType } from '@/providers/ModalProvider'
 import { NextRouter } from 'next/router'
 
 interface ISpecialRouteIndex<TValue> {
@@ -21,7 +22,7 @@ const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
 
 export const getModalUrls = (
   router: NextRouter,
-  itemType: 'creation' | 'concept',
+  itemType: ItemType,
   itemId: string,
 ): { pageUrl: string; modalUrl: string } => {
   const urls = {

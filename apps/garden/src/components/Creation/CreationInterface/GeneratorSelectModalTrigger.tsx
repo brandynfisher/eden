@@ -47,6 +47,7 @@ const GeneratorSelectModalTrigger = ({
           ? 'hover:!bg-gray-400 dark:hover:!bg-gray-950 hover:!bg-opacity-70 '
           : 'pointer-events-none !cursor-auto'
       }`}
+      data-testid="generator-select-modal-trigger"
     >
       <div className="w-full flex items-center gap-2">
         {outputType === 'image' ? (

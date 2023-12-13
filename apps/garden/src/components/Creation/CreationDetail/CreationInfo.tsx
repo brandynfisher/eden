@@ -51,7 +51,7 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
   return (
     <div>
       {creation.task.generator.output === 'creation' ? (
-        <div className="flex gap-4 flex-wrap justify-between">
+        <div className="flex gap-4 flex-wrap lg:justify-between">
           <BaseParamGroup
             label="Type"
             value={<div>{creation.task.generator.generatorName}</div>}

@@ -166,6 +166,7 @@ export type Concept = {
   publicName: string
   conceptName: string
   attributes: any
+  creationCount?: number
   praiseCount?: number
   bookmarkCount?: number
   bookmarked?: boolean

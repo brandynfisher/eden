@@ -6,7 +6,7 @@ import { CONFIG } from '@/lib/config'
 import CommentOutlined from '@ant-design/icons/CommentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/router'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const CharacterProfileHeader = ({
   character,
@@ -18,6 +18,13 @@ const CharacterProfileHeader = ({
   const router = useRouter()
   const displayName = character ? character.name : ''
   const displayImage = character ? character.image : ''
+  const [hasNativeShare, setHasNativeShare] = useState(false)
+
+  useEffect(() => {
+    if (navigator && !!navigator.share) {
+      setHasNativeShare(true)
+    }
+  }, [])
 
   const handleChat = () => {
     router.push(`/characters/chat`)
@@ -48,7 +55,7 @@ const CharacterProfileHeader = ({
               <CopyUrlButton
                 url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}
               />
-              {navigator && !!navigator.share && (
+              {hasNativeShare && (
                 <ShareButton
                   title={'Share Creation'}
                   url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}

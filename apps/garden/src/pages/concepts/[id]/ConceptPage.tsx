@@ -1,4 +1,4 @@
-import ConceptDetail from '@/components/Concept/ConceptDetail/ConceptDetail'
+import Details from '@/components/Detail/Details'
 import { useConcept } from '@/hooks/useConcept'
 import { Concept } from '@edenlabs/eden-sdk'
 import React from 'react'
@@ -15,7 +15,7 @@ const ConceptPage = ({ data }: { data: { concept: Concept } }) => {
     return null
   }
 
-  return <ConceptDetail concept={conceptData || data.concept} />
+  return <Details itemType="concept" item={conceptData || data.concept} />
 }
 
 export default ConceptPage

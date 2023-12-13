@@ -1,7 +1,7 @@
 import CharacterProfileHeader from '@/components/Characters/CharacterProfileHeader'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
-import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
+import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 import { useCharacter } from '@/hooks/useCharacter'
 import { CONFIG } from '@/lib/config'
 import { Character } from '@edenlabs/eden-sdk'
@@ -12,12 +12,12 @@ import React from 'react'
 const CreationTabContent = ({ characterId }: { characterId: string }) => {
   return (
     <div className="mt-4">
-      <MasonryInfinite
+      <MasonryInfiniteContainer
         key={`creations_${characterId}`}
-        type="creations"
-        query={{ characterId: characterId }}
-        hasSort={[OrderByLatest]}
+        itemType="creation"
         ItemComponent={CreationCard}
+        query={{ characterId: characterId }}
+        filters={[OrderByLatest]}
       />
     </div>
   )

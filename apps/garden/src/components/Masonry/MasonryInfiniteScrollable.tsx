@@ -6,8 +6,10 @@ import {
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
+import MasonryProvider from '@/providers/MasonryProvider'
+import { ItemType } from '@/providers/ModalProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
-import { useElementSize } from '@mantine/hooks'
+import { useElementSize, useViewportSize } from '@mantine/hooks'
 import { Empty } from 'antd'
 import {
   UseMasonryOptions,
@@ -25,19 +27,23 @@ const MasonryHookWrap: FC<UseMasonryOptions<Concept | Creation>> = props => {
 }
 
 const MasonryInfiniteScrollable = ({
-  type,
+  itemType,
   ItemComponent,
   query,
   hasSort,
   onCardClick,
   hover,
+  modalContainerRef,
+  modalContainerHeight,
 }: {
-  type: 'creations' | 'concepts'
+  itemType: ItemType
   ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   hasSort?: OrderByParam[]
   onCardClick?: (item: Concept | Creation) => void
   hover?: boolean
+  modalContainerRef?: React.MutableRefObject<HTMLDivElement>
+  modalContainerHeight?: number
 }) => {
   const [orderBy /*setOrderBy*/] = useState<OrderByParam>(
     hasSort ? hasSort[0] : OrderByDefaultParam,
@@ -50,7 +56,9 @@ const MasonryInfiniteScrollable = ({
     // size,
     isEmpty,
     isLoading,
-  } = useFeedPaginated(type, query, orderBy)
+    isLoadingMore,
+    // hasNextPage
+  } = useFeedPaginated(itemType, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
     isItemLoaded: (index, items) => {
@@ -60,22 +68,27 @@ const MasonryInfiniteScrollable = ({
     threshold: 50,
   })
 
-  const {
-    ref: containerRef,
-    width: containerWidth,
-    height: containerHeight,
-  } = useElementSize()
-  const { scrollTop, isScrolling } = useScroller(containerRef, { offset: 30 })
-  // console.log({ scrollTop, isScrolling, containerWidth, containerHeight })
+  // observing inner container dimensions
+  const { ref: containerRef, width: containerWidth } = useElementSize()
+  // if this lives in a modal, we need to observe the modal reference for dimensions and scroll instead of the document body
+  const { scrollTop, isScrolling } = useScroller(
+    modalContainerRef
+      ? modalContainerRef
+      : typeof window !== 'undefined'
+      ? window
+      : containerRef,
+    { offset: 30 },
+  )
+  const { height: windowHeight } = useViewportSize()
 
   const positioner = usePositioner(
     {
       width: containerWidth,
-      columnGutter: 24,
+      columnGutter: 20,
       rowGutter: 20,
       maxColumnCount: 4,
     },
-    [items.length],
+    [query?.name, query?.conceptId, query?.userId, containerWidth],
   )
 
   const resizeObserver = useResizeObserver(positioner)
@@ -88,20 +101,24 @@ const MasonryInfiniteScrollable = ({
         data={props.data}
         className={
           hover
-            ? `hover:border-2 rounded-lg hover:border-solid hover:border-blue-500 transition-all`
-            : 'transition-all'
+            ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
+            : ''
         }
         //@ts-ignore
-        onClick={onCardClick}
+        onClick={() => onCardClick(props.data)}
       />
     ),
     [hover, ItemComponent, onCardClick],
   )
 
   return (
-    <div>
-      <div className="flex flex-col max-h-[calc(100vh_-_190px)] w-full overflow-hidden">
-        {isLoading ? <LoadingIndicator /> : null}
+    <MasonryProvider>
+      <div className="flex flex-col w-full">
+        {isLoading ? (
+          <div>
+            <LoadingIndicator />{' '}
+          </div>
+        ) : null}
         {isEmpty && !items.length && (
           <div className="flex flex-col items-center">
             <Empty
@@ -119,14 +136,17 @@ const MasonryInfiniteScrollable = ({
         ) : (
           <div
             ref={containerRef}
-            className="h-[calc(100vh_-_190px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
+            // className="h-[calc(100vh_-_190px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
+            className="mx-auto mb-0 w-full min-h-[237px]"
           >
             <MasonryHookWrap
               positioner={positioner}
               resizeObserver={resizeObserver}
               items={items}
               itemHeightEstimate={207}
-              height={containerHeight}
+              height={
+                modalContainerHeight ? modalContainerHeight : windowHeight
+              }
               scrollTop={scrollTop}
               isScrolling={isScrolling}
               overscanBy={3}
@@ -137,7 +157,12 @@ const MasonryInfiniteScrollable = ({
           </div>
         )}
       </div>
-    </div>
+      {isLoadingMore ? (
+        <div className="my-4 py-2">
+          <LoadingIndicator />
+        </div>
+      ) : null}
+    </MasonryProvider>
   )
 }
 

@@ -44,7 +44,7 @@ export const ResponsiveImage = ({
         quality={quality}
         priority={priority}
         onLoadingComplete={handleOnLoadingComplete}
-        className={`rounded-lg h-full w-full object-contain`}
+        className={`h-full w-full object-contain ${className}`}
       />
       {children}
     </div>

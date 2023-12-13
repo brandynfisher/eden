@@ -11,8 +11,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(401).json({ error: 'Not authenticated' })
   }
 
-  const { name, voice, image, description, greeting, dialogue, isPrivate } =
-    req.body as CharactersCreateArguments
+  const {
+    name,
+    voice,
+    image,
+    description,
+    greeting,
+    dialogue,
+    concept,
+    logosData,
+    isPrivate,
+  } = req.body as CharactersCreateArguments
 
   try {
     const eden = new EdenClient({
@@ -26,6 +35,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       description,
       greeting,
       dialogue,
+      concept,
+      logosData,
       isPrivate,
     })
     return res.status(200).json({ characterId: response.characterId })

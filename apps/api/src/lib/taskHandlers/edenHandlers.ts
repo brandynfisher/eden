@@ -1,7 +1,9 @@
+import { ReactionType } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { Character } from '../../models/Character'
 import { Concept } from '../../models/Concept'
 import { Creation, CreationInput } from '../../models/Creation'
 import { Generator, GeneratorDocument } from '../../models/Generator'
@@ -99,6 +101,10 @@ const handleUpdate = async (
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
 
+      const { nsfw_scores, ...remainingAttributes } =
+        finalOutput.attributes || {}
+      const finalOutputAttributes = { ...remainingAttributes }
+
       await Promise.allSettled(
         finalOutput.files.map(async (files, index) => {
           const creationId = new ObjectId()
@@ -107,16 +113,8 @@ const handleUpdate = async (
             : task.user
 
           const nsfwScore =
-            finalOutput.attributes &&
-            finalOutput.attributes['nsfw_scores'] &&
-            finalOutput.attributes['nsfw_scores'].length
-              ? finalOutput.attributes['nsfw_scores'][index]
-              : 0
+            nsfw_scores && nsfw_scores.length ? nsfw_scores[index] : 0
           const isNsfw = nsfwScore && nsfwScore > 0.5
-
-          if (finalOutput.attributes) {
-            delete finalOutput.attributes.nsfw_scores
-          }
 
           const creationDocument: CreationInput = {
             _id: creationId,
@@ -128,10 +126,18 @@ const handleUpdate = async (
             name: finalOutput.name,
             attributes: {
               ...task.attributes,
-              ...finalOutput.attributes,
+              ...finalOutputAttributes,
               nsfw_score: nsfwScore,
             },
             isPrivate: isNsfw ? true : task.config.isPrivate || false,
+          }
+
+          if (task.config.lora) {
+            creationDocument.concept = new ObjectId(task.config.lora)
+          }
+
+          if (task.generator) {
+            creationDocument.generator = task.generator
           }
 
           if (finalOutput.files[index]) {
@@ -152,6 +158,34 @@ const handleUpdate = async (
           creationData.push(creationDocument)
         }),
       )
+
+      // update concept creation count
+      if (task.config.lora) {
+        await Concept.findOneAndUpdate(
+          {
+            _id: task.config.lora,
+          },
+          {
+            $inc: {
+              creationCount: task.config.n_samples ? task.config.n_samples : 1,
+            },
+          },
+        )
+      }
+
+      // update character creation count
+      if (task.character) {
+        await Character.findOneAndUpdate(
+          {
+            _id: task.character,
+          },
+          {
+            $inc: {
+              creationCount: task.config.n_samples ? task.config.n_samples : 1,
+            },
+          },
+        )
+      }
 
       await Promise.allSettled(
         creationData.map(async creationInput => {
@@ -220,7 +254,7 @@ const handleUpdate = async (
           task: task._id,
           name: publicName,
           conceptName: finalOutput.name,
-          checkpoint: task.config.checkpoint || 'sdxl-v1.0', //task.config.checkpoint,
+          checkpoint: task.config.checkpoint || 'JuggernautXL_v6', //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
           num_training_images:
             finalOutput.attributes && finalOutput.attributes.num_training_images

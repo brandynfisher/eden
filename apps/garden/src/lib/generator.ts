@@ -1,4 +1,4 @@
-import { GeneratorParameter } from '@edenlabs/eden-sdk'
+import { Generator, GeneratorParameter } from '@edenlabs/eden-sdk'
 
 export const hiddenGenerators = [
   'complete',
@@ -53,3 +53,6 @@ export const supportsGroup = (
     return parameterGroups[group]?.includes(p.name)
   })
 }
+
+export const getDefaultGeneratorVersion = (generator: Generator) =>
+  generator.versions.filter(v => v.versionId == generator.defaultVersionId)[0]

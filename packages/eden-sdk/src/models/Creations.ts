@@ -187,6 +187,7 @@ export type Creation = {
   name: string
   attributes: CreationAttributes
   mediaAttributes: MediaAttributes
+  creationCount?: number
   praiseCount?: number
   bookmarkCount?: number
   bookmarked?: boolean

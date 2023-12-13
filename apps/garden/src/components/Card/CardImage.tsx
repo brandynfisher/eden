@@ -6,12 +6,14 @@ const CardImage = ({
   height,
   priority,
   sizes,
+  className,
 }: {
   uri: string
   width: number
   height: number
   priority?: boolean
   sizes?: string
+  className?: string
 }) => {
   return (
     <ResponsiveImage
@@ -20,6 +22,7 @@ const CardImage = ({
       aspectRatio={width / height}
       sizes={sizes || '(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
       priority={priority}
+      className={className}
     />
   )
 }
