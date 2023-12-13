@@ -39,6 +39,7 @@ export interface CharacterSchema extends VisibilitySchema {
 
 export interface CharacterInput {
   user: ObjectId | UserDocument
+  concept?: ObjectId | ConceptDocument
   name: string
   description?: string
   greeting?: string

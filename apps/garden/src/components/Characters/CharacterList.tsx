@@ -63,17 +63,19 @@ const MyCharacterCard = ({ character }: { character: Character }) => {
       <CharacterCard
         character={character}
         className="!rounded-b-none !border-b-0"
+        showAuthor={false}
+        showFeatures={true}
       />
-      <div className="absolute flex gap-2 z-10 me-0 bottom-6 right-0 md:bg-gray-100 md:dark:bg-gray-800 md:rounded-b-lg md:bottom-auto md:py-2 md:relative md:w-full md:flex md:justify-between md:px-2">
+      <div className="flex gap-2 px-2 bg-gray-100 dark:bg-gray-800 rounded-b-lg py-2 w-full justify-between ">
         <div className="flex items-center w-full justify-between">
           <Link href={`/characters/chat`}>
-            <Button type="primary">
+            <Button className="flex items-center gap-0.5" type="primary">
               <CommentOutlined />
               Chat
             </Button>
           </Link>
           <Link href={`/create/characters/${character.id}`}>
-            <Button>
+            <Button className="flex items-center gap-0.5">
               <SettingOutlined />
               Edit
             </Button>

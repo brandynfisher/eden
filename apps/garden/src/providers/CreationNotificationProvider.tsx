@@ -10,6 +10,8 @@ export interface CreationNotificationContextType {
   setCompletedTasks?: (completedTasks: Task[]) => void
   failedTasks?: Task[]
   setFailedTasks?: (failedTasks: Task[]) => void
+  dismissedTaskIds?: string[]
+  addDismissedTaskIds: (dismissedTaskIds: string[]) => void
   activeTaskId?: string
   setActiveTaskId?: (taskId: string) => void
   hasChangedGenerator?: boolean
@@ -26,6 +28,8 @@ export const CreationNotificationContext =
     setFailedTasks: undefined,
     completedTasks: undefined,
     setCompletedTasks: undefined,
+    dismissedTaskIds: undefined,
+    addDismissedTaskIds: () => undefined,
     activeTaskId: undefined,
     setActiveTaskId: undefined,
     hasChangedGenerator: undefined,

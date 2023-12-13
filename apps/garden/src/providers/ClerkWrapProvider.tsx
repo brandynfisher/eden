@@ -8,10 +8,10 @@ const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
   const [baseTheme, setBaseTheme] = useState<typeof dark | undefined>(dark)
 
   useEffect(() => {
-    if (resolvedTheme && resolvedTheme === 'dark') {
-      setBaseTheme(dark)
-    } else {
+    if (resolvedTheme && resolvedTheme === 'light') {
       setBaseTheme(undefined)
+    } else {
+      setBaseTheme(dark)
     }
   }, [resolvedTheme])
 

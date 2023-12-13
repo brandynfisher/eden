@@ -32,6 +32,10 @@ body {
     backdrop-filter: blur(16px);
 }
 
+.ant-modal-wrap {
+    overflow-x: hidden !important;
+}
+
 .dark .ant-modal-content {
     border: solid;
     border-radius: 0.75rem !important;
