@@ -1,6 +1,7 @@
 import {
   PaymentsCreateArguments,
   PaymentsSubscriptionArguments,
+  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -22,6 +23,19 @@ interface TopUpMetadata {
 
 interface SubscriptionMetadata {
   subscriptionTier: string
+}
+
+const discountMap = (
+  server: FastifyInstance,
+  subscriptionTier?: SubscriptionTier,
+) => {
+  const map = {
+    [SubscriptionTier.Free]: undefined,
+    [SubscriptionTier.Basic]: server.config.STRIPE_DISCOUNT_CODE_BASIC,
+    [SubscriptionTier.Pro]: server.config.STRIPE_DISCOUNT_CODE_PRO,
+    [SubscriptionTier.Believer]: server.config.STRIPE_DISCOUNT_CODE_BELIEVER,
+  }
+  return map[subscriptionTier || SubscriptionTier.Free]
 }
 
 const updateStripeCustomer = async (
@@ -274,6 +288,8 @@ export const createCheckoutSession = async (
   const customer_creation =
     paymentMode === 'payment' && !user.stripeCustomerId ? 'always' : undefined
 
+  const discountCode = discountMap(server, user.subscriptionTier)
+
   const session = await server.stripe.checkout.sessions.create({
     mode: paymentMode,
     payment_method_types: ['card'],
@@ -283,6 +299,7 @@ export const createCheckoutSession = async (
         quantity: 1,
       },
     ],
+    discounts: discountCode ? [{ coupon: discountCode }] : undefined,
     customer_creation,
     customer: user.stripeCustomerId,
     client_reference_id: user.userId,
