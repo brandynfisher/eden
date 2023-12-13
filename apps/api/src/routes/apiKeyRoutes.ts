@@ -1,6 +1,5 @@
-import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
@@ -8,29 +7,8 @@ import {
   deleteApiKey,
   listApiKeys,
 } from '../controllers/apiKeyController'
-import {
-  hasFeatureFlag,
-  hasMinimumSubscriptionTier,
-  isAuth,
-} from '../middleware/authMiddleware'
-
-const apiKeyCreatePreHandler = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const subscriber = await hasMinimumSubscriptionTier(
-    request,
-    SubscriptionTier.Pro,
-  )
-  const previewUser = await hasFeatureFlag(request, FeatureFlag.Preview)
-  if (!subscriber && !previewUser) {
-    return reply.status(401).send({
-      statusCode: 401,
-      error: 'Unauthorized',
-      message: 'Unauthorized',
-    })
-  }
-}
+import { apiKeyCreatePreHandler } from '../lib/authorization'
+import { isAuth } from '../middleware/authMiddleware'
 
 const apiKeyRoutes: FastifyPluginAsync = async server => {
   server.post('/apikeys/create', {

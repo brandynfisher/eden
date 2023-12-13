@@ -9,6 +9,7 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { characterPrivacyPermissionCheck } from '../lib/authorization'
 import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
@@ -35,15 +36,7 @@ export const createCharacter = async (
     isPrivate,
   } = request.body as CharactersCreateArguments
 
-  if (
-    isPrivate &&
-    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
-  ) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
-  }
+  characterPrivacyPermissionCheck(request, reply)
 
   const input: {
     user: ObjectId
@@ -102,6 +95,8 @@ export const updateCharacter = async (
       message: 'You must provide a characterId',
     })
   }
+
+  characterPrivacyPermissionCheck(request, reply)
 
   const {
     name,

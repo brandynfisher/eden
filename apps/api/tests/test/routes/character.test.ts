@@ -130,7 +130,7 @@ test('Character can add attributes to a task', async context => {
   expect(task).toHaveProperty('character')
 })
 
-test('Basic user cannot create a private character', async context => {
+test('Free user cannot create a private character', async context => {
   const { server } = context
   const headers = prepareUserHeaders()
   const response = await server.inject({
@@ -162,4 +162,21 @@ test('Subscription user can create a private character', async context => {
     },
   })
   expect(response.statusCode).toBe(200)
+})
+
+test('Free user cannot update a character to be private', async context => {
+  const { server } = context
+  const headers = prepareUserHeaders()
+  const createResponse = await createCharacter(server)
+  const characterId = createResponse.json().characterId
+  const response = await server.inject({
+    method: 'PATCH',
+    url: `/characters/${characterId}`,
+    headers,
+    payload: {
+      characterId,
+      isPrivate: true,
+    },
+  })
+  expect(response.statusCode).toBe(401)
 })
