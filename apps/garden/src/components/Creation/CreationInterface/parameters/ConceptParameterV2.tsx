@@ -5,7 +5,7 @@ import { useConcept } from '@/hooks/useConcept'
 import { CONFIG } from '@/lib/config'
 import { Concept, GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Button } from '@mui/material'
-import { Form, FormInstance, Input, Tag } from 'antd'
+import { App, Form, FormInstance, Input, Tag } from 'antd'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 
@@ -83,9 +83,17 @@ const ConceptParameterV2 = (props: {
   parameter: GeneratorParameter
   initialValue?: string
 }) => {
+  const { message } = App.useApp()
   const [value, setValue] = useState(props.parameter.default)
   const loraId = Form.useWatch('lora')
   const { concept } = useConcept(loraId || props.initialValue)
+
+  useEffect(() => {
+    if (props.initialValue && concept && props.initialValue === concept._id) {
+      message.destroy()
+      message.info(`Concept '${concept.name}' pre-selected`)
+    }
+  }, [concept, props.initialValue])
 
   useEffect(() => {
     if (loraId) {
