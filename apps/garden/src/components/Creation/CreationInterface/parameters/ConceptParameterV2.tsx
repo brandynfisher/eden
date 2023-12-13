@@ -19,7 +19,7 @@ export const ConceptParameterUI = ({
   return (
     <div className="bg-gray-300 dark:bg-gray-800 rounded-md flex w-full h-16">
       {concept ? (
-        <div className="pr-2 flex gap-4 items-center w-full">
+        <div className="pr-2 flex gap-2 items-center w-full">
           {concept.thumbnail ? (
             <Image
               width={64}
@@ -32,7 +32,7 @@ export const ConceptParameterUI = ({
               className="rounded"
             />
           ) : null}
-          <div className="w-full flex flex-col justify-around h-full py-0.5">
+          <div className="w-full flex flex-col justify-around h-full py-0.5 flex-grow-0 flex-shrink">
             <div className="flex gap-2">
               <div>{`${concept.conceptName}`}</div>
               <Tag
@@ -49,9 +49,9 @@ export const ConceptParameterUI = ({
               </Tag>
             </div>
             <div className="flex gap-1 text-xs text-gray-700 dark:text-gray-500 items-center">
-              <div>{concept.name}</div>
-              <div className="text-gray-400">•</div>
-              <div>{concept.checkpoint}</div>
+              <div className="overflow-ellipsis">{concept.name}</div>
+              {/*<div className="text-gray-400">•</div>*/}
+              {/*<div>{concept.checkpoint}</div>*/}
             </div>
             <div className="flex gap-1">
               <span className="text-xs dark:text-gray-300">by</span>{' '}
@@ -81,13 +81,16 @@ export const ConceptParameterUI = ({
 const ConceptParameterV2 = (props: {
   form: FormInstance
   parameter: GeneratorParameter
+  initialValue?: string
 }) => {
   const [value, setValue] = useState(props.parameter.default)
   const loraId = Form.useWatch('lora')
-  const { concept } = useConcept(loraId)
+  const { concept } = useConcept(loraId || props.initialValue)
 
   useEffect(() => {
-    setValue(loraId)
+    if (loraId) {
+      setValue(loraId)
+    }
   }, [setValue, loraId])
 
   const onChange = (newValue: string | null) => {
@@ -99,14 +102,14 @@ const ConceptParameterV2 = (props: {
 
   return (
     <div
-      className={`flex gap-2 flex-wrap items-center justify-between ${
+      className={`flex flex-wrap items-center justify-between ${
         !loraId ? 'hidden' : ''
       }`}
     >
       <Form.Item
         className={`mb-0 flex-grow hidden`}
         name={props.parameter.name}
-        initialValue={props.parameter.default}
+        initialValue={props.initialValue || props.parameter.default}
         rules={[
           {
             required: props.parameter.isRequired,

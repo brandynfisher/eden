@@ -72,8 +72,6 @@ const CreationInterface = ({
   const [usesDrawer, setUsesDrawer] = useState(false)
 
   useEffect(() => {
-    console.log(config)
-
     const available = !selectedGenerators
       ? generators?.filter(
           generator => !hiddenGenerators.includes(generator.generatorName),
@@ -148,6 +146,7 @@ const CreationInterface = ({
           presetCreation={presetCreation}
           activeGenerator={activeGenerator}
           handleGeneratorChange={handleGeneratorChange}
+          config={config}
         />
       </div>
 

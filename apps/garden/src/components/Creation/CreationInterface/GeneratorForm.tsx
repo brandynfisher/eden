@@ -22,6 +22,7 @@ import { CreationNotificationContext } from '@/providers/CreationNotificationPro
 import { UserContext } from '@/providers/UserProvider'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import {
+  Concept,
   Creation,
   Generator,
   GeneratorParameter,
@@ -82,6 +83,7 @@ const GeneratorForm = ({
   presetCreation,
   onSubmitSuccess,
   outputType,
+  config,
 }: {
   usesDrawer?: boolean
   openedDrawer?: boolean
@@ -89,6 +91,7 @@ const GeneratorForm = ({
   presetCreation?: Creation
   onSubmitSuccess?: () => void
   outputType?: GeneratorOutputType
+  config?: { concept?: Concept }
 }) => {
   const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
     CreationNotificationContext,
@@ -121,6 +124,8 @@ const GeneratorForm = ({
     process.env.NODE_ENV === 'production'
       ? submitButtonDisabledProd
       : submitButtonDisabledDev
+
+  const { concept } = config || {}
 
   useEffect(() => {
     const transformConfig = () => {
@@ -383,6 +388,7 @@ const GeneratorForm = ({
               key={parameter.name}
               form={form}
               parameter={parameter}
+              initialValue={concept ? concept._id : undefined}
             />
           )
         }
