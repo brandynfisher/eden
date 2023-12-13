@@ -23,6 +23,23 @@ export const apiKeyCreatePreHandler = async (
   }
 }
 
+export const characterRoutePreHandler = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const subscriber = hasMinimumSubscriptionTier(
+    request,
+    SubscriptionTier.Believer,
+  )
+  if (!subscriber) {
+    return reply.status(401).send({
+      statusCode: 401,
+      message:
+        'Only believer+ subscribers can use characters. Please upgrade your subscription.',
+    })
+  }
+}
+
 export const taskPrivacyPermissionCheck = (
   request: FastifyRequest,
   reply: FastifyReply,
