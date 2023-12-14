@@ -245,7 +245,7 @@ export const getCreationsFeed = async (
 
     // When filtering by aesthetic score, limit results with date cut off
     if (orderBy === 'embedding.score') {
-      const hoursAgo = 20
+      const hoursAgo = 48
       const dateCutoff = new Date(
         new Date().setHours(new Date().getHours() - hoursAgo),
       )
