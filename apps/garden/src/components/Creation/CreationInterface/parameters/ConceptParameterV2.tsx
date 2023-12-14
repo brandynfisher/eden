@@ -138,6 +138,7 @@ const ConceptParameterV2 = (props: {
   const onChange = (newValue: string | null) => {
     // hacky way to get rid of the query parameter - avoiding next.router here because it would trigger a rerender
     if (preselectedConceptId) {
+      setPreselectedConceptId(null)
       const newUrl = '/create/creations'
       window.history.pushState(
         { ...window.history.state, as: newUrl, url: newUrl },
