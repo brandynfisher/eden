@@ -216,6 +216,39 @@ const handleSubscriptionUpdated = async (
   }
 }
 
+const handleSubscriptionDeleted = async (
+  server: FastifyInstance,
+  reply: FastifyReply,
+  { customerId }: StripeDataObject,
+) => {
+  const user = await User.findOne({
+    stripeCustomerId: customerId,
+  })
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!server.stripe) {
+    return reply.status(500).send({
+      message: 'Stripe is not configured',
+    })
+  }
+
+  try {
+    user.subscriptionTier = SubscriptionTier.Free
+    await user.save()
+
+    return reply.status(200).send({})
+  } catch (error) {
+    return reply.status(500).send({
+      message: 'Error updating subscription',
+    })
+  }
+}
+
 const handlePaymentSuccess = async (
   server: FastifyInstance,
   reply: FastifyReply,
@@ -416,6 +449,14 @@ export const handlePaymentEvent = async (
     // subscription events
     case 'customer.subscription.updated':
       await handleSubscriptionUpdated(server, reply, stripeDataObject)
+      return
+
+    case 'customer.subscription.deleted':
+      await handleSubscriptionDeleted(server, reply, stripeDataObject)
+      return
+
+    case 'invoicce.payment_succeeded':
+      // TODO: handle subscription renewal
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)

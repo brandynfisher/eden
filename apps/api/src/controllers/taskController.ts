@@ -123,7 +123,7 @@ export const createTask = async (
   const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
   if (submittedMaxTasks) {
     return reply.status(401).send({
-      message: `You have reached the maximum number of tasks in progress. Please wait for them to complete before creating more, or upgrade your subscription to increase your limit.`,
+      message: `You have reached the maximum number of tasks in progress. Upgrade your subscription to increase your limit.`,
     })
   }
 
