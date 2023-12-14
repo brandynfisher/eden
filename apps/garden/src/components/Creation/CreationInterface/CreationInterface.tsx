@@ -4,7 +4,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
 import { conceptGenerator, hiddenGenerators } from '@/lib/generator'
 import { EdenContext } from '@/providers/EdenProvider'
-import { Concept, Creation, Generator } from '@edenlabs/eden-sdk'
+import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
 import dynamic from 'next/dynamic'
 import React, {
@@ -24,12 +24,10 @@ const TimelineList = dynamic(
 )
 
 const CreationInterface = ({
-  config,
   generatorName,
   presetCreation,
   selectedGenerators,
 }: {
-  config?: { concept?: Concept }
   generatorName?: string
   presetCreation?: Creation
   selectedGenerators?: string[]
@@ -146,7 +144,6 @@ const CreationInterface = ({
           presetCreation={presetCreation}
           activeGenerator={activeGenerator}
           handleGeneratorChange={handleGeneratorChange}
-          config={config}
         />
       </div>
 

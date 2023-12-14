@@ -5,7 +5,7 @@ import {
   sdxl_generators_image,
   sdxl_generators_video,
 } from '@/lib/generator'
-import { Concept, Creation, Generator } from '@edenlabs/eden-sdk'
+import { Creation, Generator } from '@edenlabs/eden-sdk'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import { Button } from '@mui/material'
 import React, { useEffect, useState } from 'react'
@@ -18,7 +18,6 @@ const CreationWorkspace = ({
   presetCreation,
   activeGenerator,
   handleGeneratorChange,
-  config,
 }: {
   usesDrawer?: boolean
   openedDrawer?: boolean
@@ -27,7 +26,6 @@ const CreationWorkspace = ({
   presetCreation?: Creation
   activeGenerator: Generator
   handleGeneratorChange: (generatorName: Generator['generatorName']) => void
-  config?: { concept?: Concept }
 }) => {
   const [outputType, setOutputType] = useState<GeneratorOutputType>()
 
@@ -79,7 +77,6 @@ const CreationWorkspace = ({
             openedDrawer={openedDrawer}
             generator={activeGenerator}
             presetCreation={presetCreation}
-            config={config}
           />
         )}
       </div>
