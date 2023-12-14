@@ -25,6 +25,8 @@ import React, {
   useState,
 } from 'react'
 
+import UseConceptButton from '../Layout/buttons/UseConceptButton'
+
 type MenuItem = {
   key: string
   icon?: ReactNode
@@ -174,6 +176,19 @@ const CardToolsDropdown = ({
             creationId={item._id}
             variant="text"
             label="Use as Preset"
+          />
+        ),
+      })
+    }
+
+    if (itemType === 'concept') {
+      defaultMenuItems.push({
+        key: '4-1',
+        icon: (
+          <UseConceptButton
+            conceptId={item._id}
+            variant="text"
+            label="Use Concept"
           />
         ),
       })

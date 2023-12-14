@@ -2,6 +2,7 @@ import CharacterFormPro from '@/components/Characters/CharacterFormPro'
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import { ELEVENLABS_VOICES } from '@/components/Characters/elevenlabs'
 import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
+import { ConceptParameterUI } from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
 import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FormLabel from '@/components/Forms/FormLabel'
@@ -405,16 +406,21 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     labelCol={{ span: 24 }}
                     name="concept"
                   >
+                    <div className="mb-2">
+                      <ConceptSelectModalTrigger
+                        onChange={concept => {
+                          form.setFieldsValue({
+                            ['concept']: concept ? concept._id : null,
+                          })
+                        }}
+                      />
+                    </div>
                     {concept && (
-                      <div className="flex flex-col gap-2">{`Selected Concept: ${concept}`}</div>
+                      <ConceptParameterUI
+                        conceptId={concept}
+                        onChange={() => form.setFieldValue('concept', null)}
+                      />
                     )}
-                    <ConceptSelectModalTrigger
-                      onChange={concept => {
-                        form.setFieldsValue({
-                          ['concept']: concept ? concept._id : null,
-                        })
-                      }}
-                    />
                   </Form.Item>
                 </>
               )}

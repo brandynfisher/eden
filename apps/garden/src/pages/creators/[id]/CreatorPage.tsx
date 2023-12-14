@@ -6,6 +6,7 @@ import {
   OrderByLikedByMe,
   OrderByUsage,
 } from '@/components/Layout/buttons/OrderByButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
@@ -18,7 +19,16 @@ import Head from 'next/head'
 import React, { useContext } from 'react'
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
-  const { isAuthenticated, userId } = useContext(UserContext)
+  const { isAuthenticated, isAuthenticating, userId } = useContext(UserContext)
+
+  if (!isAuthenticated && isAuthenticating) {
+    return <LoadingIndicator />
+  }
+
+  const filters =
+    isAuthenticated && userId === creatorId
+      ? [OrderByLatest, OrderByLikedByMe]
+      : [OrderByLatest]
 
   return (
     <div className="mt-4">
@@ -26,11 +36,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
         key={`creations_${creatorId}`}
         itemType="creation"
         query={{ userId: creatorId }}
-        filters={
-          isAuthenticated && userId === creatorId
-            ? [OrderByLatest, OrderByLikedByMe]
-            : [OrderByLatest]
-        }
+        filters={filters}
         ItemComponent={CreationCard}
       />
     </div>

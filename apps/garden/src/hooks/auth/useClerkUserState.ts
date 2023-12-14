@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 
 export const useClerkUserState = () => {
   const router = useRouter()
-  const { isSignedIn, userId: clerkUid } = useAuth()
+  const { isLoaded, isSignedIn, userId: clerkUid } = useAuth()
   const { signOut, openSignIn } = useClerk()
   const isAuthenticated = isSignedIn || false
   const userId = clerkUid || null
@@ -35,7 +35,7 @@ export const useClerkUserState = () => {
   const { settings, updateSetting } = useSettings()
 
   const userState: UserContextType = {
-    isAuthenticating: false,
+    isAuthenticating: !isLoaded,
     authError: null,
     isAuthenticated,
     userId,

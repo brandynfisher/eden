@@ -15,7 +15,7 @@ export const useCharacters = ({
   )
 
   return {
-    characters: isAuthenticated ? data?.characters : undefined,
+    characters: isAuthenticated && data ? data?.characters : undefined,
     refetchCharacters,
   }
 }

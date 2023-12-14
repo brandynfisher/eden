@@ -1,6 +1,5 @@
 import CreationInterface from '@/components/Creation/CreationInterface/CreationInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
-import { useConcept } from '@/hooks/useConcept'
 import { useCreationImmutable } from '@/hooks/useCreationImmutable'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
@@ -22,16 +21,6 @@ const CreatePageWithPreset = ({
   return (
     <CreationInterface presetCreation={creation} generatorName={generator} />
   )
-}
-
-const CreateUsingConcept = ({ conceptId }: { conceptId: string }) => {
-  const { concept } = useConcept(conceptId)
-
-  if (!concept) {
-    return <LoadingIndicator />
-  }
-
-  return <CreationInterface config={{ concept }} />
 }
 
 const CreateCreationsPage = () => {
@@ -57,13 +46,7 @@ const CreateCreationsPage = () => {
           presetId={String(router.query.presetId)}
         />
       ) : (
-        <>
-          {router.query.concept ? (
-            <CreateUsingConcept conceptId={String(router.query.concept)} />
-          ) : (
-            <CreationInterface />
-          )}
-        </>
+        <CreationInterface />
       )}
     </>
   )
