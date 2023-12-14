@@ -136,7 +136,7 @@ const ConceptParameterV2 = (props: {
   }, [setValue, loraId])
 
   const onChange = (newValue: string | null) => {
-    if (newValue === null && preselectedConceptId) {
+    if (preselectedConceptId) {
       const newUrl = '/create/creations'
       window.history.pushState(
         { ...window.history.state, as: newUrl, url: newUrl },
