@@ -7,10 +7,10 @@ const ConceptCardDetail = ({ concept }: { concept: Concept }) => {
     <div className="relative">
       <div className="text-sm" title={concept.conceptName}>
         <span className="relative first-letter:uppercase text-xs select-text cursor-text mb-2 text-ellipsis dark:text-gray-400 break-words line-clamp-2">
-          <strong className="dark:text-gray-200 mr-1">
-            {concept.conceptName}
-          </strong>
-          {concept.name}
+          {/*<strong className="dark:text-gray-200 mr-1">*/}
+          {concept.conceptName}
+          {/*</strong>*/}
+          {/*{concept.name}*/}
         </span>
       </div>
       <Divider className="my-4 md:hidden" />

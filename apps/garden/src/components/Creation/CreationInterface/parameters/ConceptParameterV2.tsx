@@ -136,6 +136,7 @@ const ConceptParameterV2 = (props: {
   }, [setValue, loraId])
 
   const onChange = (newValue: string | null) => {
+    // hacky way to get rid of the query parameter - avoiding next.router here because it would trigger a rerender
     if (preselectedConceptId) {
       const newUrl = '/create/creations'
       window.history.pushState(

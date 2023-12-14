@@ -32,11 +32,13 @@ const MasonryInfinite = ({
   ItemComponent,
   query,
   orderBy,
+  emptyResultHandler,
 }: {
   itemType: ItemType
   ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   orderBy: OrderByParam
+  emptyResultHandler?: (orderBy: OrderByParam) => void
 }) => {
   const containerRef = useRef(null)
   const router = useRouter()
@@ -146,6 +148,12 @@ const MasonryInfinite = ({
     ),
     [],
   )
+
+  useEffect(() => {
+    if (isEmpty && !items.length && emptyResultHandler) {
+      emptyResultHandler(orderBy)
+    }
+  }, [orderBy, isEmpty, items.length, emptyResultHandler])
 
   return (
     <div ref={ref}>

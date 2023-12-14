@@ -35,6 +35,9 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
 
   const { concept, isLoading } = useConcept(
     creation.task.config['lora'] || null,
+    {
+      shouldRetryOnError: false,
+    },
   )
 
   useEffect(() => {
