@@ -20,17 +20,17 @@ export const ConceptParameterUI = ({
   const { concept, isLoading } = useConcept(conceptId)
 
   return (
-    <div className="bg-gray-300 dark:bg-gray-800 rounded-md flex w-full h-16">
+    <div className="bg-gray-300 dark:bg-gray-800 rounded-md flex w-full h-12">
       {!concept || isLoading ? (
         <LoadingIndicator />
       ) : (
         <>
           {concept ? (
-            <div className="pr-2 flex gap-2 items-center w-full">
+            <div className="pr-1 flex gap-2 items-center w-full">
               {concept.thumbnail ? (
                 <Image
-                  width={64}
-                  height={64}
+                  width={48}
+                  height={48}
                   src={
                     concept.thumbnail ||
                     `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
@@ -39,8 +39,8 @@ export const ConceptParameterUI = ({
                   className="rounded"
                 />
               ) : null}
-              <div className="w-full flex flex-col justify-around h-full py-0.5 flex-grow-0 flex-shrink max-w-[197.5px]">
-                <div className="flex gap-2 ">
+              <div className="w-full flex flex-col justify-around h-full py-0.5 flex-grow-0 flex-shrink max-w-[220px]">
+                <div className="flex justify-between gap-4">
                   <div className="max-w-full whitespace-nowrap text-ellipsis overflow-hidden">{`${concept.conceptName}`}</div>
                   <Tag
                     color={
@@ -55,13 +55,13 @@ export const ConceptParameterUI = ({
                       concept?.task?.config?.concept_mode}
                   </Tag>
                 </div>
-                <div className="flex gap-1 text-xs text-gray-700 dark:text-gray-500 items-center">
-                  <div className="max-w-full whitespace-nowrap text-ellipsis overflow-hidden">
-                    {concept.name}
-                  </div>
-                  {/*<div className="text-gray-400">•</div>*/}
-                  {/*<div>{concept.checkpoint}</div>*/}
-                </div>
+                {/*<div className="flex gap-1 text-xs text-gray-700 dark:text-gray-500 items-center">*/}
+                {/*  <div className="max-w-full whitespace-nowrap text-ellipsis overflow-hidden">*/}
+                {/*    {concept.name}*/}
+                {/*  </div>*/}
+                {/*  /!*<div className="text-gray-400">•</div>*!/*/}
+                {/*  /!*<div>{concept.checkpoint}</div>*!/*/}
+                {/*</div>*/}
                 <div className="flex gap-1">
                   <span className="text-xs dark:text-gray-300">by</span>{' '}
                   <CreatorProfileLink
@@ -108,7 +108,7 @@ const ConceptParameterV2 = (props: {
         icon: false,
         content: (
           <div onClick={() => message.destroy('concept-selected-toast')}>
-            <div className="mb-2 text-xs font-bold">Concept selected</div>
+            <div className="my-1 text-xs font-bold">Concept selected:</div>
             <ConceptParameterUI conceptId={concept._id} onChange={onChange} />
           </div>
         ),
