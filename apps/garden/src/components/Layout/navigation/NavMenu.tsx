@@ -1,6 +1,7 @@
 import SocialLinks from '@/components/Layout/navigation/SocialLinks'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
+import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline'
 import ExploreOutlined from '@mui/icons-material/ExploreOutlined'
 import ModelTraining from '@mui/icons-material/ModelTraining'
 import Yard from '@mui/icons-material/Yard'
@@ -75,12 +76,80 @@ const NavMenu = ({
   )
   const [visibleMenuItems, setVisibleMenuItems] = useState<ItemType[]>()
 
+  const isPreviewUser = user?.featureFlags?.includes('preview')
+
+  const exploreChildren: ItemType[] = [
+    {
+      key: '/',
+      icon: (
+        <Link href="/" data-testid="nav-explore-creations">
+          <Yard fontSize="small" />
+        </Link>
+      ),
+      label: 'Creations',
+    },
+    {
+      key: '/concepts',
+      icon: (
+        <Link href="/concepts" data-testid="nav-explore-concepts">
+          <ModelTraining fontSize="small" />
+        </Link>
+      ),
+      label: 'Concepts',
+    },
+    ...(isPreviewUser
+      ? [
+          {
+            key: '/characters',
+            icon: (
+              <Link href="/characters" data-testid="nav-explore-characters">
+                <ChatBubbleOutline fontSize="small" />
+              </Link>
+            ),
+            label: 'Characters',
+          },
+        ]
+      : []),
+  ]
+
+  const createChildren: ItemType[] = [
+    {
+      key: '/create/creations',
+      icon: (
+        <Link href="/create/creations" data-testid="nav-create-creations">
+          <Yard fontSize="small" />
+        </Link>
+      ),
+      label: 'Creations',
+    },
+    {
+      key: '/create/concepts',
+      icon: (
+        <Link href="/create/concepts" data-testid="nav-create-concepts">
+          <ModelTraining fontSize="small" />
+        </Link>
+      ),
+      label: 'Concepts',
+    },
+    ...(isPreviewUser
+      ? [
+          {
+            key: '/create/characters',
+            icon: (
+              <Link
+                href="/create/characters"
+                data-testid="nav-create-characters"
+              >
+                <ChatBubbleOutline fontSize="small" />
+              </Link>
+            ),
+            label: 'Characters',
+          },
+        ]
+      : []),
+  ]
+
   const menuItems: ItemType[] = [
-    // {
-    //   key: 'home',
-    //   icon: <HomeOutlined fontSize="medium" />,
-    //   label: 'Home',
-    // },
     {
       type: 'divider',
       key: 'd1',
@@ -94,81 +163,19 @@ const NavMenu = ({
       ),
       label: 'Explore',
       onTitleClick: ev => onGroupClick(ev),
-      children: [
-        {
-          key: '/',
-          icon: (
-            <Link href="/">
-              <Yard fontSize="small" />
-            </Link>
-          ),
-          label: 'Creations',
-        },
-        {
-          key: '/concepts',
-          icon: (
-            <Link href="/concepts">
-              <ModelTraining fontSize="small" />
-            </Link>
-          ),
-          label: 'Concepts',
-        },
-      ],
+      children: exploreChildren,
     },
     {
       key: 'create',
       icon: <ExperimentOutlined className="text-2xl" />,
       label: 'Create',
       onTitleClick: ev => onGroupClick(ev),
-      children: [
-        {
-          key: '/create/creations',
-          icon: (
-            <Link href="/create/creations">
-              <Yard fontSize="small" />
-            </Link>
-          ),
-          label: 'Creations',
-        },
-        {
-          key: '/create/concepts',
-          icon: (
-            <Link href="/create/concepts">
-              <ModelTraining fontSize="small" />
-            </Link>
-          ),
-          label: 'Concepts',
-        },
-        // {
-        //   key: '/create/characters',
-        //   icon: <RobotOutlined />,
-        //   label: 'Characters',
-        //   disabled: true,
-        // },
-        // {
-        //   key: '/create/scenarios',
-        //   icon: <CommentOutlined />,
-        //   label: 'Scenarios',
-        //   disabled: true,
-        // },
-      ],
+      children: createChildren,
     },
     {
       type: 'divider',
       key: 'd2',
     },
-    // {
-    //   key: 'manna',
-    //   icon: <AccountBalanceWalletOutlined fontSize="medium"/>,
-    //   label: 'Manna',
-    //   children: [
-    //     {
-    //       key: 'manna-page',
-    //       icon: <AddCircleOutlined fontSize="medium"/>,
-    //       label: 'Get more'
-    //     }
-    //   ]
-    // },
   ]
   const pathKeyMap = extractKeys(menuItems)
 
@@ -223,10 +230,10 @@ const NavMenu = ({
   }, [router, user, userId])
 
   useEffect(() => {
-    if (resolvedTheme && resolvedTheme === 'dark') {
-      setMenuTheme('dark')
-    } else {
+    if (resolvedTheme && resolvedTheme === 'light') {
       setMenuTheme(undefined)
+    } else {
+      setMenuTheme('dark')
     }
   }, [resolvedTheme])
 

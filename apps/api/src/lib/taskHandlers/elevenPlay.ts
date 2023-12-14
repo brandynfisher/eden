@@ -48,7 +48,7 @@ const runTask = async (server: FastifyInstance, config: any, task: any) => {
     error: null,
   }
 
-  console.log('the update will be', update)
+  console.log('the update will be this', update)
 
   await receiveTaskUpdate(server, update)
 }

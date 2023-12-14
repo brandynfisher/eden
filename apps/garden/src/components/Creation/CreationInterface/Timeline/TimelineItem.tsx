@@ -21,7 +21,7 @@ const TimelineItem = ({
   task: Task
   listIndex?: number
 }) => {
-  const creationUri = task && task.creation ? task.creation.uri : false
+  // const creationUri = task && task.creation ? task.creation.uri : false
 
   const [fakeProgress, setFakeProgress] = useState(0)
   const increaseFakeProgress = useCallback(
@@ -61,7 +61,7 @@ const TimelineItem = ({
   }, [task.config, task?.status, task?.generator.generatorName])
 
   return (
-    <div>
+    <div className="relative">
       <div className="flex items-center justify-between flex-wrap mb-1 md:mb-2">
         <TimelineItemHeaderInfo task={task} />
         <div className="ml-auto"></div>
@@ -78,7 +78,9 @@ const TimelineItem = ({
               progress={
                 noProgressGeneratorNames.includes(task?.generator.generatorName)
                   ? fakeProgress
-                  : task.progress || 0
+                  : task.progress
+                  ? Math.floor(task.progress * 100)
+                  : 0
               }
             />
           ) : null}
@@ -92,16 +94,20 @@ const TimelineItem = ({
         </>
       )}
 
-      {task && !creationUri ? (
+      <div>
+        {/*{task && !creationUri ? (*/}
         <TimelineItemFooter
           task={task}
           progress={
             noProgressGeneratorNames.includes(task?.generator.generatorName)
               ? fakeProgress
-              : task.progress || 0
+              : task.progress
+              ? Math.floor(task.progress * 100)
+              : 0
           }
         />
-      ) : null}
+        {/*) : null}*/}
+      </div>
     </div>
   )
 }

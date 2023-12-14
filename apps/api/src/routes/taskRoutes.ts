@@ -98,6 +98,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
         properties: {
           status: { type: ['string', 'array'] },
           taskId: { type: ['string', 'array'] },
+          type: Type.Optional(Type.String()),
           ...paginationProperties(),
         },
         required: [],

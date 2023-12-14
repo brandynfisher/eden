@@ -1,8 +1,11 @@
 import { MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
-import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { VisibilitySchema } from '../types/baseSchemas'
@@ -12,6 +15,7 @@ import { TaskDocument } from './Task'
 export interface ConceptSchema extends VisibilitySchema {
   user: UserDocument
   task: TaskDocument
+  creationCount: number
   praiseCount: number
   bookmarkCount: number
   delegate?: UserDocument
@@ -21,6 +25,7 @@ export interface ConceptSchema extends VisibilitySchema {
   conceptName: string
   checkpoint: string
   training_images: string[]
+  num_training_images?: number
   attributes?: any
   createdAt?: Date
   updatedAt?: Date
@@ -36,6 +41,7 @@ export interface ConceptInput {
   conceptName: string
   checkpoint: string
   training_images: string[]
+  num_training_images?: number
   attributes?: Record<string, any>
   mediaAttributes?: {
     type: MediaType
@@ -56,6 +62,10 @@ const concept = new Schema<ConceptDocument>(
       type: Schema.Types.ObjectId,
       ref: 'tasks',
       required: true,
+    },
+    creationCount: {
+      type: Number,
+      default: 0,
     },
     praiseCount: {
       type: Number,
@@ -92,6 +102,10 @@ const concept = new Schema<ConceptDocument>(
       type: [String],
       required: true,
     },
+    num_training_images: {
+      type: Number,
+      required: false,
+    },
     attributes: {
       type: Schema.Types.Mixed,
       default: {},
@@ -120,9 +134,23 @@ concept.pre<ConceptDocument>('save', function (next) {
 })
 
 concept.index({ createdAt: 1 })
+concept.index({ user: 1, deleted: 1, isPrivate: 1 })
+concept.index({ deleted: 1, isPrivate: 1 })
+concept.index({
+  createdAt: -1,
+  creationCount: -1,
+  praiseCount: -1,
+  bookmarkCount: -1,
+})
 
-concept.plugin(mongooseDelete, { overrideMethods: 'all' })
+// concept.plugin(mongooseDelete, { overrideMethods: 'all' })
+concept.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 concept.plugin(paginate)
 concept.plugin(aggregatePaginate)
 
-export const Concept = model<ConceptDocument>('concepts', concept)
+export const Concept = model<ConceptDocument>(
+  'concepts',
+  concept,
+) as SoftDeleteModel<ConceptDocument>

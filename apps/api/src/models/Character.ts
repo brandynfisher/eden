@@ -6,11 +6,19 @@ import paginate from 'mongoose-paginate-v2'
 import slug from 'mongoose-slug-plugin'
 
 import { VisibilitySchema } from '../types/baseSchemas'
+import { ConceptDocument } from './Concept'
 import { UserDocument } from './Creator'
 
 interface ChatSchema {
   sender: string
   message: string[]
+}
+
+interface LogosSchema {
+  documentation?: string
+  documentationPrompt?: string
+  creatorPrompt?: string
+  routerPrompt?: string
 }
 
 export interface CharacterSchema extends VisibilitySchema {
@@ -20,18 +28,23 @@ export interface CharacterSchema extends VisibilitySchema {
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
+  concept?: ConceptDocument
+  logosData?: LogosSchema
   image?: string
   voice?: string
+  creationCount?: number
   createdAt?: Date
   updatedAt?: Date
 }
 
 export interface CharacterInput {
-  user: ObjectId
+  user: ObjectId | UserDocument
+  concept?: ObjectId | ConceptDocument
   name: string
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
+  logosData?: LogosSchema
   image?: string
   voice?: string
 }
@@ -61,9 +74,35 @@ const character = new Schema<CharacterDocument>(
       type: Array,
       required: false,
     },
+    concept: {
+      type: Schema.Types.ObjectId,
+      ref: 'concepts',
+      required: false,
+    },
+    logosData: {
+      type: {
+        documentation: {
+          type: String,
+          maxlength: 99999,
+        },
+        documentationPrompt: {
+          type: String,
+          maxlength: 9999,
+        },
+        creatorPrompt: {
+          type: String,
+          maxlength: 9999,
+        },
+        routerPrompt: {
+          type: String,
+          maxlength: 9999,
+        },
+      },
+      required: false,
+    },
     description: {
       type: String,
-      maxlength: 1000,
+      maxlength: 9999,
     },
     image: {
       type: String,
@@ -72,6 +111,10 @@ const character = new Schema<CharacterDocument>(
     voice: {
       type: String,
       required: false,
+    },
+    creationCount: {
+      type: Number,
+      default: 0,
     },
     deleted: {
       type: Boolean,

@@ -100,7 +100,7 @@ export const listCollections = async (
 
   const collectionRepository = new CollectionRepository(Collection)
   const collections =
-    userId && creationId
+    creatorId && creationId
       ? // finds all collections belonging to creatorId that contain creationId
         await collectionRepository.aggregateQuery(
           collectionsAggregate(creatorId, creationId as string),
@@ -112,7 +112,9 @@ export const listCollections = async (
         )
       : await collectionRepository.query(
           {
-            user: creatorId,
+            user: userId
+              ? creators.docs.map(creator => creator._id)
+              : undefined,
           },
           {
             limit,

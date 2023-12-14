@@ -1,6 +1,5 @@
 import CustomLayout from '@/components/Layout/CustomLayout'
 import NavMenu from '@/components/Layout/navigation/NavMenu'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import theme from '@/styles/theme'
 import { useViewportSize } from '@mantine/hooks'
 import { Layout } from 'antd'
@@ -31,14 +30,6 @@ const PageLayoutSidebar = ({
       setShowFixedMenu(true)
     }
   }, [viewportWidth])
-
-  if (!viewportWidth || typeof showFixedMenu === 'undefined') {
-    return (
-      <div className="absolute inset-0">
-        <LoadingIndicator />
-      </div>
-    )
-  }
 
   return (
     <CustomLayout fixedHeight={fixedHeight}>

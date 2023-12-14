@@ -5,9 +5,19 @@ import { setup, teardown } from 'vitest-mongodb'
 
 import { ApiKey, ApiKeyInput } from '../../src/models/ApiKey'
 import { Collection } from '../../src/models/Collection'
-import { SubscriptionTier, User, UserInput } from '../../src/models/Creator'
+import {
+  FeatureFlag,
+  SubscriptionTier,
+  User,
+  UserInput,
+} from '../../src/models/Creator'
 import { Manna } from '../../src/models/Manna'
-import { createCreation, createGenerator, getDefaultUserId } from '../util'
+import {
+  createCharacter,
+  createCreation,
+  createGenerator,
+  getDefaultUserId,
+} from '../util'
 
 const createAdmin = async () => {
   const userData: UserInput = {
@@ -24,8 +34,17 @@ const createAdmin = async () => {
     apiSecret: 'admin',
     user: user._id,
   }
+
   const apiKey = new ApiKey(apiKeyData)
   await apiKey.save()
+
+  const adminManna = {
+    user: user._id,
+    balance: 1000,
+  }
+
+  const manna = new Manna(adminManna)
+  await manna.save()
 }
 
 const createFreeUser = async () => {
@@ -68,6 +87,33 @@ const createBasicUser = async () => {
   const apiKeyData: ApiKeyInput = {
     apiKey: 'basicuser',
     apiSecret: 'basicuser',
+    user: user._id,
+  }
+  const apiKey = new ApiKey(apiKeyData)
+  await apiKey.save()
+
+  const userManna = {
+    user: user._id,
+    balance: 1000,
+  }
+  const manna = new Manna(userManna)
+  await manna.save()
+}
+
+const createPreviewUser = async () => {
+  const userData: UserInput = {
+    userId: 'previewUser',
+    username: 'previewUser',
+    isWeb2: false,
+    isAdmin: false,
+  }
+  const user = new User(userData)
+  user.featureFlags = [FeatureFlag.Preview]
+  await user.save()
+
+  const apiKeyData: ApiKeyInput = {
+    apiKey: 'previewuser',
+    apiSecret: 'previewuser',
     user: user._id,
   }
   const apiKey = new ApiKey(apiKeyData)
@@ -124,9 +170,11 @@ beforeEach(async () => {
   await createAdmin()
   await createFreeUser()
   await createBasicUser()
+  await createPreviewUser()
   await createGenerator('test')
   await createCreation()
   await createCollection()
+  await createCharacter()
 })
 
 afterEach(async () => {

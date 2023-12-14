@@ -29,6 +29,7 @@ build
 .idea/
 .lh/
 .history/
+scripts/xander_cmds.txt 
 
 # debug
 npm-debug.log*

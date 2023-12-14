@@ -4,10 +4,12 @@ import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { enforceUserDocumentLimit } from '../lib/data'
+import { CharacterDocument } from './Character'
 import { UserDocument } from './Creator'
 
 export interface ApiKeySchema {
   user: UserDocument
+  character?: CharacterDocument
   apiKey: string
   apiSecret: string
   note?: string
@@ -29,6 +31,10 @@ const apiKey = new Schema<ApiKeyDocument>(
       type: Schema.Types.ObjectId,
       ref: 'users',
       required: true,
+    },
+    character: {
+      type: Schema.Types.ObjectId,
+      ref: 'characters',
     },
     apiKey: {
       type: String,

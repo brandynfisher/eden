@@ -1,7 +1,4 @@
-import {
-  sdxl_generators_image,
-  sdxl_generators_video,
-} from '@/components/Creation/CreationInterface/CreationWorkspace'
+import { sdxl_generators_image, sdxl_generators_video } from '@/lib/generator'
 import { Generator } from '@edenlabs/eden-sdk'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import MovieFilter from '@mui/icons-material/MovieFilter'
@@ -31,7 +28,7 @@ const ListItem = ({
   return (
     <div
       onClick={() => onClick && onClick()}
-      className={`cursor-pointer border border-solid border-gray-700 bg-gray-50 dark:bg-gray-950 overflow-hidden ${
+      className={`cursor-pointer border border-solid border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-hidden ${
         selected
           ? '!bg-gray-300 dark:!bg-gray-900 border-green-800'
           : 'hover:!bg-gray-200 hover:dark:!bg-gray-800'
@@ -105,7 +102,7 @@ const GeneratorList = ({
               {group.icon}
               <div>{group.title}</div>
             </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
               {group.generators.map((generator: Generator) => (
                 <ListItem
                   key={generator.generatorName}

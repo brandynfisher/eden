@@ -10,17 +10,22 @@ import ShareLinkButton from '@/components/Layout/buttons/ShareLinkButton'
 import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
+import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
+  Dispatch,
   ReactNode,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from 'react'
+
+import UseConceptButton from '../Layout/buttons/UseConceptButton'
 
 type MenuItem = {
   key: string
@@ -28,6 +33,7 @@ type MenuItem = {
   label?: string | ReactNode
   children?: MenuItem[]
   type?: string
+  disabled?: boolean
 }
 
 const CardToolsDropdown = ({
@@ -38,8 +44,8 @@ const CardToolsDropdown = ({
 }: {
   onOpen?: Function
   item: Creation | Concept
-  itemType: 'creation' | 'concept'
-  onChange: (updatedItem: Creation | Concept) => void
+  itemType: ItemType
+  onChange: Dispatch<SetStateAction<Concept | Creation>>
 }) => {
   const { user, isAuthenticated } = useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)
@@ -175,8 +181,27 @@ const CardToolsDropdown = ({
       })
     }
 
+    if (itemType === 'concept') {
+      defaultMenuItems.push({
+        key: '4-1',
+        icon: (
+          <UseConceptButton
+            conceptId={item._id}
+            variant="text"
+            label="Use Concept"
+          />
+        ),
+      })
+    }
+
     const hasUserFeatureFlagPrivate =
-      user && user.featureFlags && user.featureFlags.includes('private')
+      user && user.featureFlags && user.featureFlags.includes('preview')
+
+    const isNsfw =
+      item.attributes &&
+      item.attributes.nsfw_score &&
+      item.attributes.nsfw_score > 0.5
+
     const creatorMenuItems: MenuItem[] =
       hasUserFeatureFlagPrivate && user?.userId === item.user.userId
         ? [
@@ -193,6 +218,7 @@ const CardToolsDropdown = ({
                   variant="text"
                   label="Set Public"
                   onChange={handleOnVisibilityChange}
+                  isNsfw={isNsfw}
                 />
               ) : (
                 <MakePrivateButton
@@ -203,6 +229,7 @@ const CardToolsDropdown = ({
                   onChange={handleOnVisibilityChange}
                 />
               ),
+              disabled: isNsfw,
             },
           ]
         : []
@@ -235,6 +262,7 @@ const CardToolsDropdown = ({
             icon: (
               <DownloadFileButton
                 url={item.uri}
+                fileName={item._id}
                 variant="text"
                 label="Download"
               />
@@ -262,13 +290,13 @@ const CardToolsDropdown = ({
       arrow={true}
       placement="bottomRight"
       menu={{ items: getCardMenuItems(), onClick: onItemClick }}
-      className="card-tools-dropdown"
+      className="card-tools-dropdown ml-auto"
       onOpenChange={open => {
         onOpen && onOpen(open)
       }}
     >
       <div className="flex items-center cursor-pointer pointer-events-auto">
-        <EllipsisOutlined className="text-xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
+        <EllipsisOutlined className="text-2xl hover:scale-125 active:scale-125 hover:text-blue-500 transition-all active:text-blue-500 active:brightness-125" />
       </div>
     </Dropdown>
   )

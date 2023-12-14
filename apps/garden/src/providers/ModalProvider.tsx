@@ -1,7 +1,7 @@
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
-import ConceptDetailModal from '@/components/Modals/ConceptDetailModal'
-import CreationDetailModalV2 from '@/components/Modals/CreationDetailModalV2'
+import ConceptSelectModal from '@/components/Modals/ConceptSelectModal'
 import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
+import DetailModal from '@/components/Modals/DetailModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import GeneratorSelectModal from '@/components/Modals/GeneratorSelectModal'
@@ -21,10 +21,10 @@ import React, {
 } from 'react'
 
 export enum MODAL_TYPES {
-  CREATION_DETAIL_MODAL_V2 = 'CREATION_DETAIL_MODAL_V2',
+  DETAIL_MODAL = 'DETAIL_MODAL',
   CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
   COLLECTION_ADD_CREATION_MODAL = 'COLLECTION_ADD_CREATION_MODAL',
-  CONCEPT_DETAIL_MODAL = 'CONCEPT_DETAIL_MODAL',
+  CONCEPT_SELECT_MODAL = 'CONCEPT_SELECT_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
   FOLLOWING_MODAL = 'FOLLOWING_MODAL',
@@ -34,10 +34,10 @@ export enum MODAL_TYPES {
 
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
-  [MODAL_TYPES.CREATION_DETAIL_MODAL_V2]: CreationDetailModalV2,
+  [MODAL_TYPES.DETAIL_MODAL]: DetailModal,
   [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
   [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
-  [MODAL_TYPES.CONCEPT_DETAIL_MODAL]: ConceptDetailModal,
+  [MODAL_TYPES.CONCEPT_SELECT_MODAL]: ConceptSelectModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
   [MODAL_TYPES.FOLLOWING_MODAL]: FollowingModal,
@@ -61,10 +61,22 @@ export type GeneratorSelectModalProps = Partial<
   }
 >
 
-export type CreationDetailModalV2Props = Partial<
+export type ConceptSelectModalProps = Partial<
   BaseModalProps & {
-    initialItem: Creation
-    maybeLoadMoreFn: (currentIndex: number, currentItems: Creation[]) => void
+    onChange: (concept: Concept) => void
+  }
+>
+
+export type ItemType = 'creation' | 'concept' | 'character' | 'creator'
+
+export type DetailModalProps = Partial<
+  BaseModalProps & {
+    itemType: ItemType
+    initialItem: Creation | Concept
+    maybeLoadMoreFn: (
+      currentIndex: number,
+      currentItems: Creation[] | Concept[],
+    ) => void
   }
 >
 
@@ -79,9 +91,10 @@ type ModalStore = {
   modalType: string | undefined
   modalProps?:
     | Partial<BaseModalProps & { creation?: Creation; loadSimilar?: boolean }>
-    | CreationDetailModalV2Props
+    | DetailModalProps
     | AddToCollectionModalProps
     | GeneratorSelectModalProps
+    | ConceptSelectModalProps
     | Partial<BaseModalProps & { concept?: Concept }>
     | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })
     | (Partial<BaseModalProps> & { task?: Task })
@@ -122,13 +135,15 @@ function ModalProvider({ children }: PropsWithChildren) {
   ) => {
     setStore([...store, { modalType, modalProps }])
 
-    // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
+    // // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
     const modalWrapDomElement =
       document.getElementsByClassName('ant-modal-wrap')
+
+    // console.log({ modalWrapDomElement })
     if (modalWrapDomElement && modalWrapDomElement.length) {
       modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     }
-    // @todo ---end ugly---
+    // // @todo ---end ugly---
   }
 
   const hideModal = (modalType: ModalStore['modalType']) => {
@@ -159,6 +174,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       className:
         'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
       onCancel: async () => {
+        // console.log('onCancel', modal)
         hideModal(modal?.modalType)
         if (modal?.modalProps?.usesUrl) {
           if (modal?.modalProps?.originPageUrl) {
@@ -216,7 +232,6 @@ function ModalProvider({ children }: PropsWithChildren) {
   const onEscHandler = useCallback(
     (ev: KeyboardEvent) => {
       if (ev.key === 'Escape') {
-        console.log('escape')
         ev.stopImmediatePropagation()
         ev.stopPropagation()
 
@@ -240,8 +255,8 @@ function ModalProvider({ children }: PropsWithChildren) {
     <ModalContext.Provider value={{ showModal, hideModal }}>
       <div tabIndex={0} className="outline-0">
         {renderComponents()}
-        {children}
       </div>
+      {children}
     </ModalContext.Provider>
   )
 }

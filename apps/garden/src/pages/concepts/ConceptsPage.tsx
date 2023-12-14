@@ -1,20 +1,17 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
-import MasonryInfinite from '@/components/MasonryInfinite'
-import { UserContext } from '@/providers/UserProvider'
-import { useContext } from 'react'
+import {
+  OrderByLatest,
+  OrderByUsage,
+} from '@/components/Layout/buttons/OrderByButtons'
+import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 
 const ConceptsPage = () => {
-  const { isAuthenticated } = useContext(UserContext)
-
-  const sortButtons = isAuthenticated ? [OrderByLatest] : [OrderByLatest]
-
   return (
     <div className={`flex flex-col`}>
-      <MasonryInfinite
-        hasSort={sortButtons}
-        type="concepts"
+      <MasonryInfiniteContainer
+        itemType="concept"
         ItemComponent={ConceptCard}
+        filters={[OrderByUsage, OrderByLatest]}
       />
     </div>
   )

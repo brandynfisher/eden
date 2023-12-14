@@ -42,12 +42,14 @@ export const listCreators = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, limit, page, sort } = request.query as CreatorsListArguments
+  const { userId, discordId, limit, page, sort } =
+    request.query as CreatorsListArguments
 
   const creatorRepository = new CreatorRepository(User)
   const creators = await creatorRepository.query(
     {
       userId,
+      discordId,
     },
     {
       limit,
@@ -222,6 +224,7 @@ export const getCreator = async (
 
   const creationsCount = await Creation.countDocuments({
     user: creatorDoc?._id,
+    character: null,
   })
   const followerCount = await Follow.countDocuments({
     following: creatorDoc?._id,

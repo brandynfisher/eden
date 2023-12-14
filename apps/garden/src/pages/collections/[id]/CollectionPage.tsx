@@ -4,6 +4,7 @@ import {
   OrderByPopularity,
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
+import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 import { useCollection } from '@/hooks/useCollection'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
@@ -22,10 +23,6 @@ const CollectionHeader = dynamic(
     loading: () => <LoadingIndicator />,
   },
 )
-
-const MasonryInfinite = dynamic(() => import('@/components/MasonryInfinite'), {
-  loading: () => <LoadingIndicator />,
-})
 
 const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const { message } = App.useApp()
@@ -92,11 +89,11 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
             deleteLoading={deleteLoading}
           />
           <div className="mt-4">
-            <MasonryInfinite
+            <MasonryInfiniteContainer
               key={`collection_${collection._id}`}
-              type="creations"
+              itemType="creation"
               query={{ collectionId: collection._id }}
-              hasSort={[OrderByLatest, OrderByPopularity]}
+              filters={[OrderByLatest, OrderByPopularity]}
               ItemComponent={CreationCard}
             />
           </div>

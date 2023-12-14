@@ -76,6 +76,13 @@ db.apikeys.insertMany([
 db.createCollection('mannas')
 
 db.mannas.insertOne({
+  user: adminDev.insertedIds[0],
+  balance: 10000000000,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+})
+
+db.mannas.insertOne({
   user: adminDev.insertedIds[1],
   balance: 1000,
   createdAt: new Date(),
@@ -115,8 +122,10 @@ db.concepts.insertOne({
   user: adminDev.insertedIds[1],
   task: adminDev.insertedIds[1],
   name: 'Test Character',
+  conceptName: 'Test Character',
   checkpoint: 'checkpoint',
   training_images: [],
+  num_training_images: 1,
   uri: 'uri',
 })
 

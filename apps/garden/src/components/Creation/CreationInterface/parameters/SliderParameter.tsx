@@ -2,21 +2,34 @@ import {
   closest,
   presetItems,
 } from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
-import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, InputNumber, Slider } from 'antd'
-import { FocusEvent, useEffect, useState } from 'react'
+import React, { FocusEvent, useEffect, useState } from 'react'
 
 const SliderParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
   onFieldChange?: Function
 }) => {
-  const [fieldValue, setFieldValue] = useState<number | null>(
-    props.parameter.default,
+  const [fieldValue, setFieldValue] = useState<number>(
+    props.parameter.default || 0,
   )
 
+  const sliderValue = Form.useWatch(props.parameter.name, props.form)
+
+  useEffect(() => {
+    // if (sliderValue !== fieldValue) {
+    //   return
+    // }
+
+    // console.log('useEffect', sliderValue, fieldValue)
+    setFieldValue(prev => (prev === sliderValue ? sliderValue : prev))
+    setFormValue(fieldValue !== sliderValue ? sliderValue : fieldValue)
+  }, [sliderValue])
+
   const onChange = (newValue: number | null) => {
+    if (!newValue) return
     setFieldValue(newValue)
     props.onFieldChange && props.onFieldChange()
     specialChangeHandler()
@@ -68,25 +81,22 @@ const SliderParameter = (props: {
   }
 
   return (
-    <div className="flex items-center">
-      <div>
-        <ParameterLabel
-          name={props.parameter.name}
-          text={props.parameter.label}
-          description={props.parameter.description}
-        />
-      </div>
-      <div className="flex items-center w-full">
+    <div className="parameter parameter--slider flex items-center">
+      <ParameterAddon
+        title={props.parameter.label}
+        description={props.parameter.description}
+      />
+      <div className="flex items-center w-full parameter__addon !bg-stone-50 dark:!bg-stone-950 border border-r-0 border-solid rounded-tr-md rounded-br-md border-gray-200 dark:border-gray-700">
         <Slider
           className="flex-grow"
-          value={fieldValue || 0}
+          value={fieldValue}
           min={props.parameter.minimum}
           max={props.parameter.maximum}
           step={props.parameter.step ? props.parameter.step : 1}
           onChange={onChange}
         />
         <Form.Item
-          className="mb-1"
+          className="my-0"
           name={props.parameter.name}
           initialValue={props.parameter.default}
           rules={[
@@ -114,6 +124,7 @@ const SliderParameter = (props: {
             max={props.parameter.maximum}
             onChange={onChange}
             onBlur={onBlur}
+            step={props.parameter.step ? props.parameter.step : 1}
           />
         </Form.Item>
       </div>

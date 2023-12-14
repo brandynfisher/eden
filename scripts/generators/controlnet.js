@@ -25,7 +25,7 @@ const params = [
     name: 'controlnet_type',
     label: 'ControlNet mode',
     description: 'Which ControlNet mode to use (we recommend canny-edge or luminance)',
-    default: 'canny-edge',
+    default: 'luminance',
     allowedValues: ["luminance", "canny-edge", "depth"],
   },
   
@@ -82,7 +82,7 @@ const params = [
     label: 'Concept scale',
     description:
       'How strongly to activate the concept (0.0 will disable the concept)',
-    default: 0.8,
+    default: 0.65,
     minimum: 0.0,
     maximum: 1.5,
     step: 0.01,

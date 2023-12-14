@@ -173,10 +173,12 @@ const UploadParameter = (props: {
           className="mb-2 max-w-full w-full"
           initialValue={props.parameter.default}
           label={
-            <ParameterLabel
-              text={props.parameter.label}
-              description={props.parameter.description}
-            />
+            props.parameter.label ? (
+              <ParameterLabel
+                text={props.parameter.label}
+                description={props.parameter.description}
+              />
+            ) : null
           }
           name={props.parameter.name}
           rules={[
@@ -201,11 +203,6 @@ const UploadParameter = (props: {
             <div className="flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500">
               <FileUploadOutlined />
               <div>Click here or drag files to upload</div>
-              {/*{!props.compact ? (*/}
-              {/*  <div className="ant-upload-hint text-xs text-gray-500 mt-2">*/}
-              {/*    <strong>{props.acceptedMimeTypes}</strong>*/}
-              {/*  </div>*/}
-              {/*) : null}*/}
             </div>
           </Dragger>
         </Form.Item>

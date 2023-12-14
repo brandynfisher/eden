@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { expect, test } from 'vitest'
 
-import { prepareUserHeaders } from '../../util'
+import { prepareCharacterHeaders, prepareUserHeaders } from '../../util'
 
 const createCharacter = async (server: FastifyInstance) => {
   const headers = prepareUserHeaders()
@@ -69,7 +69,7 @@ test('User can list their Characters', async context => {
   expect(response.statusCode).toBe(200)
   const json = response.json()
   expect(json).toHaveProperty('docs')
-  expect(json.docs).toHaveLength(1)
+  expect(json.docs).toHaveLength(2)
 })
 
 test('User can delete an Character', async context => {
@@ -79,12 +79,11 @@ test('User can delete an Character', async context => {
   const characters = getResponse.json().docs
   const character = characters[0].id
   const deleteResponse = await deleteCharacter(server, character)
-  console.log(deleteResponse.json())
   expect(deleteResponse.statusCode).toBe(200)
   const getResponse2 = await listCharacters(server)
   const json = getResponse2.json()
   expect(json).toHaveProperty('docs')
-  expect(json.docs).toHaveLength(0)
+  expect(json.docs).toHaveLength(1)
 })
 
 test('Can get a character by ID', async context => {
@@ -96,4 +95,33 @@ test('Can get a character by ID', async context => {
   const json = getResponse.json()
   expect(json).toHaveProperty('character')
   expect(json.character).toHaveProperty('name')
+})
+
+test('Character can add attributes to a task', async context => {
+  const { server } = context
+  const response = await server.inject({
+    method: 'POST',
+    url: `/characters/tasks/create`,
+    headers: prepareCharacterHeaders(),
+    payload: {
+      generatorName: 'test',
+      attributes: {
+        test: 'test',
+      },
+    },
+  })
+  expect(response.statusCode).toBe(200)
+  const { taskId } = response.json()
+  expect(taskId).toBeDefined()
+
+  const taskGetResponse = await server.inject({
+    method: 'GET',
+    url: `/tasks/${taskId}`,
+    headers: prepareCharacterHeaders(),
+  })
+
+  expect(taskGetResponse.statusCode).toBe(200)
+  const { task } = taskGetResponse.json()
+  expect(task).toBeDefined()
+  expect(task).toHaveProperty('character')
 })

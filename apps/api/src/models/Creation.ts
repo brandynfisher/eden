@@ -1,6 +1,10 @@
-import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
+import {
+  CreationAttributes,
+  MediaAttributes,
+  MediaType,
+} from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
-import { Model, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import mongooseDelete, {
   SoftDeleteDocument,
@@ -9,19 +13,25 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 
 import { VisibilitySchema } from '../types/baseSchemas'
+import { CharacterDocument } from './Character'
+import { ConceptDocument } from './Concept'
 import { UserDocument } from './Creator'
+import { GeneratorDocument } from './Generator'
 import { TaskDocument } from './Task'
 
 export interface CreationSchema extends VisibilitySchema {
   user: UserDocument
+  character?: CharacterDocument
   task: TaskDocument
+  concept?: ConceptDocument
+  generator?: GeneratorDocument
   praiseCount: number
   bookmarkCount: number
   delegate?: UserDocument
   uri?: string
   thumbnail?: string
   name?: string
-  attributes?: any
+  attributes?: CreationAttributes
   mediaAttributes: MediaAttributes
   embedding?: {
     embedding?: number[]
@@ -34,8 +44,11 @@ export interface CreationSchema extends VisibilitySchema {
 
 export interface CreationInput {
   _id?: ObjectId
-  user: ObjectId
+  user: ObjectId | UserDocument
+  character?: ObjectId | CharacterDocument
   task: ObjectId
+  concept?: ObjectId | ConceptDocument
+  generator?: ObjectId | GeneratorDocument
   delegate?: ObjectId
   uri?: string
   thumbnail?: string
@@ -61,10 +74,24 @@ const creation = new Schema<CreationDocument>(
       ref: 'users',
       required: true,
     },
+    character: {
+      type: Schema.Types.ObjectId,
+      ref: 'characters',
+    },
     task: {
       type: Schema.Types.ObjectId,
       ref: 'tasks',
       required: true,
+    },
+    generator: {
+      type: Schema.Types.ObjectId,
+      ref: 'generators',
+      required: false,
+    },
+    concept: {
+      type: Schema.Types.ObjectId,
+      ref: 'concepts',
+      required: false,
     },
     praiseCount: {
       type: Number,
@@ -156,11 +183,13 @@ creation.pre<CreationDocument>('save', function (next) {
   next()
 })
 
+creation.index({ concept: -1 })
 creation.index({ createdAt: 1 })
-creation.index({ user: 1 })
 creation.index({ user: 1, deleted: 1, isPrivate: 1 })
 creation.index({ deleted: 1, isPrivate: 1 })
-creation.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1 })
+creation.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1, _id: -1 })
+creation.index({ createdAt: -1, _id: -1, 'embedding.score': -1 })
+creation.index({ createdAt: -1, _id: -1 })
 
 creation.plugin(mongooseDelete, { overrideMethods: 'all' })
 creation.plugin(paginate)

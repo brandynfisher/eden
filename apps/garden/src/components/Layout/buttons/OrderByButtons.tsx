@@ -1,5 +1,5 @@
 import { Button } from 'antd'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 export type OrderByParam = {
   label: string
@@ -16,6 +16,18 @@ export const OrderByLatest: OrderByParam = {
 export const OrderByPopularity: OrderByParam = {
   label: 'Popular',
   field: 'popularity',
+  direction: -1,
+}
+
+export const OrderByUsage: OrderByParam = {
+  label: 'Most Used',
+  field: 'creationCount',
+  direction: -1,
+}
+
+export const OrderByLikedByMe: OrderByParam = {
+  label: 'Likes',
+  field: 'liked',
   direction: -1,
 }
 
@@ -70,12 +82,20 @@ const OrderByButton = ({
 
 const OrderByButtons = ({
   params,
+  initialParam,
   onOrderChange,
 }: {
   params: OrderByParam[]
+  initialParam?: OrderByParam
   onOrderChange: (item: OrderByParam) => void
 }) => {
-  const [selectedParam, setSelectedParam] = useState<OrderByParam>(params[0])
+  const [selectedParam, setSelectedParam] = useState<OrderByParam>(
+    initialParam ? initialParam : params[0],
+  )
+
+  useEffect(() => {
+    setSelectedParam(initialParam || params[0])
+  }, [initialParam])
 
   const handleSelect = (item: OrderByParam) => {
     if (selectedParam.field === item.field) return

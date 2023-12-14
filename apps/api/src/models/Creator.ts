@@ -27,6 +27,7 @@ export interface UserSchema {
   subscriptionTier?: SubscriptionTier
   stripeCustomerId?: string
   stripeSubscriptionId?: string
+  discordId?: string
   username?: string
   userImage?: string
   deleted?: boolean
@@ -108,6 +109,9 @@ const user = new Schema<UserDocument>(
       type: String,
     },
     stripeSubscriptionId: {
+      type: String,
+    },
+    discordId: {
       type: String,
     },
     deleted: {

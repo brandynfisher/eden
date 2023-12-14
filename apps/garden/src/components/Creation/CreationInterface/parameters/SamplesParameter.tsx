@@ -1,3 +1,4 @@
+import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import { Form, FormInstance, Select } from 'antd'
 import React from 'react'
 
@@ -15,11 +16,14 @@ const SamplesParameter = ({
   }
 
   return (
-    <div className="mt-2 w-[52px]">
-      <div className="text-xs mb-2 text-gray-500">Samples</div>
+    <div className="mt-2 flex">
+      <ParameterAddon
+        title={'Samples'}
+        description={'Select the number of image variations to generate'}
+      />
       <Form.Item
         name={name}
-        className="mt-0 mb-0"
+        className="my-0"
         dependencies={['n_samples']}
         initialValue={initialValue}
         rules={[
@@ -31,7 +35,7 @@ const SamplesParameter = ({
           }),
         ]}
       >
-        <Select onChange={onChangeHandler}>
+        <Select onChange={onChangeHandler} className="with-addon">
           <Select.Option key={1} value={1}>
             1
           </Select.Option>

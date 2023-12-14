@@ -1,45 +1,22 @@
 import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
+import { createPaginationRoute } from '@/pages/api/feed/creations'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req
 
-  const { userId, page, limit, orderBy, direction } = req.query
-
-  const route = (limit: number, page: number) => {
-    const basePath = `${CONFIG.API_URL}/feed/concepts`
-    const params: FeedRouteQueryParams = {}
-
-    if (limit && page) {
-      params.page = page
-      params.limit = limit
-    }
-
-    if (userId) {
-      params.userId = String(userId)
-    }
-    if (orderBy) {
-      params.orderBy = String(orderBy)
-    }
-    if (direction) {
-      params.direction = Number(direction)
-    }
-
-    const queryString = Object.keys(params)
-      //@ts-ignore
-      .map(key => `${key}=${params[key]}`)
-      .join('&')
-
-    return queryString ? `${basePath}?${queryString}` : basePath
-  }
+  const route = createPaginationRoute(
+    `${CONFIG.API_URL}/feed/concepts`,
+    req.query as FeedRouteQueryParams,
+  )
 
   switch (method) {
     case 'GET':
       try {
-        const response = await axios.get(route(Number(limit), Number(page)), {
+        const response = await axios.get(route, {
           headers: await getAuthHeaders(req),
         })
         return res.status(200).json(response.data)

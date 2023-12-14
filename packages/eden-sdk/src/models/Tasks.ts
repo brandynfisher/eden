@@ -17,6 +17,7 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   config?: any
   metadata?: any
   webhooks?: string[]
+  attributes?: TaskAttributes
 }
 
 export interface TasksCompleteArguments extends WebAPICallOptions {
@@ -32,6 +33,7 @@ export interface TasksChatCompleteArguments extends WebAPICallOptions {
 export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
   status?: string | string[]
   taskId?: string | string[]
+  type?: 'concepts' | 'creations'
 }
 
 export interface TasksGetArguments extends WebAPICallOptions {
@@ -135,6 +137,7 @@ export type TasksGetResponse = WebAPICallResult & {
 export type Task = {
   _id: string
   user: string
+  character?: string
   generator: Generator
   versionId: string
   config?: any
@@ -149,6 +152,7 @@ export type Task = {
   creation?: any
   samples?: any[]
   concept?: string
+  attributes?: TaskAttributes
   createdAt: string
   updatedAt: string
 }
@@ -156,4 +160,9 @@ export type Task = {
 export type Completion = {
   id: string
   text: string
+}
+
+export interface TaskAttributes {
+  discordId?: string
+  delegateUserId?: string
 }

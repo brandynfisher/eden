@@ -1,39 +1,18 @@
 import { fetcher } from '@/lib/fetcher'
-import useSWR from 'swr'
+import { Generator } from '@edenlabs/eden-sdk'
+import useSWRImmutable from 'swr/immutable'
 
-export const useGeneratorInfo = (generatorName: string) => {
-  const { data, error, isLoading, mutate } = useSWR(
-    `/api/generators/${generatorName}`,
+export const useGenerator = (generatorId: string | null, options = {}) => {
+  const { data, mutate, isLoading, error } = useSWRImmutable(
+    generatorId ? `/api/generators/${generatorId}` : null,
     fetcher,
-  )
-
-  if (isLoading || !data || error) {
-    return {
-      description: '',
-      versionId: 'loading',
-      requiredParameters: [],
-      optionalParameters: [],
-      isLoading,
-      error,
-      mutate,
-    }
-  }
-
-  const requiredParameters = data?.generatorVersion?.parameters.filter(
-    (parameter: { optional: boolean }) => !parameter.optional,
-  )
-
-  const optionalParameters = data?.generatorVersion?.parameters.filter(
-    (parameter: { optional: boolean }) => parameter.optional,
+    options,
   )
 
   return {
-    description: data?.generatorVersion?.description || '',
-    versionId: data?.generatorVersion?.versionId || '',
-    requiredParameters: requiredParameters || [],
-    optionalParameters: optionalParameters || [],
+    generator: data?.generator as Generator | null,
+    mutate,
     isLoading,
     error,
-    mutate,
   }
 }

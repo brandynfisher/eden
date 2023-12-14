@@ -1,37 +1,44 @@
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { fetcher } from '@/lib/fetcher'
-import { Creation } from '@edenlabs/eden-sdk'
-import { useCallback } from 'react'
+import { ItemType } from '@/providers/ModalProvider'
+import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
+import { useCallback, useMemo } from 'react'
 import useSWRInfinite from 'swr/infinite'
 
-export type FeedRouteQueryParams = {
+export type PaginatedRouteQueryParams = {
   page?: number
   limit?: number
-  userId?: string
-  collectionId?: string
-  creationId?: string
   orderBy?: string
   direction?: number
 }
 
-export type PaginatedFeedQuery = {
-  // isAuthenticated?: boolean
+export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
   userId?: string
+  characterId?: string
   collectionId?: string
   creationId?: string
+  name?: string
+  conceptId?: string
+}
+
+export type PaginatedFeedQuery = {
+  userId?: string
+  characterId?: string
+  collectionId?: string
+  name?: string
+  creationId?: string
+  conceptId?: string
   limit?: number
 }
 
-export type FeedType = 'creations' | 'concepts'
-
 export const getFeedPageRoute = (
-  type: FeedType,
+  itemType: ItemType,
   query: PaginatedFeedQuery,
   limit: number,
   page: number,
   orderBy?: OrderByParam,
 ) => {
-  const basePath = `/api/feed/${type}`
+  const basePath = `/api/feed/${itemType}s`
   const params: FeedRouteQueryParams = {}
 
   if (limit && page) {
@@ -42,11 +49,20 @@ export const getFeedPageRoute = (
   if (query?.userId) {
     params.userId = query.userId
   }
+  if (query?.characterId) {
+    params.characterId = query.characterId
+  }
+  if (query?.name && query.name.length > 0) {
+    params.name = query.name
+  }
   if (query?.collectionId) {
     params.collectionId = query.collectionId
   }
   if (query?.creationId) {
     params.creationId = query.creationId
+  }
+  if (query?.conceptId) {
+    params.conceptId = query.conceptId
   }
   if (orderBy) {
     params.orderBy = orderBy.field
@@ -62,21 +78,35 @@ export const getFeedPageRoute = (
 }
 
 export const useFeedPaginated = (
-  type: FeedType,
+  itemType: ItemType,
   query: PaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,
 ) => {
   const pageLimit = query?.limit || 25
 
   const getKey = useCallback(
-    (pageIndex: number, previousPageData: Creation[]): string | null => {
-      if ((pageIndex === 0 && previousPageData === null) || pageIndex !== 0) {
-        return getFeedPageRoute(type, query, pageLimit, pageIndex + 1, orderBy)
+    (
+      pageIndex: number,
+      previousPageData: PaginatedResponse<Creation[]>,
+    ): string | null => {
+      if (
+        (pageIndex > 0 && !previousPageData) ||
+        (previousPageData && !previousPageData.hasNextPage)
+      ) {
+        // console.log('reached the END')
+        return null
       }
 
-      return null
+      // console.log('getKey', {pageIndex, previousPageData})
+      return getFeedPageRoute(
+        itemType,
+        query,
+        pageLimit,
+        pageIndex + 1,
+        orderBy,
+      )
     },
-    [type, query, pageLimit, orderBy],
+    [itemType, query, pageLimit, orderBy],
   )
 
   const {
@@ -90,39 +120,59 @@ export const useFeedPaginated = (
     revalidateOnFocus: false,
     // revalidateIfStale: false,
     revalidateFirstPage: false,
-    // revalidateOnReconnect: false,
+    persistSize: true,
+    revalidateOnReconnect: false,
     // revalidateAll: false,
+    initialSize: 1,
   })
-
-  const dataArray = data != null ? data.flat() : []
 
   const isLoadingMore =
     isLoading ||
-    (size > 0 && data != null && typeof data[size - 1] === 'undefined')
+    (size > 0 &&
+      data != null &&
+      typeof data[size - 1] === 'undefined' &&
+      data &&
+      data[data.length - 1] &&
+      typeof data[data.length - 1] !== 'undefined' &&
+      data[data.length - 1]?.hasNextPage)
   const isEmpty = data?.[0]?.total === 0 || data?.[0]?.length === 0
 
-  const maybeLoadMore = async () => {
-    if (isValidating) return
-    if (isLoading || isLoadingMore) return
-    if (isEmpty || (data && data.length >= data?.[0]?.pages)) return
-    if (!data?.[data?.length - 1]?.hasNextPage) return
+  const maybeLoadMore = useMemo(() => {
+    return () => {
+      if (!data) return
+      if (isValidating) return
+      if (isLoading || isLoadingMore) return
 
-    await setSize(prevSize => prevSize + 1)
-  }
+      if (data && data.length && data[data.length - 1].hasNextPage) {
+        setSize(prevSize => {
+          // console.log('maybeLoadNextPage', {size: prevSize + 1, dataHasNextPage, isLoading, isLoadingMore, isValidating, docsLength: docs.length})
+          return prevSize + 1
+        })
+      }
+    }
+  }, [isValidating, isLoading, isLoadingMore, data])
 
-  const creationDocs = (
-    dataArray
-      ? [...dataArray.map(pageData => (pageData ? pageData.docs : []))]
-      : []
-  ).flat()
+  const { docs, totalItems } = useMemo(() => {
+    if (data) {
+      const flatData = data.flatMap(page => page)
+      return {
+        docs: flatData ? flatData.map(page => (page ? page.docs : [])) : [],
+        totalItems: flatData && flatData[0] ? flatData[0].total : 0,
+      }
+    }
+    return { docs: [], totalItems: null }
+  }, [data])
 
   return {
-    hasNextPage: !!data?.[data?.length - 1]?.hasNextPage,
-    items: creationDocs,
+    hasNextPage: data ? !!data[size - 1]?.hasNextPage : false,
+    totalItems: totalItems,
+    items: data ? ([] as Creation[]).concat(...docs) : [],
     refetchFeed,
     size,
     setSize,
     isEmpty,
+    isLoading,
+    isLoadingMore,
     maybeLoadMore,
   }
 }

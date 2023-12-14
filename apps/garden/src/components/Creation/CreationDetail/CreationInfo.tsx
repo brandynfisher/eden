@@ -5,7 +5,7 @@ import { Creation } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
 import React, { ReactNode, useEffect, useState } from 'react'
 
-const BaseParamGroup = ({
+export const BaseParamGroup = ({
   label,
   value,
 }: {
@@ -28,24 +28,33 @@ const BaseParamGroup = ({
   )
 }
 
+const thumbnailSize = 132
+
 const CreationInfo = ({ creation }: { creation: Creation }) => {
   const [displayDateTime, setDisplayDateTime] = useState('')
 
   const { concept, isLoading } = useConcept(
     creation.task.config['lora'] || null,
+    {
+      shouldRetryOnError: false,
+    },
   )
 
   useEffect(() => {
     const createdDate = new Date(creation.createdAt)
     const dateString = createdDate.toLocaleDateString()
-    const timeString = createdDate.toLocaleTimeString().substring(0, 5)
-    setDisplayDateTime(`${dateString} ${timeString}`)
+    const timeString = createdDate.toLocaleTimeString()
+    const timeStringFormatted = timeString.substring(
+      0,
+      timeString.lastIndexOf(':'),
+    )
+    setDisplayDateTime(`${dateString} ${timeStringFormatted}`)
   }, [creation.createdAt])
 
   return (
     <div>
       {creation.task.generator.output === 'creation' ? (
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-4 flex-wrap lg:justify-between">
           <BaseParamGroup
             label="Type"
             value={<div>{creation.task.generator.generatorName}</div>}
@@ -82,8 +91,8 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
                   <ImageZoomable
                     key={concept.thumbnail}
                     url={concept.thumbnail}
-                    width={132}
-                    height={132}
+                    width={thumbnailSize}
+                    height={thumbnailSize}
                   />
                 </div>
               ) : (
@@ -94,16 +103,55 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
         </div>
       ) : null}
 
-      {creation.task.config['init_image_data'] ? (
+      {creation.task.config['init_image_data'] ||
+      creation.task.config['init_image'] ? (
         <div className="mt-4">
           <BaseParamGroup
             label="Init Image"
             value={
               <ImageZoomable
-                key={creation.task.config['init_image_data']}
-                url={creation.task.config['init_image_data']}
-                width={132}
-                height={132}
+                key={
+                  creation.task.config['init_image_data'] ||
+                  creation.task.config['init_image']
+                }
+                url={
+                  creation.task.config['init_image_data'] ||
+                  creation.task.config['init_image']
+                }
+                width={thumbnailSize}
+                height={thumbnailSize}
+              />
+            }
+          />
+        </div>
+      ) : null}
+
+      {creation.task.config['control_image'] ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Control Image"
+            value={
+              <ImageZoomable
+                key={creation.task.config['control_image']}
+                url={creation.task.config['control_image']}
+                width={thumbnailSize}
+                height={thumbnailSize}
+              />
+            }
+          />
+        </div>
+      ) : null}
+
+      {creation.task.config['ip_image'] ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Ip Image"
+            value={
+              <ImageZoomable
+                key={creation.task.config['ip_image']}
+                url={creation.task.config['ip_image']}
+                width={thumbnailSize}
+                height={thumbnailSize}
               />
             }
           />
@@ -122,8 +170,8 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
                     <ImageZoomable
                       key={initImage}
                       url={initImage}
-                      width={134}
-                      height={134}
+                      width={thumbnailSize}
+                      height={thumbnailSize}
                     />
                   ),
                 )}
@@ -132,8 +180,6 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
           />
         </div>
       ) : null}
-
-      {/*{ baseParams.map(([key, val]) => <CreationInfoParam key={key} label={key} val={val} />)}*/}
     </div>
   )
 }

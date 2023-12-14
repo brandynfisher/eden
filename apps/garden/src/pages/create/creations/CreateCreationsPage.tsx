@@ -1,6 +1,6 @@
 import CreationInterface from '@/components/Creation/CreationInterface/CreationInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
-import { useCreation } from '@/hooks/useCreation'
+import { useCreationImmutable } from '@/hooks/useCreationImmutable'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
@@ -10,10 +10,9 @@ const CreatePageWithPreset = ({
 }: {
   generator?: string
   presetId: string
+  conceptId?: string
 }) => {
-  const { creation } = useCreation(presetId, {
-    revalidateAll: false,
-  })
+  const { creation } = useCreationImmutable(presetId)
 
   if (!creation) {
     return <LoadingIndicator />
@@ -24,21 +23,17 @@ const CreatePageWithPreset = ({
   )
 }
 
-const CreatePageDefault = () => {
-  return <CreationInterface />
-}
-
 const CreateCreationsPage = () => {
   const router = useRouter()
   const [usesPreset, setUsesPreset] = useState<boolean>(false)
 
   useEffect(() => {
-    if (!router.query) {
-      setUsesPreset(false)
+    if (!router.query) return
+
+    if (router.query.presetId) {
+      setUsesPreset(true)
       return
     }
-
-    setUsesPreset(!!router.query.presetId)
   }, [router.query])
 
   return (
@@ -51,7 +46,7 @@ const CreateCreationsPage = () => {
           presetId={String(router.query.presetId)}
         />
       ) : (
-        <CreatePageDefault />
+        <CreationInterface />
       )}
     </>
   )

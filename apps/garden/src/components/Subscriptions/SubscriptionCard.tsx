@@ -52,6 +52,9 @@ const SubscriptionCardPlans = ({
   )
 }
 
+/**
+ * @deprecated
+ */
 const SubscriptionCard = ({
   subscription,
   checkoutHandler,

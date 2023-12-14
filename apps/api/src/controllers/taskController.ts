@@ -105,10 +105,17 @@ export const createTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
-  const { generatorName, versionId, config, webhooks } =
+  const { userId, isAdmin, character } = request.user
+  const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
+  const isCharacter = character !== undefined
+
+  if (attributes && !(isAdmin || isCharacter)) {
+    return reply.status(401).send({
+      message: 'Only admin/characters can set attributes',
+    })
+  }
   // get generator
   const generator = await Generator.findOne({
     generatorName,
@@ -179,10 +186,12 @@ export const createTask = async (
     taskId,
     status: TaskStatus.Pending,
     user,
+    character,
     generator: generator._id,
     versionId: generatorVersion.versionId,
     config: preparedConfig,
     webhooks,
+    attributes,
     cost,
   }
   const task = new Task(taskData)
@@ -223,7 +232,7 @@ export const listTasks = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { status, taskId, limit, page, sort } =
+  const { type, status, taskId, limit, page, sort } =
     request.query as TasksListArguments
 
   const user = await User.findById(userId)
@@ -232,6 +241,22 @@ export const listTasks = async (
       message: 'User not found',
     })
   }
+
+  const typeQuery = type
+    ? type === 'creations'
+      ? {
+          $or: [
+            { creation: { $ne: null } },
+            { 'config.concept_mode': { $exists: false } },
+          ],
+        }
+      : {
+          $or: [
+            { concept: { $ne: null } },
+            { 'config.concept_mode': { $exists: true } },
+          ],
+        }
+    : {}
 
   const tasksRepository = new TaskRepository(Task)
   const tasks = await tasksRepository.query(
@@ -242,6 +267,7 @@ export const listTasks = async (
       createdAt: {
         $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
       },
+      ...typeQuery,
     },
     {
       limit,

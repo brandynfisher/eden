@@ -1,9 +1,12 @@
+import { ReactionType } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
   conceptDelete,
+  conceptReact,
+  conceptUnreact,
   conceptUpdate,
   getConcept,
   listConcepts,
@@ -17,6 +20,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
         type: 'object',
         properties: {
           userId: { type: ['string', 'array'] },
+          name: { type: 'string' },
           ...paginationProperties(),
         },
         required: [],
@@ -76,6 +80,42 @@ const conceptRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => conceptDelete(request, reply),
+  })
+
+  server.post('/concepts/reactions/add', {
+    schema: {
+      request: {
+        body: Type.Object({
+          conceptId: Type.String(),
+          reaction: Type.Strict(Type.String(), ReactionType),
+        }),
+      },
+      response: {
+        200: {
+          success: Type.Boolean(),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => conceptReact(request, reply),
+  })
+
+  server.post('/concepts/reactions/remove', {
+    schema: {
+      request: {
+        body: Type.Object({
+          conceptId: Type.String(),
+          reaction: Type.Strict(Type.String(), ReactionType),
+        }),
+      },
+      response: {
+        200: {
+          success: Type.Boolean(),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => conceptUnreact(request, reply),
   })
 }
 

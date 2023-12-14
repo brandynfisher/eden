@@ -27,8 +27,15 @@ const formatConfigForReplicate = async (config: any) => {
 
   // if no text input, use interpolation texts
   if (!newConfig.text_input) {
-    newConfig.text_input =
-      newConfig.interpolation_texts?.join(' to ') || 'Untitled'
+    newConfig.text_input = newConfig.interpolation_texts?.join(' to ') || ''
+  }
+
+  if (newConfig.init_image === '') {
+    delete newConfig.init_image
+  }
+
+  if (newConfig.control_image === '') {
+    delete newConfig.control_image
   }
 
   // convert lists into |-separated strings
@@ -74,23 +81,19 @@ const submitTask = async (
     throw new Error(`Could not find model ${generatorAddress}`)
   }
   const modelId = generatorVersion.versionId
-  try {
-    const preparedConfig = await formatConfigForReplicate(config)
-    preparedConfig.mode = generatorVersion.mode
-    // @ts-ignore
-    const task = await replicate.startPrediction(
-      modelId,
-      preparedConfig,
-      webhookUrl,
-      ['start', 'output', 'completed'],
-    )
-    if (task.status == 422) {
-      throw new Error(task.detail)
-    }
-    return task
-  } catch (error) {
-    throw new Error(`${error}`)
+  const preparedConfig = await formatConfigForReplicate(config)
+  preparedConfig.mode = generatorVersion.mode
+  // @ts-ignore
+  const task = await replicate.startPrediction(
+    modelId,
+    preparedConfig,
+    webhookUrl,
+    ['start', 'output', 'completed'],
+  )
+  if (task.status == 422) {
+    throw new Error(task.detail)
   }
+  return task
 }
 
 const getTransactionCost = (
@@ -100,10 +103,10 @@ const getTransactionCost = (
   config: any,
 ) => {
   if (generatorVersion.mode === 'concept') {
-    return 100
+    return 75
   }
 
-  const baseCost = config.n_frames || 1
+  const baseCost = Math.round(config.n_frames * 0.75) || 1
   const samples = config.n_samples || 1
   const cost = baseCost * samples
   return cost

@@ -33,7 +33,7 @@ export const ResponsiveImage = ({
       className={`relative ${
         !isLoaded ? 'bg-gray-100 dark:bg-gray-800' : ''
       } rounded-lg w-auto h-full ${className ? className : ''}`}
-      style={{ aspectRatio: aspectRatio }}
+      style={{ aspectRatio: aspectRatio || 1 }}
     >
       <Image
         src={src}
@@ -44,7 +44,7 @@ export const ResponsiveImage = ({
         quality={quality}
         priority={priority}
         onLoadingComplete={handleOnLoadingComplete}
-        className={`rounded-lg h-full w-full object-contain`}
+        className={`h-full w-full object-contain ${className}`}
       />
       {children}
     </div>

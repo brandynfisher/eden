@@ -1,7 +1,9 @@
+import { ReactionType } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { Character } from '../../models/Character'
 import { Concept } from '../../models/Concept'
 import { Creation, CreationInput } from '../../models/Creation'
 import { Generator, GeneratorDocument } from '../../models/Generator'
@@ -99,18 +101,43 @@ const handleUpdate = async (
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
 
+      const { nsfw_scores, ...remainingAttributes } =
+        finalOutput.attributes || {}
+      const finalOutputAttributes = { ...remainingAttributes }
+
       await Promise.allSettled(
         finalOutput.files.map(async (files, index) => {
           const creationId = new ObjectId()
+          const creationUser = task.attributes?.delegateUserId
+            ? new ObjectId(task.attributes.delegateUserId)
+            : task.user
+
+          const nsfwScore =
+            nsfw_scores && nsfw_scores.length ? nsfw_scores[index] : 0
+          const isNsfw = nsfwScore && nsfwScore > 0.5
+
           const creationDocument: CreationInput = {
             _id: creationId,
-            user: task.user._id,
+            user: creationUser,
+            character: task.character,
             task: task._id,
             uri: finalOutput.files[index],
             thumbnail: finalOutput.thumbnails[index],
             name: finalOutput.name,
-            attributes: finalOutput.attributes,
-            isPrivate: task.config.isPrivate || false,
+            attributes: {
+              ...task.attributes,
+              ...finalOutputAttributes,
+              nsfw_score: nsfwScore,
+            },
+            isPrivate: isNsfw ? true : task.config.isPrivate || false,
+          }
+
+          if (task.config.lora) {
+            creationDocument.concept = new ObjectId(task.config.lora)
+          }
+
+          if (task.generator) {
+            creationDocument.generator = task.generator
           }
 
           if (finalOutput.files[index]) {
@@ -132,13 +159,41 @@ const handleUpdate = async (
         }),
       )
 
+      // update concept creation count
+      if (task.config.lora) {
+        await Concept.findOneAndUpdate(
+          {
+            _id: task.config.lora,
+          },
+          {
+            $inc: {
+              creationCount: task.config.n_samples ? task.config.n_samples : 1,
+            },
+          },
+        )
+      }
+
+      // update character creation count
+      if (task.character) {
+        await Character.findOneAndUpdate(
+          {
+            _id: task.character,
+          },
+          {
+            $inc: {
+              creationCount: task.config.n_samples ? task.config.n_samples : 1,
+            },
+          },
+        )
+      }
+
       await Promise.allSettled(
-        creationData.map(async (creationInput, index) => {
+        creationData.map(async creationInput => {
           const otherCreationIds = creationData
             .filter(dataItem => dataItem._id !== creationInput._id)
             .map(item => item._id)
 
-          const creation = await Creation.create({
+          await Creation.create({
             ...creationInput,
             samples: otherCreationIds,
           })
@@ -199,8 +254,12 @@ const handleUpdate = async (
           task: task._id,
           name: publicName,
           conceptName: finalOutput.name,
-          checkpoint: 'sdxl-v1.0', //task.config.checkpoint,
+          checkpoint: task.config.checkpoint || 'JuggernautXL_v6', //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
+          num_training_images:
+            finalOutput.attributes && finalOutput.attributes.num_training_images
+              ? finalOutput.attributes.num_training_images
+              : 0,
           uri: finalOutput.files[i],
           thumbnail: finalOutput.thumbnails[0],
           isPrivate: task.config.isPrivate || false,
@@ -213,11 +272,13 @@ const handleUpdate = async (
           conceptData.uri = uri
         }
         if (finalOutput.thumbnails[i]) {
-          conceptData.thumbnail = await server.uploadThumbnailAsset(
+          const { uri, mediaAttributes } = await server.uploadUrlAsset(
             server,
             finalOutput.thumbnails[i],
           )
+          conceptData.thumbnail = uri
         }
+
         const concept = await Concept.create(conceptData)
         Object.assign(taskUpdate, {
           concept: concept._id,
@@ -284,13 +345,17 @@ const handleUpdateUniversal = async (
     const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       for (let i = 0; i < output.length; i++) {
+        const creationUser = task.attributes?.delegateUserId
+          ? new ObjectId(task.attributes.delegateUserId)
+          : task.user
         const creationData = {
-          user: task.user,
+          user: creationUser,
+          character: task.character,
           task: task._id,
           uri: output[i],
           thumbnail: null,
           name: task.config.prompt,
-          attributes: null,
+          attributes: task.attributes,
           mediaAttributes: {},
         }
         if (output[i]) {

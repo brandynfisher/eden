@@ -3,6 +3,8 @@ import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { edenHandlers } from '../src/lib/taskHandlers/edenHandlers'
+import { ApiKey } from '../src/models/ApiKey'
+import { Character, CharacterInput } from '../src/models/Character'
 import { Creation } from '../src/models/Creation'
 import { User } from '../src/models/Creator'
 import { Generator, GeneratorSchema } from '../src/models/Generator'
@@ -47,10 +49,24 @@ export const prepareBasicUserHeaders = () => {
   }
 }
 
+export const preparePreviewUserHeaders = () => {
+  return {
+    'x-api-key': 'previewuser',
+    'x-api-secret': 'previewuser',
+  }
+}
+
 export const prepareAdminHeaders = () => {
   return {
     'x-api-key': 'admin',
     'x-api-secret': 'admin',
+  }
+}
+
+export const prepareCharacterHeaders = () => {
+  return {
+    'x-api-key': 'character',
+    'x-api-secret': 'character',
   }
 }
 
@@ -108,4 +124,22 @@ export const createCreation = async () => {
     },
   })
   return creation
+}
+
+export const createCharacter = async () => {
+  const characterInput: CharacterInput = {
+    user: await getDefaultUserId(),
+    name: 'character',
+  }
+  const character = await Character.create(characterInput)
+
+  const characterApiKey = {
+    apiKey: 'character',
+    apiSecret: 'character',
+    user: character.user,
+    character: character._id,
+  }
+
+  await ApiKey.create(characterApiKey)
+  return character
 }

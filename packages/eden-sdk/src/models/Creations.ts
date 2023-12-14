@@ -16,7 +16,7 @@ export interface CreationsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
-  taskId?: string
+  name?: string
 }
 
 export interface CreationsGetArguments extends WebAPICallOptions {
@@ -175,6 +175,7 @@ export type Reactions = Record<string, boolean>
 export type Creation = {
   _id: string
   user: Creator
+  character?: string
   userId?: string
   task: Task
   samples?: string[]
@@ -184,8 +185,9 @@ export type Creation = {
   uri: string
   thumbnail?: string
   name: string
-  attributes: any
+  attributes: CreationAttributes
   mediaAttributes: MediaAttributes
+  creationCount?: number
   praiseCount?: number
   bookmarkCount?: number
   bookmarked?: boolean
@@ -202,6 +204,11 @@ export interface MediaAttributes {
   width?: number
   height?: number
   aspectRatio?: number
+}
+
+export interface CreationAttributes {
+  nsfw_score?: number
+  interrogation?: string
 }
 
 export enum ReactionType {

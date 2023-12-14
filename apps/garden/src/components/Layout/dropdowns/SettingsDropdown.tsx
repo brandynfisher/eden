@@ -4,9 +4,10 @@ import { UserContext } from '@/providers/UserProvider'
 import LoginOutlined from '@ant-design/icons/LoginOutlined'
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
-import TableOutlined from '@ant-design/icons/TableOutlined'
-import ToolOutlined from '@ant-design/icons/ToolOutlined'
 import { useViewportSize } from '@mantine/hooks'
+import CardMembershipIcon from '@mui/icons-material/CardMembership'
+import GridOnIcon from '@mui/icons-material/GridOn'
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import Button from '@mui/material/Button'
 import { App, Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
@@ -106,6 +107,7 @@ const ManageSubscriptionButton = () => {
   const onManageSubscriptionClick = async () => {
     const customerId = user?.stripeCustomerId
     if (!customerId) {
+      await router.push('/manna')
       return
     }
     try {
@@ -121,7 +123,7 @@ const ManageSubscriptionButton = () => {
 
   return (
     <div className="flex items-center p-2">
-      <ToolOutlined />
+      <CardMembershipIcon fontSize="small" />
       <div
         className="ml-2 flex gap-2 w-full justify-between font-mono"
         onClick={onManageSubscriptionClick}
@@ -147,7 +149,7 @@ const MaxColumnSelector = () => {
   return (
     <div className="w-full p-2">
       <div className="flex items-center">
-        <TableOutlined />
+        <GridOnIcon fontSize="small" />
         <div className="ml-2 flex gap-2 w-full justify-between font-mono">
           {currentSetting.params.displayName}
           <div className="flex gap-2 items-center">
@@ -188,13 +190,13 @@ const MaxColumnSelector = () => {
   )
 }
 
-const DevToolsLink = () => {
+const ManageAccountLink = () => {
   return (
     <Link className="w-full p-2 flex" href="/tools">
       <div className="flex items-center">
-        <ToolOutlined />
+        <ManageAccountsIcon fontSize="small" />
         <div className="ml-2 flex gap-2 w-full justify-between font-mono">
-          Devtools
+          Manage Account
         </div>
       </div>
     </Link>
@@ -211,34 +213,17 @@ const clerkItems: ItemType[] = [
   },
 ]
 
-const clerkExtraItems: ItemType[] = [
+const authItems: ItemType[] = [
   {
     type: 'divider',
   },
-  // {
-  //   label: <DevToolsLink />,
-  //   key: '5',
-  // },
-  // {
-  //   type: 'divider',
-  // },
-  // {
-  //   label: <UserButton afterSignOutUrl="/" showName={true} />,
-  //   key: '3',
-  // },
-]
-
-const previewExtraItems: ItemType[] = [
   {
-    label: <DevToolsLink />,
+    label: <ManageAccountLink />,
     key: 'dev-tools',
   },
 ]
 
 const subscriberExtraItems: ItemType[] = [
-  {
-    type: 'divider',
-  },
   {
     label: <ManageSubscriptionButton />,
     key: 'manage-subscription',
@@ -246,9 +231,8 @@ const subscriberExtraItems: ItemType[] = [
 ]
 
 export const SettingsDropdown = () => {
-  const { isAuthenticated, featureFlags, user } = useContext(UserContext)
+  const { isAuthenticated, user } = useContext(UserContext)
   const { width: windowWidth } = useViewportSize()
-  const isPreviewUser = featureFlags?.includes('preview')
 
   const items: ItemType[] = [
     {
@@ -277,11 +261,7 @@ export const SettingsDropdown = () => {
     let newDropDownItems = [...items]
 
     if (isAuthenticated) {
-      newDropDownItems = [...newDropDownItems, ...clerkExtraItems]
-
-      if (isPreviewUser) {
-        newDropDownItems = [...newDropDownItems, ...previewExtraItems]
-      }
+      newDropDownItems = [...newDropDownItems, ...authItems]
 
       if (user?.subscriptionTier) {
         newDropDownItems = [...newDropDownItems, ...subscriberExtraItems]
@@ -302,7 +282,7 @@ export const SettingsDropdown = () => {
       className="cursor-pointer"
       arrow={true}
     >
-      <Button className="min-w-[40px]">
+      <Button className="min-w-[40px]" data-testid="settings-dropdown-trigger">
         <div className="flex items-center font-mono">
           <SettingOutlined className="text-xl" />
         </div>

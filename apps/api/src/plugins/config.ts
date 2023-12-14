@@ -48,6 +48,8 @@ const ConfigSchema = Type.Strict(
     CLERK_SECRET_KEY: Type.Optional(Type.String()),
     CLERK_WEBHOOK_SECRET: Type.Optional(Type.String()),
     AIRFLOW_BASE_URL: Type.Optional(Type.String()),
+    DISCORD_CLIENT_ID: Type.Optional(Type.String()),
+    DISCORD_CLIENT_SECRET: Type.Optional(Type.String()),
   }),
 )
 

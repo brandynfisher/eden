@@ -45,6 +45,7 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           products: Type.Array(Type.Any()),
+          subscriptions: Type.Array(Type.Any()),
         }),
       },
     },

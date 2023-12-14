@@ -2,6 +2,7 @@ import CreationWorkspace from '@/components/Creation/CreationInterface/CreationW
 import TestGeneratorInterface from '@/components/Creation/CreationInterface/TestGeneratorInterface'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
+import { conceptGenerator, hiddenGenerators } from '@/lib/generator'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
@@ -21,15 +22,6 @@ const TimelineList = dynamic(
     ssr: false,
   },
 )
-
-const hiddenCreationGenerators = [
-  'complete',
-  'tts',
-  'tts_fast',
-  'sdxl-lora-trainer',
-  'interrogate',
-  'monologue',
-]
 
 const CreationInterface = ({
   generatorName,
@@ -80,8 +72,7 @@ const CreationInterface = ({
   useEffect(() => {
     const available = !selectedGenerators
       ? generators?.filter(
-          generator =>
-            !hiddenCreationGenerators.includes(generator.generatorName),
+          generator => !hiddenGenerators.includes(generator.generatorName),
         )
       : generators?.filter(gen =>
           selectedGenerators?.includes(gen.generatorName),
@@ -158,9 +149,16 @@ const CreationInterface = ({
 
       <div
         ref={timelineRef}
-        className="w-full h-full md:h-auto overflow-y-auto px-2 md:px-0 md:pr-4 md:mt-0"
+        className="w-full h-full md:h-auto pl-2 md:px-0 md:mt-0"
       >
-        <TimelineList innerRef={timelineListRef} />
+        <TimelineList
+          innerRef={timelineListRef}
+          type={
+            activeGenerator.generatorName === conceptGenerator.name
+              ? 'concepts'
+              : 'creations'
+          }
+        />
       </div>
 
       {CONFIG.DEV_TYPE === 'dummy' ? <TestGeneratorInterface /> : null}

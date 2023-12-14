@@ -412,6 +412,7 @@ export const getProducts = async (
       const priceToDisplay = defaultPrice || prices.data[0]
       return {
         ...product,
+        isSubscription: priceToDisplay.type === 'recurring',
         displayPrice: {
           currency: priceToDisplay.currency,
           unit_amount: priceToDisplay.unit_amount,
@@ -422,6 +423,7 @@ export const getProducts = async (
   )
 
   return reply.status(200).send({
-    products: productsWithPrices,
+    products: productsWithPrices.filter(product => !product.isSubscription),
+    subscriptions: productsWithPrices.filter(product => product.isSubscription),
   })
 }

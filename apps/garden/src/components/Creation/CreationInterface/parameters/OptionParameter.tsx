@@ -1,7 +1,7 @@
-import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Form, FormInstance, Select, Switch } from 'antd'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const OptionParameter = (props: {
   form: FormInstance
@@ -40,15 +40,13 @@ const OptionParameter = (props: {
   }, [props.parameter.default])
 
   return (
-    <>
+    <div className={`flex ${isVisible ? '' : 'hidden'}`}>
+      <ParameterAddon
+        title={props.parameter.label}
+        description={props.parameter.description}
+      />
       <Form.Item
-        label={
-          <ParameterLabel
-            text={props.parameter.label}
-            description={props.parameter.description}
-          />
-        }
-        className={`mb-1 ${isVisible ? '' : 'hidden'}`}
+        className="my-0 w-full"
         name={props.parameter.name}
         initialValue={props.parameter.default}
         rules={[
@@ -63,14 +61,13 @@ const OptionParameter = (props: {
         ) : (
           <Select
             value={value}
-            style={{ maxWidth: '50%' }}
             options={options}
             onChange={onChange}
-            className="flex ml-auto"
+            className="with-addon w-full"
           />
         )}
       </Form.Item>
-    </>
+    </div>
   )
 }
 

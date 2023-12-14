@@ -1,4 +1,4 @@
-import CreationDetail from '@/components/Creation/CreationDetail/CreationDetail'
+import Details from '@/components/Detail/Details'
 import { useCreation } from '@/hooks/useCreation'
 import { Creation } from '@edenlabs/eden-sdk'
 import React from 'react'
@@ -13,8 +13,9 @@ const CreationPage = ({ data }: { data: Creation }) => {
   }
 
   return (
-    <CreationDetail
-      creation={creationData || data}
+    <Details
+      itemType="creation"
+      item={creationData || data}
       // loadSimilar={true}
     />
   )

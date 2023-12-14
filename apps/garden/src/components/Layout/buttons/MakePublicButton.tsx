@@ -1,8 +1,10 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import { handleAxiosError } from '@/lib/fetcher'
+import { ItemType } from '@/providers/ModalProvider'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
-import { App } from 'antd'
+import { App, Tooltip } from 'antd'
 import axios from 'axios'
+import React from 'react'
 
 const MakePublicButton = ({
   itemId,
@@ -10,17 +12,24 @@ const MakePublicButton = ({
   variant,
   label,
   onChange,
+  isNsfw,
 }: {
   itemId: string
-  itemType: 'creation' | 'concept'
+  itemType: ItemType
   variant?: 'text'
   label?: string
   onChange?: (visibilityUpdate: { isPrivate: boolean }) => void
+  isNsfw?: boolean
 }) => {
   const { message } = App.useApp()
   // const [ isLoading, setIsLoading ] = useState(false)
 
   const onButtonClick = async () => {
+    if (isNsfw) {
+      message.warning(`Item is marked NSFW. Can not make it public.`)
+      return
+    }
+
     // setIsLoading(true)
     try {
       await axios.patch(`/api/${itemType}s/${itemId}`, {
@@ -38,14 +47,33 @@ const MakePublicButton = ({
 
   if (variant === 'text') {
     return (
-      <div
-        onClick={() => onButtonClick()}
-        className="flex items-center gap-2 w-full justify-between"
-        title={`Make ${itemType} public`}
-      >
-        <div>{label}</div>
-        <LockOpenIcon fontSize="small" />
-      </div>
+      <>
+        {isNsfw ? (
+          <Tooltip
+            // style={{ position: 'absolute', zIndex: 1051 }}
+            title="Creations flagged as NSFW can not be made public"
+            trigger={['click', 'hover']}
+          >
+            <div
+              onClick={() => onButtonClick()}
+              className="flex items-center gap-2 w-full justify-between"
+              title={`Make ${itemType} public`}
+            >
+              <div>{label}</div>
+              <LockOpenIcon fontSize="small" />
+            </div>
+          </Tooltip>
+        ) : (
+          <div
+            onClick={() => onButtonClick()}
+            className="flex items-center gap-2 w-full justify-between"
+            title={`Make ${itemType} public`}
+          >
+            <div>{label}</div>
+            <LockOpenIcon fontSize="small" />
+          </div>
+        )}
+      </>
     )
   }
 

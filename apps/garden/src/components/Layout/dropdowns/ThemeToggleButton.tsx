@@ -1,10 +1,11 @@
+import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { Space, Switch } from 'antd'
 import { useTheme } from 'next-themes'
 import { UseThemeProps } from 'next-themes/dist/types'
 import React, { useCallback, useEffect, useState } from 'react'
 
 const toggleTheme = (theme: UseThemeProps['theme']): 'light' | 'dark' => {
-  return theme === 'dark' ? 'light' : 'dark'
+  return theme === 'light' ? 'light' : 'dark'
 }
 
 const ThemeToggleButton = () => {
@@ -32,9 +33,10 @@ const ThemeToggleButton = () => {
     <Space
       onClick={handleThemeToggleClick}
       className="justify-between w-full p-2"
+      data-testid="theme-toggle-button"
     >
       <div className="flex">
-        <div>☾ </div>
+        <DarkModeIcon fontSize="small" />
         <div className="font-mono ml-2 text-black dark:text-white">
           Dark Mode
         </div>

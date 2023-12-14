@@ -1,7 +1,9 @@
+import { TaskAttributes } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
+import { CharacterDocument } from './Character'
 import { ConceptDocument } from './Concept'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
@@ -16,6 +18,7 @@ export enum TaskStatus {
 
 export interface TaskSchema {
   user: UserDocument
+  character?: CharacterDocument
   generator: GeneratorDocument
   versionId: string
   config: Record<string, any>
@@ -30,16 +33,19 @@ export interface TaskSchema {
   output?: any
   samples?: CreationDocument[]
   intermediateOutputs?: any[]
+  attributes?: TaskAttributes
   createdAt?: Date
   updatedAt?: Date
 }
 
 export interface TaskInput {
   creator: ObjectId
+  character?: ObjectId
   generator: ObjectId
   version: ObjectId
-  const: number
+  cost: number
   config?: Record<string, any>
+  attributes?: Record<string, any>
   webhooks?: string[]
 }
 
@@ -50,6 +56,10 @@ const task = new Schema<TaskDocument>(
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users',
+    },
+    character: {
+      type: Schema.Types.ObjectId,
+      ref: 'characters',
     },
     generator: {
       type: Schema.Types.ObjectId,
@@ -115,6 +125,9 @@ const task = new Schema<TaskDocument>(
     intermediateOutputs: {
       type: [Schema.Types.Mixed],
       default: [],
+    },
+    attributes: {
+      type: Schema.Types.Mixed,
     },
   },
   {

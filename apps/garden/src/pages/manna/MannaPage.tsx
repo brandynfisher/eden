@@ -15,7 +15,7 @@ const ProductsList = dynamic(
 
 const MannaPage = () => {
   const { message } = App.useApp()
-  const { mannaBalance } = useContext(UserContext)
+  const { mannaBalance, isAuthenticated } = useContext(UserContext)
 
   const handleCheckout = async (priceId: string, paymentMode: string) => {
     try {
@@ -38,9 +38,9 @@ const MannaPage = () => {
             You currently have <span className="font-bold">{mannaBalance}</span>{' '}
             Manna
           </>
-        ) : (
+        ) : isAuthenticated ? (
           <LoadingIndicator />
-        )}
+        ) : null}
       </div>
       <div className="mb-4">
         <ProductsList checkoutHandler={handleCheckout} />

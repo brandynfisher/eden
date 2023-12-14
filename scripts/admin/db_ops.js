@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { MongoClient, ObjectId } from 'mongodb';
 import fs from 'fs';
+import { exec } from 'child_process';
 
 const env = process.argv[2];
 dotenv.config({ path: `../.env.${env}` });
@@ -12,18 +13,6 @@ if (!MONGO_URI) {
 if (!MONGO_DB_NAME) {
   throw new Error('MONGO_DB_NAME environment variable is missing');
 }
-
-const changeStuff = async (db) => {
-  const usersCollection = await db.collection('users');
-  //const cursor = usersCollection.find({username: {$in: ["gene", "xander"]}});
-  const cursor = usersCollection.find({isClerk: true});
-  const users = await cursor.toArray();
-
-  for (const user of users) {
-    const userId = user.userId;
-    await usersCollection.updateOne({ _id: user._id }, { $set: { username: userId } });
-  }
-};
 
 const addToFeatureFlags = async (db) => {
   const usernames = ["gene", "xander"]
@@ -38,10 +27,9 @@ const addToFeatureFlags = async (db) => {
 
 const iterateThroughCreations = async (db, db_backup) => {
   const batchSize = 1000;
-  let d = 0;
-  const collection = await db.collection('tasks');
-  const concepts = await db.collection('concepts');
-  const cursor = collection.find({"config.lora": {$in: ["(none)", "none"]}}).sort({ createdAt: -1 }).allowDiskUse(true).batchSize(batchSize);
+  const creations = await db.collection('creations');
+
+  const cursor = creations.find().sort({ createdAt: -1 }).limit(20).allowDiskUse(true).batchSize(batchSize);
 
   while (await cursor.hasNext()) {
     const docsBatch = [];
@@ -53,12 +41,100 @@ const iterateThroughCreations = async (db, db_backup) => {
         break;
       }
     }
-
+  
     await Promise.all(docsBatch.map(async (doc) => {
-      const docId = doc._id;      
+      // const uri = doc.uri;  
+      
     }));
   }
+
 };
+
+const updateConceptAndGenerator = async (db, db_backup) => {
+  const batchSize = 1000;
+  const creations = await db.collection('creations');
+  const tasks = await db.collection('tasks');
+
+  const cursor = creations.find().sort({ createdAt: -1 }).allowDiskUse(true).batchSize(batchSize);
+
+  while (await cursor.hasNext()) {
+    const docsBatch = [];
+    for (let i = 0; i < batchSize; i++) {
+      const doc = await cursor.next();
+      if(doc) {
+        docsBatch.push(doc);
+      } else {
+        break;
+      }
+    }
+  
+    await Promise.all(docsBatch.map(async (doc) => {
+      const task = await tasks.findOne({_id: new ObjectId(doc.task)});
+      const config = task.config;
+      
+      const generator = task.generator ? new ObjectId(task.generator) : null;
+      const lora = config.lora ? new ObjectId(config.lora) : null;
+
+      await creations.updateOne({ _id: doc._id }, { $set: { concept: lora, generator: generator } });
+
+      }
+    ));
+  }
+};
+
+
+const updateCreationCounts = async (db, db_backup) => {
+  const batchSize = 1000;
+  const creations = await db.collection('creations');
+  const concepts = await db.collection('concepts');
+
+  const cursor = concepts.find().sort({ createdAt: -1 }).allowDiskUse(true).batchSize(batchSize);
+
+  while (await cursor.hasNext()) {
+    const docsBatch = [];
+    for (let i = 0; i < batchSize; i++) {
+      const doc = await cursor.next();
+      if(doc) {
+        docsBatch.push(doc);
+      } else {
+        break;
+      }
+    }
+  
+    await Promise.all(docsBatch.map(async (doc) => {
+      console.log("THE CONCEPT", doc._id, doc.name)
+      const conceptCreations = await creations.find({concept: doc._id});
+      const count = await conceptCreations.count();
+      console.log("count is", count);
+      await concepts.updateOne({ _id: doc._id }, { $set: { creationCount: count } });
+      }
+    ));
+  }
+};
+
+const resetTasks = async (db, db_backup) => {
+  const tasks = await db.collection('tasks');
+  const mannas = await db.collection('mannas');
+
+  const twoHoursAgo = new Date(new Date().getTime() - 2 * 60 * 60 * 1000);
+
+  const cursor = tasks.find({
+    status: "running",
+    createdAt: { $lt: twoHoursAgo }
+  }).sort({ createdAt: -1 });
+
+  while (await cursor.hasNext()) {
+    const doc = await cursor.next();
+    if (doc.output?.isFinal && doc.creation) {
+      await tasks.updateOne({ _id: doc._id }, { $set: { status: "completed", progress: 1 } });
+    }
+    else {
+      const manna = await mannas.findOne({user: doc.user})
+      await mannas.updateOne({ _id: manna._id }, { $inc: { balance: doc.cost } });
+      await tasks.updateOne({ _id: doc._id }, { $set: { status: "failed", error: "Task timed out" } });
+    }
+  }
+}
 
 async function main() {
   const client = new MongoClient(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -66,7 +142,9 @@ async function main() {
     await client.connect();
     console.log(`Connected successfully to ${MONGO_URI}`);
     const db = await client.db(MONGO_DB_NAME);
-    await iterateThroughCreations(db);
+    // await resetTasks(db);
+    await updateCreationCounts(db);
+    // await updateConceptAndGenerator(db);
   } catch (err) {
     console.error('Failed to connect to the server:', err);
     throw err;

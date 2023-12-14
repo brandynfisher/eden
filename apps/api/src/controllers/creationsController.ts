@@ -105,7 +105,8 @@ export const listCreations = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, limit, page, sort } = request.query as CreationsListArguments
+  const { userId, name, limit, page, sort } =
+    request.query as CreationsListArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId,
@@ -115,21 +116,35 @@ export const listCreations = async (
   const creations = await creationRepository.query(
     {
       user:
-        creators.docs.length > 0
+        userId && creators.docs
           ? creators.docs.map(creator => creator._id)
           : undefined,
+      ...(name ? { $text: { $search: name } } : {}),
     },
     {
       limit,
       page,
       sort,
     },
-    {
-      'embedding.embedding': 0,
-    },
   )
 
-  return reply.status(200).send(creations)
+  const creationsWithPublicName = await Promise.all(
+    creations.docs.map(async doc => {
+      const user = await User.findById(doc.user._id)
+      const publicName = `${user?.username}:${doc.name}`
+      return {
+        ...doc.toObject(),
+        publicName,
+      }
+    }),
+  )
+
+  const response = {
+    ...creations,
+    docs: creationsWithPublicName,
+  }
+
+  return reply.status(200).send(response)
 }
 
 export const getCreation = async (
@@ -137,10 +152,12 @@ export const getCreation = async (
   reply: FastifyReply,
 ) => {
   const { creationId } = request.params as CreationsGetArguments
-
-  const creation = (await Creation.findById(creationId, {
-    'embedding.embedding': 0,
-  })
+  const creation = (await Creation.findOneWithDeleted(
+    { _id: creationId },
+    {
+      'embedding.embedding': 0,
+    },
+  )
     .populate({
       path: 'task',
       select: 'config status generator',
@@ -148,13 +165,19 @@ export const getCreation = async (
     })
     .populate({
       path: 'user',
-      select: 'userId username userImage',
+      select: '_id userId username userImage',
     })) as CreationDocument & {
     reactions?: Map<ReactionType, boolean>
     bookmarked?: boolean
   }
 
-  if (!creation) {
+  // nothing found or it was deleted and the user is not the owner
+  if (
+    !creation ||
+    (request.user?.userId &&
+      creation.deleted &&
+      creation.user._id.toString() !== request.user?.userId.toString())
+  ) {
     return reply.status(404).send({
       message: 'Creation not found',
     })
@@ -182,8 +205,6 @@ export const getCreation = async (
     const userRating = await getRating(uid, creation._id)
     const reactionsMap = await getReactions(uid, [creation])
     const bookmarksMap = await getBookmarks(uid, [creation])
-    console.log(reactionsMap)
-    console.log(bookmarksMap)
 
     // creation.reactions = reactionsMap[creation._id.toString()]
     // creation.bookmarked = bookmarksMap[creation._id.toString()]
@@ -321,25 +342,37 @@ export const creationUpdate = async (
     })
   }
 
-  const creation = await Creation.findOneAndUpdateWithDeleted(
-    {
-      _id: creationId,
-      user: userId,
-    },
-    {
-      isPrivate,
-      deleted,
-    },
-    {
-      new: true,
-    },
-  )
+  const creation = await Creation.findOneWithDeleted({
+    _id: creationId,
+    user: userId,
+  })
 
   if (!creation) {
     return reply.status(404).send({
       message: 'Creation not found',
     })
   }
+
+  if (
+    typeof isPrivate !== 'undefined' &&
+    !isPrivate &&
+    creation.attributes &&
+    creation.attributes.nsfw_score &&
+    creation.attributes.nsfw_score > 0.5
+  ) {
+    return reply.status(403).send({
+      message: 'Creation has NSFW flag and can not be made public.',
+    })
+  }
+
+  if (typeof isPrivate !== 'undefined') {
+    creation.isPrivate = isPrivate
+  }
+  if (typeof deleted !== 'undefined') {
+    creation.deleted = !!deleted
+  }
+
+  creation.save()
 
   return reply.status(200).send({
     creation,

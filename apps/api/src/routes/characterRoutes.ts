@@ -9,7 +9,8 @@ import {
   listCharacters,
   updateCharacter,
 } from '../controllers/characterController'
-import { isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { createTask } from '../controllers/taskController'
+import { isAuth, isCharacter, maybeAuth } from '../middleware/authMiddleware'
 
 const characterRoutes: FastifyPluginAsync = async server => {
   server.post('/characters', {
@@ -27,6 +28,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
               message: Type.String(),
             }),
           ),
+        ),
+        concept: Type.Optional(Type.String()),
+        logosData: Type.Optional(
+          Type.Object({
+            documentation: Type.Optional(Type.String()),
+            documentationPrompt: Type.Optional(Type.String()),
+            creatorPrompt: Type.Optional(Type.String()),
+            routerPrompt: Type.Optional(Type.String()),
+          }),
         ),
         isPrivate: Type.Optional(Type.Boolean()),
       }),
@@ -60,6 +70,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
+        concept: Type.Optional(Type.String()),
+        logosData: Type.Optional(
+          Type.Object({
+            documentation: Type.Optional(Type.String()),
+            documentationPrompt: Type.Optional(Type.String()),
+            creatorPrompt: Type.Optional(Type.String()),
+            routerPrompt: Type.Optional(Type.String()),
+          }),
+        ),
         isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {
@@ -92,12 +111,13 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           character: Type.Object({
             id: Type.String(),
-            user: Type.String(),
+            user: Type.Any(),
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
             voice: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
+            creationCount: Type.Optional(Type.Number()),
             greeting: Type.Optional(Type.String()),
             dialogue: Type.Optional(
               Type.Array(
@@ -106,6 +126,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
                   message: Type.String(),
                 }),
               ),
+            ),
+            concept: Type.Optional(Type.String()),
+            logosData: Type.Optional(
+              Type.Object({
+                documentation: Type.Optional(Type.String()),
+                documentationPrompt: Type.Optional(Type.String()),
+                creatorPrompt: Type.Optional(Type.String()),
+                routerPrompt: Type.Optional(Type.String()),
+              }),
             ),
             isPrivate: Type.Optional(Type.Boolean()),
           }),
@@ -130,12 +159,13 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             id: Type.String(),
-            user: Type.String(),
+            user: Type.Any(),
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
             voice: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
+            creationCount: Type.Optional(Type.Number()),
             greeting: Type.Optional(Type.String()),
             dialogue: Type.Optional(
               Type.Array(
@@ -145,6 +175,15 @@ const characterRoutes: FastifyPluginAsync = async server => {
                 }),
               ),
             ),
+            concept: Type.Optional(Type.String()),
+            logosData: Type.Optional(
+              Type.Object({
+                documentation: Type.Optional(Type.String()),
+                documentationPrompt: Type.Optional(Type.String()),
+                creatorPrompt: Type.Optional(Type.String()),
+                routerPrompt: Type.Optional(Type.String()),
+              }),
+            ),
             isPrivate: Type.Optional(Type.Boolean()),
           }),
         ),
@@ -152,6 +191,30 @@ const characterRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => listCharacters(request, reply),
+  })
+
+  server.post('/characters/tasks/create', {
+    schema: {
+      body: {
+        generatorName: Type.String(),
+        versionId: Type.Optional(Type.String()),
+        config: Type.Optional(Type.Any()),
+        webhooks: Type.Optional(Type.Array(Type.String())),
+        attributes: Type.Optional(
+          Type.Object({
+            discordId: Type.Optional(Type.String()),
+            delegateUserId: Type.Optional(Type.String()),
+          }),
+        ),
+      },
+      response: {
+        200: Type.Object({
+          taskId: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isCharacter(server, request, reply)],
+    handler: (request, reply) => createTask(server, request, reply),
   })
 }
 

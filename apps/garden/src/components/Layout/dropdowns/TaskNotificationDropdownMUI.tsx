@@ -127,6 +127,7 @@ const CompletedTaskMenuItem = ({
               src={task.creation?.thumbnail}
               alt={task._id}
               aspectRatio={task.creation?.mediaAttributes.aspectRatio}
+              className="max-w-full"
             />
           </div>
           <div className="flex items-center justify-between min-w-0 w-full gap-2">
@@ -147,14 +148,12 @@ const CompletedTaskMenuItem = ({
               type="text"
               title="Dismiss"
               className="relative px-2 right-[-8px]"
+              onClick={e => {
+                e.stopPropagation()
+                handleDismiss(task._id)
+              }}
             >
-              <CloseOutlined
-                className="ml-auto cursor-pointer"
-                onClick={e => {
-                  e.stopPropagation()
-                  handleDismiss(task._id)
-                }}
-              />
+              <CloseOutlined className="ml-auto cursor-pointer" />
             </Button>
           </div>
         </div>
@@ -232,6 +231,7 @@ const TaskNotificationDropdownMUI = () => {
     setCompletedTasks,
     failedTasks,
     setFailedTasks,
+    addDismissedTaskIds,
   } = useContext(CreationNotificationContext)
 
   const handleDismiss = async (
@@ -242,6 +242,7 @@ const TaskNotificationDropdownMUI = () => {
     if (!items || !setter) return
     const newTasks = items.filter(t => t._id !== taskId)
     setter(newTasks)
+    addDismissedTaskIds([taskId])
   }
 
   const handleDismissAll = async (
@@ -250,6 +251,7 @@ const TaskNotificationDropdownMUI = () => {
   ) => {
     if (!items || !setter) return
     setter([])
+    addDismissedTaskIds(items.map(item => item._id))
   }
 
   const pendingTaskItems: MenuDropdownItem[] = pendingTasks

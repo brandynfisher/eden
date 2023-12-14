@@ -5,22 +5,33 @@ import {
   CharactersListArguments,
   CharactersUpdateArguments,
 } from '@edenlabs/eden-sdk'
-import { booleanObjectType } from 'aws-sdk/clients/iam'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'
+import ApiKeyRepository from '../repositories/ApiKeyRepository'
 import CharacterRepository from '../repositories/CharacterRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
+import { generateApiKey } from './apiKeyController'
 
 export const createCharacter = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { name, image, voice, description, greeting, dialogue, isPrivate } =
-    request.body as CharactersCreateArguments
+  const {
+    name,
+    image,
+    voice,
+    description,
+    greeting,
+    dialogue,
+    concept,
+    logosData,
+    isPrivate,
+  } = request.body as CharactersCreateArguments
 
   const input: {
     user: ObjectId
@@ -30,6 +41,8 @@ export const createCharacter = async (
     description: string | undefined
     greeting: string | undefined
     dialogue: any[] | undefined
+    concept: string | undefined
+    logosData: any | undefined
     isPrivate?: boolean
   } = {
     user: userId,
@@ -39,11 +52,25 @@ export const createCharacter = async (
     description,
     greeting,
     dialogue,
+    concept,
+    logosData,
     isPrivate,
   }
 
   const characterRepository = new CharacterRepository(Character)
   const character = await characterRepository.create(input)
+
+  // Create API Key for character
+  const { apiKey, apiSecret } = generateApiKey()
+  const apiKeyInput = {
+    user: userId,
+    character: character._id,
+    apiKey,
+    apiSecret,
+  }
+
+  const apiKeyRepository = new ApiKeyRepository(ApiKey)
+  await apiKeyRepository.create(apiKeyInput)
 
   return reply.status(200).send({
     characterId: character._id,
@@ -64,8 +91,17 @@ export const updateCharacter = async (
     })
   }
 
-  const { name, image, voice, description, greeting, dialogue, isPrivate } =
-    request.body as CharactersUpdateArguments
+  const {
+    name,
+    image,
+    voice,
+    description,
+    greeting,
+    dialogue,
+    concept,
+    logosData,
+    isPrivate,
+  } = request.body as CharactersUpdateArguments
 
   const character = await Character.findOne({
     _id: characterId,
@@ -85,6 +121,8 @@ export const updateCharacter = async (
     description: string | undefined
     greeting: string | undefined
     dialogue: any[] | undefined
+    concept: string | undefined
+    logosData: any | undefined
     isPrivate?: boolean
   } = {
     name,
@@ -93,6 +131,8 @@ export const updateCharacter = async (
     description,
     greeting,
     dialogue,
+    concept,
+    logosData,
     isPrivate,
   }
 
@@ -148,11 +188,17 @@ export const listCharacters = async (
       sort,
     },
   )
+
+  await characterRepository.model.populate(characterPaginatedResponse.docs, {
+    path: 'user',
+    select: 'userId username userImage',
+  })
+
   const response = {
     ...characterPaginatedResponse,
     docs: characterPaginatedResponse.docs.map(character => ({
       id: character._id.toString(),
-      user: character.user.toString(),
+      user: character.user,
       name: character.name,
       slug: character.slug,
       image: character.image,
@@ -160,6 +206,8 @@ export const listCharacters = async (
       description: character.description,
       greeting: character.greeting,
       dialogue: character.dialogue,
+      concept: character.concept,
+      creationCount: character.creationCount,
       isPrivate: character.isPrivate,
     })),
   }
@@ -198,6 +246,9 @@ export const getCharacter = async (
     description: character.description,
     greeting: character.greeting,
     dialogue: character.dialogue,
+    concept: character.concept,
+    logosData: character.logosData,
+    creationCount: character.creationCount,
     isPrivate: character.isPrivate,
   }
 

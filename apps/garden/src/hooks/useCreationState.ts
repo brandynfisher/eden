@@ -105,8 +105,9 @@ import { fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
+import { useLocalStorage } from '@mantine/hooks'
 import { App } from 'antd'
-import { useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 
 export const useCreationState = () => {
@@ -116,16 +117,41 @@ export const useCreationState = () => {
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
   const [pendingTasks, setPendingTasks] = useState<Task[]>()
+
+  const [dismissedTaskIds, setDismissedTaskIds] = useLocalStorage<string[]>({
+    key: 'tasks::dismissed',
+    defaultValue: [],
+  })
+
+  const addDismissedTaskIds = (taskIds: string[]) => {
+    setDismissedTaskIds(prev => [
+      ...prev.slice(-100),
+      ...taskIds.filter(taskId => !prev.includes(taskId)),
+    ])
+  }
+
   const { data: tasksData, mutate: refetchTasks } = useSWR(
     `/api/tasks/list?status=running,starting,pending,completed,failed`,
     fetcher,
     { refreshInterval: 5000 },
   )
+  const tasks = tasksData?.tasks as Task[]
+
   const { mutate: mutateGlobal } = useSWRConfig()
   const { userId } = useContext(UserContext)
   const [notificationCutOffDate, setNotificationCutOffDate] =
     useState<number>(0)
-  const tasks = tasksData?.tasks as Task[]
+
+  useEffect(() => {
+    if (dismissedTaskIds && dismissedTaskIds.length) {
+      setCompletedTasks(prev =>
+        prev.filter(item => !dismissedTaskIds.includes(item._id)),
+      )
+      setFailedTasks(prev =>
+        prev.filter(item => !dismissedTaskIds.includes(item._id)),
+      )
+    }
+  }, [dismissedTaskIds])
 
   useEffect(() => {
     setNotificationCutOffDate(Date.now())
@@ -145,56 +171,103 @@ export const useCreationState = () => {
 
       const completed = tasks?.filter(task => task.status === 'completed')
       setCompletedTasks(prevState => {
-        if (completed.length > prevState.length) {
+        if (completed.length !== prevState.length) {
           // probably got a new finished task, trigger mutate on own profile (first page) to force a refresh
           const ownCreatorFeedPageRoute = getFeedPageRoute(
-            'creations',
+            'creation',
             { userId: userId || '' },
             25,
             1,
             OrderByLatest,
           )
           mutateGlobal(ownCreatorFeedPageRoute, undefined)
+          notify(
+            completed.filter(
+              item =>
+                !dismissedTaskIds.includes(item._id) &&
+                prevState.filter(prevItem => prevItem._id !== item._id).length,
+            ),
+          )
         }
 
-        return completed
+        return completed.filter(item => !dismissedTaskIds.includes(item._id))
       })
 
-      setFailedTasks(tasks?.filter(task => task.status === 'failed'))
+      const failed = tasks?.filter(
+        task =>
+          task.status === 'failed' && !dismissedTaskIds.includes(task._id),
+      )
+      setFailedTasks(failed)
     }
   }, [mutateGlobal, tasks, userId])
 
-  useEffect(() => {
-    // Cleanup function to remove completed tasks from taskIds
-    const notify = async () => {
-      if (tasks && tasks.length) {
-        // only show notifications for tasks that finished after the page was loaded
-        const isExpired =
-          new Date(tasks[0].updatedAt).getTime() - notificationCutOffDate <
-          10000
+  const notify = useCallback(
+    async (items: Task[]) => {
+      if (items && items.length) {
+        items.map(item => {
+          // only show notifications for tasks that finished after the page was loaded
+          const isExpired =
+            new Date(item.updatedAt).getTime() - notificationCutOffDate < 0
 
-        if (isExpired) {
-          return
-        }
+          if (isExpired) {
+            return
+          }
 
-        if (tasks[0].status === 'completed') {
-          message.destroy()
-          message.success(
-            `Task ${truncatedAddress(tasks[0].taskId)} completed successfully!`,
-          )
-        }
+          if (item.status === 'completed') {
+            message.destroy()
+            message.success(
+              `Task ${truncatedAddress(item.taskId)} completed successfully!`,
+            )
+          }
 
-        if (tasks[0].status === 'failed') {
-          message.destroy()
-          message.error(
-            `An error occured for Task ${truncatedAddress(tasks[0].taskId)}.`,
-          )
-        }
+          if (item.status === 'failed') {
+            message.destroy()
+            message.error(
+              `An error occured for Task ${truncatedAddress(item.taskId)}.`,
+            )
+          }
+        })
       }
-    }
+      setNotificationCutOffDate(Date.now())
+    },
+    [notificationCutOffDate],
+  )
 
-    notify()
-  }, [tasks, completedTasks])
+  // useEffect(() => {
+  //   // Cleanup function to remove completed tasks from taskIds
+  //   const notify = async () => {
+  //     if (notifications && notifications.length) {
+  //       // only show notifications for tasks that finished after the page was loaded
+  //       const isExpired =
+  //         new Date(notifications[notifications.length - 1].updatedAt).getTime() - notificationCutOffDate <
+  //         10000
+  //
+  //       if (isExpired) {
+  //         return
+  //       }
+  //       //
+  //       // if (dismissedTaskIds.includes(tasks[0]._id)) {
+  //       //   return
+  //       // }
+  //
+  //       if (notifications[notifications.length].status === 'completed') {
+  //         message.destroy()
+  //         message.success(
+  //           `Task ${truncatedAddress(tasks[0].taskId)} completed successfully!`,
+  //         )
+  //       }
+  //
+  //       if (tasks[0].status === 'failed') {
+  //         message.destroy()
+  //         message.error(
+  //           `An error occured for Task ${truncatedAddress(tasks[0].taskId)}.`,
+  //         )
+  //       }
+  //     }
+  //   }
+  //
+  //   notify()
+  // }, [notificationCutOffDate, notifications])
 
   return {
     tasks,
@@ -203,6 +276,8 @@ export const useCreationState = () => {
     setCompletedTasks,
     failedTasks,
     setFailedTasks,
+    dismissedTaskIds,
+    addDismissedTaskIds,
     activeTaskId,
     setActiveTaskId,
     hasChangedGenerator,
