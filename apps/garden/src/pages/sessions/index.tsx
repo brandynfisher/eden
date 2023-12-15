@@ -2,11 +2,11 @@ import { getAuthHeaders, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
-import ChatScenarioPage from '@/pages/characters/chat/ChatScenarioPage'
+import ChatScenarioPage from '@/pages/sessions/ChatScenarioPage'
 import { Character, Session } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
 
-import { Page } from '../../../../types/page'
+import { Page } from '../../../types/page'
 
 interface PageProps {
   data: {
