@@ -5,6 +5,7 @@ import {
   SessionsCreateArguments,
   SessionsDeleteArguments,
   SessionsGetArguments,
+  SessionsInteractArguments,
   SessionsListArguments,
   SessionsUpdateArguments,
 } from '@edenlabs/eden-sdk'
@@ -199,19 +200,13 @@ export const getSessionEvents = async (
   return reply.status(200).send(response)
 }
 
-export interface SessionInteractArguments {
-  userId: string
-  sessionId: string
-  interaction: InteractionEvent
-}
-
 export const interactSession = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, sessionId, interaction } =
-    request.body as SessionInteractArguments
+  const { sessionId, assistant, interaction } =
+    request.body as SessionsInteractArguments
 
   const session = await Session.findById(sessionId)
   if (!session) {
@@ -222,10 +217,14 @@ export const interactSession = async (
 
   // TODO: Check if user is allowed to interact with session
 
-  const { type, data } = await server.handleInteraction(server, interaction)
+  const { message, config } = await server.handleInteraction(
+    server,
+    assistant,
+    interaction,
+  )
 
   reply.status(200).send({
-    type,
-    data,
+    message,
+    config,
   })
 }

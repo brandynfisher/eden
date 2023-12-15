@@ -1,17 +1,12 @@
-import { InteractionEvent, SessionEventType } from '@edenlabs/eden-sdk'
+import { Assistant, Interaction } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 
 import { dummyTaskHandlers } from '../lib/taskHandlers/dummy'
 import { GeneratorDocument, GeneratorVersionSchema } from '../models/Generator'
 
 export interface LogosResponse {
-  type: SessionEventType
-  data: {
-    message?: string
-    creations?: {
-      uri: string
-    }[]
-  }
+  message: string
+  config?: any
 }
 
 export interface TaskHandlers {
@@ -28,10 +23,6 @@ export interface TaskHandlers {
     generatorVersion: GeneratorVersionSchema,
     config: any,
   ) => number
-  handleInteraction: (
-    server: FastifyInstance,
-    interaction: InteractionEvent,
-  ) => Promise<LogosResponse>
 }
 
 export const registerTaskHandlers = (
@@ -42,7 +33,6 @@ export const registerTaskHandlers = (
   server.decorate('submitTask', handlers.submitTask)
   server.decorate('receiveTaskUpdate', handlers.receiveTaskUpdate)
   server.decorate('getTransactionCost', handlers.getTransactionCost)
-  server.decorate('handleInteraction', handlers.handleInteraction)
 }
 
 declare module 'fastify' {
@@ -62,7 +52,8 @@ declare module 'fastify' {
     ) => number
     handleInteraction: (
       server: FastifyInstance,
-      interaction: InteractionEvent,
+      assistant: Assistant,
+      interaction: Interaction,
     ) => Promise<LogosResponse>
   }
 }

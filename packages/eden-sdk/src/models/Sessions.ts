@@ -1,4 +1,5 @@
 import { AxiosRequestConfig } from 'axios'
+import { LogosData } from 'src/models/Characters'
 import { ScenarioType } from 'src/models/Scenarios'
 
 import {
@@ -42,8 +43,8 @@ export interface SessionEventsListArguments
 
 export interface SessionsInteractArguments extends WebAPICallOptions {
   sessionId: string
-  userId: string
-  interaction: InteractionEvent
+  assistant: LogosData
+  interaction: Interaction
 }
 
 // Requests
@@ -155,13 +156,8 @@ export type SessionsGetResponse = WebAPICallResult & {
 
 export type SessionsInteractResponse = WebAPICallResult & {
   error?: string
-  type?: string
-  data?: {
-    message?: string
-    creations?: {
-      uri: string
-    }[]
-  }
+  message?: string
+  config?: any
 }
 
 export type SessionEventsListResponse = WebAPICallResult &
@@ -202,6 +198,20 @@ export interface InteractionEvent {
   message: string
   context?: ChatMessage[]
   addressedCharacters?: string[]
+}
+
+export interface Interaction {
+  prompt: string
+  author_id: string
+  attachments?: string[]
+}
+
+export interface Assistant {
+  character_description: string
+  creator_prompt: string
+  documentation_prompt: string
+  router_prompt: string
+  documentation: string
 }
 
 export interface ChatResponseEvent {

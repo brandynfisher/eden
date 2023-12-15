@@ -50,6 +50,7 @@ const ConfigSchema = Type.Strict(
     AIRFLOW_BASE_URL: Type.Optional(Type.String()),
     DISCORD_CLIENT_ID: Type.Optional(Type.String()),
     DISCORD_CLIENT_SECRET: Type.Optional(Type.String()),
+    LOGOS_URL: Type.Optional(Type.String()),
   }),
 )
 

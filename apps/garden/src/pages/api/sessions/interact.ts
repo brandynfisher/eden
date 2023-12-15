@@ -5,12 +5,16 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { sessionId, userId, interaction } =
+  const { sessionId, assistant, interaction } =
     req.body as SessionsInteractArguments
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
   }
+
+  console.log('sessionId', sessionId)
+  console.log('assistant', assistant)
+  console.log('interaction', interaction)
 
   try {
     const eden = new EdenClient({
@@ -20,12 +24,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     })
     const response = await eden.sessions.interact({
       sessionId,
-      userId,
+      assistant,
       interaction,
     })
     return res.status(200).json({
-      type: response.type,
-      data: response.data,
+      message: response.message,
+      config: response.config,
     })
   } catch (error) {
     console.error(error)

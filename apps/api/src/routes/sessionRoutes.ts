@@ -63,25 +63,24 @@ const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/interact', {
     schema: {
       body: Type.Object({
-        userId: Type.String(),
         sessionId: Type.String(),
+        assistant: Type.Object({
+          character_description: Type.String(),
+          documentation_prompt: Type.String(),
+          documentation: Type.String(),
+          router_prompt: Type.String(),
+          creator_prompt: Type.String(),
+        }),
         interaction: Type.Object({
-          message: Type.String(),
-          context: Type.Optional(
-            Type.Array(
-              Type.Object({
-                key: Type.String(),
-                value: Type.String(),
-              }),
-            ),
-          ),
-          addressedCharacterIds: Type.Optional(Type.Array(Type.String())),
+          prompt: Type.String(),
+          author_id: Type.String(),
+          attachments: Type.Optional(Type.Array(Type.String())),
         }),
       }),
       response: {
         200: Type.Object({
-          type: Type.Enum(SessionEventType),
-          data: Type.Any(),
+          message: Type.String(),
+          config: Type.Optional(Type.Any()),
         }),
       },
     },
@@ -103,7 +102,6 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             id: Type.String(),
-            type: Type.String(),
           }),
         ),
       },

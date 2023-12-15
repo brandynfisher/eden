@@ -94,15 +94,24 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
+      console.log('activeCharacter', activeCharacter)
       const res = await axios.post(`/api/sessions/interact`, {
         sessionId,
-        userId,
+        assistant: {
+          character_description: activeCharacter.description,
+          documentation_prompt: activeCharacter.logosData?.documentationPrompt,
+          router_prompt: activeCharacter.logosData?.routerPrompt,
+          creator_prompt: activeCharacter.logosData?.creatorPrompt,
+          documentation: activeCharacter.logosData?.documentation,
+        },
         interaction: {
-          message: text,
+          prompt: text,
+          author_id: creator?.userId,
+          attachments: [],
         },
       })
-      const { data } = res.data as SessionsInteractResponse
-      const completion = data?.message
+      const { message } = res.data as SessionsInteractResponse
+      const completion = message
       if (!completion) {
         throw new Error('No completion returned from GPT-3')
       }
@@ -112,7 +121,8 @@ const ChatScenarioUI = ({
           message: creator?.username
             ? compileMessage(completion, messageMarkers)
             : completion.trim(),
-          uris: data?.creations?.map(creation => creation.uri),
+          // uris: data?.creations?.map(creation => creation.uri),
+          uris: [],
           speaker: 'bot',
           date: new Date(),
         },
