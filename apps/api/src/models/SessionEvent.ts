@@ -6,11 +6,11 @@ import paginate from 'mongoose-paginate-v2'
 import { CharacterDocument } from './Character'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
-import { ScenarioDocument } from './Scenario'
+import { SessionDocument } from './Session'
 import { TaskDocument } from './Task'
 
 export interface SessionEventSchema {
-  session: ScenarioDocument
+  session: SessionDocument
   type: SessionEventType
   data: {
     character_add?: {

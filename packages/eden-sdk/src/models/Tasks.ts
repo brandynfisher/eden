@@ -20,16 +20,6 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   attributes?: TaskAttributes
 }
 
-export interface TasksCompleteArguments extends WebAPICallOptions {
-  prompt: string
-  config?: any
-}
-
-export interface TasksChatCompleteArguments extends WebAPICallOptions {
-  chat: any[]
-  config?: any
-}
-
 export interface TasksListArguments extends WebAPICallOptions, ListQueryParams {
   status?: string | string[]
   taskId?: string | string[]
@@ -66,30 +56,6 @@ export const tasksCostRequestConfig = (
   }
 }
 
-export const tasksCompleteRequestConfig = (
-  args: TasksCompleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'tasks/complete',
-    data: {
-      ...args,
-    },
-  }
-}
-
-export const tasksChatCompleteRequestConfig = (
-  args: TasksChatCompleteArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'tasks/chat',
-    data: {
-      ...args,
-    },
-  }
-}
-
 export const tasksListRequestConfig = (
   args: TasksListArguments,
 ): AxiosRequestConfig => {
@@ -115,11 +81,6 @@ export const tasksGetRequestConfig = (
 export type TasksCreateResponse = WebAPICallResult & {
   error?: string
   taskId?: string
-}
-
-export type TasksCompleteResponse = WebAPICallResult & {
-  error?: string
-  completion?: Completion
 }
 
 export type TasksListResponse = WebAPICallResult &
@@ -155,11 +116,6 @@ export type Task = {
   attributes?: TaskAttributes
   createdAt: string
   updatedAt: string
-}
-
-export type Completion = {
-  id: string
-  text: string
 }
 
 export interface TaskAttributes {

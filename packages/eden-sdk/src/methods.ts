@@ -114,9 +114,6 @@ import {
   SessionsInteractResponse,
   SessionsListArguments,
   SessionsListResponse,
-  TasksChatCompleteArguments,
-  TasksCompleteArguments,
-  TasksCompleteResponse,
   TasksCreateArguments,
   TasksCreateResponse,
   TasksGetArguments,
@@ -181,8 +178,6 @@ import {
   sessionsGetRequestConfig,
   sessionsInteractRequestConfig,
   sessionsListRequestConfig,
-  tasksChatCompleteRequestConfig,
-  tasksCompleteRequestConfig,
   tasksCostRequestConfig,
   tasksCreateRequestConfig,
   tasksGetRequestConfig,
@@ -539,14 +534,6 @@ export abstract class Methods {
     cost: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,
       tasksCostRequestConfig,
-    ),
-    complete: bindApiCall<TasksCompleteArguments, TasksCompleteResponse>(
-      this,
-      tasksCompleteRequestConfig,
-    ),
-    chat: bindApiCall<TasksChatCompleteArguments, TasksCompleteResponse>(
-      this,
-      tasksChatCompleteRequestConfig,
     ),
     get: bindApiCall<TasksGetArguments, TasksGetResponse>(
       this,

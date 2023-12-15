@@ -11,7 +11,6 @@ import registerLogos from './plugins/logosPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
-import registerOpenai from './plugins/openaiPlugin'
 import registerReplicate from './plugins/replicatePlugin'
 import registerS3 from './plugins/s3Plugin'
 import registerSentry from './plugins/sentryPlugin'
@@ -103,10 +102,6 @@ const createServer = async (
 
   if (server.config.REPLICATE_API_TOKEN) {
     await registerReplicate(server)
-  }
-
-  if (server.config.OPENAI_API_KEY) {
-    await registerOpenai(server)
   }
 
   if (server.config.ELEVENLABS_API_KEY) {
