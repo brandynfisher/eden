@@ -12,7 +12,14 @@ import {
   useResizeObserver,
 } from 'masonic'
 import { useScroller } from 'mini-virtual-list'
-import React, { FC, RefObject, useCallback, useMemo } from 'react'
+import React, {
+  FC,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import useSWRInfinite from 'swr/infinite'
 
 const TimelineListItem = ({ data, index }: { data: Task; index: number }) => {
@@ -126,6 +133,7 @@ const TimelineList = ({
   innerRef: RefObject<HTMLDivElement>
 }) => {
   const limit = 10
+  const [tasksDoneCount, setTasksDoneCount] = useState(0)
 
   const {
     items,
@@ -163,10 +171,21 @@ const TimelineList = ({
       maxColumnCount: 1,
       columnCount: 1,
     },
-    [items.length, containerWidth],
+    [tasksDoneCount, items.length, containerWidth],
   )
 
   const resizeObserver = useResizeObserver(positioner)
+
+  useEffect(() => {
+    console.log({ tasksDoneCount })
+  }, [tasksDoneCount])
+
+  useEffect(() => {
+    const counts = items.filter(
+      item => item.status === 'completed' || item.status === 'failed',
+    ).length
+    setTasksDoneCount(counts)
+  }, [items])
 
   return (
     <div
