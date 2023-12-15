@@ -1,6 +1,4 @@
 import { AxiosRequestConfig } from 'axios'
-import { LogosData } from 'src/models/Characters'
-import { ScenarioType } from 'src/models/Scenarios'
 
 import {
   ListQueryParams,
@@ -11,15 +9,6 @@ import {
 import { transformArgsIntoURLParams } from '../methods'
 
 // Arguments
-
-export interface SessionsCreateArguments extends WebAPICallOptions {
-  type: ScenarioType
-}
-
-export interface SessionsUpdateArguments extends WebAPICallOptions {
-  sessionId: string
-  data?: any
-}
 
 export interface SessionsDeleteArguments extends WebAPICallOptions {
   sessionId: string
@@ -41,38 +30,31 @@ export interface SessionEventsListArguments
   sessionId: string
 }
 
+export interface SessionsAddUsersArguments extends WebAPICallOptions {
+  sessionId: string
+  userIds: string[]
+}
+
+export interface SessionsAddCharactersArguments extends WebAPICallOptions {
+  sessionId: string
+  characterIds: string[]
+}
+
 export interface SessionsInteractArguments extends WebAPICallOptions {
   sessionId: string
-  assistant: LogosData
+  assistant: Assistant
   interaction: Interaction
 }
 
 // Requests
 
-export const sessionsCreateRequestConfig = (
-  args: SessionsCreateArguments,
-): AxiosRequestConfig => {
+export const sessionsCreateRequestConfig = (): AxiosRequestConfig => {
   return {
     method: 'POST',
     url: 'sessions/create',
-    data: {
-      ...args,
-    },
+    data: {},
   }
 }
-
-export const sessionsUpdateRequestConfig = (
-  args: SessionsUpdateArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'sessions/update',
-    data: {
-      ...args,
-    },
-  }
-}
-
 export const sessionsDeleteRequestConfig = (
   args: SessionsDeleteArguments,
 ): AxiosRequestConfig => {
@@ -117,6 +99,30 @@ export const sessionsInteractRequestConfig = (
   }
 }
 
+export const sessionsAddUsersRequestConfig = (
+  args: SessionsAddUsersArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/users/add',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const sessionsAddCharactersRequestConfig = (
+  args: SessionsAddCharactersArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'sessions/characters/add',
+    data: {
+      ...args,
+    },
+  }
+}
+
 export const sessionEventsListRequestConfig = (
   args: SessionEventsListArguments,
 ): AxiosRequestConfig => {
@@ -132,12 +138,7 @@ export const sessionEventsListRequestConfig = (
 
 export type SessionsCreateResponse = WebAPICallResult & {
   error?: string
-  scenarioId?: string
-}
-
-export type SessionsUpdateResponse = WebAPICallResult & {
-  eventId: string
-  error?: string
+  sessionId?: string
 }
 
 export type SessionsDeleteResponse = WebAPICallResult & {
@@ -160,6 +161,14 @@ export type SessionsInteractResponse = WebAPICallResult & {
   config?: any
 }
 
+export type SessionsAddUsersResponse = WebAPICallResult & {
+  error?: string
+}
+
+export type SessionsAddCharactersResponse = WebAPICallResult & {
+  error?: string
+}
+
 export type SessionEventsListResponse = WebAPICallResult &
   PaginatedResponse<SessionEvent> & {
     error?: string
@@ -169,8 +178,8 @@ export type SessionEventsListResponse = WebAPICallResult &
 
 export enum SessionEventType {
   END_SESSION = 'end_session',
-  USER_ADD = 'user_add',
-  CHARACTER_ADD = 'character_add',
+  USERS_ADD = 'users_add',
+  CHARACTERS_ADD = 'characters_add',
   INTERACTION = 'interaction',
   CHAT_RESPONSE = 'chat_response',
   CREATION_RESPONSE = 'creation_response',
@@ -194,10 +203,17 @@ export interface ChatMessage {
   message: string
 }
 
+export interface UsersAddEvent {
+  users: string[]
+}
+
+export interface CharactersAddEvent {
+  characters: string[]
+}
+
 export interface InteractionEvent {
-  message: string
-  context?: ChatMessage[]
-  addressedCharacters?: string[]
+  assistant: Assistant
+  interaction: Interaction
 }
 
 export interface Interaction {
@@ -235,41 +251,15 @@ export interface ErrorResponseEvent {
   task?: string
 }
 
-export type SessionEvent = {
+export interface SessionEvent {
   id?: string
   session?: string
   type?: SessionEventType
   data?: {
-    userAdded?: {
-      user: string
-    }
-    userRemoved?: {
-      user: string
-    }
-    characterAdded?: {
-      character: string
-    }
-    characterRemoved?: {
-      character: string
-    }
-    chatRequest?: {
-      user: string
-      message: string
-    }
-    chatResponse?: {
-      character: string
-      message: string
-      completion: string
-    }
-    creationRequest?: {
-      user: string
-      character: string
-      task: string
-    }
-    creationResponse?: {
-      user: string
-      character: string
-      creation: string
-    }
+    usersAdded?: UsersAddEvent
+    characterAdded?: CharactersAddEvent
+    interaction?: InteractionEvent
+    chatResponse?: ChatResponseEvent
+    creationResponse?: CreationResponseEvent
   }
 }

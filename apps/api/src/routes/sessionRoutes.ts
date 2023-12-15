@@ -1,25 +1,22 @@
-import { ScenarioType, SessionEventType } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
+  addCharactersToSession,
+  addUsersToSession,
   createSession,
   deleteSession,
   getSession,
   getSessionEvents,
   interactSession,
   listSessions,
-  updateSession,
 } from '../controllers/sessionController'
 import { isAdmin, isAuth } from '../middleware/authMiddleware'
 
 const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/create', {
     schema: {
-      body: Type.Object({
-        type: Type.Enum(ScenarioType),
-      }),
       response: {
         200: Type.Object({
           sessionId: Type.String(),
@@ -28,23 +25,6 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createSession(request, reply),
-  })
-
-  server.post('/sessions/update', {
-    schema: {
-      body: Type.Object({
-        sessionId: Type.String(),
-        type: Type.Optional(Type.Enum(SessionEventType)),
-        data: Type.Optional(Type.Any()),
-      }),
-      response: {
-        200: Type.Object({
-          eventId: Type.String(),
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAdmin(server, request, reply)],
-    handler: (request, reply) => updateSession(request, reply),
   })
 
   server.post('/sessions/delete', {
@@ -58,6 +38,34 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteSession(request, reply),
+  })
+
+  server.post('/sessions/users/add', {
+    schema: {
+      body: Type.Object({
+        sessionId: Type.String(),
+        userIds: Type.Array(Type.String()),
+      }),
+      response: {
+        200: Type.Object({}),
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => addUsersToSession(request, reply),
+  })
+
+  server.post('/sessions/characters/add', {
+    schema: {
+      body: Type.Object({
+        sessionId: Type.String(),
+        characterIds: Type.Array(Type.String()),
+      }),
+      response: {
+        200: Type.Object({}),
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => addCharactersToSession(request, reply),
   })
 
   server.post('/sessions/interact', {
@@ -119,7 +127,6 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           session: Type.Object({
             id: Type.String(),
-            type: Type.Enum(ScenarioType),
           }),
         }),
       },

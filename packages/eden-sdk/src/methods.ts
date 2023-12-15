@@ -99,19 +99,12 @@ import {
   PaymentsProductsResponse,
   PaymentsSubscriptionArguments,
   PaymentsSubscriptionResponse,
-  ScenariosCreateArguments,
-  ScenariosCreateResponse,
-  ScenariosDeleteArguments,
-  ScenariosDeleteResponse,
-  ScenariosGetArguments,
-  ScenariosGetResponse,
-  ScenariosListArguments,
-  ScenariosListResponse,
-  ScenariosUpdateArguments,
-  ScenariosUpdateResponse,
   SessionEventsListArguments,
   SessionEventsListResponse,
-  SessionsCreateArguments,
+  SessionsAddCharactersArguments,
+  SessionsAddCharactersResponse,
+  SessionsAddUsersArguments,
+  SessionsAddUsersResponse,
   SessionsCreateResponse,
   SessionsDeleteArguments,
   SessionsDeleteResponse,
@@ -121,8 +114,6 @@ import {
   SessionsInteractResponse,
   SessionsListArguments,
   SessionsListResponse,
-  SessionsUpdateArguments,
-  SessionsUpdateResponse,
   TasksChatCompleteArguments,
   TasksCompleteArguments,
   TasksCompleteResponse,
@@ -182,18 +173,14 @@ import {
   paymentsCreateRequestConfig,
   paymentsProductsRequestConfig,
   paymentsSubscriptionRequestConfig,
-  scenariosCreateRequestConfig,
-  scenariosDeleteRequestConfig,
-  scenariosGetRequestConfig,
-  scenariosListRequestConfig,
-  scenariosUpdateRequestConfig,
   sessionEventsListRequestConfig,
+  sessionsAddCharactersRequestConfig,
+  sessionsAddUsersRequestConfig,
   sessionsCreateRequestConfig,
   sessionsDeleteRequestConfig,
   sessionsGetRequestConfig,
   sessionsInteractRequestConfig,
   sessionsListRequestConfig,
-  sessionsUpdateRequestConfig,
   tasksChatCompleteRequestConfig,
   tasksCompleteRequestConfig,
   tasksCostRequestConfig,
@@ -500,37 +487,10 @@ export abstract class Methods {
     >(this, paymentsSubscriptionRequestConfig),
   }
 
-  public readonly scenarios = {
-    create: bindApiCall<ScenariosCreateArguments, ScenariosCreateResponse>(
-      this,
-      scenariosCreateRequestConfig,
-    ),
-    update: bindApiCall<ScenariosUpdateArguments, ScenariosUpdateResponse>(
-      this,
-      scenariosUpdateRequestConfig,
-    ),
-    delete: bindApiCall<ScenariosDeleteArguments, ScenariosDeleteResponse>(
-      this,
-      scenariosDeleteRequestConfig,
-    ),
-    list: bindApiCall<ScenariosListArguments, ScenariosListResponse>(
-      this,
-      scenariosListRequestConfig,
-    ),
-    get: bindApiCall<ScenariosGetArguments, ScenariosGetResponse>(
-      this,
-      scenariosGetRequestConfig,
-    ),
-  }
-
   public readonly sessions = {
-    create: bindApiCall<SessionsCreateArguments, SessionsCreateResponse>(
+    create: bindApiCall<WebAPICallOptions, SessionsCreateResponse>(
       this,
       sessionsCreateRequestConfig,
-    ),
-    update: bindApiCall<SessionsUpdateArguments, SessionsUpdateResponse>(
-      this,
-      sessionsUpdateRequestConfig,
     ),
     delete: bindApiCall<SessionsDeleteArguments, SessionsDeleteResponse>(
       this,
@@ -548,6 +508,18 @@ export abstract class Methods {
       this,
       sessionsInteractRequestConfig,
     ),
+    users: {
+      add: bindApiCall<SessionsAddUsersArguments, SessionsAddUsersResponse>(
+        this,
+        sessionsAddUsersRequestConfig,
+      ),
+    },
+    characters: {
+      add: bindApiCall<
+        SessionsAddCharactersArguments,
+        SessionsAddCharactersResponse
+      >(this, sessionsAddCharactersRequestConfig),
+    },
   }
 
   public readonly session = {
