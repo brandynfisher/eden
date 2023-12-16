@@ -25,7 +25,6 @@ const ConfigSchema = Type.Strict(
     FRONTEND_URL: Type.String(),
     MONGO_URI: Type.String(),
     CHROMA_URI: Type.String(),
-    OPENAI_API_KEY: Type.String(),
     REPLICATE_API_TOKEN: Type.String(),
     ELEVENLABS_API_KEY: Type.String(),
     WEBHOOK_URL: Type.String(),
@@ -50,6 +49,7 @@ const ConfigSchema = Type.Strict(
     AIRFLOW_BASE_URL: Type.Optional(Type.String()),
     DISCORD_CLIENT_ID: Type.Optional(Type.String()),
     DISCORD_CLIENT_SECRET: Type.Optional(Type.String()),
+    LOGOS_URL: Type.Optional(Type.String()),
   }),
 )
 

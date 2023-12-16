@@ -17,7 +17,6 @@ const SessionsGrid = ({ sessions }: { sessions: Session[] }) => {
               <Link key={session.id} href={`/scenarios/chat/${session.id}`}>
                 <div>
                   <div>{session.id}</div>
-                  <div>{session.type}</div>
                 </div>
               </Link>
             ))}

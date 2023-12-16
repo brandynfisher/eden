@@ -1,49 +1,44 @@
-import { SessionEventType } from '@edenlabs/eden-sdk'
+import { ChatMessage, SessionEventType } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { CharacterDocument } from './Character'
-import { CompletionDocument } from './Completion'
 import { CreationDocument } from './Creation'
-import { ScenarioDocument } from './Scenario'
+import { UserDocument } from './Creator'
+import { SessionDocument } from './Session'
 import { TaskDocument } from './Task'
 
 export interface SessionEventSchema {
-  session: ScenarioDocument
+  session: SessionDocument
   type: SessionEventType
   data: {
-    userAdded?: {
-      userId: string
-    }
-    userRemoved?: {
-      userId: string
-    }
-    characterAdded?: {
+    character_add?: {
       character: CharacterDocument
     }
-    characterRemoved?: {
-      character: CharacterDocument
-    }
-    userMessage?: {
-      userId: string
+    interaction?: {
+      user: UserDocument
       message: string
-      completion: CompletionDocument
+      context?: ChatMessage[]
+      addressedCharacters?: CharacterDocument[]
     }
-    characterMessage?: {
-      character: CharacterDocument
+    chat_response?: {
+      interaction: SessionEventDocument
       message: string
-      completion: CompletionDocument
     }
-    creationRequest?: {
-      userId: string
-      character: CharacterDocument
+    creation_response?: {
+      interaction: SessionEventDocument
       task: TaskDocument
+      creations?: {
+        id: CreationDocument
+        uri: string
+      }[]
+      message?: string
     }
-    creationReturn?: {
-      userId: string
-      character: CharacterDocument
-      creation: CreationDocument
+    error_response?: {
+      interaction: SessionEventDocument
+      message: string
+      task?: TaskDocument
     }
   }
   createdAt?: Date

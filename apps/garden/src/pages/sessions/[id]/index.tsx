@@ -2,12 +2,12 @@ import { getAuthHeaders, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
-import ChatSessionPage from '@/pages/characters/chat/[id]/ChatSessionPage'
+import ChatSessionPage from '@/pages/sessions/[id]/ChatSessionPage'
 import { Character, Session } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
 import { useRouter } from 'next/router'
 
-import { Page } from '../../../../../types/page'
+import { Page } from '../../../../types/page'
 
 interface PageProps {
   data: {

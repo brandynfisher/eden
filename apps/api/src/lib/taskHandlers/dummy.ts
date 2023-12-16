@@ -1,3 +1,10 @@
+import {
+  Assistant,
+  Interaction,
+  InteractionEvent,
+  SessionEventResponseType,
+  SessionEventType,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -9,7 +16,7 @@ import {
   GeneratorVersionSchema,
 } from '../../models/Generator'
 import { Task, TaskStatus } from '../../models/Task'
-import { TaskHandlers } from '../../plugins/tasks'
+import { LogosResponse, TaskHandlers } from '../../plugins/tasks'
 import { submitMonologueTask } from './airflow'
 
 interface Output {
@@ -195,6 +202,22 @@ export const dummyGetTransactionCost = (
   )
   return 1
 }
+
+// const dummyHandleInteraction = async (
+//   server: FastifyInstance,
+//   assistant: Assistant,
+//   interaction: Interaction,
+// ): Promise<LogosResponse> => {
+//   return {
+//     message: 'Hello',
+//     config: {
+//       generatorName: 'test',
+//       config: {
+//         test: 'test',
+//       },
+//     },
+//   }
+// }
 
 export const dummyTaskHandlers: TaskHandlers = {
   submitTask: dummySubmitTask,

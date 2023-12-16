@@ -5,7 +5,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { ChatCompletionRequestMessage } from 'openai'
+import { ChatCompletionMessageParam } from 'openai/resources'
 
 import {
   getDefaultGeneratorVersion,
@@ -309,73 +309,6 @@ export const receiveTaskUpdate = async (
   }
 
   await server.receiveTaskUpdate(server, request.body)
-}
-
-export const createCompletion = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { prompt } = request.body as { prompt: string }
-  const completionText = await server.complete(server, prompt)
-  const completionInput: CompletionInput = {
-    prompt,
-    completion: completionText,
-  }
-  const completion = await Completion.create(completionInput)
-  return reply.status(200).send({
-    completion: {
-      id: completion.id,
-      text: completionText,
-    },
-  })
-}
-
-type ChatMessage = {
-  sender: string
-  message: string
-}
-
-export const createChatCompletion = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { chat } = request.body as { chat: ChatMessage[] }
-
-  const chatMessages: ChatCompletionRequestMessage[] = chat.map(m => {
-    return {
-      role: m.sender == 'bot' ? 'assistant' : m.sender,
-      content: m.message,
-    } as ChatCompletionRequestMessage
-  })
-
-  const response = await server.openai.createChatCompletion({
-    model: 'gpt-3.5-turbo',
-    messages: chatMessages,
-    temperature: 1,
-    max_tokens: 256,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-  })
-
-  const completionText = response?.data?.choices[0].message?.content || 'error'
-
-  const prompt = chatMessages.map(m => `${m.role}: ${m.content}`).join('\n')
-
-  const completionInput: CompletionInput = {
-    prompt: prompt,
-    completion: completionText,
-  }
-
-  const completion = await Completion.create(completionInput)
-  return reply.status(200).send({
-    completion: {
-      id: completion.id,
-      text: completionText,
-    },
-  })
 }
 
 export const subscribeTaskUpdates = async (

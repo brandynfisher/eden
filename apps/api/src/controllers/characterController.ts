@@ -206,6 +206,7 @@ export const listCharacters = async (
       description: character.description,
       greeting: character.greeting,
       dialogue: character.dialogue,
+      logosData: character.logosData,
       concept: character.concept,
       creationCount: character.creationCount,
       isPrivate: character.isPrivate,
