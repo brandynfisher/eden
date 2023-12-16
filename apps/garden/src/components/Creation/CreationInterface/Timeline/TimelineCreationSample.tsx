@@ -15,7 +15,8 @@ const TimelineCreationSample = ({
   creationId: string
   listIndex: number
 }) => {
-  const { creation, isLoading } = useCreation(creationId, {
+  const { creation, mutate, isLoading } = useCreation(creationId, {
+    revalidateFirstPage: false,
     revalidateOnFocus: false,
     revalidateIfStale: false,
     revalidateAll: false,
@@ -52,6 +53,7 @@ const TimelineCreationSample = ({
       index={listIndex < 3 ? listIndex : 9999}
       data={creation}
       onClick={handleCardClick}
+      updateHandler={() => mutate()}
       hidePrompt={true}
       sizes={'(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 30vw)'}
     />

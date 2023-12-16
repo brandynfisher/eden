@@ -27,6 +27,7 @@ export interface CardProps {
   hidePrompt?: boolean
   sizes?: string
   className?: string
+  updateHandler?: (data: CardData) => void
 }
 
 export type CardWithTypeProps = CardProps & { itemType: ItemType }
@@ -39,7 +40,9 @@ const Card: FC<CardWithTypeProps> = ({
   hidePrompt,
   sizes,
   className,
+  updateHandler,
 }) => {
+  // const { items, setItems } = useContext(MasonryContext)
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
@@ -61,15 +64,17 @@ const Card: FC<CardWithTypeProps> = ({
       message.destroy()
       message.success(`${itemType} restored`)
 
-      setItemData({
+      const updatedItem = {
         ...itemData,
         deleted: false,
-      })
+      }
+      setItemData(updatedItem)
+      updateHandler && updateHandler(updatedItem)
     } catch (err) {
       console.log(err)
       handleAxiosError(err, message)
     }
-  }, [itemData])
+  }, [itemData, itemType])
 
   const cardClickHandler = useCallback(
     (ev: React.MouseEvent) => {
@@ -78,6 +83,12 @@ const Card: FC<CardWithTypeProps> = ({
     },
     [onClick],
   )
+
+  const cardUpdateHandler = (item: CardData) => {
+    console.log('cardUpdate', item)
+    setItemData(item)
+    updateHandler && updateHandler(item)
+  }
 
   return (
     <div
@@ -189,7 +200,9 @@ const Card: FC<CardWithTypeProps> = ({
                 onOpen={setDropdownActive}
                 item={itemData}
                 itemType={itemType}
-                onChange={updatedItem => setItemData(updatedItem)}
+                onChange={(updatedItem: CardData) =>
+                  cardUpdateHandler(updatedItem)
+                }
               />
             </div>
           </div>
@@ -205,8 +218,8 @@ const Card: FC<CardWithTypeProps> = ({
             <CardReactions
               item={itemData}
               itemType={itemType}
-              onChange={updatedCreation =>
-                setItemData(updatedCreation as Creation)
+              onChange={(updatedItem: CardData) =>
+                cardUpdateHandler(updatedItem)
               }
               showCounts={true}
             />

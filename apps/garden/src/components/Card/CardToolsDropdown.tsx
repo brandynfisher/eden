@@ -1,3 +1,4 @@
+import { CardData } from '@/components/Card/Card'
 import AddToCollectionButton from '@/components/Layout/buttons/AddToCollectionButton'
 import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
@@ -16,9 +17,7 @@ import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
-  Dispatch,
   ReactNode,
-  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -45,7 +44,7 @@ const CardToolsDropdown = ({
   onOpen?: Function
   item: Creation | Concept
   itemType: ItemType
-  onChange: Dispatch<SetStateAction<Concept | Creation>>
+  onChange: (updatedData: CardData) => void
 }) => {
   const { user, isAuthenticated } = useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)

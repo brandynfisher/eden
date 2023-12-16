@@ -10,7 +10,9 @@ import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined'
 import FavoriteTwoToneIcon from '@mui/icons-material/FavoriteTwoTone'
 import { App } from 'antd'
 import axios from 'axios'
-import React, { Dispatch, SetStateAction, useContext } from 'react'
+import React, { useContext } from 'react'
+
+import { CardData } from './Card'
 
 export const PraiseButton = ({
   item,
@@ -20,7 +22,7 @@ export const PraiseButton = ({
 }: {
   item: Creation | Concept
   itemType: ItemType
-  onChange: Dispatch<SetStateAction<Concept | Creation>>
+  onChange: (updatedData: CardData) => void
   showCounts?: boolean
 }) => {
   const { message } = App.useApp()
@@ -119,7 +121,7 @@ export const PraiseButton = ({
 export interface CardReactionProps {
   item: Creation | Concept
   itemType: ItemType
-  onChange: Dispatch<SetStateAction<Concept | Creation>>
+  onChange: (updatedData: CardData) => void
   showCounts?: boolean
 }
 
