@@ -12,7 +12,14 @@ import {
   useResizeObserver,
 } from 'masonic'
 import { useScroller } from 'mini-virtual-list'
-import React, { FC, RefObject, useCallback, useMemo } from 'react'
+import React, {
+  FC,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import useSWRInfinite from 'swr/infinite'
 
 const TimelineListItem = ({ data, index }: { data: Task; index: number }) => {
@@ -68,7 +75,13 @@ const useTasksPaginated = ({
 
   const isLoadingMore =
     isLoading ||
-    (size > 0 && data != null && typeof data[size - 1] === 'undefined')
+    (size > 0 &&
+      data != null &&
+      typeof data[size - 1] === 'undefined' &&
+      data &&
+      data[data.length - 1] &&
+      typeof data[data.length - 1] !== 'undefined' &&
+      data[data.length - 1]?.hasNextPage)
   const isEmpty = data?.[0]?.total === 0 || data?.[0]?.length === 0
 
   const maybeLoadMore = useMemo(() => {
@@ -126,9 +139,11 @@ const TimelineList = ({
   innerRef: RefObject<HTMLDivElement>
 }) => {
   const limit = 10
+  const [tasksDoneCount, setTasksDoneCount] = useState(0)
 
   const {
     items,
+    // mutate,
     // size,
     // setSize,
     // totalItems,
@@ -136,6 +151,7 @@ const TimelineList = ({
     maybeLoadMore,
     isEmpty,
     isLoading,
+    isLoadingMore,
     error,
   } = useTasksPaginated({ type, limit })
 
@@ -163,10 +179,17 @@ const TimelineList = ({
       maxColumnCount: 1,
       columnCount: 1,
     },
-    [items.length, containerWidth],
+    [tasksDoneCount, items.length, containerWidth],
   )
 
   const resizeObserver = useResizeObserver(positioner)
+
+  useEffect(() => {
+    const counts = items.filter(
+      item => item.status === 'completed' || item.status === 'failed',
+    ).length
+    setTasksDoneCount(counts)
+  }, [items])
 
   return (
     <div
@@ -204,6 +227,11 @@ const TimelineList = ({
             render={TimelineListItem}
             onRender={maybeLoadMoreTasks}
           />
+          {isLoadingMore ? (
+            <div className="my-4 py-2">
+              <LoadingIndicator />
+            </div>
+          ) : null}
         </div>
       ) : null}
       {error ? <div>{JSON.stringify(error)}</div> : null}
