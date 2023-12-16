@@ -75,7 +75,13 @@ const useTasksPaginated = ({
 
   const isLoadingMore =
     isLoading ||
-    (size > 0 && data != null && typeof data[size - 1] === 'undefined')
+    (size > 0 &&
+      data != null &&
+      typeof data[size - 1] === 'undefined' &&
+      data &&
+      data[data.length - 1] &&
+      typeof data[data.length - 1] !== 'undefined' &&
+      data[data.length - 1]?.hasNextPage)
   const isEmpty = data?.[0]?.total === 0 || data?.[0]?.length === 0
 
   const maybeLoadMore = useMemo(() => {
@@ -137,6 +143,7 @@ const TimelineList = ({
 
   const {
     items,
+    // mutate,
     // size,
     // setSize,
     // totalItems,
@@ -144,6 +151,7 @@ const TimelineList = ({
     maybeLoadMore,
     isEmpty,
     isLoading,
+    isLoadingMore,
     error,
   } = useTasksPaginated({ type, limit })
 
@@ -175,10 +183,6 @@ const TimelineList = ({
   )
 
   const resizeObserver = useResizeObserver(positioner)
-
-  useEffect(() => {
-    console.log({ tasksDoneCount })
-  }, [tasksDoneCount])
 
   useEffect(() => {
     const counts = items.filter(
@@ -223,6 +227,11 @@ const TimelineList = ({
             render={TimelineListItem}
             onRender={maybeLoadMoreTasks}
           />
+          {isLoadingMore ? (
+            <div className="my-4 py-2">
+              <LoadingIndicator />
+            </div>
+          ) : null}
         </div>
       ) : null}
       {error ? <div>{JSON.stringify(error)}</div> : null}
