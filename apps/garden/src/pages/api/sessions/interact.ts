@@ -20,11 +20,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     })
     const response = await eden.sessions.interact({
       sessionId,
-      assistant: {
-        ...assistant,
-        //@ts-ignore
-        knowledge_summary: assistant.knowledgeSummary,
-      },
+      assistant,
       interaction,
     })
     return res.status(200).json({

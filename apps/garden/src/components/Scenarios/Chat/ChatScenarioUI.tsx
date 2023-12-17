@@ -100,7 +100,7 @@ const ChatScenarioUI = ({
           name: activeCharacter.name,
           identity: activeCharacter.logosData?.identity,
           knowledge: activeCharacter.logosData?.knowledge,
-          knowledgeSummary: activeCharacter.logosData?.knowledgeSummary,
+          knowledge_summary: activeCharacter.logosData?.knowledgeSummary,
         },
         interaction: {
           prompt: text,
