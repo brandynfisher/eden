@@ -94,7 +94,6 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      console.log('activeCharacter', activeCharacter)
       const res = await axios.post(`/api/sessions/interact`, {
         sessionId,
         assistant: {

@@ -73,11 +73,10 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         sessionId: Type.String(),
         assistant: Type.Object({
-          character_description: Type.String(),
-          documentation_prompt: Type.String(),
-          documentation: Type.String(),
-          router_prompt: Type.String(),
-          creator_prompt: Type.String(),
+          name: Type.String(),
+          identity: Type.String(),
+          knowledge: Type.String(),
+          knowledge_summary: Type.String(),
         }),
         interaction: Type.Object({
           prompt: Type.String(),
