@@ -2,10 +2,13 @@ import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
+import { CharacterDocument } from './Character'
 import { UserDocument } from './Creator'
 
 export interface SessionSchema {
   user: UserDocument
+  users: UserDocument[]
+  characters: CharacterDocument[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -19,6 +22,20 @@ const session = new Schema<SessionDocument>(
       ref: 'users',
       required: true,
     },
+    users: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+        default: [],
+      },
+    ],
+    characters: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'characters',
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,

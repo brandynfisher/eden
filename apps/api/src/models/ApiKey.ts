@@ -55,12 +55,6 @@ const apiKey = new Schema<ApiKeyDocument>(
   },
 )
 
-apiKey.pre<ApiKeyDocument>('save', function (next) {
-  enforceUserDocumentLimit(10, 'apikeys', this.user)
-
-  next()
-})
-
 apiKey.plugin(paginate)
 
 export const ApiKey = model<ApiKeyDocument>('apikeys', apiKey)
