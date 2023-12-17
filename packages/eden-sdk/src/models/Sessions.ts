@@ -223,11 +223,10 @@ export interface Interaction {
 }
 
 export interface Assistant {
-  character_description: string
-  creator_prompt: string
-  documentation_prompt: string
-  router_prompt: string
-  documentation: string
+  name: string
+  identity: string
+  knowledge?: string
+  knowledgeSummary?: string
 }
 
 export interface ChatResponseEvent {

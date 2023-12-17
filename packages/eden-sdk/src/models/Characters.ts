@@ -26,11 +26,9 @@ export interface CharactersCreateArguments extends WebAPICallOptions {
   name: string
   image?: string
   voice?: string
-  description?: string
   greeting?: string
   dialogue?: any[]
-  concept?: string
-  logosData?: LogosData
+  logosData: LogosData
   isPrivate?: boolean
 }
 
@@ -39,10 +37,8 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
   name?: string
   image?: string
   voice?: string
-  description?: string
   greeting?: string
   dialogue?: any[]
-  concept?: string
   logosData?: LogosData
   isPrivate?: boolean
 }
@@ -145,10 +141,8 @@ export type Character = {
   user: Creator
   name: string
   slug: string
-  description?: string
   greeting?: string
   dialogue?: any[]
-  concept?: string
   logosData?: LogosData
   image?: string
   voice?: string
@@ -160,8 +154,15 @@ export type Character = {
 }
 
 export type LogosData = {
-  documentation?: string
-  documentationPrompt?: string
-  creatorPrompt?: string
-  routerPrompt?: string
+  capabilities?: Capabilites[]
+  identity?: string
+  knowledge?: string
+  knowledgeSummary?: string
+  concept?: string
+}
+
+export enum Capabilites {
+  CHAT = 'chat',
+  CREATION = 'creation',
+  KNOWLEDGE = 'knowledge',
 }

@@ -21,27 +21,26 @@ export const createCharacter = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const {
-    name,
-    image,
-    voice,
-    description,
-    greeting,
-    dialogue,
-    concept,
-    logosData,
-    isPrivate,
-  } = request.body as CharactersCreateArguments
+  const { name, image, voice, greeting, dialogue, logosData, isPrivate } =
+    request.body as CharactersCreateArguments
+
+  const newLogosData = {
+    ...logosData,
+    identity: logosData?.identity ? logosData.identity : undefined,
+    concept: logosData?.concept ? logosData.concept : undefined,
+    knowledge: logosData?.knowledge ? logosData.knowledge : undefined,
+    knowledgeSummary: logosData?.knowledgeSummary
+      ? logosData.knowledgeSummary
+      : undefined,
+  }
 
   const input: {
     user: ObjectId
     name: string
     image: string | undefined
     voice: string | undefined
-    description: string | undefined
     greeting: string | undefined
     dialogue: any[] | undefined
-    concept: string | undefined
     logosData: any | undefined
     isPrivate?: boolean
   } = {
@@ -49,11 +48,9 @@ export const createCharacter = async (
     name,
     image,
     voice,
-    description,
     greeting,
     dialogue,
-    concept,
-    logosData,
+    logosData: newLogosData,
     isPrivate,
   }
 
@@ -91,17 +88,18 @@ export const updateCharacter = async (
     })
   }
 
-  const {
-    name,
-    image,
-    voice,
-    description,
-    greeting,
-    dialogue,
-    concept,
-    logosData,
-    isPrivate,
-  } = request.body as CharactersUpdateArguments
+  const { name, image, voice, greeting, dialogue, logosData, isPrivate } =
+    request.body as CharactersUpdateArguments
+
+  const newLogosData = {
+    ...logosData,
+    identity: logosData?.identity ? logosData.identity : undefined,
+    concept: logosData?.concept ? logosData.concept : undefined,
+    knowledge: logosData?.knowledge ? logosData.knowledge : undefined,
+    knowledgeSummary: logosData?.knowledgeSummary
+      ? logosData.knowledgeSummary
+      : undefined,
+  }
 
   const character = await Character.findOne({
     _id: characterId,
@@ -118,21 +116,17 @@ export const updateCharacter = async (
     name: string | undefined
     image: string | undefined
     voice: string | undefined
-    description: string | undefined
     greeting: string | undefined
     dialogue: any[] | undefined
-    concept: string | undefined
     logosData: any | undefined
     isPrivate?: boolean
   } = {
     name,
     image,
     voice,
-    description,
     greeting,
     dialogue,
-    concept,
-    logosData,
+    logosData: newLogosData,
     isPrivate,
   }
 
@@ -203,11 +197,9 @@ export const listCharacters = async (
       slug: character.slug,
       image: character.image,
       voice: character.voice,
-      description: character.description,
       greeting: character.greeting,
       dialogue: character.dialogue,
       logosData: character.logosData,
-      concept: character.concept,
       creationCount: character.creationCount,
       isPrivate: character.isPrivate,
     })),
@@ -244,10 +236,8 @@ export const getCharacter = async (
     slug: character.slug,
     image: character.image,
     voice: character.voice,
-    description: character.description,
     greeting: character.greeting,
     dialogue: character.dialogue,
-    concept: character.concept,
     logosData: character.logosData,
     creationCount: character.creationCount,
     isPrivate: character.isPrivate,
