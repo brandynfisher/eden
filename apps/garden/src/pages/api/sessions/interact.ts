@@ -12,10 +12,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(401).json({ error: 'Not authenticated' })
   }
 
-  console.log('sessionId', sessionId)
-  console.log('assistant', assistant)
-  console.log('interaction', interaction)
-
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
