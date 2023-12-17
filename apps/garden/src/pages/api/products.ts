@@ -8,12 +8,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       edenApiUrl: CONFIG.API_URL,
     })
     const response = await eden.payments.products()
-    return res
-      .status(200)
-      .json({
-        products: response.products,
-        subscriptions: response.subscriptions,
-      })
+    return res.status(200).json({
+      products: response.products,
+      subscriptions: response.subscriptions,
+    })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })

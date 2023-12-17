@@ -1,3 +1,4 @@
+import { Capabilites } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -12,6 +13,17 @@ import {
 import { createTask } from '../controllers/taskController'
 import { isAuth, isCharacter, maybeAuth } from '../middleware/authMiddleware'
 
+// const logosType = Type.Optional(
+//   Type.Object({
+//     capabilities: Type.Optional(Type.Array(Type.Enum(Capabilites))),
+//     identity: Type.Optional(Type.String()),
+//     knowledge: Type.Optional(Type.String()),
+//     knowledgeSummary: Type.Optional(Type.String()),
+//     concept: Type.Optional(Type.String()),
+//   }),
+// )
+const logosType = Type.Any()
+
 const characterRoutes: FastifyPluginAsync = async server => {
   server.post('/characters', {
     schema: {
@@ -19,7 +31,6 @@ const characterRoutes: FastifyPluginAsync = async server => {
         name: Type.String(),
         image: Type.Optional(Type.String()),
         voice: Type.Optional(Type.String()),
-        description: Type.Optional(Type.String()),
         greeting: Type.Optional(Type.String()),
         dialogue: Type.Optional(
           Type.Array(
@@ -29,15 +40,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
-        concept: Type.Optional(Type.String()),
-        logosData: Type.Optional(
-          Type.Object({
-            documentation: Type.Optional(Type.String()),
-            documentationPrompt: Type.Optional(Type.String()),
-            creatorPrompt: Type.Optional(Type.String()),
-            routerPrompt: Type.Optional(Type.String()),
-          }),
-        ),
+        logosData: logosType,
         isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {
@@ -60,7 +63,6 @@ const characterRoutes: FastifyPluginAsync = async server => {
         name: Type.Optional(Type.String()),
         image: Type.Optional(Type.String()),
         voice: Type.Optional(Type.String()),
-        description: Type.Optional(Type.String()),
         greeting: Type.Optional(Type.String()),
         dialogue: Type.Optional(
           Type.Array(
@@ -70,15 +72,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
-        concept: Type.Optional(Type.String()),
-        logosData: Type.Optional(
-          Type.Object({
-            documentation: Type.Optional(Type.String()),
-            documentationPrompt: Type.Optional(Type.String()),
-            creatorPrompt: Type.Optional(Type.String()),
-            routerPrompt: Type.Optional(Type.String()),
-          }),
-        ),
+        logosData: logosType,
         isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {
@@ -116,7 +110,6 @@ const characterRoutes: FastifyPluginAsync = async server => {
             slug: Type.String(),
             image: Type.Optional(Type.String()),
             voice: Type.Optional(Type.String()),
-            description: Type.Optional(Type.String()),
             creationCount: Type.Optional(Type.Number()),
             greeting: Type.Optional(Type.String()),
             dialogue: Type.Optional(
@@ -127,15 +120,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
                 }),
               ),
             ),
-            concept: Type.Optional(Type.String()),
-            logosData: Type.Optional(
-              Type.Object({
-                documentation: Type.Optional(Type.String()),
-                documentationPrompt: Type.Optional(Type.String()),
-                creatorPrompt: Type.Optional(Type.String()),
-                routerPrompt: Type.Optional(Type.String()),
-              }),
-            ),
+            logosData: logosType,
             isPrivate: Type.Optional(Type.Boolean()),
           }),
         }),
@@ -164,7 +149,6 @@ const characterRoutes: FastifyPluginAsync = async server => {
             slug: Type.String(),
             image: Type.Optional(Type.String()),
             voice: Type.Optional(Type.String()),
-            description: Type.Optional(Type.String()),
             creationCount: Type.Optional(Type.Number()),
             greeting: Type.Optional(Type.String()),
             dialogue: Type.Optional(
@@ -175,15 +159,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
                 }),
               ),
             ),
-            concept: Type.Optional(Type.String()),
-            logosData: Type.Optional(
-              Type.Object({
-                documentation: Type.Optional(Type.String()),
-                documentationPrompt: Type.Optional(Type.String()),
-                creatorPrompt: Type.Optional(Type.String()),
-                routerPrompt: Type.Optional(Type.String()),
-              }),
-            ),
+            logosData: logosType,
             isPrivate: Type.Optional(Type.Boolean()),
           }),
         ),

@@ -11,7 +11,6 @@ import registerLogos from './plugins/logosPlugin'
 import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
-import registerOpenai from './plugins/openaiPlugin'
 import registerReplicate from './plugins/replicatePlugin'
 import registerS3 from './plugins/s3Plugin'
 import registerSentry from './plugins/sentryPlugin'
@@ -105,18 +104,12 @@ const createServer = async (
     await registerReplicate(server)
   }
 
-  if (server.config.OPENAI_API_KEY) {
-    await registerOpenai(server)
-  }
-
-  await registerLogos(server)
-
-  // if (server.config.PLAYHT_API_KEY) {
-  //   await registerPlayHt(server)
-  // }
-
   if (server.config.ELEVENLABS_API_KEY) {
     await registerElevenLabs(server)
+  }
+
+  if (server.config.LOGOS_URL) {
+    await registerLogos(server)
   }
 
   await server.register(import('@fastify/rate-limit'), {

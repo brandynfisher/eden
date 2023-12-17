@@ -23,7 +23,7 @@ export const submitMonologueTask = async (
     config: {
       prompt: config.prompt,
       character_name: character.name,
-      character_description: character.description,
+      character_description: character.logosData?.identity,
       face_url: character.image,
     },
   })

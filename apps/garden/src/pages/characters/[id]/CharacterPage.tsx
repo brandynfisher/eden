@@ -78,7 +78,10 @@ const CharacterPageContent = ({ character }: { character: Character }) => {
       </Head>
 
       <div className={`flex flex-col gap-2`}>
-        <CharacterProfileHeader character={character} numCreations={1} />
+        <CharacterProfileHeader
+          character={character}
+          numCreations={character?.creationCount}
+        />
         <Tabs
           defaultActiveKey="1"
           centered

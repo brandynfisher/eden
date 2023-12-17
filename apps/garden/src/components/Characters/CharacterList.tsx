@@ -2,7 +2,6 @@
 // import CommentOutlined from '@ant-design/icons/CommentOutlined'
 // import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import CharacterCard from '@/components/Characters/CharacterCard'
-import CommentOutlined from '@ant-design/icons/CommentOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 // import LockIcon from '@mui/icons-material/Lock'
@@ -68,12 +67,14 @@ const MyCharacterCard = ({ character }: { character: Character }) => {
       />
       <div className="flex gap-2 px-2 bg-gray-100 dark:bg-gray-800 rounded-b-lg py-2 w-full justify-between ">
         <div className="flex items-center w-full justify-between">
-          <Link href={`/characters/chat`}>
-            <Button className="flex items-center gap-0.5" type="primary">
-              <CommentOutlined />
-              Chat
-            </Button>
-          </Link>
+          {/* <Button
+            className="flex items-center gap-0.5"
+            type="primary"
+            onClick={() => createSession(character.id, router)}
+          >
+            <CommentOutlined />
+            Chat
+          </Button> */}
           <Link href={`/create/characters/${character.id}`}>
             <Button className="flex items-center gap-0.5">
               <SettingOutlined />

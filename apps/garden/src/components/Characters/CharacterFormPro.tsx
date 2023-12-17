@@ -8,13 +8,13 @@ const CharacterFormPro = () => {
       <Form.Item
         label={
           <FormLabel
-            text="Documentation"
-            description="Add documentation for your character"
+            text="Knowledge"
+            description="Add knowledge for your character"
           />
         }
         className="label-auto-height"
         labelCol={{ span: 24 }}
-        name="logosDocumentation"
+        name="knowledge"
       >
         <Input.TextArea autoSize={{ minRows: 3 }} />
       </Form.Item>
@@ -22,41 +22,13 @@ const CharacterFormPro = () => {
       <Form.Item
         label={
           <FormLabel
-            text="Documentation Prompt"
-            description="Add a documentation prompt for your character"
+            text="Knowledge Summary"
+            description="Add a knowledge summary for your character"
           />
         }
         className="label-auto-height"
         labelCol={{ span: 24 }}
-        name="logosDocumentationPrompt"
-      >
-        <Input.TextArea autoSize={{ minRows: 3 }} />
-      </Form.Item>
-
-      <Form.Item
-        label={
-          <FormLabel
-            text="Creator Prompt"
-            description="Add a creator prompt for your character"
-          />
-        }
-        className="label-auto-height"
-        labelCol={{ span: 24 }}
-        name="logosCreatorPrompt"
-      >
-        <Input.TextArea autoSize={{ minRows: 3 }} />
-      </Form.Item>
-
-      <Form.Item
-        label={
-          <FormLabel
-            text="Router Prompt"
-            description="Add a router prompt for your character"
-          />
-        }
-        className="label-auto-height"
-        labelCol={{ span: 24 }}
-        name="logosRouterPrompt"
+        name="knowledgeSummary"
       >
         <Input.TextArea autoSize={{ minRows: 3 }} />
       </Form.Item>

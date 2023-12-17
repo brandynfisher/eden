@@ -1,14 +1,18 @@
 import {
-  ScenarioType,
+  ChatResponseEvent,
+  InteractionEvent,
+  SessionEventType,
   SessionEventsListArguments,
-  SessionsCreateArguments,
+  SessionsAddCharactersArguments,
+  SessionsAddUsersArguments,
   SessionsDeleteArguments,
   SessionsGetArguments,
+  SessionsInteractArguments,
   SessionsListArguments,
-  SessionsUpdateArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
+import { Character } from '../models/Character'
 import { User } from '../models/Creator'
 import { Session } from '../models/Session'
 import { SessionEvent } from '../models/SessionEvent'
@@ -21,17 +25,9 @@ export const createSession = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { type } = request.body as SessionsCreateArguments
-
-  if (!Object.values(ScenarioType).includes(type)) {
-    return reply.status(400).send({
-      message: 'Session type not found',
-    })
-  }
 
   const input = {
     user: userId,
-    type,
   }
 
   const sessionRepository = new SessionRepository(Session)
@@ -40,40 +36,6 @@ export const createSession = async (
   return reply.status(200).send({
     sessionId: session._id,
   })
-}
-
-export const updateSession = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { sessionId, type, data } = request.body as SessionsUpdateArguments
-
-  if (!sessionId) {
-    return reply.status(400).send({
-      message: 'You must provide an sessionId',
-    })
-  }
-
-  const session = await Session.findOne({
-    _id: sessionId,
-  })
-
-  if (!session) {
-    return reply.status(401).send({
-      message: 'Session not found',
-    })
-  }
-
-  const input = {
-    session,
-    type,
-    data,
-  }
-
-  const sessionEventRepository = new SessionEventRepository(SessionEvent)
-  const sessionEvent = await sessionEventRepository.create(input)
-
-  return reply.status(200).send({ eventId: sessionEvent._id })
 }
 
 export const deleteSession = async (
@@ -134,7 +96,6 @@ export const listSessions = async (
     ...sessionPaginatedResponse,
     docs: sessionPaginatedResponse.docs.map(session => ({
       id: session._id,
-      type: session.type,
     })),
   }
 
@@ -155,7 +116,6 @@ export const getSession = async (
 
   const response = {
     id: session._id,
-    type: session.type,
   }
 
   return reply.status(200).send({ session: response })
@@ -196,4 +156,133 @@ export const getSessionEvents = async (
   }
 
   return reply.status(200).send(response)
+}
+
+export const interactSession = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { sessionId, assistant, interaction } =
+    request.body as SessionsInteractArguments
+
+  const session = await Session.findById(sessionId)
+  if (!session) {
+    return reply.status(404).send({
+      message: 'Session not found',
+    })
+  }
+
+  const interactionEventData: InteractionEvent = {
+    assistant,
+    interaction,
+  }
+  const interactionEvent = await SessionEvent.create({
+    session: session._id,
+    type: SessionEventType.INTERACTION,
+    data: interactionEventData,
+  })
+
+  // TODO: Check if user is allowed to interact with session
+
+  const { message, config } = await server.handleInteraction(
+    server,
+    assistant,
+    interaction,
+  )
+
+  const eventData: ChatResponseEvent = {
+    interaction: interactionEvent._id,
+    message,
+  }
+
+  await SessionEvent.create({
+    session: session._id,
+    type: SessionEventType.CHAT_RESPONSE,
+    data: eventData,
+  })
+
+  reply.status(200).send({
+    message,
+    config,
+  })
+}
+
+export const addUsersToSession = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { sessionId, userIds } = request.body as SessionsAddUsersArguments
+
+  const session = await Session.findById(sessionId)
+  if (!session) {
+    return reply.status(404).send({
+      message: 'Session not found',
+    })
+  }
+
+  const users = await User.find({
+    userId: userIds,
+  })
+
+  // Check that all users exist
+  if (users.length !== userIds.length) {
+    return reply.status(404).send({
+      message: 'Some users not found',
+    })
+  }
+
+  const event = {
+    session: session._id,
+    type: SessionEventType.USERS_ADD,
+    data: {
+      usersAdded: {
+        users: users.map(user => user._id),
+      },
+    },
+  }
+
+  await SessionEvent.create(event)
+
+  return reply.status(200).send({})
+}
+
+export const addCharactersToSession = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { sessionId, characterIds } =
+    request.body as SessionsAddCharactersArguments
+
+  const session = await Session.findById(sessionId)
+  if (!session) {
+    return reply.status(404).send({
+      message: 'Session not found',
+    })
+  }
+
+  const characters = await Character.find({
+    _id: characterIds,
+  })
+
+  // Check that all characters exist
+  if (characters.length !== characterIds.length) {
+    return reply.status(404).send({
+      message: 'Some characters not found',
+    })
+  }
+
+  const event = {
+    session: session._id,
+    type: SessionEventType.CHARACTERS_ADD,
+    data: {
+      charactersAdded: {
+        characters: characters.map(character => character._id),
+      },
+    },
+  }
+
+  await SessionEvent.create(event)
+
+  return reply.status(200).send({})
 }

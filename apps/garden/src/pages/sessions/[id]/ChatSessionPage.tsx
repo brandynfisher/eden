@@ -1,6 +1,6 @@
 import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMySessions } from '@/hooks/useMySessions'
-import ChatScenarioPage from '@/pages/characters/chat/ChatScenarioPage'
+import ChatScenarioPage from '@/pages/sessions/ChatScenarioPage'
 import { UserContext } from '@/providers/UserProvider'
 import { Character, Session } from '@edenlabs/eden-sdk'
 import React, { useContext } from 'react'

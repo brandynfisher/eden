@@ -22,7 +22,7 @@ import React, { useContext, useEffect, useState } from 'react'
 
 const EXAMPLE_CHARACTER = {
   name: 'Abraham',
-  description:
+  identity:
     'Abraham is an artificial artist, an AI who creates unique and original artworks.',
   greeting:
     'Greetings. I am Abraham, an artificial artist. I am glad to meet you.',
@@ -41,15 +41,13 @@ interface CharacterFormInput {
   name: string
   image: string
   voice: string
-  description: string
+  identity: string
   greeting: string
   completion: string
   concept?: string
   dialogue?: string
-  logosDocumentation?: string
-  logosDocumentationPrompt?: string
-  logosRouterPrompt?: string
-  logosCreatorPrompt?: string
+  knowledge?: string
+  knowledgeSummary?: string
   isPrivate?: boolean
 }
 
@@ -130,7 +128,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   const [proMode, setProMode] = useState<boolean>(false)
 
   const characterName = Form.useWatch('name', form)
-  const description = Form.useWatch('description', form)
+  const identity = Form.useWatch('identity', form)
   const concept = Form.useWatch('concept', form)
   const characterImageFieldValue = Form.useWatch('image', form) as {} | string
 
@@ -139,27 +137,26 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       mode === 'update' && character
         ? {
             name: character?.name,
-            description: character?.description || '',
+            identity: character?.logosData?.identity || '',
             greeting: character?.greeting || '',
             completion: '',
             image: character?.image || '',
             voice: character?.voice || '',
-            concept: character?.concept || '',
-            logosDocumentation: character?.logosData?.documentation || '',
-            logosDocumentationPrompt:
-              character?.logosData?.documentationPrompt || '',
-            logosRouterPrompt: character?.logosData?.routerPrompt || '',
-            logosCreatorPrompt: character?.logosData?.creatorPrompt || '',
+            concept: character?.logosData?.concept || '',
+            knowledge: character?.logosData?.knowledge || '',
+            knowledgeSummary: character?.logosData?.knowledgeSummary || '',
             isPrivate: character?.isPrivate || false,
           }
         : {
             name: '',
-            description: '',
+            identity: '',
             greeting: '',
             completion: '',
             image: '',
             voice: '',
             concept: '',
+            knowledge: '',
+            knowledgeSummary: '',
             isPrivate: false,
           }
 
@@ -181,7 +178,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       const prompt = compilePrompt(
         characterName,
         recentMessage[0][0],
-        description,
+        identity,
         dialogue,
       )
       const data = {
@@ -201,19 +198,21 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   }
 
   const handleSubmit = async () => {
+    const identity = form.getFieldValue('identity')
+    const concept = form.getFieldValue('concept')
+    const knowledge = form.getFieldValue('knowledge')
+    const knowledgeSummary = form.getFieldValue('knowledgeSummary')
     const data = {
       name: characterName,
-      description: form.getFieldValue('description'),
       greeting: form.getFieldValue('greeting'),
       image: form.getFieldValue('image'),
       voice: form.getFieldValue('voice'),
       dialogue: messageGroups.flat(),
-      concept: form.getFieldValue('concept') || undefined,
       logosData: {
-        documentation: form.getFieldValue('logosDocumentation'),
-        documentationPrompt: form.getFieldValue('logosDocumentationPrompt'),
-        routerPrompt: form.getFieldValue('logosRouterPrompt'),
-        creatorPrompt: form.getFieldValue('logosCreatorPrompt'),
+        identity: identity ? identity : null,
+        concept: concept ? concept : null,
+        knowledge: knowledge ? knowledge : null,
+        knowledgeSummary: knowledgeSummary ? knowledgeSummary : null,
       },
       isPrivate: form.getFieldValue('isPrivate'),
     }
@@ -278,28 +277,26 @@ const CharacterForm = ({ character }: { character?: Character }) => {
 
               <div>
                 <ParameterAddon
-                  title={'Description'}
+                  title={'Identity'}
                   textArea={true}
-                  description={
-                    'Describe your character and shape its personality'
-                  }
+                  description={'Describe your character and shape its identity'}
                 />
                 <Form.Item
                   className="mb-4 w-full"
-                  name="description"
+                  name="identity"
                   rules={[
-                    { required: true, message: 'Please input a description!' },
+                    { required: true, message: 'Please input an identity!' },
                     {
                       min: 3,
                       max: 9999,
                       message:
-                        'Description must be between 3 and 9999 characters!',
+                        'Identity must be between 3 and 9999 characters!',
                     },
                   ]}
                 >
                   <Input.TextArea
                     autoSize
-                    placeholder={EXAMPLE_CHARACTER.description}
+                    placeholder={EXAMPLE_CHARACTER.identity}
                     className="with-addon"
                   />
                 </Form.Item>
@@ -375,23 +372,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 </Form.Item>
               </div>
 
-              <Form.Item
-                label={
-                  <FormLabel
-                    text="Example Messages"
-                    description="Add sample dialogs to further refine the personality of your character"
-                  />
-                }
-                className="label-auto-height"
-                labelCol={{ span: 24 }}
-                name="messages"
-              >
-                <ChatCapabilityMessageSection
-                  messageGroups={messageGroups}
-                  setMessageGroups={setMessageGroups}
-                />
-              </Form.Item>
-
               {proMode && (
                 <>
                   <CharacterFormPro />
@@ -421,6 +401,22 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                         onChange={() => form.setFieldValue('concept', null)}
                       />
                     )}
+                    <Form.Item
+                      label={
+                        <FormLabel
+                          text="Example Messages"
+                          description="Add sample dialogs to further refine the personality of your character"
+                        />
+                      }
+                      className="label-auto-height"
+                      labelCol={{ span: 24 }}
+                      name="messages"
+                    >
+                      <ChatCapabilityMessageSection
+                        messageGroups={messageGroups}
+                        setMessageGroups={setMessageGroups}
+                      />
+                    </Form.Item>
                   </Form.Item>
                 </>
               )}

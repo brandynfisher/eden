@@ -17,7 +17,7 @@ const CharacterCardFeatures: FC<{ character: Character }> = ({ character }) => {
     },
     {
       label: 'Concept',
-      isActive: !!character.concept,
+      isActive: !!character.logosData?.concept,
     },
     // {
     //   label: 'Discord',
@@ -98,9 +98,9 @@ const CharacterCard: FC<{
             </div>
             <div
               className="line-clamp-2 text-gray-300"
-              title={character.description}
+              title={character.logosData?.identity}
             >
-              {character.description}
+              {character.logosData?.identity}
             </div>
           </div>
           {showFeatures ? (

@@ -4,12 +4,7 @@ import { useMyCharacters } from '@/hooks/useMyCharacters'
 import { useMySessions } from '@/hooks/useMySessions'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
-import {
-  Character,
-  ScenarioType,
-  Session,
-  SessionEventType,
-} from '@edenlabs/eden-sdk'
+import { Character, Session } from '@edenlabs/eden-sdk'
 import { App, Button, Select } from 'antd'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -26,7 +21,6 @@ const ChatScenarioPageContent = ({
 }) => {
   const router = useRouter()
   const { message } = App.useApp()
-  const { userId } = useContext(UserContext)
   const [activeCharacter, setActiveCharacter] = useState<Character>(
     characters?.[0] as Character,
   )
@@ -48,30 +42,8 @@ const ChatScenarioPageContent = ({
   const handleStartChat = async () => {
     setSessionCreating(true)
     try {
-      const response = await axios.post('/api/sessions/create', {
-        type: ScenarioType.CHATROOM,
-      })
+      const response = await axios.post('/api/sessions/create', {})
       const { sessionId } = response.data
-      const userAddEvent = {
-        sessionId,
-        type: SessionEventType.USER_ADD,
-        data: {
-          userAdded: {
-            userId: userId,
-          },
-        },
-      }
-      await axios.post('/api/sessions/update', userAddEvent)
-      const characterAddEvent = {
-        sessionId,
-        type: SessionEventType.CHARACTER_ADD,
-        data: {
-          characterAdded: {
-            character: activeCharacter.id,
-          },
-        },
-      }
-      await axios.post('/api/sessions/update', characterAddEvent)
       setSessionId(sessionId)
       await router.push('', `/characters/chat/${sessionId}`)
     } catch (error) {
