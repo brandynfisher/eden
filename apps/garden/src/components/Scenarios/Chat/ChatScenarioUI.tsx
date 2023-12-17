@@ -98,11 +98,10 @@ const ChatScenarioUI = ({
       const res = await axios.post(`/api/sessions/interact`, {
         sessionId,
         assistant: {
-          character_description: activeCharacter.description,
-          documentation_prompt: activeCharacter.logosData?.documentationPrompt,
-          router_prompt: activeCharacter.logosData?.routerPrompt,
-          creator_prompt: activeCharacter.logosData?.creatorPrompt,
-          documentation: activeCharacter.logosData?.documentation,
+          name: activeCharacter.name,
+          identity: activeCharacter.logosData?.identity,
+          knowledge: activeCharacter.logosData?.knowledge,
+          knowledgeSummary: activeCharacter.logosData?.knowledgeSummary,
         },
         interaction: {
           prompt: text,
