@@ -2,7 +2,7 @@ const params = [
 
   {
     name: 'init_image',
-    label: 'Init image',
+    label: 'Starting image',
     description:
       'The image you want to upscale',
     default: null,
@@ -11,9 +11,9 @@ const params = [
   },
   {
     name: 'init_image_strength',
-    label: 'Init image strength',
+    label: 'Image strength',
     description:
-      'How much to weight the input init image in the diffusion process. Recommended 0.3-0.6, Lower values will drift away from the input image more, but will imagine new details more easily, possibly leading to a sharper final image.',
+      'How much to weight the starting image in the diffusion process. Recommended 0.3-0.6, Lower values will drift away from the input image more, but will imagine new details more easily, possibly leading to a sharper final image.',
     default: 0.45,
     minimum: 0.0,
     maximum: 1.0,
@@ -52,7 +52,7 @@ const params = [
 
   {
     name: 'n_samples',
-    label: 'Samples',
+    label: 'Variations',
     description: 'Number of variations to create',
     default: 1,
     allowedValues: [1, 2, 3, 4],
@@ -61,7 +61,7 @@ const params = [
   
   {
     name: 'adopt_aspect_from_init_img',
-    label: 'Adopt aspect ratio of starting image',
+    label: 'Adopt aspect',
     description: 'Make a creation with the same aspect ratio as the starting image',
     default: true,
     allowedValues: [false, true],
@@ -78,8 +78,8 @@ const params = [
   },
   {
     name: 'guidance_scale',
-    label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance',
+    label: 'Prompt strength',
+    description: 'Higher values usually also increase saturation and constrast',
     default: 6.0,
     minimum: 0.0,
     maximum: 20.0,
@@ -98,8 +98,8 @@ const params = [
     name: 'steps',
     label: 'Steps',
     description: 'Number of denoising steps (recommended to use >30)',
-    default: 60,
-    minimum: 5,
+    default: 50,
+    minimum: 10,
     maximum: 70,
     optional: true,
   },
