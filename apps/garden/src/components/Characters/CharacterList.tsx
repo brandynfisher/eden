@@ -13,14 +13,14 @@ import React from 'react'
 // const CharacterListItem = ({ character }: { character: Character }) => {
 //   return (
 //     <Link
-//       href={`/characters/${character.id}`}
+//       href={`/characters/${character._id}`}
 //       passHref
 //       className="flex justify-between gap-4 cursor-pointer bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-black p-4 rounded-lg text-black dark:text-white"
 //     >
 //       <div className="flex items-center gap-4">
 //         <div className="flex-shrink-0 min-w-0 flex items-center">
 //           <CharacterAvatar
-//             id={character.id}
+//             id={character._id}
 //             name={character.name}
 //             imageUri={character.image || ''}
 //           />
@@ -46,7 +46,7 @@ import React from 'react'
 //             <CommentOutlined />
 //           </Button>
 //         </Link>
-//         <Link href={`/create/characters/${character.id}`}>
+//         <Link href={`/create/characters/${character._id}`}>
 //           <Button>
 //             <SettingOutlined />
 //           </Button>
@@ -58,9 +58,9 @@ import React from 'react'
 
 const MyCharacterCard = ({ character }: { character: Character }) => {
   return (
-    <div key={character.id}>
+    <div key={character._id}>
       <CharacterCard
-        character={character}
+        data={character}
         className="!rounded-b-none !border-b-0"
         showAuthor={false}
         showFeatures={true}
@@ -70,12 +70,12 @@ const MyCharacterCard = ({ character }: { character: Character }) => {
           {/* <Button
             className="flex items-center gap-0.5"
             type="primary"
-            onClick={() => createSession(character.id, router)}
+            onClick={() => createSession(character._id, router)}
           >
             <CommentOutlined />
             Chat
           </Button> */}
-          <Link href={`/create/characters/${character.id}`}>
+          <Link href={`/create/characters/${character._id}`}>
             <Button className="flex items-center gap-0.5">
               <SettingOutlined />
               Edit
@@ -93,7 +93,7 @@ const CharacterList = ({ characters }: { characters: Character[] }) => {
       {characters && characters.length ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 space-x-4 space-y-4">
           {characters.map(character => (
-            <MyCharacterCard key={character.id} character={character} />
+            <MyCharacterCard key={character._id} character={character} />
           ))}
         </div>
       ) : (

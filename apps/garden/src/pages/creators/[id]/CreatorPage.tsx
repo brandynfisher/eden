@@ -1,3 +1,4 @@
+import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import CollectionCard from '@/components/Collections/CollectionCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
@@ -57,6 +58,20 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
   )
 }
 
+const CharacterTabContent = ({ creatorId }: { creatorId: string }) => {
+  return (
+    <div className="mt-4">
+      <MasonryInfiniteContainer
+        key={`characters_${creatorId}`}
+        itemType="character"
+        query={{ userId: creatorId }}
+        filters={[OrderByLatest, OrderByUsage]}
+        ItemComponent={CharacterFeedCard}
+      />
+    </div>
+  )
+}
+
 const CollectionTabContent = ({
   collections,
 }: {
@@ -87,6 +102,11 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       label: 'Concepts',
       key: 'concepts',
       children: <ConceptTabContent creatorId={creator.userId} />,
+    },
+    {
+      label: 'Characters',
+      key: 'characters',
+      children: <CharacterTabContent creatorId={creator.userId} />,
     },
     {
       label: 'Collections',

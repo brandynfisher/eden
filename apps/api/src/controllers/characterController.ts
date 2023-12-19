@@ -191,7 +191,7 @@ export const listCharacters = async (
   const response = {
     ...characterPaginatedResponse,
     docs: characterPaginatedResponse.docs.map(character => ({
-      id: character._id.toString(),
+      _id: character._id.toString(),
       user: character.user,
       name: character.name,
       slug: character.slug,
@@ -230,7 +230,7 @@ export const getCharacter = async (
   }
 
   const response = {
-    id: character._id,
+    _id: character._id,
     user: character.user.toString(),
     name: character.name,
     slug: character.slug,

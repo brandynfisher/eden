@@ -1,4 +1,5 @@
 import {
+  FeedCharactersArguments,
   FeedConceptsArguments,
   FeedCreationsArguments,
   PaginatedResponse,
@@ -8,12 +9,14 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { PipelineStage } from 'mongoose'
 
+import { Character, CharacterDocument } from '../models/Character'
 import { Collection } from '../models/Collection'
 import { Concept, ConceptDocument } from '../models/Concept'
 import { Creation, CreationDocument } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Follow } from '../models/Follow'
 import { Reaction } from '../models/Reaction'
+import CharacterRepository from '../repositories/CharacterRepository'
 import ConceptRepository from '../repositories/ConceptRepository'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
@@ -555,5 +558,216 @@ export const getConceptsFeed = async (
   } else {
     // No user, so no reactions or bookmarks
     return reply.status(200).send(concepts)
+  }
+}
+
+const charactersAggregate = (
+  searchText: string,
+  userId: string,
+  filter?: {
+    isPrivate?: { $ne?: boolean }
+    deleted?: { $ne?: boolean }
+  },
+  options?: { limit?: number; page?: number },
+) => {
+  const pipelines: PipelineStage[] = [
+    {
+      $search: {
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: searchText,
+                path: 'name',
+              },
+            },
+            {
+              autocomplete: {
+                query: searchText,
+                path: 'conceptName',
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+        },
+      },
+    },
+  ]
+
+  if (userId) {
+    pipelines.push({
+      $match: {
+        user: new ObjectId(userId),
+      },
+    })
+  }
+
+  if (filter?.isPrivate) {
+    pipelines.push({
+      $match: {
+        isPrivate: filter.isPrivate,
+      },
+    })
+  }
+
+  if (filter?.deleted) {
+    pipelines.push({
+      $match: {
+        deleted: filter.deleted,
+      },
+    })
+  }
+
+  // if (options && options.page && options.limit) {
+  //   pipelines.push({
+  //     $limit: options.limit,
+  //   })
+  //   pipelines.push({
+  //     $skip: options.limit * (options.page - 1),
+  //   })
+  // }
+
+  return Character.aggregate(pipelines)
+}
+
+export const getCharactersFeed = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const {
+    userId: filterUserIds,
+    name,
+    limit,
+    page,
+    orderBy,
+    direction,
+  } = request.query as FeedCharactersArguments
+  const creatorsRepository = new CreatorRepository(User)
+  const creators = await creatorsRepository.query({
+    userId: filterUserIds,
+  })
+
+  const ownUserId = request.user ? request.user.userId : undefined
+  const creatorId =
+    filterUserIds && creators.docs && creators.docs.length
+      ? creators.docs.map(creator => creator._id)[0].toString()
+      : undefined
+  const isUserRequestingOwnProfileFeed =
+    creatorId && ownUserId && ownUserId.toString() === creatorId
+
+  const characterRepo = new CharacterRepository(Character)
+
+  const sort = []
+  const sortFilter: { [key: string]: unknown } = {}
+
+  // exclude zero count items when sorting by likes, bookmarks, etc
+  if (
+    orderBy === 'creationCount' ||
+    orderBy === 'bookmarkCount' ||
+    orderBy === 'praiseCount'
+  ) {
+    sortFilter[orderBy] = { $gt: 0 }
+  }
+
+  if (orderBy && direction) {
+    sort.push([orderBy, direction])
+  }
+
+  // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
+  if (orderBy !== 'createdAt') {
+    sort.push(['createdAt', -1])
+  }
+
+  if (!isUserRequestingOwnProfileFeed) {
+    sortFilter['isPrivate'] = { $ne: true }
+  }
+
+  // needed to not end up with duplicates in aggregations wtf mongo
+  sort.push(['_id', -1])
+
+  let characters: PaginatedResponse<CharacterDocument>
+  // use atlas search query
+  if (name) {
+    const aggregate = charactersAggregate(name, creatorId, {
+      ...sortFilter,
+      deleted: { $ne: true },
+    })
+    // console.log(JSON.stringify(aggregate))
+    const sortObj = Object.fromEntries(sort)
+    // console.log(sortObj)
+    characters = await characterRepo.aggregateQuery(aggregate, {
+      limit,
+      page,
+      sort: sortObj,
+    })
+    // console.log(characters)
+    // use flat query
+  } else {
+    characters = await characterRepo.query(
+      {
+        user:
+          filterUserIds && creators.docs
+            ? creators.docs.map(creator => creator._id)
+            : undefined,
+        ...sortFilter,
+      },
+      {
+        limit,
+        page,
+        sort,
+      },
+    )
+  }
+
+  // console.log(characters)
+
+  await characterRepo.model.populate(characters.docs, {
+    path: 'user',
+    select: 'userId username userImage',
+  })
+
+  if (ownUserId) {
+    interface CharacterDocumentExtension {
+      reactions: Map<ReactionType, boolean>
+      bookmarked: boolean
+    }
+
+    type FeedResponse = {
+      docs: CharacterDocumentExtension[]
+      reactions: { [key: string]: Map<ReactionType, boolean> } | []
+      bookmarks: { [key: string]: boolean } | []
+    }
+
+    const feed: FeedResponse = {
+      ...characters,
+      docs: [],
+      reactions: [],
+      bookmarks: [],
+    }
+
+    // if (characters.docs) {
+    //   const uid = new ObjectId(ownUserId)
+    //   const reactionsMap = await getConceptReactions(uid, characters.docs)
+    //   const bookmarksMap = await getConceptBookmarks(uid, characters.docs)
+    //
+    //   const extendedDocs = characters.docs.map(character => {
+    //     return {
+    //       ...(typeof character.toObject !== 'undefined'
+    //         ? character.toObject()
+    //         : character), //aggregate returns different format than query
+    //       reactions: reactionsMap[character._id.toString()],
+    //       bookmarked: bookmarksMap[character._id.toString()],
+    //     }
+    //   })
+    //   feed.docs = extendedDocs
+    //   feed.reactions = reactionsMap
+    //   feed.bookmarks = bookmarksMap
+    // }
+
+    // console.log(feed)
+    return reply.status(200).send(characters)
+  } else {
+    // No user, so no reactions or bookmarks
+    return reply.status(200).send(characters)
   }
 }

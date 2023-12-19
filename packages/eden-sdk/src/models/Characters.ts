@@ -137,7 +137,7 @@ export type CharactersGetResponse = WebAPICallResult & {
 // Types
 
 export type Character = {
-  id: string
+  _id: string
   user: Creator
   name: string
   slug: string

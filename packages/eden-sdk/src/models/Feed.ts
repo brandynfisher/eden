@@ -30,6 +30,13 @@ export interface FeedConceptsArguments
   name?: string
 }
 
+export interface FeedCharactersArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+  name?: string
+}
+
 // Requests
 
 export const feedCreationsRequestConfig = (

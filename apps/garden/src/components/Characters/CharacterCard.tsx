@@ -68,7 +68,7 @@ const CharacterCard: FC<{
       }`}
     >
       <Link
-        href={`/characters/${character.id}`}
+        href={`/characters/${character._id}`}
         className="w-full hover:brightness-110"
       >
         {character.isPrivate ? (

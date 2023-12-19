@@ -1,3 +1,5 @@
+import { CardData } from '@/components/Card/Card'
+import CharacterCard from '@/components/Characters/CharacterCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
@@ -35,7 +37,7 @@ const MasonryInfinite = ({
   emptyResultHandler,
 }: {
   itemType: ItemType
-  ItemComponent: typeof CreationCard | typeof ConceptCard
+  ItemComponent: typeof CreationCard | typeof ConceptCard | typeof CharacterCard
   query?: PaginatedFeedQuery
   orderBy: OrderByParam
   emptyResultHandler?: (orderBy: OrderByParam) => void
@@ -138,7 +140,7 @@ const MasonryInfinite = ({
   }, [])
 
   const CardWithClick = useCallback(
-    (props: { data: Creation & Concept; index: number }) => (
+    (props: { data: CardData; index: number }) => (
       <ItemComponent
         key={props.data._id}
         index={props.index}

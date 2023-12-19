@@ -1,3 +1,4 @@
+import CharacterCard from '@/components/Characters/CharacterCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
@@ -17,7 +18,7 @@ const MasonryInfiniteContainer = ({
   fallbackFilter,
 }: {
   itemType: ItemType
-  ItemComponent: typeof CreationCard | typeof ConceptCard
+  ItemComponent: typeof CreationCard | typeof ConceptCard | typeof CharacterCard
   filters?: OrderByParam[]
   query?: PaginatedFeedQuery
   fallbackFilter?: OrderByParam

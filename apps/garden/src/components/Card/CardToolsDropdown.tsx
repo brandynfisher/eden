@@ -14,7 +14,7 @@ import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
   ReactNode,
@@ -42,7 +42,7 @@ const CardToolsDropdown = ({
   onChange,
 }: {
   onOpen?: Function
-  item: Creation | Concept
+  item: Creation | Concept | Character
   itemType: ItemType
   onChange: (updatedData: CardData) => void
 }) => {
@@ -196,10 +196,13 @@ const CardToolsDropdown = ({
     const hasUserFeatureFlagPrivate =
       user && user.featureFlags && user.featureFlags.includes('preview')
 
+    const { attributes } =
+      itemType === 'concept' || itemType === 'creation'
+        ? (item as Concept | Creation)
+        : {}
+
     const isNsfw =
-      item.attributes &&
-      item.attributes.nsfw_score &&
-      item.attributes.nsfw_score > 0.5
+      attributes && attributes.nsfw_score && attributes.nsfw_score > 0.5
 
     const creatorMenuItems: MenuItem[] =
       hasUserFeatureFlagPrivate && user?.userId === item.user.userId

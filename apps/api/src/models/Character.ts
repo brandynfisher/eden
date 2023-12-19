@@ -1,6 +1,7 @@
 import { Capabilites, LogosData } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
@@ -130,6 +131,7 @@ character.pre<CharacterDocument>('save', function (next) {
 
 character.plugin(mongooseDelete, { overrideMethods: 'all' })
 character.plugin(paginate)
+character.plugin(aggregatePaginate)
 character.plugin(slug, {
   tmpl: '<%=name%>',
 })

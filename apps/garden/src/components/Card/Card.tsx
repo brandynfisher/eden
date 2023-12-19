@@ -9,7 +9,7 @@ import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
 import { ItemType } from '@/providers/ModalProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
@@ -18,7 +18,7 @@ import { App, Tag } from 'antd'
 import axios from 'axios'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 
-export type CardData = Creation | Concept
+export type CardData = Creation | Concept | Character
 
 export interface CardProps {
   index: number
@@ -112,16 +112,27 @@ const Card: FC<CardWithTypeProps> = ({
             hovered={hovered}
             sizes={sizes}
           />
-        ) : (
+        ) : null}
+        {itemType === 'concept' ? (
           <CardImage
-            uri={itemData.thumbnail || ''}
+            uri={(itemData as Concept).thumbnail || ''}
             width={0}
             height={0}
             priority={index < 10}
             sizes={sizes}
             className="!rounded-none !rounded-t-lg"
           />
-        )}
+        ) : null}
+        {itemType === 'character' ? (
+          <CardImage
+            uri={(itemData as Character).image || ''}
+            width={0}
+            height={0}
+            priority={index < 10}
+            sizes={sizes}
+            className="!rounded-none !rounded-t-lg"
+          />
+        ) : null}
       </a>
       {itemData.deleted ? (
         <div className="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center">
@@ -142,7 +153,8 @@ const Card: FC<CardWithTypeProps> = ({
             hovered ? 'md:hidden' : ''
           }`}
         >
-          {itemData.attributes &&
+          {(itemType === 'creation' || itemType === 'concept') &&
+          typeof itemData.attributes !== 'undefined' &&
           itemData.attributes.nsfw_score &&
           itemData.attributes.nsfw_score > 0.5 ? (
             <Tag color={'warning'} className="text-xs">

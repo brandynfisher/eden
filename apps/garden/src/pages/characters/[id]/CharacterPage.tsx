@@ -28,7 +28,7 @@ const CharacterPageContent = ({ character }: { character: Character }) => {
     {
       label: 'Creations',
       key: 'creations',
-      children: <CreationTabContent characterId={character.id} />,
+      children: <CreationTabContent characterId={character._id} />,
     },
     {
       label: 'Chats',
@@ -94,7 +94,7 @@ const CharacterPageContent = ({ character }: { character: Character }) => {
 }
 
 const CharacterPage = ({ data }: { data: Character }) => {
-  const { character: characterData } = useCharacter(data ? data.id : null, {
+  const { character: characterData } = useCharacter(data ? data._id : null, {
     fallbackData: data,
   })
 
