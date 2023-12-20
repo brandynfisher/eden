@@ -3,9 +3,10 @@ import {
   CharactersDeleteArguments,
   CharactersGetArguments,
   CharactersListArguments,
+  CharactersTestArguments,
   CharactersUpdateArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { ApiKey } from '../models/ApiKey'
@@ -244,4 +245,23 @@ export const getCharacter = async (
   }
 
   return reply.status(200).send({ character: response })
+}
+
+export const testCharacter = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { assistant, interaction } = request.body as CharactersTestArguments
+
+  const { message, config } = await server.handleInteraction(
+    server,
+    assistant,
+    interaction,
+  )
+
+  reply.status(200).send({
+    message,
+    config,
+  })
 }

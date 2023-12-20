@@ -8,10 +8,16 @@ import {
   deleteCharacter,
   getCharacter,
   listCharacters,
+  testCharacter,
   updateCharacter,
 } from '../controllers/characterController'
 import { createTask } from '../controllers/taskController'
-import { isAuth, isCharacter, maybeAuth } from '../middleware/authMiddleware'
+import {
+  isAdmin,
+  isAuth,
+  isCharacter,
+  maybeAuth,
+} from '../middleware/authMiddleware'
 
 // const logosType = Type.Optional(
 //   Type.Object({
@@ -167,6 +173,32 @@ const characterRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => listCharacters(request, reply),
+  })
+
+  server.post('/characters/test', {
+    schema: {
+      body: Type.Object({
+        assistant: Type.Object({
+          name: Type.String(),
+          identity: Type.String(),
+          knowledge: Type.Optional(Type.String()),
+          knowledge_summary: Type.Optional(Type.String()),
+        }),
+        interaction: Type.Object({
+          prompt: Type.String(),
+          author_id: Type.String(),
+          attachments: Type.Optional(Type.Array(Type.String())),
+        }),
+      }),
+      response: {
+        200: Type.Object({
+          message: Type.String(),
+          config: Type.Optional(Type.Any()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => testCharacter(server, request, reply),
   })
 
   server.post('/characters/tasks/create', {

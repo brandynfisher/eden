@@ -24,6 +24,8 @@ import {
   CharactersGetResponse,
   CharactersListArguments,
   CharactersListResponse,
+  CharactersTestArguments,
+  CharactersTestResponse,
   CharactersUpdateArguments,
   CharactersUpdateResponse,
   CollectionsAddCreationsArguments,
@@ -131,6 +133,7 @@ import {
   charactersDeleteRequestConfig,
   charactersGetRequestConfig,
   charactersListRequestConfig,
+  charactersTestRequestConfig,
   charactersUpdateRequestConfig,
   collectionsAddCreationsRequestConfig,
   collectionsCreateRequestConfig,
@@ -292,6 +295,10 @@ export abstract class Methods {
     get: bindApiCall<CharactersGetArguments, CharactersGetResponse>(
       this,
       charactersGetRequestConfig,
+    ),
+    test: bindApiCall<CharactersTestArguments, CharactersTestResponse>(
+      this,
+      charactersTestRequestConfig,
     ),
   }
 
