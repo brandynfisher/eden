@@ -112,7 +112,6 @@ export const PraiseButton = ({
           )}
         </div>
         {showCounts ? <div>{item.praiseCount || 0}</div> : null}
-        {/*<div>{item.praiseCount || 0}</div>*/}
       </div>
     </div>
   )

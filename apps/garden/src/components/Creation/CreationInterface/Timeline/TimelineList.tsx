@@ -185,10 +185,12 @@ const TimelineList = ({
   const resizeObserver = useResizeObserver(positioner)
 
   useEffect(() => {
-    const counts = items.filter(
-      item => item.status === 'completed' || item.status === 'failed',
-    ).length
-    setTasksDoneCount(counts)
+    if (items && items.length && typeof items[0] !== 'undefined') {
+      const counts = items.filter(
+        item => item.status === 'completed' || item.status === 'failed',
+      ).length
+      setTasksDoneCount(counts)
+    }
   }, [items])
 
   return (
