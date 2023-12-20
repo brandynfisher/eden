@@ -254,7 +254,7 @@ export const testCharacter = async (
 ) => {
   const { assistant, interaction } = request.body as CharactersTestArguments
 
-  const { message, config } = await server.handleInteraction(
+  const { message, config } = await server.handleInteractionTest(
     server,
     assistant,
     interaction,
