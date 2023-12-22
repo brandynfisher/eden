@@ -59,13 +59,13 @@ const params = [
   },
   {
     name: 'lora_scale',
-    label: 'Concept scale',
+    label: 'Concept strength',
     description:
-      'How strongly to activate the concept (0.0 will disable the concept)',
-    default: 0.65,
+      'How strongly to activate the concept. Lower this value if output looks too similar to your training images',
+    default: 0.7,
     minimum: 0.0,
-    maximum: 1.5,
-    step: 0.01,
+    maximum: 1.2,
+    step: 0.02,
     optional: true,
   },
   
@@ -90,9 +90,9 @@ const params = [
   },
   {
     name: 'guidance_scale',
-    label: 'Guidance scale (cfg_scale)',
-    description: 'Strength of prompt guidance, higher values result in frames with more saturation and contrast',
-    default: 7.0,
+    label: 'Prompt strength',
+    description: 'Higher values usually also increase saturation and constrast',
+    default: 8.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,
@@ -115,11 +115,12 @@ const params = [
     maximum: 70,
     optional: true,
   },
+
   {
     name: 'smooth',
     label: 'Smooth',
     description:
-      'Use video smoothing (highly recommended), turning this off leads to a very different aesthetic with more frame flicker',
+      'Use visual smoothing algorithm (highly recommended), turning this off leads to a very different aesthetic with more frame flicker',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -129,7 +130,7 @@ const params = [
     name: 'n_film',
     label: 'FILM Iterations',
     description:
-      'Optionally apply FILM postprocessing to create a smoother video (1 = highly recommended)',
+      'Number of iterations to apply FILM postprocessing (frame smoothing) to create a smoother video (1 = highly recommended)',
     default: 1,
     allowedValues: [0, 1, 2, 3],
     optional: true,
@@ -156,7 +157,7 @@ const params = [
   },
   {
     name: 'interpolation_init_images_min_strength',
-    label: 'fading smoothness',
+    label: 'Fading smoothness',
     description:
       'Low values will result in a rich visual journey, higher values will look more like alpha-fading but will also be smoother. Values above 0.4 are almost never needed',
     default: 0.05,
@@ -167,7 +168,7 @@ const params = [
   },
   {
     name: 'interpolation_init_images_max_strength',
-    label: '(real) keyframe strength',
+    label: 'Keyframe strength',
     description:
       'Strength of the real images during interpolation. Setting this to 1.0 will exactly reproduce the init imgs at some point in the video, lower values will allow the video to drift away from your uploaded images',
     default: 0.8,

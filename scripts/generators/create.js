@@ -30,7 +30,7 @@ const params = [
   
   {
     name: 'n_samples',
-    label: 'Samples',
+    label: 'Variations',
     description: 'Number of variations to create',
     default: 1,
     allowedValues: [1, 2, 3, 4],
@@ -45,10 +45,10 @@ const params = [
   },
   {
     name: 'lora_scale',
-    label: 'Concept scale',
+    label: 'Concept strength',
     description:
-      'How strongly to activate the concept, lower this value if your prompt is being ignored and all creations look too similar to your training images',
-    default: 0.65,
+      'How strongly to activate the concept. Lower this value if your prompt is being ignored and all creations look too similar to your training images.',
+    default: 0.7,
     minimum: 0.0,
     maximum: 1.2,
     step: 0.02,
@@ -65,7 +65,7 @@ const params = [
   },
   {
     name: 'init_image_strength',
-    label: 'Starting image strength',
+    label: 'Image strength',
     description:
       'How much influence the starting image (if there is one) has on the creation. Recommended <0.2',
     default: 0.15,
@@ -77,7 +77,7 @@ const params = [
   
   {
     name: 'adopt_aspect_from_init_img',
-    label: 'Adopt aspect ratio of starting image',
+    label: 'Adopt aspect',
     description: 'Make a creation with the same aspect ratio as the starting image',
     default: true,
     allowedValues: [false, true],
@@ -87,15 +87,15 @@ const params = [
   {
     name: 'uc_text',
     label: 'Negative prompt',
-    description: 'what you DONT want to see',
+    description: 'What you DONT want to see',
     default:
       'watermark, text, nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, blurry, blurred, grainy, signature, cut off, draft',
     optional: true,
   },
   {
     name: 'guidance_scale',
-    label: 'Guidance scale',
-    description: 'Strength of the prompt (higher values usually increase saturation and constrast)',
+    label: 'Prompt strength',
+    description: 'Higher values usually also increase saturation and constrast',
     default: 8.0,
     minimum: 0.0,
     maximum: 20.0,
@@ -105,7 +105,7 @@ const params = [
   {
     name: 'sampler',
     label: 'Sampler',
-    description: 'Sampler to use for generation',
+    description: 'Diffusion sampler to use for generation',
     default: 'euler',
     allowedValues: ["ddim", "ddpm", "klms", "euler", "euler_ancestral", "dpm", "kdpm2", "kdpm2_ancestral", "pndm"],
     optional: true,
@@ -119,6 +119,15 @@ const params = [
     maximum: 50,
     optional: true,
   },
+
+  // {
+  //   name: 'checkpoint',
+  //   label: 'Checkpoint',
+  //   description: 'Which generator model to use',
+  //   default: 'juggernaut_XL2',
+  //   allowedValues: ["juggernaut_XL2", "sdxl-v1.0"],
+  //   optional: true,
+  // },
   {
     name: 'seed',
     label: 'Seed',

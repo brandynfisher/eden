@@ -1,3 +1,4 @@
+import { CardData } from '@/components/Card/Card'
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
@@ -15,7 +16,7 @@ import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
 import Head from 'next/head'
@@ -43,14 +44,14 @@ const Details = ({
   modalContainerHeight,
 }: // loadSimilar,
 {
-  item: Creation | Concept
+  item: CardData
   itemType: ItemType
   isModal?: boolean
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
   // loadSimilar?: boolean
 }) => {
-  const [itemData, setItemData] = useState<Creation | Concept>(item)
+  const [itemData, setItemData] = useState<CardData>(item)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
@@ -100,8 +101,31 @@ const Details = ({
           content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
         />
         <meta property="og:description" content={item.name} key="description" />
-        <meta property="og:image" content={item.thumbnail} key="image" />
-        <meta property="og:image:secure_url" content={item.thumbnail} />
+        {itemType === 'character' ? (
+          <>
+            <meta
+              property="og:image"
+              content={(item as Character).image}
+              key="image"
+            />
+            <meta
+              property="og:image:secure_url"
+              content={(item as Character).image}
+            />
+          </>
+        ) : (
+          <>
+            <meta
+              property="og:image"
+              content={getItemMediaUrl(itemType, item as Creation | Concept)}
+              key="image"
+            />
+            <meta
+              property="og:image:secure_url"
+              content={getItemMediaUrl(itemType, item as Creation | Concept)}
+            />
+          </>
+        )}
         <meta
           property="og:image:alt"
           content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
@@ -129,8 +153,15 @@ const Details = ({
           >
             <div
               onClick={
-                isImageUrl(getItemMediaUrl(itemType, item))
-                  ? () => handlePreviewClick(getItemMediaUrl(itemType, item))
+                itemType === 'character'
+                  ? () => handlePreviewClick((item as Character).image)
+                  : isImageUrl(
+                      getItemMediaUrl(itemType, item as Creation | Concept),
+                    )
+                  ? () =>
+                      handlePreviewClick(
+                        getItemMediaUrl(itemType, item as Creation | Concept),
+                      )
                   : () => false
               }
               className="relative flex justify-center flex-grow max-h-[80vh] overflow-hidden"
@@ -159,18 +190,14 @@ const Details = ({
               <CardReactions
                 itemType={itemType}
                 item={itemData}
-                onChange={
-                  setItemData as Dispatch<SetStateAction<Concept | Creation>>
-                }
+                onChange={setItemData as Dispatch<SetStateAction<CardData>>}
                 showCounts={true}
               />
               {itemData ? (
                 <CardToolsDropdown
                   item={itemData}
                   itemType={itemType}
-                  onChange={
-                    setItemData as Dispatch<SetStateAction<Concept | Creation>>
-                  }
+                  onChange={setItemData as Dispatch<SetStateAction<CardData>>}
                 />
               ) : null}
             </div>

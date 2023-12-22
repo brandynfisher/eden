@@ -1,5 +1,5 @@
 import { CardData } from '@/components/Card/Card'
-import CharacterCard from '@/components/Characters/CharacterCard'
+import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
@@ -12,7 +12,7 @@ import {
   useModalContext,
 } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import {
   useResizeObserver as useResizeObserverMantine,
   useViewportSize,
@@ -37,7 +37,10 @@ const MasonryInfinite = ({
   emptyResultHandler,
 }: {
   itemType: ItemType
-  ItemComponent: typeof CreationCard | typeof ConceptCard | typeof CharacterCard
+  ItemComponent:
+    | typeof CreationCard
+    | typeof ConceptCard
+    | typeof CharacterFeedCard
   query?: PaginatedFeedQuery
   orderBy: OrderByParam
   emptyResultHandler?: (orderBy: OrderByParam) => void
@@ -129,7 +132,7 @@ const MasonryInfinite = ({
       originPageUrl: router.asPath,
       maybeLoadMoreFn: (
         currentIndex: number,
-        currentItems: Creation[] | Concept[],
+        currentItems: Creation[] | Concept[] | Character[],
       ) => {
         if (currentIndex === currentItems.length - 1) {
           maybeLoadMore(currentIndex, currentIndex + 10, currentItems)

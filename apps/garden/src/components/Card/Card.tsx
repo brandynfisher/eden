@@ -1,6 +1,8 @@
+import CardFooterWrap from '@/components/Card/CardFooterWrap'
 import CardImage from '@/components/Card/CardImage'
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
+import CharacterCardFooter from '@/components/Characters/CharacterCardFooter'
 import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
 import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
@@ -31,6 +33,23 @@ export interface CardProps {
 }
 
 export type CardWithTypeProps = CardProps & { itemType: ItemType }
+
+const NsfwBadge = ({
+  item,
+  className,
+}: {
+  item: Creation | Concept
+  className?: string
+}) => {
+  return typeof item.attributes !== 'undefined' &&
+    item.attributes &&
+    item.attributes.nsfw_score &&
+    item.attributes.nsfw_score > 0.5 ? (
+    <Tag color={'warning'} className={`text-xs ${className ? className : ''}`}>
+      NSFW
+    </Tag>
+  ) : null
+}
 
 const Card: FC<CardWithTypeProps> = ({
   itemType,
@@ -125,12 +144,12 @@ const Card: FC<CardWithTypeProps> = ({
         ) : null}
         {itemType === 'character' ? (
           <CardImage
-            uri={(itemData as Character).image || ''}
+            uri={(itemData as Character).image}
             width={0}
             height={0}
             priority={index < 10}
             sizes={sizes}
-            className="!rounded-none !rounded-t-lg"
+            className="!rounded-none !rounded-t-lg w-auto"
           />
         ) : null}
       </a>
@@ -153,13 +172,8 @@ const Card: FC<CardWithTypeProps> = ({
             hovered ? 'md:hidden' : ''
           }`}
         >
-          {(itemType === 'creation' || itemType === 'concept') &&
-          typeof itemData.attributes !== 'undefined' &&
-          itemData.attributes.nsfw_score &&
-          itemData.attributes.nsfw_score > 0.5 ? (
-            <Tag color={'warning'} className="text-xs">
-              NSFW
-            </Tag>
+          {itemType === 'creation' || itemType === 'concept' ? (
+            <NsfwBadge item={itemData as Creation | Concept} />
           ) : null}
           <div
             className={`flex z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
@@ -194,19 +208,13 @@ const Card: FC<CardWithTypeProps> = ({
               </div>
             ) : null}
             <div className="flex items-center gap-4 ml-auto my-1">
-              <>
-                {itemData.attributes &&
-                itemData.attributes.nsfw_score &&
-                itemData.attributes.nsfw_score > 0.5 ? (
-                  <Tag
-                    color={'warning'}
-                    className={`text-xs ${hovered ? 'md:hidden' : ''}`}
-                  >
-                    NSFW
-                  </Tag>
-                ) : null}
-                {itemData.isPrivate ? <LockIcon fontSize="small" /> : null}
-              </>
+              {itemType === 'creation' || itemType === 'concept' ? (
+                <NsfwBadge
+                  item={itemData as Creation | Concept}
+                  className={`text-xs ${hovered ? 'md:hidden' : ''}`}
+                />
+              ) : null}
+              {itemData.isPrivate ? <LockIcon fontSize="small" /> : null}
 
               <CardToolsDropdown
                 onOpen={setDropdownActive}
@@ -248,9 +256,15 @@ const Card: FC<CardWithTypeProps> = ({
       ) : null}
 
       {itemType === 'concept' ? (
-        <div className="absolute flex gap-2 z-10 me-0 bottom-6 right-0 md:bg-gray-100 md:dark:bg-gray-900 md:rounded-b-lg md:bottom-auto md:py-2 md:relative md:w-full md:flex md:justify-between md:px-2">
+        <CardFooterWrap>
           <ConceptCardFooter concept={itemData as Concept} />
-        </div>
+        </CardFooterWrap>
+      ) : null}
+
+      {itemType === 'character' ? (
+        <CardFooterWrap>
+          <CharacterCardFooter character={itemData as Character} />
+        </CardFooterWrap>
       ) : null}
     </div>
   )

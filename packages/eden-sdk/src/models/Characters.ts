@@ -1,6 +1,7 @@
 // packages/eden-sdk/src/methods/Characters.ts
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
+import { Assistant, Interaction } from 'src/models/Sessions'
 
 import {
   ListQueryParams,
@@ -9,6 +10,7 @@ import {
   WebAPICallResult,
 } from '../EdenClient'
 import { transformArgsIntoURLParams } from '../methods'
+import { Reactions } from './Creations'
 
 // Arguments
 
@@ -45,6 +47,11 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
 
 export interface CharactersDeleteArguments extends WebAPICallOptions {
   characterId: string
+}
+
+export interface CharactersTestArguments extends WebAPICallOptions {
+  assistant: Assistant
+  interaction: Interaction
 }
 
 // Requests
@@ -107,6 +114,18 @@ export const charactersDeleteRequestConfig = (
   }
 }
 
+export const charactersTestRequestConfig = (
+  args: CharactersTestArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'characters/test',
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type CharactersCreateResponse = WebAPICallResult & {
@@ -134,6 +153,12 @@ export type CharactersGetResponse = WebAPICallResult & {
   character?: Character
 }
 
+export type CharactersTestResponse = WebAPICallResult & {
+  error?: string
+  message?: string
+  config?: any
+}
+
 // Types
 
 export type Character = {
@@ -147,10 +172,14 @@ export type Character = {
   image?: string
   voice?: string
   creationCount?: number
-  deleted?: boolean
-  isPrivate?: boolean
+  praiseCount?: number
+  bookmarkCount?: number
+  bookmarked?: boolean
+  reactions?: Reactions
   createdAt: string
   updatedAt: string
+  isPrivate?: boolean
+  deleted?: boolean
 }
 
 export type LogosData = {

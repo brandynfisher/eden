@@ -94,14 +94,13 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      console.log('activeCharacter', activeCharacter)
       const res = await axios.post(`/api/sessions/interact`, {
         sessionId,
         assistant: {
           name: activeCharacter.name,
           identity: activeCharacter.logosData?.identity,
           knowledge: activeCharacter.logosData?.knowledge,
-          knowledgeSummary: activeCharacter.logosData?.knowledgeSummary,
+          knowledge_summary: activeCharacter.logosData?.knowledgeSummary,
         },
         interaction: {
           prompt: text,

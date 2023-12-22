@@ -2,12 +2,16 @@ import { Capabilites, LogosData } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
-import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
 import slug from 'mongoose-slug-plugin'
 
 import { VisibilitySchema } from '../types/baseSchemas'
+import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 
 interface ChatSchema {
@@ -24,6 +28,8 @@ export interface CharacterSchema extends VisibilitySchema {
   image?: string
   voice?: string
   creationCount?: number
+  praiseCount?: number
+  bookmarkCount?: number
   createdAt?: Date
   updatedAt?: Date
 }
@@ -106,6 +112,14 @@ const character = new Schema<CharacterDocument>(
       type: Number,
       default: 0,
     },
+    praiseCount: {
+      type: Number,
+      default: 0,
+    },
+    bookmarkCount: {
+      type: Number,
+      default: 0,
+    },
     deleted: {
       type: Boolean,
       default: false,
@@ -130,10 +144,16 @@ character.pre<CharacterDocument>('save', function (next) {
 })
 
 character.plugin(mongooseDelete, { overrideMethods: 'all' })
+// character.plugin(mongooseDelete, {
+//   overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+// })
 character.plugin(paginate)
 character.plugin(aggregatePaginate)
 character.plugin(slug, {
   tmpl: '<%=name%>',
 })
 
-export const Character = model<CharacterDocument>('characters', character)
+export const Character = model<CharacterDocument>(
+  'characters',
+  character,
+) as SoftDeleteModel<CharacterDocument>

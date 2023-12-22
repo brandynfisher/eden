@@ -3,7 +3,7 @@ import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined'
@@ -20,7 +20,7 @@ export const PraiseButton = ({
   onChange,
   showCounts,
 }: {
-  item: Creation | Concept
+  item: CardData
   itemType: ItemType
   onChange: (updatedData: CardData) => void
   showCounts?: boolean
@@ -118,10 +118,38 @@ export const PraiseButton = ({
 }
 
 export interface CardReactionProps {
-  item: Creation | Concept
+  item: CardData
   itemType: ItemType
   onChange: (updatedData: CardData) => void
   showCounts?: boolean
+}
+
+const CreationReactions = ({
+  item,
+  onChange,
+  showCounts,
+}: {
+  item: Creation
+  onChange: (updatedData: CardData) => void
+  showCounts?: boolean
+}) => {
+  return (
+    <>
+      <div>
+        <div className="flex pointer-events-auto">
+          <PraiseButton
+            item={item}
+            itemType={'creation'}
+            onChange={onChange}
+            showCounts={showCounts}
+          />
+        </div>
+      </div>
+      <div className="pointer-events-auto">
+        <SaveButton creation={item} onChange={onChange} />
+      </div>
+    </>
+  )
 }
 
 const CardReactions = ({
@@ -133,21 +161,11 @@ const CardReactions = ({
   return itemType === 'creation' ? (
     <div className="relative flex justify-between">
       {itemType === 'creation' ? (
-        <>
-          <div>
-            <div className="flex pointer-events-auto">
-              <PraiseButton
-                item={item}
-                itemType={itemType}
-                onChange={onChange}
-                showCounts={showCounts}
-              />
-            </div>
-          </div>
-          <div className="pointer-events-auto">
-            <SaveButton creation={item} onChange={onChange} />
-          </div>
-        </>
+        <CreationReactions
+          item={item as Creation}
+          onChange={onChange}
+          showCounts={showCounts}
+        />
       ) : null}
     </div>
   ) : (

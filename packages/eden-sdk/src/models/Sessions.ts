@@ -226,7 +226,7 @@ export interface Assistant {
   name: string
   identity: string
   knowledge?: string
-  knowledgeSummary?: string
+  knowledge_summary?: string
 }
 
 export interface ChatResponseEvent {

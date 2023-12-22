@@ -14,7 +14,7 @@ import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
-import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
   ReactNode,
@@ -35,6 +35,121 @@ type MenuItem = {
   disabled?: boolean
 }
 
+const getImageCopyMenuItems = (item: Concept | Creation) => {
+  const otherTypeCopyItems: MenuItem[] = []
+  const imageCopyItems: MenuItem[] = []
+
+  imageCopyItems.push({
+    icon: <CopyImageButton url={item.uri} variant="text" />,
+    key: '1-1',
+  })
+
+  otherTypeCopyItems.push({
+    icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
+    key: '1-2',
+  })
+
+  return isImageUrl(item.uri)
+    ? [...imageCopyItems, ...otherTypeCopyItems]
+    : otherTypeCopyItems
+}
+
+const getNsfwState = (item: Creation | Concept) => {
+  return (
+    item.attributes &&
+    item.attributes.nsfw_score &&
+    item.attributes.nsfw_score > 0.5
+  )
+}
+
+const getCreatorMenuItems = (
+  itemType: ItemType,
+  item: CardData,
+  onVisibilityChange: ({ isPrivate }: { isPrivate: boolean }) => void,
+) => {
+  const isNsfw =
+    itemType === 'creation' || itemType === 'concept'
+      ? getNsfwState(item as Concept | Creation)
+      : false
+
+  return [
+    {
+      key: '5',
+      type: 'divider',
+    },
+    {
+      key: '6',
+      icon: item.isPrivate ? (
+        <MakePublicButton
+          itemId={item._id}
+          itemType={itemType}
+          variant="text"
+          label="Set Public"
+          onChange={onVisibilityChange}
+          isNsfw={isNsfw}
+        />
+      ) : (
+        <MakePrivateButton
+          itemId={item._id}
+          itemType={itemType}
+          variant="text"
+          label="Set Private"
+          onChange={onVisibilityChange}
+        />
+      ),
+      disabled: isNsfw,
+    },
+  ]
+}
+const getDownloadUrl = (
+  itemType: ItemType,
+  item: Creation | Concept,
+  user: Creator | undefined,
+) => {
+  if (!user) {
+    return ''
+  }
+
+  if (itemType === 'concept' && !user.subscriptionTier) {
+    return ''
+  }
+
+  return item.uri
+}
+const getDownloadMenuItems = (
+  itemType: ItemType,
+  item: CardData,
+  user: Creator | undefined,
+) => {
+  const downloadable = itemType === 'creation' || itemType === 'concept'
+  const downloadUrl = downloadable
+    ? getDownloadUrl(itemType, item as Creation | Concept, user)
+    : ''
+
+  if (!downloadable) {
+    return []
+  }
+
+  return [
+    {
+      key: '7',
+      type: 'divider',
+    },
+    {
+      icon: (
+        <DownloadFileButton
+          url={downloadUrl}
+          fileName={item._id}
+          variant="text"
+          label="Download"
+        />
+      ),
+      key: '8',
+      disabled: !downloadUrl,
+    },
+  ]
+}
+
 const CardToolsDropdown = ({
   onOpen,
   item,
@@ -42,7 +157,7 @@ const CardToolsDropdown = ({
   onChange,
 }: {
   onOpen?: Function
-  item: Creation | Concept | Character
+  item: CardData
   itemType: ItemType
   onChange: (updatedData: CardData) => void
 }) => {
@@ -72,32 +187,25 @@ const CardToolsDropdown = ({
     })
   }, [item, onChange])
 
-  const imageCopyItems: MenuItem[] = [
-    {
-      icon: <CopyImageButton url={item.uri} variant="text" />,
-      key: '1-1',
-    },
-  ]
+  const copyItems: MenuItem[] = []
 
-  const otherTypeCopyItems: MenuItem[] = [
-    {
-      icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
-      key: '1-2',
-    },
-    {
-      icon: (
-        <CopyUrlButton
-          url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-          variant="text"
-          label="Page URL"
-        />
-      ),
-      key: '1-3',
-    },
-  ]
+  if (itemType === 'concept' || itemType === 'creation') {
+    copyItems.push(...getImageCopyMenuItems(item as Concept | Creation))
+  }
+
+  copyItems.push({
+    icon: (
+      <CopyUrlButton
+        url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
+        variant="text"
+        label="Page URL"
+      />
+    ),
+    key: '1-3',
+  })
 
   if (itemType === 'creation') {
-    otherTypeCopyItems.push({
+    copyItems.push({
       icon: (
         <CopyUrlButton
           url={`${CONFIG.NEXT_PUBLIC_HOST}/create/${itemType}s?presetId=${item._id}`}
@@ -108,10 +216,6 @@ const CardToolsDropdown = ({
       key: '1-4',
     })
   }
-
-  const copyItems = isImageUrl(item.uri)
-    ? [...imageCopyItems, ...otherTypeCopyItems]
-    : otherTypeCopyItems
 
   const shareItems: MenuItem[] = hasNativeShare
     ? [
@@ -195,45 +299,9 @@ const CardToolsDropdown = ({
 
     const hasUserFeatureFlagPrivate =
       user && user.featureFlags && user.featureFlags.includes('preview')
-
-    const { attributes } =
-      itemType === 'concept' || itemType === 'creation'
-        ? (item as Concept | Creation)
-        : {}
-
-    const isNsfw =
-      attributes && attributes.nsfw_score && attributes.nsfw_score > 0.5
-
     const creatorMenuItems: MenuItem[] =
       hasUserFeatureFlagPrivate && user?.userId === item.user.userId
-        ? [
-            {
-              key: '5',
-              type: 'divider',
-            },
-            {
-              key: '6',
-              icon: item.isPrivate ? (
-                <MakePublicButton
-                  itemId={item._id}
-                  itemType={itemType}
-                  variant="text"
-                  label="Set Public"
-                  onChange={handleOnVisibilityChange}
-                  isNsfw={isNsfw}
-                />
-              ) : (
-                <MakePrivateButton
-                  itemId={item._id}
-                  itemType={itemType}
-                  variant="text"
-                  label="Set Private"
-                  onChange={handleOnVisibilityChange}
-                />
-              ),
-              disabled: isNsfw,
-            },
-          ]
+        ? getCreatorMenuItems(itemType, item, handleOnVisibilityChange)
         : []
 
     const deleteItem: MenuItem[] =
@@ -255,23 +323,7 @@ const CardToolsDropdown = ({
         : []
 
     const downloadItem: MenuItem[] = isAuthenticated
-      ? [
-          {
-            key: '7',
-            type: 'divider',
-          },
-          {
-            icon: (
-              <DownloadFileButton
-                url={item.uri}
-                fileName={item._id}
-                variant="text"
-                label="Download"
-              />
-            ),
-            key: '8',
-          },
-        ]
+      ? getDownloadMenuItems(itemType, item, user)
       : []
 
     return [

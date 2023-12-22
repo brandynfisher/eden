@@ -11,7 +11,7 @@ const params = [
   },
   {
     name: 'init_image_strength',
-    label: 'Starting image strength',
+    label: 'Image strength',
     description:
       'How much to weight the starting image. Setting to 0 will try to reimagine the image. Higher values will stay closer to the original.',
     default: 0.05,
@@ -19,6 +19,7 @@ const params = [
     maximum: 1.0,
     step: 0.01,
   },
+
   {
     name: 'width',
     label: 'Width',
@@ -39,15 +40,15 @@ const params = [
   },
   {
     name: 'text_input',
-    label: 'Remix prompt',
+    label: 'Remix prompt (optional, can be used to create stylized remixes)',
     description: 'Optional text prompt for the remix (will try to remix the image in the direction of the prompt (style-transfer))',
     default: null,
   },
   
   {
     name: 'ip_image_strength',
-    label: 'Image strength (vs remix prompt strength)',
-    description: 'How much to use the image (1.0) vs the prompt (0.0)',
+    label: 'Image prompt strength (vs remix prompt strength)',
+    description: 'How much to use the starting image (1.0) vs the remix prompt (0.0)',
     default: 0.65,
     minimum: 0.0,
     maximum: 1.0,
@@ -58,7 +59,7 @@ const params = [
   // optional generation args
   {
     name: 'n_samples',
-    label: 'Samples',
+    label: 'Variations',
     description: 'Number of variations to create',
     default: 1,
     allowedValues: [1, 2, 3, 4],
@@ -67,7 +68,7 @@ const params = [
 
   {
     name: 'adopt_aspect_from_init_img',
-    label: 'Adopt aspect ratio of starting image',
+    label: 'Adopt aspect',
     description: 'Make a creation with the same aspect ratio as the starting image',
     default: true,
     allowedValues: [false, true],
@@ -95,9 +96,9 @@ const params = [
   },
   {
     name: 'guidance_scale',
-    label: 'Guidance scale',
-    description: 'Strength of prompt conditioning guidance',
-    default: 7.0,
+    label: 'Prompt strength',
+    description: 'Higher values usually also increase saturation and constrast',
+    default: 8.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,
@@ -120,6 +121,16 @@ const params = [
     maximum: 70,
     optional: true,
   },
+
+  // {
+  //   name: 'checkpoint',
+  //   label: 'Checkpoint',
+  //   description: 'Which generator model to use',
+  //   default: 'juggernaut_XL2',
+  //   allowedValues: ["juggernaut_XL2", "sdxl-v1.0"],
+  //   optional: true,
+  // },
+  
   {
     name: 'lora',
     label: 'Concept',
@@ -129,13 +140,13 @@ const params = [
   },
   {
     name: 'lora_scale',
-    label: 'Concept scale',
+    label: 'Concept strength',
     description:
-      'How strongly to activate the concept (0.0 will disable the concept)',
-    default: 0.65,
+      'How strongly to activate the concept. Lower this value if all creations look too similar to your training images',
+    default: 0.7,
     minimum: 0.0,
-    maximum: 1.5,
-    step: 0.01,
+    maximum: 1.2,
+    step: 0.02,
     optional: true,
   },
   {
