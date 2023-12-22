@@ -11,6 +11,7 @@ import CreationSamples from '@/components/Creation/CreationDetail/CreationSample
 // import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
+import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
@@ -27,6 +28,8 @@ import React, {
   useEffect,
   useState,
 } from 'react'
+
+import CharacterInfo from '../Characters/CharacterInfo'
 
 const getItemMediaUrl = (itemType: ItemType, item: Creation | Concept) => {
   if (itemType === 'creation') {
@@ -168,9 +171,33 @@ const Details = ({
             >
               {itemType === 'creation' ? (
                 <CreationMedia creation={item as Creation} />
-              ) : (
+              ) : null}
+              {itemType === 'concept' ? (
                 <ConceptMedia concept={item as Concept} />
-              )}
+              ) : null}
+              {itemType === 'character' ? (
+                // <Image
+                //   src={(item as Character).image || '/placeholder.png'}
+                //   alt={item.name}
+                //   width={240}
+                //   height={240}
+                //   className="object-contain object-center w-full bg-stone-900"
+                // />
+                <MediaDisplay
+                  priority={true}
+                  aspectRatio={100}
+                  className={'media-display__main'}
+                  creationUri={
+                    (item as Character).image
+                      ? (item as Character).image || ''
+                      : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                  }
+                  previewUri={(item as Character)?.image}
+                  // onLoad={() => {
+                  //   setConceptImageLoaded(true)
+                  // }}
+                />
+              ) : null}
               {itemData.isPrivate ? (
                 <div
                   className={`flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
@@ -219,9 +246,13 @@ const Details = ({
               <Divider className="my-4" />
               {itemType === 'creation' ? (
                 <CreationInfo creation={item as Creation} />
-              ) : (
+              ) : null}
+              {itemType === 'concept' ? (
                 <ConceptInfo concept={item as Concept} />
-              )}
+              ) : null}
+              {itemType === 'character' ? (
+                <CharacterInfo character={item as Character} />
+              ) : null}
             </div>
             {itemType === 'creation' ? (
               <CreationSamples creation={item as Creation} />
