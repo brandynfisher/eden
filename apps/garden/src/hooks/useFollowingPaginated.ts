@@ -1,3 +1,4 @@
+import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { fetcher } from '@/lib/fetcher'
 import { Creator } from '@edenlabs/eden-sdk'
 import { useCallback } from 'react'
@@ -24,7 +25,7 @@ export const useFollowingPaginated = (query: PaginatedFollowersQuery) => {
 
   const route = (limit: number, page: number) => {
     const basePath = `/api/${type}`
-    const params: FollowersRouteQueryParams = {}
+    const params: PaginatedFeedQuery = {}
 
     if (pageLimit && page) {
       params.page = page

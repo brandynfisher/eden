@@ -5,6 +5,7 @@ import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
 } from '@/components/Layout/buttons/OrderByButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { ItemType } from '@/providers/ModalProvider'
@@ -26,6 +27,7 @@ const MasonryInfiniteContainer = ({
   query?: PaginatedFeedQuery
   fallbackFilter?: OrderByParam
 }) => {
+  const [fetchStartDate, setFetchStartDate] = useState<string | undefined>()
   const [orderBy, setOrderBy] = useState<OrderByParam>(
     filters ? filters[0] : OrderByDefaultParam,
   )
@@ -46,6 +48,7 @@ const MasonryInfiniteContainer = ({
   )
 
   useEffect(() => {
+    setFetchStartDate(new Date().toISOString())
     setRenderCount(prevState => prevState + 1)
   }, [orderBy])
 
@@ -56,6 +59,10 @@ const MasonryInfiniteContainer = ({
       )
       handleOrderChange(fallbackFilter)
     }
+  }
+
+  if (!fetchStartDate) {
+    return <LoadingIndicator />
   }
 
   return (
@@ -74,7 +81,7 @@ const MasonryInfiniteContainer = ({
         key={key}
         orderBy={orderBy}
         itemType={itemType}
-        query={query}
+        query={{ ...query, dateCutOff: fetchStartDate }}
         ItemComponent={ItemComponent}
         emptyResultHandler={
           fallbackFilter ? handleFallbackOnEmptyResult : undefined

@@ -64,14 +64,6 @@ const MasonryInfinite = ({
     isLoadingMore,
   } = useFeedPaginated(itemType, query, orderBy)
 
-  const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
-    isItemLoaded: (index, items) => {
-      return !!items[index]
-    },
-    minimumBatchSize: 25,
-    threshold: 50,
-  })
-
   const [ref, rect] = useResizeObserverMantine()
   const { width: windowWidth, height: windowHeight } = useViewportSize()
   const { offset, width } = useContainerPosition(containerRef, [
@@ -79,6 +71,14 @@ const MasonryInfinite = ({
     windowHeight,
     rect,
   ])
+
+  const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
+    isItemLoaded: (index, items) => {
+      return !!items[index]
+    },
+    minimumBatchSize: 50,
+    threshold: windowWidth && windowWidth < 768 ? 25 : 75,
+  })
 
   const positioner = usePositioner(
     {
@@ -176,7 +176,7 @@ const MasonryInfinite = ({
               items={items}
               height={windowHeight}
               offset={offset}
-              overscanBy={3}
+              overscanBy={2}
               itemHeightEstimate={300}
               onRender={maybeLoadMore}
               itemKey={(item, _index) => item?._id ?? _index}
