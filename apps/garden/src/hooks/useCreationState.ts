@@ -100,7 +100,6 @@
 //   }
 // }
 import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
-import { CONFIG } from '@/lib/config'
 import { createPaginationRoute, fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
@@ -174,7 +173,7 @@ export const useCreationState = () => {
         if (completed.length !== prevState.length) {
           // probably got a new finished task, trigger mutate on own profile (first page) to force a refresh
           const ownCreatorFeedPageRoute = createPaginationRoute(
-            `${CONFIG.API_URL}/feed/creations`,
+            `/api/feed/creations`,
             {
               userId: userId || '',
               limit: 25,

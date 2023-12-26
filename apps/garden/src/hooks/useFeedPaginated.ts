@@ -1,6 +1,5 @@
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { shuffle } from '@/lib/array'
-import { CONFIG } from '@/lib/config'
 import { createPaginationRoute, fetcher } from '@/lib/fetcher'
 import { ItemType } from '@/providers/ModalProvider'
 import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
@@ -48,7 +47,7 @@ export const useFeedPaginated = (
       }
 
       // console.log('getKey', {pageIndex, previousPageData})
-      return createPaginationRoute(`${CONFIG.API_URL}/feed/${itemType}s`, {
+      return createPaginationRoute(`/api/feed/${itemType}s`, {
         ...query,
         limit: pageLimit,
         page: pageIndex + 1,
