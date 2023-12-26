@@ -31,9 +31,9 @@ const CharacterCardFeatures: FC<{ character: Character }> = ({ character }) => {
         {features.map((feature, index) => (
           <div
             key={index}
-            className="flex items-center px-2 py-1 border border-solid border-gray-700 bg-gray-900 rounded-md"
+            className="flex items-center px-2 py-1 border border-solid border-gray-400 dark:border-gray-700 bg-gray-200 dark:bg-gray-900 rounded-md"
           >
-            <span className="text-gray-400 mr-1.5 text-xs">
+            <span className="text-gray-800 dark:text-gray-400 mr-1.5 text-xs">
               {feature.label}
             </span>
             {feature.isActive ? (
@@ -63,7 +63,7 @@ const CharacterCard: FC<{
 }) => {
   return (
     <div
-      className={`relative flex flex-col border border-solid dark:border-gray-800 dark:bg-stone-950 rounded-lg overflow-hidden items-center ${
+      className={`relative flex flex-col border border-solid border-gray-200 dark:border-gray-800 dark:bg-stone-950 rounded-lg overflow-hidden items-center ${
         className ? className : ''
       }`}
     >
@@ -72,7 +72,7 @@ const CharacterCard: FC<{
         className="w-full hover:brightness-110"
       >
         {character.isPrivate ? (
-          <div className="absolute top-2 right-2 bg-gray-700 rounded-full w-8 h-8 flex items-center justify-center pointer-events-none">
+          <div className="absolute top-2 right-2 dark:bg-gray-700 rounded-full w-8 h-8 flex items-center justify-center pointer-events-none">
             <LockIcon fontSize="small" className="text-white" />
           </div>
         ) : null}
@@ -82,7 +82,7 @@ const CharacterCard: FC<{
             alt={character.name}
             width={240}
             height={240}
-            className="object-contain object-center w-full bg-stone-900"
+            className="object-contain object-center w-full dark:bg-stone-900"
           />
         ) : (
           <RobotOutlined className="text-6xl text-gray-600" />
