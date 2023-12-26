@@ -75,8 +75,8 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         assistant: Type.Object({
           name: Type.String(),
           identity: Type.String(),
-          knowledge: Type.String(),
-          knowledge_summary: Type.String(),
+          knowledge: Type.Optional(Type.String()),
+          knowledge_summary: Type.Optional(Type.String()),
         }),
         interaction: Type.Object({
           prompt: Type.String(),

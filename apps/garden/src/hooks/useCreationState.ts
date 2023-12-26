@@ -100,8 +100,7 @@
 //   }
 // }
 import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
-import { getFeedPageRoute } from '@/hooks/useFeedPaginated'
-import { fetcher } from '@/lib/fetcher'
+import { createPaginationRoute, fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { Task } from '@edenlabs/eden-sdk'
@@ -173,12 +172,14 @@ export const useCreationState = () => {
       setCompletedTasks(prevState => {
         if (completed.length !== prevState.length) {
           // probably got a new finished task, trigger mutate on own profile (first page) to force a refresh
-          const ownCreatorFeedPageRoute = getFeedPageRoute(
-            'creation',
-            { userId: userId || '' },
-            25,
-            1,
-            OrderByLatest,
+          const ownCreatorFeedPageRoute = createPaginationRoute(
+            `/api/feed/creations`,
+            {
+              userId: userId || '',
+              limit: 25,
+              page: 1,
+              orderBy: OrderByLatest.field,
+            },
           )
           mutateGlobal(ownCreatorFeedPageRoute, undefined)
           notify(

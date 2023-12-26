@@ -26,12 +26,18 @@ import {
   getReactions as getCreationReactions,
 } from './creationsController'
 
-const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
+const aggregateCreationsByFollowerId = (
+  followerId: ObjectId,
+  dateEndCutOff: string,
+) => {
   return Follow.aggregate([
     {
       $match: {
         follower: {
           $eq: new ObjectId(followerId),
+        },
+        createdAt: {
+          $lte: new Date(dateEndCutOff),
         },
       },
     },
@@ -56,9 +62,7 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
             },
           },
           {
-            $project: {
-              'embedding.embedding': 0,
-            },
+            $unset: 'embedding.embedding',
           },
           { $sort: { createdAt: -1 } },
           { $limit: 100 },
@@ -79,12 +83,18 @@ const aggregateCreationsByFollowerId = (followerId: ObjectId) => {
   ])
 }
 
-const aggregateCreationsByUserLikes = (userId: ObjectId) => {
+const aggregateCreationsByUserLikes = (
+  userId: ObjectId,
+  dateEndCutOff: string,
+) => {
   return Reaction.aggregate([
     {
       $match: {
         user: {
           $eq: new ObjectId(userId),
+        },
+        createdAt: {
+          $lte: new Date(dateEndCutOff),
         },
       },
     },
@@ -113,9 +123,7 @@ const aggregateCreationsByUserLikes = (userId: ObjectId) => {
             },
           },
           {
-            $project: {
-              'embedding.embedding': 0,
-            },
+            $unset: 'embedding.embedding',
           },
           { $sort: { createdAt: -1 } },
           { $limit: 1 },
@@ -136,6 +144,64 @@ const aggregateCreationsByUserLikes = (userId: ObjectId) => {
   ])
 }
 
+const aggregateCreationsByEmbeddingScore = (dateEndCutOff: string) => {
+  const decayPerHour = 0.0015
+  const hoursAgo = 360
+  const currentDate = new Date()
+  currentDate.setMinutes(0, 0, 0)
+  const dateCutoff = new Date(currentDate)
+  dateCutoff.setHours(currentDate.getHours() - hoursAgo)
+  dateCutoff.setMinutes(0, 0, 0)
+
+  return Creation.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: dateCutoff,
+          $lte: new Date(dateEndCutOff),
+        },
+        'embedding.score': { $exists: true },
+        isPrivate: false,
+        deleted: false,
+      },
+    },
+    {
+      $unset: 'embedding.embedding',
+    },
+    {
+      $set: {
+        'embedding.score_age_hours': {
+          $dateDiff: {
+            startDate: { $toDate: '$createdAt' },
+            endDate: currentDate,
+            unit: 'hour',
+          },
+        },
+      },
+    },
+    {
+      $set: {
+        'embedding.score_age_decay': {
+          $multiply: ['$embedding.score_age_hours', decayPerHour],
+        },
+      },
+    },
+    {
+      $set: {
+        'embedding.score_adjusted': {
+          $subtract: ['$embedding.score', '$embedding.score_age_decay'],
+        },
+      },
+    },
+    {
+      $sort: {
+        'embedding.score_adjusted': -1,
+        _id: -1,
+      },
+    },
+  ])
+}
+
 export const getCreationsFeed = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -146,6 +212,7 @@ export const getCreationsFeed = async (
     collectionId,
     conceptId,
     name,
+    dateCutOff,
     limit,
     page,
     orderBy,
@@ -185,6 +252,7 @@ export const getCreationsFeed = async (
     const followCreationRepository = new CreationRepository(Follow) //@todo: this reads rather wonky
     const followAggregate = aggregateCreationsByFollowerId(
       new ObjectId(ownUserId),
+      dateCutOff || new Date().toISOString(),
     )
 
     creations = await followCreationRepository.aggregateQuery(followAggregate, {
@@ -196,6 +264,7 @@ export const getCreationsFeed = async (
     const reactionCreationRepository = new CreationRepository(Reaction) //@todo: this reads rather wonky
     const userReactionAggregate = aggregateCreationsByUserLikes(
       new ObjectId(ownUserId),
+      dateCutOff || new Date().toISOString(),
     )
 
     creations = await reactionCreationRepository.aggregateQuery(
@@ -206,6 +275,18 @@ export const getCreationsFeed = async (
         sort: { createdAt: -1 },
       },
     )
+  } else if (orderBy === 'embedding.score') {
+    const creationsAggregate = aggregateCreationsByEmbeddingScore(
+      dateCutOff || new Date().toISOString(),
+    )
+    creations = await creationRepository.aggregateQuery(creationsAggregate, {
+      limit,
+      page,
+      sort: {
+        'embedding.score_adjusted': -1,
+        _id: -1,
+      },
+    })
   } else {
     const collection = collectionId
       ? await Collection.findById(collectionId)
@@ -229,11 +310,7 @@ export const getCreationsFeed = async (
       }
 
       // exclude zero count items when sorting by likes, bookmarks, etc
-      if (
-        orderBy === 'bookmarkCount' ||
-        orderBy === 'praiseCount' ||
-        orderBy === 'embedding.score'
-      ) {
+      if (orderBy === 'bookmarkCount' || orderBy === 'praiseCount') {
         sortFilter[orderBy] = { $gt: 0 }
       }
     }
@@ -241,15 +318,6 @@ export const getCreationsFeed = async (
     // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
     if (orderBy !== 'createdAt') {
       sort.push(['createdAt', -1])
-    }
-
-    // When filtering by aesthetic score, limit results with date cut off
-    if (orderBy === 'embedding.score') {
-      const hoursAgo = 48
-      const dateCutoff = new Date(
-        new Date().setHours(new Date().getHours() - hoursAgo),
-      )
-      sortFilter['createdAt'] = { $gte: dateCutoff }
     }
 
     if (
@@ -270,6 +338,9 @@ export const getCreationsFeed = async (
     const query = {
       _id: collectionCreations ? { $in: collectionCreations } : undefined,
       concept: conceptIds ? { $in: conceptIds } : undefined,
+      createdAt: {
+        $lte: dateCutOff || new Date().toISOString(),
+      },
       user:
         filterUserIds && creators.docs
           ? creators.docs.map(creator => creator._id)

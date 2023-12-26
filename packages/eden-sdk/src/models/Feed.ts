@@ -20,6 +20,9 @@ export interface FeedCreationsArguments
   collectionId?: string | string[]
   conceptId?: string | string[]
   name?: string
+  dateCutOff?: string
+  orderBy?: string
+  direction?: 1 | -1
 }
 
 export interface FeedConceptsArguments
@@ -28,6 +31,9 @@ export interface FeedConceptsArguments
   userId?: string | string[]
   collectionId?: string | string[]
   name?: string
+  dateCutOff?: string
+  orderBy?: string
+  direction?: 1 | -1
 }
 
 // Requests

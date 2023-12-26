@@ -16,9 +16,22 @@ const handleInteraction = async (
   return data
 }
 
+const handleInteractionTest = async (
+  server: FastifyInstance,
+  assistant: Assistant,
+  interaction: Interaction,
+): Promise<LogosResponse> => {
+  const { data } = await axios.post(`${server.config.LOGOS_URL}/test`, {
+    assistant,
+    interaction,
+  })
+  return data
+}
+
 export const registerLogos = async (fastify: FastifyInstance) => {
   try {
     fastify.decorate('handleInteraction', handleInteraction)
+    fastify.decorate('handleInteractionTest', handleInteractionTest)
     fastify.log.info('Successfully registered playHtPlugin')
   } catch (err) {
     console.log(err)
@@ -29,6 +42,11 @@ export const registerLogos = async (fastify: FastifyInstance) => {
 declare module 'fastify' {
   interface FastifyInstance {
     handleInteraction: (
+      server: FastifyInstance,
+      assistant: Assistant,
+      interaction: Interaction,
+    ) => Promise<LogosResponse>
+    handleInteractionTest: (
       server: FastifyInstance,
       assistant: Assistant,
       interaction: Interaction,

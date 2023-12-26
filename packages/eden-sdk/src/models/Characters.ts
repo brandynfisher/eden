@@ -1,6 +1,7 @@
 // packages/eden-sdk/src/methods/Characters.ts
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
+import { Assistant, Interaction } from 'src/models/Sessions'
 
 import {
   ListQueryParams,
@@ -45,6 +46,11 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
 
 export interface CharactersDeleteArguments extends WebAPICallOptions {
   characterId: string
+}
+
+export interface CharactersTestArguments extends WebAPICallOptions {
+  assistant: Assistant
+  interaction: Interaction
 }
 
 // Requests
@@ -107,6 +113,18 @@ export const charactersDeleteRequestConfig = (
   }
 }
 
+export const charactersTestRequestConfig = (
+  args: CharactersTestArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'characters/test',
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type CharactersCreateResponse = WebAPICallResult & {
@@ -132,6 +150,12 @@ export type CharactersListResponse = WebAPICallResult &
 export type CharactersGetResponse = WebAPICallResult & {
   error?: string
   character?: Character
+}
+
+export type CharactersTestResponse = WebAPICallResult & {
+  error?: string
+  message?: string
+  config?: any
 }
 
 // Types
