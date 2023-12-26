@@ -338,9 +338,11 @@ export const getCreationsFeed = async (
     const query = {
       _id: collectionCreations ? { $in: collectionCreations } : undefined,
       concept: conceptIds ? { $in: conceptIds } : undefined,
-      createdAt: {
-        $lte: dateCutOff || new Date().toISOString(),
-      },
+      createdAt: dateCutOff
+        ? {
+            $lte: new Date(dateCutOff),
+          }
+        : undefined,
       user:
         filterUserIds && creators.docs
           ? creators.docs.map(creator => creator._id)

@@ -51,7 +51,8 @@ export const useFeedPaginated = (
         ...query,
         limit: pageLimit,
         page: pageIndex + 1,
-        orderBy: orderBy?.field,
+        orderBy: orderBy ? orderBy.field : undefined,
+        direction: orderBy ? orderBy.direction : undefined,
       })
     },
     [itemType, query, pageLimit, orderBy],
