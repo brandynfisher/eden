@@ -1,6 +1,6 @@
 import { AxiosRequestConfig } from 'axios'
 
-import { WebAPICallOptions, WebAPICallResult } from '../EdenClient'
+import { WebAPICallOptions, WebAPICallResult } from '../types'
 
 export interface AdminMannaModifyArguments extends WebAPICallOptions {
   userId: string
