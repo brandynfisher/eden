@@ -28,6 +28,7 @@ const HomePage = () => {
         ItemComponent={CreationCard}
         filters={filters}
         fallbackFilter={OrderByLatest}
+        query={{ limit: 50 }}
       />
     </div>
   )

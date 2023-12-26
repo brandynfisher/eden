@@ -1,3 +1,4 @@
+import CardDebugInfo from '@/components/Card/CardDebugInfo'
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
@@ -19,6 +20,7 @@ import { Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import React, {
   Dispatch,
   SetStateAction,
@@ -80,6 +82,12 @@ const Details = ({
 
     setZoomedInImageUrl(url)
   }
+
+  const router = useRouter()
+  const [debugMode, setDebugMode] = useState<boolean>(false)
+  useEffect(() => {
+    setDebugMode(!!(router.query && router.query.debug))
+  }, [router.query])
 
   return (
     <>
@@ -197,7 +205,10 @@ const Details = ({
               )}
             </div>
             {itemType === 'creation' ? (
-              <CreationSamples creation={item as Creation} />
+              <>
+                {debugMode ? <CardDebugInfo data={item} /> : null}
+                <CreationSamples creation={item as Creation} />
+              </>
             ) : null}
           </div>
         </div>

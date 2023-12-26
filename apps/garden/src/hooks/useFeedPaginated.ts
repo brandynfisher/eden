@@ -1,5 +1,7 @@
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
-import { fetcher } from '@/lib/fetcher'
+import { shuffle } from '@/lib/array'
+import { CONFIG } from '@/lib/config'
+import { createPaginationRoute, fetcher } from '@/lib/fetcher'
 import { ItemType } from '@/providers/ModalProvider'
 import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
 import { useCallback, useMemo } from 'react'
@@ -12,70 +14,18 @@ export type PaginatedRouteQueryParams = {
   direction?: number
 }
 
-export type FeedRouteQueryParams = PaginatedRouteQueryParams & {
+export type FeedRouteQueryParams = {
   userId?: string
   characterId?: string
   collectionId?: string
   creationId?: string
   name?: string
   conceptId?: string
+  dateCutOff?: string
 }
 
-export type PaginatedFeedQuery = {
-  userId?: string
-  characterId?: string
-  collectionId?: string
-  name?: string
-  creationId?: string
-  conceptId?: string
-  limit?: number
-}
-
-export const getFeedPageRoute = (
-  itemType: ItemType,
-  query: PaginatedFeedQuery,
-  limit: number,
-  page: number,
-  orderBy?: OrderByParam,
-) => {
-  const basePath = `/api/feed/${itemType}s`
-  const params: FeedRouteQueryParams = {}
-
-  if (limit && page) {
-    params.page = page
-    params.limit = limit
-  }
-
-  if (query?.userId) {
-    params.userId = query.userId
-  }
-  if (query?.characterId) {
-    params.characterId = query.characterId
-  }
-  if (query?.name && query.name.length > 0) {
-    params.name = query.name
-  }
-  if (query?.collectionId) {
-    params.collectionId = query.collectionId
-  }
-  if (query?.creationId) {
-    params.creationId = query.creationId
-  }
-  if (query?.conceptId) {
-    params.conceptId = query.conceptId
-  }
-  if (orderBy) {
-    params.orderBy = orderBy.field
-    params.direction = orderBy.direction
-  }
-
-  const queryString = Object.keys(params)
-    //@ts-ignore
-    .map(key => `${key}=${params[key]}`)
-    .join('&')
-
-  return queryString ? `${basePath}?${queryString}` : basePath
-}
+export type PaginatedFeedQuery = FeedRouteQueryParams &
+  PaginatedRouteQueryParams
 
 export const useFeedPaginated = (
   itemType: ItemType,
@@ -98,13 +48,12 @@ export const useFeedPaginated = (
       }
 
       // console.log('getKey', {pageIndex, previousPageData})
-      return getFeedPageRoute(
-        itemType,
-        query,
-        pageLimit,
-        pageIndex + 1,
-        orderBy,
-      )
+      return createPaginationRoute(`${CONFIG.API_URL}/feed/${itemType}s`, {
+        ...query,
+        limit: pageLimit,
+        page: pageIndex + 1,
+        orderBy: orderBy?.field,
+      })
     },
     [itemType, query, pageLimit, orderBy],
   )
@@ -156,7 +105,20 @@ export const useFeedPaginated = (
     if (data) {
       const flatData = data.flatMap(page => page)
       return {
-        docs: flatData ? flatData.map(page => (page ? page.docs : [])) : [],
+        docs: flatData
+          ? flatData.map((page, index) => {
+              // shuffle latest page of recommended feed
+              if (orderBy && orderBy.field === 'embedding.score') {
+                return page
+                  ? index === size - 1
+                    ? shuffle(page.docs)
+                    : page.docs
+                  : []
+              }
+
+              return page ? page.docs : []
+            })
+          : [],
         totalItems: flatData && flatData[0] ? flatData[0].total : 0,
       }
     }

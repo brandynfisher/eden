@@ -1,3 +1,4 @@
+import CardDebugInfo from '@/components/Card/CardDebugInfo'
 import CardImage from '@/components/Card/CardImage'
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
@@ -16,6 +17,7 @@ import LockIcon from '@mui/icons-material/Lock'
 import { Button } from '@mui/material'
 import { App, Tag } from 'antd'
 import axios from 'axios'
+import { useRouter } from 'next/router'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 
 export type CardData = Creation | Concept
@@ -42,6 +44,12 @@ const Card: FC<CardWithTypeProps> = ({
   className,
   updateHandler,
 }) => {
+  const router = useRouter()
+  const [debugMode, setDebugMode] = useState<boolean>(false)
+  useEffect(() => {
+    setDebugMode(!!(router.query && router.query.debug))
+  }, [router.query])
+
   // const { items, setItems } = useContext(MasonryContext)
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
@@ -195,7 +203,6 @@ const Card: FC<CardWithTypeProps> = ({
                 ) : null}
                 {itemData.isPrivate ? <LockIcon fontSize="small" /> : null}
               </>
-
               <CardToolsDropdown
                 onOpen={setDropdownActive}
                 item={itemData}
@@ -240,6 +247,8 @@ const Card: FC<CardWithTypeProps> = ({
           <ConceptCardFooter concept={itemData as Concept} />
         </div>
       ) : null}
+
+      {debugMode ? <CardDebugInfo data={itemData} /> : null}
     </div>
   )
 }
