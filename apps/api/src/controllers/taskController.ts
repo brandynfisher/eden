@@ -125,8 +125,6 @@ export const createTask = async (
   //   })
   // }
 
-  console.log('but were continuing tho?')
-
   // get generator
   const generator = await Generator.findOne({
     generatorName,
