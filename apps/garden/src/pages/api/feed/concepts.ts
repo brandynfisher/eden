@@ -1,7 +1,7 @@
 import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
-import { createPaginationRoute } from '@/pages/api/feed/creations'
+import { createPaginationRoute } from '@/lib/fetcher'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 

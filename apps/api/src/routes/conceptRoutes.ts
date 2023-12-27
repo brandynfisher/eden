@@ -11,11 +11,19 @@ import {
   getConcept,
   listConcepts,
 } from '../controllers/conceptsController'
-import { isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { isAdmin, isAuth, maybeAuth } from '../middleware/authMiddleware'
 
 const conceptRoutes: FastifyPluginAsync = async server => {
   server.get('/concepts', {
     schema: {
+      tags: ['Concepts'],
+      description: 'List concepts',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -34,6 +42,14 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.get('/concepts/:conceptId', {
     schema: {
+      tags: ['Concepts'],
+      description: 'Get a concept',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         conceptId: Type.String(),
       },
@@ -49,14 +65,20 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/concepts/:conceptId', {
     schema: {
+      tags: ['Concepts'],
+      description: 'Update a concept',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         conceptId: Type.String(),
       },
-      request: {
-        body: Type.Object({
-          isPrivate: Type.Optional(Type.Boolean()),
-        }),
-      },
+      body: Type.Object({
+        isPrivate: Type.Optional(Type.Boolean()),
+      }),
       response: {
         200: {
           concept: Type.Any(),
@@ -69,6 +91,14 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.delete('/concepts/:conceptId', {
     schema: {
+      tags: ['Concepts'],
+      description: 'Delete a concept',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         conceptId: Type.String(),
       },
@@ -84,12 +114,18 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.post('/concepts/reactions/add', {
     schema: {
-      request: {
-        body: Type.Object({
-          conceptId: Type.String(),
-          reaction: Type.Strict(Type.String(), ReactionType),
-        }),
-      },
+      tags: ['Concepts'],
+      description: 'React to a concept',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        conceptId: Type.String(),
+        reaction: Type.Enum(ReactionType),
+      }),
       response: {
         200: {
           success: Type.Boolean(),
@@ -102,12 +138,18 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.post('/concepts/reactions/remove', {
     schema: {
-      request: {
-        body: Type.Object({
-          conceptId: Type.String(),
-          reaction: Type.Strict(Type.String(), ReactionType),
-        }),
-      },
+      tags: ['Concepts'],
+      description: 'Unreact to a concept',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        conceptId: Type.String(),
+        reaction: Type.Enum(ReactionType),
+      }),
       response: {
         200: {
           success: Type.Boolean(),

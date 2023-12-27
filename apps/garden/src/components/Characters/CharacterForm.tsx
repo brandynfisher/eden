@@ -2,16 +2,16 @@ import CharacterFormPro from '@/components/Characters/CharacterFormPro'
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import { ELEVENLABS_VOICES } from '@/components/Characters/elevenlabs'
 import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
+import { ConceptParameterUI } from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
 import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FormLabel from '@/components/Forms/FormLabel'
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
-import { compilePrompt, messageGroupsToDialogueString } from '@/lib/chat'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
-import { Character } from '@edenlabs/eden-sdk'
+import { Assistant, Character, Interaction } from '@edenlabs/eden-sdk'
 import { App, Button, Form, Input, Select, Switch } from 'antd'
 import axios from 'axios'
 import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
@@ -21,7 +21,7 @@ import React, { useContext, useEffect, useState } from 'react'
 
 const EXAMPLE_CHARACTER = {
   name: 'Abraham',
-  description:
+  identity:
     'Abraham is an artificial artist, an AI who creates unique and original artworks.',
   greeting:
     'Greetings. I am Abraham, an artificial artist. I am glad to meet you.',
@@ -40,15 +40,13 @@ interface CharacterFormInput {
   name: string
   image: string
   voice: string
-  description: string
+  identity: string
   greeting: string
   completion: string
   concept?: string
   dialogue?: string
-  logosDocumentation?: string
-  logosDocumentationPrompt?: string
-  logosRouterPrompt?: string
-  logosCreatorPrompt?: string
+  knowledge?: string
+  knowledgeSummary?: string
   isPrivate?: boolean
 }
 
@@ -81,7 +79,7 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
   const handleDeleteCharacter = async () => {
     try {
       await axios.post(`/api/characters/delete`, {
-        characterId: character.id,
+        characterId: character._id,
       })
       message.destroy()
       message.info(`Character '${character.name}' was deleted`)
@@ -129,7 +127,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   const [proMode, setProMode] = useState<boolean>(false)
 
   const characterName = Form.useWatch('name', form)
-  const description = Form.useWatch('description', form)
+  const identity = Form.useWatch('identity', form)
   const concept = Form.useWatch('concept', form)
   const characterImageFieldValue = Form.useWatch('image', form) as {} | string
 
@@ -138,27 +136,26 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       mode === 'update' && character
         ? {
             name: character?.name,
-            description: character?.description || '',
+            identity: character?.logosData?.identity || '',
             greeting: character?.greeting || '',
             completion: '',
             image: character?.image || '',
             voice: character?.voice || '',
-            concept: character?.concept || '',
-            logosDocumentation: character?.logosData?.documentation || '',
-            logosDocumentationPrompt:
-              character?.logosData?.documentationPrompt || '',
-            logosRouterPrompt: character?.logosData?.routerPrompt || '',
-            logosCreatorPrompt: character?.logosData?.creatorPrompt || '',
+            concept: character?.logosData?.concept || '',
+            knowledge: character?.logosData?.knowledge || '',
+            knowledgeSummary: character?.logosData?.knowledgeSummary || '',
             isPrivate: character?.isPrivate || false,
           }
         : {
             name: '',
-            description: '',
+            identity: '',
             greeting: '',
             completion: '',
             image: '',
             voice: '',
             concept: '',
+            knowledge: '',
+            knowledgeSummary: '',
             isPrivate: false,
           }
 
@@ -171,23 +168,27 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     setMessageGroups(mode === 'create' ? [] : characterDialogue)
   }, [form, mode, character])
 
-  const generateCompletion = async () => {
+  const handleTestCharacter = async () => {
     setUsedCompletion(true)
     setCompleting(true)
     try {
-      const url = `/api/lm/complete`
-      const dialogue = messageGroupsToDialogueString(messageGroups)
-      const prompt = compilePrompt(
-        characterName,
-        recentMessage[0][0],
-        description,
-        dialogue,
-      )
+      const url = `/api/characters/test`
+      const assistant: Assistant = {
+        name: characterName,
+        identity,
+        knowledge: form.getFieldValue('knowledge'),
+        knowledge_summary: form.getFieldValue('knowledgeSummary'),
+      }
+      const interaction: Interaction = {
+        prompt: recentMessage[0][0].message,
+        author_id: 'test',
+      }
       const data = {
-        prompt,
+        assistant,
+        interaction,
       }
       const response = await axios.post(url, data)
-      const completion = response.data.completion as string
+      const completion = response.data.message as string
       const fmtCompletion = completion.trim()
       form.setFieldsValue({
         completion: fmtCompletion,
@@ -200,19 +201,21 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   }
 
   const handleSubmit = async () => {
+    const identity = form.getFieldValue('identity')
+    const concept = form.getFieldValue('concept')
+    const knowledge = form.getFieldValue('knowledge')
+    const knowledgeSummary = form.getFieldValue('knowledgeSummary')
     const data = {
       name: characterName,
-      description: form.getFieldValue('description'),
       greeting: form.getFieldValue('greeting'),
       image: form.getFieldValue('image'),
       voice: form.getFieldValue('voice'),
       dialogue: messageGroups.flat(),
-      concept: form.getFieldValue('concept') || undefined,
       logosData: {
-        documentation: form.getFieldValue('logosDocumentation'),
-        documentationPrompt: form.getFieldValue('logosDocumentationPrompt'),
-        routerPrompt: form.getFieldValue('logosRouterPrompt'),
-        creatorPrompt: form.getFieldValue('logosCreatorPrompt'),
+        identity: identity ? identity : null,
+        concept: concept ? concept : null,
+        knowledge: knowledge ? knowledge : null,
+        knowledgeSummary: knowledgeSummary ? knowledgeSummary : null,
       },
       isPrivate: form.getFieldValue('isPrivate'),
     }
@@ -221,9 +224,9 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       if (mode === 'create') {
         await axios.post(`/api/characters/create`, data)
       } else {
-        await axios.patch(`/api/characters/${character?.id}`, {
+        await axios.patch(`/api/characters/${character?._id}`, {
           ...data,
-          characterId: character?.id,
+          characterId: character?._id,
         })
       }
 
@@ -277,28 +280,26 @@ const CharacterForm = ({ character }: { character?: Character }) => {
 
               <div>
                 <ParameterAddon
-                  title={'Description'}
+                  title={'Identity'}
                   textArea={true}
-                  description={
-                    'Describe your character and shape its personality'
-                  }
+                  description={'Describe your character and shape its identity'}
                 />
                 <Form.Item
                   className="mb-4 w-full"
-                  name="description"
+                  name="identity"
                   rules={[
-                    { required: true, message: 'Please input a description!' },
+                    { required: true, message: 'Please input an identity!' },
                     {
                       min: 3,
                       max: 9999,
                       message:
-                        'Description must be between 3 and 9999 characters!',
+                        'Identity must be between 3 and 9999 characters!',
                     },
                   ]}
                 >
                   <Input.TextArea
                     autoSize
-                    placeholder={EXAMPLE_CHARACTER.description}
+                    placeholder={EXAMPLE_CHARACTER.identity}
                     className="with-addon"
                   />
                 </Form.Item>
@@ -374,23 +375,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 </Form.Item>
               </div>
 
-              <Form.Item
-                label={
-                  <FormLabel
-                    text="Example Messages"
-                    description="Add sample dialogs to further refine the personality of your character"
-                  />
-                }
-                className="label-auto-height"
-                labelCol={{ span: 24 }}
-                name="messages"
-              >
-                <ChatCapabilityMessageSection
-                  messageGroups={messageGroups}
-                  setMessageGroups={setMessageGroups}
-                />
-              </Form.Item>
-
               {proMode && (
                 <>
                   <CharacterFormPro />
@@ -405,16 +389,37 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     labelCol={{ span: 24 }}
                     name="concept"
                   >
+                    <div className="mb-2">
+                      <ConceptSelectModalTrigger
+                        onChange={concept => {
+                          form.setFieldsValue({
+                            ['concept']: concept ? concept._id : null,
+                          })
+                        }}
+                      />
+                    </div>
                     {concept && (
-                      <div className="flex flex-col gap-2">{`Selected Concept: ${concept}`}</div>
+                      <ConceptParameterUI
+                        conceptId={concept}
+                        onChange={() => form.setFieldValue('concept', null)}
+                      />
                     )}
-                    <ConceptSelectModalTrigger
-                      onChange={concept => {
-                        form.setFieldsValue({
-                          ['concept']: concept ? concept._id : null,
-                        })
-                      }}
-                    />
+                    <Form.Item
+                      label={
+                        <FormLabel
+                          text="Example Messages"
+                          description="Add sample dialogs to further refine the personality of your character"
+                        />
+                      }
+                      className="label-auto-height"
+                      labelCol={{ span: 24 }}
+                      name="messages"
+                    >
+                      <ChatCapabilityMessageSection
+                        messageGroups={messageGroups}
+                        setMessageGroups={setMessageGroups}
+                      />
+                    </Form.Item>
                   </Form.Item>
                 </>
               )}
@@ -464,7 +469,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   <Form.Item className="mb-0">
                     <Button
                       className="font-mono"
-                      onClick={generateCompletion}
+                      onClick={handleTestCharacter}
                       loading={completing}
                     >
                       Generate Response

@@ -1,5 +1,4 @@
 import CharacterProfileHeader from '@/components/Characters/CharacterProfileHeader'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 import { useCharacter } from '@/hooks/useCharacter'
@@ -15,7 +14,6 @@ const CreationTabContent = ({ characterId }: { characterId: string }) => {
       <MasonryInfiniteContainer
         key={`creations_${characterId}`}
         itemType="creation"
-        ItemComponent={CreationCard}
         query={{ characterId: characterId }}
         filters={[OrderByLatest]}
       />
@@ -28,7 +26,7 @@ const CharacterPageContent = ({ character }: { character: Character }) => {
     {
       label: 'Creations',
       key: 'creations',
-      children: <CreationTabContent characterId={character.id} />,
+      children: <CreationTabContent characterId={character._id} />,
     },
     {
       label: 'Chats',
@@ -78,7 +76,10 @@ const CharacterPageContent = ({ character }: { character: Character }) => {
       </Head>
 
       <div className={`flex flex-col gap-2`}>
-        <CharacterProfileHeader character={character} numCreations={1} />
+        <CharacterProfileHeader
+          character={character}
+          numCreations={character?.creationCount}
+        />
         <Tabs
           defaultActiveKey="1"
           centered
@@ -91,7 +92,7 @@ const CharacterPageContent = ({ character }: { character: Character }) => {
 }
 
 const CharacterPage = ({ data }: { data: Character }) => {
-  const { character: characterData } = useCharacter(data ? data.id : null, {
+  const { character: characterData } = useCharacter(data ? data._id : null, {
     fallbackData: data,
   })
 

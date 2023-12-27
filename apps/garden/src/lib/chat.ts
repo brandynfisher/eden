@@ -1,4 +1,6 @@
 import { ChatMessage, ChatMessageGroup } from '@/lib/types'
+import axios from 'axios'
+import { NextRouter } from 'next/router'
 
 export const compilePrompt = (
   characterName: string,
@@ -74,4 +76,15 @@ export const dialogueStringToMessageGroups = (dialogue: string) => {
   })
 
   return messageGroups
+}
+
+export const createSession = async (
+  characterId: string,
+  router: NextRouter,
+) => {
+  const response = await axios.post(`/api/sessions/create`, {
+    characterId,
+  })
+  const { sessionId } = response.data
+  await router.push(`/sessions/${sessionId}`)
 }

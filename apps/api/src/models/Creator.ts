@@ -1,5 +1,6 @@
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Document, Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
 
 import { CollectionDocument } from './Collection'
@@ -12,6 +13,7 @@ export interface UserSchema {
   provider?: string
   creations: CreationDocument[]
   collections: CollectionDocument[]
+  creationCount?: number
   followerCount: number
   followingCount: number
   featureFlags?: FeatureFlag[]
@@ -78,6 +80,10 @@ const user = new Schema<UserDocument>(
         ref: 'collections',
       },
     ],
+    creationCount: {
+      type: Number,
+      default: 0,
+    },
     followerCount: {
       type: Number,
       default: 0,
@@ -122,7 +128,10 @@ user.pre<UserDocument>('save', function (next) {
 })
 
 user.index({ createdAt: 1 })
+user.index({ followerCount: -1 })
+user.index({ creationCount: -1 })
 
 user.plugin(paginate)
+user.plugin(aggregatePaginate)
 
 export const User = model<UserDocument>('users', user)

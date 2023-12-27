@@ -1,4 +1,4 @@
-import { WebAPICallOptions, WebAPICallResult } from '../EdenClient'
+import { WebAPICallOptions, WebAPICallResult } from '../types'
 
 // Arguments
 

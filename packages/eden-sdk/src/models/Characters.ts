@@ -1,14 +1,15 @@
 // packages/eden-sdk/src/methods/Characters.ts
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
+import { Assistant, Interaction } from 'src/models/Sessions'
 
+import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
-} from '../EdenClient'
-import { transformArgsIntoURLParams } from '../methods'
+} from '../types'
 
 // Arguments
 
@@ -26,11 +27,9 @@ export interface CharactersCreateArguments extends WebAPICallOptions {
   name: string
   image?: string
   voice?: string
-  description?: string
   greeting?: string
   dialogue?: any[]
-  concept?: string
-  logosData?: LogosData
+  logosData: LogosData
   isPrivate?: boolean
 }
 
@@ -39,16 +38,19 @@ export interface CharactersUpdateArguments extends WebAPICallOptions {
   name?: string
   image?: string
   voice?: string
-  description?: string
   greeting?: string
   dialogue?: any[]
-  concept?: string
   logosData?: LogosData
   isPrivate?: boolean
 }
 
 export interface CharactersDeleteArguments extends WebAPICallOptions {
   characterId: string
+}
+
+export interface CharactersTestArguments extends WebAPICallOptions {
+  assistant: Assistant
+  interaction: Interaction
 }
 
 // Requests
@@ -111,6 +113,18 @@ export const charactersDeleteRequestConfig = (
   }
 }
 
+export const charactersTestRequestConfig = (
+  args: CharactersTestArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'characters/test',
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type CharactersCreateResponse = WebAPICallResult & {
@@ -138,30 +152,41 @@ export type CharactersGetResponse = WebAPICallResult & {
   character?: Character
 }
 
+export type CharactersTestResponse = WebAPICallResult & {
+  error?: string
+  message?: string
+  config?: any
+}
+
 // Types
 
 export type Character = {
-  id: string
+  _id: string
   user: Creator
   name: string
   slug: string
-  description?: string
   greeting?: string
   dialogue?: any[]
-  concept?: string
   logosData?: LogosData
   image?: string
   voice?: string
   creationCount?: number
-  deleted?: boolean
   isPrivate?: boolean
+  deleted?: boolean
   createdAt: string
   updatedAt: string
 }
 
 export type LogosData = {
-  documentation?: string
-  documentationPrompt?: string
-  creatorPrompt?: string
-  routerPrompt?: string
+  capabilities?: Capabilites[]
+  identity?: string
+  knowledge?: string
+  knowledgeSummary?: string
+  concept?: string
+}
+
+export enum Capabilites {
+  CHAT = 'chat',
+  CREATION = 'creation',
+  KNOWLEDGE = 'knowledge',
 }

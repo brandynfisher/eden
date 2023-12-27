@@ -1,9 +1,8 @@
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
 } from '@/components/Layout/buttons/OrderByButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { ItemType } from '@/providers/ModalProvider'
@@ -11,15 +10,16 @@ import React, { useCallback, useEffect, useState } from 'react'
 
 const MasonryInfiniteContainer = ({
   itemType,
-  ItemComponent,
   filters,
   query,
+  fallbackFilter,
 }: {
   itemType: ItemType
-  ItemComponent: typeof CreationCard | typeof ConceptCard
   filters?: OrderByParam[]
   query?: PaginatedFeedQuery
+  fallbackFilter?: OrderByParam
 }) => {
+  const [fetchStartDate, setFetchStartDate] = useState<string | undefined>()
   const [orderBy, setOrderBy] = useState<OrderByParam>(
     filters ? filters[0] : OrderByDefaultParam,
   )
@@ -27,6 +27,7 @@ const MasonryInfiniteContainer = ({
   const [key, setKey] = useState(
     `${filters ? filters[0].field : OrderByDefaultParam.field}_${0}`,
   )
+  const [hiddenParams, setHiddenParams] = useState<string[]>([])
 
   const handleOrderChange = useCallback(
     (newOrderBy: OrderByParam) => {
@@ -39,14 +40,31 @@ const MasonryInfiniteContainer = ({
   )
 
   useEffect(() => {
+    setFetchStartDate(new Date().toISOString())
     setRenderCount(prevState => prevState + 1)
   }, [orderBy])
+
+  const handleFallbackOnEmptyResult = (orderBy: OrderByParam) => {
+    if (fallbackFilter) {
+      setHiddenParams(prev =>
+        prev.includes(orderBy.field) ? prev : [...prev, orderBy.field],
+      )
+      handleOrderChange(fallbackFilter)
+    }
+  }
+
+  if (!fetchStartDate) {
+    return <LoadingIndicator />
+  }
 
   return (
     <>
       {filters ? (
         <OrderByButtons
-          params={filters}
+          params={filters.filter(item => !hiddenParams.includes(item.field))}
+          initialParam={
+            filters.filter(item => !hiddenParams.includes(item.field))[0]
+          }
           onOrderChange={item => handleOrderChange(item)}
         />
       ) : null}
@@ -55,8 +73,10 @@ const MasonryInfiniteContainer = ({
         key={key}
         orderBy={orderBy}
         itemType={itemType}
-        query={query}
-        ItemComponent={ItemComponent}
+        query={{ ...query, dateCutOff: fetchStartDate }}
+        emptyResultHandler={
+          fallbackFilter ? handleFallbackOnEmptyResult : undefined
+        }
       />
     </>
   )

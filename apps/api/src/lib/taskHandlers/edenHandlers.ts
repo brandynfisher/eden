@@ -1,4 +1,3 @@
-import { ReactionType } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -12,17 +11,13 @@ import { Task, TaskStatus } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
 import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
-import * as openai from './openai'
 import * as replicate from './replicate'
-import * as scenarioRunner from './scenarioRunner'
 
-type TaskProvider = 'openai' | 'replicate' | 'elevenPlay' | 'scenarioRunner'
+type TaskProvider = 'replicate' | 'elevenPlay'
 
 const providers = new Map<TaskProvider, any>([
-  ['openai', openai],
   ['elevenPlay', elevenPlay],
   ['replicate', replicate],
-  ['scenarioRunner', scenarioRunner],
 ])
 
 interface TaskOutput {

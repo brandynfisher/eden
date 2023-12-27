@@ -10,6 +10,14 @@ import { isAuth } from '../middleware/authMiddleware'
 const mediaRoutes: FastifyPluginAsync = async server => {
   server.post('/media/upload', {
     schema: {
+      tags: ['Media'],
+      description: 'Upload media',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       response: {
         200: Type.Object({
           url: Type.String(),
@@ -22,6 +30,14 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.get('/media/download', {
     schema: {
+      tags: ['Media'],
+      description: 'Get media download url',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         url: Type.String(),
       },

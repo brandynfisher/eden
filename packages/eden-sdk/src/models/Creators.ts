@@ -1,13 +1,13 @@
 import { AxiosRequestConfig } from 'axios'
 import { Task } from 'src/models/Tasks'
 
+import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
-} from '../EdenClient'
-import { transformArgsIntoURLParams } from '../methods'
+} from '../types'
 
 // Arguments
 
@@ -181,12 +181,14 @@ export type CreatorsGetMeResponse = WebAPICallResult & {
 // Types
 
 export type Creator = {
+  _id: string
   userId: string
   username?: string
   userImage?: string
   creations?: string[]
   creationsCount?: number
   collections?: string[]
+  creationCount?: number
   followerCount?: number
   followingCount?: number
   isFollowing?: boolean
@@ -194,6 +196,8 @@ export type Creator = {
   subscriptionTier?: SubscriptionTier
   stripeCustomerId?: string
   discordId?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export enum SubscriptionTier {

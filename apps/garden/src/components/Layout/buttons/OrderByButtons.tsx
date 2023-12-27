@@ -1,5 +1,5 @@
 import { Button } from 'antd'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 export type OrderByParam = {
   label: string
@@ -49,6 +49,12 @@ export const OrderByFollowing: OrderByParam = {
   direction: -1,
 }
 
+export const OrderByFollowers: OrderByParam = {
+  label: 'Most Followed',
+  field: 'followerCount',
+  direction: -1,
+}
+
 export const OrderByScore: OrderByParam = {
   label: 'Recommended',
   field: 'embedding.score',
@@ -82,12 +88,20 @@ const OrderByButton = ({
 
 const OrderByButtons = ({
   params,
+  initialParam,
   onOrderChange,
 }: {
   params: OrderByParam[]
+  initialParam?: OrderByParam
   onOrderChange: (item: OrderByParam) => void
 }) => {
-  const [selectedParam, setSelectedParam] = useState<OrderByParam>(params[0])
+  const [selectedParam, setSelectedParam] = useState<OrderByParam>(
+    initialParam ? initialParam : params[0],
+  )
+
+  useEffect(() => {
+    setSelectedParam(initialParam || params[0])
+  }, [initialParam])
 
   const handleSelect = (item: OrderByParam) => {
     if (selectedParam.field === item.field) return

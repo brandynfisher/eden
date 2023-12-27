@@ -49,13 +49,13 @@ const params = [
   },
   {
     name: 'lora_scale',
-    label: 'Concept scale',
+    label: 'Concept strength',
     description:
-      'How strongly to activate the concept (0.0 will disable the concept)',
-    default: 0.65,
+      'How strongly to activate the concept. Lower this value if your prompts are being ignored and things look too similar to your training images',
+    default: 0.7,
     minimum: 0.0,
-    maximum: 1.5,
-    step: 0.01,
+    maximum: 1.2,
+    step: 0.02,
     optional: true,
   },
 
@@ -129,9 +129,9 @@ const params = [
   },
   {
     name: 'guidance_scale',
-    label: 'Guidance scale',
-    description: 'Strength of the prompt (higher values result in more contrast and color saturation)',
-    default: 7.0,
+    label: 'Prompt strength',
+    description: 'Higher values usually also increase saturation and constrast',
+    default: 8.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,

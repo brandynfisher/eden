@@ -3,14 +3,16 @@ import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined'
 import FavoriteTwoToneIcon from '@mui/icons-material/FavoriteTwoTone'
 import { App } from 'antd'
 import axios from 'axios'
-import React, { Dispatch, SetStateAction, useContext } from 'react'
+import React, { useContext } from 'react'
+
+import { CardData } from './Card'
 
 export const PraiseButton = ({
   item,
@@ -18,9 +20,9 @@ export const PraiseButton = ({
   onChange,
   showCounts,
 }: {
-  item: Creation | Concept
+  item: Creation
   itemType: ItemType
-  onChange: Dispatch<SetStateAction<Concept | Creation>>
+  onChange: (updatedData: Creation) => void
   showCounts?: boolean
 }) => {
   const { message } = App.useApp()
@@ -110,17 +112,44 @@ export const PraiseButton = ({
           )}
         </div>
         {showCounts ? <div>{item.praiseCount || 0}</div> : null}
-        {/*<div>{item.praiseCount || 0}</div>*/}
       </div>
     </div>
   )
 }
 
 export interface CardReactionProps {
-  item: Creation | Concept
+  item: CardData
   itemType: ItemType
-  onChange: Dispatch<SetStateAction<Concept | Creation>>
+  onChange: (updatedData: CardData) => void
   showCounts?: boolean
+}
+
+const CreationReactions = ({
+  item,
+  onChange,
+  showCounts,
+}: {
+  item: Creation
+  onChange: (updatedData: CardData) => void
+  showCounts?: boolean
+}) => {
+  return (
+    <>
+      <div>
+        <div className="flex pointer-events-auto">
+          <PraiseButton
+            item={item}
+            itemType={'creation'}
+            onChange={onChange}
+            showCounts={showCounts}
+          />
+        </div>
+      </div>
+      <div className="pointer-events-auto">
+        <SaveButton creation={item} onChange={onChange} />
+      </div>
+    </>
+  )
 }
 
 const CardReactions = ({
@@ -132,41 +161,30 @@ const CardReactions = ({
   return itemType === 'creation' ? (
     <div className="relative flex justify-between">
       {itemType === 'creation' ? (
-        <>
-          <div>
-            <div className="flex pointer-events-auto">
-              <PraiseButton
-                item={item}
-                itemType={itemType}
-                onChange={onChange}
-                showCounts={showCounts}
-              />
-            </div>
-          </div>
-          <div className="pointer-events-auto">
-            <SaveButton creation={item} onChange={onChange} />
-          </div>
-        </>
+        <CreationReactions
+          item={item as Creation}
+          onChange={onChange}
+          showCounts={showCounts}
+        />
       ) : null}
     </div>
-  ) : (
-    <div className="relative hidden md:flex justify-between">
-      <div className="h-2">
-        <div className="flex pointer-events-auto">
-          {/*      <PraiseButton*/}
-          {/*        item={conceptData}*/}
-          {/*        type={'concept'}*/}
-          {/*        onChange={*/}
-          {/*          setConceptData as Dispatch<*/}
-          {/*            SetStateAction<Concept | Creation>*/}
-          {/*          >*/}
-          {/*        }*/}
-          {/*        showCounts={true}*/}
-          {/*      />*/}
-        </div>
-      </div>
-    </div>
-  )
+  ) : // <div className="relative hidden md:flex justify-between">
+  //   <div className="h-2">
+  //     <div className="flex pointer-events-auto">
+  //       {/*      <PraiseButton*/}
+  //       {/*        item={conceptData}*/}
+  //       {/*        type={'concept'}*/}
+  //       {/*        onChange={*/}
+  //       {/*          setConceptData as Dispatch<*/}
+  //       {/*            SetStateAction<Concept | Creation>*/}
+  //       {/*          >*/}
+  //       {/*        }*/}
+  //       {/*        showCounts={true}*/}
+  //       {/*      />*/}
+  //     </div>
+  //   </div>
+  // </div>
+  null
 }
 
 export default CardReactions

@@ -1,6 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { conceptExportToHF } from '../controllers/conceptsController'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { createTask } from '../controllers/taskController'
@@ -14,6 +15,9 @@ export interface MannaModifyRequestBody {
 const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/manna/modify', {
     schema: {
+      tags: ['Admin'],
+      description: 'Modify manna for a user',
+      hide: true,
       request: {
         body: Type.Object({
           userId: Type.String(),
@@ -27,6 +31,11 @@ const adminRoutes: FastifyPluginAsync = async server => {
           transactionId: Type.String(),
         }),
       },
+      // security: [
+      //   {
+      //     apiKey: [],
+      //   },
+      // ],
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => modifyManna(request, reply),
@@ -34,6 +43,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
 
   server.post('/admin/manna/vouchers/create', {
     schema: {
+      tags: ['Admin'],
+      description: 'Create manna vouchers',
+      hide: true,
       request: {
         body: Type.Object({
           amount: Type.Number(),
@@ -52,6 +64,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
 
   server.post('/admin/media/upload', {
     schema: {
+      tags: ['Admin'],
+      description: 'Upload media',
+      hide: true,
       response: {
         200: Type.Object({
           url: Type.String(),
@@ -64,6 +79,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
 
   server.post('/admin/tasks/create', {
     schema: {
+      tags: ['Admin'],
+      description: 'Create a task as admin',
+      hide: true,
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
@@ -84,6 +102,31 @@ const adminRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => createTask(server, request, reply),
+  })
+
+  server.post('/admin/concepts/export/hf', {
+    schema: {
+      tags: ['Admin'],
+      description: 'Export a concept to HuggingFace',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      hide: true,
+      body: Type.Object({
+        userId: Type.String(),
+        conceptId: Type.String(),
+      }),
+      response: {
+        200: {
+          url: Type.String(),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => conceptExportToHF(server, request, reply),
   })
 }
 

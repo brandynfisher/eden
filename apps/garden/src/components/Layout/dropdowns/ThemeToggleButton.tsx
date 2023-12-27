@@ -5,7 +5,7 @@ import { UseThemeProps } from 'next-themes/dist/types'
 import React, { useCallback, useEffect, useState } from 'react'
 
 const toggleTheme = (theme: UseThemeProps['theme']): 'light' | 'dark' => {
-  return theme === 'light' ? 'light' : 'dark'
+  return theme === 'light' ? 'dark' : 'light'
 }
 
 const ThemeToggleButton = () => {

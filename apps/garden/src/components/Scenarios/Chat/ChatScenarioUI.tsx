@@ -2,7 +2,6 @@ import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { useCreator } from '@/hooks/useCreator'
 import { MessageMarker, compileMessage } from '@/lib/chat'
 import { timeAgo } from '@/lib/time'
-import { ChatMessage } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import {
@@ -16,8 +15,9 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
-import { Character } from '@edenlabs/eden-sdk'
+import { Character, SessionsInteractResponse } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useContext, useEffect, useState } from 'react'
 
@@ -26,6 +26,7 @@ import { useContext, useEffect, useState } from 'react'
 
 type ConversationEntry = {
   message: string
+  uris?: string[]
   speaker: 'bot' | 'user'
   date: Date
   id?: string
@@ -38,8 +39,6 @@ const ChatScenarioUI = ({
   activeCharacter: Character
   sessionId: string
 }) => {
-  const MAX_CHAT_HISTORY = 6
-
   const { isAuthenticated, userId } = useContext(UserContext)
   const { creator } = useCreator(isAuthenticated && userId ? userId : null)
 
@@ -72,19 +71,19 @@ const ChatScenarioUI = ({
   }, [activeCharacter, creator])
 
   const submit = async () => {
-    const previousMessages: ChatMessage[] = conversation
-      .slice(-MAX_CHAT_HISTORY)
-      .map(entry => {
-        return {
-          sender: entry.speaker,
-          message: entry.message,
-        }
-      })
+    // const previousMessages: ChatMessage[] = conversation
+    //   .slice(-MAX_CHAT_HISTORY)
+    //   .map(entry => {
+    //     return {
+    //       sender: entry.speaker,
+    //       message: entry.message,
+    //     }
+    //   })
 
-    const message: ChatMessage = {
-      sender: 'user',
-      message: text,
-    }
+    // const message: ChatMessage = {
+    //   sender: 'user',
+    //   message: text,
+    // }
     setConversation(state => [
       ...state,
       {
@@ -95,22 +94,33 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      let completion: string
-      const res = await axios.post(`/api/lm/chat`, {
+      const res = await axios.post(`/api/sessions/interact`, {
         sessionId,
-        characterId: activeCharacter.id,
-        description: activeCharacter.description,
-        dialogue: activeCharacter.dialogue,
-        previousMessages,
-        message,
+        assistant: {
+          name: activeCharacter.name,
+          identity: activeCharacter.logosData?.identity,
+          knowledge: activeCharacter.logosData?.knowledge,
+          knowledge_summary: activeCharacter.logosData?.knowledgeSummary,
+        },
+        interaction: {
+          prompt: text,
+          author_id: creator?.userId,
+          attachments: [],
+        },
       })
-      completion = res.data.completion as string
+      const { message } = res.data as SessionsInteractResponse
+      const completion = message
+      if (!completion) {
+        throw new Error('No completion returned from GPT-3')
+      }
       setConversation(state => [
         ...state,
         {
           message: creator?.username
             ? compileMessage(completion, messageMarkers)
             : completion.trim(),
+          // uris: data?.creations?.map(creation => creation.uri),
+          uris: [],
           speaker: 'bot',
           date: new Date(),
         },
@@ -140,13 +150,13 @@ const ChatScenarioUI = ({
             userName={
               <div className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap">
                 <Link
-                  href={`/characters/${activeCharacter.id}`}
+                  href={`/characters/${activeCharacter._id}`}
                   className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap"
                 >
                   <div className="flex items-center gap-2">
                     <div className="flex justify-center items-center h-[32px] w-[32px] flex-shrink-0 flex-grow">
                       <CharacterAvatar
-                        id={activeCharacter.id}
+                        id={activeCharacter._id}
                         name={activeCharacter.name}
                         imageUri={activeCharacter.image || ''}
                         size={'small'}
@@ -191,7 +201,7 @@ const ChatScenarioUI = ({
                 <Avatar>
                   {isBotSpeaking ? (
                     <CharacterAvatar
-                      id={activeCharacter.id}
+                      id={activeCharacter._id}
                       name={activeCharacter.name}
                       imageUri={activeCharacter.image || ''}
                       shape="circle"
@@ -235,17 +245,21 @@ const ChatScenarioUI = ({
                       : 'bg-gray-300 dark:!bg-gray-800 rounded-tl-lg'
                   }`}
                 >
+                  {entry.uris && isBotSpeaking
+                    ? entry.uris.map((uri, index) => {
+                        return (
+                          <div key={index}>
+                            <Image
+                              width={120}
+                              height={120}
+                              src={uri}
+                              alt={uri}
+                            />
+                          </div>
+                        )
+                      })
+                    : null}
                   {entry.message}
-
-                  {/* //@todo: naiive base for showing images in chat messages */}
-                  {/*{entry.media && isBotSpeaking ?*/}
-                  {/*  <Image*/}
-                  {/*    width={120}*/}
-                  {/*    height={120}*/}
-                  {/*    src={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}*/}
-                  {/*    alt={`${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}/>*/}
-                  {/*  : null*/}
-                  {/*}*/}
                 </Message.CustomContent>
                 <Message.Footer
                   className={`!mt-0 ${

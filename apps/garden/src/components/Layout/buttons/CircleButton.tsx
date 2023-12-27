@@ -5,11 +5,13 @@ const CircleButton = ({
   icon,
   onClick,
   disabled,
+  className,
 }: {
   title: string
   icon: ReactNode
   onClick?: () => void
   disabled?: boolean
+  className?: string
 }) => {
   return (
     <div
@@ -19,7 +21,7 @@ const CircleButton = ({
         disabled
           ? 'text-gray-700 hover:dark:!bg-transparent hover:!bg-transparent !cursor-default'
           : ''
-      }`}
+      } ${className ? className : ''}`}
     >
       {icon}
     </div>

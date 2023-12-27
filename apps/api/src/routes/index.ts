@@ -13,7 +13,6 @@ import generatorRoutes from './generatorRoutes'
 import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
 import paymentRoutes from './paymentRoutes'
-import scenarioRoutes from './scenarioRoutes'
 import sessionRoutes from './sessionRoutes'
 import taskRoutes from './taskRoutes'
 
@@ -54,7 +53,6 @@ export const routes = [
   generatorRoutes,
   conceptRoutes,
   taskRoutes,
-  scenarioRoutes,
   feedRoutes,
   sessionRoutes,
   paymentRoutes,

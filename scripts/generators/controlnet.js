@@ -4,27 +4,27 @@ const params = [
     label: 'Shape guidance image',
     default: null,
     description:
-      'Shape guidance image. This will guide the edges and contours of the creation',
+      'Shape guidance image. This will guide the edges and contours or colors of the creation',
     mediaUpload: 'image/png, image/jpeg, image/webp',
     isRequired: true,
     optional: false,
   },
   {
     name: 'control_image_strength',
-    label: 'Shape guidance image strength',
+    label: 'Guidance strength',
     description:
       'How much influence the guidance image has on the creation. Recommended >0.5',
     default: 0.6,
     minimum: 0.0,
-    maximum: 1.0,
+    maximum: 1.2,
     step: 0.01,
     optional: false,
   },
   
   {
     name: 'controlnet_type',
-    label: 'ControlNet mode',
-    description: 'Which ControlNet mode to use (we recommend canny-edge or luminance)',
+    label: 'Control mode',
+    description: 'Which ControlNet mode to use. canny-edge will maintain lines and edges (good for faces). Luminance will maintain dark and bright regions (good for colors). Depth will try to maintain perceived depth.',
     default: 'luminance',
     allowedValues: ["luminance", "canny-edge", "depth"],
   },
@@ -40,7 +40,7 @@ const params = [
   {
     name: 'width',
     label: 'Width',
-    description: 'Will generate a total of [Width x Height] pixels but adopts the aspect ratio of your guidance image',
+    description: 'Controlnet mode will generate a total of [Width x Height] pixels but adopts the aspect ratio of your guidance image (unless adopt aspect is turned off)',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -50,7 +50,7 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Will generate a total of [Width x Height] pixels but adopts the aspect ratio of your guidance image',
+    description: 'Controlnet mode will generate a total of [Width x Height] pixels but adopts the aspect ratio of your guidance image (unless adopt aspect is turned off)',
     default: 1024,
     minimum: 512,
     maximum: 2048,
@@ -63,7 +63,7 @@ const params = [
   
   {
     name: 'n_samples',
-    label: 'Samples',
+    label: 'Variations',
     description: 'Number of variations to create',
     default: 1,
     allowedValues: [1, 2, 3, 4],
@@ -79,20 +79,20 @@ const params = [
   },
   {
     name: 'lora_scale',
-    label: 'Concept scale',
+    label: 'Concept strength',
     description:
-      'How strongly to activate the concept (0.0 will disable the concept)',
-    default: 0.65,
+      'How strongly to activate the concept. Lower this value if your prompt is being ignored and all creations look too similar to your training images',
+    default: 0.6,
     minimum: 0.0,
-    maximum: 1.5,
-    step: 0.01,
+    maximum: 1.2,
+    step: 0.02,
     optional: true,
   },
   
   {
     name: 'adopt_aspect_from_init_img',
-    label: 'Adopt aspect ratio of guidance image',
-    description: 'Make a creation with the same aspect ratio as the guidance image.',
+    label: 'Adopt aspect',
+    description: 'Make a creation with the same aspect ratio as the guidance image',
     default: true,
     allowedValues: [false, true],
     optional: true,
@@ -108,9 +108,9 @@ const params = [
   },
   {
     name: 'guidance_scale',
-    label: 'Guidance scale',
-    description: 'Strength of the prompt (higher values result in more contrast and color saturation)',
-    default: 7.0,
+    label: 'Prompt strength',
+    description: 'Higher values usually also increase saturation and constrast',
+    default: 8.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,
@@ -124,6 +124,7 @@ const params = [
     allowedValues: ["ddim", "ddpm", "klms", "euler", "euler_ancestral", "dpm", "kdpm2", "kdpm2_ancestral", "pndm"],
     optional: true,
   },
+
   {
     name: 'steps',
     label: 'Steps',
@@ -133,6 +134,15 @@ const params = [
     maximum: 70,
     optional: true,
   },
+
+  // {
+  //   name: 'checkpoint',
+  //   label: 'Checkpoint',
+  //   description: 'Which generator model to use',
+  //   default: 'juggernaut_XL2',
+  //   allowedValues: ["juggernaut_XL2", "sdxl-v1.0"],
+  //   optional: true,
+  // },
   {
     name: 'seed',
     label: 'Seed',

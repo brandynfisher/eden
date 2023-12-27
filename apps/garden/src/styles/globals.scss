@@ -777,3 +777,20 @@ textarea.with-addon {
 div[role='grid'] {
     outline: none;
 }
+
+.concept-notice {
+    .ant-message-custom-content  {
+        > span {
+            width: 100%;
+        }
+    }
+    .ant-message-notice-content {
+        width: 325.5px;
+        padding: 0 !important;
+    }
+}
+
+// fixes upload preview getting stretched
+.ant-upload-list-item-thumbnail img {
+    object-fit: contain !important;
+}

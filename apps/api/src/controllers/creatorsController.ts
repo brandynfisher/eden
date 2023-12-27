@@ -354,7 +354,7 @@ export const followCreator = async (
 
   await userToFollow.updateOne({
     $inc: {
-      followersCount: 1,
+      followerCount: 1,
     },
   })
   await user.updateOne({
@@ -414,7 +414,7 @@ export const unfollowCreator = async (
 
   await userToUnfollow.updateOne({
     $inc: {
-      followersCount: -1,
+      followerCount: -1,
     },
   })
   await user.updateOne({

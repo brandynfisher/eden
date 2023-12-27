@@ -1,6 +1,6 @@
 import { AxiosRequestConfig } from 'axios'
 
-import { WebAPICallOptions, WebAPICallResult } from '../EdenClient'
+import { WebAPICallOptions, WebAPICallResult } from '../types'
 
 export interface AdminMannaModifyArguments extends WebAPICallOptions {
   userId: string
@@ -19,6 +19,11 @@ export interface AdminAuthChallengeArguments extends WebAPICallOptions {
 
 export interface AdminMediaUploadArguments extends WebAPICallOptions {
   media: Buffer
+}
+
+export interface AdminConceptsExportToHFArguments extends WebAPICallOptions {
+  conceptId: string
+  userId: string
 }
 
 // Requests
@@ -75,6 +80,18 @@ export const adminMediaUploadRequestConfig = (
   }
 }
 
+export const adminConceptsExportToHFRequestConfig = (
+  args: AdminConceptsExportToHFArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `admin/concepts/export/hf`,
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type AdminMannaModifyResponse = WebAPICallResult & {
@@ -95,6 +112,11 @@ export type AdminAuthChallengeResponse = WebAPICallResult & {
 }
 
 export type AdminMediaUploadResponse = WebAPICallResult & {
+  error?: string
+  url?: string
+}
+
+export type AdminConceptsExportToHFResponse = WebAPICallResult & {
   error?: string
   url?: string
 }

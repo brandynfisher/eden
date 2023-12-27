@@ -1,9 +1,9 @@
 import { AxiosRequestConfig } from 'axios'
 
-import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
   AdminAuthChallengeArguments,
   AdminAuthChallengeResponse,
+  AdminConceptsExportToHFArguments,
   AdminMannaModifyArguments,
   AdminMannaModifyResponse,
   AdminMannaVouchersCreateArguments,
@@ -24,6 +24,8 @@ import {
   CharactersGetResponse,
   CharactersListArguments,
   CharactersListResponse,
+  CharactersTestArguments,
+  CharactersTestResponse,
   CharactersUpdateArguments,
   CharactersUpdateResponse,
   CollectionsAddCreationsArguments,
@@ -99,31 +101,21 @@ import {
   PaymentsProductsResponse,
   PaymentsSubscriptionArguments,
   PaymentsSubscriptionResponse,
-  ScenariosCreateArguments,
-  ScenariosCreateResponse,
-  ScenariosDeleteArguments,
-  ScenariosDeleteResponse,
-  ScenariosGetArguments,
-  ScenariosGetResponse,
-  ScenariosListArguments,
-  ScenariosListResponse,
-  ScenariosUpdateArguments,
-  ScenariosUpdateResponse,
   SessionEventsListArguments,
   SessionEventsListResponse,
-  SessionsCreateArguments,
+  SessionsAddCharactersArguments,
+  SessionsAddCharactersResponse,
+  SessionsAddUsersArguments,
+  SessionsAddUsersResponse,
   SessionsCreateResponse,
   SessionsDeleteArguments,
   SessionsDeleteResponse,
   SessionsGetArguments,
   SessionsGetResponse,
+  SessionsInteractArguments,
+  SessionsInteractResponse,
   SessionsListArguments,
   SessionsListResponse,
-  SessionsUpdateArguments,
-  SessionsUpdateResponse,
-  TasksChatCompleteArguments,
-  TasksCompleteArguments,
-  TasksCompleteResponse,
   TasksCreateArguments,
   TasksCreateResponse,
   TasksGetArguments,
@@ -131,6 +123,7 @@ import {
   TasksListArguments,
   TasksListResponse,
   adminAuthChallengeRequestConfig,
+  adminConceptsExportToHFRequestConfig,
   adminMannaModifyRequestConfig,
   adminMannaVouchersCreateRequestConfig,
   adminMediaUploadRequestConfig,
@@ -141,6 +134,7 @@ import {
   charactersDeleteRequestConfig,
   charactersGetRequestConfig,
   charactersListRequestConfig,
+  charactersTestRequestConfig,
   charactersUpdateRequestConfig,
   collectionsAddCreationsRequestConfig,
   collectionsCreateRequestConfig,
@@ -180,45 +174,20 @@ import {
   paymentsCreateRequestConfig,
   paymentsProductsRequestConfig,
   paymentsSubscriptionRequestConfig,
-  scenariosCreateRequestConfig,
-  scenariosDeleteRequestConfig,
-  scenariosGetRequestConfig,
-  scenariosListRequestConfig,
-  scenariosUpdateRequestConfig,
   sessionEventsListRequestConfig,
+  sessionsAddCharactersRequestConfig,
+  sessionsAddUsersRequestConfig,
   sessionsCreateRequestConfig,
   sessionsDeleteRequestConfig,
   sessionsGetRequestConfig,
+  sessionsInteractRequestConfig,
   sessionsListRequestConfig,
-  sessionsUpdateRequestConfig,
-  tasksChatCompleteRequestConfig,
-  tasksCompleteRequestConfig,
   tasksCostRequestConfig,
   tasksCreateRequestConfig,
   tasksGetRequestConfig,
   tasksListRequestConfig,
 } from './models'
-
-export const transformArgsIntoURLParams = (
-  args: Record<string, any>,
-): URLSearchParams => {
-  const params = new URLSearchParams()
-
-  for (const key in args) {
-    if (Object.prototype.hasOwnProperty.call(args, key)) {
-      const value = args[key]
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          value.forEach(item => params.append(key, item))
-        } else {
-          params.append(key, value.toString())
-        }
-      }
-    }
-  }
-
-  return params
-}
+import { WebAPICallOptions, WebAPICallResult } from './types'
 
 export default interface Method<
   MethodArguments extends WebAPICallOptions,
@@ -270,6 +239,14 @@ export abstract class Methods {
         adminMediaUploadRequestConfig,
       ),
     },
+    concepts: {
+      export: {
+        hf: bindApiCall<
+          AdminConceptsExportToHFArguments,
+          AdminConceptsExportToHFArguments
+        >(this, adminConceptsExportToHFRequestConfig),
+      },
+    },
   }
 
   public readonly apiKeys = {
@@ -307,6 +284,10 @@ export abstract class Methods {
     get: bindApiCall<CharactersGetArguments, CharactersGetResponse>(
       this,
       charactersGetRequestConfig,
+    ),
+    test: bindApiCall<CharactersTestArguments, CharactersTestResponse>(
+      this,
+      charactersTestRequestConfig,
     ),
   }
 
@@ -497,37 +478,10 @@ export abstract class Methods {
     >(this, paymentsSubscriptionRequestConfig),
   }
 
-  public readonly scenarios = {
-    create: bindApiCall<ScenariosCreateArguments, ScenariosCreateResponse>(
-      this,
-      scenariosCreateRequestConfig,
-    ),
-    update: bindApiCall<ScenariosUpdateArguments, ScenariosUpdateResponse>(
-      this,
-      scenariosUpdateRequestConfig,
-    ),
-    delete: bindApiCall<ScenariosDeleteArguments, ScenariosDeleteResponse>(
-      this,
-      scenariosDeleteRequestConfig,
-    ),
-    list: bindApiCall<ScenariosListArguments, ScenariosListResponse>(
-      this,
-      scenariosListRequestConfig,
-    ),
-    get: bindApiCall<ScenariosGetArguments, ScenariosGetResponse>(
-      this,
-      scenariosGetRequestConfig,
-    ),
-  }
-
   public readonly sessions = {
-    create: bindApiCall<SessionsCreateArguments, SessionsCreateResponse>(
+    create: bindApiCall<WebAPICallOptions, SessionsCreateResponse>(
       this,
       sessionsCreateRequestConfig,
-    ),
-    update: bindApiCall<SessionsUpdateArguments, SessionsUpdateResponse>(
-      this,
-      sessionsUpdateRequestConfig,
     ),
     delete: bindApiCall<SessionsDeleteArguments, SessionsDeleteResponse>(
       this,
@@ -541,6 +495,22 @@ export abstract class Methods {
       this,
       sessionsGetRequestConfig,
     ),
+    interact: bindApiCall<SessionsInteractArguments, SessionsInteractResponse>(
+      this,
+      sessionsInteractRequestConfig,
+    ),
+    users: {
+      add: bindApiCall<SessionsAddUsersArguments, SessionsAddUsersResponse>(
+        this,
+        sessionsAddUsersRequestConfig,
+      ),
+    },
+    characters: {
+      add: bindApiCall<
+        SessionsAddCharactersArguments,
+        SessionsAddCharactersResponse
+      >(this, sessionsAddCharactersRequestConfig),
+    },
   }
 
   public readonly session = {
@@ -560,14 +530,6 @@ export abstract class Methods {
     cost: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,
       tasksCostRequestConfig,
-    ),
-    complete: bindApiCall<TasksCompleteArguments, TasksCompleteResponse>(
-      this,
-      tasksCompleteRequestConfig,
-    ),
-    chat: bindApiCall<TasksChatCompleteArguments, TasksCompleteResponse>(
-      this,
-      tasksChatCompleteRequestConfig,
     ),
     get: bindApiCall<TasksGetArguments, TasksGetResponse>(
       this,

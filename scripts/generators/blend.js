@@ -3,7 +3,7 @@ const params = [
   {
     name: 'interpolation_init_images',
     label: 'Your images',
-    description: 'Images to blend (should be exactly two images!)',
+    description: 'Images to blend (must be exactly two images!)',
     default: [],
     mediaUpload: 'image/png, image/jpeg, image/webp',
     minLength: 2,
@@ -29,17 +29,6 @@ const params = [
     step: 64,
   },
   
-  {
-    name: 'interpolation_init_images_min_strength',
-    label: 'Init image strength',
-    description:
-      'Strength of the init_img during blending. Low values (recommended) will give the blend more freedom, higher values will look more like alpha-blending of the original images. Recommended values are 0.0 - 0.1',
-    default: 0.05,
-    minimum: 0.0,
-    maximum: 1.0,
-    step: 0.01,
-  },
-
 
   ////////////////////////////////////////
   // optional generation args
@@ -51,17 +40,18 @@ const params = [
       '(optional) Use Concept on top of the model. Make sure you use same base model Concept was trained on!',
     optional: true,
    },
-   {
+  {
     name: 'lora_scale',
-    label: 'Concept scale',
+    label: 'Concept strength',
     description:
-      'How strongly to apply the Concept weights (0.0 will result in the base model)',
+      'How strongly to activate the concept. Lower this value if your prompt is being ignored and all creations look too similar to your training images',
     default: 0.7,
     minimum: 0.0,
     maximum: 1.2,
-    step: 0.01,
+    step: 0.02,
     optional: true,
   },
+
 
   {
     name: 'uc_text',
@@ -73,14 +63,27 @@ const params = [
   },
   {
     name: 'guidance_scale',
-    label: 'Guidance scale',
-    description: 'Strength of the prompt (higher values usually increase saturation and constrast)',
-    default: 7.5,
+    label: 'Prompt strength',
+    description: 'Higher values usually also increase saturation and constrast',
+    default: 8.0,
     minimum: 0.0,
     maximum: 20.0,
     step: 0.1,
     optional: true,
   },
+
+  {
+    name: 'interpolation_init_images_min_strength',
+    label: 'Image strengths',
+    description:
+      'Strength of the images during blending. Low values (recommended) will give the blend more freedom, higher values will look more like alpha-blending of the original images. Recommended values are 0.0 - 0.1',
+    default: 0.02,
+    minimum: 0.0,
+    maximum: 1.0,
+    step: 0.02,
+    optional: true,
+  },
+
   {
     name: 'sampler',
     label: 'Sampler',
@@ -98,6 +101,16 @@ const params = [
     maximum: 70,
     optional: true,
   },
+
+  // {
+  //   name: 'checkpoint',
+  //   label: 'Checkpoint',
+  //   description: 'Which generator model to use',
+  //   default: 'juggernaut_XL2',
+  //   allowedValues: ["juggernaut_XL2", "sdxl-v1.0"],
+  //   optional: true,
+  // },
+  
   {
     name: 'interpolation_texts',
     label: 'Override prompts',

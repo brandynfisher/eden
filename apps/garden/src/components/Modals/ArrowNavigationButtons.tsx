@@ -28,6 +28,7 @@ const ArrowNavigationButtons = ({
           title={'Prev'}
           icon={<KeyboardArrowLeftIcon fontSize="large" />}
           onClick={handlePrev}
+          className="md:h-[120px] md:top-[-60px] md:relative md:border md:border-solid md:border-gray-800 md:dark:border-gray-400 md:!border-opacity-50"
         />
       </div>
       <div className="pointer-events-auto md:hidden">
@@ -44,6 +45,7 @@ const ArrowNavigationButtons = ({
           title={'Next'}
           icon={<KeyboardArrowRightIcon fontSize="large" />}
           onClick={handleNext}
+          className="md:h-[120px] md:top-[-60px] md:relative md:left-2 lg:right-auto md:border md:border-solid md:border-gray-600"
         />
       </div>
     </div>

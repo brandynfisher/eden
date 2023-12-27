@@ -1,13 +1,14 @@
-import { ScenarioType } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
+import { CharacterDocument } from './Character'
 import { UserDocument } from './Creator'
 
 export interface SessionSchema {
   user: UserDocument
-  type: ScenarioType
+  users: UserDocument[]
+  characters: CharacterDocument[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -21,11 +22,20 @@ const session = new Schema<SessionDocument>(
       ref: 'users',
       required: true,
     },
-    type: {
-      type: String,
-      enum: Object.values(ScenarioType),
-      required: true,
-    },
+    users: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+        default: [],
+      },
+    ],
+    characters: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'characters',
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,

@@ -1,11 +1,13 @@
+import { Assistant, Interaction } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 
-import {
-  dummyGetTransactionCost,
-  dummyReceiveTaskUpdate,
-  dummySubmitTask,
-} from '../lib/taskHandlers/dummy'
+import { dummyTaskHandlers } from '../lib/taskHandlers/dummy'
 import { GeneratorDocument, GeneratorVersionSchema } from '../models/Generator'
+
+export interface LogosResponse {
+  message: string
+  config?: any
+}
 
 export interface TaskHandlers {
   submitTask: (
@@ -23,17 +25,11 @@ export interface TaskHandlers {
   ) => number
 }
 
-const dummyHandlers: TaskHandlers = {
-  submitTask: dummySubmitTask,
-  receiveTaskUpdate: dummyReceiveTaskUpdate,
-  getTransactionCost: dummyGetTransactionCost,
-}
-
 export const registerTaskHandlers = (
   server: FastifyInstance,
   taskHandlers: TaskHandlers | undefined,
 ) => {
-  const handlers = taskHandlers || dummyHandlers
+  const handlers = taskHandlers || dummyTaskHandlers
   server.decorate('submitTask', handlers.submitTask)
   server.decorate('receiveTaskUpdate', handlers.receiveTaskUpdate)
   server.decorate('getTransactionCost', handlers.getTransactionCost)
@@ -54,5 +50,10 @@ declare module 'fastify' {
       generatorVersion: GeneratorVersionSchema,
       config: any,
     ) => number
+    handleInteraction: (
+      server: FastifyInstance,
+      assistant: Assistant,
+      interaction: Interaction,
+    ) => Promise<LogosResponse>
   }
 }

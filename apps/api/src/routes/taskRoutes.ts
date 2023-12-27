@@ -3,8 +3,6 @@ import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
-  createChatCompletion,
-  createCompletion,
   createTask,
   getTask,
   getTaskCost,
@@ -17,6 +15,14 @@ import { isAuth } from '../middleware/authMiddleware'
 const taskRoutes: FastifyPluginAsync = async server => {
   server.post('/tasks/cost', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Get task cost',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
@@ -34,6 +40,14 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.post('/tasks/create', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Create a task',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
@@ -50,49 +64,16 @@ const taskRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => createTask(server, request, reply),
   })
 
-  server.post('/tasks/complete', {
-    schema: {
-      body: {
-        prompt: Type.String(),
-      },
-      response: {
-        200: Type.Object({
-          completion: Type.Object({
-            id: Type.String(),
-            text: Type.String(),
-          }),
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => createCompletion(server, request, reply),
-  })
-
-  server.post('/tasks/chat', {
-    schema: {
-      body: {
-        chat: Type.Array(
-          Type.Object({
-            sender: Type.String(),
-            message: Type.String(),
-          }),
-        ),
-      },
-      response: {
-        200: Type.Object({
-          completion: Type.Object({
-            id: Type.String(),
-            text: Type.String(),
-          }),
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => createChatCompletion(server, request, reply),
-  })
-
   server.get('/tasks', {
     schema: {
+      tags: ['Tasks'],
+      description: 'List tasks',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -113,6 +94,14 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.get('/tasks/:taskId', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Get a task',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         taskId: Type.String(),
       },
@@ -127,6 +116,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.post('/tasks/update', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Update a task',
+      hide: true,
       querystring: {
         secret: Type.String(),
       },
@@ -136,6 +128,14 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.get('/tasks/events', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Get task events',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         taskId: Type.Optional(Type.String()),
       },

@@ -1,4 +1,4 @@
-import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
+import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
@@ -12,7 +12,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const route = (limit: number, page: number) => {
     const basePath = `${CONFIG.API_URL}/creators/${userId}/followers`
-    const params: FeedRouteQueryParams = {}
+    const params: PaginatedFeedQuery = {}
 
     if (limit && page) {
       params.page = page

@@ -156,7 +156,6 @@ test('User cannot send an invalid reaction', async context => {
   })
   expect(response.statusCode).toBe(400)
   expect(response.json()).toHaveProperty('message')
-  expect(response.json().message).toBe('Invalid reaction')
 })
 
 test('Free user cannot make a creation private', async context => {

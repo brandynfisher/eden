@@ -12,7 +12,6 @@ import { Generator, GeneratorDocument } from './Generator'
 import { Manna, MannaDocument } from './Manna'
 import { MannaVoucher, MannaVoucherDocument } from './MannaVoucher'
 import { Reaction, ReactionDocument } from './Reaction'
-import { Scenario, ScenarioDocument } from './Scenario'
 import { Session, SessionDocument } from './Session'
 import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
@@ -34,7 +33,6 @@ export interface Database {
   Generator: Model<GeneratorDocument>
   Character: Model<CharacterDocument>
   Challenge: Model<ChallengeDocument>
-  Scenario: Model<ScenarioDocument>
   Session: Model<SessionDocument>
   SessionEvent: Model<SessionEventDocument>
   UserMigration: Model<UserMigrationDocument>
@@ -55,7 +53,6 @@ export const models: Database = {
   Generator,
   Character,
   Challenge,
-  Scenario,
   Session,
   SessionEvent,
   UserMigration,

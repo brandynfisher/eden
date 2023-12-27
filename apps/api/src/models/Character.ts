@@ -1,50 +1,46 @@
+import { Capabilites, LogosData } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
-import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
 import slug from 'mongoose-slug-plugin'
 
 import { VisibilitySchema } from '../types/baseSchemas'
-import { ConceptDocument } from './Concept'
+import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 
 interface ChatSchema {
   sender: string
   message: string[]
 }
-
-interface LogosSchema {
-  documentation?: string
-  documentationPrompt?: string
-  creatorPrompt?: string
-  routerPrompt?: string
-}
-
 export interface CharacterSchema extends VisibilitySchema {
   user: UserDocument
   name: string
   slug: string
-  description?: string
   greeting?: string
   dialogue?: ChatSchema[]
-  concept?: ConceptDocument
-  logosData?: LogosSchema
+  logosData?: LogosData
   image?: string
   voice?: string
   creationCount?: number
+  praiseCount?: number
+  bookmarkCount?: number
   createdAt?: Date
   updatedAt?: Date
 }
 
 export interface CharacterInput {
   user: ObjectId | UserDocument
-  concept?: ObjectId | ConceptDocument
   name: string
   description?: string
   greeting?: string
   dialogue?: ChatSchema[]
-  logosData?: LogosSchema
+  logosData?: LogosData
   image?: string
   voice?: string
 }
@@ -74,35 +70,35 @@ const character = new Schema<CharacterDocument>(
       type: Array,
       required: false,
     },
-    concept: {
-      type: Schema.Types.ObjectId,
-      ref: 'concepts',
-      required: false,
-    },
     logosData: {
       type: {
-        documentation: {
+        capabilities: {
+          type: Array,
+          values: Object.values(Capabilites),
+          required: false,
+        },
+        identity: {
+          type: String,
+          maxlength: 9999,
+          required: false,
+        },
+        knowledge: {
+          type: String,
+          maxlength: 99990,
+          required: false,
+        },
+        knowledgeSummary: {
           type: String,
           maxlength: 99999,
+          required: false,
         },
-        documentationPrompt: {
+        concept: {
           type: String,
-          maxlength: 9999,
-        },
-        creatorPrompt: {
-          type: String,
-          maxlength: 9999,
-        },
-        routerPrompt: {
-          type: String,
-          maxlength: 9999,
+          maxlength: 1000,
+          required: false,
         },
       },
       required: false,
-    },
-    description: {
-      type: String,
-      maxlength: 9999,
     },
     image: {
       type: String,
@@ -113,6 +109,14 @@ const character = new Schema<CharacterDocument>(
       required: false,
     },
     creationCount: {
+      type: Number,
+      default: 0,
+    },
+    praiseCount: {
+      type: Number,
+      default: 0,
+    },
+    bookmarkCount: {
       type: Number,
       default: 0,
     },
@@ -139,10 +143,17 @@ character.pre<CharacterDocument>('save', function (next) {
   next()
 })
 
-character.index({ user: 1, slug: 1 }, { unique: true })
-
 character.plugin(mongooseDelete, { overrideMethods: 'all' })
+// character.plugin(mongooseDelete, {
+//   overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+// })
 character.plugin(paginate)
-character.plugin(slug, { tmpl: '<%=name%>' })
+character.plugin(aggregatePaginate)
+character.plugin(slug, {
+  tmpl: '<%=name%>',
+})
 
-export const Character = model<CharacterDocument>('characters', character)
+export const Character = model<CharacterDocument>(
+  'characters',
+  character,
+) as SoftDeleteModel<CharacterDocument>

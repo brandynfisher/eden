@@ -1,11 +1,10 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
   OrderByLatest,
   OrderByLikedByMe,
   OrderByUsage,
 } from '@/components/Layout/buttons/OrderByButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
@@ -18,20 +17,24 @@ import Head from 'next/head'
 import React, { useContext } from 'react'
 
 const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
-  const { isAuthenticated, userId } = useContext(UserContext)
+  const { isAuthenticated, isAuthenticating, userId } = useContext(UserContext)
+
+  if (!isAuthenticated && isAuthenticating) {
+    return <LoadingIndicator />
+  }
+
+  const filters =
+    isAuthenticated && userId === creatorId
+      ? [OrderByLatest, OrderByLikedByMe]
+      : [OrderByLatest]
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 ">
       <MasonryInfiniteContainer
         key={`creations_${creatorId}`}
         itemType="creation"
         query={{ userId: creatorId }}
-        filters={
-          isAuthenticated && userId === creatorId
-            ? [OrderByLatest, OrderByLikedByMe]
-            : [OrderByLatest]
-        }
-        ItemComponent={CreationCard}
+        filters={filters}
       />
     </div>
   )
@@ -45,7 +48,19 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
         itemType="concept"
         query={{ userId: creatorId }}
         filters={[OrderByLatest, OrderByUsage]}
-        ItemComponent={ConceptCard}
+      />
+    </div>
+  )
+}
+
+const CharacterTabContent = ({ creatorId }: { creatorId: string }) => {
+  return (
+    <div className="mt-4">
+      <MasonryInfiniteContainer
+        key={`characters_${creatorId}`}
+        itemType="character"
+        query={{ userId: creatorId }}
+        filters={[OrderByLatest, OrderByUsage]}
       />
     </div>
   )
@@ -81,6 +96,11 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       label: 'Concepts',
       key: 'concepts',
       children: <ConceptTabContent creatorId={creator.userId} />,
+    },
+    {
+      label: 'Characters',
+      key: 'characters',
+      children: <CharacterTabContent creatorId={creator.userId} />,
     },
     {
       label: 'Collections',

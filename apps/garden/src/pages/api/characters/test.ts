@@ -1,16 +1,15 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { EdenClient, SessionsUpdateArguments } from '@edenlabs/eden-sdk'
+import { CharactersTestArguments, EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { sessionId, type, data } = req.body as SessionsUpdateArguments
-
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
   }
+  const { assistant, interaction } = req.body as CharactersTestArguments
 
   try {
     const eden = new EdenClient({
@@ -18,12 +17,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       apiKey: CONFIG.EDEN_ADMIN_API_KEY,
       apiSecret: CONFIG.EDEN_ADMIN_API_SECRET,
     })
-    const response = await eden.sessions.update({
-      sessionId,
-      type,
-      data,
+    const response = await eden.characters.test({
+      assistant,
+      interaction,
     })
-    return res.status(200).json({ eventId: response.eventId })
+    return res.status(200).json({
+      message: response.message,
+    })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
