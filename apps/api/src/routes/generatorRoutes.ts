@@ -10,6 +10,14 @@ import {
 const generatorRoutes: FastifyPluginAsync = async server => {
   server.get('/generators', {
     schema: {
+      tags: ['Generators'],
+      description: 'List generators',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -39,6 +47,14 @@ const generatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/generators/:generatorName', {
     schema: {
+      tags: ['Generators'],
+      description: 'Get a generator',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: Type.Object({
         generatorName: Type.String(),
       }),

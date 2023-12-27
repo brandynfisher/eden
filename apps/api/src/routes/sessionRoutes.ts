@@ -17,6 +17,14 @@ import { isAdmin, isAuth } from '../middleware/authMiddleware'
 const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/create', {
     schema: {
+      tags: ['Sessions'],
+      description: 'Create a session',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       response: {
         200: Type.Object({
           sessionId: Type.String(),
@@ -29,6 +37,14 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/delete', {
     schema: {
+      tags: ['Sessions'],
+      description: 'Delete a session',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: Type.Object({
         sessionId: Type.String(),
       }),
@@ -42,6 +58,15 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/users/add', {
     schema: {
+      tags: ['Sessions'],
+      description: 'Add users to a session',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      hide: true,
       body: Type.Object({
         sessionId: Type.String(),
         userIds: Type.Array(Type.String()),
@@ -56,6 +81,15 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/characters/add', {
     schema: {
+      tags: ['Sessions'],
+      description: 'Add characters to a session',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      hide: true,
       body: Type.Object({
         sessionId: Type.String(),
         characterIds: Type.Array(Type.String()),
@@ -70,6 +104,15 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/interact', {
     schema: {
+      tags: ['Sessions'],
+      description: 'Interact with a session',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      hide: true,
       body: Type.Object({
         sessionId: Type.String(),
         assistant: Type.Object({
@@ -97,6 +140,14 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions', {
     schema: {
+      tags: ['Sessions'],
+      description: 'List sessions',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -119,6 +170,14 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions/:sessionId', {
     schema: {
+      tags: ['Sessions'],
+      description: 'Get a session',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: Type.Object({
         sessionId: Type.String(),
       }),
@@ -136,6 +195,14 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions/:sessionId/events', {
     schema: {
+      tags: ['Sessions'],
+      description: 'Get session events',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: Type.Object({
         sessionId: Type.String(),
       }),

@@ -19,20 +19,21 @@ import {
   maybeAuth,
 } from '../middleware/authMiddleware'
 
-// const logosType = Type.Optional(
-//   Type.Object({
-//     capabilities: Type.Optional(Type.Array(Type.Enum(Capabilites))),
-//     identity: Type.Optional(Type.String()),
-//     knowledge: Type.Optional(Type.String()),
-//     knowledgeSummary: Type.Optional(Type.String()),
-//     concept: Type.Optional(Type.String()),
-//   }),
-// )
-const logosType = Type.Any()
+const logosType = Type.Optional(
+  Type.Object({
+    capabilities: Type.Optional(Type.Array(Type.Enum(Capabilites))),
+    identity: Type.Optional(Type.String()),
+    knowledge: Type.Optional(Type.String()),
+    knowledgeSummary: Type.Optional(Type.String()),
+    concept: Type.Optional(Type.String()),
+  }),
+)
 
 const characterRoutes: FastifyPluginAsync = async server => {
   server.post('/characters', {
     schema: {
+      tags: ['Characters'],
+      description: 'Create a character',
       body: Type.Object({
         name: Type.String(),
         image: Type.Optional(Type.String()),
@@ -55,6 +56,12 @@ const characterRoutes: FastifyPluginAsync = async server => {
           slug: Type.String(),
         }),
       },
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createCharacter(request, reply),
@@ -62,6 +69,14 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/characters/:characterId', {
     schema: {
+      tags: ['Characters'],
+      description: 'Update a character',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         characterId: Type.String(),
       },
@@ -91,6 +106,14 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.post('/characters/delete', {
     schema: {
+      tags: ['Characters'],
+      description: 'Delete a character',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: {
         characterId: Type.String(),
       },
@@ -104,6 +127,14 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.get('/characters/:characterId', {
     schema: {
+      tags: ['Characters'],
+      description: 'Get a character',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: Type.Object({
         characterId: Type.String(),
       }),
@@ -138,6 +169,14 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.get('/characters', {
     schema: {
+      tags: ['Characters'],
+      description: 'List characters',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -177,6 +216,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.post('/characters/test', {
     schema: {
+      tags: ['Characters'],
+      description: 'Test a character',
+      hide: true,
       body: Type.Object({
         assistant: Type.Object({
           name: Type.String(),
@@ -203,6 +245,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.post('/characters/tasks/create', {
     schema: {
+      tags: ['Characters'],
+      description: 'Create a task as character',
+      hide: true,
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),

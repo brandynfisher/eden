@@ -1,13 +1,13 @@
 import { AxiosRequestConfig } from 'axios'
 import { Task } from 'src/models/Tasks'
 
+import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
-} from '../EdenClient'
-import { transformArgsIntoURLParams } from '../methods'
+} from '../types'
 
 // Arguments
 

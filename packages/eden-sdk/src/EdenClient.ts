@@ -1,41 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 import { Methods } from './methods'
-
-export interface WebClientOptions {
-  edenApiUrl?: string
-  token?: string
-  apiKey?: string
-  apiSecret?: string
-}
-
-export interface WebAPICallResult {
-  error?: string
-  [key: string]: unknown
-}
-
-export interface WebAPICallOptions {
-  [argument: string]: unknown
-}
-
-export interface ListQueryParams {
-  page?: number
-  limit?: number
-  sort?: object
-}
-
-export interface PaginatedResponse<T> {
-  docs?: T[]
-  total?: number
-  limit?: number
-  pages?: number
-  page?: number
-  pagingCounter?: number
-  hasPrevPage?: boolean
-  hasNextPage?: boolean
-  prevPage?: number
-  nextPage?: number
-}
+import { WebAPICallOptions, WebAPICallResult, WebClientOptions } from './types'
 
 export class EdenClient extends Methods {
   public readonly edenApiUrl: string

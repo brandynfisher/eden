@@ -13,6 +13,15 @@ import { maybeAuth } from '../middleware/authMiddleware'
 const feedRoutes: FastifyPluginAsync = async server => {
   server.get('/feed/creations', {
     schema: {
+      tags: ['Feed'],
+      description: 'Get creations feed',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -55,6 +64,15 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed/concepts', {
     schema: {
+      tags: ['Feed'],
+      description: 'Get concepts feed',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {

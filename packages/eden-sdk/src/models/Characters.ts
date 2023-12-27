@@ -3,14 +3,13 @@ import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { Assistant, Interaction } from 'src/models/Sessions'
 
+import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
-} from '../EdenClient'
-import { transformArgsIntoURLParams } from '../methods'
-import { Reactions } from './Creations'
+} from '../types'
 
 // Arguments
 
@@ -172,14 +171,10 @@ export type Character = {
   image?: string
   voice?: string
   creationCount?: number
-  praiseCount?: number
-  bookmarkCount?: number
-  bookmarked?: boolean
-  reactions?: Reactions
-  createdAt: string
-  updatedAt: string
   isPrivate?: boolean
   deleted?: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export type LogosData = {
