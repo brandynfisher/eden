@@ -117,6 +117,17 @@ const createServer = async (
     timeWindow: '1 minute',
   })
 
+  await server.register(import('@fastify/helmet'), {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [`'self'`],
+        styleSrc: [`'self'`, `'unsafe-inline'`],
+        imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
+        scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+      },
+    },
+  })
+
   await server.register(import('@fastify/swagger'), {
     swagger: {
       securityDefinitions: {
@@ -140,6 +151,8 @@ const createServer = async (
       docExpansion: 'full',
       deepLinking: false,
     },
+    staticCSP: true,
+    transformStaticCSP: (header: string) => header,
   })
 
   routes.map(async route => {

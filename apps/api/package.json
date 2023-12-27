@@ -30,6 +30,7 @@
     "@edenlabs/eden-sdk": "*",
     "@edenlabs/tsconfig": "*",
     "@fastify/cors": "^8.2.1",
+    "@fastify/helmet": "^11.1.1",
     "@fastify/jwt": "^6.7.1",
     "@fastify/mongodb": "^6.2.0",
     "@fastify/multipart": "^7.6.0",
