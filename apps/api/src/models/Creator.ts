@@ -100,7 +100,7 @@ const user = new Schema<UserDocument>(
     ],
     subscriptionTier: {
       type: Number,
-      enum: Object.values(SubscriptionTier),
+      default: SubscriptionTier.Free,
     },
     stripeCustomerId: {
       type: String,
