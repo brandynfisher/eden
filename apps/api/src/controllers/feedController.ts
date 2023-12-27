@@ -366,28 +366,26 @@ export const getCreationsFeed = async (
 
     // querying for similar creations
     if (creationId) {
-      const creationDoc = (await Creation.findById(
-        creationId,
-      ).lean()) as CreationDocument
+      // const creationDoc = (await Creation.findById(
+      //   creationId,
+      // ).lean()) as CreationDocument
+      console.log('##### get creation similar 1', creationId)
       try {
-        if (
-          creationDoc &&
-          creationDoc.embedding &&
-          creationDoc.embedding.embedding &&
-          creationDoc.embedding.embedding.length
-        ) {
-          const similarCreationIds = await getSimilarCreationIds(
-            server,
-            creationDoc.embedding.embedding,
-          )
-          creationIdsQuery = similarCreationIds
-            ? {
-                $in: similarCreationIds,
-              }
-            : undefined
-        } else {
-          return reply.status(200).send(emptyPaginatedResponse)
-        }
+        console.log('##### get creation similar 2', creationId)
+        const similarCreationIds = await getSimilarCreationIds(
+          server,
+          creationId,
+        )
+        console.log(similarCreationIds)
+        console.log('##### get creation similar 3', creationId)
+        creationIdsQuery = similarCreationIds
+          ? {
+              $in: similarCreationIds,
+            }
+          : undefined
+
+        console.log(creationIdsQuery)
+        console.log('##### DONE creation similar 12', creationId)
       } catch (e) {
         console.log('Error fetching chroma embeddings', e)
         return reply.status(200).send(emptyPaginatedResponse)

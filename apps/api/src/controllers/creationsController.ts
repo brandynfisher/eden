@@ -223,6 +223,7 @@ export const getCreation = async (
   return await reply.status(200).send({ creation })
 }
 
+// this code is dead/unused now... marked for deleting.
 export const getCreationSimilar = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -230,7 +231,6 @@ export const getCreationSimilar = async (
 ) => {
   const { creationId } = request.params as CreationsGetSimilarArguments
 
-  console.log('---<>--- get creation similar ', creationId)
   // Todo: n is not actually set here. defaulting to 10
 
   // const creation = (await Creation.findById(
@@ -256,8 +256,6 @@ export const getCreationSimilar = async (
     throw new Error('Chromadb not initialized')
   }
 
-  console.log('---<>--- get creation similar 22 ', creationId)
-
   const collection = await chromadb.getCollection({
     name: 'creation_clip_embeddings',
   })
@@ -265,8 +263,6 @@ export const getCreationSimilar = async (
   if (!collection) {
     throw new Error('Chromadb collection not found')
   }
-
-  console.log('---<>--- get creation similar 33', creationId)
 
   const doc = await collection.get({
     ids: [creationId],
@@ -276,18 +272,12 @@ export const getCreationSimilar = async (
   //   throw new Error(`Chromadb failed to find creation ${creationId}`)
   // }
 
-  console.log('- - - - - - - - > similar')
-  console.log(doc)
-
   if (!doc?.embeddings) {
     throw new Error(`Chromadb failed to find creation ${creationId}`)
   }
 
   // get embedding in first doc
   const embedding = doc.embeddings[0]
-
-  console.log('-> embedding')
-  console.log(embedding)
 
   if (!embedding) {
     //} || embedding.length == 0) {
@@ -300,9 +290,6 @@ export const getCreationSimilar = async (
     queryEmbeddings: [embedding],
     nResults: 11,
   })
-
-  console.log('-> results')
-  console.log(results)
 
   if (!results?.ids) {
     throw new Error('Chromadb query failed')
