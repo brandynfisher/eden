@@ -18,6 +18,14 @@ import { isAuth, maybeAuth } from '../middleware/authMiddleware'
 const creationRoutes: FastifyPluginAsync = async server => {
   server.get('/creations', {
     schema: {
+      tags: ['Creations'],
+      description: 'List creations',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -36,6 +44,14 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creations/:creationId', {
     schema: {
+      tags: ['Creations'],
+      description: 'Get a creation',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         creationId: Type.String(),
       },
@@ -51,14 +67,20 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/creations/:creationId', {
     schema: {
+      tags: ['Creations'],
+      description: 'Update a creation',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         creationId: Type.String(),
       },
-      request: {
-        body: Type.Object({
-          isPrivate: Type.Optional(Type.Boolean()),
-        }),
-      },
+      body: Type.Object({
+        isPrivate: Type.Optional(Type.Boolean()),
+      }),
       response: {
         200: {
           creation: Type.Any(),
@@ -71,6 +93,14 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.delete('/creations/:creationId', {
     schema: {
+      tags: ['Creations'],
+      description: 'Delete a creation',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         creationId: Type.String(),
       },
@@ -86,6 +116,14 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creations/:creationId/similar', {
     schema: {
+      tags: ['Creations'],
+      description: 'Get similar creations',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         creationId: Type.String(),
         n: Type.Number(),
@@ -101,12 +139,13 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creations/rate', {
     schema: {
-      request: {
-        body: Type.Object({
-          creationId: Type.String(),
-          rating: Type.Strict(Type.Number()),
-        }),
-      },
+      tags: ['Creations'],
+      description: 'Rate a creation',
+      hide: true,
+      body: Type.Object({
+        creationId: Type.String(),
+        rating: Type.Strict(Type.Number()),
+      }),
       response: {
         200: {
           success: Type.Boolean(),
@@ -119,12 +158,18 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creations/reactions/add', {
     schema: {
-      request: {
-        body: Type.Object({
-          creationId: Type.String(),
-          reaction: Type.Strict(Type.String(), ReactionType),
-        }),
-      },
+      tags: ['Creations'],
+      description: 'React to a creation',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        creationId: Type.String(),
+        reaction: Type.Enum(ReactionType),
+      }),
       response: {
         200: {
           success: Type.Boolean(),
@@ -137,12 +182,18 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creations/reactions/remove', {
     schema: {
-      request: {
-        body: Type.Object({
-          creationId: Type.String(),
-          reaction: Type.Strict(Type.String(), ReactionType),
-        }),
-      },
+      tags: ['Creations'],
+      description: 'Unreact to a creation',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        creationId: Type.String(),
+        reaction: Type.Enum(ReactionType),
+      }),
       response: {
         200: {
           success: Type.Boolean(),

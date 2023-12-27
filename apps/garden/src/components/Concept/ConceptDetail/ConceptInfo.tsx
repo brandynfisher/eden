@@ -17,7 +17,7 @@ const ConceptInfo = ({ concept }: { concept: Concept }) => {
   }, [concept.createdAt])
 
   return (
-    <div className="flex gap-4 flex-wrap lg:justify-between">
+    <div className="flex gap-4 flex-wrap">
       <BaseParamGroup label="Type" value={<div>concept</div>} />
       <BaseParamGroup label="Checkpoint" value={concept.checkpoint} />
       <BaseParamGroup label="Date" value={displayDateTime} />

@@ -1,12 +1,12 @@
 import { AxiosRequestConfig } from 'axios'
 
+import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
-} from '../EdenClient'
-import { transformArgsIntoURLParams } from '../methods'
+} from '../types'
 import { Generator } from './Generators'
 
 // Arguments

@@ -1,6 +1,5 @@
 import { AxiosRequestConfig } from 'axios'
 
-import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
   AdminAuthChallengeArguments,
   AdminAuthChallengeResponse,
@@ -186,27 +185,7 @@ import {
   tasksGetRequestConfig,
   tasksListRequestConfig,
 } from './models'
-
-export const transformArgsIntoURLParams = (
-  args: Record<string, any>,
-): URLSearchParams => {
-  const params = new URLSearchParams()
-
-  for (const key in args) {
-    if (Object.prototype.hasOwnProperty.call(args, key)) {
-      const value = args[key]
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          value.forEach(item => params.append(key, item))
-        } else {
-          params.append(key, value.toString())
-        }
-      }
-    }
-  }
-
-  return params
-}
+import { WebAPICallOptions, WebAPICallResult } from './types'
 
 export default interface Method<
   MethodArguments extends WebAPICallOptions,

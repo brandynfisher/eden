@@ -41,7 +41,7 @@ const CharactersPageContent = ({
       <CharacterList characters={characters} />
       <div className="flex gap-4 mt-8 flex-wrap justify-between">
         <Button
-          className="font-mono bg-black text-white pt-2 pb-2 h-10"
+          className="font-mono pt-2 pb-2 h-10"
           onClick={handleCreateCharacterButtonClick}
         >
           Create new Character

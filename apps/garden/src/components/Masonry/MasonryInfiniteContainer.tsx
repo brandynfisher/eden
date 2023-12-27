@@ -1,5 +1,3 @@
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
@@ -12,13 +10,11 @@ import React, { useCallback, useEffect, useState } from 'react'
 
 const MasonryInfiniteContainer = ({
   itemType,
-  ItemComponent,
   filters,
   query,
   fallbackFilter,
 }: {
   itemType: ItemType
-  ItemComponent: typeof CreationCard | typeof ConceptCard
   filters?: OrderByParam[]
   query?: PaginatedFeedQuery
   fallbackFilter?: OrderByParam
@@ -78,7 +74,6 @@ const MasonryInfiniteContainer = ({
         orderBy={orderBy}
         itemType={itemType}
         query={{ ...query, dateCutOff: fetchStartDate }}
-        ItemComponent={ItemComponent}
         emptyResultHandler={
           fallbackFilter ? handleFallbackOnEmptyResult : undefined
         }

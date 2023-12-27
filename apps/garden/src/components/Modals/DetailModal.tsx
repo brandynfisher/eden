@@ -4,7 +4,7 @@ import ArrowNavigationButtons from '@/components/Modals/ArrowNavigationButtons'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
 import { ItemType } from '@/providers/ModalProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
 import { App, Modal, ModalProps } from 'antd'
 import { useRouter } from 'next/router'
@@ -20,7 +20,7 @@ const DetailModal = ({
   itemType: ItemType
   maybeLoadMoreFn: (
     currentIndex: number,
-    currentItems: Creation[] | Concept[],
+    currentItems: Creation[] | Concept[] | Character[],
   ) => void
 }) => {
   const { message } = App.useApp()

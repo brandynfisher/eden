@@ -1,10 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import {
-  FastifyInstance,
-  FastifyPluginAsync,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify'
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
@@ -37,6 +32,8 @@ const apiKeyCreatePreHandler = async (
 const apiKeyRoutes: FastifyPluginAsync = async server => {
   server.post('/apikeys/create', {
     schema: {
+      tags: ['API Keys'],
+      description: 'Create an API key',
       body: Type.Object({
         note: Type.Optional(Type.String()),
       }),
@@ -48,6 +45,12 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
           }),
         }),
       },
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
     },
     preHandler: [
       (request, reply) => isAuth(server, request, reply),
@@ -58,12 +61,20 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
 
   server.post('/apikeys/delete', {
     schema: {
+      tags: ['API Keys'],
+      description: 'Delete an API key',
       body: Type.Object({
         apiKey: Type.String(),
       }),
       response: {
         200: Type.Object({}),
       },
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteApiKey(request, reply),
@@ -71,6 +82,8 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
 
   server.get('/apikeys', {
     schema: {
+      tags: ['API Keys'],
+      description: 'List API keys',
       querystring: {
         type: 'object',
         properties: {
@@ -88,6 +101,12 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
           }),
         ),
       },
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listApiKeys(request, reply),

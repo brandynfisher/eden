@@ -1,4 +1,3 @@
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
   OrderByLatest,
   OrderByPopularity,
@@ -94,7 +93,6 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
               itemType="creation"
               query={{ collectionId: collection._id }}
               filters={[OrderByLatest, OrderByPopularity]}
-              ItemComponent={CreationCard}
             />
           </div>
         </Space>

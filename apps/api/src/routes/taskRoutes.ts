@@ -15,6 +15,14 @@ import { isAuth } from '../middleware/authMiddleware'
 const taskRoutes: FastifyPluginAsync = async server => {
   server.post('/tasks/cost', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Get task cost',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
@@ -32,6 +40,14 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.post('/tasks/create', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Create a task',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
@@ -50,6 +66,14 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.get('/tasks', {
     schema: {
+      tags: ['Tasks'],
+      description: 'List tasks',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -70,6 +94,14 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.get('/tasks/:taskId', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Get a task',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         taskId: Type.String(),
       },
@@ -84,6 +116,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.post('/tasks/update', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Update a task',
+      hide: true,
       querystring: {
         secret: Type.String(),
       },
@@ -93,6 +128,14 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.get('/tasks/events', {
     schema: {
+      tags: ['Tasks'],
+      description: 'Get task events',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         taskId: Type.Optional(Type.String()),
       },
