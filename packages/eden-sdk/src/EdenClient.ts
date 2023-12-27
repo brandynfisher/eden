@@ -1,7 +1,20 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { TasksCreateArguments } from 'src/models'
 
 import { Methods } from './methods'
-import { WebAPICallOptions, WebAPICallResult, WebClientOptions } from './types'
+import {
+  TaskUpdateEvent,
+  WebAPICallOptions,
+  WebAPICallResult,
+  WebClientOptions,
+} from './types'
+
+const NodeEventSource = require('eventsource')
+
+interface AsyncIteratorResult {
+  value: TaskUpdateEvent
+  done: boolean
+}
 
 export class EdenClient extends Methods {
   public readonly edenApiUrl: string
@@ -26,6 +39,73 @@ export class EdenClient extends Methods {
     this.axios = axios.create({
       baseURL: edenApiUrl,
     })
+  }
+
+  public subscribe(taskId?: string) {
+    const headers = {
+      'X-Api-Key': this.apiKey,
+      'X-Api-Secret': this.apiSecret,
+    }
+    const query = taskId ? `?taskId=${taskId}` : ''
+
+    const eventSource = new NodeEventSource(
+      `${this.edenApiUrl}/tasks/events${query}`,
+      { headers },
+    )
+
+    const eventIterable = {
+      [Symbol.asyncIterator]: () => {
+        const queue = []
+        let resolver
+
+        eventSource.onmessage = event => {
+          const data = JSON.parse(event.data)
+          if (data.taskId === taskId) {
+            if (resolver) {
+              resolver({ value: data, done: false })
+              resolver = null
+            } else {
+              queue.push(data)
+            }
+          }
+        }
+
+        eventSource.onerror = error => {
+          if (resolver) {
+            resolver(Promise.reject(error))
+            resolver = null
+          } else {
+            queue.push(Promise.reject(error))
+          }
+        }
+
+        return {
+          next(): Promise<AsyncIteratorResult> {
+            if (queue.length > 0) {
+              return Promise.resolve({ value: queue.shift(), done: false })
+            }
+
+            return new Promise(resolve => {
+              resolver = resolve
+            })
+          },
+        }
+      },
+    }
+
+    return eventIterable
+  }
+
+  async create(args: TasksCreateArguments) {
+    // Submit the task and get the ID
+    const { taskId } = await this.tasks.create(args)
+
+    // Subscribe to task updates
+    for await (const event of this.subscribe(taskId)) {
+      if (event.status === 'completed') {
+        return event.result
+      }
+    }
   }
 
   public async apiCall(
