@@ -156,11 +156,13 @@ const CardToolsDropdown = ({
   item,
   itemType,
   onChange,
+  pageUrl,
 }: {
   onOpen?: Function
   item: CardData | Creator
   itemType: ItemType
   onChange: (updatedData: CardData) => void
+  pageUrl: string
 }) => {
   const { user, isAuthenticated } = useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)
@@ -197,13 +199,7 @@ const CardToolsDropdown = ({
   }
 
   copyItems.push({
-    icon: (
-      <CopyUrlButton
-        url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-        variant="text"
-        label="Page URL"
-      />
-    ),
+    icon: <CopyUrlButton url={pageUrl} variant="text" label="Page URL" />,
     key: '1-3',
   })
 
@@ -224,18 +220,12 @@ const CardToolsDropdown = ({
     ? [
         {
           key: '2',
-          icon: (
-            <ShareLinkButton
-              url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-              variant="text"
-              label="Share"
-            />
-          ),
+          icon: <ShareLinkButton url={pageUrl} variant="text" label="Share" />,
         },
       ]
     : []
 
-  const getCreatorCardMenuItems = (item: Creator) => {
+  const getCreatorCardMenuItems = () => {
     const defaultMenuItems: MenuItem[] = [
       {
         label: 'Copy...',
@@ -250,11 +240,7 @@ const CardToolsDropdown = ({
       {
         key: '3',
         icon: (
-          <NewTabLinkButton
-            url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-            variant="text"
-            label="To New Tab"
-          />
+          <NewTabLinkButton url={pageUrl} variant="text" label="To New Tab" />
         ),
       },
     ]
@@ -292,11 +278,7 @@ const CardToolsDropdown = ({
       {
         key: '3',
         icon: (
-          <NewTabLinkButton
-            url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-            variant="text"
-            label="To New Tab"
-          />
+          <NewTabLinkButton url={pageUrl} variant="text" label="To New Tab" />
         ),
       },
     ]
@@ -397,7 +379,7 @@ const CardToolsDropdown = ({
       menu={{
         items:
           itemType === 'creator'
-            ? getCreatorCardMenuItems(item as Creator)
+            ? getCreatorCardMenuItems()
             : getCardMenuItems(item as CardData),
         onClick: onItemClick,
       }}

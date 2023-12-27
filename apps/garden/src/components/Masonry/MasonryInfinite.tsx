@@ -1,8 +1,8 @@
 import { CardData } from '@/components/Card/Card'
-import CreatorCard from '@/components/Card/CreatorCard'
 import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import CreatorCard from '@/components/Creators/CreatorCard'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
@@ -127,7 +127,7 @@ const MasonryInfinite = ({
       originPageUrl: router.asPath,
       maybeLoadMoreFn: (
         currentIndex: number,
-        currentItems: Creation[] | Concept[] | Character[],
+        currentItems: Creation[] | Concept[] | Character[] | Creator[],
       ) => {
         if (currentIndex === currentItems.length - 1) {
           maybeLoadMore(currentIndex, currentIndex + 10, currentItems)

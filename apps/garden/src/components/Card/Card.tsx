@@ -125,12 +125,13 @@ const Card: FC<CardWithTypeProps> = ({
       }`}
     >
       {itemType !== 'creation' ? (
-        <CardHeaderWrap title={itemData.name}>
+        <CardHeaderWrap title={itemData.name} onClick={cardClickHandler}>
           <CardToolsDropdown
             onOpen={setDropdownActive}
             item={itemData}
             itemType={itemType}
             onChange={(updatedItem: CardData) => cardUpdateHandler(updatedItem)}
+            pageUrl={`/${itemType}s/${itemData._id}`}
           />
         </CardHeaderWrap>
       ) : null}
@@ -246,6 +247,7 @@ const Card: FC<CardWithTypeProps> = ({
                   onChange={(updatedItem: CardData) =>
                     cardUpdateHandler(updatedItem)
                   }
+                  pageUrl={`/${itemType}s/${itemData._id}`}
                 />
               ) : null}
             </div>

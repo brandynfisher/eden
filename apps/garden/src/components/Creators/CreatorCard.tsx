@@ -49,11 +49,15 @@ const Card: FC<CardWithTypeProps> = ({
         className || ''
       }`}
     >
-      <CardHeaderWrap title={itemData.username || itemData.userId}>
+      <CardHeaderWrap
+        title={itemData.username || itemData.userId}
+        onClick={cardClickHandler}
+      >
         <CardToolsDropdown
           item={itemData}
           itemType={'creator'}
           onChange={updatedItem => cardUpdateHandler(updatedItem as Creator)}
+          pageUrl={`/creators/${itemData.username || itemData.userId}`}
         />
       </CardHeaderWrap>
 
