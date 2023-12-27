@@ -29,7 +29,7 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
       : [OrderByLatest]
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 ">
       <MasonryInfiniteContainer
         key={`creations_${creatorId}`}
         itemType="creation"
