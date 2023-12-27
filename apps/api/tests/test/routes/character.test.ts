@@ -77,7 +77,7 @@ test('User can delete an Character', async context => {
   await createCharacter(server)
   const getResponse = await listCharacters(server)
   const characters = getResponse.json().docs
-  const character = characters[0].id
+  const character = characters[0]._id
   const deleteResponse = await deleteCharacter(server, character)
   expect(deleteResponse.statusCode).toBe(200)
   const getResponse2 = await listCharacters(server)

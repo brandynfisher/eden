@@ -79,7 +79,7 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
   const handleDeleteCharacter = async () => {
     try {
       await axios.post(`/api/characters/delete`, {
-        characterId: character.id,
+        characterId: character._id,
       })
       message.destroy()
       message.info(`Character '${character.name}' was deleted`)
@@ -224,9 +224,9 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       if (mode === 'create') {
         await axios.post(`/api/characters/create`, data)
       } else {
-        await axios.patch(`/api/characters/${character?.id}`, {
+        await axios.patch(`/api/characters/${character?._id}`, {
           ...data,
-          characterId: character?.id,
+          characterId: character?._id,
         })
       }
 

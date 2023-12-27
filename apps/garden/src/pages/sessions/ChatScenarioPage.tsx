@@ -67,7 +67,7 @@ const ChatScenarioPageContent = ({
               >
                 {characters &&
                   characters.map(character => (
-                    <Select.Option key={character.id} value={character.name}>
+                    <Select.Option key={character._id} value={character.name}>
                       {character.name}
                     </Select.Option>
                   ))}

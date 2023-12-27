@@ -49,6 +49,12 @@ export const OrderByFollowing: OrderByParam = {
   direction: -1,
 }
 
+export const OrderByFollowers: OrderByParam = {
+  label: 'Most Followed',
+  field: 'followerCount',
+  direction: -1,
+}
+
 export const OrderByScore: OrderByParam = {
   label: 'Recommended',
   field: 'embedding.score',

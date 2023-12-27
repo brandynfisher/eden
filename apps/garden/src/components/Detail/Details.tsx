@@ -1,3 +1,4 @@
+import { CardData } from '@/components/Card/Card'
 import CardDebugInfo from '@/components/Card/CardDebugInfo'
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
@@ -8,15 +9,17 @@ import ConceptMedia from '@/components/Concept/ConceptDetail/ConceptMedia'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
 import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
+import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 // import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
+import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
 import Head from 'next/head'
@@ -28,6 +31,8 @@ import React, {
   useEffect,
   useState,
 } from 'react'
+
+import CharacterInfo from '../Characters/CharacterInfo'
 
 const getItemMediaUrl = (itemType: ItemType, item: Creation | Concept) => {
   if (itemType === 'creation') {
@@ -45,14 +50,14 @@ const Details = ({
   modalContainerHeight,
 }: // loadSimilar,
 {
-  item: Creation | Concept
+  item: CardData
   itemType: ItemType
   isModal?: boolean
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
   // loadSimilar?: boolean
 }) => {
-  const [itemData, setItemData] = useState<Creation | Concept>(item)
+  const [itemData, setItemData] = useState<CardData>(item)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
 
@@ -108,8 +113,31 @@ const Details = ({
           content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
         />
         <meta property="og:description" content={item.name} key="description" />
-        <meta property="og:image" content={item.thumbnail} key="image" />
-        <meta property="og:image:secure_url" content={item.thumbnail} />
+        {itemType === 'character' ? (
+          <>
+            <meta
+              property="og:image"
+              content={(item as Character).image}
+              key="image"
+            />
+            <meta
+              property="og:image:secure_url"
+              content={(item as Character).image}
+            />
+          </>
+        ) : (
+          <>
+            <meta
+              property="og:image"
+              content={getItemMediaUrl(itemType, item as Creation | Concept)}
+              key="image"
+            />
+            <meta
+              property="og:image:secure_url"
+              content={getItemMediaUrl(itemType, item as Creation | Concept)}
+            />
+          </>
+        )}
         <meta
           property="og:image:alt"
           content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
@@ -137,17 +165,48 @@ const Details = ({
           >
             <div
               onClick={
-                isImageUrl(getItemMediaUrl(itemType, item))
-                  ? () => handlePreviewClick(getItemMediaUrl(itemType, item))
+                itemType === 'character'
+                  ? () => handlePreviewClick((item as Character).image)
+                  : isImageUrl(
+                      getItemMediaUrl(itemType, item as Creation | Concept),
+                    )
+                  ? () =>
+                      handlePreviewClick(
+                        getItemMediaUrl(itemType, item as Creation | Concept),
+                      )
                   : () => false
               }
               className="relative flex justify-center flex-grow max-h-[80vh] overflow-hidden"
             >
               {itemType === 'creation' ? (
                 <CreationMedia creation={item as Creation} />
-              ) : (
+              ) : null}
+              {itemType === 'concept' ? (
                 <ConceptMedia concept={item as Concept} />
-              )}
+              ) : null}
+              {itemType === 'character' ? (
+                // <Image
+                //   src={(item as Character).image || '/placeholder.png'}
+                //   alt={item.name}
+                //   width={240}
+                //   height={240}
+                //   className="object-contain object-center w-full bg-stone-900"
+                // />
+                <MediaDisplay
+                  priority={true}
+                  aspectRatio={100}
+                  className={'media-display__main'}
+                  creationUri={
+                    (item as Character).image
+                      ? (item as Character).image || ''
+                      : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                  }
+                  previewUri={(item as Character)?.image}
+                  // onLoad={() => {
+                  //   setConceptImageLoaded(true)
+                  // }}
+                />
+              ) : null}
               {itemData.isPrivate ? (
                 <div
                   className={`flex absolute right-1 top-1 z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none`}
@@ -167,18 +226,14 @@ const Details = ({
               <CardReactions
                 itemType={itemType}
                 item={itemData}
-                onChange={
-                  setItemData as Dispatch<SetStateAction<Concept | Creation>>
-                }
+                onChange={setItemData as Dispatch<SetStateAction<CardData>>}
                 showCounts={true}
               />
               {itemData ? (
                 <CardToolsDropdown
                   item={itemData}
                   itemType={itemType}
-                  onChange={
-                    setItemData as Dispatch<SetStateAction<Concept | Creation>>
-                  }
+                  onChange={setItemData as Dispatch<SetStateAction<CardData>>}
                 />
               ) : null}
             </div>
@@ -200,9 +255,13 @@ const Details = ({
               <Divider className="my-4" />
               {itemType === 'creation' ? (
                 <CreationInfo creation={item as Creation} />
-              ) : (
+              ) : null}
+              {itemType === 'concept' ? (
                 <ConceptInfo concept={item as Concept} />
-              )}
+              ) : null}
+              {itemType === 'character' ? (
+                <CharacterInfo character={item as Character} />
+              ) : null}
             </div>
             {itemType === 'creation' ? (
               <>
@@ -212,18 +271,20 @@ const Details = ({
             ) : null}
           </div>
         </div>
-        {/*{loadSimilar ? (*/}
-        {/*  <SimilarCreations*/}
-        {/*    creation={creation}*/}
-        {/*    containerRef={containerRef}*/}
-        {/*    isModal={isModal}*/}
-        {/*  />*/}
-        {/*) : null}*/}
       </div>
       {itemType === 'concept' ? (
         <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
           <ConceptCreations
             concept={item as Concept}
+            modalContainerRef={modalContainerRef}
+            modalContainerHeight={modalContainerHeight}
+          />
+        </div>
+      ) : null}
+      {itemType === 'creation' ? (
+        <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
+          <SimilarCreations
+            creation={item as Creation}
             modalContainerRef={modalContainerRef}
             modalContainerHeight={modalContainerHeight}
           />

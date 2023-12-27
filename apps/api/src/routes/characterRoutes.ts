@@ -93,7 +93,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
-        logosData: logosType,
+        logosData: Type.Optional(logosType),
         isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {

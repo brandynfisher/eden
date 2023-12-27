@@ -1,11 +1,5 @@
-export {
-  EdenClient,
-  WebClientOptions,
-  WebAPICallOptions,
-  WebAPICallResult,
-  PaginatedResponse,
-} from './EdenClient'
-
+export { EdenClient } from './EdenClient'
+export * from './types'
 export * from './methods'
 export * from './models'
 export { default as Method } from './methods'

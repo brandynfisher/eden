@@ -53,12 +53,12 @@ const CharacterProfileHeader = ({
             </div>
             <div className="flex gap-1 ml-auto">
               <CopyUrlButton
-                url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}
+                url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?._id}`}
               />
               {hasNativeShare && (
                 <ShareButton
                   title={'Share Creation'}
-                  url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?.id}`}
+                  url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?._id}`}
                 />
               )}
               <CircleButton
