@@ -118,21 +118,23 @@ export const maximumTasksInProgressPermissionCheck = async (
   request: FastifyRequest,
 ) => {
   const { userId, subscriptionTier } = request.user
-  console.log(`userId: ${userId}`)
-  console.log(`subscriptionTier: ${subscriptionTier}`)
   const maximumTasksInProgress =
     maximumTasksInProgressMap[
       (subscriptionTier as SubscriptionTier) || SubscriptionTier.Free
     ]
-  console.log(`maximumTasksInProgress: ${maximumTasksInProgress}`)
 
   const inProgressStatus: TaskStatus[] = [
     TaskStatus.Pending,
     TaskStatus.Running,
   ]
+
+  const oneHourAgo = new Date()
+  oneHourAgo.setHours(oneHourAgo.getHours() - 1)
+
   const tasksInProgress = await Task.find({
     userId,
     status: { $in: inProgressStatus },
+    createdAt: { $gte: oneHourAgo },
   })
 
   if (tasksInProgress.length >= maximumTasksInProgress) {
