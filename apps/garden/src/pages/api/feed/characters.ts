@@ -1,7 +1,7 @@
 import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
-import { createPaginationRoute } from '@/lib/fetcher'
+import { createPaginationRoute, handleAxiosServerError } from '@/lib/fetcher'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -20,11 +20,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           headers: await getAuthHeaders(req),
         })
         return res.status(200).json(response.data)
-      } catch (_error) {
-        console.error(_error)
-        res.status(401).json({ error: 'Unauthorized' })
+      } catch (error) {
+        const errorMessage = handleAxiosServerError(error)
+        console.error(errorMessage)
+        return res.status(500).json({ message: errorMessage })
       }
-      break
     default:
       res.setHeader('Allow', ['POST'])
       res.status(405).end(`Method ${method} Not Allowed`)

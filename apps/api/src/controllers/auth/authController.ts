@@ -1,3 +1,4 @@
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -8,6 +9,7 @@ import { Manna } from '../../models/Manna'
 
 export const createNewUser = async (input: UserInput) => {
   const newUser = new User(input)
+  newUser.subscriptionTier = SubscriptionTier.Free
   await newUser.save()
 
   // Give them a default collection

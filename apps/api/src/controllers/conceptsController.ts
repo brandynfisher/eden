@@ -17,6 +17,10 @@ import { ObjectId } from 'mongodb'
 import { join } from 'path'
 import tar from 'tar'
 
+import {
+  conceptExportPermissionCheck,
+  conceptPrivacyPermissionCheck,
+} from '../lib/authorization'
 import { Concept, ConceptDocument } from '../models/Concept'
 import { User } from '../models/Creator'
 import { Reaction } from '../models/Reaction'
@@ -127,7 +131,7 @@ export const listConcepts = async (
     },
   )
 
-  const conceptsWithPublicName = await Promise.all(
+  let conceptsWithPublicName = await Promise.all(
     concepts.docs.map(async doc => {
       const user = await User.findById(doc.user._id)
       const publicName = `${user?.username}:${doc.name}`
@@ -137,6 +141,15 @@ export const listConcepts = async (
       }
     }),
   )
+
+  const hasConceptExportPermission = conceptExportPermissionCheck(request)
+  if (!hasConceptExportPermission) {
+    conceptsWithPublicName = conceptsWithPublicName.map(concept => {
+      // @ts-ignore
+      const { uri, ...rest } = concept
+      return rest
+    })
+  }
 
   const response = {
     ...concepts,
@@ -152,7 +165,7 @@ export const getConcept = async (
 ) => {
   const { conceptId } = request.params as ConceptsGetArguments
 
-  const concept = (await Concept.findById(conceptId, {})
+  let concept = (await Concept.findById(conceptId, {})
     .populate({
       path: 'user',
       select: 'userId username userImage',
@@ -181,6 +194,13 @@ export const getConcept = async (
     }
   }
 
+  const hasConceptExportPermission = conceptExportPermissionCheck(request)
+  if (!hasConceptExportPermission) {
+    const { uri, ...conceptWithoutUri } = concept.toObject()
+    // @ts-ignore
+    concept = conceptWithoutUri
+  }
+
   if (request.user?.userId) {
     // Get user's reactions and bookmarks
     const userId = request.user.userId
@@ -196,6 +216,7 @@ export const getConcept = async (
 
     // concept.reactions = reactionsMap[concept._id.toString()]
     // concept.bookmarked = bookmarksMap[concept._id.toString()]
+
     const conceptWithExtras = {
       ...concept.toObject(),
       reactions: reactionsMap[concept._id.toString()],
@@ -245,6 +266,13 @@ export const conceptUpdate = async (
   const { userId } = request.user
   const { conceptId } = request.params as ConceptsUpdateArguments
   const { isPrivate } = request.body as ConceptsUpdateArguments
+
+  // if (conceptPrivacyPermissionCheck(request)) {
+  //   return reply.status(401).send({
+  //     message:
+  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
+  //   })
+  // }
 
   if (!userId || !conceptId || typeof isPrivate === 'undefined') {
     return reply.status(422).send({

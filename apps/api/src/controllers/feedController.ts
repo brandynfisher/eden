@@ -10,6 +10,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { PipelineStage } from 'mongoose'
 
+import { conceptExportPermissionCheck } from '../lib/authorization'
 import { getSimilarCreationIds } from '../lib/similar'
 import { Character, CharacterDocument } from '../models/Character'
 import { Collection } from '../models/Collection'
@@ -22,7 +23,6 @@ import CharacterRepository from '../repositories/CharacterRepository'
 import ConceptRepository from '../repositories/ConceptRepository'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
-import server from '../server'
 import {
   getBookmarks as getConceptBookmarks,
   getReactions as getConceptReactions,
@@ -644,6 +644,15 @@ export const getConceptsFeed = async (
     select: 'status config generator',
     populate: { path: 'generator', select: 'generatorName output' },
   })
+
+  const hasConceptExportPermission = conceptExportPermissionCheck(request)
+  if (!hasConceptExportPermission) {
+    // @ts-ignore
+    concepts.docs = concepts.docs.map(concept => {
+      const { uri, ...conceptWithoutUri } = concept.toObject()
+      return conceptWithoutUri
+    })
+  }
 
   if (ownUserId) {
     interface ConceptDocumentExtension {

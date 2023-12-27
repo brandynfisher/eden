@@ -1,5 +1,6 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
+import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -42,8 +43,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     return res.status(501).json({ error: `HTTP ${req.method} not implemented` })
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({ error: 'Internal server error' })
+    const errorMessage = handleAxiosServerError(error)
+    console.error(errorMessage)
+    return res.status(500).json({ message: errorMessage })
   }
 }
 

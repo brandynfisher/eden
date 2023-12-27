@@ -1,5 +1,6 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
+import { handleAxiosServerError } from '@/lib/fetcher'
 import { CharactersTestArguments, EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -24,8 +25,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       message: response.message,
     })
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({ error: 'Internal server error' })
+    const errorMessage = handleAxiosServerError(error)
+    console.error(errorMessage)
+    return res.status(500).json({ message: errorMessage })
   }
 }
 

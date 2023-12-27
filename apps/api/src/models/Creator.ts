@@ -1,19 +1,10 @@
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Document, Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
 
 import { CollectionDocument } from './Collection'
 import { CreationDocument } from './Creation'
-
-export enum FeatureFlag {
-  Preview = 'preview',
-}
-
-export enum SubscriptionTier {
-  Basic = 'basic',
-  Pro = 'pro',
-  Free = 'free',
-}
 
 export interface UserSchema {
   userId: string
@@ -108,7 +99,7 @@ const user = new Schema<UserDocument>(
       },
     ],
     subscriptionTier: {
-      type: String,
+      type: Number,
       enum: Object.values(SubscriptionTier),
     },
     stripeCustomerId: {

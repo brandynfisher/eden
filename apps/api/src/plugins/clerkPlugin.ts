@@ -1,8 +1,9 @@
 import { Clerk } from '@clerk/backend'
 import { clerkPlugin, createClerkClient, getAuth } from '@clerk/fastify'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import { SubscriptionTier, User } from '../models/Creator'
+import { User } from '../models/Creator'
 
 export const registerClerk = async (fastify: FastifyInstance) => {
   try {

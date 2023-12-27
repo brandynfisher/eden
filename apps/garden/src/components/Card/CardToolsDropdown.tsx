@@ -15,7 +15,7 @@ import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
-import { Concept, Creation, Creator } from '@edenlabs/eden-sdk'
+import { Concept, Creation, Creator, FeatureFlag } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
   ReactNode,
@@ -328,7 +328,9 @@ const CardToolsDropdown = ({
     }
 
     const hasUserFeatureFlagPrivate =
-      user && user.featureFlags && user.featureFlags.includes('preview')
+      user &&
+      user.featureFlags &&
+      user.featureFlags.includes(FeatureFlag.Preview)
     const creatorMenuItems: MenuItem[] =
       itemType !== 'creator' &&
       hasUserFeatureFlagPrivate &&
@@ -359,7 +361,7 @@ const CardToolsDropdown = ({
       : []
 
     if (
-      user?.featureFlags?.includes('preview') &&
+      user?.featureFlags?.includes(FeatureFlag.Preview) &&
       itemType === 'concept' &&
       item.user.userId === user?.userId
     ) {

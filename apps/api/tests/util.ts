@@ -49,6 +49,20 @@ export const prepareBasicUserHeaders = () => {
   }
 }
 
+export const prepareProUserHeaders = () => {
+  return {
+    'x-api-key': 'prouser',
+    'x-api-secret': 'prouser',
+  }
+}
+
+export const prepareBelieverUserHeaders = () => {
+  return {
+    'x-api-key': 'believeruser',
+    'x-api-secret': 'believeruser',
+  }
+}
+
 export const preparePreviewUserHeaders = () => {
   return {
     'x-api-key': 'previewuser',

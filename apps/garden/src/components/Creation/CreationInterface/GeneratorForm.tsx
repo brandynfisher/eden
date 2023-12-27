@@ -12,6 +12,7 @@ import UploadParameter from '@/components/Creation/CreationInterface/parameters/
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { requireAuth } from '@/lib/auth'
+import { handleAxiosError } from '@/lib/fetcher'
 import {
   GeneratorOutputType,
   conceptGenerator,
@@ -23,6 +24,7 @@ import { UserContext } from '@/providers/UserProvider'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import {
   Creation,
+  FeatureFlag,
   Generator,
   GeneratorParameter,
   Task,
@@ -303,7 +305,7 @@ const GeneratorForm = ({
       refetchTasks && refetchTasks()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
-      message.error('Error creating task. Please try again.')
+      handleAxiosError(error, message)
     } finally {
       setIsSubmitting(false)
     }
@@ -629,7 +631,7 @@ const GeneratorForm = ({
 
           {user &&
           user.featureFlags &&
-          user.featureFlags.includes('preview') ? (
+          user.featureFlags.includes(FeatureFlag.Preview) ? (
             <PrivacyToggle />
           ) : null}
         </div>

@@ -1,7 +1,8 @@
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { ApiKey } from '../models/ApiKey'
-import { FeatureFlag, SubscriptionTier, User } from '../models/Creator'
+import { User } from '../models/Creator'
 
 const apiKeyVerify = async (request: FastifyRequest) => {
   if (!request.headers['x-api-secret']) {
@@ -106,11 +107,22 @@ export const isCharacter = async (
   }
 }
 
-export const isSubscriber = async (request: FastifyRequest) => {
-  return request.user.subscriptionTier !== SubscriptionTier.Free
+export const hasMinimumSubscriptionTier = (
+  request: FastifyRequest,
+  minimumTier: SubscriptionTier,
+) => {
+  if (!request.user) {
+    return false
+  }
+  return (
+    request.user.subscriptionTier >= minimumTier ||
+    // Admin user and preview user are equivalent to having the highest tier
+    request.user.isAdmin ||
+    request.user.featureFlags.includes('preview')
+  )
 }
 
-export const hasFeatureFlag = async (
+export const hasFeatureFlag = (
   request: FastifyRequest,
   featureFlag: FeatureFlag,
 ) => {
