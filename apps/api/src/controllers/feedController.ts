@@ -2,24 +2,27 @@ import {
   FeedCharactersArguments,
   FeedConceptsArguments,
   FeedCreationsArguments,
+  FeedCreatorsArguments,
   PaginatedResponse,
   ReactionType,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { PipelineStage } from 'mongoose'
 
+import { getSimilarCreationIds } from '../lib/similar'
 import { Character, CharacterDocument } from '../models/Character'
 import { Collection } from '../models/Collection'
 import { Concept, ConceptDocument } from '../models/Concept'
 import { Creation, CreationDocument } from '../models/Creation'
-import { User } from '../models/Creator'
+import { User, UserDocument } from '../models/Creator'
 import { Follow } from '../models/Follow'
 import { Reaction } from '../models/Reaction'
 import CharacterRepository from '../repositories/CharacterRepository'
 import ConceptRepository from '../repositories/ConceptRepository'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
+import server from '../server'
 import {
   getBookmarks as getConceptBookmarks,
   getReactions as getConceptReactions,
@@ -205,7 +208,21 @@ const aggregateCreationsByEmbeddingScore = (dateEndCutOff: string) => {
   ])
 }
 
+const emptyPaginatedResponse = {
+  docs: [],
+  total: 0,
+  pages: 0,
+  page: 0,
+  limit: 0,
+  pagingCounter: 0,
+  hasPrevPage: false,
+  hasNextPage: false,
+  prevPage: 0,
+  nextPage: 0,
+}
+
 export const getCreationsFeed = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -214,6 +231,7 @@ export const getCreationsFeed = async (
     characterId,
     collectionId,
     conceptId,
+    creationId,
     name,
     dateCutOff,
     limit,
@@ -338,8 +356,46 @@ export const getCreationsFeed = async (
     // needed to not end up with duplicates in aggregations wtf mongo
     sort.push(['_id', -1])
 
+    let creationIdsQuery = collectionCreations
+      ? {
+          $in: collectionCreations.map(
+            collectionCreation => collectionCreation._id,
+          ),
+        }
+      : undefined
+
+    // querying for similar creations
+    if (creationId) {
+      const creationDoc = (await Creation.findById(
+        creationId,
+      ).lean()) as CreationDocument
+      try {
+        if (
+          creationDoc &&
+          creationDoc.embedding &&
+          creationDoc.embedding.embedding &&
+          creationDoc.embedding.embedding.length
+        ) {
+          const similarCreationIds = await getSimilarCreationIds(
+            server,
+            creationDoc.embedding.embedding,
+          )
+          creationIdsQuery = similarCreationIds
+            ? {
+                $in: similarCreationIds,
+              }
+            : undefined
+        } else {
+          return reply.status(200).send(emptyPaginatedResponse)
+        }
+      } catch (e) {
+        console.log('Error fetching chroma embeddings', e)
+        return reply.status(200).send(emptyPaginatedResponse)
+      }
+    }
+
     const query = {
-      _id: collectionCreations ? { $in: collectionCreations } : undefined,
+      _id: creationIdsQuery,
       concept: conceptIds ? { $in: conceptIds } : undefined,
       createdAt: dateCutOff
         ? {
@@ -843,4 +899,90 @@ export const getCharactersFeed = async (
     // No user, so no reactions or bookmarks
     return reply.status(200).send(characters)
   }
+}
+
+const creatorsAggregate = (
+  searchText: string,
+  options?: { limit?: number; page?: number },
+) => {
+  const pipelines: PipelineStage[] = [
+    {
+      $search: {
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: searchText,
+                path: 'username',
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+        },
+      },
+    },
+  ]
+
+  return User.aggregate(pipelines)
+}
+
+export const getCreatorsFeed = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { name, limit, page, orderBy, direction } =
+    request.query as FeedCreatorsArguments
+  const creatorsRepository = new CreatorRepository(User)
+
+  const sort = []
+  const sortFilter: { [key: string]: unknown } = {}
+
+  // exclude zero count items when sorting by likes, bookmarks, etc
+  if (orderBy === 'followerCount') {
+    sortFilter[orderBy] = { $gt: 0 }
+  }
+
+  if (orderBy && direction) {
+    sort.push([orderBy, direction])
+  }
+
+  // add secondary sort condition "by newest" to all other sort fields to avoid random indexes for equal sort positions
+  if (orderBy !== 'createdAt') {
+    sort.push(['createdAt', -1])
+  }
+
+  // needed to not end up with duplicates in aggregations wtf mongo
+  sort.push(['_id', -1])
+
+  let creators: PaginatedResponse<UserDocument>
+  // use atlas search query
+  if (name) {
+    const aggregate = creatorsAggregate(name, {
+      ...sortFilter,
+    })
+    // console.log(JSON.stringify(aggregate))
+    const sortObj = Object.fromEntries(sort)
+    // console.log(sortObj)
+    creators = await creatorsRepository.aggregateQuery(aggregate, {
+      limit,
+      page,
+      sort: sortObj,
+    })
+  } else {
+    console.log(sortFilter ? sortFilter : {}, {
+      limit,
+      page,
+      sort,
+    })
+    creators = await creatorsRepository.query(
+      {},
+      {
+        limit,
+        page,
+        sort,
+      },
+    )
+  }
+
+  return reply.status(200).send(creators)
 }

@@ -62,7 +62,7 @@ const getNsfwState = (item: Creation | Concept) => {
   )
 }
 
-const getCreatorMenuItems = (
+const getAuthorMenuItems = (
   itemType: ItemType,
   item: CardData,
   onVisibilityChange: ({ isPrivate }: { isPrivate: boolean }) => void,
@@ -157,7 +157,7 @@ const CardToolsDropdown = ({
   onChange,
 }: {
   onOpen?: Function
-  item: CardData
+  item: CardData | Creator
   itemType: ItemType
   onChange: (updatedData: CardData) => void
 }) => {
@@ -172,8 +172,9 @@ const CardToolsDropdown = ({
 
   const handleOnVisibilityChange = useCallback(
     (visibilityUpdate: { isPrivate: boolean }) => {
+      const itemTyped = item as CardData
       onChange({
-        ...item,
+        ...itemTyped,
         ...visibilityUpdate,
       })
     },
@@ -181,8 +182,9 @@ const CardToolsDropdown = ({
   )
 
   const handleDelete = useCallback(() => {
+    const itemTyped = item as CardData
     onChange({
-      ...item,
+      ...itemTyped,
       deleted: true,
     })
   }, [item, onChange])
@@ -232,7 +234,34 @@ const CardToolsDropdown = ({
       ]
     : []
 
-  const getCardMenuItems = () => {
+  const getCreatorCardMenuItems = (item: Creator) => {
+    const defaultMenuItems: MenuItem[] = [
+      {
+        label: 'Copy...',
+        key: '0',
+        children: copyItems,
+      },
+      {
+        key: '1',
+        type: 'divider',
+      },
+      ...shareItems,
+      {
+        key: '3',
+        icon: (
+          <NewTabLinkButton
+            url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
+            variant="text"
+            label="To New Tab"
+          />
+        ),
+      },
+    ]
+
+    return [...defaultMenuItems]
+  }
+
+  const getCardMenuItems = (item: CardData) => {
     const defaultMenuItems: MenuItem[] = [
       {
         label: 'Copy...',
@@ -300,12 +329,14 @@ const CardToolsDropdown = ({
     const hasUserFeatureFlagPrivate =
       user && user.featureFlags && user.featureFlags.includes('preview')
     const creatorMenuItems: MenuItem[] =
-      hasUserFeatureFlagPrivate && user?.userId === item.user.userId
-        ? getCreatorMenuItems(itemType, item, handleOnVisibilityChange)
+      itemType !== 'creator' &&
+      hasUserFeatureFlagPrivate &&
+      user?.userId === item.user.userId
+        ? getAuthorMenuItems(itemType, item, handleOnVisibilityChange)
         : []
 
     const deleteItem: MenuItem[] =
-      user && user?.userId === item.user.userId
+      itemType !== 'creator' && user && user?.userId === item.user.userId
         ? [
             {
               icon: (
@@ -343,7 +374,13 @@ const CardToolsDropdown = ({
       trigger={['click']}
       arrow={true}
       placement="bottomRight"
-      menu={{ items: getCardMenuItems(), onClick: onItemClick }}
+      menu={{
+        items:
+          itemType === 'creator'
+            ? getCreatorCardMenuItems(item as Creator)
+            : getCardMenuItems(item as CardData),
+        onClick: onItemClick,
+      }}
       className="card-tools-dropdown ml-auto"
       onOpenChange={open => {
         onOpen && onOpen(open)

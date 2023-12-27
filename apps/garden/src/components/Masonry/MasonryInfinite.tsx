@@ -1,4 +1,5 @@
 import { CardData } from '@/components/Card/Card'
+import CreatorCard from '@/components/Card/CreatorCard'
 import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
@@ -12,7 +13,7 @@ import {
   useModalContext,
 } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
-import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import {
   useResizeObserver as useResizeObserverMantine,
   useViewportSize,
@@ -31,16 +32,11 @@ import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
 const MasonryInfinite = ({
   itemType,
-  ItemComponent,
   query,
   orderBy,
   emptyResultHandler,
 }: {
   itemType: ItemType
-  ItemComponent:
-    | typeof CreationCard
-    | typeof ConceptCard
-    | typeof CharacterFeedCard
   query?: PaginatedFeedQuery
   orderBy: OrderByParam
   emptyResultHandler?: (orderBy: OrderByParam) => void
@@ -84,8 +80,7 @@ const MasonryInfinite = ({
     {
       width: width || windowWidth,
       columnGutter: itemType === 'creation' ? 8 : 20,
-      rowGutter:
-        windowWidth && windowWidth < 768 ? 0 : itemType === 'creation' ? 8 : 20,
+      rowGutter: itemType === 'creation' ? 8 : 20,
       columnCount:
         windowWidth && windowWidth < 768
           ? 1
@@ -143,14 +138,51 @@ const MasonryInfinite = ({
   }, [])
 
   const CardWithClick = useCallback(
-    (props: { data: CardData; index: number }) => (
-      <ItemComponent
-        key={props.data._id}
-        index={props.index}
-        data={props.data}
-        onClick={() => handleCardClick(props.index)}
-      />
-    ),
+    (props: { data: CardData; index: number }) => {
+      if (itemType === 'creator') {
+        return (
+          <CreatorCard
+            key={props.data._id}
+            index={props.index}
+            data={props.data as Creator}
+            onClick={() => handleCardClick(props.index)}
+          />
+        )
+      }
+
+      if (itemType === 'creation') {
+        return (
+          <CreationCard
+            key={props.data._id}
+            index={props.index}
+            data={props.data as CardData}
+            onClick={() => handleCardClick(props.index)}
+          />
+        )
+      }
+
+      if (itemType === 'concept') {
+        return (
+          <ConceptCard
+            key={props.data._id}
+            index={props.index}
+            data={props.data as CardData}
+            onClick={() => handleCardClick(props.index)}
+          />
+        )
+      }
+
+      if (itemType === 'character') {
+        return (
+          <CharacterFeedCard
+            key={props.data._id}
+            index={props.index}
+            data={props.data as CardData}
+            onClick={() => handleCardClick(props.index)}
+          />
+        )
+      }
+    },
     [],
   )
 

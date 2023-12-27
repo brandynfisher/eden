@@ -1,10 +1,10 @@
 import CardDebugInfo from '@/components/Card/CardDebugInfo'
 import CardFooterWrap from '@/components/Card/CardFooterWrap'
+import CardHeaderWrap from '@/components/Card/CardHeaderWrap'
 import CardImage from '@/components/Card/CardImage'
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import CharacterCardFooter from '@/components/Characters/CharacterCardFooter'
-import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
 import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import CreationCardMedia from '@/components/Creation/CreationCard/CreationCardMedia'
@@ -124,6 +124,16 @@ const Card: FC<CardWithTypeProps> = ({
         className || ''
       }`}
     >
+      {itemType !== 'creation' ? (
+        <CardHeaderWrap title={itemData.name}>
+          <CardToolsDropdown
+            onOpen={setDropdownActive}
+            item={itemData}
+            itemType={itemType}
+            onChange={(updatedItem: CardData) => cardUpdateHandler(updatedItem)}
+          />
+        </CardHeaderWrap>
+      ) : null}
       <a
         onClick={cardClickHandler}
         href={`/${itemType}s/${itemData._id}`}
@@ -147,7 +157,7 @@ const Card: FC<CardWithTypeProps> = ({
             height={0}
             priority={index < 10}
             sizes={sizes}
-            className="!rounded-none !rounded-t-lg"
+            className="!rounded-none"
           />
         ) : null}
         {itemType === 'character' ? (
@@ -157,7 +167,7 @@ const Card: FC<CardWithTypeProps> = ({
             height={0}
             priority={index < 10}
             sizes={sizes}
-            className="!rounded-none !rounded-t-lg w-auto"
+            className="!rounded-none w-auto"
           />
         ) : null}
       </a>
@@ -197,6 +207,10 @@ const Card: FC<CardWithTypeProps> = ({
           <div
             className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:pb-1 md:pt-0.5 md:px-2 pointer-events-none opacity-0 transition-opacity duration-300 ${
               width ? 'opacity-100' : ''
+            } ${
+              itemType !== 'creation'
+                ? 'md:top-auto md:bottom-7 !rounded-none'
+                : ''
             }`}
           >
             {!hidePrompt ? (
@@ -224,23 +238,21 @@ const Card: FC<CardWithTypeProps> = ({
               ) : null}
               {itemData.isPrivate ? <LockIcon fontSize="small" /> : null}
 
-              <CardToolsDropdown
-                onOpen={setDropdownActive}
-                item={itemData}
-                itemType={itemType}
-                onChange={(updatedItem: CardData) =>
-                  cardUpdateHandler(updatedItem)
-                }
-              />
+              {itemType === 'creation' ? (
+                <CardToolsDropdown
+                  onOpen={setDropdownActive}
+                  item={itemData}
+                  itemType={itemType}
+                  onChange={(updatedItem: CardData) =>
+                    cardUpdateHandler(updatedItem)
+                  }
+                />
+              ) : null}
             </div>
           </div>
           <div
             className={`md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:px-2 pointer-events-none md:hidden ${
               hovered ? 'md:!block' : ''
-            } ${
-              itemType !== 'creation'
-                ? 'pt-2 md:pt-0 md:bottom-10 md:rounded-b-none'
-                : ''
             }`}
           >
             <CardReactions
@@ -252,12 +264,8 @@ const Card: FC<CardWithTypeProps> = ({
               showCounts={true}
             />
 
-            {!hidePrompt ? (
-              itemType === 'creation' ? (
-                <CreationCardDetail creation={itemData as Creation} />
-              ) : (
-                <ConceptCardDetail concept={itemData as Concept} />
-              )
+            {!hidePrompt && itemType === 'creation' ? (
+              <CreationCardDetail creation={itemData as Creation} />
             ) : null}
           </div>
         </>

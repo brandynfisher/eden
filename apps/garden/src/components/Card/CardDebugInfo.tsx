@@ -8,6 +8,9 @@ type ExtendedCardData = CardData & {
     score_adjusted?: number
     score_age_hours?: number
   }
+  attributes?: {
+    nsfw_score?: number
+  }
 }
 
 const CardDebugInfo = ({ data }: { data: CardData }) => {

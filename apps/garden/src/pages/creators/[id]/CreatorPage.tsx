@@ -1,7 +1,4 @@
-import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import CollectionCard from '@/components/Collections/CollectionCard'
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
   OrderByLatest,
   OrderByLikedByMe,
@@ -38,7 +35,6 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
         itemType="creation"
         query={{ userId: creatorId }}
         filters={filters}
-        ItemComponent={CreationCard}
       />
     </div>
   )
@@ -52,7 +48,6 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
         itemType="concept"
         query={{ userId: creatorId }}
         filters={[OrderByLatest, OrderByUsage]}
-        ItemComponent={ConceptCard}
       />
     </div>
   )
@@ -66,7 +61,6 @@ const CharacterTabContent = ({ creatorId }: { creatorId: string }) => {
         itemType="character"
         query={{ userId: creatorId }}
         filters={[OrderByLatest, OrderByUsage]}
-        ItemComponent={CharacterFeedCard}
       />
     </div>
   )

@@ -1,5 +1,4 @@
 import CharacterProfileHeader from '@/components/Characters/CharacterProfileHeader'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
 import { useCharacter } from '@/hooks/useCharacter'
@@ -15,7 +14,6 @@ const CreationTabContent = ({ characterId }: { characterId: string }) => {
       <MasonryInfiniteContainer
         key={`creations_${characterId}`}
         itemType="creation"
-        ItemComponent={CreationCard}
         query={{ characterId: characterId }}
         filters={[OrderByLatest]}
       />

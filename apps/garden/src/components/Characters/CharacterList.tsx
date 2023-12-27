@@ -1,11 +1,16 @@
 import CharacterCard from '@/components/Characters/CharacterCard'
+import { createSession } from '@/lib/chat'
+import CommentOutlined from '@ant-design/icons/CommentOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import { Button, Empty } from 'antd'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import React from 'react'
 
 const MyCharacterCard = ({ character }: { character: Character }) => {
+  const router = useRouter()
+
   return (
     <div key={character._id}>
       <CharacterCard
@@ -16,14 +21,14 @@ const MyCharacterCard = ({ character }: { character: Character }) => {
       />
       <div className="flex gap-2 px-2 bg-gray-100 dark:bg-gray-800 rounded-b-lg py-2 w-full justify-between ">
         <div className="flex items-center w-full justify-between">
-          {/* <Button
+          <Button
             className="flex items-center gap-0.5"
             type="primary"
             onClick={() => createSession(character._id, router)}
           >
             <CommentOutlined />
             Chat
-          </Button> */}
+          </Button>
           <Link href={`/create/characters/${character._id}`}>
             <Button className="flex items-center gap-0.5">
               <SettingOutlined />

@@ -1,4 +1,3 @@
-import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import {
   OrderByLatest,
   OrderByUsage,
@@ -10,7 +9,6 @@ const CharactersPage = () => {
     <div className={`flex flex-col`}>
       <MasonryInfiniteContainer
         itemType="character"
-        ItemComponent={CharacterFeedCard}
         filters={[OrderByUsage, OrderByLatest]}
       />
     </div>

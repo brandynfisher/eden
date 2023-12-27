@@ -168,24 +168,23 @@ const CardReactions = ({
         />
       ) : null}
     </div>
-  ) : (
-    <div className="relative hidden md:flex justify-between">
-      <div className="h-2">
-        <div className="flex pointer-events-auto">
-          {/*      <PraiseButton*/}
-          {/*        item={conceptData}*/}
-          {/*        type={'concept'}*/}
-          {/*        onChange={*/}
-          {/*          setConceptData as Dispatch<*/}
-          {/*            SetStateAction<Concept | Creation>*/}
-          {/*          >*/}
-          {/*        }*/}
-          {/*        showCounts={true}*/}
-          {/*      />*/}
-        </div>
-      </div>
-    </div>
-  )
+  ) : // <div className="relative hidden md:flex justify-between">
+  //   <div className="h-2">
+  //     <div className="flex pointer-events-auto">
+  //       {/*      <PraiseButton*/}
+  //       {/*        item={conceptData}*/}
+  //       {/*        type={'concept'}*/}
+  //       {/*        onChange={*/}
+  //       {/*          setConceptData as Dispatch<*/}
+  //       {/*            SetStateAction<Concept | Creation>*/}
+  //       {/*          >*/}
+  //       {/*        }*/}
+  //       {/*        showCounts={true}*/}
+  //       {/*      />*/}
+  //     </div>
+  //   </div>
+  // </div>
+  null
 }
 
 export default CardReactions
