@@ -456,7 +456,7 @@ export const handlePaymentEvent = async (
       return
 
     case 'invoicce.payment_succeeded':
-      // TODO: handle subscription renewal
+      // TODO: handle subscription renewal.
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)
