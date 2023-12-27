@@ -16,8 +16,11 @@ export const getSimilarCreationIds = async (
   })
   console.log('##### got collection')
   console.log(collection)
-  console.log('collection count', collection.count())
-  console.log(collection.peek())
+  const ct = await collection.count()
+  console.log('collection count', ct)
+  const pk = await collection.peek()
+  console.log('collection peek')
+  console.log(pk)
   console.log('##### get creation similar 5', creationId)
   console.log(collection)
   if (!collection) {
