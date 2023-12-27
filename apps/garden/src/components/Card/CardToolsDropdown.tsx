@@ -337,7 +337,7 @@ const CardToolsDropdown = ({
         : []
 
     const deleteItem: MenuItem[] =
-      itemType !== 'creator' && user && user?.userId === item.user.userId
+      user && itemType !== 'creator' && user?.userId === item.user.userId
         ? [
             {
               icon: (
@@ -358,7 +358,11 @@ const CardToolsDropdown = ({
       ? getDownloadMenuItems(itemType, item, user)
       : []
 
-    if (itemType === 'concept' && item.user.userId === user?.userId) {
+    if (
+      user?.featureFlags?.includes('preview') &&
+      itemType === 'concept' &&
+      item.user.userId === user?.userId
+    ) {
       downloadItem.push({
         key: '4-2',
         icon: (
