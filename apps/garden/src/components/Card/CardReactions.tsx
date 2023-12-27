@@ -20,9 +20,9 @@ export const PraiseButton = ({
   onChange,
   showCounts,
 }: {
-  item: CardData
+  item: Creation
   itemType: ItemType
-  onChange: (updatedData: CardData) => void
+  onChange: (updatedData: Creation) => void
   showCounts?: boolean
 }) => {
   const { message } = App.useApp()
