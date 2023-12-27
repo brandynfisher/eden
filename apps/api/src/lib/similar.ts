@@ -1,3 +1,4 @@
+import { IncludeEnum } from 'chromadb'
 import { FastifyInstance } from 'fastify'
 
 export const getSimilarCreationIds = async (
@@ -31,7 +32,7 @@ export const getSimilarCreationIds = async (
   // get embedding
   const document = await collection.get({
     ids: [creationId],
-    include: ['embeddings'],
+    include: [IncludeEnum.Embeddings],
   })
   console.log('##### get creation similar 7', creationId)
   console.log('##### -> similar')
