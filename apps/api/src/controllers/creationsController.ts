@@ -268,7 +268,7 @@ export const getCreationSimilar = async (
 
   console.log('---<>--- get creation similar 33', creationId)
 
-  const docs = await collection.get({
+  const doc = await collection.get({
     ids: [creationId],
   })
 
@@ -277,10 +277,14 @@ export const getCreationSimilar = async (
   // }
 
   console.log('- - - - - - - - > similar')
-  console.log(docs)
+  console.log(doc)
+
+  if (!doc?.embeddings) {
+    throw new Error(`Chromadb failed to find creation ${creationId}`)
+  }
 
   // get embedding in first doc
-  const embedding = null //docs[0].embedding;
+  const embedding = doc.embeddings[0]
 
   console.log('-> embedding')
   console.log(embedding)
@@ -296,6 +300,9 @@ export const getCreationSimilar = async (
     queryEmbeddings: [embedding],
     nResults: 11,
   })
+
+  console.log('-> results')
+  console.log(results)
 
   if (!results?.ids) {
     throw new Error('Chromadb query failed')
