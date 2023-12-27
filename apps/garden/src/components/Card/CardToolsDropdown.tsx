@@ -4,6 +4,7 @@ import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import DeleteButton from '@/components/Layout/buttons/DeleteButton'
 import DownloadFileButton from '@/components/Layout/buttons/DownloadFileButton'
+import ExportConcept from '@/components/Layout/buttons/ExportConceptButton'
 import MakePrivateButton from '@/components/Layout/buttons/MakePrivateButton'
 import MakePublicButton from '@/components/Layout/buttons/MakePublicButton'
 import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
@@ -270,6 +271,19 @@ const CardToolsDropdown = ({
           },
         ]
       : []
+
+    if (itemType === 'concept' && item.user.userId === user?.userId) {
+      downloadItem.push({
+        key: '4-2',
+        icon: (
+          <ExportConcept
+            conceptId={item._id}
+            variant="text"
+            label={'Publish to Huggingface'}
+          />
+        ),
+      })
+    }
 
     return [
       ...defaultMenuItems,

@@ -3,6 +3,7 @@ import { AxiosRequestConfig } from 'axios'
 import {
   AdminAuthChallengeArguments,
   AdminAuthChallengeResponse,
+  AdminConceptsExportToHFArguments,
   AdminMannaModifyArguments,
   AdminMannaModifyResponse,
   AdminMannaVouchersCreateArguments,
@@ -122,6 +123,7 @@ import {
   TasksListArguments,
   TasksListResponse,
   adminAuthChallengeRequestConfig,
+  adminConceptsExportToHFRequestConfig,
   adminMannaModifyRequestConfig,
   adminMannaVouchersCreateRequestConfig,
   adminMediaUploadRequestConfig,
@@ -236,6 +238,14 @@ export abstract class Methods {
         this,
         adminMediaUploadRequestConfig,
       ),
+    },
+    concepts: {
+      export: {
+        hf: bindApiCall<
+          AdminConceptsExportToHFArguments,
+          AdminConceptsExportToHFArguments
+        >(this, adminConceptsExportToHFRequestConfig),
+      },
     },
   }
 

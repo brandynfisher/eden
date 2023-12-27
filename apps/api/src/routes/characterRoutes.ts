@@ -142,7 +142,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           character: Type.Object({
             id: Type.String(),
-            user: Type.Any(),
+            user: Type.String(),
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
@@ -189,7 +189,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             id: Type.String(),
-            user: Type.Any(),
+            user: Type.String(),
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
