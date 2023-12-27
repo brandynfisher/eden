@@ -77,8 +77,9 @@ async function updateDefaultVersion(db) {
     'monologue', 'dialogue',
   ];
   const comfyui_generators = [
-    'animatediff_comfyui'
-  ]
+    'comfy_txt2vid', 'comfy_img2vid', 'comfy_vid2vid', 'comfy_upscale',
+    'comfy_makeitrad'
+  ];
 
   if (cog === 'eden-sd-pipelines-sdxl') {
     for (const generatorName of sdxl_generators) {
