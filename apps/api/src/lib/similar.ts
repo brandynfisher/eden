@@ -4,15 +4,18 @@ export const getSimilarCreationIds = async (
   server: FastifyInstance,
   creationId: any,
 ) => {
-  console.log('##### get creation similar 4', creationId)
+  console.log('##### get creation similar 4a', creationId)
   const { chromadb } = server
   if (!chromadb) {
     throw new Error('Chromadb not initialized')
   }
-  console.log('##### get creation similar 4', creationId)
+  console.log('##### get creation similar 4b', creationId)
+  console.log('##### get collection')
   const collection = await chromadb.getCollection({
     name: 'creation_clip_embeddings',
   })
+  console.log('##### got collection')
+  console.log(collection)
   console.log('##### get creation similar 5', creationId)
   console.log(collection)
   if (!collection) {
