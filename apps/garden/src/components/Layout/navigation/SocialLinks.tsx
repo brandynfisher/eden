@@ -8,7 +8,7 @@ const SocialLinks = () => {
   return (
     <div className={`flex gap-4 px-4 py-3 items-center justify-between`}>
       <a
-        href="https://github.com/abraham-ai"
+        href="https://github.com/edenartlab"
         target="_blank"
         rel="noopener noreferrer"
         title="Eden on Github"

@@ -1,6 +1,7 @@
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import GithubOutlined from '@ant-design/icons/GithubOutlined'
+import InstagramOutlined from '@ant-design/icons/InstagramOutlined'
 import TwitterOutlined from '@ant-design/icons/TwitterOutlined'
 import { Menu, type MenuProps } from 'antd'
 import Link from 'next/link'
@@ -73,6 +74,15 @@ const LayoutMenu = ({ inDrawer }: { inDrawer?: boolean }) => {
           className="text-black dark:text-gray-400 hover:text-blue-400 hover:dark:text-blue-400 flex items-center"
         >
           <TwitterOutlined className="text-2xl" />
+        </a>
+        <a
+          href="https://instagram.com/eden.art____"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Eden on Instagram"
+          className="text-black dark:text-gray-400 hover:text-blue-400 hover:dark:text-blue-400 flex items-center"
+        >
+          <InstagramOutlined className="text-2xl" />
         </a>
       </div>
     </div>
