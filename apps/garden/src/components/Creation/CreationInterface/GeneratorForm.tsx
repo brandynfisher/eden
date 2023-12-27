@@ -295,6 +295,7 @@ const GeneratorForm = ({
         generatorName: generator.generatorName,
         config: cleanedValues,
       })
+      refetchTasks && refetchTasks()
 
       message.success('Task created!')
 
@@ -302,7 +303,6 @@ const GeneratorForm = ({
       setActiveTaskId && setActiveTaskId(taskId)
       setHasChangedGenerator && setHasChangedGenerator(false)
       refetchMe()
-      refetchTasks && refetchTasks()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       handleAxiosError(error, message)

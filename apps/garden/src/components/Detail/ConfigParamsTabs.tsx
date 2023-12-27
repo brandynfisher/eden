@@ -70,11 +70,6 @@ const ConfigParamsTabs = ({ data }: { data: Concept | Creation }) => {
       label: `Text`,
       children: <ConfigParamsTextTabContent data={data} />,
     },
-    // {
-    //   key: '2',
-    //   label: `JSON`,
-    //   children: <ConfigParamsCodeTabContent taskConfig={formattedTaskConfig} />,
-    // },
     {
       key: '3',
       label: `Eden SDK`,
