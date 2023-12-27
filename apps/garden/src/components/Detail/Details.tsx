@@ -10,7 +10,6 @@ import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
 import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
 import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
-// import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
 import MediaDisplay from '@/components/MediaDisplay'
@@ -48,14 +47,12 @@ const Details = ({
   isModal,
   modalContainerRef,
   modalContainerHeight,
-}: // loadSimilar,
-{
+}: {
   item: CardData
   itemType: ItemType
   isModal?: boolean
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
-  // loadSimilar?: boolean
 }) => {
   const [itemData, setItemData] = useState<CardData>(item)
   const [showFollowControls, setShowFollowControls] = useState(false)

@@ -1,14 +1,13 @@
 import {
   CreationsDeleteArguments,
   CreationsGetArguments,
-  CreationsGetSimilarArguments,
   CreationsListArguments,
   CreationsReactArguments,
   CreationsUnreactArguments,
   CreationsUpdateArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { creationPrivacyPermissionCheck } from '../lib/authorization'
@@ -222,79 +221,6 @@ export const getCreation = async (
   }
 
   return await reply.status(200).send({ creation })
-}
-
-export const getCreationSimilar = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { creationId } = request.params as CreationsGetSimilarArguments
-
-  // Todo: n is not actually set here. defaulting to 10
-
-  const creation = (await Creation.findById(
-    creationId,
-  ).lean()) as CreationDocument
-
-  if (!creation) {
-    return reply.status(404).send({
-      message: 'Creation not found',
-    })
-  }
-
-  const embedding = creation.embedding?.embedding
-
-  if (!embedding || embedding.length == 0) {
-    return reply.status(404).send({
-      message: 'Embedding not found',
-    })
-  }
-
-  const { chromadb } = server
-  if (!chromadb) {
-    throw new Error('Chromadb not initialized')
-  }
-
-  const collection = await chromadb.getCollection({
-    name: 'creation_clip_embeddings',
-  })
-
-  if (!collection) {
-    throw new Error('Chromadb collection not found')
-  }
-
-  const results = await collection.query({
-    queryEmbeddings: [embedding],
-    nResults: 11,
-  })
-
-  if (!results?.ids) {
-    throw new Error('Chromadb query failed')
-  }
-
-  const similarIdxs = results.ids[0].slice(1)
-
-  const similarCreations = await Creation.find(
-    {
-      _id: {
-        $in: similarIdxs,
-      },
-    },
-    { 'embedding.embedding': 0 },
-  )
-
-  await Creation.populate(similarCreations, {
-    path: 'user',
-    select: 'userId username userImage',
-  })
-  await Creation.populate(similarCreations, {
-    path: 'task',
-    select: 'config status generator',
-    populate: { path: 'generator', select: 'generatorName description output' },
-  })
-
-  return reply.status(200).send({ similarCreations })
 }
 
 export const creationDelete = async (

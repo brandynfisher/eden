@@ -140,7 +140,7 @@ const Card: FC<CardWithTypeProps> = ({
         target={'_blank'}
         className={`card-image relative overflow-hidden cursor-pointer block  ${
           itemData.deleted ? 'grayscale' : ''
-        } ${itemType === 'concept' ? '' : 'rounded-lg '}`}
+        } ${itemType === 'creation' ? 'rounded-lg' : ''}`}
       >
         {itemType === 'creation' ? (
           <CreationCardMedia

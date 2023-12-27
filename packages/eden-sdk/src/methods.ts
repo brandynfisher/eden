@@ -58,8 +58,6 @@ import {
   CreationsDeleteResponse,
   CreationsGetArguments,
   CreationsGetResponse,
-  CreationsGetSimilarArguments,
-  CreationsGetSimilarResponse,
   CreationsListArguments,
   CreationsListResponse,
   CreationsReactArguments,
@@ -151,7 +149,6 @@ import {
   conceptsUpdateRequestConfig,
   creationsDeleteRequestConfig,
   creationsGetRequestConfig,
-  creationsGetSimilarRequestConfig,
   creationsListRequestConfig,
   creationsReactRequestConfig,
   creationsUnreactRequestConfig,
@@ -360,10 +357,6 @@ export abstract class Methods {
       this,
       creationsGetRequestConfig,
     ),
-    getSimilar: bindApiCall<
-      CreationsGetSimilarArguments,
-      CreationsGetSimilarResponse
-    >(this, creationsGetSimilarRequestConfig),
     react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
       this,
       creationsReactRequestConfig,
