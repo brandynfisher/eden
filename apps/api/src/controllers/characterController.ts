@@ -36,12 +36,12 @@ export const createCharacter = async (
       : undefined,
   }
 
-  if (characterPrivacyPermissionCheck(request)) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
-  }
+  // if (characterPrivacyPermissionCheck(request)) {
+  //   return reply.status(401).send({
+  //     message:
+  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
+  //   })
+  // }
 
   const input: {
     user: ObjectId

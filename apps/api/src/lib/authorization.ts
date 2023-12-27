@@ -111,7 +111,7 @@ const maximumTasksInProgressMap: Record<SubscriptionTier, number> = {
   [SubscriptionTier.Free]: 1,
   [SubscriptionTier.Basic]: 3,
   [SubscriptionTier.Pro]: 6,
-  [SubscriptionTier.Believer]: 15,
+  [SubscriptionTier.Believer]: 10,
 }
 
 export const maximumTasksInProgressPermissionCheck = async (

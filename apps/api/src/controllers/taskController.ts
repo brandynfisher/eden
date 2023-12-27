@@ -5,7 +5,6 @@ import {
 } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { ChatCompletionMessageParam } from 'openai/resources'
 
 import {
   maximumTasksInProgressPermissionCheck,
@@ -16,7 +15,6 @@ import {
   getLatestGeneratorVersion,
   prepareConfig,
 } from '../lib/generator'
-import { Completion, CompletionInput } from '../models/Completion'
 import { User } from '../models/Creator'
 import {
   Generator,
@@ -113,12 +111,12 @@ export const createTask = async (
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
-  if (taskPrivacyPermissionCheck(request)) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
-  }
+  // if (taskPrivacyPermissionCheck(request)) {
+  //   return reply.status(401).send({
+  //     message:
+  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
+  //   })
+  // }
 
   const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
   if (submittedMaxTasks) {
