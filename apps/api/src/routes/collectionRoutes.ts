@@ -16,6 +16,14 @@ import { isAuth } from '../middleware/authMiddleware'
 const collectionRoutes: FastifyPluginAsync = async server => {
   server.get('/collections', {
     schema: {
+      tags: ['Collections'],
+      description: 'List collections',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -34,6 +42,14 @@ const collectionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/collections/:collectionId', {
     schema: {
+      tags: ['Collections'],
+      description: 'Get a collection',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       params: {
         collectionId: Type.String(),
       },
@@ -48,13 +64,19 @@ const collectionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/collections/update', {
     schema: {
-      request: {
-        body: Type.Object({
-          collectionId: Type.Optional(Type.String()),
-          name: Type.Optional(Type.String()),
-          description: Type.Optional(Type.String()),
-        }),
-      },
+      tags: ['Collections'],
+      description: 'Update a collection',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        collectionId: Type.Optional(Type.String()),
+        name: Type.Optional(Type.String()),
+        description: Type.Optional(Type.String()),
+      }),
       response: {
         200: Type.Object({}),
       },
@@ -65,12 +87,18 @@ const collectionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/collections/creations/add', {
     schema: {
-      request: {
-        body: Type.Object({
-          collectionId: Type.Optional(Type.String()),
-          creationIds: Type.Array(Type.String()),
-        }),
-      },
+      tags: ['Collections'],
+      description: 'Add creations to a collection',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        collectionId: Type.Optional(Type.String()),
+        creationIds: Type.Array(Type.String()),
+      }),
       response: {
         200: Type.Object({}),
       },
@@ -81,12 +109,18 @@ const collectionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/collections/creations/remove', {
     schema: {
-      request: {
-        body: Type.Object({
-          collectionId: Type.Optional(Type.String()),
-          creationIds: Type.Array(Type.String()),
-        }),
-      },
+      tags: ['Collections'],
+      description: 'Remove creations from a collection',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        collectionId: Type.Optional(Type.String()),
+        creationIds: Type.Array(Type.String()),
+      }),
       response: {
         200: Type.Object({}),
       },
@@ -97,11 +131,17 @@ const collectionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/collections/delete', {
     schema: {
-      request: {
-        body: Type.Object({
-          collectionId: Type.String(),
-        }),
-      },
+      tags: ['Collections'],
+      description: 'Delete a collection',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        collectionId: Type.String(),
+      }),
       response: {
         200: Type.Object({}),
       },
@@ -112,13 +152,19 @@ const collectionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/collections/create', {
     schema: {
-      request: {
-        body: Type.Object({
-          name: Type.String(),
-          description: Type.Optional(Type.String()),
-          creationIds: Type.Optional(Type.Array(Type.String())),
-        }),
-      },
+      tags: ['Collections'],
+      description: 'Create a collection',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        name: Type.String(),
+        description: Type.Optional(Type.String()),
+        creationIds: Type.Optional(Type.Array(Type.String())),
+      }),
       response: {
         200: {
           collectionId: Type.String(),

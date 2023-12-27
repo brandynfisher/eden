@@ -117,6 +117,45 @@ const createServer = async (
     timeWindow: '1 minute',
   })
 
+  await server.register(import('@fastify/swagger'), {
+    swagger: {
+      securityDefinitions: {
+        apiKey: {
+          type: 'apiKey',
+          name: 'X-Api-Key',
+          in: 'header',
+        },
+        apiSecret: {
+          type: 'apiKey',
+          name: 'X-Api-Secret',
+          in: 'header',
+        },
+      },
+    },
+  })
+
+  await server.register(import('@fastify/swagger-ui'), {
+    routePrefix: '/documentation',
+    uiConfig: {
+      docExpansion: 'full',
+      deepLinking: false,
+    },
+    uiHooks: {
+      onRequest: function (request, reply, next) {
+        next()
+      },
+      preHandler: function (request, reply, next) {
+        next()
+      },
+    },
+    staticCSP: true,
+    transformStaticCSP: header => header,
+    transformSpecification: (swaggerObject, request, reply) => {
+      return swaggerObject
+    },
+    transformSpecificationClone: true,
+  })
+
   routes.map(async route => {
     await server.register(route)
   })
