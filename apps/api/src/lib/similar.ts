@@ -31,6 +31,7 @@ export const getSimilarCreationIds = async (
   // get embedding
   const document = await collection.get({
     ids: [creationId],
+    include: ['embeddings'],
   })
   console.log('##### get creation similar 7', creationId)
   console.log('##### -> similar')
