@@ -7,6 +7,14 @@ import { isAuth } from '../middleware/authMiddleware'
 const mannaRoutes: FastifyPluginAsync = async server => {
   server.get('/manna/balance', {
     schema: {
+      tags: ['Manna'],
+      description: 'Get manna balance',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       response: {
         200: Type.Object({
           manna: Type.Number(),
@@ -19,6 +27,14 @@ const mannaRoutes: FastifyPluginAsync = async server => {
 
   server.post('/manna/vouchers/redeem', {
     schema: {
+      tags: ['Manna'],
+      description: 'Redeem a manna voucher',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: Type.Object({
         code: Type.String(),
       }),

@@ -1,6 +1,7 @@
 import SocialLinks from '@/components/Layout/navigation/SocialLinks'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
+import { PeopleOutline } from '@mui/icons-material'
 import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline'
 import ExploreOutlined from '@mui/icons-material/ExploreOutlined'
 import ModelTraining from '@mui/icons-material/ModelTraining'
@@ -88,6 +89,19 @@ const NavMenu = ({
       ),
       label: 'Creations',
     },
+    ...(isPreviewUser
+      ? [
+          {
+            key: '/creators',
+            icon: (
+              <Link href="/creators" data-testid="nav-explore-concepts">
+                <PeopleOutline fontSize="small" />
+              </Link>
+            ),
+            label: 'Creators',
+          },
+        ]
+      : []),
     {
       key: '/concepts',
       icon: (

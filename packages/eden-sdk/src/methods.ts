@@ -1,6 +1,5 @@
 import { AxiosRequestConfig } from 'axios'
 
-import { WebAPICallOptions, WebAPICallResult } from './EdenClient'
 import {
   AdminAuthChallengeArguments,
   AdminAuthChallengeResponse,
@@ -24,6 +23,8 @@ import {
   CharactersGetResponse,
   CharactersListArguments,
   CharactersListResponse,
+  CharactersTestArguments,
+  CharactersTestResponse,
   CharactersUpdateArguments,
   CharactersUpdateResponse,
   CollectionsAddCreationsArguments,
@@ -131,6 +132,7 @@ import {
   charactersDeleteRequestConfig,
   charactersGetRequestConfig,
   charactersListRequestConfig,
+  charactersTestRequestConfig,
   charactersUpdateRequestConfig,
   collectionsAddCreationsRequestConfig,
   collectionsCreateRequestConfig,
@@ -183,27 +185,7 @@ import {
   tasksGetRequestConfig,
   tasksListRequestConfig,
 } from './models'
-
-export const transformArgsIntoURLParams = (
-  args: Record<string, any>,
-): URLSearchParams => {
-  const params = new URLSearchParams()
-
-  for (const key in args) {
-    if (Object.prototype.hasOwnProperty.call(args, key)) {
-      const value = args[key]
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          value.forEach(item => params.append(key, item))
-        } else {
-          params.append(key, value.toString())
-        }
-      }
-    }
-  }
-
-  return params
-}
+import { WebAPICallOptions, WebAPICallResult } from './types'
 
 export default interface Method<
   MethodArguments extends WebAPICallOptions,
@@ -292,6 +274,10 @@ export abstract class Methods {
     get: bindApiCall<CharactersGetArguments, CharactersGetResponse>(
       this,
       charactersGetRequestConfig,
+    ),
+    test: bindApiCall<CharactersTestArguments, CharactersTestResponse>(
+      this,
+      charactersTestRequestConfig,
     ),
   }
 

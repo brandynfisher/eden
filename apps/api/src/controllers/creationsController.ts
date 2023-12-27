@@ -230,30 +230,33 @@ export const getCreationSimilar = async (
 ) => {
   const { creationId } = request.params as CreationsGetSimilarArguments
 
+  console.log('---<>--- get creation similar ', creationId)
   // Todo: n is not actually set here. defaulting to 10
 
-  const creation = (await Creation.findById(
-    creationId,
-  ).lean()) as CreationDocument
+  // const creation = (await Creation.findById(
+  //   creationId,
+  // ).lean()) as CreationDocument
 
-  if (!creation) {
-    return reply.status(404).send({
-      message: 'Creation not found',
-    })
-  }
+  // if (!creation) {
+  //   return reply.status(404).send({
+  //     message: 'Creation not found',
+  //   })
+  // }
 
-  const embedding = creation.embedding?.embedding
+  // const embedding = creation.embedding?.embedding
 
-  if (!embedding || embedding.length == 0) {
-    return reply.status(404).send({
-      message: 'Embedding not found',
-    })
-  }
+  // if (!embedding || embedding.length == 0) {
+  //   return reply.status(404).send({
+  //     message: 'Embedding not found',
+  //   })
+  // }
 
   const { chromadb } = server
   if (!chromadb) {
     throw new Error('Chromadb not initialized')
   }
+
+  console.log('---<>--- get creation similar 22 ', creationId)
 
   const collection = await chromadb.getCollection({
     name: 'creation_clip_embeddings',
@@ -263,10 +266,43 @@ export const getCreationSimilar = async (
     throw new Error('Chromadb collection not found')
   }
 
+  console.log('---<>--- get creation similar 33', creationId)
+
+  const doc = await collection.get({
+    ids: [creationId],
+  })
+
+  // if (!docs || docs.length == 0) {
+  //   throw new Error(`Chromadb failed to find creation ${creationId}`)
+  // }
+
+  console.log('- - - - - - - - > similar')
+  console.log(doc)
+
+  if (!doc?.embeddings) {
+    throw new Error(`Chromadb failed to find creation ${creationId}`)
+  }
+
+  // get embedding in first doc
+  const embedding = doc.embeddings[0]
+
+  console.log('-> embedding')
+  console.log(embedding)
+
+  if (!embedding) {
+    //} || embedding.length == 0) {
+    return reply.status(404).send({
+      message: 'Embedding not found',
+    })
+  }
+
   const results = await collection.query({
     queryEmbeddings: [embedding],
     nResults: 11,
   })
+
+  console.log('-> results')
+  console.log(results)
 
   if (!results?.ids) {
     throw new Error('Chromadb query failed')

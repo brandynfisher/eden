@@ -185,7 +185,7 @@ export const interactSession = async (
 
   // TODO: Check if user is allowed to interact with session
 
-  const { message, config } = await server.handleInteraction(
+  const { message, config } = await server.handleInteractionTest(
     server,
     assistant,
     interaction,

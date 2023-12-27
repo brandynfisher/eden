@@ -3,7 +3,10 @@ import { Aggregate } from 'mongoose'
 
 interface IRepository<T> {
   query(
-    query?: Record<string, string | string[] | ObjectId | object | undefined>,
+    query?: Record<
+      string,
+      string | string[] | ObjectId | object | undefined | unknown
+    >,
     options?: { page?: number; limit?: number; sort?: object },
   ): Promise<PaginatedResponse<T>>
   aggregateQuery(
@@ -38,7 +41,10 @@ class RestfulRepository<T> implements IRepository<T> {
   }
 
   async query(
-    query: Record<string, string | string[] | ObjectId | object | undefined>,
+    query: Record<
+      string,
+      string | string[] | ObjectId | object | undefined | unknown
+    >,
     options: {
       page?: number
       limit?: number

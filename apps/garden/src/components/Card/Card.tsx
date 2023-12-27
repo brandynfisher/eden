@@ -1,7 +1,10 @@
+import CardDebugInfo from '@/components/Card/CardDebugInfo'
+import CardFooterWrap from '@/components/Card/CardFooterWrap'
+import CardHeaderWrap from '@/components/Card/CardHeaderWrap'
 import CardImage from '@/components/Card/CardImage'
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
-import ConceptCardDetail from '@/components/Concept/ConceptCard/ConceptCardDetail'
+import CharacterCardFooter from '@/components/Characters/CharacterCardFooter'
 import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import CreationCardMedia from '@/components/Creation/CreationCard/CreationCardMedia'
@@ -9,16 +12,17 @@ import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
 import { ItemType } from '@/providers/ModalProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
 import { Button } from '@mui/material'
 import { App, Tag } from 'antd'
 import axios from 'axios'
+import { useRouter } from 'next/router'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 
-export type CardData = Creation | Concept
+export type CardData = Creation | Concept | Character
 
 export interface CardProps {
   index: number
@@ -32,6 +36,23 @@ export interface CardProps {
 
 export type CardWithTypeProps = CardProps & { itemType: ItemType }
 
+const NsfwBadge = ({
+  item,
+  className,
+}: {
+  item: Creation | Concept
+  className?: string
+}) => {
+  return typeof item.attributes !== 'undefined' &&
+    item.attributes &&
+    item.attributes.nsfw_score &&
+    item.attributes.nsfw_score > 0.5 ? (
+    <Tag color={'warning'} className={`text-xs ${className ? className : ''}`}>
+      NSFW
+    </Tag>
+  ) : null
+}
+
 const Card: FC<CardWithTypeProps> = ({
   itemType,
   index,
@@ -42,6 +63,12 @@ const Card: FC<CardWithTypeProps> = ({
   className,
   updateHandler,
 }) => {
+  const router = useRouter()
+  const [debugMode, setDebugMode] = useState<boolean>(false)
+  useEffect(() => {
+    setDebugMode(!!(router.query && router.query.debug))
+  }, [router.query])
+
   // const { items, setItems } = useContext(MasonryContext)
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
@@ -97,6 +124,16 @@ const Card: FC<CardWithTypeProps> = ({
         className || ''
       }`}
     >
+      {itemType !== 'creation' ? (
+        <CardHeaderWrap title={itemData.name}>
+          <CardToolsDropdown
+            onOpen={setDropdownActive}
+            item={itemData}
+            itemType={itemType}
+            onChange={(updatedItem: CardData) => cardUpdateHandler(updatedItem)}
+          />
+        </CardHeaderWrap>
+      ) : null}
       <a
         onClick={cardClickHandler}
         href={`/${itemType}s/${itemData._id}`}
@@ -112,16 +149,27 @@ const Card: FC<CardWithTypeProps> = ({
             hovered={hovered}
             sizes={sizes}
           />
-        ) : (
+        ) : null}
+        {itemType === 'concept' ? (
           <CardImage
-            uri={itemData.thumbnail || ''}
+            uri={(itemData as Concept).thumbnail || ''}
             width={0}
             height={0}
             priority={index < 10}
             sizes={sizes}
-            className="!rounded-none !rounded-t-lg"
+            className="!rounded-none"
           />
-        )}
+        ) : null}
+        {itemType === 'character' ? (
+          <CardImage
+            uri={(itemData as Character).image}
+            width={0}
+            height={0}
+            priority={index < 10}
+            sizes={sizes}
+            className="!rounded-none w-auto"
+          />
+        ) : null}
       </a>
       {itemData.deleted ? (
         <div className="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center">
@@ -142,12 +190,8 @@ const Card: FC<CardWithTypeProps> = ({
             hovered ? 'md:hidden' : ''
           }`}
         >
-          {itemData.attributes &&
-          itemData.attributes.nsfw_score &&
-          itemData.attributes.nsfw_score > 0.5 ? (
-            <Tag color={'warning'} className="text-xs">
-              NSFW
-            </Tag>
+          {itemType === 'creation' || itemType === 'concept' ? (
+            <NsfwBadge item={itemData as Creation | Concept} />
           ) : null}
           <div
             className={`flex z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
@@ -163,6 +207,10 @@ const Card: FC<CardWithTypeProps> = ({
           <div
             className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:pb-1 md:pt-0.5 md:px-2 pointer-events-none opacity-0 transition-opacity duration-300 ${
               width ? 'opacity-100' : ''
+            } ${
+              itemType !== 'creation'
+                ? 'md:top-auto md:bottom-7 !rounded-none'
+                : ''
             }`}
           >
             {!hidePrompt ? (
@@ -182,37 +230,29 @@ const Card: FC<CardWithTypeProps> = ({
               </div>
             ) : null}
             <div className="flex items-center gap-4 ml-auto my-1">
-              <>
-                {itemData.attributes &&
-                itemData.attributes.nsfw_score &&
-                itemData.attributes.nsfw_score > 0.5 ? (
-                  <Tag
-                    color={'warning'}
-                    className={`text-xs ${hovered ? 'md:hidden' : ''}`}
-                  >
-                    NSFW
-                  </Tag>
-                ) : null}
-                {itemData.isPrivate ? <LockIcon fontSize="small" /> : null}
-              </>
+              {itemType === 'creation' || itemType === 'concept' ? (
+                <NsfwBadge
+                  item={itemData as Creation | Concept}
+                  className={`text-xs ${hovered ? 'md:hidden' : ''}`}
+                />
+              ) : null}
+              {itemData.isPrivate ? <LockIcon fontSize="small" /> : null}
 
-              <CardToolsDropdown
-                onOpen={setDropdownActive}
-                item={itemData}
-                itemType={itemType}
-                onChange={(updatedItem: CardData) =>
-                  cardUpdateHandler(updatedItem)
-                }
-              />
+              {itemType === 'creation' ? (
+                <CardToolsDropdown
+                  onOpen={setDropdownActive}
+                  item={itemData}
+                  itemType={itemType}
+                  onChange={(updatedItem: CardData) =>
+                    cardUpdateHandler(updatedItem)
+                  }
+                />
+              ) : null}
             </div>
           </div>
           <div
             className={`md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:px-2 pointer-events-none md:hidden ${
               hovered ? 'md:!block' : ''
-            } ${
-              itemType !== 'creation'
-                ? 'pt-2 md:pt-0 md:bottom-10 md:rounded-b-none'
-                : ''
             }`}
           >
             <CardReactions
@@ -224,22 +264,26 @@ const Card: FC<CardWithTypeProps> = ({
               showCounts={true}
             />
 
-            {!hidePrompt ? (
-              itemType === 'creation' ? (
-                <CreationCardDetail creation={itemData as Creation} />
-              ) : (
-                <ConceptCardDetail concept={itemData as Concept} />
-              )
+            {!hidePrompt && itemType === 'creation' ? (
+              <CreationCardDetail creation={itemData as Creation} />
             ) : null}
           </div>
         </>
       ) : null}
 
       {itemType === 'concept' ? (
-        <div className="absolute flex gap-2 z-10 me-0 bottom-6 right-0 md:bg-gray-100 md:dark:bg-gray-900 md:rounded-b-lg md:bottom-auto md:py-2 md:relative md:w-full md:flex md:justify-between md:px-2">
+        <CardFooterWrap>
           <ConceptCardFooter concept={itemData as Concept} />
-        </div>
+        </CardFooterWrap>
       ) : null}
+
+      {itemType === 'character' ? (
+        <CardFooterWrap>
+          <CharacterCardFooter character={itemData as Character} />
+        </CardFooterWrap>
+      ) : null}
+
+      {debugMode ? <CardDebugInfo data={itemData} /> : null}
     </div>
   )
 }

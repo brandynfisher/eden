@@ -1,4 +1,3 @@
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
   OrderByFollowing,
   OrderByLatest,
@@ -25,9 +24,9 @@ const HomePage = () => {
     <div className={`flex flex-col`}>
       <MasonryInfiniteContainer
         itemType="creation"
-        ItemComponent={CreationCard}
         filters={filters}
         fallbackFilter={OrderByLatest}
+        query={{ limit: 50 }}
       />
     </div>
   )

@@ -34,6 +34,8 @@
     "@fastify/mongodb": "^6.2.0",
     "@fastify/multipart": "^7.6.0",
     "@fastify/rate-limit": "^7.6.0",
+    "@fastify/swagger": "^8.12.2",
+    "@fastify/swagger-ui": "^2.0.1",
     "@immobiliarelabs/fastify-sentry": "^7.1.0",
     "@sinclair/typebox": "^0.23.5",
     "@stripe/stripe-js": "^2.1.0",

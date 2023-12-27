@@ -1,9 +1,8 @@
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
 } from '@/components/Layout/buttons/OrderByButtons'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { ItemType } from '@/providers/ModalProvider'
@@ -11,17 +10,16 @@ import React, { useCallback, useEffect, useState } from 'react'
 
 const MasonryInfiniteContainer = ({
   itemType,
-  ItemComponent,
   filters,
   query,
   fallbackFilter,
 }: {
   itemType: ItemType
-  ItemComponent: typeof CreationCard | typeof ConceptCard
   filters?: OrderByParam[]
   query?: PaginatedFeedQuery
   fallbackFilter?: OrderByParam
 }) => {
+  const [fetchStartDate, setFetchStartDate] = useState<string | undefined>()
   const [orderBy, setOrderBy] = useState<OrderByParam>(
     filters ? filters[0] : OrderByDefaultParam,
   )
@@ -42,6 +40,7 @@ const MasonryInfiniteContainer = ({
   )
 
   useEffect(() => {
+    setFetchStartDate(new Date().toISOString())
     setRenderCount(prevState => prevState + 1)
   }, [orderBy])
 
@@ -52,6 +51,10 @@ const MasonryInfiniteContainer = ({
       )
       handleOrderChange(fallbackFilter)
     }
+  }
+
+  if (!fetchStartDate) {
+    return <LoadingIndicator />
   }
 
   return (
@@ -70,8 +73,7 @@ const MasonryInfiniteContainer = ({
         key={key}
         orderBy={orderBy}
         itemType={itemType}
-        query={query}
-        ItemComponent={ItemComponent}
+        query={{ ...query, dateCutOff: fetchStartDate }}
         emptyResultHandler={
           fallbackFilter ? handleFallbackOnEmptyResult : undefined
         }

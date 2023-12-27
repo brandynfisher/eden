@@ -7,12 +7,11 @@ import ParameterAddon from '@/components/Creation/CreationInterface/parameters/P
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FormLabel from '@/components/Forms/FormLabel'
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
-import { compilePrompt, messageGroupsToDialogueString } from '@/lib/chat'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
-import { Character } from '@edenlabs/eden-sdk'
+import { Assistant, Character, Interaction } from '@edenlabs/eden-sdk'
 import { App, Button, Form, Input, Select, Switch } from 'antd'
 import axios from 'axios'
 import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
@@ -80,7 +79,7 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
   const handleDeleteCharacter = async () => {
     try {
       await axios.post(`/api/characters/delete`, {
-        characterId: character.id,
+        characterId: character._id,
       })
       message.destroy()
       message.info(`Character '${character.name}' was deleted`)
@@ -169,23 +168,27 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     setMessageGroups(mode === 'create' ? [] : characterDialogue)
   }, [form, mode, character])
 
-  const generateCompletion = async () => {
+  const handleTestCharacter = async () => {
     setUsedCompletion(true)
     setCompleting(true)
     try {
-      const url = `/api/lm/complete`
-      const dialogue = messageGroupsToDialogueString(messageGroups)
-      const prompt = compilePrompt(
-        characterName,
-        recentMessage[0][0],
+      const url = `/api/characters/test`
+      const assistant: Assistant = {
+        name: characterName,
         identity,
-        dialogue,
-      )
+        knowledge: form.getFieldValue('knowledge'),
+        knowledge_summary: form.getFieldValue('knowledgeSummary'),
+      }
+      const interaction: Interaction = {
+        prompt: recentMessage[0][0].message,
+        author_id: 'test',
+      }
       const data = {
-        prompt,
+        assistant,
+        interaction,
       }
       const response = await axios.post(url, data)
-      const completion = response.data.completion as string
+      const completion = response.data.message as string
       const fmtCompletion = completion.trim()
       form.setFieldsValue({
         completion: fmtCompletion,
@@ -221,9 +224,9 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       if (mode === 'create') {
         await axios.post(`/api/characters/create`, data)
       } else {
-        await axios.patch(`/api/characters/${character?.id}`, {
+        await axios.patch(`/api/characters/${character?._id}`, {
           ...data,
-          characterId: character?.id,
+          characterId: character?._id,
         })
       }
 
@@ -466,7 +469,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   <Form.Item className="mb-0">
                     <Button
                       className="font-mono"
-                      onClick={generateCompletion}
+                      onClick={handleTestCharacter}
                       loading={completing}
                     >
                       Generate Response

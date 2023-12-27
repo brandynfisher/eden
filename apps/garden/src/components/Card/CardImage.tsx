@@ -8,7 +8,7 @@ const CardImage = ({
   sizes,
   className,
 }: {
-  uri: string
+  uri: string | undefined
   width: number
   height: number
   priority?: boolean
@@ -17,8 +17,8 @@ const CardImage = ({
 }) => {
   return (
     <ResponsiveImage
-      src={uri}
-      alt={uri}
+      src={uri ? uri : '/placeholder.png'}
+      alt={uri ? uri : 'image placeholder'}
       aspectRatio={width / height}
       sizes={sizes || '(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
       priority={priority}

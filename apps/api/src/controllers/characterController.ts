@@ -3,9 +3,10 @@ import {
   CharactersDeleteArguments,
   CharactersGetArguments,
   CharactersListArguments,
+  CharactersTestArguments,
   CharactersUpdateArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 import { ApiKey } from '../models/ApiKey'
@@ -191,7 +192,7 @@ export const listCharacters = async (
   const response = {
     ...characterPaginatedResponse,
     docs: characterPaginatedResponse.docs.map(character => ({
-      id: character._id.toString(),
+      _id: character._id.toString(),
       user: character.user,
       name: character.name,
       slug: character.slug,
@@ -230,7 +231,7 @@ export const getCharacter = async (
   }
 
   const response = {
-    id: character._id,
+    _id: character._id,
     user: character.user.toString(),
     name: character.name,
     slug: character.slug,
@@ -244,4 +245,23 @@ export const getCharacter = async (
   }
 
   return reply.status(200).send({ character: response })
+}
+
+export const testCharacter = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { assistant, interaction } = request.body as CharactersTestArguments
+
+  const { message, config } = await server.handleInteractionTest(
+    server,
+    assistant,
+    interaction,
+  )
+
+  reply.status(200).send({
+    message,
+    config,
+  })
 }
