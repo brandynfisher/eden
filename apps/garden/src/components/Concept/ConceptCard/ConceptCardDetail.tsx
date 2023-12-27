@@ -1,5 +1,4 @@
 import { Concept } from '@edenlabs/eden-sdk'
-import { Divider } from 'antd'
 import React from 'react'
 
 const ConceptCardDetail = ({ concept }: { concept: Concept }) => {
@@ -13,7 +12,6 @@ const ConceptCardDetail = ({ concept }: { concept: Concept }) => {
           {/*{concept.name}*/}
         </span>
       </div>
-      <Divider className="my-4 md:hidden" />
     </div>
   )
 }

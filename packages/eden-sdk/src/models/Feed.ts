@@ -16,6 +16,7 @@ export interface FeedCreationsArguments
   extends WebAPICallOptions,
     ListQueryParams {
   userId?: string | string[]
+  creationId?: string
   characterId?: string | string[]
   collectionId?: string | string[]
   conceptId?: string | string[]
@@ -34,6 +35,19 @@ export interface FeedConceptsArguments
   dateCutOff?: string
   orderBy?: string
   direction?: 1 | -1
+}
+
+export interface FeedCharactersArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+  name?: string
+}
+
+export interface FeedCreatorsArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  name?: string
 }
 
 // Requests

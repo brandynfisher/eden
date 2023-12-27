@@ -1,4 +1,3 @@
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import {
   OrderByLatest,
   OrderByUsage,
@@ -10,7 +9,6 @@ const ConceptsPage = () => {
     <div className={`flex flex-col`}>
       <MasonryInfiniteContainer
         itemType="concept"
-        ItemComponent={ConceptCard}
         filters={[OrderByUsage, OrderByLatest]}
       />
     </div>

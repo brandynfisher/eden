@@ -45,6 +45,9 @@ export const createPaginationRoute = (
   if (query.userId) {
     params.userId = String(query.userId)
   }
+  if (query.creationId) {
+    params.creationId = String(query.creationId)
+  }
   if (query.characterId) {
     params.characterId = String(query.characterId)
   }

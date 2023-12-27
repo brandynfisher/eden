@@ -789,3 +789,8 @@ div[role='grid'] {
         padding: 0 !important;
     }
 }
+
+// fixes upload preview getting stretched
+.ant-upload-list-item-thumbnail img {
+    object-fit: contain !important;
+}

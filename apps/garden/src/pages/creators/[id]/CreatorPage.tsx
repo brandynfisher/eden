@@ -1,6 +1,4 @@
 import CollectionCard from '@/components/Collections/CollectionCard'
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import {
   OrderByLatest,
   OrderByLikedByMe,
@@ -37,7 +35,6 @@ const CreationTabContent = ({ creatorId }: { creatorId: string }) => {
         itemType="creation"
         query={{ userId: creatorId }}
         filters={filters}
-        ItemComponent={CreationCard}
       />
     </div>
   )
@@ -51,7 +48,19 @@ const ConceptTabContent = ({ creatorId }: { creatorId: string }) => {
         itemType="concept"
         query={{ userId: creatorId }}
         filters={[OrderByLatest, OrderByUsage]}
-        ItemComponent={ConceptCard}
+      />
+    </div>
+  )
+}
+
+const CharacterTabContent = ({ creatorId }: { creatorId: string }) => {
+  return (
+    <div className="mt-4">
+      <MasonryInfiniteContainer
+        key={`characters_${creatorId}`}
+        itemType="character"
+        query={{ userId: creatorId }}
+        filters={[OrderByLatest, OrderByUsage]}
       />
     </div>
   )
@@ -87,6 +96,11 @@ const CreatorPageContent = ({ creator }: { creator: Creator }) => {
       label: 'Concepts',
       key: 'concepts',
       children: <ConceptTabContent creatorId={creator.userId} />,
+    },
+    {
+      label: 'Characters',
+      key: 'characters',
+      children: <CharacterTabContent creatorId={creator.userId} />,
     },
     {
       label: 'Collections',

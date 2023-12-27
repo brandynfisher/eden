@@ -19,7 +19,9 @@ const Banner = ({
 
   return (
     <div
-      className={`flex justify-center border border-b-1 border-l-0 border-solid border-r-0 border-t-0 border-gray-300 dark:border-gray-700 ${className}`}
+      className={`flex justify-center border border-b-1 border-l-0 border-solid border-r-0 border-t-0 border-gray-300 dark:border-gray-700 ${
+        className ? className : ''
+      }`}
     >
       <div className="relative flex w-full max-w-7xl gap-2 items-center justify-center flex-wrap px-4">
         <div className="flex items-center flex-col p-2 flex-shrink-0 sm:w-full max-w-full">

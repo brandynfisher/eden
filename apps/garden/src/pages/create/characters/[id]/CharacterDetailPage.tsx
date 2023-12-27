@@ -12,7 +12,7 @@ export const CharacterContext = createContext<ICharacterContext>({
 })
 
 const CharacterDetailPage = ({ data }: { data: Character }) => {
-  const { character: characterData } = useCharacter(data ? data.id : null, {
+  const { character: characterData } = useCharacter(data ? data._id : null, {
     fallbackData: data,
   })
 

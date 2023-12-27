@@ -161,7 +161,7 @@ export type CharactersTestResponse = WebAPICallResult & {
 // Types
 
 export type Character = {
-  id: string
+  _id: string
   user: Creator
   name: string
   slug: string
@@ -171,8 +171,8 @@ export type Character = {
   image?: string
   voice?: string
   creationCount?: number
-  deleted?: boolean
   isPrivate?: boolean
+  deleted?: boolean
   createdAt: string
   updatedAt: string
 }
