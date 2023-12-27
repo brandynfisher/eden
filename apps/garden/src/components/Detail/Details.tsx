@@ -10,12 +10,12 @@ import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
 import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
 import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
-// import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
 import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
+import { getId } from '@/lib/modal'
 import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
@@ -48,14 +48,12 @@ const Details = ({
   isModal,
   modalContainerRef,
   modalContainerHeight,
-}: // loadSimilar,
-{
+}: {
   item: CardData
   itemType: ItemType
   isModal?: boolean
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
-  // loadSimilar?: boolean
 }) => {
   const [itemData, setItemData] = useState<CardData>(item)
   const [showFollowControls, setShowFollowControls] = useState(false)
@@ -202,9 +200,6 @@ const Details = ({
                       : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                   }
                   previewUri={(item as Character)?.image}
-                  // onLoad={() => {
-                  //   setConceptImageLoaded(true)
-                  // }}
                 />
               ) : null}
               {itemData.isPrivate ? (
@@ -234,6 +229,10 @@ const Details = ({
                   item={itemData}
                   itemType={itemType}
                   onChange={setItemData as Dispatch<SetStateAction<CardData>>}
+                  pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${getId(
+                    itemType,
+                    item,
+                  )}`}
                 />
               ) : null}
             </div>

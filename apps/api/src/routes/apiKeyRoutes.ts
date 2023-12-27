@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
 import {
@@ -7,27 +7,8 @@ import {
   deleteApiKey,
   listApiKeys,
 } from '../controllers/apiKeyController'
-import {
-  hasFeatureFlag,
-  isAuth,
-  isSubscriber,
-} from '../middleware/authMiddleware'
-import { FeatureFlag } from '../models/Creator'
-
-const apiKeyCreatePreHandler = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const subscriber = await isSubscriber(request)
-  const previewUser = await hasFeatureFlag(request, FeatureFlag.Preview)
-  if (!subscriber && !previewUser) {
-    return reply.status(401).send({
-      statusCode: 401,
-      error: 'Unauthorized',
-      message: 'Unauthorized',
-    })
-  }
-}
+import { apiKeyCreatePreHandler } from '../lib/authorization'
+import { isAuth } from '../middleware/authMiddleware'
 
 const apiKeyRoutes: FastifyPluginAsync = async server => {
   server.post('/apikeys/create', {

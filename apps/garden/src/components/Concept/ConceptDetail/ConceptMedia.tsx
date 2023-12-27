@@ -15,9 +15,6 @@ const ConceptMedia = ({ concept }: { concept: Concept }) => {
           : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
       }
       previewUri={concept?.thumbnail}
-      // onLoad={() => {
-      //   setConceptImageLoaded(true)
-      // }}
     />
   )
 }

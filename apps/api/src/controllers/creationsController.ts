@@ -1,16 +1,16 @@
 import {
   CreationsDeleteArguments,
   CreationsGetArguments,
-  CreationsGetSimilarArguments,
   CreationsListArguments,
   CreationsReactArguments,
   CreationsUnreactArguments,
   CreationsUpdateArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { creationPrivacyPermissionCheck } from '../lib/authorization'
 import { Collection } from '../models/Collection'
 import { Creation, CreationDocument } from '../models/Creation'
 import { User } from '../models/Creator'
@@ -223,102 +223,6 @@ export const getCreation = async (
   return await reply.status(200).send({ creation })
 }
 
-// this code is dead/unused now... marked for deleting.
-export const getCreationSimilar = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { creationId } = request.params as CreationsGetSimilarArguments
-
-  // Todo: n is not actually set here. defaulting to 10
-
-  // const creation = (await Creation.findById(
-  //   creationId,
-  // ).lean()) as CreationDocument
-
-  // if (!creation) {
-  //   return reply.status(404).send({
-  //     message: 'Creation not found',
-  //   })
-  // }
-
-  // const embedding = creation.embedding?.embedding
-
-  // if (!embedding || embedding.length == 0) {
-  //   return reply.status(404).send({
-  //     message: 'Embedding not found',
-  //   })
-  // }
-
-  const { chromadb } = server
-  if (!chromadb) {
-    throw new Error('Chromadb not initialized')
-  }
-
-  const collection = await chromadb.getCollection({
-    name: 'creation_clip_embeddings',
-  })
-
-  if (!collection) {
-    throw new Error('Chromadb collection not found')
-  }
-
-  const doc = await collection.get({
-    ids: [creationId],
-  })
-
-  // if (!docs || docs.length == 0) {
-  //   throw new Error(`Chromadb failed to find creation ${creationId}`)
-  // }
-
-  if (!doc?.embeddings) {
-    throw new Error(`Chromadb failed to find creation ${creationId}`)
-  }
-
-  // get embedding in first doc
-  const embedding = doc.embeddings[0]
-
-  if (!embedding) {
-    //} || embedding.length == 0) {
-    return reply.status(404).send({
-      message: 'Embedding not found',
-    })
-  }
-
-  const results = await collection.query({
-    queryEmbeddings: [embedding],
-    nResults: 11,
-  })
-
-  if (!results?.ids) {
-    throw new Error('Chromadb query failed')
-  }
-
-  const similarIdxs = results.ids[0].slice(1)
-
-  const similarCreations = await Creation.find(
-    {
-      _id: {
-        $in: similarIdxs,
-      },
-    },
-    { 'embedding.embedding': 0 },
-  )
-
-  await Creation.populate(similarCreations, {
-    path: 'user',
-    select: 'userId username userImage',
-  })
-  await Creation.populate(similarCreations, {
-    path: 'task',
-    select: 'config status generator',
-    populate: { path: 'generator', select: 'generatorName description output' },
-  })
-
-  return reply.status(200).send({ similarCreations })
-}
-
 export const creationDelete = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -354,6 +258,13 @@ export const creationUpdate = async (
   const { userId } = request.user
   const { creationId } = request.params as CreationsUpdateArguments
   const { isPrivate, deleted } = request.body as CreationsUpdateArguments
+
+  // if (creationPrivacyPermissionCheck(request)) {
+  //   return reply.status(401).send({
+  //     message:
+  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
+  //   })
+  // }
 
   if (
     !userId ||

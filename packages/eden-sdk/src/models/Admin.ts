@@ -21,6 +21,11 @@ export interface AdminMediaUploadArguments extends WebAPICallOptions {
   media: Buffer
 }
 
+export interface AdminConceptsExportToHFArguments extends WebAPICallOptions {
+  conceptId: string
+  userId: string
+}
+
 // Requests
 
 export const adminMannaModifyRequestConfig = (
@@ -75,6 +80,18 @@ export const adminMediaUploadRequestConfig = (
   }
 }
 
+export const adminConceptsExportToHFRequestConfig = (
+  args: AdminConceptsExportToHFArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `admin/concepts/export/hf`,
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type AdminMannaModifyResponse = WebAPICallResult & {
@@ -95,6 +112,11 @@ export type AdminAuthChallengeResponse = WebAPICallResult & {
 }
 
 export type AdminMediaUploadResponse = WebAPICallResult & {
+  error?: string
+  url?: string
+}
+
+export type AdminConceptsExportToHFResponse = WebAPICallResult & {
   error?: string
   url?: string
 }

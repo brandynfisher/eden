@@ -9,6 +9,7 @@ import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFoote
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import CreationCardMedia from '@/components/Creation/CreationCard/CreationCardMedia'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
 import { ItemType } from '@/providers/ModalProvider'
@@ -125,12 +126,13 @@ const Card: FC<CardWithTypeProps> = ({
       }`}
     >
       {itemType !== 'creation' ? (
-        <CardHeaderWrap title={itemData.name}>
+        <CardHeaderWrap title={itemData.name} onClick={cardClickHandler}>
           <CardToolsDropdown
             onOpen={setDropdownActive}
             item={itemData}
             itemType={itemType}
             onChange={(updatedItem: CardData) => cardUpdateHandler(updatedItem)}
+            pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${itemData._id}`}
           />
         </CardHeaderWrap>
       ) : null}
@@ -140,7 +142,7 @@ const Card: FC<CardWithTypeProps> = ({
         target={'_blank'}
         className={`card-image relative overflow-hidden cursor-pointer block  ${
           itemData.deleted ? 'grayscale' : ''
-        } ${itemType === 'concept' ? '' : 'rounded-lg '}`}
+        } ${itemType === 'creation' ? 'rounded-lg' : ''}`}
       >
         {itemType === 'creation' ? (
           <CreationCardMedia
@@ -246,6 +248,7 @@ const Card: FC<CardWithTypeProps> = ({
                   onChange={(updatedItem: CardData) =>
                     cardUpdateHandler(updatedItem)
                   }
+                  pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${itemData._id}`}
                 />
               ) : null}
             </div>

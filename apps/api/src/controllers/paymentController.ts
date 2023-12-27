@@ -1,6 +1,7 @@
 import {
   PaymentsCreateArguments,
   PaymentsSubscriptionArguments,
+  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -22,6 +23,30 @@ interface TopUpMetadata {
 
 interface SubscriptionMetadata {
   subscriptionTier: string
+  manna: string
+}
+
+const discountMap = (
+  server: FastifyInstance,
+  subscriptionTier?: SubscriptionTier,
+) => {
+  const map = {
+    [SubscriptionTier.Free]: undefined,
+    [SubscriptionTier.Basic]: server.config.STRIPE_DISCOUNT_CODE_BASIC,
+    [SubscriptionTier.Pro]: server.config.STRIPE_DISCOUNT_CODE_PRO,
+    [SubscriptionTier.Believer]: server.config.STRIPE_DISCOUNT_CODE_BELIEVER,
+  }
+  return map[subscriptionTier || SubscriptionTier.Free]
+}
+
+const mannaTierMap = (subscriptionTier?: SubscriptionTier) => {
+  const map = {
+    [SubscriptionTier.Free]: 0,
+    [SubscriptionTier.Basic]: 1000,
+    [SubscriptionTier.Pro]: 3500,
+    [SubscriptionTier.Believer]: 8000,
+  }
+  return map[subscriptionTier || SubscriptionTier.Free]
 }
 
 const updateStripeCustomer = async (
@@ -99,15 +124,46 @@ const handleTopUp = async (
 }
 
 const handleNewSubscription = async (
+  server: FastifyInstance,
   reply: FastifyReply,
   metadata: SubscriptionMetadata,
   user: UserDocument,
 ) => {
-  const subscriptionTier = metadata.subscriptionTier
+  const subscriptionTier = parseInt(metadata.subscriptionTier)
+  let mannaAmountInt: number
+
   try {
     await user.updateOne({
       subscriptionTier,
     })
+
+    try {
+      const previousTierManna = mannaTierMap(user.subscriptionTier || undefined)
+      const newTierManna = mannaTierMap(subscriptionTier)
+      mannaAmountInt = newTierManna - previousTierManna
+    } catch (error) {
+      return reply.status(400).send({
+        message: 'Invalid manna amount',
+      })
+    }
+    if (mannaAmountInt > 0) {
+      try {
+        await axios.post(
+          `${server.config.API_URL}/admin/manna/modify`,
+          {
+            userId: user.userId,
+            amount: mannaAmountInt,
+          },
+          {
+            headers: getAdminHeaders(server),
+          },
+        )
+      } catch (error) {
+        return reply.status(500).send({
+          message: 'Error adding manna',
+        })
+      }
+    }
 
     return reply.status(200).send({})
   } catch (error) {
@@ -142,6 +198,7 @@ const handleSubscriptionUpdated = async (
   const product = await server.stripe.products.retrieve(productId)
   const metadata = {
     subscriptionTier: product.metadata.subscriptionTier,
+    manna: product.metadata.manna,
   }
 
   if (!metadata) {
@@ -151,7 +208,7 @@ const handleSubscriptionUpdated = async (
   }
 
   if (metadata.subscriptionTier) {
-    await handleNewSubscription(reply, metadata, user)
+    await handleNewSubscription(server, reply, metadata, user)
   } else {
     return reply.status(400).send({
       message: 'No subscription tier found',
@@ -181,7 +238,7 @@ const handleSubscriptionDeleted = async (
   }
 
   try {
-    user.subscriptionTier = undefined
+    user.subscriptionTier = SubscriptionTier.Free
     await user.save()
 
     return reply.status(200).send({})
@@ -237,10 +294,15 @@ const handlePaymentSuccess = async (
     })
   }
 
-  if (metadata.manna) {
+  if (metadata.subscriptionTier) {
+    await handleNewSubscription(
+      server,
+      reply,
+      metadata as SubscriptionMetadata,
+      user,
+    )
+  } else {
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
-  } else if (metadata.subscriptionTier) {
-    await handleNewSubscription(reply, metadata as SubscriptionMetadata, user)
   }
 }
 
@@ -274,6 +336,8 @@ export const createCheckoutSession = async (
   const customer_creation =
     paymentMode === 'payment' && !user.stripeCustomerId ? 'always' : undefined
 
+  const discountCode = discountMap(server, user.subscriptionTier)
+
   const session = await server.stripe.checkout.sessions.create({
     mode: paymentMode,
     payment_method_types: ['card'],
@@ -283,6 +347,10 @@ export const createCheckoutSession = async (
         quantity: 1,
       },
     ],
+    discounts:
+      paymentMode === 'payment' && discountCode
+        ? [{ coupon: discountCode }]
+        : undefined,
     customer_creation,
     customer: user.stripeCustomerId,
     client_reference_id: user.userId,
@@ -382,8 +450,13 @@ export const handlePaymentEvent = async (
     case 'customer.subscription.updated':
       await handleSubscriptionUpdated(server, reply, stripeDataObject)
       return
+
     case 'customer.subscription.deleted':
       await handleSubscriptionDeleted(server, reply, stripeDataObject)
+      return
+
+    case 'invoicce.payment_succeeded':
+      // TODO: handle subscription renewal.
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)

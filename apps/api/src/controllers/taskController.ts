@@ -5,14 +5,16 @@ import {
 } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { ChatCompletionMessageParam } from 'openai/resources'
 
+import {
+  maximumTasksInProgressPermissionCheck,
+  taskPrivacyPermissionCheck,
+} from '../lib/authorization'
 import {
   getDefaultGeneratorVersion,
   getLatestGeneratorVersion,
   prepareConfig,
 } from '../lib/generator'
-import { Completion, CompletionInput } from '../models/Completion'
 import { User } from '../models/Creator'
 import {
   Generator,
@@ -105,17 +107,24 @@ export const createTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, isAdmin, character } = request.user
+  const { userId, character } = request.user
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
-  const isCharacter = character !== undefined
+  // if (taskPrivacyPermissionCheck(request)) {
+  //   return reply.status(401).send({
+  //     message:
+  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
+  //   })
+  // }
 
-  if (attributes && !(isAdmin || isCharacter)) {
-    return reply.status(401).send({
-      message: 'Only admin/characters can set attributes',
-    })
-  }
+  // const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
+  // if (submittedMaxTasks) {
+  //   return reply.status(401).send({
+  //     message: `You have reached the maximum number of tasks in progress. Upgrade your subscription to increase your limit.`,
+  //   })
+  // }
+
   // get generator
   const generator = await Generator.findOne({
     generatorName,

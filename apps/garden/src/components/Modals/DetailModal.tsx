@@ -4,7 +4,7 @@ import ArrowNavigationButtons from '@/components/Modals/ArrowNavigationButtons'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
 import { ItemType } from '@/providers/ModalProvider'
-import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
 import { App, Modal, ModalProps } from 'antd'
 import { useRouter } from 'next/router'
@@ -20,7 +20,7 @@ const DetailModal = ({
   itemType: ItemType
   maybeLoadMoreFn: (
     currentIndex: number,
-    currentItems: Creation[] | Concept[] | Character[],
+    currentItems: Creation[] | Concept[] | Character[] | Creator[],
   ) => void
 }) => {
   const { message } = App.useApp()
@@ -36,7 +36,7 @@ const DetailModal = ({
     } else {
       const newIndex = prevIndex <= 0 ? 0 : prevIndex
       setCurrentIndex(newIndex)
-      maybeLoadMoreFn(newIndex, items as Creation[])
+      maybeLoadMoreFn(newIndex, items)
     }
   }, [currentIndex, items.length])
 
@@ -47,7 +47,7 @@ const DetailModal = ({
       message.info('Reached last item')
     } else {
       setCurrentIndex(nextIndex)
-      maybeLoadMoreFn(nextIndex, items as Creation[])
+      maybeLoadMoreFn(nextIndex, items)
     }
   }, [currentIndex, items.length])
 
@@ -74,7 +74,7 @@ const DetailModal = ({
       const { pageUrl, modalUrl } = getModalUrls(
         router,
         itemType,
-        items[currentIndex]._id,
+        items[currentIndex],
       )
       // console.log('push', items[currentIndex]._id, pageUrl, modalUrl)
       await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })

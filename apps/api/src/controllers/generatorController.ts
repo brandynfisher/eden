@@ -86,7 +86,6 @@ export const listGenerators = async (
 //   });
 
 //   if (generator) {
-//     // Already exists, add new version
 //     await Generator.updateOne({
 //       generatorName,
 //     }, {

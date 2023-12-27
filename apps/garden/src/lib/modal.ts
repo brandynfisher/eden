@@ -1,4 +1,6 @@
+import { CardData } from '@/components/Card/Card'
 import { ItemType } from '@/providers/ModalProvider'
+import { Creator } from '@edenlabs/eden-sdk'
 import { NextRouter } from 'next/router'
 
 interface ISpecialRouteIndex<TValue> {
@@ -20,11 +22,28 @@ const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
   },
 }
 
+const getCreatorName = (item: Creator) => {
+  return item.username || item.userId
+}
+
+const getItemId = (item: CardData) => {
+  return item._id
+}
+
+export const getId = (itemType: ItemType, item: CardData | Creator) => {
+  if (itemType === 'creator') {
+    return getCreatorName(item as Creator)
+  }
+
+  return getItemId(item as CardData)
+}
+
 export const getModalUrls = (
   router: NextRouter,
   itemType: ItemType,
-  itemId: string,
+  item: CardData | Creator,
 ): { pageUrl: string; modalUrl: string } => {
+  const id = getId(itemType, item)
   const urls = {
     pageUrl: '',
     modalUrl: '',
@@ -32,7 +51,7 @@ export const getModalUrls = (
 
   // all default cases; modalUrl has id as path segment instead of query param
   if (!specialHandlingRoutes[router.pathname]) {
-    urls.modalUrl = `/${itemType}s/${itemId}`
+    urls.modalUrl = `/${itemType}s/${id}`
     return urls
   }
 
@@ -40,7 +59,7 @@ export const getModalUrls = (
   const basePath = specialHandlingRoutes[router.pathname].basePath
   urls.modalUrl = `/${basePath}${
     router.query.id ? `/${router.query.id}` : ''
-  }?${itemType}Id=${itemId}`
+  }?${itemType}Id=${id}`
   urls.pageUrl = urls.modalUrl
 
   return urls
