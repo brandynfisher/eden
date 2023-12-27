@@ -16,6 +16,8 @@ export const getSimilarCreationIds = async (
   })
   console.log('##### got collection')
   console.log(collection)
+  console.log('collection count', collection.count())
+  console.log(collection.peek())
   console.log('##### get creation similar 5', creationId)
   console.log(collection)
   if (!collection) {
@@ -25,7 +27,7 @@ export const getSimilarCreationIds = async (
   console.log(creationId.toString())
   // get embedding
   const document = await collection.get({
-    ids: [creationId.toString()],
+    ids: [creationId],
   })
   console.log('##### get creation similar 7', creationId)
   console.log('##### -> similar')
