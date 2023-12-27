@@ -38,6 +38,14 @@ export interface PaginatedResponse<T> {
   nextPage?: number
 }
 
+export interface TaskUpdateEvent {
+  userId: string
+  taskId: string
+  status: string
+  progress?: number
+  result?: string
+}
+
 export const transformArgsIntoURLParams = (
   args: Record<string, any>,
 ): URLSearchParams => {

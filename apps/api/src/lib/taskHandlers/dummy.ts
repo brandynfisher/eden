@@ -1,10 +1,3 @@
-import {
-  Assistant,
-  Interaction,
-  InteractionEvent,
-  SessionEventResponseType,
-  SessionEventType,
-} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -16,7 +9,7 @@ import {
   GeneratorVersionSchema,
 } from '../../models/Generator'
 import { Task, TaskStatus } from '../../models/Task'
-import { LogosResponse, TaskHandlers } from '../../plugins/tasks'
+import { TaskHandlers } from '../../plugins/tasks'
 import { submitMonologueTask } from './airflow'
 
 interface Output {

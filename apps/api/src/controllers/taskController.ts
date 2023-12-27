@@ -3,6 +3,7 @@ import {
   TasksGetArguments,
   TasksListArguments,
 } from '@edenlabs/eden-sdk'
+import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -24,7 +25,6 @@ import {
 import { Manna } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
-import { TaskUpdateEvent } from '../plugins/eventEmitterPlugin'
 import TaskRepository from '../repositories/TaskRepository'
 
 const getGeneratorVersion = (
