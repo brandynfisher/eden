@@ -1,4 +1,5 @@
 import {
+  AdminConceptsExportToHFArguments,
   ConceptsDeleteArguments,
   ConceptsGetArguments,
   ConceptsListArguments,
@@ -7,15 +8,51 @@ import {
   ConceptsUpdateArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { createRepo, fileExists, uploadFile } from '@huggingface/hub'
+import axios from 'axios'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { promises as fs } from 'fs'
+import { readdir } from 'fs/promises'
 import { ObjectId } from 'mongodb'
+import { join } from 'path'
+import tar from 'tar'
 
 import { Concept, ConceptDocument } from '../models/Concept'
-import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Reaction } from '../models/Reaction'
 import ConceptRepository from '../repositories/ConceptRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
+
+const downloadAndUntar = async (conceptUri: string, outputDir: string) => {
+  const response = await axios.get(conceptUri, { responseType: 'stream' })
+  response.data.pipe(tar.x({ C: outputDir }))
+  return new Promise((resolve, reject) => {
+    response.data.on('end', resolve)
+    response.data.on('error', reject)
+  })
+}
+
+const uploadDirToHuggingFace = async (
+  dirPath: string,
+  repo: string,
+  hfToken: string,
+): Promise<void> => {
+  const files: string[] = await readdir(dirPath)
+  for (const file of files) {
+    const filePath = join(dirPath, file)
+    const fileContent = await fs.readFile(filePath, 'utf-8')
+    const content = new Blob([fileContent])
+    const params = {
+      repo,
+      credentials: { accessToken: hfToken },
+      file: {
+        path: file,
+        content: content,
+      },
+    }
+    await uploadFile(params)
+  }
+}
 
 export const getReactions = async (
   userId: ObjectId,
@@ -332,5 +369,66 @@ export const conceptUnreact = async (
 
   return reply.status(200).send({
     success: true,
+  })
+}
+
+export const conceptExportToHF = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId, conceptId } = request.body as AdminConceptsExportToHFArguments
+
+  const user = await User.findOne({ userId })
+  if (!user) {
+    return reply.status(404).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!server.config.HF_TOKEN) {
+    return reply.status(500).send({
+      message: 'Missing HF_TOKEN in server config',
+    })
+  }
+
+  const concept = await Concept.findById(conceptId)
+
+  if (!concept) {
+    return reply.status(404).send({
+      message: 'Concept not found',
+    })
+  }
+
+  if (concept.user.toString() !== user.id.toString()) {
+    return reply.status(401).send({
+      message: 'You may only export your own concepts',
+    })
+  }
+  const repo = `eden-art/${concept.name}`
+  let repoUrl
+  try {
+    const repoResult = await createRepo({
+      repo,
+      credentials: {
+        accessToken: server.config.HF_TOKEN as string,
+      },
+    })
+    repoUrl = repoResult.repoUrl
+  } catch (e) {
+    return reply.status(400).send({
+      message: 'Concept already exists on HuggingFace',
+    })
+  }
+
+  const { uri } = concept
+  const dirPath = `/tmp/${concept.name}`
+  await fs.mkdir(dirPath, { recursive: true })
+  await downloadAndUntar(uri, dirPath)
+  await uploadDirToHuggingFace(dirPath, repo, server.config.HF_TOKEN)
+  await fs.rmdir(dirPath, { recursive: true })
+
+  return reply.status(200).send({
+    url: repoUrl,
   })
 }

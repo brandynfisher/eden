@@ -50,6 +50,7 @@ const ConfigSchema = Type.Strict(
     DISCORD_CLIENT_ID: Type.Optional(Type.String()),
     DISCORD_CLIENT_SECRET: Type.Optional(Type.String()),
     LOGOS_URL: Type.Optional(Type.String()),
+    HF_TOKEN: Type.Optional(Type.String()),
   }),
 )
 

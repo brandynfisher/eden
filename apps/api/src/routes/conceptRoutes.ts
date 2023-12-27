@@ -11,7 +11,7 @@ import {
   getConcept,
   listConcepts,
 } from '../controllers/conceptsController'
-import { isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { isAdmin, isAuth, maybeAuth } from '../middleware/authMiddleware'
 
 const conceptRoutes: FastifyPluginAsync = async server => {
   server.get('/concepts', {
