@@ -18,11 +18,7 @@ const CreationDetailStaticModal = ({
   const router = useRouter()
   useEffect(() => {
     if (usesUrl) {
-      const { pageUrl, modalUrl } = getModalUrls(
-        router,
-        'creation',
-        creation._id,
-      )
+      const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation)
       router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     }
   }, [usesUrl, creation])

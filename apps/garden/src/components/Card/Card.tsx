@@ -9,6 +9,7 @@ import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFoote
 import CreationCardDetail from '@/components/Creation/CreationCard/CreationCardDetail'
 import CreationCardMedia from '@/components/Creation/CreationCard/CreationCardMedia'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
 import { ItemType } from '@/providers/ModalProvider'
@@ -131,7 +132,7 @@ const Card: FC<CardWithTypeProps> = ({
             item={itemData}
             itemType={itemType}
             onChange={(updatedItem: CardData) => cardUpdateHandler(updatedItem)}
-            pageUrl={`/${itemType}s/${itemData._id}`}
+            pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${itemData._id}`}
           />
         </CardHeaderWrap>
       ) : null}
@@ -247,7 +248,7 @@ const Card: FC<CardWithTypeProps> = ({
                   onChange={(updatedItem: CardData) =>
                     cardUpdateHandler(updatedItem)
                   }
-                  pageUrl={`/${itemType}s/${itemData._id}`}
+                  pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${itemData._id}`}
                 />
               ) : null}
             </div>

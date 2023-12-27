@@ -15,6 +15,7 @@ import CreatorSection from '@/components/Detail/CreatorSection'
 import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
+import { getId } from '@/lib/modal'
 import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
@@ -228,6 +229,10 @@ const Details = ({
                   item={itemData}
                   itemType={itemType}
                   onChange={setItemData as Dispatch<SetStateAction<CardData>>}
+                  pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${getId(
+                    itemType,
+                    item,
+                  )}`}
                 />
               ) : null}
             </div>

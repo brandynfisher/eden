@@ -3,6 +3,7 @@ import CardHeaderWrap from '@/components/Card/CardHeaderWrap'
 import CardImage from '@/components/Card/CardImage'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import CreatorCardFooter from '@/components/Creators/CreatorCardFooter'
+import { CONFIG } from '@/lib/config'
 import { Creator } from '@edenlabs/eden-sdk'
 import React, { FC, useCallback, useState } from 'react'
 
@@ -57,7 +58,9 @@ const Card: FC<CardWithTypeProps> = ({
           item={itemData}
           itemType={'creator'}
           onChange={updatedItem => cardUpdateHandler(updatedItem as Creator)}
-          pageUrl={`/creators/${itemData.username || itemData.userId}`}
+          pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/creators/${
+            itemData.username || itemData.userId
+          }`}
         />
       </CardHeaderWrap>
 
