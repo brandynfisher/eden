@@ -17,6 +17,14 @@ import { isAuth, maybeAuth } from '../middleware/authMiddleware'
 const creatorRoutes: FastifyPluginAsync = async server => {
   server.get('/creators', {
     schema: {
+      tags: ['Creators'],
+      description: 'List creators',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -35,6 +43,14 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creators/:userId/followers', {
     schema: {
+      tags: ['Creators'],
+      description: 'List creator followers',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -52,6 +68,14 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creators/:userId/following', {
     schema: {
+      tags: ['Creators'],
+      description: 'List creator following',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -69,6 +93,14 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creators/:userId', {
     schema: {
+      tags: ['Creators'],
+      description: 'Get a creator',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       response: {
         200: {
           creator: Type.Any(),
@@ -81,6 +113,14 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creators/update', {
     schema: {
+      tags: ['Creators'],
+      description: 'Update a creator',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       request: {
         body: Type.Object({
           username: Type.Optional(Type.String()),
@@ -99,11 +139,17 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creators/follow', {
     schema: {
-      request: {
-        body: Type.Object({
-          userId: Type.String(),
-        }),
-      },
+      tags: ['Creators'],
+      description: 'Follow a creator',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        userId: Type.String(),
+      }),
       response: {
         200: {
           success: Type.Boolean(),
@@ -116,11 +162,17 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creators/unfollow', {
     schema: {
-      request: {
-        body: Type.Object({
-          userId: Type.String(),
-        }),
-      },
+      tags: ['Creators'],
+      description: 'Unfollow a creator',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      body: Type.Object({
+        userId: Type.String(),
+      }),
       response: {
         200: {
           success: Type.Boolean(),
@@ -133,6 +185,14 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creators/me', {
     schema: {
+      tags: ['Creators'],
+      description: 'Get your own info',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       response: {
         200: Type.Object({
           creator: Type.Optional(Type.Any()),

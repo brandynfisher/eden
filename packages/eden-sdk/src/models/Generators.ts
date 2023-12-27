@@ -5,7 +5,7 @@ import {
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
-} from '../EdenClient'
+} from '../types'
 
 // Arguments
 

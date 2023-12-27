@@ -12,6 +12,15 @@ import { isAuth } from '../middleware/authMiddleware'
 const paymentRoutes: FastifyPluginAsync = async server => {
   server.post('/payments/create', {
     schema: {
+      tags: ['Payments'],
+      description: 'Create a payment',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: {
         priceId: Type.String(),
         paymentMode: Type.String(),
@@ -31,6 +40,15 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       rawBody: true,
     },
     schema: {
+      tags: ['Payments'],
+      description: 'Handle a payment event',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: {
         id: Type.String(),
       },
@@ -42,6 +60,15 @@ const paymentRoutes: FastifyPluginAsync = async server => {
 
   server.get('/payments/products', {
     schema: {
+      tags: ['Payments'],
+      description: 'Get products',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       response: {
         200: Type.Object({
           products: Type.Array(Type.Any()),
@@ -54,6 +81,15 @@ const paymentRoutes: FastifyPluginAsync = async server => {
 
   server.post('/payments/subscription', {
     schema: {
+      tags: ['Payments'],
+      description: 'Create a subscription',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
       body: {
         stripeCustomerId: Type.String(),
       },
