@@ -6,6 +6,7 @@ import {
   getGenerator,
   listGenerators,
 } from '../controllers/generatorController'
+import { parameterType } from '../types/routeTypes'
 
 const generatorRoutes: FastifyPluginAsync = async server => {
   server.get('/generators', {
@@ -35,7 +36,7 @@ const generatorRoutes: FastifyPluginAsync = async server => {
             versions: Type.Array(
               Type.Object({
                 versionId: Type.String(),
-                parameters: Type.Any(),
+                parameters: parameterType,
               }),
             ),
           }),
@@ -68,7 +69,7 @@ const generatorRoutes: FastifyPluginAsync = async server => {
             versions: Type.Array(
               Type.Object({
                 versionId: Type.String(),
-                parameters: Type.Any(),
+                parameters: parameterType,
               }),
             ),
           }),

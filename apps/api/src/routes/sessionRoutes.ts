@@ -13,6 +13,7 @@ import {
   listSessions,
 } from '../controllers/sessionController'
 import { isAdmin, isAuth } from '../middleware/authMiddleware'
+import { configType } from '../types/routeTypes'
 
 const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/create', {
@@ -130,7 +131,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           message: Type.String(),
-          config: Type.Optional(Type.Any()),
+          config: configType,
         }),
       },
     },
