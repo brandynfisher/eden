@@ -27,11 +27,11 @@ describe('Task Methods', () => {
   //   expect(tasksResponse.task).toBeDefined()
   //   expect(tasksResponse.task.taskId).toBe(response.taskId)
   // })
-  // test('Should be able to submit a task and await its completion', async context => {
-  //   const { client } = context
-  //   const result = await client.create({
-  //     generatorName: 'test',
-  //   })
-  //   expect(result).toBeDefined()
-  // })
+  test('Should be able to submit a task and await its completion', async context => {
+    const { client } = context
+    const result = await client.create({
+      generatorName: 'test',
+    })
+    expect(result).toBeDefined()
+  })
 }, 100000)

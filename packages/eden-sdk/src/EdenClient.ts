@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import EventSourcePolyfill from 'event-source-polyfill'
 import { TasksCreateArguments } from 'src/models'
 
 import { Methods } from './methods'
@@ -48,7 +49,15 @@ export class EdenClient extends Methods {
     }
     const query = taskId ? `?taskId=${taskId}` : ''
 
-    const eventSource = new NodeEventSource(
+    const isNodeEnvironment =
+      typeof process !== 'undefined' &&
+      process.release &&
+      process.release.name === 'node'
+    const EventSource = isNodeEnvironment
+      ? NodeEventSource
+      : EventSourcePolyfill
+
+    const eventSource = new EventSource(
       `${this.edenApiUrl}/tasks/events${query}`,
       { headers },
     )
