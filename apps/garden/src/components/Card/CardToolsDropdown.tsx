@@ -4,6 +4,7 @@ import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import DeleteButton from '@/components/Layout/buttons/DeleteButton'
 import DownloadFileButton from '@/components/Layout/buttons/DownloadFileButton'
+import ExportConcept from '@/components/Layout/buttons/ExportConceptButton'
 import MakePrivateButton from '@/components/Layout/buttons/MakePrivateButton'
 import MakePublicButton from '@/components/Layout/buttons/MakePublicButton'
 import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
@@ -14,7 +15,7 @@ import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
-import { Concept, Creation, Creator } from '@edenlabs/eden-sdk'
+import { Concept, Creation, Creator, FeatureFlag } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
   ReactNode,
@@ -155,11 +156,13 @@ const CardToolsDropdown = ({
   item,
   itemType,
   onChange,
+  pageUrl,
 }: {
   onOpen?: Function
   item: CardData | Creator
   itemType: ItemType
   onChange: (updatedData: CardData) => void
+  pageUrl: string
 }) => {
   const { user, isAuthenticated } = useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)
@@ -196,13 +199,7 @@ const CardToolsDropdown = ({
   }
 
   copyItems.push({
-    icon: (
-      <CopyUrlButton
-        url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-        variant="text"
-        label="Page URL"
-      />
-    ),
+    icon: <CopyUrlButton url={pageUrl} variant="text" label="Page URL" />,
     key: '1-3',
   })
 
@@ -223,18 +220,12 @@ const CardToolsDropdown = ({
     ? [
         {
           key: '2',
-          icon: (
-            <ShareLinkButton
-              url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-              variant="text"
-              label="Share"
-            />
-          ),
+          icon: <ShareLinkButton url={pageUrl} variant="text" label="Share" />,
         },
       ]
     : []
 
-  const getCreatorCardMenuItems = (item: Creator) => {
+  const getCreatorCardMenuItems = () => {
     const defaultMenuItems: MenuItem[] = [
       {
         label: 'Copy...',
@@ -249,11 +240,7 @@ const CardToolsDropdown = ({
       {
         key: '3',
         icon: (
-          <NewTabLinkButton
-            url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-            variant="text"
-            label="To New Tab"
-          />
+          <NewTabLinkButton url={pageUrl} variant="text" label="To New Tab" />
         ),
       },
     ]
@@ -291,11 +278,7 @@ const CardToolsDropdown = ({
       {
         key: '3',
         icon: (
-          <NewTabLinkButton
-            url={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-            variant="text"
-            label="To New Tab"
-          />
+          <NewTabLinkButton url={pageUrl} variant="text" label="To New Tab" />
         ),
       },
     ]
@@ -327,7 +310,9 @@ const CardToolsDropdown = ({
     }
 
     const hasUserFeatureFlagPrivate =
-      user && user.featureFlags && user.featureFlags.includes('preview')
+      user &&
+      user.featureFlags &&
+      user.featureFlags.includes(FeatureFlag.Preview)
     const creatorMenuItems: MenuItem[] =
       itemType !== 'creator' &&
       hasUserFeatureFlagPrivate &&
@@ -336,7 +321,7 @@ const CardToolsDropdown = ({
         : []
 
     const deleteItem: MenuItem[] =
-      itemType !== 'creator' && user && user?.userId === item.user.userId
+      user && itemType !== 'creator' && user?.userId === item.user.userId
         ? [
             {
               icon: (
@@ -356,6 +341,23 @@ const CardToolsDropdown = ({
     const downloadItem: MenuItem[] = isAuthenticated
       ? getDownloadMenuItems(itemType, item, user)
       : []
+
+    if (
+      user?.featureFlags?.includes(FeatureFlag.Preview) &&
+      itemType === 'concept' &&
+      item.user.userId === user?.userId
+    ) {
+      downloadItem.push({
+        key: '4-2',
+        icon: (
+          <ExportConcept
+            conceptId={item._id}
+            variant="text"
+            label={'Publish to Huggingface'}
+          />
+        ),
+      })
+    }
 
     return [
       ...defaultMenuItems,
@@ -377,7 +379,7 @@ const CardToolsDropdown = ({
       menu={{
         items:
           itemType === 'creator'
-            ? getCreatorCardMenuItems(item as Creator)
+            ? getCreatorCardMenuItems()
             : getCardMenuItems(item as CardData),
         onClick: onItemClick,
       }}

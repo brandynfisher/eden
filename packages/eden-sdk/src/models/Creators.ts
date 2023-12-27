@@ -192,10 +192,21 @@ export type Creator = {
   followerCount?: number
   followingCount?: number
   isFollowing?: boolean
-  featureFlags?: string[]
-  subscriptionTier?: string
+  featureFlags?: FeatureFlag[]
+  subscriptionTier?: SubscriptionTier
   stripeCustomerId?: string
   discordId?: string
   createdAt: string
   updatedAt: string
+}
+
+export enum SubscriptionTier {
+  Free = 0,
+  Basic = 1,
+  Pro = 2,
+  Believer = 3,
+}
+
+export enum FeatureFlag {
+  Preview = 'preview',
 }

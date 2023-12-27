@@ -24,6 +24,16 @@ export const handleAxiosError = (
   }
 }
 
+export const handleAxiosServerError = (error: AxiosError | unknown) => {
+  if (axios.isAxiosError(error)) {
+    const errorMessage =
+      error.response?.data.message || 'Unknown Error has occurred'
+    return errorMessage
+  }
+
+  return 'Unknown Error has occurred'
+}
+
 export const getAdminHeaders = () => {
   return {
     'X-Api-Key': CONFIG.EDEN_ADMIN_API_KEY,

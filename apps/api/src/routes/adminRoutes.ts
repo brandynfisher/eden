@@ -1,6 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { conceptExportToHF } from '../controllers/conceptsController'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { createTask } from '../controllers/taskController'
@@ -101,6 +102,31 @@ const adminRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => createTask(server, request, reply),
+  })
+
+  server.post('/admin/concepts/export/hf', {
+    schema: {
+      tags: ['Admin'],
+      description: 'Export a concept to HuggingFace',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      hide: true,
+      body: Type.Object({
+        userId: Type.String(),
+        conceptId: Type.String(),
+      }),
+      response: {
+        200: {
+          url: Type.String(),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => conceptExportToHF(server, request, reply),
   })
 }
 

@@ -283,6 +283,6 @@ export const useCreationState = () => {
     setActiveTaskId,
     hasChangedGenerator,
     setHasChangedGenerator,
-    refetchTasks: refetchTasks,
+    refetchTasks,
   }
 }

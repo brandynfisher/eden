@@ -11,7 +11,12 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
-import { Assistant, Character, Interaction } from '@edenlabs/eden-sdk'
+import {
+  Assistant,
+  Character,
+  FeatureFlag,
+  Interaction,
+} from '@edenlabs/eden-sdk'
 import { App, Button, Form, Input, Select, Switch } from 'antd'
 import axios from 'axios'
 import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
@@ -441,7 +446,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   </div>
                   {user &&
                   user.featureFlags &&
-                  user.featureFlags.includes('preview') ? (
+                  user.featureFlags.includes(FeatureFlag.Preview) ? (
                     <PrivacyToggle />
                   ) : null}
                 </div>

@@ -1,6 +1,7 @@
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 import mongoose, { ObjectId } from 'mongoose'
 
-import { FeatureFlag, UserDocument } from '../models/Creator'
+import { UserDocument } from '../models/Creator'
 
 export type IdInput = string | ObjectId
 

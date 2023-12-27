@@ -36,6 +36,9 @@ const ConfigSchema = Type.Strict(
     STRIPE_PUBLISHABLE_KEY: Type.String(),
     STRIPE_SECRET_KEY: Type.String(),
     STRIPE_WEBHOOK_SECRET: Type.String(),
+    STRIPE_DISCOUNT_CODE_BASIC: Type.Optional(Type.String()),
+    STRIPE_DISCOUNT_CODE_PRO: Type.Optional(Type.String()),
+    STRIPE_DISCOUNT_CODE_BELIEVER: Type.Optional(Type.String()),
     SENTRY_DSN: Type.String(),
     MINIO_HOST: Type.Optional(Type.String()),
     MINIO_PORT: Type.Optional(Type.String()),
@@ -50,6 +53,7 @@ const ConfigSchema = Type.Strict(
     DISCORD_CLIENT_ID: Type.Optional(Type.String()),
     DISCORD_CLIENT_SECRET: Type.Optional(Type.String()),
     LOGOS_URL: Type.Optional(Type.String()),
+    HF_TOKEN: Type.Optional(Type.String()),
   }),
 )
 

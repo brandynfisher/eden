@@ -90,7 +90,7 @@ export type AddToCollectionModalProps = Partial<
 type ModalStore = {
   modalType: string | undefined
   modalProps?:
-    | Partial<BaseModalProps & { creation?: Creation; loadSimilar?: boolean }>
+    | Partial<BaseModalProps & { creation?: Creation }>
     | DetailModalProps
     | AddToCollectionModalProps
     | GeneratorSelectModalProps

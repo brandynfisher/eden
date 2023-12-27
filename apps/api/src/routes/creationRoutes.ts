@@ -10,7 +10,6 @@ import {
   creationUnreact,
   creationUpdate,
   getCreation,
-  getCreationSimilar,
   listCreations,
 } from '../controllers/creationsController'
 import { isAuth, maybeAuth } from '../middleware/authMiddleware'
@@ -112,29 +111,6 @@ const creationRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => creationDelete(request, reply),
-  })
-
-  server.get('/creations/:creationId/similar', {
-    schema: {
-      tags: ['Creations'],
-      description: 'Get similar creations',
-      security: [
-        {
-          apiKey: [],
-          apiSecret: [],
-        },
-      ],
-      params: {
-        creationId: Type.String(),
-        n: Type.Number(),
-      },
-      response: {
-        200: {
-          similarCreations: Type.Array(Type.Any()),
-        },
-      },
-    },
-    handler: (request, reply) => getCreationSimilar(server, request, reply),
   })
 
   server.post('/creations/rate', {

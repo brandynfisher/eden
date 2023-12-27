@@ -23,11 +23,6 @@ export interface CreationsGetArguments extends WebAPICallOptions {
   creationId: string
 }
 
-export interface CreationsGetSimilarArguments extends WebAPICallOptions {
-  creationId: string
-  n: number
-}
-
 export interface CreationsRatingArguments extends WebAPICallOptions {
   creationId: string
   rating: number
@@ -71,15 +66,6 @@ export const creationsGetRequestConfig = (
   return {
     method: 'GET',
     url: `creations/${args.creationId}`,
-  }
-}
-
-export const creationsGetSimilarRequestConfig = (
-  args: CreationsGetSimilarArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `creations/${args.creationId}/similar`,
   }
 }
 
@@ -141,11 +127,6 @@ export type CreationsListResponse = WebAPICallResult &
 export type CreationsGetResponse = WebAPICallResult & {
   error?: string
   creation?: Creation
-}
-
-export type CreationsGetSimilarResponse = WebAPICallResult & {
-  error?: string
-  similarCreations?: Creation[]
 }
 
 export type CreationsReactResponse = WebAPICallResult & {

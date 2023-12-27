@@ -9,6 +9,7 @@ import {
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+import { characterPrivacyPermissionCheck } from '../lib/authorization'
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'
@@ -34,6 +35,13 @@ export const createCharacter = async (
       ? logosData.knowledgeSummary
       : undefined,
   }
+
+  // if (characterPrivacyPermissionCheck(request)) {
+  //   return reply.status(401).send({
+  //     message:
+  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
+  //   })
+  // }
 
   const input: {
     user: ObjectId
@@ -88,6 +96,13 @@ export const updateCharacter = async (
       message: 'You must provide a characterId',
     })
   }
+
+  // if (characterPrivacyPermissionCheck(request)) {
+  //   return reply.status(401).send({
+  //     message:
+  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
+  //   })
+  // }
 
   const { name, image, voice, greeting, dialogue, logosData, isPrivate } =
     request.body as CharactersUpdateArguments
