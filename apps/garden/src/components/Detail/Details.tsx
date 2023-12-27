@@ -202,9 +202,6 @@ const Details = ({
                       : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                   }
                   previewUri={(item as Character)?.image}
-                  // onLoad={() => {
-                  //   setConceptImageLoaded(true)
-                  // }}
                 />
               ) : null}
               {itemData.isPrivate ? (

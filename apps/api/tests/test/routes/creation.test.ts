@@ -173,7 +173,7 @@ test('Free user cannot make a creation private', async context => {
   expect(response.statusCode).toBe(401)
 })
 
-// TODO: $text index locally
+// TODO: $text index locally.
 // test('User can search creations', async context => {
 //   const { server } = context
 //   const headers = prepareUserHeaders()
