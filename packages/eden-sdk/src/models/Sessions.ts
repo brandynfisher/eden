@@ -41,9 +41,10 @@ export interface SessionsAddCharactersArguments extends WebAPICallOptions {
 }
 
 export interface SessionsInteractArguments extends WebAPICallOptions {
-  sessionId: string
-  assistant: Assistant
-  interaction: Interaction
+  character_id: string
+  session_id: string
+  prompt: string
+  attachments?: string[]
 }
 
 // Requests
@@ -212,8 +213,9 @@ export interface CharactersAddEvent {
 }
 
 export interface InteractionEvent {
-  assistant: Assistant
-  interaction: Interaction
+  character: string
+  prompt: string
+  attachments?: string[]
 }
 
 export interface Interaction {
