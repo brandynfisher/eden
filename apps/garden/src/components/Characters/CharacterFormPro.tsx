@@ -12,7 +12,7 @@ const CharacterFormPro = () => {
             description="Add knowledge for your character"
           />
         }
-        className="label-auto-height"
+        className="label-auto-height !mb-4"
         labelCol={{ span: 24 }}
         name="knowledge"
       >
@@ -26,7 +26,7 @@ const CharacterFormPro = () => {
             description="Add a knowledge summary for your character"
           />
         }
-        className="label-auto-height"
+        className="label-auto-height !mb-0"
         labelCol={{ span: 24 }}
         name="knowledgeSummary"
       >

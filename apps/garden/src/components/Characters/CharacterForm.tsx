@@ -17,13 +17,15 @@ import {
   FeatureFlag,
   Interaction,
 } from '@edenlabs/eden-sdk'
-import { App, Button, Form, Input, Select, Switch } from 'antd'
+import { SettingsSuggest } from '@mui/icons-material'
+import { App, Button, Collapse, Form, Input, Select } from 'antd'
 import axios from 'axios'
 import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
+const { Panel } = Collapse
 const EXAMPLE_CHARACTER = {
   name: 'Abraham',
   identity:
@@ -129,7 +131,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   const [messageGroups, setMessageGroups] = useState<ChatMessageGroup[]>([])
   const [completing, setCompleting] = useState<boolean>(false)
   const [usedCompletion, setUsedCompletion] = useState<boolean>(false)
-  const [proMode, setProMode] = useState<boolean>(false)
 
   const characterName = Form.useWatch('name', form)
   const identity = Form.useWatch('identity', form)
@@ -352,7 +353,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 </Form.Item>
               </div>
 
-              <div>
+              <div className="hidden">
                 <ParameterAddon
                   title={'Greeting'}
                   textArea={true}
@@ -380,56 +381,73 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 </Form.Item>
               </div>
 
-              {proMode && (
-                <>
-                  <CharacterFormPro />
-                  <Form.Item
-                    label={
-                      <FormLabel
-                        text="Concept"
-                        description="(Optional) Select a concept that your character will use when creating images."
-                      />
-                    }
-                    className="label-auto-height"
-                    labelCol={{ span: 24 }}
-                    name="concept"
-                  >
-                    <div className="mb-2">
-                      <ConceptSelectModalTrigger
-                        onChange={concept => {
-                          form.setFieldsValue({
-                            ['concept']: concept ? concept._id : null,
-                          })
-                        }}
-                      />
+              <Form.Item
+                label={
+                  <FormLabel
+                    text="Concept"
+                    description="(Optional) Select a concept that your character will use when creating images."
+                  />
+                }
+                className="label-auto-height"
+                labelCol={{ span: 24 }}
+                name="concept"
+              >
+                <div className="mb-2">
+                  <ConceptSelectModalTrigger
+                    onChange={concept => {
+                      form.setFieldsValue({
+                        ['concept']: concept ? concept._id : null,
+                      })
+                    }}
+                  />
+                </div>
+                {concept && (
+                  <ConceptParameterUI
+                    conceptId={concept}
+                    onChange={() => form.setFieldValue('concept', null)}
+                  />
+                )}
+                <Form.Item
+                  label={
+                    <FormLabel
+                      text="Example Messages"
+                      description="Add sample dialogs to further refine the personality of your character"
+                    />
+                  }
+                  className="label-auto-height hidden"
+                  labelCol={{ span: 24 }}
+                  name="messages"
+                >
+                  <ChatCapabilityMessageSection
+                    messageGroups={messageGroups}
+                    setMessageGroups={setMessageGroups}
+                  />
+                </Form.Item>
+              </Form.Item>
+
+              <Collapse expandIconPosition="end" className="mb-4">
+                <Panel
+                  key={'1'}
+                  header={
+                    <div className="flex gap-2 items-center">
+                      <SettingsSuggest fontSize="small" />
+                      <span>Advanced</span>
                     </div>
-                    {concept && (
-                      <ConceptParameterUI
-                        conceptId={concept}
-                        onChange={() => form.setFieldValue('concept', null)}
-                      />
-                    )}
-                    <Form.Item
-                      label={
-                        <FormLabel
-                          text="Example Messages"
-                          description="Add sample dialogs to further refine the personality of your character"
-                        />
-                      }
-                      className="label-auto-height"
-                      labelCol={{ span: 24 }}
-                      name="messages"
-                    >
-                      <ChatCapabilityMessageSection
-                        messageGroups={messageGroups}
-                        setMessageGroups={setMessageGroups}
-                      />
-                    </Form.Item>
-                  </Form.Item>
-                </>
-              )}
+                  }
+                  forceRender={true}
+                >
+                  <CharacterFormPro />
+                </Panel>
+              </Collapse>
 
               <div className="flex flex-wrap gap-4 justify-between items-center">
+                <div className="flex justify-between items-center w-full">
+                  {user &&
+                  user.featureFlags &&
+                  user.featureFlags.includes(FeatureFlag.Preview) ? (
+                    <PrivacyToggle />
+                  ) : null}
+                </div>
                 <Form.Item className="mb-0">
                   <Button
                     className="font-mono h-10"
@@ -439,17 +457,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     {mode === 'create' ? 'Create' : 'Update'} Character
                   </Button>
                 </Form.Item>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <Switch checked={proMode} onChange={setProMode} />
-                    <span className="mr-2">Pro Mode</span>
-                  </div>
-                  {user &&
-                  user.featureFlags &&
-                  user.featureFlags.includes(FeatureFlag.Preview) ? (
-                    <PrivacyToggle />
-                  ) : null}
-                </div>
                 {character && <CharacterToolButtons character={character} />}
               </div>
             </div>

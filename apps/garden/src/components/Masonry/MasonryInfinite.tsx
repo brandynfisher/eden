@@ -101,6 +101,7 @@ const MasonryInfinite = ({
     [width, query?.userId],
   )
   const resizeObserver = useResizeObserver(positioner)
+
   useEffect(() => {
     setItems(items)
   }, [items.length])
