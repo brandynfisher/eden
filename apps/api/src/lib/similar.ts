@@ -1,18 +1,27 @@
+import { IncludeEnum } from 'chromadb'
 import { FastifyInstance } from 'fastify'
 
 export const getSimilarCreationIds = async (
   server: FastifyInstance,
   creationId: any,
 ) => {
-  console.log('##### get creation similar 4', creationId)
+  console.log('##### get creation similar 4a', creationId)
   const { chromadb } = server
   if (!chromadb) {
     throw new Error('Chromadb not initialized')
   }
-  console.log('##### get creation similar 4', creationId)
+  console.log('##### get creation similar 4b', creationId)
+  console.log('##### get collection')
   const collection = await chromadb.getCollection({
     name: 'creation_clip_embeddings',
   })
+  console.log('##### got collection')
+  console.log(collection)
+  const ct = await collection.count()
+  console.log('collection count', ct)
+  const pk = await collection.peek()
+  console.log('collection peek')
+  console.log(pk)
   console.log('##### get creation similar 5', creationId)
   console.log(collection)
   if (!collection) {
@@ -22,7 +31,8 @@ export const getSimilarCreationIds = async (
   console.log(creationId.toString())
   // get embedding
   const document = await collection.get({
-    ids: [creationId.toString()],
+    ids: [creationId],
+    include: [IncludeEnum.Embeddings],
   })
   console.log('##### get creation similar 7', creationId)
   console.log('##### -> similar')
