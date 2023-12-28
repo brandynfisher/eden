@@ -7,10 +7,7 @@ import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import {
-  maximumTasksInProgressPermissionCheck,
-  taskPrivacyPermissionCheck,
-} from '../lib/authorization'
+import { taskPrivacyPermissionCheck } from '../lib/authorization'
 import {
   getDefaultGeneratorVersion,
   getLatestGeneratorVersion,
