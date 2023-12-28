@@ -1,6 +1,7 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import { useCreator } from '@/hooks/useCreator'
 import { MessageMarker, compileMessage } from '@/lib/chat'
+import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
@@ -15,7 +16,13 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
-import { Character, SessionsInteractResponse } from '@edenlabs/eden-sdk'
+import {
+  Character,
+  SessionsInteractArguments,
+  SessionsInteractResponse,
+  TasksCreateArguments,
+} from '@edenlabs/eden-sdk'
+import { App } from 'antd'
 import axios from 'axios'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -39,6 +46,7 @@ const ChatScenarioUI = ({
   activeCharacter: Character
   sessionId: string
 }) => {
+  const { message } = App.useApp()
   const { isAuthenticated, userId } = useContext(UserContext)
   const { creator } = useCreator(isAuthenticated && userId ? userId : null)
 
@@ -94,21 +102,14 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      const res = await axios.post(`/api/sessions/interact`, {
-        sessionId,
-        assistant: {
-          name: activeCharacter.name,
-          identity: activeCharacter.logosData?.identity,
-          knowledge: activeCharacter.logosData?.knowledge,
-          knowledge_summary: activeCharacter.logosData?.knowledgeSummary,
-        },
-        interaction: {
-          prompt: text,
-          author_id: creator?.userId,
-          attachments: [],
-        },
-      })
-      const { message } = res.data as SessionsInteractResponse
+      const args: SessionsInteractArguments = {
+        session_id: sessionId,
+        character_id: activeCharacter._id,
+        prompt: text,
+        attachments: [],
+      }
+      const res = await axios.post(`/api/sessions/interact`, args)
+      const { message, config } = res.data as SessionsInteractResponse
       const completion = message
       if (!completion) {
         throw new Error('No completion returned from GPT-3')
@@ -125,8 +126,30 @@ const ChatScenarioUI = ({
           date: new Date(),
         },
       ])
+
+      if (config) {
+        const { generator, ...rest } = config
+        const createInput: TasksCreateArguments = {
+          generatorName: generator,
+          config: rest,
+        }
+        const createRes = await axios.post(
+          `/api/sessions/creation`,
+          createInput,
+        )
+        const { uri } = createRes.data
+        setConversation(state => [
+          ...state,
+          {
+            message: 'Here is your creation:',
+            uris: [uri],
+            speaker: 'bot',
+            date: new Date(),
+          },
+        ])
+      }
     } catch (error) {
-      console.error('Error submitting message:', error)
+      handleAxiosError(error, message)
     } finally {
       setBotIsTyping(false)
     }

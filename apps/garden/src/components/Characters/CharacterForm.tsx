@@ -12,10 +12,9 @@ import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import {
-  Assistant,
   Character,
+  CharactersTestArguments,
   FeatureFlag,
-  Interaction,
 } from '@edenlabs/eden-sdk'
 import { App, Button, Form, Input, Select, Switch } from 'antd'
 import axios from 'axios'
@@ -178,19 +177,12 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     setCompleting(true)
     try {
       const url = `/api/characters/test`
-      const assistant: Assistant = {
+      const data: CharactersTestArguments = {
         name: characterName,
         identity,
+        prompt: recentMessage[0][0].message,
         knowledge: form.getFieldValue('knowledge'),
         knowledge_summary: form.getFieldValue('knowledgeSummary'),
-      }
-      const interaction: Interaction = {
-        prompt: recentMessage[0][0].message,
-        author_id: 'test',
-      }
-      const data = {
-        assistant,
-        interaction,
       }
       const response = await axios.post(url, data)
       const completion = response.data.message as string
@@ -409,7 +401,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                         onChange={() => form.setFieldValue('concept', null)}
                       />
                     )}
-                    <Form.Item
+                    {/* <Form.Item
                       label={
                         <FormLabel
                           text="Example Messages"
@@ -424,7 +416,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                         messageGroups={messageGroups}
                         setMessageGroups={setMessageGroups}
                       />
-                    </Form.Item>
+                    </Form.Item> */}
                   </Form.Item>
                 </>
               )}

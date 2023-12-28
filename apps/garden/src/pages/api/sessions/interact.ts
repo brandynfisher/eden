@@ -6,8 +6,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { sessionId, assistant, interaction } =
-    req.body as SessionsInteractArguments
+  const args = req.body as SessionsInteractArguments
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -19,11 +18,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       apiKey: CONFIG.EDEN_ADMIN_API_KEY,
       apiSecret: CONFIG.EDEN_ADMIN_API_SECRET,
     })
-    const response = await eden.sessions.interact({
-      sessionId,
-      assistant,
-      interaction,
-    })
+    const response = await eden.sessions.interact(args)
     return res.status(200).json({
       message: response.message,
       config: response.config,

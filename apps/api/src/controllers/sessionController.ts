@@ -163,10 +163,10 @@ export const interactSession = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { sessionId, assistant, interaction } =
-    request.body as SessionsInteractArguments
+  const args = request.body as SessionsInteractArguments
+  const { session_id, character_id, prompt, attachments } = args
 
-  const session = await Session.findById(sessionId)
+  const session = await Session.findById(session_id)
   if (!session) {
     return reply.status(404).send({
       message: 'Session not found',
@@ -174,8 +174,9 @@ export const interactSession = async (
   }
 
   const interactionEventData: InteractionEvent = {
-    assistant,
-    interaction,
+    character: character_id,
+    prompt,
+    attachments,
   }
   const interactionEvent = await SessionEvent.create({
     session: session._id,
@@ -185,11 +186,8 @@ export const interactSession = async (
 
   // TODO: Check if user is allowed to interact with session
 
-  const { message, config } = await server.handleInteractionTest(
-    server,
-    assistant,
-    interaction,
-  )
+  const { message, config } = await server.handleInteraction(server, args)
+  console.log('111', message, config)
 
   const eventData: ChatResponseEvent = {
     interaction: interactionEvent._id,

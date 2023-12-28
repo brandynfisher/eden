@@ -267,13 +267,9 @@ export const testCharacter = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { assistant, interaction } = request.body as CharactersTestArguments
+  const args = request.body as CharactersTestArguments
 
-  const { message, config } = await server.handleInteractionTest(
-    server,
-    assistant,
-    interaction,
-  )
+  const { message, config } = await server.handleInteractionTest(server, args)
 
   reply.status(200).send({
     message,
