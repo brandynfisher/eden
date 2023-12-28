@@ -1,7 +1,8 @@
+import { CardData } from '@/components/Card/Card'
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
 import ConceptSelectModal from '@/components/Modals/ConceptSelectModal'
-import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
 import DetailModal from '@/components/Modals/DetailModal'
+import DetailStaticModal from '@/components/Modals/DetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import GeneratorSelectModal from '@/components/Modals/GeneratorSelectModal'
@@ -29,7 +30,7 @@ import React, {
 
 export enum MODAL_TYPES {
   DETAIL_MODAL = 'DETAIL_MODAL',
-  CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
+  DETAIL_STATIC_MODAL = 'DETAIL_STATIC_MODAL',
   COLLECTION_ADD_CREATION_MODAL = 'COLLECTION_ADD_CREATION_MODAL',
   CONCEPT_SELECT_MODAL = 'CONCEPT_SELECT_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
@@ -42,7 +43,7 @@ export enum MODAL_TYPES {
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.DETAIL_MODAL]: DetailModal,
-  [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
+  [MODAL_TYPES.DETAIL_STATIC_MODAL]: DetailStaticModal,
   [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
   [MODAL_TYPES.CONCEPT_SELECT_MODAL]: ConceptSelectModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
@@ -87,6 +88,13 @@ export type DetailModalProps = Partial<
   }
 >
 
+export type DetailStaticModalProps = Partial<
+  BaseModalProps & {
+    itemType: ItemType
+    item: CardData | Creator
+  }
+>
+
 export type AddToCollectionModalProps = Partial<
   BaseModalProps & {
     creationId: string
@@ -97,7 +105,7 @@ export type AddToCollectionModalProps = Partial<
 type ModalStore = {
   modalType: string | undefined
   modalProps?:
-    | Partial<BaseModalProps & { creation?: Creation }>
+    | DetailStaticModalProps
     | DetailModalProps
     | AddToCollectionModalProps
     | GeneratorSelectModalProps

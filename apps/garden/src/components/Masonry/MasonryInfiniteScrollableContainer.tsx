@@ -1,3 +1,4 @@
+import { CardData } from '@/components/Card/Card'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
@@ -13,7 +14,7 @@ import {
   MODAL_TYPES,
   useModalContext,
 } from '@/providers/ModalProvider'
-import { Creation } from '@edenlabs/eden-sdk'
+import { Creation, Creator } from '@edenlabs/eden-sdk'
 // import { ItemType } from '@/providers/ModalProvider'
 import React, { useCallback, useEffect, useState } from 'react'
 
@@ -32,9 +33,10 @@ const MasonryInfiniteScrollableContainer = ({
 }) => {
   const { showModal } = useModalContext()
 
-  const openDetailModal = async (creation: Creation) => {
-    showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
-      creation: creation ? creation : undefined,
+  const openDetailModal = async (item: CardData | Creator) => {
+    showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
+      itemType,
+      item: item,
       usesUrl: true,
     })
   }

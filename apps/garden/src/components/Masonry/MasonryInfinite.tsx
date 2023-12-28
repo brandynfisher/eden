@@ -109,7 +109,7 @@ const MasonryInfinite = ({
   const handleCardClick = useCallback((index: number) => {
     //@todo: move this to CreationMasonry (similarMasonry, as static)
     // if (disableArrowNav) {
-    //   showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
+    //   showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
     //     creation,
     //     loadSimilar: true,
     //     usesUrl: true,

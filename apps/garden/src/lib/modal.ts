@@ -58,6 +58,12 @@ export const getModalUrls = (
     modalUrl: '',
   }
 
+  console.log(
+    router.pathname,
+    specialHandlingRoutes,
+    specialHandlingRoutes[router.pathname],
+  )
+
   // all default cases; modalUrl has id as path segment instead of query param
   if (!specialHandlingRoutes[router.pathname]) {
     urls.modalUrl = `/${itemType}s/${id}`
