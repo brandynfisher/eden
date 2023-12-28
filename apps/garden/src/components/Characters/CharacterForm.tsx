@@ -249,183 +249,190 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       <div className="mb-4">
         <Form form={form} name="CharacterForm">
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 ">
-            <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg border border-solid border-stone-800">
-              <h3 className="font-mono font-bold text-lg">
-                Build Your Character
-              </h3>
-              <div>
-                <div className="parameter parameter--text flex">
+            <div className="py-2 bg-gray-100 dark:bg-gray-900 rounded-lg border border-solid border-stone-800">
+              <div className="px-2">
+                <h3 className="font-mono font-bold text-lg">
+                  Build Your Character
+                </h3>
+                <div>
+                  <div className="parameter parameter--text flex">
+                    <ParameterAddon
+                      title={'Name'}
+                      description={'What should your character be called?'}
+                    />
+                    <Form.Item
+                      className="mb-4 font-mono w-full"
+                      name="name"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please input a character name!',
+                        },
+                        {
+                          min: 3,
+                          max: 20,
+                          message:
+                            'Character name must be between 3 and 20 characters!',
+                        },
+                      ]}
+                    >
+                      <Input
+                        className="with-addon"
+                        spellCheck={false}
+                        placeholder={EXAMPLE_CHARACTER.name}
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+
+                <div>
                   <ParameterAddon
-                    title={'Name'}
-                    description={'What should your character be called?'}
+                    title={'Identity'}
+                    textArea={true}
+                    description={
+                      'Describe your character and shape its identity'
+                    }
                   />
                   <Form.Item
-                    className="mb-4 font-mono w-full"
-                    name="name"
+                    className="mb-4 w-full"
+                    name="identity"
                     rules={[
-                      {
-                        required: true,
-                        message: 'Please input a character name!',
-                      },
+                      { required: true, message: 'Please input an identity!' },
                       {
                         min: 3,
-                        max: 20,
+                        max: 9999,
                         message:
-                          'Character name must be between 3 and 20 characters!',
+                          'Identity must be between 3 and 9999 characters!',
                       },
                     ]}
                   >
-                    <Input
+                    <Input.TextArea
+                      autoSize
+                      placeholder={EXAMPLE_CHARACTER.identity}
                       className="with-addon"
-                      spellCheck={false}
-                      placeholder={EXAMPLE_CHARACTER.name}
                     />
                   </Form.Item>
                 </div>
-              </div>
 
-              <div>
-                <ParameterAddon
-                  title={'Identity'}
-                  textArea={true}
-                  description={'Describe your character and shape its identity'}
-                />
-                <Form.Item
-                  className="mb-4 w-full"
-                  name="identity"
-                  rules={[
-                    { required: true, message: 'Please input an identity!' },
-                    {
-                      min: 3,
-                      max: 9999,
-                      message:
-                        'Identity must be between 3 and 9999 characters!',
-                    },
-                  ]}
-                >
-                  <Input.TextArea
-                    autoSize
-                    placeholder={EXAMPLE_CHARACTER.identity}
-                    className="with-addon"
+                <div>
+                  <ParameterAddon
+                    title={'Portrait'}
+                    description={
+                      'Used as an avatar for your character. If mouth is visible, it will be animated when your character speaks. Portrait orientation recommended.'
+                    }
                   />
-                </Form.Item>
-              </div>
-
-              <div>
-                <ParameterAddon
-                  title={'Portrait'}
-                  description={
-                    'Used as an avatar for your character. If mouth is visible, it will be animated when your character speaks. Portrait orientation recommended.'
-                  }
-                />
-                <Form.Item className="mb-4 w-full" name="image">
-                  <UploadParameter
-                    form={form}
-                    parameter={{
-                      name: 'image',
-                      label: '',
-                      maxLength: 1,
-                      default: (character && character.image) || '',
-                    }}
-                    key={'image'}
-                    acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
-                  />
-                </Form.Item>
-              </div>
-
-              <div className="flex max-w-full">
-                <ParameterAddon
-                  title={'Voice'}
-                  info={'(optional)'}
-                  description={
-                    'Your character will speak with this voice. Voices provided by ElevenLabs.'
-                  }
-                />
-                <Form.Item className="mb-4 w-full min-w-0" name="voice">
-                  <Select className="with-addon">
-                    {ELEVENLABS_VOICES.map(voice => (
-                      <Select.Option key={voice.id} value={voice.id}>
-                        {voice.name}, {voice.accent}, {voice.age},{' '}
-                        {voice.gender}, {voice.description}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-
-              <div className="hidden">
-                <ParameterAddon
-                  title={'Greeting'}
-                  textArea={true}
-                  description={
-                    'Your Character will introduce themselves with this message when entering a conversation'
-                  }
-                />
-                <Form.Item
-                  className="mb-4 font-mono w-full"
-                  name="greeting"
-                  rules={[
-                    {
-                      min: 3,
-                      max: 1000,
-                      message:
-                        'Greeting must be between 3 and 1000 characters!',
-                    },
-                  ]}
-                >
-                  <Input.TextArea
-                    className="with-addon"
-                    autoSize
-                    placeholder={EXAMPLE_CHARACTER.greeting}
-                  />
-                </Form.Item>
-              </div>
-
-              <Form.Item
-                label={
-                  <FormLabel
-                    text="Concept"
-                    description="(Optional) Select a concept that your character will use when creating images."
-                  />
-                }
-                className="label-auto-height"
-                labelCol={{ span: 24 }}
-                name="concept"
-              >
-                <div className="mb-2">
-                  <ConceptSelectModalTrigger
-                    onChange={concept => {
-                      form.setFieldsValue({
-                        ['concept']: concept ? concept._id : null,
-                      })
-                    }}
-                  />
+                  <Form.Item className="mb-4 w-full" name="image">
+                    <UploadParameter
+                      form={form}
+                      parameter={{
+                        name: 'image',
+                        label: '',
+                        maxLength: 1,
+                        default: (character && character.image) || '',
+                      }}
+                      key={'image'}
+                      acceptedMimeTypes={'image/png, image/jpeg, image/webp'}
+                    />
+                  </Form.Item>
                 </div>
-                {concept && (
-                  <ConceptParameterUI
-                    conceptId={concept}
-                    onChange={() => form.setFieldValue('concept', null)}
+
+                <div className="flex max-w-full">
+                  <ParameterAddon
+                    title={'Voice'}
+                    info={'(optional)'}
+                    description={
+                      'Your character will speak with this voice. Voices provided by ElevenLabs.'
+                    }
                   />
-                )}
+                  <Form.Item className="mb-4 w-full min-w-0" name="voice">
+                    <Select className="with-addon">
+                      {ELEVENLABS_VOICES.map(voice => (
+                        <Select.Option key={voice.id} value={voice.id}>
+                          {voice.name}, {voice.accent}, {voice.age},{' '}
+                          {voice.gender}, {voice.description}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
+
+                <div className="hidden">
+                  <ParameterAddon
+                    title={'Greeting'}
+                    textArea={true}
+                    description={
+                      'Your Character will introduce themselves with this message when entering a conversation'
+                    }
+                  />
+                  <Form.Item
+                    className="mb-4 font-mono w-full"
+                    name="greeting"
+                    rules={[
+                      {
+                        min: 3,
+                        max: 1000,
+                        message:
+                          'Greeting must be between 3 and 1000 characters!',
+                      },
+                    ]}
+                  >
+                    <Input.TextArea
+                      className="with-addon"
+                      autoSize
+                      placeholder={EXAMPLE_CHARACTER.greeting}
+                    />
+                  </Form.Item>
+                </div>
+
                 <Form.Item
                   label={
                     <FormLabel
-                      text="Example Messages"
-                      description="Add sample dialogs to further refine the personality of your character"
+                      text="Concept"
+                      description="(Optional) Select a concept that your character will use when creating images."
                     />
                   }
-                  className="label-auto-height hidden"
+                  className="label-auto-height"
                   labelCol={{ span: 24 }}
-                  name="messages"
+                  name="concept"
                 >
-                  <ChatCapabilityMessageSection
-                    messageGroups={messageGroups}
-                    setMessageGroups={setMessageGroups}
-                  />
+                  <div className="mb-2">
+                    <ConceptSelectModalTrigger
+                      onChange={concept => {
+                        form.setFieldsValue({
+                          ['concept']: concept ? concept._id : null,
+                        })
+                      }}
+                    />
+                  </div>
+                  {concept && (
+                    <ConceptParameterUI
+                      conceptId={concept}
+                      onChange={() => form.setFieldValue('concept', null)}
+                    />
+                  )}
+                  <Form.Item
+                    label={
+                      <FormLabel
+                        text="Example Messages"
+                        description="Add sample dialogs to further refine the personality of your character"
+                      />
+                    }
+                    className="label-auto-height hidden"
+                    labelCol={{ span: 24 }}
+                    name="messages"
+                  >
+                    <ChatCapabilityMessageSection
+                      messageGroups={messageGroups}
+                      setMessageGroups={setMessageGroups}
+                    />
+                  </Form.Item>
                 </Form.Item>
-              </Form.Item>
+              </div>
 
-              <Collapse expandIconPosition="end" className="mb-4">
+              <Collapse
+                expandIconPosition="end"
+                className="mb-4 generator-settings-collapse"
+              >
                 <Panel
                   key={'1'}
                   header={
@@ -440,7 +447,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 </Panel>
               </Collapse>
 
-              <div className="flex flex-wrap gap-4 justify-between items-center">
+              <div className="flex flex-wrap gap-4 justify-between items-center px-2">
                 <div className="flex justify-between items-center w-full">
                   {user &&
                   user.featureFlags &&

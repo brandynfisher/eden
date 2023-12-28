@@ -1,5 +1,7 @@
 'use client'
 
+import CharacterDetails from '@/components/Characters/CharacterDetails'
+import CreatorDetails from '@/components/Creators/CreatorDetails'
 import ArrowNavigationButtons from '@/components/Modals/ArrowNavigationButtons'
 import { getModalUrls } from '@/lib/modal'
 import { MasonryContext } from '@/providers/MasonryProvider'
@@ -69,7 +71,7 @@ const DetailModal = ({
   }, [currentIndex, handlePrevItem, handleNextItem])
 
   useEffect(() => {
-    // console.log(currentIndex, items)
+    console.log(router.asPath, currentIndex, items)
     const handleRouteChange = async () => {
       const { pageUrl, modalUrl } = getModalUrls(
         router,
@@ -81,7 +83,7 @@ const DetailModal = ({
     }
 
     if (currentIndex !== null) {
-      // console.log('changing route')
+      console.log('changing route', currentIndex)
       handleRouteChange()
     }
   }, [router.asPath, currentIndex, items.length])
@@ -142,13 +144,33 @@ const DetailModal = ({
         }
       >
         {items[currentIndex] ? (
-          <Details
-            isModal={true}
-            modalContainerRef={containerRef}
-            modalContainerHeight={containerHeight}
-            itemType={itemType}
-            item={items[currentIndex]}
-          />
+          <>
+            {itemType === 'creator' ? (
+              <CreatorDetails
+                // isModal={true}
+                creator={items[currentIndex] as Creator}
+                modalContainerRef={containerRef}
+                modalContainerHeight={containerHeight}
+              />
+            ) : null}
+            {itemType === 'character' ? (
+              <CharacterDetails
+                // isModal={true}
+                character={items[currentIndex] as Character}
+                modalContainerRef={containerRef}
+                modalContainerHeight={containerHeight}
+              />
+            ) : null}
+            {itemType === 'creation' || itemType === 'concept' ? (
+              <Details
+                isModal={true}
+                modalContainerRef={containerRef}
+                modalContainerHeight={containerHeight}
+                itemType={itemType}
+                item={items[currentIndex] as Creation | Concept}
+              />
+            ) : null}
+          </>
         ) : null}
         {currentIndex !== null ? (
           <ArrowNavigationButtons

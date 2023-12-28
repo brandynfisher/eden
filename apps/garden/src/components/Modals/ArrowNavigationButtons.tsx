@@ -1,5 +1,5 @@
 import CircleButton from '@/components/Layout/buttons/CircleButton'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
@@ -12,7 +12,7 @@ const ArrowNavigationButtons = ({
   handleNext,
   handleCancel,
 }: {
-  items: Concept[] | Creation[]
+  items: Creation[] | Concept[] | Creator[] | Character[]
   currentIndex: number
   handlePrev: () => void
   handleNext: () => void

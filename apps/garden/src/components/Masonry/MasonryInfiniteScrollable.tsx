@@ -1,9 +1,6 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
-import {
-  OrderByDefaultParam,
-  OrderByParam,
-} from '@/components/Layout/buttons/OrderByButtons'
+import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import MasonryProvider from '@/providers/MasonryProvider'
@@ -19,7 +16,7 @@ import {
   useResizeObserver,
 } from 'masonic'
 import { useScroller } from 'mini-virtual-list'
-import React, { FC, useCallback, useState } from 'react'
+import React, { FC, useCallback } from 'react'
 
 const MasonryHookWrap: FC<UseMasonryOptions<Concept | Creation>> = props => {
   // console.log(props)
@@ -30,7 +27,7 @@ const MasonryInfiniteScrollable = ({
   itemType,
   ItemComponent,
   query,
-  hasSort,
+  orderBy,
   onCardClick,
   hover,
   modalContainerRef,
@@ -39,16 +36,12 @@ const MasonryInfiniteScrollable = ({
   itemType: ItemType
   ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
-  hasSort?: OrderByParam[]
+  orderBy?: OrderByParam
   onCardClick?: (item: Concept | Creation) => void
   hover?: boolean
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
 }) => {
-  const [orderBy /*setOrderBy*/] = useState<OrderByParam>(
-    hasSort ? hasSort[0] : OrderByDefaultParam,
-  )
-
   const {
     items,
     maybeLoadMore: maybeLoadNextPage,

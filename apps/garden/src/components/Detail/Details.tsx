@@ -3,15 +3,14 @@ import CardDebugInfo from '@/components/Card/CardDebugInfo'
 import CardReactions from '@/components/Card/CardReactions'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import ConceptCardFooter from '@/components/Concept/ConceptCard/ConceptCardFooter'
-import ConceptCreations from '@/components/Concept/ConceptDetail/ConceptCreations'
 import ConceptInfo from '@/components/Concept/ConceptDetail/ConceptInfo'
 import ConceptMedia from '@/components/Concept/ConceptDetail/ConceptMedia'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
 import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
-import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
+import ModalMasonry from '@/components/Masonry/ModalMasonry'
 import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
@@ -273,8 +272,9 @@ const Details = ({
       </div>
       {itemType === 'concept' ? (
         <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
-          <ConceptCreations
-            concept={item as Concept}
+          <ModalMasonry
+            title="Latest Public Creations"
+            query={{ conceptId: item._id }}
             modalContainerRef={modalContainerRef}
             modalContainerHeight={modalContainerHeight}
           />
@@ -282,8 +282,9 @@ const Details = ({
       ) : null}
       {itemType === 'creation' ? (
         <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
-          <SimilarCreations
-            creation={item as Creation}
+          <ModalMasonry
+            title="Similar Creations"
+            query={{ creationId: item._id }}
             modalContainerRef={modalContainerRef}
             modalContainerHeight={modalContainerHeight}
           />

@@ -8,7 +8,14 @@ import GeneratorSelectModal from '@/components/Modals/GeneratorSelectModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
 import TaskDetailModal from '@/components/Modals/TaskDetailModal'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
-import { Concept, Creation, Generator, Task } from '@edenlabs/eden-sdk'
+import {
+  Character,
+  Concept,
+  Creation,
+  Creator,
+  Generator,
+  Task,
+} from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, {
@@ -72,10 +79,10 @@ export type ItemType = 'creation' | 'concept' | 'character' | 'creator'
 export type DetailModalProps = Partial<
   BaseModalProps & {
     itemType: ItemType
-    initialItem: Creation | Concept
+    initialItem: Creation | Concept | Character | Creator
     maybeLoadMoreFn: (
       currentIndex: number,
-      currentItems: Creation[] | Concept[],
+      currentItems: Creation[] | Concept[] | Character[] | Creator[],
     ) => void
   }
 >
