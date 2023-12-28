@@ -70,7 +70,6 @@ const Card: FC<CardWithTypeProps> = ({
     setDebugMode(!!(router.query && router.query.debug))
   }, [router.query])
 
-  // const { items, setItems } = useContext(MasonryContext)
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
