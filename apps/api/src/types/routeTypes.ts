@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 export const configType = Type.Record(Type.String(), Type.Any())
-export const parameterType = Type.Record(Type.String(), Type.Any())
+export const parameterType = Type.Array(Type.Record(Type.String(), Type.Any()))
 
 export const conceptDocType = Type.Object({
   deleted: Type.Boolean(),
