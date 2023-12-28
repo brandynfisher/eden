@@ -43,7 +43,7 @@ export interface TaskUpdateEvent {
   taskId: string
   status: string
   progress?: number
-  result?: string
+  result?: string[]
 }
 
 export const transformArgsIntoURLParams = (

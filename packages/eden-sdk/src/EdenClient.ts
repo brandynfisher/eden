@@ -69,6 +69,7 @@ export class EdenClient extends Methods {
 
         eventSource.onmessage = event => {
           const data = JSON.parse(event.data)
+          console.log('Received event', data)
           if (data.taskId === taskId) {
             if (resolver) {
               resolver({ value: data, done: false })

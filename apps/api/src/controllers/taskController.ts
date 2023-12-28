@@ -335,6 +335,8 @@ export const subscribeTaskUpdates = async (
     (async function* () {
       for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
         const taskUpdate = event as TaskUpdateEvent
+        console.log(`Received task update for task ${taskUpdate.taskId}`)
+        console.log(`Task update: ${event}`)
         if (
           taskUpdate.userId.toString() === userId.toString() &&
           (!taskId || taskUpdate.taskId === taskId)
