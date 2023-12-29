@@ -92,10 +92,14 @@ export const listSessions = async (
       sort,
     },
   )
+
   const response = {
     ...sessionPaginatedResponse,
     docs: sessionPaginatedResponse.docs.map(session => ({
       id: session._id,
+      user: session.user,
+      characters: session.characters,
+      users: session.users,
     })),
   }
 
@@ -108,6 +112,8 @@ export const getSession = async (
 ) => {
   const { sessionId } = request.params as SessionsGetArguments
   const session = await Session.findById(sessionId)
+    .populate('users')
+    .populate('characters')
   if (!session) {
     return reply.status(404).send({
       message: 'Session not found',
@@ -116,6 +122,9 @@ export const getSession = async (
 
   const response = {
     id: session._id,
+    user: session.user,
+    characters: session.characters,
+    users: session.users,
   }
 
   return reply.status(200).send({ session: response })
@@ -241,6 +250,9 @@ export const addUsersToSession = async (
   }
 
   await SessionEvent.create(event)
+  await session.updateOne({
+    users: [...session.users, ...users.map(user => user._id)],
+  })
 
   return reply.status(200).send({})
 }
@@ -281,6 +293,9 @@ export const addCharactersToSession = async (
   }
 
   await SessionEvent.create(event)
+  await session.updateOne({
+    characters: [...session.characters, ...characters.map(c => c._id)],
+  })
 
   return reply.status(200).send({})
 }

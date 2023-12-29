@@ -1,4 +1,5 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreator } from '@/hooks/useCreator'
 import { MessageMarker, compileMessage } from '@/lib/chat'
 import { handleAxiosError } from '@/lib/fetcher'
@@ -18,6 +19,7 @@ import {
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
   Character,
+  Session,
   SessionsInteractArguments,
   SessionsInteractResponse,
   TasksCreateArguments,
@@ -39,13 +41,8 @@ type ConversationEntry = {
   id?: string
 }
 
-const ChatScenarioUI = ({
-  activeCharacter,
-  sessionId,
-}: {
-  activeCharacter: Character
-  sessionId: string
-}) => {
+const ChatScenarioUI = ({ session }: { session: Session }) => {
+  const activeCharacter = session.characters[0] as Character
   const { message } = App.useApp()
   const { isAuthenticated, userId } = useContext(UserContext)
   const { creator } = useCreator(isAuthenticated && userId ? userId : null)
@@ -103,7 +100,7 @@ const ChatScenarioUI = ({
     try {
       setBotIsTyping(true)
       const args: SessionsInteractArguments = {
-        session_id: sessionId,
+        session_id: session.id,
         character_id: activeCharacter._id,
         prompt: text,
         attachments: [],
@@ -157,7 +154,7 @@ const ChatScenarioUI = ({
   }
 
   if (!creator) {
-    return <div>not logged in</div>
+    return <LoadingIndicator />
   }
 
   return (

@@ -49,3 +49,10 @@ export const conceptType = Type.Object({
     creationCount: Type.Number(),
   }),
 })
+
+export const sessionType = Type.Object({
+  id: Type.String(),
+  user: Type.String(),
+  users: Type.Array(Type.Any()),
+  characters: Type.Array(Type.Any()),
+})

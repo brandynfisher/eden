@@ -1,46 +1,18 @@
-import { useMyCharacters } from '@/hooks/useMyCharacters'
-import { useMySessions } from '@/hooks/useMySessions'
-import ChatScenarioPage from '@/pages/sessions/ChatScenarioPage'
-import { UserContext } from '@/providers/UserProvider'
-import { Character, Session } from '@edenlabs/eden-sdk'
-import React, { useContext } from 'react'
+import ChatScenarioUI from '@/components/Scenarios/Chat/ChatScenarioUI'
+import { useSession } from '@/hooks/useSession'
+import { Session } from '@edenlabs/eden-sdk'
+import React from 'react'
 
-const ChatSessionPage = ({
-  data,
-  activeSessionId,
-}: {
-  data: { characters: Character[]; sessions: Session[] }
-  activeSessionId?: string | undefined
-}) => {
-  const { isAuthenticated, userId } = useContext(UserContext)
-  const { characters: charactersData } = useMyCharacters({
-    userId,
-    isAuthenticated,
-    options: {
-      fallbackData: data ? data.characters : [],
-    },
-  })
-  const { sessions: sessionsData } = useMySessions({
-    userId,
-    isAuthenticated,
-    options: {
-      fallbackData: data ? data.sessions : [],
-    },
+const ChatSessionPage = ({ data }: { data: Session }) => {
+  const { session: sessionData } = useSession(data ? data.id : null, {
+    fallbackData: data,
   })
 
-  if (!data) {
+  if (!sessionData) {
     return null
   }
 
-  return (
-    <ChatScenarioPage
-      data={{
-        characters: charactersData || data.characters,
-        sessions: sessionsData || data.sessions,
-      }}
-      activeSessionId={activeSessionId}
-    />
-  )
+  return <ChatScenarioUI session={sessionData} />
 }
 
 export default ChatSessionPage

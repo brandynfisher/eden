@@ -1,4 +1,6 @@
 import { AxiosRequestConfig } from 'axios'
+import { Character } from 'src/models/Characters'
+import { Creator } from 'src/models/Creators'
 
 import { transformArgsIntoURLParams } from '../types'
 import {
@@ -149,11 +151,12 @@ export type SessionsDeleteResponse = WebAPICallResult & {
 export type SessionsListResponse = WebAPICallResult &
   PaginatedResponse<Session> & {
     error?: string
+    session?: Session
   }
 
 export type SessionsGetResponse = WebAPICallResult & {
   error?: string
-  scenario: Session
+  session?: Session
 }
 
 export type SessionsInteractResponse = WebAPICallResult & {
@@ -195,6 +198,8 @@ export type SessionEventResponseType =
 export type Session = {
   id: string
   user: string
+  users: Creator[]
+  characters: Character[]
   createdAt?: Date
   updatedAt?: Date
 }

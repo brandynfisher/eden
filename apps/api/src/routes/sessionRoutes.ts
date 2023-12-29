@@ -13,7 +13,7 @@ import {
   listSessions,
 } from '../controllers/sessionController'
 import { isAdmin, isAuth } from '../middleware/authMiddleware'
-import { configType } from '../types/routeTypes'
+import { sessionType } from '../types/routeTypes'
 
 const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/create', {
@@ -150,11 +150,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         required: [],
       },
       response: {
-        200: paginatedResponse(
-          Type.Object({
-            id: Type.String(),
-          }),
-        ),
+        200: paginatedResponse(sessionType),
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
@@ -176,9 +172,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       }),
       response: {
         200: Type.Object({
-          session: Type.Object({
-            id: Type.String(),
-          }),
+          session: sessionType,
         }),
       },
     },
