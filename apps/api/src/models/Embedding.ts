@@ -13,21 +13,22 @@ export interface EmbeddingSchema {
 
 export interface EmbeddingDocument extends EmbeddingSchema, Document {}
 
-const embedding = new Schema<EmbeddingDocument>({
-  creation: {
-    type: Schema.Types.ObjectId,
-    ref: 'creations',
-    required: true,
+const embedding = new Schema<EmbeddingDocument>(
+  {
+    creation: {
+      type: Schema.Types.ObjectId,
+      ref: 'creations',
+      required: true,
+    },
+    embedding: {
+      type: [Number],
+      required: true,
+    },
   },
-  embedding: {
-    type: [Number],
-    required: true,
+  {
+    timestamps: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-})
+)
 
 embedding.plugin(paginate)
 embedding.plugin(aggregatePaginate)
