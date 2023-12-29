@@ -12,7 +12,7 @@ const MyCharacterCard = ({ character }: { character: Character }) => {
   const router = useRouter()
 
   return (
-    <div key={character._id}>
+    <div key={character._id} className="w-[250px]">
       <CharacterCard
         character={character}
         className="!rounded-b-none !border-b-0"

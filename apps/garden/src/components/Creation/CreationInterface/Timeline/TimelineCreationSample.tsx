@@ -26,8 +26,11 @@ const TimelineCreationSample = ({
   const { showModal } = useModalContext()
 
   const handleCardClick = useCallback(() => {
-    showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
-      creation: creation ? creation : undefined,
+    if (!creation) return
+
+    showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
+      item: creation,
+      itemType: 'creation',
       usesUrl: false,
     })
   }, [showModal, creation])

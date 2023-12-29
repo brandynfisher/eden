@@ -38,8 +38,11 @@ const ResultPreviewDisplay = ({
   // }, [creation])
 
   const openDetailModal = async () => {
-    showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
-      creation: creation ? creation : undefined,
+    if (!creation) return
+
+    showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
+      item: creation ? creation : undefined,
+      itemType: 'creation',
       usesUrl: true,
     })
   }
