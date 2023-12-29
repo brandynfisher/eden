@@ -50,10 +50,5 @@ declare module 'fastify' {
       generatorVersion: GeneratorVersionSchema,
       config: any,
     ) => number
-    handleInteraction: (
-      server: FastifyInstance,
-      assistant: Assistant,
-      interaction: Interaction,
-    ) => Promise<LogosResponse>
   }
 }

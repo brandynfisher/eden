@@ -1,30 +1,40 @@
-import { Assistant, Interaction } from '@edenlabs/eden-sdk'
+import {
+  CharactersTestArguments,
+  SessionsInteractArguments,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import type { FastifyInstance } from 'fastify'
 
 import { LogosResponse } from './tasks'
 
+export interface LogosTestArguments {
+  name: string
+  identity: string
+  prompt: string
+  knowledge?: string
+  knowledge_summary?: string
+  attachments?: string[]
+}
+
 const handleInteraction = async (
   server: FastifyInstance,
-  assistant: Assistant,
-  interaction: Interaction,
+  args: SessionsInteractArguments,
 ): Promise<LogosResponse> => {
-  const { data } = await axios.post(`${server.config.LOGOS_URL}/interact`, {
-    assistant,
-    interaction,
-  })
+  const { data } = await axios.post(
+    `${server.config.LOGOS_URL}/chat/speak`,
+    args,
+  )
   return data
 }
 
 const handleInteractionTest = async (
   server: FastifyInstance,
-  assistant: Assistant,
-  interaction: Interaction,
+  args: CharactersTestArguments,
 ): Promise<LogosResponse> => {
-  const { data } = await axios.post(`${server.config.LOGOS_URL}/test`, {
-    assistant,
-    interaction,
-  })
+  const { data } = await axios.post(
+    `${server.config.LOGOS_URL}/chat/test`,
+    args,
+  )
   return data
 }
 
@@ -43,13 +53,11 @@ declare module 'fastify' {
   interface FastifyInstance {
     handleInteraction: (
       server: FastifyInstance,
-      assistant: Assistant,
-      interaction: Interaction,
+      args: SessionsInteractArguments,
     ) => Promise<LogosResponse>
     handleInteractionTest: (
       server: FastifyInstance,
-      assistant: Assistant,
-      interaction: Interaction,
+      args: CharactersTestArguments,
     ) => Promise<LogosResponse>
   }
 }

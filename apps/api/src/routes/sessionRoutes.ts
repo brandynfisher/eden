@@ -13,7 +13,7 @@ import {
   listSessions,
 } from '../controllers/sessionController'
 import { isAdmin, isAuth } from '../middleware/authMiddleware'
-import { configType } from '../types/routeTypes'
+import { sessionType } from '../types/routeTypes'
 
 const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/create', {
@@ -115,23 +115,15 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       ],
       hide: true,
       body: Type.Object({
-        sessionId: Type.String(),
-        assistant: Type.Object({
-          name: Type.String(),
-          identity: Type.String(),
-          knowledge: Type.Optional(Type.String()),
-          knowledge_summary: Type.Optional(Type.String()),
-        }),
-        interaction: Type.Object({
-          prompt: Type.String(),
-          author_id: Type.String(),
-          attachments: Type.Optional(Type.Array(Type.String())),
-        }),
+        character_id: Type.String(),
+        session_id: Type.String(),
+        prompt: Type.String(),
+        attachments: Type.Optional(Type.Array(Type.String())),
       }),
       response: {
         200: Type.Object({
           message: Type.String(),
-          config: configType,
+          config: Type.Optional(Type.Any()),
         }),
       },
     },
@@ -158,11 +150,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
         required: [],
       },
       response: {
-        200: paginatedResponse(
-          Type.Object({
-            id: Type.String(),
-          }),
-        ),
+        200: paginatedResponse(sessionType),
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
@@ -184,9 +172,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       }),
       response: {
         200: Type.Object({
-          session: Type.Object({
-            id: Type.String(),
-          }),
+          session: sessionType,
         }),
       },
     },

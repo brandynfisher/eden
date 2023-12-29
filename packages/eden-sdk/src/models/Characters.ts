@@ -49,8 +49,12 @@ export interface CharactersDeleteArguments extends WebAPICallOptions {
 }
 
 export interface CharactersTestArguments extends WebAPICallOptions {
-  assistant: Assistant
-  interaction: Interaction
+  name: string
+  identity: string
+  prompt: string
+  knowledge?: string
+  knowledge_summary?: string
+  attachments?: string[]
 }
 
 // Requests

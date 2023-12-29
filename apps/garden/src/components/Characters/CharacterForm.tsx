@@ -12,10 +12,9 @@ import { ChatMessageGroup } from '@/lib/types'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import {
-  Assistant,
   Character,
+  CharactersTestArguments,
   FeatureFlag,
-  Interaction,
 } from '@edenlabs/eden-sdk'
 import { SettingsSuggest } from '@mui/icons-material'
 import { App, Button, Collapse, Form, Input, Select } from 'antd'
@@ -179,19 +178,12 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     setCompleting(true)
     try {
       const url = `/api/characters/test`
-      const assistant: Assistant = {
+      const data: CharactersTestArguments = {
         name: characterName,
         identity,
+        prompt: recentMessage[0][0].message,
         knowledge: form.getFieldValue('knowledge'),
         knowledge_summary: form.getFieldValue('knowledgeSummary'),
-      }
-      const interaction: Interaction = {
-        prompt: recentMessage[0][0].message,
-        author_id: 'test',
-      }
-      const data = {
-        assistant,
-        interaction,
       }
       const response = await axios.post(url, data)
       const completion = response.data.message as string
@@ -395,37 +387,23 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   labelCol={{ span: 24 }}
                   name="concept"
                 >
-                  <div className="mb-2">
-                    <ConceptSelectModalTrigger
-                      onChange={concept => {
-                        form.setFieldsValue({
-                          ['concept']: concept ? concept._id : null,
-                        })
-                      }}
-                    />
-                  </div>
-                  {concept && (
-                    <ConceptParameterUI
-                      conceptId={concept}
-                      onChange={() => form.setFieldValue('concept', null)}
-                    />
-                  )}
-                  <Form.Item
-                    label={
-                      <FormLabel
-                        text="Example Messages"
-                        description="Add sample dialogs to further refine the personality of your character"
+                  <div>
+                    <div className="mb-2">
+                      <ConceptSelectModalTrigger
+                        onChange={concept => {
+                          form.setFieldsValue({
+                            ['concept']: concept ? concept._id : null,
+                          })
+                        }}
                       />
-                    }
-                    className="label-auto-height hidden"
-                    labelCol={{ span: 24 }}
-                    name="messages"
-                  >
-                    <ChatCapabilityMessageSection
-                      messageGroups={messageGroups}
-                      setMessageGroups={setMessageGroups}
-                    />
-                  </Form.Item>
+                    </div>
+                    {concept && (
+                      <ConceptParameterUI
+                        conceptId={concept}
+                        onChange={() => form.setFieldValue('concept', null)}
+                      />
+                    )}
+                  </div>
                 </Form.Item>
               </div>
 
