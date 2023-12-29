@@ -77,7 +77,7 @@ async function updateDefaultVersion(db) {
     'monologue', 'dialogue',
   ];
   const comfyui_generators = [
-    'comfy_txt2vid', 'comfy_img2vid', 'comfy_vid2vid', 'comfy_upscale',
+    //'comfy_txt2vid', 'comfy_img2vid', 'comfy_vid2vid', 'comfy_upscale',
     'comfy_makeitrad'
   ];
 

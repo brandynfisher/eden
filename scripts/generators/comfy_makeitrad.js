@@ -4,8 +4,8 @@ const params = [
     name: 'render_mode',
     label: 'Animation mode',
     description: 'text-to-video or video-to-video (style transfer)',
-    default: 'txt2vid',
-    allowedValues: ["txt2vid", "vid2vid"],
+    default: 'comfy_makeitrad',
+    allowedValues: ["comfy_makeitrad"],
     isRequired: true,
   },
   

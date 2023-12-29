@@ -19,10 +19,10 @@ import zeroscopeParameters from './generators/zeroscope-v2-xl.js';
 
 //import comfyuiParameters from './generators/comfyui.js';
 //import animatediffParameters from './generators/animatediff.js';
-import comfyuiTxt2VidParameters from './generators/comfy_txt2vid.js';
-import comfyuiImg2VidParameters from './generators/comfy_img2vid.js';
-import comfyuiVid2VidParameters from './generators/comfy_vid2vid.js';
-import comfyuiUpscaleParameters from './generators/comfy_upscale.js';
+// import comfyuiTxt2VidParameters from './generators/comfy_txt2vid.js';
+// import comfyuiImg2VidParameters from './generators/comfy_img2vid.js';
+// import comfyuiVid2VidParameters from './generators/comfy_vid2vid.js';
+// import comfyuiUpscaleParameters from './generators/comfy_upscale.js';
 import comfyuiMakeitradParameters from './generators/comfy_makeitrad.js';
 
  
@@ -227,42 +227,42 @@ async function updateVersion(db) {
   }
 
   else if (cog === 'eden-comfyui') {
+    
+    // const comfyuiTxt2VidVersion = {
+    //   provider: 'replicate',
+    //   address: 'abraham-ai/eden-comfyui',
+    //   versionId: versionId,
+    //   mode: 'comfy_txt2vid',
+    //   parameters: comfyuiTxt2VidParameters,
+    //   isDeprecated: false
+    // }
+    
+    // const comfyuiImg2VidVersion = {
+    //   provider: 'replicate',
+    //   address: 'abraham-ai/eden-comfyui',
+    //   versionId: versionId,
+    //   mode: 'comfy_img2vid',
+    //   parameters: comfyuiImg2VidParameters,
+    //   isDeprecated: false
+    // }
 
-    const comfyuiTxt2VidVersion = {
-      provider: 'replicate',
-      address: 'abraham-ai/eden-comfyui',
-      versionId: versionId,
-      mode: 'comfy_txt2vid',
-      parameters: comfyuiTxt2VidParameters,
-      isDeprecated: false
-    }
+    // const comfyuiVid2VidVersion = {
+    //   provider: 'replicate',
+    //   address: 'abraham-ai/eden-comfyui',
+    //   versionId: versionId,
+    //   mode: 'comfy_vid2vid',
+    //   parameters: comfyuiVid2VidParameters,
+    //   isDeprecated: false
+    // }
 
-    const comfyuiImg2VidVersion = {
-      provider: 'replicate',
-      address: 'abraham-ai/eden-comfyui',
-      versionId: versionId,
-      mode: 'comfy_img2vid',
-      parameters: comfyuiImg2VidParameters,
-      isDeprecated: false
-    }
-
-    const comfyuiVid2VidVersion = {
-      provider: 'replicate',
-      address: 'abraham-ai/eden-comfyui',
-      versionId: versionId,
-      mode: 'comfy_vid2vid',
-      parameters: comfyuiVid2VidParameters,
-      isDeprecated: false
-    }
-
-    const comfyuiUpscaleVersion = {
-      provider: 'replicate',
-      address: 'abraham-ai/eden-comfyui',
-      versionId: versionId,
-      mode: 'comfy_upscale',
-      parameters: comfyuiUpscaleParameters,
-      isDeprecated: false
-    }
+    // const comfyuiUpscaleVersion = {
+    //   provider: 'replicate',
+    //   address: 'abraham-ai/eden-comfyui',
+    //   versionId: versionId,
+    //   mode: 'comfy_upscale',
+    //   parameters: comfyuiUpscaleParameters,
+    //   isDeprecated: false
+    // }
 
     const comfyuiMakeitradVersion = {
       provider: 'replicate',
@@ -273,25 +273,25 @@ async function updateVersion(db) {
       isDeprecated: false
     }
 
-    await db.collection('generators').updateOne(
-      { generatorName: 'comfy_txt2vid' }, 
-      { $addToSet: { versions: comfyuiTxt2VidVersion } }
-    );
+    // await db.collection('generators').updateOne(
+    //   { generatorName: 'comfy_txt2vid' }, 
+    //   { $addToSet: { versions: comfyuiTxt2VidVersion } }
+    // );
 
-    await db.collection('generators').updateOne(
-      { generatorName: 'comfy_img2vid' }, 
-      { $addToSet: { versions: comfyuiImg2VidVersion } }
-    );
+    // await db.collection('generators').updateOne(
+    //   { generatorName: 'comfy_img2vid' }, 
+    //   { $addToSet: { versions: comfyuiImg2VidVersion } }
+    // );
 
-    await db.collection('generators').updateOne(
-      { generatorName: 'comfy_vid2vid' }, 
-      { $addToSet: { versions: comfyuiVid2VidVersion } }
-    );
+    // await db.collection('generators').updateOne(
+    //   { generatorName: 'comfy_vid2vid' }, 
+    //   { $addToSet: { versions: comfyuiVid2VidVersion } }
+    // );
 
-    await db.collection('generators').updateOne(
-      { generatorName: 'comfy_upscale' }, 
-      { $addToSet: { versions: comfyuiUpscaleVersion } }
-    );
+    // await db.collection('generators').updateOne(
+    //   { generatorName: 'comfy_upscale' }, 
+    //   { $addToSet: { versions: comfyuiUpscaleVersion } }
+    // );
 
     await db.collection('generators').updateOne(
       { generatorName: 'comfy_makeitrad' }, 
