@@ -17,6 +17,7 @@ import { Collection } from '../models/Collection'
 import { Concept, ConceptDocument } from '../models/Concept'
 import { Creation, CreationDocument } from '../models/Creation'
 import { User, UserDocument } from '../models/Creator'
+import { Embedding, EmbeddingDocument } from '../models/Embedding'
 import { Follow } from '../models/Follow'
 import { Reaction } from '../models/Reaction'
 import CharacterRepository from '../repositories/CharacterRepository'
@@ -66,9 +67,6 @@ const aggregateCreationsByFollowerId = (
                 { deleted: { $ne: true } },
               ],
             },
-          },
-          {
-            $unset: 'embedding.embedding',
           },
           { $sort: { createdAt: -1 } },
           { $limit: 100 },
@@ -128,9 +126,6 @@ const aggregateCreationsByUserLikes = (
               ],
             },
           },
-          {
-            $unset: 'embedding.embedding',
-          },
           { $sort: { createdAt: -1 } },
           { $limit: 1 },
         ],
@@ -170,9 +165,6 @@ const aggregateCreationsByEmbeddingScore = (dateEndCutOff: string) => {
         isPrivate: false,
         deleted: false,
       },
-    },
-    {
-      $unset: 'embedding.embedding',
     },
     {
       $set: {
@@ -366,16 +358,23 @@ export const getCreationsFeed = async (
 
     // querying for similar creations
     if (creationId) {
+      const embeddingDoc = (await Embedding.find({
+        creation: new ObjectId(creationId),
+      }).lean()) as EmbeddingDocument
       try {
-        const similarCreationIds = await getSimilarCreationIds(
-          server,
-          creationId,
-        )
-        creationIdsQuery = similarCreationIds
-          ? {
-              $in: similarCreationIds,
-            }
-          : undefined
+        if (embeddingDoc?.embedding?.length) {
+          const similarCreationIds = await getSimilarCreationIds(
+            server,
+            embeddingDoc.embedding,
+          )
+          creationIdsQuery = similarCreationIds
+            ? {
+                $in: similarCreationIds,
+              }
+            : undefined
+        } else {
+          return reply.status(200).send(emptyPaginatedResponse)
+        }
       } catch (e) {
         console.log('Error fetching chroma embeddings', e)
         return reply.status(200).send(emptyPaginatedResponse)
@@ -407,7 +406,6 @@ export const getCreationsFeed = async (
       limit,
       page,
       sort,
-      select: '-embedding.embedding',
     })
   }
 

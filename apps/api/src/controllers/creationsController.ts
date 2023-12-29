@@ -152,12 +152,7 @@ export const getCreation = async (
   reply: FastifyReply,
 ) => {
   const { creationId } = request.params as CreationsGetArguments
-  const creation = (await Creation.findOneWithDeleted(
-    { _id: creationId },
-    {
-      'embedding.embedding': 0,
-    },
-  )
+  const creation = (await Creation.findOneWithDeleted({ _id: creationId })
     .populate({
       path: 'task',
       select: 'config status generator',
