@@ -220,7 +220,7 @@ function ModalProvider({ children }: PropsWithChildren) {
         )
       : defaultClassNames
 
-    console.log({ numModals: store.length, index })
+    // console.log({ numModals: store.length, index })
 
     // // if (index > 0) {
     //   return (
