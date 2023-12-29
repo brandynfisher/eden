@@ -1,6 +1,8 @@
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreator } from '@/hooks/useCreator'
 import { MessageMarker, compileMessage } from '@/lib/chat'
+import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
 import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
@@ -15,7 +17,14 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
-import { Character, SessionsInteractResponse } from '@edenlabs/eden-sdk'
+import {
+  Character,
+  Session,
+  SessionsInteractArguments,
+  SessionsInteractResponse,
+  TasksCreateArguments,
+} from '@edenlabs/eden-sdk'
+import { App } from 'antd'
 import axios from 'axios'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -32,13 +41,9 @@ type ConversationEntry = {
   id?: string
 }
 
-const ChatScenarioUI = ({
-  activeCharacter,
-  sessionId,
-}: {
-  activeCharacter: Character
-  sessionId: string
-}) => {
+const ChatScenarioUI = ({ session }: { session: Session }) => {
+  const activeCharacter = session.characters[0] as Character
+  const { message } = App.useApp()
   const { isAuthenticated, userId } = useContext(UserContext)
   const { creator } = useCreator(isAuthenticated && userId ? userId : null)
 
@@ -94,21 +99,14 @@ const ChatScenarioUI = ({
     ])
     try {
       setBotIsTyping(true)
-      const res = await axios.post(`/api/sessions/interact`, {
-        sessionId,
-        assistant: {
-          name: activeCharacter.name,
-          identity: activeCharacter.logosData?.identity,
-          knowledge: activeCharacter.logosData?.knowledge,
-          knowledge_summary: activeCharacter.logosData?.knowledgeSummary,
-        },
-        interaction: {
-          prompt: text,
-          author_id: creator?.userId,
-          attachments: [],
-        },
-      })
-      const { message } = res.data as SessionsInteractResponse
+      const args: SessionsInteractArguments = {
+        session_id: session.id,
+        character_id: activeCharacter._id,
+        prompt: text,
+        attachments: [],
+      }
+      const res = await axios.post(`/api/sessions/interact`, args)
+      const { message, config } = res.data as SessionsInteractResponse
       const completion = message
       if (!completion) {
         throw new Error('No completion returned from GPT-3')
@@ -125,8 +123,31 @@ const ChatScenarioUI = ({
           date: new Date(),
         },
       ])
+
+      if (config) {
+        const { generator, ...rest } = config
+        const createInput: TasksCreateArguments & { characterId: string } = {
+          characterId: activeCharacter._id,
+          generatorName: generator,
+          config: rest,
+        }
+        const createRes = await axios.post(
+          `/api/sessions/creation`,
+          createInput,
+        )
+        const { uri } = createRes.data
+        setConversation(state => [
+          ...state,
+          {
+            message: 'Here is your creation:',
+            uris: [uri],
+            speaker: 'bot',
+            date: new Date(),
+          },
+        ])
+      }
     } catch (error) {
-      console.error('Error submitting message:', error)
+      handleAxiosError(error, message)
     } finally {
       setBotIsTyping(false)
     }
@@ -134,7 +155,7 @@ const ChatScenarioUI = ({
   }
 
   if (!creator) {
-    return <div>not logged in</div>
+    return <LoadingIndicator />
   }
 
   return (
@@ -142,7 +163,7 @@ const ChatScenarioUI = ({
       responsive
       className="dark:!bg-gray-800 !border-none rounded-lg overflow-hidden"
     >
-      <ChatContainer className="!bg-gray-200 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden max-h-[calc(100vh_-_96px)]">
+      <ChatContainer className="!bg-gray-200 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden max-h-[calc(100vh-_96px)]">
         <ConversationHeader className="!bg-gray-200 dark:!bg-gray-800 !px-4 !py-4 !border-b-0">
           {/*<ConversationHeader.Actions className="!bg-gray-100 dark:!bg-gray-800"></ConversationHeader.Actions>*/}
           <ConversationHeader.Content
@@ -150,7 +171,7 @@ const ChatScenarioUI = ({
             userName={
               <div className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap">
                 <Link
-                  href={`/characters/${activeCharacter._id}`}
+                  href={`/characters/${activeCharacter.slug}`}
                   className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap"
                 >
                   <div className="flex items-center gap-2">
