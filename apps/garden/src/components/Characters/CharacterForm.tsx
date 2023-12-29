@@ -387,37 +387,23 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   labelCol={{ span: 24 }}
                   name="concept"
                 >
-                  <div className="mb-2">
-                    <ConceptSelectModalTrigger
-                      onChange={concept => {
-                        form.setFieldsValue({
-                          ['concept']: concept ? concept._id : null,
-                        })
-                      }}
-                    />
-                  </div>
-                  {concept && (
-                    <ConceptParameterUI
-                      conceptId={concept}
-                      onChange={() => form.setFieldValue('concept', null)}
-                    />
-                  )}
-                  {/* <Form.Item
-                    label={
-                      <FormLabel
-                        text="Example Messages"
-                        description="Add sample dialogs to further refine the personality of your character"
+                  <div>
+                    <div className="mb-2">
+                      <ConceptSelectModalTrigger
+                        onChange={concept => {
+                          form.setFieldsValue({
+                            ['concept']: concept ? concept._id : null,
+                          })
+                        }}
                       />
-                    }
-                    className="label-auto-height hidden"
-                    labelCol={{ span: 24 }}
-                    name="messages"
-                  >
-                    <ChatCapabilityMessageSection
-                      messageGroups={messageGroups}
-                      setMessageGroups={setMessageGroups}
-                    />
-                  </Form.Item> */}
+                    </div>
+                    {concept && (
+                      <ConceptParameterUI
+                        conceptId={concept}
+                        onChange={() => form.setFieldValue('concept', null)}
+                      />
+                    )}
+                  </div>
                 </Form.Item>
               </div>
 

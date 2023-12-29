@@ -20,12 +20,15 @@ import { generateApiKey } from './apiKeyController'
 
 const findCharacterByIdOrSlug = async (id: string) => {
   const lowerCaseId = id.toLowerCase()
-  const characterDoc = await Character.findOne({
-    $or: [
-      { id: new ObjectId(id) },
-      { slug: { $regex: new RegExp(`^${lowerCaseId}$`, 'i') } },
-    ],
-  })
+  const conditions: { slug?: { $regex: RegExp }; _id?: ObjectId }[] = [
+    { slug: { $regex: new RegExp(`^${lowerCaseId}$`, 'i') } },
+  ]
+
+  if (ObjectId.isValid(id)) {
+    conditions.push({ _id: new ObjectId(id) })
+  }
+
+  const characterDoc = await Character.findOne({ $or: conditions })
   return characterDoc
 }
 

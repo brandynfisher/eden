@@ -2,6 +2,7 @@ import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import ShareButton from '@/components/Layout/buttons/ShareButton'
+import { createSession } from '@/lib/chat'
 import { CONFIG } from '@/lib/config'
 import CommentOutlined from '@ant-design/icons/CommentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
@@ -25,10 +26,6 @@ const CharacterProfileHeader = ({
       setHasNativeShare(true)
     }
   }, [])
-
-  const handleChat = () => {
-    router.push(`/characters/chat`)
-  }
 
   return (
     <div className="flex flex-col border border-solid border-gray-300 dark:border-gray-900 rounded-lg p-4 relative">
@@ -61,11 +58,13 @@ const CharacterProfileHeader = ({
                   url={`${CONFIG.NEXT_PUBLIC_HOST}/characters/${character?._id}`}
                 />
               )}
-              <CircleButton
-                title={'Chat'}
-                icon={<CommentOutlined className="text-xl" />}
-                onClick={handleChat}
-              />
+              {character && (
+                <CircleButton
+                  title={'Chat'}
+                  icon={<CommentOutlined className="text-xl" />}
+                  onClick={() => createSession(character?._id, router)}
+                />
+              )}
             </div>
           </div>
           <div>
