@@ -358,7 +358,7 @@ export const getCreationsFeed = async (
 
     // querying for similar creations
     if (creationId) {
-      const embeddingDoc = (await Embedding.find({
+      const embeddingDoc = (await Embedding.findOne({
         creation: new ObjectId(creationId),
       }).lean()) as EmbeddingDocument
       try {
