@@ -68,9 +68,6 @@ const aggregateCreationsByFollowerId = (
               ],
             },
           },
-          {
-            $unset: 'embedding.embedding',
-          },
           { $sort: { createdAt: -1 } },
           { $limit: 100 },
         ],
@@ -129,9 +126,6 @@ const aggregateCreationsByUserLikes = (
               ],
             },
           },
-          // {
-          //   $unset: 'embedding.embedding',
-          // },
           { $sort: { createdAt: -1 } },
           { $limit: 1 },
         ],
@@ -172,9 +166,6 @@ const aggregateCreationsByEmbeddingScore = (dateEndCutOff: string) => {
         deleted: false,
       },
     },
-    // {
-    //   $unset: 'embedding.embedding',
-    // },
     {
       $set: {
         'embedding.score_age_hours': {
@@ -415,7 +406,6 @@ export const getCreationsFeed = async (
       limit,
       page,
       sort,
-      select: '-embedding.embedding',
     })
   }
 
