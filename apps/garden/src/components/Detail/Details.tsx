@@ -8,6 +8,7 @@ import ConceptMedia from '@/components/Concept/ConceptDetail/ConceptMedia'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
 import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
+// import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
 import ModalMasonry from '@/components/Masonry/ModalMasonry'
@@ -280,16 +281,16 @@ const Details = ({
           />
         </div>
       ) : null}
-      {itemType === 'creation' ? (
-        <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
-          <ModalMasonry
-            title="Similar Creations"
-            query={{ creationId: item._id }}
-            modalContainerRef={modalContainerRef}
-            modalContainerHeight={modalContainerHeight}
-          />
-        </div>
-      ) : null}
+      {/*{itemType === 'creation' ? (*/}
+      {/*  <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>*/}
+      {/*    <ModalMasonry*/}
+      {/*      title="Similar Creations"*/}
+      {/*      query={{ creationId: item._id }}*/}
+      {/*      modalContainerRef={modalContainerRef}*/}
+      {/*      modalContainerHeight={modalContainerHeight}*/}
+      {/*    />*/}
+      {/*  </div>*/}
+      {/*) : null}*/}
     </>
   )
 }
