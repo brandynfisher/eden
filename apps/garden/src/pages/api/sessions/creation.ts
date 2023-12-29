@@ -6,7 +6,9 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const args = req.body as TasksCreateArguments
+  const { characterId, ...args } = req.body as TasksCreateArguments & {
+    characterId: string
+  }
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -18,7 +20,23 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       apiKey: CONFIG.EDEN_ADMIN_API_KEY,
       apiSecret: CONFIG.EDEN_ADMIN_API_SECRET,
     })
-    const result = await eden.create(args)
+
+    const response = await eden.admin.apikeys.list({
+      character: characterId,
+    })
+    const docs = response.docs
+    if (!docs || docs?.length === 0) {
+      return res.status(400).json({ error: 'No API key found' })
+    }
+    const { apiKey, apiSecret } = docs[0]
+
+    const characterEden = new EdenClient({
+      edenApiUrl: CONFIG.API_URL,
+      apiKey,
+      apiSecret,
+    })
+
+    const result = await characterEden.create(args)
     return res.status(200).json({
       uri: result[0],
     })

@@ -18,6 +18,18 @@ import CharacterRepository from '../repositories/CharacterRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 import { generateApiKey } from './apiKeyController'
 
+const findCharacterByIdOrSlug = async (id: string) => {
+  const lowerCaseId = id.toLowerCase()
+  const conditions = [{ slug: { $regex: new RegExp(`^${lowerCaseId}$`, 'i') } }]
+
+  if (ObjectId.isValid(id)) {
+    conditions.push({ _id: new ObjectId(id) })
+  }
+
+  const characterDoc = await Character.findOne({ $or: conditions })
+  return characterDoc
+}
+
 export const createCharacter = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -229,7 +241,10 @@ export const getCharacter = async (
   reply: FastifyReply,
 ) => {
   const { characterId } = request.params as CharactersGetArguments
-  const character = await Character.findOne({ _id: characterId })
+  console.log('characterId', characterId)
+  const character = await findCharacterByIdOrSlug(characterId)
+  console.log('xxx', character)
+
   if (!character) {
     return reply.status(404).send({
       message: 'Character not found',

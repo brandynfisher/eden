@@ -1,6 +1,8 @@
 import { AxiosRequestConfig } from 'axios'
 
 import {
+  AdminApiKeysListArguments,
+  AdminApiKeysListResponse,
   AdminAuthChallengeArguments,
   AdminAuthChallengeResponse,
   AdminConceptsExportToHFArguments,
@@ -120,6 +122,7 @@ import {
   TasksGetResponse,
   TasksListArguments,
   TasksListResponse,
+  adminApiKeysListRequestConfig,
   adminAuthChallengeRequestConfig,
   adminConceptsExportToHFRequestConfig,
   adminMannaModifyRequestConfig,
@@ -243,6 +246,12 @@ export abstract class Methods {
           AdminConceptsExportToHFArguments
         >(this, adminConceptsExportToHFRequestConfig),
       },
+    },
+    apikeys: {
+      list: bindApiCall<AdminApiKeysListArguments, AdminApiKeysListResponse>(
+        this,
+        adminApiKeysListRequestConfig,
+      ),
     },
   }
 

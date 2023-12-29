@@ -126,7 +126,8 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
 
       if (config) {
         const { generator, ...rest } = config
-        const createInput: TasksCreateArguments = {
+        const createInput: TasksCreateArguments & { characterId: string } = {
+          characterId: activeCharacter._id,
           generatorName: generator,
           config: rest,
         }
@@ -162,7 +163,7 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
       responsive
       className="dark:!bg-gray-800 !border-none rounded-lg overflow-hidden"
     >
-      <ChatContainer className="!bg-gray-200 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden max-h-[calc(100vh_-_96px)]">
+      <ChatContainer className="!bg-gray-200 dark:!bg-gray-800 !border-none rounded-lg overflow-hidden max-h-[calc(100vh-_96px)]">
         <ConversationHeader className="!bg-gray-200 dark:!bg-gray-800 !px-4 !py-4 !border-b-0">
           {/*<ConversationHeader.Actions className="!bg-gray-100 dark:!bg-gray-800"></ConversationHeader.Actions>*/}
           <ConversationHeader.Content
@@ -170,7 +171,7 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
             userName={
               <div className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap">
                 <Link
-                  href={`/characters/${activeCharacter._id}`}
+                  href={`/characters/${activeCharacter.slug}`}
                   className="!bg-gray-200 dark:!bg-gray-800 dark:!text-gray-200 text-sm flex justify-between items-center flex-wrap"
                 >
                   <div className="flex items-center gap-2">
