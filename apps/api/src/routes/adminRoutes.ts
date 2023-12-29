@@ -6,6 +6,7 @@ import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { createTask } from '../controllers/taskController'
 import { isAdmin } from '../middleware/authMiddleware'
+import { configType } from '../types/routeTypes'
 
 export interface MannaModifyRequestBody {
   userId: string
@@ -85,7 +86,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
-        config: Type.Optional(Type.Any()),
+        config: Type.Optional(configType),
         webhooks: Type.Optional(Type.Array(Type.String())),
         attributes: Type.Optional(
           Type.Object({

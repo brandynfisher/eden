@@ -90,19 +90,15 @@ const NavMenu = ({
       ),
       label: 'Creations',
     },
-    ...(isPreviewUser
-      ? [
-          {
-            key: '/creators',
-            icon: (
-              <Link href="/creators" data-testid="nav-explore-concepts">
-                <PeopleOutline fontSize="small" />
-              </Link>
-            ),
-            label: 'Creators',
-          },
-        ]
-      : []),
+    {
+      key: '/creators',
+      icon: (
+        <Link href="/creators" data-testid="nav-explore-concepts">
+          <PeopleOutline fontSize="small" />
+        </Link>
+      ),
+      label: 'Creators',
+    },
     {
       key: '/concepts',
       icon: (

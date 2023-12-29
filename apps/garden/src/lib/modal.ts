@@ -8,14 +8,23 @@ interface ISpecialRouteIndex<TValue> {
 }
 
 const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
+  '/characters/[id]': {
+    basePath: 'characters',
+  },
   '/creators/[id]': {
     basePath: 'creators',
   },
   '/collections/[id]': {
     basePath: 'collections',
   },
+  '/concepts/[id]': {
+    basePath: 'concepts',
+  },
   '/create/creations': {
     basePath: 'create/creations',
+  },
+  '/create/characters': {
+    basePath: 'create/characters',
   },
   '/create/concepts': {
     basePath: 'create/concepts',
@@ -48,6 +57,12 @@ export const getModalUrls = (
     pageUrl: '',
     modalUrl: '',
   }
+
+  // console.log(
+  //   router.pathname,
+  //   specialHandlingRoutes,
+  //   specialHandlingRoutes[router.pathname],
+  // )
 
   // all default cases; modalUrl has id as path segment instead of query param
   if (!specialHandlingRoutes[router.pathname]) {

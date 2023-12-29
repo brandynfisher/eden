@@ -1,14 +1,22 @@
+import { CardData } from '@/components/Card/Card'
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
 import ConceptSelectModal from '@/components/Modals/ConceptSelectModal'
-import CreationDetailStaticModal from '@/components/Modals/CreationDetailStaticModal'
 import DetailModal from '@/components/Modals/DetailModal'
+import DetailStaticModal from '@/components/Modals/DetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import GeneratorSelectModal from '@/components/Modals/GeneratorSelectModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
 import TaskDetailModal from '@/components/Modals/TaskDetailModal'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
-import { Concept, Creation, Generator, Task } from '@edenlabs/eden-sdk'
+import {
+  Character,
+  Concept,
+  Creation,
+  Creator,
+  Generator,
+  Task,
+} from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, {
@@ -22,7 +30,7 @@ import React, {
 
 export enum MODAL_TYPES {
   DETAIL_MODAL = 'DETAIL_MODAL',
-  CREATION_DETAIL_STATIC_MODAL = 'CREATION_DETAIL_STATIC_MODAL',
+  DETAIL_STATIC_MODAL = 'DETAIL_STATIC_MODAL',
   COLLECTION_ADD_CREATION_MODAL = 'COLLECTION_ADD_CREATION_MODAL',
   CONCEPT_SELECT_MODAL = 'CONCEPT_SELECT_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
@@ -35,7 +43,7 @@ export enum MODAL_TYPES {
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.DETAIL_MODAL]: DetailModal,
-  [MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL]: CreationDetailStaticModal,
+  [MODAL_TYPES.DETAIL_STATIC_MODAL]: DetailStaticModal,
   [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
   [MODAL_TYPES.CONCEPT_SELECT_MODAL]: ConceptSelectModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
@@ -72,11 +80,18 @@ export type ItemType = 'creation' | 'concept' | 'character' | 'creator'
 export type DetailModalProps = Partial<
   BaseModalProps & {
     itemType: ItemType
-    initialItem: Creation | Concept
+    initialItem: Creation | Concept | Character | Creator
     maybeLoadMoreFn: (
       currentIndex: number,
-      currentItems: Creation[] | Concept[],
+      currentItems: Creation[] | Concept[] | Character[] | Creator[],
     ) => void
+  }
+>
+
+export type DetailStaticModalProps = Partial<
+  BaseModalProps & {
+    itemType: ItemType
+    item: CardData | Creator
   }
 >
 
@@ -90,7 +105,7 @@ export type AddToCollectionModalProps = Partial<
 type ModalStore = {
   modalType: string | undefined
   modalProps?:
-    | Partial<BaseModalProps & { creation?: Creation }>
+    | DetailStaticModalProps
     | DetailModalProps
     | AddToCollectionModalProps
     | GeneratorSelectModalProps
@@ -154,12 +169,12 @@ function ModalProvider({ children }: PropsWithChildren) {
     return (
       <>
         {store && store.length
-          ? store.map(modal => renderComponent(modal))
+          ? store.map((modal, index) => renderComponent(index, modal))
           : null}
       </>
     )
   }
-  const renderComponent = (modal: ModalStore) => {
+  const renderComponent = (index: number, modal: ModalStore) => {
     if (!modal || !modal.modalType) {
       return
     }
@@ -205,10 +220,25 @@ function ModalProvider({ children }: PropsWithChildren) {
         )
       : defaultClassNames
 
+    // console.log({ numModals: store.length, index })
+
+    // // if (index > 0) {
+    //   return (
+    //     <MasonryProvider key={`${modal.modalType}_${index}`} id={`${modal.modalType}_${index}`}>
+    //       {/*// @ts-ignore*/}
+    //       <ModalComponent
+    //         {...({ ...defaultModalProps, ...modal.modalProps } as ModalProps)}
+    //         handleCancel={modal.modalProps?.onCancel}
+    //         className={classNames}
+    //       />
+    //     </MasonryProvider>
+    //   )
+    // // }
+
     return (
       // @ts-ignore
       <ModalComponent
-        key={modal.modalType}
+        key={`${modal.modalType}_${index}`}
         {...({ ...defaultModalProps, ...modal.modalProps } as ModalProps)}
         handleCancel={modal.modalProps?.onCancel}
         className={classNames}

@@ -1,11 +1,11 @@
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Character, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import React, { PropsWithChildren, createContext, useState } from 'react'
 
 export interface MasonryContextType {
   currentIndex: number
   setCurrentIndex: (newIndex: number) => void
-  items: Creation[] | Concept[]
-  setItems: (items: Creation[] | Concept[]) => void
+  items: Creation[] | Concept[] | Creator[] | Character[]
+  setItems: (items: Creation[] | Concept[] | Creator[] | Character[]) => void
 }
 
 const defaultMasonryContextState: MasonryContextType = {
@@ -21,7 +21,9 @@ export const MasonryContext = createContext<MasonryContextType>(
 
 function MasonryProvider({ children }: PropsWithChildren) {
   const [currentIndex, setCurrentIndex] = useState<number>(0)
-  const [items, setItems] = useState<Creation[] | Concept[]>([])
+  const [items, setItems] = useState<
+    Creation[] | Concept[] | Creator[] | Character[]
+  >([])
 
   return (
     <MasonryContext.Provider
