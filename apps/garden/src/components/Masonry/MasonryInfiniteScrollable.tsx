@@ -3,7 +3,6 @@ import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
-import MasonryProvider from '@/providers/MasonryProvider'
 import { ItemType } from '@/providers/ModalProvider'
 import { Concept, Creation } from '@edenlabs/eden-sdk'
 import { useElementSize, useViewportSize } from '@mantine/hooks'
@@ -105,7 +104,7 @@ const MasonryInfiniteScrollable = ({
   )
 
   return (
-    <MasonryProvider>
+    <>
       <div className="flex flex-col w-full">
         {isLoading ? (
           <div>
@@ -155,7 +154,7 @@ const MasonryInfiniteScrollable = ({
           <LoadingIndicator />
         </div>
       ) : null}
-    </MasonryProvider>
+    </>
   )
 }
 

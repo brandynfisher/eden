@@ -30,6 +30,8 @@ const DetailModal = ({
   const router = useRouter()
   const { items, currentIndex, setCurrentIndex } = useContext(MasonryContext)
 
+  // console.log(items, currentIndex)
+
   const handlePrevItem = useCallback(async () => {
     const prevIndex = currentIndex - 1
 
@@ -71,7 +73,7 @@ const DetailModal = ({
   }, [currentIndex, handlePrevItem, handleNextItem])
 
   useEffect(() => {
-    console.log(router.asPath, currentIndex, items)
+    // console.log(router.asPath, currentIndex, items)
     const handleRouteChange = async () => {
       const { pageUrl, modalUrl } = getModalUrls(
         router,
@@ -83,7 +85,7 @@ const DetailModal = ({
     }
 
     if (currentIndex !== null) {
-      console.log('changing route', currentIndex)
+      // console.log('changing route', currentIndex)
       handleRouteChange()
     }
   }, [router.asPath, currentIndex, items.length])

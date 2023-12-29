@@ -7,7 +7,6 @@ import OrderByButtons, {
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfiniteScrollable from '@/components/Masonry/MasonryInfiniteScrollable'
-// import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import {
   ItemType,
@@ -15,7 +14,6 @@ import {
   useModalContext,
 } from '@/providers/ModalProvider'
 import { Creation, Creator } from '@edenlabs/eden-sdk'
-// import { ItemType } from '@/providers/ModalProvider'
 import React, { useCallback, useEffect, useState } from 'react'
 
 const MasonryInfiniteScrollableContainer = ({

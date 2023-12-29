@@ -169,12 +169,12 @@ function ModalProvider({ children }: PropsWithChildren) {
     return (
       <>
         {store && store.length
-          ? store.map(modal => renderComponent(modal))
+          ? store.map((modal, index) => renderComponent(index, modal))
           : null}
       </>
     )
   }
-  const renderComponent = (modal: ModalStore) => {
+  const renderComponent = (index: number, modal: ModalStore) => {
     if (!modal || !modal.modalType) {
       return
     }
@@ -220,10 +220,25 @@ function ModalProvider({ children }: PropsWithChildren) {
         )
       : defaultClassNames
 
+    console.log({ numModals: store.length, index })
+
+    // // if (index > 0) {
+    //   return (
+    //     <MasonryProvider key={`${modal.modalType}_${index}`} id={`${modal.modalType}_${index}`}>
+    //       {/*// @ts-ignore*/}
+    //       <ModalComponent
+    //         {...({ ...defaultModalProps, ...modal.modalProps } as ModalProps)}
+    //         handleCancel={modal.modalProps?.onCancel}
+    //         className={classNames}
+    //       />
+    //     </MasonryProvider>
+    //   )
+    // // }
+
     return (
       // @ts-ignore
       <ModalComponent
-        key={modal.modalType}
+        key={`${modal.modalType}_${index}`}
         {...({ ...defaultModalProps, ...modal.modalProps } as ModalProps)}
         handleCancel={modal.modalProps?.onCancel}
         className={classNames}

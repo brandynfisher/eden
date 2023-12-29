@@ -39,12 +39,24 @@ const CreatorDetails = ({
     {
       label: 'Concepts',
       key: 'concepts',
-      children: <CreatorConceptsTab creatorId={creator.userId} />,
+      children: (
+        <CreatorConceptsTab
+          creatorId={creator.userId}
+          modalContainerRef={modalContainerRef}
+          modalContainerHeight={modalContainerHeight}
+        />
+      ),
     },
     {
       label: 'Characters',
       key: 'characters',
-      children: <CreatorCharactersTab creatorId={creator.userId} />,
+      children: (
+        <CreatorCharactersTab
+          creatorId={creator.userId}
+          modalContainerRef={modalContainerRef}
+          modalContainerHeight={modalContainerHeight}
+        />
+      ),
     },
     {
       label: 'Collections',
