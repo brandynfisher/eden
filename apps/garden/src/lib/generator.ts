@@ -34,6 +34,11 @@ export const sdxl_generators_video = [
   'dialogue',
   'monologue',
   'wav2lip',
+  'comfy_txt2vid',
+  'comfy_img2vid',
+  'comfy_vid2vid',
+  'comfy_upscale',
+  'comfy_makeitrad',
 ]
 
 export const parameterGroups: { [key: string]: string[] } = {
