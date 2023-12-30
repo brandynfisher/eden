@@ -11,7 +11,8 @@ export const useClerkUserState = () => {
   const { signOut, openSignIn } = useClerk()
   const isAuthenticated = isSignedIn || false
   const userId = clerkUid || null
-  const { user, balance, pendingTasks, refetchMe } = useMe({ isAuthenticated })
+  const { user, balance, pendingTasks, refetchMe, hasMinimumSubscriptionTier } =
+    useMe({ isAuthenticated })
 
   const authenticate = async () => {
     if (!isAuthenticated) {
@@ -48,6 +49,7 @@ export const useClerkUserState = () => {
     user: user ? user : undefined,
     refetchMe,
     featureFlags: user?.featureFlags || [],
+    hasMinimumSubscriptionTier,
   }
   return userState
 }

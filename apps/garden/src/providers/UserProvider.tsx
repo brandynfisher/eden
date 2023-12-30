@@ -1,6 +1,6 @@
 import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
 import { SettingName, Settings } from '@/hooks/useSettings'
-import { Creator, Task } from '@edenlabs/eden-sdk'
+import { Creator, SubscriptionTier, Task } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, createContext } from 'react'
 
 export interface UserContextType {
@@ -17,6 +17,7 @@ export interface UserContextType {
   updateSetting: (settingName: SettingName, newValue: number | 'auto') => void
   user?: Creator
   featureFlags: string[]
+  hasMinimumSubscriptionTier: (minimumTier: SubscriptionTier) => boolean
 }
 
 const defaultUserState: UserContextType = {
@@ -41,6 +42,9 @@ const defaultUserState: UserContextType = {
     return null
   },
   featureFlags: [],
+  hasMinimumSubscriptionTier: () => {
+    return false
+  },
 }
 
 export const UserContext = createContext<UserContextType>(defaultUserState)
