@@ -470,7 +470,6 @@ const conceptsAggregate = (
     isPrivate?: { $ne?: boolean }
     deleted?: { $ne?: boolean }
   },
-  options?: { limit?: number; page?: number },
 ) => {
   const pipelines: PipelineStage[] = [
     {
@@ -487,6 +486,24 @@ const conceptsAggregate = (
               autocomplete: {
                 query: searchText,
                 path: 'conceptName',
+              },
+            },
+            {
+              text: {
+                query: searchText,
+                path: 'name',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+            {
+              text: {
+                query: searchText,
+                path: 'conceptName',
+                fuzzy: {
+                  maxEdits: 2,
+                },
               },
             },
           ],
@@ -519,15 +536,6 @@ const conceptsAggregate = (
       },
     })
   }
-
-  // if (options && options.page && options.limit) {
-  //   pipelines.push({
-  //     $limit: options.limit,
-  //   })
-  //   pipelines.push({
-  //     $skip: options.limit * (options.page - 1),
-  //   })
-  // }
 
   return Concept.aggregate(pipelines)
 }
@@ -651,7 +659,6 @@ const charactersAggregate = (
     isPrivate?: { $ne?: boolean }
     deleted?: { $ne?: boolean }
   },
-  options?: { limit?: number; page?: number },
 ) => {
   const pipelines: PipelineStage[] = [
     {
@@ -665,9 +672,12 @@ const charactersAggregate = (
               },
             },
             {
-              autocomplete: {
+              text: {
                 query: searchText,
-                path: 'conceptName',
+                path: 'name',
+                fuzzy: {
+                  maxEdits: 2,
+                },
               },
             },
           ],
@@ -701,15 +711,6 @@ const charactersAggregate = (
     })
   }
 
-  // if (options && options.page && options.limit) {
-  //   pipelines.push({
-  //     $limit: options.limit,
-  //   })
-  //   pipelines.push({
-  //     $skip: options.limit * (options.page - 1),
-  //   })
-  // }
-
   return Character.aggregate(pipelines)
 }
 
@@ -725,6 +726,7 @@ export const getCharactersFeed = async (
     orderBy,
     direction,
   } = request.query as FeedCharactersArguments
+
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
     userId: filterUserIds,
@@ -775,15 +777,15 @@ export const getCharactersFeed = async (
       ...sortFilter,
       deleted: { $ne: true },
     })
-    // console.log(JSON.stringify(aggregate))
+    console.log(JSON.stringify(aggregate))
     const sortObj = Object.fromEntries(sort)
-    // console.log(sortObj)
+    console.log(sortObj)
     characters = await characterRepo.aggregateQuery(aggregate, {
       limit,
       page,
       sort: sortObj,
     })
-    // console.log(characters)
+    console.log(characters)
     // use flat query
   } else {
     characters = await characterRepo.query(
@@ -802,63 +804,15 @@ export const getCharactersFeed = async (
     )
   }
 
-  // console.log(characters)
-
   await characterRepo.model.populate(characters.docs, {
     path: 'user',
     select: 'userId username userImage',
   })
 
-  if (ownUserId) {
-    interface CharacterDocumentExtension {
-      reactions: Map<ReactionType, boolean>
-      bookmarked: boolean
-    }
-
-    type FeedResponse = {
-      docs: CharacterDocumentExtension[]
-      reactions: { [key: string]: Map<ReactionType, boolean> } | []
-      bookmarks: { [key: string]: boolean } | []
-    }
-
-    const feed: FeedResponse = {
-      ...characters,
-      docs: [],
-      reactions: [],
-      bookmarks: [],
-    }
-
-    // if (characters.docs) {
-    //   const uid = new ObjectId(ownUserId)
-    //   const reactionsMap = await getConceptReactions(uid, characters.docs)
-    //   const bookmarksMap = await getConceptBookmarks(uid, characters.docs)
-    //
-    //   const extendedDocs = characters.docs.map(character => {
-    //     return {
-    //       ...(typeof character.toObject !== 'undefined'
-    //         ? character.toObject()
-    //         : character), //aggregate returns different format than query
-    //       reactions: reactionsMap[character._id.toString()],
-    //       bookmarked: bookmarksMap[character._id.toString()],
-    //     }
-    //   })
-    //   feed.docs = extendedDocs
-    //   feed.reactions = reactionsMap
-    //   feed.bookmarks = bookmarksMap
-    // }
-
-    // console.log(feed)
-    return reply.status(200).send(characters)
-  } else {
-    // No user, so no reactions or bookmarks
-    return reply.status(200).send(characters)
-  }
+  return reply.status(200).send(characters)
 }
 
-const creatorsAggregate = (
-  searchText: string,
-  options?: { limit?: number; page?: number },
-) => {
+const creatorsAggregate = (searchText: string) => {
   const pipelines: PipelineStage[] = [
     {
       $search: {
@@ -870,12 +824,27 @@ const creatorsAggregate = (
                 path: 'username',
               },
             },
+            {
+              text: {
+                query: searchText,
+                path: 'username',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
           ],
           minimumShouldMatch: 1,
         },
       },
     },
   ]
+
+  pipelines.push({
+    $match: {
+      deleted: { $ne: true },
+    },
+  })
 
   return User.aggregate(pipelines)
 }
@@ -911,9 +880,7 @@ export const getCreatorsFeed = async (
   let creators: PaginatedResponse<UserDocument>
   // use atlas search query
   if (name) {
-    const aggregate = creatorsAggregate(name, {
-      ...sortFilter,
-    })
+    const aggregate = creatorsAggregate(name)
     // console.log(JSON.stringify(aggregate))
     const sortObj = Object.fromEntries(sort)
     // console.log(sortObj)
