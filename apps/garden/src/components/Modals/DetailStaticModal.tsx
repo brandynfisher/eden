@@ -2,32 +2,35 @@
 
 import Details from '@/components/Detail/Details'
 import { getModalUrls } from '@/lib/modal'
+import { ItemType } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Modal } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useEffect } from 'react'
 
-const CreationDetailStaticModal = ({
-  creation,
+const DetailStaticModal = ({
+  item,
+  itemType,
   usesUrl,
   ...rest
 }: {
-  creation: Creation
+  item: Creation
+  itemType: ItemType
   usesUrl: boolean
 }) => {
   const router = useRouter()
   useEffect(() => {
     if (usesUrl) {
-      const { pageUrl, modalUrl } = getModalUrls(router, 'creation', creation)
+      const { pageUrl, modalUrl } = getModalUrls(router, itemType, item)
       router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     }
-  }, [usesUrl, creation])
+  }, [usesUrl, item])
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">
-      <Details itemType="creation" item={creation} isModal={true} />
+      <Details itemType={itemType} item={item} isModal={true} />
     </Modal>
   )
 }
 
-export default CreationDetailStaticModal
+export default DetailStaticModal

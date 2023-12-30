@@ -1,58 +1,7 @@
-import { getAuthHeaders, getAuthUserId } from '@/lib/auth'
-import { CONFIG } from '@/lib/config'
-import { fetcher as fetcherFn } from '@/lib/fetcher'
-import { getServerSidePropsBase } from '@/lib/ssr'
-import ChatScenarioPage from '@/pages/sessions/ChatScenarioPage'
-import { Character, Session } from '@edenlabs/eden-sdk'
-import { NextApiRequest, NextPageContext } from 'next'
+import React from 'react'
 
-import { Page } from '../../../types/page'
-
-interface PageProps {
-  data: {
-    characters: Character[]
-    sessions: Session[]
-  }
-  error?: string
+const index = () => {
+  return <div>index</div>
 }
 
-const fetchCharacters = async (context: NextPageContext) => {
-  const { req } = context
-  const userId = await getAuthUserId(req as NextApiRequest)
-
-  return fetcherFn(
-    `${CONFIG.NEXT_PUBLIC_HOST}/api/characters/user?userId=${userId}`,
-    {
-      headers: await getAuthHeaders(req as NextApiRequest),
-    },
-  )
-}
-
-const fetchSessions = async (context: NextPageContext) => {
-  const { req } = context
-  const userId = await getAuthUserId(req as NextApiRequest)
-
-  return fetcherFn(
-    `${CONFIG.NEXT_PUBLIC_HOST}/api/sessions/user?userId=${userId}`,
-    {
-      headers: await getAuthHeaders(req as NextApiRequest),
-    },
-  )
-}
-
-export const getServerSideProps = getServerSidePropsBase([
-  {
-    responseFieldName: 'characters',
-    dataFetcher: fetchCharacters,
-  },
-  {
-    responseFieldName: 'sessions',
-    dataFetcher: fetchSessions,
-  },
-])
-
-const chatScenario: Page<PageProps> = ({ data }: PageProps) => {
-  return <ChatScenarioPage data={data} />
-}
-
-export default chatScenario
+export default index

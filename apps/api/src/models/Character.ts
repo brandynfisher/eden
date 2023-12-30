@@ -11,7 +11,6 @@ import paginate from 'mongoose-paginate-v2'
 import slug from 'mongoose-slug-plugin'
 
 import { VisibilitySchema } from '../types/baseSchemas'
-import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 
 interface ChatSchema {
@@ -151,6 +150,7 @@ character.plugin(paginate)
 character.plugin(aggregatePaginate)
 character.plugin(slug, {
   tmpl: '<%=name%>',
+  history: false,
 })
 
 export const Character = model<CharacterDocument>(

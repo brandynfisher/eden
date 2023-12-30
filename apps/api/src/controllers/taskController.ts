@@ -3,13 +3,11 @@ import {
   TasksGetArguments,
   TasksListArguments,
 } from '@edenlabs/eden-sdk'
+import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import {
-  maximumTasksInProgressPermissionCheck,
-  taskPrivacyPermissionCheck,
-} from '../lib/authorization'
+import { taskPrivacyPermissionCheck } from '../lib/authorization'
 import {
   getDefaultGeneratorVersion,
   getLatestGeneratorVersion,
@@ -24,7 +22,6 @@ import {
 import { Manna } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
-import { TaskUpdateEvent } from '../plugins/eventEmitterPlugin'
 import TaskRepository from '../repositories/TaskRepository'
 
 const getGeneratorVersion = (
@@ -335,6 +332,8 @@ export const subscribeTaskUpdates = async (
     (async function* () {
       for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
         const taskUpdate = event as TaskUpdateEvent
+        console.log(`Received task update for task ${taskUpdate.taskId}`)
+        console.log(`Task update: ${event}`)
         if (
           taskUpdate.userId.toString() === userId.toString() &&
           (!taskId || taskUpdate.taskId === taskId)

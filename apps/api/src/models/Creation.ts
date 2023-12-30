@@ -34,7 +34,6 @@ export interface CreationSchema extends VisibilitySchema {
   attributes?: CreationAttributes
   mediaAttributes: MediaAttributes
   embedding?: {
-    embedding?: number[]
     score?: number
   }
   createdAt?: Date
@@ -143,9 +142,6 @@ const creation = new Schema<CreationDocument>(
       },
     },
     embedding: {
-      embedding: {
-        type: [Number],
-      },
       score: {
         type: Number,
       },

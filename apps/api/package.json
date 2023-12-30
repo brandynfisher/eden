@@ -83,6 +83,7 @@
     "@types/tar": "^6.1.10",
     "@types/tmp": "^0.2.4",
     "@types/uuid": "^9.0.1",
+    "@types/event-source-polyfill": "^1.0.3",
     "esbuild": "^0.14.54",
     "eslint": "^8.40.0",
     "lint-staged": "^13.2.2",

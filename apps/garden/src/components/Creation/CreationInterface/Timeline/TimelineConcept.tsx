@@ -2,7 +2,7 @@ import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import { ProgressCard } from '@/components/Creation/CreationInterface/Timeline/TimelineItemMediaPlaceholder'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useConcept } from '@/hooks/useConcept'
-import { useModalContext } from '@/providers/ModalProvider'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Task } from '@edenlabs/eden-sdk'
 import React, { useCallback } from 'react'
 
@@ -25,11 +25,13 @@ const TimelineCreationSample = ({
   const { showModal } = useModalContext()
 
   const handleCardClick = useCallback(() => {
-    // showModal(MODAL_TYPES.CREATION_DETAIL_STATIC_MODAL, {
-    //   creation: creation ? creation : undefined,
-    //   loadSimilar: false,
-    //   usesUrl: false,
-    // })
+    if (!concept) return
+
+    showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
+      item: concept,
+      itemType: 'concept',
+      usesUrl: false,
+    })
   }, [showModal, concept])
 
   if (isLoading) {

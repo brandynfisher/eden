@@ -1,11 +1,14 @@
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+import { paginatedResponse, paginationProperties } from '.'
+import { adminListApiKeys, listApiKeys } from '../controllers/apiKeyController'
 import { conceptExportToHF } from '../controllers/conceptsController'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { createTask } from '../controllers/taskController'
-import { isAdmin } from '../middleware/authMiddleware'
+import { isAdmin, isAuth } from '../middleware/authMiddleware'
+import { configType } from '../types/routeTypes'
 
 export interface MannaModifyRequestBody {
   userId: string
@@ -85,7 +88,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
-        config: Type.Optional(Type.Any()),
+        config: Type.Optional(configType),
         webhooks: Type.Optional(Type.Array(Type.String())),
         attributes: Type.Optional(
           Type.Object({
@@ -127,6 +130,40 @@ const adminRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => conceptExportToHF(server, request, reply),
+  })
+
+  server.get('/admin/apikeys', {
+    schema: {
+      tags: ['API Keys'],
+      description: 'List API keys',
+      hide: true,
+      querystring: {
+        type: 'object',
+        properties: {
+          character: { type: ['string', 'array'] },
+          ...paginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: paginatedResponse(
+          Type.Object({
+            apiKey: Type.String(),
+            apiSecret: Type.String(),
+            note: Type.Optional(Type.String()),
+            createdAt: Type.String(),
+          }),
+        ),
+      },
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => adminListApiKeys(request, reply),
   })
 }
 

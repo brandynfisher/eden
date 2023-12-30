@@ -39,7 +39,6 @@ const Card: FC<CardWithTypeProps> = ({
   )
 
   const cardUpdateHandler = (item: Creator) => {
-    console.log('cardUpdate', item)
     setItemData(item)
     updateHandler && updateHandler(item)
   }

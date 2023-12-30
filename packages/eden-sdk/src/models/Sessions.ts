@@ -1,4 +1,6 @@
 import { AxiosRequestConfig } from 'axios'
+import { Character } from 'src/models/Characters'
+import { Creator } from 'src/models/Creators'
 
 import { transformArgsIntoURLParams } from '../types'
 import {
@@ -41,9 +43,10 @@ export interface SessionsAddCharactersArguments extends WebAPICallOptions {
 }
 
 export interface SessionsInteractArguments extends WebAPICallOptions {
-  sessionId: string
-  assistant: Assistant
-  interaction: Interaction
+  character_id: string
+  session_id: string
+  prompt: string
+  attachments?: string[]
 }
 
 // Requests
@@ -148,11 +151,12 @@ export type SessionsDeleteResponse = WebAPICallResult & {
 export type SessionsListResponse = WebAPICallResult &
   PaginatedResponse<Session> & {
     error?: string
+    session?: Session
   }
 
 export type SessionsGetResponse = WebAPICallResult & {
   error?: string
-  scenario: Session
+  session?: Session
 }
 
 export type SessionsInteractResponse = WebAPICallResult & {
@@ -194,6 +198,8 @@ export type SessionEventResponseType =
 export type Session = {
   id: string
   user: string
+  users: Creator[]
+  characters: Character[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -212,8 +218,9 @@ export interface CharactersAddEvent {
 }
 
 export interface InteractionEvent {
-  assistant: Assistant
-  interaction: Interaction
+  character: string
+  prompt: string
+  attachments?: string[]
 }
 
 export interface Interaction {

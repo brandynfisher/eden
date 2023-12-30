@@ -195,6 +195,14 @@ const handleUpdate = async (
         }),
       )
 
+      server.eventEmitter.emit('taskUpdate', {
+        userId: task.user,
+        taskId,
+        status: TaskStatus.Completed,
+        progress: 1.0,
+        result: creationData.map(item => item.uri),
+      })
+
       if (task.webhooks) {
         for (const webhook of task.webhooks) {
           await axios.post(webhook, {
@@ -280,6 +288,15 @@ const handleUpdate = async (
           status: 'completed',
           progress: 1.0,
         })
+
+        server.eventEmitter.emit('taskUpdate', {
+          userId: task.user,
+          taskId,
+          status: TaskStatus.Completed,
+          progress: 1.0,
+          result: [conceptData.uri],
+        })
+
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
             await axios.post(webhook, {
@@ -290,13 +307,6 @@ const handleUpdate = async (
         }
       }
     }
-
-    server.eventEmitter.emit('taskUpdate', {
-      userId: task.user,
-      taskId,
-      status: TaskStatus.Completed,
-      progress: 1.0,
-    })
   }
 
   await Task.updateOne(
@@ -372,15 +382,16 @@ const handleUpdateUniversal = async (
             })
           })
         }
+
+        server.eventEmitter.emit('taskUpdate', {
+          userId: task.user,
+          taskId,
+          status: TaskStatus.Completed,
+          progress: 1.0,
+          result: creationData.uri,
+        })
       }
     }
-
-    server.eventEmitter.emit('taskUpdate', {
-      userId: task.user,
-      taskId,
-      status: TaskStatus.Completed,
-      progress: 1.0,
-    })
   }
 
   await Task.updateOne(
@@ -451,6 +462,7 @@ const handleFailure = async (
     taskId,
     status: TaskStatus.Failed,
     progress: 1.0,
+    result: null,
   })
 }
 

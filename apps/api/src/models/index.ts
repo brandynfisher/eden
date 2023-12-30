@@ -7,6 +7,7 @@ import { Collection, CollectionDocument } from './Collection'
 import { Concept, ConceptDocument } from './Concept'
 import { Creation, CreationDocument } from './Creation'
 import { User, UserDocument } from './Creator'
+import { Embedding, EmbeddingDocument } from './Embedding'
 import { Follow, FollowDocument } from './Follow'
 import { Generator, GeneratorDocument } from './Generator'
 import { Manna, MannaDocument } from './Manna'
@@ -26,6 +27,7 @@ export interface Database {
   Follow: Model<FollowDocument>
   Task: Model<TaskDocument>
   Creation: Model<CreationDocument>
+  Embedding: Model<EmbeddingDocument>
   Concept: Model<ConceptDocument>
   Reaction: Model<ReactionDocument>
   Collection: Model<CollectionDocument>
@@ -44,6 +46,7 @@ export const models: Database = {
   MannaVoucher,
   ApiKey,
   Follow,
+  Embedding,
   Task,
   Creation,
   Concept,

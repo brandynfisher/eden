@@ -92,10 +92,14 @@ export const listSessions = async (
       sort,
     },
   )
+
   const response = {
     ...sessionPaginatedResponse,
     docs: sessionPaginatedResponse.docs.map(session => ({
       id: session._id,
+      user: session.user,
+      characters: session.characters,
+      users: session.users,
     })),
   }
 
@@ -108,6 +112,8 @@ export const getSession = async (
 ) => {
   const { sessionId } = request.params as SessionsGetArguments
   const session = await Session.findById(sessionId)
+    .populate('users')
+    .populate('characters')
   if (!session) {
     return reply.status(404).send({
       message: 'Session not found',
@@ -116,6 +122,9 @@ export const getSession = async (
 
   const response = {
     id: session._id,
+    user: session.user,
+    characters: session.characters,
+    users: session.users,
   }
 
   return reply.status(200).send({ session: response })
@@ -163,10 +172,10 @@ export const interactSession = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { sessionId, assistant, interaction } =
-    request.body as SessionsInteractArguments
+  const args = request.body as SessionsInteractArguments
+  const { session_id, character_id, prompt, attachments } = args
 
-  const session = await Session.findById(sessionId)
+  const session = await Session.findById(session_id)
   if (!session) {
     return reply.status(404).send({
       message: 'Session not found',
@@ -174,8 +183,9 @@ export const interactSession = async (
   }
 
   const interactionEventData: InteractionEvent = {
-    assistant,
-    interaction,
+    character: character_id,
+    prompt,
+    attachments,
   }
   const interactionEvent = await SessionEvent.create({
     session: session._id,
@@ -185,11 +195,7 @@ export const interactSession = async (
 
   // TODO: Check if user is allowed to interact with session
 
-  const { message, config } = await server.handleInteractionTest(
-    server,
-    assistant,
-    interaction,
-  )
+  const { message, config } = await server.handleInteraction(server, args)
 
   const eventData: ChatResponseEvent = {
     interaction: interactionEvent._id,
@@ -243,6 +249,9 @@ export const addUsersToSession = async (
   }
 
   await SessionEvent.create(event)
+  await session.updateOne({
+    users: [...session.users, ...users.map(user => user._id)],
+  })
 
   return reply.status(200).send({})
 }
@@ -283,6 +292,9 @@ export const addCharactersToSession = async (
   }
 
   await SessionEvent.create(event)
+  await session.updateOne({
+    characters: [...session.characters, ...characters.map(c => c._id)],
+  })
 
   return reply.status(200).send({})
 }

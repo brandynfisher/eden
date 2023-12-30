@@ -11,6 +11,7 @@ import {
   subscribeTaskUpdates,
 } from '../controllers/taskController'
 import { isAuth } from '../middleware/authMiddleware'
+import { configType } from '../types/routeTypes'
 
 const taskRoutes: FastifyPluginAsync = async server => {
   server.post('/tasks/cost', {
@@ -26,7 +27,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
-        config: Type.Optional(Type.Any()),
+        config: Type.Optional(configType),
       },
       response: {
         200: Type.Object({
@@ -51,7 +52,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
-        config: Type.Optional(Type.Any()),
+        config: Type.Optional(configType),
         webhooks: Type.Optional(Type.Array(Type.String())),
       },
       response: {

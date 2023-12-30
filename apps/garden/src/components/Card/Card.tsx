@@ -70,7 +70,6 @@ const Card: FC<CardWithTypeProps> = ({
     setDebugMode(!!(router.query && router.query.debug))
   }, [router.query])
 
-  // const { items, setItems } = useContext(MasonryContext)
   const { message } = App.useApp()
   const { hovered, ref } = useHover()
   const { width } = useViewportSize()
@@ -99,7 +98,6 @@ const Card: FC<CardWithTypeProps> = ({
       setItemData(updatedItem)
       updateHandler && updateHandler(updatedItem)
     } catch (err) {
-      console.log(err)
       handleAxiosError(err, message)
     }
   }, [itemData, itemType])
@@ -113,7 +111,6 @@ const Card: FC<CardWithTypeProps> = ({
   )
 
   const cardUpdateHandler = (item: CardData) => {
-    console.log('cardUpdate', item)
     setItemData(item)
     updateHandler && updateHandler(item)
   }

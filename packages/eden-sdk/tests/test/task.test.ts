@@ -9,14 +9,12 @@ describe('Task Methods', () => {
     expect(result).toBeDefined()
     expect(result.taskId).toBeDefined()
   })
-
   test('should be able to get all tasks', async context => {
     const { client } = context
     const result = await client.tasks.list()
     expect(result).toBeDefined()
     expect(result.docs).toBeDefined()
   })
-
   test('should be able to get a task by id', async context => {
     const { client } = context
     const response = await client.tasks.create({
@@ -29,4 +27,11 @@ describe('Task Methods', () => {
     expect(tasksResponse.task).toBeDefined()
     expect(tasksResponse.task.taskId).toBe(response.taskId)
   })
-})
+  // test('Should be able to submit a task and await its completion', async context => {
+  //   const { client } = context
+  //   const result = await client.create({
+  //     generatorName: 'test',
+  //   })
+  //   expect(result).toBeDefined()
+  // })
+}, 100000)
