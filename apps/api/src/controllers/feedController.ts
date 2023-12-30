@@ -635,54 +635,13 @@ export const getConceptsFeed = async (
   if (!hasConceptExportPermission) {
     // @ts-ignore
     concepts.docs = concepts.docs.map(concept => {
-      const { uri, ...conceptWithoutUri } = concept.toObject()
+      const conceptWithoutUri = concept.toObject()
+      delete conceptWithoutUri.uri
       return conceptWithoutUri
     })
   }
 
-  if (ownUserId) {
-    interface ConceptDocumentExtension {
-      reactions: Map<ReactionType, boolean>
-      bookmarked: boolean
-    }
-
-    type FeedResponse = {
-      docs: ConceptDocumentExtension[]
-      reactions: { [key: string]: Map<ReactionType, boolean> } | []
-      bookmarks: { [key: string]: boolean } | []
-    }
-
-    const feed: FeedResponse = {
-      ...concepts,
-      docs: [],
-      reactions: [],
-      bookmarks: [],
-    }
-
-    if (concepts.docs) {
-      const uid = new ObjectId(ownUserId)
-      const reactionsMap = await getConceptReactions(uid, concepts.docs)
-      const bookmarksMap = await getConceptBookmarks(uid, concepts.docs)
-
-      const extendedDocs = concepts.docs.map(concept => {
-        return {
-          ...(typeof concept.toObject !== 'undefined'
-            ? concept.toObject()
-            : concept), //aggregate returns different format than query
-          reactions: reactionsMap[concept._id.toString()],
-          bookmarked: bookmarksMap[concept._id.toString()],
-        }
-      })
-      feed.docs = extendedDocs
-      feed.reactions = reactionsMap
-      feed.bookmarks = bookmarksMap
-    }
-
-    return reply.status(200).send(feed)
-  } else {
-    // No user, so no reactions or bookmarks
-    return reply.status(200).send(concepts)
-  }
+  return reply.status(200).send(concepts)
 }
 
 const charactersAggregate = (
