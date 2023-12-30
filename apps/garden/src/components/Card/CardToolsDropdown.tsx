@@ -15,7 +15,13 @@ import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
-import { Concept, Creation, Creator, FeatureFlag } from '@edenlabs/eden-sdk'
+import {
+  Concept,
+  Creation,
+  Creator,
+  FeatureFlag,
+  SubscriptionTier,
+} from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
   ReactNode,
@@ -106,12 +112,13 @@ const getDownloadUrl = (
   itemType: ItemType,
   item: Creation | Concept,
   user: Creator | undefined,
+  canDownloadConcepts: boolean,
 ) => {
   if (!user) {
     return ''
   }
 
-  if (itemType === 'concept' && !user.subscriptionTier) {
+  if (itemType === 'concept' && !canDownloadConcepts) {
     return ''
   }
 
@@ -121,10 +128,16 @@ const getDownloadMenuItems = (
   itemType: ItemType,
   item: CardData,
   user: Creator | undefined,
+  canDownloadConcepts: boolean,
 ) => {
   const downloadable = itemType === 'creation' || itemType === 'concept'
   const downloadUrl = downloadable
-    ? getDownloadUrl(itemType, item as Creation | Concept, user)
+    ? getDownloadUrl(
+        itemType,
+        item as Creation | Concept,
+        user,
+        canDownloadConcepts,
+      )
     : ''
 
   if (!downloadable) {
@@ -164,7 +177,8 @@ const CardToolsDropdown = ({
   onChange: (updatedData: CardData) => void
   pageUrl: string
 }) => {
-  const { user, isAuthenticated } = useContext(UserContext)
+  const { user, isAuthenticated, hasMinimumSubscriptionTier } =
+    useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)
 
   useEffect(() => {
@@ -339,7 +353,12 @@ const CardToolsDropdown = ({
         : []
 
     const downloadItem: MenuItem[] = isAuthenticated
-      ? getDownloadMenuItems(itemType, item, user)
+      ? getDownloadMenuItems(
+          itemType,
+          item,
+          user,
+          hasMinimumSubscriptionTier(SubscriptionTier.Basic),
+        )
       : []
 
     if (

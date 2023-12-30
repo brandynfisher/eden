@@ -10,12 +10,12 @@ const CreatorCardFooter = ({ creator }: { creator: Creator }) => {
       <Popover content="Creations made by this user" trigger={['hover']}>
         <Tag
           className={`flex items-center first-letter:capitalize me-0 gap-1 hover:text-blue-400 px-1 ${
-            creator.creationCount === 0 ? 'text-gray-500' : ''
+            !creator.creationCount ? 'text-gray-500' : ''
           }`}
           bordered={false}
           icon={<Yard fontSize="medium" />}
         >
-          {creator.creationCount}
+          {creator.creationCount || 0}
         </Tag>
       </Popover>
 
@@ -27,7 +27,7 @@ const CreatorCardFooter = ({ creator }: { creator: Creator }) => {
           bordered={false}
           icon={<People fontSize="medium" />}
         >
-          {creator.followerCount}
+          {creator.followerCount || 0}
         </Tag>
       </Popover>
     </>

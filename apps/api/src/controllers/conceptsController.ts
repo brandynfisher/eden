@@ -165,7 +165,7 @@ export const getConcept = async (
 ) => {
   const { conceptId } = request.params as ConceptsGetArguments
 
-  let concept = (await Concept.findById(conceptId, {})
+  const concept = (await Concept.findById(conceptId, {})
     .populate({
       path: 'user',
       select: 'userId username userImage',
@@ -196,39 +196,12 @@ export const getConcept = async (
 
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
   if (!hasConceptExportPermission) {
-    const { uri, ...conceptWithoutUri } = concept.toObject()
-    // @ts-ignore
-    concept = conceptWithoutUri
+    const conceptWithoutUri = concept.toObject()
+    delete conceptWithoutUri.uri
+    return reply.status(200).send({ concept: conceptWithoutUri })
   }
 
-  if (request.user?.userId) {
-    // Get user's reactions and bookmarks
-    const userId = request.user.userId
-    const user = await User.findOne({ _id: userId })
-    if (!user) {
-      return reply.status(404).send({
-        message: 'User not found',
-      })
-    }
-    const uid = new ObjectId(userId)
-    const reactionsMap = await getReactions(uid, [concept])
-    const bookmarksMap = await getBookmarks(uid, [concept])
-
-    // concept.reactions = reactionsMap[concept._id.toString()]
-    // concept.bookmarked = bookmarksMap[concept._id.toString()]
-
-    const conceptWithExtras = {
-      ...concept.toObject(),
-      reactions: reactionsMap[concept._id.toString()],
-      bookmarked: bookmarksMap[concept._id.toString()],
-    }
-
-    return reply.status(200).send({
-      concept: conceptWithExtras,
-    })
-  }
-
-  return await reply.status(200).send({ concept })
+  return reply.status(200).send({ concept })
 }
 
 export const conceptDelete = async (
