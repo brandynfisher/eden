@@ -182,6 +182,12 @@ export const useCreationState = () => {
             },
           )
           mutateGlobal(ownCreatorFeedPageRoute, undefined)
+          // brutally refreshes
+          mutateGlobal(
+            key =>
+              typeof key === 'string' && key.startsWith('/api/feed/concepts'),
+            undefined,
+          )
           notify(
             completed.filter(
               item =>
