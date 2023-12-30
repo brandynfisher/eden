@@ -243,9 +243,7 @@ export const getCharacter = async (
   reply: FastifyReply,
 ) => {
   const { characterId } = request.params as CharactersGetArguments
-  console.log('characterId', characterId)
   const character = await findCharacterByIdOrSlug(characterId)
-  console.log('xxx', character)
 
   if (!character) {
     return reply.status(404).send({

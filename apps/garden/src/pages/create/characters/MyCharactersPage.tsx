@@ -20,7 +20,6 @@ const CharactersPageContent = ({
 }: {
   characters?: Character[]
 }) => {
-  console.log(characters)
   const router = useRouter()
   const { isAuthenticated, authenticate } = useContext(UserContext)
 

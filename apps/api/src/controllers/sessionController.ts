@@ -196,7 +196,6 @@ export const interactSession = async (
   // TODO: Check if user is allowed to interact with session
 
   const { message, config } = await server.handleInteraction(server, args)
-  console.log('111', message, config)
 
   const eventData: ChatResponseEvent = {
     interaction: interactionEvent._id,
