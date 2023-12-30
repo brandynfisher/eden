@@ -26,6 +26,8 @@ export const sdxl_generators_image = [
   'blend',
   'upscale',
   'controlnet',
+  'comfy_upscale',
+  'comfy_makeitrad',
 ]
 export const sdxl_generators_video = [
   'real2real',
@@ -37,8 +39,6 @@ export const sdxl_generators_video = [
   'comfy_txt2vid',
   'comfy_img2vid',
   'comfy_vid2vid',
-  'comfy_upscale',
-  'comfy_makeitrad',
 ]
 
 export const parameterGroups: { [key: string]: string[] } = {
