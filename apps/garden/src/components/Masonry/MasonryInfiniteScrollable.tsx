@@ -100,7 +100,7 @@ const MasonryInfiniteScrollable = ({
         onClick={() => onCardClick(props.data)}
       />
     ),
-    [hover, ItemComponent, onCardClick],
+    [hover],
   )
 
   return (
@@ -131,21 +131,23 @@ const MasonryInfiniteScrollable = ({
             // className="h-[calc(100vh_-_190px)] mx-auto mb-0 w-full pr-3 overflow-y-auto overflow-x-hidden"
             className="mx-auto mb-0 w-full min-h-[237px]"
           >
-            <MasonryHookWrap
-              positioner={positioner}
-              resizeObserver={resizeObserver}
-              items={items}
-              itemHeightEstimate={207}
-              height={
-                modalContainerHeight ? modalContainerHeight : windowHeight
-              }
-              scrollTop={scrollTop}
-              isScrolling={isScrolling}
-              overscanBy={3}
-              //@ts-ignore
-              render={CardWithClick}
-              onRender={maybeLoadMore}
-            />
+            {containerWidth ? (
+              <MasonryHookWrap
+                positioner={positioner}
+                resizeObserver={resizeObserver}
+                items={items}
+                itemHeightEstimate={207}
+                height={
+                  modalContainerHeight ? modalContainerHeight : windowHeight
+                }
+                scrollTop={scrollTop}
+                isScrolling={isScrolling}
+                overscanBy={3}
+                //@ts-ignore
+                render={CardWithClick}
+                onRender={maybeLoadMore}
+              />
+            ) : null}
           </div>
         )}
       </div>
