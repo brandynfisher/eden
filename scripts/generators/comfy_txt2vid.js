@@ -10,7 +10,7 @@ const params = [
   },
   
   {
-    name: 'prompt',
+    name: 'interpolation_texts',
     label: 'Prompts',
     description: 'Prompts to interpolate through',
     default: [],

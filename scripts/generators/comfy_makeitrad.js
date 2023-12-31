@@ -10,7 +10,7 @@ const params = [
   },
   
   {
-    name: 'prompt',
+    name: 'text_input',
     label: 'Prompt',
     description: 'Text prompt for the creation',
     default: null,
