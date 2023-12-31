@@ -10,14 +10,6 @@ const params = [
   },
   
   {
-    name: 'input_video_path',
-    label: 'input video (only used by vid2vid mode)',
-    description: 'Source video (driving shape/content)',
-    default: null,
-    mediaUpload: "video/mp4, image/gif",
-  },
-  
-  {
     name: 'prompt',
     label: 'Prompt',
     description: 'Text prompt for the creation',
@@ -44,36 +36,6 @@ const params = [
     step: 64,
   },
   
-  {
-    name: 'n_frames',
-    label: 'Number of frames',
-    description: 'length of the output video',
-    default: 48,
-    minimum: 16,
-    maximum: 320,
-  },
-  
-  {
-    name: 'controlnet_type',
-    label: 'ControlNet mode',
-    description: 'Which ControlNet mode to use for vid2vid mode (we recommend canny-edge or luminance)',
-    default: 'qr_monster',
-    allowedValues: ["qr_monster", "canny-edge"],
-  },
-
-  {
-    name: 'controlnet_strength',
-    label: 'Control video strength',
-    description:
-      'How much influence the guidance video has on the creation. Recommended >0.5',
-    default: 0.6,
-    minimum: 0.0,
-    maximum: 1.25,
-    step: 0.01,
-  },
-  
-  
-
   ////////////////////////////////////////
   // optional generation args
   
