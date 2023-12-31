@@ -11,13 +11,15 @@ import { Task, TaskStatus } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
 import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
+import * as logos from './logos'
 import * as replicate from './replicate'
 
-type TaskProvider = 'replicate' | 'elevenPlay'
+type TaskProvider = 'replicate' | 'elevenPlay' | 'logos'
 
 const providers = new Map<TaskProvider, any>([
   ['elevenPlay', elevenPlay],
   ['replicate', replicate],
+  ['logos', logos],
 ])
 
 interface TaskOutput {
@@ -37,7 +39,6 @@ const submitTask = async (
   config: any,
 ) => {
   const { provider } = generatorVersion
-  console.log('GO!!!', provider)
   const task = await providers
     .get(provider)
     .submitTask(server, generator, generatorVersion, config)
