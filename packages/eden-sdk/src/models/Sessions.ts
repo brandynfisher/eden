@@ -45,7 +45,7 @@ export interface SessionsAddCharactersArguments extends WebAPICallOptions {
 export interface SessionsInteractArguments extends WebAPICallOptions {
   character_id: string
   session_id: string
-  prompt: string
+  message: string
   attachments?: string[]
 }
 

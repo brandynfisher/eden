@@ -10,9 +10,9 @@ import { LogosResponse } from './tasks'
 export interface LogosTestArguments {
   name: string
   identity: string
-  prompt: string
   knowledge?: string
   knowledge_summary?: string
+  message: string
   attachments?: string[]
 }
 
