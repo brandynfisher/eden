@@ -172,8 +172,14 @@ const ConceptParameterV2 = (props: {
       >
         <Input value={value} disabled={true} />
       </Form.Item>
-      {loraId && concept ? (
-        <ConceptParameterUI conceptId={concept._id} onChange={onChange} />
+      {loraId ? (
+        <>
+          {concept ? (
+            <ConceptParameterUI conceptId={concept._id} onChange={onChange} />
+          ) : (
+            <LoadingIndicator />
+          )}
+        </>
       ) : null}
     </div>
   )
