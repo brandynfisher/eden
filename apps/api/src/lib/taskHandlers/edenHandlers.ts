@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb'
 import { Character } from '../../models/Character'
 import { Concept } from '../../models/Concept'
 import { Creation, CreationInput } from '../../models/Creation'
+import { User } from '../../models/Creator'
 import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task, TaskStatus } from '../../models/Task'
@@ -159,6 +160,20 @@ const handleUpdate = async (
         await Concept.findOneAndUpdate(
           {
             _id: task.config.lora,
+          },
+          {
+            $inc: {
+              creationCount: task.config.n_samples ? task.config.n_samples : 1,
+            },
+          },
+        )
+      }
+
+      // update user creation count
+      if (task.user) {
+        await User.findOneAndUpdate(
+          {
+            _id: task.user,
           },
           {
             $inc: {
