@@ -15,13 +15,7 @@ import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
-import {
-  Concept,
-  Creation,
-  Creator,
-  FeatureFlag,
-  SubscriptionTier,
-} from '@edenlabs/eden-sdk'
+import { Concept, Creation, Creator, FeatureFlag } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
   ReactNode,
@@ -46,15 +40,17 @@ const getImageCopyMenuItems = (item: Concept | Creation) => {
   const otherTypeCopyItems: MenuItem[] = []
   const imageCopyItems: MenuItem[] = []
 
-  imageCopyItems.push({
-    icon: <CopyImageButton url={item.uri} variant="text" />,
-    key: '1-1',
-  })
+  if (item.uri) {
+    imageCopyItems.push({
+      icon: <CopyImageButton url={item.uri} variant="text" />,
+      key: '1-1',
+    })
 
-  otherTypeCopyItems.push({
-    icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
-    key: '1-2',
-  })
+    otherTypeCopyItems.push({
+      icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
+      key: '1-2',
+    })
+  }
 
   return isImageUrl(item.uri)
     ? [...imageCopyItems, ...otherTypeCopyItems]
@@ -109,16 +105,10 @@ const getAuthorMenuItems = (
   ]
 }
 const getDownloadUrl = (
-  itemType: ItemType,
   item: Creation | Concept,
   user: Creator | undefined,
-  canDownloadConcepts: boolean,
 ) => {
   if (!user) {
-    return ''
-  }
-
-  if (itemType === 'concept' && !canDownloadConcepts) {
     return ''
   }
 
@@ -128,19 +118,18 @@ const getDownloadMenuItems = (
   itemType: ItemType,
   item: CardData,
   user: Creator | undefined,
-  canDownloadConcepts: boolean,
 ) => {
   const downloadable = itemType === 'creation' || itemType === 'concept'
-  const downloadUrl = downloadable
-    ? getDownloadUrl(
-        itemType,
-        item as Creation | Concept,
-        user,
-        canDownloadConcepts,
-      )
-    : ''
 
   if (!downloadable) {
+    return []
+  }
+
+  const downloadUrl = downloadable
+    ? getDownloadUrl(item as Creation | Concept, user)
+    : ''
+
+  if (!downloadUrl) {
     return []
   }
 
@@ -154,12 +143,10 @@ const getDownloadMenuItems = (
         <DownloadFileButton
           url={downloadUrl}
           fileName={item._id}
-          variant="text"
           label="Download"
         />
       ),
       key: '8',
-      disabled: !downloadUrl,
     },
   ]
 }
@@ -177,8 +164,7 @@ const CardToolsDropdown = ({
   onChange: (updatedData: CardData) => void
   pageUrl: string
 }) => {
-  const { user, isAuthenticated, hasMinimumSubscriptionTier } =
-    useContext(UserContext)
+  const { user, isAuthenticated } = useContext(UserContext)
   const [hasNativeShare, setHasNativeShare] = useState(false)
 
   useEffect(() => {
@@ -353,12 +339,7 @@ const CardToolsDropdown = ({
         : []
 
     const downloadItem: MenuItem[] = isAuthenticated
-      ? getDownloadMenuItems(
-          itemType,
-          item,
-          user,
-          hasMinimumSubscriptionTier(SubscriptionTier.Basic),
-        )
+      ? getDownloadMenuItems(itemType, item, user)
       : []
 
     if (
