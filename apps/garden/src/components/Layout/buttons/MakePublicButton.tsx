@@ -11,29 +11,32 @@ import LockOpenIcon from '@mui/icons-material/LockOpen'
 import { App, Popover, Tooltip } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
-import React from 'react'
+import React, { ReactElement } from 'react'
 
 const ButtonElement = ({
   label,
   itemType,
   handleClick,
   isAllowed,
+  children,
 }: {
   label: string
   itemType: ItemType
   handleClick: () => void
   isAllowed: boolean
+  children?: ReactElement
 }) => {
   return (
     <div
       onClick={handleClick}
-      className={`flex items-center gap-2 w-full justify-between ${
+      className={`flex items-center gap-2 w-full ${
         !isAllowed ? 'text-gray-500' : ''
       }`}
       title={`Make ${itemType} public`}
     >
+      {children ? children : null}
       <div>{label}</div>
-      <LockOpenIcon fontSize="small" />
+      <LockOpenIcon fontSize="small" className="ml-auto" />
     </div>
   )
 }
@@ -119,14 +122,15 @@ const MakePublicButton = ({
         }
         trigger={['hover']}
       >
-        <div className="w-full flex gap-1">
-          <WorkspacePremium className="text-orange-300" />
+        <div className="w-full">
           <ButtonElement
             label={label || ''}
             itemType={itemType}
             handleClick={() => handleClick()}
             isAllowed={isAllowed}
-          />
+          >
+            <WorkspacePremium fontSize="small" className="text-orange-300 " />
+          </ButtonElement>
         </div>
       </Popover>
     )

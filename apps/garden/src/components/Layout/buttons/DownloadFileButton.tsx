@@ -6,27 +6,30 @@ import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { WorkspacePremium } from '@mui/icons-material'
 import { App, Popover } from 'antd'
 import Link from 'next/link'
-import React from 'react'
+import React, { ReactElement } from 'react'
 
 const ButtonElement = ({
   label,
   handleClick,
   isAllowed,
+  children,
 }: {
   label: string
   handleClick: () => void
   isAllowed: boolean
+  children?: ReactElement
 }) => {
   return (
     <div
       onClick={handleClick}
-      className={`flex items-center gap-2 w-full justify-between ${
+      className={`flex items-center gap-2 w-full ${
         !isAllowed ? 'text-gray-500' : ''
       }`}
       title={'Download file'}
     >
+      {children ? children : null}
       <div>{label}</div>
-      <DownloadOutlined className="text-xl" />
+      <DownloadOutlined className="text-xl ml-auto" />
     </div>
   )
 }
@@ -75,13 +78,14 @@ const DownloadFileButton = ({
         }
         trigger={['hover']}
       >
-        <div className="w-full flex gap-1">
-          <WorkspacePremium className="text-orange-300" />
+        <div className="w-full">
           <ButtonElement
             label={label || ''}
             handleClick={() => handleClick(url)}
             isAllowed={isAllowed}
-          />
+          >
+            <WorkspacePremium fontSize="small" className="text-orange-300" />
+          </ButtonElement>
         </div>
       </Popover>
     )
