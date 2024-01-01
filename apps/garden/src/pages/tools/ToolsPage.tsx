@@ -2,6 +2,7 @@ import DiscordAuthButton from '@/components/DiscordAuthButton'
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { UserContext } from '@/providers/UserProvider'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import KeyOutlined from '@mui/icons-material/KeyOutlined'
 import { Collapse } from 'antd'
 import dynamic from 'next/dynamic'
@@ -15,8 +16,10 @@ const ApiKeys = dynamic(() => import('@/components/ApiKeys'), {
 })
 
 const ToolsPage = () => {
-  const { featureFlags } = useContext(UserContext)
-  const isPreviewUser = featureFlags?.includes('preview')
+  const { hasMinimumSubscriptionTier } = useContext(UserContext)
+  const hasApiAccessPermission = hasMinimumSubscriptionTier(
+    SubscriptionTier.Pro,
+  )
 
   return (
     <>
@@ -42,12 +45,15 @@ const ToolsPage = () => {
               </div>
             </Panel>
             <Panel key={'apiKeys'} header={'API Keys'} extra={<KeyOutlined />}>
-              {isPreviewUser ? (
+              {hasApiAccessPermission ? (
                 <ApiKeys />
               ) : (
                 <div className="text-gray-500">
-                  Upgrade your <Link href="/manna">subscription</Link> for API
-                  access.
+                  Only pro+ subscribers can create API keys. Please upgrade your{' '}
+                  <Link href="/manna" className="font-bold">
+                    subscription
+                  </Link>
+                  .
                 </div>
               )}
             </Panel>
