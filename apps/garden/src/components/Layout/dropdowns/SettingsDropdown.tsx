@@ -16,61 +16,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
-// import { UserButton } from '@clerk/nextjs'
-// import Link from 'next/link'
-
-// const Web3LoginLogoutButton = () => {
-//   const { isConnected } = useWeb3State()
-//   const { isAuthenticated, authenticate, logout } = useContext(UserContext)
-//   const router = useRouter()
-
-//   const handleAuthClick = useCallback(async () => {
-//     if (!isAuthenticated) {
-//       authenticate && (await authenticate())
-//     } else {
-//       logout && (await logout())
-//       await router.push('/')
-//     }
-//   }, [logout, authenticate, isAuthenticated])
-
-//   return (
-//     <div>
-//       <ConnectButton />
-//       <Button
-//         className="font-mono w-full flex items-center mt-2 "
-//         onClick={handleAuthClick}
-//       >
-//         {isAuthenticated ? (
-//           <div className="w-full">
-//             <div className="flex justify-center">
-//               <LogoutOutlined />
-//               <div className="text-black dark:text-white ml-2">
-//                 Disconnect Wallet
-//               </div>
-//             </div>
-//           </div>
-//         ) : !isConnected ? (
-//           <div className="w-full">
-//             <div className="flex justify-center">
-//               <LoginOutlined />
-//               <div className="text-black dark:text-white ml-2">
-//                 Connect Wallet
-//               </div>
-//             </div>
-//           </div>
-//         ) : (
-//           <div className="w-full">
-//             <div className="flex justify-center">
-//               <LoginOutlined />
-//               <div className="text-black dark:text-white ml-2">Sign In</div>
-//             </div>
-//           </div>
-//         )}
-//       </Button>
-//     </div>
-//   )
-// }
-
 const ClerkLoginLogoutButton = () => {
   const { isAuthenticated, authenticate, logout } = useContext(UserContext)
 
