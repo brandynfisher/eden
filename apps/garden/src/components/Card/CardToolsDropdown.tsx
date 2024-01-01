@@ -86,7 +86,6 @@ const getAuthorMenuItems = (
         <MakePublicButton
           itemId={item._id}
           itemType={itemType}
-          variant="text"
           label="Set Public"
           onChange={onVisibilityChange}
           isNsfw={isNsfw}
@@ -95,7 +94,6 @@ const getAuthorMenuItems = (
         <MakePrivateButton
           itemId={item._id}
           itemType={itemType}
-          variant="text"
           label="Set Private"
           onChange={onVisibilityChange}
         />
@@ -309,14 +307,8 @@ const CardToolsDropdown = ({
       })
     }
 
-    const hasUserFeatureFlagPrivate =
-      user &&
-      user.featureFlags &&
-      user.featureFlags.includes(FeatureFlag.Preview)
     const creatorMenuItems: MenuItem[] =
-      itemType !== 'creator' &&
-      hasUserFeatureFlagPrivate &&
-      user?.userId === item.user.userId
+      itemType !== 'creator' && user?.userId === item.user.userId
         ? getAuthorMenuItems(itemType, item, handleOnVisibilityChange)
         : []
 

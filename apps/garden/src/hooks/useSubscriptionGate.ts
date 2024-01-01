@@ -3,7 +3,8 @@ import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { useContext, useEffect, useState } from 'react'
 
 export enum GatedActions {
-  ConceptDownload = 'concept-download',
+  ConceptDownload = 'ConceptDownload',
+  MakePrivate = 'MakePrivate',
 }
 
 export const useSubscriptionGate = (action: GatedActions) => {

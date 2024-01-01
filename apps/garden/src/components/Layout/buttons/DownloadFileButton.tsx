@@ -45,7 +45,6 @@ const DownloadFileButton = ({
   const { showModal } = useModalContext()
   const handleClick = async (url: string) => {
     if (!isAllowed) {
-      // console.log('show notice, not allowed, subscribe')
       showModal(MODAL_TYPES.SUBSCRIPTION_GATE_MODAL, {
         usesUrl: false,
         minimumSubscriptionTier: SubscriptionTier.Pro,
