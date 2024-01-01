@@ -19,12 +19,19 @@ const DetailStaticModal = ({
   usesUrl: boolean
 }) => {
   const router = useRouter()
+
   useEffect(() => {
-    if (usesUrl) {
+    const handleRouteChange = async () => {
       const { pageUrl, modalUrl } = getModalUrls(router, itemType, item)
-      router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
+      // console.log('push', item._id, pageUrl, modalUrl)
+      await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     }
-  }, [usesUrl, item])
+
+    if (item) {
+      // console.log('changing route', currentIndex)
+      handleRouteChange()
+    }
+  }, [router.asPath, usesUrl, item, itemType])
 
   return (
     <Modal {...rest} className="modal-full max-w-7xl">
