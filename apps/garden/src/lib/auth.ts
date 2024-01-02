@@ -1,14 +1,6 @@
 import { getAuth } from '@clerk/nextjs/server'
 import { NextApiRequest } from 'next'
 
-export const requireAuth = async (authenticate: () => void) => {
-  try {
-    await authenticate()
-  } catch (error) {
-    return
-  }
-}
-
 export const getAuthToken = async (req: NextApiRequest) => {
   const { getToken } = getAuth(req)
   const authToken = await getToken()

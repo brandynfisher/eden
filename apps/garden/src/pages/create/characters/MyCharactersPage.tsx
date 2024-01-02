@@ -1,6 +1,5 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useMyCharacters } from '@/hooks/useMyCharacters'
-import { requireAuth } from '@/lib/auth'
 import { UserContext } from '@/providers/UserProvider'
 import { Character } from '@edenlabs/eden-sdk'
 import { Button } from 'antd'
@@ -21,13 +20,10 @@ const CharactersPageContent = ({
   characters?: Character[]
 }) => {
   const router = useRouter()
-  const { isAuthenticated, authenticate } = useContext(UserContext)
+  const { maybeAuthenticate } = useContext(UserContext)
 
   const handleCreateCharacterButtonClick = async () => {
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
+    if (!(await maybeAuthenticate())) return
     await router.push('/create/characters/new')
   }
 

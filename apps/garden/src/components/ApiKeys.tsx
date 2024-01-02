@@ -1,5 +1,4 @@
 import { useApiKeys } from '@/hooks/useApiKeys'
-import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { useClipboard } from '@mantine/hooks'
@@ -65,17 +64,14 @@ const TruncatedField = ({ name, text }: { name: string; text: string }) => {
 }
 
 const ApiKeys = () => {
-  const { isAuthenticated, authenticate } = useContext(UserContext)
+  const { isAuthenticated, maybeAuthenticate } = useContext(UserContext)
   const { apiKeys, refetchApiKeys } = useApiKeys({ isAuthenticated })
   const [apiKeyCreating, setApiKeyCreating] = useState(false)
   const [note, setNote] = useState('')
   const { message } = App.useApp()
 
   const handleCreateAPIKey = async () => {
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
+    if (!(await maybeAuthenticate())) return
     setApiKeyCreating(true)
     try {
       await axios.post('/api/apikeys/create', {
