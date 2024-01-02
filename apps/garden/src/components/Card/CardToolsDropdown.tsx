@@ -139,6 +139,7 @@ const getDownloadMenuItems = (
     {
       icon: (
         <DownloadFileButton
+          itemType={itemType}
           url={downloadUrl}
           fileName={item._id}
           label="Download"

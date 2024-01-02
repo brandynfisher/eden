@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from 'react'
 
 export enum GatedActions {
   ConceptDownload = 'ConceptDownload',
+  CreationDownload = 'CreationDownload',
   MakePrivate = 'MakePrivate',
 }
 
@@ -14,6 +15,11 @@ export const useSubscriptionGate = (action: GatedActions) => {
   useEffect(() => {
     if (action === GatedActions.ConceptDownload) {
       setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Pro))
+      return
+    }
+
+    if (action === GatedActions.CreationDownload) {
+      setIsAllowed(true)
       return
     }
   }, [hasMinimumSubscriptionTier])

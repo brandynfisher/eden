@@ -1,6 +1,10 @@
 import { GatedActions, useSubscriptionGate } from '@/hooks/useSubscriptionGate'
 import { downloadFile } from '@/lib/files'
-import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
+import {
+  ItemType,
+  MODAL_TYPES,
+  useModalContext,
+} from '@/providers/ModalProvider'
 import DownloadOutlined from '@ant-design/icons/DownloadOutlined'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { WorkspacePremium } from '@mui/icons-material'
@@ -35,16 +39,22 @@ const ButtonElement = ({
 }
 
 const DownloadFileButton = ({
+  itemType,
   url,
   fileName,
   label,
 }: {
+  itemType: ItemType
   url: string
   fileName: string
   label?: string
 }) => {
   const { message } = App.useApp()
-  const { isAllowed } = useSubscriptionGate(GatedActions.ConceptDownload)
+  const { isAllowed } = useSubscriptionGate(
+    itemType === 'concept'
+      ? GatedActions.ConceptDownload
+      : GatedActions.CreationDownload,
+  )
   const { showModal } = useModalContext()
   const handleClick = async (url: string) => {
     if (!isAllowed) {
