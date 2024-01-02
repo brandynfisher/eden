@@ -147,7 +147,6 @@ const interrogateGeneratorVersionDev = {
   provider: 'replicate',
   address: 'abraham-ai/eden-sd-pipelines',
   versionId: '591f2e3bb1e239eb3ef17d278c11e9d39ceafe9a93d078928330df523195a611',
-  mode: 'interrogate',
   parameters: interrogateParametersDev,
   isDeprecated: false,
 }
@@ -180,7 +179,6 @@ const monologueVersionDev = {
   provider: 'airflow',
   address: 'airflow/handler-monologue',
   versionId: '0.0.1',
-  mode: 'monologue',
   parameters: monologueParametersDev,
   isDeprecated: false,
 }

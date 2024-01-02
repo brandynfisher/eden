@@ -76,7 +76,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      mode: 'generate',
       parameters: createParameters,
       isDeprecated: false,
     }
@@ -85,7 +84,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      mode: 'remix',
       parameters: remixParameters,
       isDeprecated: false
     }
@@ -94,7 +92,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      mode: 'interrogate',
       parameters: interrogateParameters,
       isDeprecated: false
     }
@@ -103,7 +100,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      mode: 'blend',
       parameters: blendParameters,
       isDeprecated: false
     }
@@ -112,7 +108,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      mode: 'upscale',
       parameters: upscaleParameters,
       isDeprecated: false
     }
@@ -121,7 +116,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      mode: 'controlnet',
       parameters: controlnetParameters,
       isDeprecated: false
     }
@@ -164,7 +158,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      mode: 'interpolate',
       parameters: interpolateParameters,
       isDeprecated: false,
     }
@@ -173,7 +166,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      mode: 'real2real',
       parameters: real2realParameters,
       isDeprecated: false
     }
@@ -196,7 +188,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/character',
       versionId: versionId,
-      mode: 'wav2lip',
       parameters: wav2lipParameters,
       isDeprecated: false
     }
@@ -214,7 +205,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/sdxl-lora-trainer',
       versionId: versionId,
-      mode: 'concept',
       parameters: conceptParameters,
       isDeprecated: false
     }
@@ -232,7 +222,6 @@ async function updateVersion(db) {
     //   provider: 'replicate',
     //   address: 'abraham-ai/eden-comfyui',
     //   versionId: versionId,
-    //   mode: 'comfy_txt2vid',
     //   parameters: comfyuiTxt2VidParameters,
     //   isDeprecated: false
     // }
@@ -241,7 +230,6 @@ async function updateVersion(db) {
     //   provider: 'replicate',
     //   address: 'abraham-ai/eden-comfyui',
     //   versionId: versionId,
-    //   mode: 'comfy_img2vid',
     //   parameters: comfyuiImg2VidParameters,
     //   isDeprecated: false
     // }
@@ -250,7 +238,6 @@ async function updateVersion(db) {
     //   provider: 'replicate',
     //   address: 'abraham-ai/eden-comfyui',
     //   versionId: versionId,
-    //   mode: 'comfy_vid2vid',
     //   parameters: comfyuiVid2VidParameters,
     //   isDeprecated: false
     // }
@@ -259,7 +246,6 @@ async function updateVersion(db) {
     //   provider: 'replicate',
     //   address: 'abraham-ai/eden-comfyui',
     //   versionId: versionId,
-    //   mode: 'comfy_upscale',
     //   parameters: comfyuiUpscaleParameters,
     //   isDeprecated: false
     // }
@@ -268,7 +254,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-comfyui',
       versionId: versionId,
-      mode: 'comfy_makeitrad',
       parameters: comfyuiMakeitradParameters,
       isDeprecated: false
     }
@@ -306,7 +291,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'anotherjesse/zeroscope-v2-xl',
       versionId: versionId,
-      mode: 'zeroscope',
       parameters: zeroscopeParameters,
       isDeprecated: false
     }
@@ -324,7 +308,6 @@ async function updateVersion(db) {
       provider: 'scenarioRunner',
       address: 'eden/monologue',
       versionId: versionId,
-      mode: 'monologue',
       parameters: monologueParameters,
       isDeprecated: false
     }
@@ -333,7 +316,6 @@ async function updateVersion(db) {
       provider: 'scenarioRunner',
       address: 'eden/dialogue',
       versionId: versionId,
-      mode: 'dialogue',
       parameters: dialogueParameters,
       isDeprecated: false
     }
