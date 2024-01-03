@@ -18,10 +18,17 @@ export const useSubscriptionGate = (action: GatedActions) => {
       return
     }
 
+    if (action === GatedActions.MakePrivate) {
+      setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Basic))
+      return
+    }
+
     if (action === GatedActions.CreationDownload) {
       setIsAllowed(true)
       return
     }
+
+    setIsAllowed(false)
   }, [hasMinimumSubscriptionTier])
 
   return {

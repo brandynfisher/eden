@@ -23,7 +23,6 @@ import { UserContext } from '@/providers/UserProvider'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import {
   Creation,
-  FeatureFlag,
   Generator,
   GeneratorParameter,
   Task,
@@ -96,8 +95,7 @@ const GeneratorForm = ({
   )
   const { message } = App.useApp()
   const router = useRouter()
-  const { maybeAuthenticate, mannaBalance, user, refetchMe } =
-    useContext(UserContext)
+  const { maybeAuthenticate, mannaBalance, refetchMe } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, taskCost } = useTaskCost()
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
@@ -626,11 +624,7 @@ const GeneratorForm = ({
             )}
           </div>
 
-          {user &&
-          user.featureFlags &&
-          user.featureFlags.includes(FeatureFlag.Preview) ? (
-            <PrivacyToggle />
-          ) : null}
+          <PrivacyToggle />
         </div>
 
         {uploadsInProgress ? (
