@@ -2,12 +2,12 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 import { paginatedResponse, paginationProperties } from '.'
-import { adminListApiKeys, listApiKeys } from '../controllers/apiKeyController'
+import { adminListApiKeys } from '../controllers/apiKeyController'
 import { conceptExportToHF } from '../controllers/conceptsController'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { createTask } from '../controllers/taskController'
-import { isAdmin, isAuth } from '../middleware/authMiddleware'
+import { isAdmin } from '../middleware/authMiddleware'
 import { configType } from '../types/routeTypes'
 
 export interface MannaModifyRequestBody {

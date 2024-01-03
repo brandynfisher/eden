@@ -22,10 +22,8 @@ const submitTask = async (
     config: config,
     webhookUrl: webhookUrl,
   }
-  console.log('Args', args)
 
   const task = await handleGeneratorRequest(server, args)
-  console.log('Task', task)
 
   return task
 }

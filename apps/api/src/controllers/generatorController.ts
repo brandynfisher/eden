@@ -68,13 +68,12 @@ export const listGenerators = async (
 }
 
 // export const registerGenerator = async (request: FastifyRequest, reply: FastifyReply) => {
-//   const { generatorName, provider, address, versionId, mode, parameters, creationAttributes } = request.body as GeneratorRegisterRequestBody;
+//   const { generatorName, provider, address, versionId, parameters, creationAttributes } = request.body as GeneratorRegisterRequestBody;
 
 //   const generatorVersion: GeneratorVersionSchema = {
 //     provider,
 //     address,
 //     versionId,
-//     mode,
 //     parameters,
 //     creationAttributes,
 //     isDeprecated: false,
