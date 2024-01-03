@@ -117,7 +117,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         character_id: Type.String(),
         session_id: Type.String(),
-        prompt: Type.String(),
+        message: Type.String(),
         attachments: Type.Optional(Type.Array(Type.String())),
       }),
       response: {

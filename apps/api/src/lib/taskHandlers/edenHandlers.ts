@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb'
 import { Character } from '../../models/Character'
 import { Concept } from '../../models/Concept'
 import { Creation, CreationInput } from '../../models/Creation'
+import { User } from '../../models/Creator'
 import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task, TaskStatus } from '../../models/Task'
@@ -169,6 +170,20 @@ const handleUpdate = async (
         )
       }
 
+      // update user creation count
+      if (task.user) {
+        await User.findOneAndUpdate(
+          {
+            _id: task.user,
+          },
+          {
+            $inc: {
+              creationCount: task.config.n_samples ? task.config.n_samples : 1,
+            },
+          },
+        )
+      }
+
       // update character creation count
       if (task.character) {
         await Character.findOneAndUpdate(
@@ -183,11 +198,18 @@ const handleUpdate = async (
         )
       }
 
+      console.log('DEBUG_CREATION_DATA', creationData)
+
       await Promise.allSettled(
         creationData.map(async creationInput => {
           const otherCreationIds = creationData
             .filter(dataItem => dataItem._id !== creationInput._id)
             .map(item => item._id)
+
+          console.log('DEBUG_CREATE', {
+            ...creationInput,
+            samples: otherCreationIds,
+          })
 
           await Creation.create({
             ...creationInput,

@@ -19,15 +19,29 @@ const sortByPrice = (a: Product, b: Product) => {
 const dummyFeatures: { [key: string]: string[] } = {
   basic: [
     '1000 Manna / month',
-    'Powered by GPT-4 (more accurate)',
-    'API access',
+    '10% Discount on Manna-Refills',
+    '3 concurrent creation jobs',
+    'Private creations',
   ],
   pro: [
-    '5000 Manna / month',
-    'Powered by GPT-4 (more accurate)',
+    '3500 Manna / month',
+    '20% Discount on Manna-Refills',
+    '6 concurrent creation jobs',
+    'Private creations',
     'API access',
-    'Private Creations',
-    'Fast Generations',
+    'Premium generators',
+    'Export Concepts for use in other apps',
+  ],
+  believer: [
+    '7000 Manna / month',
+    '30% Discount on Manna-Refills',
+    '15 concurrent creation jobs',
+    'Private creations',
+    'API access',
+    'Premium generators',
+    'Export Concepts for use in other apps',
+    'Early access to preview features',
+    'Priority support',
   ],
 }
 

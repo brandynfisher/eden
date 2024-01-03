@@ -1,5 +1,4 @@
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
-import { requireAuth } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
@@ -9,13 +8,9 @@ import React, { useContext } from 'react'
 
 const DiscordAuthButton: React.FC = () => {
   const { message } = App.useApp()
-  const { userId, user, refetchMe, isAuthenticated, authenticate } =
-    useContext(UserContext)
+  const { userId, user, refetchMe, maybeAuthenticate } = useContext(UserContext)
   const handleClick = async () => {
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
+    if (!(await maybeAuthenticate())) return
 
     try {
       window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${
@@ -29,10 +24,7 @@ const DiscordAuthButton: React.FC = () => {
   }
 
   const handleDisconnect = async () => {
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
+    if (!(await maybeAuthenticate())) return
 
     try {
       await axios.get('/api/auth/discord/disconnect')

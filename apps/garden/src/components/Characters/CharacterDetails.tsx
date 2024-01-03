@@ -15,8 +15,6 @@ const CharacterDetails = ({
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
 }) => {
-  console.log({ character })
-
   const creatorPageTabs = [
     {
       label: 'Creations',

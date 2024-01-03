@@ -98,7 +98,6 @@ const Card: FC<CardWithTypeProps> = ({
       setItemData(updatedItem)
       updateHandler && updateHandler(updatedItem)
     } catch (err) {
-      console.log(err)
       handleAxiosError(err, message)
     }
   }, [itemData, itemType])
@@ -112,7 +111,6 @@ const Card: FC<CardWithTypeProps> = ({
   )
 
   const cardUpdateHandler = (item: CardData) => {
-    console.log('cardUpdate', item)
     setItemData(item)
     updateHandler && updateHandler(item)
   }

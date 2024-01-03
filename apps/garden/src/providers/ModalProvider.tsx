@@ -7,6 +7,7 @@ import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import GeneratorSelectModal from '@/components/Modals/GeneratorSelectModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
+import SubscriptionGateModal from '@/components/Modals/SubscriptionGateModal'
 import TaskDetailModal from '@/components/Modals/TaskDetailModal'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import {
@@ -15,6 +16,7 @@ import {
   Creation,
   Creator,
   Generator,
+  SubscriptionTier,
   Task,
 } from '@edenlabs/eden-sdk'
 import { ModalProps } from 'antd'
@@ -38,6 +40,7 @@ export enum MODAL_TYPES {
   FOLLOWING_MODAL = 'FOLLOWING_MODAL',
   TASK_DETAIL_MODAL = 'TASK_DETAIL_MODAL',
   GENERATOR_SELECT_MODAL = 'GENERATOR_SELECT_MODAL',
+  SUBSCRIPTION_GATE_MODAL = 'SUBSCRIPTION_GATE_MODAL',
 }
 
 type GenericModalParams = unknown
@@ -51,6 +54,7 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.FOLLOWING_MODAL]: FollowingModal,
   [MODAL_TYPES.TASK_DETAIL_MODAL]: TaskDetailModal,
   [MODAL_TYPES.GENERATOR_SELECT_MODAL]: GeneratorSelectModal,
+  [MODAL_TYPES.SUBSCRIPTION_GATE_MODAL]: SubscriptionGateModal,
 }
 
 type BaseModalProps = Partial<ModalProps> & {
@@ -72,6 +76,13 @@ export type GeneratorSelectModalProps = Partial<
 export type ConceptSelectModalProps = Partial<
   BaseModalProps & {
     onChange: (concept: Concept) => void
+  }
+>
+
+export type SubscriptionGateModalProps = Partial<
+  BaseModalProps & {
+    featureName: string
+    minimumSubscriptionTier: SubscriptionTier
   }
 >
 
@@ -110,6 +121,7 @@ type ModalStore = {
     | AddToCollectionModalProps
     | GeneratorSelectModalProps
     | ConceptSelectModalProps
+    | SubscriptionGateModalProps
     | Partial<BaseModalProps & { concept?: Concept }>
     | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })
     | (Partial<BaseModalProps> & { task?: Task })
