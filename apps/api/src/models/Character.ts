@@ -142,10 +142,18 @@ character.pre<CharacterDocument>('save', function (next) {
   next()
 })
 
-character.plugin(mongooseDelete, { overrideMethods: 'all' })
-// character.plugin(mongooseDelete, {
-//   overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
-// })
+character.index({ createdAt: 1 })
+character.index({ user: 1, deleted: 1, isPrivate: 1 })
+character.index({ deleted: 1, isPrivate: 1 })
+character.index({
+  createdAt: -1,
+  creationCount: -1,
+})
+
+// character.plugin(mongooseDelete, { overrideMethods: 'all' })
+character.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 character.plugin(paginate)
 character.plugin(aggregatePaginate)
 character.plugin(slug, {

@@ -46,6 +46,7 @@ export const useFeedPaginated = (
         return null
       }
 
+      // console.log({ query })
       // console.log('getKey', {pageIndex, previousPageData})
       return createPaginationRoute(`/api/feed/${itemType}s`, {
         ...query,

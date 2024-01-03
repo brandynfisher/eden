@@ -3,21 +3,14 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import MasonryInfiniteScrollable from '@/components/Masonry/MasonryInfiniteScrollable'
 import ModalTitle from '@/components/Modals/ModalTitle'
+import SearchBar from '@/components/Search/SearchBar'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
 import { Concept } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
-import { debounce } from '@mui/material/utils'
-import { Input, Modal, Switch } from 'antd'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { Modal, Switch } from 'antd'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 
 const ConceptSelectModal = ({
   onChange,
@@ -26,39 +19,13 @@ const ConceptSelectModal = ({
   onChange: (concept: Concept) => void
 }) => {
   const { userId } = useContext(UserContext)
-  const [searchTerm, setSearchTerm] = useState('')
+  // const [baseQuery, setBaseQuery] = useState<PaginatedFeedQuery>()
+  const [query, setQuery] = useState<PaginatedFeedQuery>()
   const [searchPublic, setSearchPublic] = useState(false)
-  const [query, setQuery] = useState<PaginatedFeedQuery>({
-    userId: userId || undefined,
-  })
-
-  const handleSearchSubmit = useCallback(
-    (name: string, showPublic: boolean) => {
-      // console.log('handleSearch', name, showPublic, userId)
-
-      setQuery(prev => ({
-        ...prev,
-        name: name || undefined,
-        userId: !showPublic ? userId || undefined : undefined,
-      }))
-    },
-    [userId, setQuery],
-  )
 
   const handleSearchPublicToggle = (checked: boolean) => {
     setSearchPublic(checked)
-    handleSearchSubmit(searchTerm, checked)
   }
-
-  const debouncedHandleFormFieldsChange = useMemo(
-    () =>
-      debounce(async (ev: React.ChangeEvent<HTMLInputElement>) => {
-        // console.log(ev.target.value)
-        setSearchTerm(ev.target.value)
-        handleSearchSubmit(ev.target.value, searchPublic)
-      }, 500),
-    [handleSearchSubmit, setSearchTerm, searchPublic],
-  )
 
   const { ref: containerRef, height: containerHeight } = useElementSize()
 
@@ -130,13 +97,11 @@ const ConceptSelectModal = ({
         />
         <div className="p-4 pb-0 !rounded-xl">
           <div className="mb-4">
-            <Input.Search
-              className="mb-4"
-              placeholder="Search"
-              onChange={ev => debouncedHandleFormFieldsChange(ev)}
-              onSearch={value => handleSearchSubmit(value, searchPublic)}
-              allowClear={true}
-              maxLength={256}
+            <SearchBar
+              onSearchSubmit={query => {
+                setQuery(query)
+              }}
+              baseQuery={!searchPublic && userId ? { userId } : undefined}
             />
             <div className="flex flex-wrap gap-2">
               <Switch

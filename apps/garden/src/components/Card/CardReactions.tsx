@@ -1,5 +1,4 @@
 import SaveButton from '@/components/Card/SaveButton'
-import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
@@ -26,7 +25,7 @@ export const PraiseButton = ({
   showCounts?: boolean
 }) => {
   const { message } = App.useApp()
-  const { isAuthenticated, authenticate } = useContext(UserContext)
+  const { maybeAuthenticate } = useContext(UserContext)
   const { hovered, ref } = useHover()
 
   const onPraiseButtonClick = async (
@@ -37,10 +36,7 @@ export const PraiseButton = ({
   ) => {
     ev.stopPropagation()
 
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
+    if (!(await maybeAuthenticate())) return
 
     const reactionData = {
       id: item._id,

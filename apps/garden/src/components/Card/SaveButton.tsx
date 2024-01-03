@@ -1,4 +1,3 @@
-import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
@@ -19,7 +18,7 @@ export const SaveButton = ({
   creation: Creation | Concept
   onChange: (updatedCreation: Creation | Concept) => void
 }) => {
-  const { isAuthenticated, authenticate } = useContext(UserContext)
+  const { maybeAuthenticate } = useContext(UserContext)
   const { message } = App.useApp()
   const { showModal } = useModalContext()
 
@@ -31,10 +30,7 @@ export const SaveButton = ({
   ) => {
     ev.stopPropagation()
 
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
+    if (!(await maybeAuthenticate())) return
 
     message.destroy()
 

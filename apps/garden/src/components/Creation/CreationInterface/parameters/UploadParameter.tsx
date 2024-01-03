@@ -121,7 +121,7 @@ const UploadParameter = (props: {
       fileList.pop()
       setFileList(fileList)
       props.form.setFieldsValue({
-        [props.parameter.name]: isArray ? urls : urls[0],
+        [props.parameter.name]: isArray ? urls : urls[urls.length - 1],
       })
 
       let errorMessage = info.file.response?.error || 'Unknown error occurred'
@@ -138,7 +138,7 @@ const UploadParameter = (props: {
     if (info.file.status === 'done' || info.file.status === 'success') {
       const newUrls = [...urls, info.file.response.fileUrl]
       props.form.setFieldsValue({
-        [props.parameter.name]: isArray ? newUrls : newUrls[0],
+        [props.parameter.name]: isArray ? newUrls : newUrls[newUrls.length - 1],
       })
       setUrls(newUrls)
       showUploadSuccessMessage(info.file.name)
@@ -148,7 +148,7 @@ const UploadParameter = (props: {
       const removedUrl = info.file.response.fileUrl
       const newUrls = urls.filter(url => url !== removedUrl)
       props.form.setFieldsValue({
-        [props.parameter.name]: isArray ? newUrls : newUrls[0],
+        [props.parameter.name]: isArray ? newUrls : newUrls[newUrls.length - 1],
       })
       setUrls(newUrls)
     }

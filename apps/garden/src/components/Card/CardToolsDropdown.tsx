@@ -40,15 +40,17 @@ const getImageCopyMenuItems = (item: Concept | Creation) => {
   const otherTypeCopyItems: MenuItem[] = []
   const imageCopyItems: MenuItem[] = []
 
-  imageCopyItems.push({
-    icon: <CopyImageButton url={item.uri} variant="text" />,
-    key: '1-1',
-  })
+  if (item.uri) {
+    imageCopyItems.push({
+      icon: <CopyImageButton url={item.uri} variant="text" />,
+      key: '1-1',
+    })
 
-  otherTypeCopyItems.push({
-    icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
-    key: '1-2',
-  })
+    otherTypeCopyItems.push({
+      icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
+      key: '1-2',
+    })
+  }
 
   return isImageUrl(item.uri)
     ? [...imageCopyItems, ...otherTypeCopyItems]
@@ -84,7 +86,6 @@ const getAuthorMenuItems = (
         <MakePublicButton
           itemId={item._id}
           itemType={itemType}
-          variant="text"
           label="Set Public"
           onChange={onVisibilityChange}
           isNsfw={isNsfw}
@@ -93,7 +94,6 @@ const getAuthorMenuItems = (
         <MakePrivateButton
           itemId={item._id}
           itemType={itemType}
-          variant="text"
           label="Set Private"
           onChange={onVisibilityChange}
         />
@@ -103,15 +103,10 @@ const getAuthorMenuItems = (
   ]
 }
 const getDownloadUrl = (
-  itemType: ItemType,
   item: Creation | Concept,
   user: Creator | undefined,
 ) => {
   if (!user) {
-    return ''
-  }
-
-  if (itemType === 'concept' && !user.subscriptionTier) {
     return ''
   }
 
@@ -123,11 +118,16 @@ const getDownloadMenuItems = (
   user: Creator | undefined,
 ) => {
   const downloadable = itemType === 'creation' || itemType === 'concept'
-  const downloadUrl = downloadable
-    ? getDownloadUrl(itemType, item as Creation | Concept, user)
-    : ''
 
   if (!downloadable) {
+    return []
+  }
+
+  const downloadUrl = downloadable
+    ? getDownloadUrl(item as Creation | Concept, user)
+    : ''
+
+  if (!downloadUrl) {
     return []
   }
 
@@ -139,14 +139,13 @@ const getDownloadMenuItems = (
     {
       icon: (
         <DownloadFileButton
+          itemType={itemType}
           url={downloadUrl}
           fileName={item._id}
-          variant="text"
           label="Download"
         />
       ),
       key: '8',
-      disabled: !downloadUrl,
     },
   ]
 }
@@ -309,14 +308,8 @@ const CardToolsDropdown = ({
       })
     }
 
-    const hasUserFeatureFlagPrivate =
-      user &&
-      user.featureFlags &&
-      user.featureFlags.includes(FeatureFlag.Preview)
     const creatorMenuItems: MenuItem[] =
-      itemType !== 'creator' &&
-      hasUserFeatureFlagPrivate &&
-      user?.userId === item.user.userId
+      itemType !== 'creator' && user?.userId === item.user.userId
         ? getAuthorMenuItems(itemType, item, handleOnVisibilityChange)
         : []
 

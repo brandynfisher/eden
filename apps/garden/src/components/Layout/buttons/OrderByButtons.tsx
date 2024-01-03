@@ -110,7 +110,7 @@ const OrderByButtons = ({
   }
 
   return (
-    <div className="mb-4 flex gap-2 flex-wrap">
+    <div className="mb-4 flex gap-2 flex-wrap items-center">
       {params.map(item => (
         <OrderByButton
           key={item.field}

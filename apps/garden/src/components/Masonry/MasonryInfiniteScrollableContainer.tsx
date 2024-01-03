@@ -14,6 +14,7 @@ import {
   useModalContext,
 } from '@/providers/ModalProvider'
 import { Creation, Creator } from '@edenlabs/eden-sdk'
+import { useRouter } from 'next/router'
 import React, { useCallback, useEffect, useState } from 'react'
 
 const MasonryInfiniteScrollableContainer = ({
@@ -30,11 +31,13 @@ const MasonryInfiniteScrollableContainer = ({
   modalContainerHeight?: number
 }) => {
   const { showModal } = useModalContext()
+  const router = useRouter()
 
   const openDetailModal = async (item: CardData | Creator) => {
     showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
       itemType,
       item: item,
+      originPageUrl: router.asPath,
       usesUrl: true,
     })
   }

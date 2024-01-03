@@ -11,7 +11,6 @@ import StringParameter from '@/components/Creation/CreationInterface/parameters/
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
-import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import {
   GeneratorOutputType,
@@ -97,7 +96,7 @@ const GeneratorForm = ({
   )
   const { message } = App.useApp()
   const router = useRouter()
-  const { isAuthenticated, authenticate, mannaBalance, user, refetchMe } =
+  const { maybeAuthenticate, mannaBalance, user, refetchMe } =
     useContext(UserContext)
   const { getTaskCost, canAffordOperation, taskCost } = useTaskCost()
   const [form] = Form.useForm()
@@ -273,9 +272,7 @@ const GeneratorForm = ({
     // console.log('handleFinish')
     setIsSubmitting(true)
 
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-
+    if (!(await maybeAuthenticate())) {
       setIsSubmitting(false)
       return
     }
