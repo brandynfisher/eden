@@ -239,7 +239,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         name: Type.String(),
         identity: Type.String(),
-        prompt: Type.String(),
+        message: Type.String(),
         knowledge: Type.Optional(Type.String()),
         knowledge_summary: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),

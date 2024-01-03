@@ -181,7 +181,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       const data: CharactersTestArguments = {
         name: characterName,
         identity,
-        prompt: recentMessage[0][0].message,
+        message: recentMessage[0][0].message,
         knowledge: form.getFieldValue('knowledge'),
         knowledge_summary: form.getFieldValue('knowledgeSummary'),
       }

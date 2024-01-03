@@ -10,10 +10,27 @@ import { LogosResponse } from './tasks'
 export interface LogosTestArguments {
   name: string
   identity: string
-  prompt: string
   knowledge?: string
   knowledge_summary?: string
+  message: string
   attachments?: string[]
+}
+
+export interface LogosGeneratorRequestArguments {
+  generatorName: string
+  config: Record<string, unknown>
+  webhookUrl: string
+}
+
+const handleGeneratorRequest = async (
+  server: FastifyInstance,
+  args: LogosGeneratorRequestArguments,
+): Promise<LogosResponse> => {
+  const { data } = await axios.post(
+    `${server.config.LOGOS_URL}/tasks/create`,
+    args,
+  )
+  return data
 }
 
 const handleInteraction = async (
@@ -40,6 +57,7 @@ const handleInteractionTest = async (
 
 export const registerLogos = async (fastify: FastifyInstance) => {
   try {
+    fastify.decorate('handleGeneratorRequest', handleGeneratorRequest)
     fastify.decorate('handleInteraction', handleInteraction)
     fastify.decorate('handleInteractionTest', handleInteractionTest)
     fastify.log.info('Successfully registered playHtPlugin')
@@ -51,6 +69,10 @@ export const registerLogos = async (fastify: FastifyInstance) => {
 
 declare module 'fastify' {
   interface FastifyInstance {
+    handleGeneratorRequest: (
+      server: FastifyInstance,
+      args: LogosGeneratorRequestArguments,
+    ) => Promise<any>
     handleInteraction: (
       server: FastifyInstance,
       args: SessionsInteractArguments,
