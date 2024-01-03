@@ -1,6 +1,7 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import SubscriptionCard from '@/components/Products/SubscriptionCard'
 import { useProducts } from '@/hooks/useProducts'
+import { subscriptionTierNameMap } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { Creator, Product } from '@edenlabs/eden-sdk'
 import dynamic from 'next/dynamic'
@@ -77,7 +78,7 @@ const ProductsList = ({
                 <div>
                   Your current plan:{' '}
                   <span className="capitalize font-bold">
-                    {activeSubscriptionTier}
+                    {subscriptionTierNameMap[activeSubscriptionTier]}
                   </span>
                 </div>
               ) : (

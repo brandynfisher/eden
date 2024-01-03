@@ -1,6 +1,7 @@
 'use client'
 
 import ModalTitle from '@/components/Modals/ModalTitle'
+import { subscriptionTierNameMap } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Modal } from 'antd'
@@ -37,8 +38,10 @@ const SubscriptionGateModal = ({
 
         {user && user.subscriptionTier ? (
           <div className="text-gray-500 mb-2">
-            Your current tier:{' '}
-            <strong className="capitalize">{user.subscriptionTier}</strong>
+            Your current plan:{' '}
+            <strong className="capitalize">
+              {subscriptionTierNameMap[user.subscriptionTier]}
+            </strong>
           </div>
         ) : null}
         <Link href={'/manna'} className="font-bold mb-2">
