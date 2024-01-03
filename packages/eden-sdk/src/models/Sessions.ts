@@ -219,12 +219,12 @@ export interface CharactersAddEvent {
 
 export interface InteractionEvent {
   character: string
-  prompt: string
+  message: string
   attachments?: string[]
 }
 
 export interface Interaction {
-  prompt: string
+  message: string
   author_id: string
   attachments?: string[]
 }
