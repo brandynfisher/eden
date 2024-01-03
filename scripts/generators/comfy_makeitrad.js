@@ -1,8 +1,8 @@
 const params = [
 
   {
-    name: 'render_mode',
-    label: 'Animation mode',
+    name: 'mode',
+    label: 'mode',
     description: 'text-to-video or video-to-video (style transfer)',
     default: 'comfy_makeitrad',
     allowedValues: ["comfy_makeitrad"],

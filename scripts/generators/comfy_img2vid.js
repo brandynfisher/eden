@@ -1,8 +1,8 @@
 const params = [
 
   {
-    name: 'render_mode',
-    label: 'Animation mode',
+    name: 'mode',
+    label: 'mode',
     description: 'mode',
     default: 'comfy_img2vid',
     allowedValues: ["comfy_img2vid"],
