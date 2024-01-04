@@ -1,16 +1,7 @@
 const params = [
-
-  {
-    name: 'render_mode',
-    label: 'Animation mode',
-    description: 'text-to-video or video-to-video (style transfer)',
-    default: 'comfy_makeitrad',
-    allowedValues: ["comfy_makeitrad"],
-    isRequired: true,
-  },
   
   {
-    name: 'prompt',
+    name: 'text_input',
     label: 'Prompt',
     description: 'Text prompt for the creation',
     default: null,
