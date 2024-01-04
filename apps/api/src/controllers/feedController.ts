@@ -25,10 +25,6 @@ import ConceptRepository from '../repositories/ConceptRepository'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 import {
-  getBookmarks as getConceptBookmarks,
-  getReactions as getConceptReactions,
-} from './conceptsController'
-import {
   getBookmarks as getCreationBookmarks,
   getReactions as getCreationReactions,
 } from './creationsController'

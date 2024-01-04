@@ -1,10 +1,14 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import SubscriptionCard from '@/components/Products/SubscriptionCard'
 import { useProducts } from '@/hooks/useProducts'
+import { handleAxiosError } from '@/lib/fetcher'
 import { subscriptionTierNameMap } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { Creator, Product } from '@edenlabs/eden-sdk'
+import { Button, message } from 'antd'
+import axios from 'axios'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
 const ProductCard = dynamic(() => import('@/components/Products/ProductCard'), {
@@ -34,9 +38,9 @@ const dummyFeatures: { [key: string]: string[] } = {
     'Export Concepts for use in other apps',
   ],
   believer: [
-    '7000 Manna / month',
+    '7500 Manna / month',
     '30% Discount on Manna-Refills',
-    '15 concurrent creation jobs',
+    '10 concurrent creation jobs',
     'Private creations',
     'API access',
     'Premium generators',
@@ -51,6 +55,7 @@ const ProductsList = ({
 }: {
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
+  const router = useRouter()
   const { user } = useContext(UserContext)
   const { products, subscriptions } = useProducts()
   const productsSortedByPrice = products?.sort(sortByPrice)
@@ -64,6 +69,23 @@ const ProductsList = ({
       user?.subscriptionTier ? user?.subscriptionTier : undefined,
     )
   }, [user?.subscriptionTier])
+
+  const onManageSubscriptionClick = async () => {
+    const customerId = user?.stripeCustomerId
+    if (!customerId) {
+      await router.push('/manna')
+      return
+    }
+    try {
+      const response = await axios.post('/api/billing/subscription', {
+        stripeCustomerId: customerId,
+      })
+      const { url } = response.data
+      await router.push(url)
+    } catch (error) {
+      handleAxiosError(error, message)
+    }
+  }
 
   return (
     <div>
@@ -80,23 +102,35 @@ const ProductsList = ({
                   <span className="capitalize font-bold">
                     {subscriptionTierNameMap[activeSubscriptionTier]}
                   </span>
+                  <Button
+                    type="primary"
+                    className="font-mono capitalize flex items-center"
+                    onClick={onManageSubscriptionClick}
+                  >
+                    Manage Subscription
+                  </Button>
                 </div>
               ) : (
-                'No active plan'
+                <>
+                  <div>No active plan</div>
+                  <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
+                    {subscriptionsSortedByPrice.map(product => (
+                      <SubscriptionCard
+                        key={product.id}
+                        features={
+                          dummyFeatures[product.metadata.subscriptionTier]
+                        }
+                        subscription={product}
+                        checkoutHandler={checkoutHandler}
+                        isActive={
+                          activeSubscriptionTier ===
+                          product.metadata.subscriptionTier
+                        }
+                      />
+                    ))}
+                  </div>
+                </>
               )}
-            </div>
-            <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
-              {subscriptionsSortedByPrice.map(product => (
-                <SubscriptionCard
-                  key={product.id}
-                  features={dummyFeatures[product.metadata.subscriptionTier]}
-                  subscription={product}
-                  checkoutHandler={checkoutHandler}
-                  isActive={
-                    activeSubscriptionTier === product.metadata.subscriptionTier
-                  }
-                />
-              ))}
             </div>
           </div>
         )}

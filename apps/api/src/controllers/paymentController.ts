@@ -44,7 +44,7 @@ const mannaTierMap = (subscriptionTier?: SubscriptionTier) => {
     [SubscriptionTier.Free]: 0,
     [SubscriptionTier.Basic]: 1000,
     [SubscriptionTier.Pro]: 3500,
-    [SubscriptionTier.Believer]: 8000,
+    [SubscriptionTier.Believer]: 7500,
   }
   return map[subscriptionTier || SubscriptionTier.Free]
 }
@@ -423,6 +423,7 @@ export const handlePaymentEvent = async (
     sig,
     server.config.STRIPE_WEBHOOK_SECRET,
   )
+
   const dataObject = event.data.object
   // @ts-ignore
   const userId = dataObject.client_reference_id
@@ -457,6 +458,7 @@ export const handlePaymentEvent = async (
 
     case 'invoicce.payment_succeeded':
       // TODO: handle subscription renewal.
+
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)

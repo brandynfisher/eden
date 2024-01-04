@@ -198,18 +198,11 @@ const handleUpdate = async (
         )
       }
 
-      console.log('DEBUG_CREATION_DATA', creationData)
-
       await Promise.allSettled(
         creationData.map(async creationInput => {
           const otherCreationIds = creationData
             .filter(dataItem => dataItem._id !== creationInput._id)
             .map(item => item._id)
-
-          console.log('DEBUG_CREATE', {
-            ...creationInput,
-            samples: otherCreationIds,
-          })
 
           await Creation.create({
             ...creationInput,
@@ -291,14 +284,14 @@ const handleUpdate = async (
           isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+          const { uri } = await server.uploadUrlAsset(
             server,
             finalOutput.files[i],
           )
           conceptData.uri = uri
         }
         if (finalOutput.thumbnails[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+          const { uri } = await server.uploadUrlAsset(
             server,
             finalOutput.thumbnails[i],
           )

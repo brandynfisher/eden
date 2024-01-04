@@ -25,7 +25,10 @@ export const useSubscriptionGate = (action: GatedActions) => {
 
     if (action === GatedActions.CreationDownload) {
       setIsAllowed(true)
+      return
     }
+
+    setIsAllowed(false)
   }, [hasMinimumSubscriptionTier])
 
   return {

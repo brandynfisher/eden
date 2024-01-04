@@ -8,7 +8,7 @@ import {
   ConceptsUpdateArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
-import { createRepo, fileExists, uploadFile } from '@huggingface/hub'
+import { createRepo, uploadFile } from '@huggingface/hub'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { promises as fs } from 'fs'
@@ -240,12 +240,12 @@ export const conceptUpdate = async (
   const { conceptId } = request.params as ConceptsUpdateArguments
   const { isPrivate } = request.body as ConceptsUpdateArguments
 
-  // if (conceptPrivacyPermissionCheck(request)) {
-  //   return reply.status(401).send({
-  //     message:
-  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
-  //   })
-  // }
+  if (conceptPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
   if (!userId || !conceptId || typeof isPrivate === 'undefined') {
     return reply.status(422).send({
