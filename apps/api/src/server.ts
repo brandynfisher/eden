@@ -135,6 +135,7 @@ const createServer = async (
   })
 
   const swaggerSha = 'tG+x05Hp2iKWfyCNzcCBlraUuB6rEMjtIj/zcnbu/fk='
+  const styleSha = 'RL3ie0nH+Lzz2YNqQN83mnU0J1ot4QL7b99vMdIX99w='
 
   await server.register(import('@fastify/swagger-ui'), {
     routePrefix: '/documentation',
@@ -144,10 +145,15 @@ const createServer = async (
     },
     staticCSP: true,
     transformStaticCSP: header => {
-      return header.replace(
+      header = header.replace(
         "script-src 'self'",
-        `script-src 'self' 'sha256-${swaggerSha}'`,
+        `script-src 'self' 'sha256-${swaggerSha}`,
       )
+      header = header.replace(
+        "style-src 'self'",
+        `style-src 'self' 'sha256-${styleSha}'`,
+      )
+      return header
     },
   })
 
