@@ -1,13 +1,4 @@
 const params = [
-
-  {
-    name: 'mode',
-    label: 'mode',
-    description: 'text-to-video or video-to-video (style transfer)',
-    default: 'comfy_makeitrad',
-    allowedValues: ["comfy_makeitrad"],
-    isRequired: true,
-  },
   
   {
     name: 'text_input',

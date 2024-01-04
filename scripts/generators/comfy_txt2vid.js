@@ -1,13 +1,4 @@
 const params = [
-
-  {
-    name: 'mode',
-    label: 'mode',
-    description: 'text-to-video or video-to-video (style transfer)',
-    default: 'comfy_txt2vid',
-    allowedValues: ["comfy_txt2vid"],
-    isRequired: true,
-  },
   
   {
     name: 'interpolation_texts',

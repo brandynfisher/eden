@@ -1,16 +1,7 @@
 const params = [
 
   {
-    name: 'mode',
-    label: 'mode',
-    description: 'mode',
-    default: 'comfy_img2vid',
-    allowedValues: ["comfy_img2vid"],
-    isRequired: true,
-  },
-
-  {
-    name: 'input_image_path',
+    name: 'init_image',
     label: 'Image to animate',
     description:
       'The image you want to animate',
