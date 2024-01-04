@@ -233,7 +233,16 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
     select: 'generatorName',
   })
 
-  return reply.status(200).send({ task })
+  if (!task) {
+    return reply.status(404).send({
+      message: 'Task not found',
+    })
+  }
+
+  const taskObject = task.toObject()
+  delete taskObject.config.lora_training_urls
+
+  return reply.status(200).send({ task: taskObject })
 }
 
 export const listTasks = async (

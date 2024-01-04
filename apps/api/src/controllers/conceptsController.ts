@@ -142,6 +142,12 @@ export const listConcepts = async (
     }),
   )
 
+  conceptsWithPublicName = conceptsWithPublicName.map(concept => {
+    // @ts-ignore
+    const { training_images, ...rest } = concept
+    return rest
+  })
+
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
   if (!hasConceptExportPermission) {
     conceptsWithPublicName = conceptsWithPublicName.map(concept => {
@@ -194,14 +200,16 @@ export const getConcept = async (
     }
   }
 
+  const conceptObject = concept.toObject()
+  delete conceptObject.training_images
+  delete conceptObject.task.config.lora_training_urls
+
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
   if (!hasConceptExportPermission) {
-    const conceptWithoutUri = concept.toObject()
-    delete conceptWithoutUri.uri
-    return reply.status(200).send({ concept: conceptWithoutUri })
+    delete conceptObject.uri
   }
 
-  return reply.status(200).send({ concept })
+  return reply.status(200).send({ concept: conceptObject })
 }
 
 export const conceptDelete = async (
