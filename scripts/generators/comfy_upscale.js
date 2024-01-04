@@ -10,7 +10,7 @@ const params = [
   },
 
   {
-    name: 'input_image_path',
+    name: 'init_image',
     label: 'Image to animate',
     description:
       'The image you want to upscale',
