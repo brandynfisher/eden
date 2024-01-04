@@ -44,7 +44,7 @@ const mannaTierMap = (subscriptionTier?: SubscriptionTier) => {
     [SubscriptionTier.Free]: 0,
     [SubscriptionTier.Basic]: 1000,
     [SubscriptionTier.Pro]: 3500,
-    [SubscriptionTier.Believer]: 8000,
+    [SubscriptionTier.Believer]: 7500,
   }
   return map[subscriptionTier || SubscriptionTier.Free]
 }
@@ -135,6 +135,7 @@ const handleNewSubscription = async (
   try {
     await user.updateOne({
       subscriptionTier,
+      highestMonthlySubscriptionTier: subscriptionTier,
     })
 
     try {
@@ -207,7 +208,11 @@ const handleSubscriptionUpdated = async (
     })
   }
 
-  if (metadata.subscriptionTier) {
+  if (
+    metadata.subscriptionTier &&
+    parseInt(metadata.subscriptionTier) >=
+      (user.highestMonthlySubscriptionTier || 0)
+  ) {
     await handleNewSubscription(server, reply, metadata, user)
   } else {
     return reply.status(400).send({
@@ -423,6 +428,8 @@ export const handlePaymentEvent = async (
     sig,
     server.config.STRIPE_WEBHOOK_SECRET,
   )
+  console.log(`Stripe: ${event.type}, ${JSON.stringify(event.data)}`)
+
   const dataObject = event.data.object
   // @ts-ignore
   const userId = dataObject.client_reference_id
@@ -457,6 +464,7 @@ export const handlePaymentEvent = async (
 
     case 'invoicce.payment_succeeded':
       // TODO: handle subscription renewal.
+
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)

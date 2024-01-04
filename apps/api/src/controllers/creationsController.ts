@@ -254,12 +254,12 @@ export const creationUpdate = async (
   const { creationId } = request.params as CreationsUpdateArguments
   const { isPrivate, deleted } = request.body as CreationsUpdateArguments
 
-  // if (creationPrivacyPermissionCheck(request)) {
-  //   return reply.status(401).send({
-  //     message:
-  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
-  //   })
-  // }
+  if (creationPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
   if (
     !userId ||

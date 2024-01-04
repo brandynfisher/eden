@@ -127,10 +127,6 @@ const getDownloadMenuItems = (
     ? getDownloadUrl(item as Creation | Concept, user)
     : ''
 
-  if (!downloadUrl) {
-    return []
-  }
-
   return [
     {
       key: '7',

@@ -1,3 +1,5 @@
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
+
 export const truncatedAddress = (creatorId: string) =>
   `${creatorId.slice(0, 5)}...${creatorId.slice(-4)}`
 
@@ -21,4 +23,11 @@ export const isImageUrl = (url: string) => {
 
 export const isVideoUrl = (url: string) => {
   return /\.(mp4)$/.test(url)
+}
+
+export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
+  [SubscriptionTier.Free]: 'Free',
+  [SubscriptionTier.Basic]: 'Basic',
+  [SubscriptionTier.Pro]: 'Pro',
+  [SubscriptionTier.Believer]: 'Believer',
 }

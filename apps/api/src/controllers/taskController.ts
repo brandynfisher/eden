@@ -7,7 +7,10 @@ import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import { taskPrivacyPermissionCheck } from '../lib/authorization'
+import {
+  maximumTasksInProgressPermissionCheck,
+  taskPrivacyPermissionCheck,
+} from '../lib/authorization'
 import {
   getDefaultGeneratorVersion,
   getLatestGeneratorVersion,
@@ -108,19 +111,19 @@ export const createTask = async (
   const { generatorName, versionId, config, webhooks, attributes } =
     request.body as TasksCreateArguments
 
-  // if (taskPrivacyPermissionCheck(request)) {
-  //   return reply.status(401).send({
-  //     message:
-  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
-  //   })
-  // }
+  if (taskPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
-  // const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
-  // if (submittedMaxTasks) {
-  //   return reply.status(401).send({
-  //     message: `You have reached the maximum number of tasks in progress. Upgrade your subscription to increase your limit.`,
-  //   })
-  // }
+  const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
+  if (submittedMaxTasks) {
+    return reply.status(401).send({
+      message: `You have reached the maximum number of tasks in progress. Upgrade your subscription to increase your limit.`,
+    })
+  }
 
   // get generator
   const generator = await Generator.findOne({

@@ -74,7 +74,7 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
       confirmationButtonProps: { color: 'warning' },
     })
       .then(() => handleDeleteCharacter())
-      .catch(() => console.log('Deletion cancelled.'))
+      .catch(() => {})
   }
 
   const handleDeleteCharacter = async () => {

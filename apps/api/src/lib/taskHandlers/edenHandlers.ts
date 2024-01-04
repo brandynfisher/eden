@@ -284,14 +284,14 @@ const handleUpdate = async (
           isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+          const { uri } = await server.uploadUrlAsset(
             server,
             finalOutput.files[i],
           )
           conceptData.uri = uri
         }
         if (finalOutput.thumbnails[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+          const { uri } = await server.uploadUrlAsset(
             server,
             finalOutput.thumbnails[i],
           )
