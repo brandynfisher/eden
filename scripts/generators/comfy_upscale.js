@@ -11,7 +11,7 @@ const params = [
 
   {
     name: 'init_image',
-    label: 'Image to animate',
+    label: 'Image you want to upscale',
     description:
       'The image you want to upscale',
     default: null,
