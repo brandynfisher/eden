@@ -6,8 +6,8 @@ export const hiddenGenerators = [
   'tts_fast',
   'sdxl-lora-trainer',
   'interrogate',
-  'monologue',
-  'dialogue',
+  // 'monologue',
+  // 'dialogue',
   'wav2lip',
 ]
 

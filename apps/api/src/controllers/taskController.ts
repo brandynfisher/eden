@@ -87,7 +87,7 @@ export const getTaskCost = async (
   }
 
   // validate config, add defaults
-  const preparedConfig = prepareConfig(generatorVersion.parameters, config)
+  const preparedConfig = prepareConfig(generatorVersion, config)
 
   const cost = server.getTransactionCost(
     server,
@@ -152,7 +152,7 @@ export const createTask = async (
   }
 
   // validate config, add defaults
-  const preparedConfig = prepareConfig(generatorVersion.parameters, config)
+  const preparedConfig = prepareConfig(generatorVersion, config)
 
   // check if user has enough manna
   const manna = await Manna.findOne({ user })

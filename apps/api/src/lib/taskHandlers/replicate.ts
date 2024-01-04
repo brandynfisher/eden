@@ -82,9 +82,7 @@ const submitTask = async (
   }
   const modelId = generatorVersion.versionId
   const preparedConfig = await formatConfigForReplicate(config)
-  const mode =
-    generator.generatorName === 'create' ? 'generate' : generator.generatorName
-  preparedConfig.mode = mode
+  preparedConfig.mode = generator.generatorName
   console.log('preparedConfig', preparedConfig)
   // @ts-ignore
   const task = await replicate.startPrediction(
