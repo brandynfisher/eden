@@ -1,6 +1,12 @@
 'use client'
 
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import OrderByButtons, {
+  OrderByDefaultParam,
+  OrderByLatest,
+  OrderByParam,
+  OrderByUsage,
+} from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfiniteScrollable from '@/components/Masonry/MasonryInfiniteScrollable'
 import ModalTitle from '@/components/Modals/ModalTitle'
 import SearchBar from '@/components/Search/SearchBar'
@@ -10,7 +16,13 @@ import { Concept } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { Modal, Switch } from 'antd'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 const ConceptSelectModal = ({
   onChange,
@@ -73,6 +85,24 @@ const ConceptSelectModal = ({
     }
   }, [])
 
+  const [orderBy, setOrderBy] = useState<OrderByParam>(OrderByDefaultParam)
+  const [renderCount, setRenderCount] = useState(0)
+  const [key, setKey] = useState(`${OrderByDefaultParam.field}_${0}`)
+  const handleOrderChange = useCallback(
+    (newOrderBy: OrderByParam) => {
+      if (newOrderBy.field !== orderBy?.field) {
+        // console.log(newOrderBy)
+        setOrderBy(newOrderBy)
+        setKey(`${newOrderBy.field}_${renderCount}`)
+      }
+    },
+    [renderCount],
+  )
+
+  useEffect(() => {
+    setRenderCount(prevState => prevState + 1)
+  }, [orderBy])
+
   return (
     <div ref={modalContainerRef}>
       <Modal
@@ -112,13 +142,20 @@ const ConceptSelectModal = ({
               />
             </div>
           </div>
+          <OrderByButtons
+            params={[OrderByLatest, OrderByUsage]}
+            initialParam={OrderByLatest}
+            onOrderChange={item => handleOrderChange(item)}
+          />
+
           <MasonryInfiniteScrollable
-            key={`public_${searchPublic}`}
+            key={`public_${searchPublic}_${key}`}
             itemType="concept"
             ItemComponent={ConceptCard}
             query={query}
             onCardClick={concept => onChange(concept as Concept)}
             hover={true}
+            orderBy={orderBy}
             modalContainerRef={containerRef}
             modalContainerHeight={containerHeight}
           />

@@ -47,6 +47,7 @@ export interface ConceptInput {
     type: MediaType
     duration?: number
   }
+  isPrivate?: boolean
 }
 
 export interface ConceptDocument extends SoftDeleteDocument, ConceptSchema {}
