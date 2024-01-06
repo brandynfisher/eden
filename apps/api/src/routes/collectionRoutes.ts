@@ -73,7 +73,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
         },
       ],
       params: {
-        conceptId: Type.String(),
+        collectionId: Type.String(),
       },
       body: Type.Object({
         name: Type.Optional(Type.String()),

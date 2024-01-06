@@ -1,3 +1,4 @@
+import CollectionHeaderName from '@/components/Collections/CollectionHeaderName'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection } from '@edenlabs/eden-sdk'
@@ -21,9 +22,11 @@ const CollectionHeader = ({
     <div className="flex flex-col bg-gray-200 dark:bg-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4">
         <div>
-          <h2 className="dark:text-white text-lg font-semibold">
-            Collection: {collection.name}
-          </h2>
+          <CollectionHeaderName
+            collectionId={collection._id}
+            displayName={collection.name}
+            isOwnProfile={isAuthUser}
+          />
           <div className="dark:text-white text-md font-semibold mb-2">
             {collection.description}
           </div>

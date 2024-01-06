@@ -16,12 +16,15 @@ export interface CollectionsCreateArguments extends WebAPICallOptions {
   name: string
   description?: string
   creationIds?: string[]
+  isPrivate?: boolean
 }
 
 export interface CollectionsUpdateArguments extends WebAPICallOptions {
   collectionId: string
   name?: string
   description?: string
+  isPrivate?: boolean
+  deleted?: boolean
 }
 
 export interface CollectionsDeleteArguments extends WebAPICallOptions {

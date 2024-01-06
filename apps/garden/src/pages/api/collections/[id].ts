@@ -2,17 +2,18 @@ import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
-import axios, { AxiosError } from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export type CollectionUpdatePartial = {
-  isPrivate: boolean
+  isPrivate?: boolean
+  deleted?: boolean
+  name?: string
+  description?: string
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
   const { id } = req.query
-
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
@@ -29,6 +30,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (req.method === 'PATCH') {
       const { update } = req.body
+      console.log({ id, update })
       return updateCollection(
         id as string,
         update as CollectionUpdatePartial,
@@ -70,18 +72,13 @@ const updateCollection = async (
   eden: EdenClient,
 ) => {
   try {
+    console.log(id, updatePartial)
     const response = await eden.collections.update({
       collectionId: id,
       ...updatePartial,
     })
     return res.status(200).json({ collection: response.collection })
   } catch (e) {
-    if (axios.isAxiosError(e)) {
-      const axiosError = e.toJSON() as AxiosError
-      return res
-        .status(axiosError.status || 500)
-        .json({ message: 'Item is flagged as NSFW. Can not make public' })
-    }
     return res.status(500).json({ error: e })
   }
 }

@@ -13,6 +13,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { PipelineStage } from 'mongoose'
 
+import { creationPrivacyPermissionCheck } from '../lib/authorization'
 import { Collection } from '../models/Collection'
 import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
@@ -243,19 +244,42 @@ export const updateCollection = async (
 ) => {
   const { userId } = request.user
   const { collectionId } = request.params as CollectionsUpdateArguments
-  const { name, description, isPrivate } =
+  const { name, description, isPrivate, deleted } =
     request.body as CollectionsUpdateArguments
+
+  console.log({ userId, collectionId, params: request.params })
+
+  if (
+    !userId ||
+    !collectionId ||
+    (typeof name === 'undefined' &&
+      typeof description === 'undefined' &&
+      typeof isPrivate === 'undefined' &&
+      typeof deleted === 'undefined')
+  ) {
+    return reply.status(422).send({
+      message: 'Missing parameters or malformed request body',
+    })
+  }
+
+  if (creationPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
   let collection
 
   if (collectionId) {
-    collection = await Collection.findOne({
+    collection = await Collection.findOneWithDeleted({
       _id: collectionId,
       user: userId,
     })
+
     if (!collection) {
-      return reply.status(400).send({
-        message: 'Invalid collection',
+      return reply.status(404).send({
+        message: 'Collection not found',
       })
     }
   } else {
@@ -263,10 +287,23 @@ export const updateCollection = async (
     collection = await getDefaultCollection(userId)
   }
 
-  await collection.updateOne({
-    name,
-    description,
-  })
+  if (typeof name !== 'undefined') {
+    collection.name = name
+  }
+
+  if (typeof description !== 'undefined') {
+    collection.description = description
+  }
+
+  if (typeof isPrivate !== 'undefined') {
+    collection.isPrivate = isPrivate
+  }
+
+  if (typeof deleted !== 'undefined') {
+    collection.deleted = !!deleted
+  }
+
+  await collection.save()
 
   return reply.status(200).send({})
 }
