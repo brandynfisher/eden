@@ -8,6 +8,7 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { Creator } from './Creators'
 
 // Arguments
 
@@ -66,8 +67,8 @@ export const collectionsUpdateRequestConfig = (
   args: CollectionsUpdateArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: 'collections/update',
+    method: 'PATCH',
+    url: `collections/${args.collectionId}`,
     data: {
       ...args,
     },
@@ -78,8 +79,8 @@ export const collectionsDeleteRequestConfig = (
   args: CollectionsDeleteArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: 'collections/delete',
+    method: 'DELETE',
+    url: `collections/${args.collectionId}`,
     data: {
       ...args,
     },
@@ -168,6 +169,7 @@ export type CollectionsGetResponse = WebAPICallResult & {
 
 export type Collection = {
   _id: string
+  user: Creator
   name: string
   description: string
   isDefaultCollection: boolean
@@ -177,4 +179,8 @@ export type Collection = {
   creatorName?: string
   creatorImage?: string
   hasItem?: boolean
+  deleted?: boolean
+  isPrivate?: boolean
+  createdAt: string
+  updatedAt: string
 }

@@ -1,6 +1,10 @@
 import { ObjectId } from 'mongodb'
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 import { enforceUserDocumentLimit } from '../lib/data'
@@ -23,9 +27,13 @@ export interface CollectionInput {
   user: ObjectId
   name: string
   description?: string
+  displayImageUri?: string
+  isPrivate?: boolean
 }
 
-export interface CollectionDocument extends CollectionSchema, Document {}
+export interface CollectionDocument
+  extends SoftDeleteDocument,
+    CollectionSchema {}
 
 const collection = new Schema<CollectionDocument>(
   {
@@ -57,6 +65,13 @@ const collection = new Schema<CollectionDocument>(
       type: String,
       maxLength: 1000,
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    deleteBy: {
+      type: String,
+    },
     isPrivate: {
       type: Boolean,
       default: false,
@@ -73,7 +88,12 @@ collection.pre<CollectionDocument>('update', function (next) {
   next()
 })
 
+collection.index({ user: 1, deleted: 1, isPrivate: 1 })
+collection.plugin(mongooseDelete, { overrideMethods: 'all' })
 collection.plugin(paginate)
 collection.plugin(aggregatePaginate)
 
-export const Collection = model<CollectionDocument>('collections', collection)
+export const Collection = model<CollectionDocument>(
+  'collections',
+  collection,
+) as SoftDeleteModel<CollectionDocument>

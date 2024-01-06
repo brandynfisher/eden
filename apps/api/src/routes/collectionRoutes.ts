@@ -62,7 +62,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => getCollection(request, reply),
   })
 
-  server.post('/collections/update', {
+  server.patch('/collections/:collectionId', {
     schema: {
       tags: ['Collections'],
       description: 'Update a collection',
@@ -72,10 +72,13 @@ const collectionRoutes: FastifyPluginAsync = async server => {
           apiSecret: [],
         },
       ],
+      params: {
+        conceptId: Type.String(),
+      },
       body: Type.Object({
-        collectionId: Type.Optional(Type.String()),
         name: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
+        isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {
         200: Type.Object({}),
@@ -129,7 +132,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => removeCreationsFromCollection(request, reply),
   })
 
-  server.post('/collections/delete', {
+  server.delete('/collections/:collectionId', {
     schema: {
       tags: ['Collections'],
       description: 'Delete a collection',
@@ -139,9 +142,9 @@ const collectionRoutes: FastifyPluginAsync = async server => {
           apiSecret: [],
         },
       ],
-      body: Type.Object({
-        collectionId: Type.String(),
-      }),
+      params: {
+        conceptId: Type.String(),
+      },
       response: {
         200: Type.Object({}),
       },

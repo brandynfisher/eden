@@ -33,9 +33,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   const onDeleteButtonClick = async () => {
     setDeleteLoading(true)
     try {
-      await axios.post(`/api/collections/delete`, {
-        collectionId: collection._id,
-      })
+      await axios.delete(`/api/collections/${collection._id}`)
       const userProfilePath =
         isAuthenticated && user && user.username
           ? `/creators/${user.username?.toLowerCase()}`

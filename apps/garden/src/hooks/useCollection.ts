@@ -4,7 +4,7 @@ import useSWR from 'swr'
 
 export const useCollection = (collectionId: string | null, options = {}) => {
   const { data, mutate } = useSWR(
-    collectionId ? '/api/collections?collectionId=' + collectionId : null,
+    collectionId ? `/api/collections/${collectionId}` : null,
     fetcher,
     options,
   )

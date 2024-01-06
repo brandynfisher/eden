@@ -62,8 +62,8 @@ test('User can update a collection', async context => {
   })
   const collectionId = listResponse.json().docs[0]._id
   const response = await server.inject({
-    method: 'POST',
-    url: '/collections/update',
+    method: 'PATCH',
+    url: `/collections/${collectionId}`,
     headers,
     payload: {
       collectionId,
@@ -87,11 +87,8 @@ test('User can delete a collection', async context => {
   })
   const collectionId = createResponse.json().collectionId
   const response = await server.inject({
-    method: 'POST',
-    url: '/collections/delete',
-    payload: {
-      collectionId,
-    },
+    method: 'DELETE',
+    url: `/collections/${collectionId}`,
     headers,
   })
   expect(response.statusCode).toBe(200)
