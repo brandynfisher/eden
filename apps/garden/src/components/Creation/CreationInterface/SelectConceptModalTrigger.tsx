@@ -12,6 +12,7 @@ const SelectConceptModalTrigger = ({
   return (
     <SelectModalTrigger
       modalType={MODAL_TYPES.CONCEPT_SELECT_MODAL}
+      // maxSelectableItems={1}
       buttonContent={
         <>
           <ModelTrainingIcon fontSize="small" />

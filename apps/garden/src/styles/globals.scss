@@ -814,3 +814,9 @@ div[role='grid'] {
         }
     }
 }
+
+.custom-form-item {
+    .ant-form-item-control-input {
+        min-height: 0;
+    }
+}

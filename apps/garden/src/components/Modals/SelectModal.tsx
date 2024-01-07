@@ -125,7 +125,7 @@ const SelectModal = ({
               target="_blank"
               className="flex gap-1 items-center"
             >
-              Learn about {label}
+              Learn about {label}s
               <LinkOutlined />
             </a>
           }

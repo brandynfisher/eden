@@ -3,7 +3,8 @@ import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelec
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
 import SelectCharacterModalTrigger from '@/components/Creation/CreationInterface/SelectCharacterModalTrigger'
 import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
-import ConceptParameterV2 from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
+import CharacterParameter from '@/components/Creation/CreationInterface/parameters/CharacterParameter'
+import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
@@ -264,8 +265,8 @@ const GeneratorForm = ({
     [generator],
   )
 
+  const supportsCharacters = supportsGroup(requiredParameters, 'character')
   const supportsConcepts = supportsGroup(advancedParameters, 'concept')
-  const supportsCharacters = supportsGroup(advancedParameters, 'character')
   const supportsInitImage = supportsGroup(advancedParameters, 'init_image')
 
   const handleFinish = async () => {
@@ -378,7 +379,16 @@ const GeneratorForm = ({
         }
         if (parameter.name === 'lora') {
           return (
-            <ConceptParameterV2
+            <ConceptParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        if (parameter.name === 'characterId') {
+          return (
+            <CharacterParameter
               key={parameter.name}
               form={form}
               parameter={parameter}
@@ -466,7 +476,28 @@ const GeneratorForm = ({
         } ${usesDrawer && !openedDrawer ? 'hidden' : 'flex'}`}
       >
         <div className={`p-2 py-3 bg-gray-100 dark:bg-gray-900`}>
-          {renderFormFields(requiredParameters)}
+          {renderFormFields(
+            requiredParameters.filter(
+              p => !parameterGroups['character'].includes(p.name),
+            ),
+          )}
+
+          {supportsCharacters ? (
+            <div className="flex flex-col mt-2 bg-gray-100 dark:bg-gray-900">
+              <SelectCharacterModalTrigger
+                onChange={character => {
+                  form.setFieldsValue({
+                    ['characterId']: character ? character._id : null,
+                  })
+                }}
+              />
+              {renderFormFields(
+                requiredParameters.filter(p =>
+                  parameterGroups['character'].includes(p.name),
+                ),
+              )}
+            </div>
+          ) : null}
 
           {/* decorative / extra params linked to the actual param input */}
           {outputType === 'image' ||
@@ -497,23 +528,6 @@ const GeneratorForm = ({
               {/*  }}*/}
               {/*/>*/}
             </div>
-          ) : null}
-
-          {supportsCharacters ? (
-            <>
-              <SelectCharacterModalTrigger
-                onChange={character => {
-                  form.setFieldsValue({
-                    ['characterId']: character ? character._id : null,
-                  })
-                }}
-              />
-              {renderFormFields(
-                advancedParameters.filter(p =>
-                  parameterGroups['character'].includes(p.name),
-                ),
-              )}
-            </>
           ) : null}
         </div>
 
