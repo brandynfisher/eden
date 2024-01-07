@@ -1,4 +1,4 @@
-import { Capabilites } from '@edenlabs/eden-sdk'
+import { Capabilities } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -23,7 +23,7 @@ import { configType } from '../types/routeTypes'
 
 const logosType = Type.Optional(
   Type.Object({
-    capabilities: Type.Optional(Type.Array(Type.Enum(Capabilites))),
+    capabilities: Type.Optional(Type.Array(Type.Enum(Capabilities))),
     identity: Type.Optional(Type.String()),
     knowledge: Type.Optional(Type.String()),
     knowledgeSummary: Type.Optional(Type.String()),
