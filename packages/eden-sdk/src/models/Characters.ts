@@ -8,6 +8,7 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { Creator } from './Creators'
 
 // Arguments
 
@@ -164,7 +165,7 @@ export type CharactersTestResponse = WebAPICallResult & {
 
 export type Character = {
   _id: string
-  user: Capabilities
+  user: Creator
   name: string
   slug: string
   greeting?: string
