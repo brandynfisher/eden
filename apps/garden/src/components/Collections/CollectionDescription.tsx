@@ -7,7 +7,7 @@ import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
 
-const CollectionHeaderName = ({
+const CollectionDescription = ({
   collectionId,
   isOwnProfile,
 }: {
@@ -20,35 +20,39 @@ const CollectionHeaderName = ({
   const [loading, setLoading] = useState(false)
   const clickOutsideTargetRef = useClickOutside(() => setIsEditing(false))
   const { collection, mutate } = useCollection(collectionId)
-  const [updatedName, setUpdatedName] = useState(collection?.name)
+  const [updatedDescription, setUpdatedDescription] = useState(
+    collection?.description,
+  )
 
-  const handleEditNameClick = async () => {
+  const handleEditDescriptionClick = async () => {
     if (!(await maybeAuthenticate())) return
     setIsEditing(true)
-    setUpdatedName(collection?.name)
+    setUpdatedDescription(collection?.description)
   }
-  const handleNameInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDescriptionInputChange = (
+    ev: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const newValue = ev.target.value
-    setUpdatedName(newValue.trim())
+    setUpdatedDescription(newValue)
   }
 
-  const handleNameSubmit = async () => {
+  const handleDescriptionSubmit = async () => {
     setLoading(true)
     message.destroy()
 
     try {
       await axios.patch(`/api/collections/${collectionId}`, {
         update: {
-          name: updatedName,
+          description: updatedDescription,
         },
       })
       await mutate({
         ...collection,
-        name: updatedName,
+        description: updatedDescription,
       })
       setIsEditing(false)
       message.destroy()
-      message.success(`Collection name changed`)
+      message.success(`Collection description changed`)
     } catch (err) {
       handleAxiosError(err, message)
     }
@@ -56,28 +60,37 @@ const CollectionHeaderName = ({
   }
 
   return (
-    <div className="flex items-center gap-2 w-full">
+    <div className="flex items-center gap-1 w-full">
       <div
         ref={clickOutsideTargetRef}
-        className={`dark:text-white text-md font-semibold min-w-0 ${
-          isEditing ? 'w-full' : ''
-        }`}
-        title={collection?.name}
+        className={`dark:text-white min-w-0 ${isEditing ? 'w-full' : ''}`}
+        title={collection?.description}
       >
         {!isEditing ? (
-          <div className="text-lg truncate">Collection: {collection?.name}</div>
+          <>
+            {collection?.description ? (
+              <div className="truncate">{collection?.description}</div>
+            ) : (
+              <>
+                {isOwnProfile ? (
+                  <div className="text-gray-500 text-xs">Add a description</div>
+                ) : null}
+              </>
+            )}
+          </>
         ) : (
           <div className="relative w-full flex flex-col min-w-0 z-10">
             <input
+              autoFocus={true}
               type="text"
               enterKeyHint="enter"
-              value={updatedName}
+              value={updatedDescription}
               maxLength={32}
               minLength={3}
               autoCorrect="off"
               spellCheck="false"
               className="z-10 pl-0 ml-0 border-none shadow-none !ring-none flex h-7 max-w-full items-center text-lg font-medium bg-transparent underline decoration-dotted decoration-2 underline-offset-[6px] !outline-none"
-              onChange={handleNameInputChange}
+              onChange={handleDescriptionInputChange}
             />
             <div className="z-0 flex gap-2 absolute bg-white dark:bg-gray-800 p-2 top-full border border-gray-300 dark:border-gray-700 border-solid border-t-0 rounded-b-md anim-slide-fade-down ">
               <Button
@@ -89,11 +102,14 @@ const CollectionHeaderName = ({
                 Cancel
               </Button>
               <Button
-                onClick={handleNameSubmit}
+                onClick={handleDescriptionSubmit}
                 size="small"
                 type="text"
                 loading={loading}
-                disabled={!updatedName || updatedName === collection?.name}
+                disabled={
+                  !updatedDescription ||
+                  updatedDescription === collection?.description
+                }
                 className="font-mono"
               >
                 Save
@@ -106,7 +122,11 @@ const CollectionHeaderName = ({
       {isOwnProfile && (
         <>
           {!isEditing && (
-            <Button size={'small'} type="text" onClick={handleEditNameClick}>
+            <Button
+              size={'small'}
+              type="text"
+              onClick={handleEditDescriptionClick}
+            >
               <EditOutlined className="text-xl" />
             </Button>
           )}
@@ -116,4 +136,4 @@ const CollectionHeaderName = ({
   )
 }
 
-export default CollectionHeaderName
+export default CollectionDescription

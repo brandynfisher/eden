@@ -73,6 +73,7 @@ const ProfileHeaderName = ({
         ) : (
           <div className="relative w-full flex flex-col min-w-0 z-0">
             <input
+              autoFocus={true}
               type="text"
               enterKeyHint="enter"
               value={updatedName}
