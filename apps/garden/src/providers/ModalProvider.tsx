@@ -1,12 +1,13 @@
 import { CardData } from '@/components/Card/Card'
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
-import ConceptSelectModal from '@/components/Modals/ConceptSelectModal'
 import DetailModal from '@/components/Modals/DetailModal'
 import DetailStaticModal from '@/components/Modals/DetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
 import FollowingModal from '@/components/Modals/FollowingModal'
 import GeneratorSelectModal from '@/components/Modals/GeneratorSelectModal'
 import MannaRefillModal from '@/components/Modals/MannaRefillModal'
+import SelectCharacterModal from '@/components/Modals/SelectCharacterModal'
+import SelectConceptModal from '@/components/Modals/SelectConceptModal'
 import SubscriptionGateModal from '@/components/Modals/SubscriptionGateModal'
 import TaskDetailModal from '@/components/Modals/TaskDetailModal'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
@@ -35,6 +36,7 @@ export enum MODAL_TYPES {
   DETAIL_STATIC_MODAL = 'DETAIL_STATIC_MODAL',
   COLLECTION_ADD_CREATION_MODAL = 'COLLECTION_ADD_CREATION_MODAL',
   CONCEPT_SELECT_MODAL = 'CONCEPT_SELECT_MODAL',
+  CHARACTER_SELECT_MODAL = 'CHARACTER_SELECT_MODAL',
   MANNA_REFILL_MODAL = 'MANNA_REFILL_MODAL',
   FOLLOWERS_MODAL = 'FOLLOWERS_MODAL',
   FOLLOWING_MODAL = 'FOLLOWING_MODAL',
@@ -48,7 +50,8 @@ const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.DETAIL_MODAL]: DetailModal,
   [MODAL_TYPES.DETAIL_STATIC_MODAL]: DetailStaticModal,
   [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
-  [MODAL_TYPES.CONCEPT_SELECT_MODAL]: ConceptSelectModal,
+  [MODAL_TYPES.CONCEPT_SELECT_MODAL]: SelectConceptModal,
+  [MODAL_TYPES.CHARACTER_SELECT_MODAL]: SelectCharacterModal,
   [MODAL_TYPES.MANNA_REFILL_MODAL]: MannaRefillModal,
   [MODAL_TYPES.FOLLOWERS_MODAL]: FollowersModal,
   [MODAL_TYPES.FOLLOWING_MODAL]: FollowingModal,
@@ -75,7 +78,13 @@ export type GeneratorSelectModalProps = Partial<
 
 export type ConceptSelectModalProps = Partial<
   BaseModalProps & {
-    onChange: (concept: Concept) => void
+    onChange: (item: Concept) => void
+  }
+>
+
+export type CharacterSelectModalProps = Partial<
+  BaseModalProps & {
+    onChange: (item: Character) => void
   }
 >
 
@@ -121,6 +130,7 @@ type ModalStore = {
     | AddToCollectionModalProps
     | GeneratorSelectModalProps
     | ConceptSelectModalProps
+    | CharacterSelectModalProps
     | SubscriptionGateModalProps
     | Partial<BaseModalProps & { concept?: Concept }>
     | (Partial<BaseModalProps> & { creatorId: string; isOwnProfile: boolean })

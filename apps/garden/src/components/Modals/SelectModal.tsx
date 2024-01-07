@@ -1,22 +1,37 @@
 'use client'
 
+import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import OrderByButtons, {
+  OrderByDefaultParam,
+  OrderByLatest,
+  OrderByParam,
+  OrderByUsage,
+} from '@/components/Layout/buttons/OrderByButtons'
 import MasonryInfiniteScrollable from '@/components/Masonry/MasonryInfiniteScrollable'
 import ModalTitle from '@/components/Modals/ModalTitle'
 import SearchBar from '@/components/Search/SearchBar'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept } from '@edenlabs/eden-sdk'
+import { Character, Concept } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { Modal, Switch } from 'antd'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
-const ConceptSelectModal = ({
+const SelectModal = ({
   onChange,
+  itemType,
   ...rest
 }: {
-  onChange: (concept: Concept) => void
+  itemType: 'concept' | 'character'
+  onChange: (concept: Concept | Character) => void
 }) => {
   const { userId } = useContext(UserContext)
   // const [baseQuery, setBaseQuery] = useState<PaginatedFeedQuery>()
@@ -31,7 +46,9 @@ const ConceptSelectModal = ({
 
   const modalContainerRef = useRef<HTMLDivElement | null>(null)
 
-  // other code...
+  const ItemComponent = itemType === 'concept' ? ConceptCard : CharacterFeedCard
+  const docsLinkUrl = `https://docs.eden.art/docs/guides/${itemType}s`
+  const label = itemType === 'concept' ? 'Concept' : 'Character'
 
   useEffect(() => {
     const observer = new MutationObserver(mutations => {
@@ -73,6 +90,24 @@ const ConceptSelectModal = ({
     }
   }, [])
 
+  const [orderBy, setOrderBy] = useState<OrderByParam>(OrderByDefaultParam)
+  const [renderCount, setRenderCount] = useState(0)
+  const [key, setKey] = useState(`${OrderByDefaultParam.field}_${0}`)
+  const handleOrderChange = useCallback(
+    (newOrderBy: OrderByParam) => {
+      if (newOrderBy.field !== orderBy?.field) {
+        // console.log(newOrderBy)
+        setOrderBy(newOrderBy)
+        setKey(`${newOrderBy.field}_${renderCount}`)
+      }
+    },
+    [renderCount],
+  )
+
+  useEffect(() => {
+    setRenderCount(prevState => prevState + 1)
+  }, [orderBy])
+
   return (
     <div ref={modalContainerRef}>
       <Modal
@@ -83,14 +118,14 @@ const ConceptSelectModal = ({
         }
       >
         <ModalTitle
-          title="Select Concept"
+          title={`Select ${label}`}
           link={
             <a
-              href="https://docs.eden.art/docs/guides/concepts"
+              href={docsLinkUrl}
               target="_blank"
               className="flex gap-1 items-center"
             >
-              Learn about Concepts
+              Learn about {label}s
               <LinkOutlined />
             </a>
           }
@@ -107,18 +142,26 @@ const ConceptSelectModal = ({
               <Switch
                 checked={searchPublic}
                 onChange={checked => handleSearchPublicToggle(checked)}
-                checkedChildren="All Concepts"
-                unCheckedChildren="My Concepts"
+                checkedChildren={`All ${label}`}
+                unCheckedChildren={`My ${label}`}
               />
             </div>
           </div>
+
+          <OrderByButtons
+            params={[OrderByLatest, OrderByUsage]}
+            initialParam={OrderByLatest}
+            onOrderChange={item => handleOrderChange(item)}
+          />
+
           <MasonryInfiniteScrollable
-            key={`public_${searchPublic}`}
-            itemType="concept"
-            ItemComponent={ConceptCard}
+            key={`public_${itemType}_${searchPublic}_${key}`}
+            itemType={itemType}
+            ItemComponent={ItemComponent}
             query={query}
-            onCardClick={concept => onChange(concept as Concept)}
+            onCardClick={item => onChange(item as Concept | Character)}
             hover={true}
+            orderBy={orderBy}
             modalContainerRef={containerRef}
             modalContainerHeight={containerHeight}
           />
@@ -128,4 +171,4 @@ const ConceptSelectModal = ({
   )
 }
 
-export default ConceptSelectModal
+export default SelectModal

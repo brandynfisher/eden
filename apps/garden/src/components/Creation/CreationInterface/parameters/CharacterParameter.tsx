@@ -1,72 +1,52 @@
-import { trainingModeColorMap } from '@/components/Concept/ConceptCard/ConceptCard'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
-import { useConcept } from '@/hooks/useConcept'
+import { useCharacter } from '@/hooks/useCharacter'
 import { CONFIG } from '@/lib/config'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import CloseIcon from '@mui/icons-material/Close'
-import { App, Button, Form, FormInstance, Input, Tag } from 'antd'
+import { App, Button, Form, FormInstance, Input } from 'antd'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
-export const ConceptParameterUI = ({
-  conceptId,
+export const CharacterParameterUI = ({
+  characterId,
   onChange,
 }: {
-  conceptId: string
+  characterId: string
   onChange: (newValue: string | null) => void
 }) => {
-  const { concept, isLoading } = useConcept(conceptId)
+  const { character, isLoading } = useCharacter(characterId)
 
   return (
     <div className="bg-gray-300 dark:bg-gray-800 rounded-md flex w-full h-12">
-      {!concept || isLoading ? (
+      {!character || isLoading ? (
         <LoadingIndicator />
       ) : (
         <>
-          {concept ? (
+          {character ? (
             <div className="pr-1 flex gap-2 items-center w-full">
-              {concept.thumbnail ? (
+              {character.image ? (
                 <Image
                   width={48}
                   height={48}
                   src={
-                    concept.thumbnail ||
+                    character.image ||
                     `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                   }
-                  alt={`${concept.conceptName} - ${concept.checkpoint}`}
-                  className="rounded"
+                  alt={`${character.name}`}
+                  className="rounded object-contain"
                 />
               ) : null}
               <div className="w-full flex flex-col justify-around h-full py-0.5 flex-grow-0 flex-shrink max-w-[220px]">
                 <div className="flex justify-between gap-4">
-                  <div className="max-w-full whitespace-nowrap text-ellipsis overflow-hidden">{`${concept.conceptName}`}</div>
-                  <Tag
-                    color={
-                      trainingModeColorMap[
-                        concept?.task?.config?.mode ||
-                          concept?.task?.config?.concept_mode
-                      ]
-                    }
-                    className="first-letter:capitalize me-0"
-                  >
-                    {concept?.task?.config?.mode ||
-                      concept?.task?.config?.concept_mode}
-                  </Tag>
+                  <div className="max-w-full whitespace-nowrap text-ellipsis overflow-hidden">{`${character.name}`}</div>
                 </div>
-                {/*<div className="flex gap-1 text-xs text-gray-700 dark:text-gray-500 items-center">*/}
-                {/*  <div className="max-w-full whitespace-nowrap text-ellipsis overflow-hidden">*/}
-                {/*    {concept.name}*/}
-                {/*  </div>*/}
-                {/*  /!*<div className="text-gray-400">•</div>*!/*/}
-                {/*  /!*<div>{concept.checkpoint}</div>*!/*/}
-                {/*</div>*/}
                 <div className="flex gap-1">
                   <span className="text-xs dark:text-gray-300">by</span>{' '}
                   <CreatorProfileLink
-                    creatorId={concept.user.userId}
-                    creatorName={concept.user.username}
+                    creatorId={character.user.userId}
+                    creatorName={character.user.username}
                   />
                 </div>
               </div>
@@ -84,61 +64,64 @@ export const ConceptParameterUI = ({
   )
 }
 
-const ConceptParameterV2 = (props: {
+const CharacterParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
 }) => {
   const router = useRouter()
   const { message } = App.useApp()
   const [value, setValue] = useState(props.parameter.default)
-  const loraId = Form.useWatch('lora')
-  const [preselectedConceptId, setPreselectedConceptId] = useState<
+  const characterId = Form.useWatch('characterId')
+  const [preselectedCharacterId, setPreselectedCharacterId] = useState<
     string | null
   >(null)
-  const { concept } = useConcept(loraId || preselectedConceptId)
+  const { character } = useCharacter(characterId || preselectedCharacterId)
 
   useEffect(() => {
     if (
-      concept &&
-      preselectedConceptId &&
-      concept._id === preselectedConceptId
+      character &&
+      preselectedCharacterId &&
+      character._id === preselectedCharacterId
     ) {
       message.open({
-        key: 'concept-selected-toast',
+        key: 'character-selected-toast',
         icon: false,
         content: (
-          <div onClick={() => message.destroy('concept-selected-toast')}>
-            <div className="my-1 text-xs font-bold">Concept selected:</div>
-            <ConceptParameterUI conceptId={concept._id} onChange={onChange} />
+          <div onClick={() => message.destroy('character-selected-toast')}>
+            <div className="my-1 text-xs font-bold">Character selected:</div>
+            <CharacterParameterUI
+              characterId={character._id}
+              onChange={onChange}
+            />
           </div>
         ),
         duration: 3,
-        className: 'concept-notice',
+        className: 'character-notice',
       })
     }
-  }, [concept, preselectedConceptId])
+  }, [character, preselectedCharacterId])
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search)
-    const conceptParam = queryParams.get('concept') // world
-    if (conceptParam) {
-      onChange(String(conceptParam))
-      setPreselectedConceptId(conceptParam)
+    const characterParam = queryParams.get('character') // world
+    if (characterParam) {
+      onChange(String(characterParam))
+      setPreselectedCharacterId(characterParam)
     } else {
-      setPreselectedConceptId(null)
+      setPreselectedCharacterId(null)
     }
   }, [router.query])
 
   useEffect(() => {
-    if (loraId) {
-      setValue(loraId)
+    if (characterId) {
+      setValue(characterId)
     }
-  }, [setValue, loraId])
+  }, [setValue, characterId])
 
   const onChange = (newValue: string | null) => {
     // hacky way to get rid of the query parameter - avoiding next.router here because it would trigger a rerender
-    if (preselectedConceptId) {
-      setPreselectedConceptId(null)
+    if (preselectedCharacterId) {
+      setPreselectedCharacterId(null)
       const newUrl = '/create/creations'
       window.history.pushState(
         { ...window.history.state, as: newUrl, url: newUrl },
@@ -154,13 +137,9 @@ const ConceptParameterV2 = (props: {
   }
 
   return (
-    <div
-      className={`flex flex-wrap items-center justify-between ${
-        !loraId ? 'hidden' : ''
-      }`}
-    >
+    <div className={`flex flex-wrap items-center justify-between`}>
       <Form.Item
-        className={`mb-0 flex-grow hidden`}
+        className={`mb-0 flex-grow custom-form-item`}
         name={props.parameter.name}
         initialValue={props.parameter.default}
         rules={[
@@ -170,19 +149,22 @@ const ConceptParameterV2 = (props: {
           },
         ]}
       >
-        <Input value={value} disabled={true} />
+        <Input value={value} disabled={true} className="hidden" />
       </Form.Item>
-      {loraId ? (
-        <>
-          {concept ? (
-            <ConceptParameterUI conceptId={concept._id} onChange={onChange} />
+      {characterId ? (
+        <div className="mt-2 w-full">
+          {character ? (
+            <CharacterParameterUI
+              characterId={character._id}
+              onChange={onChange}
+            />
           ) : (
             <LoadingIndicator />
           )}
-        </>
+        </div>
       ) : null}
     </div>
   )
 }
 
-export default ConceptParameterV2
+export default CharacterParameter

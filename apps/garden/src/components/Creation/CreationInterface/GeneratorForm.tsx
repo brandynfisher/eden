@@ -1,8 +1,10 @@
-import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelect'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
-import ConceptParameterV2 from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
+import SelectCharacterModalTrigger from '@/components/Creation/CreationInterface/SelectCharacterModalTrigger'
+import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
+import CharacterParameter from '@/components/Creation/CreationInterface/parameters/CharacterParameter'
+import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
@@ -263,6 +265,7 @@ const GeneratorForm = ({
     [generator],
   )
 
+  const supportsCharacters = supportsGroup(requiredParameters, 'character')
   const supportsConcepts = supportsGroup(advancedParameters, 'concept')
   const supportsInitImage = supportsGroup(advancedParameters, 'init_image')
 
@@ -376,7 +379,16 @@ const GeneratorForm = ({
         }
         if (parameter.name === 'lora') {
           return (
-            <ConceptParameterV2
+            <ConceptParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        if (parameter.name === 'characterId') {
+          return (
+            <CharacterParameter
               key={parameter.name}
               form={form}
               parameter={parameter}
@@ -464,7 +476,28 @@ const GeneratorForm = ({
         } ${usesDrawer && !openedDrawer ? 'hidden' : 'flex'}`}
       >
         <div className={`p-2 py-3 bg-gray-100 dark:bg-gray-900`}>
-          {renderFormFields(requiredParameters)}
+          {renderFormFields(
+            requiredParameters.filter(
+              p => !parameterGroups['character'].includes(p.name),
+            ),
+          )}
+
+          {supportsCharacters ? (
+            <div className="flex flex-col mt-2 bg-gray-100 dark:bg-gray-900">
+              <SelectCharacterModalTrigger
+                onChange={character => {
+                  form.setFieldsValue({
+                    ['characterId']: character ? character._id : null,
+                  })
+                }}
+              />
+              {renderFormFields(
+                requiredParameters.filter(p =>
+                  parameterGroups['character'].includes(p.name),
+                ),
+              )}
+            </div>
+          ) : null}
 
           {/* decorative / extra params linked to the actual param input */}
           {outputType === 'image' ||
@@ -558,7 +591,7 @@ const GeneratorForm = ({
                 forceRender={true}
               >
                 <div className="px-2 flex flex-col gap-2 py-4 bg-gray-100 dark:bg-gray-900">
-                  <ConceptSelectModalTrigger
+                  <SelectConceptModalTrigger
                     onChange={concept => {
                       form.setFieldsValue({
                         ['lora']: concept ? concept._id : null,
