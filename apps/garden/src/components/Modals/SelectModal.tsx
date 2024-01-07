@@ -1,5 +1,6 @@
 'use client'
 
+import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import OrderByButtons, {
   OrderByDefaultParam,
@@ -12,7 +13,7 @@ import ModalTitle from '@/components/Modals/ModalTitle'
 import SearchBar from '@/components/Search/SearchBar'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { UserContext } from '@/providers/UserProvider'
-import { Concept } from '@edenlabs/eden-sdk'
+import { Character, Concept } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import { Modal, Switch } from 'antd'
@@ -24,11 +25,13 @@ import React, {
   useState,
 } from 'react'
 
-const ConceptSelectModal = ({
+const SelectModal = ({
   onChange,
+  itemType,
   ...rest
 }: {
-  onChange: (concept: Concept) => void
+  itemType: 'concept' | 'character'
+  onChange: (concept: Concept | Character) => void
 }) => {
   const { userId } = useContext(UserContext)
   // const [baseQuery, setBaseQuery] = useState<PaginatedFeedQuery>()
@@ -43,7 +46,9 @@ const ConceptSelectModal = ({
 
   const modalContainerRef = useRef<HTMLDivElement | null>(null)
 
-  // other code...
+  const ItemComponent = itemType === 'concept' ? ConceptCard : CharacterFeedCard
+  const docsLinkUrl = `https://docs.eden.art/docs/guides/${itemType}s`
+  const label = itemType === 'concept' ? 'Concept' : 'Character'
 
   useEffect(() => {
     const observer = new MutationObserver(mutations => {
@@ -113,14 +118,14 @@ const ConceptSelectModal = ({
         }
       >
         <ModalTitle
-          title="Select Concept"
+          title={`Select ${label}`}
           link={
             <a
-              href="https://docs.eden.art/docs/guides/concepts"
+              href={docsLinkUrl}
               target="_blank"
               className="flex gap-1 items-center"
             >
-              Learn about Concepts
+              Learn about {label}
               <LinkOutlined />
             </a>
           }
@@ -137,11 +142,12 @@ const ConceptSelectModal = ({
               <Switch
                 checked={searchPublic}
                 onChange={checked => handleSearchPublicToggle(checked)}
-                checkedChildren="All Concepts"
-                unCheckedChildren="My Concepts"
+                checkedChildren={`All ${label}`}
+                unCheckedChildren={`My ${label}`}
               />
             </div>
           </div>
+
           <OrderByButtons
             params={[OrderByLatest, OrderByUsage]}
             initialParam={OrderByLatest}
@@ -149,11 +155,11 @@ const ConceptSelectModal = ({
           />
 
           <MasonryInfiniteScrollable
-            key={`public_${searchPublic}_${key}`}
-            itemType="concept"
-            ItemComponent={ConceptCard}
+            key={`public_${itemType}_${searchPublic}_${key}`}
+            itemType={itemType}
+            ItemComponent={ItemComponent}
             query={query}
-            onCardClick={concept => onChange(concept as Concept)}
+            onCardClick={item => onChange(item as Concept | Character)}
             hover={true}
             orderBy={orderBy}
             modalContainerRef={containerRef}
@@ -165,4 +171,4 @@ const ConceptSelectModal = ({
   )
 }
 
-export default ConceptSelectModal
+export default SelectModal

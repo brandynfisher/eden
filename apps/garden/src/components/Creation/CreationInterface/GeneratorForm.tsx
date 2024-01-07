@@ -1,7 +1,8 @@
-import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelect'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
+import SelectCharacterModalTrigger from '@/components/Creation/CreationInterface/SelectCharacterModalTrigger'
+import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
 import ConceptParameterV2 from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
@@ -264,6 +265,7 @@ const GeneratorForm = ({
   )
 
   const supportsConcepts = supportsGroup(advancedParameters, 'concept')
+  const supportsCharacters = supportsGroup(advancedParameters, 'character')
   const supportsInitImage = supportsGroup(advancedParameters, 'init_image')
 
   const handleFinish = async () => {
@@ -496,6 +498,23 @@ const GeneratorForm = ({
               {/*/>*/}
             </div>
           ) : null}
+
+          {supportsCharacters ? (
+            <>
+              <SelectCharacterModalTrigger
+                onChange={character => {
+                  form.setFieldsValue({
+                    ['characterId']: character ? character._id : null,
+                  })
+                }}
+              />
+              {renderFormFields(
+                advancedParameters.filter(p =>
+                  parameterGroups['character'].includes(p.name),
+                ),
+              )}
+            </>
+          ) : null}
         </div>
 
         {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
@@ -558,7 +577,7 @@ const GeneratorForm = ({
                 forceRender={true}
               >
                 <div className="px-2 flex flex-col gap-2 py-4 bg-gray-100 dark:bg-gray-900">
-                  <ConceptSelectModalTrigger
+                  <SelectConceptModalTrigger
                     onChange={concept => {
                       form.setFieldsValue({
                         ['lora']: concept ? concept._id : null,

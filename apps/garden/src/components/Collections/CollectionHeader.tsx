@@ -59,22 +59,6 @@ const CollectionHeader = ({
           )}
         </div>
       </div>
-      {/*<Divider />*/}
-      {/*<div className="flex gap-2">*/}
-      {/*  <Link href={`/creators/${collection.creatorName}`} passHref>*/}
-      {/*    <Button className="font-mono flex items-center gap-2">*/}
-      {/*      <div>User Profile</div>*/}
-      {/*    </Button>*/}
-      {/*  </Link>*/}
-      {/*<Link*/}
-      {/*  href={`/creators/${collection.creatorName}?tab=collections`}*/}
-      {/*  passHref*/}
-      {/*>*/}
-      {/*  <Button className="font-mono flex items-center gap-2">*/}
-      {/*    <div>User Collections</div>*/}
-      {/*  </Button>*/}
-      {/*</Link>*/}
-      {/*</div>*/}
     </div>
   )
 }

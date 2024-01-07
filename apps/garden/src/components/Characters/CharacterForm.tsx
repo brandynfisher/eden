@@ -1,7 +1,7 @@
 import CharacterFormPro from '@/components/Characters/CharacterFormPro'
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import { ELEVENLABS_VOICES } from '@/components/Characters/elevenlabs'
-import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
+import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
 import { ConceptParameterUI } from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
 import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
@@ -383,7 +383,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 >
                   <div>
                     <div className="mb-2">
-                      <ConceptSelectModalTrigger
+                      <SelectConceptModalTrigger
                         onChange={concept => {
                           form.setFieldsValue({
                             ['concept']: concept ? concept._id : null,
