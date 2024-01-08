@@ -4,6 +4,7 @@ import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBad
 import SelectCharacterModalTrigger from '@/components/Creation/CreationInterface/SelectCharacterModalTrigger'
 import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
 import CharacterParameter from '@/components/Creation/CreationInterface/parameters/CharacterParameter'
+import CharactersParameter from '@/components/Creation/CreationInterface/parameters/CharactersParameter'
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
@@ -265,7 +266,11 @@ const GeneratorForm = ({
     [generator],
   )
 
-  const supportsCharacters = supportsGroup(requiredParameters, 'character')
+  const supportsSingleCharacter = supportsGroup(requiredParameters, 'character')
+  const supportsMultiCharacters = supportsGroup(
+    requiredParameters,
+    'characters',
+  )
   const supportsConcepts = supportsGroup(advancedParameters, 'concept')
   const supportsInitImage = supportsGroup(advancedParameters, 'init_image')
 
@@ -395,6 +400,15 @@ const GeneratorForm = ({
             />
           )
         }
+        if (parameter.name === 'characterIds') {
+          return (
+            <CharactersParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
         return (
           <StringParameter
             key={parameter.name}
@@ -478,11 +492,13 @@ const GeneratorForm = ({
         <div className={`p-2 py-3 bg-gray-100 dark:bg-gray-900`}>
           {renderFormFields(
             requiredParameters.filter(
-              p => !parameterGroups['character'].includes(p.name),
+              p =>
+                !parameterGroups['character'].includes(p.name) &&
+                !parameterGroups['characters'].includes(p.name),
             ),
           )}
 
-          {supportsCharacters ? (
+          {supportsSingleCharacter ? (
             <div className="flex flex-col mt-2 bg-gray-100 dark:bg-gray-900">
               <SelectCharacterModalTrigger
                 onChange={character => {
@@ -494,6 +510,16 @@ const GeneratorForm = ({
               {renderFormFields(
                 requiredParameters.filter(p =>
                   parameterGroups['character'].includes(p.name),
+                ),
+              )}
+            </div>
+          ) : null}
+
+          {supportsMultiCharacters ? (
+            <div className="flex flex-col mt-2 bg-gray-100 dark:bg-gray-900">
+              {renderFormFields(
+                requiredParameters.filter(p =>
+                  parameterGroups['characters'].includes(p.name),
                 ),
               )}
             </div>

@@ -44,6 +44,7 @@ export const sdxl_generators_video = [
 export const parameterGroups: { [key: string]: string[] } = {
   concept: ['lora', 'lora_scale'],
   character: ['characterId'],
+  characters: ['characterIds'],
   init_image: [
     'init_image',
     'init_image_strength',
