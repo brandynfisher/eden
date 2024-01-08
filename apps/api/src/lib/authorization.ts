@@ -117,11 +117,12 @@ const maximumTasksInProgressMap: Record<SubscriptionTier, number> = {
 export const maximumTasksInProgressPermissionCheck = async (
   request: FastifyRequest,
 ) => {
-  const { userId, subscriptionTier } = request.user
-  const maximumTasksInProgress =
-    maximumTasksInProgressMap[
-      (subscriptionTier as SubscriptionTier) || SubscriptionTier.Free
-    ]
+  const { userId, subscriptionTier, featureFlags } = request.user
+  const maximumTasksInProgress = featureFlags?.includes('preview')
+    ? 99
+    : maximumTasksInProgressMap[
+        (subscriptionTier as SubscriptionTier) || SubscriptionTier.Free
+      ]
 
   const inProgressStatus: TaskStatus[] = [
     TaskStatus.Pending,
