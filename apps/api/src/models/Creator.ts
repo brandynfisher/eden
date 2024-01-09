@@ -8,7 +8,7 @@ import { CreationDocument } from './Creation'
 
 export interface UserSchema {
   userId: string
-  isWeb2: boolean
+  isWeb2?: boolean
   isAdmin: boolean
   provider?: string
   creations: CreationDocument[]
@@ -18,6 +18,7 @@ export interface UserSchema {
   followingCount: number
   featureFlags?: FeatureFlag[]
   subscriptionTier?: SubscriptionTier
+  highestMonthlySubscriptionTier?: SubscriptionTier
   stripeCustomerId?: string
   stripeSubscriptionId?: string
   discordId?: string
@@ -49,7 +50,6 @@ const user = new Schema<UserDocument>(
     },
     isWeb2: {
       type: Boolean,
-      required: true,
     },
     isAdmin: {
       type: Boolean,
@@ -99,6 +99,10 @@ const user = new Schema<UserDocument>(
       },
     ],
     subscriptionTier: {
+      type: Number,
+      default: SubscriptionTier.Free,
+    },
+    highestMonthlySubscriptionTier: {
       type: Number,
       default: SubscriptionTier.Free,
     },

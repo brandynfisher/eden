@@ -5,19 +5,22 @@ import { ObjectId } from 'mongodb'
 import { Character } from '../../models/Character'
 import { Concept } from '../../models/Concept'
 import { Creation, CreationInput } from '../../models/Creation'
+import { User } from '../../models/Creator'
 import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task, TaskStatus } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
 import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
+import * as logos from './logos'
 import * as replicate from './replicate'
 
-type TaskProvider = 'replicate' | 'elevenPlay'
+type TaskProvider = 'replicate' | 'elevenPlay' | 'logos'
 
 const providers = new Map<TaskProvider, any>([
   ['elevenPlay', elevenPlay],
   ['replicate', replicate],
+  ['logos', logos],
 ])
 
 interface TaskOutput {
@@ -37,7 +40,6 @@ const submitTask = async (
   config: any,
 ) => {
   const { provider } = generatorVersion
-  console.log('GO!!!', provider)
   const task = await providers
     .get(provider)
     .submitTask(server, generator, generatorVersion, config)
@@ -168,6 +170,20 @@ const handleUpdate = async (
         )
       }
 
+      // update user creation count
+      if (task.user) {
+        await User.findOneAndUpdate(
+          {
+            _id: task.user,
+          },
+          {
+            $inc: {
+              creationCount: task.config.n_samples ? task.config.n_samples : 1,
+            },
+          },
+        )
+      }
+
       // update character creation count
       if (task.character) {
         await Character.findOneAndUpdate(
@@ -268,14 +284,14 @@ const handleUpdate = async (
           isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+          const { uri } = await server.uploadUrlAsset(
             server,
             finalOutput.files[i],
           )
           conceptData.uri = uri
         }
         if (finalOutput.thumbnails[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+          const { uri } = await server.uploadUrlAsset(
             server,
             finalOutput.thumbnails[i],
           )

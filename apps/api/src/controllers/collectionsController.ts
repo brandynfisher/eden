@@ -6,11 +6,16 @@ import {
   CollectionsListArguments,
   CollectionsRemoveCreationsArguments,
   CollectionsUpdateArguments,
+  ConceptsDeleteArguments,
+  ConceptsUpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+import { PipelineStage } from 'mongoose'
 
+import { creationPrivacyPermissionCheck } from '../lib/authorization'
 import { Collection } from '../models/Collection'
+import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import CollectionRepository from '../repositories/CollectionRepository'
@@ -52,8 +57,15 @@ export const getCollection = async (
   })
 }
 
-const collectionsAggregate = (userId: string, creationId: string) => {
-  return Collection.aggregate([
+const collectionsAggregate = (
+  userId: string,
+  creationId: string,
+  filter?: {
+    isPrivate?: { $ne?: boolean }
+    deleted?: { $ne?: boolean }
+  },
+) => {
+  const pipelines: PipelineStage[] = [
     {
       $match: {
         user: new ObjectId(userId),
@@ -74,7 +86,25 @@ const collectionsAggregate = (userId: string, creationId: string) => {
         creationCount: -1,
       },
     },
-  ])
+  ]
+
+  if (filter?.isPrivate) {
+    pipelines.push({
+      $match: {
+        isPrivate: filter.isPrivate,
+      },
+    })
+  }
+
+  if (filter?.deleted) {
+    pipelines.push({
+      $match: {
+        deleted: filter.deleted,
+      },
+    })
+  }
+
+  return Collection.aggregate(pipelines)
 }
 
 export const listCollections = async (
@@ -103,7 +133,10 @@ export const listCollections = async (
     creatorId && creationId
       ? // finds all collections belonging to creatorId that contain creationId
         await collectionRepository.aggregateQuery(
-          collectionsAggregate(creatorId, creationId as string),
+          collectionsAggregate(creatorId, creationId as string, {
+            ...sortFilter,
+            deleted: { $ne: true },
+          }),
           {
             limit,
             page,
@@ -115,6 +148,7 @@ export const listCollections = async (
             user: userId
               ? creators.docs.map(creator => creator._id)
               : undefined,
+            ...sortFilter,
           },
           {
             limit,
@@ -122,6 +156,19 @@ export const listCollections = async (
             sort,
           },
         )
+
+  console.log(
+    {
+      user: userId && creators.docs ? creators.docs[0]._id : undefined,
+    },
+    // {
+    //   limit,
+    //   page,
+    //   sort,
+    // },
+  )
+
+  console.log(collections)
 
   return reply.status(200).send(collections)
 }
@@ -165,18 +212,30 @@ export const deleteCollection = async (
     _id: collectionId,
     user: userId,
   })
+
   if (!collection) {
     return reply.status(400).send({
       message: 'Invalid collection',
     })
   }
+
+  if (collection.user.toString() !== userId.toString()) {
+    return reply.status(401).send({
+      message: 'User not authorized to delete this',
+    })
+  }
+
   if (collection.isDefaultCollection) {
     return reply.status(400).send({
       message: 'Cannot delete default collection',
     })
   }
-  await collection.delete()
-  return reply.status(200).send({})
+
+  await collection.delete({ deleteBy: 'user' })
+
+  return reply.status(200).send({
+    success: true,
+  })
 }
 
 export const updateCollection = async (
@@ -184,19 +243,43 @@ export const updateCollection = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { collectionId, name, description } =
+  const { collectionId } = request.params as CollectionsUpdateArguments
+  const { name, description, isPrivate, deleted } =
     request.body as CollectionsUpdateArguments
+
+  console.log({ userId, collectionId, params: request.params })
+
+  if (
+    !userId ||
+    !collectionId ||
+    (typeof name === 'undefined' &&
+      typeof description === 'undefined' &&
+      typeof isPrivate === 'undefined' &&
+      typeof deleted === 'undefined')
+  ) {
+    return reply.status(422).send({
+      message: 'Missing parameters or malformed request body',
+    })
+  }
+
+  if (creationPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
   let collection
 
   if (collectionId) {
-    collection = await Collection.findOne({
+    collection = await Collection.findOneWithDeleted({
       _id: collectionId,
       user: userId,
     })
+
     if (!collection) {
-      return reply.status(400).send({
-        message: 'Invalid collection',
+      return reply.status(404).send({
+        message: 'Collection not found',
       })
     }
   } else {
@@ -204,10 +287,23 @@ export const updateCollection = async (
     collection = await getDefaultCollection(userId)
   }
 
-  await collection.updateOne({
-    name,
-    description,
-  })
+  if (typeof name !== 'undefined') {
+    collection.name = name
+  }
+
+  if (typeof description !== 'undefined') {
+    collection.description = description
+  }
+
+  if (typeof isPrivate !== 'undefined') {
+    collection.isPrivate = isPrivate
+  }
+
+  if (typeof deleted !== 'undefined') {
+    collection.deleted = !!deleted
+  }
+
+  await collection.save()
 
   return reply.status(200).send({})
 }

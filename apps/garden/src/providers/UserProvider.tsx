@@ -6,6 +6,7 @@ import { PropsWithChildren, createContext } from 'react'
 export interface UserContextType {
   isAuthenticating: boolean
   isAuthenticated: boolean
+  maybeAuthenticate: () => Promise<boolean>
   authError: string | null
   authenticate: () => Promise<void>
   logout: () => Promise<void>
@@ -23,6 +24,9 @@ export interface UserContextType {
 const defaultUserState: UserContextType = {
   isAuthenticating: false,
   isAuthenticated: false,
+  maybeAuthenticate: () => {
+    return new Promise<boolean>(resolve => resolve(false))
+  },
   authError: null,
   authenticate: () => {
     return new Promise<void>(resolve => resolve())

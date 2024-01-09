@@ -1,7 +1,5 @@
 // packages/eden-sdk/src/methods/Characters.ts
 import { AxiosRequestConfig } from 'axios'
-import { Creator } from 'src/models/Creators'
-import { Assistant, Interaction } from 'src/models/Sessions'
 
 import { transformArgsIntoURLParams } from '../types'
 import {
@@ -10,6 +8,7 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { Creator } from './Creators'
 
 // Arguments
 
@@ -51,7 +50,7 @@ export interface CharactersDeleteArguments extends WebAPICallOptions {
 export interface CharactersTestArguments extends WebAPICallOptions {
   name: string
   identity: string
-  prompt: string
+  message: string
   knowledge?: string
   knowledge_summary?: string
   attachments?: string[]
@@ -182,14 +181,14 @@ export type Character = {
 }
 
 export type LogosData = {
-  capabilities?: Capabilites[]
+  capabilities?: Capabilities[]
   identity?: string
   knowledge?: string
   knowledgeSummary?: string
   concept?: string
 }
 
-export enum Capabilites {
+export enum Capabilities {
   CHAT = 'chat',
   CREATION = 'creation',
   KNOWLEDGE = 'knowledge',

@@ -1,4 +1,4 @@
-import { Capabilites, LogosData } from '@edenlabs/eden-sdk'
+import { Capabilities, LogosData } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -73,7 +73,7 @@ const character = new Schema<CharacterDocument>(
       type: {
         capabilities: {
           type: Array,
-          values: Object.values(Capabilites),
+          values: Object.values(Capabilities),
           required: false,
         },
         identity: {

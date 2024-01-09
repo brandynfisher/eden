@@ -1,8 +1,11 @@
-import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelect'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
-import ConceptParameterV2 from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
+import SelectCharacterModalTrigger from '@/components/Creation/CreationInterface/SelectCharacterModalTrigger'
+import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
+import CharacterParameter from '@/components/Creation/CreationInterface/parameters/CharacterParameter'
+import CharactersParameter from '@/components/Creation/CreationInterface/parameters/CharactersParameter'
+import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 // import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
@@ -11,7 +14,6 @@ import StringParameter from '@/components/Creation/CreationInterface/parameters/
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { useTaskCost } from '@/hooks/useTaskCost'
-import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import {
   GeneratorOutputType,
@@ -24,7 +26,6 @@ import { UserContext } from '@/providers/UserProvider'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
 import {
   Creation,
-  FeatureFlag,
   Generator,
   GeneratorParameter,
   Task,
@@ -97,8 +98,7 @@ const GeneratorForm = ({
   )
   const { message } = App.useApp()
   const router = useRouter()
-  const { isAuthenticated, authenticate, mannaBalance, user, refetchMe } =
-    useContext(UserContext)
+  const { maybeAuthenticate, mannaBalance, refetchMe } = useContext(UserContext)
   const { getTaskCost, canAffordOperation, taskCost } = useTaskCost()
   const [form] = Form.useForm()
   const [presetConfig, setPresetConfig] = useState<Task['config']>()
@@ -266,6 +266,11 @@ const GeneratorForm = ({
     [generator],
   )
 
+  const supportsSingleCharacter = supportsGroup(requiredParameters, 'character')
+  const supportsMultiCharacters = supportsGroup(
+    requiredParameters,
+    'characters',
+  )
   const supportsConcepts = supportsGroup(advancedParameters, 'concept')
   const supportsInitImage = supportsGroup(advancedParameters, 'init_image')
 
@@ -273,9 +278,7 @@ const GeneratorForm = ({
     // console.log('handleFinish')
     setIsSubmitting(true)
 
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-
+    if (!(await maybeAuthenticate())) {
       setIsSubmitting(false)
       return
     }
@@ -381,7 +384,25 @@ const GeneratorForm = ({
         }
         if (parameter.name === 'lora') {
           return (
-            <ConceptParameterV2
+            <ConceptParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        if (parameter.name === 'characterId') {
+          return (
+            <CharacterParameter
+              key={parameter.name}
+              form={form}
+              parameter={parameter}
+            />
+          )
+        }
+        if (parameter.name === 'characterIds') {
+          return (
+            <CharactersParameter
               key={parameter.name}
               form={form}
               parameter={parameter}
@@ -469,7 +490,40 @@ const GeneratorForm = ({
         } ${usesDrawer && !openedDrawer ? 'hidden' : 'flex'}`}
       >
         <div className={`p-2 py-3 bg-gray-100 dark:bg-gray-900`}>
-          {renderFormFields(requiredParameters)}
+          {renderFormFields(
+            requiredParameters.filter(
+              p =>
+                !parameterGroups['character'].includes(p.name) &&
+                !parameterGroups['characters'].includes(p.name),
+            ),
+          )}
+
+          {supportsSingleCharacter ? (
+            <div className="flex flex-col mt-2 bg-gray-100 dark:bg-gray-900">
+              <SelectCharacterModalTrigger
+                onChange={character => {
+                  form.setFieldsValue({
+                    ['characterId']: character ? character._id : null,
+                  })
+                }}
+              />
+              {renderFormFields(
+                requiredParameters.filter(p =>
+                  parameterGroups['character'].includes(p.name),
+                ),
+              )}
+            </div>
+          ) : null}
+
+          {supportsMultiCharacters ? (
+            <div className="flex flex-col mt-2 bg-gray-100 dark:bg-gray-900">
+              {renderFormFields(
+                requiredParameters.filter(p =>
+                  parameterGroups['characters'].includes(p.name),
+                ),
+              )}
+            </div>
+          ) : null}
 
           {/* decorative / extra params linked to the actual param input */}
           {outputType === 'image' ||
@@ -563,7 +617,7 @@ const GeneratorForm = ({
                 forceRender={true}
               >
                 <div className="px-2 flex flex-col gap-2 py-4 bg-gray-100 dark:bg-gray-900">
-                  <ConceptSelectModalTrigger
+                  <SelectConceptModalTrigger
                     onChange={concept => {
                       form.setFieldsValue({
                         ['lora']: concept ? concept._id : null,
@@ -629,11 +683,7 @@ const GeneratorForm = ({
             )}
           </div>
 
-          {user &&
-          user.featureFlags &&
-          user.featureFlags.includes(FeatureFlag.Preview) ? (
-            <PrivacyToggle />
-          ) : null}
+          <PrivacyToggle />
         </div>
 
         {uploadsInProgress ? (

@@ -173,7 +173,7 @@ export const interactSession = async (
   reply: FastifyReply,
 ) => {
   const args = request.body as SessionsInteractArguments
-  const { session_id, character_id, prompt, attachments } = args
+  const { session_id, character_id, message, attachments } = args
 
   const session = await Session.findById(session_id)
   if (!session) {
@@ -184,7 +184,7 @@ export const interactSession = async (
 
   const interactionEventData: InteractionEvent = {
     character: character_id,
-    prompt,
+    message,
     attachments,
   }
   const interactionEvent = await SessionEvent.create({
@@ -195,11 +195,14 @@ export const interactSession = async (
 
   // TODO: Check if user is allowed to interact with session
 
-  const { message, config } = await server.handleInteraction(server, args)
+  const { message: responseMessage, config } = await server.handleInteraction(
+    server,
+    args,
+  )
 
   const eventData: ChatResponseEvent = {
     interaction: interactionEvent._id,
-    message,
+    message: responseMessage,
   }
 
   await SessionEvent.create({
@@ -209,7 +212,7 @@ export const interactSession = async (
   })
 
   reply.status(200).send({
-    message,
+    message: responseMessage,
     config,
   })
 }

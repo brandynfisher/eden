@@ -28,6 +28,15 @@ export const useClerkUserState = () => {
     await router.push('/sign-in')
   }
 
+  const maybeAuthenticate = async () => {
+    if (isAuthenticated) {
+      return true
+    }
+
+    await authenticate()
+    return false
+  }
+
   // reset user state on disconnect
   useEffect(() => {
     refetchMe()
@@ -39,6 +48,7 @@ export const useClerkUserState = () => {
     isAuthenticating: !isLoaded,
     authError: null,
     isAuthenticated,
+    maybeAuthenticate,
     userId,
     authenticate,
     logout,

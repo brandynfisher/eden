@@ -2,7 +2,7 @@ import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import {
-  Capabilites,
+  Capabilities,
   CharactersUpdateArguments,
   EdenClient,
 } from '@edenlabs/eden-sdk'
@@ -42,15 +42,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       if (logosData) {
         if (logosData?.capabilities && logosData?.knowledge) {
           const extraCapabilities = [
-            Capabilites.CREATION,
-            Capabilites.KNOWLEDGE,
+            Capabilities.CREATION,
+            Capabilities.KNOWLEDGE,
           ]
           logosData.capabilities = [
             ...logosData.capabilities,
             ...extraCapabilities,
           ]
         } else {
-          logosData.capabilities = [Capabilites.CHAT]
+          logosData.capabilities = [Capabilities.CHAT]
         }
       }
 

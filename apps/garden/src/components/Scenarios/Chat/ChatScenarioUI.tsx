@@ -102,7 +102,7 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
       const args: SessionsInteractArguments = {
         session_id: session.id,
         character_id: activeCharacter._id,
-        prompt: text,
+        message: text,
         attachments: [],
       }
       const res = await axios.post(`/api/sessions/interact`, args)

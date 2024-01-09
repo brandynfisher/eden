@@ -71,7 +71,6 @@ const CardComponent = ({
           </span>
           <span className="ml-1 text-xl font-semibold">/ month</span>
         </div>
-        <p className="mt-4">{subscription.description}</p>
         <SubscriptionFeatures features={features} />
       </div>
       {actionButton}

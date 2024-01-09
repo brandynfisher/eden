@@ -794,3 +794,29 @@ div[role='grid'] {
 .ant-upload-list-item-thumbnail img {
     object-fit: contain !important;
 }
+
+.ant-popover {
+    z-index: 1051 !important;
+}
+
+.popover-subscription-gate {
+    .ant-popover-inner,
+    .ant-popover-arrow:before {
+        background-color: rgb(255, 255, 255);
+    }
+}
+
+.dark {
+    .popover-subscription-gate {
+        .ant-popover-inner,
+        .ant-popover-arrow:before {
+            background-color: rgb(28 25 23);
+        }
+    }
+}
+
+.custom-form-item {
+    .ant-form-item-control-input {
+        min-height: 0;
+    }
+}

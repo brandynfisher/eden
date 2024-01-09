@@ -182,6 +182,12 @@ export const useCreationState = () => {
             },
           )
           mutateGlobal(ownCreatorFeedPageRoute, undefined)
+          // brutally refreshes
+          mutateGlobal(
+            key =>
+              typeof key === 'string' && key.startsWith('/api/feed/concepts'),
+            undefined,
+          )
           notify(
             completed.filter(
               item =>
@@ -233,42 +239,6 @@ export const useCreationState = () => {
     },
     [notificationCutOffDate],
   )
-
-  // useEffect(() => {
-  //   // Cleanup function to remove completed tasks from taskIds
-  //   const notify = async () => {
-  //     if (notifications && notifications.length) {
-  //       // only show notifications for tasks that finished after the page was loaded
-  //       const isExpired =
-  //         new Date(notifications[notifications.length - 1].updatedAt).getTime() - notificationCutOffDate <
-  //         10000
-  //
-  //       if (isExpired) {
-  //         return
-  //       }
-  //       //
-  //       // if (dismissedTaskIds.includes(tasks[0]._id)) {
-  //       //   return
-  //       // }
-  //
-  //       if (notifications[notifications.length].status === 'completed') {
-  //         message.destroy()
-  //         message.success(
-  //           `Task ${truncatedAddress(tasks[0].taskId)} completed successfully!`,
-  //         )
-  //       }
-  //
-  //       if (tasks[0].status === 'failed') {
-  //         message.destroy()
-  //         message.error(
-  //           `An error occured for Task ${truncatedAddress(tasks[0].taskId)}.`,
-  //         )
-  //       }
-  //     }
-  //   }
-  //
-  //   notify()
-  // }, [notificationCutOffDate, notifications])
 
   return {
     tasks,

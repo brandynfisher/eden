@@ -1,28 +1,23 @@
 import CharacterFormPro from '@/components/Characters/CharacterFormPro'
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import { ELEVENLABS_VOICES } from '@/components/Characters/elevenlabs'
-import ConceptSelectModalTrigger from '@/components/Creation/CreationInterface/ConceptSelectModalTrigger'
-import { ConceptParameterUI } from '@/components/Creation/CreationInterface/parameters/ConceptParameterV2'
+import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
+import { ConceptParameterUI } from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import UploadParameter from '@/components/Creation/CreationInterface/parameters/UploadParameter'
 import FormLabel from '@/components/Forms/FormLabel'
 import PrivacyToggle from '@/components/Forms/PrivacyToggle'
 import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
-import { UserContext } from '@/providers/UserProvider'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
-import {
-  Character,
-  CharactersTestArguments,
-  FeatureFlag,
-} from '@edenlabs/eden-sdk'
+import { Character, CharactersTestArguments } from '@edenlabs/eden-sdk'
 import { SettingsSuggest } from '@mui/icons-material'
 import { App, Button, Collapse, Form, Input, Select } from 'antd'
 import axios from 'axios'
 import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const { Panel } = Collapse
 const EXAMPLE_CHARACTER = {
@@ -79,7 +74,7 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
       confirmationButtonProps: { color: 'warning' },
     })
       .then(() => handleDeleteCharacter())
-      .catch(() => console.log('Deletion cancelled.'))
+      .catch(() => {})
   }
 
   const handleDeleteCharacter = async () => {
@@ -122,7 +117,6 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
 const CharacterForm = ({ character }: { character?: Character }) => {
   const mode = !character ? 'create' : 'update'
   const { message } = App.useApp()
-  const { user } = useContext(UserContext)
   const router = useRouter()
   const [form] = Form.useForm()
   const [recentMessage, setRecentMessage] =
@@ -181,7 +175,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       const data: CharactersTestArguments = {
         name: characterName,
         identity,
-        prompt: recentMessage[0][0].message,
+        message: recentMessage[0][0].message,
         knowledge: form.getFieldValue('knowledge'),
         knowledge_summary: form.getFieldValue('knowledgeSummary'),
       }
@@ -389,7 +383,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 >
                   <div>
                     <div className="mb-2">
-                      <ConceptSelectModalTrigger
+                      <SelectConceptModalTrigger
                         onChange={concept => {
                           form.setFieldsValue({
                             ['concept']: concept ? concept._id : null,
@@ -427,11 +421,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
 
               <div className="flex flex-wrap gap-4 justify-between items-center px-2">
                 <div className="flex justify-between items-center w-full">
-                  {user &&
-                  user.featureFlags &&
-                  user.featureFlags.includes(FeatureFlag.Preview) ? (
-                    <PrivacyToggle />
-                  ) : null}
+                  <PrivacyToggle />
                 </div>
                 <Form.Item className="mb-0">
                   <Button

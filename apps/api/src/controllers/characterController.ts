@@ -50,12 +50,12 @@ export const createCharacter = async (
       : undefined,
   }
 
-  // if (characterPrivacyPermissionCheck(request)) {
-  //   return reply.status(401).send({
-  //     message:
-  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
-  //   })
-  // }
+  if (characterPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
 
   const input: {
     user: ObjectId
@@ -260,9 +260,14 @@ export const getCharacter = async (
     }
   }
 
+  await Character.populate(character, {
+    path: 'user',
+    select: 'userId username userImage',
+  })
+
   const response = {
     _id: character._id,
-    user: character.user.toString(),
+    user: character.user,
     name: character.name,
     slug: character.slug,
     image: character.image,
@@ -273,7 +278,6 @@ export const getCharacter = async (
     creationCount: character.creationCount,
     isPrivate: character.isPrivate,
   }
-
   return reply.status(200).send({ character: response })
 }
 

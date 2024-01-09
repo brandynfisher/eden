@@ -25,10 +25,6 @@ import ConceptRepository from '../repositories/ConceptRepository'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 import {
-  getBookmarks as getConceptBookmarks,
-  getReactions as getConceptReactions,
-} from './conceptsController'
-import {
   getBookmarks as getCreationBookmarks,
   getReactions as getCreationReactions,
 } from './creationsController'
@@ -640,14 +636,16 @@ export const getConceptsFeed = async (
   })
 
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
-  if (!hasConceptExportPermission) {
-    // @ts-ignore
-    concepts.docs = concepts.docs.map(concept => {
-      const conceptWithoutUri = concept.toObject()
-      delete conceptWithoutUri.uri
-      return conceptWithoutUri
-    })
-  }
+  // @ts-ignore
+  concepts.docs = concepts.docs.map(concept => {
+    const conceptWithoutTrainingImages = concept.toObject()
+    delete conceptWithoutTrainingImages.training_images
+    delete conceptWithoutTrainingImages.task.config.lora_training_urls
+    if (!hasConceptExportPermission) {
+      delete conceptWithoutTrainingImages.uri
+    }
+    return conceptWithoutTrainingImages
+  })
 
   return reply.status(200).send(concepts)
 }

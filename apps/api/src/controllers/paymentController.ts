@@ -15,6 +15,8 @@ interface StripeDataObject {
   customerId: string
   sessionId: string
   productId: string
+  current_period_start?: number
+  current_period_end?: number
 }
 
 interface TopUpMetadata {
@@ -44,7 +46,7 @@ const mannaTierMap = (subscriptionTier?: SubscriptionTier) => {
     [SubscriptionTier.Free]: 0,
     [SubscriptionTier.Basic]: 1000,
     [SubscriptionTier.Pro]: 3500,
-    [SubscriptionTier.Believer]: 8000,
+    [SubscriptionTier.Believer]: 7500,
   }
   return map[subscriptionTier || SubscriptionTier.Free]
 }
@@ -128,6 +130,7 @@ const handleNewSubscription = async (
   reply: FastifyReply,
   metadata: SubscriptionMetadata,
   user: UserDocument,
+  proration?: number,
 ) => {
   const subscriptionTier = parseInt(metadata.subscriptionTier)
   let mannaAmountInt: number
@@ -135,12 +138,15 @@ const handleNewSubscription = async (
   try {
     await user.updateOne({
       subscriptionTier,
+      highestMonthlySubscriptionTier: subscriptionTier,
     })
 
     try {
       const previousTierManna = mannaTierMap(user.subscriptionTier || undefined)
       const newTierManna = mannaTierMap(subscriptionTier)
-      mannaAmountInt = newTierManna - previousTierManna
+      mannaAmountInt = Math.ceil(
+        (newTierManna - previousTierManna) * (proration || 1),
+      )
     } catch (error) {
       return reply.status(400).send({
         message: 'Invalid manna amount',
@@ -177,7 +183,12 @@ const handleNewSubscription = async (
 const handleSubscriptionUpdated = async (
   server: FastifyInstance,
   reply: FastifyReply,
-  { customerId, productId }: StripeDataObject,
+  {
+    customerId,
+    productId,
+    current_period_end,
+    current_period_start,
+  }: StripeDataObject,
 ) => {
   if (!server.stripe) {
     return reply.status(500).send({
@@ -207,8 +218,27 @@ const handleSubscriptionUpdated = async (
     })
   }
 
-  if (metadata.subscriptionTier) {
-    await handleNewSubscription(server, reply, metadata, user)
+  if (
+    metadata.subscriptionTier &&
+    parseInt(metadata.subscriptionTier) >=
+      (user.highestMonthlySubscriptionTier || 0)
+  ) {
+    const currentDate = Math.floor(Date.now() / 1000) // Convert to seconds since Stripe uses seconds
+
+    if (!current_period_end || !current_period_start) {
+      return reply.status(400).send({
+        message: 'No current period found',
+      })
+    }
+
+    const totalSecondsInCurrentPeriod =
+      current_period_end - current_period_start
+    const secondsLeftInCurrentPeriod = current_period_end - currentDate
+
+    const proration = secondsLeftInCurrentPeriod / totalSecondsInCurrentPeriod
+    console.log(`Proration: ${proration}`)
+
+    await handleNewSubscription(server, reply, metadata, user, proration)
   } else {
     return reply.status(400).send({
       message: 'No subscription tier found',
@@ -423,6 +453,7 @@ export const handlePaymentEvent = async (
     sig,
     server.config.STRIPE_WEBHOOK_SECRET,
   )
+
   const dataObject = event.data.object
   // @ts-ignore
   const userId = dataObject.client_reference_id
@@ -432,12 +463,18 @@ export const handlePaymentEvent = async (
   const sessionId = dataObject.id
   // @ts-ignore
   const productId = dataObject.items?.data[0]?.price?.product
+  // @ts-ignore
+  const current_period_end = dataObject.current_period_end
+  // @ts-ignore
+  const current_period_start = dataObject.current_period_start
 
   const stripeDataObject: StripeDataObject = {
     userId,
     customerId,
     sessionId,
     productId,
+    current_period_start,
+    current_period_end,
   }
 
   switch (event.type) {
@@ -457,6 +494,7 @@ export const handlePaymentEvent = async (
 
     case 'invoicce.payment_succeeded':
       // TODO: handle subscription renewal.
+
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)

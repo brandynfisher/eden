@@ -1,4 +1,8 @@
-import { GeneratorParameter, GeneratorSchema } from '../models/Generator'
+import {
+  GeneratorParameter,
+  GeneratorSchema,
+  GeneratorVersionSchema,
+} from '../models/Generator'
 
 export const getLatestGeneratorVersion = (generator: GeneratorSchema) =>
   generator.versions[generator.versions.length - 1]
@@ -27,9 +31,11 @@ const setupSeeds = (config?: any) => {
 }
 
 export const prepareConfig = (
-  parameters: GeneratorParameter[],
+  generatorVersion: GeneratorVersionSchema,
   config: any = {},
 ) => {
+  const parameters: GeneratorParameter[] = generatorVersion.parameters
+
   // check config has all required params
   const missingParams: string[] = []
   for (const param of parameters) {
@@ -87,7 +93,9 @@ export const prepareConfig = (
   }
 
   // randomize seeds if not provided
-  config = setupSeeds(config)
+  if (generatorVersion.address === 'abraham-ai/eden-sd-pipelines-sdxl') {
+    config = setupSeeds(config)
+  }
 
   return config
 }

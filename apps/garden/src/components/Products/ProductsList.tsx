@@ -1,9 +1,14 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import SubscriptionCard from '@/components/Products/SubscriptionCard'
 import { useProducts } from '@/hooks/useProducts'
+import { handleAxiosError } from '@/lib/fetcher'
+import { subscriptionTierNameMap } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
-import { Creator, Product } from '@edenlabs/eden-sdk'
+import { Creator, Product, SubscriptionTier } from '@edenlabs/eden-sdk'
+import { Button, message } from 'antd'
+import axios from 'axios'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
 const ProductCard = dynamic(() => import('@/components/Products/ProductCard'), {
@@ -16,18 +21,33 @@ const sortByPrice = (a: Product, b: Product) => {
   return aPrice > bPrice ? 1 : -1
 }
 
-const dummyFeatures: { [key: string]: string[] } = {
-  basic: [
+const dummyFeatures: { [key in SubscriptionTier]: string[] } = {
+  0: [],
+  1: [
     '1000 Manna / month',
-    'Powered by GPT-4 (more accurate)',
-    'API access',
+    '10% Discount on Manna-Refills',
+    '3 concurrent creation jobs',
+    'Private creations',
   ],
-  pro: [
-    '5000 Manna / month',
-    'Powered by GPT-4 (more accurate)',
+  2: [
+    '3500 Manna / month',
+    '20% Discount on Manna-Refills',
+    '6 concurrent creation jobs',
+    'Private creations',
     'API access',
-    'Private Creations',
-    'Fast Generations',
+    'Premium generators',
+    'Export Concepts for use in other apps',
+  ],
+  3: [
+    '7500 Manna / month',
+    '30% Discount on Manna-Refills',
+    '10 concurrent creation jobs',
+    'Private creations',
+    'API access',
+    'Premium generators',
+    'Export Concepts for use in other apps',
+    'Early access to preview features',
+    'Priority support',
   ],
 }
 
@@ -36,6 +56,7 @@ const ProductsList = ({
 }: {
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
+  const router = useRouter()
   const { user } = useContext(UserContext)
   const { products, subscriptions } = useProducts()
   const productsSortedByPrice = products?.sort(sortByPrice)
@@ -50,6 +71,23 @@ const ProductsList = ({
     )
   }, [user?.subscriptionTier])
 
+  const onManageSubscriptionClick = async () => {
+    const customerId = user?.stripeCustomerId
+    if (!customerId) {
+      await router.push('/account')
+      return
+    }
+    try {
+      const response = await axios.post('/api/billing/subscription', {
+        stripeCustomerId: customerId,
+      })
+      const { url } = response.data
+      await router.push(url)
+    } catch (error) {
+      handleAxiosError(error, message)
+    }
+  }
+
   return (
     <div>
       <div className="mb-8">
@@ -63,32 +101,47 @@ const ProductsList = ({
                 <div>
                   Your current plan:{' '}
                   <span className="capitalize font-bold">
-                    {activeSubscriptionTier}
+                    {subscriptionTierNameMap[activeSubscriptionTier]}
                   </span>
+                  <Button
+                    type="primary"
+                    className="font-mono capitalize flex items-center"
+                    onClick={onManageSubscriptionClick}
+                  >
+                    Manage Subscription
+                  </Button>
                 </div>
               ) : (
-                'No active plan'
+                <>
+                  <div>Choose the plan that works for you:</div>
+                  <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
+                    {subscriptionsSortedByPrice.map(product => (
+                      <SubscriptionCard
+                        key={product.id}
+                        features={
+                          dummyFeatures[
+                            product.metadata
+                              .subscriptionTier as SubscriptionTier
+                          ]
+                        }
+                        subscription={product}
+                        checkoutHandler={checkoutHandler}
+                        isActive={
+                          activeSubscriptionTier ===
+                          product.metadata.subscriptionTier
+                        }
+                      />
+                    ))}
+                  </div>
+                </>
               )}
-            </div>
-            <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
-              {subscriptionsSortedByPrice.map(product => (
-                <SubscriptionCard
-                  key={product.id}
-                  features={dummyFeatures[product.metadata.subscriptionTier]}
-                  subscription={product}
-                  checkoutHandler={checkoutHandler}
-                  isActive={
-                    activeSubscriptionTier === product.metadata.subscriptionTier
-                  }
-                />
-              ))}
             </div>
           </div>
         )}
       </div>
 
       <div>
-        <h3 className="font-mono font-bold">Products</h3>
+        <h3 className="font-mono font-bold">Additional Manna</h3>
         {!products || !products.length ? (
           <LoadingIndicator />
         ) : (

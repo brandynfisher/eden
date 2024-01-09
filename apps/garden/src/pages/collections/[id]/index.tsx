@@ -18,12 +18,9 @@ const fetchCollection = async (context: NextPageContext) => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  return fetcherFn(
-    `${CONFIG.NEXT_PUBLIC_HOST}/api/collections?collectionId=${id}`,
-    {
-      headers: await getAuthHeaders(req as NextApiRequest),
-    },
-  )
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/collections/${id}`, {
+    headers: await getAuthHeaders(req as NextApiRequest),
+  })
 }
 
 export const getServerSideProps = getServerSidePropsBase([

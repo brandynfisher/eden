@@ -1,32 +1,75 @@
-import CircleButton from '@/components/Layout/buttons/CircleButton'
+import { GatedActions, useSubscriptionGate } from '@/hooks/useSubscriptionGate'
 import { handleAxiosError } from '@/lib/fetcher'
-import { ItemType } from '@/providers/ModalProvider'
+import {
+  ItemType,
+  MODAL_TYPES,
+  useModalContext,
+} from '@/providers/ModalProvider'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import { WorkspacePremium } from '@mui/icons-material'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
-import { App, Tooltip } from 'antd'
+import { App, Popover, Tooltip } from 'antd'
 import axios from 'axios'
-import React from 'react'
+import Link from 'next/link'
+import React, { ReactElement } from 'react'
+
+const ButtonElement = ({
+  label,
+  itemType,
+  handleClick,
+  isAllowed,
+  children,
+}: {
+  label: string
+  itemType: ItemType
+  handleClick: () => void
+  isAllowed: boolean
+  children?: ReactElement
+}) => {
+  return (
+    <div
+      onClick={handleClick}
+      className={`flex items-center gap-2 w-full ${
+        !isAllowed ? 'text-gray-500' : ''
+      }`}
+      title={`Make ${itemType} public`}
+    >
+      {children ? children : null}
+      <div>{label}</div>
+      <LockOpenIcon fontSize="small" className="ml-auto" />
+    </div>
+  )
+}
 
 const MakePublicButton = ({
   itemId,
   itemType,
-  variant,
   label,
   onChange,
   isNsfw,
 }: {
   itemId: string
   itemType: ItemType
-  variant?: 'text'
   label?: string
   onChange?: (visibilityUpdate: { isPrivate: boolean }) => void
   isNsfw?: boolean
 }) => {
   const { message } = App.useApp()
-  // const [ isLoading, setIsLoading ] = useState(false)
+  const { isAllowed } = useSubscriptionGate(GatedActions.MakePrivate)
+  const { showModal } = useModalContext()
 
-  const onButtonClick = async () => {
+  const handleClick = async () => {
     if (isNsfw) {
       message.warning(`Item is marked NSFW. Can not make it public.`)
+      return
+    }
+
+    if (!isAllowed) {
+      showModal(MODAL_TYPES.SUBSCRIPTION_GATE_MODAL, {
+        usesUrl: false,
+        minimumSubscriptionTier: SubscriptionTier.Basic,
+        featureName: 'Private Creations',
+      })
       return
     }
 
@@ -42,46 +85,63 @@ const MakePublicButton = ({
     } catch (err) {
       handleAxiosError(err, message)
     }
-    // setIsLoading(false)
   }
 
-  if (variant === 'text') {
+  if (isNsfw) {
     return (
-      <>
-        {isNsfw ? (
-          <Tooltip
-            // style={{ position: 'absolute', zIndex: 1051 }}
-            title="Creations flagged as NSFW can not be made public"
-            trigger={['click', 'hover']}
-          >
-            <div
-              onClick={() => onButtonClick()}
-              className="flex items-center gap-2 w-full justify-between"
-              title={`Make ${itemType} public`}
-            >
-              <div>{label}</div>
-              <LockOpenIcon fontSize="small" />
+      <Tooltip
+        title="Creations flagged as NSFW can not be made public"
+        trigger={['click', 'hover']}
+      >
+        <div className="w-full">
+          <ButtonElement
+            label={label || ''}
+            itemType={itemType}
+            handleClick={() => handleClick()}
+            isAllowed={false}
+          />
+        </div>
+      </Tooltip>
+    )
+  }
+
+  if (!isAllowed) {
+    return (
+      <Popover
+        arrow={true}
+        overlayClassName="popover-subscription-gate"
+        content={
+          <div className="text-center">
+            <div className="mb-1">
+              <strong>Private Creations</strong> is a premium feature
             </div>
-          </Tooltip>
-        ) : (
-          <div
-            onClick={() => onButtonClick()}
-            className="flex items-center gap-2 w-full justify-between"
-            title={`Make ${itemType} public`}
-          >
-            <div>{label}</div>
-            <LockOpenIcon fontSize="small" />
+            <Link href={'/account'} className="font-bold mb-2">
+              Explore plans
+            </Link>
           </div>
-        )}
-      </>
+        }
+        trigger={['hover']}
+      >
+        <div className="w-full">
+          <ButtonElement
+            label={label || ''}
+            itemType={itemType}
+            handleClick={() => handleClick()}
+            isAllowed={isAllowed}
+          >
+            <WorkspacePremium fontSize="small" className="text-orange-300 " />
+          </ButtonElement>
+        </div>
+      </Popover>
     )
   }
 
   return (
-    <CircleButton
-      title={`Make ${itemType} public`}
-      icon={<LockOpenIcon fontSize="medium" />}
-      onClick={() => onButtonClick()}
+    <ButtonElement
+      label={label || ''}
+      itemType={itemType}
+      handleClick={() => handleClick()}
+      isAllowed={true}
     />
   )
 }

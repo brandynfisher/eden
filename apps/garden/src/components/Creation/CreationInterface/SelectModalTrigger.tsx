@@ -1,25 +1,28 @@
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
-import { Concept } from '@edenlabs/eden-sdk'
-import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
+import { Character, Concept } from '@edenlabs/eden-sdk'
 import Button from '@mui/material/Button'
-import React from 'react'
+import React, { ReactNode } from 'react'
 
-const ConceptSelectModalTrigger = ({
+const SelectModalTrigger = ({
+  buttonContent,
+  modalType,
   onChange,
 }: {
-  onChange: (concept: Concept) => void
+  buttonContent: ReactNode
+  modalType: MODAL_TYPES
+  onChange: (item: Concept | Character) => void
 }) => {
   const { showModal, hideModal } = useModalContext()
 
   const handleClickOpen = () => {
-    showModal(MODAL_TYPES.CONCEPT_SELECT_MODAL, {
+    showModal(modalType, {
       onChange: handleChange,
     })
   }
 
-  const handleChange = (concept: Concept) => {
-    onChange(concept)
-    hideModal(MODAL_TYPES.CONCEPT_SELECT_MODAL)
+  const handleChange = (item: Concept | Character) => {
+    onChange(item)
+    hideModal(modalType)
   }
 
   return (
@@ -28,10 +31,9 @@ const ConceptSelectModalTrigger = ({
       onClick={handleClickOpen}
       className="w-full flex !py-1 !px-2 items-center gap-2 !bg-gray-300 hover:!bg-gray-400 dark:!bg-gray-950 dark:hover:!bg-gray-950 bg-opacity-50 hover:!bg-opacity-70 !normal-case"
     >
-      <ModelTrainingIcon fontSize="small" />
-      <div>Select Concept</div>
+      {buttonContent}
     </Button>
   )
 }
 
-export default ConceptSelectModalTrigger
+export default SelectModalTrigger

@@ -1,4 +1,3 @@
-import { requireAuth } from '@/lib/auth'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import EditOutlined from '@ant-design/icons/EditOutlined'
@@ -17,7 +16,7 @@ const ProfileHeaderName = ({
   isOwnProfile: boolean
 }) => {
   const { message } = App.useApp()
-  const { isAuthenticated, authenticate } = useContext(UserContext)
+  const { maybeAuthenticate } = useContext(UserContext)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [updatedName, setUpdatedName] = useState(displayName)
@@ -25,10 +24,7 @@ const ProfileHeaderName = ({
   const { user } = useUser()
 
   const handleEditNameClick = async () => {
-    if (!isAuthenticated) {
-      await requireAuth(authenticate)
-      return
-    }
+    if (!(await maybeAuthenticate())) return
     setIsEditing(true)
     setUpdatedName(displayName)
   }
@@ -77,6 +73,7 @@ const ProfileHeaderName = ({
         ) : (
           <div className="relative w-full flex flex-col min-w-0 z-0">
             <input
+              autoFocus={true}
               type="text"
               enterKeyHint="enter"
               value={updatedName}

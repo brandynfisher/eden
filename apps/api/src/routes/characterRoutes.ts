@@ -1,4 +1,4 @@
-import { Capabilites } from '@edenlabs/eden-sdk'
+import { Capabilities } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -23,7 +23,7 @@ import { configType } from '../types/routeTypes'
 
 const logosType = Type.Optional(
   Type.Object({
-    capabilities: Type.Optional(Type.Array(Type.Enum(Capabilites))),
+    capabilities: Type.Optional(Type.Array(Type.Enum(Capabilities))),
     identity: Type.Optional(Type.String()),
     knowledge: Type.Optional(Type.String()),
     knowledgeSummary: Type.Optional(Type.String()),
@@ -153,7 +153,11 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           character: Type.Object({
             _id: Type.String(),
-            user: Type.String(),
+            user: Type.Object({
+              userId: Type.String(),
+              username: Type.String(),
+              userImage: Type.String(),
+            }),
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
@@ -203,7 +207,11 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             _id: Type.String(),
-            user: Type.String(),
+            user: Type.Object({
+              userId: Type.String(),
+              username: Type.String(),
+              userImage: Type.String(),
+            }),
             name: Type.String(),
             slug: Type.String(),
             image: Type.Optional(Type.String()),
@@ -239,7 +247,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         name: Type.String(),
         identity: Type.String(),
-        prompt: Type.String(),
+        message: Type.String(),
         knowledge: Type.Optional(Type.String()),
         knowledge_summary: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),

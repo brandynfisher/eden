@@ -1,19 +1,44 @@
-import { Product } from '@edenlabs/eden-sdk'
+import { UserContext } from '@/providers/UserProvider'
+import { Product, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Button, Card } from 'antd'
 import Image from 'next/image'
+import { useContext } from 'react'
 
 const { Meta } = Card
 
-export const renderDisplayPrice = (product: Product) => {
+const discountFactorMap: { [key in SubscriptionTier]: number } = {
+  0: 1,
+  1: 0.9,
+  2: 0.8,
+  3: 0.7,
+}
+
+export const renderDisplayPrice = (
+  product: Product,
+  subscriptionTier?: SubscriptionTier,
+) => {
   const { displayPrice } = product
+  const discountFactor = discountFactorMap[subscriptionTier || 0]
+  const discountedPrice = (
+    displayPrice?.unit_amount
+      ? (displayPrice?.unit_amount / 100) * discountFactor
+      : 0
+  ).toFixed(2)
+
   return (
     <div>
       {displayPrice.currency.toUpperCase()}{' '}
       <strong>
-        {(displayPrice?.unit_amount
-          ? displayPrice?.unit_amount / 100
-          : 0
-        ).toFixed(2)}
+        {discountFactor < 1 ? (
+          <>
+            <span style={{ textDecoration: 'line-through' }}>
+              {(displayPrice?.unit_amount / 100).toFixed(2)}
+            </span>
+            {' ' + discountedPrice}
+          </>
+        ) : (
+          discountedPrice
+        )}
       </strong>
     </div>
   )
@@ -26,6 +51,7 @@ const ProductCard = ({
   product: Product
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
+  const { user } = useContext(UserContext)
   const handleBuyProductClick = () => {
     checkoutHandler(product.default_price, 'payment')
   }
@@ -52,7 +78,7 @@ const ProductCard = ({
           className="px-4 flex gap-2 justify-between items-center"
         >
           <Button onClick={handleBuyProductClick}>Buy</Button>
-          {renderDisplayPrice(product)}
+          {renderDisplayPrice(product, user?.subscriptionTier)}
         </div>,
       ]}
     >

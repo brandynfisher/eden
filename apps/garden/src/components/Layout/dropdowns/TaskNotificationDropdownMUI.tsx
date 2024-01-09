@@ -50,10 +50,12 @@ const FailedTaskMenuItem = ({
         >
           <div className="flex items-center justify-between min-w-0 gap-2 w-full">
             <div className="flex flex-col min-w-0 w-full">
-              <div className="flex justify-between items-center">
-                <strong>/{task.generator.generatorName}</strong>
+              <div className="flex justify-between items-center mt-1">
+                <strong className="text-xs">
+                  /{task.generator.generatorName}
+                </strong>
                 <div
-                  className="flex min-w-0 truncate mt-1 cursor-copy"
+                  className="flex min-w-0 truncate cursor-copy"
                   onClick={handleCopyClick}
                 >
                   <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
@@ -133,7 +135,9 @@ const CompletedTaskMenuItem = ({
           <div className="flex items-center justify-between min-w-0 w-full gap-2">
             <div className="flex flex-col gap-2 min-w-0 w-full">
               <div className="flex justify-between items-center text-sm">
-                <strong>/{task.generator.generatorName}</strong>
+                <strong className="text-xs">
+                  /{task.generator.generatorName}
+                </strong>
                 <div className="text-xs text-gray-800 dark:text-gray-400 hidden xs:flex">
                   Took {taskRunDuration}
                 </div>
@@ -177,10 +181,10 @@ const PendingTaskMenuItem = ({ task }: { task: Task }) => {
 
   return (
     <div className="w-full" key={task._id}>
-      <div className="flex justify-between items-center">
-        <strong>/{task.generator.generatorName}</strong>
+      <div className="flex justify-between items-center mt-1">
+        <strong className="text-xs">/{task.generator.generatorName}</strong>
         <div
-          className="flex gap-2 min-w-0 truncate mt-1 cursor-copy"
+          className="flex gap-2 min-w-0 truncate cursor-copy"
           onClick={handleCopyClick}
         >
           <div className="text-xs italic text-gray-800 dark:text-gray-400 truncate">
