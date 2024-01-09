@@ -1,15 +1,6 @@
 const params = [
 
   {
-    name: 'mode',
-    label: 'mode',
-    description: 'mode',
-    default: 'comfy_upscale',
-    allowedValues: ["comfy_upscale"],
-    isRequired: true,
-  },
-
-  {
     name: 'init_image',
     label: 'Image you want to upscale',
     description:
@@ -48,7 +39,26 @@ const params = [
     step: 64,
   },
   
+  {
+    name: 'n_samples',
+    label: 'Variations',
+    description: 'Number of variations to create',
+    default: 1,
+    allowedValues: [1, 2, 3, 4],
+    optional: true,
+  },
 
+  {
+    name: 'seed',
+    label: 'Seed',
+    description:
+      'Set random seed for reproducibility. If blank, will be set randomly.',
+    default: null,
+    minimum: 0,
+    maximum: 1e8,
+    optional: true,
+  },
+  
 ]
 
 export default params;

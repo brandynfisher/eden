@@ -42,6 +42,17 @@ const params = [
     step: 64,
   },
   
+  {
+    name: 'seed',
+    label: 'Seed',
+    description:
+      'Set random seed for reproducibility. If blank, will be set randomly.',
+    default: null,
+    minimum: 0,
+    maximum: 1e8,
+    optional: true,
+  },
+  
 
 
 ]
