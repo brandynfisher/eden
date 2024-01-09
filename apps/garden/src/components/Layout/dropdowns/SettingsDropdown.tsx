@@ -1,19 +1,15 @@
 import ThemeToggleButton from '@/components/Layout/dropdowns/ThemeToggleButton'
-import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import LoginOutlined from '@ant-design/icons/LoginOutlined'
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined'
 import SettingOutlined from '@ant-design/icons/SettingOutlined'
 import { useViewportSize } from '@mantine/hooks'
-import CardMembershipIcon from '@mui/icons-material/CardMembership'
 import GridOnIcon from '@mui/icons-material/GridOn'
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import Button from '@mui/material/Button'
-import { App, Dropdown, Slider, Switch } from 'antd'
+import { Dropdown, Slider, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/hooks/useItems'
-import axios from 'axios'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import React, { useContext, useEffect, useState } from 'react'
 
 const ClerkLoginLogoutButton = () => {
@@ -39,41 +35,6 @@ const ClerkLoginLogoutButton = () => {
             <div>Sign in</div>
           </Button>
         )}
-      </div>
-    </div>
-  )
-}
-
-const ManageSubscriptionButton = () => {
-  const { user } = useContext(UserContext)
-  const router = useRouter()
-  const { message } = App.useApp()
-
-  const onManageSubscriptionClick = async () => {
-    const customerId = user?.stripeCustomerId
-    if (!customerId) {
-      await router.push('/manna')
-      return
-    }
-    try {
-      const response = await axios.post('/api/billing/subscription', {
-        stripeCustomerId: customerId,
-      })
-      const { url } = response.data
-      await router.push(url)
-    } catch (error) {
-      handleAxiosError(error, message)
-    }
-  }
-
-  return (
-    <div className="flex items-center p-2">
-      <CardMembershipIcon fontSize="small" />
-      <div
-        className="ml-2 flex gap-2 w-full justify-between font-mono"
-        onClick={onManageSubscriptionClick}
-      >
-        Manage Subscription
       </div>
     </div>
   )
@@ -137,7 +98,7 @@ const MaxColumnSelector = () => {
 
 const ManageAccountLink = () => {
   return (
-    <Link className="w-full p-2 flex" href="/tools">
+    <Link className="w-full p-2 flex" href="/account">
       <div className="flex items-center">
         <ManageAccountsIcon fontSize="small" />
         <div className="ml-2 flex gap-2 w-full justify-between font-mono">
@@ -165,13 +126,6 @@ const authItems: ItemType[] = [
   {
     label: <ManageAccountLink />,
     key: 'dev-tools',
-  },
-]
-
-const subscriberExtraItems: ItemType[] = [
-  {
-    label: <ManageSubscriptionButton />,
-    key: 'manage-subscription',
   },
 ]
 
@@ -209,7 +163,7 @@ export const SettingsDropdown = () => {
       newDropDownItems = [...newDropDownItems, ...authItems]
 
       if (user?.subscriptionTier) {
-        newDropDownItems = [...newDropDownItems, ...subscriberExtraItems]
+        newDropDownItems = [...newDropDownItems]
       }
     }
 

@@ -1,10 +1,13 @@
 import DiscordAuthButton from '@/components/DiscordAuthButton'
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
 import LoadingIndicator from '@/components/LoadingIndicator'
+import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import { AddShoppingCartOutlined } from '@mui/icons-material'
 import KeyOutlined from '@mui/icons-material/KeyOutlined'
-import { Collapse } from 'antd'
+import { App, Collapse } from 'antd'
+import axios from 'axios'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import React, { useContext } from 'react'
@@ -15,17 +18,50 @@ const ApiKeys = dynamic(() => import('@/components/ApiKeys'), {
   loading: () => <LoadingIndicator />,
 })
 
-const ToolsPage = () => {
+const ProductsList = dynamic(
+  () => import('@/components/Products/ProductsList'),
+  {
+    loading: () => <LoadingIndicator />,
+  },
+)
+
+const AccountPage = () => {
+  const { message } = App.useApp()
   const { hasMinimumSubscriptionTier } = useContext(UserContext)
   const hasApiAccessPermission = hasMinimumSubscriptionTier(
     SubscriptionTier.Pro,
   )
 
+  const handleCheckout = async (priceId: string, paymentMode: string) => {
+    try {
+      const response = await axios.post('/api/payment', {
+        priceId,
+        paymentMode,
+      })
+      const { url } = response.data
+      window.location.href = url
+    } catch (error) {
+      handleAxiosError(error, message)
+    }
+  }
+
   return (
     <>
       <div className="w-full grid grid-cols-12">
         <div className="flex flex-col space-y-4 col-span-12 xl:col-span-8 mb-4">
-          <Collapse expandIconPosition="start" defaultActiveKey={'discord'}>
+          <Collapse
+            expandIconPosition="start"
+            defaultActiveKey={'subscription'}
+          >
+            <Panel
+              key={'subscription'}
+              header={'Subscription & Manna'}
+              extra={<AddShoppingCartOutlined />}
+            >
+              <div className="mb-4">
+                <ProductsList checkoutHandler={handleCheckout} />
+              </div>
+            </Panel>
             <Panel
               key={'discord'}
               header={'Discord Account'}
@@ -64,4 +100,4 @@ const ToolsPage = () => {
   )
 }
 
-export default ToolsPage
+export default AccountPage

@@ -4,7 +4,7 @@ import { useProducts } from '@/hooks/useProducts'
 import { handleAxiosError } from '@/lib/fetcher'
 import { subscriptionTierNameMap } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
-import { Creator, Product } from '@edenlabs/eden-sdk'
+import { Creator, Product, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Button, message } from 'antd'
 import axios from 'axios'
 import dynamic from 'next/dynamic'
@@ -21,14 +21,15 @@ const sortByPrice = (a: Product, b: Product) => {
   return aPrice > bPrice ? 1 : -1
 }
 
-const dummyFeatures: { [key: string]: string[] } = {
-  basic: [
+const dummyFeatures: { [key in SubscriptionTier]: string[] } = {
+  0: [],
+  1: [
     '1000 Manna / month',
     '10% Discount on Manna-Refills',
     '3 concurrent creation jobs',
     'Private creations',
   ],
-  pro: [
+  2: [
     '3500 Manna / month',
     '20% Discount on Manna-Refills',
     '6 concurrent creation jobs',
@@ -37,7 +38,7 @@ const dummyFeatures: { [key: string]: string[] } = {
     'Premium generators',
     'Export Concepts for use in other apps',
   ],
-  believer: [
+  3: [
     '7500 Manna / month',
     '30% Discount on Manna-Refills',
     '10 concurrent creation jobs',
@@ -112,13 +113,16 @@ const ProductsList = ({
                 </div>
               ) : (
                 <>
-                  <div>No active plan</div>
+                  <div>Choose the plan that works for you:</div>
                   <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
                     {subscriptionsSortedByPrice.map(product => (
                       <SubscriptionCard
                         key={product.id}
                         features={
-                          dummyFeatures[product.metadata.subscriptionTier]
+                          dummyFeatures[
+                            product.metadata
+                              .subscriptionTier as SubscriptionTier
+                          ]
                         }
                         subscription={product}
                         checkoutHandler={checkoutHandler}
@@ -137,7 +141,7 @@ const ProductsList = ({
       </div>
 
       <div>
-        <h3 className="font-mono font-bold">Products</h3>
+        <h3 className="font-mono font-bold">Additional Manna</h3>
         {!products || !products.length ? (
           <LoadingIndicator />
         ) : (

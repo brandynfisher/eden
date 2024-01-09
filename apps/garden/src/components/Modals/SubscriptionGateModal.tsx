@@ -44,7 +44,7 @@ const SubscriptionGateModal = ({
             </strong>
           </div>
         ) : null}
-        <Link href={'/manna'} className="font-bold mb-2">
+        <Link href={'/account'} className="font-bold mb-2">
           Explore subscription plans
         </Link>
       </div>

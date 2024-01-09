@@ -88,7 +88,7 @@ const MakePrivateButton = ({
             <div className="mb-1">
               <strong>Private Creations</strong> is a premium feature
             </div>
-            <Link href={'/manna'} className="font-bold mb-2">
+            <Link href={'/account'} className="font-bold mb-2">
               Explore plans
             </Link>
           </div>

@@ -6,15 +6,11 @@ export const registerChroma = async (
   chromaUri: string | undefined,
 ) => {
   const uri = chromaUri || fastify.config.CHROMA_URI
-  console.log('CONNECT TO URI 1', uri)
   try {
-    console.log('CONNECT TO URI', uri)
     const chromadb = new ChromaClient({
       path: uri,
       auth: { provider: 'basic', credentials: 'chromadb:changeme' },
     })
-    console.log('CONNECT TO URI 3')
-    console.log(chromadb)
     fastify.decorate('chromadb', chromadb)
     fastify.log.info('Successfully registered ChromaPlugin')
   } catch (err) {

@@ -14,7 +14,7 @@ const MannaBalanceInfo = () => {
   const { mannaBalance } = useContext(UserContext)
 
   return (
-    <Link href={'/manna'} className="flex items-center gap-2 p-2">
+    <Link href={'/account'} className="flex items-center gap-2 p-2">
       You have <span className="font-bold">{mannaBalance}</span> Manna
     </Link>
   )
@@ -37,9 +37,9 @@ const MannaRefillModalTrigger = () => {
 
 const MannaBuyLink = () => {
   return (
-    <Link href={'/manna'} className="flex items-center gap-2 p-2">
+    <Link href={'/account'} className="flex items-center gap-2 p-2">
       <AddShoppingCartIcon fontSize="medium" />
-      Buy Manna
+      Explore Plans
     </Link>
   )
 }
