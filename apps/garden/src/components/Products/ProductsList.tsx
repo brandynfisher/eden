@@ -24,13 +24,13 @@ const sortByPrice = (a: Product, b: Product) => {
 const dummyFeatures: { [key in SubscriptionTier]: string[] } = {
   0: [],
   1: [
-    '1000 Manna / month',
+    '1,000 Manna / month',
     '10% Discount on Manna-Refills',
     '3 concurrent creation jobs',
     'Private creations',
   ],
   2: [
-    '3500 Manna / month',
+    '5,000 Manna / month',
     '20% Discount on Manna-Refills',
     '6 concurrent creation jobs',
     'Private creations',
@@ -39,7 +39,7 @@ const dummyFeatures: { [key in SubscriptionTier]: string[] } = {
     'Export Concepts for use in other apps',
   ],
   3: [
-    '7500 Manna / month',
+    '10,000 Manna / month',
     '30% Discount on Manna-Refills',
     '10 concurrent creation jobs',
     'Private creations',
