@@ -74,7 +74,7 @@ const ProductsList = ({
   const onManageSubscriptionClick = async () => {
     const customerId = user?.stripeCustomerId
     if (!customerId) {
-      await router.push('/manna')
+      await router.push('/account')
       return
     }
     try {

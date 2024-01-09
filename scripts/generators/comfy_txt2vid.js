@@ -1,7 +1,7 @@
 const params = [
   
   {
-    name: 'prompt',
+    name: 'interpolation_texts',
     label: 'Prompts',
     description: 'Prompts to interpolate through',
     default: [],
@@ -40,6 +40,17 @@ const params = [
     minimum: 512,
     maximum: 1024,
     step: 64,
+  },
+  
+  {
+    name: 'seed',
+    label: 'Seed',
+    description:
+      'Set random seed for reproducibility. If blank, will be set randomly.',
+    default: null,
+    minimum: 0,
+    maximum: 1e8,
+    optional: true,
   },
   
 

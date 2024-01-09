@@ -67,6 +67,16 @@ const params = [
     maximum: 1e8,
     optional: true,
   },
+  
+  {
+    name: 'n_samples',
+    label: 'Variations',
+    description: 'Number of variations to create',
+    default: 1,
+    allowedValues: [1, 2, 3, 4],
+    optional: true,
+  },
+
 ]
 
 export default params;
