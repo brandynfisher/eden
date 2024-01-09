@@ -119,7 +119,7 @@ export const maximumTasksInProgressPermissionCheck = async (
 ) => {
   const { userId, subscriptionTier, featureFlags } = request.user
   const maximumTasksInProgress = featureFlags?.includes('preview')
-    ? 99
+    ? 10
     : maximumTasksInProgressMap[
         (subscriptionTier as SubscriptionTier) || SubscriptionTier.Free
       ]
