@@ -1,4 +1,4 @@
-import ToolsPage from '@/pages/tools/ToolsPage'
+import ToolsPage from '@/pages/account/AccountPage'
 import React from 'react'
 
 const tools = () => {
