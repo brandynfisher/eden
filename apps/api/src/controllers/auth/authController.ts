@@ -22,7 +22,7 @@ export const createNewUser = async (input: UserInput) => {
   // Give them free Manna
   const newManna = new Manna({
     user: newUser._id,
-    balance: 500,
+    balance: 200,
   })
   await newManna.save()
   return newUser
