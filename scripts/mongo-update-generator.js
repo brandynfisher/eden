@@ -19,6 +19,7 @@ import interpolateParameters from './generators/interpolate.js'
 import interrogateParameters from './generators/interrogate.js'
 import monologueParameters from './generators/monologue.js'
 import real2realParameters from './generators/real2real.js'
+import real2real_audioParameters from './generators/real2real_audio.js'
 import remixParameters from './generators/remix.js'
 import upscaleParameters from './generators/upscale.js'
 import wav2lipParameters from './generators/wav2lip.js'
@@ -175,6 +176,14 @@ async function updateVersion(db) {
       isDeprecated: false,
     }
 
+    const real2real_audioGeneratorVersion = {
+      provider: 'replicate',
+      address: 'abraham-ai/eden-sd-pipelines-sdxl',
+      versionId: versionId,
+      parameters: real2real_audioParameters,
+      isDeprecated: false,
+    }
+
     await db
       .collection('generators')
       .updateOne(
@@ -188,6 +197,14 @@ async function updateVersion(db) {
         { generatorName: 'real2real' },
         { $addToSet: { versions: real2realGeneratorVersion } },
       )
+
+    await db
+    .collection('generators')
+    .updateOne(
+      { generatorName: 'real2real_audio' },
+      { $addToSet: { versions: real2real_audioGeneratorVersion } },
+    )
+
   } else if (cog === 'character') {
     const wav2lipGeneratorVersion = {
       provider: 'replicate',

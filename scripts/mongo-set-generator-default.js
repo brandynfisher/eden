@@ -71,7 +71,7 @@ async function updateDefaultVersion(db) {
     'interrogate', 'controlnet',
   ];
   const sdxl_generators_video = [
-    'interpolate', 'real2real'
+    'interpolate', 'real2real', 'real2real_audio'
   ];
   const scenario_runner_generators = [
     'monologue', 'dialogue',
