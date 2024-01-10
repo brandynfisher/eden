@@ -27,18 +27,18 @@ const params = [
     name: 'width',
     label: 'Width',
     description: 'Width of the creation in pixels',
-    default: 768,
-    minimum: 512,
-    maximum: 1024,
+    default: 1280,
+    minimum: 1024,
+    maximum: 2048,
     step: 64,
   },
   {
     name: 'height',
     label: 'Height',
     description: 'Height of the creation in pixels',
-    default: 512,
-    minimum: 512,
-    maximum: 1024,
+    default: 1280,
+    minimum: 1024,
+    maximum: 2048,
     step: 64,
   },
   
@@ -52,7 +52,6 @@ const params = [
     maximum: 1e8,
     optional: true,
   },
-  
 
 
 ]
