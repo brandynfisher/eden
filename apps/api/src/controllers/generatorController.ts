@@ -60,7 +60,7 @@ export const listGenerators = async (
       versions: generator.versions.filter(
         (version: GeneratorVersionSchema) =>
           version.versionId === generator.defaultVersionId,
-      )[-1],
+      ),
     })),
   }
 
