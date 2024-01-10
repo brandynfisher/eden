@@ -118,12 +118,12 @@ export const createTask = async (
     })
   }
 
-  const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
-  if (submittedMaxTasks) {
-    return reply.status(401).send({
-      message: `You have reached the maximum number of tasks in progress. Upgrade your subscription to increase your limit.`,
-    })
-  }
+  // const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
+  // if (submittedMaxTasks) {
+  //   return reply.status(401).send({
+  //     message: `You have reached the maximum number of tasks in progress. Upgrade your subscription to increase your limit.`,
+  //   })
+  // }
 
   // get generator
   const generator = await Generator.findOne({
