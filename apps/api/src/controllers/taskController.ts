@@ -155,7 +155,15 @@ export const createTask = async (
   }
 
   // validate config, add defaults
-  const preparedConfig = prepareConfig(generatorVersion, config)
+  let preparedConfig
+  try {
+    preparedConfig = prepareConfig(generatorVersion, config)
+  } catch (err: any) {
+    console.log(err)
+    return reply.status(400).send({
+      message: err.message,
+    })
+  }
 
   // check if user has enough manna
   const manna = await Manna.findOne({ user })
