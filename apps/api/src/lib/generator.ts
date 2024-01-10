@@ -27,6 +27,14 @@ const setupSeeds = (config?: any) => {
     }
   }
 
+  // cast all seeds as integers
+  config.seed = parseInt(config.seed)
+  if (config.interpolation_seeds) {
+    config.interpolation_seeds = config.interpolation_seeds.map((s: any) =>
+      parseInt(s),
+    )
+  }
+
   return config
 }
 
