@@ -8,7 +8,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-import { PipelineStage } from 'mongoose'
+import mongoose, { Mongoose, PipelineStage } from 'mongoose'
 
 import { conceptExportPermissionCheck } from '../lib/authorization'
 import { getSimilarCreationIds } from '../lib/similar'
@@ -636,9 +636,12 @@ export const getConceptsFeed = async (
   })
 
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
+  console.log({ count: concepts?.docs?.length, docs: concepts.docs })
   // @ts-ignore
   concepts.docs = concepts.docs.map(concept => {
-    const conceptWithoutTrainingImages = concept.toObject()
+    // @ts-ignore
+    const conceptWithoutTrainingImages =
+      concept instanceof mongoose.Document ? concept.toObject() : concept
     delete conceptWithoutTrainingImages.training_images
     delete conceptWithoutTrainingImages.task.config.lora_training_urls
     if (!hasConceptExportPermission) {
