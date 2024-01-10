@@ -108,7 +108,10 @@ export const prepareConfig = (
   }
 
   // randomize seeds if not provided
-  if (generatorVersion.address === 'abraham-ai/eden-sd-pipelines-sdxl') {
+  if (
+    generatorVersion.address === 'abraham-ai/eden-sd-pipelines-sdxl' ||
+    generatorVersion.address === 'abraham-ai/eden-comfyui'
+  ) {
     config = setupSeeds(config)
   }
 
