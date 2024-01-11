@@ -6,9 +6,8 @@ export const hiddenGenerators = [
   'tts_fast',
   'sdxl-lora-trainer',
   'interrogate',
-  // 'monologue',
-  // 'dialogue',
   'wav2lip',
+  'makeitrad',
 ]
 
 export type GeneratorOutputType = 'image' | 'text' | 'video'
@@ -26,19 +25,18 @@ export const sdxl_generators_image = [
   'blend',
   'upscale',
   'controlnet',
-  'comfy_upscale',
-  'comfy_makeitrad',
+  'makeitrad',
 ]
 export const sdxl_generators_video = [
   'real2real',
-  'animatediff_comfyui',
+  'real2real_audio',
   'interpolate',
   'dialogue',
   'monologue',
   'wav2lip',
-  'comfy_txt2vid',
-  'comfy_img2vid',
-  'comfy_vid2vid',
+  'txt2vid',
+  'img2vid',
+  'vid2vid',
 ]
 
 export const parameterGroups: { [key: string]: string[] } = {

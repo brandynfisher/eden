@@ -23,7 +23,7 @@ const params = [
   {
     name: 'width',
     label: 'Width',
-    description: 'Width of the creation in pixels',
+    description: 'Max width of the creation in pixels',
     default: 1280,
     minimum: 1024,
     maximum: 2048,
@@ -32,16 +32,13 @@ const params = [
   {
     name: 'height',
     label: 'Height',
-    description: 'Height of the creation in pixels',
+    description: 'Max height of the creation in pixels',
     default: 1280,
     minimum: 1024,
     maximum: 2048,
     step: 64,
   },
   
-  ////////////////////////////////////////
-  // optional generation args
-
   {
     name: 'seed',
     label: 'Seed',

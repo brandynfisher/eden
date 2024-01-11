@@ -66,8 +66,7 @@ async function updateDefaultVersion(db) {
   console.log(` `);
 
   const sdxl_generators = [
-    'create', 'remix',
-    'blend', 'upscale',
+    'create', 'remix', 'blend', 
     'interrogate', 'controlnet',
   ];
   const sdxl_generators_video = [
@@ -77,7 +76,7 @@ async function updateDefaultVersion(db) {
     'monologue', 'dialogue',
   ];
   const comfyui_generators = [
-    'comfy_txt2vid', 'comfy_img2vid', 'comfy_makeitrad', 'comfy_vid2vid', 'comfy_upscale',
+    'txt2vid', 'img2vid', 'makeitrad', 'vid2vid', 'upscale',
   ];
 
   if (cog === 'eden-sd-pipelines-sdxl') {
