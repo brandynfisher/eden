@@ -6,8 +6,6 @@ import { fileURLToPath } from 'url'
 import blendParameters from './generators/blend.js'
 import comfyuiImg2VidParameters from './generators/comfy_img2vid.js'
 import comfyuiMakeitradParameters from './generators/comfy_makeitrad.js'
-//import comfyuiParameters from './generators/comfyui.js';
-//import animatediffParameters from './generators/animatediff.js';
 import comfyuiTxt2VidParameters from './generators/comfy_txt2vid.js'
 import comfyuiUpscaleParameters from './generators/comfy_upscale.js'
 import comfyuiVid2VidParameters from './generators/comfy_vid2vid.js'
@@ -19,18 +17,15 @@ import interpolateParameters from './generators/interpolate.js'
 import interrogateParameters from './generators/interrogate.js'
 import monologueParameters from './generators/monologue.js'
 import real2realParameters from './generators/real2real.js'
-import real2real_audioParameters from './generators/real2real_audio.js'
+import real2realAudioParameters from './generators/real2real_audio.js'
 import remixParameters from './generators/remix.js'
-import upscaleParameters from './generators/upscale.js'
 import wav2lipParameters from './generators/wav2lip.js'
-import zeroscopeParameters from './generators/zeroscope-v2-xl.js'
 
 const allowedCogs = [
   'eden-sd-pipelines-sdxl',
   'eden-sd-pipelines-sdxl-video',
   'character',
   'sdxl-lora-trainer',
-  'zeroscope-v2-xl',
   'scenarioRunner',
   'eden-comfyui',
 ]
@@ -102,14 +97,6 @@ async function updateVersion(db) {
       isDeprecated: false,
     }
 
-    const upscaleGeneratorVersion = {
-      provider: 'replicate',
-      address: 'abraham-ai/eden-sd-pipelines-sdxl',
-      versionId: versionId,
-      parameters: upscaleParameters,
-      isDeprecated: false,
-    }
-
     const controlnetGeneratorVersion = {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
@@ -149,13 +136,6 @@ async function updateVersion(db) {
     await db
       .collection('generators')
       .updateOne(
-        { generatorName: 'upscale' },
-        { $addToSet: { versions: upscaleGeneratorVersion } },
-      )
-
-    await db
-      .collection('generators')
-      .updateOne(
         { generatorName: 'controlnet' },
         { $addToSet: { versions: controlnetGeneratorVersion } },
       )
@@ -176,14 +156,14 @@ async function updateVersion(db) {
       isDeprecated: false,
     }
 
-    const real2real_audioGeneratorVersion = {
+    const real2realAudioGeneratorVersion = {
       provider: 'replicate',
       address: 'abraham-ai/eden-sd-pipelines-sdxl',
       versionId: versionId,
-      parameters: real2real_audioParameters,
+      parameters: real2realAudioParameters,
       isDeprecated: false,
     }
-
+    
     await db
       .collection('generators')
       .updateOne(
@@ -199,11 +179,11 @@ async function updateVersion(db) {
       )
 
     await db
-    .collection('generators')
-    .updateOne(
-      { generatorName: 'real2real_audio' },
-      { $addToSet: { versions: real2real_audioGeneratorVersion } },
-    )
+      .collection('generators')
+      .updateOne(
+        { generatorName: 'real2real_audio' },
+        { $addToSet: { versions: real2realAudioGeneratorVersion } },
+      )
 
   } else if (cog === 'character') {
     const wav2lipGeneratorVersion = {
@@ -240,7 +220,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-comfyui',
       versionId: versionId,
-      mode: 'comfy_txt2vid',
       parameters: comfyuiTxt2VidParameters,
       isDeprecated: false,
     }
@@ -249,7 +228,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-comfyui',
       versionId: versionId,
-      mode: 'comfy_img2vid',
       parameters: comfyuiImg2VidParameters,
       isDeprecated: false,
     }
@@ -258,7 +236,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-comfyui',
       versionId: versionId,
-      mode: 'comfy_vid2vid',
       parameters: comfyuiVid2VidParameters,
       isDeprecated: false,
     }
@@ -267,7 +244,6 @@ async function updateVersion(db) {
       provider: 'replicate',
       address: 'abraham-ai/eden-comfyui',
       versionId: versionId,
-      mode: 'comfy_upscale',
       parameters: comfyuiUpscaleParameters,
       isDeprecated: false,
     }
@@ -283,52 +259,38 @@ async function updateVersion(db) {
     await db
       .collection('generators')
       .updateOne(
-        { generatorName: 'comfy_txt2vid' },
+        { generatorName: 'txt2vid' },
         { $addToSet: { versions: comfyuiTxt2VidVersion } },
       )
 
     await db
       .collection('generators')
       .updateOne(
-        { generatorName: 'comfy_img2vid' },
+        { generatorName: 'img2vid' },
         { $addToSet: { versions: comfyuiImg2VidVersion } },
       )
 
     await db
       .collection('generators')
       .updateOne(
-        { generatorName: 'comfy_vid2vid' },
+        { generatorName: 'vid2vid' },
         { $addToSet: { versions: comfyuiVid2VidVersion } },
       )
 
     await db
       .collection('generators')
       .updateOne(
-        { generatorName: 'comfy_upscale' },
+        { generatorName: 'upscale' },
         { $addToSet: { versions: comfyuiUpscaleVersion } },
       )
 
     await db
       .collection('generators')
       .updateOne(
-        { generatorName: 'comfy_makeitrad' },
+        { generatorName: 'makeitrad' },
         { $addToSet: { versions: comfyuiMakeitradVersion } },
       )
-  } else if (cog === 'zeroscope-v2-xl') {
-    const zeroscopeVersion = {
-      provider: 'replicate',
-      address: 'anotherjesse/zeroscope-v2-xl',
-      versionId: versionId,
-      parameters: zeroscopeParameters,
-      isDeprecated: false,
-    }
-
-    await db
-      .collection('generators')
-      .updateOne(
-        { generatorName: 'zeroscope-v2-xl' },
-        { $addToSet: { versions: zeroscopeVersion } },
-      )
+  
   } else if (cog === 'scenarioRunner') {
     const monologueVersion = {
       provider: 'scenarioRunner',

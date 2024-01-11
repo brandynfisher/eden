@@ -20,7 +20,11 @@ const setupSeeds = (config?: any) => {
     config.interpolation_init_images?.length || 0,
   )
 
-  if (nSeeds > 0 && config?.interpolation_seeds.length == 0) {
+  if (
+    nSeeds > 0 &&
+    config?.interpolation_seeds &&
+    config?.interpolation_seeds.length == 0
+  ) {
     config.interpolation_seeds = []
     for (let i = 0; i < nSeeds; i++) {
       config.interpolation_seeds.push(Math.floor(Math.random() * 1e8))
@@ -101,7 +105,10 @@ export const prepareConfig = (
   }
 
   // randomize seeds if not provided
-  if (generatorVersion.address === 'abraham-ai/eden-sd-pipelines-sdxl') {
+  if (
+    generatorVersion.address === 'abraham-ai/eden-sd-pipelines-sdxl' ||
+    generatorVersion.address === 'abraham-ai/eden-comfyui'
+  ) {
     config = setupSeeds(config)
   }
 
