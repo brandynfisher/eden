@@ -164,19 +164,19 @@ async function updateVersion(db) {
       isDeprecated: false,
     }
     
-    // await db
-    //   .collection('generators')
-    //   .updateOne(
-    //     { generatorName: 'interpolate' },
-    //     { $addToSet: { versions: interpolateGeneratorVersion } },
-    //   )
+    await db
+      .collection('generators')
+      .updateOne(
+        { generatorName: 'interpolate' },
+        { $addToSet: { versions: interpolateGeneratorVersion } },
+      )
 
-    // await db
-    //   .collection('generators')
-    //   .updateOne(
-    //     { generatorName: 'real2real' },
-    //     { $addToSet: { versions: real2realGeneratorVersion } },
-    //   )
+    await db
+      .collection('generators')
+      .updateOne(
+        { generatorName: 'real2real' },
+        { $addToSet: { versions: real2realGeneratorVersion } },
+      )
 
     await db
       .collection('generators')

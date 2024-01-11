@@ -642,8 +642,20 @@ export const getConceptsFeed = async (
     // @ts-ignore
     const conceptWithoutTrainingImages =
       concept instanceof mongoose.Document ? concept.toObject() : concept
-    delete conceptWithoutTrainingImages.training_images
-    delete conceptWithoutTrainingImages.task.config.lora_training_urls
+
+    if (typeof conceptWithoutTrainingImages.training_images !== 'undefined') {
+      delete conceptWithoutTrainingImages.training_images
+    }
+
+    if (
+      typeof conceptWithoutTrainingImages.task !== 'undefined' &&
+      typeof conceptWithoutTrainingImages.task.config !== 'undefined' &&
+      typeof conceptWithoutTrainingImages.task.config.lora_training_urls !==
+        'undefined'
+    ) {
+      delete conceptWithoutTrainingImages.task.config.lora_training_urls
+    }
+
     if (!hasConceptExportPermission) {
       delete conceptWithoutTrainingImages.uri
     }

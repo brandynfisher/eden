@@ -11,12 +11,9 @@ export const getDefaultGeneratorVersion = (generator: GeneratorSchema) =>
   generator.versions.filter(v => v.versionId == generator.defaultVersionId)[0]
 
 const setupSeeds = (config?: any) => {
-  console.log('setup seeds')
-  console.log(config)
   if (!config.seed) {
     config.seed = Math.floor(Math.random() * 1e8)
   }
-  console.log(config)
 
   const nSeeds = Math.max(
     config.interpolation_texts?.length || 0,
@@ -34,7 +31,6 @@ const setupSeeds = (config?: any) => {
     }
   }
 
-  console.log(config)
   // cast all seeds as integers
   config.seed = parseInt(config.seed)
   if (config.interpolation_seeds) {
@@ -42,9 +38,6 @@ const setupSeeds = (config?: any) => {
       parseInt(s),
     )
   }
-
-  console.log(config)
-  console.log('done')
 
   return config
 }
