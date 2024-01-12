@@ -1,16 +1,16 @@
 const VideoResult = ({
-  resultUrl,
+  src,
   disableControls,
   onLoad,
 }: {
-  resultUrl: string
+  src: string
   disableControls?: boolean
   onLoad?: () => void
 }) => {
   return (
-    <div className="ant-image">
+    <div className="ant-image z-10">
       <video
-        src={resultUrl}
+        src={src}
         className="z-10 object-contain w-full h-full max-w-full rounded-lg"
         autoPlay={true}
         muted={true}

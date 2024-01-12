@@ -2,7 +2,7 @@ import SocialLinks from '@/components/Layout/navigation/SocialLinks'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
-import { PeopleOutline } from '@mui/icons-material'
+import { ConnectedTvOutlined, PeopleOutline } from '@mui/icons-material'
 import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline'
 import ExploreOutlined from '@mui/icons-material/ExploreOutlined'
 import ModelTraining from '@mui/icons-material/ModelTraining'
@@ -118,6 +118,15 @@ const NavMenu = ({
               </Link>
             ),
             label: 'Characters',
+          },
+          {
+            key: '/channels',
+            icon: (
+              <Link href="/channels" data-testid="nav-explore-channels">
+                <ConnectedTvOutlined fontSize="small" />
+              </Link>
+            ),
+            label: 'Channels',
           },
         ]
       : []),
