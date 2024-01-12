@@ -1,15 +1,3 @@
-import {
-  FeedCharactersArguments,
-  FeedConceptsArguments,
-  FeedCreationsArguments,
-  FeedCreatorsArguments,
-  PaginatedResponse,
-  ReactionType,
-} from '@edenlabs/eden-sdk'
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { ObjectId } from 'mongodb'
-import mongoose, { Mongoose, PipelineStage } from 'mongoose'
-
 import { conceptExportPermissionCheck } from '../lib/authorization'
 import { getSimilarCreationIds } from '../lib/similar'
 import { Character, CharacterDocument } from '../models/Character'
@@ -28,6 +16,17 @@ import {
   getBookmarks as getCreationBookmarks,
   getReactions as getCreationReactions,
 } from './creationsController'
+import {
+  FeedCharactersArguments,
+  FeedConceptsArguments,
+  FeedCreationsArguments,
+  FeedCreatorsArguments,
+  PaginatedResponse,
+  ReactionType,
+} from '@edenlabs/eden-sdk'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
+import mongoose, { Mongoose, PipelineStage } from 'mongoose'
 
 const aggregateCreationsByFollowerId = (
   followerId: ObjectId,
@@ -636,7 +635,6 @@ export const getConceptsFeed = async (
   })
 
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
-  console.log({ count: concepts?.docs?.length, docs: concepts.docs })
   // @ts-ignore
   concepts.docs = concepts.docs.map(concept => {
     // @ts-ignore
@@ -790,15 +788,12 @@ export const getCharactersFeed = async (
       ...sortFilter,
       deleted: { $ne: true },
     })
-    console.log(JSON.stringify(aggregate))
     const sortObj = Object.fromEntries(sort)
-    console.log(sortObj)
     characters = await characterRepo.aggregateQuery(aggregate, {
       limit,
       page,
       sort: sortObj,
     })
-    console.log(characters)
     // use flat query
   } else {
     characters = await characterRepo.query(
@@ -903,11 +898,6 @@ export const getCreatorsFeed = async (
       sort: sortObj,
     })
   } else {
-    console.log(sortFilter ? sortFilter : {}, {
-      limit,
-      page,
-      sort,
-    })
     creators = await creatorsRepository.query(
       {},
       {
