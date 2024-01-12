@@ -1,3 +1,7 @@
+import '@/styles/globals.scss'
+import 'antd/dist/reset.css'
+
+import { Page } from '../../types/page'
 import ErrorBoundary from '@/ErrorBoundary'
 import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
 import PasswordProtection from '@/components/PasswordProtection'
@@ -9,15 +13,11 @@ import MUIConfigWrapProvider from '@/providers/MUIConfigWrapProvider'
 import MasonryProvider from '@/providers/MasonryProvider'
 import ModalProvider from '@/providers/ModalProvider'
 import UserProvider from '@/providers/UserProvider'
-import '@/styles/globals.scss'
-import 'antd/dist/reset.css'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
 import { Inter } from 'next/font/google'
 import Head from 'next/head'
 import { ReactElement } from 'react'
-
-import { Page } from '../../types/page'
 
 type Props = AppProps & {
   Component: Page
