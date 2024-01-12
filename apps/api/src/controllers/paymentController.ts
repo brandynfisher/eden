@@ -1,3 +1,5 @@
+import { getAdminHeaders } from '../lib/util'
+import { User, UserDocument } from '../models/Creator'
 import {
   PaymentsCreateArguments,
   PaymentsSubscriptionArguments,
@@ -6,9 +8,6 @@ import {
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import Stripe from 'stripe'
-
-import { getAdminHeaders } from '../lib/util'
-import { User, UserDocument } from '../models/Creator'
 
 interface StripeDataObject {
   userId: string
@@ -45,8 +44,8 @@ const mannaTierMap = (subscriptionTier?: SubscriptionTier) => {
   const map = {
     [SubscriptionTier.Free]: 0,
     [SubscriptionTier.Basic]: 1000,
-    [SubscriptionTier.Pro]: 3500,
-    [SubscriptionTier.Believer]: 7500,
+    [SubscriptionTier.Pro]: 5000,
+    [SubscriptionTier.Believer]: 10000,
   }
   return map[subscriptionTier || SubscriptionTier.Free]
 }
