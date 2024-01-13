@@ -91,7 +91,7 @@ const ImageGallery = ({ images }: { images: string[] }) => {
     setProbedImageUrls(undefined)
   }, [images])
   return (
-    <div className="self-start max-w-sm lg:mx-0 mx-auto mb-4 lg:mx-0 w-full">
+    <div className="self-start max-w-sm mx-auto mb-4 lg:mx-0 w-full">
       <h3>Training Images</h3>
       <div className="relative overflow-hidden max-w-full">
         {probedImageUrls && (
