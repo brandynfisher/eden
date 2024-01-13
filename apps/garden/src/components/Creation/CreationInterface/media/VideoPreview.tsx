@@ -36,7 +36,7 @@ const VideoPreview = ({
       />
       {hovered && (
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-          <VideoResult resultUrl={creation.uri || ''} disableControls />
+          <VideoResult src={creation.uri || ''} disableControls />
         </div>
       )}
       <div
