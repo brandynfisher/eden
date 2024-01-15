@@ -13,6 +13,7 @@ import conceptParameters from './generators/concept.js'
 import controlnetParameters from './generators/controlnet.js'
 import createParameters from './generators/create.js'
 import dialogueParameters from './generators/dialogue.js'
+import storyParameters from './generators/story.js'
 import interpolateParameters from './generators/interpolate.js'
 import interrogateParameters from './generators/interrogate.js'
 import monologueParameters from './generators/monologue.js'
@@ -308,6 +309,14 @@ async function updateVersion(db) {
       isDeprecated: false,
     }
 
+    const storyVersion = {
+      provider: 'scenarioRunner',
+      address: 'eden/story',
+      versionId: versionId,
+      parameters: storyParameters,
+      isDeprecated: false,
+    }
+
     await db
       .collection('generators')
       .updateOne(
@@ -320,6 +329,13 @@ async function updateVersion(db) {
       .updateOne(
         { generatorName: 'dialogue' },
         { $addToSet: { versions: dialogueVersion } },
+      )
+
+    await db
+      .collection('generators')
+      .updateOne(
+        { generatorName: 'story' },
+        { $addToSet: { versions: storyVersion } },
       )
   }
 

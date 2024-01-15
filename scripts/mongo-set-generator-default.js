@@ -73,7 +73,7 @@ async function updateDefaultVersion(db) {
     'interpolate', 'real2real', 'real2real_audio'
   ];
   const scenario_runner_generators = [
-    'monologue', 'dialogue',
+    'monologue', 'dialogue', 'story',
   ];
   const comfyui_generators = [
     'txt2vid', 'img2vid', 'makeitrad', 'vid2vid', 'upscale',
