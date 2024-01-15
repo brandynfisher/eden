@@ -115,6 +115,7 @@ const AddToCollectionModal = ({
               {showForm ? (
                 <div>
                   <TextField
+                    autoFocus={true}
                     size="small"
                     id="standard-basic"
                     label="Name"

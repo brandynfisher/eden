@@ -45,7 +45,7 @@ const CharacterList = ({ characters }: { characters: Character[] }) => {
   return (
     <div className="flex flex-col gap-4">
       {characters && characters.length ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 space-x-4 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
           {characters.map(character => (
             <MyCharacterCard key={character._id} character={character} />
           ))}

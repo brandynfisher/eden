@@ -1,5 +1,7 @@
 import { CardData } from '@/components/Card/Card'
+import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
+import ChannelDetailsModal from '@/components/Modals/ChannelDetailsModal'
 import DetailModal from '@/components/Modals/DetailModal'
 import DetailStaticModal from '@/components/Modals/DetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
@@ -33,6 +35,7 @@ import React, {
 
 export enum MODAL_TYPES {
   DETAIL_MODAL = 'DETAIL_MODAL',
+  CHANNEL_DETAIL_MODAL = 'CHANNEL_DETAIL_MODAL',
   DETAIL_STATIC_MODAL = 'DETAIL_STATIC_MODAL',
   COLLECTION_ADD_CREATION_MODAL = 'COLLECTION_ADD_CREATION_MODAL',
   CONCEPT_SELECT_MODAL = 'CONCEPT_SELECT_MODAL',
@@ -48,6 +51,7 @@ export enum MODAL_TYPES {
 type GenericModalParams = unknown
 const MODAL_COMPONENTS: { [key: string]: GenericModalParams } = {
   [MODAL_TYPES.DETAIL_MODAL]: DetailModal,
+  [MODAL_TYPES.CHANNEL_DETAIL_MODAL]: ChannelDetailsModal,
   [MODAL_TYPES.DETAIL_STATIC_MODAL]: DetailStaticModal,
   [MODAL_TYPES.COLLECTION_ADD_CREATION_MODAL]: AddToCollectionModal,
   [MODAL_TYPES.CONCEPT_SELECT_MODAL]: SelectConceptModal,
@@ -85,6 +89,14 @@ export type ConceptSelectModalProps = Partial<
 export type CharacterSelectModalProps = Partial<
   BaseModalProps & {
     onChange: (item: Character) => void
+  }
+>
+
+export type ChannelDetailsModalProps = Partial<
+  BaseModalProps & {
+    label: string
+    itemType: ItemType
+    orderBy: OrderByParam
   }
 >
 
@@ -127,6 +139,7 @@ type ModalStore = {
   modalProps?:
     | DetailStaticModalProps
     | DetailModalProps
+    | ChannelDetailsModalProps
     | AddToCollectionModalProps
     | GeneratorSelectModalProps
     | ConceptSelectModalProps

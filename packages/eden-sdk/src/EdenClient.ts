@@ -1,7 +1,3 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import EventSourcePolyfill from 'event-source-polyfill'
-import { TasksCreateArguments } from 'src/models'
-
 import { Methods } from './methods'
 import {
   TaskUpdateEvent,
@@ -9,6 +5,9 @@ import {
   WebAPICallResult,
   WebClientOptions,
 } from './types'
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import EventSourcePolyfill from 'event-source-polyfill'
+import { TasksCreateArguments } from 'src/models'
 
 const NodeEventSource = require('eventsource')
 
@@ -68,18 +67,22 @@ export class EdenClient extends Methods {
         let resolver
 
         eventSource.onmessage = event => {
-          const data = JSON.parse(event.data)
-          if (data.taskId === taskId) {
-            if (resolver) {
-              resolver({ value: data, done: false })
-              resolver = null
-            } else {
-              queue.push(data)
+          if (event && event.data) {
+            const data = JSON.parse(event.data)
+            if (data && data.taskId === taskId) {
+              if (resolver) {
+                resolver({ value: data, done: false })
+                resolver = null
+              } else {
+                queue.push(data)
+              }
             }
           }
         }
 
         eventSource.onerror = error => {
+          console.error('EventSource error:', error)
+          eventSource.close()
           if (resolver) {
             resolver(Promise.reject(error))
             resolver = null
@@ -100,6 +103,7 @@ export class EdenClient extends Methods {
           },
         }
       },
+      close: () => eventSource.close(),
     }
 
     return eventIterable
@@ -110,9 +114,19 @@ export class EdenClient extends Methods {
     const { taskId } = await this.tasks.create(args)
 
     // Subscribe to task updates
-    for await (const event of this.subscribe(taskId)) {
-      if (event.status === 'completed') {
-        return event.result
+    const subscription = this.subscribe(taskId)
+    try {
+      for await (const event of subscription) {
+        if (event.status === 'completed' || event.status === 'error') {
+          return event.result
+        }
+      }
+    } catch (error) {
+      console.error('Error during subscription:', error)
+    } finally {
+      // Close the subscription
+      if (subscription.close) {
+        subscription.close()
       }
     }
   }
