@@ -149,7 +149,7 @@ const ChannelDetailsModal = ({
 
     const timer = setTimeout(() => {
       handleNextItem()
-    }, 7000)
+    }, 12500)
 
     return () => {
       clearTimeout(timer)

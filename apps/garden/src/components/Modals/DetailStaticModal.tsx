@@ -27,7 +27,7 @@ const DetailStaticModal = ({
       await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     }
 
-    if (item) {
+    if (usesUrl && item) {
       // console.log('changing route', currentIndex)
       handleRouteChange()
     }

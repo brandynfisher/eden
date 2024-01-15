@@ -1,3 +1,4 @@
+import CharacterInfo from '../Characters/CharacterInfo'
 import { CardData } from '@/components/Card/Card'
 import CardDebugInfo from '@/components/Card/CardDebugInfo'
 import CardReactions from '@/components/Card/CardReactions'
@@ -8,7 +9,6 @@ import ConceptMedia from '@/components/Concept/ConceptDetail/ConceptMedia'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
 import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
-// import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
 import ModalMasonry from '@/components/Masonry/ModalMasonry'
@@ -31,8 +31,6 @@ import React, {
   useEffect,
   useState,
 } from 'react'
-
-import CharacterInfo from '../Characters/CharacterInfo'
 
 const getItemMediaUrl = (itemType: ItemType, item: Creation | Concept) => {
   if (itemType === 'creation') {
