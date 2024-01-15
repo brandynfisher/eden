@@ -16,7 +16,7 @@ import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getId } from '@/lib/modal'
-import { isImageUrl } from '@/lib/string'
+import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
@@ -38,6 +38,10 @@ const getItemMediaUrl = (itemType: ItemType, item: Creation | Concept) => {
   }
 
   return item.thumbnail || ''
+}
+
+const getItemMediaAttributes = (item: Creation) => {
+  return item.mediaAttributes
 }
 
 const Details = ({
@@ -94,15 +98,6 @@ const Details = ({
     <>
       <Head>
         <title>{`/${itemType} by ${item?.user?.username} | Garden of Eden`}</title>
-        {/*{itemType === 'creation' && isVideoUrl(item.uri) &&  (*/}
-        {/*  <>*/}
-        {/*    <meta property='og:type' content='video.other' />*/}
-        {/*    <meta*/}
-        {/*      property='og:video:duration'*/}
-        {/*      content={String(item.mediaAttributes.duration)}*/}
-        {/*    />*/}
-        {/*  </>*/}
-        {/*)}*/}
         <meta
           property="og:title"
           key="title"
@@ -123,22 +118,52 @@ const Details = ({
           </>
         ) : (
           <>
-            <meta
-              property="og:image"
-              content={getItemMediaUrl(itemType, item as Creation | Concept)}
-              key="image"
-            />
-            <meta
-              property="og:image:secure_url"
-              content={getItemMediaUrl(itemType, item as Creation | Concept)}
-            />
+            {itemType === 'creation' &&
+            isVideoUrl(getItemMediaUrl(itemType, item as Creation)) ? (
+              <>
+                <meta
+                  property="og:video"
+                  content={getItemMediaUrl(itemType, item as Creation)}
+                />
+                <meta property="og:type" content="video.other" />
+                <meta
+                  property="og:video:secure_url"
+                  content={getItemMediaUrl(itemType, item as Creation)}
+                />
+                <meta property="og:video:type" content="video/mp4" />
+                <meta
+                  property="og:video:duration"
+                  content={String(
+                    getItemMediaAttributes(item as Creation).duration,
+                  )}
+                />
+              </>
+            ) : (
+              <>
+                <meta
+                  property="og:image:alt"
+                  content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
+                />
+                <meta property="og:image:type" content="image/jpeg" />
+                <meta
+                  property="og:image"
+                  content={getItemMediaUrl(
+                    itemType,
+                    item as Creation | Concept,
+                  )}
+                  key="image"
+                />
+                <meta
+                  property="og:image:secure_url"
+                  content={getItemMediaUrl(
+                    itemType,
+                    item as Creation | Concept,
+                  )}
+                />
+              </>
+            )}
           </>
         )}
-        <meta
-          property="og:image:alt"
-          content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
-        />
-        <meta property="og:image:type" content="image/jpeg" />
         <meta
           property="og:url"
           content={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
