@@ -13,8 +13,8 @@ const params = [
   {
     name: 'denoise_strength',
     label: 'Creativity strength',
-    description: 'High values (0.4-0.7) will give the upscale more freedom to invent new details, low values (0.2-0.3) will keep the upscale closer to the original image',
-    default: 0.4,
+    description: 'High values (0.5-0.7) will give the upscale more freedom to invent new details, low values (0.2-0.4) will keep the upscale closer to the original image',
+    default: 0.45,
     minimum: 0.1,
     maximum: 1.0,
     step: 0.05,
