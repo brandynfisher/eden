@@ -24,7 +24,7 @@ const params = [
   {
     name: 'controlnet_type',
     label: 'Control mode',
-    description: 'Which ControlNet mode to use. canny-edge will maintain lines and edges (good for faces). Luminance will maintain dark and bright regions (good for colors). Depth will try to maintain perceived depth.',
+    description: 'Which ControlNet mode to use. canny-edge will maintain lines and edges (good for faces or subtle details). Luminance will maintain dark and bright regions (good for colors). Depth will try to maintain the perceived depth in the image.',
     default: 'luminance',
     allowedValues: ["luminance", "canny-edge", "depth"],
   },
