@@ -1,3 +1,5 @@
+import { Page } from '../../../../types/page'
+import { CollectionHeadTags } from '@/components/HeadTags'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
@@ -7,10 +9,10 @@ import { Collection as CollectionType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
 import React from 'react'
 
-import { Page } from '../../../../types/page'
-
 interface PageProps {
-  data: CollectionType
+  data: {
+    collection: CollectionType
+  }
   error?: string
 }
 
@@ -31,7 +33,12 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const Collection: Page<PageProps> = ({ data }: PageProps) => {
-  return <CollectionPage data={data} />
+  return (
+    <>
+      <CollectionHeadTags collection={data.collection} />
+      <CollectionPage data={data.collection} />
+    </>
+  )
 }
 
 export default Collection

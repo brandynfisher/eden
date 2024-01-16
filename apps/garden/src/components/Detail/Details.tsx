@@ -11,18 +11,18 @@ import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
 import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
+import { getItemMediaUrl } from '@/components/HeadTags'
 import ModalMasonry from '@/components/Masonry/ModalMasonry'
 import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { CONFIG } from '@/lib/config'
 import { getId } from '@/lib/modal'
-import { isImageUrl, isVideoUrl } from '@/lib/string'
+import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
-import Head from 'next/head'
 import { useRouter } from 'next/router'
 import React, {
   Dispatch,
@@ -31,18 +31,6 @@ import React, {
   useEffect,
   useState,
 } from 'react'
-
-const getItemMediaUrl = (itemType: ItemType, item: Creation | Concept) => {
-  if (itemType === 'creation') {
-    return item.uri
-  }
-
-  return item.thumbnail || ''
-}
-
-const getItemMediaAttributes = (item: Creation) => {
-  return item.mediaAttributes
-}
 
 const Details = ({
   item,
@@ -96,80 +84,6 @@ const Details = ({
 
   return (
     <>
-      <Head>
-        <title>{`/${itemType} by ${item?.user?.username} | Garden of Eden`}</title>
-        <meta
-          property="og:title"
-          key="title"
-          content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
-        />
-        <meta property="og:description" content={item.name} key="description" />
-        {itemType === 'character' ? (
-          <>
-            <meta
-              property="og:image"
-              content={(item as Character).image}
-              key="image"
-            />
-            <meta
-              property="og:image:secure_url"
-              content={(item as Character).image}
-            />
-          </>
-        ) : (
-          <>
-            {itemType === 'creation' &&
-            isVideoUrl(getItemMediaUrl(itemType, item as Creation)) ? (
-              <>
-                <meta
-                  property="og:video"
-                  content={getItemMediaUrl(itemType, item as Creation)}
-                />
-                <meta property="og:type" content="video.other" />
-                <meta
-                  property="og:video:secure_url"
-                  content={getItemMediaUrl(itemType, item as Creation)}
-                />
-                <meta property="og:video:type" content="video/mp4" />
-                <meta
-                  property="og:video:duration"
-                  content={String(
-                    getItemMediaAttributes(item as Creation).duration,
-                  )}
-                />
-              </>
-            ) : (
-              <>
-                <meta
-                  property="og:image:alt"
-                  content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
-                />
-                <meta property="og:image:type" content="image/jpeg" />
-                <meta
-                  property="og:image"
-                  content={getItemMediaUrl(
-                    itemType,
-                    item as Creation | Concept,
-                  )}
-                  key="image"
-                />
-                <meta
-                  property="og:image:secure_url"
-                  content={getItemMediaUrl(
-                    itemType,
-                    item as Creation | Concept,
-                  )}
-                />
-              </>
-            )}
-          </>
-        )}
-        <meta
-          property="og:url"
-          content={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-        />
-      </Head>
-
       {zoomedInImageUrl && (
         <ImageZoomPan
           imageUrl={zoomedInImageUrl}

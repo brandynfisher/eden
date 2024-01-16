@@ -1,14 +1,18 @@
 import { Page } from '@/../types/page'
+import { CreationHeadTags } from '@/components/HeadTags'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import CreationPage from '@/pages/creations/[id]/CreationPage'
-import { Creation as CreationType } from '@edenlabs/eden-sdk'
+import { Creation } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
+import React from 'react'
 
 interface PageProps {
-  data: CreationType
+  data: {
+    creation: Creation
+  }
   error?: string
 }
 
@@ -28,8 +32,13 @@ export const getServerSideProps = getServerSidePropsBase([
   },
 ])
 
-const Creation: Page<PageProps> = ({ data }: PageProps) => {
-  return <CreationPage data={data} />
+const creation: Page<PageProps> = ({ data }: PageProps) => {
+  return (
+    <>
+      <CreationHeadTags creation={data.creation} />
+      <CreationPage data={data.creation} />
+    </>
+  )
 }
 
-export default Creation
+export default creation

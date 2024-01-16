@@ -1,3 +1,5 @@
+import { Page } from '../../../../types/page'
+import { CharacterHeadTags } from '@/components/HeadTags'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
@@ -6,10 +8,10 @@ import CharacterPage from '@/pages/characters/[id]/CharacterPage'
 import { Character as CharacterType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
 
-import { Page } from '../../../../types/page'
-
 interface PageProps {
-  data: CharacterType
+  data: {
+    character: CharacterType
+  }
   error?: string
 }
 
@@ -30,7 +32,12 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const Character: Page<PageProps> = ({ data }: PageProps) => {
-  return <CharacterPage data={data} />
+  return (
+    <>
+      <CharacterHeadTags character={data.character} />
+      <CharacterPage data={data.character} />
+    </>
+  )
 }
 
 export default Character
