@@ -76,7 +76,7 @@ async function updateDefaultVersion(db) {
     'monologue', 'dialogue', 'story',
   ];
   const comfyui_generators = [
-    'txt2vid', 'img2vid', 'makeitrad', 'vid2vid', 'upscale', 'txt2img'
+    'txt2vid', 'img2vid', 'makeitrad', 'vid2vid', 'upscale', 
   ];
 
   if (cog === 'eden-sd-pipelines-sdxl') {
