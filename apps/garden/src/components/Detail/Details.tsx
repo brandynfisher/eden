@@ -1,3 +1,4 @@
+import CharacterInfo from '../Characters/CharacterInfo'
 import { CardData } from '@/components/Card/Card'
 import CardDebugInfo from '@/components/Card/CardDebugInfo'
 import CardReactions from '@/components/Card/CardReactions'
@@ -8,9 +9,9 @@ import ConceptMedia from '@/components/Concept/ConceptDetail/ConceptMedia'
 import CreationInfo from '@/components/Creation/CreationDetail/CreationInfo'
 import CreationMedia from '@/components/Creation/CreationDetail/CreationMedia'
 import CreationSamples from '@/components/Creation/CreationDetail/CreationSamples'
-// import SimilarCreations from '@/components/Creation/CreationDetail/SimilarCreations'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorSection from '@/components/Detail/CreatorSection'
+import { getItemMediaUrl } from '@/components/HeadTags'
 import ModalMasonry from '@/components/Masonry/ModalMasonry'
 import MediaDisplay from '@/components/MediaDisplay'
 import TruncatedExpandableText from '@/components/TruncatedExpandableText'
@@ -22,7 +23,6 @@ import { UserContext } from '@/providers/UserProvider'
 import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
-import Head from 'next/head'
 import { useRouter } from 'next/router'
 import React, {
   Dispatch,
@@ -31,16 +31,6 @@ import React, {
   useEffect,
   useState,
 } from 'react'
-
-import CharacterInfo from '../Characters/CharacterInfo'
-
-const getItemMediaUrl = (itemType: ItemType, item: Creation | Concept) => {
-  if (itemType === 'creation') {
-    return item.uri
-  }
-
-  return item.thumbnail || ''
-}
 
 const Details = ({
   item,
@@ -94,59 +84,6 @@ const Details = ({
 
   return (
     <>
-      <Head>
-        <title>{`/${itemType} by ${item?.user?.username} | Garden of Eden`}</title>
-        {/*{itemType === 'creation' && isVideoUrl(item.uri) &&  (*/}
-        {/*  <>*/}
-        {/*    <meta property='og:type' content='video.other' />*/}
-        {/*    <meta*/}
-        {/*      property='og:video:duration'*/}
-        {/*      content={String(item.mediaAttributes.duration)}*/}
-        {/*    />*/}
-        {/*  </>*/}
-        {/*)}*/}
-        <meta
-          property="og:title"
-          key="title"
-          content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
-        />
-        <meta property="og:description" content={item.name} key="description" />
-        {itemType === 'character' ? (
-          <>
-            <meta
-              property="og:image"
-              content={(item as Character).image}
-              key="image"
-            />
-            <meta
-              property="og:image:secure_url"
-              content={(item as Character).image}
-            />
-          </>
-        ) : (
-          <>
-            <meta
-              property="og:image"
-              content={getItemMediaUrl(itemType, item as Creation | Concept)}
-              key="image"
-            />
-            <meta
-              property="og:image:secure_url"
-              content={getItemMediaUrl(itemType, item as Creation | Concept)}
-            />
-          </>
-        )}
-        <meta
-          property="og:image:alt"
-          content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
-        />
-        <meta property="og:image:type" content="image/jpeg" />
-        <meta
-          property="og:url"
-          content={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
-        />
-      </Head>
-
       {zoomedInImageUrl && (
         <ImageZoomPan
           imageUrl={zoomedInImageUrl}

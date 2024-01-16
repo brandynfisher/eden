@@ -1,4 +1,5 @@
 import { Page } from '@/../types/page'
+import { ConceptHeadTags } from '@/components/HeadTags'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
@@ -6,6 +7,7 @@ import { getServerSidePropsBase } from '@/lib/ssr'
 import ConceptPage from '@/pages/concepts/[id]/ConceptPage'
 import { Concept as ConceptType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
+import React from 'react'
 
 interface PageProps {
   data: { concept: ConceptType }
@@ -29,7 +31,12 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const Concept: Page<PageProps> = ({ data }: PageProps) => {
-  return <ConceptPage data={data} />
+  return (
+    <>
+      <ConceptHeadTags concept={data.concept} />
+      <ConceptPage data={data} />
+    </>
+  )
 }
 
 export default Concept

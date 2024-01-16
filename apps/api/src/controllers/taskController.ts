@@ -1,13 +1,4 @@
 import {
-  TasksCreateArguments,
-  TasksGetArguments,
-  TasksListArguments,
-} from '@edenlabs/eden-sdk'
-import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
-import { on } from 'events'
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-
-import {
   maximumTasksInProgressPermissionCheck,
   taskPrivacyPermissionCheck,
 } from '../lib/authorization'
@@ -26,6 +17,14 @@ import { Manna } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
 import TaskRepository from '../repositories/TaskRepository'
+import {
+  TasksCreateArguments,
+  TasksGetArguments,
+  TasksListArguments,
+} from '@edenlabs/eden-sdk'
+import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
+import { on } from 'events'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 const getGeneratorVersion = (
   generator: GeneratorDocument,
@@ -82,7 +81,6 @@ export const getTaskCost = async (
 
   // use versionId if provided else latest
   const generatorVersion = getGeneratorVersion(generator, versionId)
-  console.log(`generatorVersion: ${generatorVersion?.versionId}`)
   if (!generatorVersion) {
     return reply.status(400).send({
       message: 'Generator version not found',
@@ -346,14 +344,11 @@ export const subscribeTaskUpdates = async (
   const { taskId } = request.query as {
     taskId?: string
   }
-  console.log(`Subscribing to task updates for user ${userId}`)
 
   reply.sse(
     (async function* () {
       for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
         const taskUpdate = event as TaskUpdateEvent
-        console.log(`Received task update for task ${taskUpdate.taskId}`)
-        console.log(`Task update: ${event}`)
         if (
           taskUpdate.userId.toString() === userId.toString() &&
           (!taskId || taskUpdate.taskId === taskId)

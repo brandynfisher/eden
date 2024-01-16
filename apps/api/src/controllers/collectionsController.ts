@@ -1,3 +1,10 @@
+import { creationPrivacyPermissionCheck } from '../lib/authorization'
+import { Collection } from '../models/Collection'
+import { Concept } from '../models/Concept'
+import { Creation } from '../models/Creation'
+import { User } from '../models/Creator'
+import CollectionRepository from '../repositories/CollectionRepository'
+import CreatorRepository from '../repositories/CreatorRepository'
 import {
   CollectionsAddCreationsArguments,
   CollectionsCreateArguments,
@@ -12,14 +19,6 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { PipelineStage } from 'mongoose'
-
-import { creationPrivacyPermissionCheck } from '../lib/authorization'
-import { Collection } from '../models/Collection'
-import { Concept } from '../models/Concept'
-import { Creation } from '../models/Creation'
-import { User } from '../models/Creator'
-import CollectionRepository from '../repositories/CollectionRepository'
-import CreatorRepository from '../repositories/CreatorRepository'
 
 const getDefaultCollection = async (user: ObjectId) => {
   let collection = await Collection.findOne({ isDefaultCollection: true, user })
@@ -157,19 +156,6 @@ export const listCollections = async (
           },
         )
 
-  console.log(
-    {
-      user: userId && creators.docs ? creators.docs[0]._id : undefined,
-    },
-    // {
-    //   limit,
-    //   page,
-    //   sort,
-    // },
-  )
-
-  console.log(collections)
-
   return reply.status(200).send(collections)
 }
 
@@ -246,8 +232,6 @@ export const updateCollection = async (
   const { collectionId } = request.params as CollectionsUpdateArguments
   const { name, description, isPrivate, deleted } =
     request.body as CollectionsUpdateArguments
-
-  console.log({ userId, collectionId, params: request.params })
 
   if (
     !userId ||

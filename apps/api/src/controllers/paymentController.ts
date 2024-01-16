@@ -235,7 +235,6 @@ const handleSubscriptionUpdated = async (
     const secondsLeftInCurrentPeriod = current_period_end - currentDate
 
     const proration = secondsLeftInCurrentPeriod / totalSecondsInCurrentPeriod
-    console.log(`Proration: ${proration}`)
 
     await handleNewSubscription(server, reply, metadata, user, proration)
   } else {
