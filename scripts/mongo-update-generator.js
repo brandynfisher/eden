@@ -7,6 +7,7 @@ import blendParameters from './generators/blend.js'
 import comfyuiImg2VidParameters from './generators/comfy_img2vid.js'
 import comfyuiMakeitradParameters from './generators/comfy_makeitrad.js'
 import comfyuiTxt2VidParameters from './generators/comfy_txt2vid.js'
+import comfyuiTxt2ImgParameters from './generators/comfy_txt2img.js'
 import comfyuiUpscaleParameters from './generators/comfy_upscale.js'
 import comfyuiVid2VidParameters from './generators/comfy_vid2vid.js'
 import conceptParameters from './generators/concept.js'
@@ -248,6 +249,15 @@ async function updateVersion(db) {
       isDeprecated: false,
     }
 
+    const comfyuiTxt2ImgVersion = {
+      provider: 'replicate',
+      address: 'abraham-ai/eden-comfyui',
+      versionId: versionId,
+      parameters: comfyuiTxt2ImgParameters,
+      isDeprecated: false,
+    }
+    
+
     const comfyuiMakeitradVersion = {
       provider: 'replicate',
       address: 'abraham-ai/eden-comfyui',
@@ -283,6 +293,13 @@ async function updateVersion(db) {
         { generatorName: 'upscale' },
         { $addToSet: { versions: comfyuiUpscaleVersion } },
       )
+        
+    await db
+    .collection('generators')
+    .updateOne(
+      { generatorName: 'txt2img' },
+      { $addToSet: { versions: comfyuiTxt2ImgVersion } },
+    )
 
     await db
       .collection('generators')
