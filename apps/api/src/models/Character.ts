@@ -1,5 +1,4 @@
 import { VisibilitySchema } from '../types/baseSchemas'
-import { CharacterVersionDocument } from './CharacterVersion'
 import { UserDocument } from './Creator'
 import { Capabilities, LogosData } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
@@ -13,11 +12,19 @@ import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
 import slug from 'mongoose-slug-plugin'
 
+interface ChatSchema {
+  sender: string
+  message: string[]
+}
 export interface CharacterSchema extends VisibilitySchema {
   user: UserDocument
   name: string
   slug: string
-  versions: CharacterVersionDocument[]
+  greeting?: string
+  dialogue?: ChatSchema[]
+  logosData?: LogosData
+  image?: string
+  voice?: string
   creationCount?: number
   praiseCount?: number
   bookmarkCount?: number
@@ -53,12 +60,52 @@ const character = new Schema<CharacterDocument>(
       maxlength: 80,
     },
     slug: { type: String, unique: true },
-    versions: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'characterVersions',
+    greeting: {
+      type: String,
+      maxlength: 1000,
+    },
+    dialogue: {
+      type: Array,
+      required: false,
+    },
+    logosData: {
+      type: {
+        capabilities: {
+          type: Array,
+          values: Object.values(Capabilities),
+          required: false,
+        },
+        identity: {
+          type: String,
+          maxlength: 9999,
+          required: false,
+        },
+        knowledge: {
+          type: String,
+          maxlength: 99990,
+          required: false,
+        },
+        knowledgeSummary: {
+          type: String,
+          maxlength: 99999,
+          required: false,
+        },
+        concept: {
+          type: String,
+          maxlength: 1000,
+          required: false,
+        },
       },
-    ],
+      required: false,
+    },
+    image: {
+      type: String,
+      required: false,
+    },
+    voice: {
+      type: String,
+      required: false,
+    },
     creationCount: {
       type: Number,
       default: 0,
