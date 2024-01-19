@@ -27,7 +27,7 @@ const allowedCogs = [
   'eden-sd-pipelines-sdxl-video',
   'character',
   'sdxl-lora-trainer',
-  'scenarioRunner',
+  'logos',
   'eden-comfyui',
 ]
 
@@ -292,9 +292,9 @@ async function updateVersion(db) {
         { $addToSet: { versions: comfyuiMakeitradVersion } },
       )
   
-  } else if (cog === 'scenarioRunner') {
+  } else if (cog === 'logos') {
     const monologueVersion = {
-      provider: 'scenarioRunner',
+      provider: 'logos',
       address: 'eden/monologue',
       versionId: versionId,
       parameters: monologueParameters,
@@ -302,7 +302,7 @@ async function updateVersion(db) {
     }
 
     const dialogueVersion = {
-      provider: 'scenarioRunner',
+      provider: 'logos',
       address: 'eden/dialogue',
       versionId: versionId,
       parameters: dialogueParameters,
@@ -310,7 +310,7 @@ async function updateVersion(db) {
     }
 
     const storyVersion = {
-      provider: 'scenarioRunner',
+      provider: 'logos',
       address: 'eden/story',
       versionId: versionId,
       parameters: storyParameters,
