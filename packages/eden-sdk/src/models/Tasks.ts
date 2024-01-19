@@ -1,5 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
-
 import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
@@ -8,6 +6,7 @@ import {
   WebAPICallResult,
 } from '../types'
 import { Generator } from './Generators'
+import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
@@ -16,7 +15,6 @@ export interface TasksCreateArguments extends WebAPICallOptions {
   versionId?: string
   config?: any
   metadata?: any
-  webhooks?: string[]
   attributes?: TaskAttributes
 }
 
