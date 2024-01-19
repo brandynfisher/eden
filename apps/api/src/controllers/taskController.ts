@@ -348,6 +348,7 @@ export const subscribeTaskUpdates = async (
     (async function* () {
       const keepAliveTimer = setInterval(() => {
         // keep the connection alive.
+        reply.sse({ event: 'keep-alive', data: '' })
       }, 15000) // Send a keep-alive every 15 seconds
 
       try {
