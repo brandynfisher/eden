@@ -25,6 +25,7 @@
     "@mantine/hooks": "^6.0.13",
     "@mui/icons-material": "^5.14.3",
     "@mui/material": "^5.14.3",
+    "@next/third-parties": "^14.1.0",
     "@sentry/nextjs": "^7.68.0",
     "antd": "^5.5.1",
     "autoprefixer": "10.4.14",
