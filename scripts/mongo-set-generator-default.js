@@ -8,7 +8,7 @@ const allowedCogs = [
   "character",
   "sdxl-lora-trainer",
   "zeroscope-v2-xl",
-  "scenarioRunner",
+  "logos",
   "eden-comfyui"
 ]
 
@@ -116,7 +116,7 @@ async function updateDefaultVersion(db) {
       versionId
     )
   }
-  else if (cog === 'scenarioRunner') {
+  else if (cog === 'logos') {
     for (const generatorName of scenario_runner_generators) {
       handleUpdateResult(
         await db.collection('generators').updateOne(
