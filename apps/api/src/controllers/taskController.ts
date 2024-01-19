@@ -106,7 +106,7 @@ export const createTask = async (
   reply: FastifyReply,
 ) => {
   const { userId, character } = request.user
-  const { generatorName, versionId, config, webhooks, attributes } =
+  const { generatorName, versionId, config, attributes } =
     request.body as TasksCreateArguments
 
   if (taskPrivacyPermissionCheck(request)) {
@@ -205,7 +205,6 @@ export const createTask = async (
     generator: generator._id,
     versionId: generatorVersion.versionId,
     config: preparedConfig,
-    webhooks,
     attributes,
     cost,
   }

@@ -1,6 +1,3 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   createTask,
@@ -12,6 +9,8 @@ import {
 } from '../controllers/taskController'
 import { isAuth } from '../middleware/authMiddleware'
 import { configType } from '../types/routeTypes'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const taskRoutes: FastifyPluginAsync = async server => {
   server.post('/tasks/cost', {
@@ -53,7 +52,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),
         config: Type.Optional(configType),
-        webhooks: Type.Optional(Type.Array(Type.String())),
       },
       response: {
         200: Type.Object({
