@@ -1,3 +1,5 @@
+import { VisibilitySchema } from '../types/baseSchemas'
+import { UserDocument } from './Creator'
 import { Capabilities, LogosData } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
@@ -9,9 +11,6 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
 import slug from 'mongoose-slug-plugin'
-
-import { VisibilitySchema } from '../types/baseSchemas'
-import { UserDocument } from './Creator'
 
 interface ChatSchema {
   sender: string

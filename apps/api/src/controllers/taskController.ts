@@ -347,17 +347,25 @@ export const subscribeTaskUpdates = async (
 
   reply.sse(
     (async function* () {
-      for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
-        const taskUpdate = event as TaskUpdateEvent
-        if (
-          taskUpdate.userId.toString() === userId.toString() &&
-          (!taskId || taskUpdate.taskId === taskId)
-        ) {
-          yield {
-            event: event.name,
-            data: JSON.stringify(event),
+      const keepAliveTimer = setInterval(() => {
+        // keep the connection alive.
+      }, 15000) // Send a keep-alive every 15 seconds
+
+      try {
+        for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
+          const taskUpdate = event as TaskUpdateEvent
+          if (
+            taskUpdate.userId.toString() === userId.toString() &&
+            (!taskId || taskUpdate.taskId === taskId)
+          ) {
+            yield {
+              event: event.name,
+              data: JSON.stringify(event),
+            }
           }
         }
+      } finally {
+        clearInterval(keepAliveTimer)
       }
     })(),
   )
