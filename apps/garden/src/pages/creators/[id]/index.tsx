@@ -1,3 +1,5 @@
+import { Page } from '../../../../types/page'
+import { CreatorHeadTags } from '@/components/HeadTags'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
@@ -6,10 +8,10 @@ import CreatorPage from '@/pages/creators/[id]/CreatorPage'
 import { Creator as CreatorType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
 
-import { Page } from '../../../../types/page'
-
 interface PageProps {
-  data: CreatorType
+  data: {
+    creator: CreatorType
+  }
   error?: string
 }
 
@@ -30,7 +32,12 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const Creator: Page<PageProps> = ({ data }: PageProps) => {
-  return <CreatorPage data={data} />
+  return (
+    <>
+      <CreatorHeadTags creator={data.creator} />
+      <CreatorPage data={data.creator} />
+    </>
+  )
 }
 
 export default Creator
