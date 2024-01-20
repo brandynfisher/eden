@@ -1,14 +1,3 @@
-import {
-  CharactersCreateArguments,
-  CharactersDeleteArguments,
-  CharactersGetArguments,
-  CharactersListArguments,
-  CharactersTestArguments,
-  CharactersUpdateArguments,
-} from '@edenlabs/eden-sdk'
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { ObjectId } from 'mongodb'
-
 import { characterPrivacyPermissionCheck } from '../lib/authorization'
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
@@ -17,6 +6,17 @@ import ApiKeyRepository from '../repositories/ApiKeyRepository'
 import CharacterRepository from '../repositories/CharacterRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 import { generateApiKey } from './apiKeyController'
+import {
+  CharactersCreateArguments,
+  CharactersDeleteArguments,
+  CharactersGetArguments,
+  CharactersListArguments,
+  CharactersTestArguments,
+  CharactersUpdateArguments,
+  SessionsInteractArguments,
+} from '@edenlabs/eden-sdk'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 const findCharacterByIdOrSlug = async (id: string) => {
   const lowerCaseId = id.toLowerCase()
@@ -289,6 +289,35 @@ export const testCharacter = async (
   const args = request.body as CharactersTestArguments
 
   const { message, config } = await server.handleInteractionTest(server, args)
+
+  reply.status(200).send({
+    message,
+    config,
+  })
+}
+
+export const interactCharacter = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const args = request.body as SessionsInteractArguments
+  const { character_id } = args
+  const character = await Character.findById(character_id)
+
+  if (!character) {
+    return reply.status(404).send({
+      message: 'Character not found',
+    })
+  }
+
+  if (character.user.toString() !== request.user?.userId.toString()) {
+    return reply.status(401).send({
+      message: 'You may not interact with this character',
+    })
+  }
+
+  const { message, config } = await server.handleInteraction(server, args)
 
   reply.status(200).send({
     message,
