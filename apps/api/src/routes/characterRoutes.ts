@@ -259,7 +259,10 @@ const characterRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    preHandler: [
+      (request, reply) => isAuth(server, request, reply),
+      (request, reply) => characterRoutePreHandler(request, reply),
+    ],
     handler: (request, reply) => testCharacter(server, request, reply),
   })
 
