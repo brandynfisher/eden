@@ -102,7 +102,7 @@ const getTransactionCost = (
   generatorVersion: any,
   config: any,
 ) => {
-  if (generatorVersion.output === 'concept') {
+  if (generator.output === 'concept') {
     return 75
   }
 
