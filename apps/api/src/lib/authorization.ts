@@ -1,3 +1,5 @@
+import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
+import { Task, TaskStatus } from '../models/Task'
 import {
   CharactersUpdateArguments,
   ConceptsUpdateArguments,
@@ -6,9 +8,6 @@ import {
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
-
-import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
-import { Task, TaskStatus } from '../models/Task'
 
 export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,

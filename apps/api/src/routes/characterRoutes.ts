@@ -1,12 +1,9 @@
-import { Capabilities } from '@edenlabs/eden-sdk'
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   createCharacter,
   deleteCharacter,
   getCharacter,
+  interactCharacter,
   listCharacters,
   testCharacter,
   updateCharacter,
@@ -20,6 +17,9 @@ import {
   maybeAuth,
 } from '../middleware/authMiddleware'
 import { configType } from '../types/routeTypes'
+import { Capabilities } from '@edenlabs/eden-sdk'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const logosType = Type.Optional(
   Type.Object({
@@ -259,8 +259,36 @@ const characterRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    preHandler: [
+      (request, reply) => isAuth(server, request, reply),
+      (request, reply) => characterRoutePreHandler(request, reply),
+    ],
     handler: (request, reply) => testCharacter(server, request, reply),
+  })
+
+  server.post('/characters/interact', {
+    schema: {
+      tags: ['Characters'],
+      description: 'Interact with a character',
+      hide: true,
+      body: {
+        character_id: Type.String(),
+        session_id: Type.String(),
+        message: Type.String(),
+        attachments: Type.Optional(Type.Array(Type.String())),
+      },
+      response: {
+        200: Type.Object({
+          message: Type.String(),
+          config: Type.Optional(Type.Any()),
+        }),
+      },
+    },
+    preHandler: [
+      (request, reply) => isAuth(server, request, reply),
+      (request, reply) => characterRoutePreHandler(request, reply),
+    ],
+    handler: (request, reply) => interactCharacter(server, request, reply),
   })
 
   server.post('/characters/tasks/create', {

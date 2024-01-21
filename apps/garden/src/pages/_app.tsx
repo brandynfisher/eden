@@ -13,6 +13,7 @@ import MUIConfigWrapProvider from '@/providers/MUIConfigWrapProvider'
 import MasonryProvider from '@/providers/MasonryProvider'
 import ModalProvider from '@/providers/ModalProvider'
 import UserProvider from '@/providers/UserProvider'
+import { GoogleTagManager } from '@next/third-parties/google'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
 import { Inter } from 'next/font/google'
@@ -113,6 +114,9 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           </ThemeProvider>
         </main>
       </PasswordProtection>
+      {process.env.NODE_ENV === 'production' ? (
+        <GoogleTagManager gtmId="G-W4718WCZQK" />
+      ) : null}
     </>
   )
 }

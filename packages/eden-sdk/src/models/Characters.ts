@@ -1,6 +1,4 @@
 // packages/eden-sdk/src/methods/Characters.ts
-import { AxiosRequestConfig } from 'axios'
-
 import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
@@ -9,6 +7,7 @@ import {
   WebAPICallResult,
 } from '../types'
 import { Creator } from './Creators'
+import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
@@ -53,6 +52,13 @@ export interface CharactersTestArguments extends WebAPICallOptions {
   message: string
   knowledge?: string
   knowledge_summary?: string
+  attachments?: string[]
+}
+
+export interface CharactersInteractArguments extends WebAPICallOptions {
+  sessionId: string
+  characterId: string
+  message: string
   attachments?: string[]
 }
 
@@ -128,6 +134,18 @@ export const charactersTestRequestConfig = (
   }
 }
 
+export const charactersInteractRequestConfig = (
+  args: CharactersInteractArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'characters/interact',
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type CharactersCreateResponse = WebAPICallResult & {
@@ -156,6 +174,12 @@ export type CharactersGetResponse = WebAPICallResult & {
 }
 
 export type CharactersTestResponse = WebAPICallResult & {
+  error?: string
+  message?: string
+  config?: any
+}
+
+export type CharactersInteractResponse = WebAPICallResult & {
   error?: string
   message?: string
   config?: any

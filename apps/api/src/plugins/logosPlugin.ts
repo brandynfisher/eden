@@ -1,11 +1,10 @@
+import { LogosResponse } from './tasks'
 import {
   CharactersTestArguments,
   SessionsInteractArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import type { FastifyInstance } from 'fastify'
-
-import { LogosResponse } from './tasks'
 
 export interface LogosTestArguments {
   name: string
@@ -60,7 +59,7 @@ export const registerLogos = async (fastify: FastifyInstance) => {
     fastify.decorate('handleGeneratorRequest', handleGeneratorRequest)
     fastify.decorate('handleInteraction', handleInteraction)
     fastify.decorate('handleInteractionTest', handleInteractionTest)
-    fastify.log.info('Successfully registered playHtPlugin')
+    fastify.log.info('Successfully registered LogosPlugin')
   } catch (err) {
     console.log(err)
     fastify.log.error('Plugin: Logos, error on register', err)

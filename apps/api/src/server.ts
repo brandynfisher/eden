@@ -1,5 +1,3 @@
-import fastify, { FastifyRequest } from 'fastify'
-
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerAirflow from './plugins/airflowPlugin'
 import registerChroma from './plugins/chromaPlugin'
@@ -17,6 +15,7 @@ import registerSentry from './plugins/sentryPlugin'
 import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
 import { routes } from './routes'
+import fastify, { FastifyRequest } from 'fastify'
 
 export interface CreateServerOpts {
   mongoUri?: string
@@ -89,10 +88,6 @@ const createServer = async (
   await registerTaskHandlers(server, opts.taskHandlers)
   await registerStripe(server)
   await registerEventEmitter(server)
-
-  if (server.config.AIRFLOW_BASE_URL) {
-    await registerAirflow(server)
-  }
 
   if (server.config.MINIO_URI) {
     await registerMinio(server)
