@@ -1,8 +1,7 @@
-import { FastifyInstance } from 'fastify'
-import { ObjectId } from 'mongodb'
-
 import { Concept } from '../../models/Concept'
 import { GeneratorDocument } from '../../models/Generator'
+import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
@@ -103,7 +102,7 @@ const getTransactionCost = (
   generatorVersion: any,
   config: any,
 ) => {
-  if (generatorVersion.mode === 'concept') {
+  if (generatorVersion.output === 'concept') {
     return 75
   }
 
