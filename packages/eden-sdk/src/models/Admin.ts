@@ -1,12 +1,11 @@
-import { AxiosRequestConfig } from 'axios'
-import { ApiKey } from 'src/models/ApiKeys'
-
 import {
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../types'
+import { AxiosRequestConfig } from 'axios'
+import { ApiKey } from 'src/models/ApiKeys'
 
 export interface AdminMannaModifyArguments extends WebAPICallOptions {
   userId: string
@@ -28,6 +27,11 @@ export interface AdminMediaUploadArguments extends WebAPICallOptions {
 }
 
 export interface AdminConceptsExportToHFArguments extends WebAPICallOptions {
+  conceptId: string
+  userId: string
+}
+
+export interface AdminConceptsRemoveFromHFArguments extends WebAPICallOptions {
   conceptId: string
   userId: string
 }
@@ -102,6 +106,18 @@ export const adminConceptsExportToHFRequestConfig = (
   }
 }
 
+export const adminConceptsRemoveFromHFRequestConfig = (
+  args: AdminConceptsRemoveFromHFArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `admin/concepts/remove/hf`,
+    data: {
+      ...args,
+    },
+  }
+}
+
 export const adminApiKeysListRequestConfig = (
   args: AdminApiKeysListArguments,
 ): AxiosRequestConfig => {
@@ -140,6 +156,10 @@ export type AdminMediaUploadResponse = WebAPICallResult & {
 export type AdminConceptsExportToHFResponse = WebAPICallResult & {
   error?: string
   url?: string
+}
+
+export type AdminConceptsRemoveFromHFResponse = WebAPICallResult & {
+  error?: string
 }
 
 export type AdminApiKeysListResponse = WebAPICallResult &
