@@ -1,7 +1,3 @@
-import { ReactionType } from '@edenlabs/eden-sdk'
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   conceptDelete,
@@ -11,7 +7,10 @@ import {
   getConcept,
   listConcepts,
 } from '../controllers/conceptsController'
-import { isAdmin, isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { ReactionType } from '@edenlabs/eden-sdk'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const conceptRoutes: FastifyPluginAsync = async server => {
   server.get('/concepts', {

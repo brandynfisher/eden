@@ -1,4 +1,13 @@
 import {
+  conceptExportPermissionCheck,
+  conceptPrivacyPermissionCheck,
+} from '../lib/authorization'
+import { Concept, ConceptDocument } from '../models/Concept'
+import { User } from '../models/Creator'
+import { Reaction } from '../models/Reaction'
+import ConceptRepository from '../repositories/ConceptRepository'
+import CreatorRepository from '../repositories/CreatorRepository'
+import {
   AdminConceptsExportToHFArguments,
   ConceptsDeleteArguments,
   ConceptsGetArguments,
@@ -8,7 +17,7 @@ import {
   ConceptsUpdateArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
-import { createRepo, uploadFile } from '@huggingface/hub'
+import { createRepo, deleteRepo, uploadFile } from '@huggingface/hub'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { promises as fs } from 'fs'
@@ -16,16 +25,6 @@ import { readdir } from 'fs/promises'
 import { ObjectId } from 'mongodb'
 import { join } from 'path'
 import tar from 'tar'
-
-import {
-  conceptExportPermissionCheck,
-  conceptPrivacyPermissionCheck,
-} from '../lib/authorization'
-import { Concept, ConceptDocument } from '../models/Concept'
-import { User } from '../models/Creator'
-import { Reaction } from '../models/Reaction'
-import ConceptRepository from '../repositories/ConceptRepository'
-import CreatorRepository from '../repositories/CreatorRepository'
 
 const downloadAndUntar = async (conceptUri: string, outputDir: string) => {
   const response = await axios.get(conceptUri, { responseType: 'stream' })
@@ -395,6 +394,12 @@ export const conceptExportToHF = async (
     })
   }
 
+  if (!conceptExportPermissionCheck(request)) {
+    return reply.status(401).send({
+      message: 'You do not have permission to export concepts',
+    })
+  }
+
   if (!server.config.HF_TOKEN) {
     return reply.status(500).send({
       message: 'Missing HF_TOKEN in server config',
@@ -414,6 +419,7 @@ export const conceptExportToHF = async (
       message: 'You may only export your own concepts',
     })
   }
+
   const repo = `eden-art/${concept.name}`
   let repoUrl
   try {
@@ -436,6 +442,74 @@ export const conceptExportToHF = async (
   await downloadAndUntar(uri, dirPath)
   await uploadDirToHuggingFace(dirPath, repo, server.config.HF_TOKEN)
   await fs.rmdir(dirPath, { recursive: true })
+
+  await concept.updateOne({
+    $set: {
+      publishedUrl: repoUrl,
+    },
+  })
+
+  return reply.status(200).send({
+    url: repoUrl,
+  })
+}
+
+export const removeConceptFromHF = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId, conceptId } = request.body as AdminConceptsExportToHFArguments
+
+  const user = await User.findOne({ userId })
+  if (!user) {
+    return reply.status(404).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!server.config.HF_TOKEN) {
+    return reply.status(500).send({
+      message: 'Missing HF_TOKEN in server config',
+    })
+  }
+
+  const concept = await Concept.findById(conceptId)
+
+  if (!concept) {
+    return reply.status(404).send({
+      message: 'Concept not found',
+    })
+  }
+
+  if (concept.user.toString() !== user.id.toString()) {
+    return reply.status(401).send({
+      message: 'You may only export your own concepts',
+    })
+  }
+
+  const { publishedUrl } = concept
+  if (!publishedUrl) {
+    return reply.status(400).send({
+      message: 'Concept is not published on HuggingFace',
+    })
+  }
+
+  const parts = publishedUrl.split('/')
+  const repo = parts.slice(-2).join('/')
+  const repoUrl = `https://huggingface.co/${repo}`
+  await deleteRepo({
+    repo,
+    credentials: {
+      accessToken: server.config.HF_TOKEN as string,
+    },
+  })
+
+  await concept.updateOne({
+    $unset: {
+      publishedUrl: '',
+    },
+  })
 
   return reply.status(200).send({
     url: repoUrl,
