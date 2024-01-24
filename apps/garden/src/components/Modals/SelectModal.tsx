@@ -1,7 +1,5 @@
 'use client'
 
-import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByLatest,
@@ -46,7 +44,6 @@ const SelectModal = ({
 
   const modalContainerRef = useRef<HTMLDivElement | null>(null)
 
-  const ItemComponent = itemType === 'concept' ? ConceptCard : CharacterFeedCard
   const docsLinkUrl = `https://docs.eden.art/docs/guides/${itemType}s`
   const label = itemType === 'concept' ? 'Concept' : 'Character'
 
@@ -157,7 +154,6 @@ const SelectModal = ({
           <MasonryInfiniteScrollable
             key={`public_${itemType}_${searchPublic}_${key}`}
             itemType={itemType}
-            ItemComponent={ItemComponent}
             query={query}
             onCardClick={item => onChange(item as Concept | Character)}
             hover={true}

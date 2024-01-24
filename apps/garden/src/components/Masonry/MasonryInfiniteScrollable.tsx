@@ -1,10 +1,13 @@
+import { CardData } from '@/components/Card/Card'
+import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
 import CreationCard from '@/components/Creation/CreationCard/CreationCard'
+import CreatorCard from '@/components/Creators/CreatorCard'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { ItemType } from '@/providers/ModalProvider'
-import { Concept, Creation } from '@edenlabs/eden-sdk'
+import { Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import { useElementSize, useViewportSize } from '@mantine/hooks'
 import { Empty } from 'antd'
 import {
@@ -24,7 +27,7 @@ const MasonryHookWrap: FC<UseMasonryOptions<Concept | Creation>> = props => {
 
 const MasonryInfiniteScrollable = ({
   itemType,
-  ItemComponent,
+  // ItemComponent,
   query,
   orderBy,
   onCardClick,
@@ -33,10 +36,10 @@ const MasonryInfiniteScrollable = ({
   modalContainerHeight,
 }: {
   itemType: ItemType
-  ItemComponent: typeof CreationCard | typeof ConceptCard
+  // ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   orderBy?: OrderByParam
-  onCardClick?: (item: Concept | Creation) => void
+  onCardClick: (item: CardData) => void
   hover?: boolean
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
@@ -86,22 +89,81 @@ const MasonryInfiniteScrollable = ({
   const resizeObserver = useResizeObserver(positioner)
 
   const CardWithClick = useCallback(
-    (props: { data: Creation & Concept; index: number }) => (
-      <ItemComponent
-        key={props.data._id}
-        index={props.index}
-        data={props.data}
-        className={
-          hover
-            ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
-            : ''
-        }
-        //@ts-ignore
-        onClick={() => onCardClick(props.data)}
-      />
-    ),
+    (props: { data: CardData; index: number }) => {
+      if (itemType === 'creator') {
+        return (
+          <CreatorCard
+            key={props.data._id}
+            index={props.index}
+            data={props.data as Creator}
+            onClick={() => onCardClick(props.data)}
+          />
+        )
+      }
+
+      if (itemType === 'creation') {
+        return (
+          <CreationCard
+            key={props.data._id}
+            index={props.index}
+            data={props.data as CardData}
+            onClick={() => onCardClick(props.data)}
+          />
+        )
+      }
+
+      if (itemType === 'concept') {
+        return (
+          <ConceptCard
+            key={props.data._id}
+            index={props.index}
+            data={props.data as CardData}
+            onClick={() => onCardClick(props.data)}
+            className={
+              hover
+                ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
+                : ''
+            }
+          />
+        )
+      }
+
+      if (itemType === 'character') {
+        return (
+          <CharacterFeedCard
+            key={props.data._id}
+            index={props.index}
+            data={props.data as CardData}
+            onClick={() => onCardClick(props.data)}
+            className={
+              hover
+                ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
+                : ''
+            }
+          />
+        )
+      }
+    },
     [hover],
   )
+
+  // const CardWithClick = useCallback(
+  //   (props: { data: Creation & Concept; index: number }) => (
+  //     <ItemComponent
+  //       key={props.data._id}
+  //       index={props.index}
+  //       data={props.data}
+  //       className={
+  //         hover
+  //           ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
+  //           : ''
+  //       }
+  //       //@ts-ignore
+  //       onClick={() => onCardClick(props.data)}
+  //     />
+  //   ),
+  //   [hover],
+  // )
 
   return (
     <>

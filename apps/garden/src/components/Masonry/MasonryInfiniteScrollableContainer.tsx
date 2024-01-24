@@ -1,6 +1,4 @@
 import { CardData } from '@/components/Card/Card'
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
@@ -83,7 +81,6 @@ const MasonryInfiniteScrollableContainer = ({
       <MasonryInfiniteScrollable
         key={key}
         itemType={itemType ? itemType : 'creation'}
-        ItemComponent={itemType === 'creation' ? CreationCard : ConceptCard}
         query={{ ...query, dateCutOff: fetchStartDate }}
         orderBy={orderBy}
         onCardClick={creation => openDetailModal(creation as Creation)}
