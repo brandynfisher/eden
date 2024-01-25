@@ -360,7 +360,11 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       voice: form.getFieldValue('voice'),
       dialogue: messageGroups.flat(),
       logosData: {
-        abilities: form.getFieldValue('abilities'),
+        abilities: {
+          creations: form.getFieldValue('abilities.creations'),
+          knowledge: form.getFieldValue('abilities.knowledge'),
+          smart_reply: form.getFieldValue('abilities.smart_reply'),
+        },
         identity: identity ? identity : null,
         concept: concept ? concept : null,
         knowledge: knowledge ? knowledge : null,
