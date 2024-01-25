@@ -10,20 +10,15 @@ import {
 } from '../controllers/characterController'
 import { createTask } from '../controllers/taskController'
 import { characterRoutePreHandler } from '../lib/authorization'
-import {
-  isAdmin,
-  isAuth,
-  isCharacter,
-  maybeAuth,
-} from '../middleware/authMiddleware'
+import { isAuth, isCharacter, maybeAuth } from '../middleware/authMiddleware'
 import { configType } from '../types/routeTypes'
-import { Capabilities } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const logosType = Type.Optional(
   Type.Object({
-    capabilities: Type.Optional(Type.Array(Type.Enum(Capabilities))),
+    abilities: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+    capabilities: Type.Optional(Type.Array(Type.String())),
     identity: Type.Optional(Type.String()),
     knowledge: Type.Optional(Type.String()),
     knowledgeSummary: Type.Optional(Type.String()),
