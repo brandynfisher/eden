@@ -52,11 +52,9 @@ interface CharacterFormInput {
   identity: string
   greeting: string
   completion: string
-  abilities: {
-    creations: boolean
-    knowledge: boolean
-    smart_reply: boolean
-  }
+  creationsEnabled: boolean
+  knowledgeEnabled: boolean
+  smartReplyEnabled: boolean
   concept?: string
   knowledge?: string
   knowledgeSummary?: string
@@ -133,7 +131,7 @@ const CreationsSection = ({
   form: FormInstance
   concept: string
 }) => {
-  const creationEnabled = Form.useWatch('abilities.creations', form)
+  const creationEnabled = Form.useWatch('creationsEnabled', form)
 
   return (
     <div className="px-2 py-2">
@@ -143,7 +141,7 @@ const CreationsSection = ({
           description="Turn on to enable creations for this character."
         />
         <Form.Item
-          name="abilities.creations"
+          name="creationsEnabled"
           valuePropName="checked"
           style={{ marginBottom: 0 }}
         >
@@ -186,7 +184,7 @@ const CreationsSection = ({
 }
 
 const KnowledgeSection = ({ form }: { form: FormInstance }) => {
-  const knowledgeEnabled = Form.useWatch('abilities.knowledge', form)
+  const knowledgeEnabled = Form.useWatch('knowledgeEnabled', form)
 
   return (
     <div className="px-2 py-2">
@@ -196,7 +194,7 @@ const KnowledgeSection = ({ form }: { form: FormInstance }) => {
           description="Turn on to enable knowledge for this character. Knowledge enables a character to have a set of information to selectively from. It can be used for things like answering questions about documentation."
         />
         <Form.Item
-          name="abilities.knowledge"
+          name="knowledgeEnabled"
           valuePropName="checked"
           style={{ marginBottom: 0 }}
         >
@@ -248,7 +246,7 @@ const SmartReplySection = () => {
           description="Turn on to enable smart reply for this character. Smart reply lets a character decide when to respond based on the conversation."
         />
         <Form.Item
-          name="abilities.smart_reply"
+          name="smartReplyEnabled"
           valuePropName="checked"
           style={{ marginBottom: 0 }}
         >
@@ -288,12 +286,12 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             concept: character?.logosData?.concept || '',
             knowledge: character?.logosData?.knowledge || '',
             knowledgeSummary: character?.logosData?.knowledgeSummary || '',
-            abilities: {
-              creations: character?.logosData?.abilities?.creations || false,
-              knowledge: character?.logosData?.abilities?.knowledge || false,
-              smart_reply:
-                character?.logosData?.abilities?.smart_reply || false,
-            },
+            creationsEnabled:
+              character?.logosData?.abilities?.creations || false,
+            knowledgeEnabled:
+              character?.logosData?.abilities?.knowledge || false,
+            smartReplyEnabled:
+              character?.logosData?.abilities?.smart_reply || false,
             isPrivate: character?.isPrivate || false,
           }
         : {
@@ -306,11 +304,9 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             concept: '',
             knowledge: '',
             knowledgeSummary: '',
-            abilities: {
-              creations: false,
-              knowledge: false,
-              smart_reply: false,
-            },
+            creationsEnabled: false,
+            knowledgeEnabled: false,
+            smartReplyEnabled: false,
             isPrivate: false,
           }
 
@@ -361,9 +357,9 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       dialogue: messageGroups.flat(),
       logosData: {
         abilities: {
-          creations: form.getFieldValue('abilities.creations'),
-          knowledge: form.getFieldValue('abilities.knowledge'),
-          smart_reply: form.getFieldValue('abilities.smart_reply'),
+          creations: form.getFieldValue('creationsEnabled'),
+          knowledge: form.getFieldValue('knowledgeEnabled'),
+          smart_reply: form.getFieldValue('smartReplyEnabled'),
         },
         identity: identity ? identity : null,
         concept: concept ? concept : null,
