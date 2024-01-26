@@ -17,28 +17,19 @@ const params = [
     default: 0.45,
     minimum: 0.1,
     maximum: 1.0,
-    step: 0.05,
+    step: 0.01,
   },
 
   {
     name: 'width',
-    label: 'Width',
-    description: 'Max width of the creation in pixels',
-    default: 1600,
+    label: 'Resolution',
+    description: 'Target resolution of the creation in pixels (upscale will never stretch the aspect ratio of your image)',
+    default: 1920,
     minimum: 1024,
-    maximum: 2048,
+    maximum: 3840,
     step: 64,
   },
-  {
-    name: 'height',
-    label: 'Height',
-    description: 'Max height of the creation in pixels',
-    default: 1600,
-    minimum: 1024,
-    maximum: 2048,
-    step: 64,
-  },
-  
+
   {
     name: 'n_samples',
     label: 'Variations',
