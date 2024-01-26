@@ -60,12 +60,9 @@ const MasonryInfiniteScrollable = ({
   const {
     items,
     maybeLoadMore: maybeLoadNextPage,
-    // setSize,
-    // size,
     isEmpty,
     isLoading,
     isLoadingMore,
-    // hasNextPage
   } = useFeedPaginated(itemType, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
@@ -107,19 +104,6 @@ const MasonryInfiniteScrollable = ({
 
   const handleCardClick = useCallback(
     (index: number) => {
-      //@todo: move this to CreationMasonry (similarMasonry, as static)
-      // if (disableArrowNav) {
-      //   showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
-      //     creation,
-      //     loadSimilar: true,
-      //     usesUrl: true,
-      //     originPageUrl: router.asPath,
-      //   })
-      //
-      //   return
-      // }
-      // setItems(items)
-
       setCurrentIndex(masonryKey, index)
 
       showModal(MODAL_TYPES.DETAIL_MODAL, {

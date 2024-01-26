@@ -53,10 +53,7 @@ const MasonryInfinite = ({
 
   const {
     items,
-    // refetchFeed,
     maybeLoadMore: maybeLoadNextPage,
-    // size,
-    // setSize,
     isEmpty,
     isLoadingMore,
   } = useFeedPaginated(itemType, query, orderBy)
@@ -109,19 +106,6 @@ const MasonryInfinite = ({
 
   const handleCardClick = useCallback(
     (index: number) => {
-      //@todo: move this to CreationMasonry (similarMasonry, as static)
-      // if (disableArrowNav) {
-      //   showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
-      //     creation,
-      //     loadSimilar: true,
-      //     usesUrl: true,
-      //     originPageUrl: router.asPath,
-      //   })
-      //
-      //   return
-      // }
-      // setItems(items)
-
       setCurrentIndex(masonryKey, index)
 
       showModal(MODAL_TYPES.DETAIL_MODAL, {
