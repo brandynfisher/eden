@@ -13,6 +13,8 @@ const CharacterCreationsTab = ({
   return (
     <div className="mt-4">
       <ModalMasonry
+        itemType={'creation'}
+        masonryKeySuffix={`characterId_${characterId}`}
         key={`creations_${characterId}`}
         query={{ characterId: characterId }}
         modalContainerRef={modalContainerRef}

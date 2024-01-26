@@ -30,6 +30,7 @@ const CreatorCreationsTab = ({
   return (
     <div className="mt-4 ">
       <ModalMasonry
+        masonryKeySuffix={`userId_${creatorId}`}
         itemType="creation"
         key={`creations_${creatorId}`}
         filters={filters}

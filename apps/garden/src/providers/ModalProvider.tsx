@@ -112,7 +112,7 @@ export type ItemType = 'creation' | 'concept' | 'character' | 'creator'
 export type DetailModalProps = Partial<
   BaseModalProps & {
     itemType: ItemType
-    initialItem: Creation | Concept | Character | Creator
+    parentMasonryKey: string
     maybeLoadMoreFn: (
       currentIndex: number,
       currentItems: Creation[] | Concept[] | Character[] | Creator[],

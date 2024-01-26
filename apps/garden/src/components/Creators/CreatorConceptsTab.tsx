@@ -17,6 +17,7 @@ const CreatorConceptsTab = ({
   return (
     <div className="mt-4">
       <ModalMasonry
+        masonryKeySuffix={`userId_${creatorId}`}
         key={`concepts_${creatorId}`}
         itemType={'concept'}
         filters={[OrderByLatest, OrderByUsage]}
