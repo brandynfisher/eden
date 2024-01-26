@@ -1,11 +1,7 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import {
-  Capabilities,
-  CharactersUpdateArguments,
-  EdenClient,
-} from '@edenlabs/eden-sdk'
+import { CharactersUpdateArguments, EdenClient } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -37,22 +33,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         logosData,
         isPrivate,
       } = req.body as CharactersUpdateArguments
-
-      // TODO: make more dynamic
-      if (logosData) {
-        if (logosData?.capabilities && logosData?.knowledge) {
-          const extraCapabilities = [
-            Capabilities.CREATION,
-            Capabilities.KNOWLEDGE,
-          ]
-          logosData.capabilities = [
-            ...logosData.capabilities,
-            ...extraCapabilities,
-          ]
-        } else {
-          logosData.capabilities = [Capabilities.CHAT]
-        }
-      }
 
       const update = {
         characterId,
