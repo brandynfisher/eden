@@ -205,6 +205,9 @@ export type Character = {
 }
 
 export type LogosData = {
+  abilities?: {
+    [key in Capabilities]?: boolean
+  }
   capabilities?: Capabilities[]
   identity?: string
   knowledge?: string
@@ -213,7 +216,7 @@ export type LogosData = {
 }
 
 export enum Capabilities {
-  CHAT = 'chat',
-  CREATION = 'creation',
+  CREATIONS = 'creations',
   KNOWLEDGE = 'knowledge',
+  SMART_REPLY = 'smart_reply',
 }
