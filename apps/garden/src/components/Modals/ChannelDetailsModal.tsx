@@ -5,7 +5,10 @@ import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import ModalTitle from '@/components/Modals/ModalTitle'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
-import { useFeedPaginated } from '@/hooks/useFeedPaginated'
+import {
+  FeedRouteQueryParams,
+  useFeedPaginated,
+} from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
@@ -74,17 +77,21 @@ const CustomVideo = ({
 }
 
 const ChannelDetailsModal = ({
+  title,
   itemType,
   orderBy,
+  query,
   ...rest
 }: {
+  title?: string
+  query?: FeedRouteQueryParams
   itemType: ItemType
   orderBy: OrderByParam
 }) => {
   const PAGE_LIMIT = 50
-  const { items, isEmpty, isLoading, size, maybeLoadMore } = useFeedPaginated(
+  const { items, isEmpty, isLoading, maybeLoadMore } = useFeedPaginated(
     itemType,
-    { limit: PAGE_LIMIT },
+    { ...query, limit: PAGE_LIMIT },
     orderBy,
   )
 
@@ -105,9 +112,9 @@ const ChannelDetailsModal = ({
 
     const loadedRemaining =
       items.length - (focusItemIndex !== null ? focusItemIndex : 0)
-    console.log('remaining loaded', loadedRemaining)
+    // console.log('remaining loaded', loadedRemaining)
     if (loadedRemaining <= PAGE_LIMIT) {
-      console.log('Loading More')
+      // console.log('Loading More')
       maybeLoadMore()
     }
   }
@@ -134,9 +141,9 @@ const ChannelDetailsModal = ({
     })
     const loadedRemaining =
       items.length - (focusItemIndex !== null ? focusItemIndex : 0)
-    console.log('remaining loaded', loadedRemaining)
+    // console.log('remaining loaded', loadedRemaining)
     if (loadedRemaining <= PAGE_LIMIT) {
-      console.log('Loading More')
+      // console.log('Loading More')
       maybeLoadMore()
     }
   }
@@ -145,7 +152,7 @@ const ChannelDetailsModal = ({
     if (focusItemIndex === null) {
       return
     }
-    console.log('render modal, focus item', focusItemIndex, { size })
+    // console.log('render modal, focus item', focusItemIndex, { size })
     setFocusItem(items[focusItemIndex])
 
     // setIsLoadingImage(true)
@@ -184,17 +191,17 @@ const ChannelDetailsModal = ({
   const [isImageLoading, setImageLoading] = useState(true)
 
   const handleMediaLoadStart = () => {
-    console.log('handleMediaLoadStart')
+    // console.log('handleMediaLoadStart')
     setImageLoading(true)
   }
 
   const handleMediaLoaded = () => {
-    console.log('handleMediaLoaded')
+    // console.log('handleMediaLoaded')
     setImageLoading(false)
   }
 
   const handleVideoEnded = () => {
-    console.log('handleVideoEnded')
+    // console.log('handleVideoEnded')
     handleNextItem()
   }
 
@@ -228,7 +235,7 @@ const ChannelDetailsModal = ({
       className="modal-small modal-grow max-w-6xl pb-0 flex flex-col w-full items-center justify-center"
     >
       <ModalTitle
-        title={`Channel: ${orderBy.label}`}
+        title={`Channel: ${title ? title : orderBy.label}`}
         link={
           <>
             <div className="flex items-center gap-2">
@@ -346,8 +353,8 @@ const ChannelDetailsModal = ({
               )}
 
               <div className="absolute z-10 bottom-0 left-0 max-w-[33%]">
-                <div className="bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg h-11">
-                  <div className="truncate">{focusItem.name}</div>
+                <div className="bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg min-h-11">
+                  <div className="line-clamp-3">{focusItem.name}</div>
                 </div>
               </div>
               <div className="absolute flex flex-col justify-center z-10 bottom-0 right-0">

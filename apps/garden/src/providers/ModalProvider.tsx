@@ -12,6 +12,7 @@ import SelectCharacterModal from '@/components/Modals/SelectCharacterModal'
 import SelectConceptModal from '@/components/Modals/SelectConceptModal'
 import SubscriptionGateModal from '@/components/Modals/SubscriptionGateModal'
 import TaskDetailModal from '@/components/Modals/TaskDetailModal'
+import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import CloseOutlined from '@ant-design/icons/CloseOutlined'
 import {
   Character,
@@ -94,8 +95,9 @@ export type CharacterSelectModalProps = Partial<
 
 export type ChannelDetailsModalProps = Partial<
   BaseModalProps & {
-    label: string
+    title?: string
     itemType: ItemType
+    query?: FeedRouteQueryParams
     orderBy: OrderByParam
   }
 >

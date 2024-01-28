@@ -18,6 +18,7 @@ export type FeedRouteQueryParams = {
   characterId?: string
   collectionId?: string
   creationId?: string
+  generatorId?: string
   name?: string
   conceptId?: string
   dateCutOff?: string
@@ -46,7 +47,6 @@ export const useFeedPaginated = (
         return null
       }
 
-      // console.log({ query })
       // console.log('getKey', {pageIndex, previousPageData})
       return createPaginationRoute(`/api/feed/${itemType}s`, {
         ...query,

@@ -64,6 +64,9 @@ export const createPaginationRoute = (
   if (query.conceptId) {
     params.conceptId = String(query.conceptId)
   }
+  if (query.generatorId) {
+    params.generatorId = String(query.generatorId)
+  }
   if (query.name && query.name.length > 0) {
     params.name = String(query.name)
   }

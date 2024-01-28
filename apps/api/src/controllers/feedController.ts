@@ -219,6 +219,7 @@ export const getCreationsFeed = async (
     collectionId,
     conceptId,
     creationId,
+    generatorId,
     name,
     dateCutOff,
     limit,
@@ -251,6 +252,12 @@ export const getCreationsFeed = async (
     ? Array.isArray(conceptId)
       ? conceptId.map(id => new ObjectId(id))
       : new ObjectId(conceptId)
+    : undefined
+
+  const generatorIds = generatorId
+    ? Array.isArray(generatorId)
+      ? generatorId.map(id => new ObjectId(id))
+      : new ObjectId(generatorId)
     : undefined
 
   const creationRepository = new CreationRepository(Creation)
@@ -379,6 +386,7 @@ export const getCreationsFeed = async (
     const query = {
       _id: creationIdsQuery,
       concept: conceptIds ? { $in: conceptIds } : undefined,
+      generator: generatorIds ? { $in: generatorIds } : undefined,
       createdAt: dateCutOff
         ? {
             $lte: new Date(dateCutOff),
