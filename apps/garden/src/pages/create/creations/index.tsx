@@ -1,8 +1,5 @@
 import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
-import {
-  maybeRedirectIfConceptIdQuery,
-  maybeRedirectIfCreationIdQuery,
-} from '@/lib/redirect'
+import { maybeRedirectIfItemIdQuery } from '@/lib/redirect'
 import CreateCreationsPage from '@/pages/create/creations/CreateCreationsPage'
 import { NextPageContext } from 'next'
 import { AppProps } from 'next/app'
@@ -13,10 +10,7 @@ const createCreations = () => {
 }
 
 export async function getServerSideProps(ctx: NextPageContext) {
-  return (
-    (await maybeRedirectIfCreationIdQuery(ctx)) ||
-    (await maybeRedirectIfConceptIdQuery(ctx)) || { props: {} }
-  )
+  return maybeRedirectIfItemIdQuery(ctx)
 }
 
 createCreations.getLayout = (page: AppProps['pageProps']) => (

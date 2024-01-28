@@ -40,3 +40,31 @@ export const maybeRedirectIfConceptIdQuery = async (
     }
   }
 }
+
+export const maybeRedirectIfCharacterIdQuery = async (
+  context: NextPageContext,
+) => {
+  const { query } = context
+  const characterId = query.characterId ? query.characterId : false
+
+  if (characterId) {
+    const { res } = context
+
+    if (res) {
+      return {
+        redirect: {
+          destination: `/characters/${characterId}`,
+          statusCode: 307,
+        },
+      }
+    }
+  }
+}
+
+export const maybeRedirectIfItemIdQuery = async (context: NextPageContext) => {
+  return (
+    (await maybeRedirectIfCreationIdQuery(context)) ||
+    (await maybeRedirectIfCharacterIdQuery(context)) ||
+    (await maybeRedirectIfConceptIdQuery(context)) || { props: {} }
+  )
+}
