@@ -27,11 +27,11 @@ const CharacterDetails = ({
         />
       ),
     },
-    {
-      label: 'Chats',
-      key: 'chats',
-      children: <div>Chats</div>,
-    },
+    // {
+    //   label: 'Chats',
+    //   key: 'chats',
+    //   children: <div>Chats</div>,
+    // },
   ]
 
   return (
