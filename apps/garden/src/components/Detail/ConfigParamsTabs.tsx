@@ -99,26 +99,14 @@ const ConfigParamsTabs = ({ data }: { data: Concept | Creation }) => {
       </div>
 
       {isRevealed && (
-        <>
-          <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden text-xs">
-            <Tabs
-              centered
-              defaultActiveKey="1"
-              items={items}
-              onChange={onConfigurationTabChange}
-            />
-          </div>
-
-          <div className="flex w-full  justify-start md:justify-center items-center my-2">
-            <Button
-              type="dashed"
-              className="dark:text-gray-400"
-              onClick={() => setIsRevealed(false)}
-            >
-              Hide configuration
-            </Button>
-          </div>
-        </>
+        <div className="border border-gray-300 dark:border-gray-800 border-solid rounded-lg justify-between flex-wrap overflow-hidden text-xs">
+          <Tabs
+            centered
+            defaultActiveKey="1"
+            items={items}
+            onChange={onConfigurationTabChange}
+          />
+        </div>
       )}
     </>
   )
