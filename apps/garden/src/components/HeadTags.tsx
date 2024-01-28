@@ -145,7 +145,7 @@ const HeadTags = ({
     <Head>
       <title>{`${title} | Garden of Eden`}</title>
       <meta property="og:title" key="title" content={title} />
-      <meta property="og:description" content={''} key="description" />
+      <meta property="og:description" content={item.name} key="description" />
       {itemType === 'character' ? (
         <>
           <meta
@@ -158,6 +158,7 @@ const HeadTags = ({
             content={(item as Character).image}
             key="image_secure"
           />
+          <meta name="twitter:image:src" content={(item as Character).image} />
         </>
       ) : null}
       {itemType === 'creation' &&
@@ -193,7 +194,7 @@ const HeadTags = ({
         isImageUrl(getItemMediaUrl(itemType, item as Creation))) ||
       itemType === 'concept' ? (
         <>
-          <meta property="og:image:alt" content={`${title}`} />
+          <meta property="og:image:alt" content={title} />
           <meta property="og:image:type" content="image/jpeg" />
           <meta
             property="og:image"
@@ -205,8 +206,34 @@ const HeadTags = ({
             key="image_secure"
             content={getItemMediaUrl(itemType, item as Creation | Concept)}
           />
+          <meta
+            name="twitter:image:src"
+            content={getItemMediaUrl(itemType, item as Creation | Concept)}
+          />
         </>
       ) : null}
+      {itemType === 'creation' &&
+      isImageUrl(getItemMediaUrl(itemType, item as Creation)) ? (
+        <>
+          <meta
+            property="og:image:width"
+            content={String((item as Creation).mediaAttributes.width || 1024)}
+          />
+          <meta
+            property="og:image:height"
+            content={String((item as Creation).mediaAttributes.height || 1024)}
+          />
+        </>
+      ) : (
+        <>
+          <meta property="og:image:width" content={String(1024)} />
+          <meta property="og:image:height" content={String(1024)} />
+        </>
+      )}
+      <meta name="twitter:site" content="Garden of Eden" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={item.name} />
+      <meta name="twitter:card" content="summary_large_image" />
       <meta
         property="og:url"
         content={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}

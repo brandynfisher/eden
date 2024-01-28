@@ -204,6 +204,7 @@ const Details = ({
       {itemType === 'concept' ? (
         <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
           <ModalMasonry
+            key={`conceptId_${item._id}`}
             itemType="creation"
             masonryKeySuffix={`conceptId_${item._id}`}
             title="Latest Public Creations"
@@ -216,6 +217,7 @@ const Details = ({
       {itemType === 'creation' ? (
         <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
           <ModalMasonry
+            key={`creationId_${item._id}`}
             itemType="creation"
             masonryKeySuffix={`creationId_${item._id}`}
             title="Similar Creations"

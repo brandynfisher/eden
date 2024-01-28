@@ -7,6 +7,7 @@ import { getServerSidePropsBase } from '@/lib/ssr'
 import CreationPage from '@/pages/creations/[id]/CreationPage'
 import { Creation } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
+import Error from 'next/error'
 import React from 'react'
 
 interface PageProps {
@@ -33,6 +34,10 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const creation: Page<PageProps> = ({ data }: PageProps) => {
+  if (!data) {
+    return <Error statusCode={404} withDarkMode={true} />
+  }
+
   return (
     <>
       <CreationHeadTags creation={data.creation} />
