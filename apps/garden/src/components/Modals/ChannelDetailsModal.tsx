@@ -4,6 +4,7 @@ import VideoResult from '@/components/Creation/CreationInterface/media/VideoResu
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import ModalTitle from '@/components/Modals/ModalTitle'
+import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl, isVideoUrl } from '@/lib/string'
@@ -13,6 +14,9 @@ import { useFullscreen } from '@mantine/hooks'
 import { Button } from '@mui/material'
 import { Modal } from 'antd'
 import Image from 'next/image'
+// import { timeAgo } from '@/lib/time'
+import Link from 'next/link'
+import { QRCodeCanvas } from 'qrcode.react'
 import React, { useEffect, useState } from 'react'
 
 const CustomImage = ({
@@ -89,6 +93,8 @@ const ChannelDetailsModal = ({
   const [focusItem, setFocusItem] = useState<Creation | null>(null)
   const [focusItemIndex, setFocusItemIndex] = useState<number | null>(null)
   const [galleryItems, setGalleryItems] = useState<Creation[] | null>(null)
+  // const [createdDateString, setCreatedDateString] = useState('')
+  // const timeSinceCreation = focusItem ? timeAgo(focusItem.createdAt) : ''
 
   const handleClickItem = (item: Creation) => {
     setFocusItemIndex(() => {
@@ -209,6 +215,12 @@ const ChannelDetailsModal = ({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [handleNextItem])
+  //
+  // useEffect(() => {
+  //   if (focusItem) {
+  //     setCreatedDateString(new Date(focusItem.createdAt).toLocaleString())
+  //   }
+  // }, [focusItem])
 
   return (
     <Modal
@@ -296,6 +308,7 @@ const ChannelDetailsModal = ({
                   <LoadingIndicator />
                 </div>
               ) : null}
+
               <Image
                 key={`${focusItem._id}_placeholder`}
                 alt={focusItem.name}
@@ -331,6 +344,48 @@ const ChannelDetailsModal = ({
                   className="z-10"
                 />
               )}
+
+              <div className="absolute z-10 bottom-0 left-0 max-w-[33%]">
+                <div className="bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg h-11">
+                  <div className="truncate">{focusItem.name}</div>
+                </div>
+              </div>
+              <div className="absolute flex flex-col justify-center z-10 bottom-0 right-0">
+                <div className="flex items-center justify-end px-4 py-4">
+                  <div className="flex p-1 bg-white">
+                    <QRCodeCanvas
+                      value={`/creations/${focusItem._id}`}
+                      size={96}
+                      level="L"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-1 items-center bg-black bg-opacity-50 px-4 py-2 rounded-tl-lg">
+                  <Link
+                    href={`/creations/${focusItem._id}`}
+                    target="_blank"
+                    className="!text-gray-200 hover:!text-gray-400"
+                  >
+                    <strong>/{focusItem.task.generator.generatorName}</strong>
+                  </Link>
+                  <div className="flex items-center">
+                    <span className="mr-2">by</span>{' '}
+                    <CreatorProfileLink
+                      creatorId={focusItem.user.userId}
+                      creatorName={focusItem.user.username}
+                      creatorImage={focusItem.user.userImage}
+                      target="_blank"
+                    />
+                    {/*<div*/}
+                    {/*  className="text-gray-700 dark:text-gray-400 text-xs"*/}
+                    {/*  title={createdDateString}*/}
+                    {/*>*/}
+                    {/*  <span className="mx-1">•</span>*/}
+                    {/*  {timeSinceCreation} ago*/}
+                    {/*</div>*/}
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         )}
