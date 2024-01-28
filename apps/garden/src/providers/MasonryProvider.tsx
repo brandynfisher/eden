@@ -1,18 +1,32 @@
 import { Character, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import React, { PropsWithChildren, createContext, useState } from 'react'
 
-export interface MasonryContextType {
-  currentIndex: number
-  setCurrentIndex: (newIndex: number) => void
+export type MasonryItems = {
   items: Creation[] | Concept[] | Creator[] | Character[]
-  setItems: (items: Creation[] | Concept[] | Creator[] | Character[]) => void
+  currentIndex: number
+}
+
+export type MasonryInstances = { [masonryKey: string]: MasonryItems }
+
+export interface MasonryContextType {
+  getCurrentIndex: (masonryKey: string) => number
+  setCurrentIndex: (masonryKey: string, newIndex: number) => void
+  setItems: (
+    masonryKey: string,
+    items: Creation[] | Concept[] | Creator[] | Character[],
+  ) => void
+  getItems: (
+    masonryKey: string,
+  ) => Creation[] | Concept[] | Creator[] | Character[]
+  instances: MasonryInstances
 }
 
 const defaultMasonryContextState: MasonryContextType = {
-  currentIndex: 0,
+  getCurrentIndex: () => 0,
   setCurrentIndex: () => null,
-  items: [],
-  setItems: () => null,
+  getItems: () => [],
+  setItems: () => [],
+  instances: {},
 }
 
 export const MasonryContext = createContext<MasonryContextType>(
@@ -20,18 +34,49 @@ export const MasonryContext = createContext<MasonryContextType>(
 )
 
 function MasonryProvider({ children }: PropsWithChildren) {
-  const [currentIndex, setCurrentIndex] = useState<number>(0)
-  const [items, setItems] = useState<
-    Creation[] | Concept[] | Creator[] | Character[]
-  >([])
+  const [instances, setInstances] = useState<MasonryInstances>({})
+
+  // console.log('MasonryProvider instances', instances)
+
+  const getCurrentIndex = (masonryKey: string) => {
+    // console.log('getCurrentIndex', masonryKey, instances[masonryKey].currentIndex)
+    return instances[masonryKey] ? instances[masonryKey].currentIndex : 0
+  }
+
+  const setCurrentIndex = (masonryKey: string, currentIndex: number) => {
+    // console.log('setCurrentIndex', masonryKey, currentIndex)
+    setInstances(prev => {
+      const inst = { ...prev }
+      inst[masonryKey] = { ...inst[masonryKey], currentIndex: currentIndex }
+      return inst
+    })
+  }
+
+  const setItems = (
+    masonryKey: string,
+    items: Creation[] | Concept[] | Creator[] | Character[],
+  ) => {
+    // console.log('setItems', masonryKey, items)
+    setInstances(prev => {
+      const inst = { ...prev }
+      inst[masonryKey] = { ...inst[masonryKey], items: items }
+      return inst
+    })
+  }
+
+  const getItems = (masonryKey: string) => {
+    // console.log('getItems', masonryKey, instances[masonryKey].items)
+    return instances[masonryKey].items
+  }
 
   return (
     <MasonryContext.Provider
       value={{
-        currentIndex,
-        setCurrentIndex,
-        items,
         setItems,
+        getItems,
+        getCurrentIndex,
+        setCurrentIndex,
+        instances,
       }}
     >
       {children}

@@ -120,13 +120,6 @@ const Details = ({
                 <ConceptMedia concept={item as Concept} />
               ) : null}
               {itemType === 'character' ? (
-                // <Image
-                //   src={(item as Character).image || '/placeholder.png'}
-                //   alt={item.name}
-                //   width={240}
-                //   height={240}
-                //   className="object-contain object-center w-full bg-stone-900"
-                // />
                 <MediaDisplay
                   priority={true}
                   aspectRatio={100}
@@ -211,6 +204,8 @@ const Details = ({
       {itemType === 'concept' ? (
         <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
           <ModalMasonry
+            itemType="creation"
+            masonryKeySuffix={`conceptId_${item._id}`}
             title="Latest Public Creations"
             query={{ conceptId: item._id }}
             modalContainerRef={modalContainerRef}
@@ -221,6 +216,8 @@ const Details = ({
       {itemType === 'creation' ? (
         <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
           <ModalMasonry
+            itemType="creation"
+            masonryKeySuffix={`creationId_${item._id}`}
             title="Similar Creations"
             query={{ creationId: item._id }}
             modalContainerRef={modalContainerRef}

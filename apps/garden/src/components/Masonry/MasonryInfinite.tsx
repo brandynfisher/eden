@@ -49,13 +49,11 @@ const MasonryInfinite = ({
   const { isAuthenticated, settings, userId } = useContext(UserContext)
   const isAuthenticatedUser =
     isAuthenticated && query && query.userId && query.userId === userId
+  const masonryKey = `${itemType}_${orderBy.field}`
 
   const {
     items,
-    // refetchFeed,
     maybeLoadMore: maybeLoadNextPage,
-    // size,
-    // setSize,
     isEmpty,
     isLoadingMore,
   } = useFeedPaginated(itemType, query, orderBy)
@@ -103,40 +101,31 @@ const MasonryInfinite = ({
   const resizeObserver = useResizeObserver(positioner)
 
   useEffect(() => {
-    setItems(items)
-  }, [items.length])
+    setItems(masonryKey, items)
+  }, [masonryKey, items.length])
 
-  const handleCardClick = useCallback((index: number) => {
-    //@todo: move this to CreationMasonry (similarMasonry, as static)
-    // if (disableArrowNav) {
-    //   showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
-    //     creation,
-    //     loadSimilar: true,
-    //     usesUrl: true,
-    //     originPageUrl: router.asPath,
-    //   })
-    //
-    //   return
-    // }
-    // setItems(items)
+  const handleCardClick = useCallback(
+    (index: number) => {
+      setCurrentIndex(masonryKey, index)
 
-    setCurrentIndex(index)
-
-    showModal(MODAL_TYPES.DETAIL_MODAL, {
-      itemType: itemType,
-      usesUrl: true,
-      originPageUrl: router.asPath,
-      maybeLoadMoreFn: (
-        currentIndex: number,
-        currentItems: Creation[] | Concept[] | Character[] | Creator[],
-      ) => {
-        if (currentIndex === currentItems.length - 1) {
-          maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
-        }
-        // console.log(currentItems.length)
-      },
-    })
-  }, [])
+      showModal(MODAL_TYPES.DETAIL_MODAL, {
+        itemType: itemType,
+        usesUrl: true,
+        originPageUrl: router.asPath,
+        parentMasonryKey: masonryKey,
+        maybeLoadMoreFn: (
+          currentIndex: number,
+          currentItems: Creation[] | Concept[] | Character[] | Creator[],
+        ) => {
+          if (currentIndex === currentItems.length - 1) {
+            maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
+          }
+          //console.log(currentItems.length)
+        },
+      })
+    },
+    [masonryKey],
+  )
 
   const CardWithClick = useCallback(
     (props: { data: CardData; index: number }) => {

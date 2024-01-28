@@ -9,6 +9,7 @@ const ModalMasonry = ({
   query,
   modalContainerRef,
   modalContainerHeight,
+  masonryKeySuffix,
   filters,
 }: {
   title?: string
@@ -23,6 +24,7 @@ const ModalMasonry = ({
   filters?: OrderByParam[]
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
+  masonryKeySuffix?: string
 }) => {
   return (
     <div className="mt-2 md:mt-4">
@@ -31,6 +33,7 @@ const ModalMasonry = ({
           <div className="my-2 text-gray-400 text-xs">{title}</div>
         ) : null}
         <MasonryInfiniteScrollableContainer
+          masonryKeySuffix={masonryKeySuffix}
           itemType={itemType || 'creation'}
           query={query}
           filters={filters}

@@ -6,8 +6,13 @@ import CreatorCard from '@/components/Creators/CreatorCard'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
-import { ItemType } from '@/providers/ModalProvider'
-import { Concept, Creation, Creator } from '@edenlabs/eden-sdk'
+import { MasonryContext } from '@/providers/MasonryProvider'
+import {
+  ItemType,
+  MODAL_TYPES,
+  useModalContext,
+} from '@/providers/ModalProvider'
+import { Character, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import { useElementSize, useViewportSize } from '@mantine/hooks'
 import { Empty } from 'antd'
 import {
@@ -18,7 +23,8 @@ import {
   useResizeObserver,
 } from 'masonic'
 import { useScroller } from 'mini-virtual-list'
-import React, { FC, useCallback } from 'react'
+import { useRouter } from 'next/router'
+import React, { FC, useCallback, useContext, useEffect } from 'react'
 
 const MasonryHookWrap: FC<UseMasonryOptions<Concept | Creation>> = props => {
   // console.log(props)
@@ -34,25 +40,29 @@ const MasonryInfiniteScrollable = ({
   hover,
   modalContainerRef,
   modalContainerHeight,
+  masonryKeySuffix,
 }: {
   itemType: ItemType
   // ItemComponent: typeof CreationCard | typeof ConceptCard
   query?: PaginatedFeedQuery
   orderBy?: OrderByParam
-  onCardClick: (item: CardData) => void
+  onCardClick?: (item: CardData) => void
   hover?: boolean
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
+  masonryKeySuffix?: string
 }) => {
+  const router = useRouter()
+  const { showModal } = useModalContext()
+  const { setItems, setCurrentIndex } = useContext(MasonryContext)
+  const masonryKey = `scrollable_${itemType}_${orderBy?.field}_${masonryKeySuffix}`
+
   const {
     items,
     maybeLoadMore: maybeLoadNextPage,
-    // setSize,
-    // size,
     isEmpty,
     isLoading,
     isLoadingMore,
-    // hasNextPage
   } = useFeedPaginated(itemType, query, orderBy)
 
   const maybeLoadMore = useInfiniteLoader(maybeLoadNextPage, {
@@ -88,6 +98,33 @@ const MasonryInfiniteScrollable = ({
 
   const resizeObserver = useResizeObserver(positioner)
 
+  useEffect(() => {
+    setItems(masonryKey, items)
+  }, [masonryKey, items.length])
+
+  const handleCardClick = useCallback(
+    (index: number) => {
+      setCurrentIndex(masonryKey, index)
+
+      showModal(MODAL_TYPES.DETAIL_MODAL, {
+        itemType: itemType,
+        usesUrl: true,
+        originPageUrl: router.asPath,
+        parentMasonryKey: masonryKey,
+        maybeLoadMoreFn: (
+          currentIndex: number,
+          currentItems: Creation[] | Concept[] | Character[] | Creator[],
+        ) => {
+          if (currentIndex === currentItems.length - 1) {
+            maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
+          }
+          // console.log(currentItems.length)
+        },
+      })
+    },
+    [masonryKey],
+  )
+
   const CardWithClick = useCallback(
     (props: { data: CardData; index: number }) => {
       if (itemType === 'creator') {
@@ -96,7 +133,11 @@ const MasonryInfiniteScrollable = ({
             key={props.data._id}
             index={props.index}
             data={props.data as Creator}
-            onClick={() => onCardClick(props.data)}
+            onClick={() =>
+              onCardClick
+                ? onCardClick(props.data)
+                : handleCardClick(props.index)
+            }
           />
         )
       }
@@ -107,7 +148,11 @@ const MasonryInfiniteScrollable = ({
             key={props.data._id}
             index={props.index}
             data={props.data as CardData}
-            onClick={() => onCardClick(props.data)}
+            onClick={() =>
+              onCardClick
+                ? onCardClick(props.data)
+                : handleCardClick(props.index)
+            }
           />
         )
       }
@@ -118,7 +163,11 @@ const MasonryInfiniteScrollable = ({
             key={props.data._id}
             index={props.index}
             data={props.data as CardData}
-            onClick={() => onCardClick(props.data)}
+            onClick={() =>
+              onCardClick
+                ? onCardClick(props.data)
+                : handleCardClick(props.index)
+            }
             className={
               hover
                 ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
@@ -134,7 +183,11 @@ const MasonryInfiniteScrollable = ({
             key={props.data._id}
             index={props.index}
             data={props.data as CardData}
-            onClick={() => onCardClick(props.data)}
+            onClick={() =>
+              onCardClick
+                ? onCardClick(props.data)
+                : handleCardClick(props.index)
+            }
             className={
               hover
                 ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
@@ -146,24 +199,6 @@ const MasonryInfiniteScrollable = ({
     },
     [hover],
   )
-
-  // const CardWithClick = useCallback(
-  //   (props: { data: Creation & Concept; index: number }) => (
-  //     <ItemComponent
-  //       key={props.data._id}
-  //       index={props.index}
-  //       data={props.data}
-  //       className={
-  //         hover
-  //           ? `hover:outline hover:outline-2 rounded-lg hover:outline-blue-500`
-  //           : ''
-  //       }
-  //       //@ts-ignore
-  //       onClick={() => onCardClick(props.data)}
-  //     />
-  //   ),
-  //   [hover],
-  // )
 
   return (
     <>

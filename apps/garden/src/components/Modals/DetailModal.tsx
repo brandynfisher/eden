@@ -1,5 +1,6 @@
 'use client'
 
+import Details from '../Detail/Details'
 import CharacterDetails from '@/components/Characters/CharacterDetails'
 import CreatorDetails from '@/components/Creators/CreatorDetails'
 import ArrowNavigationButtons from '@/components/Modals/ArrowNavigationButtons'
@@ -12,14 +13,14 @@ import { App, Modal, ModalProps } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
-import Details from '../Detail/Details'
-
 const DetailModal = ({
   itemType,
+  parentMasonryKey,
   maybeLoadMoreFn,
   ...rest
 }: {
   itemType: ItemType
+  parentMasonryKey: string
   maybeLoadMoreFn: (
     currentIndex: number,
     currentItems: Creation[] | Concept[] | Character[] | Creator[],
@@ -28,9 +29,12 @@ const DetailModal = ({
   const { message } = App.useApp()
   const { onCancel } = rest as ModalProps
   const router = useRouter()
-  const { items, currentIndex, setCurrentIndex } = useContext(MasonryContext)
+  const { getItems, getCurrentIndex, setCurrentIndex } =
+    useContext(MasonryContext)
 
-  // console.log(items, currentIndex)
+  const items = getItems(parentMasonryKey)
+  const currentIndex = getCurrentIndex(parentMasonryKey)
+  console.log({ parent: parentMasonryKey, currentIndex, items })
 
   const handlePrevItem = useCallback(async () => {
     const prevIndex = currentIndex - 1
@@ -39,10 +43,10 @@ const DetailModal = ({
       message.info('Reached first item')
     } else {
       const newIndex = prevIndex <= 0 ? 0 : prevIndex
-      setCurrentIndex(newIndex)
+      setCurrentIndex(parentMasonryKey, newIndex)
       maybeLoadMoreFn(newIndex, items)
     }
-  }, [currentIndex, items.length])
+  }, [parentMasonryKey, currentIndex, items.length])
 
   const handleNextItem = useCallback(async () => {
     const nextIndex = currentIndex + 1
@@ -50,10 +54,10 @@ const DetailModal = ({
     if (nextIndex >= items.length) {
       message.info('Reached last item')
     } else {
-      setCurrentIndex(nextIndex)
+      setCurrentIndex(parentMasonryKey, nextIndex)
       maybeLoadMoreFn(nextIndex, items)
     }
-  }, [currentIndex, items.length])
+  }, [parentMasonryKey, currentIndex, items.length])
 
   useEffect(() => {
     if (currentIndex === null) return

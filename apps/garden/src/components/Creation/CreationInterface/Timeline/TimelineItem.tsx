@@ -3,16 +3,42 @@ import TimelineItemHeaderInfo from '@/components/Creation/CreationInterface/Time
 import TimelineItemMedia from '@/components/Creation/CreationInterface/Timeline/TimelineItemMedia'
 import TimelineItemMediaPlaceholder from '@/components/Creation/CreationInterface/Timeline/TimelineItemMediaPlaceholder'
 import TimelineItemPrompt from '@/components/Creation/CreationInterface/Timeline/TimelineItemPrompt'
-import { Task } from '@edenlabs/eden-sdk'
+import { Generator, Task } from '@edenlabs/eden-sdk'
 import React, { useCallback, useEffect, useState } from 'react'
 
-const noProgressGeneratorNames = [
+const noProgressImageGeneratorNames = [
   'create',
   'remix',
   'blend',
   'controlnet',
   'upscale',
 ]
+
+const noProgressVideoGeneratorNames = ['img2vid', 'vid2vid', 'text2vid']
+
+const getFakeProgressIncrement = (
+  generatorName: Generator['generatorName'],
+  taskConfig: Task['config'],
+) => {
+  const resolutionMultiplier =
+    (1024 * 1024) / (taskConfig['width'] || 1024 * taskConfig['height'] || 1024)
+
+  if (
+    noProgressImageGeneratorNames.includes(generatorName) &&
+    taskConfig['n_samples']
+  ) {
+    return (4 / taskConfig['n_samples']) * resolutionMultiplier
+  }
+
+  if (
+    noProgressVideoGeneratorNames.includes(generatorName) &&
+    taskConfig['n_frames']
+  ) {
+    return (16 / taskConfig['n_frames']) * resolutionMultiplier
+  }
+
+  return 4 * resolutionMultiplier
+}
 
 const TimelineItem = ({
   task,
@@ -43,22 +69,30 @@ const TimelineItem = ({
 
     if (
       task?.status === 'running' &&
-      // task?.status === 'pending' &&
-      noProgressGeneratorNames.includes(task?.generator.generatorName)
+      (noProgressImageGeneratorNames.includes(task?.generator.generatorName) ||
+        noProgressVideoGeneratorNames.includes(task?.generator.generatorName))
     ) {
-      const increment = task?.config['n_samples']
-        ? 4 / task?.config['n_samples']
-        : 4
       timerId = setInterval(
-        () => increaseFakeProgress(increment, timerId),
+        () =>
+          increaseFakeProgress(
+            getFakeProgressIncrement(task.generator.generatorName, task.config),
+            timerId,
+          ),
         1000,
       )
     }
 
     return () => {
-      clearInterval(timerId)
+      if (timerId) {
+        clearInterval(timerId)
+      }
     }
-  }, [task.config, task?.status, task?.generator.generatorName])
+  }, [
+    increaseFakeProgress,
+    task.config,
+    task?.status,
+    task?.generator.generatorName,
+  ])
 
   return (
     <div className="relative">
@@ -76,8 +110,13 @@ const TimelineItem = ({
             <TimelineItemMediaPlaceholder
               task={task}
               progress={
-                noProgressGeneratorNames.includes(task?.generator.generatorName)
-                  ? fakeProgress
+                noProgressImageGeneratorNames.includes(
+                  task?.generator.generatorName,
+                ) ||
+                noProgressVideoGeneratorNames.includes(
+                  task?.generator.generatorName,
+                )
+                  ? Math.floor(fakeProgress)
                   : task.progress
                   ? Math.floor(task.progress * 100)
                   : 0
@@ -99,8 +138,13 @@ const TimelineItem = ({
         <TimelineItemFooter
           task={task}
           progress={
-            noProgressGeneratorNames.includes(task?.generator.generatorName)
-              ? fakeProgress
+            noProgressImageGeneratorNames.includes(
+              task?.generator.generatorName,
+            ) ||
+            noProgressVideoGeneratorNames.includes(
+              task?.generator.generatorName,
+            )
+              ? Math.floor(fakeProgress)
               : task.progress
               ? Math.floor(task.progress * 100)
               : 0

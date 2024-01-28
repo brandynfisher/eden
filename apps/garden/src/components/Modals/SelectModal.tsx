@@ -152,6 +152,7 @@ const SelectModal = ({
           />
 
           <MasonryInfiniteScrollable
+            masonryKeySuffix={'selectmodal'}
             key={`public_${itemType}_${searchPublic}_${key}`}
             itemType={itemType}
             query={query}
