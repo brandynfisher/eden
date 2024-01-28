@@ -14,13 +14,13 @@ export type PaginatedRouteQueryParams = {
 }
 
 export type FeedRouteQueryParams = {
-  userId?: string
-  characterId?: string
-  collectionId?: string
-  creationId?: string
-  generatorId?: string
-  name?: string
-  conceptId?: string
+  userId?: string | string[]
+  characterId?: string | string[]
+  collectionId?: string | string[]
+  creationId?: string | string[]
+  generatorId?: string | string[]
+  name?: string | string[]
+  conceptId?: string | string[]
   dateCutOff?: string
 }
 
