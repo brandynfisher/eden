@@ -7,6 +7,8 @@ import { getServerSidePropsBase } from '@/lib/ssr'
 import CreatorPage from '@/pages/creators/[id]/CreatorPage'
 import { Creator as CreatorType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
+import Error from 'next/error'
+import React from 'react'
 
 interface PageProps {
   data: {
@@ -32,6 +34,10 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const Creator: Page<PageProps> = ({ data }: PageProps) => {
+  if (!data) {
+    return <Error statusCode={404} withDarkMode={true} />
+  }
+
   return (
     <>
       <CreatorHeadTags creator={data.creator} />

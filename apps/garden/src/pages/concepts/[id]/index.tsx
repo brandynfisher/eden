@@ -7,6 +7,7 @@ import { getServerSidePropsBase } from '@/lib/ssr'
 import ConceptPage from '@/pages/concepts/[id]/ConceptPage'
 import { Concept as ConceptType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
+import Error from 'next/error'
 import React from 'react'
 
 interface PageProps {
@@ -31,6 +32,10 @@ export const getServerSideProps = getServerSidePropsBase([
 ])
 
 const Concept: Page<PageProps> = ({ data }: PageProps) => {
+  if (!data) {
+    return <Error statusCode={404} withDarkMode={true} />
+  }
+
   return (
     <>
       <ConceptHeadTags concept={data.concept} />

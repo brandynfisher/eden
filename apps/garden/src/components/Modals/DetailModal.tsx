@@ -34,7 +34,7 @@ const DetailModal = ({
 
   const items = getItems(parentMasonryKey)
   const currentIndex = getCurrentIndex(parentMasonryKey)
-  console.log({ parent: parentMasonryKey, currentIndex, items })
+  // console.log({ parent: parentMasonryKey, currentIndex, items })
 
   const handlePrevItem = useCallback(async () => {
     const prevIndex = currentIndex - 1
