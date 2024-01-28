@@ -33,12 +33,12 @@ const ChannelsPage = () => {
   return (
     <div>
       <div className="mb-2">Channels</div>
-      <div className="grid xs:grid-cols-3 xl:grid-cols-3 3xl:grid-cols-4 flex-wrap gap-4 mb-4">
+      <div className="grid xs:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 flex-wrap gap-4 mb-4">
         <ChannelCard itemType="creation" orderBy={OrderByLatest} />
         <ChannelCard itemType="creation" orderBy={OrderByPopularity} />
         <ChannelCard itemType="creation" orderBy={OrderByScore} />
       </div>
-      <div className="grid xs:grid-cols-3 xl:grid-cols-3 3xl:grid-cols-4 flex-wrap gap-4 mb-4">
+      <div className="grid xs:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 flex-wrap gap-4 mb-4">
         {generatorChannels.map(generatorChannel => (
           <ChannelCard
             key={generatorChannel.generatorId}

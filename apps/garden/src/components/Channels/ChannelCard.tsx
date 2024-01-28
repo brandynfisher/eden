@@ -39,7 +39,7 @@ const ChannelCard = ({
         rounded-lg 
         border-gray-300
         dark:border-gray-600 
-        hover:border-blue-500 
+        hover:!border-blue-500 
         cursor-pointer 
         transition-colors
         duration-200 
