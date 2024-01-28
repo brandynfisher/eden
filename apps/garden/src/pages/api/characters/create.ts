@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { Capabilities, EdenClient } from '@edenlabs/eden-sdk'
+import { EdenClient } from '@edenlabs/eden-sdk'
 import { CharactersCreateArguments } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -17,14 +17,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (logosData?.concept === '') {
     logosData.concept = undefined
-  }
-
-  logosData.capabilities = [Capabilities.CHAT]
-
-  // TODO: make more dynamic
-  if (logosData?.knowledge) {
-    const extraCapabilities = [Capabilities.CREATION, Capabilities.KNOWLEDGE]
-    logosData.capabilities = [...logosData.capabilities, ...extraCapabilities]
   }
 
   try {

@@ -25,6 +25,14 @@ export const isVideoUrl = (url: string) => {
   return /\.(mp4)$/.test(url)
 }
 
+export const capitalize = (text: string) => {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+export const possessivy = (name: string | undefined) => {
+  return name ? (name.endsWith('s') ? `${name}'` : `${name}'s`) : ''
+}
+
 export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
   [SubscriptionTier.Free]: 'Free',
   [SubscriptionTier.Basic]: 'Basic',
