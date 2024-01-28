@@ -22,7 +22,7 @@ export const isImageUrl = (url: string) => {
 }
 
 export const isVideoUrl = (url: string) => {
-  return /\.(mp4)$/.test(url)
+  return /\.(mp4|webm)$/.test(url)
 }
 
 export const capitalize = (text: string) => {
