@@ -40,6 +40,7 @@ const StringParameter = (props: {
             <ParameterAddon
               title={props.parameter.label}
               info={`(max. ${props.parameter.maxLength})`}
+              description={props.parameter.description}
               textArea={true}
             />
           </div>
@@ -105,7 +106,11 @@ const StringParameter = (props: {
         </>
       ) : (
         <div className="">
-          <ParameterAddon title={props.parameter.label} textArea={true} />
+          <ParameterAddon
+            title={props.parameter.label}
+            textArea={true}
+            description={props.parameter.description}
+          />
           <Form.Item
             className="mb-1 font-mono w-full"
             name={props.parameter.name}
