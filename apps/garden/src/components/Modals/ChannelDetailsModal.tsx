@@ -6,7 +6,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import ModalTitle from '@/components/Modals/ModalTitle'
 import { useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
-import { isVideoUrl } from '@/lib/string'
+import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useFullscreen } from '@mantine/hooks'
@@ -83,11 +83,28 @@ const ChannelDetailsModal = ({
     { limit: PAGE_LIMIT },
     orderBy,
   )
+
   const { ref, toggle, fullscreen } = useFullscreen()
 
   const [focusItem, setFocusItem] = useState<Creation | null>(null)
   const [focusItemIndex, setFocusItemIndex] = useState<number | null>(null)
   const [galleryItems, setGalleryItems] = useState<Creation[] | null>(null)
+
+  const handleClickItem = (item: Creation) => {
+    setFocusItemIndex(() => {
+      const newIndex = items.findIndex(elem => elem._id === item._id)
+      setGalleryItems(items.slice(newIndex, newIndex + 10))
+      return newIndex
+    })
+
+    const loadedRemaining =
+      items.length - (focusItemIndex !== null ? focusItemIndex : 0)
+    console.log('remaining loaded', loadedRemaining)
+    if (loadedRemaining <= PAGE_LIMIT) {
+      console.log('Loading More')
+      maybeLoadMore()
+    }
+  }
 
   const handlePrevItem = () => {
     setFocusItemIndex(prev => {
@@ -226,12 +243,13 @@ const ChannelDetailsModal = ({
           <div>No items found</div>
         ) : (
           <>
-            <div className="grid grid-flow-col mb-6 auto-cols-max hover:auto-cols-min gap-1 items-center overflow-x-clip">
+            <div className="grid grid-flow-col mb-6 auto-cols-max gap-1 items-center overflow-x-clip">
               {galleryItems &&
                 galleryItems.map(item => (
                   <div
                     key={item._id}
-                    className="relative w-20 h-20 md:w-32 md:h-32 p-1"
+                    className="relative h-20 md:h-32 p-1 hover:cursor-pointer hover:scale-105"
+                    onClick={() => handleClickItem(item)}
                   >
                     <span className="overflow-hidden rounded-md">
                       <Image
@@ -243,11 +261,23 @@ const ChannelDetailsModal = ({
                         }
                         width={120}
                         height={120}
-                        className={`object-contain max-w-full rounded-md transition-all ${
-                          item._id !== focusItem._id ? 'grayscale' : 'scale-105'
+                        className={`object-contain max-w-full rounded-md transition-all w-auto ${
+                          item._id !== focusItem._id ? 'grayscale' : ''
                         }`}
                       />
                     </span>
+                    {/* // render full size image but keep it hidden to act as preloader  */}
+                    {isImageUrl(item.uri) ? (
+                      <CustomImage
+                        key={item._id}
+                        src={
+                          item.uri ||
+                          `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                        }
+                        alt={item.name}
+                        className="hidden"
+                      />
+                    ) : null}
                   </div>
                 ))}
             </div>
