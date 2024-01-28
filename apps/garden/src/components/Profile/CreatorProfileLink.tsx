@@ -7,11 +7,13 @@ const CreatorProfileLink = ({
   creatorName,
   creatorImage,
   isOverlay,
+  target,
 }: {
   creatorId: string
   creatorName?: string
   creatorImage?: string
   isOverlay?: boolean
+  target?: string
 }) => {
   return (
     <Link
@@ -26,6 +28,7 @@ const CreatorProfileLink = ({
           ? 'text-gray-300 hover:text-white'
           : 'hover:text-gray-800 text-black dark:text-gray-300'
       }  hover:brightness-125 transition-all`}
+      target={target}
     >
       <CreatorProfileButton
         creatorName={creatorName || ''}

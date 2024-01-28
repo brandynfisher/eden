@@ -1,3 +1,4 @@
 .env.eden
+.env.stage
 .env.local
 .env.migrate

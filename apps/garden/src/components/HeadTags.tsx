@@ -1,6 +1,6 @@
 import { CardData } from '@/components/Card/Card'
 import { CONFIG } from '@/lib/config'
-import { isImageUrl, isVideoUrl } from '@/lib/string'
+import { capitalize, isImageUrl, isVideoUrl, possessivy } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import {
   Character,
@@ -28,15 +28,23 @@ export const getItemMediaAttributes = (item: Creation) => {
 }
 
 export const CreationHeadTags = ({ creation }: { creation: Creation }) => {
-  return <HeadTags itemType="creation" item={creation} />
+  return (
+    <HeadTags
+      itemType="creation"
+      itemSuffix={creation.task?.generator?.generatorName}
+      item={creation}
+    />
+  )
 }
 
 export const ConceptHeadTags = ({ concept }: { concept: Concept }) => {
-  return <HeadTags itemType="concept" item={concept} />
+  return <HeadTags itemType="concept" itemName={concept.name} item={concept} />
 }
 
 export const CharacterHeadTags = ({ character }: { character: Character }) => {
-  return <HeadTags itemType="character" item={character} />
+  return (
+    <HeadTags itemType="character" itemName={character.name} item={character} />
+  )
 }
 
 export const CollectionHeadTags = ({
@@ -79,17 +87,15 @@ export const CollectionHeadTags = ({
 }
 
 export const CreatorHeadTags = ({ creator }: { creator: Creator }) => {
+  const title = `${possessivy(creator.username)} Profile`
+
   return (
     <Head>
-      <title>{`${creator.username} | Garden of Eden`}</title>
-      <meta
-        property="og:title"
-        key="title"
-        content={`${creator.username} | Garden of Eden`}
-      />
+      <title>{`${title} | Garden of Eden`}</title>
+      <meta property="og:title" key="title" content={title} />
       <meta
         property="og:description"
-        content={`${creator.username}'s Profile - ${creator.creationsCount} Creations | ${creator.followerCount} Followers`}
+        content={`${creator.creationsCount} Creations | ${creator.followerCount} Followers`}
         key="description"
       />
       <meta
@@ -109,7 +115,7 @@ export const CreatorHeadTags = ({ creator }: { creator: Creator }) => {
             : 'https://app.eden.art/apple-touch-icon.png'
         }
       />
-      <meta property="og:image:alt" content={`${creator.username} - Creator`} />
+      <meta property="og:image:alt" content={title} />
       <meta
         property="og:url"
         content={`${
@@ -122,20 +128,24 @@ export const CreatorHeadTags = ({ creator }: { creator: Creator }) => {
 
 const HeadTags = ({
   itemType,
+  itemName,
+  itemSuffix,
   item,
 }: {
   itemType: ItemType
+  itemName?: string
+  itemSuffix?: string
   item: CardData
 }) => {
+  const title = `${capitalize(itemType)}${
+    itemName ? ` "${itemName}"` : ''
+  } by ${item?.user?.username}${itemSuffix ? ` | ${itemSuffix}` : ''}`
+
   return (
     <Head>
-      <title>{`/${itemType} by ${item?.user?.username} | Garden of Eden`}</title>
-      <meta
-        property="og:title"
-        key="title"
-        content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
-      />
-      <meta property="og:description" content={item.name} key="description" />
+      <title>{`${title} | Garden of Eden`}</title>
+      <meta property="og:title" key="title" content={title} />
+      <meta property="og:description" content={''} key="description" />
       {itemType === 'character' ? (
         <>
           <meta
@@ -183,10 +193,7 @@ const HeadTags = ({
         isImageUrl(getItemMediaUrl(itemType, item as Creation))) ||
       itemType === 'concept' ? (
         <>
-          <meta
-            property="og:image:alt"
-            content={`/${itemType} by ${item?.user?.username} | Garden of Eden`}
-          />
+          <meta property="og:image:alt" content={`${title}`} />
           <meta property="og:image:type" content="image/jpeg" />
           <meta
             property="og:image"

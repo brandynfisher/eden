@@ -1,5 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
-
 import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
@@ -9,6 +7,7 @@ import {
 } from '../types'
 import { Concept } from './Concepts'
 import { Creation } from './Creations'
+import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
@@ -20,6 +19,7 @@ export interface FeedCreationsArguments
   characterId?: string | string[]
   collectionId?: string | string[]
   conceptId?: string | string[]
+  generatorId?: string | string[]
   name?: string
   dateCutOff?: string
   orderBy?: string

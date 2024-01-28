@@ -4,15 +4,22 @@ import VideoResult from '@/components/Creation/CreationInterface/media/VideoResu
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import ModalTitle from '@/components/Modals/ModalTitle'
-import { useFeedPaginated } from '@/hooks/useFeedPaginated'
+import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
+import {
+  FeedRouteQueryParams,
+  useFeedPaginated,
+} from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
-import { isVideoUrl } from '@/lib/string'
+import { isImageUrl, isVideoUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useFullscreen } from '@mantine/hooks'
 import { Button } from '@mui/material'
 import { Modal } from 'antd'
 import Image from 'next/image'
+// import { timeAgo } from '@/lib/time'
+import Link from 'next/link'
+import { QRCodeCanvas } from 'qrcode.react'
 import React, { useEffect, useState } from 'react'
 
 const CustomImage = ({
@@ -70,24 +77,47 @@ const CustomVideo = ({
 }
 
 const ChannelDetailsModal = ({
+  title,
   itemType,
   orderBy,
+  query,
   ...rest
 }: {
+  title?: string
+  query?: FeedRouteQueryParams
   itemType: ItemType
   orderBy: OrderByParam
 }) => {
   const PAGE_LIMIT = 50
-  const { items, isEmpty, isLoading, size, maybeLoadMore } = useFeedPaginated(
+  const { items, isEmpty, isLoading, maybeLoadMore } = useFeedPaginated(
     itemType,
-    { limit: PAGE_LIMIT },
+    { ...query, limit: PAGE_LIMIT },
     orderBy,
   )
+
   const { ref, toggle, fullscreen } = useFullscreen()
 
   const [focusItem, setFocusItem] = useState<Creation | null>(null)
   const [focusItemIndex, setFocusItemIndex] = useState<number | null>(null)
   const [galleryItems, setGalleryItems] = useState<Creation[] | null>(null)
+  // const [createdDateString, setCreatedDateString] = useState('')
+  // const timeSinceCreation = focusItem ? timeAgo(focusItem.createdAt) : ''
+
+  const handleClickItem = (item: Creation) => {
+    setFocusItemIndex(() => {
+      const newIndex = items.findIndex(elem => elem._id === item._id)
+      setGalleryItems(items.slice(newIndex, newIndex + 10))
+      return newIndex
+    })
+
+    const loadedRemaining =
+      items.length - (focusItemIndex !== null ? focusItemIndex : 0)
+    // console.log('remaining loaded', loadedRemaining)
+    if (loadedRemaining <= PAGE_LIMIT) {
+      // console.log('Loading More')
+      maybeLoadMore()
+    }
+  }
 
   const handlePrevItem = () => {
     setFocusItemIndex(prev => {
@@ -111,9 +141,9 @@ const ChannelDetailsModal = ({
     })
     const loadedRemaining =
       items.length - (focusItemIndex !== null ? focusItemIndex : 0)
-    console.log('remaining loaded', loadedRemaining)
+    // console.log('remaining loaded', loadedRemaining)
     if (loadedRemaining <= PAGE_LIMIT) {
-      console.log('Loading More')
+      // console.log('Loading More')
       maybeLoadMore()
     }
   }
@@ -122,7 +152,7 @@ const ChannelDetailsModal = ({
     if (focusItemIndex === null) {
       return
     }
-    console.log('render modal, focus item', focusItemIndex, { size })
+    // console.log('render modal, focus item', focusItemIndex, { size })
     setFocusItem(items[focusItemIndex])
 
     // setIsLoadingImage(true)
@@ -161,17 +191,17 @@ const ChannelDetailsModal = ({
   const [isImageLoading, setImageLoading] = useState(true)
 
   const handleMediaLoadStart = () => {
-    console.log('handleMediaLoadStart')
+    // console.log('handleMediaLoadStart')
     setImageLoading(true)
   }
 
   const handleMediaLoaded = () => {
-    console.log('handleMediaLoaded')
+    // console.log('handleMediaLoaded')
     setImageLoading(false)
   }
 
   const handleVideoEnded = () => {
-    console.log('handleVideoEnded')
+    // console.log('handleVideoEnded')
     handleNextItem()
   }
 
@@ -192,6 +222,12 @@ const ChannelDetailsModal = ({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [handleNextItem])
+  //
+  // useEffect(() => {
+  //   if (focusItem) {
+  //     setCreatedDateString(new Date(focusItem.createdAt).toLocaleString())
+  //   }
+  // }, [focusItem])
 
   return (
     <Modal
@@ -199,7 +235,7 @@ const ChannelDetailsModal = ({
       className="modal-small modal-grow max-w-6xl pb-0 flex flex-col w-full items-center justify-center"
     >
       <ModalTitle
-        title={`Channel: ${orderBy.label}`}
+        title={`Channel: ${title ? title : orderBy.label}`}
         link={
           <>
             <div className="flex items-center gap-2">
@@ -226,12 +262,13 @@ const ChannelDetailsModal = ({
           <div>No items found</div>
         ) : (
           <>
-            <div className="grid grid-flow-col mb-6 auto-cols-max hover:auto-cols-min gap-1 items-center overflow-x-clip">
+            <div className="grid grid-flow-col mb-6 auto-cols-max gap-1 items-center overflow-x-clip">
               {galleryItems &&
                 galleryItems.map(item => (
                   <div
                     key={item._id}
-                    className="relative w-20 h-20 md:w-32 md:h-32 p-1"
+                    className="relative h-20 md:h-32 p-1 hover:cursor-pointer hover:scale-105"
+                    onClick={() => handleClickItem(item)}
                   >
                     <span className="overflow-hidden rounded-md">
                       <Image
@@ -243,11 +280,23 @@ const ChannelDetailsModal = ({
                         }
                         width={120}
                         height={120}
-                        className={`object-contain max-w-full rounded-md transition-all ${
-                          item._id !== focusItem._id ? 'grayscale' : 'scale-105'
+                        className={`object-contain max-w-full rounded-md transition-all w-auto ${
+                          item._id !== focusItem._id ? 'grayscale' : ''
                         }`}
                       />
                     </span>
+                    {/* // render full size image but keep it hidden to act as preloader  */}
+                    {isImageUrl(item.uri) ? (
+                      <CustomImage
+                        key={item._id}
+                        src={
+                          item.uri ||
+                          `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                        }
+                        alt={item.name}
+                        className="hidden"
+                      />
+                    ) : null}
                   </div>
                 ))}
             </div>
@@ -266,6 +315,7 @@ const ChannelDetailsModal = ({
                   <LoadingIndicator />
                 </div>
               ) : null}
+
               <Image
                 key={`${focusItem._id}_placeholder`}
                 alt={focusItem.name}
@@ -301,6 +351,48 @@ const ChannelDetailsModal = ({
                   className="z-10"
                 />
               )}
+
+              <div className="absolute z-10 bottom-0 left-0 max-w-[33%]">
+                <div className="bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg min-h-11">
+                  <div className="line-clamp-3">{focusItem.name}</div>
+                </div>
+              </div>
+              <div className="absolute flex flex-col justify-center z-10 bottom-0 right-0">
+                <div className="flex items-center justify-end px-4 py-4">
+                  <div className="flex p-1 bg-white">
+                    <QRCodeCanvas
+                      value={`/creations/${focusItem._id}`}
+                      size={96}
+                      level="L"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-1 items-center bg-black bg-opacity-50 px-4 py-2 rounded-tl-lg">
+                  <Link
+                    href={`/creations/${focusItem._id}`}
+                    target="_blank"
+                    className="!text-gray-200 hover:!text-gray-400"
+                  >
+                    <strong>/{focusItem.task.generator.generatorName}</strong>
+                  </Link>
+                  <div className="flex items-center">
+                    <span className="mr-2">by</span>{' '}
+                    <CreatorProfileLink
+                      creatorId={focusItem.user.userId}
+                      creatorName={focusItem.user.username}
+                      creatorImage={focusItem.user.userImage}
+                      target="_blank"
+                    />
+                    {/*<div*/}
+                    {/*  className="text-gray-700 dark:text-gray-400 text-xs"*/}
+                    {/*  title={createdDateString}*/}
+                    {/*>*/}
+                    {/*  <span className="mx-1">•</span>*/}
+                    {/*  {timeSinceCreation} ago*/}
+                    {/*</div>*/}
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         )}

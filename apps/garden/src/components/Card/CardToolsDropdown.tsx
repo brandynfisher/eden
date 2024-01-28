@@ -1,3 +1,4 @@
+import UseConceptButton from '../Layout/buttons/UseConceptButton'
 import { CardData } from '@/components/Card/Card'
 import AddToCollectionButton from '@/components/Layout/buttons/AddToCollectionButton'
 import CopyImageButton from '@/components/Layout/buttons/CopyImageButton'
@@ -9,13 +10,14 @@ import MakePrivateButton from '@/components/Layout/buttons/MakePrivateButton'
 import MakePublicButton from '@/components/Layout/buttons/MakePublicButton'
 import NewTabLinkButton from '@/components/Layout/buttons/NewTabLinkButton'
 import ShareLinkButton from '@/components/Layout/buttons/ShareLinkButton'
+import UnpublishButton from '@/components/Layout/buttons/UnpublishButton'
 import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
-import { Concept, Creation, Creator, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
   ReactNode,
@@ -24,8 +26,6 @@ import React, {
   useEffect,
   useState,
 } from 'react'
-
-import UseConceptButton from '../Layout/buttons/UseConceptButton'
 
 type MenuItem = {
   key: string
@@ -331,21 +331,43 @@ const CardToolsDropdown = ({
       ? getDownloadMenuItems(itemType, item, user)
       : []
 
-    if (
-      user?.featureFlags?.includes(FeatureFlag.Preview) &&
-      itemType === 'concept' &&
-      item.user.userId === user?.userId
-    ) {
-      downloadItem.push({
-        key: '4-2',
-        icon: (
-          <ExportConcept
-            conceptId={item._id}
-            variant="text"
-            label={'Publish to Huggingface'}
-          />
-        ),
-      })
+    const huggingFaceItems: MenuItem[] = []
+
+    if (itemType === 'concept') {
+      const conceptItem = item as Concept
+      if (!conceptItem.publishedUrl && item.user.userId === user?.userId) {
+        huggingFaceItems.push({
+          key: '4-2',
+          icon: (
+            <ExportConcept
+              conceptId={item._id}
+              label={'Publish to Huggingface'}
+            />
+          ),
+        })
+      } else if (conceptItem.publishedUrl) {
+        huggingFaceItems.push({
+          key: '4-2',
+          icon: (
+            <NewTabLinkButton
+              url={conceptItem.publishedUrl}
+              variant="text"
+              label="View on Huggingface"
+            />
+          ),
+        })
+        if (conceptItem.user.userId === user?.userId) {
+          huggingFaceItems.push({
+            key: '4-3',
+            icon: (
+              <UnpublishButton
+                conceptId={item._id}
+                label="Remove from HuggingFace"
+              />
+            ),
+          })
+        }
+      }
     }
 
     return [
@@ -353,6 +375,7 @@ const CardToolsDropdown = ({
       ...creatorMenuItems,
       ...deleteItem,
       ...downloadItem,
+      ...huggingFaceItems,
     ]
   }
 

@@ -1,6 +1,3 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginationProperties } from '.'
 import {
   getCharactersFeed,
@@ -9,6 +6,8 @@ import {
   getCreatorsFeed,
 } from '../controllers/feedController'
 import { maybeAuth } from '../middleware/authMiddleware'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const feedRoutes: FastifyPluginAsync = async server => {
   server.get('/feed/creations', {
@@ -29,8 +28,9 @@ const feedRoutes: FastifyPluginAsync = async server => {
           characterId: { type: ['string', 'array'] },
           collectionId: { type: ['string', 'array'] },
           conceptId: { type: ['string', 'array'] },
-          creationId: { type: 'string' },
-          name: { type: 'string' },
+          creationId: { type: ['string', 'array'] },
+          generatorId: { type: ['string', 'array'] },
+          name: { type: ['string', 'array'] },
           dateCutOff: { type: 'string' },
           ...paginationProperties(),
         },

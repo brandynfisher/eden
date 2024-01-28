@@ -11,6 +11,7 @@ const defaultImageDomains = [
   'https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/',
   'files.stripe.com',
   'img.clerk.com',
+  'cdn.discordapp.com',
   'eden-creations-stg.s3.us-east-1.amazonaws.com',
   'eden-creations-prod.s3.us-east-1.amazonaws.com',
   'edenartlab-prod-data.s3.us-east-1.amazonaws.com',

@@ -1,4 +1,5 @@
 import {
+  maybeRedirectIfCharacterIdQuery,
   maybeRedirectIfConceptIdQuery,
   maybeRedirectIfCreationIdQuery,
 } from '@/lib/redirect'
@@ -25,6 +26,13 @@ export const getServerSidePropsBase = (fieldRequests: FieldRequest[]) => {
 
     if (shouldRedirectToConceptDetail) {
       return shouldRedirectToConceptDetail
+    }
+
+    const shouldRedirectToCharacterDetail =
+      await maybeRedirectIfCharacterIdQuery(ctx)
+
+    if (shouldRedirectToCharacterDetail) {
+      return shouldRedirectToCharacterDetail
     }
 
     try {

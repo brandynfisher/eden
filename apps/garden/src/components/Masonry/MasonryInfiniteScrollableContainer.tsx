@@ -1,6 +1,3 @@
-import { CardData } from '@/components/Card/Card'
-import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import OrderByButtons, {
   OrderByDefaultParam,
   OrderByParam,
@@ -8,13 +5,7 @@ import OrderByButtons, {
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfiniteScrollable from '@/components/Masonry/MasonryInfiniteScrollable'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
-import {
-  ItemType,
-  MODAL_TYPES,
-  useModalContext,
-} from '@/providers/ModalProvider'
-import { Creation, Creator } from '@edenlabs/eden-sdk'
-import { useRouter } from 'next/router'
+import { ItemType } from '@/providers/ModalProvider'
 import React, { useCallback, useEffect, useState } from 'react'
 
 const MasonryInfiniteScrollableContainer = ({
@@ -23,25 +14,15 @@ const MasonryInfiniteScrollableContainer = ({
   query,
   modalContainerRef,
   modalContainerHeight,
+  masonryKeySuffix,
 }: {
   itemType: ItemType
   filters?: OrderByParam[]
   query?: PaginatedFeedQuery
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
+  masonryKeySuffix?: string
 }) => {
-  const { showModal } = useModalContext()
-  const router = useRouter()
-
-  const openDetailModal = async (item: CardData | Creator) => {
-    showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
-      itemType,
-      item: item,
-      originPageUrl: router.asPath,
-      usesUrl: true,
-    })
-  }
-
   const [fetchStartDate, setFetchStartDate] = useState<string | undefined>()
   const [orderBy, setOrderBy] = useState<OrderByParam>(
     filters ? filters[0] : OrderByDefaultParam,
@@ -81,12 +62,11 @@ const MasonryInfiniteScrollableContainer = ({
       ) : null}
 
       <MasonryInfiniteScrollable
+        masonryKeySuffix={masonryKeySuffix}
         key={key}
         itemType={itemType ? itemType : 'creation'}
-        ItemComponent={itemType === 'creation' ? CreationCard : ConceptCard}
         query={{ ...query, dateCutOff: fetchStartDate }}
         orderBy={orderBy}
-        onCardClick={creation => openDetailModal(creation as Creation)}
         modalContainerRef={modalContainerRef}
         modalContainerHeight={modalContainerHeight}
       />

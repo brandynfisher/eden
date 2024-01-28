@@ -1,14 +1,16 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import { adminListApiKeys } from '../controllers/apiKeyController'
-import { conceptExportToHF } from '../controllers/conceptsController'
+import {
+  conceptExportToHF,
+  removeConceptFromHF,
+} from '../controllers/conceptsController'
 import { createMannaVoucher, modifyManna } from '../controllers/mannaController'
 import { uploadMediaAdmin } from '../controllers/mediaController'
 import { createTask } from '../controllers/taskController'
 import { isAdmin } from '../middleware/authMiddleware'
 import { configType } from '../types/routeTypes'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 export interface MannaModifyRequestBody {
   userId: string
@@ -130,6 +132,31 @@ const adminRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => conceptExportToHF(server, request, reply),
+  })
+
+  server.post('/admin/concepts/remove/hf', {
+    schema: {
+      tags: ['Admin'],
+      description: 'Remove a concept from HuggingFace',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      hide: true,
+      body: Type.Object({
+        userId: Type.String(),
+        conceptId: Type.String(),
+      }),
+      response: {
+        200: {
+          url: Type.String(),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => removeConceptFromHF(server, request, reply),
   })
 
   server.get('/admin/apikeys', {

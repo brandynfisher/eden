@@ -193,6 +193,33 @@ const TimelineList = ({
     }
   }, [items])
 
+  // useEffect(() => {
+  //   setItems(masonryKey, items)
+  // }, [masonryKey, items.length])
+  //
+  // const handleCardClick = useCallback(
+  //   (index: number) => {
+  //     setCurrentIndex(masonryKey, index)
+  //
+  //     showModal(MODAL_TYPES.DETAIL_MODAL, {
+  //       itemType: itemType,
+  //       usesUrl: true,
+  //       originPageUrl: router.asPath,
+  //       parentMasonryKey: masonryKey,
+  //       maybeLoadMoreFn: (
+  //         currentIndex: number,
+  //         currentItems: Creation[] | Concept[] | Character[] | Creator[],
+  //       ) => {
+  //         if (currentIndex === currentItems.length - 1) {
+  //           maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
+  //         }
+  //         //console.log(currentItems.length)
+  //       },
+  //     })
+  //   },
+  //   [masonryKey],
+  // )
+
   return (
     <div
       className="flex flex-col max-h-[calc(100vh_-_72px)] pb-[105px] w-full overflow-hidden md:pb-0"

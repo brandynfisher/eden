@@ -64,6 +64,15 @@ export const createPaginationRoute = (
   if (query.conceptId) {
     params.conceptId = String(query.conceptId)
   }
+  // if (query.generatorId) {
+  //   params.generatorId = String(query.generatorId)
+  // }
+  if (Array.isArray(query.generatorId)) {
+    params.generatorId = query.generatorId.map(id => String(id))
+  } else if (query.generatorId) {
+    params.generatorId = [String(query.generatorId)]
+  }
+
   if (query.name && query.name.length > 0) {
     params.name = String(query.name)
   }
@@ -79,11 +88,22 @@ export const createPaginationRoute = (
   if (query.dateCutOff) {
     params.dateCutOff = query.dateCutOff
   }
+  let queryStringArray: string[] = []
 
-  const queryString = Object.keys(params)
-    //@ts-ignore
-    .map(key => `${key}=${params[key]}`)
-    .join('&')
+  for (let key in params) {
+    // @ts-ignore
+    if (Array.isArray(params[key])) {
+      // @ts-ignore
+      params[key].forEach((value: string | number) => {
+        queryStringArray.push(`${key}=${value}`)
+      })
+    } else {
+      // @ts-ignore
+      queryStringArray.push(`${key}=${params[key]}`)
+    }
+  }
+
+  const queryString = queryStringArray.join('&')
 
   return queryString ? `${basePath}?${queryString}` : basePath
 }

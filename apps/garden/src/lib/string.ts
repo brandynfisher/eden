@@ -22,7 +22,15 @@ export const isImageUrl = (url: string) => {
 }
 
 export const isVideoUrl = (url: string) => {
-  return /\.(mp4)$/.test(url)
+  return /\.(mp4|webm)$/.test(url)
+}
+
+export const capitalize = (text: string) => {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+export const possessivy = (name: string | undefined) => {
+  return name ? (name.endsWith('s') ? `${name}'` : `${name}'s`) : ''
 }
 
 export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {

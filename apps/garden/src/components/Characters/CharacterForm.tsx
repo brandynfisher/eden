@@ -1,4 +1,3 @@
-import CharacterFormPro from '@/components/Characters/CharacterFormPro'
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
 import { ELEVENLABS_VOICES } from '@/components/Characters/elevenlabs'
 import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
@@ -12,7 +11,16 @@ import { ChatMessageGroup } from '@/lib/types'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import { Character, CharactersTestArguments } from '@edenlabs/eden-sdk'
 import { SettingsSuggest } from '@mui/icons-material'
-import { App, Button, Collapse, Form, Input, Select } from 'antd'
+import {
+  App,
+  Button,
+  Collapse,
+  Form,
+  FormInstance,
+  Input,
+  Select,
+  Switch,
+} from 'antd'
 import axios from 'axios'
 import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
 import Image from 'next/image'
@@ -44,8 +52,10 @@ interface CharacterFormInput {
   identity: string
   greeting: string
   completion: string
+  creationsEnabled: boolean
+  knowledgeEnabled: boolean
+  smartReplyEnabled: boolean
   concept?: string
-  dialogue?: string
   knowledge?: string
   knowledgeSummary?: string
   isPrivate?: boolean
@@ -114,6 +124,139 @@ const CharacterToolButtons = ({ character }: { character: Character }) => {
   )
 }
 
+const CreationsSection = ({
+  form,
+  concept,
+}: {
+  form: FormInstance
+  concept: string
+}) => {
+  const creationEnabled = Form.useWatch('creationsEnabled', form)
+
+  return (
+    <div className="px-2 py-2">
+      <div className="flex justify-between items-center">
+        <FormLabel
+          text="Enable Creations"
+          description="Turn on to enable creations for this character."
+        />
+        <Form.Item
+          name="creationsEnabled"
+          valuePropName="checked"
+          style={{ marginBottom: 0 }}
+        >
+          <Switch />
+        </Form.Item>
+      </div>
+      {creationEnabled && (
+        <Form.Item
+          label={
+            <FormLabel
+              text="Concept"
+              description="(Optional) Select a concept that your character will use when creating images."
+            />
+          }
+          className="label-auto-height"
+          labelCol={{ span: 24 }}
+          name="concept"
+        >
+          <div>
+            <div className="mb-2">
+              <SelectConceptModalTrigger
+                onChange={concept => {
+                  form.setFieldsValue({
+                    ['concept']: concept ? concept._id : null,
+                  })
+                }}
+              />
+            </div>
+            {concept && (
+              <ConceptParameterUI
+                conceptId={concept}
+                onChange={() => form.setFieldValue('concept', null)}
+              />
+            )}
+          </div>
+        </Form.Item>
+      )}
+    </div>
+  )
+}
+
+const KnowledgeSection = ({ form }: { form: FormInstance }) => {
+  const knowledgeEnabled = Form.useWatch('knowledgeEnabled', form)
+
+  return (
+    <div className="px-2 py-2">
+      <div className="flex justify-between items-center">
+        <FormLabel
+          text="Enable Knowledge"
+          description="Turn on to enable knowledge for this character. Knowledge enables a character to have a set of information to selectively from. It can be used for things like answering questions about documentation."
+        />
+        <Form.Item
+          name="knowledgeEnabled"
+          valuePropName="checked"
+          style={{ marginBottom: 0 }}
+        >
+          <Switch />
+        </Form.Item>
+      </div>
+
+      {knowledgeEnabled && (
+        <>
+          <Form.Item
+            label={
+              <FormLabel
+                text="Knowledge"
+                description="Add knowledge for your character"
+              />
+            }
+            className="label-auto-height !mb-2"
+            labelCol={{ span: 24 }}
+            name="knowledge"
+          >
+            <Input.TextArea autoSize={{ minRows: 3 }} />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <FormLabel
+                text="Knowledge Summary"
+                description="(Optional) Add a knowledge summary for your character. This should be a few sentences that will clue your character as to when it should use its full knowledge. If you do not provide a summary, it will be auto-generated on save."
+              />
+            }
+            className="label-auto-height !mb-0"
+            labelCol={{ span: 24 }}
+            name="knowledgeSummary"
+          >
+            <Input.TextArea autoSize={{ minRows: 3 }} />
+          </Form.Item>
+        </>
+      )}
+    </div>
+  )
+}
+
+const SmartReplySection = () => {
+  return (
+    <div className="px-2 py-2">
+      <div className="flex justify-between items-center">
+        <FormLabel
+          text="Enable Smart Reply"
+          description="Turn on to enable smart reply for this character. Smart reply lets a character decide when to respond based on the conversation."
+        />
+        <Form.Item
+          name="smartReplyEnabled"
+          valuePropName="checked"
+          style={{ marginBottom: 0 }}
+        >
+          <Switch />
+        </Form.Item>
+      </div>
+    </div>
+  )
+}
+
 const CharacterForm = ({ character }: { character?: Character }) => {
   const mode = !character ? 'create' : 'update'
   const { message } = App.useApp()
@@ -143,6 +286,12 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             concept: character?.logosData?.concept || '',
             knowledge: character?.logosData?.knowledge || '',
             knowledgeSummary: character?.logosData?.knowledgeSummary || '',
+            creationsEnabled:
+              character?.logosData?.abilities?.creations || false,
+            knowledgeEnabled:
+              character?.logosData?.abilities?.knowledge || false,
+            smartReplyEnabled:
+              character?.logosData?.abilities?.smart_reply || false,
             isPrivate: character?.isPrivate || false,
           }
         : {
@@ -155,6 +304,9 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             concept: '',
             knowledge: '',
             knowledgeSummary: '',
+            creationsEnabled: false,
+            knowledgeEnabled: false,
+            smartReplyEnabled: false,
             isPrivate: false,
           }
 
@@ -204,6 +356,11 @@ const CharacterForm = ({ character }: { character?: Character }) => {
       voice: form.getFieldValue('voice'),
       dialogue: messageGroups.flat(),
       logosData: {
+        abilities: {
+          creations: form.getFieldValue('creationsEnabled'),
+          knowledge: form.getFieldValue('knowledgeEnabled'),
+          smart_reply: form.getFieldValue('smartReplyEnabled'),
+        },
         identity: identity ? identity : null,
         concept: concept ? concept : null,
         knowledge: knowledge ? knowledge : null,
@@ -369,36 +526,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     />
                   </Form.Item>
                 </div>
-
-                <Form.Item
-                  label={
-                    <FormLabel
-                      text="Concept"
-                      description="(Optional) Select a concept that your character will use when creating images."
-                    />
-                  }
-                  className="label-auto-height"
-                  labelCol={{ span: 24 }}
-                  name="concept"
-                >
-                  <div>
-                    <div className="mb-2">
-                      <SelectConceptModalTrigger
-                        onChange={concept => {
-                          form.setFieldsValue({
-                            ['concept']: concept ? concept._id : null,
-                          })
-                        }}
-                      />
-                    </div>
-                    {concept && (
-                      <ConceptParameterUI
-                        conceptId={concept}
-                        onChange={() => form.setFieldValue('concept', null)}
-                      />
-                    )}
-                  </div>
-                </Form.Item>
               </div>
 
               <Collapse
@@ -406,16 +533,20 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                 className="mb-4 generator-settings-collapse"
               >
                 <Panel
-                  key={'1'}
+                  key={'advanced'}
                   header={
                     <div className="flex gap-2 items-center">
                       <SettingsSuggest fontSize="small" />
-                      <span>Advanced</span>
+                      <span>Advanced Settings</span>
                     </div>
                   }
                   forceRender={true}
                 >
-                  <CharacterFormPro />
+                  <div className="px-2 py-2">
+                    <CreationsSection form={form} concept={concept} />
+                    <KnowledgeSection form={form} />
+                    <SmartReplySection />
+                  </div>
                 </Panel>
               </Collapse>
 

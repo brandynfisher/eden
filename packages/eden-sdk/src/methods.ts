@@ -1,11 +1,10 @@
-import { AxiosRequestConfig } from 'axios'
-
 import {
   AdminApiKeysListArguments,
   AdminApiKeysListResponse,
   AdminAuthChallengeArguments,
   AdminAuthChallengeResponse,
   AdminConceptsExportToHFArguments,
+  AdminConceptsRemoveFromHFArguments,
   AdminMannaModifyArguments,
   AdminMannaModifyResponse,
   AdminMannaVouchersCreateArguments,
@@ -125,6 +124,7 @@ import {
   adminApiKeysListRequestConfig,
   adminAuthChallengeRequestConfig,
   adminConceptsExportToHFRequestConfig,
+  adminConceptsRemoveFromHFRequestConfig,
   adminMannaModifyRequestConfig,
   adminMannaVouchersCreateRequestConfig,
   adminMediaUploadRequestConfig,
@@ -188,6 +188,7 @@ import {
   tasksListRequestConfig,
 } from './models'
 import { WebAPICallOptions, WebAPICallResult } from './types'
+import { AxiosRequestConfig } from 'axios'
 
 export default interface Method<
   MethodArguments extends WebAPICallOptions,
@@ -240,6 +241,12 @@ export abstract class Methods {
       ),
     },
     concepts: {
+      remove: {
+        hf: bindApiCall<
+          AdminConceptsRemoveFromHFArguments,
+          AdminConceptsRemoveFromHFArguments
+        >(this, adminConceptsRemoveFromHFRequestConfig),
+      },
       export: {
         hf: bindApiCall<
           AdminConceptsExportToHFArguments,

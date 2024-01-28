@@ -1,3 +1,6 @@
+import { VisibilitySchema } from '../types/baseSchemas'
+import { UserDocument } from './Creator'
+import { TaskDocument } from './Task'
 import { MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
@@ -7,10 +10,6 @@ import mongooseDelete, {
   SoftDeleteModel,
 } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
-
-import { VisibilitySchema } from '../types/baseSchemas'
-import { UserDocument } from './Creator'
-import { TaskDocument } from './Task'
 
 export interface ConceptSchema extends VisibilitySchema {
   user: UserDocument
@@ -22,10 +21,12 @@ export interface ConceptSchema extends VisibilitySchema {
   uri: string
   thumbnail?: string
   name: string
+  description?: string
   conceptName: string
   checkpoint: string
   training_images: string[]
   num_training_images?: number
+  publishedUrl?: string
   attributes?: any
   createdAt?: Date
   updatedAt?: Date
@@ -38,6 +39,7 @@ export interface ConceptInput {
   uri: string
   thumbnail?: string
   name: string
+  description?: string
   conceptName: string
   checkpoint: string
   training_images: string[]
@@ -90,6 +92,10 @@ const concept = new Schema<ConceptDocument>(
       required: true,
       maxlength: 1000,
     },
+    description: {
+      type: String,
+      maxlength: 5000,
+    },
     conceptName: {
       type: String,
       required: true,
@@ -106,6 +112,10 @@ const concept = new Schema<ConceptDocument>(
     num_training_images: {
       type: Number,
       required: false,
+    },
+    publishedUrl: {
+      type: String,
+      maxlength: 1000,
     },
     attributes: {
       type: Schema.Types.Mixed,

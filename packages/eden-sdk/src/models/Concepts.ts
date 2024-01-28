@@ -1,8 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
-import { ReactionType, Reactions } from 'src/models/Creations'
-import { Creator } from 'src/models/Creators'
-import { Task } from 'src/models/Tasks'
-
 import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
@@ -10,6 +5,10 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { AxiosRequestConfig } from 'axios'
+import { ReactionType, Reactions } from 'src/models/Creations'
+import { Creator } from 'src/models/Creators'
+import { Task } from 'src/models/Tasks'
 
 // Arguments
 
@@ -159,9 +158,11 @@ export type Concept = {
   num_training_images?: number
   checkpoint?: string
   name: string
+  description?: string
   publicName: string
   conceptName: string
   attributes: any
+  publishedUrl?: string
   creationCount?: number
   praiseCount?: number
   bookmarkCount?: number

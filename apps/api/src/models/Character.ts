@@ -70,6 +70,11 @@ const character = new Schema<CharacterDocument>(
     },
     logosData: {
       type: {
+        abilities: {
+          type: Map,
+          of: Boolean,
+          required: false,
+        },
         capabilities: {
           type: Array,
           values: Object.values(Capabilities),
