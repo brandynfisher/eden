@@ -39,7 +39,7 @@ const CustomImage = ({
 }) => {
   useEffect(() => {
     onLoadStart && onLoadStart()
-  }, [])
+  }, [onLoadStart])
 
   return (
     <img {...rest} src={src} alt={alt} onLoad={onLoad} className={className} />

@@ -84,8 +84,8 @@ const ChannelsPage = () => {
       <h3 className="mb-4">Channels</h3>
       <div className="mb-4">
         <div className="mb-2">Settings</div>
-        <div className="p-2 bg-gray-300 dark:bg-gray-800 rounded-md">
-          <div className="mb-2 flex gap-2 flex-wrap">
+        <div className="p-2 py-4 bg-gray-300 dark:bg-gray-800 rounded-md">
+          <div className="mb-4 flex gap-2 flex-wrap">
             Display
             <div>
               <Switch
