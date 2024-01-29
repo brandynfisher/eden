@@ -1,5 +1,6 @@
 import CardImage from '@/components/Card/CardImage'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
+import { ChannelSettings } from '@/components/Modals/ChannelDetailsModal'
 import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import {
   ItemType,
@@ -13,11 +14,13 @@ const ChannelCard = ({
   title,
   orderBy,
   query,
+  settings,
 }: {
   itemType: ItemType
   title?: string
   orderBy: OrderByParam
   query?: FeedRouteQueryParams
+  settings: ChannelSettings
 }) => {
   const { showModal } = useModalContext()
   const onChannelCardClick = () => {
@@ -26,7 +29,8 @@ const ChannelCard = ({
       title,
       itemType,
       orderBy,
-      query,
+      query: { ...query, dateCutOff: new Date().toISOString() },
+      settings,
     })
   }
 

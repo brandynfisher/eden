@@ -145,7 +145,6 @@ const HeadTags = ({
     <Head>
       <title>{`${title} | Garden of Eden`}</title>
       <meta property="og:title" key="title" content={title} />
-      <meta property="og:description" content={item.name} key="description" />
       {itemType === 'character' ? (
         <>
           <meta
@@ -164,6 +163,7 @@ const HeadTags = ({
       {itemType === 'creation' &&
       isVideoUrl(getItemMediaUrl(itemType, item as Creation)) ? (
         <>
+          <meta property="og:description" content={''} key="description" />
           <meta
             property="og:image"
             content={(item as Creation).thumbnail}
@@ -188,8 +188,42 @@ const HeadTags = ({
             property="og:video:duration"
             content={String(getItemMediaAttributes(item as Creation).duration)}
           />
+          <meta
+            name="og:video:width"
+            content={String(getItemMediaAttributes(item as Creation).width)}
+          />
+          <meta
+            name="og:video:height"
+            content={String(getItemMediaAttributes(item as Creation).height)}
+          />
+          <meta name="twitter:card" content="player" />
+          <meta
+            name="twitter:player"
+            content={getItemMediaUrl(itemType, item as Creation)}
+          />
+          <meta
+            name="twitter:player:stream"
+            content={getItemMediaUrl(itemType, item as Creation)}
+          />
+          <meta
+            name="twitter:player:width"
+            content={String(getItemMediaAttributes(item as Creation).width)}
+          />
+          <meta
+            name="twitter:player:height"
+            content={String(getItemMediaAttributes(item as Creation).height)}
+          />
         </>
-      ) : null}
+      ) : (
+        <>
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta
+            property="og:description"
+            content={item.name}
+            key="description"
+          />
+        </>
+      )}
       {(itemType === 'creation' &&
         isImageUrl(getItemMediaUrl(itemType, item as Creation))) ||
       itemType === 'concept' ? (
@@ -215,6 +249,7 @@ const HeadTags = ({
       {itemType === 'creation' &&
       isImageUrl(getItemMediaUrl(itemType, item as Creation)) ? (
         <>
+          <meta name="twitter:card" content="summary_large_image" />
           <meta
             property="og:image:width"
             content={String((item as Creation).mediaAttributes.width || 1024)}
@@ -230,10 +265,9 @@ const HeadTags = ({
           <meta property="og:image:height" content={String(1024)} />
         </>
       )}
-      <meta name="twitter:site" content="Garden of Eden" />
+      <meta name="twitter:site" content="@eden_art_" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={item.name} />
-      <meta name="twitter:card" content="summary_large_image" />
       <meta
         property="og:url"
         content={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}

@@ -17,10 +17,11 @@ import { useFullscreen } from '@mantine/hooks'
 import { Button } from '@mui/material'
 import { Modal } from 'antd'
 import Image from 'next/image'
-// import { timeAgo } from '@/lib/time'
 import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
 import React, { useEffect, useState } from 'react'
+
+// import DurationProgressBar from '@/components/Layout/DurationProgressBar'
 
 const CustomImage = ({
   src,
@@ -38,7 +39,7 @@ const CustomImage = ({
 }) => {
   useEffect(() => {
     onLoadStart && onLoadStart()
-  }, [])
+  }, [onLoadStart])
 
   return (
     <img {...rest} src={src} alt={alt} onLoad={onLoad} className={className} />
@@ -76,19 +77,34 @@ const CustomVideo = ({
   )
 }
 
+export type ChannelSettings = {
+  showPrompt: boolean
+  showCreator: boolean
+  showQrCode: boolean
+  imageDisplayDuration: number
+}
+
 const ChannelDetailsModal = ({
   title,
   itemType,
   orderBy,
   query,
+  settings,
   ...rest
 }: {
   title?: string
   query?: FeedRouteQueryParams
   itemType: ItemType
   orderBy: OrderByParam
+  settings: ChannelSettings
 }) => {
   const PAGE_LIMIT = 50
+
+  // State for injected items
+  // const [newItems, setNewItems] = useState<Creation[]>([
+  //
+  // ]);
+
   const { items, isEmpty, isLoading, maybeLoadMore } = useFeedPaginated(
     itemType,
     { ...query, limit: PAGE_LIMIT },
@@ -100,8 +116,6 @@ const ChannelDetailsModal = ({
   const [focusItem, setFocusItem] = useState<Creation | null>(null)
   const [focusItemIndex, setFocusItemIndex] = useState<number | null>(null)
   const [galleryItems, setGalleryItems] = useState<Creation[] | null>(null)
-  // const [createdDateString, setCreatedDateString] = useState('')
-  // const timeSinceCreation = focusItem ? timeAgo(focusItem.createdAt) : ''
 
   const handleClickItem = (item: Creation) => {
     setFocusItemIndex(() => {
@@ -159,6 +173,12 @@ const ChannelDetailsModal = ({
   }, [focusItemIndex])
 
   useEffect(() => {
+    // // Immediately show a new item
+    // if (newItems.length > 0 && focusItemIndex === null) {
+    //   setFocusItemIndex(0);
+    //   setGalleryItems(newItems.slice(0, 10));
+    // }
+
     // console.log('useEffect')
     if (!isLoading && items.length && !focusItem) {
       // console.log({length: items.length, focusItemIndex})
@@ -179,12 +199,12 @@ const ChannelDetailsModal = ({
 
     const timer = setTimeout(() => {
       handleNextItem()
-    }, 12500)
+    }, settings.imageDisplayDuration * 1000)
 
     return () => {
       clearTimeout(timer)
     }
-  }, [focusItem])
+  }, [focusItem, settings.imageDisplayDuration])
 
   // console.log({ length: items.length, items, focusItemIndex, focusItem, size })
 
@@ -222,12 +242,6 @@ const ChannelDetailsModal = ({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [handleNextItem])
-  //
-  // useEffect(() => {
-  //   if (focusItem) {
-  //     setCreatedDateString(new Date(focusItem.createdAt).toLocaleString())
-  //   }
-  // }, [focusItem])
 
   return (
     <Modal
@@ -310,6 +324,9 @@ const ChannelDetailsModal = ({
                 aspectRatio: `${focusItem.mediaAttributes.aspectRatio || 1}`,
               }}
             >
+              {/*<div className="absolute w-full z-50">*/}
+              {/*  <DurationProgressBar key={focusItem._id} duration={5000} />*/}
+              {/*</div>*/}
               {isImageLoading ? (
                 <div className="absolute inset-0 rounded-md">
                   <LoadingIndicator />
@@ -352,47 +369,57 @@ const ChannelDetailsModal = ({
                 />
               )}
 
-              <div className="absolute z-10 bottom-0 left-0 max-w-[33%]">
-                <div className="bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg min-h-11">
-                  <div className="line-clamp-3">{focusItem.name}</div>
-                </div>
-              </div>
-              <div className="absolute flex flex-col justify-center z-10 bottom-0 right-0">
-                <div className="flex items-center justify-end px-4 py-4">
-                  <div className="flex p-1 bg-white">
-                    <QRCodeCanvas
-                      value={`/creations/${focusItem._id}`}
-                      size={96}
-                      level="L"
-                    />
+              {settings.showPrompt ? (
+                <div className="absolute z-10 bottom-0 left-0 max-w-[33%]">
+                  <div className="bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg min-h-11">
+                    <div className="line-clamp-3">{focusItem.name}</div>
                   </div>
                 </div>
-                <div className="flex gap-1 items-center bg-black bg-opacity-50 px-4 py-2 rounded-tl-lg">
-                  <Link
-                    href={`/creations/${focusItem._id}`}
-                    target="_blank"
-                    className="!text-gray-200 hover:!text-gray-400"
-                  >
-                    <strong>/{focusItem.task.generator.generatorName}</strong>
-                  </Link>
-                  <div className="flex items-center">
-                    <span className="mr-2">by</span>{' '}
-                    <CreatorProfileLink
-                      creatorId={focusItem.user.userId}
-                      creatorName={focusItem.user.username}
-                      creatorImage={focusItem.user.userImage}
-                      target="_blank"
-                    />
-                    {/*<div*/}
-                    {/*  className="text-gray-700 dark:text-gray-400 text-xs"*/}
-                    {/*  title={createdDateString}*/}
-                    {/*>*/}
-                    {/*  <span className="mx-1">•</span>*/}
-                    {/*  {timeSinceCreation} ago*/}
-                    {/*</div>*/}
-                  </div>
+              ) : null}
+              {settings.showCreator || settings.showQrCode ? (
+                <div className="absolute flex flex-col justify-center z-10 bottom-0 right-0">
+                  {settings.showQrCode ? (
+                    <div className="flex items-center justify-end px-4 py-4">
+                      <div className="flex p-1 bg-white">
+                        <QRCodeCanvas
+                          value={`/creations/${focusItem._id}`}
+                          size={96}
+                          level="L"
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                  {settings.showCreator ? (
+                    <div className="flex gap-1 items-center bg-black bg-opacity-50 px-4 py-2 rounded-tl-lg">
+                      <Link
+                        href={`/creations/${focusItem._id}`}
+                        target="_blank"
+                        className="!text-gray-200 hover:!text-gray-400"
+                      >
+                        <strong>
+                          /{focusItem.task.generator.generatorName}
+                        </strong>
+                      </Link>
+                      <div className="flex items-center">
+                        <span className="mr-2">by</span>{' '}
+                        <CreatorProfileLink
+                          creatorId={focusItem.user.userId}
+                          creatorName={focusItem.user.username}
+                          creatorImage={focusItem.user.userImage}
+                          target="_blank"
+                        />
+                        {/*<div*/}
+                        {/*  className="text-gray-700 dark:text-gray-400 text-xs"*/}
+                        {/*  title={createdDateString}*/}
+                        {/*>*/}
+                        {/*  <span className="mx-1">•</span>*/}
+                        {/*  {timeSinceCreation} ago*/}
+                        {/*</div>*/}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-              </div>
+              ) : null}
             </div>
           </>
         )}

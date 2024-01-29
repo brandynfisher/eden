@@ -17,7 +17,7 @@ interface ProgressBarConfig {
   delay: number
 }
 
-export default class ProgressBar {
+export default class RouteProgressBar {
   /** Show the progress bar and begin animating it. */
   start: () => void
 

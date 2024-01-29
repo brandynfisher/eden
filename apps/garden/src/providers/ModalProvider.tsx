@@ -1,7 +1,9 @@
 import { CardData } from '@/components/Card/Card'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import AddToCollectionModal from '@/components/Modals/AddToCollectionModal'
-import ChannelDetailsModal from '@/components/Modals/ChannelDetailsModal'
+import ChannelDetailsModal, {
+  ChannelSettings,
+} from '@/components/Modals/ChannelDetailsModal'
 import DetailModal from '@/components/Modals/DetailModal'
 import DetailStaticModal from '@/components/Modals/DetailStaticModal'
 import FollowersModal from '@/components/Modals/FollowersModal'
@@ -99,6 +101,7 @@ export type ChannelDetailsModalProps = Partial<
     itemType: ItemType
     query?: FeedRouteQueryParams
     orderBy: OrderByParam
+    settings: ChannelSettings
   }
 >
 
