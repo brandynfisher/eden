@@ -196,6 +196,7 @@ const HeadTags = ({
             name="og:video:height"
             content={String(getItemMediaAttributes(item as Creation).height)}
           />
+          <meta name="twitter:card" content="player" />
           <meta
             name="twitter:player"
             content={getItemMediaUrl(itemType, item as Creation)}
