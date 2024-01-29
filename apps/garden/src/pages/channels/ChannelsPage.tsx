@@ -4,7 +4,9 @@ import {
   OrderByPopularity,
   OrderByScore,
 } from '@/components/Layout/buttons/OrderByButtons'
-import React from 'react'
+import { ChannelSettings } from '@/components/Modals/ChannelDetailsModal'
+import { InputNumber, Switch } from 'antd'
+import React, { useEffect, useState } from 'react'
 
 const generatorChannels =
   process.env.NODE_ENV === 'development'
@@ -58,13 +60,96 @@ const generatorChannels =
       ]
 
 const ChannelsPage = () => {
+  const [showPrompt, setShowPrompt] = useState<boolean>(true)
+  const [showQrCode, setShowQrCode] = useState<boolean>(true)
+  const [showCreator, setShowCreator] = useState<boolean>(true)
+  const [imageDisplayDuration, setImageDisplayDuration] = useState<number>(10)
+  const [settings, setSettings] = useState<ChannelSettings>({
+    showPrompt,
+    showQrCode,
+    showCreator,
+    imageDisplayDuration,
+  })
+  useEffect(() => {
+    setSettings({
+      showPrompt,
+      showQrCode,
+      showCreator,
+      imageDisplayDuration,
+    })
+  }, [showPrompt, showQrCode, showCreator, imageDisplayDuration])
+
   return (
     <div>
-      <div className="mb-2">Channels</div>
+      <h3 className="mb-4">Channels</h3>
+      <div className="mb-4">
+        <div className="mb-2">Settings</div>
+        <div className="p-2 bg-gray-300 dark:bg-gray-800 rounded-md">
+          <div className="mb-2 flex gap-2 flex-wrap">
+            Display
+            <div>
+              <Switch
+                defaultChecked={showPrompt}
+                onChange={() => setShowPrompt(!showPrompt)}
+                checkedChildren={<div>Prompt</div>}
+                unCheckedChildren={<div>Prompt</div>}
+              />
+            </div>
+            <div>
+              <Switch
+                defaultChecked={showCreator}
+                onChange={() => setShowCreator(!showCreator)}
+                checkedChildren={<div>Creator</div>}
+                unCheckedChildren={<div>Creator</div>}
+              />
+            </div>
+            <div>
+              <Switch
+                defaultChecked={showQrCode}
+                onChange={() => setShowQrCode(!showQrCode)}
+                checkedChildren={<div>QR-Code</div>}
+                unCheckedChildren={<div>QR-Code</div>}
+              />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="duration">Image duration</label>
+              <InputNumber
+                id="duration"
+                name="duration"
+                className="w-20"
+                defaultValue={imageDisplayDuration}
+                min={1}
+                max={60 * 60}
+                onChange={newVal => setImageDisplayDuration(newVal || 10)}
+                step={1}
+              />
+              <div className="text-gray-400">seconds</div>
+            </div>
+            <div className="italic text-xs text-gray-500 mt-2">
+              Sets image display duration (videos will use their own duration)
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mb-2">List</div>
       <div className="grid xs:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 flex-wrap gap-4 mb-4">
-        <ChannelCard itemType="creation" orderBy={OrderByLatest} />
-        <ChannelCard itemType="creation" orderBy={OrderByPopularity} />
-        <ChannelCard itemType="creation" orderBy={OrderByScore} />
+        <ChannelCard
+          itemType="creation"
+          orderBy={OrderByLatest}
+          settings={settings}
+        />
+        <ChannelCard
+          itemType="creation"
+          orderBy={OrderByPopularity}
+          settings={settings}
+        />
+        <ChannelCard
+          itemType="creation"
+          orderBy={OrderByScore}
+          settings={settings}
+        />
       </div>
       <div className="grid xs:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 flex-wrap gap-4 mb-4">
         {generatorChannels.map(generatorChannel => (
@@ -74,6 +159,7 @@ const ChannelsPage = () => {
             itemType="creation"
             orderBy={OrderByLatest}
             query={{ generatorId: generatorChannel.generatorIds }}
+            settings={settings}
           />
         ))}
       </div>

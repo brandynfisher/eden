@@ -1,6 +1,6 @@
 import FetchIndicator from '@/components/Layout/FetchIndicator'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
-import ProgressBar from '@/components/Layout/ProgressBar'
+import RouteProgressBar from '@/components/Layout/RouteProgressBar'
 import BackToTopButton from '@/components/Layout/buttons/BackToTopButton'
 import { Layout } from 'antd'
 import { Router } from 'next/router'
@@ -44,7 +44,7 @@ export const myRequestCounterMiddlewareWrap: (
   }
 }
 
-const progress = new ProgressBar({
+const progress = new RouteProgressBar({
   size: 2,
   color: '#38a169',
   className: 'bar-of-progress',
