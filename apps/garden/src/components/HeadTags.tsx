@@ -145,7 +145,6 @@ const HeadTags = ({
     <Head>
       <title>{`${title} | Garden of Eden`}</title>
       <meta property="og:title" key="title" content={title} />
-      <meta property="og:description" content={item.name} key="description" />
       {itemType === 'character' ? (
         <>
           <meta
@@ -164,6 +163,7 @@ const HeadTags = ({
       {itemType === 'creation' &&
       isVideoUrl(getItemMediaUrl(itemType, item as Creation)) ? (
         <>
+          <meta property="og:description" content={''} key="description" />
           <meta
             property="og:image"
             content={(item as Creation).thumbnail}
@@ -189,6 +189,14 @@ const HeadTags = ({
             content={String(getItemMediaAttributes(item as Creation).duration)}
           />
           <meta
+            name="og:video:width"
+            content={String(getItemMediaAttributes(item as Creation).width)}
+          />
+          <meta
+            name="og:video:height"
+            content={String(getItemMediaAttributes(item as Creation).height)}
+          />
+          <meta
             name="twitter:player"
             content={getItemMediaUrl(itemType, item as Creation)}
           />
@@ -208,6 +216,11 @@ const HeadTags = ({
       ) : (
         <>
           <meta name="twitter:card" content="summary_large_image" />
+          <meta
+            property="og:description"
+            content={item.name}
+            key="description"
+          />
         </>
       )}
       {(itemType === 'creation' &&
