@@ -57,14 +57,6 @@ export const ELEVENLABS_VOICES = [
   },
   {
     id: 'EXAVITQu4vr4xnSDxMaL',
-    name: 'Sarah',
-    accent: 'American',
-    age: 'young',
-    gender: 'female',
-    description: 'soft',
-  },
-  {
-    id: 'EXAVITQu4vr4xnSDxMaL',
     name: 'Bella',
     accent: 'American',
     age: 'young',
