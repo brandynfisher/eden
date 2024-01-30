@@ -16,7 +16,7 @@ const SelectCharacterModalTrigger = ({
       buttonContent={
         <>
           <RobotOutlined />
-          <div>Select Character</div>
+          <div>Add Character</div>
         </>
       }
       onChange={item => onChange(item as Character)}

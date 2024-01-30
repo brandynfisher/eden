@@ -139,7 +139,7 @@ const CharactersParameter = (props: {
 
   const onSelectionChange = (values: string[]) => {
     setValidation(
-      validateCharacterSelection(values, props.parameter.minLength || 1),
+      validateCharacterSelection(values, props.parameter.minLength || 0),
     )
   }
 
@@ -171,11 +171,17 @@ const CharactersParameter = (props: {
       const newValues = [...prev]
       newValues[index] = newValue
       onSelectionChange(newValues)
-      return newValues
+      if (newValue) {
+        return [...newValues, '']
+      }
+
+      return newValues.length > 1
+        ? newValues.filter(val => val !== '')
+        : newValues
     })
   }
 
-  console.log(validation)
+  // console.log(validation)
 
   return (
     <div>
@@ -196,7 +202,11 @@ const CharactersParameter = (props: {
         name={props.parameter.name}
         rules={[
           {
-            required: true,
+            required:
+              (props.parameter.isRequired &&
+                props.parameter.minLength &&
+                props.parameter.minLength > 0) ||
+              false,
             type: 'array',
             message: `At least ${props.parameter.minLength} Characters required`,
           },
