@@ -16,6 +16,7 @@ interface StripeDataObject {
   customerId: string
   sessionId: string
   productId: string
+  renewalPriceId?: string
   current_period_start?: number
   current_period_end?: number
 }
@@ -178,7 +179,7 @@ const handleNewSubscription = async (
 
           const transaction = new Transaction({
             manna: manna._id,
-            mannaAmountInt,
+            amount: mannaAmountInt,
           })
           await transaction.save()
         }
@@ -238,7 +239,7 @@ const handleSubscriptionUpdated = async (
 
   if (
     metadata.subscriptionTier &&
-    parseInt(metadata.subscriptionTier) >=
+    parseInt(metadata.subscriptionTier) >
       (user.highestMonthlySubscriptionTier || 0)
   ) {
     const currentDate = Math.floor(Date.now() / 1000) // Convert to seconds since Stripe uses seconds
@@ -286,6 +287,7 @@ const handleSubscriptionDeleted = async (
 
   try {
     user.subscriptionTier = SubscriptionTier.Free
+    user.highestMonthlySubscriptionTier = SubscriptionTier.Free
     await user.save()
 
     return reply.status(200).send({})
@@ -294,6 +296,110 @@ const handleSubscriptionDeleted = async (
       message: 'Error updating subscription',
     })
   }
+}
+
+const handleRenewal = async (
+  server: FastifyInstance,
+  reply: FastifyReply,
+  { customerId, renewalPriceId }: StripeDataObject,
+) => {
+  console.log('Handling renewal')
+  if (!server.stripe) {
+    return reply.status(500).send({
+      message: 'Stripe is not configured',
+    })
+  }
+
+  if (!renewalPriceId) {
+    return reply.status(400).send({
+      message: 'No renewal price id found',
+    })
+  }
+
+  const price = await server.stripe.prices.retrieve(renewalPriceId, {
+    expand: ['product'],
+  })
+  const product = price.product as Stripe.Product
+
+  if (!product) {
+    return reply.status(400).send({
+      message: 'No product found',
+    })
+  }
+
+  if (!product.metadata) {
+    return reply.status(400).send({
+      message: 'No metadata found',
+    })
+  }
+
+  const metadata = {
+    subscriptionTier: product.metadata.subscriptionTier,
+    manna: product.metadata.manna,
+  }
+
+  console.log('Metadata', metadata)
+
+  if (!metadata) {
+    return reply.status(400).send({
+      message: 'No metadata found',
+    })
+  }
+
+  const user = await User.findOne({
+    stripeCustomerId: customerId,
+  })
+
+  console.log(user)
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  const subscriptionTier = parseInt(metadata.subscriptionTier)
+  user.subscriptionTier = subscriptionTier
+  user.highestMonthlySubscriptionTier = subscriptionTier
+  await user.save()
+
+  console.log('User', user)
+
+  const manna = await Manna.findOne({
+    user: user._id,
+  })
+
+  if (!manna) {
+    return reply.status(400).send({
+      message: 'Manna not found',
+    })
+  }
+
+  let mannaAmountInt: number
+  try {
+    mannaAmountInt = parseInt(metadata.manna)
+  } catch (error) {
+    return reply.status(400).send({
+      message: 'Invalid manna amount',
+    })
+  }
+
+  console.log('Manna amount', mannaAmountInt)
+
+  const newAmount = Math.max(manna.subscriptionBalance || 0, mannaAmountInt)
+
+  console.log('New amount', newAmount)
+  if (newAmount > 0) {
+    manna.subscriptionBalance = newAmount
+    await manna.save()
+    const transaction = new Transaction({
+      manna: manna._id,
+      amount: newAmount - (manna.subscriptionBalance || 0),
+    })
+    await transaction.save()
+  }
+
+  return reply.status(200).send({})
 }
 
 const handlePaymentSuccess = async (
@@ -481,15 +587,21 @@ export const handlePaymentEvent = async (
   // @ts-ignore
   const productId = dataObject.items?.data[0]?.price?.product
   // @ts-ignore
+  const renewalPriceId = dataObject.lines?.data[0]?.price?.id
+  // @ts-ignore
   const current_period_end = dataObject.current_period_end
   // @ts-ignore
   const current_period_start = dataObject.current_period_start
+
+  // @ts-ignore
+  const billing_reason = dataObject.billing_reason
 
   const stripeDataObject: StripeDataObject = {
     userId,
     customerId,
     sessionId,
     productId,
+    renewalPriceId,
     current_period_start,
     current_period_end,
   }
@@ -498,6 +610,15 @@ export const handlePaymentEvent = async (
     // checkout events
     case 'checkout.session.completed':
       await handlePaymentSuccess(server, reply, stripeDataObject)
+      return
+
+    case 'invoice.payment_succeeded':
+      if (billing_reason !== 'subscription_cycle') {
+        return
+      }
+      console.log(dataObject)
+      console.log(stripeDataObject)
+      handleRenewal(server, reply, stripeDataObject)
       return
 
     // subscription events
@@ -509,7 +630,6 @@ export const handlePaymentEvent = async (
       await handleSubscriptionDeleted(server, reply, stripeDataObject)
       return
 
-    case 'invoicce.payment_succeeded':
       // TODO: handle subscription renewal.
 
       return
