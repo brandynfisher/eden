@@ -85,8 +85,11 @@ export const createPaginationRoute = (
   if (query.direction) {
     params.direction = Number(query.direction)
   }
-  if (query.dateCutOff) {
-    params.dateCutOff = query.dateCutOff
+  if (query.maxDate) {
+    params.maxDate = query.maxDate
+  }
+  if (query.minDate) {
+    params.minDate = query.minDate
   }
   let queryStringArray: string[] = []
 

@@ -63,21 +63,31 @@ const ChannelsPage = () => {
   const [showPrompt, setShowPrompt] = useState<boolean>(true)
   const [showQrCode, setShowQrCode] = useState<boolean>(true)
   const [showCreator, setShowCreator] = useState<boolean>(true)
+  const [muteVideoAudio, setMuteVideoAudio] = useState<boolean>(false)
   const [imageDisplayDuration, setImageDisplayDuration] = useState<number>(10)
   const [settings, setSettings] = useState<ChannelSettings>({
     showPrompt,
     showQrCode,
     showCreator,
     imageDisplayDuration,
+    muteVideoAudio,
   })
+
   useEffect(() => {
     setSettings({
       showPrompt,
       showQrCode,
       showCreator,
       imageDisplayDuration,
+      muteVideoAudio,
     })
-  }, [showPrompt, showQrCode, showCreator, imageDisplayDuration])
+  }, [
+    muteVideoAudio,
+    showPrompt,
+    showQrCode,
+    showCreator,
+    imageDisplayDuration,
+  ])
 
   return (
     <div>
@@ -109,6 +119,17 @@ const ChannelsPage = () => {
                 onChange={() => setShowQrCode(!showQrCode)}
                 checkedChildren={<div>QR-Code</div>}
                 unCheckedChildren={<div>QR-Code</div>}
+              />
+            </div>
+          </div>
+          <div className="mb-4 flex gap-2 flex-wrap">
+            Video
+            <div>
+              <Switch
+                defaultChecked={muteVideoAudio}
+                onChange={() => setMuteVideoAudio(!muteVideoAudio)}
+                checkedChildren={<div>Audio</div>}
+                unCheckedChildren={<div>Audio</div>}
               />
             </div>
           </div>

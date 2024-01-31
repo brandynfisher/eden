@@ -29,7 +29,7 @@ const ChannelCard = ({
       title,
       itemType,
       orderBy,
-      query: { ...query, dateCutOff: new Date().toISOString() },
+      query: { ...query, maxDate: new Date().toISOString() },
       settings,
     })
   }

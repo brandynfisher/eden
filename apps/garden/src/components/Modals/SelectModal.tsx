@@ -103,7 +103,7 @@ const SelectModal = ({
 
   useEffect(() => {
     setRenderCount(prevState => prevState + 1)
-  }, [orderBy])
+  }, [orderBy, itemType, searchPublic])
 
   return (
     <div ref={modalContainerRef}>

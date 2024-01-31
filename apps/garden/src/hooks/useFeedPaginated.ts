@@ -21,7 +21,8 @@ export type FeedRouteQueryParams = {
   generatorId?: string | string[]
   name?: string | string[]
   conceptId?: string | string[]
-  dateCutOff?: string
+  maxDate?: string
+  minDate?: string
 }
 
 export type PaginatedFeedQuery = FeedRouteQueryParams &

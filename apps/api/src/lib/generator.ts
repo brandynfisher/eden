@@ -52,6 +52,10 @@ export const prepareConfig = (
   const missingParams: string[] = []
   for (const param of parameters) {
     if (param.isRequired && !config[param.name]) {
+      if (typeof param.minLength !== 'undefined' && param.minLength === 0) {
+        continue
+      }
+
       missingParams.push(param.name)
     }
   }

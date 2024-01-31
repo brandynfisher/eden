@@ -10,7 +10,7 @@ import {
   useFeedPaginated,
 } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
-import { isImageUrl, isVideoUrl } from '@/lib/string'
+import { isVideoUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
 import { useFullscreen } from '@mantine/hooks'
@@ -50,19 +50,27 @@ const CustomVideo = ({
   onLoad,
   onLoadStart,
   onEnded,
+  autoPlay,
+  preload,
   loop,
+  muted,
   src,
+  className,
   ...rest
 }: {
   onLoad?: () => void
   onEnded?: () => void
+  autoPlay?: boolean
+  preload?: boolean
   loop?: boolean
+  muted?: boolean
   src: string
-  onLoadStart: () => void
+  onLoadStart?: () => void
+  className?: string
 }) => {
   useEffect(() => {
     onLoadStart && onLoadStart()
-  }, [])
+  }, [onLoadStart])
 
   return (
     <VideoResult
@@ -70,9 +78,12 @@ const CustomVideo = ({
       onLoad={onLoad}
       onEnded={onEnded}
       src={src}
-      loop={typeof loop !== 'undefined' ? loop : false}
-      muted={false}
+      autoPlay={autoPlay}
+      preload={preload}
+      loop={loop}
+      muted={muted}
       disableControls={true}
+      className={className}
     />
   )
 }
@@ -82,6 +93,7 @@ export type ChannelSettings = {
   showCreator: boolean
   showQrCode: boolean
   imageDisplayDuration: number
+  muteVideoAudio: boolean
 }
 
 const ChannelDetailsModal = ({
@@ -278,7 +290,7 @@ const ChannelDetailsModal = ({
           <>
             <div className="grid grid-flow-col mb-6 auto-cols-max gap-1 items-center overflow-x-clip">
               {galleryItems &&
-                galleryItems.map(item => (
+                galleryItems.map((item, index) => (
                   <div
                     key={item._id}
                     className="relative h-20 md:h-32 p-1 hover:cursor-pointer hover:scale-105"
@@ -300,16 +312,32 @@ const ChannelDetailsModal = ({
                       />
                     </span>
                     {/* // render full size image but keep it hidden to act as preloader  */}
-                    {isImageUrl(item.uri) ? (
-                      <CustomImage
-                        key={item._id}
-                        src={
-                          item.uri ||
-                          `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                        }
-                        alt={item.name}
-                        className="hidden"
-                      />
+                    {index <= 2 ? (
+                      <>
+                        {isVideoUrl(item.uri) ? (
+                          <>
+                            <CustomVideo
+                              autoPlay={false}
+                              preload={true}
+                              muted={true}
+                              loop={false}
+                              key={item._id}
+                              src={item.uri}
+                              className="hidden"
+                            />
+                          </>
+                        ) : (
+                          <CustomImage
+                            key={item._id}
+                            src={
+                              item.uri ||
+                              `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                            }
+                            alt={item.name}
+                            className="hidden"
+                          />
+                        )}
+                      </>
                     ) : null}
                   </div>
                 ))}
@@ -349,6 +377,9 @@ const ChannelDetailsModal = ({
                 <>
                   <CustomVideo
                     key={focusItem._id}
+                    autoPlay={true}
+                    loop={false}
+                    muted={settings.muteVideoAudio}
                     src={focusItem.uri}
                     onLoadStart={handleMediaLoadStart}
                     onLoad={handleMediaLoaded}

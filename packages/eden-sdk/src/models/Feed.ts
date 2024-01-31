@@ -21,7 +21,8 @@ export interface FeedCreationsArguments
   conceptId?: string | string[]
   generatorId?: string | string[]
   name?: string
-  dateCutOff?: string
+  maxDate?: string
+  minDate?: string
   orderBy?: string
   direction?: 1 | -1
 }
@@ -32,7 +33,8 @@ export interface FeedConceptsArguments
   userId?: string | string[]
   collectionId?: string | string[]
   name?: string
-  dateCutOff?: string
+  maxDate?: string
+  minDate?: string
   orderBy?: string
   direction?: 1 | -1
 }

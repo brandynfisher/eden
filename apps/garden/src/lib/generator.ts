@@ -8,6 +8,7 @@ export const hiddenGenerators = [
   'interrogate',
   'wav2lip',
   'makeitrad',
+  'littlemartians',
 ]
 
 export type GeneratorOutputType = 'image' | 'text' | 'video'
@@ -38,6 +39,7 @@ export const sdxl_generators_video = [
   'txt2vid',
   'img2vid',
   'vid2vid',
+  'littlemartians',
 ]
 
 export const parameterGroups: { [key: string]: string[] } = {

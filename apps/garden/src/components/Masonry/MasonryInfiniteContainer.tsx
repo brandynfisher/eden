@@ -73,7 +73,7 @@ const MasonryInfiniteContainer = ({
         key={key}
         orderBy={orderBy}
         itemType={itemType}
-        query={{ ...query, dateCutOff: fetchStartDate }}
+        query={{ ...query, maxDate: fetchStartDate }}
         emptyResultHandler={
           fallbackFilter ? handleFallbackOnEmptyResult : undefined
         }

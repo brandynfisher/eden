@@ -1,7 +1,3 @@
-import { ReactionType } from '@edenlabs/eden-sdk'
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   creationDelete,
@@ -13,6 +9,9 @@ import {
   listCreations,
 } from '../controllers/creationsController'
 import { isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { ReactionType } from '@edenlabs/eden-sdk'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const creationRoutes: FastifyPluginAsync = async server => {
   server.get('/creations', {
@@ -78,6 +77,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         creationId: Type.String(),
       },
       body: Type.Object({
+        deleted: Type.Optional(Type.Boolean()),
         isPrivate: Type.Optional(Type.Boolean()),
       }),
       response: {

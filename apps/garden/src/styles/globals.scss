@@ -820,3 +820,9 @@ div[role='grid'] {
         min-height: 0;
     }
 }
+
+.upload-btn-hidden {
+    .ant-upload.ant-upload-drag {
+        display: none !important;
+    }
+}
