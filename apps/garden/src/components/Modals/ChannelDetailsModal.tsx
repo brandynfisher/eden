@@ -53,6 +53,7 @@ const CustomVideo = ({
   autoPlay,
   preload,
   loop,
+  muted,
   src,
   className,
   ...rest
@@ -62,6 +63,7 @@ const CustomVideo = ({
   autoPlay?: boolean
   preload?: boolean
   loop?: boolean
+  muted?: boolean
   src: string
   onLoadStart?: () => void
   className?: string
@@ -78,8 +80,8 @@ const CustomVideo = ({
       src={src}
       autoPlay={autoPlay}
       preload={preload}
-      loop={typeof loop !== 'undefined' ? loop : false}
-      muted={false}
+      loop={loop}
+      muted={muted}
       disableControls={true}
       className={className}
     />
@@ -91,6 +93,7 @@ export type ChannelSettings = {
   showCreator: boolean
   showQrCode: boolean
   imageDisplayDuration: number
+  muteVideoAudio: boolean
 }
 
 const ChannelDetailsModal = ({
@@ -317,6 +320,8 @@ const ChannelDetailsModal = ({
                             <CustomVideo
                               autoPlay={false}
                               preload={true}
+                              muted={true}
+                              loop={false}
                               key={item._id}
                               src={item.uri}
                               className="hidden"
@@ -373,6 +378,8 @@ const ChannelDetailsModal = ({
                 <>
                   <CustomVideo
                     autoPlay={true}
+                    loop={false}
+                    muted={settings.muteVideoAudio}
                     key={focusItem._id}
                     src={focusItem.uri}
                     onLoadStart={handleMediaLoadStart}
