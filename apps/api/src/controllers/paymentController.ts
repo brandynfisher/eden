@@ -1,5 +1,7 @@
 import { getAdminHeaders } from '../lib/util'
 import { User, UserDocument } from '../models/Creator'
+import { Manna } from '../models/Manna'
+import { Transaction } from '../models/Transaction'
 import {
   PaymentsCreateArguments,
   PaymentsSubscriptionArguments,
@@ -151,18 +153,35 @@ const handleNewSubscription = async (
         message: 'Invalid manna amount',
       })
     }
+
     if (mannaAmountInt > 0) {
+      console.log('xxx update manna for user', user.userId)
+      console.log('xxx mannaAmountInt', mannaAmountInt)
       try {
-        await axios.post(
-          `${server.config.API_URL}/admin/manna/modify`,
-          {
-            userId: user.userId,
-            amount: mannaAmountInt,
-          },
-          {
-            headers: getAdminHeaders(server),
-          },
-        )
+        if (mannaAmountInt > 0) {
+          const manna = await Manna.findOne({
+            user: user._id,
+          })
+
+          if (!manna) {
+            return reply.status(400).send({
+              message: 'Manna not found',
+            })
+          }
+
+          if (!manna.subscriptionBalance) {
+            manna.subscriptionBalance = mannaAmountInt
+          } else {
+            manna.subscriptionBalance += mannaAmountInt
+          }
+          await manna.save()
+
+          const transaction = new Transaction({
+            manna: manna._id,
+            mannaAmountInt,
+          })
+          await transaction.save()
+        }
       } catch (error) {
         return reply.status(500).send({
           message: 'Error adding manna',

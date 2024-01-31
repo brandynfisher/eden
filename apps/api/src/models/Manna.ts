@@ -1,10 +1,10 @@
-import { Document, Schema, model } from 'mongoose'
-
 import { UserDocument } from './Creator'
+import { Document, Schema, model } from 'mongoose'
 
 export interface MannaSchema {
   user: UserDocument
   balance: number
+  subscriptionBalance: number
   createdAt?: Date
   updatedAt?: Date
 }
@@ -24,6 +24,10 @@ const manna = new Schema<MannaDocument>(
       required: true,
     },
     balance: {
+      type: Number,
+      default: 0,
+    },
+    subscriptionBalance: {
       type: Number,
       default: 0,
     },
