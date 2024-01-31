@@ -129,7 +129,7 @@ const UploadParameter = (props: {
         errorMessage = 'file size limit exceeded (100mb)'
       }
 
-      showUploadErrorMessage(info.file.name, errorMessage)
+      await showUploadErrorMessage(info.file.name, errorMessage)
       return
     }
 
@@ -165,6 +165,9 @@ const UploadParameter = (props: {
     )
   }
 
+  const shouldHideUploadButton =
+    fileList.length >= (props.parameter.maxLength || 1)
+
   return (
     <>
       {contextHolder}
@@ -193,6 +196,7 @@ const UploadParameter = (props: {
             action="/api/media"
             fileList={fileList}
             listType="picture"
+            className={shouldHideUploadButton ? 'upload-btn-hidden' : ''}
             onChange={handleChange}
             accept={props.acceptedMimeTypes ? props.acceptedMimeTypes : ''}
             multiple={maxUploads > 1}
@@ -202,7 +206,10 @@ const UploadParameter = (props: {
           >
             <div className="flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500">
               <FileUploadOutlined />
-              <div>Click here or drag files to upload</div>
+              <div>
+                Click here or drag files to upload (max.{' '}
+                {props.parameter.maxLength || 1}){' '}
+              </div>
             </div>
           </Dragger>
         </Form.Item>

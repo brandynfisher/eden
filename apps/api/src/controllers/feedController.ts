@@ -26,7 +26,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-import mongoose, { Mongoose, PipelineStage } from 'mongoose'
+import mongoose, { PipelineStage } from 'mongoose'
 
 const aggregateCreationsByFollowerId = (
   followerId: ObjectId,
@@ -145,15 +145,15 @@ const aggregateCreationsByEmbeddingScore = (dateEndCutOff: string) => {
   const hoursAgo = 360
   const currentDate = new Date()
   currentDate.setMinutes(0, 0, 0)
-  const dateCutoff = new Date(currentDate)
-  dateCutoff.setHours(currentDate.getHours() - hoursAgo)
-  dateCutoff.setMinutes(0, 0, 0)
+  const maxDate = new Date(currentDate)
+  maxDate.setHours(currentDate.getHours() - hoursAgo)
+  maxDate.setMinutes(0, 0, 0)
 
   return Creation.aggregate([
     {
       $match: {
         createdAt: {
-          $gte: dateCutoff,
+          $gte: maxDate,
           $lte: new Date(dateEndCutOff),
         },
         'embedding.score': { $exists: true },
@@ -221,7 +221,8 @@ export const getCreationsFeed = async (
     creationId,
     generatorId,
     name,
-    dateCutOff,
+    maxDate,
+    minDate,
     limit,
     page,
     orderBy,
@@ -267,7 +268,7 @@ export const getCreationsFeed = async (
     const followCreationRepository = new CreationRepository(Follow) //@todo: this reads rather wonky
     const followAggregate = aggregateCreationsByFollowerId(
       new ObjectId(ownUserId),
-      dateCutOff || new Date().toISOString(),
+      maxDate || new Date().toISOString(),
     )
 
     creations = await followCreationRepository.aggregateQuery(followAggregate, {
@@ -279,7 +280,7 @@ export const getCreationsFeed = async (
     const reactionCreationRepository = new CreationRepository(Reaction) //@todo: this reads rather wonky
     const userReactionAggregate = aggregateCreationsByUserLikes(
       new ObjectId(ownUserId),
-      dateCutOff || new Date().toISOString(),
+      maxDate || new Date().toISOString(),
     )
 
     creations = await reactionCreationRepository.aggregateQuery(
@@ -292,7 +293,7 @@ export const getCreationsFeed = async (
     )
   } else if (orderBy === 'embedding.score') {
     const creationsAggregate = aggregateCreationsByEmbeddingScore(
-      dateCutOff || new Date().toISOString(),
+      maxDate || new Date().toISOString(),
     )
     creations = await creationRepository.aggregateQuery(creationsAggregate, {
       limit,
@@ -383,14 +384,20 @@ export const getCreationsFeed = async (
       }
     }
 
+    const createdAtFilter: { $gte?: Date; $lte?: Date } = {}
+    if (minDate) {
+      createdAtFilter['$gte'] = new Date(minDate)
+    }
+    if (maxDate) {
+      createdAtFilter['$lte'] = new Date(maxDate)
+    }
+
     const query = {
       _id: creationIdsQuery,
       concept: conceptIds ? { $in: conceptIds } : undefined,
       generator: generatorIds ? { $in: generatorIds } : undefined,
-      createdAt: dateCutOff
-        ? {
-            $lte: new Date(dateCutOff),
-          }
+      createdAt: Object.keys(createdAtFilter).length
+        ? createdAtFilter
         : undefined,
       user:
         filterUserIds && creators.docs
