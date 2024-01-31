@@ -311,7 +311,6 @@ const ChannelDetailsModal = ({
                         }`}
                       />
                     </span>
-                    <div>galleryItemIndex {index}</div>
                     {/* // render full size image but keep it hidden to act as preloader  */}
                     {index <= 2 ? (
                       <>
@@ -377,10 +376,10 @@ const ChannelDetailsModal = ({
               {isVideoUrl(focusItem.uri) ? (
                 <>
                   <CustomVideo
+                    key={focusItem._id}
                     autoPlay={true}
                     loop={false}
                     muted={settings.muteVideoAudio}
-                    key={focusItem._id}
                     src={focusItem.uri}
                     onLoadStart={handleMediaLoadStart}
                     onLoad={handleMediaLoaded}
