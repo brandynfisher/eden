@@ -128,8 +128,8 @@ const ChannelsPage = () => {
               <Switch
                 defaultChecked={muteVideoAudio}
                 onChange={() => setMuteVideoAudio(!muteVideoAudio)}
-                checkedChildren={<div>Mute Audio</div>}
-                unCheckedChildren={<div>Mute Audio</div>}
+                checkedChildren={<div>Audio</div>}
+                unCheckedChildren={<div>Audio</div>}
               />
             </div>
           </div>
