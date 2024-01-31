@@ -826,3 +826,16 @@ div[role='grid'] {
         display: none !important;
     }
 }
+
+.video-controls-hover-only {
+    video::-webkit-media-controls-enclosure {
+        display:none !important;
+    }
+
+    &:hover {
+        //border: 1px solid red;
+        video::-webkit-media-controls-enclosure {
+            display:initial !important;
+        }
+    }
+}

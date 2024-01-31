@@ -19,7 +19,9 @@ import { Modal } from 'antd'
 import Image from 'next/image'
 import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+
+// import { createPaginationRoute } from '@/lib/fetcher'
 
 // import DurationProgressBar from '@/components/Layout/DurationProgressBar'
 
@@ -82,8 +84,8 @@ const CustomVideo = ({
       preload={preload}
       loop={loop}
       muted={muted}
-      disableControls={true}
-      className={className}
+      // disableControls={true}
+      className={`video-controls-hover-only ${className ? className : ''}`}
     />
   )
 }
@@ -112,11 +114,6 @@ const ChannelDetailsModal = ({
 }) => {
   const PAGE_LIMIT = 50
 
-  // State for injected items
-  // const [newItems, setNewItems] = useState<Creation[]>([
-  //
-  // ]);
-
   const { items, isEmpty, isLoading, maybeLoadMore } = useFeedPaginated(
     itemType,
     { ...query, limit: PAGE_LIMIT },
@@ -128,24 +125,65 @@ const ChannelDetailsModal = ({
   const [focusItem, setFocusItem] = useState<Creation | null>(null)
   const [focusItemIndex, setFocusItemIndex] = useState<number | null>(null)
   const [galleryItems, setGalleryItems] = useState<Creation[] | null>(null)
+  const [isImageLoading, setImageLoading] = useState(true)
 
-  const handleClickItem = (item: Creation) => {
-    setFocusItemIndex(() => {
-      const newIndex = items.findIndex(elem => elem._id === item._id)
-      setGalleryItems(items.slice(newIndex, newIndex + 10))
-      return newIndex
-    })
+  // add polling for new creations every x seconds
+  // use $gt: query.maxDate as the initial lower bound minDate to get all new creations since modal opened
+  // whenever we got new creations, use the moist current creations date as the new cutoff - setMinDate
+  // if there's new creations, set newItems
+  // if newItems has creations, splice those in to the items array at an index "focusItemIndex + 1"
+  // somehow keep track of the amount of new creations
+  // think about how to inject even newer items while we're showing new items
+  // dont trigger maybeLoadMore while we're using newItems
+  //
+  // const NEW_ITEMS_POLLING_INTERVAL = 5000
+  // const [ minDate, setMinDate ] = useState(query?.maxDate || new Date().toISOString())
+  // const [ newItems, setNewItems] = useState<Creation[]>([]);
+  //
+  // const fetchNewItems = useCallback(() => {
+  //   const newItemsQuery = { ...query, maxDate: undefined }
+  //   const newItemsRoute = createPaginationRoute(`/api/feed/${itemType}s`, {
+  //     ...newItemsQuery,
+  //     limit: PAGE_LIMIT,
+  //     page: 1,
+  //     orderBy: orderBy ? orderBy.field : undefined,
+  //     direction: orderBy ? orderBy.direction : undefined,
+  //     minDate: minDate
+  //   })
+  //
+  //   return newItemsRoute
+  // }, [minDate, itemType, query, orderBy, PAGE_LIMIT])
 
-    const loadedRemaining =
-      items.length - (focusItemIndex !== null ? focusItemIndex : 0)
-    // console.log('remaining loaded', loadedRemaining)
-    if (loadedRemaining <= PAGE_LIMIT) {
-      // console.log('Loading More')
-      maybeLoadMore()
-    }
-  }
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     console.log(fetchNewItems())
+  //   }, NEW_ITEMS_POLLING_INTERVAL)
+  //
+  //   return () => {
+  //     clearInterval(timer)
+  //   }
+  // }, [fetchNewItems, NEW_ITEMS_POLLING_INTERVAL])
 
-  const handlePrevItem = () => {
+  const handleClickItem = useCallback(
+    (item: Creation) => {
+      setFocusItemIndex(() => {
+        const newIndex = items.findIndex(elem => elem._id === item._id)
+        setGalleryItems(items.slice(newIndex, newIndex + 10))
+        return newIndex
+      })
+
+      const loadedRemaining =
+        items.length - (focusItemIndex !== null ? focusItemIndex : 0)
+      // console.log('remaining loaded', loadedRemaining)
+      if (loadedRemaining <= PAGE_LIMIT) {
+        // console.log('Loading More')
+        maybeLoadMore()
+      }
+    },
+    [maybeLoadMore, focusItemIndex, items],
+  )
+
+  const handlePrevItem = useCallback(() => {
     setFocusItemIndex(prev => {
       if (prev === null || prev <= 0) {
         setGalleryItems(items.slice(0, 10))
@@ -155,9 +193,9 @@ const ChannelDetailsModal = ({
       setGalleryItems(items.slice(newIndex, newIndex + 10))
       return newIndex
     })
-  }
+  }, [items])
 
-  const handleNextItem = () => {
+  const handleNextItem = useCallback(() => {
     setFocusItemIndex(prev => {
       const newIndex = (prev === null ? 0 : prev) + 1
       setGalleryItems(items.slice(newIndex, newIndex + 10))
@@ -172,7 +210,22 @@ const ChannelDetailsModal = ({
       // console.log('Loading More')
       maybeLoadMore()
     }
-  }
+  }, [focusItemIndex, items, maybeLoadMore])
+
+  const handleMediaLoadStart = useCallback(() => {
+    // console.log('handleMediaLoadStart')
+    setImageLoading(true)
+  }, [])
+
+  const handleMediaLoaded = useCallback(() => {
+    // console.log('handleMediaLoaded')
+    setImageLoading(false)
+  }, [])
+
+  const handleVideoEnded = useCallback(() => {
+    // console.log('handleVideoEnded')
+    handleNextItem()
+  }, [handleNextItem])
 
   useEffect(() => {
     if (focusItemIndex === null) {
@@ -182,7 +235,7 @@ const ChannelDetailsModal = ({
     setFocusItem(items[focusItemIndex])
 
     // setIsLoadingImage(true)
-  }, [focusItemIndex])
+  }, [items, focusItemIndex])
 
   useEffect(() => {
     // // Immediately show a new item
@@ -197,7 +250,7 @@ const ChannelDetailsModal = ({
       setFocusItemIndex(0)
       setGalleryItems(items.slice(0, 10))
     }
-  }, [isLoading, items.length, focusItem])
+  }, [items, isLoading, items.length, focusItem])
 
   useEffect(() => {
     // console.log('useEffect')
@@ -216,26 +269,9 @@ const ChannelDetailsModal = ({
     return () => {
       clearTimeout(timer)
     }
-  }, [focusItem, settings.imageDisplayDuration])
+  }, [handleNextItem, focusItem, settings.imageDisplayDuration])
 
   // console.log({ length: items.length, items, focusItemIndex, focusItem, size })
-
-  const [isImageLoading, setImageLoading] = useState(true)
-
-  const handleMediaLoadStart = () => {
-    // console.log('handleMediaLoadStart')
-    setImageLoading(true)
-  }
-
-  const handleMediaLoaded = () => {
-    // console.log('handleMediaLoaded')
-    setImageLoading(false)
-  }
-
-  const handleVideoEnded = () => {
-    // console.log('handleVideoEnded')
-    handleNextItem()
-  }
 
   useEffect(() => {
     const handleKeyDown = async (event: KeyboardEvent) => {
@@ -253,7 +289,7 @@ const ChannelDetailsModal = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [handleNextItem])
+  }, [handlePrevItem, handleNextItem])
 
   return (
     <Modal
@@ -396,12 +432,12 @@ const ChannelDetailsModal = ({
                   alt={focusItem.name}
                   onLoadStart={handleMediaLoadStart}
                   onLoad={handleMediaLoaded}
-                  className="z-10"
+                  className="z-10 w-auto"
                 />
               )}
 
               {settings.showPrompt ? (
-                <div className="absolute z-10 bottom-0 left-0 max-w-[33%]">
+                <div className="absolute z-10 bottom-0 left-0 max-w-[40%]">
                   <div className="bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg min-h-11">
                     <div className="line-clamp-3">{focusItem.name}</div>
                   </div>
@@ -410,7 +446,7 @@ const ChannelDetailsModal = ({
               {settings.showCreator || settings.showQrCode ? (
                 <div className="absolute flex flex-col justify-center z-10 bottom-0 right-0">
                   {settings.showQrCode ? (
-                    <div className="flex items-center justify-end px-4 py-4">
+                    <div className="flex items-center justify-end px-4 py-4 pointer-events-none">
                       <div className="flex p-1 bg-white">
                         <QRCodeCanvas
                           value={`/creations/${focusItem._id}`}
