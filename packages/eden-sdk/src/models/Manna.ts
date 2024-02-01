@@ -1,6 +1,5 @@
-import { AxiosRequestConfig } from 'axios'
-
 import { WebAPICallOptions, WebAPICallResult } from '../types'
+import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
@@ -35,7 +34,8 @@ export const mannaVouchersRedeemRequestConfig = (
 
 export type MannaBalanceGetResponse = WebAPICallResult & {
   error?: string
-  manna: number
+  balance: number
+  subscriptionBalance: number
 }
 
 export type MannaVoucherRedeemResponse = WebAPICallResult & {

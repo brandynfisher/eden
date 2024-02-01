@@ -1,8 +1,3 @@
-import axios from 'axios'
-import { FastifyInstance } from 'fastify'
-import { ObjectId } from 'mongodb'
-import { v4 as uuidv4 } from 'uuid'
-
 import { Creation } from '../../models/Creation'
 import {
   GeneratorDocument,
@@ -11,6 +6,10 @@ import {
 import { Task, TaskStatus } from '../../models/Task'
 import { TaskHandlers } from '../../plugins/tasks'
 import { submitMonologueTask } from './airflow'
+import axios from 'axios'
+import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
+import { v4 as uuidv4 } from 'uuid'
 
 interface Output {
   result: string

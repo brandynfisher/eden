@@ -1,8 +1,7 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { getBalance, redeemMannaVoucher } from '../controllers/mannaController'
 import { isAuth } from '../middleware/authMiddleware'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const mannaRoutes: FastifyPluginAsync = async server => {
   server.get('/manna/balance', {
@@ -17,7 +16,8 @@ const mannaRoutes: FastifyPluginAsync = async server => {
       ],
       response: {
         200: Type.Object({
-          manna: Type.Number(),
+          balance: Type.Number(),
+          subscriptionBalance: Type.Number(),
         }),
       },
     },

@@ -1,6 +1,3 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   followCreator,
@@ -13,6 +10,8 @@ import {
   updateCreator,
 } from '../controllers/creatorsController'
 import { isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const creatorRoutes: FastifyPluginAsync = async server => {
   server.get('/creators', {
@@ -197,6 +196,8 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           creator: Type.Optional(Type.Any()),
           balance: Type.Number(),
+          subscriptionBalance: Type.Number(),
+          foreverBalance: Type.Number(),
           pendingTasks: Type.Optional(Type.Any()),
         }),
       },

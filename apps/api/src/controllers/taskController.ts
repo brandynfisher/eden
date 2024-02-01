@@ -13,7 +13,7 @@ import {
   GeneratorDocument,
   GeneratorVersionSchema,
 } from '../models/Generator'
-import { Manna } from '../models/Manna'
+import { Manna, MannaDocument } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
 import TaskRepository from '../repositories/TaskRepository'
@@ -25,6 +25,39 @@ import {
 import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+
+const checkUserBalanceIsSufficient = (manna: MannaDocument, amount: number) => {
+  const totalBalance = manna.balance + manna.subscriptionBalance
+  if (totalBalance < amount) {
+    return false
+  }
+  return true
+}
+
+const spendManna = async (manna: MannaDocument, cost: number) => {
+  let remainingCost = cost
+
+  // Spend subscription balance first
+  if (manna.subscriptionBalance > 0) {
+    if (manna.subscriptionBalance >= remainingCost) {
+      // If subscription balance covers the entire cost
+      manna.subscriptionBalance -= remainingCost
+      remainingCost = 0
+    } else {
+      // If subscription balance only partially covers the cost
+      remainingCost -= manna.subscriptionBalance
+      manna.subscriptionBalance = 0
+    }
+  }
+
+  // If there's still cost remaining, spend the normal balance
+  if (remainingCost > 0 && manna.balance >= remainingCost) {
+    manna.balance -= remainingCost
+    remainingCost = 0
+  }
+
+  await manna.save()
+}
 
 const getGeneratorVersion = (
   generator: GeneratorDocument,
@@ -177,13 +210,14 @@ export const createTask = async (
     generatorVersion,
     preparedConfig,
   )
-  if (manna.balance < cost) {
+  const hasSufficientBalance = checkUserBalanceIsSufficient(manna, cost)
+  if (!hasSufficientBalance) {
     return reply.status(401).send({
       message: 'Not enough manna',
     })
   }
 
-  // submit task
+  // spend manna
   const taskId = await server.submitTask(
     server,
     generator,
@@ -211,16 +245,15 @@ export const createTask = async (
   const task = new Task(taskData)
   await task.save()
 
+  // charge user manna
+  await spendManna(manna, cost)
+
   const transactionData: TransactionSchema = {
     manna: manna._id,
     task: task._id,
     amount: -cost,
   }
   await Transaction.create(transactionData)
-
-  // charge user manna
-  manna.balance -= cost
-  await manna.save()
 
   return reply.status(200).send({ taskId })
 }

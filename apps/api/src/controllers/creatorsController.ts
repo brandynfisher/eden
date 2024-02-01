@@ -1,3 +1,10 @@
+import { Creation } from '../models/Creation'
+import { User } from '../models/Creator'
+import { Follow, FollowDocument } from '../models/Follow'
+import { Manna } from '../models/Manna'
+import { Task } from '../models/Task'
+import CreatorRepository from '../repositories/CreatorRepository'
+import FollowerRepository from '../repositories/FollowerRepository'
 import {
   CreatorFollowersListArguments,
   CreatorFollowingListArguments,
@@ -9,14 +16,6 @@ import {
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-
-import { Creation } from '../models/Creation'
-import { User } from '../models/Creator'
-import { Follow, FollowDocument } from '../models/Follow'
-import { Manna } from '../models/Manna'
-import { Task } from '../models/Task'
-import CreatorRepository from '../repositories/CreatorRepository'
-import FollowerRepository from '../repositories/FollowerRepository'
 
 const removePrivateFields = (creator: any) => {
   const creatorObject = creator.toObject()
@@ -452,9 +451,15 @@ export const getCreatorMe = async (
     createdAt: { $gte: date },
   })
 
+  const subscriptionBalance = manna?.subscriptionBalance || 0
+  const balance = manna?.balance || 0
+  const totalBalance = subscriptionBalance + balance
+
   return {
     creator: user,
-    balance: manna?.balance || 0,
+    balance: totalBalance,
+    subscriptionBalance,
+    foreverBalance: balance,
     pendingTasks,
   }
 }

@@ -1,12 +1,11 @@
-import { MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
-
 import { randomId } from '../lib/util'
 import { User } from '../models/Creator'
 import { Manna } from '../models/Manna'
 import { MannaVoucher } from '../models/MannaVoucher'
 import { Transaction } from '../models/Transaction'
 import { MannaModifyRequestBody } from '../routes/adminRoutes'
+import { MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
+import { FastifyReply, FastifyRequest } from 'fastify'
 
 export const modifyManna = async (
   request: FastifyRequest,
@@ -96,13 +95,14 @@ export const getBalance = async (
   })
 
   if (!manna) {
-    return reply.status(200).send({
-      manna: 0,
+    return reply.status(400).send({
+      message: `Manna not found for user ${userId}`,
     })
   }
 
   return reply.status(200).send({
-    manna: manna.balance,
+    balance: manna.balance,
+    subscriptionBalance: manna.subscriptionBalance ?? 0,
   })
 }
 
