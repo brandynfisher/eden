@@ -1,6 +1,5 @@
 'use client'
 
-import dummyItems from './dummyResponse.json'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
@@ -11,6 +10,7 @@ import {
   useFeedPaginated,
 } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
+import { createPaginationRoute } from '@/lib/fetcher'
 import { isVideoUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -21,10 +21,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
 import React, { useCallback, useEffect, useState } from 'react'
-
-// import { createPaginationRoute } from '@/lib/fetcher'
-
-// import DurationProgressBar from '@/components/Layout/DurationProgressBar'
 
 const CustomImage = ({
   src,
@@ -85,7 +81,6 @@ const CustomVideo = ({
       preload={preload}
       loop={loop}
       muted={muted}
-      // disableControls={true}
       className={`video-controls-hover-only ${className ? className : ''}`}
     />
   )
@@ -97,6 +92,13 @@ export type ChannelSettings = {
   showQrCode: boolean
   imageDisplayDuration: number
   muteVideoAudio: boolean
+  insertNewCreations: boolean
+}
+
+const addOneMillisecondToISODate = (isoDateString: string) => {
+  let date = new Date(isoDateString) // create Date object from ISO date string
+  date.setMilliseconds(date.getMilliseconds() + 1) // add one millisecond
+  return date.toISOString() // convert back to ISO date string
 }
 
 const ChannelDetailsModal = ({
@@ -129,51 +131,33 @@ const ChannelDetailsModal = ({
   const [galleryItems, setGalleryItems] = useState<Creation[] | null>(null)
   const [isImageLoading, setImageLoading] = useState(true)
 
-  // add polling for new creations every x seconds
-  // use $gt: query.maxDate as the initial lower bound minDate to get all new creations since modal opened
-  // whenever we got new creations, use the moist current creations date as the new cutoff - setMinDate
-  // if there's new creations, set newItems
-  // if newItems has creations, splice those in to the items array at an index "focusItemIndex + 1"
-  // somehow keep track of the amount of new creations
-  // think about how to inject even newer items while we're showing new items
-  // dont trigger maybeLoadMore while we're using newItems
-
   const [minDate, setMinDate] = useState(
     query?.maxDate || new Date().toISOString(),
   )
   const [displayItems, setDisplayItems] = useState<Creation[]>([])
 
-  const [dummyIndex, setDummyIndex] = useState(0)
   const fetchNewItems = useCallback(async (): Promise<Creation[]> => {
-    // const newItemsQuery = { ...query, maxDate: undefined }
-    // const newItemsRoute = createPaginationRoute(`/api/feed/${itemType}s`, {
-    //   ...newItemsQuery,
-    //   limit: PAGE_LIMIT,
-    //   page: 1,
-    //   orderBy: orderBy ? orderBy.field : undefined,
-    //   direction: orderBy ? orderBy.direction : undefined,
-    //   minDate: minDate
-    // })
+    const newItemsQuery = { ...query, maxDate: undefined }
+    const newItemsRoute = createPaginationRoute(`/api/feed/${itemType}s`, {
+      ...newItemsQuery,
+      limit: PAGE_LIMIT,
+      page: 1,
+      orderBy: orderBy ? orderBy.field : undefined,
+      direction: orderBy ? orderBy.direction : undefined,
+      minDate: minDate,
+    })
 
-    // const response = await fetch(newItemsRoute)
-    // const responseJson = await response.json()
-    const responseJson = dummyItems.docs.slice(dummyIndex, dummyIndex + 1)
+    const response = await fetch(newItemsRoute)
+    const responseJson = await response.json()
 
-    // remove this debug stuff
-    if (dummyIndex < 3) {
-      setDummyIndex(prev => prev + 1)
-      setMinDate(new Date(responseJson[0].createdAt).toISOString())
-      return responseJson
+    if (responseJson && responseJson.docs && responseJson.docs.length) {
+      // console.log('GOT NEW: setting new minDate', responseJson.docs[0].createdAt)
+      setMinDate(addOneMillisecondToISODate(responseJson.docs[0].createdAt))
+      return responseJson.docs
     }
 
-    // if (responseJson && responseJson.docs && responseJson.docs.length) {
-    //   console.log('GOT NEW: setting new minDate', new Date(responseJson.docs[0].createdAt).toISOString())
-    //   setMinDate(new Date(responseJson.docs[0].createdAt).toISOString())
-    //   return responseJson.docs
-    // }
-
     return []
-  }, [minDate, itemType, query, orderBy, PAGE_LIMIT, dummyIndex])
+  }, [minDate, itemType, query, orderBy, PAGE_LIMIT])
 
   const handleClickItem = useCallback(
     (item: Creation) => {
@@ -197,7 +181,7 @@ const ChannelDetailsModal = ({
   const handlePrevItem = useCallback(() => {
     setFocusItemIndex(prev => {
       if (prev === null || prev <= 0) {
-        setGalleryItems(displayItems.slice(0, 10))
+        setGalleryItems(displayItems.slice(0, GALLERY_SIZE))
         return 0
       }
       const newIndex = prev - 1
@@ -210,34 +194,42 @@ const ChannelDetailsModal = ({
     setFocusItemIndex(prev => {
       const newIndex = (prev === null ? 0 : prev) + 1
       setGalleryItems(displayItems.slice(newIndex, newIndex + GALLERY_SIZE))
-      // setGalleryItems(items.slice(newIndex - 10, newIndex))
-
       return newIndex
     })
 
     const loadedRemaining =
       displayItems.length - (focusItemIndex !== null ? focusItemIndex : 0)
-    console.log('remaining loaded', loadedRemaining)
-    if (loadedRemaining <= PAGE_LIMIT) {
-      console.log(
-        'getting close to last item, check for new or load more from feed',
-      )
-      const newlyCreatedItems = await fetchNewItems()
+    // console.log('remaining loaded', loadedRemaining)
 
-      if (newlyCreatedItems && newlyCreatedItems.length) {
-        setDisplayItems(prev => [...prev, ...newlyCreatedItems])
-        console.log('got New items, show them first', newlyCreatedItems)
-        return
+    if (settings.insertNewCreations) {
+      if (loadedRemaining <= PAGE_LIMIT) {
+        // console.log(
+        //   'remaining below page limit, check for new creations',
+        // )
+        const newlyCreatedItems = await fetchNewItems()
+
+        if (newlyCreatedItems && newlyCreatedItems.length) {
+          setDisplayItems(prev => [
+            ...prev.slice(0, (focusItemIndex != null ? focusItemIndex : 0) + 3),
+            ...newlyCreatedItems,
+            ...prev.slice((focusItemIndex != null ? focusItemIndex : 0) + 3),
+          ])
+          // console.log('got New items, show them first', newlyCreatedItems)
+          return
+        }
       }
+    }
 
-      console.log('NO NEW ITEMS, continue paging')
+    // console.log('NO NEW ITEMS, continue paging')
 
-      console.log('Loading More Feed')
+    if (loadedRemaining <= GALLERY_SIZE) {
+      // console.log('remaining below gallery size, get next page from regularfeed')
+      // console.log('Loading More Feed')
       maybeLoadMore()
     }
-  }, [focusItemIndex, displayItems, maybeLoadMore])
+  }, [fetchNewItems, focusItemIndex, displayItems, maybeLoadMore])
 
-  console.log(displayItems)
+  // console.log(displayItems)
 
   useEffect(() => {
     // setDisplayItems - only add elements from the items array of objects that are not yet present in displayItems, compare by each elements _id
@@ -410,60 +402,60 @@ const ChannelDetailsModal = ({
                 ))}
             </div>
 
-            <div className="grid grid-flow-col mb-6 auto-cols-max gap-1 items-center overflow-x-clip">
-              {displayItems &&
-                displayItems.map((item, index) => (
-                  <div
-                    key={item._id}
-                    className="relative h-20 md:h-32 p-1 hover:cursor-pointer hover:scale-105"
-                    onClick={() => handleClickItem(item)}
-                  >
-                    <span className="overflow-hidden rounded-md">
-                      <Image
-                        alt={item.name}
-                        src={
-                          item.thumbnail
-                            ? item.thumbnail
-                            : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                        }
-                        width={48}
-                        height={48}
-                        className={`object-contain max-w-full rounded-md transition-all w-auto ${
-                          item._id !== focusItem._id ? 'grayscale' : ''
-                        }`}
-                      />
-                    </span>
-                    {/* // render full size image but keep it hidden to act as preloader  */}
-                    {index <= 2 ? (
-                      <>
-                        {isVideoUrl(item.uri) ? (
-                          <>
-                            <CustomVideo
-                              autoPlay={false}
-                              preload={true}
-                              muted={true}
-                              loop={false}
-                              key={item._id}
-                              src={item.uri}
-                              className="hidden"
-                            />
-                          </>
-                        ) : (
-                          <CustomImage
-                            key={item._id}
-                            src={
-                              item.uri ||
-                              `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                            }
-                            alt={item.name}
-                            className="hidden"
-                          />
-                        )}
-                      </>
-                    ) : null}
-                  </div>
-                ))}
-            </div>
+            {/*<div className="grid grid-flow-col mb-6 auto-cols-max gap-1 items-center overflow-x-clip">*/}
+            {/*  {displayItems &&*/}
+            {/*    displayItems.map((item, index) => (*/}
+            {/*      <div*/}
+            {/*        key={item._id}*/}
+            {/*        className="relative h-20 md:h-32 p-1 hover:cursor-pointer hover:scale-105"*/}
+            {/*        onClick={() => handleClickItem(item)}*/}
+            {/*      >*/}
+            {/*        <span className="overflow-hidden rounded-md">*/}
+            {/*          <Image*/}
+            {/*            alt={item.name}*/}
+            {/*            src={*/}
+            {/*              item.thumbnail*/}
+            {/*                ? item.thumbnail*/}
+            {/*                : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`*/}
+            {/*            }*/}
+            {/*            width={48}*/}
+            {/*            height={48}*/}
+            {/*            className={`object-contain max-w-full rounded-md transition-all w-auto ${*/}
+            {/*              item._id !== focusItem._id ? 'grayscale' : ''*/}
+            {/*            }`}*/}
+            {/*          />*/}
+            {/*        </span>*/}
+            {/*        /!* // render full size image but keep it hidden to act as preloader  *!/*/}
+            {/*        {index <= 2 ? (*/}
+            {/*          <>*/}
+            {/*            {isVideoUrl(item.uri) ? (*/}
+            {/*              <>*/}
+            {/*                <CustomVideo*/}
+            {/*                  autoPlay={false}*/}
+            {/*                  preload={true}*/}
+            {/*                  muted={true}*/}
+            {/*                  loop={false}*/}
+            {/*                  key={item._id}*/}
+            {/*                  src={item.uri}*/}
+            {/*                  className="hidden"*/}
+            {/*                />*/}
+            {/*              </>*/}
+            {/*            ) : (*/}
+            {/*              <CustomImage*/}
+            {/*                key={item._id}*/}
+            {/*                src={*/}
+            {/*                  item.uri ||*/}
+            {/*                  `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`*/}
+            {/*                }*/}
+            {/*                alt={item.name}*/}
+            {/*                className="hidden"*/}
+            {/*              />*/}
+            {/*            )}*/}
+            {/*          </>*/}
+            {/*        ) : null}*/}
+            {/*      </div>*/}
+            {/*    ))}*/}
+            {/*</div>*/}
 
             <div
               ref={ref}
