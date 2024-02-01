@@ -10,6 +10,7 @@ import {
   useFeedPaginated,
 } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
+import { createPaginationRoute } from '@/lib/fetcher'
 import { isVideoUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { Creation } from '@edenlabs/eden-sdk'
@@ -20,10 +21,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
 import React, { useCallback, useEffect, useState } from 'react'
-
-// import { createPaginationRoute } from '@/lib/fetcher'
-
-// import DurationProgressBar from '@/components/Layout/DurationProgressBar'
 
 const CustomImage = ({
   src,
@@ -84,7 +81,6 @@ const CustomVideo = ({
       preload={preload}
       loop={loop}
       muted={muted}
-      // disableControls={true}
       className={`video-controls-hover-only ${className ? className : ''}`}
     />
   )
@@ -96,6 +92,13 @@ export type ChannelSettings = {
   showQrCode: boolean
   imageDisplayDuration: number
   muteVideoAudio: boolean
+  insertNewCreations: boolean
+}
+
+const addOneMillisecondToISODate = (isoDateString: string) => {
+  let date = new Date(isoDateString) // create Date object from ISO date string
+  date.setMilliseconds(date.getMilliseconds() + 1) // add one millisecond
+  return date.toISOString() // convert back to ISO date string
 }
 
 const ChannelDetailsModal = ({
@@ -112,7 +115,8 @@ const ChannelDetailsModal = ({
   orderBy: OrderByParam
   settings: ChannelSettings
 }) => {
-  const PAGE_LIMIT = 50
+  const PAGE_LIMIT = 10
+  const GALLERY_SIZE = 5
 
   const { items, isEmpty, isLoading, maybeLoadMore } = useFeedPaginated(
     itemType,
@@ -127,90 +131,115 @@ const ChannelDetailsModal = ({
   const [galleryItems, setGalleryItems] = useState<Creation[] | null>(null)
   const [isImageLoading, setImageLoading] = useState(true)
 
-  // add polling for new creations every x seconds
-  // use $gt: query.maxDate as the initial lower bound minDate to get all new creations since modal opened
-  // whenever we got new creations, use the moist current creations date as the new cutoff - setMinDate
-  // if there's new creations, set newItems
-  // if newItems has creations, splice those in to the items array at an index "focusItemIndex + 1"
-  // somehow keep track of the amount of new creations
-  // think about how to inject even newer items while we're showing new items
-  // dont trigger maybeLoadMore while we're using newItems
-  //
-  // const NEW_ITEMS_POLLING_INTERVAL = 5000
-  // const [ minDate, setMinDate ] = useState(query?.maxDate || new Date().toISOString())
-  // const [ newItems, setNewItems] = useState<Creation[]>([]);
-  //
-  // const fetchNewItems = useCallback(() => {
-  //   const newItemsQuery = { ...query, maxDate: undefined }
-  //   const newItemsRoute = createPaginationRoute(`/api/feed/${itemType}s`, {
-  //     ...newItemsQuery,
-  //     limit: PAGE_LIMIT,
-  //     page: 1,
-  //     orderBy: orderBy ? orderBy.field : undefined,
-  //     direction: orderBy ? orderBy.direction : undefined,
-  //     minDate: minDate
-  //   })
-  //
-  //   return newItemsRoute
-  // }, [minDate, itemType, query, orderBy, PAGE_LIMIT])
+  const [minDate, setMinDate] = useState(
+    query?.maxDate || new Date().toISOString(),
+  )
+  const [displayItems, setDisplayItems] = useState<Creation[]>([])
 
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     console.log(fetchNewItems())
-  //   }, NEW_ITEMS_POLLING_INTERVAL)
-  //
-  //   return () => {
-  //     clearInterval(timer)
-  //   }
-  // }, [fetchNewItems, NEW_ITEMS_POLLING_INTERVAL])
+  const fetchNewItems = useCallback(async (): Promise<Creation[]> => {
+    const newItemsQuery = { ...query, maxDate: undefined }
+    const newItemsRoute = createPaginationRoute(`/api/feed/${itemType}s`, {
+      ...newItemsQuery,
+      limit: PAGE_LIMIT,
+      page: 1,
+      orderBy: orderBy ? orderBy.field : undefined,
+      direction: orderBy ? orderBy.direction : undefined,
+      minDate: minDate,
+    })
+
+    const response = await fetch(newItemsRoute)
+    const responseJson = await response.json()
+
+    if (responseJson && responseJson.docs && responseJson.docs.length) {
+      // console.log('GOT NEW: setting new minDate', responseJson.docs[0].createdAt)
+      setMinDate(addOneMillisecondToISODate(responseJson.docs[0].createdAt))
+      return responseJson.docs
+    }
+
+    return []
+  }, [minDate, itemType, query, orderBy, PAGE_LIMIT])
 
   const handleClickItem = useCallback(
     (item: Creation) => {
       setFocusItemIndex(() => {
-        const newIndex = items.findIndex(elem => elem._id === item._id)
-        setGalleryItems(items.slice(newIndex, newIndex + 10))
+        const newIndex = displayItems.findIndex(elem => elem._id === item._id)
+        setGalleryItems(displayItems.slice(newIndex, newIndex + GALLERY_SIZE))
         return newIndex
       })
 
       const loadedRemaining =
-        items.length - (focusItemIndex !== null ? focusItemIndex : 0)
+        displayItems.length - (focusItemIndex !== null ? focusItemIndex : 0)
       // console.log('remaining loaded', loadedRemaining)
       if (loadedRemaining <= PAGE_LIMIT) {
         // console.log('Loading More')
         maybeLoadMore()
       }
     },
-    [maybeLoadMore, focusItemIndex, items],
+    [maybeLoadMore, focusItemIndex, displayItems],
   )
 
   const handlePrevItem = useCallback(() => {
     setFocusItemIndex(prev => {
       if (prev === null || prev <= 0) {
-        setGalleryItems(items.slice(0, 10))
+        setGalleryItems(displayItems.slice(0, GALLERY_SIZE))
         return 0
       }
       const newIndex = prev - 1
-      setGalleryItems(items.slice(newIndex, newIndex + 10))
+      setGalleryItems(displayItems.slice(newIndex, newIndex + GALLERY_SIZE))
       return newIndex
     })
-  }, [items])
+  }, [displayItems])
 
-  const handleNextItem = useCallback(() => {
+  const handleNextItem = useCallback(async () => {
     setFocusItemIndex(prev => {
       const newIndex = (prev === null ? 0 : prev) + 1
-      setGalleryItems(items.slice(newIndex, newIndex + 10))
-      // setGalleryItems(items.slice(newIndex - 10, newIndex))
-
+      setGalleryItems(displayItems.slice(newIndex, newIndex + GALLERY_SIZE))
       return newIndex
     })
+
     const loadedRemaining =
-      items.length - (focusItemIndex !== null ? focusItemIndex : 0)
+      displayItems.length - (focusItemIndex !== null ? focusItemIndex : 0)
     // console.log('remaining loaded', loadedRemaining)
-    if (loadedRemaining <= PAGE_LIMIT) {
-      // console.log('Loading More')
+
+    if (settings.insertNewCreations) {
+      if (loadedRemaining <= PAGE_LIMIT) {
+        // console.log(
+        //   'remaining below page limit, check for new creations',
+        // )
+        const newlyCreatedItems = await fetchNewItems()
+
+        if (newlyCreatedItems && newlyCreatedItems.length) {
+          setDisplayItems(prev => [
+            ...prev.slice(0, (focusItemIndex != null ? focusItemIndex : 0) + 3),
+            ...newlyCreatedItems,
+            ...prev.slice((focusItemIndex != null ? focusItemIndex : 0) + 3),
+          ])
+          // console.log('got New items, show them first', newlyCreatedItems)
+          return
+        }
+      }
+    }
+
+    // console.log('NO NEW ITEMS, continue paging')
+
+    if (loadedRemaining <= GALLERY_SIZE) {
+      // console.log('remaining below gallery size, get next page from regularfeed')
+      // console.log('Loading More Feed')
       maybeLoadMore()
     }
-  }, [focusItemIndex, items, maybeLoadMore])
+  }, [fetchNewItems, focusItemIndex, displayItems, maybeLoadMore])
+
+  // console.log(displayItems)
+
+  useEffect(() => {
+    // setDisplayItems - only add elements from the items array of objects that are not yet present in displayItems, compare by each elements _id
+    setDisplayItems(prev => [
+      ...prev,
+      ...items.filter(
+        item => !prev.find(displayItem => displayItem._id === item._id),
+      ),
+    ])
+  }, [items.length])
 
   const handleMediaLoadStart = useCallback(() => {
     // console.log('handleMediaLoadStart')
@@ -232,25 +261,19 @@ const ChannelDetailsModal = ({
       return
     }
     // console.log('render modal, focus item', focusItemIndex, { size })
-    setFocusItem(items[focusItemIndex])
+    setFocusItem(displayItems[focusItemIndex])
 
     // setIsLoadingImage(true)
-  }, [items, focusItemIndex])
+  }, [displayItems, focusItemIndex])
 
   useEffect(() => {
-    // // Immediately show a new item
-    // if (newItems.length > 0 && focusItemIndex === null) {
-    //   setFocusItemIndex(0);
-    //   setGalleryItems(newItems.slice(0, 10));
-    // }
-
     // console.log('useEffect')
-    if (!isLoading && items.length && !focusItem) {
+    if (!isLoading && displayItems.length && !focusItem) {
       // console.log({length: items.length, focusItemIndex})
       setFocusItemIndex(0)
-      setGalleryItems(items.slice(0, 10))
+      setGalleryItems(displayItems.slice(0, GALLERY_SIZE))
     }
-  }, [items, isLoading, items.length, focusItem])
+  }, [displayItems, isLoading, displayItems.length, focusItem])
 
   useEffect(() => {
     // console.log('useEffect')
@@ -340,8 +363,8 @@ const ChannelDetailsModal = ({
                             ? item.thumbnail
                             : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                         }
-                        width={120}
-                        height={120}
+                        width={96}
+                        height={96}
                         className={`object-contain max-w-full rounded-md transition-all w-auto ${
                           item._id !== focusItem._id ? 'grayscale' : ''
                         }`}
@@ -378,6 +401,61 @@ const ChannelDetailsModal = ({
                   </div>
                 ))}
             </div>
+
+            {/*<div className="grid grid-flow-col mb-6 auto-cols-max gap-1 items-center overflow-x-clip">*/}
+            {/*  {displayItems &&*/}
+            {/*    displayItems.map((item, index) => (*/}
+            {/*      <div*/}
+            {/*        key={item._id}*/}
+            {/*        className="relative h-20 md:h-32 p-1 hover:cursor-pointer hover:scale-105"*/}
+            {/*        onClick={() => handleClickItem(item)}*/}
+            {/*      >*/}
+            {/*        <span className="overflow-hidden rounded-md">*/}
+            {/*          <Image*/}
+            {/*            alt={item.name}*/}
+            {/*            src={*/}
+            {/*              item.thumbnail*/}
+            {/*                ? item.thumbnail*/}
+            {/*                : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`*/}
+            {/*            }*/}
+            {/*            width={48}*/}
+            {/*            height={48}*/}
+            {/*            className={`object-contain max-w-full rounded-md transition-all w-auto ${*/}
+            {/*              item._id !== focusItem._id ? 'grayscale' : ''*/}
+            {/*            }`}*/}
+            {/*          />*/}
+            {/*        </span>*/}
+            {/*        /!* // render full size image but keep it hidden to act as preloader  *!/*/}
+            {/*        {index <= 2 ? (*/}
+            {/*          <>*/}
+            {/*            {isVideoUrl(item.uri) ? (*/}
+            {/*              <>*/}
+            {/*                <CustomVideo*/}
+            {/*                  autoPlay={false}*/}
+            {/*                  preload={true}*/}
+            {/*                  muted={true}*/}
+            {/*                  loop={false}*/}
+            {/*                  key={item._id}*/}
+            {/*                  src={item.uri}*/}
+            {/*                  className="hidden"*/}
+            {/*                />*/}
+            {/*              </>*/}
+            {/*            ) : (*/}
+            {/*              <CustomImage*/}
+            {/*                key={item._id}*/}
+            {/*                src={*/}
+            {/*                  item.uri ||*/}
+            {/*                  `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`*/}
+            {/*                }*/}
+            {/*                alt={item.name}*/}
+            {/*                className="hidden"*/}
+            {/*              />*/}
+            {/*            )}*/}
+            {/*          </>*/}
+            {/*        ) : null}*/}
+            {/*      </div>*/}
+            {/*    ))}*/}
+            {/*</div>*/}
 
             <div
               ref={ref}

@@ -65,12 +65,14 @@ const ChannelsPage = () => {
   const [showCreator, setShowCreator] = useState<boolean>(true)
   const [muteVideoAudio, setMuteVideoAudio] = useState<boolean>(false)
   const [imageDisplayDuration, setImageDisplayDuration] = useState<number>(10)
+  const [insertNewCreations, setInsertNewCreations] = useState<boolean>(true)
   const [settings, setSettings] = useState<ChannelSettings>({
     showPrompt,
     showQrCode,
     showCreator,
     imageDisplayDuration,
     muteVideoAudio,
+    insertNewCreations,
   })
 
   useEffect(() => {
@@ -80,6 +82,7 @@ const ChannelsPage = () => {
       showCreator,
       imageDisplayDuration,
       muteVideoAudio,
+      insertNewCreations,
     })
   }, [
     muteVideoAudio,
@@ -87,6 +90,7 @@ const ChannelsPage = () => {
     showQrCode,
     showCreator,
     imageDisplayDuration,
+    insertNewCreations,
   ])
 
   return (
@@ -130,6 +134,17 @@ const ChannelsPage = () => {
                 onChange={() => setMuteVideoAudio(!muteVideoAudio)}
                 checkedChildren={<div>Audio</div>}
                 unCheckedChildren={<div>Audio</div>}
+              />
+            </div>
+          </div>
+          <div className="mb-4 flex gap-2 flex-wrap">
+            Misc
+            <div>
+              <Switch
+                defaultChecked={insertNewCreations}
+                onChange={() => setInsertNewCreations(!insertNewCreations)}
+                checkedChildren={<div>Fetch newer creations</div>}
+                unCheckedChildren={<div>Fetch newer creations</div>}
               />
             </div>
           </div>

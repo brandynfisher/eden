@@ -72,8 +72,10 @@ const getCleanedConfig = (
       if (typeof consolidatedFieldValues[key] !== 'undefined') {
         // @ts-ignore
         obj[key] = Array.isArray(consolidatedFieldValues[key])
-          ? consolidatedFieldValues[key].filter(item => item !== '')
-          : consolidatedFieldValues[key]
+          ? // @ts-ignore
+            consolidatedFieldValues[key].filter(item => item !== '')
+          : // @ts-ignore
+            consolidatedFieldValues[key]
       }
       return obj
     }, {})
