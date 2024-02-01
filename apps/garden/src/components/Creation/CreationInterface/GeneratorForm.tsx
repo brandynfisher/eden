@@ -1,3 +1,4 @@
+import SamplesParameter from './parameters/SamplesParameter'
 import CreationPresetInfo from '@/components/Creation/CreationInterface/CreationPresetInfo'
 import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelect'
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
@@ -49,8 +50,6 @@ import React, {
   useState,
 } from 'react'
 
-import SamplesParameter from './parameters/SamplesParameter'
-
 // import UpscaleParameter from './parameters/UpscaleParameter'
 const { Panel } = Collapse
 
@@ -72,7 +71,11 @@ const getCleanedConfig = (
       // @ts-ignore
       if (typeof consolidatedFieldValues[key] !== 'undefined') {
         // @ts-ignore
-        obj[key] = consolidatedFieldValues[key]
+        obj[key] = Array.isArray(consolidatedFieldValues[key])
+          ? // @ts-ignore
+            consolidatedFieldValues[key].filter(item => item !== '')
+          : // @ts-ignore
+            consolidatedFieldValues[key]
       }
       return obj
     }, {})
@@ -286,13 +289,13 @@ const GeneratorForm = ({
     message.destroy()
 
     try {
-      // console.log(form.getFieldsValue())
+      console.log(form.getFieldsValue())
       const cleanedValues = getCleanedConfig(
         form.getFieldsValue(),
         stringArrayValues,
       )
 
-      // console.log(cleanedValues)
+      console.log(cleanedValues)
 
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,

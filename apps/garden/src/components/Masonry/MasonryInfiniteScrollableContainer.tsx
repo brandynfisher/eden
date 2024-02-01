@@ -33,13 +33,13 @@ const MasonryInfiniteScrollableContainer = ({
   )
   const handleOrderChange = useCallback(
     (newOrderBy: OrderByParam) => {
-      if (newOrderBy.field !== orderBy?.field) {
+      if (newOrderBy.field !== orderBy.field) {
         // console.log(newOrderBy)
         setOrderBy(newOrderBy)
         setKey(`${newOrderBy.field}_${renderCount}`)
       }
     },
-    [renderCount],
+    [orderBy.field, renderCount],
   )
 
   useEffect(() => {

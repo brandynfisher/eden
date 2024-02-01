@@ -171,12 +171,14 @@ const CharactersParameter = (props: {
       const newValues = [...prev]
       newValues[index] = newValue
       onSelectionChange(newValues)
+      // added
       if (newValue) {
         return [...newValues, '']
       }
 
+      // removed
       return newValues.length > 1
-        ? newValues.filter(val => val !== '')
+        ? [...newValues.filter(val => val !== ''), '']
         : newValues
     })
   }
@@ -185,6 +187,7 @@ const CharactersParameter = (props: {
 
   return (
     <div>
+      {JSON.stringify(values)}
       {values.map((value, index) => (
         <div
           key={`${index}_${value}`}
