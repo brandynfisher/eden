@@ -1,0 +1,1889 @@
+{
+  "docs": [
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 9.583333,
+        "width": 1024,
+        "height": 1024,
+        "aspectRatio": 1
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "_id": "657a21a6315c5deb12dfa431",
+      "user": {
+        "_id": "652bfd262ea937e07378268c",
+        "userId": "user_2WnwUb7cpjq35JWfzNj8bzDOdI6",
+        "username": "laub-local",
+        "userImage": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/4dccc0758decda2abc775ec91f008c8f0be2b2b4bf4b5a78e6b63276f85abd7a.jpg"
+      },
+      "task": {
+        "_id": "657a203fd6dbe79f619dd63b",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 8,
+          "sampler": "euler",
+          "steps": 35,
+          "lora_scale": 0.7,
+          "interpolation_init_images": [
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/47d33f80fd6c34ecbb7f9b590dff96daadb5f937e1c4d4895f65ef2f3377e158.jpg",
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/a3328b88a9cc3102fbab3492121642ce44f11a474063b0a847022269e9279c66.jpg",
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/6acfae028e76cc9023d24d810007a9c063e4ba4da1e2c9d7f4b36452509a9def.jpg"
+          ],
+          "n_frames": 60,
+          "loop": true,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.8,
+          "interpolation_texts": [],
+          "interpolation_seeds": [29168150, 15849119, 96399302],
+          "seed": 87723493
+        },
+        "status": "completed"
+      },
+      "generator": "63f0987f1bbd8127b36a8a35",
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/957474b54b831dac018f0906bb976c1e1faeadcebe85f0ce9cb5145eb30a386d.mp4",
+      "thumbnail": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/c691c3932b770655613151f18cfeced0218eabd63c51e24d52b495906a182488.webp",
+      "name": "brightly colored chair with a cartoony design on it in a white room, 6 0 s chair, monster graveyard chair, funky furniture, inspired by Saul Steinberg, armchair, inspired by Tim Biskup, armchairs, avocado armchair, by Don Eddy, made for an art gallery, inspired by Paulus Decker, inspired by Howard Arkley, with retro sci fi furniture => cartoon character sitting on a chair with a banana on it, spongy, spongebob in real life, spongebob, sponge bob, gelbooru, monster graveyard chair, an avocado armchair, funky furniture, avocado armchair, avocado chair, anthropomorphic cheese wedge, interesting character design, spongebob squarepants, an avocado chair, c 4 d ”, cartoon character, designed in blender => araffe sitting in a chair with a seat and a pillow, spongebob in real life, spongebob, spongy, avocado armchair, sponge bob, inspired by Richard Artschwager, emma watson as an avocado chair, an avocado armchair, as if homer simpson came to life, spongebob squarepants, avocado chair, inspired by Jakob Emanuel Handmann, pudenda => brightly colored chair with a cartoony design on it in a white room, 6 0 s chair, monster graveyard chair, funky furniture, inspired by Saul Steinberg, armchair, inspired by Tim Biskup, armchairs, avocado armchair, by Don Eddy, made for an art gallery, inspired by Paulus Decker, inspired by Howard Arkley, with retro sci fi furniture",
+      "attributes": {
+        "interrogation": [
+          "brightly colored chair with a cartoony design on it in a white room, 6 0 s chair, monster graveyard chair, funky furniture, inspired by Saul Steinberg, armchair, inspired by Tim Biskup, armchairs, avocado armchair, by Don Eddy, made for an art gallery, inspired by Paulus Decker, inspired by Howard Arkley, with retro sci fi furniture",
+          "cartoon character sitting on a chair with a banana on it, spongy, spongebob in real life, spongebob, sponge bob, gelbooru, monster graveyard chair, an avocado armchair, funky furniture, avocado armchair, avocado chair, anthropomorphic cheese wedge, interesting character design, spongebob squarepants, an avocado chair, c 4 d ”, cartoon character, designed in blender",
+          "araffe sitting in a chair with a seat and a pillow, spongebob in real life, spongebob, spongy, avocado armchair, sponge bob, inspired by Richard Artschwager, emma watson as an avocado chair, an avocado armchair, as if homer simpson came to life, spongebob squarepants, avocado chair, inspired by Jakob Emanuel Handmann, pudenda",
+          "brightly colored chair with a cartoony design on it in a white room, 6 0 s chair, monster graveyard chair, funky furniture, inspired by Saul Steinberg, armchair, inspired by Tim Biskup, armchairs, avocado armchair, by Don Eddy, made for an art gallery, inspired by Paulus Decker, inspired by Howard Arkley, with retro sci fi furniture"
+        ],
+        "job_time_seconds": 271.72906160354614,
+        "nsfw_score": 0.02
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-12-13T21:27:03.177Z",
+      "updatedAt": "2023-12-13T21:27:03.177Z",
+      "__v": 0
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 1.5,
+        "width": 1352,
+        "height": 776,
+        "aspectRatio": 1.7422680412371134
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "_id": "656f33703b43d034f5345e95",
+      "user": {
+        "_id": "652bfd262ea937e07378268c",
+        "userId": "user_2WnwUb7cpjq35JWfzNj8bzDOdI6",
+        "username": "laub-local",
+        "userImage": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/4dccc0758decda2abc775ec91f008c8f0be2b2b4bf4b5a78e6b63276f85abd7a.jpg"
+      },
+      "task": {
+        "_id": "656f3121a5fe2819b933048b",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 8,
+          "sampler": "euler",
+          "steps": 35,
+          "lora_scale": 0.6,
+          "isPrivate": false,
+          "interpolation_init_images": [
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/74814db9fd46b6fb7b93ea7c8fd1b0d2252144a005336d57a678fc9840952324.jpg",
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/87af1715fe649b33a8cd9b61c0d58bf41c96a5b18a68822e161e39166bccae05.jpg"
+          ],
+          "n_frames": 10,
+          "loop": true,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.8,
+          "interpolation_texts": [],
+          "interpolation_seeds": [42100802, 20098981],
+          "seed": 58380708
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/1a682c089ff2eeb2d9e658cc89445c32a0ef3c384dc964a97b0414ea13c76f4a.mp4",
+      "thumbnail": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/f69c7f05fffbfedc23166c3d1d8153c4692b1a3977561a72b194b2088103374b.webp",
+      "name": "painting of a group of people dancing around a campfire in a forest, dancing around a fire, people facing fire circle, campfire background, tribal red atmosphere, tribal dance, warm beautiful scene, at a campfire in the forest, 3 d render of a shaman, tribe members attacking, ritual in a forest, solstice fire, bonfire, surrounded with fire, camp fire, rpg scene => there is a fire in the middle of a forest with many trees, background artwork, ritual in a forest, dnd in a dark forest, forest ritual, burning forest, fantasy artrealistic painting, a flaming forest, campfire background, the forest is on fire, witch runes in the deep forest, fantasy painting hd, elf forest background",
+      "attributes": {
+        "interrogation": [
+          "painting of a group of people dancing around a campfire in a forest, dancing around a fire, people facing fire circle, campfire background, tribal red atmosphere, tribal dance, warm beautiful scene, at a campfire in the forest, 3 d render of a shaman, tribe members attacking, ritual in a forest, solstice fire, bonfire, surrounded with fire, camp fire, rpg scene",
+          "there is a fire in the middle of a forest with many trees, background artwork, ritual in a forest, dnd in a dark forest, forest ritual, burning forest, fantasy artrealistic painting, a flaming forest, campfire background, the forest is on fire, witch runes in the deep forest, fantasy painting hd, elf forest background"
+        ],
+        "nsfw_score": 0
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-12-05T14:28:01.055Z",
+      "updatedAt": "2023-12-05T14:28:01.055Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 9.916667,
+        "width": 1024,
+        "height": 1024,
+        "aspectRatio": 1
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "_id": "656130df0c11a3d5d3b3322a",
+      "user": {
+        "_id": "653aca861d15a054a35b7f32",
+        "userId": "user_2XJek79gH94XanG334KBM4LDVSa",
+        "username": "xander",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yWEplazh0TEo3ZHgwUzFOaXV6eXBsZW9DdWYifQ"
+      },
+      "task": {
+        "_id": "65612fc60c11a3d5d3b2c072",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "lora": "655f62aa000112de0bc4a94e",
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7,
+          "sampler": "euler",
+          "steps": 35,
+          "interpolation_init_images": [
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/30720a4ea47dd8e83bdec6d1d02dd6d3d63c4d8e4d6a16a3dfe9bcda91ee00d5.jpg",
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/0f847c6630ee51ba92e20e6c8216b1c322a55c979ec8a071845626143113de96.jpg"
+          ],
+          "n_frames": 60,
+          "loop": true,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.8,
+          "interpolation_texts": [],
+          "interpolation_seeds": [9039777, 27895611],
+          "seed": 81725277
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/832e28e6b04b9ae8b03609a719890e71d9cd0c7326b03f4e1d38e9a7ba59e42c.mp4",
+      "thumbnail": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/976024983f45bb8580010ac03c14102267c50e06fcd2807da7254125664327e8.webp",
+      "name": "there is a yellow table with a plant on it and a face painted on it, realistic rendering for stool, funky furniture, trending on artstatioin, trending on dribbble.com mascot, stylistic furniture, featured in pictoplasma, brutalism style stool, trending on artstartion, wooden side table, modern gallery furniture, trending on artstion => araffe dressed in a suit and sunglasses on the red carpet, lemon wearing sunglasses, oscar winner, fruit celebrity, winner of seven oscars, banana, oscar winning, award winning cgi, oscar nominated cinematography, beskinski, discord profile picture, a24, gary oldman as a pear, best anime character design, oscar, big man",
+      "attributes": {
+        "interrogation": [
+          "<s0><s1>, <s0><s1>, there is a yellow table with a plant on it and a face painted on it, realistic rendering for stool, funky furniture, trending on artstatioin, trending on dribbble.com mascot, stylistic furniture, featured in pictoplasma, brutalism style stool, trending on artstartion, wooden side table, modern gallery furniture, trending on artstion",
+          "<s0><s1>, <s0><s1>, araffe dressed in a suit and sunglasses on the red carpet, lemon wearing sunglasses, oscar winner, fruit celebrity, winner of seven oscars, banana, oscar winning, award winning cgi, oscar nominated cinematography, beskinski, discord profile picture, a24, gary oldman as a pear, best anime character design, oscar, big man"
+        ]
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-11-24T23:25:20.431Z",
+      "updatedAt": "2023-11-24T23:25:20.431Z",
+      "__v": 0,
+      "concept": "655f62aa000112de0bc4a94e",
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 1.5,
+        "width": 1024,
+        "height": 1024,
+        "aspectRatio": 1
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "_id": "6558ec0d5e91d48ad77ee70d",
+      "user": {
+        "_id": "6544502e4cd811f27c430b56",
+        "userId": "user_2Xe3bPtGIFWkapMx6sjeNrugAfy",
+        "username": "jmill4747",
+        "userImage": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/7859f9b801ffa8e9e884b38865abf86cb485ba380ecae731184e7f83661119d0.jpg"
+      },
+      "task": {
+        "_id": "6558eb7e5e91d48ad77df0fa",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7,
+          "sampler": "euler",
+          "steps": 35,
+          "interpolation_init_images": [
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/3e1cc676b475cc3aaac0afc2923412d955b34b4011ccdb84bbdc69eef6476a53.jpg",
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/f7345ff0cf200d6286d607de67f75749cdc3d314e25235f79d10c859bbe16e13.jpg"
+          ],
+          "n_frames": 10,
+          "loop": true,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.8,
+          "interpolation_texts": [],
+          "interpolation_seeds": [5497751, 10800478],
+          "seed": 59083937
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/b5062ea25f6dc88bd7c1270ae68c1dc9e23e7bcc1f6c4ca98cefd09a8cf43167.mp4",
+      "thumbnail": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/3208c60f767e7a53fe2ddb6ce6fd2e0f5ae76f219dc4571bc286e68df67eb6d7.webp",
+      "name": "a close up of a room with a bunch of arcade machines, league of legends style art, league of legends art style, computer game art, league of legends art, league of legends concept art, 2 d game art background, magic lab background, futuristic room background, futuristic. game cg, hearthstone style art, beautiful 3 d concept art, piltover => a rendering of a sci - themed room with a lot of different machines, magic lab background, scifi room, alien room background, star hatcheries, futuristic room background, spaceship hallway background, galaxy themed room, cthylla's laboratory!, painting of ornate space ship, aurora spaceship environment, outer space environment, alien room, inside a magical item shop",
+      "attributes": {
+        "interrogation": [
+          "a close up of a room with a bunch of arcade machines, league of legends style art, league of legends art style, computer game art, league of legends art, league of legends concept art, 2 d game art background, magic lab background, futuristic room background, futuristic. game cg, hearthstone style art, beautiful 3 d concept art, piltover",
+          "a rendering of a sci - themed room with a lot of different machines, magic lab background, scifi room, alien room background, star hatcheries, futuristic room background, spaceship hallway background, galaxy themed room, cthylla's laboratory!, painting of ornate space ship, aurora spaceship environment, outer space environment, alien room, inside a magical item shop"
+        ]
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-11-18T16:53:34.143Z",
+      "updatedAt": "2023-11-18T16:53:34.143Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 1.5,
+        "width": 1024,
+        "height": 1024,
+        "aspectRatio": 1
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "_id": "6558e706f538518ad59f7f99",
+      "user": {
+        "_id": "6544502e4cd811f27c430b56",
+        "userId": "user_2Xe3bPtGIFWkapMx6sjeNrugAfy",
+        "username": "jmill4747",
+        "userImage": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/7859f9b801ffa8e9e884b38865abf86cb485ba380ecae731184e7f83661119d0.jpg"
+      },
+      "task": {
+        "_id": "6558e677dfdb94ff5fb8c0e2",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "n_frames": 10,
+          "lora_scale": 0.8,
+          "loop": true,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7,
+          "sampler": "euler",
+          "steps": 35,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images": [
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/3e1cc676b475cc3aaac0afc2923412d955b34b4011ccdb84bbdc69eef6476a53.jpg",
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/f7345ff0cf200d6286d607de67f75749cdc3d314e25235f79d10c859bbe16e13.jpg"
+          ],
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.8,
+          "interpolation_texts": [],
+          "interpolation_seeds": [11064949, 56195911],
+          "seed": 13118763
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/5413de6a8fd4022062e7a9a018798c43c6345b12cf8bd9b1779befccc07a8323.mp4",
+      "thumbnail": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/ad2762d466ff4fa4e0cd63182ce1086570a6947ed1e114f35beea452bc0b4720.webp",
+      "name": "a close up of a room with a bunch of arcade machines, league of legends style art, league of legends art style, computer game art, league of legends art, league of legends concept art, 2 d game art background, magic lab background, futuristic room background, futuristic. game cg, hearthstone style art, beautiful 3 d concept art, piltover => a rendering of a sci - themed room with a lot of different machines, magic lab background, scifi room, alien room background, star hatcheries, futuristic room background, spaceship hallway background, cthylla's laboratory!, galaxy themed room, painting of ornate space ship, aurora spaceship environment, outer space environment, alien room, inside a magical item shop",
+      "attributes": {
+        "interrogation": [
+          "a close up of a room with a bunch of arcade machines, league of legends style art, league of legends art style, computer game art, league of legends art, league of legends concept art, 2 d game art background, magic lab background, futuristic room background, futuristic. game cg, hearthstone style art, beautiful 3 d concept art, piltover",
+          "a rendering of a sci - themed room with a lot of different machines, magic lab background, scifi room, alien room background, star hatcheries, futuristic room background, spaceship hallway background, cthylla's laboratory!, galaxy themed room, painting of ornate space ship, aurora spaceship environment, outer space environment, alien room, inside a magical item shop"
+        ]
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-11-18T16:32:07.253Z",
+      "updatedAt": "2023-11-18T16:32:07.253Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 1.5,
+        "width": 1024,
+        "height": 1024,
+        "aspectRatio": 1
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "_id": "6558bf5812d98940c6b1b79f",
+      "user": {
+        "_id": "6544502e4cd811f27c430b56",
+        "userId": "user_2Xe3bPtGIFWkapMx6sjeNrugAfy",
+        "username": "jmill4747",
+        "userImage": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/7859f9b801ffa8e9e884b38865abf86cb485ba380ecae731184e7f83661119d0.jpg"
+      },
+      "task": {
+        "_id": "6558be6f12d98940c6b17aea",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7,
+          "sampler": "euler",
+          "steps": 35,
+          "interpolation_init_images": [
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/3e1cc676b475cc3aaac0afc2923412d955b34b4011ccdb84bbdc69eef6476a53.jpg",
+            "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/f7345ff0cf200d6286d607de67f75749cdc3d314e25235f79d10c859bbe16e13.jpg"
+          ],
+          "n_frames": 10,
+          "loop": true,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.8,
+          "interpolation_texts": [],
+          "interpolation_seeds": [15820184, 68351368],
+          "seed": 88860015
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/331796ad1889f35c3b564ce87c731a4be3dfa092b03294b3bde23b114c9346aa.mp4",
+      "thumbnail": "https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/27a84032bb1f40a5ced3bcc611995d1a453d1378a9a07c409933aa5e977a8c5e.webp",
+      "name": "a close up of a room with a bunch of arcade machines, league of legends style art, league of legends art style, computer game art, league of legends art, league of legends concept art, 2 d game art background, magic lab background, futuristic room background, futuristic. game cg, hearthstone style art, beautiful 3 d concept art, piltover => a rendering of a sci - themed room with a lot of different machines, magic lab background, scifi room, alien room background, star hatcheries, futuristic room background, spaceship hallway background, galaxy themed room, cthylla's laboratory!, painting of ornate space ship, aurora spaceship environment, outer space environment, alien room, inside a magical item shop",
+      "attributes": {
+        "interrogation": [
+          "a close up of a room with a bunch of arcade machines, league of legends style art, league of legends art style, computer game art, league of legends art, league of legends concept art, 2 d game art background, magic lab background, futuristic room background, futuristic. game cg, hearthstone style art, beautiful 3 d concept art, piltover",
+          "a rendering of a sci - themed room with a lot of different machines, magic lab background, scifi room, alien room background, star hatcheries, futuristic room background, spaceship hallway background, galaxy themed room, cthylla's laboratory!, painting of ornate space ship, aurora spaceship environment, outer space environment, alien room, inside a magical item shop"
+        ]
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-11-18T13:42:49.885Z",
+      "updatedAt": "2023-11-18T13:42:49.885Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 16.583333,
+        "width": 1024,
+        "height": 1024,
+        "aspectRatio": 1
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "65335028592328dcf4045cce",
+      "user": {
+        "_id": "65284b18f8bbb9bff13ebe65",
+        "userId": "user_2Wg1Muli2GgbFExoxMXy3xpgLC9",
+        "username": "gene3",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV2cxTXZmOWp3SWtRUFBPWHhDWHZrV2xDdGoifQ"
+      },
+      "task": {
+        "_id": "65334efa592328dcf403acd9",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "text_input": "CL + faveCL",
+          "uc_text": "birds, people, birds, clocks, airplanes, faces, nature, birds, airplanes, flowers, animals, clocks, birds",
+          "guidance_scale": 7.5,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/9cb9c27508cddca9d6c80744b6d7d8829e1627426798f9a8205c83b851f32534.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/9bb0f4b0ab9d88d934f9cac1be8c2d1e665bf031bebfdc7b8e32a7674200d190.jpg"
+          ],
+          "interpolation_texts": [
+            "there is a box with a cut out of a piece of paper, multi-layered artworks, toned orange and pastel pink, jean-sebastien rossbach, picture frames, pink and red color style, corner, assembled, ayamin kojima, keys, lots de details, insainly detailed, benjamin vnuk, flattened, lv, paper cut out, hermes artwork by Digital Does",
+            "there are many different colored paper cutouts on a table, hyper-detailed. studio lightning, pink and orange, inspired by Silvia Dimitrova, close-up product photo, intricate details illustration, ivan chermayeff, benjamin vnuk, scrap, a beautiful artwork illustration artwork by Digital Does"
+          ],
+          "init_image_strength": 0.25,
+          "width": 1024,
+          "height": 1024,
+          "steps": 40,
+          "n_frames": 100,
+          "seed": 62210,
+          "upscale_f": 1,
+          "lora": "653327d8592328dcf4e873cb",
+          "lora_scale": 0.4,
+          "loop": true,
+          "sampler": "euler",
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_seeds": [47986664, 88071373],
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.95
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 1,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/da22e372a4e6eba0ea5fb12d7a83272ea882d1937073e46b2d0983bc5f7ebfdd.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/cfb3e3cff30f82289ad02a222f024efc208611490764419d4494c476beebf87d.webp",
+      "name": "there is a box with a cut out of a piece of paper, multi-layered artworks, toned orange and pastel pink, jean-sebastien rossbach, picture frames, pink and red color style, corner, assembled, ayamin kojima, keys, lots de details, insainly detailed, benjamin vnuk, flattened, lv, paper cut out, hermes artwork by Digital Does => there are many different colored paper cutouts on a table, hyper-detailed. studio lightning, pink and orange, inspired by Silvia Dimitrova, close-up product photo, intricate details illustration, ivan chermayeff, benjamin vnuk, scrap, a beautiful artwork illustration artwork by Digital Does",
+      "attributes": {
+        "interrogation": [
+          "<s0><s1>, <s0><s1>, there is a box with a cut out of a piece of paper, multi-layered artworks, toned orange and pastel pink, jean-sebastien rossbach, picture frames, pink and red color style, corner, assembled, ayamin kojima, keys, lots de details, insainly detailed, benjamin vnuk, flattened, lv, paper cut out, hermes artwork by Digital Does",
+          "<s0><s1>, <s0><s1>, there are many different colored paper cutouts on a table, hyper-detailed. studio lightning, pink and orange, inspired by Silvia Dimitrova, close-up product photo, intricate details illustration, ivan chermayeff, benjamin vnuk, scrap, a beautiful artwork illustration artwork by Digital Does"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-21T04:14:32.155Z",
+      "updatedAt": "2023-10-21T12:00:10.451Z",
+      "__v": 0,
+      "concept": "653327d8592328dcf4e873cb",
+      "generator": "63f0987f1bbd8127b36a8a35",
+      "bookmarked": true
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 16.583333,
+        "width": 1400,
+        "height": 1056,
+        "aspectRatio": 1.3257575757575757
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "65334ef5592328dcf403a992",
+      "user": {
+        "_id": "65284b18f8bbb9bff13ebe65",
+        "userId": "user_2Wg1Muli2GgbFExoxMXy3xpgLC9",
+        "username": "gene3",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV2cxTXZmOWp3SWtRUFBPWHhDWHZrV2xDdGoifQ"
+      },
+      "task": {
+        "_id": "65334dab592328dcf402f929",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "text_input": "CL + faveCL",
+          "uc_text": "birds, people, birds, clocks, airplanes, faces, nature, birds, airplanes, flowers, animals, clocks, birds",
+          "guidance_scale": 7.5,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/5b4598fd71ed8ea6612b5183674c4b717d57c98cd661741785c0431331e7a371.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/5dd6405f85e66883f7ea220db61bd49b79dd7f56a777831addca7044abb5da8d.jpg"
+          ],
+          "interpolation_texts": [
+            "there are many pieces of paper cut out of a variety of shapes, layered paper art, layered paper style, layered paper, cut-out paper collage, paper modeling art, paper art, paper cut out collage artwork, paper cutouts of plain colors, colored paper collage, paper cutout, multi-layered artworks, stylized layered shapes, paper cut out, cut paper texture",
+            "there is a picture of a blue suitcase with a blue seat, cut-out paper collage, detail shot, emerald color palette, inspired by Vassily Maximov, behance art, micro detail 4k, blue submarine no 6, rapids, product introduction photo, detail artwork by Digital Does"
+          ],
+          "init_image_strength": 0.1,
+          "width": 1440,
+          "height": 1024,
+          "steps": 40,
+          "n_frames": 100,
+          "seed": 926419,
+          "upscale_f": 1,
+          "lora": "65332192592328dcf4c8e131",
+          "lora_scale": 0.75,
+          "loop": true,
+          "sampler": "euler",
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_seeds": [37989335, 43579364],
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.95
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/b643c3c88f0942285511f7c686f229631dd197934fa68e7528d99328c1f13320.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/b339fe40eb98f56e1de8c63eaea7e08625c61de621e01e30e43d2d9ebe8381e6.webp",
+      "name": "there are many pieces of paper cut out of a variety of shapes, layered paper art, layered paper style, layered paper, cut-out paper collage, paper modeling art, paper art, paper cut out collage artwork, paper cutouts of plain colors, colored paper collage, paper cutout, multi-layered artworks, stylized layered shapes, paper cut out, cut paper texture => there is a picture of a blue suitcase with a blue seat, cut-out paper collage, detail shot, emerald color palette, inspired by Vassily Maximov, behance art, micro detail 4k, blue submarine no 6, rapids, product introduction photo, detail artwork by Digital Does",
+      "attributes": {
+        "interrogation": [
+          "<s0><s1>, <s0><s1>, there are many pieces of paper cut out of a variety of shapes, layered paper art, layered paper style, layered paper, cut-out paper collage, paper modeling art, paper art, paper cut out collage artwork, paper cutouts of plain colors, colored paper collage, paper cutout, multi-layered artworks, stylized layered shapes, paper cut out, cut paper texture",
+          "<s0><s1>, <s0><s1>, there is a picture of a blue suitcase with a blue seat, cut-out paper collage, detail shot, emerald color palette, inspired by Vassily Maximov, behance art, micro detail 4k, blue submarine no 6, rapids, product introduction photo, detail artwork by Digital Does"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-21T04:09:25.707Z",
+      "updatedAt": "2023-10-21T04:09:25.707Z",
+      "__v": 0,
+      "concept": "65332192592328dcf4c8e131",
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 16.583333,
+        "width": 1360,
+        "height": 1208,
+        "aspectRatio": 1.1258278145695364
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "65334da6592328dcf402f5e2",
+      "user": {
+        "_id": "65284b18f8bbb9bff13ebe65",
+        "userId": "user_2Wg1Muli2GgbFExoxMXy3xpgLC9",
+        "username": "gene3",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV2cxTXZmOWp3SWtRUFBPWHhDWHZrV2xDdGoifQ"
+      },
+      "task": {
+        "_id": "65334c0b592328dcf40243cd",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "text_input": "CL + faveCL",
+          "uc_text": "birds, people, birds, clocks, airplanes, faces, nature, birds, airplanes, flowers, animals, clocks, birds",
+          "guidance_scale": 7.5,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/88c7fdb648026b6ef02db39f2c25034b97060ccd0fccf0926824f0182eaa691b.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/566a1bb76af8c2c15321bb49cf3dc0f29aaa922aa0e32e72b44e08d916900d61.jpg"
+          ],
+          "interpolation_texts": [
+            "there is a pile of cut up paper and scissors on a table, intricate abstract. cyberpunk, mewtwo, close-up product photo, case, limited palette, kirigami, portrait image, shore, colored layers, made from mechanical parts, floro details, product introduction photo artwork by Digital Does",
+            "there are many different colored paper cutouts on a table, hyper-detailed. studio lightning, pink and orange, inspired by Silvia Dimitrova, close-up product photo, intricate details illustration, ivan chermayeff, benjamin vnuk, scrap, a beautiful artwork illustration artwork by Digital Does"
+          ],
+          "init_image_strength": 0.7,
+          "width": 1280,
+          "height": 1280,
+          "steps": 40,
+          "n_frames": 100,
+          "seed": 386052,
+          "upscale_f": 1,
+          "loop": true,
+          "lora_scale": 0.8,
+          "sampler": "euler",
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_seeds": [28698154, 50697638],
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.95
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/1eac22512acb722e392d6e58e792c715a642ad184ec4d263c3689efc2b60218d.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/ebae4fc6bd41cab33cc2ec9ea7f045a4dc0a31706773877c7bcc0166ecd8f9cb.webp",
+      "name": "there is a pile of cut up paper and scissors on a table, intricate abstract. cyberpunk, mewtwo, close-up product photo, case, limited palette, kirigami, portrait image, shore, colored layers, made from mechanical parts, floro details, product introduction photo artwork by Digital Does => there are many different colored paper cutouts on a table, hyper-detailed. studio lightning, pink and orange, inspired by Silvia Dimitrova, close-up product photo, intricate details illustration, ivan chermayeff, benjamin vnuk, scrap, a beautiful artwork illustration artwork by Digital Does",
+      "attributes": {
+        "interrogation": [
+          "there is a pile of cut up paper and scissors on a table, intricate abstract. cyberpunk, mewtwo, close-up product photo, case, limited palette, kirigami, portrait image, shore, colored layers, made from mechanical parts, floro details, product introduction photo artwork by Digital Does",
+          "there are many different colored paper cutouts on a table, hyper-detailed. studio lightning, pink and orange, inspired by Silvia Dimitrova, close-up product photo, intricate details illustration, ivan chermayeff, benjamin vnuk, scrap, a beautiful artwork illustration artwork by Digital Does"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-21T04:03:50.700Z",
+      "updatedAt": "2023-10-21T12:03:19.671Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 16.583333,
+        "width": 1392,
+        "height": 944,
+        "aspectRatio": 1.4745762711864407
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "65334c09592328dcf4024093",
+      "user": {
+        "_id": "65284b18f8bbb9bff13ebe65",
+        "userId": "user_2Wg1Muli2GgbFExoxMXy3xpgLC9",
+        "username": "gene3",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV2cxTXZmOWp3SWtRUFBPWHhDWHZrV2xDdGoifQ"
+      },
+      "task": {
+        "_id": "65334ac8592328dcf4018fe0",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "text_input": "CL + faveCL",
+          "uc_text": "birds, people, birds, clocks, airplanes, faces, nature, birds, airplanes, flowers, animals, clocks, birds",
+          "guidance_scale": 7.5,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/39d9eb21dfb073277c278b53437d647f377ab5792415fb045c0f1aa61a45af50.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/2624b5aeb50d61e3cf772849cb80b918a7dbbfffcf8b0f1c5b9c171eaf417277.jpg"
+          ],
+          "interpolation_texts": [
+            "there is a small toy car that is on a table, inspired by Frank Stella, detail shots, cutout, with elements of the f40, multilayer, with fluo colored details, hoverboard, cut out of cardboard, aleksander rostov, detail shot, vinyl material, set on fire, detailed -4, focus stacked, visible stitching, sports artwork by Digital Does",
+            "there are many different tools that are laying on a table, white neon details, mechanical features and neon, layered paper style, fluo details, with fluo colored details, nvidia and behance, green neon details, neon color details, layered paper, layered paper art, diecut, paper cut out, paper cutouts of plain colors, paper modeling art"
+          ],
+          "init_image_strength": 0.5,
+          "width": 1280,
+          "height": 1024,
+          "steps": 40,
+          "n_frames": 100,
+          "seed": 298222,
+          "upscale_f": 1,
+          "lora": "65332192592328dcf4c8e131",
+          "lora_scale": 0.85,
+          "loop": true,
+          "sampler": "euler",
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_seeds": [2030498, 56001571],
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.95
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/4b6ef50910756186dd4c847a5eafc921e77f4703822983b1fcd9279915467c32.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/4cbfd4b8634d474c1725ad5ffea32586409411ecb5ae84cce8119589407198a3.webp",
+      "name": "there is a small toy car that is on a table, inspired by Frank Stella, detail shots, cutout, with elements of the f40, multilayer, with fluo colored details, hoverboard, cut out of cardboard, aleksander rostov, detail shot, vinyl material, set on fire, detailed -4, focus stacked, visible stitching, sports artwork by Digital Does => there are many different tools that are laying on a table, white neon details, mechanical features and neon, layered paper style, fluo details, with fluo colored details, nvidia and behance, green neon details, neon color details, layered paper, layered paper art, diecut, paper cut out, paper cutouts of plain colors, paper modeling art",
+      "attributes": {
+        "interrogation": [
+          "<s0><s1>, <s0><s1>, there is a small toy car that is on a table, inspired by Frank Stella, detail shots, cutout, with elements of the f40, multilayer, with fluo colored details, hoverboard, cut out of cardboard, aleksander rostov, detail shot, vinyl material, set on fire, detailed -4, focus stacked, visible stitching, sports artwork by Digital Does",
+          "<s0><s1>, <s0><s1>, there are many different tools that are laying on a table, white neon details, mechanical features and neon, layered paper style, fluo details, with fluo colored details, nvidia and behance, green neon details, neon color details, layered paper, layered paper art, diecut, paper cut out, paper cutouts of plain colors, paper modeling art"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-21T03:56:57.631Z",
+      "updatedAt": "2023-10-21T03:56:57.631Z",
+      "__v": 0,
+      "concept": "65332192592328dcf4c8e131",
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 16.583333,
+        "width": 1216,
+        "height": 1216,
+        "aspectRatio": 1
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "65334ac5592328dcf4018c99",
+      "user": {
+        "_id": "65284b18f8bbb9bff13ebe65",
+        "userId": "user_2Wg1Muli2GgbFExoxMXy3xpgLC9",
+        "username": "gene3",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV2cxTXZmOWp3SWtRUFBPWHhDWHZrV2xDdGoifQ"
+      },
+      "task": {
+        "_id": "65334943592328dcf400daf4",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "text_input": "CL + faveCL",
+          "uc_text": "birds, people, birds, clocks, airplanes, faces, nature, birds, airplanes, flowers, animals, clocks, birds",
+          "guidance_scale": 7.5,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/5ef5d692c2251b44a48da236687329fdc82059fe2549ad78035b67514636a4b5.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/27615c6a316eae1c864a1b91efb237c14d3702f9320b9b0bd11cca8c9a389adb.jpg"
+          ],
+          "interpolation_texts": [
+            "there is a close up of a piece of paper with a machine, papercraft, in style of photogrammetry cloud, tiny details, inspired by Vassily Maximov, charts, blue and white color palette, many pieces, rounded lines, slightly pixelated, miniature product photo artwork by Digital Does",
+            "there are many different tools that are laying on a table, white neon details, mechanical features and neon, layered paper style, fluo details, with fluo colored details, nvidia and behance, green neon details, neon color details, layered paper, layered paper art, diecut, paper cut out, paper cutouts of plain colors, paper modeling art"
+          ],
+          "init_image_strength": 0.32,
+          "width": 1440,
+          "height": 1024,
+          "steps": 40,
+          "n_frames": 100,
+          "seed": 682390,
+          "upscale_f": 1,
+          "lora": "653327d8592328dcf4e873cb",
+          "lora_scale": 0.75,
+          "loop": true,
+          "sampler": "euler",
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_seeds": [40638838, 83969554],
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.95
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/f3ffff65fb61f704da2d6dc6df54550d10d46e7662ceee07c5cb6dc6b39173bd.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/359693911ac73b1f23b1d93b113032913b2f9799c513edde8502fb8b59a12e61.webp",
+      "name": "there is a close up of a piece of paper with a machine, papercraft, in style of photogrammetry cloud, tiny details, inspired by Vassily Maximov, charts, blue and white color palette, many pieces, rounded lines, slightly pixelated, miniature product photo artwork by Digital Does => there are many different tools that are laying on a table, white neon details, mechanical features and neon, layered paper style, fluo details, with fluo colored details, nvidia and behance, green neon details, neon color details, layered paper, layered paper art, diecut, paper cut out, paper cutouts of plain colors, paper modeling art",
+      "attributes": {
+        "interrogation": [
+          "<s0><s1>, <s0><s1>, there is a close up of a piece of paper with a machine, papercraft, in style of photogrammetry cloud, tiny details, inspired by Vassily Maximov, charts, blue and white color palette, many pieces, rounded lines, slightly pixelated, miniature product photo artwork by Digital Does",
+          "<s0><s1>, <s0><s1>, there are many different tools that are laying on a table, white neon details, mechanical features and neon, layered paper style, fluo details, with fluo colored details, nvidia and behance, green neon details, neon color details, layered paper, layered paper art, diecut, paper cut out, paper cutouts of plain colors, paper modeling art"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-21T03:51:33.745Z",
+      "updatedAt": "2023-10-21T03:51:33.745Z",
+      "__v": 0,
+      "concept": "653327d8592328dcf4e873cb",
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 15.333333,
+        "width": 1256,
+        "height": 840,
+        "aspectRatio": 1.4952380952380953
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "6532e62d592328dcf4a9e763",
+      "user": {
+        "_id": "65284b18f8bbb9bff13ebe65",
+        "userId": "user_2Wg1Muli2GgbFExoxMXy3xpgLC9",
+        "username": "gene3",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV2cxTXZmOWp3SWtRUFBPWHhDWHZrV2xDdGoifQ"
+      },
+      "task": {
+        "_id": "6532e306592328dcf4a76259",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/318cd65ac99ed74fa1a2fed439b3e818e89bd0ff5c3ba15c06175ec3afd2000c.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/412884055669f88a5f7c1ab88d0392c238ad68590974e882c33bdfd28afa7551.jpg"
+          ],
+          "n_frames": 92,
+          "loop": false,
+          "lora": "6532d825592328dcf4a26fc0",
+          "lora_scale": 1,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7,
+          "sampler": "euler",
+          "steps": 35,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.95,
+          "interpolation_texts": [],
+          "interpolation_seeds": [51814471, 66441050],
+          "seed": 40201483
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/72728ff0c67fc76a6b6dc2c32b80730afba37d2552bb1787598a76a4204e46cb.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/0001a411f7dbe132f235271df7e4a59ef05b52a41aa05b4eaf59fcde1086d39d.webp",
+      "name": "there is a picture of a picture of a blue and white cat, paper modeling art, layered paper art, paper craft, papercraft, paper cutouts of plain colors, featured in pictoplasma, paper cutout, handcrafted paper background, featured on dribbble, featured on dribbble, cory behance hd, paper art, cute pictoplasma, pictoplasma => there is a cut out of a paper airplane with a plane on it, paper modeling art, paper craft, paper cutouts of plain colors, papercraft, paper cutout, layered paper art, cory behance hd, cut paper texture, featured in pictoplasma, layered paper style, paper craft low poly, featured on dribbble, featured on dribbble",
+      "attributes": {
+        "interrogation": [
+          "<s0><s1>, <s0><s1>, there is a picture of a picture of a blue and white cat, paper modeling art, layered paper art, paper craft, papercraft, paper cutouts of plain colors, featured in pictoplasma, paper cutout, handcrafted paper background, featured on dribbble, featured on dribbble, cory behance hd, paper art, cute pictoplasma, pictoplasma",
+          "<s0><s1>, <s0><s1>, there is a cut out of a paper airplane with a plane on it, paper modeling art, paper craft, paper cutouts of plain colors, papercraft, paper cutout, layered paper art, cory behance hd, cut paper texture, featured in pictoplasma, layered paper style, paper craft low poly, featured on dribbble, featured on dribbble"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-20T20:42:21.690Z",
+      "updatedAt": "2023-10-20T20:42:21.690Z",
+      "__v": 0,
+      "concept": "6532d825592328dcf4a26fc0",
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 9.916667,
+        "width": 1256,
+        "height": 840,
+        "aspectRatio": 1.4952380952380953
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "6532ddc0592328dcf4a68a60",
+      "user": {
+        "_id": "65284b18f8bbb9bff13ebe65",
+        "userId": "user_2Wg1Muli2GgbFExoxMXy3xpgLC9",
+        "username": "gene3",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV2cxTXZmOWp3SWtRUFBPWHhDWHZrV2xDdGoifQ"
+      },
+      "task": {
+        "_id": "6532db19592328dcf4a3c341",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "n_frames": 60,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/f64a065d0628c881ec494d84d22f1c75da104927c330c0a68d31d799aeada8c7.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/30b8602f9581067ddca318061bbb692c1968321c442fe006d54e03fb1217d093.jpg"
+          ],
+          "loop": true,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7,
+          "sampler": "euler",
+          "steps": 35,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.95,
+          "interpolation_texts": [],
+          "interpolation_seeds": [42430648, 70579757],
+          "seed": 99810444
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/a43bd724fb5312b4fd0d18f5ee628c8298c400cc8fa861d35364bd863e4818b0.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/77aec9d9ead524db38ae731a1c06d35f972c8f40c198ba4144eb2ec26a736a8d.webp",
+      "name": "there is a pair of scissors and some cut paper pieces, paper cutouts of plain colors, paper craft, cut paper texture, layered paper art, paper modeling art, teal white gold color palette, handcrafted paper background, papercraft, white and teal metallic accents, cory behance hd, vinyl designer toy, behance. high detail, highly inventive pattern cutting => there is a lego clock with a smiley face on it, paper modeling art, layered paper art, papercraft, paper craft, paper cutouts of plain colors, behance. high detail, 3 d epic illustrations, behance favourite, trend on behance 3 d art, trend on behance 3d art, paper cutout, paper art, behance contest winner",
+      "attributes": {
+        "interrogation": [
+          "there is a pair of scissors and some cut paper pieces, paper cutouts of plain colors, paper craft, cut paper texture, layered paper art, paper modeling art, teal white gold color palette, handcrafted paper background, papercraft, white and teal metallic accents, cory behance hd, vinyl designer toy, behance. high detail, highly inventive pattern cutting",
+          "there is a lego clock with a smiley face on it, paper modeling art, layered paper art, papercraft, paper craft, paper cutouts of plain colors, behance. high detail, 3 d epic illustrations, behance favourite, trend on behance 3 d art, trend on behance 3d art, paper cutout, paper art, behance contest winner"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-20T20:06:24.809Z",
+      "updatedAt": "2023-10-20T20:06:24.809Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 9.916667,
+        "width": 1256,
+        "height": 840,
+        "aspectRatio": 1.4952380952380953
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "6532dcd9592328dcf4a60c98",
+      "user": {
+        "_id": "65284b18f8bbb9bff13ebe65",
+        "userId": "user_2Wg1Muli2GgbFExoxMXy3xpgLC9",
+        "username": "gene3",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV2cxTXZmOWp3SWtRUFBPWHhDWHZrV2xDdGoifQ"
+      },
+      "task": {
+        "_id": "6532dae9592328dcf4a39ee8",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "n_frames": 60,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/412884055669f88a5f7c1ab88d0392c238ad68590974e882c33bdfd28afa7551.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/318cd65ac99ed74fa1a2fed439b3e818e89bd0ff5c3ba15c06175ec3afd2000c.jpg"
+          ],
+          "loop": true,
+          "lora": "6532d825592328dcf4a26fc0",
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7,
+          "sampler": "euler",
+          "steps": 35,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_min_strength": 0.05,
+          "interpolation_init_images_max_strength": 0.95,
+          "interpolation_texts": [],
+          "interpolation_seeds": [99843421, 73192963],
+          "seed": 53089300
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/7d11ee954bd0ec407facf103b9828d1a673f7737e712ba8254f2f97bbd9ed1c3.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/2ca5d6312737c85e440c1aa8d8f3f68ab4a2e49c9885b851d0da0f8dd6894715.webp",
+      "name": "there is a cut out of a paper airplane with a plane on it, paper modeling art, paper craft, paper cutouts of plain colors, papercraft, paper cutout, layered paper art, cory behance hd, cut paper texture, featured in pictoplasma, layered paper style, paper craft low poly, featured on dribbble, featured on dribbble => there is a picture of a picture of a blue and white cat, paper modeling art, layered paper art, paper craft, papercraft, paper cutouts of plain colors, featured in pictoplasma, paper cutout, handcrafted paper background, featured on dribbble, featured on dribbble, cory behance hd, cute pictoplasma, paper art, pictoplasma",
+      "attributes": {
+        "interrogation": [
+          "<s0><s1>, <s0><s1>, there is a cut out of a paper airplane with a plane on it, paper modeling art, paper craft, paper cutouts of plain colors, papercraft, paper cutout, layered paper art, cory behance hd, cut paper texture, featured in pictoplasma, layered paper style, paper craft low poly, featured on dribbble, featured on dribbble",
+          "<s0><s1>, <s0><s1>, there is a picture of a picture of a blue and white cat, paper modeling art, layered paper art, paper craft, papercraft, paper cutouts of plain colors, featured in pictoplasma, paper cutout, handcrafted paper background, featured on dribbble, featured on dribbble, cory behance hd, cute pictoplasma, paper art, pictoplasma"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-20T20:02:33.165Z",
+      "updatedAt": "2023-10-20T20:02:33.165Z",
+      "__v": 0,
+      "concept": "6532d825592328dcf4a26fc0",
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 18.833333,
+        "width": 712,
+        "height": 1264,
+        "aspectRatio": 0.5632911392405063
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "6525a753ecd8b4b619b149fa",
+      "user": {
+        "_id": "651c6e895447983fa2697453",
+        "userId": "user_2WGbyc0iiDEsIhC4NTFN3ayn3Zy",
+        "username": "laub",
+        "userImage": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/88f5c30ac6f352afda89ebaa7ca538ac215569a347bf5e7d4e4cba86ad86d1c2.jpg"
+      },
+      "task": {
+        "_id": "6525a469ecd8b4b619aeda89",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 720,
+          "height": 1280,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/7a5a76def9c68b61aefe1e8a3f8a67f6057bf1b77b197173b568c44c51f13e06.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/7c9eec558cf2be878a9a8c8a35cae0e38cca8a24c8eac795c01cd60f9ee60697.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/417be5c85238cf889e95f12e761555643a62833ea8cbb5f3eb6f172528e61179.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/1134b94e0038dbea2858344a317c6dfae6e29e853b8bdc874f19cfe7e0b03c77.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/44798d37ce93769b2ad6df0f44bd3d6886230146ea10d1f18f5bd20d184113ac.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/c76f20f296776f56be6330e71aed700af02f1d1472c742e74d351bd60523448a.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/9db0074331d1ff03e5e4237264901142571a86b9c402e20400c180eda2edb3e8.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/a6c8cc356272b08604dfecf445486902920658576bbc2049aadc1516735fca2c.jpg"
+          ],
+          "n_frames": 120,
+          "loop": true,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "latent_blending_skip_f": [0.1, 0.65],
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_texts": [],
+          "interpolation_seeds": [
+            70232525, 42984265, 2783380, 19774643, 90446946, 57225302, 41909410,
+            83878650
+          ],
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "seed": 34040922
+        },
+        "status": "completed"
+      },
+      "praiseCount": 2,
+      "bookmarkCount": 1,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/14e0b1b48ad5dc6ba983701c5bc8eb245b35d41718dbc33fb59dfec94337b26b.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/ee784dd96efc29cbf1c5adf3dfe0ede0179e6877b75260ea24ed88a9ee01364d.webp",
+      "name": "painting of a man standing in a doorway with a view of a planet, hyper - detailed visionary art, visionary art style, psychedelic digital art, highly detailed visionary art, mind-bending digital art, dmt background, psychedelic fractal art, psychedelic trippy visionary art, dan mumford and alex grey style, dmt art, cosmic lsd poster art, beksisnski => painting of a doorway leading to a surreal landscape with a man and woman, doorways. zdzisław beksinski, doors of perception, doors that are cosmic portals, beksisnski, highly detailed visionary art, dream portal, portal to another world, portal to the ethereal realm, dimensional portal, portal to another universe, james mccarthy => painting of a window in a stone building with a view of a river, screenshot from fortnite, from inside the giant palace, ancient ruins background, beautiful render of a landscape, unreal 5 8 k depth of field, odin's stone arena background, photo of a beautiful window, background in a cinematic, random cinematic view, arena background, unreal engine 5 quality, the witness => a painting of a doorway leading to a beautiful landscape, dream portal, doors of perception, dimensional portal, portal to the ethereal realm, magic doorway, doors that are cosmic portals, entrance to ethereal realm, kilian eng and thomas kinkade, portal opening, dmt temple, gateway to another universe, mythical cosmic shrine, dimensions, highly detailed visionary art => painting of a window with a view of a landscape and a lake, doors of perception, doorways. zdzisław beksinski, highly detailed visionary art, hyperdetailed | donato giancola, dmt entities, inter-dimensional mirrors, dream portal, visionary art style, visionary art, beksisnski, by Victor Nizovtsev => a painting of a colorful room with a bright blue and orange design, doorways. zdzisław beksinski, visionary art style, highly detailed visionary art, doors of perception, psychedelic fractal art, hyper - detailed visionary art, alex gray, doors that are cosmic portals, patterned visionary art, psychedelic trippy visionary art, dream portal, dmt art => a painting of a colorful room with a large square window, psychedelic fractal art, visionary art style, dmt background, patterned visionary art, dmt temple, visionary fractal structures, entering the mind maze, abstract fractal art, dmt realm, psychedelic trippy visionary art, dmt entity ; lsd art, dmt art, dmt entity, mind-bending digital art => a painting of a doorway with a view of a planet and a spiral, doors of perception, doorways. zdzisław beksinski, highly detailed visionary art, visionary art style, portal to alternative reality, portal to another universe, dream portal, doors that are cosmic portals, portal, gateway to another dimension, portal 3, gateway to another universe => painting of a man standing in a doorway with a view of a planet, hyper - detailed visionary art, visionary art style, psychedelic digital art, highly detailed visionary art, mind-bending digital art, dmt background, psychedelic fractal art, psychedelic trippy visionary art, dan mumford and alex grey style, dmt art, cosmic lsd poster art, beksisnski",
+      "attributes": {
+        "interrogation": [
+          "painting of a man standing in a doorway with a view of a planet, hyper - detailed visionary art, visionary art style, psychedelic digital art, highly detailed visionary art, mind-bending digital art, dmt background, psychedelic fractal art, psychedelic trippy visionary art, dan mumford and alex grey style, dmt art, cosmic lsd poster art, beksisnski",
+          "painting of a doorway leading to a surreal landscape with a man and woman, doorways. zdzisław beksinski, doors of perception, doors that are cosmic portals, beksisnski, highly detailed visionary art, dream portal, portal to another world, portal to the ethereal realm, dimensional portal, portal to another universe, james mccarthy",
+          "painting of a window in a stone building with a view of a river, screenshot from fortnite, from inside the giant palace, ancient ruins background, beautiful render of a landscape, unreal 5 8 k depth of field, odin's stone arena background, photo of a beautiful window, background in a cinematic, random cinematic view, arena background, unreal engine 5 quality, the witness",
+          "a painting of a doorway leading to a beautiful landscape, dream portal, doors of perception, dimensional portal, portal to the ethereal realm, magic doorway, doors that are cosmic portals, entrance to ethereal realm, kilian eng and thomas kinkade, portal opening, dmt temple, gateway to another universe, mythical cosmic shrine, dimensions, highly detailed visionary art",
+          "painting of a window with a view of a landscape and a lake, doors of perception, doorways. zdzisław beksinski, highly detailed visionary art, hyperdetailed | donato giancola, dmt entities, inter-dimensional mirrors, dream portal, visionary art style, visionary art, beksisnski, by Victor Nizovtsev",
+          "a painting of a colorful room with a bright blue and orange design, doorways. zdzisław beksinski, visionary art style, highly detailed visionary art, doors of perception, psychedelic fractal art, hyper - detailed visionary art, alex gray, doors that are cosmic portals, patterned visionary art, psychedelic trippy visionary art, dream portal, dmt art",
+          "a painting of a colorful room with a large square window, psychedelic fractal art, visionary art style, dmt background, patterned visionary art, dmt temple, visionary fractal structures, entering the mind maze, abstract fractal art, dmt realm, psychedelic trippy visionary art, dmt entity ; lsd art, dmt art, dmt entity, mind-bending digital art",
+          "a painting of a doorway with a view of a planet and a spiral, doors of perception, doorways. zdzisław beksinski, highly detailed visionary art, visionary art style, portal to alternative reality, portal to another universe, dream portal, doors that are cosmic portals, portal, gateway to another dimension, portal 3, gateway to another universe",
+          "painting of a man standing in a doorway with a view of a planet, hyper - detailed visionary art, visionary art style, psychedelic digital art, highly detailed visionary art, mind-bending digital art, dmt background, psychedelic fractal art, psychedelic trippy visionary art, dan mumford and alex grey style, dmt art, cosmic lsd poster art, beksisnski"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-10T19:34:43.473Z",
+      "updatedAt": "2023-10-18T20:22:29.632Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35",
+      "reactions": {
+        "praise": true
+      },
+      "bookmarked": true
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 9.416667,
+        "width": 1216,
+        "height": 864,
+        "aspectRatio": 1.4074074074074074
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "65259a57ecd8b4b619aad3fd",
+      "user": {
+        "_id": "651c6e895447983fa2697453",
+        "userId": "user_2WGbyc0iiDEsIhC4NTFN3ayn3Zy",
+        "username": "laub",
+        "userImage": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/88f5c30ac6f352afda89ebaa7ca538ac215569a347bf5e7d4e4cba86ad86d1c2.jpg"
+      },
+      "task": {
+        "_id": "652597b9ecd8b4b619aa0503",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/4184b0fdaf56c12ed8d7d99217a158ccd9f1104e16d5f0ef687b9918d4104dd4.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/ea2acbb6f63eb84c40e904e8372592a4a05e331411d7e0348b15b358a749c59c.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/47a9f39650e960c85ebdb136912be3d3187d67fe996ecc1b45838532cf63e9ed.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/d0e52034aa3013009042a23e18dd86fb402d1845e389e2a7aac4ed520bb1fd8c.jpg"
+          ],
+          "n_frames": 60,
+          "loop": true,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "latent_blending_skip_f": [0.1, 0.65],
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_texts": [],
+          "interpolation_seeds": [72642719, 9820153, 74219120, 16414088],
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "seed": 53711265
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/64c2db940ccad2bc9e554b50f88970393aca664d5013ab224d6527a2ff2a40f1.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/46b627e4f04b0db716ac85e2a378d9b86d6e055d13cce9ed5cc95d194449de2f.webp",
+      "name": "there is a man standing in a room with a keyboard, in his basement studio, living room vibe, screenshot of found footage, dj at a party, vektroid, bladee from drain gang, home video footage, standing on top of a piano, vektroid album cover, 2 0 1 5 live music video, lofi aesthetic => there is a laptop computer sitting on a table with a red light, virtual metaverse room, pulse projections, futuristic lasers tracing, photograph of 3d ios room, 3 6 0 projection, in a cyberpunk themed room, cyber installation, futuristic fine lasers tracing, virtual installation, reflection lumen mapping, colored projections, projection mapping, computers and holograms => there is a red room with a red wall and a red light, 3 6 0 projection, virtual metaverse room, pulse projections, in a cyberpunk themed room, 1 9 7 0 s analog video, red room, infinity mirror, video art, alien room, photograph of 3d ios room, 8 mm film still, anaglyph lighting => there is a laptop computer sitting on a desk with a red light, 3 6 0 projection, virtual metaverse room, pulse projections, anaglyph lighting, projection mapping, futuristic lasers tracing, photograph of 3d ios room, projection design installation, red laser scanner, stroboscope, cinematic hologram, ledspace, holographic projection, hologram center => there is a man standing in a room with a keyboard, in his basement studio, living room vibe, screenshot of found footage, vektroid, dj at a party, bladee from drain gang, home video footage, standing on top of a piano, vektroid album cover, 2 0 1 5 live music video, lofi aesthetic",
+      "attributes": {
+        "interrogation": [
+          "there is a man standing in a room with a keyboard, in his basement studio, living room vibe, screenshot of found footage, dj at a party, vektroid, bladee from drain gang, home video footage, standing on top of a piano, vektroid album cover, 2 0 1 5 live music video, lofi aesthetic",
+          "there is a laptop computer sitting on a table with a red light, virtual metaverse room, pulse projections, futuristic lasers tracing, photograph of 3d ios room, 3 6 0 projection, in a cyberpunk themed room, cyber installation, futuristic fine lasers tracing, virtual installation, reflection lumen mapping, colored projections, projection mapping, computers and holograms",
+          "there is a red room with a red wall and a red light, 3 6 0 projection, virtual metaverse room, pulse projections, in a cyberpunk themed room, 1 9 7 0 s analog video, red room, infinity mirror, video art, alien room, photograph of 3d ios room, 8 mm film still, anaglyph lighting",
+          "there is a laptop computer sitting on a desk with a red light, 3 6 0 projection, virtual metaverse room, pulse projections, anaglyph lighting, projection mapping, futuristic lasers tracing, photograph of 3d ios room, projection design installation, red laser scanner, stroboscope, cinematic hologram, ledspace, holographic projection, hologram center",
+          "there is a man standing in a room with a keyboard, in his basement studio, living room vibe, screenshot of found footage, vektroid, dj at a party, bladee from drain gang, home video footage, standing on top of a piano, vektroid album cover, 2 0 1 5 live music video, lofi aesthetic"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-10T18:39:19.967Z",
+      "updatedAt": "2023-10-10T18:39:19.967Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 9.583333,
+        "width": 976,
+        "height": 1080,
+        "aspectRatio": 0.9037037037037037
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "6521212e54b34c9f73427efd",
+      "user": {
+        "_id": "651c87f9a52c1e2cd7e0b203",
+        "userId": "user_2WGpB8vNDz4g05AVNwTSvOHMqOd",
+        "username": "xander2",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV0dwQkNtakREZUdZcGgzejFxSEZGc0RtQXMifQ"
+      },
+      "task": {
+        "_id": "65211f6154b34c9f7341e1d7",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/75b71e8a9d1f5c585c842fcdced6ba37d08d7eb820d4832f2933c769f6e15751.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/d02cf7115ac7b6feac83eb13eee1ea3c35b69954a47e58d837e441d97bc2aee1.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/74a20e126de89f419d82d7f4b2f942f61069c1ec520a68586c626eefbed981db.jpg"
+          ],
+          "n_frames": 60,
+          "loop": true,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "latent_blending_skip_f": [0.1, 0.65],
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_texts": [],
+          "interpolation_seeds": [99490737, 399140, 31033190],
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "seed": 69230496
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/1698760743a5a62827aea6a321df1cb35ba63d1ba0f6582e13de177263c7b26b.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/a430772880a45480b56ec05e6a43c0e21e232d94b4dc78ba6e49ec79f9ae5057.webp",
+      "name": "there is a small plant that is growing out of the snow, bloomed lighting, light bloom, photo taken with ektachrome, fuji provia, photography of todd hido, rinko kawauchi, photographed on ektachrome film, luminescent plants, photosynthetic, environmental light, inspired by Scarlett Hooft Graafland => there is a yellow substance on the ground next to a tree, by Andy Goldsworthy, light casting onto the ground, luminism woods, magical leafs falling, glowing forest, photography of enchanted forest, neon glowing wood, glowing crystals on the ground, environmental artwork, glowing fungus, colorful otherworldly trees, luminescent plants, inspired by Andy Goldsworthy, lightening tree => there is a circular sculpture made of rocks and sticks in a stream, by Andy Goldsworthy, land art, a beautiful land art of a large, environmental art, inspired by Andy Goldsworthy, sculpture made of piled stones, an eerie whirlpool, environmental artwork, whirlpool, swirling scene in forest, ecological art, water wheel, infinity concentric pool => there is a small plant that is growing out of the snow, bloomed lighting, light bloom, photo taken with ektachrome, fuji provia, photography of todd hido, rinko kawauchi, photographed on ektachrome film, luminescent plants, photosynthetic, environmental light, inspired by Scarlett Hooft Graafland",
+      "attributes": {
+        "interrogation": [
+          "there is a small plant that is growing out of the snow, bloomed lighting, light bloom, photo taken with ektachrome, fuji provia, photography of todd hido, rinko kawauchi, photographed on ektachrome film, luminescent plants, photosynthetic, environmental light, inspired by Scarlett Hooft Graafland",
+          "there is a yellow substance on the ground next to a tree, by Andy Goldsworthy, light casting onto the ground, luminism woods, magical leafs falling, glowing forest, photography of enchanted forest, neon glowing wood, glowing crystals on the ground, environmental artwork, glowing fungus, colorful otherworldly trees, luminescent plants, inspired by Andy Goldsworthy, lightening tree",
+          "there is a circular sculpture made of rocks and sticks in a stream, by Andy Goldsworthy, land art, a beautiful land art of a large, environmental art, inspired by Andy Goldsworthy, sculpture made of piled stones, an eerie whirlpool, environmental artwork, whirlpool, swirling scene in forest, ecological art, water wheel, infinity concentric pool",
+          "there is a small plant that is growing out of the snow, bloomed lighting, light bloom, photo taken with ektachrome, fuji provia, photography of todd hido, rinko kawauchi, photographed on ektachrome film, luminescent plants, photosynthetic, environmental light, inspired by Scarlett Hooft Graafland"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-07T09:13:18.736Z",
+      "updatedAt": "2023-10-07T09:13:18.736Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 16.583333,
+        "width": 1352,
+        "height": 1016,
+        "aspectRatio": 1.330708661417323
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "6520950454b34c9f734046c4",
+      "user": {
+        "_id": "651c78aea52c1e2cd7de4fff",
+        "userId": "user_2WGhEqpdi6cgu28hFniE7NlHdea",
+        "username": "gene1",
+        "userImage": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/e745b8c200bb10efe744caa800c7c7f89c3ae05c39fa4aa0595bdd138117c592.png"
+      },
+      "task": {
+        "_id": "652091fe54b34c9f733f06eb",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1344,
+          "height": 1024,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/58e4ce7bc80078744eb122e9ee143f8b0b5b19d69e2cfc8c7438518f173ab7f5.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/48536ac59bb4aa39ad719c13cd98aada45d092838cf8d9d01f9da2d908a91017.jpg"
+          ],
+          "n_frames": 100,
+          "loop": true,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "latent_blending_skip_f": [0.1, 0.65],
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_texts": [],
+          "interpolation_seeds": [81536668, 50174572],
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "seed": 49856601
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/d523f103c7796537d9c731bb0b2189e33fb79744575c64d3bcd289cad997ce23.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/97dd7ca85af4194610ccb553b7ea653ce0a4ea9b43a60f9f1f9ef69f97528ea3.webp",
+      "name": "cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpu, cyberpunk comic cover art, cyberpunk noir, neon cyberpunk highlights, synthwave image, tech-noir, synthwave neon retrofuturism, synthwave art, dreamy colorful cyberpunk colors, neonpunk, neon noir, cyberpunk with neon lighting, neon cyberpunk style, synthwave style, cyberpunk vibrant colors, retrowave noir => there are three cubes that are stacked up on top of each other, abstract blocks, isometric 3 d, isometric 3d, isometric art, 3d isometric, 3 d isometric, prerendered isometric graphics, isometric game art, isometric views, soft geometric 3d shapes, isometric game, 3 d geometric neon shapes",
+      "attributes": {
+        "interrogation": [
+          "cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpunk cyberpu, cyberpunk comic cover art, cyberpunk noir, neon cyberpunk highlights, synthwave image, tech-noir, synthwave neon retrofuturism, synthwave art, dreamy colorful cyberpunk colors, neonpunk, neon noir, cyberpunk with neon lighting, neon cyberpunk style, synthwave style, cyberpunk vibrant colors, retrowave noir",
+          "there are three cubes that are stacked up on top of each other, abstract blocks, isometric 3 d, isometric 3d, isometric art, 3d isometric, 3 d isometric, prerendered isometric graphics, isometric game art, isometric views, soft geometric 3d shapes, isometric game, 3 d geometric neon shapes"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-06T23:15:16.472Z",
+      "updatedAt": "2023-10-06T23:15:16.472Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 9.583333,
+        "width": 1096,
+        "height": 824,
+        "aspectRatio": 1.3300970873786409
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "_id": "651ed006765b7f7e4aa266d8",
+      "user": {
+        "_id": "651c6e895447983fa2697453",
+        "userId": "user_2WGbyc0iiDEsIhC4NTFN3ayn3Zy",
+        "username": "laub",
+        "userImage": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/88f5c30ac6f352afda89ebaa7ca538ac215569a347bf5e7d4e4cba86ad86d1c2.jpg"
+      },
+      "task": {
+        "_id": "651ecd6b765b7f7e4aa1ce5a",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1280,
+          "height": 720,
+          "interpolation_init_images": [
+            "651ecd13765b7f7e4aa1b849",
+            "651ecd2c765b7f7e4aa1bd30",
+            "651ecd30765b7f7e4aa1bfa3"
+          ],
+          "n_frames": 60,
+          "loop": true,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "latent_blending_skip_f": [0.15, 0.65],
+          "interpolation_texts": [],
+          "interpolation_seeds": [92333946, 59931076, 30590548],
+          "seed": 48233201
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/7bd9a17bb077d30ced5219ef007fc81f47a29d6b794d46166434e6a5acb24edd.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/b64ee6a58827e3834679009297f3c62921900d9ab745533c77f431c8e11223a9.webp",
+      "name": "there is a view of a city from a hill with trees, located in hajibektash complex, photo taken with ektachrome, ancient tombs in the background, today\\'s featured photograph 4k, russian villages at background, view over city, medieval castle on background, catacomb in background, panorama of crooked ancient city => there is a statue of a person on a hill overlooking a city, located in hajibektash complex, the motherland calls, yutja, christ the redeemer, statue of julius caesar, salvador, image from afar, inspired by Afewerk Tekle, constantine, large stone statues of heroes, la llorona, city of armenia quindio => there is a statue of a woman holding a knife in her hand, female figure in maxi dress, statue of a woman, located in hajibektash complex, statue of the perfect woman, statue of a perfect woman, gigapixel photo, 4k photo gigapixel, mongolia, kazakh, gigapixel, the lady of ash => there is a view of a city from a hill with trees, located in hajibektash complex, photo taken with ektachrome, ancient tombs in the background, today\\'s featured photograph 4k, russian villages at background, view over city, medieval castle on background, catacomb in background, panorama of crooked ancient city",
+      "attributes": {
+        "interrogation": [
+          "there is a view of a city from a hill with trees, located in hajibektash complex, photo taken with ektachrome, ancient tombs in the background, today\\'s featured photograph 4k, russian villages at background, view over city, medieval castle on background, catacomb in background, panorama of crooked ancient city",
+          "there is a statue of a person on a hill overlooking a city, located in hajibektash complex, the motherland calls, yutja, christ the redeemer, statue of julius caesar, salvador, image from afar, inspired by Afewerk Tekle, constantine, large stone statues of heroes, la llorona, city of armenia quindio",
+          "there is a statue of a woman holding a knife in her hand, female figure in maxi dress, statue of a woman, located in hajibektash complex, statue of the perfect woman, statue of a perfect woman, gigapixel photo, 4k photo gigapixel, mongolia, kazakh, gigapixel, the lady of ash",
+          "there is a view of a city from a hill with trees, located in hajibektash complex, photo taken with ektachrome, ancient tombs in the background, today\\'s featured photograph 4k, russian villages at background, view over city, medieval castle on background, catacomb in background, panorama of crooked ancient city"
+        ]
+      },
+      "deleted": false,
+      "isPrivate": false,
+      "createdAt": "2023-10-05T15:02:30.469Z",
+      "updatedAt": "2023-10-05T15:02:30.469Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 43.333333,
+        "width": 1256,
+        "height": 840,
+        "aspectRatio": 1.4952380952380953
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "_id": "651d7230a565f610447ee70b",
+      "user": {
+        "_id": "651c78aea52c1e2cd7de4fff",
+        "userId": "user_2WGhEqpdi6cgu28hFniE7NlHdea",
+        "username": "gene1",
+        "userImage": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/e745b8c200bb10efe744caa800c7c7f89c3ae05c39fa4aa0595bdd138117c592.png"
+      },
+      "task": {
+        "_id": "651d6d39a565f610447c1ed1",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/94466c5978b7208eed795a36ac0fdf91dc089ef29896eaed5e6f5f8c1062ed57.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/a17525f4601e15162285fe140b154fd9b64e3d26fa3b53d73f2a4ad49637d992.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/22ba73ed772bd3acb760776c473cb91dd31c89c006c721b9f8770618dede38c9.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/54c7ec0477952a9f0145d818565c0bb9f809a8d0f32d5da72d6ccba860a777aa.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/be6a8888e7c84bda8d7732e0adeda105031e08c16a49b9fb1f4b0251dc7e2cc5.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/0920aae4b91e99df17c29eb2c49c3e91fcb3a727c052f41c79e05843d89d2ea2.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/c1b22fba45a0698b4824afa8d25dc5dd3be10cbc907c0311fa214b63ef936cd6.jpg"
+          ],
+          "n_frames": 264,
+          "loop": true,
+          "lora_scale": 0.8,
+          "uc_text": "origami, flowers, nature, ugly, tiling, out of frame, extra limbs, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "latent_blending_skip_f": [0.15, 0.65],
+          "interpolation_texts": [],
+          "interpolation_seeds": [
+            82953187, 60592466, 70513117, 31699103, 37264546, 21582081, 29679955
+          ],
+          "seed": 80318286
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 1,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/3dc01c2bff094783941e6dc4981fe302f9ceba15115e70e47d76c52eeb9cd11a.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/6f31defcc518219af8ff6f33db13ae3d92b91bab3cb0c7149d4fc803a974ba40.webp",
+      "name": "there is a clock with a bunch of different colored parts on it, paper modeling art, layered paper art, clock iconography, trend on behance 3 d art, trend on behance 3d art, paper cutouts of plain colors, behance. high detail, trending on artstattion, 3d hd mixed media, highly detailed 3 d art => there is a clock with a bunch of different types of letters on it, trend on behance 3 d art, trend on behance 3d art, fragmented typography, paper modeling art, futuristic typography, layered paper art, 3d hd mixed media, behance. high detail, wolff olins |, highly detailed 3 d art, behance. polished => there is a small bird that is sitting on a table, paper modeling art, layered paper art, flowing book pages, paper art, paper decoration, paper cutouts of plain colors, paper craft, behance. high detail, torn paper edges, layered paper style, japanese art on behance, by Carol Bove, trend on behance 3d art => there is a close up of a table with a clock on it, paper modeling art, layered paper art, paper craft, paper cutouts of plain colors, handcrafted paper background, featured in pictoplasma, paper decoration, flowing book pages, paper art, papercraft, close-up print of fractured, cut paper texture, cut out of cardboard, torn paper edges => there is a close up of a picture of a bunch of letters, fragmented typography, behance. high detail, trend on behance 3 d art, trend on behance 3d art, wolff olins |, typography, paper modeling art, handcrafted paper background, behance 3d, trend in behance hd, international typographic style, cory behance hd => there is a model of a train on a table with a clock, octane render : :, abstract 3d rendering, motion graphics, complex 3 d render, complex 3d render, rendered in cinema 4 d, rendered in cinema4d, behance. high detail, epic 3 d abstract model, houdini sidefx, dribbble 8k => there is a close up of a table with a clock and a toy, layered paper art, paper modeling art, paper craft, papercraft, paper cutouts of plain colors, paper art, paper decoration, handcrafted paper background, crayon and cut up, featured in pictoplasma, behance. high detail, trend on behance 3 d art => there is a clock with a bunch of different colored parts on it, paper modeling art, layered paper art, clock iconography, trend on behance 3d art, trend on behance 3 d art, paper cutouts of plain colors, behance. high detail, 3d hd mixed media, trending on artstattion, highly detailed 3 d art",
+      "attributes": {
+        "interrogation": [
+          "there is a clock with a bunch of different colored parts on it, paper modeling art, layered paper art, clock iconography, trend on behance 3 d art, trend on behance 3d art, paper cutouts of plain colors, behance. high detail, trending on artstattion, 3d hd mixed media, highly detailed 3 d art",
+          "there is a clock with a bunch of different types of letters on it, trend on behance 3 d art, trend on behance 3d art, fragmented typography, paper modeling art, futuristic typography, layered paper art, 3d hd mixed media, behance. high detail, wolff olins |, highly detailed 3 d art, behance. polished",
+          "there is a small bird that is sitting on a table, paper modeling art, layered paper art, flowing book pages, paper art, paper decoration, paper cutouts of plain colors, paper craft, behance. high detail, torn paper edges, layered paper style, japanese art on behance, by Carol Bove, trend on behance 3d art",
+          "there is a close up of a table with a clock on it, paper modeling art, layered paper art, paper craft, paper cutouts of plain colors, handcrafted paper background, featured in pictoplasma, paper decoration, flowing book pages, paper art, papercraft, close-up print of fractured, cut paper texture, cut out of cardboard, torn paper edges",
+          "there is a close up of a picture of a bunch of letters, fragmented typography, behance. high detail, trend on behance 3 d art, trend on behance 3d art, wolff olins |, typography, paper modeling art, handcrafted paper background, behance 3d, trend in behance hd, international typographic style, cory behance hd",
+          "there is a model of a train on a table with a clock, octane render : :, abstract 3d rendering, motion graphics, complex 3 d render, complex 3d render, rendered in cinema 4 d, rendered in cinema4d, behance. high detail, epic 3 d abstract model, houdini sidefx, dribbble 8k",
+          "there is a close up of a table with a clock and a toy, layered paper art, paper modeling art, paper craft, papercraft, paper cutouts of plain colors, paper art, paper decoration, handcrafted paper background, crayon and cut up, featured in pictoplasma, behance. high detail, trend on behance 3 d art",
+          "there is a clock with a bunch of different colored parts on it, paper modeling art, layered paper art, clock iconography, trend on behance 3d art, trend on behance 3 d art, paper cutouts of plain colors, behance. high detail, 3d hd mixed media, trending on artstattion, highly detailed 3 d art"
+        ]
+      },
+      "createdAt": "2023-10-04T14:09:52.468Z",
+      "updatedAt": "2023-10-04T18:03:38.291Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 9.583333,
+        "width": 1304,
+        "height": 808,
+        "aspectRatio": 1.613861386138614
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "_id": "651d42c7a565f610447b531b",
+      "user": {
+        "_id": "651c87f9a52c1e2cd7e0b203",
+        "userId": "user_2WGpB8vNDz4g05AVNwTSvOHMqOd",
+        "username": "xander2",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV0dwQkNtakREZUdZcGgzejFxSEZGc0RtQXMifQ"
+      },
+      "task": {
+        "_id": "651d4190a565f610447abb59",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1024,
+          "height": 1024,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/1292e83a2a870a4e099a7f36605499701661827f0a7d8bffc0f9e2a5e247d6c8.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/e0cf757003bbad3febd8290e2cbec432ba89c855e44f3ea820d19defb21f4218.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/562dac5fcfd1e0ae8dc329a99ef3b9a989e0a35bb28d9722108c996f87b43ad5.jpg"
+          ],
+          "n_frames": 60,
+          "loop": true,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "latent_blending_skip_f": [0.15, 0.65],
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_texts": [],
+          "interpolation_seeds": [36022082, 36949997, 12451530],
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "seed": 46368299
+        },
+        "status": "completed"
+      },
+      "praiseCount": 1,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/516ab78cc98f8bc25ee87eff05488c7d1ff00856e814b69c0a3c83db8acb2a48.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/5a8ffb7723f6493c4a6fac35f854296a1954076562e40fa0d2d7fb3b27801024.webp",
+      "name": "a view of a pool with a sunset in the background, cyber space forest scene, emissive, emissive bssrdf, neon landscape, emissive lights, emissive light, intricate rainbow environment, neon volumetric lights, surreal cyberspace, a digital dreamscape, cgsociety 9, digital forest, neon ancient ruins => painting of a mountain lake with a mountain in the background, by Albert Bierstadt, an american romanticism painting, bierstadt, by Frederic Edwin Church, by Frederic Church, frederic edwin, style of albert bierstadt, by Frederick Edwin Church, hudson river school painting, dan mumford and albert bierstadt, frederic church and vasily perov, edwin church => painting of a mountain scene with a river and a valley, an american romanticism painting, by Albert Bierstadt, hudson river school painting, by Eugene von Guerard, by Frederick Edwin Church, dan mumford and albert bierstadt, by Frederic Edwin Church, frederic edwin, hudson river school, style of albert bierstadt, beautiful oil matte painting, inspired by Sanford Robinson Gifford => a view of a pool with a sunset in the background, cyber space forest scene, emissive, emissive bssrdf, neon landscape, emissive lights, emissive light, intricate rainbow environment, neon volumetric lights, surreal cyberspace, a digital dreamscape, cgsociety 9, digital forest, neon ancient ruins",
+      "attributes": {
+        "interrogation": [
+          "a view of a pool with a sunset in the background, cyber space forest scene, emissive, emissive bssrdf, neon landscape, emissive lights, emissive light, intricate rainbow environment, neon volumetric lights, surreal cyberspace, a digital dreamscape, cgsociety 9, digital forest, neon ancient ruins",
+          "painting of a mountain lake with a mountain in the background, by Albert Bierstadt, an american romanticism painting, bierstadt, by Frederic Edwin Church, by Frederic Church, frederic edwin, style of albert bierstadt, by Frederick Edwin Church, hudson river school painting, dan mumford and albert bierstadt, frederic church and vasily perov, edwin church",
+          "painting of a mountain scene with a river and a valley, an american romanticism painting, by Albert Bierstadt, hudson river school painting, by Eugene von Guerard, by Frederick Edwin Church, dan mumford and albert bierstadt, by Frederic Edwin Church, frederic edwin, hudson river school, style of albert bierstadt, beautiful oil matte painting, inspired by Sanford Robinson Gifford",
+          "a view of a pool with a sunset in the background, cyber space forest scene, emissive, emissive bssrdf, neon landscape, emissive lights, emissive light, intricate rainbow environment, neon volumetric lights, surreal cyberspace, a digital dreamscape, cgsociety 9, digital forest, neon ancient ruins"
+        ]
+      },
+      "createdAt": "2023-10-04T10:47:35.823Z",
+      "updatedAt": "2023-10-09T16:30:09.311Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 33.083333,
+        "width": 1776,
+        "height": 920,
+        "aspectRatio": 1.9304347826086956
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "_id": "651c5b2a5447983fa268ffdf",
+      "user": {
+        "_id": "651c2ec45447983fa25e0609",
+        "userId": "user_2WG4sqab89qqg4hzdW09lLHRETR",
+        "username": "edengene",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV0c0c3gwV3hQTW9zakRGSmQwTjVpUlkwWmkifQ"
+      },
+      "task": {
+        "_id": "651c54d15447983fa2650030",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1344,
+          "height": 1216,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/44e0ca2eb178a3d2e18d1f0a346fff3efa28ffc5149dc54cf9530747a16e5e98.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/2425060d3a99f07847ef1e23e582b4e8cd0940867827c1e3de7c2af1796c6d81.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/9a3b523b92f3cceff653c420fd994b4ac5871fa538eeedf2580100bcbadd3794.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/b6e508fd259acfe6bd3b59e74e42d1adf6c93eded0a3237100d63a6a34039603.jpg"
+          ],
+          "n_frames": 200,
+          "loop": false,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_texts": [
+            "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+            "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+            "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+            "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise"
+          ],
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "latent_blending_skip_f": [0.15, 0.65],
+          "interpolation_seeds": [35462584, 43927017, 74257797, 36657817],
+          "seed": 43127293
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/252d0d1e66d54c0e9f32e4ac7977d40ce971556c06cfd3f01bf1b87726610ac6.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/f2acbd64bc4eece58a6ac78c538c3b20750b1c702d09512c99baefdb2dd44124.webp",
+      "name": "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise => Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise => Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise => Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+      "attributes": {
+        "interrogation": [
+          "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+          "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+          "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+          "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise"
+        ]
+      },
+      "createdAt": "2023-10-03T18:19:22.938Z",
+      "updatedAt": "2023-10-03T18:19:22.938Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 33.083333,
+        "width": 1224,
+        "height": 1208,
+        "aspectRatio": 1.0132450331125828
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "_id": "651c5a5e5447983fa268dfdf",
+      "user": {
+        "_id": "651c2ec45447983fa25e0609",
+        "userId": "user_2WG4sqab89qqg4hzdW09lLHRETR",
+        "username": "edengene",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV0c0c3gwV3hQTW9zakRGSmQwTjVpUlkwWmkifQ"
+      },
+      "task": {
+        "_id": "651c54845447983fa264daca",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1216,
+          "height": 1216,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/18c7c1c69f271af3af188c8f08dcb914d1aaa56b01d33370c801ddb76d898cf6.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/f0d9200f35da3466780bec62e8be462f1cab8f3268c8d3ac83afe11145a8e3b0.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/07545fb9c9c2673ae06d691919e45edb9c9382f54eab7cfa47618cac0d8a1ed9.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/a322492019f9dbdcf8550c0dec0a965729065dc1b42f990266872c5b31210e23.jpg"
+          ],
+          "n_frames": 200,
+          "loop": false,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_texts": [
+            "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+            "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+            "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+            "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise"
+          ],
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "latent_blending_skip_f": [0.15, 0.65],
+          "interpolation_seeds": [28543055, 95241983, 2144464, 93920100],
+          "seed": 11735975
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/840a924cc58929e103638bfc0ad693dafd89881e0feaacae5213a888e5ad4ef1.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/516485de7e6c55ec48f7904f7d5a44465d058e878af5d5dad7c0885419a89ce4.webp",
+      "name": "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise => Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise => Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise => Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+      "attributes": {
+        "interrogation": [
+          "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+          "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+          "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise",
+          "Paper collage, depth, angular, cutouts, paper cardboard cutouts, sleek, ordered and chaotic, very detailed, ornate, delicate, precise"
+        ]
+      },
+      "createdAt": "2023-10-03T18:15:58.668Z",
+      "updatedAt": "2023-10-03T18:15:58.668Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    },
+    {
+      "mediaAttributes": {
+        "type": "video",
+        "duration": 31.583333,
+        "width": 1464,
+        "height": 1008,
+        "aspectRatio": 1.4523809523809523
+      },
+      "embedding": {
+        "embedding": []
+      },
+      "samples": [],
+      "deleted": false,
+      "isPrivate": false,
+      "_id": "651c49dd5447983fa261b3ec",
+      "user": {
+        "_id": "651c2ec45447983fa25e0609",
+        "userId": "user_2WG4sqab89qqg4hzdW09lLHRETR",
+        "username": "edengene",
+        "userImage": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18yV0c0c3gwV3hQTW9zakRGSmQwTjVpUlkwWmkifQ"
+      },
+      "task": {
+        "_id": "651c44d15447983fa25fbe84",
+        "generator": {
+          "_id": "63f0987f1bbd8127b36a8a35",
+          "generatorName": "real2real",
+          "output": "creation",
+          "description": "Create a video interpolation between two images"
+        },
+        "config": {
+          "width": 1216,
+          "height": 1216,
+          "interpolation_init_images": [
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/067b1ce46dde1c0b315f717310efcea060bd7caf6f1d25fb26446fd095e4a216.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/92acac3cc0d94aa69b4e711c10f6aebc0dbe5b8ef9f46aa4420a01d5dfa99765.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/44e0ca2eb178a3d2e18d1f0a346fff3efa28ffc5149dc54cf9530747a16e5e98.jpg",
+            "https://eden-creations-stg.s3.us-east-1.amazonaws.com/cbf477535229541c5cc4a8c9dc8c064fc2f140eeb2b2356a9717a6849d179a72.jpg"
+          ],
+          "n_frames": 192,
+          "loop": false,
+          "lora_scale": 0.8,
+          "uc_text": "nude, naked, nsfw, poorly drawn face, ugly, tiling, out of frame, extra limbs, disfigured, deformed body, blurry, blurred, watermark, text, grainy, signature, cut off, draft",
+          "guidance_scale": 7.5,
+          "sampler": "euler",
+          "steps": 40,
+          "smooth": true,
+          "n_film": 1,
+          "fps": 12,
+          "interpolation_init_images_power": 3,
+          "interpolation_init_images_min_strength": 0,
+          "interpolation_init_images_max_strength": 0.95,
+          "checkpoint": "sdxl-v1.0",
+          "stream": false,
+          "stream_every": 10,
+          "latent_blending_skip_f": [0.15, 0.65],
+          "interpolation_texts": [],
+          "interpolation_seeds": [14603348, 78863900, 17846128, 97991789],
+          "seed": 58492130
+        },
+        "status": "completed"
+      },
+      "praiseCount": 0,
+      "bookmarkCount": 0,
+      "uri": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/ebb9a06f797703fc4db81edee12b937208233ffaf1db00c1c19d3ffb7b0c26b1.mp4",
+      "thumbnail": "https://eden-creations-stg.s3.us-east-1.amazonaws.com/f628d82689aac7e007f4e4a1bdc5cbf1d8ef252a6ed9d58e1f76633a6d432a58.webp",
+      "name": "there is a close up of a plate of paper cut flowers, intricate ornamental flourishes, highly detailed generative art, layered paper art, a paper cutout garden, paper cutouts of plain colors, victo ngai! cmyk palette, intricate automatism, torn paper intricate texture, victo ngai and tristan eaton, handcrafted paper background, paper modeling art => pink and black scissors and pink flowers are on a white surface, paper modeling art, a paper cutout garden, layered paper art, paper art, by Louise Nevelson, paper cutouts of plain colors, handcrafted paper background, trend on behance 3 d art, trend on behance 3d art, tissue paper art, paper craft, paper decoration => there is a blue box with a cut out of a snowflake, intricate ornamental flourishes, layered paper art, paper cut art, paper modeling art, paper art, handcrafted paper background, paper decoration, cut paper texture, intricate art deco leaf designs, detailed decorative flourishes, a paper cutout garden, paper quilling, masterpiece ; behance hd => a close up of a pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel, monocolor mosaics, lego movie still, pixelated art, multi-layered artworks, 8-bit pixel art, 8 - bit pixel art, detailed patterns pop art, melting pixels, lego mixels, lego movie style, made out of legos",
+      "attributes": {
+        "interrogation": [
+          "there is a close up of a plate of paper cut flowers, intricate ornamental flourishes, highly detailed generative art, layered paper art, a paper cutout garden, paper cutouts of plain colors, victo ngai! cmyk palette, intricate automatism, torn paper intricate texture, victo ngai and tristan eaton, handcrafted paper background, paper modeling art",
+          "pink and black scissors and pink flowers are on a white surface, paper modeling art, a paper cutout garden, layered paper art, paper art, by Louise Nevelson, paper cutouts of plain colors, handcrafted paper background, trend on behance 3 d art, trend on behance 3d art, tissue paper art, paper craft, paper decoration",
+          "there is a blue box with a cut out of a snowflake, intricate ornamental flourishes, layered paper art, paper cut art, paper modeling art, paper art, handcrafted paper background, paper decoration, cut paper texture, intricate art deco leaf designs, detailed decorative flourishes, a paper cutout garden, paper quilling, masterpiece ; behance hd",
+          "a close up of a pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel pixel, monocolor mosaics, lego movie still, pixelated art, multi-layered artworks, 8-bit pixel art, 8 - bit pixel art, detailed patterns pop art, melting pixels, lego mixels, lego movie style, made out of legos"
+        ]
+      },
+      "createdAt": "2023-10-03T17:05:33.469Z",
+      "updatedAt": "2023-10-03T17:05:33.469Z",
+      "__v": 0,
+      "concept": null,
+      "generator": "63f0987f1bbd8127b36a8a35"
+    }
+  ],
+  "bookmarks": {
+    "65335028592328dcf4045cce": true,
+    "6525a753ecd8b4b619b149fa": true
+  },
+  "reactions": {
+    "6525a753ecd8b4b619b149fa": {
+      "praise": true
+    }
+  },
+  "total": 24,
+  "limit": 50,
+  "pages": 1,
+  "page": 1,
+  "pagingCounter": 1,
+  "hasPrevPage": false,
+  "hasNextPage": false,
+  "prevPage": 0,
+  "nextPage": 0
+}
