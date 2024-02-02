@@ -4,6 +4,7 @@ import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import UserAddOutlined from '@ant-design/icons/UserAddOutlined'
 import UserDeleteOutlined from '@ant-design/icons/UserDeleteOutlined'
+import { People } from '@mui/icons-material'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect } from 'react'
@@ -81,17 +82,21 @@ const FollowControls = ({
       {showStats && (
         <div className="flex flex-wrap gap-2">
           <div
-            className="text-xs md:text-sm flex-shrink-0 hover:underline hover:brightness-125 cursor-pointer"
+            className="text-xs md:text-sm flex items-center gap-1 border border-solid border-gray-300 dark:border-gray-700 rounded px-1 flex-shrink-0 hover:brightness-125 cursor-pointer"
             onClick={() => onFollowersClickHandler()}
           >
-            <strong>{followerCount || 0}</strong> Followers
+            <People fontSize="medium" />
+            <strong>{followerCount || 0}</strong>
+            Followers
           </div>
-          <div
-            className="text-xs md:text-sm flex-shrink-0 hover:underline hover:brightness-125 cursor-pointer"
-            onClick={() => onFollowingClickHandler()}
-          >
-            <strong>{followingCount || 0}</strong> Following
-          </div>
+          {isAuthenticated && isOwnProfile ? (
+            <div
+              className="text-xs md:text-sm flex items-center gap-1 border border-solid border-gray-300 dark:border-gray-700 rounded px-1 flex-shrink-0 hover:brightness-125 cursor-pointer"
+              onClick={() => onFollowingClickHandler()}
+            >
+              <strong>{followingCount || 0}</strong> Following
+            </div>
+          ) : null}
         </div>
       )}
 

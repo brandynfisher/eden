@@ -63,7 +63,7 @@ const ChannelsPage = () => {
   const [showPrompt, setShowPrompt] = useState<boolean>(true)
   const [showQrCode, setShowQrCode] = useState<boolean>(true)
   const [showCreator, setShowCreator] = useState<boolean>(true)
-  const [muteVideoAudio, setMuteVideoAudio] = useState<boolean>(false)
+  const [muteVideoAudio, setMuteVideoAudio] = useState<boolean>(true)
   const [imageDisplayDuration, setImageDisplayDuration] = useState<number>(10)
   const [insertNewCreations, setInsertNewCreations] = useState<boolean>(true)
   const [settings, setSettings] = useState<ChannelSettings>({

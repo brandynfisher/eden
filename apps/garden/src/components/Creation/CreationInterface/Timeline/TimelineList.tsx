@@ -222,6 +222,7 @@ const TimelineList = ({
 
   return (
     <div
+      data-testid="creation-workspace-timeline"
       className="flex flex-col max-h-[calc(100vh_-_72px)] pb-[105px] w-full overflow-hidden md:pb-0"
       ref={innerRef}
     >
@@ -262,7 +263,11 @@ const TimelineList = ({
             </div>
           ) : null}
         </div>
-      ) : null}
+      ) : (
+        <div className="flex justify-center p-4 text-gray-500">
+          No recent tasks/creations
+        </div>
+      )}
       {error ? <div>{JSON.stringify(error)}</div> : null}
     </div>
   )

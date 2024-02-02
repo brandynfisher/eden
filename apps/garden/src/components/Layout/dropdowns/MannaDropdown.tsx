@@ -102,7 +102,7 @@ const MannaDropdown = () => {
       disabled={!isAuthenticated}
       arrow={true}
     >
-      <Button>
+      <Button data-testid="manna-dropdown-button">
         <div className="font-mono flex items-center">
           <AccountBalanceWalletOutlined className="!flex mr-2 text-xl" />
           {typeof mannaBalance === 'undefined' ? '---' : mannaBalance}

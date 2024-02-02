@@ -60,7 +60,7 @@ const GeneratorSelectModalTrigger = ({
           <Article fontSize="medium" />
         )}
         <div className="mr-auto h-[24px] font-mono">
-          /
+          <span className="text-xs">Generator:</span> /
           {activeGenerator.generatorName === conceptGenerator.name
             ? conceptGenerator.displayName
             : activeGenerator.generatorName}

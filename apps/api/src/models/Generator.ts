@@ -40,85 +40,86 @@ export interface GeneratorVersionDocument
   extends GeneratorVersionSchema,
     Document {}
 
-const generatorVersion = new Schema<GeneratorVersionDocument>({
-  provider: {
-    type: String,
-    required: true,
+const generatorVersion = new Schema<GeneratorVersionDocument>(
+  {
+    provider: {
+      type: String,
+      required: true,
+    },
+    address: {
+      type: String,
+      required: true,
+    },
+    versionId: {
+      type: String,
+      required: true,
+    },
+    parameters: {
+      type: [
+        {
+          name: {
+            type: String,
+            required: true,
+          },
+          label: {
+            type: String,
+            required: true,
+          },
+          description: {
+            type: String,
+            required: true,
+          },
+          isRequired: {
+            type: Boolean,
+            default: false,
+          },
+          optional: {
+            type: Boolean,
+            default: false,
+          },
+          default: {
+            type: Schema.Types.Mixed,
+            required: true,
+          },
+          allowedValues: {
+            type: [Schema.Types.Mixed],
+            default: [],
+          },
+          allowedValuesFrom: {
+            type: String,
+          },
+          minimum: {
+            type: Number,
+          },
+          maximum: {
+            type: Number,
+          },
+          minLength: {
+            type: Number,
+          },
+          maxLength: {
+            type: Number,
+          },
+          mediaUpload: {
+            type: String,
+          },
+        },
+      ],
+      default: [],
+    },
+    creationAttributes: {
+      type: [String],
+      default: [],
+    },
+    isDeprecated: {
+      type: Boolean,
+      default: false,
+    },
   },
-  address: {
-    type: String,
-    required: true,
+  {
+    timestamps: true,
   },
-  versionId: {
-    type: String,
-    required: true,
-  },
-  parameters: {
-    type: [
-      {
-        name: {
-          type: String,
-          required: true,
-        },
-        label: {
-          type: String,
-          required: true,
-        },
-        description: {
-          type: String,
-          required: true,
-        },
-        isRequired: {
-          type: Boolean,
-          default: false,
-        },
-        optional: {
-          type: Boolean,
-          default: false,
-        },
-        default: {
-          type: Schema.Types.Mixed,
-          required: true,
-        },
-        allowedValues: {
-          type: [Schema.Types.Mixed],
-          default: [],
-        },
-        allowedValuesFrom: {
-          type: String,
-        },
-        minimum: {
-          type: Number,
-        },
-        maximum: {
-          type: Number,
-        },
-        minLength: {
-          type: Number,
-        },
-        maxLength: {
-          type: Number,
-        },
-        mediaUpload: {
-          type: String,
-        },
-      },
-    ],
-    default: [],
-  },
-  creationAttributes: {
-    type: [String],
-    default: [],
-  },
-  isDeprecated: {
-    type: Boolean,
-    default: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-})
+)
 
 type GeneratorOutputType = 'creation' | 'llm' | 'concept'
 
