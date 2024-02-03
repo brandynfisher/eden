@@ -154,7 +154,7 @@ const ProductsList = ({
           <div>
             <div className="mb-2">
               {activeSubscriptionTier ? (
-                <div>
+                <div className="mb-8">
                   <div className="mb-4">
                     Your current plan:{' '}
                     <span className="capitalize font-bold">
@@ -164,7 +164,7 @@ const ProductsList = ({
 
                   <Button
                     type="primary"
-                    className="font-mono capitalize flex items-center"
+                    className="font-mono capitalize flex items-center "
                     onClick={onManageSubscriptionClick}
                   >
                     Manage Subscription

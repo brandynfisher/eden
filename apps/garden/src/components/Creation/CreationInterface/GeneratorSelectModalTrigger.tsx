@@ -8,7 +8,7 @@ import ModelTrainingIcon from '@mui/icons-material/ModelTraining'
 import MovieFilter from '@mui/icons-material/MovieFilter'
 import Wallpaper from '@mui/icons-material/Wallpaper'
 import Button from '@mui/material/Button'
-import React, { useState } from 'react'
+import React from 'react'
 
 const GeneratorSelectModalTrigger = ({
   outputType,
@@ -22,25 +22,20 @@ const GeneratorSelectModalTrigger = ({
   onChange: (generatorName: string) => void
 }) => {
   const { showModal, hideModal } = useModalContext()
-  const [modalId, setModalId] = useState<number>()
 
   const handleClickOpen = () => {
     if (generators.length === 1) return
 
-    const id = showModal(MODAL_TYPES.GENERATOR_SELECT_MODAL, {
+    showModal(MODAL_TYPES.GENERATOR_SELECT_MODAL, {
       generators,
       activeGenerator,
       onChange: handleChange,
     })
-
-    setModalId(id)
   }
 
   const handleChange = (generator: Generator) => {
     onChange(generator.generatorName)
-    if (modalId) {
-      hideModal(modalId)
-    }
+    hideModal(null, MODAL_TYPES.GENERATOR_SELECT_MODAL)
   }
 
   return (

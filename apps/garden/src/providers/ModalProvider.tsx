@@ -162,7 +162,10 @@ export interface ModalContextType {
     modalType: ModalStore['modalType'],
     modalProps?: ModalStore['modalProps'],
   ) => number
-  hideModal: (modalId: ModalStore['modalId']) => void
+  hideModal: (
+    modalId: ModalStore['modalId'] | null,
+    modalType?: ModalStore['modalType'],
+  ) => void
 }
 
 const initialState: ModalContextType = {
@@ -205,8 +208,18 @@ function ModalProvider({ children }: PropsWithChildren) {
     return modalId
   }
 
-  const hideModal = (modalId: ModalStore['modalId']) => {
-    setStore(store.filter(storeItem => storeItem.modalId !== modalId))
+  const hideModal = (
+    modalId: ModalStore['modalId'] | null,
+    modalType?: ModalStore['modalType'],
+  ) => {
+    if (modalId) {
+      setStore(store.filter(storeItem => storeItem.modalId !== modalId))
+      return
+    }
+
+    if (modalType) {
+      setStore(store.filter(storeItem => storeItem.modalType !== modalType))
+    }
   }
 
   const renderComponents = () => {
