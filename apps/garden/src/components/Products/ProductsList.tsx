@@ -99,10 +99,13 @@ const ProductsList = ({
             <div className="mb-2">
               {activeSubscriptionTier ? (
                 <div>
-                  Your current plan:{' '}
-                  <span className="capitalize font-bold">
-                    {subscriptionTierNameMap[activeSubscriptionTier]}
-                  </span>
+                  <div className="mb-4">
+                    Your current plan:{' '}
+                    <span className="capitalize font-bold">
+                      {subscriptionTierNameMap[activeSubscriptionTier]}
+                    </span>
+                  </div>
+
                   <Button
                     type="primary"
                     className="font-mono capitalize flex items-center"
@@ -114,27 +117,29 @@ const ProductsList = ({
               ) : (
                 <>
                   <div>Choose the plan that works for you:</div>
-                  <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
-                    {subscriptionsSortedByPrice.map(product => (
-                      <SubscriptionCard
-                        key={product.id}
-                        features={
-                          dummyFeatures[
-                            product.metadata
-                              .subscriptionTier as SubscriptionTier
-                          ]
-                        }
-                        subscription={product}
-                        checkoutHandler={checkoutHandler}
-                        isActive={
-                          activeSubscriptionTier ===
-                          product.metadata.subscriptionTier
-                        }
-                      />
-                    ))}
-                  </div>
                 </>
               )}
+            </div>
+            <div className="mt-4 container flex flex-wrap gap-4 items-center">
+              {subscriptionsSortedByPrice.map(product => (
+                <SubscriptionCard
+                  key={product.id}
+                  features={
+                    dummyFeatures[
+                      product.metadata.subscriptionTier as SubscriptionTier
+                    ]
+                  }
+                  subscription={product}
+                  checkoutHandler={checkoutHandler}
+                  isActive={
+                    activeSubscriptionTier ===
+                    Number(product.metadata.subscriptionTier)
+                  }
+                  hasActiveSubscription={
+                    typeof activeSubscriptionTier !== 'undefined'
+                  }
+                />
+              ))}
             </div>
           </div>
         )}
