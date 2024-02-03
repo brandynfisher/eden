@@ -51,6 +51,9 @@ const formatConfigForReplicate = async (config: any) => {
   newConfig.input_images
     ? (newConfig.input_images = newConfig.input_images.join('|'))
     : null
+  newConfig.mask_images
+    ? (newConfig.mask_images = newConfig.mask_images.join('|'))
+    : null
   newConfig.voice_file_urls
     ? (newConfig.voice_file_urls = newConfig.voice_file_urls.join('|'))
     : null
