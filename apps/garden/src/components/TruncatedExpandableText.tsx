@@ -1,8 +1,12 @@
-import { useElementSize } from '@mantine/hooks'
-import { Button } from 'antd'
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import CopyOutlined from '@ant-design/icons/CopyOutlined'
+import { useClipboard, useElementSize } from '@mantine/hooks'
+import { App, Button } from 'antd'
 import React, { useEffect, useState } from 'react'
 
 const TruncatedExpandableText = ({ text }: { text: string }) => {
+  const { message } = App.useApp()
+  const { copied, copy } = useClipboard()
   const [showMore, setShowMore] = useState(false)
   const [isTruncated, setIsTruncated] = useState(false)
   const { ref, width, height } = useElementSize()
@@ -13,17 +17,34 @@ const TruncatedExpandableText = ({ text }: { text: string }) => {
     }
   }, [showMore, ref.current, height, width])
 
+  const handleCopyClick = async (text: string) => {
+    copy(text)
+    await message.success(
+      <div>
+        <strong>Text</strong> copied
+      </div>,
+    )
+  }
+
   return (
     <div>
-      <span
-        ref={ref}
-        title={text}
-        className={`relative text-sm select-text cursor-text w-full ${
-          isTruncated ? 'mb-2' : ''
-        } ${showMore ? '' : 'text-ellipsis line-clamp-2'}`}
+      <div
+        onClick={() => handleCopyClick(text)}
+        className="hover:text-blue-500 cursor-copy"
       >
-        {text}
-      </span>
+        <span
+          ref={ref}
+          title={text}
+          className={`relative text-sm select-text w-full ${
+            isTruncated ? 'mb-2' : ''
+          } ${showMore ? '' : 'text-ellipsis line-clamp-2'}`}
+        >
+          {text}
+        </span>
+        <div className="absolute right-2 top-1">
+          {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+        </div>
+      </div>
       {isTruncated && (
         <div className="w-full flex justify-center">
           <Button

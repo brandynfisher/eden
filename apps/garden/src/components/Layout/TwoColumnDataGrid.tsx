@@ -82,7 +82,7 @@ const ConfigParam = ({
   return (
     <div
       onClick={() => handleCopyClick(configKey, configValue)}
-      className="group hover:!text-blue-500 cursor-pointer "
+      className="group hover:!text-blue-500 cursor-copy"
     >
       <Popover
         className={`flex justify-between col-start-1 py-1 px-2 lg:pb-0 lg:pt-1 lg:px-2 text-gray-500 ${
