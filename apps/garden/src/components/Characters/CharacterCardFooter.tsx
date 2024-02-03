@@ -1,10 +1,14 @@
+import { createSession } from '@/lib/chat'
 import CommentOutlined from '@ant-design/icons/CommentOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import Yard from '@mui/icons-material/Yard'
-import { Popover, Tag } from 'antd'
+import { Button, Popover, Tag } from 'antd'
+import { useRouter } from 'next/router'
 import React from 'react'
 
 const CharacterCardFooter = ({ character }: { character: Character }) => {
+  const router = useRouter()
+
   return (
     <>
       <Popover content="Creations made by this character" trigger={['hover']}>
@@ -18,16 +22,14 @@ const CharacterCardFooter = ({ character }: { character: Character }) => {
           {character.creationCount}
         </Tag>
       </Popover>
-      <Popover content="Chats with this character" trigger={['hover']}>
-        <Tag
-          className={`flex items-center first-letter:capitalize me-0 gap-1 hover:text-blue-400 px-1 ${
-            character.creationCount === 0 ? 'text-gray-500' : ''
-          }`}
-          bordered={false}
-          icon={<CommentOutlined className="text-xl me-0" />}
+      <Popover content="Chat with this character" trigger={['hover']}>
+        <Button
+          className="flex items-center gap-0.5"
+          onClick={() => createSession(character._id, router)}
         >
-          <div>{character.creationCount}</div>
-        </Tag>
+          <CommentOutlined />
+          Chat
+        </Button>
       </Popover>
     </>
   )
