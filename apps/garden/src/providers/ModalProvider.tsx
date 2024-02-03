@@ -140,6 +140,7 @@ export type AddToCollectionModalProps = Partial<
 >
 
 type ModalStore = {
+  modalId: number
   modalType: string | undefined
   modalProps?:
     | DetailStaticModalProps
@@ -160,12 +161,12 @@ export interface ModalContextType {
   showModal: (
     modalType: ModalStore['modalType'],
     modalProps?: ModalStore['modalProps'],
-  ) => void
-  hideModal: (modalType: ModalStore['modalType']) => void
+  ) => number
+  hideModal: (modalId: ModalStore['modalId']) => void
 }
 
 const initialState: ModalContextType = {
-  showModal: () => {},
+  showModal: () => 0,
   hideModal: () => {},
 }
 
@@ -188,7 +189,8 @@ function ModalProvider({ children }: PropsWithChildren) {
     modalType: ModalStore['modalType'],
     modalProps: ModalStore['modalProps'] = {},
   ) => {
-    setStore([...store, { modalType, modalProps }])
+    const modalId = Date.now()
+    setStore([...store, { modalType, modalProps, modalId }])
 
     // // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
     const modalWrapDomElement =
@@ -198,11 +200,13 @@ function ModalProvider({ children }: PropsWithChildren) {
     if (modalWrapDomElement && modalWrapDomElement.length) {
       modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     }
-    // // @todo ---end ugly---
+
+    // @todo ---end ugly---
+    return modalId
   }
 
-  const hideModal = (modalType: ModalStore['modalType']) => {
-    setStore(store.filter(storeItem => storeItem.modalType !== modalType))
+  const hideModal = (modalId: ModalStore['modalId']) => {
+    setStore(store.filter(storeItem => storeItem.modalId !== modalId))
   }
 
   const renderComponents = () => {
@@ -230,7 +234,7 @@ function ModalProvider({ children }: PropsWithChildren) {
         'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
       onCancel: async () => {
         // console.log('onCancel', modal)
-        hideModal(modal?.modalType)
+        hideModal(modal?.modalId)
         if (modal?.modalProps?.usesUrl) {
           if (modal?.modalProps?.originPageUrl) {
             await router.push(
@@ -290,7 +294,7 @@ function ModalProvider({ children }: PropsWithChildren) {
     router.events.on('routeChangeStart', (url, { shallow }) => {
       // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
       if (store.length && !shallow) {
-        hideModal(store[store.length - 1].modalType)
+        hideModal(store[store.length - 1].modalId)
       }
     })
 
@@ -306,7 +310,7 @@ function ModalProvider({ children }: PropsWithChildren) {
         ev.stopPropagation()
 
         if (store.length) {
-          hideModal(store[store.length - 1].modalType)
+          hideModal(store[store.length - 1].modalId)
         }
       }
     },

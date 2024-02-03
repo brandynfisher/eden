@@ -1,7 +1,7 @@
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Character, Concept } from '@edenlabs/eden-sdk'
 import Button from '@mui/material/Button'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useState } from 'react'
 
 const SelectModalTrigger = ({
   buttonContent,
@@ -13,16 +13,21 @@ const SelectModalTrigger = ({
   onChange: (item: Concept | Character) => void
 }) => {
   const { showModal, hideModal } = useModalContext()
+  const [modalId, setModalId] = useState<number>()
 
   const handleClickOpen = () => {
-    showModal(modalType, {
+    const id = showModal(modalType, {
       onChange: handleChange,
     })
+
+    setModalId(id)
   }
 
   const handleChange = (item: Concept | Character) => {
     onChange(item)
-    hideModal(modalType)
+    if (modalId) {
+      hideModal(modalId)
+    }
   }
 
   return (
