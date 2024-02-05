@@ -263,11 +263,7 @@ const TimelineList = ({
             </div>
           ) : null}
         </div>
-      ) : (
-        <div className="flex justify-center p-4 text-gray-500">
-          No recent tasks/creations
-        </div>
-      )}
+      ) : null}
       {error ? <div>{JSON.stringify(error)}</div> : null}
     </div>
   )
