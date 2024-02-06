@@ -1,7 +1,8 @@
-import CreationActions from '@/components/Creation/CreationDetail/CreationActions'
+import CreationImageActions from '@/components/Creation/CreationDetail/CreationImageActions'
 import ImageZoomable from '@/components/Creation/CreationInterface/media/ImageZoomable'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useConcept } from '@/hooks/useConcept'
+import { isImageUrl } from '@/lib/string'
 import { Creation } from '@edenlabs/eden-sdk'
 import { Divider } from 'antd'
 import Link from 'next/link'
@@ -77,8 +78,12 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
             />
             <BaseParamGroup label="Date" value={displayDateTime} />
           </div>
-          <Divider className="my-4" />
-          <CreationActions creation={creation} />
+          {isImageUrl(creation.uri) ? (
+            <>
+              <Divider className="my-4" />
+              <CreationImageActions creation={creation} />
+            </>
+          ) : null}
         </div>
       ) : null}
 

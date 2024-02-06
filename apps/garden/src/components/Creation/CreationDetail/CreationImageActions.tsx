@@ -1,7 +1,6 @@
 import { GatedActions, useSubscriptionGate } from '@/hooks/useSubscriptionGate'
 import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
-import { isImageUrl } from '@/lib/string'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
@@ -293,17 +292,13 @@ export const AnimateImageMenu = ({ imageUri }: { imageUri: string }) => {
   )
 }
 
-const CreationActions = ({ creation }: { creation: Creation }) => {
+const CreationImageActions = ({ creation }: { creation: Creation }) => {
   return (
     <div>
       <div className="text-gray-400 text-xs mb-2">Actions</div>
       <div className="flex gap-2">
-        {isImageUrl(creation.uri) ? (
-          <UpscaleImageMenu imageUri={creation.uri} />
-        ) : null}
-        {isImageUrl(creation.uri) ? (
-          <AnimateImageMenu imageUri={creation.uri} />
-        ) : null}
+        <UpscaleImageMenu imageUri={creation.uri} />
+        <AnimateImageMenu imageUri={creation.uri} />
         {/*<Button variant='outlined' size='small' className='flex items-center leading-snug'>*/}
         {/*  <div className='h-6 text-xs flex items-center cap'>Recreate</div>*/}
         {/*</Button>*/}
@@ -312,4 +307,4 @@ const CreationActions = ({ creation }: { creation: Creation }) => {
   )
 }
 
-export default CreationActions
+export default CreationImageActions
