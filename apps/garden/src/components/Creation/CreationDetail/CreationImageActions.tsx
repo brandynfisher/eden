@@ -1,34 +1,34 @@
 import { GatedActions, useSubscriptionGate } from '@/hooks/useSubscriptionGate'
-import { useTaskCost } from '@/hooks/useTaskCost'
+// import { useTaskCost } from '@/hooks/useTaskCost'
 import { handleAxiosError } from '@/lib/fetcher'
 import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 import { UserContext } from '@/providers/UserProvider'
 import { Creation, Generator, Task } from '@edenlabs/eden-sdk'
 import AnimationOutlined from '@mui/icons-material/AnimationOutlined'
-import ScaleOutlined from '@mui/icons-material/ScaleOutlined'
+import PhotoSizeSelectLarge from '@mui/icons-material/PhotoSizeSelectLarge'
 import WorkspacePremium from '@mui/icons-material/WorkspacePremium'
 import Button from '@mui/material/Button'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { App } from 'antd'
 import axios from 'axios'
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-const MannaCostDisplay = ({
-  generatorName,
-  config,
-}: {
-  generatorName: Generator['generatorName']
-  config: Task['config']
-}) => {
-  const { getTaskCost } = useTaskCost()
-
-  return (
-    <span className="text-xs text-gray-400">
-      <>-{getTaskCost(generatorName, config)} Manna</>
-    </span>
-  )
-}
+// const MannaCostDisplay = ({
+//   generatorName,
+//   config,
+// }: {
+//   generatorName: Generator['generatorName']
+//   config: Task['config']
+// }) => {
+//   const { getTaskCost } = useTaskCost()
+//
+//   return (
+//     <span className="text-xs text-gray-400">
+//       <>-{getTaskCost(generatorName, config)} Manna</>
+//     </span>
+//   )
+// }
 
 export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
   const { message } = App.useApp()
@@ -45,10 +45,15 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
 
   const [isSubmittingTask, setIsSubmittingTask] = useState(false)
 
-  const generatorName = 'upscale'
-  const baseConfig = {
-    init_image: imageUri,
-  }
+  const generatorName = useMemo(() => {
+    return 'upscale'
+  }, [])
+
+  const baseConfig = useMemo(() => {
+    return {
+      input_images: [imageUri],
+    }
+  }, [imageUri])
 
   const handleTaskCreate = async (
     generatorName: Generator['generatorName'],
@@ -108,10 +113,8 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
         aria-expanded={open ? 'true' : undefined}
         onClick={handleOpen}
       >
-        <div className="h-6 text-xs flex items-center">
-          <div>
-            <ScaleOutlined fontSize="small" />
-          </div>
+        <div className="h-6 text-xs flex gap-1 items-center">
+          <PhotoSizeSelectLarge fontSize="small" />
           <div>Upscale</div>
         </div>
       </Button>
@@ -132,10 +135,10 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
           disabled={isSubmittingTask}
         >
           2k
-          <MannaCostDisplay
-            generatorName={generatorName}
-            config={{ ...baseConfig, width: 2048, height: 2048 }}
-          />
+          {/*<MannaCostDisplay*/}
+          {/*  generatorName={generatorName}*/}
+          {/*  config={{ ...baseConfig, width: 2048, height: 2048 }}*/}
+          {/*/>*/}
         </MenuItem>
         <MenuItem
           onClick={() => handleItemClick(3072)}
@@ -146,10 +149,10 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
             <WorkspacePremium fontSize="small" className="text-orange-300" />
           ) : null}
           4k
-          <MannaCostDisplay
-            generatorName={generatorName}
-            config={{ ...baseConfig, width: 3072, height: 3072 }}
-          />
+          {/*<MannaCostDisplay*/}
+          {/*  generatorName={generatorName}*/}
+          {/*  config={{ ...baseConfig, width: 3072, height: 3072 }}*/}
+          {/*/>*/}
         </MenuItem>
       </Menu>
     </div>
@@ -167,59 +170,70 @@ export const AnimateImageMenu = ({ imageUri }: { imageUri: string }) => {
   )
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const open = Boolean(anchorEl)
-
+  const [menuOpen, setMenuOpen] = useState<boolean>(false)
   const [isSubmittingTask, setIsSubmittingTask] = useState(false)
 
-  const generatorName = 'img2vid'
-  const baseConfig = {
-    init_image: imageUri,
-  }
+  const generatorName = useMemo(() => {
+    return 'img2vid'
+  }, [])
 
-  const handleTaskCreate = async (
-    generatorName: Generator['generatorName'],
-    config: Task['config'],
-  ) => {
-    setIsSubmittingTask(true)
-
-    if (!(await maybeAuthenticate())) {
-      setIsSubmittingTask(false)
-      return
+  const baseConfig = useMemo(() => {
+    return {
+      input_images: [imageUri],
     }
+  }, [imageUri])
 
-    message.destroy()
+  const handleTaskCreate = useCallback(
+    async (
+      generatorName: Generator['generatorName'],
+      config: Task['config'],
+    ) => {
+      setIsSubmittingTask(true)
 
-    try {
-      const response = await axios.post('/api/tasks/create', {
-        generatorName,
-        config,
-      })
-      refetchTasks && refetchTasks()
-      message.success('Task "img2vid" created!')
-      const { taskId } = response.data
-      setActiveTaskId && setActiveTaskId(taskId)
-      refetchMe()
-    } catch (error) {
-      handleAxiosError(error, message)
-    } finally {
-      setIsSubmittingTask(false)
-    }
-  }
+      if (!(await maybeAuthenticate())) {
+        setIsSubmittingTask(false)
+        return
+      }
+
+      message.destroy()
+
+      try {
+        const response = await axios.post('/api/tasks/create', {
+          generatorName,
+          config,
+        })
+        refetchTasks && refetchTasks()
+        message.success('Task "img2vid" created!')
+        const { taskId } = response.data
+        setActiveTaskId && setActiveTaskId(taskId)
+        refetchMe()
+      } catch (error) {
+        handleAxiosError(error, message)
+      } finally {
+        setIsSubmittingTask(false)
+      }
+    },
+    [refetchTasks, refetchMe, maybeAuthenticate, message, setActiveTaskId],
+  )
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
+    setMenuOpen(true)
   }
 
   const handleClose = () => {
-    setAnchorEl(null)
+    setMenuOpen(false)
   }
 
-  const handleItemClick = async (durationInFrames: number) => {
-    await handleTaskCreate(generatorName, {
-      ...baseConfig,
-      n_frames: durationInFrames,
-    })
-  }
+  const handleItemClick = useCallback(
+    async (durationInFrames: number) => {
+      await handleTaskCreate(generatorName, {
+        ...baseConfig,
+        n_frames: durationInFrames,
+      })
+    },
+    [generatorName, baseConfig, handleTaskCreate],
+  )
 
   return (
     <div>
@@ -228,15 +242,13 @@ export const AnimateImageMenu = ({ imageUri }: { imageUri: string }) => {
         size="small"
         className="flex items-center leading-snug"
         id="animate-positioned-button"
-        aria-controls={open ? 'animate-positioned-menu' : undefined}
+        aria-controls={anchorEl ? 'animate-positioned-menu' : undefined}
         aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
+        aria-expanded={anchorEl ? 'true' : undefined}
         onClick={handleOpen}
       >
-        <div className="h-6 text-xs flex items-center">
-          <div>
-            <AnimationOutlined fontSize="small" />
-          </div>
+        <div className="h-6 text-xs flex gap-1 items-center">
+          <AnimationOutlined fontSize="small" />
           <div>Animate</div>
         </div>
       </Button>
@@ -244,34 +256,32 @@ export const AnimateImageMenu = ({ imageUri }: { imageUri: string }) => {
         id="animate-positioned-menu"
         aria-labelledby="animate-positioned-button"
         anchorEl={anchorEl}
-        open={open}
+        open={menuOpen}
         onClose={handleClose}
         title={'Animation duration...'}
       >
         <MenuItem className="text-xs" disabled={true}>
-          Duration
+          Animation Duration
         </MenuItem>
         <MenuItem
           onClick={() => handleItemClick(24)}
           className="flex gap-1"
           disabled={isSubmittingTask}
         >
-          4 s
-          <MannaCostDisplay
-            generatorName={generatorName}
-            config={{ ...baseConfig, n_frames: 24 }}
-          />
+          4 s{/*<MannaCostDisplay*/}
+          {/*  generatorName={generatorName}*/}
+          {/*  config={{ ...baseConfig, n_frames: 24 }}*/}
+          {/*/>*/}
         </MenuItem>
         <MenuItem
           onClick={() => handleItemClick(48)}
           className="flex gap-1"
           disabled={isSubmittingTask}
         >
-          8 s
-          <MannaCostDisplay
-            generatorName={generatorName}
-            config={{ ...baseConfig, n_frames: 48 }}
-          />
+          8 s{/*<MannaCostDisplay*/}
+          {/*  generatorName={generatorName}*/}
+          {/*  config={{ ...baseConfig, n_frames: 48 }}*/}
+          {/*/>*/}
         </MenuItem>
         <MenuItem
           onClick={() => handleItemClick(64)}
@@ -281,11 +291,10 @@ export const AnimateImageMenu = ({ imageUri }: { imageUri: string }) => {
           {!isAnimateLongAllowed ? (
             <WorkspacePremium fontSize="small" className="text-orange-300" />
           ) : null}
-          12 s
-          <MannaCostDisplay
-            generatorName={generatorName}
-            config={{ ...baseConfig, n_frames: 64 }}
-          />
+          12 s{/*<MannaCostDisplay*/}
+          {/*  generatorName={generatorName}*/}
+          {/*  config={{ ...baseConfig, n_frames: 64 }}*/}
+          {/*/>*/}
         </MenuItem>
       </Menu>
     </div>
