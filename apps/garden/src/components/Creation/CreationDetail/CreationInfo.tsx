@@ -172,6 +172,52 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
         </div>
       ) : null}
 
+      {creation.task.config['input_images'] &&
+      creation.task.config['input_images'].length ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Input Images"
+            value={
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                {creation.task.config['input_images'].map(
+                  (initImage: string) => (
+                    <ImageZoomable
+                      key={initImage}
+                      url={initImage}
+                      width={thumbnailSize}
+                      height={thumbnailSize}
+                    />
+                  ),
+                )}
+              </div>
+            }
+          />
+        </div>
+      ) : null}
+
+      {creation.task.config['mask_images'] &&
+      creation.task.config['mask_images'].length ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Mask Images"
+            value={
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                {creation.task.config['mask_images'].map(
+                  (initImage: string) => (
+                    <ImageZoomable
+                      key={initImage}
+                      url={initImage}
+                      width={thumbnailSize}
+                      height={thumbnailSize}
+                    />
+                  ),
+                )}
+              </div>
+            }
+          />
+        </div>
+      ) : null}
+
       {creation.task.config['interpolation_init_images'] &&
       creation.task.config['interpolation_init_images'].length ? (
         <div className="mt-4">
