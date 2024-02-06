@@ -6,6 +6,8 @@ export enum GatedActions {
   ConceptDownload = 'ConceptDownload',
   CreationDownload = 'CreationDownload',
   MakePrivate = 'MakePrivate',
+  UpscaleImage4k = 'UpscaleImage4k',
+  AnimateImageLong = 'AnimateImageLong',
 }
 
 export const useSubscriptionGate = (action: GatedActions) => {
@@ -13,23 +15,33 @@ export const useSubscriptionGate = (action: GatedActions) => {
   const [isAllowed, setIsAllowed] = useState(false)
 
   useEffect(() => {
-    if (action === GatedActions.ConceptDownload) {
-      setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Pro))
-      return
+    switch (action) {
+      case GatedActions.ConceptDownload: {
+        setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Pro))
+        return
+      }
+      case GatedActions.MakePrivate: {
+        setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Basic))
+        return
+      }
+      case GatedActions.CreationDownload: {
+        setIsAllowed(true)
+        return
+      }
+      case GatedActions.AnimateImageLong: {
+        setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Basic))
+        return
+      }
+      case GatedActions.UpscaleImage4k: {
+        setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Pro))
+        return
+      }
+      default: {
+        setIsAllowed(false)
+        return
+      }
     }
-
-    if (action === GatedActions.MakePrivate) {
-      setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Basic))
-      return
-    }
-
-    if (action === GatedActions.CreationDownload) {
-      setIsAllowed(true)
-      return
-    }
-
-    setIsAllowed(false)
-  }, [hasMinimumSubscriptionTier])
+  }, [action, hasMinimumSubscriptionTier])
 
   return {
     isAllowed,

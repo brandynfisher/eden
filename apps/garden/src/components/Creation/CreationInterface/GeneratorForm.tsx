@@ -309,9 +309,7 @@ const GeneratorForm = ({
         config: cleanedValues,
       })
       refetchTasks && refetchTasks()
-
       message.success('Task created!')
-
       const { taskId } = response.data
       setActiveTaskId && setActiveTaskId(taskId)
       setHasChangedGenerator && setHasChangedGenerator(false)

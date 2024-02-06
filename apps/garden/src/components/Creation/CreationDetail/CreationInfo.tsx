@@ -1,7 +1,9 @@
+import CreationActions from '@/components/Creation/CreationDetail/CreationActions'
 import ImageZoomable from '@/components/Creation/CreationInterface/media/ImageZoomable'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useConcept } from '@/hooks/useConcept'
 import { Creation } from '@edenlabs/eden-sdk'
+import { Divider } from 'antd'
 import Link from 'next/link'
 import React, { ReactNode, useEffect, useState } from 'react'
 
@@ -14,12 +16,15 @@ export const BaseParamGroup = ({
 }) => {
   return (
     <div>
-      <div className="text-gray-400 text-xs mb-1">{label}</div>
+      <div className="text-gray-400 text-xs mb-2">{label}</div>
       <div>
         {Array.isArray(value) ? (
           <div title={value?.toString()}>{JSON.stringify(value)}</div>
         ) : (
-          <div title={typeof value === 'string' ? value?.toString() : ''}>
+          <div
+            className="text-xs"
+            title={typeof value === 'string' ? value?.toString() : ''}
+          >
             {value}
           </div>
         )}
@@ -28,7 +33,7 @@ export const BaseParamGroup = ({
   )
 }
 
-const thumbnailSize = 132
+const thumbnailSize = 128
 
 const CreationInfo = ({ creation }: { creation: Creation }) => {
   const [displayDateTime, setDisplayDateTime] = useState('')
@@ -54,22 +59,26 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
   return (
     <div>
       {creation.task.generator.output === 'creation' ? (
-        <div className="flex gap-4 flex-wrap lg:justify-between">
-          <BaseParamGroup
-            label="Type"
-            value={<div>{creation.task.generator.generatorName}</div>}
-          />
-          <BaseParamGroup
-            label="Size"
-            value={
-              <div>
-                {creation.mediaAttributes.width}
-                <span className="text-gray-400">x</span>
-                {creation.mediaAttributes.height}
-              </div>
-            }
-          />
-          <BaseParamGroup label="Date" value={displayDateTime} />
+        <div>
+          <div className="flex gap-4 flex-wrap lg:justify-between">
+            <BaseParamGroup
+              label="Type"
+              value={<div>{creation.task.generator.generatorName}</div>}
+            />
+            <BaseParamGroup
+              label="Size"
+              value={
+                <div>
+                  {creation.mediaAttributes.width}
+                  <span className="text-gray-400">x</span>
+                  {creation.mediaAttributes.height}
+                </div>
+              }
+            />
+            <BaseParamGroup label="Date" value={displayDateTime} />
+          </div>
+          <Divider className="my-4" />
+          <CreationActions creation={creation} />
         </div>
       ) : null}
 
