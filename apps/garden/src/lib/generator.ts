@@ -8,7 +8,7 @@ export const hiddenGenerators = [
   'interrogate',
   'wav2lip',
   'makeitrad',
-  'littlemartians',
+  // 'littlemartians',
 ]
 
 export type GeneratorOutputType = 'image' | 'text' | 'video'
