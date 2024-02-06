@@ -29,11 +29,13 @@ export const useSubscriptionGate = (action: GatedActions) => {
         return
       }
       case GatedActions.AnimateImageLong: {
-        setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Basic))
+        // setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Basic))
+        setIsAllowed(true) //@todo: TBD if that's premium or not
         return
       }
       case GatedActions.UpscaleImage4k: {
-        setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Pro))
+        // setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Pro))
+        setIsAllowed(true) //@todo: TBD if that's premium or not
         return
       }
       default: {
