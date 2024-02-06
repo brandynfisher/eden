@@ -82,6 +82,7 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
       handleAxiosError(error, message)
     } finally {
       setIsSubmittingTask(false)
+      handleClose()
     }
   }
 
@@ -211,6 +212,7 @@ export const AnimateImageMenu = ({ imageUri }: { imageUri: string }) => {
         handleAxiosError(error, message)
       } finally {
         setIsSubmittingTask(false)
+        handleClose()
       }
     },
     [refetchTasks, refetchMe, maybeAuthenticate, message, setActiveTaskId],
