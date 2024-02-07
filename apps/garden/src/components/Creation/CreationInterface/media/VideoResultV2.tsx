@@ -1,4 +1,5 @@
 import ImageResultZoomable from '@/components/Creation/CreationInterface/media/ImageResultZoomable'
+import ReactPlayer from 'react-player'
 
 // import { useState } from 'react'
 
@@ -24,11 +25,11 @@ const VideoResultV2 = ({
         aspectRatio={aspectRatio}
         priority={true}
       >
-        <video
-          src={resultUrl}
+        <ReactPlayer
+          url={resultUrl}
           className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg max-h-[80vh]`}
           style={{ objectFit: 'contain', objectPosition: 'top center' }}
-          autoPlay={true}
+          playing={true}
           muted={false}
           loop={true}
           controls={!disableControls}

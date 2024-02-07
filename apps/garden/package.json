@@ -54,6 +54,7 @@
     "react-blockies": "^1.4.1",
     "react-dom": "18.2.0",
     "react-joyride": "^2.7.2",
+    "react-player": "^2.14.1",
     "react-zoom-pan-pinch": "^3.1.0",
     "sharp": "^0.32.5",
     "swr": "^2.1.5",
