@@ -39,7 +39,10 @@ export const useTaskCost = () => {
       )
       if (staticGenerator.length > 0) {
         setTaskCost(staticGenerator[0].cost)
-        return
+        return {
+          cost: staticCostGenerators[0].cost,
+          canAfford: (mannaBalance || 0) >= staticCostGenerators[0].cost,
+        }
       }
 
       const configParamArray: [string, number][] = Object.entries(config)
@@ -57,12 +60,19 @@ export const useTaskCost = () => {
           })
           .reduce((total, arr) => total + arr)
         setTaskCost(totalFactor)
-        return
+        return {
+          cost: totalFactor,
+          canAfford: (mannaBalance || 0) >= totalFactor,
+        }
       }
 
       setTaskCost(1)
+      return {
+        cost: 1,
+        canAfford: (mannaBalance || 0) >= 1,
+      }
     },
-    [],
+    [mannaBalance],
   )
 
   return {

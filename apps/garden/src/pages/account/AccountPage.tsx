@@ -48,7 +48,7 @@ const AccountPage = () => {
   return (
     <>
       <div className="w-full grid grid-cols-12">
-        <div className="flex flex-col space-y-4 col-span-12 xl:col-span-8 mb-4">
+        <div className="flex flex-col space-y-4 col-span-12 xl:col-span-11 mb-4">
           <Collapse
             expandIconPosition="start"
             defaultActiveKey={'subscription'}

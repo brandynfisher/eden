@@ -1,4 +1,7 @@
+import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
+
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
+import ImageZoomable from '@/components/Creation/CreationInterface/media/ImageZoomable'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreator } from '@/hooks/useCreator'
 import { MessageMarker, compileMessage } from '@/lib/chat'
@@ -16,7 +19,6 @@ import {
   MessageList,
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
-import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
   Character,
   Session,
@@ -26,12 +28,8 @@ import {
 } from '@edenlabs/eden-sdk'
 import { App } from 'antd'
 import axios from 'axios'
-import Image from 'next/image'
 import Link from 'next/link'
-import { useContext, useEffect, useState } from 'react'
-
-// import Image from 'next/image'
-// import { CONFIG } from '@/lib/config';
+import React, { useContext, useEffect, useState } from 'react'
 
 type ConversationEntry = {
   message: string
@@ -270,11 +268,11 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
                     ? entry.uris.map((uri, index) => {
                         return (
                           <div key={index}>
-                            <Image
+                            <ImageZoomable
+                              key={uri}
+                              url={uri}
                               width={120}
                               height={120}
-                              src={uri}
-                              alt={uri}
                             />
                           </div>
                         )

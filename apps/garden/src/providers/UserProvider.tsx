@@ -12,6 +12,8 @@ export interface UserContextType {
   logout: () => Promise<void>
   userId: string | null
   mannaBalance?: number
+  mannaForeverBalance?: number
+  mannaSubscriptionBalance?: number
   pendingTasks?: Task[]
   refetchMe: VoidFunction
   settings?: Settings
@@ -37,6 +39,8 @@ const defaultUserState: UserContextType = {
   userId: null,
   user: undefined,
   mannaBalance: undefined,
+  mannaForeverBalance: undefined,
+  mannaSubscriptionBalance: undefined,
   pendingTasks: undefined,
   refetchMe: () => {
     return null

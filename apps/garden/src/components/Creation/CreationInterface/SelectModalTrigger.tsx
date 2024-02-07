@@ -22,7 +22,7 @@ const SelectModalTrigger = ({
 
   const handleChange = (item: Concept | Character) => {
     onChange(item)
-    hideModal(modalType)
+    hideModal(null, modalType)
   }
 
   return (

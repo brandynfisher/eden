@@ -21,6 +21,13 @@ const sortByPrice = (a: Product, b: Product) => {
   return aPrice > bPrice ? 1 : -1
 }
 
+const mannaCapTierMap = {
+  0: 0,
+  1: 1000,
+  2: 5000,
+  3: 10000,
+}
+
 const dummyFeatures: { [key in SubscriptionTier]: string[] } = {
   0: [],
   1: [
@@ -56,6 +63,12 @@ const ProductsList = ({
 }: {
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
+  const {
+    mannaBalance,
+    mannaForeverBalance,
+    mannaSubscriptionBalance,
+    isAuthenticated,
+  } = useContext(UserContext)
   const router = useRouter()
   const { user } = useContext(UserContext)
   const { products, subscriptions } = useProducts()
@@ -91,6 +104,49 @@ const ProductsList = ({
   return (
     <div>
       <div className="mb-8">
+        <h3 className="font-mono font-bold">Manna</h3>
+        <div>
+          <div className="mb-2">Your current Manna Balance:</div>
+          {typeof mannaBalance !== 'undefined' ? (
+            <div>
+              <span className="font-bold">{mannaBalance}</span> total
+              <ul className="px-6">
+                <li>
+                  {typeof mannaForeverBalance !== 'undefined' ? (
+                    <div>
+                      <span>{mannaForeverBalance}</span> non-expiring
+                    </div>
+                  ) : isAuthenticated ? (
+                    <LoadingIndicator />
+                  ) : null}
+                </li>
+                {activeSubscriptionTier ? (
+                  <li>
+                    {typeof mannaSubscriptionBalance !== 'undefined' ? (
+                      <div>
+                        <span>{mannaSubscriptionBalance}</span> from your
+                        subscription plan{' '}
+                        <span>
+                          (refills to a cap of{' '}
+                          <strong>
+                            {mannaCapTierMap[activeSubscriptionTier]}
+                          </strong>{' '}
+                          Manna at the next billing cycle)
+                        </span>
+                      </div>
+                    ) : isAuthenticated ? (
+                      <LoadingIndicator />
+                    ) : null}
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+          ) : isAuthenticated ? (
+            <LoadingIndicator />
+          ) : null}
+        </div>
+      </div>
+      <div className="mb-8">
         <h3 className="font-mono font-bold">Subscriptions</h3>
         {!subscriptions || !subscriptions.length ? (
           <LoadingIndicator />
@@ -98,14 +154,17 @@ const ProductsList = ({
           <div>
             <div className="mb-2">
               {activeSubscriptionTier ? (
-                <div>
-                  Your current plan:{' '}
-                  <span className="capitalize font-bold">
-                    {subscriptionTierNameMap[activeSubscriptionTier]}
-                  </span>
+                <div className="mb-8">
+                  <div className="mb-4">
+                    Your current plan:{' '}
+                    <span className="capitalize font-bold">
+                      {subscriptionTierNameMap[activeSubscriptionTier]}
+                    </span>
+                  </div>
+
                   <Button
                     type="primary"
-                    className="font-mono capitalize flex items-center"
+                    className="font-mono capitalize flex items-center "
                     onClick={onManageSubscriptionClick}
                   >
                     Manage Subscription
@@ -114,27 +173,29 @@ const ProductsList = ({
               ) : (
                 <>
                   <div>Choose the plan that works for you:</div>
-                  <div className="mt-4 container max-w-4xl space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8">
-                    {subscriptionsSortedByPrice.map(product => (
-                      <SubscriptionCard
-                        key={product.id}
-                        features={
-                          dummyFeatures[
-                            product.metadata
-                              .subscriptionTier as SubscriptionTier
-                          ]
-                        }
-                        subscription={product}
-                        checkoutHandler={checkoutHandler}
-                        isActive={
-                          activeSubscriptionTier ===
-                          product.metadata.subscriptionTier
-                        }
-                      />
-                    ))}
-                  </div>
                 </>
               )}
+            </div>
+            <div className="mt-4 container flex flex-wrap gap-4">
+              {subscriptionsSortedByPrice.map(product => (
+                <SubscriptionCard
+                  key={product.id}
+                  features={
+                    dummyFeatures[
+                      product.metadata.subscriptionTier as SubscriptionTier
+                    ]
+                  }
+                  subscription={product}
+                  checkoutHandler={checkoutHandler}
+                  isActive={
+                    activeSubscriptionTier ===
+                    Number(product.metadata.subscriptionTier)
+                  }
+                  hasActiveSubscription={
+                    typeof activeSubscriptionTier !== 'undefined'
+                  }
+                />
+              ))}
             </div>
           </div>
         )}

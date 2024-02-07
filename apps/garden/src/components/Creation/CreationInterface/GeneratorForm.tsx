@@ -161,19 +161,6 @@ const GeneratorForm = ({
     transformConfig()
   }, [presetCreation])
 
-  const handleFormFieldsChange = () => {
-    setIsFormTouched(true)
-
-    if (!uploadsInProgress) {
-      handleGetTaskCost()
-    }
-  }
-
-  const debouncedHandleFormFieldsChange = useMemo(
-    () => debounce(handleFormFieldsChange, 350),
-    [handleFormFieldsChange],
-  )
-
   const getCurrentGeneratorParameters = (currentGenerator: Generator) => {
     if (!currentGenerator) return
 
@@ -269,6 +256,19 @@ const GeneratorForm = ({
     [generator],
   )
 
+  const handleFormFieldsChange = useCallback(async () => {
+    // console.log('handleFormFieldsChange')
+    setIsFormTouched(true)
+    if (!uploadsInProgress) {
+      handleGetTaskCost()
+    }
+  }, [uploadsInProgress, handleGetTaskCost])
+
+  const debouncedHandleFormFieldsChange = useMemo(
+    () => debounce(handleFormFieldsChange, 350),
+    [handleFormFieldsChange],
+  )
+
   const supportsSingleCharacter = supportsGroup(requiredParameters, 'character')
   const supportsMultiCharacters = supportsGroup(
     requiredParameters,
@@ -278,6 +278,13 @@ const GeneratorForm = ({
   const supportsInitImage = supportsGroup(advancedParameters, 'init_image')
 
   const handleFinish = async () => {
+    try {
+      await form.validateFields()
+    } catch (e) {
+      console.log('Not a valid form')
+      return
+    }
+
     // console.log('handleFinish')
     setIsSubmitting(true)
 
@@ -289,22 +296,20 @@ const GeneratorForm = ({
     message.destroy()
 
     try {
-      console.log(form.getFieldsValue())
+      // console.log(form.getFieldsValue())
       const cleanedValues = getCleanedConfig(
         form.getFieldsValue(),
         stringArrayValues,
       )
 
-      console.log(cleanedValues)
+      // console.log(cleanedValues)
 
       const response = await axios.post('/api/tasks/create', {
         generatorName: generator.generatorName,
         config: cleanedValues,
       })
       refetchTasks && refetchTasks()
-
       message.success('Task created!')
-
       const { taskId } = response.data
       setActiveTaskId && setActiveTaskId(taskId)
       setHasChangedGenerator && setHasChangedGenerator(false)
@@ -467,7 +472,6 @@ const GeneratorForm = ({
       layout={'vertical'}
       form={form}
       name="generate"
-      onFinish={handleFinish}
       key={generator.generatorName}
       onFieldsChange={debouncedHandleFormFieldsChange}
       className={`flex flex-col h-full`}
@@ -675,7 +679,8 @@ const GeneratorForm = ({
             ) : (
               <Button
                 type="primary"
-                htmlType="submit"
+                htmlType="button"
+                onClick={handleFinish}
                 className="font-mono capitalize w-full flex items-center flex-shrink-0 justify-between !px-2 !pr-0.5"
                 loading={isSubmitting ? { delay: 250 } : false}
                 disabled={submitButtonDisabled}

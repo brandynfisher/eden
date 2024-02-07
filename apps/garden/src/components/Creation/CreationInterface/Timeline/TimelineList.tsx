@@ -222,6 +222,7 @@ const TimelineList = ({
 
   return (
     <div
+      data-testid="creation-workspace-timeline"
       className="flex flex-col max-h-[calc(100vh_-_72px)] pb-[105px] w-full overflow-hidden md:pb-0"
       ref={innerRef}
     >

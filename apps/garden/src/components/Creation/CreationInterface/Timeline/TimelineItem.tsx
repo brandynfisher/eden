@@ -21,13 +21,14 @@ const getFakeProgressIncrement = (
   taskConfig: Task['config'],
 ) => {
   const resolutionMultiplier =
-    (1024 * 1024) / (taskConfig['width'] || 1024 * taskConfig['height'] || 1024)
+    (1024 * 1024) /
+    ((taskConfig['width'] || 1024) * (taskConfig['height'] || 1024))
 
   if (
     noProgressImageGeneratorNames.includes(generatorName) &&
     taskConfig['n_samples']
   ) {
-    return (4 / taskConfig['n_samples']) * resolutionMultiplier
+    return (5 / taskConfig['n_samples']) * resolutionMultiplier
   }
 
   if (
@@ -53,6 +54,7 @@ const TimelineItem = ({
   const increaseFakeProgress = useCallback(
     (increment: number, timerId: ReturnType<typeof setInterval>) => {
       setFakeProgress(prevState => {
+        console.log(prevState, increment)
         if (prevState + increment >= 100) {
           clearInterval(timerId)
           return 100

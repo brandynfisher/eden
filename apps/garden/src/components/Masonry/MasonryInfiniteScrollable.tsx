@@ -230,6 +230,7 @@ const MasonryInfiniteScrollable = ({
           >
             {containerWidth ? (
               <MasonryHookWrap
+                key={masonryKey}
                 positioner={positioner}
                 resizeObserver={resizeObserver}
                 items={items}

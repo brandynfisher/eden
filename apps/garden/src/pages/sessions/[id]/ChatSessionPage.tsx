@@ -6,6 +6,7 @@ import React from 'react'
 const ChatSessionPage = ({ data }: { data: Session }) => {
   const { session: sessionData } = useSession(data ? data.id : null, {
     fallbackData: data,
+    revalidateOnFocus: false,
   })
 
   if (!sessionData) {

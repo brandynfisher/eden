@@ -38,6 +38,10 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     user: isAuthenticated ? (data?.creator as Creator) : undefined,
     hasMinimumSubscriptionTier,
     balance: isAuthenticated ? data?.balance : undefined,
+    foreverBalance: isAuthenticated ? data?.foreverBalance : undefined,
+    subscriptionBalance: isAuthenticated
+      ? data?.subscriptionBalance
+      : undefined,
     pendingTasks: isAuthenticated ? data?.pendingTasks : undefined,
     refetchMe: mutate,
   }

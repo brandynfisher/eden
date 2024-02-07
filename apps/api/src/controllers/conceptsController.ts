@@ -386,6 +386,7 @@ export const conceptExportToHF = async (
   reply: FastifyReply,
 ) => {
   const { userId, conceptId } = request.body as AdminConceptsExportToHFArguments
+  const frontendUrl = server.config.FRONTEND_URL
 
   const user = await User.findOne({ userId })
   if (!user) {
@@ -440,6 +441,32 @@ export const conceptExportToHF = async (
   const dirPath = `/tmp/${concept.name}`
   await fs.mkdir(dirPath, { recursive: true })
   await downloadAndUntar(uri, dirPath)
+
+  // Create dynamic README.md / HF model card
+  const username = user.username
+  const conceptName = concept.name
+  const conceptUri = concept.uri
+  const conceptThumbnail = concept.thumbnail
+  const num_training_images = concept.num_training_images || 0
+  const readmeContent = `---
+language: 
+  - en
+thumbnail: "${conceptThumbnail}"
+base_model: "stabilityai/stable-diffusion-xl-base-1.0"
+---
+
+## [${conceptName}](${conceptUri})
+
+LoRA trained on [Eden.art](https://eden.art) by [${username}](${frontendUrl}/creators/${username}) on ${num_training_images} images.
+
+* [How to train Concepts (LoRAs) on Eden](https://docs.eden.art/docs/guides/concepts)
+* [How to export LoRAs from Eden](https://docs.eden.art/docs/guides/concepts#exporting-loras-for-use-in-other-tools)
+
+![Samples](${conceptThumbnail})`
+
+  const readmePath = join(dirPath, 'README.md')
+  await fs.writeFile(readmePath, readmeContent)
+
   await uploadDirToHuggingFace(dirPath, repo, server.config.HF_TOKEN)
   await fs.rmdir(dirPath, { recursive: true })
 

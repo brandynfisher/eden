@@ -187,7 +187,6 @@ const CharactersParameter = (props: {
 
   return (
     <div>
-      {JSON.stringify(values)}
       {values.map((value, index) => (
         <div
           key={`${index}_${value}`}

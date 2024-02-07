@@ -54,7 +54,7 @@ const CardComponent = ({
 }) => {
   return (
     <div
-      className={`relative h-full p-4 md:p-8 border border-solid rounded-xl shadow-sm flex flex-col ${
+      className={`relative h-full p-4 md:p-8 border border-solid rounded-xl shadow-sm flex flex-col w-full md:w-[360px] ${
         isActive
           ? 'bg-gray-100 dark:bg-gray-900 border-blue-600'
           : 'border-gray-200 dark:border-gray-700 '
@@ -83,10 +83,12 @@ const SubscriptionCard = ({
   features,
   checkoutHandler,
   isActive,
+  hasActiveSubscription,
 }: {
   subscription: Product
   features: string[]
   isActive: boolean
+  hasActiveSubscription?: boolean
   checkoutHandler: (priceId: string, paymentMode: string) => void
 }) => {
   const { user } = useContext(UserContext)
@@ -117,7 +119,11 @@ const SubscriptionCard = ({
 
   if (isActive) {
     return (
-      <Badge.Ribbon text="Active" color="#2463eb">
+      <Badge.Ribbon
+        text="Active"
+        color="#2463eb"
+        className="flex-grow badge-grow"
+      >
         <CardComponent
           isActive={true}
           subscription={subscription}
@@ -131,7 +137,7 @@ const SubscriptionCard = ({
                 onClick={handleManageClick}
                 className="bg-blue-600 text-white hover:bg-blue-700 py-2 px-6 mt-4 block w-full cursor-pointer border border-transparent rounded-md text-center font-medium"
               >
-                Manage
+                Manage plan
               </div>
             </div>
           }
@@ -141,18 +147,22 @@ const SubscriptionCard = ({
   }
 
   return (
-    <CardComponent
-      subscription={subscription}
-      features={features}
-      actionButton={
-        <div
-          onClick={handleSubscribeClick}
-          className="bg-emerald-500 text-white hover:bg-emerald-600 py-2 px-6 mt-8 block w-full cursor-pointer border border-transparent rounded-md text-center font-medium"
-        >
-          Subscribe
-        </div>
-      }
-    />
+    <div className="w-full md:w-[360px]">
+      <CardComponent
+        subscription={subscription}
+        features={features}
+        actionButton={
+          <div
+            onClick={
+              hasActiveSubscription ? handleManageClick : handleSubscribeClick
+            }
+            className="bg-emerald-500 text-white hover:bg-emerald-600 py-2 px-6 mt-8 block w-full cursor-pointer border border-transparent rounded-md text-center font-medium"
+          >
+            {hasActiveSubscription ? 'Change to this plan' : 'Subscribe'}
+          </div>
+        }
+      />
+    </div>
   )
 }
 

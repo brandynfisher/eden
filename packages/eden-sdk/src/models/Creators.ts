@@ -1,6 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
-import { Task } from 'src/models/Tasks'
-
 import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
@@ -8,6 +5,8 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { AxiosRequestConfig } from 'axios'
+import { Task } from 'src/models/Tasks'
 
 // Arguments
 
@@ -175,6 +174,8 @@ export type CreatorsGetMeResponse = WebAPICallResult & {
   error?: string
   creator?: Creator
   balance?: number
+  subscriptionBalance?: number
+  foreverBalance?: number
   pendingTasks?: Task[]
 }
 

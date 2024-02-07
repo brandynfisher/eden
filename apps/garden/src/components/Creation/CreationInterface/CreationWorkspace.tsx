@@ -1,5 +1,6 @@
 import GeneratorForm from '@/components/Creation/CreationInterface/GeneratorForm'
 import GeneratorSelectModalTrigger from '@/components/Creation/CreationInterface/GeneratorSelectModalTrigger'
+import TourCreationTool from '@/components/Tours/TourCreationTool'
 import {
   GeneratorOutputType,
   sdxl_generators_image,
@@ -69,7 +70,12 @@ const CreationWorkspace = ({
         </div>
       </div>
 
-      <div className={`w-full md:h-full md:max-h-[calc(100%_-_48px)]`}>
+      <TourCreationTool />
+
+      <div
+        data-testid="creation-workspace-form"
+        className={`w-full md:h-full md:max-h-[calc(100%_-_48px)]`}
+      >
         {activeGenerator && (
           <GeneratorForm
             outputType={outputType}

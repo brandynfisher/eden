@@ -12,30 +12,29 @@ type FieldRequest = {
 
 export const getServerSidePropsBase = (fieldRequests: FieldRequest[]) => {
   return async (ctx: NextPageContext) => {
-    const shouldRedirectToCreationDetail = await maybeRedirectIfCreationIdQuery(
-      ctx,
-    )
-
-    if (shouldRedirectToCreationDetail) {
-      return shouldRedirectToCreationDetail
-    }
-
-    const shouldRedirectToConceptDetail = await maybeRedirectIfConceptIdQuery(
-      ctx,
-    )
-
-    if (shouldRedirectToConceptDetail) {
-      return shouldRedirectToConceptDetail
-    }
-
-    const shouldRedirectToCharacterDetail =
-      await maybeRedirectIfCharacterIdQuery(ctx)
-
-    if (shouldRedirectToCharacterDetail) {
-      return shouldRedirectToCharacterDetail
-    }
-
     try {
+      const shouldRedirectToCreationDetail =
+        await maybeRedirectIfCreationIdQuery(ctx)
+
+      if (shouldRedirectToCreationDetail) {
+        return shouldRedirectToCreationDetail
+      }
+
+      const shouldRedirectToConceptDetail = await maybeRedirectIfConceptIdQuery(
+        ctx,
+      )
+
+      if (shouldRedirectToConceptDetail) {
+        return shouldRedirectToConceptDetail
+      }
+
+      const shouldRedirectToCharacterDetail =
+        await maybeRedirectIfCharacterIdQuery(ctx)
+
+      if (shouldRedirectToCharacterDetail) {
+        return shouldRedirectToCharacterDetail
+      }
+
       const allFieldResults = await Promise.all(
         fieldRequests.map(async fieldRequest => {
           const data = await fieldRequest.dataFetcher(ctx)
