@@ -3,7 +3,6 @@ import 'antd/dist/reset.css'
 
 import { Page } from '../../types/page'
 import ErrorBoundary from '@/ErrorBoundary'
-import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
 import PasswordProtection from '@/components/PasswordProtection'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
@@ -16,6 +15,7 @@ import UserProvider from '@/providers/UserProvider'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
+import dynamic from 'next/dynamic'
 import { Inter } from 'next/font/google'
 import Head from 'next/head'
 import { ReactElement } from 'react'
@@ -25,6 +25,11 @@ type Props = AppProps & {
 }
 
 const inter = Inter({ subsets: ['latin'] })
+
+const PageLayoutSidebar = dynamic(
+  () => import('@/components/Layout/layouts/PageLayoutSidebar'),
+  { ssr: false },
+)
 
 export default function App({ Component, pageProps }: Props): ReactElement {
   // use per-component layout if defined or fallback to a generic one

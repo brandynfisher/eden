@@ -111,15 +111,6 @@ const ProductsList = ({
             <div>
               <span className="font-bold">{mannaBalance}</span> total
               <ul className="px-6">
-                <li>
-                  {typeof mannaForeverBalance !== 'undefined' ? (
-                    <div>
-                      <span>{mannaForeverBalance}</span> non-expiring
-                    </div>
-                  ) : isAuthenticated ? (
-                    <LoadingIndicator />
-                  ) : null}
-                </li>
                 {activeSubscriptionTier ? (
                   <li>
                     {typeof mannaSubscriptionBalance !== 'undefined' ? (
@@ -139,6 +130,15 @@ const ProductsList = ({
                     ) : null}
                   </li>
                 ) : null}
+                <li>
+                  {typeof mannaForeverBalance !== 'undefined' ? (
+                    <div>
+                      <span>{mannaForeverBalance}</span> non-expiring
+                    </div>
+                  ) : isAuthenticated ? (
+                    <LoadingIndicator />
+                  ) : null}
+                </li>
               </ul>
             </div>
           ) : isAuthenticated ? (
