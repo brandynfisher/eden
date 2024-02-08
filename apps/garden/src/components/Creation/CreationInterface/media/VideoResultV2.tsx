@@ -42,7 +42,6 @@ const VideoResultV2 = ({
           loop={true}
           controls={!disableControls}
           onPlay={() => {
-            // setIsLoaded(true)
             onLoad && onLoad()
           }}
           preload="none"

@@ -1,5 +1,4 @@
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
-import registerAirflow from './plugins/airflowPlugin'
 import registerChroma from './plugins/chromaPlugin'
 import registerClerk from './plugins/clerkPlugin'
 import config from './plugins/config'

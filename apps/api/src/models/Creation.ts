@@ -1,3 +1,9 @@
+import { VisibilitySchema } from '../types/baseSchemas'
+import { CharacterDocument } from './Character'
+import { ConceptDocument } from './Concept'
+import { UserDocument } from './Creator'
+import { GeneratorDocument } from './Generator'
+import { TaskDocument } from './Task'
 import {
   CreationAttributes,
   MediaAttributes,
@@ -12,13 +18,6 @@ import mongooseDelete, {
 } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-import { VisibilitySchema } from '../types/baseSchemas'
-import { CharacterDocument } from './Character'
-import { ConceptDocument } from './Concept'
-import { UserDocument } from './Creator'
-import { GeneratorDocument } from './Generator'
-import { TaskDocument } from './Task'
-
 export interface CreationSchema extends VisibilitySchema {
   user: UserDocument
   character?: CharacterDocument
@@ -29,6 +28,7 @@ export interface CreationSchema extends VisibilitySchema {
   bookmarkCount: number
   delegate?: UserDocument
   uri?: string
+  hlsUri?: string
   thumbnail?: string
   name?: string
   attributes?: CreationAttributes
@@ -107,6 +107,10 @@ const creation = new Schema<CreationDocument>(
     uri: {
       type: String,
       required: true,
+      maxlength: 1000,
+    },
+    hlsUri: {
+      type: String,
       maxlength: 1000,
     },
     thumbnail: {
