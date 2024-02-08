@@ -1,11 +1,10 @@
+import { Generator, GeneratorVersionSchema } from '../models/Generator'
+import GeneratorRepository from '../repositories/GeneratorRepository'
 import {
   GeneratorsGetArguments,
   GeneratorsListArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
-
-import { Generator, GeneratorVersionSchema } from '../models/Generator'
-import GeneratorRepository from '../repositories/GeneratorRepository'
 
 export const getGenerator = async (
   request: FastifyRequest,
@@ -29,6 +28,7 @@ export const getGenerator = async (
       (version: GeneratorVersionSchema) =>
         version.versionId === generator.defaultVersionId,
     ),
+    visible: generator.visible,
   }
 
   return reply.status(200).send({ generator: generatorObj })
@@ -38,11 +38,13 @@ export const listGenerators = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { limit, page, sort } = request.query as GeneratorsListArguments
-
+  const { limit, page, sort, visible } =
+    request.query as GeneratorsListArguments
   const generatorRepository = new GeneratorRepository(Generator)
   const generators = await generatorRepository.query(
-    {},
+    {
+      visible,
+    },
     {
       limit,
       page,
@@ -61,6 +63,7 @@ export const listGenerators = async (
         (version: GeneratorVersionSchema) =>
           version.versionId === generator.defaultVersionId,
       ),
+      visible: generator.visible,
     })),
   }
 

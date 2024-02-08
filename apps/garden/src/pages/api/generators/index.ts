@@ -8,7 +8,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
     })
-    const response = await eden.generators.list()
+    const response = await eden.generators.list(req.query)
     return res.status(200).json({ generators: response.docs })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
