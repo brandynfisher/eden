@@ -36,7 +36,7 @@ const MannaCostDisplay = ({
   }, [getTaskCost, generatorName, config])
 
   return (
-    <span className="text-xs text-gray-400 font-mono">
+    <span className="text-xs text-gray-400 font-mono ml-auto">
       <>{taskCost} Manna</>
     </span>
   )
@@ -150,7 +150,7 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
         </MenuItem>
         <MenuItem
           onClick={() => handleItemClick(2048)}
-          className="flex gap-1 justify-between"
+          className="flex gap-1"
           disabled={isSubmittingTask}
         >
           2k
@@ -161,7 +161,7 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
         </MenuItem>
         <MenuItem
           onClick={() => handleItemClick(3072)}
-          className="flex gap-1 justify-between"
+          className="flex gap-1"
           disabled={isSubmittingTask}
         >
           {!is4kUpscaleAllowed ? (
