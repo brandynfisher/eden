@@ -17,6 +17,7 @@ const defaultImageDomains = [
   'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
   'edenartlab-stg-data.s3.us-east-1.amazonaws.com',
   'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
+  'dtut5r9j4w7j4.cloudfront.net',
 ]
 
 const devImageDomains = ['localhost']
