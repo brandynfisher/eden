@@ -25,8 +25,8 @@ export const sdxl_generators_image = [
   'remix',
   'blend',
   'upscale',
-  'controlnet',
   'makeitrad',
+  'inpaint',
 ]
 export const sdxl_generators_video = [
   'real2real',
