@@ -1,12 +1,11 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   getGenerator,
   listGenerators,
 } from '../controllers/generatorController'
 import { parameterType } from '../types/routeTypes'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const generatorRoutes: FastifyPluginAsync = async server => {
   server.get('/generators', {
@@ -22,6 +21,7 @@ const generatorRoutes: FastifyPluginAsync = async server => {
       querystring: {
         type: 'object',
         properties: {
+          visible: Type.Optional(Type.Boolean()),
           ...paginationProperties(),
         },
         required: [],
@@ -39,6 +39,7 @@ const generatorRoutes: FastifyPluginAsync = async server => {
                 parameters: parameterType,
               }),
             ),
+            visible: Type.Optional(Type.Boolean()),
           }),
         ),
       },

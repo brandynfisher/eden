@@ -1,16 +1,5 @@
 import { Generator, GeneratorParameter } from '@edenlabs/eden-sdk'
 
-export const hiddenGenerators = [
-  'complete',
-  'tts',
-  'tts_fast',
-  'sdxl-lora-trainer',
-  'interrogate',
-  'wav2lip',
-  'makeitrad',
-  // 'littlemartians',
-]
-
 export type GeneratorOutputType = 'image' | 'text' | 'video'
 
 export const conceptGenerator = {
@@ -25,8 +14,8 @@ export const sdxl_generators_image = [
   'remix',
   'blend',
   'upscale',
-  'controlnet',
   'makeitrad',
+  'inpaint',
 ]
 export const sdxl_generators_video = [
   'real2real',

@@ -34,6 +34,7 @@ const CharacterAvatar = ({
           alt={`${name}'s Avatar`}
           width={90}
           height={90}
+          sizes={'90px'}
           style={{ objectFit: 'cover', maxWidth: '100%', maxHeight: '100%' }}
           onError={() => setImgError(true)}
         />

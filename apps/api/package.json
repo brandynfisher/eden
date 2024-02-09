@@ -59,7 +59,7 @@
     "mongoose-slug-plugin": "^2.1.0",
     "openai": "^4.18.0",
     "react": "^18.2.0",
-    "replicate-js": "https://github.com/genekogan/replicate-js",
+    "replicate-js": "git+https://github.com/genekogan/replicate-js.git",
     "sharp": "^0.32.1",
     "stripe": "^12.18.0",
     "svix": "^1.12.0",

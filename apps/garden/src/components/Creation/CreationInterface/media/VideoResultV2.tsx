@@ -45,11 +45,11 @@ const VideoResultV2 = ({
             onLoad && onLoad()
           }}
           preload="none"
-          config={{
-            file: {
-              forceHLS: true,
-            },
-          }}
+          // config={{
+          //   file: {
+          //     forceHLS: true,
+          //   },
+          // }}
         />
       </ImageResultZoomable>
     </>
