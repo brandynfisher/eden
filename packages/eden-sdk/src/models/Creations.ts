@@ -1,7 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
-import { Creator } from 'src/models/Creators'
-import { Task } from 'src/models/Tasks'
-
 import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
@@ -9,6 +5,9 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { AxiosRequestConfig } from 'axios'
+import { Creator } from 'src/models/Creators'
+import { Task } from 'src/models/Tasks'
 
 // Arguments
 
@@ -164,6 +163,7 @@ export type Creation = {
   delegateUser?: string
   delegateHasClaimed?: boolean
   uri: string
+  hlsUri?: string
   thumbnail?: string
   name: string
   attributes: CreationAttributes

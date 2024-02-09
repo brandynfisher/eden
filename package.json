@@ -45,5 +45,7 @@
     ]
   },
   "packageManager": "yarn@1.22.19",
-  "dependencies": {}
+  "dependencies": {
+    "aws-sdk": "^2.1552.0"
+  }
 }

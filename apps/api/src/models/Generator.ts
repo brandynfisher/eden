@@ -129,6 +129,7 @@ export interface GeneratorSchema {
   defaultVersionId?: string
   versions: GeneratorVersionSchema[]
   output: GeneratorOutputType
+  visible?: boolean
   createdAt?: Date
   updatedAt?: Date
 }
@@ -139,6 +140,7 @@ export interface GeneratorInput {
   defaultVersionId?: string
   versions: GeneratorVersionInput[]
   output: GeneratorOutputType
+  visible?: boolean
 }
 
 export interface GeneratorDocument extends GeneratorSchema, Document {}
@@ -163,6 +165,9 @@ const generator = new Schema<GeneratorDocument>(
     versions: {
       type: [generatorVersion],
       default: [],
+    },
+    visible: {
+      type: Boolean,
     },
   },
   {

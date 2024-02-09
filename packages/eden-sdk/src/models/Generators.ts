@@ -1,26 +1,35 @@
-import { AxiosRequestConfig } from 'axios'
-
 import {
   ListQueryParams,
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
+  transformArgsIntoURLParams,
 } from '../types'
+import { FeedCreationsArguments } from './Feed'
+import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
-export type GeneratorsListArguments = WebAPICallOptions & ListQueryParams
+export type GeneratorsListArguments = WebAPICallOptions &
+  ListQueryParams & {
+    visible?: boolean
+  }
 
 export interface GeneratorsGetArguments extends WebAPICallOptions {
   generatorName: string
 }
 
 // Requests
+export const generatorsListRequestConfig = (
+  args: GeneratorsListArguments,
+): AxiosRequestConfig => {
+  console.log(args)
+  const params = transformArgsIntoURLParams(args)
 
-export const generatorsListRequestConfig = (): AxiosRequestConfig => {
   return {
     method: 'GET',
     url: 'generators',
+    params,
   }
 }
 
@@ -53,6 +62,7 @@ export type Generator = {
   output: string
   defaultVersionId?: string
   versions: GeneratorVersion[]
+  visible?: boolean
 }
 
 export type GeneratorVersion = {

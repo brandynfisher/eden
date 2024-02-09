@@ -145,15 +145,15 @@ const aggregateCreationsByEmbeddingScore = (dateEndCutOff: string) => {
   const hoursAgo = 360
   const currentDate = new Date()
   currentDate.setMinutes(0, 0, 0)
-  const maxDate = new Date(currentDate)
-  maxDate.setHours(currentDate.getHours() - hoursAgo)
-  maxDate.setMinutes(0, 0, 0)
+  const minDate = new Date(currentDate)
+  minDate.setHours(currentDate.getHours() - hoursAgo)
+  minDate.setMinutes(0, 0, 0)
 
   return Creation.aggregate([
     {
       $match: {
         createdAt: {
-          $gte: maxDate,
+          $gte: minDate,
           $lte: new Date(dateEndCutOff),
         },
         'embedding.score': { $exists: true },
