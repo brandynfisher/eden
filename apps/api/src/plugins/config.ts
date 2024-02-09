@@ -33,6 +33,7 @@ const ConfigSchema = Type.Strict(
     AWS_SECRET_KEY: Type.Optional(Type.String()),
     AWS_REGION: Type.Optional(Type.String()),
     AWS_S3_BUCKET: Type.Optional(Type.String()),
+    AWS_CLOUDFRONT_URL: Type.Optional(Type.String()),
     STRIPE_PUBLISHABLE_KEY: Type.String(),
     STRIPE_SECRET_KEY: Type.String(),
     STRIPE_WEBHOOK_SECRET: Type.String(),
