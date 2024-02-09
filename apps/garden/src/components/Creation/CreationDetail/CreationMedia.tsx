@@ -17,7 +17,7 @@ const CreationMedia = ({ creation }: { creation: Creation }) => {
     <MediaDisplay
       priority={true}
       aspectRatio={aspectRatio}
-      creationUri={creationUri}
+      creationUri={creation.uri}
       previewUri={creation?.uri}
       thumbnailUri={creation?.thumbnail}
     />
