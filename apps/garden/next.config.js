@@ -17,6 +17,7 @@ const defaultImageDomains = [
   'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
   'edenartlab-stg-data.s3.us-east-1.amazonaws.com',
   'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
+  'dtut5r9j4w7j4.cloudfront.net',
 ]
 
 const devImageDomains = ['localhost']
@@ -26,9 +27,9 @@ const imageDomains =
     ? [...defaultImageDomains, ...devImageDomains]
     : defaultImageDomains
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-})
+// const withBundleAnalyzer = require('@next/bundle-analyzer')({
+//   enabled: process.env.ANALYZE === 'true',
+// })
 
 module.exports = withTM({
   async redirects() {
@@ -65,6 +66,18 @@ module.exports = withTM({
     domains: imageDomains,
     deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920, 2560],
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
+        port: '',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
+        port: '',
+        pathname: '**',
+      },
       {
         protocol: 'https',
         hostname: 'minio.aws.abraham.fun',
@@ -109,7 +122,7 @@ const { withSentryConfig } = require('@sentry/nextjs')
 // module.exports = withBundleAnalyzer(withNextPWA(
 module.exports = withNextPWA(
   withSentryConfig(
-    withBundleAnalyzer(
+    // withBundleAnalyzer(
       module.exports,
       {
         // For all available options, see:
@@ -139,6 +152,6 @@ module.exports = withNextPWA(
         // Automatically tree-shake Sentry logger statements to reduce bundle size
         disableLogger: true,
       },
-    ),
+    // ),
   ),
 )

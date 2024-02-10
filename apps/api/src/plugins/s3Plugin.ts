@@ -1,3 +1,4 @@
+import * as util from '../lib/util'
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import AWS from 'aws-sdk'
 import axios from 'axios'
@@ -10,8 +11,6 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import sharp from 'sharp'
 
-import * as util from '../lib/util'
-
 export interface Asset {
   uri: string
   assetBuffer: Buffer
@@ -20,6 +19,7 @@ export interface Asset {
 
 const mediaTypeMap: Record<string, MediaType> = {
   mp4: MediaType.Video,
+  m3u8: MediaType.Video,
   jpg: MediaType.Image,
   jpeg: MediaType.Image,
   png: MediaType.Image,
@@ -140,32 +140,19 @@ export const uploadBufferAsset = async (
   buffer: Buffer,
   fileExtension: string | null = null,
 ): Promise<{ uri: string; mediaAttributes: MediaAttributes }> => {
-  console.log('let us upload this buffer')
-  console.log(buffer)
   const client = server.s3
   const S3_BUCKET = server.config.AWS_S3_BUCKET as string
   const sha = util.sha256(buffer)
-  console.log('got sha', sha)
   const fileType = await fileTypeFromBuffer(buffer)
-  console.log('got fileType', fileType)
   const { ext, mime } = fileType
     ? (fileType as { ext: string; mime: string })
     : { ext: 'txt', mime: 'text/plain' }
-  console.log('mine', ext, mime)
   const metadata = { 'Content-Type': mime, SHA: sha }
   const filename = `${sha}.${fileExtension || ext}`
   const urlUpload = s3Url(server, filename)
-  console.log('upload to ', urlUpload)
-
-  console.log('the whole config')
-  console.log('0-00-')
   try {
     await client.headObject({ Bucket: S3_BUCKET, Key: filename }).promise()
-    console.log(
-      ` --> Object ${filename} already exists in ${S3_BUCKET}, skipping upload`,
-    )
   } catch (error) {
-    console.log(' ---> uploading buffer ', filename, metadata, buffer)
     await client
       .putObject({
         Bucket: S3_BUCKET,
@@ -175,13 +162,9 @@ export const uploadBufferAsset = async (
         ContentType: mime,
       })
       .promise()
-    console.log(` --> Uploaded to ${urlUpload}`)
-    console.log(` --> Uploaded to ${urlUpload}`)
-    console.log(' ----> yay done', buffer)
   }
 
   const mediaAttributes = await getMediaAttributes(buffer, ext)
-  console.log('got mediaAttributes', mediaAttributes)
 
   return {
     uri: urlUpload,
@@ -195,7 +178,7 @@ export const getSignedDownloadUrl = (
 ) => {
   // @todo: got assets floating on multiple buckets, thus this ugly solution of dissecting the url
   // @todo: swap this back to use config/ENV values whenever we're living on a single bucket
-  // const currentBucketUrl = s3Url(server, '')
+  //  currentBucketUrl = s3Url(server, '')
   // const isLegacyBucket = !assetUrl.includes(currentBucketUrl)
   const fileBucketUrlParts = assetUrl.split('/')
   const bucketName = fileBucketUrlParts[2].split('.')[0]
@@ -240,8 +223,17 @@ export const createSignedDownloadUrl = (
   return server.s3.getSignedUrl('getObject', params)
 }
 
-export const s3Url = (server: FastifyInstance, filename: string) =>
-  `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com/${filename}`
+export const s3Url = (server: FastifyInstance, filename: string) => {
+  if (server.config.AWS_CLOUDFRONT_URL) {
+    // Check if AWS_CLOUDFRONT_URL already includes https://
+    const baseUrl = server.config.AWS_CLOUDFRONT_URL.startsWith('https://')
+      ? server.config.AWS_CLOUDFRONT_URL
+      : `https://${server.config.AWS_CLOUDFRONT_URL}`
+    return `${baseUrl}/${filename}`
+  } else {
+    return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com/${filename}`
+  }
+}
 
 export const registerS3 = async (fastify: FastifyInstance) => {
   try {

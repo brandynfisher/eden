@@ -201,14 +201,14 @@ const Card: FC<CardWithTypeProps> = ({
           </div>
         </div>
       ) : null}
-      {!itemData.deleted && (width < 768 || hovered || dropdownActive) ? (
+      {!itemData.deleted && (width < 640 || hovered || dropdownActive) ? (
         <>
           <div
-            className={`order-first md:order-none flex items-center justify-between mb-[12px] md:absolute md:z-10 md:w-full md:top-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-t-lg md:pb-1 md:pt-0.5 md:px-2 pointer-events-none opacity-0 transition-opacity duration-300 ${
+            className={`order-first sm:order-none flex items-center justify-between mb-[12px] sm:absolute md:z-10 sm:w-full sm:top-0 sm:bg-gray-200 sm:dark:bg-gray-900 sm:!bg-opacity-80 sm:rounded-t-lg sm:pb-1 sm:pt-0.5 sm:px-2 pointer-events-none opacity-0 transition-opacity duration-300 ${
               width ? 'opacity-100' : ''
             } ${
               itemType !== 'creation'
-                ? 'md:top-auto md:bottom-7 !rounded-none'
+                ? 'sm:top-auto sm:bottom-7 !rounded-none'
                 : ''
             }`}
           >
@@ -251,8 +251,8 @@ const Card: FC<CardWithTypeProps> = ({
             </div>
           </div>
           <div
-            className={`md:absolute md:z-10 md:w-full md:bottom-0 md:bg-gray-200 md:dark:bg-gray-900 md:!bg-opacity-80 md:rounded-b-lg md:px-2 pointer-events-none md:hidden ${
-              hovered ? 'md:!block' : ''
+            className={`sm:absolute sm:z-10 sm:w-full sm:bottom-0 sm:bg-gray-200 sm:dark:bg-gray-900 sm:!bg-opacity-80 sm:rounded-b-lg sm:px-2 pointer-events-none sm:hidden ${
+              hovered ? 'sm:!block' : ''
             }`}
           >
             <CardReactions

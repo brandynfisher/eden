@@ -28,7 +28,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 const PageLayoutSidebar = dynamic(
   () => import('@/components/Layout/layouts/PageLayoutSidebar'),
-  { ssr: false },
+  { ssr: true },
 )
 
 export default function App({ Component, pageProps }: Props): ReactElement {
@@ -90,6 +90,19 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           href="/eden-logo-512x512.png"
           sizes="640x1136"
         />
+        {process.env.NODE_ENV === 'production' ? (
+          <>
+            <link rel="preconnect" href="https://clerk.eden.art" />
+            <link rel="preconnect" href="https://www.googletagmanager.com" />
+          </>
+        ) : (
+          <>
+            <link
+              rel="preconnect"
+              href="https://oriented-glider-22.clerk.accounts.dev/"
+            />
+          </>
+        )}
       </Head>
 
       <PasswordProtection>

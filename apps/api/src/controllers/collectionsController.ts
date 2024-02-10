@@ -139,7 +139,10 @@ export const listCollections = async (
           {
             limit,
             page,
-            sort,
+            sort: {
+              ...sort,
+              updatedAt: -1,
+            },
           },
         )
       : await collectionRepository.query(
@@ -152,7 +155,10 @@ export const listCollections = async (
           {
             limit,
             page,
-            sort,
+            sort: {
+              ...sort,
+              updatedAt: -1,
+            },
           },
         )
 
