@@ -16,6 +16,7 @@ export const sdxl_generators_image = [
   'upscale',
   'makeitrad',
   'inpaint',
+  'controlnet',
 ]
 export const sdxl_generators_video = [
   'real2real',
