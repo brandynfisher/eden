@@ -63,7 +63,7 @@ const ChannelsPage = () => {
   const [showPrompt, setShowPrompt] = useState<boolean>(true)
   const [showQrCode, setShowQrCode] = useState<boolean>(true)
   const [showCreator, setShowCreator] = useState<boolean>(true)
-  const [muteVideoAudio, setMuteVideoAudio] = useState<boolean>(true)
+  const [muteVideoAudio, setMuteVideoAudio] = useState<boolean>(false)
   const [imageDisplayDuration, setImageDisplayDuration] = useState<number>(10)
   const [insertNewCreations, setInsertNewCreations] = useState<boolean>(true)
   const [settings, setSettings] = useState<ChannelSettings>({
@@ -132,8 +132,8 @@ const ChannelsPage = () => {
               <Switch
                 defaultChecked={muteVideoAudio}
                 onChange={() => setMuteVideoAudio(!muteVideoAudio)}
-                checkedChildren={<div>Audio</div>}
-                unCheckedChildren={<div>Audio</div>}
+                checkedChildren={<div>Mute Audio</div>}
+                unCheckedChildren={<div>Mute Audio</div>}
               />
             </div>
           </div>
