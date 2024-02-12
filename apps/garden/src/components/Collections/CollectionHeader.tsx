@@ -3,7 +3,9 @@ import CollectionName from '@/components/Collections/CollectionName'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { UserContext } from '@/providers/UserProvider'
 import { Collection } from '@edenlabs/eden-sdk'
+import { ConnectedTvOutlined } from '@mui/icons-material'
 import { Button } from 'antd'
+import Link from 'next/link'
 import React, { useContext } from 'react'
 
 const CollectionHeader = ({
@@ -59,6 +61,17 @@ const CollectionHeader = ({
           )}
         </div>
       </div>
+      <Link
+        title={'Opens page in new tab'}
+        href={`/channels?collectionId=${collection._id}`}
+        target="_blank"
+        className="mt-2"
+      >
+        <Button className="flex items-center gap-2 justify-between">
+          <ConnectedTvOutlined fontSize="small" />
+          <div>Play in New Tab</div>
+        </Button>
+      </Link>
     </div>
   )
 }

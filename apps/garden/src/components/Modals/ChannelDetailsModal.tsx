@@ -569,6 +569,7 @@ const ChannelDetailsModal = ({
           </>
         )}
       </div>
+      {/*<ChannelDetails />*/}
     </Modal>
   )
 }

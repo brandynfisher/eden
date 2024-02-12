@@ -7,7 +7,7 @@ import {
   MODAL_TYPES,
   useModalContext,
 } from '@/providers/ModalProvider'
-import React from 'react'
+import React, { useCallback } from 'react'
 
 const ChannelCard = ({
   itemType,
@@ -23,7 +23,7 @@ const ChannelCard = ({
   settings: ChannelSettings
 }) => {
   const { showModal } = useModalContext()
-  const onChannelCardClick = () => {
+  const onChannelCardClick = useCallback(() => {
     showModal(MODAL_TYPES.CHANNEL_DETAIL_MODAL, {
       usesUrl: false,
       title,
@@ -32,7 +32,7 @@ const ChannelCard = ({
       query: { ...query, maxDate: new Date().toISOString() },
       settings,
     })
-  }
+  }, [showModal, title, itemType, orderBy, query, settings])
 
   return (
     <div
