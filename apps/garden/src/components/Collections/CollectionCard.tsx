@@ -5,7 +5,7 @@ import React from 'react'
 
 const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
   if (!imageUri) {
-    return <div className="image-placeholder w-full h-full min-h-[148px]" />
+    return <div className="image-placeholder w-full h-full min-h-full" />
   }
 
   return (
@@ -14,7 +14,8 @@ const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
       src={imageUri}
       preview={false}
       placeholder={true}
-      className={'max-h-[300px] max-w-[300px] object-cover'}
+      wrapperClassName="flex justify-center overflow-hidden"
+      className="object-cover"
     />
   )
 }
@@ -25,7 +26,7 @@ const CollectionCard = ({ collection }: { collection: Collection }) => {
       <Card
         hoverable
         cover={<CoverImage imageUri={collection.displayImageUri} />}
-        className="h-full flex flex-col justify-between"
+        className="h-full flex flex-col justify-between "
       >
         <Card.Meta
           title={collection.name}

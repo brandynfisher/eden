@@ -5,7 +5,9 @@ import {
   OrderByScore,
 } from '@/components/Layout/buttons/OrderByButtons'
 import { ChannelSettings } from '@/components/Modals/ChannelDetailsModal'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { InputNumber, Switch } from 'antd'
+import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
 const generatorChannels =
@@ -60,10 +62,11 @@ const generatorChannels =
       ]
 
 const ChannelsPage = () => {
+  const router = useRouter()
   const [showPrompt, setShowPrompt] = useState<boolean>(true)
   const [showQrCode, setShowQrCode] = useState<boolean>(true)
   const [showCreator, setShowCreator] = useState<boolean>(true)
-  const [muteVideoAudio, setMuteVideoAudio] = useState<boolean>(true)
+  const [muteVideoAudio, setMuteVideoAudio] = useState<boolean>(false)
   const [imageDisplayDuration, setImageDisplayDuration] = useState<number>(10)
   const [insertNewCreations, setInsertNewCreations] = useState<boolean>(true)
   const [settings, setSettings] = useState<ChannelSettings>({
@@ -74,6 +77,8 @@ const ChannelsPage = () => {
     muteVideoAudio,
     insertNewCreations,
   })
+  const { showModal } = useModalContext()
+  const [modalOpen, setModalOpen] = useState<number>()
 
   useEffect(() => {
     setSettings({
@@ -92,6 +97,25 @@ const ChannelsPage = () => {
     imageDisplayDuration,
     insertNewCreations,
   ])
+
+  useEffect(() => {
+    console.log(
+      router.query,
+      Object.keys(router.query).length,
+      Object.keys(router.query).length > 0,
+    )
+    if (!modalOpen && Object.keys(router.query).length > 0) {
+      const id = showModal(MODAL_TYPES.CHANNEL_DETAIL_MODAL, {
+        usesUrl: false,
+        title: 'Custom',
+        itemType: 'creation',
+        orderBy: OrderByLatest,
+        query: { ...router.query, maxDate: new Date().toISOString() },
+        settings,
+      })
+      setModalOpen(id)
+    }
+  }, [modalOpen, showModal, settings, router.query])
 
   return (
     <div>
@@ -132,8 +156,8 @@ const ChannelsPage = () => {
               <Switch
                 defaultChecked={muteVideoAudio}
                 onChange={() => setMuteVideoAudio(!muteVideoAudio)}
-                checkedChildren={<div>Audio</div>}
-                unCheckedChildren={<div>Audio</div>}
+                checkedChildren={<div>Mute Audio</div>}
+                unCheckedChildren={<div>Mute Audio</div>}
               />
             </div>
           </div>
