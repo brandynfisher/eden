@@ -175,6 +175,7 @@ export const uploadBufferAsset = async (
 export const getSignedDownloadUrl = (
   server: FastifyInstance,
   assetUrl: string,
+  fileName?: string,
 ) => {
   // @todo: got assets floating on multiple buckets, thus this ugly solution of dissecting the url
   // @todo: swap this back to use config/ENV values whenever we're living on a single bucket
@@ -195,12 +196,24 @@ export const getSignedDownloadUrl = (
       .headObject(params)
       .promise()
       .then(function () {
-        // console.log('s3 File exists')
+        // console.log('s3 File exists', {
+        //   ...params,
+        //   ResponseContentType: 'application/octet-stream',
+        //   ResponseContentDisposition: fileName ? `attachment; filename="${fileName}"` : undefined,
+        //   Expires: 60 * 60 * 72, // 3 days
+        // })
+        // if (fileName) {
+        //   console.log('client requested custom filename. add dispo header', { ResponseContentDisposition: 'attachment; filename="' + fileName + '"' })
+        // }
+
         resolve(
           createSignedDownloadUrl(server, {
             ...params,
             ResponseContentType: 'application/octet-stream',
-            Expires: 60 * 60 * 48, // 2 days
+            ResponseContentDisposition: fileName
+              ? `attachment; filename="${fileName}"`
+              : undefined,
+            Expires: 60 * 60 * 72, // 3 days
           }),
         )
       })
@@ -215,9 +228,10 @@ export const createSignedDownloadUrl = (
   server: FastifyInstance,
   params: {
     Bucket: string
-    Key: string
     ResponseContentType: string
+    ResponseContentDisposition: string | undefined
     Expires: number
+    Key: string
   },
 ) => {
   return server.s3.getSignedUrl('getObject', params)
@@ -274,6 +288,7 @@ declare module 'fastify' {
     getSignedDownloadUrl: (
       server: FastifyInstance,
       assetUrl: string,
+      fileName?: string,
     ) => Promise<string>
   }
 }

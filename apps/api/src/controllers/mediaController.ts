@@ -60,7 +60,7 @@ export const getMediaDownloadUrl = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { url } = request.query as { url: string }
+  const { url, fileName } = request.query as { url: string; fileName: string }
 
   if (!url) {
     return reply.status(500).send({
@@ -68,7 +68,7 @@ export const getMediaDownloadUrl = async (
     })
   }
 
-  const signedUrl = await server.getSignedDownloadUrl(server, url)
+  const signedUrl = await server.getSignedDownloadUrl(server, url, fileName)
 
   return reply.status(200).send({ signedUrl })
 }
