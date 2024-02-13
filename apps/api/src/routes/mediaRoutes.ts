@@ -1,11 +1,10 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import {
   getMediaDownloadUrl,
   uploadMedia,
 } from '../controllers/mediaController'
 import { isAuth } from '../middleware/authMiddleware'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const mediaRoutes: FastifyPluginAsync = async server => {
   server.post('/media/upload', {
@@ -40,6 +39,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       ],
       querystring: {
         url: Type.String(),
+        fileName: Type.Optional(Type.String()),
       },
       response: {
         200: Type.Object({

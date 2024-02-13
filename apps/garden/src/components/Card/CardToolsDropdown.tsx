@@ -137,7 +137,9 @@ const getDownloadMenuItems = (
         <DownloadFileButton
           itemType={itemType}
           url={downloadUrl}
-          fileName={item._id}
+          fileName={encodeURIComponent(
+            `Eden-${item.user.username}-${item.name.slice(0, 128)}-${item._id}`,
+          )}
           label="Download"
         />
       ),

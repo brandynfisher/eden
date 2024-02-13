@@ -12,10 +12,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    const { url } = req.query
+    const { url, fileName } = req.query
 
     const response = await axios.get(
-      `${CONFIG.API_URL}/media/download?url=${url}`,
+      `${CONFIG.API_URL}/media/download?url=${url}&fileName=${fileName}`,
       {
         headers: {
           Authorization: `Bearer ${authToken}`,
