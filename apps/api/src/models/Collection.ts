@@ -1,3 +1,7 @@
+import { enforceUserDocumentLimit } from '../lib/data'
+import { VisibilitySchema } from '../types/baseSchemas'
+import { CreationDocument } from './Creation'
+import { UserDocument } from './Creator'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -7,16 +11,12 @@ import mongooseDelete, {
 } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-import { enforceUserDocumentLimit } from '../lib/data'
-import { VisibilitySchema } from '../types/baseSchemas'
-import { CreationDocument } from './Creation'
-import { UserDocument } from './Creator'
-
 export interface CollectionSchema extends VisibilitySchema {
   user: UserDocument
   name: string
   description?: string
   creations: CreationDocument[]
+  contributors?: UserDocument[]
   isDefaultCollection: boolean
   displayImageUri?: string
   createdAt?: Date
@@ -28,6 +28,7 @@ export interface CollectionInput {
   name: string
   description?: string
   displayImageUri?: string
+  contributors?: UserDocument[]
   isPrivate?: boolean
 }
 
@@ -42,6 +43,12 @@ const collection = new Schema<CollectionDocument>(
       ref: 'users',
       required: true,
     },
+    contributors: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+      },
+    ],
     name: {
       type: String,
       required: true,
