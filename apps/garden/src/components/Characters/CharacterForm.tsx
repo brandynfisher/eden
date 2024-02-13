@@ -1,5 +1,8 @@
 import ChatCapabilityMessageSection from '@/components/Characters/ChatMessageSection'
-import { ELEVENLABS_VOICES } from '@/components/Characters/elevenlabs'
+import {
+  ELEVENLABS_VOICES,
+  ElevenLabsVoice,
+} from '@/components/Characters/elevenlabs'
 import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
 import { ConceptParameterUI } from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
 import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
@@ -11,6 +14,7 @@ import { ChatMessageGroup } from '@/lib/types'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import { Character, CharactersTestArguments } from '@edenlabs/eden-sdk'
 import { SettingsSuggest } from '@mui/icons-material'
+import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded'
 import {
   App,
   Button,
@@ -20,12 +24,13 @@ import {
   Input,
   Select,
   Switch,
+  Tag,
 } from 'antd'
 import axios from 'axios'
 import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 const { Panel } = Collapse
 const EXAMPLE_CHARACTER = {
@@ -271,7 +276,23 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   const characterName = Form.useWatch('name', form)
   const identity = Form.useWatch('identity', form)
   const concept = Form.useWatch('concept', form)
+  const voice = Form.useWatch('voice', form)
   const characterImageFieldValue = Form.useWatch('image', form) as {} | string
+
+  const [selectedVoiceObj, setSelectedVoiceObj] = useState<ElevenLabsVoice>()
+
+  const updateSelectedVoiceObj = (voiceId: string | undefined) => {
+    console.log(voiceId)
+    setSelectedVoiceObj(
+      typeof voiceId !== 'undefined'
+        ? ELEVENLABS_VOICES.filter(labsVoice => labsVoice.id === voiceId)[0]
+        : undefined,
+    )
+  }
+
+  useEffect(() => {
+    updateSelectedVoiceObj(voice)
+  }, [voice])
 
   useEffect(() => {
     const formValues: CharacterFormInput =
@@ -387,6 +408,13 @@ const CharacterForm = ({ character }: { character?: Character }) => {
     }
   }
 
+  const handlePlayVoiceSample = useCallback((url: string) => {
+    const audioElement = document.createElement('audio')
+    audioElement.autoplay = true
+    audioElement.controls = false
+    audioElement.src = url
+  }, [])
+
   return (
     <ConfirmProvider>
       <div className="mb-4">
@@ -479,24 +507,59 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   </Form.Item>
                 </div>
 
-                <div className="flex max-w-full">
-                  <ParameterAddon
-                    title={'Voice'}
-                    info={'(optional)'}
-                    description={
-                      'Your character will speak with this voice. Voices provided by ElevenLabs.'
-                    }
-                  />
-                  <Form.Item className="mb-4 w-full min-w-0" name="voice">
-                    <Select className="with-addon">
-                      {ELEVENLABS_VOICES.map(voice => (
-                        <Select.Option key={voice.id} value={voice.id}>
-                          {voice.name}, {voice.accent}, {voice.age},{' '}
-                          {voice.gender}, {voice.description}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+                <div className="mb-4 w-full">
+                  <div className="flex w-full">
+                    <ParameterAddon
+                      title={'Voice'}
+                      info={'(optional)'}
+                      description={
+                        'Your character will speak with this voice. Voices provided by ElevenLabs.'
+                      }
+                    />
+                    <Form.Item className="mb-0 w-full min-w-0" name="voice">
+                      <Select
+                        className="with-addon"
+                        showSearch
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        options={ELEVENLABS_VOICES.map(labVoice => ({
+                          value: labVoice.id,
+                          label: `${labVoice.name}, ${labVoice.accent}, ${
+                            labVoice.age
+                          }, ${labVoice.gender}${
+                            labVoice.description
+                              ? `, ${labVoice.description}`
+                              : ''
+                          }${
+                            labVoice.use_case ? `, ${labVoice.use_case}` : ''
+                          }`,
+                        }))}
+                        onSelect={val => updateSelectedVoiceObj(val)}
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').includes(input)
+                        }
+                        filterSort={(optionA, optionB) =>
+                          (optionA?.label ?? '')
+                            .toLowerCase()
+                            .localeCompare((optionB?.label ?? '').toLowerCase())
+                        }
+                      />
+                    </Form.Item>
+                  </div>
+                  {selectedVoiceObj ? (
+                    <div className="flex mt-1">
+                      <Tag
+                        className={`flex items-center first-letter:capitalize me-0 gap-1 !pl-0 !pr-2 hover:text-blue-400`}
+                        // bordered={false}
+                        icon={<PlayArrowRounded fontSize="medium" />}
+                        onClick={() =>
+                          handlePlayVoiceSample(selectedVoiceObj.preview_url)
+                        }
+                      >
+                        Test Sample <strong>{selectedVoiceObj.name}</strong>
+                      </Tag>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="hidden">

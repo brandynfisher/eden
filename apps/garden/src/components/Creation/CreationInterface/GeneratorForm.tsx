@@ -60,8 +60,8 @@ const getCleanedConfig = (
   stringArrayValues: FieldValues | undefined,
 ) => {
   const consolidatedFieldValues = {
-    ...formFieldValues,
     ...stringArrayValues,
+    ...formFieldValues,
   }
 
   // filter out temporary preset form values
