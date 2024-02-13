@@ -67,7 +67,10 @@ const collectionsAggregate = (
   const pipelines: PipelineStage[] = [
     {
       $match: {
-        user: new ObjectId(userId),
+        $or: [
+          { user: new ObjectId(userId) },
+          { contributors: { $in: [new ObjectId(userId)] } },
+        ],
       },
     },
     {
@@ -147,9 +150,23 @@ export const listCollections = async (
         )
       : await collectionRepository.query(
           {
-            user: userId
-              ? creators.docs.map(creator => creator._id)
-              : undefined,
+            $or: [
+              {
+                user: userId
+                  ? creators.docs.map(creator => creator._id)
+                  : undefined,
+              },
+              {
+                contributors: {
+                  $in: userId
+                    ? creators.docs.map(creator => creator._id)
+                    : undefined,
+                },
+              },
+            ],
+            // contributors: userId
+            //   ? { $in: creators.docs.map(creator => creator._id) }
+            //   : undefined,
             ...sortFilter,
           },
           {
@@ -311,7 +328,10 @@ export const addCreationsToCollection = async (
   if (collectionId) {
     collection = await Collection.findOne({
       _id: collectionId,
-      user: userId,
+      $or: [
+        { user: new ObjectId(userId) },
+        { contributors: new ObjectId(userId) },
+      ],
     })
   } else {
     // Get the default collection
@@ -365,7 +385,10 @@ export const removeCreationsFromCollection = async (
   if (collectionId) {
     collection = await Collection.findOne({
       _id: collectionId,
-      user: userId,
+      $or: [
+        { user: new ObjectId(userId) },
+        { contributors: new ObjectId(userId) },
+      ],
     })
   } else {
     // Get the default collection

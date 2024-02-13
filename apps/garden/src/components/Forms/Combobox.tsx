@@ -24,6 +24,8 @@ const Combobox = ({
     setLoadingItem(null)
   }
 
+  console.log({ items })
+
   return (
     <div>
       {hasSearch ? <div>search box</div> : null}

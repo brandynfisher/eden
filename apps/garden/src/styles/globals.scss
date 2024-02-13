@@ -296,7 +296,8 @@ body {
 }
 
 .link-card .ant-card-cover {
-    flex-grow: 1
+    flex-grow: 1;
+    height: 300px;
 }
 
 @media (max-width: 767px) {
@@ -828,12 +829,23 @@ div[role='grid'] {
 }
 
 .video-controls-hover-only {
+    ::-webkit-media-controls {
+        display:none !important;
+    }
+    video::-webkit-media-controls {
+        display:none !important;
+    }
     video::-webkit-media-controls-enclosure {
         display:none !important;
     }
 
     &:hover {
-        //border: 1px solid red;
+        ::-webkit-media-controls {
+            display:initial !important;
+        }
+        video::-webkit-media-controls {
+            display:initial !important;
+        }
         video::-webkit-media-controls-enclosure {
             display:initial !important;
         }

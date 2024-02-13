@@ -26,6 +26,8 @@ const AddToCollectionModal = ({
   const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(false)
 
+  console.log({ collections })
+
   const handleCreationAdd = async (
     creationId: string,
     collection: Collection,
