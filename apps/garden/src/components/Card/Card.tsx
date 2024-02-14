@@ -160,14 +160,23 @@ const Card: FC<CardWithTypeProps> = ({
           />
         ) : null}
         {itemType === 'character' ? (
-          <CardImage
-            uri={(itemData as Character).image}
-            width={0}
-            height={0}
-            priority={index < 10}
-            sizes={sizes}
-            className="!rounded-none w-auto"
-          />
+          <>
+            <CardImage
+              uri={(itemData as Character).image}
+              width={0}
+              height={0}
+              priority={index < 10}
+              sizes={sizes}
+              className="!rounded-none w-auto"
+            />
+            <div className="bg-opacity-50 absolute bottom-0 bg-gray-900 w-full h-9 px-1 flex items-center">
+              <CreatorProfileLink
+                creatorId={itemData.user.userId}
+                creatorName={itemData.user.username}
+                creatorImage={itemData.user.userImage}
+              />
+            </div>
+          </>
         ) : null}
       </a>
       {itemData.deleted ? (
@@ -201,7 +210,9 @@ const Card: FC<CardWithTypeProps> = ({
           </div>
         </div>
       ) : null}
-      {!itemData.deleted && (width < 640 || hovered || dropdownActive) ? (
+      {itemType !== 'character' &&
+      !itemData.deleted &&
+      (width < 640 || hovered || dropdownActive) ? (
         <>
           <div
             className={`order-first sm:order-none flex items-center justify-between mb-[12px] sm:absolute md:z-10 sm:w-full sm:top-0 sm:bg-gray-200 sm:dark:bg-gray-900 sm:!bg-opacity-80 sm:rounded-t-lg sm:pb-1 sm:pt-0.5 sm:px-2 pointer-events-none opacity-0 transition-opacity duration-300 ${
@@ -278,9 +289,24 @@ const Card: FC<CardWithTypeProps> = ({
       ) : null}
 
       {itemType === 'character' ? (
-        <CardFooterWrap>
-          <CharacterCardFooter character={itemData as Character} />
-        </CardFooterWrap>
+        <>
+          <a
+            onClick={cardClickHandler}
+            href={`/${itemType}s/${itemData._id}`}
+            target={'_blank'}
+            className={`cursor-pointer block`}
+          >
+            <div
+              className="line-clamp-2 text-gray-400 px-2 pt-2 bg-gray-900"
+              title={(itemData as Character).logosData?.identity}
+            >
+              {(itemData as Character).logosData?.identity}
+            </div>
+          </a>
+          <CardFooterWrap>
+            <CharacterCardFooter character={itemData as Character} />
+          </CardFooterWrap>
+        </>
       ) : null}
 
       {debugMode ? <CardDebugInfo data={itemData} /> : null}
