@@ -297,7 +297,7 @@ const Card: FC<CardWithTypeProps> = ({
             className={`cursor-pointer block`}
           >
             <div
-              className="line-clamp-2 text-gray-400 px-2 pt-2 bg-gray-900"
+              className="line-clamp-2 text-xs text-gray-400 px-2 pt-2 bg-gray-900 h-10"
               title={(itemData as Character).logosData?.identity}
             >
               {(itemData as Character).logosData?.identity}
