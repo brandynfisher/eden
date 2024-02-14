@@ -2,6 +2,7 @@ import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import CircleButton from '@/components/Layout/buttons/CircleButton'
 import CopyUrlButton from '@/components/Layout/buttons/CopyUrlButton'
 import ShareButton from '@/components/Layout/buttons/ShareButton'
+import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { createSession } from '@/lib/chat'
 import { CONFIG } from '@/lib/config'
 import CommentOutlined from '@ant-design/icons/CommentOutlined'
@@ -74,6 +75,11 @@ const CharacterProfileHeader = ({
           </div>
         </div>
       </div>
+      {character?.logosData && character?.logosData.identity ? (
+        <div className="mt-2">
+          <TruncatedExpandableText text={character?.logosData.identity || ''} />
+        </div>
+      ) : null}
     </div>
   )
 }
