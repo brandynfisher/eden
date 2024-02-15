@@ -60,6 +60,7 @@ interface CharacterFormInput {
   creationsEnabled: boolean
   knowledgeEnabled: boolean
   smartReplyEnabled: boolean
+  storyCreationEnabled: boolean
   concept?: string
   knowledge?: string
   knowledgeSummary?: string
@@ -262,6 +263,26 @@ const SmartReplySection = () => {
   )
 }
 
+const StoryCreationSection = () => {
+  return (
+    <div className="px-2 py-2">
+      <div className="flex justify-between items-center">
+        <FormLabel
+          text="Enable Story Creation"
+          description="Turn on to enable story creation for this character. Story creation lets a character iteratively draft a story based on the conversation."
+        />
+        <Form.Item
+          name="storyCreationEnabled"
+          valuePropName="checked"
+          style={{ marginBottom: 0 }}
+        >
+          <Switch />
+        </Form.Item>
+      </div>
+    </div>
+  )
+}
+
 const CharacterForm = ({ character }: { character?: Character }) => {
   const mode = !character ? 'create' : 'update'
   const { message } = App.useApp()
@@ -282,7 +303,6 @@ const CharacterForm = ({ character }: { character?: Character }) => {
   const [selectedVoiceObj, setSelectedVoiceObj] = useState<ElevenLabsVoice>()
 
   const updateSelectedVoiceObj = (voiceId: string | undefined) => {
-    console.log(voiceId)
     setSelectedVoiceObj(
       typeof voiceId !== 'undefined'
         ? ELEVENLABS_VOICES.filter(labsVoice => labsVoice.id === voiceId)[0]
@@ -313,6 +333,8 @@ const CharacterForm = ({ character }: { character?: Character }) => {
               character?.logosData?.abilities?.knowledge || false,
             smartReplyEnabled:
               character?.logosData?.abilities?.smart_reply || false,
+            storyCreationEnabled:
+              character?.logosData?.abilities?.story_creations || false,
             isPrivate: character?.isPrivate || false,
           }
         : {
@@ -328,6 +350,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             creationsEnabled: false,
             knowledgeEnabled: false,
             smartReplyEnabled: false,
+            storyCreationEnabled: false,
             isPrivate: false,
           }
 
@@ -381,6 +404,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
           creations: form.getFieldValue('creationsEnabled'),
           knowledge: form.getFieldValue('knowledgeEnabled'),
           smart_reply: form.getFieldValue('smartReplyEnabled'),
+          story_creations: form.getFieldValue('storyCreationEnabled'),
         },
         identity: identity ? identity : null,
         concept: concept ? concept : null,
@@ -609,6 +633,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     <CreationsSection form={form} concept={concept} />
                     <KnowledgeSection form={form} />
                     <SmartReplySection />
+                    <StoryCreationSection />
                   </div>
                 </Panel>
               </Collapse>

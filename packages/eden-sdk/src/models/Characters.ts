@@ -219,4 +219,5 @@ export enum Capabilities {
   CREATIONS = 'creations',
   KNOWLEDGE = 'knowledge',
   SMART_REPLY = 'smart_reply',
+  STORY_CREATIONS = 'story_creations',
 }
