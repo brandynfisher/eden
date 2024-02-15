@@ -117,7 +117,6 @@ const getDownloadMenuItems = (
   item: CardData,
   user: Creator | undefined,
 ) => {
-  console.log({ itemType, item })
   const downloadable = itemType === 'creation' || itemType === 'concept'
 
   if (!downloadable) {
