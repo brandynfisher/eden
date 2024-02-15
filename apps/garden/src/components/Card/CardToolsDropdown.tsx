@@ -117,6 +117,7 @@ const getDownloadMenuItems = (
   item: CardData,
   user: Creator | undefined,
 ) => {
+  console.log({ itemType, item })
   const downloadable = itemType === 'creation' || itemType === 'concept'
 
   if (!downloadable) {
@@ -138,7 +139,9 @@ const getDownloadMenuItems = (
           itemType={itemType}
           url={downloadUrl}
           fileName={encodeURIComponent(
-            `Eden-${item.user.username}-${item.name.slice(0, 128)}-${item._id}`,
+            `Eden-${item.user.username}-${
+              item && item.name ? item.name.slice(0, 128) : '___'
+            }-${item._id}`,
           )}
           label="Download"
         />
