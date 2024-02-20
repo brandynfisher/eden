@@ -118,7 +118,7 @@ const Card: FC<CardWithTypeProps> = ({
   return (
     <div
       ref={ref}
-      className={`w-full flex justify-center flex-col relative ${
+      className={`card w-full flex justify-center flex-col relative ${
         className || ''
       }`}
     >

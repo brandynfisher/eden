@@ -140,7 +140,7 @@ export type AddToCollectionModalProps = Partial<
 >
 
 type ModalStore = {
-  modalId: number
+  modalId: number | string
   modalType: string | undefined
   modalProps?:
     | DetailStaticModalProps
@@ -161,7 +161,8 @@ export interface ModalContextType {
   showModal: (
     modalType: ModalStore['modalType'],
     modalProps?: ModalStore['modalProps'],
-  ) => number
+    modalId?: number | string,
+  ) => number | string
   hideModal: (
     modalId: ModalStore['modalId'] | null,
     modalType?: ModalStore['modalType'],
@@ -173,7 +174,7 @@ const initialState: ModalContextType = {
   hideModal: () => {},
 }
 
-const ModalContext = createContext(initialState)
+const ModalContext = createContext<ModalContextType>(initialState)
 export const useModalContext = () => useContext(ModalContext)
 
 export const CloseButton = () => {
@@ -188,39 +189,51 @@ function ModalProvider({ children }: PropsWithChildren) {
   const [store, setStore] = useState<ModalStore[]>([])
   const router = useRouter()
 
-  const showModal = (
-    modalType: ModalStore['modalType'],
-    modalProps: ModalStore['modalProps'] = {},
-  ) => {
-    const modalId = Date.now()
-    setStore([...store, { modalType, modalProps, modalId }])
+  const showModal = useCallback(
+    (
+      modalType: ModalStore['modalType'],
+      modalProps: ModalStore['modalProps'] = {},
+      modalId?: number | string,
+    ) => {
+      const newModalId = modalId || Date.now()
+      setStore(currentStore => [
+        ...currentStore,
+        { modalType, modalProps, modalId: newModalId },
+      ])
 
-    // // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
-    const modalWrapDomElement =
-      document.getElementsByClassName('ant-modal-wrap')
+      // // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
+      const modalWrapDomElement =
+        document.getElementsByClassName('ant-modal-wrap')
+      // console.log({ modalWrapDomElement })
+      if (modalWrapDomElement && modalWrapDomElement.length) {
+        modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      }
+      // @todo ---end ugly---
+      return newModalId
+    },
+    [],
+  )
 
-    // console.log({ modalWrapDomElement })
-    if (modalWrapDomElement && modalWrapDomElement.length) {
-      modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-    }
+  const hideModal = useCallback(
+    (
+      modalId: ModalStore['modalId'] | null,
+      modalType?: ModalStore['modalType'],
+    ) => {
+      if (modalId) {
+        setStore(currentStore =>
+          currentStore.filter(storeItem => storeItem.modalId !== modalId),
+        )
+        return
+      }
 
-    // @todo ---end ugly---
-    return modalId
-  }
-
-  const hideModal = (
-    modalId: ModalStore['modalId'] | null,
-    modalType?: ModalStore['modalType'],
-  ) => {
-    if (modalId) {
-      setStore(store.filter(storeItem => storeItem.modalId !== modalId))
-      return
-    }
-
-    if (modalType) {
-      setStore(store.filter(storeItem => storeItem.modalType !== modalType))
-    }
-  }
+      if (modalType) {
+        setStore(currentStore =>
+          currentStore.filter(storeItem => storeItem.modalType !== modalType),
+        )
+      }
+    },
+    [],
+  )
 
   const renderComponents = () => {
     return (
@@ -231,6 +244,7 @@ function ModalProvider({ children }: PropsWithChildren) {
       </>
     )
   }
+
   const renderComponent = (index: number, modal: ModalStore) => {
     if (!modal || !modal.modalType) {
       return
@@ -247,7 +261,7 @@ function ModalProvider({ children }: PropsWithChildren) {
         'flex overflow-hidden flex-col mx-auto relative z-20 w-full h-auto my-4 lg:items-center lg:justify-center my-4 lg:my-12 lg:mt-4 shadow-2xl',
       onCancel: async () => {
         // console.log('onCancel', modal)
-        hideModal(modal?.modalId)
+        hideModal(modal?.modalId, modal?.modalType)
         if (modal?.modalProps?.usesUrl) {
           if (modal?.modalProps?.originPageUrl) {
             await router.push(
@@ -272,25 +286,14 @@ function ModalProvider({ children }: PropsWithChildren) {
       ? modal?.modalProps?.className.split(' ')
       : []
     const classNames = customClassNames.length
-      ? defaultClassNames?.concat(
-          customClassNames.filter(item => defaultClassNames.indexOf(item) < 0),
-        )
-      : defaultClassNames
-
-    // console.log({ numModals: store.length, index })
-
-    // // if (index > 0) {
-    //   return (
-    //     <MasonryProvider key={`${modal.modalType}_${index}`} id={`${modal.modalType}_${index}`}>
-    //       {/*// @ts-ignore*/}
-    //       <ModalComponent
-    //         {...({ ...defaultModalProps, ...modal.modalProps } as ModalProps)}
-    //         handleCancel={modal.modalProps?.onCancel}
-    //         className={classNames}
-    //       />
-    //     </MasonryProvider>
-    //   )
-    // // }
+      ? `${defaultClassNames
+          ?.concat(
+            customClassNames.filter(
+              item => defaultClassNames.indexOf(item) < 0,
+            ),
+          )
+          .join(' ')}`
+      : `${defaultClassNames.join(' ')}`
 
     return (
       // @ts-ignore
@@ -304,15 +307,16 @@ function ModalProvider({ children }: PropsWithChildren) {
   }
 
   useEffect(() => {
-    router.events.on('routeChangeStart', (url, { shallow }) => {
+    const handler = (url: string, { shallow }: { shallow: boolean }) => {
       // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
       if (store.length && !shallow) {
         hideModal(store[store.length - 1].modalId)
       }
-    })
+    }
+    router.events.on('routeChangeStart', handler)
 
     return () => {
-      router.events.off('routeChangeStart', () => {})
+      router.events.off('routeChangeStart', handler)
     }
   }, [store])
 
@@ -327,7 +331,7 @@ function ModalProvider({ children }: PropsWithChildren) {
         }
       }
     },
-    [store],
+    [hideModal, store],
   )
 
   useEffect(() => {

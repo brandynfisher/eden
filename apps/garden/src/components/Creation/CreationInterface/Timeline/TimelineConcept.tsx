@@ -22,17 +22,17 @@ const TimelineCreationSample = ({
     revalidateOnReconnect: false,
     shouldRetryOnError: false,
   })
-  const { showModal } = useModalContext()
+  const { showModal, hideModal } = useModalContext()
 
   const handleCardClick = useCallback(() => {
     if (!concept) return
-
+    hideModal(null, MODAL_TYPES.DETAIL_STATIC_MODAL)
     showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
       item: concept,
       itemType: 'concept',
       usesUrl: false,
     })
-  }, [showModal, concept])
+  }, [showModal, hideModal, concept])
 
   if (isLoading) {
     return (
