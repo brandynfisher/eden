@@ -73,7 +73,7 @@ export const receiveUserUpdate = async (
       const existingUser = await User.findOne({ email: normalizedEmail })
       // Check if the normalized email already exists
       // If the existing user is found, delete the newly created user from Clerk.
-      if (!existingUser) {
+      if (existingUser) {
         console.log(
           'User with the normalized @gmail address already exists (dot-trick prevention)',
           existingUser,
