@@ -47,7 +47,7 @@ export const registerClerk = async (fastify: FastifyInstance) => {
 
 declare module 'fastify' {
   interface FastifyInstance {
-    clerk?: typeof Clerk
+    clerk?: typeof clerkClient
   }
 }
 

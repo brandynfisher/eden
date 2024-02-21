@@ -79,7 +79,7 @@ export const receiveUserUpdate = async (
           existingUser,
         )
 
-        // await server.clerk?.users.deleteUser(evt.data.id);
+        await server.clerk?.users.deleteUser(evt.data.id)
 
         return reply.status(500).send('Webhook Error: Duplicate E-Mail address')
       }
