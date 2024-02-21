@@ -78,7 +78,7 @@ const ChannelsPage = () => {
     insertNewCreations,
   })
   const { showModal } = useModalContext()
-  const [modalOpen, setModalOpen] = useState<number>()
+  const [modalOpen, setModalOpen] = useState<number | string>()
 
   useEffect(() => {
     setSettings({
