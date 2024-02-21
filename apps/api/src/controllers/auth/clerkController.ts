@@ -70,7 +70,9 @@ export const receiveUserUpdate = async (
 
       const email = evt.data.email_addresses[0].email_address
       const normalizedEmail = normalizeGmailAddress(email)
-      const existingUser = await User.findOne({ email: normalizedEmail })
+      const existingUser = await User.findOne({
+        normalizedEmail: normalizedEmail,
+      })
       // Check if the normalized email already exists
       // If the existing user is found, delete the newly created user from Clerk.
       if (existingUser) {
