@@ -1,13 +1,22 @@
 import { User, UserDocument } from '../../models/Creator'
 import { createNewUser } from './authController'
-import { Clerk, WebhookEvent } from '@clerk/clerk-sdk-node'
+import { WebhookEvent } from '@clerk/clerk-sdk-node'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { IncomingHttpHeaders } from 'http'
 import { Webhook, WebhookRequiredHeaders } from 'svix'
 
+function replaceDotsInEmailAddress(email: string) {
+  return email.split('@')[0].replace(/\./g, '')
+}
+
 function normalizeGmailAddress(email: string) {
-  if (email && email.includes('@gmail.com')) {
-    return email.split('@')[0].replace(/\./g, '') + '@gmail.com'
+  if (email) {
+    if (email.includes('@gmail.com')) {
+      return replaceDotsInEmailAddress(email) + '@gmail.com'
+    }
+    if (email.includes('@googlemail.com')) {
+      return replaceDotsInEmailAddress(email) + '@googlemail.com'
+    }
   }
   return email
 }
