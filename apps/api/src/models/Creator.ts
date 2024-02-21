@@ -1,10 +1,9 @@
+import { CollectionDocument } from './Collection'
+import { CreationDocument } from './Creation'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Document, Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
-
-import { CollectionDocument } from './Collection'
-import { CreationDocument } from './Creation'
 
 export interface UserSchema {
   userId: string
@@ -24,6 +23,8 @@ export interface UserSchema {
   discordId?: string
   username?: string
   userImage?: string
+  email?: string
+  normalizedEmail?: string
   deleted?: boolean
   createdAt?: Date
   updatedAt?: Date
@@ -36,6 +37,8 @@ export interface UserInput {
   userImage?: string
   isClerk?: boolean
   isAdmin?: boolean
+  email?: string
+  normalizedEmail?: string
 }
 
 export interface UserDocument extends UserSchema, Document {}
@@ -67,6 +70,16 @@ const user = new Schema<UserDocument>(
     userImage: {
       type: String,
       maxlength: 1000,
+    },
+    email: {
+      type: String,
+      unique: true,
+      maxLength: 320,
+    },
+    normalizedEmail: {
+      type: String,
+      unique: true,
+      maxLength: 320,
     },
     creations: [
       {
