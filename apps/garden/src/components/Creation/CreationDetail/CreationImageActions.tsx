@@ -72,7 +72,7 @@ export const UpscaleImageMenu = ({
       input_images: [imageUri],
       isPrivate,
     }
-  }, [imageUri])
+  }, [isPrivate, imageUri])
 
   const handleTaskCreate = useCallback(
     async (
@@ -214,7 +214,7 @@ export const AnimateImageMenu = ({
       input_images: [imageUri],
       isPrivate,
     }
-  }, [imageUri])
+  }, [isPrivate, imageUri])
 
   const handleTaskCreate = useCallback(
     async (
@@ -344,11 +344,11 @@ const CreationImageActions = ({ creation }: { creation: Creation }) => {
       <div className="text-gray-400 text-xs mb-2">Actions</div>
       <div className="flex gap-2">
         <UpscaleImageMenu
-          isPrivate={creation.isPrivate}
+          isPrivate={!!creation.isPrivate}
           imageUri={creation.uri}
         />
         <AnimateImageMenu
-          isPrivate={creation.isPrivate}
+          isPrivate={!!creation.isPrivate}
           imageUri={creation.uri}
         />
         {/*<Button variant='outlined' size='small' className='flex items-center leading-snug'>*/}
