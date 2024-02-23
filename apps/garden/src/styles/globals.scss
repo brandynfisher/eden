@@ -298,6 +298,7 @@ body {
 .link-card .ant-card-cover {
     flex-grow: 1;
     height: 300px;
+    overflow: hidden;
 }
 
 @media (max-width: 767px) {
