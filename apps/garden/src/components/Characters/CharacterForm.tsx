@@ -13,6 +13,7 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { ChatMessageGroup } from '@/lib/types'
 import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import { Character, CharactersTestArguments } from '@edenlabs/eden-sdk'
+import { ChatModel } from '@edenlabs/eden-sdk'
 import { SettingsSuggest } from '@mui/icons-material'
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded'
 import {
@@ -64,6 +65,7 @@ interface CharacterFormInput {
   concept?: string
   knowledge?: string
   knowledgeSummary?: string
+  chatModel: string
   isPrivate?: boolean
 }
 
@@ -283,6 +285,39 @@ const StoryCreationSection = () => {
   )
 }
 
+const ChatModelSection = ({ form }: { form: FormInstance }) => {
+  const selectedChatModel = Form.useWatch('chatModel', form)
+
+  return (
+    <div className="px-2 py-2">
+      <Form.Item
+        name="chatModel"
+        className="w-full" // Use Tailwind CSS to ensure the Form.Item takes the full width
+      >
+        <FormLabel
+          text="Chat Model"
+          description="Select a custom chat model for your character."
+        />
+        <Select
+          showSearch
+          placeholder="Select a chat model"
+          className="w-full mt-2" // Use Tailwind CSS for full width and margin top
+          value={selectedChatModel}
+          onChange={value => {
+            form.setFieldsValue({ chatModel: value })
+          }}
+        >
+          {Object.values(ChatModel).map(model => (
+            <Select.Option key={model} value={model} className="w-full">
+              {model}
+            </Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
+    </div>
+  )
+}
+
 const CharacterForm = ({ character }: { character?: Character }) => {
   const mode = !character ? 'create' : 'update'
   const { message } = App.useApp()
@@ -335,6 +370,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
               character?.logosData?.abilities?.smart_reply || false,
             storyCreationEnabled:
               character?.logosData?.abilities?.story_creations || false,
+            chatModel: character?.logosData?.chatModel || 'gpt-3.5-turbo',
             isPrivate: character?.isPrivate || false,
           }
         : {
@@ -351,6 +387,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
             knowledgeEnabled: false,
             smartReplyEnabled: false,
             storyCreationEnabled: false,
+            chatModel: 'gpt-3.5-turbo',
             isPrivate: false,
           }
 
@@ -410,6 +447,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
         concept: concept ? concept : null,
         knowledge: knowledge ? knowledge : null,
         knowledgeSummary: knowledgeSummary ? knowledgeSummary : null,
+        chatModel: form.getFieldValue('chatModel'),
       },
       isPrivate: form.getFieldValue('isPrivate'),
     }
@@ -634,6 +672,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                     <KnowledgeSection form={form} />
                     <SmartReplySection />
                     <StoryCreationSection />
+                    <ChatModelSection form={form} />
                   </div>
                 </Panel>
               </Collapse>

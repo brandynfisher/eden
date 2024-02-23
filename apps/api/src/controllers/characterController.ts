@@ -42,6 +42,7 @@ export const createCharacter = async (
 
   const newLogosData = {
     ...logosData,
+    chatModel: logosData?.chatModel ? logosData.chatModel : undefined,
     identity: logosData?.identity ? logosData.identity : undefined,
     concept: logosData?.concept ? logosData.concept : undefined,
     knowledge: logosData?.knowledge ? logosData.knowledge : undefined,
@@ -121,8 +122,11 @@ export const updateCharacter = async (
   const { name, image, voice, greeting, dialogue, logosData, isPrivate } =
     request.body as CharactersUpdateArguments
 
+  console.log('777777', logosData)
+
   const newLogosData = {
     ...logosData,
+    chatModel: logosData?.chatModel ? logosData.chatModel : undefined,
     identity: logosData?.identity ? logosData.identity : undefined,
     concept: logosData?.concept ? logosData.concept : undefined,
     knowledge: logosData?.knowledge ? logosData.knowledge : undefined,
