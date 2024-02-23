@@ -42,7 +42,13 @@ const MannaCostDisplay = ({
   )
 }
 
-export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
+export const UpscaleImageMenu = ({
+  isPrivate,
+  imageUri,
+}: {
+  isPrivate: boolean
+  imageUri: string
+}) => {
   const { message } = App.useApp()
   const { maybeAuthenticate, refetchMe } = useContext(UserContext)
   const { setActiveTaskId, refetchTasks } = useContext(
@@ -64,8 +70,9 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
   const baseConfig = useMemo(() => {
     return {
       input_images: [imageUri],
+      isPrivate,
     }
-  }, [imageUri])
+  }, [isPrivate, imageUri])
 
   const handleTaskCreate = useCallback(
     async (
@@ -178,7 +185,13 @@ export const UpscaleImageMenu = ({ imageUri }: { imageUri: string }) => {
   )
 }
 
-export const AnimateImageMenu = ({ imageUri }: { imageUri: string }) => {
+export const AnimateImageMenu = ({
+  isPrivate,
+  imageUri,
+}: {
+  isPrivate: boolean
+  imageUri: string
+}) => {
   const { message } = App.useApp()
   const { maybeAuthenticate, refetchMe } = useContext(UserContext)
   const { setActiveTaskId, refetchTasks } = useContext(
@@ -199,8 +212,9 @@ export const AnimateImageMenu = ({ imageUri }: { imageUri: string }) => {
   const baseConfig = useMemo(() => {
     return {
       input_images: [imageUri],
+      isPrivate,
     }
-  }, [imageUri])
+  }, [isPrivate, imageUri])
 
   const handleTaskCreate = useCallback(
     async (
@@ -329,8 +343,14 @@ const CreationImageActions = ({ creation }: { creation: Creation }) => {
     <div>
       <div className="text-gray-400 text-xs mb-2">Actions</div>
       <div className="flex gap-2">
-        <UpscaleImageMenu imageUri={creation.uri} />
-        <AnimateImageMenu imageUri={creation.uri} />
+        <UpscaleImageMenu
+          isPrivate={!!creation.isPrivate}
+          imageUri={creation.uri}
+        />
+        <AnimateImageMenu
+          isPrivate={!!creation.isPrivate}
+          imageUri={creation.uri}
+        />
         {/*<Button variant='outlined' size='small' className='flex items-center leading-snug'>*/}
         {/*  <div className='h-6 text-xs flex items-center cap'>Recreate</div>*/}
         {/*</Button>*/}

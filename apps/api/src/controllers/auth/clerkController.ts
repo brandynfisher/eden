@@ -1,10 +1,25 @@
+import { User, UserDocument } from '../../models/Creator'
+import { createNewUser } from './authController'
 import { WebhookEvent } from '@clerk/clerk-sdk-node'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { IncomingHttpHeaders } from 'http'
 import { Webhook, WebhookRequiredHeaders } from 'svix'
 
-import { User, UserDocument } from '../../models/Creator'
-import { createNewUser } from './authController'
+function replaceDotsInEmailAddress(email: string) {
+  return email.split('@')[0].replace(/\./g, '')
+}
+
+function normalizeGmailAddress(email: string) {
+  if (email) {
+    if (email.includes('@gmail.com')) {
+      return replaceDotsInEmailAddress(email) + '@gmail.com'
+    }
+    if (email.includes('@googlemail.com')) {
+      return replaceDotsInEmailAddress(email) + '@googlemail.com'
+    }
+  }
+  return email
+}
 
 export const receiveUserUpdate = async (
   server: FastifyInstance,
@@ -29,20 +44,61 @@ export const receiveUserUpdate = async (
 
   let user: UserDocument | null
   switch (eventType) {
-    case 'user.created':
+    // case "session.created": {
+    //   break;
+    // }
+    // case "session.ended": {
+    //   break;
+    // }
+    // case "session.removed": {
+    //   break;
+    // }
+    // case "session.revoked": {
+    //   break;
+    // }
+    // case "email.created": {
+    //   break;
+    // }
+    case 'user.created': {
       if (!evt.data.username) {
         return reply.status(400).send('Webhook Error: Missing username')
       }
+
+      if (!evt.data.email_addresses || !evt.data.email_addresses.length) {
+        return reply.status(400).send('Webhook Error: Missing emailAddress')
+      }
+
+      const email = evt.data.email_addresses[0].email_address
+      const normalizedEmail = normalizeGmailAddress(email)
+      const existingUser = await User.findOne({
+        normalizedEmail: normalizedEmail,
+      })
+      // Check if the normalized email already exists
+      // If the existing user is found, delete the newly created user from Clerk.
+      if (existingUser) {
+        console.log(
+          'User with the normalized @gmail address already exists (dot-trick prevention)',
+          existingUser,
+        )
+
+        await server.clerk?.users.deleteUser(evt.data.id)
+
+        return reply.status(500).send('Webhook Error: Duplicate E-Mail address')
+      }
+
       await createNewUser({
         userId: evt.data.id,
         username: evt.data.username,
         userImage: evt.data.image_url,
+        email: email,
+        normalizedEmail: normalizedEmail,
         isWeb2: false,
         isClerk: true,
         isAdmin: false,
       })
       return reply.status(200).send({})
-    case 'user.updated':
+    }
+    case 'user.updated': {
       user = await User.findOne({
         userId: evt.data.id,
       })
@@ -53,7 +109,8 @@ export const receiveUserUpdate = async (
       user.userImage = evt.data.image_url || user.userImage
       await user.save()
       return reply.status(200).send({})
-    case 'user.deleted':
+    }
+    case 'user.deleted': {
       user = await User.findOne({
         userId: evt.data.id,
       })
@@ -63,6 +120,7 @@ export const receiveUserUpdate = async (
       user.deleted = true
       await user.save()
       return reply.status(200).send({})
+    }
     default:
       return reply.status(400).send('Webhook Error: Invalid event type')
   }

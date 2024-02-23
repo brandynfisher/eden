@@ -26,7 +26,7 @@ const ResultPreviewDisplay = ({
   } = useCreation(creationId, {
     shouldRetryOnError: false,
   })
-  const { showModal } = useModalContext()
+  const { showModal, hideModal } = useModalContext()
   // const { message } = App.useApp()
   // const [ratingValue, setRatingValue] = useState(0)
 
@@ -40,10 +40,11 @@ const ResultPreviewDisplay = ({
   const openDetailModal = async () => {
     if (!creation) return
 
+    hideModal(null, MODAL_TYPES.DETAIL_STATIC_MODAL)
     showModal(MODAL_TYPES.DETAIL_STATIC_MODAL, {
       item: creation ? creation : undefined,
       itemType: 'creation',
-      usesUrl: true,
+      usesUrl: false,
     })
   }
 

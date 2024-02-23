@@ -186,6 +186,8 @@ export type Creator = {
   userId: string
   username?: string
   userImage?: string
+  email?: string
+  normalizedEmail?: string
   creations?: string[]
   creationsCount?: number
   collections?: string[]
