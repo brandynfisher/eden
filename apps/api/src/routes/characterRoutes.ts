@@ -23,6 +23,7 @@ const logosType = Type.Optional(
     knowledge: Type.Optional(Type.String()),
     knowledgeSummary: Type.Optional(Type.String()),
     concept: Type.Optional(Type.String()),
+    chatModel: Type.Optional(Type.String()),
   }),
 )
 

@@ -100,6 +100,11 @@ const character = new Schema<CharacterDocument>(
           maxlength: 1000,
           required: false,
         },
+        chatModel: {
+          type: String,
+          maxlength: 1000,
+          required: false,
+        },
       },
       required: false,
     },
