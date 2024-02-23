@@ -14,8 +14,8 @@ const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
       src={imageUri}
       preview={false}
       placeholder={true}
-      wrapperClassName="flex justify-center overflow-hidden"
-      className="object-cover"
+      wrapperClassName="!flex justify-center items-center overflow-hidden"
+      className="object-cover w-full !h-full"
     />
   )
 }
