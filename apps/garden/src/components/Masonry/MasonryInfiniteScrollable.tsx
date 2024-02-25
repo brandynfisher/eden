@@ -1,3 +1,4 @@
+import dummyResponse from '../Modals/dummyResponse.json'
 import { CardData } from '@/components/Card/Card'
 import CharacterFeedCard from '@/components/Characters/CharacterFeedCard'
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
@@ -200,6 +201,8 @@ const MasonryInfiniteScrollable = ({
     [hover],
   )
 
+  console.log({ modalContainerHeight, scrollTop })
+
   return (
     <>
       <div className="flex flex-col w-full">
@@ -233,12 +236,17 @@ const MasonryInfiniteScrollable = ({
                 key={masonryKey}
                 positioner={positioner}
                 resizeObserver={resizeObserver}
-                items={items}
+                // items={items}
+                items={dummyResponse.docs}
                 itemHeightEstimate={207}
                 height={
                   modalContainerHeight ? modalContainerHeight : windowHeight
                 }
-                scrollTop={scrollTop}
+                scrollTop={
+                  modalContainerHeight
+                    ? scrollTop - modalContainerHeight
+                    : scrollTop
+                }
                 isScrolling={isScrolling}
                 overscanBy={3}
                 //@ts-ignore

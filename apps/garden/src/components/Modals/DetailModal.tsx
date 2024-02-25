@@ -79,19 +79,19 @@ const DetailModal = ({
   }, [currentIndex, handlePrevItem, handleNextItem])
 
   useEffect(() => {
-    // console.log(router.asPath, currentIndex, items)
+    console.log(router.asPath, currentIndex, items)
     const handleRouteChange = async () => {
       const { pageUrl, modalUrl } = getModalUrls(
         router,
         itemType,
         items[currentIndex],
       )
-      // console.log('push', items[currentIndex]._id, pageUrl, modalUrl)
+      console.log('push', items[currentIndex]._id, pageUrl, modalUrl)
       await router.push(pageUrl, modalUrl, { scroll: false, shallow: true })
     }
 
     if (currentIndex !== null) {
-      // console.log('changing route', currentIndex)
+      console.log('changing route', currentIndex)
       handleRouteChange()
     }
   }, [router.asPath, currentIndex, items.length])
