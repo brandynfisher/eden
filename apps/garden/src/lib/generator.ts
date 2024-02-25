@@ -23,6 +23,7 @@ export const sdxl_generators_video = [
   'real2real_audio',
   'interpolate',
   'story',
+  'reel',
   'dialogue',
   'monologue',
   'wav2lip',

@@ -213,6 +213,7 @@ export type LogosData = {
   knowledge?: string
   knowledgeSummary?: string
   concept?: string
+  chatModel?: ChatModel
 }
 
 export enum Capabilities {
@@ -220,4 +221,18 @@ export enum Capabilities {
   KNOWLEDGE = 'knowledge',
   SMART_REPLY = 'smart_reply',
   STORY_CREATIONS = 'story_creations',
+}
+
+export enum ChatModel {
+  Gpt35Turbo = 'gpt-3.5-turbo',
+  Gpt41106Preview = 'gpt-4-1106-preview',
+  GrypheMythomaxL213b8k = 'gryphe/mythomax-l2-13b-8k',
+  MistralaiMistralMedium = 'mistralai/mistral-medium',
+  MistralaiMixtral8x7bInstruct = 'mistralai/mixtral-8x7b-instruct',
+  NousresearchNousHermes2Mixtral8x7bDpo = 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo',
+  NousresearchNousCapybara7b = 'nousresearch/nous-capybara-7b',
+  TekniumOpenhermes2Mistral7b = 'teknium/openhermes-2-mistral-7b',
+  PygmalionaiMythalion13b = 'pygmalionai/mythalion-13b',
+  AnthropicClaude2 = 'anthropic/claude-2',
+  CognitiveComputationsDolphinMixtral8x7b = 'cognitivecomputations/dolphin-mixtral-8x7b',
 }

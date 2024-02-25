@@ -1,14 +1,13 @@
+import { randomId } from '../lib/util'
+import { ApiKey, ApiKeyInput } from '../models/ApiKey'
+import { User } from '../models/Creator'
+import ApiKeyRepository from '../repositories/ApiKeyRepository'
 import {
   ApiKeysCreateArguments,
   ApiKeysDeleteArguments,
   ApiKeysListArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
-
-import { randomId } from '../lib/util'
-import { ApiKey, ApiKeyInput } from '../models/ApiKey'
-import { User } from '../models/Creator'
-import ApiKeyRepository from '../repositories/ApiKeyRepository'
 
 export const generateApiKey = () => {
   const apiKey = randomId(24)
@@ -93,6 +92,7 @@ export const listApiKeys = async (
   const apiKeys = await apiKeyRepository.query(
     {
       user: userId,
+      character: { $eq: null },
     },
     {
       limit,
