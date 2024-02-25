@@ -54,7 +54,7 @@ const TimelineItem = ({
   const increaseFakeProgress = useCallback(
     (increment: number, timerId: ReturnType<typeof setInterval>) => {
       setFakeProgress(prevState => {
-        console.log(prevState, increment)
+        // console.log(prevState, increment)
         if (prevState + increment >= 100) {
           clearInterval(timerId)
           return 100

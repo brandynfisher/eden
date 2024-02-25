@@ -17,10 +17,12 @@ const DetailModal = ({
   itemType,
   parentMasonryKey,
   maybeLoadMoreFn,
+  layerIndex,
   ...rest
 }: {
   itemType: ItemType
   parentMasonryKey: string
+  layerIndex?: number
   maybeLoadMoreFn: (
     currentIndex: number,
     currentItems: Creation[] | Concept[] | Character[] | Creator[],
@@ -98,8 +100,6 @@ const DetailModal = ({
 
   const modalContainerRef = useRef<HTMLDivElement | null>(null)
 
-  // other code...
-
   useEffect(() => {
     const observer = new MutationObserver(mutations => {
       mutations.forEach(mutation => {
@@ -140,14 +140,23 @@ const DetailModal = ({
     }
   }, [])
 
+  const getContainer = useCallback(() => {
+    if (modalContainerRef && modalContainerRef.current) {
+      return modalContainerRef?.current
+    }
+
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    container.style.zIndex = String(50 + (layerIndex || 0))
+    return container
+  }, [])
+
   return (
     <div ref={modalContainerRef}>
       <Modal
         {...rest}
         className="modal-full max-w-7xl"
-        getContainer={() =>
-          modalContainerRef?.current || document.createElement('div')
-        }
+        getContainer={getContainer}
       >
         {items[currentIndex] ? (
           <>

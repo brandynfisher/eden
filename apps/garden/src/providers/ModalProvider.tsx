@@ -295,9 +295,12 @@ function ModalProvider({ children }: PropsWithChildren) {
           .join(' ')}`
       : `${defaultClassNames.join(' ')}`
 
+    console.log('render modal index', index)
+
     return (
       // @ts-ignore
       <ModalComponent
+        layerIndex={index}
         key={`${modal.modalType}_${index}`}
         {...({ ...defaultModalProps, ...modal.modalProps } as ModalProps)}
         handleCancel={modal.modalProps?.onCancel}
