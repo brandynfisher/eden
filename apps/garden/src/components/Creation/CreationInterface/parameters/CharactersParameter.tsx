@@ -35,7 +35,7 @@ const CharacterInput = ({
           />
 
           {characterId ? (
-            <div className="mt-2 w-full">
+            <div className="mb-2 w-full">
               {character ? (
                 <CharacterParameterUI
                   characterId={characterId}

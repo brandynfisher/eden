@@ -44,7 +44,7 @@ export const CharacterParameterUI = ({
       ) : (
         <>
           {character ? (
-            <div className="pr-1 flex gap-2 items-center w-full">
+            <div className="pl-0 pr-1 py-1 flex gap-1 items-center w-full">
               {character.image ? (
                 <Image
                   width={48}
@@ -54,10 +54,10 @@ export const CharacterParameterUI = ({
                     `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
                   }
                   alt={`${character.name}`}
-                  className="rounded object-contain"
+                  className="rounded object-contain max-h-full"
                 />
               ) : null}
-              <div className="w-full flex flex-col justify-around h-full py-0.5 flex-grow-0 flex-shrink max-w-[220px]">
+              <div className="w-full flex flex-col justify-around h-full py-0.5 flex-grow-0 flex-shrink max-w-[164px]">
                 <div className="flex justify-between gap-4">
                   <div className="max-w-full whitespace-nowrap text-ellipsis overflow-hidden">{`${character.name}`}</div>
                 </div>
@@ -70,7 +70,7 @@ export const CharacterParameterUI = ({
                 </div>
               </div>
               <Button
-                className="w-[40px] h-[40px] flex items-center justify-center flex-shrink-0 ml-auto"
+                className="w-[40px] h-[40px] flex items-center justify-center flex-shrink-0 ml-auto mr-0"
                 onClick={handleClickOpen}
               >
                 <Edit fontSize="medium" />
