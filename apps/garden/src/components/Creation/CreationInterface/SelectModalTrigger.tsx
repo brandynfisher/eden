@@ -7,10 +7,12 @@ const SelectModalTrigger = ({
   buttonContent,
   modalType,
   onChange,
+  hasValue,
 }: {
   buttonContent: ReactNode
   modalType: MODAL_TYPES
   onChange: (item: Concept | Character) => void
+  hasValue?: boolean
 }) => {
   const { showModal, hideModal } = useModalContext()
 
@@ -29,7 +31,9 @@ const SelectModalTrigger = ({
     <Button
       variant="outlined"
       onClick={handleClickOpen}
-      className="w-full flex !py-1 !px-2 items-center gap-2 !bg-gray-300 hover:!bg-gray-400 dark:!bg-gray-950 dark:hover:!bg-gray-950 bg-opacity-50 hover:!bg-opacity-70 !normal-case"
+      className={`w-full flex !py-1 !px-2 items-center gap-2 bg-gray-300 hover:!bg-blue-200 dark:!bg-gray-950 dark:hover:!bg-gray-950 bg-opacity-70 hover:!bg-opacity-70 !normal-case ${
+        hasValue ? 'hidden' : ''
+      }`}
     >
       {buttonContent}
     </Button>

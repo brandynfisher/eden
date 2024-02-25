@@ -202,12 +202,13 @@ function ModalProvider({ children }: PropsWithChildren) {
       ])
 
       // // @todo: ---start ugly--- this should be handled with ref.current to be more robust but we'll need to create own modal component as ant doesnt allow passing refs
-      const modalWrapDomElement =
-        document.getElementsByClassName('ant-modal-wrap')
-      // console.log({ modalWrapDomElement })
-      if (modalWrapDomElement && modalWrapDomElement.length) {
-        modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-      }
+      // console.log('showModal')
+      // const modalWrapDomElement =
+      //   document.getElementsByClassName('ant-modal-wrap')
+      // // console.log({ modalWrapDomElement })
+      // if (modalWrapDomElement && modalWrapDomElement.length) {
+      //   modalWrapDomElement[0].scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      // }
       // @todo ---end ugly---
       return newModalId
     },
@@ -295,7 +296,7 @@ function ModalProvider({ children }: PropsWithChildren) {
           .join(' ')}`
       : `${defaultClassNames.join(' ')}`
 
-    console.log('render modal index', index)
+    // console.log('render modal index', index)
 
     return (
       // @ts-ignore
@@ -311,7 +312,7 @@ function ModalProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const handler = (url: string, { shallow }: { shallow: boolean }) => {
-      console.log('routeChangeStart')
+      console.log('routeChangeStart', url, shallow)
       // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
       if (store.length && !shallow) {
         hideModal(store[store.length - 1].modalId)
@@ -322,7 +323,7 @@ function ModalProvider({ children }: PropsWithChildren) {
     return () => {
       router.events.off('routeChangeStart', handler)
     }
-  }, [store])
+  }, [router.events, hideModal, store])
 
   const onEscHandler = useCallback(
     (ev: KeyboardEvent) => {

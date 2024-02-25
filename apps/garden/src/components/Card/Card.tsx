@@ -169,7 +169,7 @@ const Card: FC<CardWithTypeProps> = ({
               sizes={sizes}
               className="!rounded-none w-auto"
             />
-            <div className="bg-opacity-50 absolute bottom-0 bg-gray-900 w-full h-9 px-1 flex items-center">
+            <div className="bg-opacity-50 absolute bottom-0 dark:bg-gray-900 bg-gray-100 w-full h-9 px-1 flex items-center">
               <CreatorProfileLink
                 creatorId={itemData.user.userId}
                 creatorName={itemData.user.username}
@@ -297,7 +297,7 @@ const Card: FC<CardWithTypeProps> = ({
             className={`cursor-pointer block`}
           >
             <div
-              className="line-clamp-2 text-xs text-gray-400 px-2 pt-2 bg-gray-900 h-10"
+              className="line-clamp-2 text-xs text-gray-400 px-2 pt-2 dark:bg-gray-900 bg-gray-100 h-10"
               title={(itemData as Character).logosData?.identity}
             >
               {(itemData as Character).logosData?.identity}

@@ -2,7 +2,9 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { useCharacter } from '@/hooks/useCharacter'
 import { CONFIG } from '@/lib/config'
-import { GeneratorParameter } from '@edenlabs/eden-sdk'
+import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
+import { Character, GeneratorParameter } from '@edenlabs/eden-sdk'
+import { Edit } from '@mui/icons-material'
 import CloseIcon from '@mui/icons-material/Close'
 import { App, Button, Form, FormInstance, Input } from 'antd'
 import Image from 'next/image'
@@ -12,11 +14,28 @@ import React, { useEffect, useState } from 'react'
 export const CharacterParameterUI = ({
   characterId,
   onChange,
+  onEdit,
 }: {
   characterId: string
   onChange: (newValue: string | null) => void
+  onEdit?: (newValue: Character) => void
 }) => {
   const { character, isLoading } = useCharacter(characterId)
+
+  const { showModal, hideModal } = useModalContext()
+
+  const handleChange = (item: Character) => {
+    if (onEdit) {
+      onEdit(item)
+    }
+    hideModal(null, MODAL_TYPES.CHARACTER_SELECT_MODAL)
+  }
+
+  const handleClickOpen = () => {
+    showModal(MODAL_TYPES.CHARACTER_SELECT_MODAL, {
+      onChange: handleChange,
+    })
+  }
 
   return (
     <div className="bg-gray-300 dark:bg-gray-800 rounded-md flex w-full h-12">
@@ -50,6 +69,12 @@ export const CharacterParameterUI = ({
                   />
                 </div>
               </div>
+              <Button
+                className="w-[40px] h-[40px] flex items-center justify-center flex-shrink-0 ml-auto"
+                onClick={handleClickOpen}
+              >
+                <Edit fontSize="medium" />
+              </Button>
               <Button
                 className="w-[40px] h-[40px] flex items-center justify-center flex-shrink-0 ml-auto"
                 onClick={() => onChange(null)}

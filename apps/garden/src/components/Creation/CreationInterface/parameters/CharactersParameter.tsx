@@ -2,7 +2,7 @@ import SelectCharacterModalTrigger from '@/components/Creation/CreationInterface
 import { CharacterParameterUI } from '@/components/Creation/CreationInterface/parameters/CharacterParameter'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCharacter } from '@/hooks/useCharacter'
-import { GeneratorParameter } from '@edenlabs/eden-sdk'
+import { Character, GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Badge, Form, FormInstance, Input } from 'antd'
 import React, { useEffect, useState } from 'react'
 
@@ -17,6 +17,10 @@ const CharacterInput = ({
 }) => {
   const { character } = useCharacter(characterId)
 
+  const handleCharacterSelect = (character: Character) => {
+    onChange(character._id, index)
+  }
+
   return (
     <>
       <Badge
@@ -26,9 +30,8 @@ const CharacterInput = ({
       >
         <div className="pointer-events-auto">
           <SelectCharacterModalTrigger
-            onChange={character => {
-              onChange(character._id, index)
-            }}
+            selectedValue={characterId || undefined}
+            onChange={handleCharacterSelect}
           />
 
           {characterId ? (
@@ -37,6 +40,7 @@ const CharacterInput = ({
                 <CharacterParameterUI
                   characterId={characterId}
                   onChange={val => onChange(val || '', index)}
+                  onEdit={handleCharacterSelect}
                 />
               ) : (
                 <LoadingIndicator />
@@ -188,16 +192,18 @@ const CharactersParameter = (props: {
   return (
     <div>
       {values.map((value, index) => (
-        <div
+        // <div
+        //   key={`${index}_${value}`}
+        //   // className="flex flex-wrap items-center justify-between mb-2 border border-solid border-blue-200 dark:border-blue-800 dark:bg-opacity-50 rounded-md p-2 bg-blue-100 dark:bg-blue-950"
+        //   className={`flex flex-wrap items-center justify-between mb-2`}
+        // >
+        <CharacterInput
           key={`${index}_${value}`}
-          className="flex flex-wrap items-center justify-between mb-2"
-        >
-          <CharacterInput
-            characterId={value}
-            index={index}
-            onChange={onChange}
-          />
-        </div>
+          characterId={value}
+          index={index}
+          onChange={onChange}
+        />
+        // </div>
       ))}
       <Form.Item
         className={`mb-0 flex-grow custom-form-item`}
