@@ -76,7 +76,7 @@ export const CharacterParameterUI = ({
                 <Edit fontSize="medium" />
               </Button>
               <Button
-                className="w-[40px] h-[40px] flex items-center justify-center flex-shrink-0 ml-auto"
+                className="w-[40px] h-[40px] flex items-center justify-center flex-shrink-0"
                 onClick={() => onChange(null)}
               >
                 <CloseIcon className="text-red-500" />
