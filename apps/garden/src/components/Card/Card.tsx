@@ -150,14 +150,26 @@ const Card: FC<CardWithTypeProps> = ({
           />
         ) : null}
         {itemType === 'concept' ? (
-          <CardImage
-            uri={(itemData as Concept).thumbnail || ''}
-            width={0}
-            height={0}
-            priority={index < 10}
-            sizes={sizes}
-            className="!rounded-none"
-          />
+          <>
+            <CardImage
+              uri={(itemData as Concept).thumbnail || ''}
+              width={0}
+              height={0}
+              priority={index < 10}
+              sizes={sizes}
+              className="!rounded-none"
+            />
+            <div className="!bg-opacity-75 absolute bottom-0 dark:bg-gray-900 bg-gray-100 w-full h-9 px-1 flex items-center justify-between">
+              <CreatorProfileLink
+                creatorId={itemData.user.userId}
+                creatorName={itemData.user.username}
+                creatorImage={itemData.user.userImage}
+              />
+              {itemData.isPrivate ? (
+                <LockIcon fontSize="small" className="text-white" />
+              ) : null}
+            </div>
+          </>
         ) : null}
         {itemType === 'character' ? (
           <>
@@ -169,12 +181,15 @@ const Card: FC<CardWithTypeProps> = ({
               sizes={sizes}
               className="!rounded-none w-auto"
             />
-            <div className="bg-opacity-50 absolute bottom-0 dark:bg-gray-900 bg-gray-100 w-full h-9 px-1 flex items-center">
+            <div className="!bg-opacity-75 absolute bottom-0 dark:bg-gray-900 bg-gray-100 w-full h-9 px-1 flex items-center justify-between">
               <CreatorProfileLink
                 creatorId={itemData.user.userId}
                 creatorName={itemData.user.username}
                 creatorImage={itemData.user.userImage}
               />
+              {itemData.isPrivate ? (
+                <LockIcon fontSize="small" className="text-white" />
+              ) : null}
             </div>
           </>
         ) : null}
@@ -201,16 +216,19 @@ const Card: FC<CardWithTypeProps> = ({
           {itemType === 'creation' || itemType === 'concept' ? (
             <NsfwBadge item={itemData as Creation | Concept} />
           ) : null}
-          <div
-            className={`flex z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
-              hovered ? 'md:hidden' : ''
-            }`}
-          >
-            <LockIcon fontSize="small" className="text-white" />
-          </div>
+          {itemType === 'creation' ? (
+            <div
+              className={`flex z-10 bg-gray-700 rounded-full w-8 h-8 items-center justify-center pointer-events-none ${
+                hovered ? 'md:hidden' : ''
+              }`}
+            >
+              <LockIcon fontSize="small" className="text-white" />
+            </div>
+          ) : null}
         </div>
       ) : null}
       {itemType !== 'character' &&
+      itemType !== 'concept' &&
       !itemData.deleted &&
       (width < 640 || hovered || dropdownActive) ? (
         <>
@@ -239,8 +257,8 @@ const Card: FC<CardWithTypeProps> = ({
                 </div>
               </div>
             ) : null}
-            <div className="flex items-center gap-4 ml-auto my-1">
-              {itemType === 'creation' || itemType === 'concept' ? (
+            <div className="flex items-center gap-3 ml-auto my-1">
+              {itemType === 'creation' ? (
                 <NsfwBadge
                   item={itemData as Creation | Concept}
                   className={`text-xs ${hovered ? 'md:hidden' : ''}`}

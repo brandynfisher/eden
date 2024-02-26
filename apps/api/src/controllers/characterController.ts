@@ -1,4 +1,7 @@
-import { characterPrivacyPermissionCheck } from '../lib/authorization'
+import {
+  characterLimitPermissionCheck,
+  characterPrivacyPermissionCheck,
+} from '../lib/authorization'
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'
@@ -79,6 +82,18 @@ export const createCharacter = async (
   }
 
   const characterRepository = new CharacterRepository(Character)
+
+  const charactersCount = await Character.count({
+    user: userId,
+  })
+
+  if (!characterLimitPermissionCheck(request, charactersCount)) {
+    return reply.status(401).send({
+      message:
+        'Only basic+ subscribers can have more than one character. Please upgrade your subscription.',
+    })
+  }
+
   const character = await characterRepository.create(input)
 
   // Create API Key for character

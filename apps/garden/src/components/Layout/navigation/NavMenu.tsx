@@ -1,3 +1,5 @@
+import NavMenuHeader from './NavMenuHeader'
+import NavMenuProfileLink from './NavMenuProfileLink'
 import SocialLinks from '@/components/Layout/navigation/SocialLinks'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
@@ -18,9 +20,6 @@ import React, {
   useEffect,
   useState,
 } from 'react'
-
-import NavMenuHeader from './NavMenuHeader'
-import NavMenuProfileLink from './NavMenuProfileLink'
 
 type ItemType = {
   key: string
@@ -108,17 +107,17 @@ const NavMenu = ({
       ),
       label: 'Concepts',
     },
+    {
+      key: '/characters',
+      icon: (
+        <Link href="/characters" data-testid="nav-explore-characters">
+          <ChatBubbleOutline fontSize="small" />
+        </Link>
+      ),
+      label: 'Characters',
+    },
     ...(isPreviewUser
       ? [
-          {
-            key: '/characters',
-            icon: (
-              <Link href="/characters" data-testid="nav-explore-characters">
-                <ChatBubbleOutline fontSize="small" />
-              </Link>
-            ),
-            label: 'Characters',
-          },
           {
             key: '/channels',
             icon: (
@@ -151,22 +150,15 @@ const NavMenu = ({
       ),
       label: 'Concepts',
     },
-    ...(isPreviewUser
-      ? [
-          {
-            key: '/create/characters',
-            icon: (
-              <Link
-                href="/create/characters"
-                data-testid="nav-create-characters"
-              >
-                <ChatBubbleOutline fontSize="small" />
-              </Link>
-            ),
-            label: 'Characters',
-          },
-        ]
-      : []),
+    {
+      key: '/create/characters',
+      icon: (
+        <Link href="/create/characters" data-testid="nav-create-characters">
+          <ChatBubbleOutline fontSize="small" />
+        </Link>
+      ),
+      label: 'Characters',
+    },
   ]
 
   const menuItems: ItemType[] = [

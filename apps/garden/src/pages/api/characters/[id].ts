@@ -23,19 +23,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     if (req.method === 'PATCH') {
-      const {
-        characterId,
-        name,
-        image,
-        voice,
-        greeting,
-        dialogue,
-        logosData,
-        isPrivate,
-      } = req.body as CharactersUpdateArguments
+      const { name, image, voice, greeting, dialogue, logosData, isPrivate } =
+        req.body as CharactersUpdateArguments
+
+      if (!id) {
+        return res.status(500).json({ error: 'No characterId provided' })
+      }
 
       const update = {
-        characterId,
+        characterId: String(id),
         name,
         image,
         voice,

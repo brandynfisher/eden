@@ -33,6 +33,7 @@ const defaultItems: MenuItem[] = [
     '/create/concepts',
     <ModelTrainingIcon fontSize="small" />,
   ),
+  getItem('Characters', '/create/characters', <RobotOutlined />),
 ]
 
 const createMenuItems = (userFlags: string[]) => {
@@ -45,7 +46,6 @@ const createMenuItems = (userFlags: string[]) => {
 }
 
 const featurePreviewItems: MenuItem[] = [
-  getItem('Characters', '/create/characters', <RobotOutlined />),
   getItem('Scenarios', '/create/scenarios', <CommentOutlined />),
 ]
 

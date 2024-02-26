@@ -61,10 +61,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         },
       ],
     },
-    preHandler: [
-      (request, reply) => isAuth(server, request, reply),
-      (request, reply) => characterRoutePreHandler(request, reply),
-    ],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createCharacter(request, reply),
   })
 
@@ -101,10 +98,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({}),
       },
     },
-    preHandler: [
-      (request, reply) => isAuth(server, request, reply),
-      (request, reply) => characterRoutePreHandler(request, reply),
-    ],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateCharacter(request, reply),
   })
 
@@ -125,10 +119,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({}),
       },
     },
-    preHandler: [
-      (request, reply) => isAuth(server, request, reply),
-      (request, reply) => characterRoutePreHandler(request, reply),
-    ],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteCharacter(request, reply),
   })
 
@@ -174,10 +165,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [
-      async (request, reply) => maybeAuth(server, request, reply),
-      (request, reply) => characterRoutePreHandler(request, reply),
-    ],
+    preHandler: [async (request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCharacter(request, reply),
   })
 
@@ -228,10 +216,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         ),
       },
     },
-    preHandler: [
-      async (request, reply) => maybeAuth(server, request, reply),
-      (request, reply) => characterRoutePreHandler(request, reply),
-    ],
+    preHandler: [async (request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => listCharacters(request, reply),
   })
 
@@ -255,10 +240,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [
-      (request, reply) => isAuth(server, request, reply),
-      (request, reply) => characterRoutePreHandler(request, reply),
-    ],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => testCharacter(server, request, reply),
   })
 
@@ -280,10 +262,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [
-      (request, reply) => isAuth(server, request, reply),
-      (request, reply) => characterRoutePreHandler(request, reply),
-    ],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => interactCharacter(server, request, reply),
   })
 

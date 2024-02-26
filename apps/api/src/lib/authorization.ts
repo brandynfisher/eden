@@ -1,6 +1,7 @@
 import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
 import { Task, TaskStatus } from '../models/Task'
 import {
+  CharactersCreateArguments,
   CharactersUpdateArguments,
   ConceptsUpdateArguments,
   CreationsUpdateArguments,
@@ -40,6 +41,25 @@ export const characterRoutePreHandler = async (
   }
 }
 
+export const characterLimitPermissionCheck = (
+  request: FastifyRequest,
+  currentCharactersCount: number,
+) => {
+  const { isAdmin, character } = request.user
+
+  const isUser = !isAdmin && !character
+
+  if (
+    isUser &&
+    currentCharactersCount >= 1 &&
+    !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
+  ) {
+    return false
+  }
+
+  return true
+}
+
 export const taskPrivacyPermissionCheck = (request: FastifyRequest) => {
   const { isAdmin, character } = request.user
   const { config } = request.body as TasksCreateArguments
@@ -51,7 +71,7 @@ export const taskPrivacyPermissionCheck = (request: FastifyRequest) => {
     config?.isPrivate &&
     !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
   ) {
-    true
+    return true
   }
 
   return false
