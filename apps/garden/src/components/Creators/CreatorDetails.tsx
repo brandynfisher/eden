@@ -68,7 +68,7 @@ const CreatorDetails = ({
       <ProfileHeader
         creatorId={creator.userId}
         creator={creator}
-        numCreations={creator?.creationsCount}
+        numCreations={creator?.creationCount}
         isOwnProfile={isOwnProfile}
       />
       <Tabs
