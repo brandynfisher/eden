@@ -140,7 +140,10 @@ const aggregateCreationsByUserLikes = (
   ])
 }
 
-const aggregateCreationsByEmbeddingScore = (dateEndCutOff: string) => {
+const aggregateCreationsByEmbeddingScore = (
+  dateEndCutOff: string,
+  dateStartCutOff: string | undefined,
+) => {
   const decayPerHour = 0.0015
   const hoursAgo = 360
   const currentDate = new Date()
@@ -153,7 +156,7 @@ const aggregateCreationsByEmbeddingScore = (dateEndCutOff: string) => {
     {
       $match: {
         createdAt: {
-          $gte: minDate,
+          $gte: dateStartCutOff || minDate,
           $lte: new Date(dateEndCutOff),
         },
         'embedding.score': { $exists: true },
@@ -292,8 +295,16 @@ export const getCreationsFeed = async (
       },
     )
   } else if (orderBy === 'embedding.score') {
+    // if (minDate) {
+    //   createdAtFilter['$gte'] = new Date(minDate)
+    // }
+    // if (maxDate) {
+    //   createdAtFilter['$lte'] = new Date(maxDate)
+    // }
+
     const creationsAggregate = aggregateCreationsByEmbeddingScore(
       maxDate || new Date().toISOString(),
+      minDate ? minDate : undefined,
     )
     creations = await creationRepository.aggregateQuery(creationsAggregate, {
       limit,
