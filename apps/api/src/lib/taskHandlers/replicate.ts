@@ -57,6 +57,12 @@ const formatConfigForReplicate = async (config: any) => {
   newConfig.mask_images
     ? (newConfig.mask_images = newConfig.mask_images.join('|'))
     : null
+  newConfig.text_inputs_to_interpolate
+    ? (newConfig.text_inputs_to_interpolate = newConfig.text_inputs_to_interpolate.join('|'))
+    : null
+  newConfig.text_inputs_to_interpolate_weights
+    ? (newConfig.text_inputs_to_interpolate_weights = newConfig.text_inputs_to_interpolate_weights.join('|'))
+    : null
   newConfig.voice_file_urls
     ? (newConfig.voice_file_urls = newConfig.voice_file_urls.join('|'))
     : null
