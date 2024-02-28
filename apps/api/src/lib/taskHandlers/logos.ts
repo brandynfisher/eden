@@ -1,6 +1,5 @@
-import { FastifyInstance } from 'fastify'
-
 import { GeneratorDocument } from '../../models/Generator'
+import { FastifyInstance } from 'fastify'
 
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
@@ -33,6 +32,6 @@ const getTransactionCost = (
   __: any,
   ___: any,
   config: any,
-) => 10
+) => 30
 
 export { submitTask, getTransactionCost }
