@@ -13,7 +13,19 @@ const staticCostGenerators = [
   },
   {
     generatorName: 'dialogue',
-    cost: 50,
+    cost: 30,
+  },
+  {
+    generatorName: 'monologue',
+    cost: 30,
+  },
+  {
+    generatorName: 'story',
+    cost: 30,
+  },
+  {
+    generatorName: 'reel',
+    cost: 30,
   },
 ]
 
