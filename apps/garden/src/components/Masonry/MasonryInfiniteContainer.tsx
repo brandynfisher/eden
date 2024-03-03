@@ -4,6 +4,7 @@ import OrderByButtons, {
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
+import FeedFilter from '@/components/Search/FeedFilter'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { ItemType } from '@/providers/ModalProvider'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -59,15 +60,19 @@ const MasonryInfiniteContainer = ({
 
   return (
     <>
-      {filters ? (
-        <OrderByButtons
-          params={filters.filter(item => !hiddenParams.includes(item.field))}
-          initialParam={
-            filters.filter(item => !hiddenParams.includes(item.field))[0]
-          }
-          onOrderChange={item => handleOrderChange(item)}
-        />
-      ) : null}
+      <div className="flex justify-between mb-4 ">
+        {filters ? (
+          <OrderByButtons
+            params={filters.filter(item => !hiddenParams.includes(item.field))}
+            initialParam={
+              filters.filter(item => !hiddenParams.includes(item.field))[0]
+            }
+            onOrderChange={item => handleOrderChange(item)}
+          />
+        ) : null}
+
+        <FeedFilter />
+      </div>
 
       <MasonryInfinite
         key={key}
