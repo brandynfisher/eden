@@ -193,7 +193,9 @@ const FeedFilterPopover = ({
                               )
                             }
                             label={
-                              <span className="text-sm ">{item.label}</span>
+                              <span className="text-sm select-none">
+                                {item.label}
+                              </span>
                             }
                             // onChange={() => handleItemChange(item)}
                           />
