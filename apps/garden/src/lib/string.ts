@@ -33,6 +33,10 @@ export const possessivy = (name: string | undefined) => {
   return name ? (name.endsWith('s') ? `${name}'` : `${name}'s`) : ''
 }
 
+export const sanitize = (text: string) => {
+  return text.replace(/[^a-z0-9_\-\s]/gi, '_')
+}
+
 export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
   [SubscriptionTier.Free]: 'Free',
   [SubscriptionTier.Basic]: 'Basic',
