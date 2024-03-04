@@ -8,45 +8,79 @@ import {
   FormControlLabel,
   FormGroup,
   Radio,
+  RadioGroup,
 } from '@mui/material'
 import Popover from '@mui/material/Popover'
-import React, { ComponentPropsWithoutRef, ReactElement } from 'react'
+import React, {
+  ComponentPropsWithoutRef,
+  ReactElement,
+  useEffect,
+  useState,
+} from 'react'
 
-const segments = [
+interface Item {
+  label: string
+  value: string | {}
+  defaultActive?: boolean
+}
+
+interface Group {
+  id: string
+  title: string
+  type: 'single' | 'multi'
+  items: Item[]
+  defaultValue?: string
+}
+
+interface Segment {
+  id: string
+  title: string
+  defaultOpen?: boolean
+  groups: Group[]
+}
+
+const segments: Segment[] = [
   {
     id: 'filters',
     title: 'Filters',
     defaultOpen: true,
     groups: [
       {
+        id: 'type',
         title: 'Type',
         type: 'multi',
         items: [
           {
             label: 'Images',
             value: 'image',
+            defaultActive: true,
           },
           {
             label: 'Videos',
             value: 'video',
+            defaultActive: true,
           },
           {
             label: 'Stories',
             value: 'story',
+            defaultActive: false,
           },
         ],
       },
       {
+        id: 'visibility',
         title: 'Visibility',
         type: 'multi',
         items: [
           {
             label: 'Public',
-            value: { isPrivate: false },
+            value: 'public',
+            defaultActive: true,
           },
           {
             label: 'Private',
-            value: { isPrivate: true },
+            value: 'private',
+            defaultActive: false,
           },
         ],
       },
@@ -58,8 +92,10 @@ const segments = [
     defaultOpen: false,
     groups: [
       {
+        id: 'layout',
         title: 'Layout',
         type: 'single',
+        defaultValue: 'full',
         items: [
           {
             label: 'Full',
@@ -72,8 +108,10 @@ const segments = [
         ],
       },
       {
+        id: 'imageSize',
         title: 'Image Size',
         type: 'single',
+        defaultValue: 'medium',
         items: [
           {
             label: 'Small',
@@ -93,9 +131,7 @@ const segments = [
   },
 ]
 
-// type FilterParam = {
-//   value: string
-// }
+type FilterParams = {}
 
 interface ControlledAccordionProps extends ComponentPropsWithoutRef<'div'> {
   defaultOpen?: boolean
@@ -107,7 +143,7 @@ const ControlledAccordion = ({
   children,
   ...rest
 }: ControlledAccordionProps & AccordionProps) => {
-  const [expanded, setExpanded] = React.useState<boolean>(defaultOpen || false)
+  const [expanded, setExpanded] = useState<boolean>(defaultOpen || false)
 
   const handleChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded)
@@ -129,7 +165,40 @@ const FeedFilterPopover = ({
   handleClose: () => void
   anchorEl: HTMLDivElement | null
 }) => {
-  // const [ filters, setFilters ] = useState<FilterParam[]>([])
+  const [filters, setFilters] = useState<FilterParams>({})
+
+  useEffect(() => {
+    console.log(filters)
+  }, [filters])
+
+  const handleItemChange = (
+    groupId: Group['id'],
+    type: Group['type'],
+    value: Group['defaultValue'],
+  ) => {
+    setFilters(prev => {
+      if (type === 'multi') {
+        // If this checkbox group doesn't exist yet in the filters object,
+        // create an empty object for it.
+        if (!(groupId in prev)) {
+          prev[groupId] = {}
+        }
+
+        // If the checkbox was previously checked, remove it
+        if (prev[groupId][value]) {
+          const newGroup = { ...prev[groupId] }
+          delete newGroup[value]
+          return { ...prev, [groupId]: newGroup }
+        }
+
+        // Otherwise add it
+        return { ...prev, [groupId]: { ...prev[groupId], [value]: true } }
+      } else {
+        // For 'single' type, just store the value directly
+        return { ...prev, [groupId]: value }
+      }
+    })
+  }
 
   return (
     <Popover
@@ -167,41 +236,72 @@ const FeedFilterPopover = ({
               {segment?.groups?.map(group => (
                 <div key={group.title}>
                   <div className="text-sm pb-0.5">{group.title}</div>
-                  <FormGroup className="mb-2">
-                    {group.items && group.items.length
-                      ? group.items.map(item => (
-                          <FormControlLabel
-                            className="pl-1 text-sm !mr-0"
-                            key={item.label}
-                            control={
-                              group.type === 'multi' ? (
-                                <Checkbox
-                                  size="small"
-                                  // checked={item.hasItem}
-                                  // disabled={
-                                  //   loadingItem !== null && loadingItem._id === item._id
-                                  // }
-                                />
-                              ) : (
+                  {group.type === 'single' ? (
+                    <RadioGroup
+                      name={group.id}
+                      aria-labelledby="demo-radio-buttons-group-label"
+                      defaultValue={group.defaultValue}
+                    >
+                      {group.items && group.items.length
+                        ? group.items.map(item => (
+                            <FormControlLabel
+                              className="pl-1 text-sm !mr-0"
+                              key={item.label}
+                              control={
                                 <Radio
                                   size="small"
-                                  // checked={item.hasItem}
-                                  // disabled={
-                                  //   loadingItem !== null && loadingItem._id === item._id
-                                  // }
+                                  value={item.value}
+                                  // defaultChecked={group.defaultValue === item.value}
+                                  // checked={filters[group.id] && filters[group.id].value === item.value}
                                 />
-                              )
-                            }
-                            label={
-                              <span className="text-sm select-none">
-                                {item.label}
-                              </span>
-                            }
-                            // onChange={() => handleItemChange(item)}
-                          />
-                        ))
-                      : null}
-                  </FormGroup>
+                              }
+                              label={
+                                <span className="text-sm select-none">
+                                  {item.label}
+                                </span>
+                              }
+                              onChange={() =>
+                                handleItemChange(
+                                  group.id,
+                                  group.type,
+                                  item.value,
+                                )
+                              }
+                            />
+                          ))
+                        : null}
+                    </RadioGroup>
+                  ) : (
+                    <FormGroup className="mb-2">
+                      {group.items && group.items.length
+                        ? group.items.map(item => (
+                            <FormControlLabel
+                              className="pl-1 text-sm !mr-0"
+                              key={item.label}
+                              control={
+                                <Checkbox
+                                  size="small"
+                                  name={group.id}
+                                  defaultChecked={item.defaultActive}
+                                />
+                              }
+                              label={
+                                <span className="text-sm select-none">
+                                  {item.label}
+                                </span>
+                              }
+                              onChange={() =>
+                                handleItemChange(
+                                  group.id,
+                                  group.type,
+                                  item.value,
+                                )
+                              }
+                            />
+                          ))
+                        : null}
+                    </FormGroup>
+                  )}
                 </div>
               ))}
             </AccordionDetails>,
