@@ -1,3 +1,8 @@
+import {
+  FeedSettingItem,
+  FeedSettings,
+  FeedSettingsContext,
+} from '@/providers/FeedSettingsProvider'
 import { ExpandMore } from '@mui/icons-material'
 import {
   Accordion,
@@ -14,18 +19,18 @@ import Popover from '@mui/material/Popover'
 import React, {
   ComponentPropsWithoutRef,
   ReactElement,
-  useEffect,
+  useContext,
   useState,
 } from 'react'
 
 interface Item {
   label: string
-  value: string | {}
+  value: string
   defaultActive?: boolean
 }
 
 interface Group {
-  id: string
+  id: 'type' | 'visibility' | 'gridImageStyle' | 'imageSize'
   title: string
   type: 'single' | 'multi'
   items: Item[]
@@ -53,17 +58,17 @@ const segments: Segment[] = [
           {
             label: 'Images',
             value: 'image',
-            defaultActive: true,
+            // defaultActive: false,
           },
           {
             label: 'Videos',
             value: 'video',
-            defaultActive: true,
+            // defaultActive: false,
           },
           {
             label: 'Stories',
             value: 'story',
-            defaultActive: false,
+            // defaultActive: false,
           },
         ],
       },
@@ -75,12 +80,12 @@ const segments: Segment[] = [
           {
             label: 'Public',
             value: 'public',
-            defaultActive: true,
+            // defaultActive: false,
           },
           {
             label: 'Private',
             value: 'private',
-            defaultActive: false,
+            // defaultActive: false,
           },
         ],
       },
@@ -88,22 +93,22 @@ const segments: Segment[] = [
   },
   {
     id: 'view',
-    title: 'View',
+    title: 'View Options',
     defaultOpen: false,
     groups: [
       {
-        id: 'layout',
+        id: 'gridImageStyle',
         title: 'Layout',
         type: 'single',
         defaultValue: 'full',
         items: [
           {
             label: 'Full',
-            value: 'full',
+            value: 'contain',
           },
           {
             label: 'Square',
-            value: 'square',
+            value: 'cover',
           },
         ],
       },
@@ -130,8 +135,6 @@ const segments: Segment[] = [
     ],
   },
 ]
-
-type FilterParams = {}
 
 interface ControlledAccordionProps extends ComponentPropsWithoutRef<'div'> {
   defaultOpen?: boolean
@@ -165,38 +168,94 @@ const FeedFilterPopover = ({
   handleClose: () => void
   anchorEl: HTMLDivElement | null
 }) => {
-  const [filters, setFilters] = useState<FilterParams>({})
+  const { feedSettings, updateFeedSettings } = useContext(FeedSettingsContext)
 
-  useEffect(() => {
-    console.log(filters)
-  }, [filters])
+  // useEffect(() => {
+  //   console.log('UPDATING FEED SETTINGS', settings)
+  //   updateFeedSettings(settings)
+  // }, [settings])
+
+  // const handleItemChange = (
+  //   groupId: Group['id'],
+  //   type: Group['type'],
+  //   value: Item['value'],
+  //   checked: boolean
+  // ) => {
+  //   if (type === 'multi') {
+  //     console.log('multi')
+  //     updateFeedSettings((current: FeedSettings) => {
+  //       const newState = { ...current }
+  //
+  //       newState[groupId][value] = checked
+  //
+  //       console.log({newState})
+  //
+  //       return {
+  //         ...current,
+  //         ...newState
+  //       }
+  //     })
+  //   //   updateFeedSettings(prev => {
+  //   //     const prevState = {...prev}
+  //   //     if (!(groupId in prevState)) {
+  //   //       prevState[groupId] = {};
+  //   //     }
+  //   //
+  //   //     if (typeof prevState[groupId] === 'object' && typeof value === 'string') {
+  //   //       //@ts-ignore
+  //   //       if (prevState[groupId][value]) {
+  //   //         const newGroup = { ...prevState[groupId] as {[key: string]: boolean} };
+  //   //         delete newGroup[value];
+  //   //         return { ...prevState, [groupId]: newGroup };
+  //   //       }
+  //   //
+  //   //       return { ...prevState, [groupId]: { ...(prevState[groupId] as {[key: string]: boolean}), [value]: true } };
+  //   //     }
+  //   //     return prevState;
+  //   //   });
+  //   } else {
+  //     console.log('single')
+  //     updateFeedSettings((current: FeedSettings) => {
+  //       const newState = { ...current }
+  //       // if (!isFeedSettingsKey(groupId)) {
+  //       //   return current
+  //       // }
+  //       //
+  //       newState[groupId] = value
+  //
+  //       return {
+  //         ...current,
+  //         ...newState
+  //       }
+  //     })
+  //   //   updateFeedSettings(prev => {
+  //   //     if (typeof value === 'string') {
+  //   //       return { ...prev, [groupId]: value };
+  //   //     }
+  //   //     return prev;
+  //   //   });
+  //   }
+  // };
 
   const handleItemChange = (
     groupId: Group['id'],
     type: Group['type'],
-    value: Group['defaultValue'],
+    value: Item['value'],
+    checked: boolean,
   ) => {
-    setFilters(prev => {
+    updateFeedSettings((current: FeedSettings) => {
+      const newState = { ...current }
+
       if (type === 'multi') {
-        // If this checkbox group doesn't exist yet in the filters object,
-        // create an empty object for it.
-        if (!(groupId in prev)) {
-          prev[groupId] = {}
-        }
-
-        // If the checkbox was previously checked, remove it
-        if (prev[groupId][value]) {
-          const newGroup = { ...prev[groupId] }
-          delete newGroup[value]
-          return { ...prev, [groupId]: newGroup }
-        }
-
-        // Otherwise add it
-        return { ...prev, [groupId]: { ...prev[groupId], [value]: true } }
-      } else {
-        // For 'single' type, just store the value directly
-        return { ...prev, [groupId]: value }
+        // We assert that newState[groupId] is a 'FeedSettingItem'
+        const group = newState[groupId] as FeedSettingItem
+        group[value] = checked
+      } else if (groupId === 'gridImageStyle' || groupId === 'imageSize') {
+        // We knowingly can assert that newState[groupId] can take a string here
+        (newState[groupId] as string) = value
       }
+
+      return newState
     })
   }
 
@@ -211,36 +270,47 @@ const FeedFilterPopover = ({
         horizontal: 'left',
       }}
       className="border border-solid border-gray-600 rounded-lg overflow-hidden p-2"
+      style={{ background: 'transparent' }}
     >
       {segments.map(segment => (
         <ControlledAccordion
           key={segment.id}
           defaultOpen={segment.defaultOpen}
-          className="min-w-[160px] !m-0 controlled-accordion"
+          className="min-w-[160px] !m-0 controlled-accordion [&:not(:last-child)]:!mb-4"
         >
           {[
-            <AccordionSummary
-              key={1}
-              className={`!h-10 !min-h-0 hover:dark:bg-gray-700 bg-slate-800 !border-0 text-gray-300`}
-              expandIcon={<ExpandMore className="text-gray-300" />}
-              aria-controls={`${segment.id}-content`}
-              id={`${segment.id}-header`}
-            >
-              {segment.title}
-            </AccordionSummary>,
+            <div key={1}>
+              <AccordionSummary
+                className="!h-10 !min-h-0 hover:dark:bg-gray-700 bg-slate-800 !border-0 text-gray-300 text-sm"
+                expandIcon={<ExpandMore className="text-gray-300" />}
+                aria-controls={`${segment.id}-content`}
+                id={`${segment.id}-header`}
+              >
+                {segment.title}
+              </AccordionSummary>
+              {segment.id === 'filters' ? (
+                <div>
+                  {Object.entries(feedSettings).map((setting, index) => (
+                    <div key={index} onClick={() => console.log(setting)}>
+                      {setting[1].label}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>,
             <AccordionDetails
               key={2}
               className="pb-0 text-gray-300"
               id={`${segment.id}-content`}
             >
               {segment?.groups?.map(group => (
-                <div key={group.title}>
+                <div key={group.title} className="mb-2">
                   <div className="text-sm pb-0.5">{group.title}</div>
                   {group.type === 'single' ? (
                     <RadioGroup
                       name={group.id}
                       aria-labelledby="demo-radio-buttons-group-label"
-                      defaultValue={group.defaultValue}
+                      value={feedSettings[group.id]}
                     >
                       {group.items && group.items.length
                         ? group.items.map(item => (
@@ -248,23 +318,19 @@ const FeedFilterPopover = ({
                               className="pl-1 text-sm !mr-0"
                               key={item.label}
                               control={
-                                <Radio
-                                  size="small"
-                                  value={item.value}
-                                  // defaultChecked={group.defaultValue === item.value}
-                                  // checked={filters[group.id] && filters[group.id].value === item.value}
-                                />
+                                <Radio size="small" value={item.value} />
                               }
                               label={
                                 <span className="text-sm select-none">
                                   {item.label}
                                 </span>
                               }
-                              onChange={() =>
+                              onChange={(evt, checked) =>
                                 handleItemChange(
                                   group.id,
                                   group.type,
                                   item.value,
+                                  checked,
                                 )
                               }
                             />
@@ -282,7 +348,7 @@ const FeedFilterPopover = ({
                                 <Checkbox
                                   size="small"
                                   name={group.id}
-                                  defaultChecked={item.defaultActive}
+                                  checked={!!feedSettings[group.id][item.value]}
                                 />
                               }
                               label={
@@ -290,11 +356,12 @@ const FeedFilterPopover = ({
                                   {item.label}
                                 </span>
                               }
-                              onChange={() =>
+                              onChange={(event, checked) =>
                                 handleItemChange(
                                   group.id,
                                   group.type,
                                   item.value,
+                                  checked,
                                 )
                               }
                             />
