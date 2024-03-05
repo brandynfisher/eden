@@ -3,11 +3,19 @@ import React, { ReactElement, createContext } from 'react'
 
 export type FeedSettingItem = { [key: string]: boolean }
 
-export interface FeedSettings {
+export interface FilterSettings {
   type: FeedSettingItem
   visibility: FeedSettingItem
+}
+
+export interface ViewSettings {
   imageSize: 'small' | 'medium' | 'large'
   gridImageStyle: 'contain' | 'cover'
+}
+
+export interface FeedSettings extends ViewSettings {
+  type: FeedSettingItem
+  visibility: FeedSettingItem
 }
 
 interface SettingsContextProps {

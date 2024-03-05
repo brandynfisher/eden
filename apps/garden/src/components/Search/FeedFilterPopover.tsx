@@ -348,7 +348,14 @@ const FeedFilterPopover = ({
                                 <Checkbox
                                   size="small"
                                   name={group.id}
-                                  checked={!!feedSettings[group.id][item.value]}
+                                  checked={
+                                    (
+                                      feedSettings[group.id] as Record<
+                                        string,
+                                        boolean
+                                      >
+                                    )[item.value]
+                                  }
                                 />
                               }
                               label={
