@@ -14,9 +14,14 @@ export const sdxl_generators_image = [
   'remix',
   'blend',
   'upscale',
-  'makeitrad',
   'controlnet',
   'inpaint',
+  'kojii/makeitrad',
+  'kojii/va2rosa',
+  'kojii/chebel',
+  'kojii/untitledxyz',
+  'kojii/violetforest',
+  'kojii/huemin',
 ]
 export const sdxl_generators_video = [
   'real2real',
@@ -30,7 +35,6 @@ export const sdxl_generators_video = [
   'txt2vid',
   'img2vid',
   'vid2vid',
-  'littlemartians',
 ]
 
 export const parameterGroups: { [key: string]: string[] } = {
