@@ -34,6 +34,10 @@ export const useFeedPaginated = (
   orderBy: OrderByParam | undefined,
 ) => {
   const pageLimit = query?.limit || 25
+  const featuredCollectionId =
+    orderBy && orderBy.label === 'Featured'
+      ? process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
+      : undefined
 
   const getKey = useCallback(
     (
@@ -55,6 +59,7 @@ export const useFeedPaginated = (
         page: pageIndex + 1,
         orderBy: orderBy ? orderBy.field : undefined,
         direction: orderBy ? orderBy.direction : undefined,
+        collectionId: featuredCollectionId,
       })
     },
     [itemType, query, pageLimit, orderBy],
