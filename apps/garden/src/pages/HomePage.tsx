@@ -1,4 +1,5 @@
 import {
+  OrderByFeatured,
   OrderByFollowing,
   OrderByLatest,
   OrderByPopularity,
@@ -16,9 +17,12 @@ const HomePage = () => {
     return <LoadingIndicator />
   }
 
-  const filters = isAuthenticated
-    ? [OrderByScore, OrderByLatest, OrderByPopularity, OrderByFollowing]
-    : [OrderByScore, OrderByLatest, OrderByPopularity]
+  const filters = process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
+    ? [OrderByFeatured]
+    : []
+
+  filters.push(OrderByScore, OrderByLatest, OrderByPopularity)
+  isAuthenticated && filters.push(OrderByFollowing)
 
   return (
     <div className={`flex flex-col`}>
