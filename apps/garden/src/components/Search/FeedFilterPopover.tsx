@@ -1,3 +1,4 @@
+import FeedFilterButtons from '@/components/Search/FeedFilterButtons'
 import {
   FeedSettingItem,
   FeedSettings,
@@ -288,15 +289,7 @@ const FeedFilterPopover = ({
               >
                 {segment.title}
               </AccordionSummary>
-              {segment.id === 'filters' ? (
-                <div>
-                  {Object.entries(feedSettings).map((setting, index) => (
-                    <div key={index} onClick={() => console.log(setting)}>
-                      {setting[1].label}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
+              {segment.id === 'filters' ? <FeedFilterButtons /> : null}
             </div>,
             <AccordionDetails
               key={2}

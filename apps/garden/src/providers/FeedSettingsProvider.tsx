@@ -1,11 +1,16 @@
 import { useLocalStorage } from '@mantine/hooks'
-import React, { ReactElement, createContext } from 'react'
+import React, { ReactElement, createContext, useEffect, useState } from 'react'
+
+export enum FilterName {
+  Type = 'type',
+  Visibility = 'visibility',
+}
 
 export type FeedSettingItem = { [key: string]: boolean }
 
 export interface FilterSettings {
-  type: FeedSettingItem
-  visibility: FeedSettingItem
+  [FilterName.Type]: FeedSettingItem
+  [FilterName.Visibility]: FeedSettingItem
 }
 
 export interface ViewSettings {
@@ -13,13 +18,21 @@ export interface ViewSettings {
   gridImageStyle: 'contain' | 'cover'
 }
 
+// export interface FeedSettings extends ViewSettings {
+//   type: FeedSettingItem
+//   visibility: FeedSettingItem
+// }
+
 export interface FeedSettings extends ViewSettings {
-  type: FeedSettingItem
-  visibility: FeedSettingItem
+  [FilterName.Type]: FeedSettingItem
+  [FilterName.Visibility]: FeedSettingItem
 }
+
+// export type FilterName = string
 
 interface SettingsContextProps {
   feedSettings: FeedSettings
+  filters: Partial<FilterSettings>[]
   updateFeedSettings: (
     newSettings: (current: FeedSettings) => FeedSettings,
   ) => void
@@ -42,6 +55,7 @@ const feedSettingsContextDefaults: FeedSettings = {
 // Initialized context with default value to avoid the null checks in consumers
 export const FeedSettingsContext = createContext<SettingsContextProps>({
   feedSettings: feedSettingsContextDefaults,
+  filters: [],
   updateFeedSettings: () => {},
 })
 
@@ -55,14 +69,34 @@ export const FeedSettingsProvider = ({
     defaultValue: feedSettingsContextDefaults,
   })
 
+  const [filters, setFilters] = useState<Partial<FilterSettings>[]>([])
+
   const updateFeedSettings = (
     newSettings: (current: FeedSettings) => FeedSettings,
   ) => {
     setFeedSettings(newSettings(feedSettings))
   }
 
+  useEffect(() => {
+    const filterItems = Object.keys(feedSettings)
+      .filter((key): key is FilterName =>
+        Object.values(FilterName).includes(key as FilterName),
+      )
+      .map(
+        filterName =>
+          ({
+            [filterName]: feedSettings[filterName],
+          } as Partial<FilterSettings>),
+      )
+
+    console.log({ filterItems })
+    setFilters(filterItems)
+  }, [feedSettings])
+
   return (
-    <FeedSettingsContext.Provider value={{ feedSettings, updateFeedSettings }}>
+    <FeedSettingsContext.Provider
+      value={{ feedSettings, filters, updateFeedSettings }}
+    >
       {children}
     </FeedSettingsContext.Provider>
   )
