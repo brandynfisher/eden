@@ -8,7 +8,6 @@ import { ExpandMore } from '@mui/icons-material'
 import {
   Accordion,
   AccordionDetails,
-  AccordionProps,
   AccordionSummary,
   Checkbox,
   FormControlLabel,
@@ -59,17 +58,14 @@ const segments: Segment[] = [
           {
             label: 'Images',
             value: 'image',
-            // defaultActive: false,
           },
           {
             label: 'Videos',
             value: 'video',
-            // defaultActive: false,
           },
           {
             label: 'Stories',
             value: 'story',
-            // defaultActive: false,
           },
         ],
       },
@@ -81,12 +77,10 @@ const segments: Segment[] = [
           {
             label: 'Public',
             value: 'public',
-            // defaultActive: false,
           },
           {
             label: 'Private',
             value: 'private',
-            // defaultActive: false,
           },
         ],
       },
@@ -138,105 +132,34 @@ const segments: Segment[] = [
 ]
 
 interface ControlledAccordionProps extends ComponentPropsWithoutRef<'div'> {
-  defaultOpen?: boolean
-  children: ReactElement[]
+  segment: Segment
+  headerExtra?: ReactElement
 }
 
-const ControlledAccordion = ({
-  defaultOpen,
+const AccordionHeader = ({
+  segment,
   children,
-  ...rest
-}: ControlledAccordionProps & AccordionProps) => {
-  const [expanded, setExpanded] = useState<boolean>(defaultOpen || false)
-
-  const handleChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpanded(isExpanded)
-  }
-
+}: {
+  segment: Segment
+  children?: ReactElement
+}) => {
   return (
-    <Accordion expanded={expanded} onChange={handleChange} {...rest}>
+    <div key={1} className="flex flex-col max-w-full">
+      <AccordionSummary
+        className="!h-10 !min-h-0 hover:dark:bg-gray-700 bg-slate-800 !border-0 text-gray-300 text-sm"
+        expandIcon={<ExpandMore className="text-gray-300" />}
+        aria-controls={`${segment.id}-content`}
+        id={`${segment.id}-header`}
+      >
+        {segment.title}
+      </AccordionSummary>
       {children}
-    </Accordion>
+    </div>
   )
 }
 
-const FeedFilterPopover = ({
-  open,
-  handleClose,
-  anchorEl,
-}: {
-  open: boolean
-  handleClose: () => void
-  anchorEl: HTMLDivElement | null
-}) => {
+const AccordionBody = ({ segment }: { segment: Segment }) => {
   const { feedSettings, updateFeedSettings } = useContext(FeedSettingsContext)
-
-  // useEffect(() => {
-  //   console.log('UPDATING FEED SETTINGS', settings)
-  //   updateFeedSettings(settings)
-  // }, [settings])
-
-  // const handleItemChange = (
-  //   groupId: Group['id'],
-  //   type: Group['type'],
-  //   value: Item['value'],
-  //   checked: boolean
-  // ) => {
-  //   if (type === 'multi') {
-  //     console.log('multi')
-  //     updateFeedSettings((current: FeedSettings) => {
-  //       const newState = { ...current }
-  //
-  //       newState[groupId][value] = checked
-  //
-  //       console.log({newState})
-  //
-  //       return {
-  //         ...current,
-  //         ...newState
-  //       }
-  //     })
-  //   //   updateFeedSettings(prev => {
-  //   //     const prevState = {...prev}
-  //   //     if (!(groupId in prevState)) {
-  //   //       prevState[groupId] = {};
-  //   //     }
-  //   //
-  //   //     if (typeof prevState[groupId] === 'object' && typeof value === 'string') {
-  //   //       //@ts-ignore
-  //   //       if (prevState[groupId][value]) {
-  //   //         const newGroup = { ...prevState[groupId] as {[key: string]: boolean} };
-  //   //         delete newGroup[value];
-  //   //         return { ...prevState, [groupId]: newGroup };
-  //   //       }
-  //   //
-  //   //       return { ...prevState, [groupId]: { ...(prevState[groupId] as {[key: string]: boolean}), [value]: true } };
-  //   //     }
-  //   //     return prevState;
-  //   //   });
-  //   } else {
-  //     console.log('single')
-  //     updateFeedSettings((current: FeedSettings) => {
-  //       const newState = { ...current }
-  //       // if (!isFeedSettingsKey(groupId)) {
-  //       //   return current
-  //       // }
-  //       //
-  //       newState[groupId] = value
-  //
-  //       return {
-  //         ...current,
-  //         ...newState
-  //       }
-  //     })
-  //   //   updateFeedSettings(prev => {
-  //   //     if (typeof value === 'string') {
-  //   //       return { ...prev, [groupId]: value };
-  //   //     }
-  //   //     return prev;
-  //   //   });
-  //   }
-  // };
 
   const handleItemChange = (
     groupId: Group['id'],
@@ -261,8 +184,120 @@ const FeedFilterPopover = ({
   }
 
   return (
+    <AccordionDetails
+      key={2}
+      className="pb-0 text-gray-300"
+      id={`${segment.id}-content`}
+    >
+      {segment?.groups?.map(group => (
+        <div key={group.title} className="mb-2">
+          <div className="text-sm pb-0.5">{group.title}</div>
+          {group.type === 'single' ? (
+            <RadioGroup
+              name={group.id}
+              aria-labelledby="demo-radio-buttons-group-label"
+              value={feedSettings[group.id]}
+            >
+              {group.items && group.items.length
+                ? group.items.map(item => (
+                    <FormControlLabel
+                      className="pl-1 text-sm !mr-0"
+                      key={item.label}
+                      control={<Radio size="small" value={item.value} />}
+                      label={
+                        <span className="text-sm select-none">
+                          {item.label}
+                        </span>
+                      }
+                      onChange={(evt, checked) =>
+                        handleItemChange(
+                          group.id,
+                          group.type,
+                          item.value,
+                          checked,
+                        )
+                      }
+                    />
+                  ))
+                : null}
+            </RadioGroup>
+          ) : (
+            <FormGroup className="mb-2">
+              {group.items && group.items.length
+                ? group.items.map(item => (
+                    <FormControlLabel
+                      className="pl-1 text-sm !mr-0"
+                      key={item.label}
+                      control={
+                        <Checkbox
+                          size="small"
+                          name={group.id}
+                          checked={
+                            (feedSettings[group.id] as Record<string, boolean>)[
+                              item.value
+                            ]
+                          }
+                        />
+                      }
+                      label={
+                        <span className="text-sm select-none">
+                          {item.label}
+                        </span>
+                      }
+                      onChange={(event, checked) =>
+                        handleItemChange(
+                          group.id,
+                          group.type,
+                          item.value,
+                          checked,
+                        )
+                      }
+                    />
+                  ))
+                : null}
+            </FormGroup>
+          )}
+        </div>
+      ))}
+    </AccordionDetails>
+  )
+}
+
+const ControlledAccordion = ({
+  segment,
+  headerExtra,
+  ...rest
+}: ControlledAccordionProps) => {
+  const [expanded, setExpanded] = useState<boolean>(
+    segment.defaultOpen || false,
+  )
+
+  const handleChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpanded(isExpanded)
+  }
+
+  return (
+    <Accordion expanded={expanded} {...rest} onChange={handleChange}>
+      <AccordionHeader segment={segment}>
+        {headerExtra && !expanded ? headerExtra : undefined}
+      </AccordionHeader>
+      <AccordionBody segment={segment} />
+    </Accordion>
+  )
+}
+
+const FeedFilterPopover = ({
+  open,
+  handleClose,
+  anchorEl,
+}: {
+  open: boolean
+  handleClose: () => void
+  anchorEl: HTMLDivElement | null
+}) => {
+  return (
     <Popover
-      id={'feed'}
+      id={'feed-filter-popover'}
       open={open}
       anchorEl={anchorEl}
       onClose={handleClose}
@@ -276,104 +311,12 @@ const FeedFilterPopover = ({
       {segments.map(segment => (
         <ControlledAccordion
           key={segment.id}
-          defaultOpen={segment.defaultOpen}
-          className="min-w-[160px] !m-0 controlled-accordion [&:not(:last-child)]:!mb-4"
-        >
-          {[
-            <div key={1}>
-              <AccordionSummary
-                className="!h-10 !min-h-0 hover:dark:bg-gray-700 bg-slate-800 !border-0 text-gray-300 text-sm"
-                expandIcon={<ExpandMore className="text-gray-300" />}
-                aria-controls={`${segment.id}-content`}
-                id={`${segment.id}-header`}
-              >
-                {segment.title}
-              </AccordionSummary>
-              {segment.id === 'filters' ? <FeedFilterButtons /> : null}
-            </div>,
-            <AccordionDetails
-              key={2}
-              className="pb-0 text-gray-300"
-              id={`${segment.id}-content`}
-            >
-              {segment?.groups?.map(group => (
-                <div key={group.title} className="mb-2">
-                  <div className="text-sm pb-0.5">{group.title}</div>
-                  {group.type === 'single' ? (
-                    <RadioGroup
-                      name={group.id}
-                      aria-labelledby="demo-radio-buttons-group-label"
-                      value={feedSettings[group.id]}
-                    >
-                      {group.items && group.items.length
-                        ? group.items.map(item => (
-                            <FormControlLabel
-                              className="pl-1 text-sm !mr-0"
-                              key={item.label}
-                              control={
-                                <Radio size="small" value={item.value} />
-                              }
-                              label={
-                                <span className="text-sm select-none">
-                                  {item.label}
-                                </span>
-                              }
-                              onChange={(evt, checked) =>
-                                handleItemChange(
-                                  group.id,
-                                  group.type,
-                                  item.value,
-                                  checked,
-                                )
-                              }
-                            />
-                          ))
-                        : null}
-                    </RadioGroup>
-                  ) : (
-                    <FormGroup className="mb-2">
-                      {group.items && group.items.length
-                        ? group.items.map(item => (
-                            <FormControlLabel
-                              className="pl-1 text-sm !mr-0"
-                              key={item.label}
-                              control={
-                                <Checkbox
-                                  size="small"
-                                  name={group.id}
-                                  checked={
-                                    (
-                                      feedSettings[group.id] as Record<
-                                        string,
-                                        boolean
-                                      >
-                                    )[item.value]
-                                  }
-                                />
-                              }
-                              label={
-                                <span className="text-sm select-none">
-                                  {item.label}
-                                </span>
-                              }
-                              onChange={(event, checked) =>
-                                handleItemChange(
-                                  group.id,
-                                  group.type,
-                                  item.value,
-                                  checked,
-                                )
-                              }
-                            />
-                          ))
-                        : null}
-                    </FormGroup>
-                  )}
-                </div>
-              ))}
-            </AccordionDetails>,
-          ]}
-        </ControlledAccordion>
+          segment={segment}
+          headerExtra={
+            segment.id === 'filters' ? <FeedFilterButtons /> : undefined
+          }
+          className="w-[160px] !m-0 [&:not(:last-child)]:!mb-4"
+        />
       ))}
     </Popover>
   )
