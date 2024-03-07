@@ -10,14 +10,14 @@ import React, { useCallback, useEffect, useState } from 'react'
 
 const MasonryInfiniteScrollableContainer = ({
   itemType,
-  filters,
+  orderParams,
   query,
   modalContainerRef,
   modalContainerHeight,
   masonryKeySuffix,
 }: {
   itemType: ItemType
-  filters?: OrderByParam[]
+  orderParams?: OrderByParam[]
   query?: PaginatedFeedQuery
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
@@ -25,11 +25,11 @@ const MasonryInfiniteScrollableContainer = ({
 }) => {
   const [fetchStartDate, setFetchStartDate] = useState<string | undefined>()
   const [orderBy, setOrderBy] = useState<OrderByParam>(
-    filters ? filters[0] : OrderByDefaultParam,
+    orderParams ? orderParams[0] : OrderByDefaultParam,
   )
   const [renderCount, setRenderCount] = useState(0)
   const [key, setKey] = useState(
-    `${filters ? filters[0].field : OrderByDefaultParam.field}_${0}`,
+    `${orderParams ? orderParams[0].field : OrderByDefaultParam.field}_${0}`,
   )
   const handleOrderChange = useCallback(
     (newOrderBy: OrderByParam) => {
@@ -53,13 +53,15 @@ const MasonryInfiniteScrollableContainer = ({
 
   return (
     <>
-      {filters ? (
-        <OrderByButtons
-          params={filters}
-          initialParam={filters[0]}
-          onOrderChange={item => handleOrderChange(item)}
-        />
-      ) : null}
+      <div className="flex justify-between mb-4">
+        {orderParams ? (
+          <OrderByButtons
+            params={orderParams}
+            initialParam={orderParams[0]}
+            onOrderChange={item => handleOrderChange(item)}
+          />
+        ) : null}
+      </div>
 
       <MasonryInfiniteScrollable
         masonryKeySuffix={masonryKeySuffix}
