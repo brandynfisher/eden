@@ -101,6 +101,7 @@ const MasonryInfinite = ({
   const resizeObserver = useResizeObserver(positioner)
 
   useEffect(() => {
+    console.log({ masonryKey, count: items.length })
     setItems(masonryKey, items)
   }, [masonryKey, items.length])
 

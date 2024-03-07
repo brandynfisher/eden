@@ -20,7 +20,7 @@ const CharactersPage = () => {
 
       <MasonryInfiniteContainer
         itemType="character"
-        filters={[OrderByUsage, OrderByLatest]}
+        orderParams={[OrderByUsage, OrderByLatest]}
         query={query}
       />
     </div>

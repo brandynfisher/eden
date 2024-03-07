@@ -24,8 +24,8 @@ const HomePage = () => {
     <div className={`flex flex-col`}>
       <MasonryInfiniteContainer
         itemType="creation"
-        filters={filters}
-        fallbackFilter={OrderByLatest}
+        orderParams={filters}
+        fallbackOrderParam={OrderByLatest}
         query={{ limit: 50 }}
       />
     </div>

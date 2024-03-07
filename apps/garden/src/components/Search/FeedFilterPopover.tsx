@@ -30,7 +30,7 @@ interface Item {
 }
 
 interface Group {
-  id: 'type' | 'visibility' | 'gridImageStyle' | 'imageSize'
+  id: 'outputType' | 'visibility' | 'gridImageStyle' | 'imageSize'
   title: string
   type: 'single' | 'multi'
   items: Item[]
@@ -51,7 +51,7 @@ const segments: Segment[] = [
     defaultOpen: true,
     groups: [
       {
-        id: 'type',
+        id: 'outputType',
         title: 'Type',
         type: 'multi',
         items: [
@@ -63,72 +63,72 @@ const segments: Segment[] = [
             label: 'Videos',
             value: 'video',
           },
-          {
-            label: 'Stories',
-            value: 'story',
-          },
+          // {
+          //   label: 'Stories',
+          //   value: 'story',
+          // },
         ],
       },
-      {
-        id: 'visibility',
-        title: 'Visibility',
-        type: 'multi',
-        items: [
-          {
-            label: 'Public',
-            value: 'public',
-          },
-          {
-            label: 'Private',
-            value: 'private',
-          },
-        ],
-      },
+      // {
+      //   id: 'visibility',
+      //   title: 'Visibility',
+      //   type: 'multi',
+      //   items: [
+      //     {
+      //       label: 'Public',
+      //       value: 'public',
+      //     },
+      //     {
+      //       label: 'Private',
+      //       value: 'private',
+      //     },
+      //   ],
+      // },
     ],
   },
-  {
-    id: 'view',
-    title: 'View Options',
-    defaultOpen: false,
-    groups: [
-      {
-        id: 'gridImageStyle',
-        title: 'Layout',
-        type: 'single',
-        defaultValue: 'full',
-        items: [
-          {
-            label: 'Full',
-            value: 'contain',
-          },
-          {
-            label: 'Square',
-            value: 'cover',
-          },
-        ],
-      },
-      {
-        id: 'imageSize',
-        title: 'Image Size',
-        type: 'single',
-        defaultValue: 'medium',
-        items: [
-          {
-            label: 'Small',
-            value: 'small',
-          },
-          {
-            label: 'Medium',
-            value: 'medium',
-          },
-          {
-            label: 'Large',
-            value: 'large',
-          },
-        ],
-      },
-    ],
-  },
+  // {
+  //   id: 'view',
+  //   title: 'View Options',
+  //   defaultOpen: false,
+  //   groups: [
+  //     {
+  //       id: 'gridImageStyle',
+  //       title: 'Layout',
+  //       type: 'single',
+  //       defaultValue: 'full',
+  //       items: [
+  //         {
+  //           label: 'Full',
+  //           value: 'contain',
+  //         },
+  //         {
+  //           label: 'Square',
+  //           value: 'cover',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       id: 'imageSize',
+  //       title: 'Image Size',
+  //       type: 'single',
+  //       defaultValue: 'medium',
+  //       items: [
+  //         {
+  //           label: 'Small',
+  //           value: 'small',
+  //         },
+  //         {
+  //           label: 'Medium',
+  //           value: 'medium',
+  //         },
+  //         {
+  //           label: 'Large',
+  //           value: 'large',
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // },
 ]
 
 interface ControlledAccordionProps extends ComponentPropsWithoutRef<'div'> {
@@ -315,7 +315,7 @@ const FeedFilterPopover = ({
           headerExtra={
             segment.id === 'filters' ? <FeedFilterButtons /> : undefined
           }
-          className="w-[160px] !m-0 [&:not(:last-child)]:!mb-4"
+          className="w-[160px] !m-0"
         />
       ))}
     </Popover>

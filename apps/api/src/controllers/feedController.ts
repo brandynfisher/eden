@@ -31,7 +31,9 @@ import mongoose, { PipelineStage } from 'mongoose'
 const aggregateCreationsByFollowerId = (
   followerId: ObjectId,
   dateEndCutOff: string,
+  filters: Filters,
 ) => {
+  console.log({ filters })
   return Follow.aggregate([
     {
       $match: {
@@ -60,6 +62,7 @@ const aggregateCreationsByFollowerId = (
                 { $expr: { $eq: ['$user', '$$followingId'] } },
                 { isPrivate: { $ne: true } },
                 { deleted: { $ne: true } },
+                { ...filters },
               ],
             },
           },
@@ -85,6 +88,7 @@ const aggregateCreationsByFollowerId = (
 const aggregateCreationsByUserLikes = (
   userId: ObjectId,
   dateEndCutOff: string,
+  filters: Filters,
 ) => {
   return Reaction.aggregate([
     {
@@ -118,6 +122,7 @@ const aggregateCreationsByUserLikes = (
                 { $expr: { $eq: ['$_id', '$$reactionsCreationId'] } },
                 { isPrivate: { $ne: true } },
                 { deleted: { $ne: true } },
+                { ...filters },
               ],
             },
           },
@@ -140,9 +145,16 @@ const aggregateCreationsByUserLikes = (
   ])
 }
 
+type Filters =
+  | {
+      'mediaAttributes.type': { $in: string | string[] } | undefined
+    }
+  | undefined
+
 const aggregateCreationsByEmbeddingScore = (
   dateEndCutOff: string,
   dateStartCutOff: string | undefined,
+  filters: Filters,
 ) => {
   const decayPerHour = 0.0015
   const hoursAgo = 360
@@ -162,6 +174,7 @@ const aggregateCreationsByEmbeddingScore = (
         'embedding.score': { $exists: true },
         isPrivate: false,
         deleted: false,
+        ...filters,
       },
     },
     {
@@ -223,6 +236,7 @@ export const getCreationsFeed = async (
     conceptId,
     creationId,
     generatorId,
+    outputType,
     name,
     maxDate,
     minDate,
@@ -264,6 +278,15 @@ export const getCreationsFeed = async (
       : new ObjectId(generatorId)
     : undefined
 
+  const outputTypes = outputType
+    ? Array.isArray(outputType)
+      ? outputType.map(type => String(type))
+      : [String(outputType)]
+    : undefined
+
+  const filters: Filters = outputTypes
+    ? { 'mediaAttributes.type': { $in: outputTypes } }
+    : undefined
   const creationRepository = new CreationRepository(Creation)
   let creations: PaginatedResponse<CreationDocument>
 
@@ -272,6 +295,7 @@ export const getCreationsFeed = async (
     const followAggregate = aggregateCreationsByFollowerId(
       new ObjectId(ownUserId),
       maxDate || new Date().toISOString(),
+      filters,
     )
 
     creations = await followCreationRepository.aggregateQuery(followAggregate, {
@@ -284,6 +308,7 @@ export const getCreationsFeed = async (
     const userReactionAggregate = aggregateCreationsByUserLikes(
       new ObjectId(ownUserId),
       maxDate || new Date().toISOString(),
+      filters,
     )
 
     creations = await reactionCreationRepository.aggregateQuery(
@@ -305,6 +330,7 @@ export const getCreationsFeed = async (
     const creationsAggregate = aggregateCreationsByEmbeddingScore(
       maxDate || new Date().toISOString(),
       minDate ? minDate : undefined,
+      filters,
     )
     creations = await creationRepository.aggregateQuery(creationsAggregate, {
       limit,
@@ -421,6 +447,7 @@ export const getCreationsFeed = async (
         : characterIds
         ? { $in: characterIds }
         : undefined,
+      ...filters,
     }
 
     creations = await creationRepository.query(query, {

@@ -10,7 +10,6 @@ export type FeedSettingItemKey = keyof FeedSettingItem
 
 const FeedFilterButtons = () => {
   const { feedSettings, updateFeedSettings } = useContext(FeedSettingsContext)
-
   const { ...filterSettings } = feedSettings
 
   const handleButtonClick = (
@@ -30,7 +29,7 @@ const FeedFilterButtons = () => {
   }
 
   return (
-    <div className={`flex flex-wrap gap-1 px-2 mt-2 max-w-full`}>
+    <div className={`flex flex-wrap gap-1 px-2 my-2 max-w-full`}>
       {Object.keys(filterSettings)
         .filter((filterName): filterName is FilterName =>
           Object.values(FilterName).includes(filterName as FilterName),
