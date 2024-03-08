@@ -57,7 +57,7 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
             key={`collection_${collection._id}`}
             itemType="creation"
             query={{ collectionId: collection._id }}
-            filters={[OrderByLatest, OrderByPopularity]}
+            orderParams={[OrderByLatest, OrderByPopularity]}
           />
         </div>
       </Space>

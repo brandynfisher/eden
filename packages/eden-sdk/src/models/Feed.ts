@@ -20,6 +20,7 @@ export interface FeedCreationsArguments
   collectionId?: string | string[]
   conceptId?: string | string[]
   generatorId?: string | string[]
+  outputType?: string | string[]
   name?: string
   maxDate?: string
   minDate?: string

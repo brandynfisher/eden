@@ -8,28 +8,32 @@ import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { ItemType } from '@/providers/ModalProvider'
 import React, { useCallback, useEffect, useState } from 'react'
 
+// import FeedFilter from '@/components/Search/FeedFilter'
+// import { FeedSettingsContext, FilterName } from '@/providers/FeedSettingsProvider'
+
 const MasonryInfiniteScrollableContainer = ({
   itemType,
-  filters,
+  orderParams,
   query,
   modalContainerRef,
   modalContainerHeight,
   masonryKeySuffix,
 }: {
   itemType: ItemType
-  filters?: OrderByParam[]
+  orderParams?: OrderByParam[]
   query?: PaginatedFeedQuery
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
   masonryKeySuffix?: string
 }) => {
+  // const [feedFilters, setFeedFilters] = useState({})
   const [fetchStartDate, setFetchStartDate] = useState<string | undefined>()
   const [orderBy, setOrderBy] = useState<OrderByParam>(
-    filters ? filters[0] : OrderByDefaultParam,
+    orderParams ? orderParams[0] : OrderByDefaultParam,
   )
   const [renderCount, setRenderCount] = useState(0)
   const [key, setKey] = useState(
-    `${filters ? filters[0].field : OrderByDefaultParam.field}_${0}`,
+    `${orderParams ? orderParams[0].field : OrderByDefaultParam.field}_${0}`,
   )
   const handleOrderChange = useCallback(
     (newOrderBy: OrderByParam) => {
@@ -42,10 +46,35 @@ const MasonryInfiniteScrollableContainer = ({
     [orderBy.field, renderCount],
   )
 
+  // const { filters } = useContext(FeedSettingsContext)
   useEffect(() => {
+    // console.log(' ===== useEffect::orderBy+feedFilters')
+    // let activeFilters = {}
+    //
+    // filters.map(filter => {
+    //   Object.entries(filter).map(items => {
+    //     let values: FilterName[] = []
+    //     // console.log({ type: items[0], items: items[1] })
+    //     Object.entries(items[1]).map(item => {
+    //       // item[0]
+    //       if (item[1] === true) {
+    //         values.push(item[0] as FilterName)
+    //       }
+    //     })
+    //
+    //     // @ts-ignore
+    //     activeFilters[items[0]] = values
+    //   })
+    // })
+    //
+    // console.log(activeFilters)
+    // setFeedFilters(activeFilters)
     setFetchStartDate(new Date().toISOString())
-    setRenderCount(prevState => prevState + 1)
-  }, [orderBy])
+    setRenderCount(prevState => {
+      setKey(`${orderBy.field}_${prevState + 1}`)
+      return prevState + 1
+    })
+  }, [orderBy, setRenderCount])
 
   if (!fetchStartDate) {
     return <LoadingIndicator />
@@ -53,19 +82,27 @@ const MasonryInfiniteScrollableContainer = ({
 
   return (
     <>
-      {filters ? (
-        <OrderByButtons
-          params={filters}
-          initialParam={filters[0]}
-          onOrderChange={item => handleOrderChange(item)}
-        />
-      ) : null}
+      <div className="flex justify-between mb-4">
+        {orderParams ? (
+          <OrderByButtons
+            params={orderParams}
+            initialParam={orderParams[0]}
+            onOrderChange={item => handleOrderChange(item)}
+          />
+        ) : null}
+
+        {/*{itemType && itemType === 'creation' ? <FeedFilter containerRef={modalContainerRef}/> : null}*/}
+      </div>
 
       <MasonryInfiniteScrollable
         masonryKeySuffix={masonryKeySuffix}
         key={key}
         itemType={itemType ? itemType : 'creation'}
-        query={{ ...query, maxDate: fetchStartDate }}
+        query={{
+          ...query,
+          // ...feedFilters,
+          maxDate: fetchStartDate,
+        }}
         orderBy={orderBy}
         modalContainerRef={modalContainerRef}
         modalContainerHeight={modalContainerHeight}

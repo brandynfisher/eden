@@ -19,6 +19,7 @@ export type FeedRouteQueryParams = {
   collectionId?: string | string[]
   creationId?: string | string[]
   generatorId?: string | string[]
+  outputType?: string | string[]
   name?: string | string[]
   conceptId?: string | string[]
   maxDate?: string

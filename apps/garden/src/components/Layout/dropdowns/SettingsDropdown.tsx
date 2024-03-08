@@ -181,7 +181,7 @@ export const SettingsDropdown = () => {
       className="cursor-pointer"
       arrow={true}
     >
-      <Button className="min-w-[40px]" data-testid="settings-dropdown-trigger">
+      <Button className="!min-w-[40px]" data-testid="settings-dropdown-trigger">
         <div className="flex items-center font-mono">
           <SettingOutlined className="text-xl" />
         </div>

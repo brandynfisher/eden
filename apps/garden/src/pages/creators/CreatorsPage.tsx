@@ -21,7 +21,7 @@ const CreatorsPage = () => {
 
       <MasonryInfiniteContainer
         itemType="creator"
-        filters={[OrderByFollowers, OrderByUsage, OrderByLatest]}
+        orderParams={[OrderByFollowers, OrderByUsage, OrderByLatest]}
         query={query}
       />
     </div>

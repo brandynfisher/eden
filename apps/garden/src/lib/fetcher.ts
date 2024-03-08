@@ -73,6 +73,12 @@ export const createPaginationRoute = (
     params.generatorId = [String(query.generatorId)]
   }
 
+  if (Array.isArray(query.outputType)) {
+    params.outputType = query.outputType.map(id => String(id))
+  } else if (query.outputType) {
+    params.outputType = [String(query.outputType)]
+  }
+
   if (query.name && query.name.length > 0) {
     params.name = String(query.name)
   }

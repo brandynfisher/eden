@@ -36,7 +36,7 @@ const ModalMasonry = ({
           masonryKeySuffix={masonryKeySuffix}
           itemType={itemType || 'creation'}
           query={query}
-          filters={filters}
+          orderParams={filters}
           modalContainerRef={modalContainerRef}
           modalContainerHeight={modalContainerHeight}
         />

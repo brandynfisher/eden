@@ -19,7 +19,7 @@ const ConceptsPage = () => {
       />
       <MasonryInfiniteContainer
         itemType="concept"
-        filters={[OrderByUsage, OrderByLatest]}
+        orderParams={[OrderByUsage, OrderByLatest]}
         query={query}
       />
     </div>
