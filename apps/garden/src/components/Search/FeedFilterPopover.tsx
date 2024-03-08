@@ -147,8 +147,8 @@ const AccordionHeader = ({
   return (
     <div key={1} className="flex flex-col max-w-full">
       <AccordionSummary
-        className="!h-10 !min-h-0 hover:dark:bg-gray-700 bg-slate-800 !border-0 text-gray-300 text-sm"
-        expandIcon={<ExpandMore className="text-gray-300" />}
+        className="!h-10 !min-h-0 !hover:bg-gray-300 !hover:dark:bg-gray-700 !bg-slate-800 !border-0 text-gray-700 dark:text-gray-300 text-sm"
+        expandIcon={<ExpandMore className="text-gray-700 dark:text-gray-300" />}
         aria-controls={`${segment.id}-content`}
         id={`${segment.id}-header`}
       >
@@ -187,7 +187,7 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
   return (
     <AccordionDetails
       key={2}
-      className="pb-0 text-gray-300"
+      className="pb-0 text-gray-700 dark:text-gray-300"
       id={`${segment.id}-content`}
     >
       {segment?.groups?.map(group => (
