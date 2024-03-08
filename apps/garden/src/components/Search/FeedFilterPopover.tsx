@@ -18,6 +18,7 @@ import {
 import Popover from '@mui/material/Popover'
 import React, {
   ComponentPropsWithoutRef,
+  MutableRefObject,
   ReactElement,
   useContext,
   useState,
@@ -287,17 +288,22 @@ const ControlledAccordion = ({
 }
 
 const FeedFilterPopover = ({
+  containerRef,
   open,
   handleClose,
   anchorEl,
 }: {
+  containerRef?: MutableRefObject<HTMLDivElement>
   open: boolean
   handleClose: () => void
   anchorEl: HTMLDivElement | null
 }) => {
+  console.log(containerRef?.current)
   return (
     <Popover
       id={'feed-filter-popover'}
+      // disableScrollLock={true}
+      container={containerRef?.current || undefined}
       open={open}
       anchorEl={anchorEl}
       onClose={handleClose}

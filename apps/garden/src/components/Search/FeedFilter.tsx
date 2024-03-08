@@ -1,11 +1,16 @@
 import FeedFilterPopover from '@/components/Search/FeedFilterPopover'
 import FeedFilterTrigger from '@/components/Search/FeedFilterTrigger'
-import React from 'react'
+import React, { MutableRefObject } from 'react'
 
-const FeedFilter = () => {
+const FeedFilter = ({
+  containerRef,
+}: {
+  containerRef?: MutableRefObject<HTMLDivElement>
+}) => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    console.log({ feedFilterTarget: event.currentTarget })
     setAnchorEl(event.currentTarget)
   }
 
@@ -17,6 +22,7 @@ const FeedFilter = () => {
     <div data-testid="feed-filter">
       <FeedFilterTrigger onClick={handleClick} />
       <FeedFilterPopover
+        containerRef={containerRef}
         open={Boolean(anchorEl)}
         handleClose={handleClose}
         anchorEl={anchorEl}
