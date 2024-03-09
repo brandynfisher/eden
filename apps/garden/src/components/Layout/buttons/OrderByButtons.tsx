@@ -7,6 +7,12 @@ export type OrderByParam = {
   direction: -1 | 1
 }
 
+export const OrderByFeatured: OrderByParam = {
+  label: 'Featured',
+  field: 'wow',
+  direction: -1,
+}
+
 export const OrderByLatest: OrderByParam = {
   label: 'Latest',
   field: 'createdAt',
@@ -110,7 +116,7 @@ const OrderByButtons = ({
   }
 
   return (
-    <div className="mb-4 flex gap-2 flex-wrap items-center">
+    <div className="flex gap-2 flex-wrap items-center">
       {params.map(item => (
         <OrderByButton
           key={item.field}

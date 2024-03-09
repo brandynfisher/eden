@@ -4,28 +4,34 @@ import OrderByButtons, {
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
+import FeedFilter from '@/components/Search/FeedFilter'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
+import {
+  FeedSettingsContext,
+  FilterName,
+} from '@/providers/FeedSettingsProvider'
 import { ItemType } from '@/providers/ModalProvider'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 const MasonryInfiniteContainer = ({
   itemType,
-  filters,
   query,
-  fallbackFilter,
+  orderParams,
+  fallbackOrderParam,
 }: {
   itemType: ItemType
-  filters?: OrderByParam[]
+  orderParams?: OrderByParam[]
   query?: PaginatedFeedQuery
-  fallbackFilter?: OrderByParam
+  fallbackOrderParam?: OrderByParam
 }) => {
+  const [feedFilters, setFeedFilters] = useState({})
   const [fetchStartDate, setFetchStartDate] = useState<string | undefined>()
   const [orderBy, setOrderBy] = useState<OrderByParam>(
-    filters ? filters[0] : OrderByDefaultParam,
+    orderParams ? orderParams[0] : OrderByDefaultParam,
   )
   const [renderCount, setRenderCount] = useState(0)
   const [key, setKey] = useState(
-    `${filters ? filters[0].field : OrderByDefaultParam.field}_${0}`,
+    `${orderParams ? orderParams[0].field : OrderByDefaultParam.field}_${0}`,
   )
   const [hiddenParams, setHiddenParams] = useState<string[]>([])
 
@@ -36,22 +42,52 @@ const MasonryInfiniteContainer = ({
         setKey(`${newOrderBy.field}_${renderCount}`)
       }
     },
-    [renderCount],
+    [orderBy.field, renderCount],
   )
 
-  useEffect(() => {
-    setFetchStartDate(new Date().toISOString())
-    setRenderCount(prevState => prevState + 1)
-  }, [orderBy])
-
   const handleFallbackOnEmptyResult = (orderBy: OrderByParam) => {
-    if (fallbackFilter) {
+    if (orderBy.field !== 'embedding.score') {
+      return
+    }
+
+    if (fallbackOrderParam) {
       setHiddenParams(prev =>
         prev.includes(orderBy.field) ? prev : [...prev, orderBy.field],
       )
-      handleOrderChange(fallbackFilter)
+      handleOrderChange(fallbackOrderParam)
     }
   }
+
+  const { filters } = useContext(FeedSettingsContext)
+  useEffect(() => {
+    let activeFilters = {}
+
+    filters.map(filter => {
+      Object.entries(filter).map(items => {
+        let values: FilterName[] = []
+        // console.log({ type: items[0], items: items[1] })
+        Object.entries(items[1]).map(item => {
+          // item[0]
+          if (item[1] === true) {
+            values.push(item[0] as FilterName)
+          }
+        })
+
+        // @ts-ignore
+        activeFilters[items[0]] = values
+      })
+    })
+
+    setFeedFilters(activeFilters)
+  }, [filters])
+
+  useEffect(() => {
+    setFetchStartDate(new Date().toISOString())
+    setRenderCount(prevState => {
+      setKey(`${orderBy.field}_${prevState + 1}`)
+      return prevState + 1
+    })
+  }, [orderBy, feedFilters])
 
   if (!fetchStartDate) {
     return <LoadingIndicator />
@@ -59,23 +95,29 @@ const MasonryInfiniteContainer = ({
 
   return (
     <>
-      {filters ? (
-        <OrderByButtons
-          params={filters.filter(item => !hiddenParams.includes(item.field))}
-          initialParam={
-            filters.filter(item => !hiddenParams.includes(item.field))[0]
-          }
-          onOrderChange={item => handleOrderChange(item)}
-        />
-      ) : null}
+      <div className="flex justify-between mb-4">
+        {orderParams ? (
+          <OrderByButtons
+            params={orderParams.filter(
+              item => !hiddenParams.includes(item.field),
+            )}
+            initialParam={
+              orderParams.filter(item => !hiddenParams.includes(item.field))[0]
+            }
+            onOrderChange={item => handleOrderChange(item)}
+          />
+        ) : null}
+
+        {itemType && itemType === 'creation' ? <FeedFilter /> : null}
+      </div>
 
       <MasonryInfinite
         key={key}
         orderBy={orderBy}
         itemType={itemType}
-        query={{ ...query, maxDate: fetchStartDate }}
+        query={{ ...query, ...feedFilters, maxDate: fetchStartDate }}
         emptyResultHandler={
-          fallbackFilter ? handleFallbackOnEmptyResult : undefined
+          fallbackOrderParam ? handleFallbackOnEmptyResult : undefined
         }
       />
     </>

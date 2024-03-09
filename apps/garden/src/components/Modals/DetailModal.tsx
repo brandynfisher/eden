@@ -133,12 +133,14 @@ const DetailModal = ({
     document.body.classList.add('overflow-hidden')
 
     return () => {
-      document.body.style.paddingRight = ''
-      document.body.style.overflow = ''
-      document.body.classList.remove('relative')
-      document.body.classList.remove('overflow-hidden')
+      if (layerIndex === 0) {
+        document.body.style.paddingRight = ''
+        document.body.style.overflow = ''
+        document.body.classList.remove('relative')
+        document.body.classList.remove('overflow-hidden')
+      }
     }
-  }, [])
+  }, [layerIndex])
 
   const getContainer = useCallback(() => {
     if (modalContainerRef && modalContainerRef.current) {

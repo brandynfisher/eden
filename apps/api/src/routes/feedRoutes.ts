@@ -33,6 +33,8 @@ const feedRoutes: FastifyPluginAsync = async server => {
           name: { type: ['string', 'array'] },
           maxDate: { type: 'string' },
           minDate: { type: 'string' },
+          outputType: { type: ['string', 'array'] },
+          isPrivate: { type: 'boolean' },
           ...paginationProperties(),
         },
         required: [],

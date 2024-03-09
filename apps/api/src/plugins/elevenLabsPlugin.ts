@@ -474,6 +474,28 @@ const ELEVENLABS_VOICES = [
       'https://storage.googleapis.com/eleven-public-prod/premade/voices/zrHiDhphv9ZnVXBqCLjz/decbf20b-0f57-4fac-985b-a4f0290ebfc4.mp3',
     use_case: 'animation',
   },
+
+  //////// custom voices //////////////
+  {
+    id: 'Aeso74V56QEMYuaJGgsw',
+    name: 'Tao',
+    accent: 'american',
+    age: 'middle aged',
+    gender: 'male',
+    description: 'Bombay Beach Biennale',
+    preview_url: '',
+    use_case: 'tao',
+  },
+  {
+    id: 'CWJgNDoO3K8OswjpujkI',
+    name: 'chatsubo.z',
+    accent: 'american',
+    age: 'middle aged',
+    gender: 'male',
+    description: 'Mars College',
+    preview_url: '',
+    use_case: 'chatsubo.z',
+  },
 ]
 
 export class ElevenLabs {
