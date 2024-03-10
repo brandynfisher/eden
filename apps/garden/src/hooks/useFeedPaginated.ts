@@ -36,7 +36,7 @@ export const useFeedPaginated = (
 ) => {
   const pageLimit = query?.limit || 25
   const featuredCollectionId =
-    orderBy && orderBy.label === 'Featured'
+    orderBy && orderBy.field === 'wow'
       ? process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
       : undefined
 
@@ -53,14 +53,12 @@ export const useFeedPaginated = (
         return null
       }
 
-      // console.log('getKey', {pageIndex, previousPageData})
       return createPaginationRoute(`/api/feed/${itemType}s`, {
-        ...query,
+        ...{ collectionId: featuredCollectionId, ...query },
         limit: pageLimit,
         page: pageIndex + 1,
         orderBy: orderBy ? orderBy.field : undefined,
         direction: orderBy ? orderBy.direction : undefined,
-        collectionId: featuredCollectionId,
       })
     },
     [itemType, query, pageLimit, orderBy],
