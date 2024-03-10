@@ -298,7 +298,6 @@ const FeedFilterPopover = ({
   handleClose: () => void
   anchorEl: HTMLDivElement | null
 }) => {
-  console.log(containerRef?.current)
   return (
     <Popover
       id={'feed-filter-popover'}
