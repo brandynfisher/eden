@@ -312,7 +312,7 @@ function ModalProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const handler = (url: string, { shallow }: { shallow: boolean }) => {
-      console.log('routeChangeStart', url, shallow)
+      // console.log('routeChangeStart', url, shallow)
       // if routing is not shallow, it's not leading to a modal, so we close it if there is one open
       if (store.length && !shallow) {
         hideModal(store[store.length - 1].modalId)
