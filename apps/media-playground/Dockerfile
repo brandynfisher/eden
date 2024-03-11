@@ -48,7 +48,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs
 
-COPY --from=installer /app/apps/media-playground/next.config.mjs .
+COPY --from=installer /app/apps/media-playground/next.config.js .
 COPY --from=installer /app/apps/media-playground/package.json .
 
 # Automatically leverage output traces to reduce image size
