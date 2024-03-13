@@ -2,6 +2,7 @@
   "name": "garden",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev:dummy": "env-cmd -f .env.dummy.local next dev",
     "dev:eden": "env-cmd -f .env.eden.local next dev",
