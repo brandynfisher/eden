@@ -43,10 +43,10 @@ RUN yarn turbo run build --filter=media-playground...
 FROM base AS runner
 WORKDIR /app
 
+ENV NODE_ENV production
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-USER nextjs
 
 COPY --from=installer /app/apps/media-playground/next.config.js .
 COPY --from=installer /app/apps/media-playground/package.json .
@@ -56,5 +56,7 @@ COPY --from=installer /app/apps/media-playground/package.json .
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/static ./apps/media-playground/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/public ./apps/media-playground/public
+
+USER nextjs
 
 CMD node apps/media-playground/server.js
