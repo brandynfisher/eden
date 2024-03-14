@@ -4,10 +4,10 @@ import { DocsLink } from '@/components/Creation/CreationInterface/GeneratorSelec
 import MannaCostBadge from '@/components/Creation/CreationInterface/MannaCostBadge'
 import SelectCharacterModalTrigger from '@/components/Creation/CreationInterface/SelectCharacterModalTrigger'
 import SelectConceptModalTrigger from '@/components/Creation/CreationInterface/SelectConceptModalTrigger'
+import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import CharacterParameter from '@/components/Creation/CreationInterface/parameters/CharacterParameter'
 import CharactersParameter from '@/components/Creation/CreationInterface/parameters/CharactersParameter'
 import ConceptParameter from '@/components/Creation/CreationInterface/parameters/ConceptParameter'
-// import AspectRatioParameter from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import NumberParameter from '@/components/Creation/CreationInterface/parameters/NumberParameter'
 import OptionParameter from '@/components/Creation/CreationInterface/parameters/OptionParameter'
 import SliderParameter from '@/components/Creation/CreationInterface/parameters/SliderParameter'
@@ -552,14 +552,15 @@ const GeneratorForm = ({
                 )}
                 {/*<UpscaleParameter form={form} name="ui-upscale"/>*/}
               </div>
-              {/*<AspectRatioParameter*/}
-              {/*  form={form}*/}
-              {/*  name="ui-aspect-ratio"*/}
-              {/*  initialValue={{*/}
-              {/*    width: getInitialValue('width'),*/}
-              {/*    height: getInitialValue('height'),*/}
-              {/*  }}*/}
-              {/*/>*/}
+              <AspectRatioParameter
+                form={form}
+                name="ui-aspect-ratio"
+                // initialValue={{
+                //   width: getInitialValue('width'),
+                //   height: getInitialValue('height'),
+                // }}
+                onFieldChange={debouncedHandleFormFieldsChange}
+              />
             </div>
           ) : null}
         </div>

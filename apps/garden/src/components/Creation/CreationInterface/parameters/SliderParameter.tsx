@@ -10,23 +10,13 @@ import React, { FocusEvent, useEffect, useState } from 'react'
 const SliderParameter = (props: {
   form: FormInstance
   parameter: GeneratorParameter
-  onFieldChange?: Function
+  onFieldChange?: () => void
 }) => {
   const [fieldValue, setFieldValue] = useState<number>(
     props.parameter.default || 0,
   )
 
   const sliderValue = Form.useWatch(props.parameter.name, props.form)
-
-  useEffect(() => {
-    // if (sliderValue !== fieldValue) {
-    //   return
-    // }
-
-    // console.log('useEffect', sliderValue, fieldValue)
-    setFieldValue(prev => (prev === sliderValue ? sliderValue : prev))
-    setFormValue(fieldValue !== sliderValue ? sliderValue : fieldValue)
-  }, [sliderValue])
 
   const onChange = (newValue: number | null) => {
     if (!newValue) return
@@ -52,6 +42,14 @@ const SliderParameter = (props: {
   }
 
   useEffect(() => {
+    if (fieldValue !== sliderValue) {
+      // console.log('useEffect', sliderValue, fieldValue)
+      setFieldValue(sliderValue)
+      // setFormValue(sliderValue)
+    }
+  }, [sliderValue])
+
+  useEffect(() => {
     setFormValue(fieldValue)
   }, [fieldValue])
 
@@ -61,21 +59,17 @@ const SliderParameter = (props: {
 
   const specialChangeHandler = () => {
     if (props.parameter.name === 'width' || props.parameter.name === 'height') {
-      // console.log('is width/height')
-      // console.log(presetItems)
-
-      // console.log({index})
       const values = props.form.getFieldsValue(['width', 'height'])
+      // console.log({values})
+      if (values.height === 0 || values.width === 0) {
+        // console.log('Dimension should not be 0!');
+        return
+      }
       const aspectRatio = values.width / values.height
-      // console.log({aspectRatio})
-
-      // console.log(props.form.getFieldsValue(['ui-aspect-ratio']))
 
       const aspectIndex = presetItems['aspectRatio'].indexOf(
         closest(aspectRatio || 0, presetItems['aspectRatio']),
       )
-      // console.log({aspectIndex})
-      // const heightIndex = presetItems['height'].indexOf(closest(values.height || 0, presetItems['height']))
       props.form.setFieldsValue({ 'ui-aspect-ratio': aspectIndex })
     }
   }
