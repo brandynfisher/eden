@@ -4,8 +4,9 @@ import {
 } from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
+import { debounce } from '@mui/material/utils'
 import { Form, FormInstance, InputNumber, Slider } from 'antd'
-import React, { FocusEvent, useEffect, useState } from 'react'
+import React, { FocusEvent, useCallback, useEffect, useState } from 'react'
 
 const SliderParameter = (props: {
   form: FormInstance
@@ -18,17 +19,23 @@ const SliderParameter = (props: {
 
   const sliderValue = Form.useWatch(props.parameter.name, props.form)
 
-  const onChange = (newValue: number | null) => {
+  const onChange = (newValue: number | null, triggerLinked?: boolean) => {
+    // console.log('onChange', newValue)
+    // console.log(source, newValue)
     if (!newValue) return
     setFieldValue(newValue)
-    props.onFieldChange && props.onFieldChange()
-    specialChangeHandler()
+    // props.onFieldChange && props.onFieldChange()
+    // specialChangeHandler()
+
+    if (triggerLinked) {
+      onAfterChange()
+    }
   }
 
   const setFormValue = (newValue: number | null) => {
     if (newValue !== null) {
-      props.form.setFieldsValue({ [props.parameter.name]: newValue })
       props.form.setFieldsValue({
+        [props.parameter.name]: newValue,
         [`${props.parameter.name}--preset`]: newValue,
       })
     }
@@ -41,13 +48,61 @@ const SliderParameter = (props: {
     }
   }
 
+  // useEffect(() => {
+  //   // console.log({sliderValue})
+  //   // if (typeof sliderValue !== 'undefined') {
+  //   setFieldValue(prev => {
+  //     console.log('SL -- useEffect::sliderValue', { sliderValue, prev, fieldValue })
+  //
+  //     if (
+  //       props.parameter.name === 'width' ||
+  //       props.parameter.name === 'height'
+  //     ) {
+  //       if (sliderValue === prev && sliderValue === fieldValue) {
+  //         console.log('ALL THEM THINGS', { sliderValue })
+  //         return prev
+  //       }
+  //
+  //       if (sliderValue !== prev && fieldValue === prev) {
+  //         return sliderValue
+  //       }
+  //     }
+  //
+  //     return prev
+  //   })
+  //   // setFormValue(sliderValue)
+  //   // }
+  // }, [sliderValue])
+  const debouncedSave = useCallback(
+    debounce(setFieldValue, 300),
+    [], // will be created only once initially
+  )
   useEffect(() => {
-    if (fieldValue !== sliderValue) {
-      // console.log('useEffect', sliderValue, fieldValue)
-      setFieldValue(sliderValue)
-      // setFormValue(sliderValue)
-    }
-  }, [sliderValue])
+    debouncedSave((prev: number) => {
+      console.log('SL -- useEffect::sliderValue', {
+        sliderValue,
+        prev,
+        fieldValue,
+      })
+
+      if (
+        props.parameter.name === 'width' ||
+        props.parameter.name === 'height'
+      ) {
+        if (sliderValue === prev && sliderValue === fieldValue) {
+          console.log('ALL THEM THINGS', { sliderValue })
+          return prev
+        }
+
+        if (sliderValue !== prev && fieldValue === prev) {
+          return sliderValue
+        }
+      }
+
+      return prev
+    })
+    return () => debouncedSave.clear()
+  }, [debouncedSave, sliderValue])
 
   useEffect(() => {
     setFormValue(fieldValue)
@@ -55,6 +110,7 @@ const SliderParameter = (props: {
 
   useEffect(() => {
     onChange(props.parameter.default)
+    onAfterChange()
   }, [props.parameter.default])
 
   const specialChangeHandler = () => {
@@ -74,6 +130,13 @@ const SliderParameter = (props: {
     }
   }
 
+  const onAfterChange = () => {
+    if (props.parameter.name === 'width' || props.parameter.name === 'height') {
+      props.onFieldChange && props.onFieldChange()
+      specialChangeHandler()
+    }
+  }
+
   return (
     <div className="parameter parameter--slider flex items-center">
       <ParameterAddon
@@ -88,6 +151,7 @@ const SliderParameter = (props: {
           max={props.parameter.maximum}
           step={props.parameter.step ? props.parameter.step : 1}
           onChange={onChange}
+          onAfterChange={onAfterChange}
         />
         <Form.Item
           className="my-0"
@@ -116,7 +180,7 @@ const SliderParameter = (props: {
             value={fieldValue}
             min={props.parameter.minimum}
             max={props.parameter.maximum}
-            onChange={onChange}
+            onChange={val => onChange(val, true)}
             onBlur={onBlur}
             step={props.parameter.step ? props.parameter.step : 1}
           />
