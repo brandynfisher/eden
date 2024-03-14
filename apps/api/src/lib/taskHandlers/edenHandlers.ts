@@ -1,7 +1,3 @@
-import axios from 'axios'
-import { FastifyInstance } from 'fastify'
-import { ObjectId } from 'mongodb'
-
 import { Character } from '../../models/Character'
 import { Concept } from '../../models/Concept'
 import { Creation, CreationInput } from '../../models/Creation'
@@ -14,6 +10,9 @@ import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
 import * as logos from './logos'
 import * as replicate from './replicate'
+import axios from 'axios'
+import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 type TaskProvider = 'replicate' | 'elevenPlay' | 'logos'
 
@@ -274,6 +273,7 @@ const handleUpdate = async (
           name: publicName,
           conceptName: finalOutput.name,
           checkpoint: task.config.checkpoint || 'JuggernautXL_v6', //task.config.checkpoint,
+          grid_prompts: task.config.grid_prompts || [], //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
           num_training_images:
             finalOutput.attributes && finalOutput.attributes.num_training_images
