@@ -245,25 +245,25 @@ const KnowledgeSection = ({ form }: { form: FormInstance }) => {
   )
 }
 
-const SmartReplySection = () => {
-  return (
-    <div className="px-2 py-2">
-      <div className="flex justify-between items-center">
-        <FormLabel
-          text="Enable Smart Reply"
-          description="Turn on to enable smart reply for this character. Smart reply lets a character decide when to respond based on the conversation."
-        />
-        <Form.Item
-          name="smartReplyEnabled"
-          valuePropName="checked"
-          style={{ marginBottom: 0 }}
-        >
-          <Switch />
-        </Form.Item>
-      </div>
-    </div>
-  )
-}
+// const SmartReplySection = () => {
+//   return (
+//     <div className="px-2 py-2">
+//       <div className="flex justify-between items-center">
+//         <FormLabel
+//           text="Enable Smart Reply"
+//           description="Turn on to enable smart reply for this character. Smart reply lets a character decide when to respond based on the conversation."
+//         />
+//         <Form.Item
+//           name="smartReplyEnabled"
+//           valuePropName="checked"
+//           style={{ marginBottom: 0 }}
+//         >
+//           <Switch />
+//         </Form.Item>
+//       </div>
+//     </div>
+//   )
+// }
 
 const StoryCreationSection = () => {
   return (
@@ -670,7 +670,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                   <div className="px-2 py-2">
                     <CreationsSection form={form} concept={concept} />
                     <KnowledgeSection form={form} />
-                    <SmartReplySection />
+                    {/*<SmartReplySection />*/}
                     <StoryCreationSection />
                     <ChatModelSection form={form} />
                   </div>

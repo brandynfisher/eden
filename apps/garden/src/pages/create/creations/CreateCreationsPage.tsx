@@ -28,7 +28,10 @@ const CreateCreationsPage = () => {
   const [usesPreset, setUsesPreset] = useState<boolean>(false)
 
   useEffect(() => {
-    if (!router.query) return
+    if (!Object.keys(router.query).length) {
+      setUsesPreset(false)
+      return
+    }
 
     if (router.query.presetId) {
       setUsesPreset(true)

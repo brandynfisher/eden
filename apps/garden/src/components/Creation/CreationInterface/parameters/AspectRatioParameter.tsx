@@ -76,56 +76,94 @@ export const presetItems = {
   aspectRatio: presetResolutions.map(pres => pres.width / pres.height),
 }
 
+// const createMarksObject = (numEntries: number): Record<string, React.ReactNode> => {
+//   const obj: Record<string, React.ReactNode> = {}
+//
+//   for (let i = 0; i < numEntries; i++) {
+//     obj[i.toString()] = <></>;  // Set a React Fragment with optional label for each entry
+//   }
+//
+//   return obj
+// }
+
 const getPresetResolutionIndex = (width: number, height: number) => {
   const aspectRatio = width / height
   const aspectIndex = presetItems['aspectRatio'].indexOf(
     closest(aspectRatio || 0, presetItems['aspectRatio']),
   )
-  return aspectIndex
+  return aspectIndex !== -1 ? aspectIndex : 0
 }
 
 const AspectRatioParameter = ({
   form,
   name,
-  initialValue,
+  // initialValue,
+  onFieldChange,
 }: {
   form: FormInstance
   name: string
-  initialValue?: { width: number; height: number }
+  // initialValue?: { width: number; height: number }
+  onFieldChange?: () => void
 }) => {
-  const [displayValue, setDisplayValue] = useState<string>()
-  const [fieldValue, setFieldValue] = useState<number>()
+  // const [displayValue, setDisplayValue] = useState<string>()
+  // const [fieldValue, setFieldValue] = useState<number>()
 
   const aspectRatioValue = Form.useWatch('ui-aspect-ratio', form)
-  // console.log({ aspectRatioValue })
+  const width = Form.useWatch('width', form)
+  const height = Form.useWatch('height', form)
+
+  const [values, setValues] = useState<{
+    fieldValue: number | undefined
+    displayValue: string | undefined
+  }>({
+    fieldValue: undefined,
+    displayValue: undefined,
+  })
 
   useEffect(() => {
+    // console.log('useEffect:aspectRatioValue', { aspectRatioValue, width, height })
+
     if (typeof aspectRatioValue !== 'undefined') {
-      setTimeout(() => {
-        setFieldValue(aspectRatioValue)
-        setDisplayValue(presetResolutions[aspectRatioValue].aspectRatio)
-      }, 0)
-    }
-  }, [aspectRatioValue])
+      const presetIndex = getPresetResolutionIndex(width, height)
+      // setTimeout(() => {
+      // Update both fields at once
+      // console.log('setValues::aspectRatioValue', aspectRatioValue)
+      setValues({
+        fieldValue: presetIndex,
+        displayValue: presetResolutions[presetIndex].aspectRatio,
+      })
+      // }, 50);
 
-  useEffect(() => {
-    if (!initialValue) {
-      // setFieldValue(4)
-      // setDisplayValue(presetResolutions[4].aspectRatio)
       return
     }
-    const presetIndex = getPresetResolutionIndex(
-      initialValue.width,
-      initialValue.height,
-    )
-    setFieldValue(presetIndex)
-    setDisplayValue(presetResolutions[presetIndex].aspectRatio)
-  }, [initialValue])
+  }, [aspectRatioValue, width, height])
+
+  // useEffect(() => {
+  //   console.log('useEffect::initialValue', initialValue)
+  //   if (!initialValue) {
+  //     return;
+  //   }
+  //   const presetIndex = getPresetResolutionIndex(
+  //     initialValue.width,
+  //     initialValue.height,
+  //   );
+  //   // Update both fields at once
+  //   setValues({
+  //     fieldValue: presetIndex,
+  //     displayValue: presetResolutions[presetIndex].aspectRatio,
+  //   });
+  // }, [initialValue]);
 
   const onChangeHandler = (newVal: PresetResolution) => {
-    setDisplayValue(newVal.aspectRatio)
+    // console.log('onChangeHander', newVal)
+    const presetIndex = getPresetResolutionIndex(newVal.width, newVal.height)
+    setValues({
+      fieldValue: presetIndex,
+      displayValue: presetResolutions[presetIndex].aspectRatio,
+    })
     form.setFieldsValue({ ['width']: newVal.width })
     form.setFieldsValue({ ['height']: newVal.height })
+    onFieldChange && onFieldChange()
   }
 
   return (
@@ -134,13 +172,15 @@ const AspectRatioParameter = ({
         <Popover content={<div>Landscape</div>} trigger={['click', 'hover']}>
           <CropLandscapeIcon fontSize="large" className="dark:text-gray-500" />
         </Popover>
-        <div className="flex mx-auto dark:text-gray-300">{displayValue}</div>
+        <div className="flex mx-auto dark:text-gray-300">
+          {values.displayValue}
+        </div>
         <Popover content={<div>Portrait</div>} trigger={['click', 'hover']}>
           <CropPortraitIcon fontSize="large" className="dark:text-gray-500" />
         </Popover>
       </div>
       <Form.Item
-        initialValue={fieldValue}
+        initialValue={aspectRatioValue}
         name={name}
         className="mt-0 mb-0"
         dependencies={['width', 'height']}
@@ -150,17 +190,22 @@ const AspectRatioParameter = ({
           },
           () => ({
             validator(rule, incomingValue) {
-              setDisplayValue(presetResolutions[incomingValue].aspectRatio)
+              // console.log({incomingValue})
+              setValues({
+                fieldValue: incomingValue,
+                displayValue: presetResolutions[incomingValue].aspectRatio,
+              })
               return Promise.resolve()
             },
           }),
         ]}
       >
         <Slider
-          value={fieldValue}
+          value={values.fieldValue}
           trackStyle={{ display: 'none' }}
           step={1}
           min={0}
+          // marks={createMarksObject(presetResolutions.length)}
           tooltip={{
             placement: 'bottom',
             formatter: val => (
@@ -173,6 +218,7 @@ const AspectRatioParameter = ({
           }}
           max={presetResolutions.length - 1}
           onChange={newVal => onChangeHandler(presetResolutions[newVal])}
+          onAfterChange={newVal => onChangeHandler(presetResolutions[newVal])}
         />
       </Form.Item>
     </div>

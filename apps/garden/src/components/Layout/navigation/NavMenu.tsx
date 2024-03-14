@@ -90,15 +90,6 @@ const NavMenu = ({
       label: 'Creations',
     },
     {
-      key: '/creators',
-      icon: (
-        <Link href="/creators" data-testid="nav-explore-concepts">
-          <PeopleOutline fontSize="small" />
-        </Link>
-      ),
-      label: 'Creators',
-    },
-    {
       key: '/concepts',
       icon: (
         <Link href="/concepts" data-testid="nav-explore-concepts">
@@ -115,6 +106,15 @@ const NavMenu = ({
         </Link>
       ),
       label: 'Characters',
+    },
+    {
+      key: '/creators',
+      icon: (
+        <Link href="/creators" data-testid="nav-explore-concepts">
+          <PeopleOutline fontSize="small" />
+        </Link>
+      ),
+      label: 'Creators',
     },
     ...(isPreviewUser
       ? [

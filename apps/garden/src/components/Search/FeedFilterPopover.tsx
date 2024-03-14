@@ -31,7 +31,12 @@ interface Item {
 }
 
 interface Group {
-  id: 'outputType' | 'visibility' | 'gridImageStyle' | 'imageSize'
+  id:
+    | 'outputType'
+    | 'visibility'
+    | 'gridImageStyle'
+    | 'imageSize'
+    | 'generatorId'
   title: string
   type: 'single' | 'multi'
   items: Item[]
@@ -53,7 +58,7 @@ const segments: Segment[] = [
     groups: [
       {
         id: 'outputType',
-        title: 'Type',
+        title: 'Output',
         type: 'multi',
         items: [
           {
@@ -64,12 +69,20 @@ const segments: Segment[] = [
             label: 'Videos',
             value: 'video',
           },
-          // {
-          //   label: 'Stories',
-          //   value: 'story',
-          // },
         ],
       },
+      {
+        id: 'generatorId',
+        title: 'Generator',
+        type: 'multi',
+        items: [
+          {
+            label: 'Stories',
+            value: 'story',
+          },
+        ],
+      },
+      // @todo: mostly relevant for own profile feed
       // {
       //   id: 'visibility',
       //   title: 'Visibility',
