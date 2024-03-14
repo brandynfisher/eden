@@ -17,18 +17,33 @@ const ConceptInfo = ({ concept }: { concept: Concept }) => {
   }, [concept.createdAt])
 
   return (
-    <div className="flex gap-4 flex-wrap">
-      <BaseParamGroup label="Type" value={<div>concept</div>} />
-      <BaseParamGroup label="Checkpoint" value={concept.checkpoint} />
-      <BaseParamGroup label="Date" value={displayDateTime} />
-      <BaseParamGroup
-        label={'Training Images'}
-        value={
-          concept.num_training_images
-            ? concept.num_training_images
-            : concept.training_images?.length || 0
-        }
-      />
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-4 flex-wrap">
+        <BaseParamGroup label="Type" value={<div>concept</div>} />
+        <BaseParamGroup label="Checkpoint" value={concept.checkpoint} />
+        <BaseParamGroup label="Date" value={displayDateTime} />
+        <BaseParamGroup
+          label={'Training Images'}
+          value={
+            concept.num_training_images
+              ? concept.num_training_images
+              : concept.training_images?.length || 0
+          }
+        />
+      </div>
+
+      {concept?.grid_prompts && concept.grid_prompts?.length ? (
+        <BaseParamGroup
+          label={'Grid Prompts'}
+          value={
+            <ol className="pl-3" type="a">
+              {concept?.grid_prompts?.map((prompt, index) => (
+                <div key={index}>{prompt}</div>
+              ))}
+            </ol>
+          }
+        />
+      ) : null}
     </div>
   )
 }
