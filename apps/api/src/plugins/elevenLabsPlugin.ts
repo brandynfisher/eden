@@ -496,6 +496,16 @@ const ELEVENLABS_VOICES = [
     preview_url: '',
     use_case: 'chatsubo.z',
   },
+  {
+    id: 'GV911kUjA4mzz0yqTSDX',
+    name: 'Sonia',
+    accent: 'British-American',
+    age: 'older',
+    gender: 'female',
+    description: 'Bombay Beach',
+    preview_url: '',
+    use_case: 'Sonia',
+  },
 ]
 
 export class ElevenLabs {
