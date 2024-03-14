@@ -6,6 +6,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import FeedFilter from '@/components/Search/FeedFilter'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
+import { storyGeneratorIds } from '@/pages/channels/ChannelsPage'
 import {
   FeedSettingsContext,
   FilterName,
@@ -58,6 +59,7 @@ const MasonryInfiniteContainer = ({
     }
   }
 
+  // @todo: abstract this away into context to be able to just get queryFilters pre formatted and reusable
   const { filters } = useContext(FeedSettingsContext)
   useEffect(() => {
     let activeFilters = {}
@@ -65,9 +67,14 @@ const MasonryInfiniteContainer = ({
     filters.map(filter => {
       Object.entries(filter).map(items => {
         let values: FilterName[] = []
-        // console.log({ type: items[0], items: items[1] })
+
         Object.entries(items[1]).map(item => {
-          // item[0]
+          if (items[0] === 'generatorId') {
+            if (item[0] === 'story' && item[1] === true)
+              values.push(...(storyGeneratorIds as FilterName[]))
+            return
+          }
+
           if (item[1] === true) {
             values.push(item[0] as FilterName)
           }
@@ -95,7 +102,7 @@ const MasonryInfiniteContainer = ({
 
   return (
     <>
-      <div className="flex justify-between mb-4">
+      <div className="flex flex-wrap space-y-2 justify-between mb-4">
         {orderParams ? (
           <OrderByButtons
             params={orderParams.filter(

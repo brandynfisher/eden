@@ -50,7 +50,7 @@ const FeedFilterButtons = () => {
                 className="flex items-center text-xs gap-1 px-1 rounded border border-solid border-blue-800 bg-blue-500 hover:bg-blue-800 hover:bg-opacity-75 bg-opacity-25 text-blue-300 cursor-pointer "
               >
                 {itemKey}
-                <Close fontSize="small" className="text-xs" />
+                <Close fontSize="small" className="!text-xs" />
               </div>
             )),
         )}

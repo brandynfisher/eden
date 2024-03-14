@@ -35,7 +35,7 @@ const CreationCardVideo = ({
       <>
         {hovered && (
           <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-            <VideoResult src={uri} disableControls />
+            <VideoResult src={uri} disableControls autoPlay={true} />
           </div>
         )}
         <div

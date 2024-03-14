@@ -2,6 +2,7 @@ import { useLocalStorage } from '@mantine/hooks'
 import React, { ReactElement, createContext, useEffect, useState } from 'react'
 
 export enum FilterName {
+  GeneratorId = 'generatorId',
   OutputType = 'outputType',
   Visibility = 'visibility',
 }
@@ -9,6 +10,7 @@ export enum FilterName {
 export type FeedSettingItem = { [key: string]: boolean }
 
 export interface FilterSettings {
+  [FilterName.GeneratorId]: FeedSettingItem
   [FilterName.OutputType]: FeedSettingItem
   [FilterName.Visibility]: FeedSettingItem
 }
@@ -19,6 +21,7 @@ export interface ViewSettings {
 }
 
 export interface FeedSettings extends ViewSettings {
+  [FilterName.GeneratorId]: FeedSettingItem
   [FilterName.OutputType]: FeedSettingItem
   [FilterName.Visibility]: FeedSettingItem
 }
@@ -34,10 +37,12 @@ interface SettingsContextProps {
 }
 
 const feedSettingsContextDefaults: FeedSettings = {
+  generatorId: {
+    story: false,
+  },
   outputType: {
     image: false,
     video: false,
-    story: false,
   },
   visibility: {
     private: false,
@@ -47,25 +52,25 @@ const feedSettingsContextDefaults: FeedSettings = {
   gridImageStyle: 'contain',
 }
 
-export const FilterQueryConfig = {
-  image: {
-    'mediaAttributes.type': {
-      $eq: 'image',
-    },
-  },
-  video: {
-    'mediaAttributes.type': {
-      $eq: 'video',
-    },
-  },
-  story: {
-    generatorId: [
-      '6511d29ad2d97662167a76d6', // dialogue
-      '65047b5a5c9278a72cd0ae91', // monologue
-      '65a484ac4f1d544e3a1d9435', // story
-    ],
-  },
-}
+// export const FilterQueryConfig = {
+//   image: {
+//     'mediaAttributes.type': {
+//       $eq: 'image',
+//     },
+//   },
+//   video: {
+//     'mediaAttributes.type': {
+//       $eq: 'video',
+//     },
+//   },
+//   story: {
+//     generatorId: [
+//       '6511d29ad2d97662167a76d6', // dialogue
+//       '65047b5a5c9278a72cd0ae91', // monologue
+//       '65a484ac4f1d544e3a1d9435', // story
+//     ],
+//   },
+// }
 
 // Initialized context with default value to avoid the null checks in consumers
 export const FeedSettingsContext = createContext<SettingsContextProps>({

@@ -1,3 +1,4 @@
+import FeedFilterButtons from '@/components/Search/FeedFilterButtons'
 import FeedFilterPopover from '@/components/Search/FeedFilterPopover'
 import FeedFilterTrigger from '@/components/Search/FeedFilterTrigger'
 import React, { MutableRefObject } from 'react'
@@ -10,7 +11,7 @@ const FeedFilter = ({
   const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    console.log({ feedFilterTarget: event.currentTarget })
+    // console.log({ feedFilterTarget: event.currentTarget })
     setAnchorEl(event.currentTarget)
   }
 
@@ -19,7 +20,8 @@ const FeedFilter = ({
   }
 
   return (
-    <div data-testid="feed-filter">
+    <div data-testid="feed-filter" className="flex ml-auto">
+      <FeedFilterButtons />
       <FeedFilterTrigger onClick={handleClick} />
       <FeedFilterPopover
         containerRef={containerRef}
