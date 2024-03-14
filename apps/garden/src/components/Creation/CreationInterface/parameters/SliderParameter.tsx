@@ -19,6 +19,7 @@ const SliderParameter = (props: {
   const sliderValue = Form.useWatch(props.parameter.name, props.form)
 
   const onChange = (newValue: number | null) => {
+    // console.log(source, newValue)
     if (!newValue) return
     setFieldValue(newValue)
     // props.onFieldChange && props.onFieldChange()
@@ -43,11 +44,19 @@ const SliderParameter = (props: {
 
   useEffect(() => {
     // console.log({sliderValue})
-    if (typeof sliderValue !== 'undefined') {
-      // console.log('SL -- useEffect::sliderValue', sliderValue, fieldValue)
-      setFieldValue(sliderValue)
-      // setFormValue(sliderValue)
-    }
+    // if (typeof sliderValue !== 'undefined') {
+    setFieldValue(prev => {
+      // console.log('SL -- useEffect::sliderValue', { sliderValue, prev, fieldValue })
+
+      if (sliderValue === prev && sliderValue === fieldValue) {
+        // console.log('ALL THEM THINGS', { sliderValue })
+        return sliderValue
+      }
+
+      return prev
+    })
+    // setFormValue(sliderValue)
+    // }
   }, [sliderValue])
 
   useEffect(() => {

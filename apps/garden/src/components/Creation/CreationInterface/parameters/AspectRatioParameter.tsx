@@ -97,20 +97,13 @@ const getPresetResolutionIndex = (width: number, height: number) => {
 const AspectRatioParameter = ({
   form,
   name,
-  // initialValue,
   onFieldChange,
 }: {
   form: FormInstance
   name: string
-  // initialValue?: { width: number; height: number }
   onFieldChange?: () => void
 }) => {
-  // const [displayValue, setDisplayValue] = useState<string>()
-  // const [fieldValue, setFieldValue] = useState<number>()
-
   const aspectRatioValue = Form.useWatch('ui-aspect-ratio', form)
-  // const width = Form.useWatch('width', form)
-  // const height = Form.useWatch('height', form)
 
   const [values, setValues] = useState<{
     fieldValue: number | undefined
