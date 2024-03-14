@@ -18,12 +18,17 @@ const SliderParameter = (props: {
 
   const sliderValue = Form.useWatch(props.parameter.name, props.form)
 
-  const onChange = (newValue: number | null) => {
+  const onChange = (newValue: number | null, triggerLinked?: boolean) => {
+    // console.log('onChange', newValue)
     // console.log(source, newValue)
     if (!newValue) return
     setFieldValue(newValue)
     // props.onFieldChange && props.onFieldChange()
     // specialChangeHandler()
+
+    if (triggerLinked) {
+      onAfterChange()
+    }
   }
 
   const setFormValue = (newValue: number | null) => {
@@ -50,6 +55,10 @@ const SliderParameter = (props: {
 
       if (sliderValue === prev && sliderValue === fieldValue) {
         // console.log('ALL THEM THINGS', { sliderValue })
+        return sliderValue
+      }
+
+      if (sliderValue !== prev && fieldValue === prev) {
         return sliderValue
       }
 
@@ -133,7 +142,7 @@ const SliderParameter = (props: {
             value={fieldValue}
             min={props.parameter.minimum}
             max={props.parameter.maximum}
-            onChange={onChange}
+            onChange={val => onChange(val, true)}
             onBlur={onBlur}
             step={props.parameter.step ? props.parameter.step : 1}
           />
