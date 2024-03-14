@@ -53,13 +53,18 @@ const SliderParameter = (props: {
     setFieldValue(prev => {
       // console.log('SL -- useEffect::sliderValue', { sliderValue, prev, fieldValue })
 
-      if (sliderValue === prev && sliderValue === fieldValue) {
-        // console.log('ALL THEM THINGS', { sliderValue })
-        return sliderValue
-      }
+      if (
+        props.parameter.name === 'width' ||
+        props.parameter.name === 'height'
+      ) {
+        if (sliderValue === prev && sliderValue === fieldValue) {
+          // console.log('ALL THEM THINGS', { sliderValue })
+          return sliderValue
+        }
 
-      if (sliderValue !== prev && fieldValue === prev) {
-        return sliderValue
+        if (sliderValue !== prev && fieldValue === prev) {
+          return sliderValue
+        }
       }
 
       return prev
@@ -95,8 +100,10 @@ const SliderParameter = (props: {
   }
 
   const onAfterChange = () => {
-    props.onFieldChange && props.onFieldChange()
-    specialChangeHandler()
+    if (props.parameter.name === 'width' || props.parameter.name === 'height') {
+      props.onFieldChange && props.onFieldChange()
+      specialChangeHandler()
+    }
   }
 
   return (
