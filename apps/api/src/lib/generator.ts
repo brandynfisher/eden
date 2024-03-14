@@ -51,7 +51,7 @@ export const prepareConfig = (
   // check config has all required params
   const missingParams: string[] = []
   for (const param of parameters) {
-    if (param.isRequired && !config[param.name]) {
+    if (param.isRequired && !(param.name in config)) {
       if (typeof param.minLength !== 'undefined' && param.minLength === 0) {
         continue
       }
