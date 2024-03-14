@@ -127,6 +127,10 @@ const GeneratorForm = ({
       ? submitButtonDisabledProd
       : submitButtonDisabledDev
 
+  const supportsAspectRatio = optionalParameters.some(
+    param => param.name === 'width' || param.name === 'height',
+  )
+
   useEffect(() => {
     const transformConfig = () => {
       if (!presetCreation) {
@@ -552,15 +556,17 @@ const GeneratorForm = ({
                 )}
                 {/*<UpscaleParameter form={form} name="ui-upscale"/>*/}
               </div>
-              <AspectRatioParameter
-                form={form}
-                name="ui-aspect-ratio"
-                // initialValue={{
-                //   width: getInitialValue('width'),
-                //   height: getInitialValue('height'),
-                // }}
-                onFieldChange={debouncedHandleFormFieldsChange}
-              />
+              {supportsAspectRatio && (
+                <AspectRatioParameter
+                  form={form}
+                  name="ui-aspect-ratio"
+                  // initialValue={{
+                  //   width: getInitialValue('width'),
+                  //   height: getInitialValue('height'),
+                  // }}
+                  onFieldChange={debouncedHandleFormFieldsChange}
+                />
+              )}
             </div>
           ) : null}
         </div>
