@@ -21,14 +21,14 @@ const SliderParameter = (props: {
   const onChange = (newValue: number | null) => {
     if (!newValue) return
     setFieldValue(newValue)
-    props.onFieldChange && props.onFieldChange()
-    specialChangeHandler()
+    // props.onFieldChange && props.onFieldChange()
+    // specialChangeHandler()
   }
 
   const setFormValue = (newValue: number | null) => {
     if (newValue !== null) {
-      props.form.setFieldsValue({ [props.parameter.name]: newValue })
       props.form.setFieldsValue({
+        [props.parameter.name]: newValue,
         [`${props.parameter.name}--preset`]: newValue,
       })
     }
@@ -42,8 +42,9 @@ const SliderParameter = (props: {
   }
 
   useEffect(() => {
-    if (fieldValue !== sliderValue) {
-      // console.log('useEffect', sliderValue, fieldValue)
+    // console.log({sliderValue})
+    if (typeof sliderValue !== 'undefined') {
+      // console.log('SL -- useEffect::sliderValue', sliderValue, fieldValue)
       setFieldValue(sliderValue)
       // setFormValue(sliderValue)
     }
@@ -55,6 +56,7 @@ const SliderParameter = (props: {
 
   useEffect(() => {
     onChange(props.parameter.default)
+    onAfterChange()
   }, [props.parameter.default])
 
   const specialChangeHandler = () => {
@@ -74,6 +76,11 @@ const SliderParameter = (props: {
     }
   }
 
+  const onAfterChange = () => {
+    props.onFieldChange && props.onFieldChange()
+    specialChangeHandler()
+  }
+
   return (
     <div className="parameter parameter--slider flex items-center">
       <ParameterAddon
@@ -88,6 +95,7 @@ const SliderParameter = (props: {
           max={props.parameter.maximum}
           step={props.parameter.step ? props.parameter.step : 1}
           onChange={onChange}
+          onAfterChange={onAfterChange}
         />
         <Form.Item
           className="my-0"
