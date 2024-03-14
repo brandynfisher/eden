@@ -4,8 +4,9 @@ import {
 } from '@/components/Creation/CreationInterface/parameters/AspectRatioParameter'
 import ParameterAddon from '@/components/Creation/CreationInterface/parameters/ParameterAddon'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
+import { debounce } from '@mui/material/utils'
 import { Form, FormInstance, InputNumber, Slider } from 'antd'
-import React, { FocusEvent, useEffect, useState } from 'react'
+import React, { FocusEvent, useCallback, useEffect, useState } from 'react'
 
 const SliderParameter = (props: {
   form: FormInstance
@@ -47,19 +48,50 @@ const SliderParameter = (props: {
     }
   }
 
+  // useEffect(() => {
+  //   // console.log({sliderValue})
+  //   // if (typeof sliderValue !== 'undefined') {
+  //   setFieldValue(prev => {
+  //     console.log('SL -- useEffect::sliderValue', { sliderValue, prev, fieldValue })
+  //
+  //     if (
+  //       props.parameter.name === 'width' ||
+  //       props.parameter.name === 'height'
+  //     ) {
+  //       if (sliderValue === prev && sliderValue === fieldValue) {
+  //         console.log('ALL THEM THINGS', { sliderValue })
+  //         return prev
+  //       }
+  //
+  //       if (sliderValue !== prev && fieldValue === prev) {
+  //         return sliderValue
+  //       }
+  //     }
+  //
+  //     return prev
+  //   })
+  //   // setFormValue(sliderValue)
+  //   // }
+  // }, [sliderValue])
+  const debouncedSave = useCallback(
+    debounce(setFieldValue, 300),
+    [], // will be created only once initially
+  )
   useEffect(() => {
-    // console.log({sliderValue})
-    // if (typeof sliderValue !== 'undefined') {
-    setFieldValue(prev => {
-      // console.log('SL -- useEffect::sliderValue', { sliderValue, prev, fieldValue })
+    debouncedSave((prev: number) => {
+      console.log('SL -- useEffect::sliderValue', {
+        sliderValue,
+        prev,
+        fieldValue,
+      })
 
       if (
         props.parameter.name === 'width' ||
         props.parameter.name === 'height'
       ) {
         if (sliderValue === prev && sliderValue === fieldValue) {
-          // console.log('ALL THEM THINGS', { sliderValue })
-          return sliderValue
+          console.log('ALL THEM THINGS', { sliderValue })
+          return prev
         }
 
         if (sliderValue !== prev && fieldValue === prev) {
@@ -69,9 +101,8 @@ const SliderParameter = (props: {
 
       return prev
     })
-    // setFormValue(sliderValue)
-    // }
-  }, [sliderValue])
+    return () => debouncedSave.clear()
+  }, [debouncedSave, sliderValue])
 
   useEffect(() => {
     setFormValue(fieldValue)
