@@ -506,6 +506,16 @@ const ELEVENLABS_VOICES = [
     preview_url: '',
     use_case: 'Sonia',
   },
+  {
+    id: '16j0SQzA3kJQvnsWTGSz',
+    name: 'David Lynch',
+    accent: 'American',
+    age: 'older',
+    gender: 'male',
+    description: 'Weather reports with David Lynch',
+    preview_url: '',
+    use_case: 'David Lynch',
+  },
 ]
 
 export class ElevenLabs {
