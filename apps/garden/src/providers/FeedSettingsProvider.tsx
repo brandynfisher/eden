@@ -85,7 +85,7 @@ export const FeedSettingsProvider = ({
   children: ReactElement
 }) => {
   const [feedSettings, setFeedSettings] = useLocalStorage<FeedSettings>({
-    key: 'feedSettings_v1',
+    key: 'feedSettings_v2',
     defaultValue: feedSettingsContextDefaults,
   })
 
