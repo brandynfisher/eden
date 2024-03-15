@@ -16,7 +16,7 @@ const SamplesParameter = ({
   }
 
   return (
-    <div className="mt-2 flex">
+    <div className="flex">
       <ParameterAddon
         title={'Samples'}
         description={'Select the number of image variations to generate'}

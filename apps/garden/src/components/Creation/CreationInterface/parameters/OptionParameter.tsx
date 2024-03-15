@@ -46,7 +46,7 @@ const OptionParameter = (props: {
         description={props.parameter.description}
       />
       <Form.Item
-        className="my-0 w-full"
+        className="my-0 w-full mb-3"
         name={props.parameter.name}
         initialValue={props.parameter.default}
         rules={[
@@ -57,7 +57,11 @@ const OptionParameter = (props: {
         ]}
       >
         {typeof props.parameter.default === 'boolean' ? (
-          <Switch checked={value} onChange={onSwitchChange} />
+          <div className="flex">
+            <div className="ml-2">
+              <Switch checked={value} onChange={onSwitchChange} />
+            </div>
+          </div>
         ) : (
           <Select
             value={value}

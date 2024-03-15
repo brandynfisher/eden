@@ -78,6 +78,7 @@ const CreationWorkspace = ({
       >
         {activeGenerator && (
           <GeneratorForm
+            key={activeGenerator.generatorName}
             outputType={outputType}
             usesDrawer={usesDrawer}
             openedDrawer={openedDrawer}
