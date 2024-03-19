@@ -1,4 +1,5 @@
 import { BaseParamGroup } from '@/components/Creation/CreationDetail/CreationInfo'
+import TruncatedExpandableText from '@/components/TruncatedExpandableText'
 import { Concept } from '@edenlabs/eden-sdk'
 import React, { useEffect, useState } from 'react'
 
@@ -17,11 +18,19 @@ const ConceptInfo = ({ concept }: { concept: Concept }) => {
   }, [concept.createdAt])
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
+      {concept?.description ? (
+        <BaseParamGroup
+          label={'Description'}
+          value={
+            <TruncatedExpandableText text={concept.description} lines={3} />
+          }
+        />
+      ) : null}
+
       <div className="flex gap-4 flex-wrap">
-        <BaseParamGroup label="Type" value={<div>concept</div>} />
+        {/*<BaseParamGroup label="Type" value={<div>concept</div>} />*/}
         <BaseParamGroup label="Checkpoint" value={concept.checkpoint} />
-        <BaseParamGroup label="Date" value={displayDateTime} />
         <BaseParamGroup
           label={'Training Images'}
           value={
@@ -30,6 +39,7 @@ const ConceptInfo = ({ concept }: { concept: Concept }) => {
               : concept.training_images?.length || 0
           }
         />
+        <BaseParamGroup label="Date" value={displayDateTime} />
       </div>
 
       {concept?.grid_prompts && concept.grid_prompts?.length ? (
