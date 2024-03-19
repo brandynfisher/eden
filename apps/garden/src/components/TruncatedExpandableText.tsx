@@ -42,7 +42,7 @@ const TruncatedExpandableText = ({
           ref={ref}
           title={text}
           className={`relative text-sm select-text w-full ${
-            isTruncated ? 'mb-2' : ''
+            isTruncated ? 'mb-1' : ''
           } ${showMore ? '' : `text-ellipsis line-clamp-${lines ? lines : 2}`}`}
         >
           {text}
