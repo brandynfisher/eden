@@ -4,7 +4,8 @@ import {
   FeedSettings,
   FeedSettingsContext,
 } from '@/providers/FeedSettingsProvider'
-import { ExpandMore } from '@mui/icons-material'
+import ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
   AccordionDetails,
@@ -77,8 +78,36 @@ const segments: Segment[] = [
         type: 'multi',
         items: [
           {
-            label: 'Stories',
+            label: 'Create',
+            value: 'create',
+          },
+          {
+            label: 'Story',
             value: 'story',
+          },
+          {
+            label: 'Upscale',
+            value: 'upscale',
+          },
+          {
+            label: 'ControlNet',
+            value: 'controlnet',
+          },
+          {
+            label: 'txt2vid',
+            value: 'txt2vid',
+          },
+          {
+            label: 'img2vid',
+            value: 'img2vid',
+          },
+          {
+            label: 'vid2vid',
+            value: 'vid2vid',
+          },
+          {
+            label: 'real2real',
+            value: 'real2real',
           },
         ],
       },
@@ -172,6 +201,78 @@ const AccordionHeader = ({
   )
 }
 
+const CheckboxGroup = ({
+  group,
+  feedSettings,
+  onChange,
+}: {
+  group: Group
+  feedSettings: FeedSettings
+  onChange: (
+    id: Group['id'],
+    type: Group['type'],
+    value: Item['value'],
+    checked: boolean,
+  ) => void
+}) => {
+  const numItemsVisible = 3
+  const [showMore, setShowMore] = useState(false)
+
+  return (
+    <>
+      {group.items && group.items.length
+        ? group.items.map((item, index) => (
+            <FormControlLabel
+              className={`pl-1 text-sm !mr-0 ${
+                !(feedSettings[group.id] as Record<string, boolean>)[
+                  item.value
+                ] &&
+                index >= numItemsVisible &&
+                !showMore
+                  ? 'hidden'
+                  : ''
+              }`}
+              key={item.label}
+              control={
+                <Checkbox
+                  size="small"
+                  name={group.id}
+                  checked={
+                    (feedSettings[group.id] as Record<string, boolean>)[
+                      item.value
+                    ]
+                  }
+                />
+              }
+              label={<span className="text-sm select-none">{item.label}</span>}
+              onChange={(event, checked) =>
+                onChange(group.id, group.type, item.value, checked)
+              }
+            />
+          ))
+        : null}
+      {group.items.length > 3 ? (
+        <div
+          onClick={() => setShowMore(!showMore)}
+          className={`text-gray-400 flex items-center gap-1 text-xs cursor-pointer hover:underline hover:text-gray-300 ${
+            group.items.length >= numItemsVisible ? '' : 'hidden'
+          }`}
+        >
+          {showMore ? (
+            <>
+              <ExpandLess fontSize="small" className="w-6" /> Show less
+            </>
+          ) : (
+            <>
+              <ExpandMore fontSize="small" className="w-6" /> Show more
+            </>
+          )}
+        </div>
+      ) : null}
+    </>
+  )
+}
+
 const AccordionBody = ({ segment }: { segment: Segment }) => {
   const { feedSettings, updateFeedSettings } = useContext(FeedSettingsContext)
 
@@ -237,38 +338,11 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
             </RadioGroup>
           ) : (
             <FormGroup className="mb-2">
-              {group.items && group.items.length
-                ? group.items.map(item => (
-                    <FormControlLabel
-                      className="pl-1 text-sm !mr-0"
-                      key={item.label}
-                      control={
-                        <Checkbox
-                          size="small"
-                          name={group.id}
-                          checked={
-                            (feedSettings[group.id] as Record<string, boolean>)[
-                              item.value
-                            ]
-                          }
-                        />
-                      }
-                      label={
-                        <span className="text-sm select-none">
-                          {item.label}
-                        </span>
-                      }
-                      onChange={(event, checked) =>
-                        handleItemChange(
-                          group.id,
-                          group.type,
-                          item.value,
-                          checked,
-                        )
-                      }
-                    />
-                  ))
-                : null}
+              <CheckboxGroup
+                group={group}
+                feedSettings={feedSettings}
+                onChange={handleItemChange}
+              />
             </FormGroup>
           )}
         </div>

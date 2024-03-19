@@ -57,6 +57,7 @@ export type GeneratorsGetResponse = WebAPICallResult & {
 // Types
 
 export type Generator = {
+  _id: string
   generatorName: string
   description: string
   output: string
