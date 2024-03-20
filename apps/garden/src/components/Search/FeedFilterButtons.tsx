@@ -47,7 +47,7 @@ const FeedFilterButtons = () => {
                 }
                 key={itemKey}
                 title={`Remove filter - ${filterName} '${itemKey}'`}
-                className="flex items-center text-xs gap-1 px-1 rounded border border-solid border-blue-800 bg-blue-500 hover:bg-blue-800 hover:bg-opacity-75 bg-opacity-25 text-blue-300 cursor-pointer "
+                className="flex items-center text-xs gap-1 px-1 rounded border border-solid border-blue-800 bg-blue-500 hover:bg-blue-300 hover:dark:bg-blue-800 hover:bg-opacity-75 bg-opacity-25 text-blue-700 dark:text-blue-300 cursor-pointer "
               >
                 {itemKey}
                 <Close fontSize="small" className="!text-xs" />

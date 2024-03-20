@@ -189,7 +189,7 @@ const AccordionHeader = ({
   return (
     <div key={1} className="flex flex-col max-w-full">
       <AccordionSummary
-        className="!h-10 !min-h-0 !hover:bg-gray-300 !hover:dark:bg-gray-700 !bg-slate-800 !border-0 text-gray-700 dark:text-gray-300 text-sm"
+        className="!h-10 !min-h-0 !hover:bg-gray-300 !hover:dark:bg-gray-700 !bg-slate-800 !border-0 text-gray-400 dark:text-gray-300 text-sm"
         expandIcon={<ExpandMore className="text-gray-700 dark:text-gray-300" />}
         aria-controls={`${segment.id}-content`}
         id={`${segment.id}-header`}
@@ -397,7 +397,6 @@ const FeedFilterPopover = ({
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      className="border border-solid border-gray-600 rounded-lg overflow-hidden p-2"
       style={{ background: 'transparent' }}
     >
       {segments.map(segment => (
