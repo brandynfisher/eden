@@ -1,70 +1,43 @@
 import * as Sentry from '@sentry/nextjs'
 import { Button } from 'antd'
 import Image from 'next/image'
-import { NextRouter, useRouter, withRouter } from 'next/router'
-import React, {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useState,
-} from 'react'
+import { NextRouter, withRouter } from 'next/router'
+import React, { Component } from 'react'
 
 interface State {
   hasError: boolean
 }
 
 interface Props {
-  hasError?: boolean
-  setHasError?: Dispatch<SetStateAction<boolean>>
-  children?: ReactNode
-  router?: NextRouter
+  children?: React.ReactNode
+  router: NextRouter
 }
 
-function ErrorBoundary({ children }: Props) {
-  const [hasError, setHasError] = useState(false)
-  const router = useRouter()
-  useEffect(() => {
-    const handleRouteChange = () => {
-      if (hasError) {
-        setHasError(false)
-      }
-    }
-
-    router.events.on('routeChangeStart', handleRouteChange)
-
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChange)
-    }
-  }, [router.pathname, hasError])
-  return (
-    <ErrorBoundaryInner hasError={hasError} setHasError={setHasError}>
-      {children}
-    </ErrorBoundaryInner>
-  )
-}
-
-class ErrorBoundaryInner extends React.Component<Props, State> {
-  public state: State = {
-    hasError: false,
-  }
-
+class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
+    this.state = { hasError: false }
   }
 
-  static getDerivedStateFromError(): State {
+  static getDerivedStateFromError() {
     return { hasError: true }
   }
 
-  componentDidCatch(error: Error) {
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.log({ error, info })
     Sentry.captureException(error)
   }
 
-  componentDidUpdate(prevProps: Props) {
-    if (!this.props.hasError && prevProps.hasError) {
-      this.setState({ hasError: false })
-    }
+  componentDidMount() {
+    this.props.router?.events.on('routeChangeStart', this.handleRouteChange)
+  }
+
+  componentWillUnmount() {
+    this.props.router?.events.off('routeChangeStart', this.handleRouteChange)
+  }
+
+  handleRouteChange = () => {
+    this.setState({ hasError: false })
   }
 
   render() {
@@ -95,13 +68,13 @@ class ErrorBoundaryInner extends React.Component<Props, State> {
                     </p>
                   </div>
                   <div className="flex gap-4 justify-center">
-                    {/*<Button*/}
-                    {/*  type="primary"*/}
-                    {/*  className="font-mono"*/}
-                    {/*  onClick={() => this.setState({ hasError: false })}*/}
-                    {/*>*/}
-                    {/*  Try again?*/}
-                    {/*</Button>*/}
+                    <Button
+                      type="primary"
+                      className="font-mono"
+                      onClick={() => this.setState({ hasError: false })}
+                    >
+                      Try again?
+                    </Button>
                     <a href="/">
                       <Button
                         className="font-mono"
@@ -118,7 +91,6 @@ class ErrorBoundaryInner extends React.Component<Props, State> {
         </section>
       )
     }
-
     return this.props.children
   }
 }
