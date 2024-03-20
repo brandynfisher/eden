@@ -19,6 +19,7 @@ const CharacterCreationsTab = ({
         query={{ characterId: characterId }}
         modalContainerRef={modalContainerRef}
         modalContainerHeight={modalContainerHeight}
+        hasFeedFilter={true}
       />
     </div>
   )

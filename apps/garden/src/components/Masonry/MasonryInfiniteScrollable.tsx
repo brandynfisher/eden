@@ -27,7 +27,6 @@ import { useRouter } from 'next/router'
 import React, { FC, useCallback, useContext, useEffect } from 'react'
 
 const MasonryHookWrap: FC<UseMasonryOptions<Concept | Creation>> = props => {
-  // console.log(props)
   return <div>{useMasonry(props)}</div>
 }
 
@@ -99,6 +98,7 @@ const MasonryInfiniteScrollable = ({
   const resizeObserver = useResizeObserver(positioner)
 
   useEffect(() => {
+    // console.log('SETTING ITEMS', masonryKey, items.length)
     setItems(masonryKey, items)
   }, [masonryKey, items.length])
 
@@ -199,8 +199,6 @@ const MasonryInfiniteScrollable = ({
     },
     [hover],
   )
-
-  // console.log({ modalContainerHeight, scrollTop })
 
   return (
     <>

@@ -211,6 +211,7 @@ const Details = ({
             query={{ conceptId: item._id }}
             modalContainerRef={modalContainerRef}
             modalContainerHeight={modalContainerHeight}
+            hasFeedFilter={false}
           />
         </div>
       ) : null}
@@ -224,6 +225,7 @@ const Details = ({
             query={{ creationId: item._id }}
             modalContainerRef={modalContainerRef}
             modalContainerHeight={modalContainerHeight}
+            hasFeedFilter={false}
           />
         </div>
       ) : null}

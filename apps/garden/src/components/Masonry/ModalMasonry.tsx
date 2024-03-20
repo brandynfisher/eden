@@ -10,7 +10,8 @@ const ModalMasonry = ({
   modalContainerRef,
   modalContainerHeight,
   masonryKeySuffix,
-  filters,
+  orderParams,
+  hasFeedFilter,
 }: {
   title?: string
   itemType?: ItemType
@@ -21,10 +22,11 @@ const ModalMasonry = ({
     characterId?: string
     creatorId?: string
   }
-  filters?: OrderByParam[]
+  orderParams?: OrderByParam[]
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
   masonryKeySuffix?: string
+  hasFeedFilter?: boolean
 }) => {
   return (
     <div className="mt-2 md:mt-4">
@@ -36,9 +38,10 @@ const ModalMasonry = ({
           masonryKeySuffix={masonryKeySuffix}
           itemType={itemType || 'creation'}
           query={query}
-          orderParams={filters}
+          orderParams={orderParams}
           modalContainerRef={modalContainerRef}
           modalContainerHeight={modalContainerHeight}
+          hasFeedFilter={hasFeedFilter}
         />
       </div>
     </div>

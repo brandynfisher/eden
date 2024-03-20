@@ -388,7 +388,9 @@ const FeedFilterPopover = ({
   return (
     <Popover
       id={'feed-filter-popover'}
-      // disableScrollLock={true}
+      disableAutoFocus={true}
+      disableEnforceFocus={true}
+      disableRestoreFocus={true}
       container={containerRef?.current || undefined}
       open={open}
       anchorEl={anchorEl}
