@@ -11,6 +11,7 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
 import slug from 'mongoose-slug-plugin'
+import getSlug from 'speakingurl'
 
 interface ChatSchema {
   sender: string
@@ -145,9 +146,26 @@ const character = new Schema<CharacterDocument>(
   },
 )
 
-character.pre<CharacterDocument>('save', function (next) {
-  this.updatedAt = new Date()
+async function generateUniqueSlug(
+  name: string,
+  originalSlug: string,
+  count = 0,
+): Promise<string> {
+  const slug = count === 0 ? originalSlug : `${originalSlug}-${count}`
+  const exists = await Character.countDocuments({ slug }).exec()
+  if (exists) {
+    return generateUniqueSlug(name, originalSlug, count + 1)
+  }
+  return slug
+}
 
+character.pre<CharacterDocument>('save', async function (next) {
+  this.updatedAt = new Date()
+  if (this.isModified('name')) {
+    console.log('name changed', this.name)
+    const baseSlug = getSlug(this.name, { lang: 'en' })
+    this.slug = await generateUniqueSlug(this.name, baseSlug)
+  }
   next()
 })
 

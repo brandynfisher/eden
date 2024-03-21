@@ -127,17 +127,8 @@ export const updateCharacter = async (
     })
   }
 
-  // if (characterPrivacyPermissionCheck(request)) {
-  //   return reply.status(401).send({
-  //     message:
-  //       'Only subscribers can use privacy features. Please upgrade your subscription.',
-  //   })
-  // }
-
   const { name, image, voice, greeting, dialogue, logosData, isPrivate } =
     request.body as CharactersUpdateArguments
-
-  console.log('777777', logosData)
 
   const newLogosData = {
     ...logosData,
@@ -156,32 +147,26 @@ export const updateCharacter = async (
   })
 
   if (!character) {
-    return reply.status(401).send({
+    return reply.status(404).send({
       message: 'Character not found',
     })
   }
 
-  const input: {
-    name: string | undefined
-    image: string | undefined
-    voice: string | undefined
-    greeting: string | undefined
-    dialogue: any[] | undefined
-    logosData: any | undefined
-    isPrivate?: boolean
-  } = {
-    name,
-    image,
-    voice,
-    greeting,
-    dialogue,
-    logosData: newLogosData,
-    isPrivate,
-  }
+  // Manually assign the updated values to the character document
+  character.name = name !== undefined ? name : character.name
+  character.image = image !== undefined ? image : character.image
+  character.voice = voice !== undefined ? voice : character.voice
+  character.greeting = greeting !== undefined ? greeting : character.greeting
+  character.dialogue = dialogue !== undefined ? dialogue : character.dialogue
+  character.logosData =
+    newLogosData !== undefined ? newLogosData : character.logosData
+  character.isPrivate =
+    isPrivate !== undefined ? isPrivate : character.isPrivate
 
-  await character.update(input)
+  // Save the document to trigger pre-save hooks and validate the document
+  await character.save()
 
-  return reply.status(200).send({ characterId })
+  return reply.status(200).send({ characterId: character._id })
 }
 
 export const deleteCharacter = async (
