@@ -6,6 +6,7 @@ import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
 import FeedFilter from '@/components/Search/FeedFilter'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
+import { useGenerators } from '@/hooks/useGenerators'
 import { storyGeneratorIds } from '@/pages/channels/ChannelsPage'
 import {
   FeedSettingsContext,
@@ -25,6 +26,7 @@ const MasonryInfiniteContainer = ({
   query?: PaginatedFeedQuery
   fallbackOrderParam?: OrderByParam
 }) => {
+  const { generators } = useGenerators()
   const [feedFilters, setFeedFilters] = useState({})
   const [fetchStartDate, setFetchStartDate] = useState<string | undefined>()
   const [orderBy, setOrderBy] = useState<OrderByParam>(
@@ -69,9 +71,20 @@ const MasonryInfiniteContainer = ({
         let values: FilterName[] = []
 
         Object.entries(items[1]).map(item => {
-          if (items[0] === 'generatorId') {
-            if (item[0] === 'story' && item[1] === true)
+          if (items[0] === 'generatorId' && item[1] === true) {
+            if (item[0] === 'story') {
               values.push(...(storyGeneratorIds as FilterName[]))
+              return
+            }
+
+            const matchingGenerator = generators?.filter(
+              generator => generator.generatorName === item[0],
+            )[0]
+
+            if (matchingGenerator) {
+              values.push(matchingGenerator._id as FilterName)
+            }
+
             return
           }
 

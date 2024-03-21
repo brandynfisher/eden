@@ -26,8 +26,6 @@ export interface FeedSettings extends ViewSettings {
   [FilterName.Visibility]: FeedSettingItem
 }
 
-// export type FilterName = string
-
 interface SettingsContextProps {
   feedSettings: FeedSettings
   filters: Partial<FilterSettings>[]
@@ -38,7 +36,13 @@ interface SettingsContextProps {
 
 const feedSettingsContextDefaults: FeedSettings = {
   generatorId: {
+    create: false,
     story: false,
+    upscale: false,
+    controlnet: false,
+    txt2vid: false,
+    img2vid: false,
+    vid2vid: false,
   },
   outputType: {
     image: false,
@@ -51,26 +55,6 @@ const feedSettingsContextDefaults: FeedSettings = {
   imageSize: 'medium',
   gridImageStyle: 'contain',
 }
-
-// export const FilterQueryConfig = {
-//   image: {
-//     'mediaAttributes.type': {
-//       $eq: 'image',
-//     },
-//   },
-//   video: {
-//     'mediaAttributes.type': {
-//       $eq: 'video',
-//     },
-//   },
-//   story: {
-//     generatorId: [
-//       '6511d29ad2d97662167a76d6', // dialogue
-//       '65047b5a5c9278a72cd0ae91', // monologue
-//       '65a484ac4f1d544e3a1d9435', // story
-//     ],
-//   },
-// }
 
 // Initialized context with default value to avoid the null checks in consumers
 export const FeedSettingsContext = createContext<SettingsContextProps>({
@@ -85,7 +69,7 @@ export const FeedSettingsProvider = ({
   children: ReactElement
 }) => {
   const [feedSettings, setFeedSettings] = useLocalStorage<FeedSettings>({
-    key: 'feedSettings_v1',
+    key: 'feedSettings_v3',
     defaultValue: feedSettingsContextDefaults,
   })
 

@@ -1,4 +1,6 @@
 import { Collection } from '@edenlabs/eden-sdk'
+import Groups from '@mui/icons-material/Groups'
+import Chip from '@mui/material/Chip'
 import { Card, Image } from 'antd'
 import Link from 'next/link'
 import React from 'react'
@@ -30,7 +32,23 @@ const CollectionCard = ({ collection }: { collection: Collection }) => {
       >
         <Card.Meta
           title={collection.name}
-          description={`${collection.creations?.length || 0} items`}
+          description={
+            <div className="flex flex-wrap items-center justify-between">
+              {collection.creations?.length || 0} items{' '}
+              {collection.contributors && collection.contributors.length ? (
+                <Chip
+                  size="small"
+                  className="text-gray-400"
+                  clickable={true}
+                  label={
+                    <div className="flex items-center gap-1">
+                      <Groups fontSize="small" /> Shared
+                    </div>
+                  }
+                />
+              ) : null}
+            </div>
+          }
         />
       </Card>
     </Link>

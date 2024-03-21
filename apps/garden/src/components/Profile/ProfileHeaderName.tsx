@@ -77,11 +77,12 @@ const ProfileHeaderName = ({
               type="text"
               enterKeyHint="enter"
               value={updatedName}
+              placeholder={'Enter new Name'}
               maxLength={32}
               minLength={3}
               autoCorrect="off"
               spellCheck="false"
-              className="z-10 pl-0 ml-0 border-none shadow-none !ring-none flex h-7 max-w-full items-center text-lg font-medium bg-transparent underline decoration-dotted decoration-2 underline-offset-[6px] !outline-none"
+              className="z-10 ml-0 border-none shadow-none !ring-none flex h-7 max-w-full items-center text-lg font-medium bg-gray-100 dark:bg-gray-950 pl-1 rounded-md underline decoration-dotted decoration-2 underline-offset-[6px] !outline-none placeholder:text-xs placeholder:font-normal"
               onChange={handleNameInputChange}
             />
             <div className="z-0 flex gap-2 absolute bg-white dark:bg-gray-800 p-2 top-full border border-gray-300 dark:border-gray-700 border-solid border-t-0 rounded-b-md anim-slide-fade-down ">
