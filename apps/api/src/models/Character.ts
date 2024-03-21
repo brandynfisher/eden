@@ -11,6 +11,7 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 // @ts-ignore
 import slug from 'mongoose-slug-plugin'
+// @ts-ignore
 import getSlug from 'speakingurl'
 
 interface ChatSchema {
