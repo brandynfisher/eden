@@ -62,6 +62,7 @@ export type Generator = {
   description: string
   output: string
   defaultVersionId?: string
+  deployment?: string
   versions: GeneratorVersion[]
   visible?: boolean
 }

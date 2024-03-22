@@ -6,8 +6,10 @@ import { ObjectId } from 'mongodb'
 const makeWebhookUrl = (server: FastifyInstance) =>
   `${server.config.WEBHOOK_URL}/tasks/update?secret=${server.config.WEBHOOK_SECRET}`
 
-const formatConfigForReplicate = async (config: any) => {
+const formatConfigForReplicate = async (generator: any, config: any) => {
   const newConfig = { ...config }
+
+  newConfig.mode = generator.generatorName
 
   // if it's a Concept training, remove any spaces, pipes, or underscores in the name
   if (newConfig.lora_training_urls) {
@@ -58,10 +60,12 @@ const formatConfigForReplicate = async (config: any) => {
     ? (newConfig.mask_images = newConfig.mask_images.join('|'))
     : null
   newConfig.text_inputs_to_interpolate
-    ? (newConfig.text_inputs_to_interpolate = newConfig.text_inputs_to_interpolate.join('|'))
+    ? (newConfig.text_inputs_to_interpolate =
+        newConfig.text_inputs_to_interpolate.join('|'))
     : null
   newConfig.text_inputs_to_interpolate_weights
-    ? (newConfig.text_inputs_to_interpolate_weights = newConfig.text_inputs_to_interpolate_weights.join('|'))
+    ? (newConfig.text_inputs_to_interpolate_weights =
+        newConfig.text_inputs_to_interpolate_weights.join('|'))
     : null
   newConfig.voice_file_urls
     ? (newConfig.voice_file_urls = newConfig.voice_file_urls.join('|'))
@@ -90,24 +94,43 @@ const submitTask = async (
   const webhookUrl = makeWebhookUrl(server)
 
   const generatorAddress = generatorVersion.address
-  const model = await replicate.getModel(generatorAddress)
-  if (!model.results) {
+  const [addressUser, addressModel] = generatorAddress.split('/')
+
+  try {
+    await replicate.models.get(addressUser, addressModel)
+  } catch (e) {
     throw new Error(`Could not find model ${generatorAddress}`)
   }
-  const modelId = generatorVersion.versionId
-  const preparedConfig = await formatConfigForReplicate(config)
-  preparedConfig.mode = generator.generatorName
-  console.log('preparedConfig', preparedConfig)
-  // @ts-ignore
-  const task = await replicate.startPrediction(
-    modelId,
-    preparedConfig,
-    webhookUrl,
-    ['start', 'output', 'completed'],
-  )
-  if (task.status == 422) {
-    throw new Error(task.detail)
+
+  const deployment = generator.deployment
+  const preparedConfig = await formatConfigForReplicate(generator, config)
+  let task
+
+  if (deployment) {
+    const [deploymentUser, deploymentName] = deployment.split('/')
+    task = await replicate.deployments.predictions.create(
+      deploymentUser,
+      deploymentName,
+      {
+        input: preparedConfig,
+        webhook: webhookUrl,
+        webhook_events_filter: ['start', 'output', 'completed'],
+      },
+    )
+  } else {
+    const modelId = generatorVersion.versionId
+    task = await replicate.predictions.create({
+      version: modelId,
+      input: preparedConfig,
+      webhook: webhookUrl,
+      webhook_events_filter: ['start', 'output', 'completed'],
+    })
   }
+
+  if (task.error) {
+    throw new Error(task.error)
+  }
+
   return task
 }
 

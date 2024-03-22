@@ -24,6 +24,7 @@ export const getGenerator = async (
     output: generator.output,
     description: generator.description,
     defaultVersionId: generator.defaultVersionId,
+    deployment: generator.deployment,
     versions: generator.versions.filter(
       (version: GeneratorVersionSchema) =>
         version.versionId === generator.defaultVersionId,
@@ -60,6 +61,7 @@ export const listGenerators = async (
       output: generator.output,
       description: generator.description,
       defaultVersionId: generator.defaultVersionId,
+      deployment: generator.deployment,
       versions: generator.versions.filter(
         (version: GeneratorVersionSchema) =>
           version.versionId === generator.defaultVersionId,

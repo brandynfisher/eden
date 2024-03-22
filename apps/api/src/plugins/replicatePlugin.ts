@@ -1,10 +1,11 @@
 import type { FastifyInstance } from 'fastify'
-import Replicate from 'replicate-js'
+import Replicate from 'replicate'
 
 export const registerReplicate = async (fastify: FastifyInstance) => {
   try {
+    console.log('make a rep instance')
     const replicate = new Replicate({
-      token: process.env.REPLICATE_TOKEN as string,
+      auth: process.env.REPLICATE_TOKEN as string,
     })
     fastify.decorate('replicate', replicate)
     fastify.log.info('Successfully registered ReplicatePlugin')
