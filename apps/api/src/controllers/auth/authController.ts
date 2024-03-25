@@ -1,10 +1,9 @@
-import axios from 'axios'
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-
 import { Collection } from '../../models/Collection'
 import { Creation } from '../../models/Creation'
 import { User, UserInput } from '../../models/Creator'
 import { Manna } from '../../models/Manna'
+import axios from 'axios'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const createNewUser = async (input: UserInput) => {
   const newUser = new User(input)
@@ -108,7 +107,7 @@ export const discordOAuth = async (
       }),
     )
 
-    return reply.redirect(`${server.config.FRONTEND_URL}/tools`)
+    return reply.redirect(`${server.config.FRONTEND_URL}/account`)
   } catch (error) {
     console.error(error)
     return reply
