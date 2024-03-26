@@ -13,7 +13,13 @@ import { CONFIG } from '@/lib/config'
 import { handleAxiosError } from '@/lib/fetcher'
 import { timeAgo } from '@/lib/time'
 import { ItemType } from '@/providers/ModalProvider'
-import { Character, Concept, Creation } from '@edenlabs/eden-sdk'
+import {
+  Character,
+  Collection,
+  Concept,
+  Creation,
+  Creator,
+} from '@edenlabs/eden-sdk'
 import { useHover } from '@mantine/hooks'
 import { useViewportSize } from '@mantine/hooks'
 import LockIcon from '@mui/icons-material/Lock'
@@ -32,7 +38,7 @@ export interface CardProps {
   hidePrompt?: boolean
   sizes?: string
   className?: string
-  updateHandler?: (data: CardData) => void
+  updateHandler?: (data: CardData | Creator | Collection) => void
 }
 
 export type CardWithTypeProps = CardProps & { itemType: ItemType }
@@ -128,7 +134,7 @@ const Card: FC<CardWithTypeProps> = ({
             onOpen={setDropdownActive}
             item={itemData}
             itemType={itemType}
-            onChange={(updatedItem: CardData) => cardUpdateHandler(updatedItem)}
+            onChange={updatedItem => cardUpdateHandler(updatedItem as CardData)}
             pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${itemData._id}`}
           />
         </CardHeaderWrap>
@@ -271,8 +277,8 @@ const Card: FC<CardWithTypeProps> = ({
                   onOpen={setDropdownActive}
                   item={itemData}
                   itemType={itemType}
-                  onChange={(updatedItem: CardData) =>
-                    cardUpdateHandler(updatedItem)
+                  onChange={updatedItem =>
+                    cardUpdateHandler(updatedItem as CardData)
                   }
                   pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${itemData._id}`}
                 />

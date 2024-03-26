@@ -61,6 +61,10 @@ const DetailModal = ({
     }
   }, [parentMasonryKey, currentIndex, items.length])
 
+  // useEffect(() => {
+  //   console.log('########## rendering DetailModal')
+  // }, [])
+
   useEffect(() => {
     if (currentIndex === null) return
 
@@ -79,7 +83,10 @@ const DetailModal = ({
   }, [currentIndex, handlePrevItem, handleNextItem])
 
   useEffect(() => {
-    // console.log(router.asPath, currentIndex, items)
+    if (!items.length) {
+      // console.log('no items, stay here')
+      return
+    }
     const handleRouteChange = async () => {
       const { pageUrl, modalUrl } = getModalUrls(
         router,
@@ -91,7 +98,7 @@ const DetailModal = ({
     }
 
     if (currentIndex !== null) {
-      // console.log('changing route', currentIndex)
+      // console.log('changing route')
       handleRouteChange()
     }
   }, [router.asPath, currentIndex, items.length])

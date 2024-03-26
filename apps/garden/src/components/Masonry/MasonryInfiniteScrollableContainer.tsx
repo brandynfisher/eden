@@ -94,7 +94,7 @@ const MasonryInfiniteScrollableContainer = ({
 
     setFetchStartDate(new Date().toISOString())
     setRenderCount(prevState => {
-      console.log(`${orderBy.field}_${prevState + 1}`, { prevState })
+      // console.log(`${orderBy.field}_${prevState + 1}`, { prevState })
       setKey(`${orderBy.field}_${prevState + 1}`)
       return prevState + 1
     })
@@ -104,7 +104,7 @@ const MasonryInfiniteScrollableContainer = ({
   useEffect(() => {
     setFetchStartDate(new Date().toISOString())
     setRenderCount(prevState => {
-      console.log(`${orderBy.field}_${prevState + 1}`, { prevState })
+      // console.log(`${orderBy.field}_${prevState + 1}`, { prevState })
       setKey(`${orderBy.field}_${prevState + 1}`)
       return prevState + 1
     })

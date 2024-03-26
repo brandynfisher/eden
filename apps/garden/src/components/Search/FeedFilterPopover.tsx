@@ -4,6 +4,7 @@ import {
   FeedSettings,
   FeedSettingsContext,
 } from '@/providers/FeedSettingsProvider'
+import { UserContext } from '@/providers/UserProvider'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import {
@@ -17,11 +18,13 @@ import {
   RadioGroup,
 } from '@mui/material'
 import Popover from '@mui/material/Popover'
+import { useRouter } from 'next/router'
 import React, {
   ComponentPropsWithoutRef,
   MutableRefObject,
   ReactElement,
   useContext,
+  useEffect,
   useState,
 } from 'react'
 
@@ -49,6 +52,22 @@ interface Segment {
   title: string
   defaultOpen?: boolean
   groups: Group[]
+}
+
+const visibilityGroup: Group = {
+  id: 'visibility',
+  title: 'Visibility',
+  type: 'multi',
+  items: [
+    {
+      label: 'Private',
+      value: 'private',
+    },
+    {
+      label: 'Public',
+      value: 'public',
+    },
+  ],
 }
 
 const segments: Segment[] = [
@@ -111,22 +130,6 @@ const segments: Segment[] = [
           },
         ],
       },
-      // @todo: mostly relevant for own profile feed
-      // {
-      //   id: 'visibility',
-      //   title: 'Visibility',
-      //   type: 'multi',
-      //   items: [
-      //     {
-      //       label: 'Public',
-      //       value: 'public',
-      //     },
-      //     {
-      //       label: 'Private',
-      //       value: 'private',
-      //     },
-      //   ],
-      // },
     ],
   },
   // {
@@ -298,15 +301,35 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
     })
   }
 
+  const [availableGroups, setAvailableGroups] = useState(segment?.groups)
+
+  const router = useRouter()
+  const nextPath = router.pathname
+  const query = router.query
+
+  const { user, isAuthenticated } = useContext(UserContext)
+  useEffect(() => {
+    if (isAuthenticated && nextPath === '/creators/[id]' && query && query.id) {
+      if (query.id === user?.username) {
+        setAvailableGroups([visibilityGroup, ...(segment?.groups || [])])
+        return
+      }
+    }
+
+    setAvailableGroups(segment?.groups)
+  }, [segment?.groups, isAuthenticated, nextPath, query, user])
+
   return (
     <AccordionDetails
       key={2}
       className="pb-0 text-gray-700 dark:text-gray-300"
       id={`${segment.id}-content`}
     >
-      {segment?.groups?.map(group => (
+      {availableGroups.map(group => (
         <div key={group.title} className="mb-2">
-          <div className="text-sm pb-0.5">{group.title}</div>
+          <div className="text-sm pb-0.5 border-0 border-b border-solid border-b-gray-600">
+            {group.title}
+          </div>
           {group.type === 'single' ? (
             <RadioGroup
               name={group.id}

@@ -125,7 +125,7 @@ export const listCollections = async (
   const sortFilter: { [key: string]: unknown } = {}
   const ownUserId = request.user ? request.user.userId : undefined
   const isUserRequestingOwnProfileFeed =
-    creatorId && ownUserId && ownUserId.toString() === creatorId
+    creatorId && ownUserId && ownUserId.toString() === creatorId.toString()
   if (!isUserRequestingOwnProfileFeed) {
     sortFilter['isPrivate'] = { $ne: true }
   }
@@ -178,6 +178,11 @@ export const listCollections = async (
             },
           },
         )
+
+  await collectionRepository.model.populate(collections.docs, {
+    path: 'user',
+    select: 'userId username userImage',
+  })
 
   return reply.status(200).send(collections)
 }
