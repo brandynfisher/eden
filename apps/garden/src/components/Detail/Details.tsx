@@ -158,7 +158,7 @@ const Details = ({
                 <CardToolsDropdown
                   item={itemData}
                   itemType={itemType}
-                  onChange={setItemData as Dispatch<SetStateAction<CardData>>}
+                  onChange={updatedItem => setItemData(updatedItem as CardData)}
                   pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${getId(
                     itemType,
                     item,
