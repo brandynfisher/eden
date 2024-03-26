@@ -127,9 +127,9 @@ const GeneratorForm = ({
       ? submitButtonDisabledProd
       : submitButtonDisabledDev
 
-  const supportsAspectRatio = optionalParameters.some(
-    param => param.name === 'width' || param.name === 'height',
-  )
+  const supportsAspectRatio =
+    optionalParameters.some(param => param.name === 'width') &&
+    optionalParameters.some(param => param.name === 'height')
 
   useEffect(() => {
     const transformConfig = () => {
@@ -543,7 +543,7 @@ const GeneratorForm = ({
             generator.generatorName !== 'monologue' &&
             generator.generatorName !== 'wav2lip') ? (
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-2">
                 {outputType === 'image' &&
                 generator.generatorName !== 'blend' ? (
                   <SamplesParameter
