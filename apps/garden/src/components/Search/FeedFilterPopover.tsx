@@ -258,7 +258,7 @@ const CheckboxGroup = ({
         <div
           onClick={() => setShowMore(!showMore)}
           className={`text-gray-400 flex items-center gap-1 text-xs cursor-pointer hover:underline hover:text-gray-300 ${
-            group.items.length >= numItemsVisible ? '' : 'hidden'
+            group.items.length >= numItemsVisible ? '' : '!hidden'
           }`}
         >
           {showMore ? (
