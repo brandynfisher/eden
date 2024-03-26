@@ -22,6 +22,8 @@ const providers = new Map<TaskProvider, any>([
   ['logos', logos],
 ])
 
+const universalGenerators = ['zeroscope-v2-xl', 'upscale']
+
 interface TaskOutput {
   result: string
   files: string[]
@@ -348,7 +350,6 @@ const handleUpdateUniversal = async (
   if (!task) {
     throw new Error(`Could not find task ${taskId}`)
   }
-
   output = Array.isArray(output) ? output : [output]
   const isCompleted = output.some(Boolean) && status == 'succeeded'
 
@@ -356,7 +357,6 @@ const handleUpdateUniversal = async (
     status: 'running',
     progress: 0,
   }
-
   if (isCompleted) {
     Object.assign(taskUpdate, {
       status: 'completed',
@@ -409,14 +409,13 @@ const handleUpdateUniversal = async (
       }
     }
   }
-
   await Task.updateOne(
     {
       taskId,
+      status: { $nin: ['completed', 'failed'] },
     },
     {
       $set: taskUpdate,
-      status: { $nin: ['completed', 'failed'] },
     },
   )
 }
@@ -488,38 +487,36 @@ export const receiveTaskUpdate = async (
 ) => {
   const { id: taskId, status, output, error } = update as any
   console.log(`Received update for task ${taskId} with status ${status}`)
-  console.log(`Output: ${JSON.stringify(output)}`)
+  if (output) {
+    console.log(`Output: ${JSON.stringify(output)}`)
+  }
   if (error) {
     console.error(`Error for task ${taskId}: ${error}`)
   }
-
   const task = await Task.findOne({
     taskId,
   })
   if (!task) {
     throw new Error(`Could not find task ${taskId}`)
   }
-
   const generator = await Generator.findById(task.generator)
   if (!generator) {
     throw new Error(`Could not find generator ${task.generator}`)
   }
-
   const generatorName = generator.generatorName
-
   switch (status) {
     case 'starting':
       // await handleStarting(server, taskId)
       break
     case 'processing':
-      if (generatorName === 'zeroscope-v2-xl') {
+      if (universalGenerators.includes(generatorName)) {
         await handleUpdateUniversal(server, taskId, output, 'processing')
       } else {
         await handleUpdate(server, taskId, output, 'processing')
       }
       break
     case 'succeeded':
-      if (generatorName === 'zeroscope-v2-xl') {
+      if (universalGenerators.includes(generatorName)) {
         await handleUpdateUniversal(server, taskId, output, 'succeeded')
       } else {
         await handleUpdate(server, taskId, output, 'succeeded')

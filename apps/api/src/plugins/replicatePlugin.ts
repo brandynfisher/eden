@@ -3,7 +3,6 @@ import Replicate from 'replicate'
 
 export const registerReplicate = async (fastify: FastifyInstance) => {
   try {
-    console.log('make a rep instance')
     const replicate = new Replicate({
       auth: process.env.REPLICATE_TOKEN as string,
     })
