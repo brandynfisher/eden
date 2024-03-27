@@ -237,7 +237,7 @@ const CheckboxGroup = ({
                 ] &&
                 index >= numItemsVisible &&
                 !showMore
-                  ? 'hidden'
+                  ? '!hidden'
                   : ''
               }`}
               key={item.label}
