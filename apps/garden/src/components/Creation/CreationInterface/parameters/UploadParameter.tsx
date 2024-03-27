@@ -1,10 +1,12 @@
 import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
+import { handleAxiosError } from '@/lib/fetcher'
 import { truncateText } from '@/lib/string'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined'
 import { Form, FormInstance, Modal, Row, Upload, message } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
+import axios, { AxiosProgressEvent } from 'axios'
 import React, { useEffect, useState } from 'react'
 
 const { Dragger } = Upload
@@ -16,6 +18,30 @@ const getBase64 = (file: RcFile): Promise<string> =>
     reader.onload = () => resolve(reader.result as string)
     reader.onerror = error => reject(error)
   })
+
+interface CustomRequestOptions {
+  file: RcFile | File
+  onSuccess: (response: object, file: File | RcFile) => void
+  onError: (error: Error) => void
+  onProgress: (event: { percent: number }) => void
+}
+
+// Function to request a signed URL from the server
+async function requestSignedUrl(
+  filename: string,
+  fileType: string,
+): Promise<string> {
+  try {
+    const response = await axios.post('/api/media/upload', {
+      filename,
+      contentType: fileType,
+    })
+    return response.data.signedUrl // Adjust according to your actual API response
+  } catch (error) {
+    console.error('Error requesting signed URL:', error)
+    throw new Error('Failed to get signed URL')
+  }
+}
 
 const UploadParameter = (props: {
   form: FormInstance
@@ -165,6 +191,38 @@ const UploadParameter = (props: {
     )
   }
 
+  const customRequest = async (options: CustomRequestOptions) => {
+    const { file, onSuccess, onError, onProgress } = options
+
+    try {
+      const signedUrl = await requestSignedUrl(file.name, file.type)
+      const config = {
+        headers: {
+          'Content-Type': file.type,
+        },
+        onUploadProgress: (event: AxiosProgressEvent) => {
+          const total = event.total ? event.total : 1
+          onProgress({ percent: (event.loaded / total) * 100 })
+        },
+      }
+
+      const response = await axios.put(signedUrl, file, config)
+
+      if (response.status === 200) {
+        onSuccess(
+          {
+            fileUrl: signedUrl.split('?')[0],
+          },
+          file,
+        )
+      } else {
+        onError(new Error('Upload failed'))
+      }
+    } catch (error) {
+      handleAxiosError(error, message)
+    }
+  }
+
   const shouldHideUploadButton =
     fileList.length >= (props.parameter.maxLength || 1)
 
@@ -193,7 +251,6 @@ const UploadParameter = (props: {
         >
           <Dragger
             name="file"
-            action="/api/media"
             fileList={fileList}
             listType="picture"
             className={shouldHideUploadButton ? 'upload-btn-hidden' : ''}
@@ -203,6 +260,8 @@ const UploadParameter = (props: {
             maxCount={maxUploads}
             showUploadList={{ showDownloadIcon: true, showRemoveIcon: true }}
             onPreview={handlePreview}
+            // @ts-ignore
+            customRequest={customRequest}
           >
             <div className="flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500">
               <FileUploadOutlined />

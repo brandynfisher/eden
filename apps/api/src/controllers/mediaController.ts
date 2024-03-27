@@ -72,3 +72,33 @@ export const getMediaDownloadUrl = async (
 
   return reply.status(200).send({ signedUrl })
 }
+
+export const uploadMediaRequest = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { filename, contentType } = request.body as {
+    filename: string
+    contentType: string
+  }
+
+  if (!filename || !contentType) {
+    return reply.status(400).send({
+      message: 'Missing fileName or contentType',
+    })
+  }
+
+  try {
+    const signedUrl = await server.generateUploadSignedUrl(server, {
+      filename,
+      contentType,
+    })
+    return reply.status(200).send({ signedUrl })
+  } catch (error) {
+    console.error('Error generating signed URL:', error)
+    return reply.status(500).send({
+      message: 'Error generating signed URL',
+    })
+  }
+}
