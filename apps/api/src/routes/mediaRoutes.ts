@@ -1,6 +1,7 @@
 import {
   getMediaDownloadUrl,
   uploadMedia,
+  uploadMediaRequest,
 } from '../controllers/mediaController'
 import { isAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -17,6 +18,10 @@ const mediaRoutes: FastifyPluginAsync = async server => {
           apiSecret: [],
         },
       ],
+      body: Type.Object({
+        filename: Type.String(),
+        contentType: Type.String(),
+      }),
       response: {
         200: Type.Object({
           url: Type.String(),
@@ -25,6 +30,26 @@ const mediaRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (req, reply) => uploadMedia(server, req, reply),
+  })
+
+  server.post('/media/upload/request', {
+    schema: {
+      tags: ['Media'],
+      description: 'Upload media request',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      response: {
+        200: Type.Object({
+          signedUrl: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (req, reply) => uploadMediaRequest(server, req, reply),
   })
 
   server.get('/media/download', {

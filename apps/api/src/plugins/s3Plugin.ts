@@ -10,6 +10,7 @@ import fs from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import sharp from 'sharp'
+import { v4 as uuidv4 } from 'uuid'
 
 export interface Asset {
   uri: string
@@ -172,6 +173,31 @@ export const uploadBufferAsset = async (
   }
 }
 
+export const generateUploadSignedUrl = async (
+  server: FastifyInstance,
+  { filename, contentType }: { filename: string; contentType: string },
+): Promise<string> => {
+  const s3 = server.s3
+  const S3_BUCKET = server.config.AWS_S3_BUCKET as string
+
+  const params = {
+    Bucket: S3_BUCKET,
+    Key: uuidv4(),
+    Expires: 60 * 5, // URL expires in 5 minutes
+    ContentType: contentType,
+  }
+
+  return new Promise((resolve, reject) => {
+    s3.getSignedUrl('putObject', params, (err, url) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(url)
+      }
+    })
+  })
+}
+
 export const getSignedDownloadUrl = (
   server: FastifyInstance,
   assetUrl: string,
@@ -261,6 +287,7 @@ export const registerS3 = async (fastify: FastifyInstance) => {
     fastify.decorate('uploadThumbnailAsset', uploadThumbnailAsset)
     fastify.decorate('uploadBufferAsset', uploadBufferAsset)
     fastify.decorate('getSignedDownloadUrl', getSignedDownloadUrl)
+    fastify.decorate('generateUploadSignedUrl', generateUploadSignedUrl)
     fastify.log.info('Successfully registered S3Plugin')
   } catch (err) {
     fastify.log.error('Plugin: S3, error on register', err)
@@ -289,6 +316,10 @@ declare module 'fastify' {
       server: FastifyInstance,
       assetUrl: string,
       fileName?: string,
+    ) => Promise<string>
+    generateUploadSignedUrl: (
+      server: FastifyInstance,
+      { filename, contentType }: { filename: string; contentType: string },
     ) => Promise<string>
   }
 }
