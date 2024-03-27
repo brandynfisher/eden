@@ -13,6 +13,7 @@ import {
   FilterName,
 } from '@/providers/FeedSettingsProvider'
 import { ItemType } from '@/providers/ModalProvider'
+import { useRouter } from 'next/router'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 // import FeedFilter from '@/components/Search/FeedFilter'
@@ -57,38 +58,50 @@ const MasonryInfiniteScrollableContainer = ({
 
   const { generators } = useGenerators()
   const { filters } = useContext(FeedSettingsContext)
+  const router = useRouter()
+  const pathname = router.pathname
   useEffect(() => {
     let activeFilters = {}
 
     filters.map(filter => {
       Object.entries(filter).map(items => {
         let values: FilterName[] = []
+        if (typeof items[1] === 'string') {
+          if (items[0] === 'visibility') {
+            if (pathname !== '/creators/[id]') {
+              return
+            }
+          }
 
-        Object.entries(items[1]).map(item => {
-          if (items[0] === 'generatorId' && item[1] === true) {
-            if (item[0] === 'story') {
-              values.push(...(storyGeneratorIds as FilterName[]))
+          // @ts-ignore
+          activeFilters[items[0]] = items[1]
+        } else {
+          Object.entries(items[1]).map(item => {
+            if (items[0] === 'generatorId' && item[1] === true) {
+              if (item[0] === 'story') {
+                values.push(...(storyGeneratorIds as FilterName[]))
+                return
+              }
+
+              const matchingGenerator = generators?.filter(
+                generator => generator.generatorName === item[0],
+              )[0]
+
+              if (matchingGenerator) {
+                values.push(matchingGenerator._id as FilterName)
+              }
+
               return
             }
 
-            const matchingGenerator = generators?.filter(
-              generator => generator.generatorName === item[0],
-            )[0]
-
-            if (matchingGenerator) {
-              values.push(matchingGenerator._id as FilterName)
+            if (item[1] === true) {
+              values.push(item[0] as FilterName)
             }
+          })
 
-            return
-          }
-
-          if (item[1] === true) {
-            values.push(item[0] as FilterName)
-          }
-        })
-
-        // @ts-ignore
-        activeFilters[items[0]] = values
+          // @ts-ignore
+          activeFilters[items[0]] = values
+        }
       })
     })
 
@@ -99,7 +112,7 @@ const MasonryInfiniteScrollableContainer = ({
       return prevState + 1
     })
     setFeedFilters(activeFilters)
-  }, [filters])
+  }, [filters, pathname])
 
   useEffect(() => {
     setFetchStartDate(new Date().toISOString())

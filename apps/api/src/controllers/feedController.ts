@@ -147,7 +147,8 @@ const aggregateCreationsByUserLikes = (
 
 type Filters =
   | {
-      'mediaAttributes.type': { $in: string | string[] } | undefined
+      'mediaAttributes.type'?: { $in: string | string[] } | undefined
+      isPrivate?: boolean | undefined
     }
   | undefined
 
@@ -237,6 +238,7 @@ export const getCreationsFeed = async (
     creationId,
     generatorId,
     outputType,
+    isPrivate,
     name,
     maxDate,
     minDate,
@@ -284,9 +286,14 @@ export const getCreationsFeed = async (
       : [String(outputType)]
     : undefined
 
-  const filters: Filters = outputTypes
-    ? { 'mediaAttributes.type': { $in: outputTypes } }
-    : undefined
+  const filters: Filters = {
+    ...(typeof outputTypes !== 'undefined'
+      ? { 'mediaAttributes.type': { $in: outputTypes } }
+      : {}),
+    ...(typeof isPrivate !== 'undefined'
+      ? { isPrivate: isPrivate === 'true' }
+      : {}),
+  }
   const creationRepository = new CreationRepository(Creation)
   let creations: PaginatedResponse<CreationDocument>
 

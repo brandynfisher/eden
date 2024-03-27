@@ -4,12 +4,36 @@ import {
   FilterName,
 } from '@/providers/FeedSettingsProvider'
 import { Close } from '@mui/icons-material'
+import { useRouter } from 'next/router'
 import { useContext } from 'react'
 
 export type FeedSettingItemKey = keyof FeedSettingItem
 
+const FeedFilterButton = ({
+  filterName,
+  itemKey,
+  handleClick,
+}: {
+  filterName: FilterName
+  itemKey: FeedSettingItemKey | string
+  handleClick: () => void
+}) => {
+  return (
+    <div
+      onClick={() => handleClick()}
+      title={`Remove filter - ${filterName} '${itemKey}'`}
+      className="flex items-center text-xs gap-1 px-1 rounded border border-solid border-blue-800 bg-blue-500 hover:bg-blue-300 hover:dark:bg-blue-800 hover:bg-opacity-75 bg-opacity-25 text-blue-700 dark:text-blue-300 cursor-pointer "
+    >
+      {itemKey}
+      <Close fontSize="small" className="!text-xs" />
+    </div>
+  )
+}
+
 const FeedFilterButtons = () => {
   const { feedSettings, updateFeedSettings } = useContext(FeedSettingsContext)
+  const router = useRouter()
+  const pathname = router.pathname
   const { ...filterSettings } = feedSettings
 
   const handleButtonClick = (
@@ -18,10 +42,16 @@ const FeedFilterButtons = () => {
   ) => {
     updateFeedSettings(current => {
       const updatedSettings = { ...current }
-      if (
+
+      if (typeof updatedSettings[filterName] === 'string') {
+        //@ts-ignore
+        updatedSettings[filterName] = 'all'
+      } else if (
         updatedSettings[filterName] &&
+        //@ts-ignore
         itemKey in updatedSettings[filterName]
       ) {
+        //@ts-ignore
         updatedSettings[filterName][itemKey] = false
       }
       return updatedSettings
@@ -34,26 +64,48 @@ const FeedFilterButtons = () => {
         .filter((filterName): filterName is FilterName =>
           Object.values(FilterName).includes(filterName as FilterName),
         )
-        .map(filterName =>
-          Object.keys(filterSettings[filterName])
-            .filter(itemKey => filterSettings[filterName][itemKey])
-            .map(itemKey => (
-              <div
-                onClick={() =>
-                  handleButtonClick(
-                    filterName as FilterName,
-                    itemKey as FeedSettingItemKey,
-                  )
-                }
-                key={itemKey}
-                title={`Remove filter - ${filterName} '${itemKey}'`}
-                className="flex items-center text-xs gap-1 px-1 rounded border border-solid border-blue-800 bg-blue-500 hover:bg-blue-300 hover:dark:bg-blue-800 hover:bg-opacity-75 bg-opacity-25 text-blue-700 dark:text-blue-300 cursor-pointer "
-              >
-                {itemKey}
-                <Close fontSize="small" className="!text-xs" />
-              </div>
-            )),
-        )}
+        .map(filterName => {
+          if (typeof filterSettings[filterName] === 'string') {
+            if (
+              pathname === '/creators/[id]' &&
+              filterSettings[filterName] !== 'all'
+            ) {
+              return (
+                <FeedFilterButton
+                  key={filterName}
+                  //@ts-ignore
+                  itemKey={filterSettings[filterName]}
+                  filterName={filterName}
+                  handleClick={() =>
+                    handleButtonClick(
+                      filterName as FilterName,
+                      filterSettings[filterName] as FeedSettingItemKey,
+                    )
+                  }
+                />
+              )
+            }
+          } else {
+            return (
+              Object.keys(filterSettings[filterName])
+                //@ts-ignore
+                .filter(itemKey => filterSettings[filterName][itemKey])
+                .map(itemKey => (
+                  <FeedFilterButton
+                    key={itemKey}
+                    filterName={filterName}
+                    itemKey={itemKey}
+                    handleClick={() =>
+                      handleButtonClick(
+                        filterName as FilterName,
+                        itemKey as FeedSettingItemKey,
+                      )
+                    }
+                  />
+                ))
+            )
+          }
+        })}
     </div>
   )
 }

@@ -44,7 +44,7 @@ interface Group {
   title: string
   type: 'single' | 'multi'
   items: Item[]
-  defaultValue?: string
+  defaultValue?: string | null
 }
 
 interface Segment {
@@ -57,8 +57,13 @@ interface Segment {
 const visibilityGroup: Group = {
   id: 'visibility',
   title: 'Visibility',
-  type: 'multi',
+  type: 'single',
+  defaultValue: 'all',
   items: [
+    {
+      label: 'All',
+      value: 'all',
+    },
     {
       label: 'Private',
       value: 'private',
@@ -292,7 +297,11 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
         // We assert that newState[groupId] is a 'FeedSettingItem'
         const group = newState[groupId] as FeedSettingItem
         group[value] = checked
-      } else if (groupId === 'gridImageStyle' || groupId === 'imageSize') {
+      } else if (
+        groupId === 'gridImageStyle' ||
+        groupId === 'imageSize' ||
+        groupId === 'visibility'
+      ) {
         // We knowingly can assert that newState[groupId] can take a string here
         (newState[groupId] as string) = value
       }

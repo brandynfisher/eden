@@ -545,7 +545,8 @@ const GeneratorForm = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="flex gap-2 mt-2">
                 {outputType === 'image' &&
-                generator.generatorName !== 'blend' ? (
+                generator.generatorName !== 'blend' &&
+                generator.generatorName !== 'upscale' ? (
                   <SamplesParameter
                     form={form}
                     name="ui-samples"

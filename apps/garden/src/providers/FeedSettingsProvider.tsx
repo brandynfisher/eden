@@ -8,11 +8,12 @@ export enum FilterName {
 }
 
 export type FeedSettingItem = { [key: string]: boolean }
+export type FeedSettingItemSingle = string
 
 export interface FilterSettings {
   [FilterName.GeneratorId]: FeedSettingItem
   [FilterName.OutputType]: FeedSettingItem
-  [FilterName.Visibility]: FeedSettingItem
+  [FilterName.Visibility]: FeedSettingItemSingle
 }
 
 export interface ViewSettings {
@@ -23,7 +24,7 @@ export interface ViewSettings {
 export interface FeedSettings extends ViewSettings {
   [FilterName.GeneratorId]: FeedSettingItem
   [FilterName.OutputType]: FeedSettingItem
-  [FilterName.Visibility]: FeedSettingItem
+  [FilterName.Visibility]: FeedSettingItemSingle
 }
 
 interface SettingsContextProps {
@@ -35,7 +36,7 @@ interface SettingsContextProps {
 }
 
 const feedSettingsContextDefaults: FeedSettings = {
-  generatorId: {
+  [FilterName.GeneratorId]: {
     create: false,
     story: false,
     upscale: false,
@@ -44,14 +45,11 @@ const feedSettingsContextDefaults: FeedSettings = {
     img2vid: false,
     vid2vid: false,
   },
-  outputType: {
+  [FilterName.OutputType]: {
     image: false,
     video: false,
   },
-  visibility: {
-    private: false,
-    public: false,
-  },
+  [FilterName.Visibility]: 'all',
   imageSize: 'medium',
   gridImageStyle: 'contain',
 }
@@ -69,7 +67,7 @@ export const FeedSettingsProvider = ({
   children: ReactElement
 }) => {
   const [feedSettings, setFeedSettings] = useLocalStorage<FeedSettings>({
-    key: 'feedSettings_v3',
+    key: 'feedSettings_v4',
     defaultValue: feedSettingsContextDefaults,
   })
 
@@ -83,16 +81,14 @@ export const FeedSettingsProvider = ({
 
   useEffect(() => {
     const filterItems = Object.keys(feedSettings)
-      .filter((key): key is FilterName =>
-        Object.values(FilterName).includes(key as FilterName),
-      )
-      .map(
-        filterName =>
-          ({
-            [filterName]: feedSettings[filterName],
-          } as Partial<FilterSettings>),
-      )
-
+      .filter((key): key is FilterName => {
+        return Object.values(FilterName).includes(key as FilterName)
+      })
+      .map(filterName => {
+        return {
+          [filterName]: feedSettings[filterName],
+        } as Partial<FilterSettings>
+      })
     setFilters(filterItems)
   }, [feedSettings])
 
