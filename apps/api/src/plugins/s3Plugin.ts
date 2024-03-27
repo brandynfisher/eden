@@ -10,7 +10,6 @@ import fs from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import sharp from 'sharp'
-import { v4 as uuidv4 } from 'uuid'
 
 export interface Asset {
   uri: string
@@ -182,7 +181,7 @@ export const generateUploadSignedUrl = async (
 
   const params = {
     Bucket: S3_BUCKET,
-    Key: uuidv4(),
+    Key: filename,
     Expires: 60 * 5, // URL expires in 5 minutes
     ContentType: contentType,
   }

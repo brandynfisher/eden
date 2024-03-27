@@ -26,14 +26,22 @@ interface CustomRequestOptions {
   onProgress: (event: { percent: number }) => void
 }
 
+const getFileHash = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer()
+  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
+  const hashArray = Array.from(new Uint8Array(hashBuffer)) // Convert buffer to byte array
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('') // Convert bytes to hex string
+  return hashHex
+}
+
 // Function to request a signed URL from the server
 async function requestSignedUrl(
-  filename: string,
+  fileHash: string,
   fileType: string,
 ): Promise<string> {
   try {
     const response = await axios.post('/api/media/upload', {
-      filename,
+      filename: `${fileHash}.${fileType.split('/')[1]}`,
       contentType: fileType,
     })
     return response.data.signedUrl // Adjust according to your actual API response
@@ -195,7 +203,8 @@ const UploadParameter = (props: {
     const { file, onSuccess, onError, onProgress } = options
 
     try {
-      const signedUrl = await requestSignedUrl(file.name, file.type)
+      const fileHash = await getFileHash(file)
+      const signedUrl = await requestSignedUrl(fileHash, file.type)
       const config = {
         headers: {
           'Content-Type': file.type,
