@@ -34,7 +34,7 @@ export type CardData = Creation | Concept | Character
 export interface CardProps {
   index: number
   data: CardData
-  onClick: () => void
+  onClick?: () => void
   hidePrompt?: boolean
   sizes?: string
   className?: string
@@ -109,11 +109,15 @@ const Card: FC<CardWithTypeProps> = ({
   }, [itemData, itemType])
 
   const cardClickHandler = useCallback(
-    (ev: React.MouseEvent) => {
+    async (ev: React.MouseEvent) => {
       ev.preventDefault()
-      onClick()
+      if (onClick) {
+        onClick()
+      } else {
+        await router.push(`/${itemType}s/${itemData._id}`)
+      }
     },
-    [onClick],
+    [router, onClick, itemData, itemType],
   )
 
   const cardUpdateHandler = (item: CardData) => {
@@ -139,67 +143,63 @@ const Card: FC<CardWithTypeProps> = ({
           />
         </CardHeaderWrap>
       ) : null}
-      <a
-        onClick={cardClickHandler}
-        href={`/${itemType}s/${itemData._id}`}
-        target={'_blank'}
-        className={`card-image relative overflow-hidden cursor-pointer block  ${
-          itemData.deleted ? 'grayscale' : ''
-        } ${itemType === 'creation' ? 'rounded-lg' : ''}`}
-      >
-        {itemType === 'creation' ? (
-          <CreationCardMedia
-            creation={itemData as Creation}
-            priority={index < 20}
-            hovered={hovered}
-            sizes={sizes}
-          />
-        ) : null}
-        {itemType === 'concept' ? (
-          <>
-            <CardImage
-              uri={(itemData as Concept).thumbnail || ''}
-              width={0}
-              height={0}
-              priority={index < 10}
+      <div className="relative">
+        <a
+          onClick={cardClickHandler}
+          href={`/${itemType}s/${itemData._id}`}
+          target={'_blank'}
+          className={`card-image relative overflow-hidden cursor-pointer block  ${
+            itemData.deleted ? 'grayscale' : ''
+          } ${itemType === 'creation' ? 'rounded-lg' : ''}`}
+        >
+          {itemType === 'creation' ? (
+            <CreationCardMedia
+              creation={itemData as Creation}
+              priority={index < 20}
+              hovered={hovered}
               sizes={sizes}
-              className="!rounded-none"
             />
-            <div className="!bg-opacity-75 absolute bottom-0 dark:bg-gray-900 bg-gray-100 w-full h-9 px-1 flex items-center justify-between">
-              <CreatorProfileLink
-                creatorId={itemData.user.userId}
-                creatorName={itemData.user.username}
-                creatorImage={itemData.user.userImage}
+          ) : null}
+          {itemType === 'concept' ? (
+            <>
+              <CardImage
+                uri={(itemData as Concept).thumbnail || ''}
+                width={0}
+                height={0}
+                priority={index < 10}
+                sizes={sizes}
+                className="!rounded-none"
               />
-              {itemData.isPrivate ? (
-                <LockIcon fontSize="small" className="text-white" />
-              ) : null}
-            </div>
-          </>
-        ) : null}
-        {itemType === 'character' ? (
-          <>
-            <CardImage
-              uri={(itemData as Character).image}
-              width={0}
-              height={0}
-              priority={index < 10}
-              sizes={sizes}
-              className="!rounded-none w-auto"
+            </>
+          ) : null}
+          {itemType === 'character' ? (
+            <>
+              <CardImage
+                uri={(itemData as Character).image}
+                width={0}
+                height={0}
+                priority={index < 10}
+                sizes={sizes}
+                className="!rounded-none w-auto"
+              />
+            </>
+          ) : null}
+        </a>
+
+        {itemType === 'concept' || itemType === 'character' ? (
+          <div className="!bg-opacity-75 absolute bottom-0 dark:bg-gray-900 bg-gray-100 w-full h-9 px-1 flex items-center justify-between">
+            <CreatorProfileLink
+              creatorId={itemData.user.userId}
+              creatorName={itemData.user.username}
+              creatorImage={itemData.user.userImage}
             />
-            <div className="!bg-opacity-75 absolute bottom-0 dark:bg-gray-900 bg-gray-100 w-full h-9 px-1 flex items-center justify-between">
-              <CreatorProfileLink
-                creatorId={itemData.user.userId}
-                creatorName={itemData.user.username}
-                creatorImage={itemData.user.userImage}
-              />
-              {itemData.isPrivate ? (
-                <LockIcon fontSize="small" className="text-white" />
-              ) : null}
-            </div>
-          </>
+            {itemData.isPrivate ? (
+              <LockIcon fontSize="small" className="text-white" />
+            ) : null}
+          </div>
         ) : null}
-      </a>
+      </div>
+
       {itemData.deleted ? (
         <div className="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center">
           <Button

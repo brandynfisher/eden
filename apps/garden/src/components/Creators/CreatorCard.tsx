@@ -10,7 +10,7 @@ import React, { FC, useCallback, useState } from 'react'
 interface CardProps {
   index: number
   data: Creator
-  onClick: () => void
+  onClick?: () => void
   hidePrompt?: boolean
   sizes?: string
   className?: string
@@ -19,7 +19,7 @@ interface CardProps {
 
 export type CardWithTypeProps = CardProps
 
-const Card: FC<CardWithTypeProps> = ({
+const CreatorCard: FC<CardWithTypeProps> = ({
   index,
   data,
   onClick,
@@ -32,8 +32,10 @@ const Card: FC<CardWithTypeProps> = ({
 
   const cardClickHandler = useCallback(
     (ev: React.MouseEvent) => {
-      ev.preventDefault()
-      onClick()
+      if (onClick) {
+        ev.preventDefault()
+        onClick()
+      }
     },
     [onClick],
   )
@@ -86,4 +88,4 @@ const Card: FC<CardWithTypeProps> = ({
   )
 }
 
-export default Card
+export default CreatorCard
