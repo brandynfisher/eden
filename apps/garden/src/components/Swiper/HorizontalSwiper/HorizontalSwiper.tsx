@@ -1,7 +1,7 @@
 import {
   HorizontalSwiperNavNext,
   HorizontalSwiperNavPrev,
-} from '@/components/Swiper/HorizontalSwiperNav'
+} from '@/components/Swiper/HorizontalSwiper/HorizontalSwiperNav'
 import ArrowRight from '@mui/icons-material/ArrowRight'
 import Link from 'next/link'
 import React, { ReactNode, useRef } from 'react'
@@ -13,39 +13,24 @@ import { SwiperSlide } from 'swiper/react'
 const swiperBreakpoints = {
   420: {
     slidesPerView: 1.25,
-    pagination: {
-      enabled: true,
-      clickable: true,
-    },
     navigation: {
       disabledClass: '!opacity-0 pointer-events-none',
     },
   },
   512: {
     slidesPerView: 2.25,
-    pagination: {
-      enabled: true,
-      clickable: true,
-    },
     navigation: {
       disabledClass: '!opacity-0 pointer-events-none',
     },
   },
   768: {
     slidesPerView: 3.25,
-    pagination: {
-      enabled: true,
-      clickable: true,
-    },
     navigation: {
       disabledClass: '!opacity-0 pointer-events-none',
     },
   },
   1024: {
     slidesPerView: 'auto',
-    pagination: {
-      enabled: false,
-    },
     navigation: {
       disabledClass: '!opacity-0 pointer-events-none',
     },

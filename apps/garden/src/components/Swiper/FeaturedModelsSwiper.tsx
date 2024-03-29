@@ -1,5 +1,5 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
-import HorizontalSwiper from '@/components/Swiper/HorizontalSwiper'
+import HorizontalSwiper from '@/components/Swiper/HorizontalSwiper/HorizontalSwiper'
 import SlideSkeleton from '@/components/Swiper/SlideSkeleton'
 import { useFeaturedConcepts } from '@/hooks/useFeaturedConcepts'
 import React from 'react'

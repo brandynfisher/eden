@@ -1,9 +1,9 @@
 import { fetcher } from '@/lib/fetcher'
 import { Creation } from '@edenlabs/eden-sdk'
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
 
 export const useFeaturedCreations = () => {
-  const { data, mutate, isLoading, error } = useSWR(
+  const { data, mutate, isLoading, error } = useSWRImmutable(
     `/api/feed/creations?page=1&limit=10&orderBy=popularity&direction=-1`,
     fetcher,
   )

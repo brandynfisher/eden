@@ -1,9 +1,9 @@
 import { fetcher } from '@/lib/fetcher'
 import { Concept } from '@edenlabs/eden-sdk'
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
 
 export const useFeaturedConcepts = () => {
-  const { data, mutate, isLoading, error } = useSWR(
+  const { data, mutate, isLoading, error } = useSWRImmutable(
     `/api/feed/concepts?page=1&limit=10&orderBy=creationCount&direction=-1`,
     fetcher,
   )
