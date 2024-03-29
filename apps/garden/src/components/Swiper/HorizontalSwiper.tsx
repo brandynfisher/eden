@@ -6,9 +6,7 @@ import ArrowRight from '@mui/icons-material/ArrowRight'
 import Link from 'next/link'
 import React, { ReactNode, useRef } from 'react'
 import 'swiper/css'
-import 'swiper/css/pagination'
-import 'swiper/css/scrollbar'
-import { A11y, Navigation, Pagination, Scrollbar } from 'swiper/modules'
+import { A11y, Navigation } from 'swiper/modules'
 import { Swiper, SwiperClass } from 'swiper/react'
 import { SwiperSlide } from 'swiper/react'
 
@@ -96,14 +94,8 @@ const HorizontalSwiper = ({
             swiper.navigation.init()
             swiper.navigation.update()
           }}
-          modules={[Navigation, Pagination, Scrollbar, A11y]}
+          modules={[Navigation, A11y]}
           spaceBetween={16}
-          scrollbar={{
-            hide: false,
-          }}
-          pagination={{
-            enabled: false,
-          }}
           breakpoints={swiperBreakpoints}
         >
           {slides.map((slide, index) => (
