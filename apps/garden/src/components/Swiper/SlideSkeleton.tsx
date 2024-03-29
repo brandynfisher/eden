@@ -1,0 +1,11 @@
+import React from 'react'
+
+const SlideSkeleton = () => {
+  return (
+    <div className="pb-10 pt-10 bg-gray-900 rounded-lg animate-pulse bg-opacity-50 mt-[1px] mb-[1px]">
+      <div className="h-full w-full aspect-square bg-gray-800 bg-opacity-50" />
+    </div>
+  )
+}
+
+export default SlideSkeleton

@@ -1,7 +1,7 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import HorizontalSwiper from '@/components/Swiper/HorizontalSwiper'
+import SlideSkeleton from '@/components/Swiper/SlideSkeleton'
 import { useFeaturedConcepts } from '@/hooks/useFeaturedConcepts'
-import HorizontalSwiper from '@/pages/new/HorizontalSwiper'
-import { Skeleton } from '@mui/material'
 import React from 'react'
 
 const FeaturedModelsSwiper = () => {
@@ -11,19 +11,15 @@ const FeaturedModelsSwiper = () => {
     <HorizontalSwiper
       title={'Featured Models'}
       url={'/concepts'}
+      slideClasses={'max-w-[300px]'}
       slides={(isLoading ? Array.from(new Array(10)) : concepts || []).map(
-        (item, index) => (
-          <div key={index}>
-            {item ? (
-              <ConceptCard data={item} index={index} />
-            ) : (
-              <Skeleton
-                variant="rectangular"
-                className="!h-full !w-full rounded-lg aspect-square"
-              />
-            )}
-          </div>
-        ),
+        (item, index) => {
+          return item ? (
+            <ConceptCard key={index} data={item} index={index} />
+          ) : (
+            <SlideSkeleton key={index} />
+          )
+        },
       )}
     />
   )
