@@ -1,13 +1,79 @@
 import { ChevronLeftRounded, ChevronRightRounded } from '@mui/icons-material'
 import ArrowRight from '@mui/icons-material/ArrowRight'
 import Link from 'next/link'
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode, RefObject, useRef } from 'react'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 import { A11y, Navigation, Pagination, Scrollbar } from 'swiper/modules'
 import { Swiper, SwiperClass } from 'swiper/react'
 import { SwiperSlide } from 'swiper/react'
+
+const SwiperNav = ({
+  navRef,
+  children,
+  onClick,
+  className,
+}: {
+  navRef: RefObject<HTMLDivElement>
+  children: ReactNode
+  onClick: () => void
+  className?: string
+}) => {
+  return (
+    <div
+      ref={navRef}
+      onClick={onClick}
+      className={`absolute z-10 h-full w-12 top-0 opacity-100 flex items-center transition-opacity duration-300 cursor-pointer group from-transparent to-black ${
+        className ? className : ''
+      }`}
+    >
+      {children}
+    </div>
+  )
+}
+
+const SwiperNavPrev = ({
+  navRef,
+  onClick,
+}: {
+  navRef: RefObject<HTMLDivElement>
+  onClick: () => void
+}) => {
+  return (
+    <SwiperNav
+      navRef={navRef}
+      onClick={onClick}
+      className="left-0 bg-gradient-to-l"
+    >
+      <ChevronLeftRounded
+        fontSize="large"
+        className="text-gray-300 group-hover:scale-125 group-hover:text-gray-200"
+      />
+    </SwiperNav>
+  )
+}
+
+const SwiperNavNext = ({
+  navRef,
+  onClick,
+}: {
+  navRef: RefObject<HTMLDivElement>
+  onClick: () => void
+}) => {
+  return (
+    <SwiperNav
+      navRef={navRef}
+      onClick={onClick}
+      className="right-0 bg-gradient-to-r"
+    >
+      <ChevronRightRounded
+        fontSize="large"
+        className="text-gray-300 group-hover:scale-125 group-hover:text-gray-200 !w-12"
+      />
+    </SwiperNav>
+  )
+}
 
 const HorizontalSwiper = ({
   title,
@@ -32,23 +98,18 @@ const HorizontalSwiper = ({
       </div>
 
       <div className="relative">
-        <div
-          ref={prevElRef}
+        <SwiperNavPrev
+          navRef={prevElRef}
           onClick={() => swiperRef.current?.slidePrev()}
-          className={`absolute z-10 h-full w-12 left-0 top-0 bg-gradient-to-l from-transparent to-black opacity-100 flex items-center transition-opacity duration-300 cursor-pointer group`}
-        >
-          <ChevronLeftRounded
-            fontSize="large"
-            className="text-gray-300 group-hover:scale-125 group-hover:text-gray-200 !w-12"
-          />
-        </div>
-
+        />
         <Swiper
           ref={swiperRef}
           onBeforeInit={(swiper: SwiperClass) => {
+            // swiper ref is null on initial render, reassign for instance ref to actually work (nav buttons etc)
             swiperRef.current = swiper
           }}
           onInit={(swiper: SwiperClass) => {
+            // working around references being null when initially assigned which then breaks event handling etc by reassigning refs when they are actually populated
             swiper.navigation.prevEl = prevElRef.current
             swiper.navigation.nextEl = nextElRef.current
             swiper.navigation.init()
@@ -69,12 +130,9 @@ const HorizontalSwiper = ({
                 enabled: true,
                 clickable: true,
               },
-              // navigation: {
-              // enabled: true,
-              // prevEl: prevElRef?.current,
-              // nextEl,
-              // disabledClass: '!opacity-0',
-              // }
+              navigation: {
+                disabledClass: '!opacity-0 pointer-events-none',
+              },
             },
             512: {
               slidesPerView: 2.25,
@@ -106,28 +164,6 @@ const HorizontalSwiper = ({
               },
             },
           }}
-          // onSliderMove={(swiper: SwiperClass) => {
-          //   {/* //@todo: get rid of this by providing custom navigation elements that contains the gradient edges */}
-          //   console.log('move', swiper.realIndex, swiper.snapIndex, swiper)
-          //   if (swiper.isEnd || swiper.realIndex === slides.length) {
-          //     console.log('reached end')
-          //     setLastSlideActive(true)
-          //   } else {
-          //     setLastSlideActive(false)
-          //   }
-          //
-          //   if (swiper.translate === 0) {
-          //     console.log('reached beginning')
-          //     setFirstSlideActive(true)
-          //   }
-          //
-          //   if (!swiper.isEnd) {
-          //     setLastSlideActive(false)
-          //   }
-          //   if (!swiper.isBeginning) {
-          //     setFirstSlideActive(false)
-          //   }
-          // }}
         >
           {slides.map((slide, index) => (
             <SwiperSlide key={index} className="lg:max-w-[300px]">
@@ -135,16 +171,10 @@ const HorizontalSwiper = ({
             </SwiperSlide>
           ))}
         </Swiper>
-        <div
-          ref={nextElRef}
+        <SwiperNavNext
+          navRef={nextElRef}
           onClick={() => swiperRef.current?.slideNext()}
-          className={`absolute z-10 h-full w-12 right-0 top-0 bg-gradient-to-r from-transparent to-black opacity-100 cursor-pointer flex items-center transition-opacity duration-300 group`}
-        >
-          <ChevronRightRounded
-            fontSize="large"
-            className="text-gray-300 group-hover:scale-125 group-hover:text-gray-200 !w-12"
-          />
-        </div>
+        />
       </div>
     </div>
   )
