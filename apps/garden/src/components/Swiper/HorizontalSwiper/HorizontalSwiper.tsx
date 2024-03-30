@@ -44,21 +44,23 @@ const HorizontalSwiper = ({
   slideClasses,
 }: {
   title: string
-  url: string
+  url?: string
   slides: ReactNode[]
   slideClasses?: string
 }) => {
+  const swiperRef = useRef<SwiperClass>()
   const prevElRef = useRef(null)
   const nextElRef = useRef(null)
-  const swiperRef = useRef<SwiperClass>()
 
   return (
     <div className="mb-4">
       <div className="flex justify-between flex-wrap items-center">
         <h2 className="mb-2">{title}</h2>
-        <Link title={'Show all'} href={url} className="flex items-center">
-          Show all <ArrowRight />
-        </Link>
+        {url ? (
+          <Link title={'Show all'} href={url} className="flex items-center">
+            Show all <ArrowRight />
+          </Link>
+        ) : null}
       </div>
 
       <div className="relative">

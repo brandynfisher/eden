@@ -1,6 +1,6 @@
 import CreatorCard from '@/components/Creators/CreatorCard'
+import FeaturedSlideSkeleton from '@/components/Swiper/FeaturedSlideSkeleton'
 import HorizontalSwiper from '@/components/Swiper/HorizontalSwiper/HorizontalSwiper'
-import SlideSkeleton from '@/components/Swiper/SlideSkeleton'
 import { useFeaturedArtists } from '@/hooks/useFeaturedArtists'
 import React from 'react'
 
@@ -17,7 +17,7 @@ const FeaturedArtistsSwiper = () => {
           return item ? (
             <CreatorCard key={index} data={item} index={index} />
           ) : (
-            <SlideSkeleton key={index} />
+            <FeaturedSlideSkeleton key={index} />
           )
         },
       )}

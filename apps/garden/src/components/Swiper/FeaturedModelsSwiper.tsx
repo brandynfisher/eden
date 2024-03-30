@@ -1,6 +1,6 @@
 import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import FeaturedSlideSkeleton from '@/components/Swiper/FeaturedSlideSkeleton'
 import HorizontalSwiper from '@/components/Swiper/HorizontalSwiper/HorizontalSwiper'
-import SlideSkeleton from '@/components/Swiper/SlideSkeleton'
 import { useFeaturedConcepts } from '@/hooks/useFeaturedConcepts'
 import React from 'react'
 
@@ -17,7 +17,7 @@ const FeaturedModelsSwiper = () => {
           return item ? (
             <ConceptCard key={index} data={item} index={index} />
           ) : (
-            <SlideSkeleton key={index} />
+            <FeaturedSlideSkeleton key={index} />
           )
         },
       )}

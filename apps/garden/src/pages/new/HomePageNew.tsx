@@ -1,15 +1,14 @@
+import FeaturedArtistsSwiper from '@/components/Swiper/FeaturedArtistsSwiper'
 import FeaturedModelsSwiper from '@/components/Swiper/FeaturedModelsSwiper'
-import FeaturedArtists from '@/pages/new/FeaturedArtists'
+import HighlightsSwiper from '@/components/Swiper/HighlightsSwiper'
 import FeaturedCreations from '@/pages/new/FeaturedCreations'
-// import FeaturedModels from '@/pages/new/FeaturedModels'
-import Highlights from '@/pages/new/Highlights'
 
 const HomePage = () => {
   return (
     <div className="flex flex-col gap-4">
-      <Highlights />
+      <HighlightsSwiper />
       <FeaturedModelsSwiper />
-      <FeaturedArtists />
+      <FeaturedArtistsSwiper />
       <FeaturedCreations />
     </div>
   )
