@@ -190,7 +190,13 @@ creation.index({ deleted: 1, isPrivate: 1 })
 creation.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1, _id: -1 })
 creation.index({ createdAt: -1, _id: -1, 'embedding.score': -1 })
 creation.index({ 'embedding.score': -1 })
-creation.index({ isPrivate: 1, 'embedding.score': 1, deleted: 1, createdAt: 1 })
+creation.index({
+  'mediaAttributes.type': 1,
+  isPrivate: 1,
+  'embedding.score': 1,
+  deleted: 1,
+  createdAt: 1,
+})
 creation.index({ praiseCount: 1, bookmarkCount: 1, createdAt: -1, _id: -1 })
 creation.index({ 'attributes.discordId': 1, deleted: 1 })
 

@@ -1,13 +1,12 @@
-import { TaskAttributes } from '@edenlabs/eden-sdk'
-import { ObjectId } from 'mongodb'
-import { Document, Schema, model } from 'mongoose'
-import paginate from 'mongoose-paginate-v2'
-
 import { CharacterDocument } from './Character'
 import { ConceptDocument } from './Concept'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
 import { GeneratorDocument } from './Generator'
+import { TaskAttributes } from '@edenlabs/eden-sdk'
+import { ObjectId } from 'mongodb'
+import { Document, Schema, model } from 'mongoose'
+import paginate from 'mongoose-paginate-v2'
 
 export enum TaskStatus {
   Pending = 'pending',
@@ -144,6 +143,7 @@ task.pre<TaskDocument>('save', function (next) {
 task.index({ createdAt: 1 })
 task.index({ user: 1, _id: 1, status: 1 })
 task.index({ user: 1, status: 1, createdAt: 1 })
+task.index({ status: 1, createdAt: 1 })
 task.index({ generator: 1 })
 task.plugin(paginate)
 
