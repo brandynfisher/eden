@@ -28,7 +28,7 @@ export interface CreationSchema extends VisibilitySchema {
   bookmarkCount: number
   delegate?: UserDocument
   uri?: string
-  hlsUri?: string
+  mediaUri?: string
   thumbnail?: string
   name?: string
   attributes?: CreationAttributes
@@ -109,7 +109,7 @@ const creation = new Schema<CreationDocument>(
       required: true,
       maxlength: 1000,
     },
-    hlsUri: {
+    mediaUri: {
       type: String,
       maxlength: 1000,
     },

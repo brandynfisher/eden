@@ -262,16 +262,24 @@ export const createSignedDownloadUrl = (
   return server.s3.getSignedUrl('getObject', params)
 }
 
-export const s3Url = (server: FastifyInstance, filename: string) => {
+export const s3BaseUrl = (server: FastifyInstance) => {
   if (server.config.AWS_CLOUDFRONT_URL) {
     // Check if AWS_CLOUDFRONT_URL already includes https://
-    const baseUrl = server.config.AWS_CLOUDFRONT_URL.startsWith('https://')
+    return server.config.AWS_CLOUDFRONT_URL.startsWith('https://')
       ? server.config.AWS_CLOUDFRONT_URL
       : `https://${server.config.AWS_CLOUDFRONT_URL}`
-    return `${baseUrl}/${filename}`
   } else {
-    return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com/${filename}`
+    return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com`
   }
+}
+
+export const rawS3BaseUrl = (server: FastifyInstance) => {
+  return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com`
+}
+
+export const s3Url = (server: FastifyInstance, filename: string) => {
+  const baseUrl = s3BaseUrl(server)
+  return `${baseUrl}/${filename}`
 }
 
 export const registerS3 = async (fastify: FastifyInstance) => {

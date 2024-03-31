@@ -1,5 +1,6 @@
 import {
   getMediaDownloadUrl,
+  receiveMediaTranscodeUpdate,
   uploadMedia,
   uploadMediaRequest,
 } from '../controllers/mediaController'
@@ -74,6 +75,22 @@ const mediaRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (req, reply) => getMediaDownloadUrl(server, req, reply),
+  })
+
+  server.post('/media/update/transcode', {
+    schema: {
+      tags: ['Tasks'],
+      description: 'Update a task',
+      hide: true,
+      querystring: {
+        secret: Type.String(),
+      },
+      body: Type.Object({
+        s3key: Type.String(),
+      }),
+    },
+    handler: (request, reply) =>
+      receiveMediaTranscodeUpdate(server, request, reply),
   })
 }
 
