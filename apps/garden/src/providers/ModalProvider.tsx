@@ -112,7 +112,12 @@ export type SubscriptionGateModalProps = Partial<
   }
 >
 
-export type ItemType = 'creation' | 'concept' | 'character' | 'creator'
+export type ItemType =
+  | 'creation'
+  | 'concept'
+  | 'character'
+  | 'creator'
+  | 'collection'
 
 export type DetailModalProps = Partial<
   BaseModalProps & {

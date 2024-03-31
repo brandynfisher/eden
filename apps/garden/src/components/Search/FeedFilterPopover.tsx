@@ -4,7 +4,9 @@ import {
   FeedSettings,
   FeedSettingsContext,
 } from '@/providers/FeedSettingsProvider'
-import { ExpandMore } from '@mui/icons-material'
+import { UserContext } from '@/providers/UserProvider'
+import ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
   AccordionDetails,
@@ -16,11 +18,13 @@ import {
   RadioGroup,
 } from '@mui/material'
 import Popover from '@mui/material/Popover'
+import { useRouter } from 'next/router'
 import React, {
   ComponentPropsWithoutRef,
   MutableRefObject,
   ReactElement,
   useContext,
+  useEffect,
   useState,
 } from 'react'
 
@@ -40,7 +44,7 @@ interface Group {
   title: string
   type: 'single' | 'multi'
   items: Item[]
-  defaultValue?: string
+  defaultValue?: string | null
 }
 
 interface Segment {
@@ -48,6 +52,27 @@ interface Segment {
   title: string
   defaultOpen?: boolean
   groups: Group[]
+}
+
+const visibilityGroup: Group = {
+  id: 'visibility',
+  title: 'Visibility',
+  type: 'single',
+  defaultValue: 'all',
+  items: [
+    {
+      label: 'All',
+      value: 'all',
+    },
+    {
+      label: 'Private',
+      value: 'private',
+    },
+    {
+      label: 'Public',
+      value: 'public',
+    },
+  ],
 }
 
 const segments: Segment[] = [
@@ -77,27 +102,39 @@ const segments: Segment[] = [
         type: 'multi',
         items: [
           {
-            label: 'Stories',
+            label: 'Create',
+            value: 'create',
+          },
+          {
+            label: 'Story',
             value: 'story',
+          },
+          {
+            label: 'Upscale',
+            value: 'upscale',
+          },
+          {
+            label: 'ControlNet',
+            value: 'controlnet',
+          },
+          {
+            label: 'txt2vid',
+            value: 'txt2vid',
+          },
+          {
+            label: 'img2vid',
+            value: 'img2vid',
+          },
+          {
+            label: 'vid2vid',
+            value: 'vid2vid',
+          },
+          {
+            label: 'real2real',
+            value: 'real2real',
           },
         ],
       },
-      // @todo: mostly relevant for own profile feed
-      // {
-      //   id: 'visibility',
-      //   title: 'Visibility',
-      //   type: 'multi',
-      //   items: [
-      //     {
-      //       label: 'Public',
-      //       value: 'public',
-      //     },
-      //     {
-      //       label: 'Private',
-      //       value: 'private',
-      //     },
-      //   ],
-      // },
     ],
   },
   // {
@@ -160,7 +197,7 @@ const AccordionHeader = ({
   return (
     <div key={1} className="flex flex-col max-w-full">
       <AccordionSummary
-        className="!h-10 !min-h-0 !hover:bg-gray-300 !hover:dark:bg-gray-700 !bg-slate-800 !border-0 text-gray-700 dark:text-gray-300 text-sm"
+        className="!h-10 !min-h-0 !hover:bg-gray-300 !hover:dark:bg-gray-700 !bg-slate-800 !border-0 text-gray-400 dark:text-gray-300 text-sm"
         expandIcon={<ExpandMore className="text-gray-700 dark:text-gray-300" />}
         aria-controls={`${segment.id}-content`}
         id={`${segment.id}-header`}
@@ -169,6 +206,78 @@ const AccordionHeader = ({
       </AccordionSummary>
       {children}
     </div>
+  )
+}
+
+const CheckboxGroup = ({
+  group,
+  feedSettings,
+  onChange,
+}: {
+  group: Group
+  feedSettings: FeedSettings
+  onChange: (
+    id: Group['id'],
+    type: Group['type'],
+    value: Item['value'],
+    checked: boolean,
+  ) => void
+}) => {
+  const numItemsVisible = 3
+  const [showMore, setShowMore] = useState(false)
+
+  return (
+    <>
+      {group.items && group.items.length
+        ? group.items.map((item, index) => (
+            <FormControlLabel
+              className={`pl-1 text-sm !mr-0 ${
+                !(feedSettings[group.id] as Record<string, boolean>)[
+                  item.value
+                ] &&
+                index >= numItemsVisible &&
+                !showMore
+                  ? '!hidden'
+                  : ''
+              }`}
+              key={item.label}
+              control={
+                <Checkbox
+                  size="small"
+                  name={group.id}
+                  checked={
+                    (feedSettings[group.id] as Record<string, boolean>)[
+                      item.value
+                    ]
+                  }
+                />
+              }
+              label={<span className="text-sm select-none">{item.label}</span>}
+              onChange={(event, checked) =>
+                onChange(group.id, group.type, item.value, checked)
+              }
+            />
+          ))
+        : null}
+      {group.items.length > 3 ? (
+        <div
+          onClick={() => setShowMore(!showMore)}
+          className={`text-gray-400 flex items-center gap-1 text-xs cursor-pointer hover:underline hover:text-gray-300 ${
+            group.items.length >= numItemsVisible ? '' : '!hidden'
+          }`}
+        >
+          {showMore ? (
+            <>
+              <ExpandLess fontSize="small" className="w-6" /> Show less
+            </>
+          ) : (
+            <>
+              <ExpandMore fontSize="small" className="w-6" /> Show more
+            </>
+          )}
+        </div>
+      ) : null}
+    </>
   )
 }
 
@@ -188,7 +297,11 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
         // We assert that newState[groupId] is a 'FeedSettingItem'
         const group = newState[groupId] as FeedSettingItem
         group[value] = checked
-      } else if (groupId === 'gridImageStyle' || groupId === 'imageSize') {
+      } else if (
+        groupId === 'gridImageStyle' ||
+        groupId === 'imageSize' ||
+        groupId === 'visibility'
+      ) {
         // We knowingly can assert that newState[groupId] can take a string here
         (newState[groupId] as string) = value
       }
@@ -197,15 +310,35 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
     })
   }
 
+  const [availableGroups, setAvailableGroups] = useState(segment?.groups)
+
+  const router = useRouter()
+  const nextPath = router.pathname
+  const query = router.query
+
+  const { user, isAuthenticated } = useContext(UserContext)
+  useEffect(() => {
+    if (isAuthenticated && nextPath === '/creators/[id]' && query && query.id) {
+      if (query.id === user?.username) {
+        setAvailableGroups([visibilityGroup, ...(segment?.groups || [])])
+        return
+      }
+    }
+
+    setAvailableGroups(segment?.groups)
+  }, [segment?.groups, isAuthenticated, nextPath, query, user])
+
   return (
     <AccordionDetails
       key={2}
       className="pb-0 text-gray-700 dark:text-gray-300"
       id={`${segment.id}-content`}
     >
-      {segment?.groups?.map(group => (
+      {availableGroups.map(group => (
         <div key={group.title} className="mb-2">
-          <div className="text-sm pb-0.5">{group.title}</div>
+          <div className="text-sm pb-0.5 border-0 border-b border-solid border-b-gray-600">
+            {group.title}
+          </div>
           {group.type === 'single' ? (
             <RadioGroup
               name={group.id}
@@ -237,38 +370,11 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
             </RadioGroup>
           ) : (
             <FormGroup className="mb-2">
-              {group.items && group.items.length
-                ? group.items.map(item => (
-                    <FormControlLabel
-                      className="pl-1 text-sm !mr-0"
-                      key={item.label}
-                      control={
-                        <Checkbox
-                          size="small"
-                          name={group.id}
-                          checked={
-                            (feedSettings[group.id] as Record<string, boolean>)[
-                              item.value
-                            ]
-                          }
-                        />
-                      }
-                      label={
-                        <span className="text-sm select-none">
-                          {item.label}
-                        </span>
-                      }
-                      onChange={(event, checked) =>
-                        handleItemChange(
-                          group.id,
-                          group.type,
-                          item.value,
-                          checked,
-                        )
-                      }
-                    />
-                  ))
-                : null}
+              <CheckboxGroup
+                group={group}
+                feedSettings={feedSettings}
+                onChange={handleItemChange}
+              />
             </FormGroup>
           )}
         </div>
@@ -314,7 +420,9 @@ const FeedFilterPopover = ({
   return (
     <Popover
       id={'feed-filter-popover'}
-      // disableScrollLock={true}
+      disableAutoFocus={true}
+      disableEnforceFocus={true}
+      disableRestoreFocus={true}
       container={containerRef?.current || undefined}
       open={open}
       anchorEl={anchorEl}
@@ -323,7 +431,6 @@ const FeedFilterPopover = ({
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      className="border border-solid border-gray-600 rounded-lg overflow-hidden p-2"
       style={{ background: 'transparent' }}
     >
       {segments.map(segment => (

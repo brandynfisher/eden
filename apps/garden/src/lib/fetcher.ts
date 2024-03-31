@@ -79,6 +79,12 @@ export const createPaginationRoute = (
     params.outputType = [String(query.outputType)]
   }
 
+  if (query.visibility && query.visibility !== 'all') {
+    params.isPrivate = query.visibility === 'private'
+  } else if (typeof query.isPrivate !== 'undefined') {
+    params.isPrivate = query.isPrivate
+  }
+
   if (query.name && query.name.length > 0) {
     params.name = String(query.name)
   }

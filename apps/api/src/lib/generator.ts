@@ -111,7 +111,8 @@ export const prepareConfig = (
   // randomize seeds if not provided
   if (
     generatorVersion.address === 'abraham-ai/eden-sd-pipelines-sdxl' ||
-    generatorVersion.address === 'abraham-ai/eden-comfyui'
+    generatorVersion.address === 'abraham-ai/eden-comfyui' ||
+    generatorVersion.address === 'philz1337x/clarity-upscaler'
   ) {
     config = setupSeeds(config)
   }

@@ -1,6 +1,3 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   addCreationsToCollection,
@@ -11,7 +8,9 @@ import {
   removeCreationsFromCollection,
   updateCollection,
 } from '../controllers/collectionsController'
-import { isAuth } from '../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../middleware/authMiddleware'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const collectionRoutes: FastifyPluginAsync = async server => {
   server.get('/collections', {
@@ -37,6 +36,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => listCollections(request, reply),
   })
 
@@ -59,6 +59,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCollection(request, reply),
   })
 

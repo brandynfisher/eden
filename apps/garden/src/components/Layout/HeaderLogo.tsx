@@ -9,6 +9,7 @@ const HeaderLogo = () => {
         <Image
           width={32}
           height={32}
+          quality={100}
           priority={true}
           src="/favicon-32x32.png"
           alt="Logo"

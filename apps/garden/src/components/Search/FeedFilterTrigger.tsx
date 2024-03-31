@@ -8,7 +8,7 @@ const FeedFilterTrigger = ({
 }) => {
   return (
     <div
-      className="flex items-center cursor-pointer text-gray-400 hover:text-gray-200"
+      className="flex items-center cursor-pointer text-gray-400 hover:text-gray-700 hover:dark:text-gray-200"
       title="Filter"
       onClick={onClick}
     >

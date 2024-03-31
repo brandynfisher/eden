@@ -8,11 +8,12 @@ export enum FilterName {
 }
 
 export type FeedSettingItem = { [key: string]: boolean }
+export type FeedSettingItemSingle = string
 
 export interface FilterSettings {
   [FilterName.GeneratorId]: FeedSettingItem
   [FilterName.OutputType]: FeedSettingItem
-  [FilterName.Visibility]: FeedSettingItem
+  [FilterName.Visibility]: FeedSettingItemSingle
 }
 
 export interface ViewSettings {
@@ -23,10 +24,8 @@ export interface ViewSettings {
 export interface FeedSettings extends ViewSettings {
   [FilterName.GeneratorId]: FeedSettingItem
   [FilterName.OutputType]: FeedSettingItem
-  [FilterName.Visibility]: FeedSettingItem
+  [FilterName.Visibility]: FeedSettingItemSingle
 }
-
-// export type FilterName = string
 
 interface SettingsContextProps {
   feedSettings: FeedSettings
@@ -37,40 +36,23 @@ interface SettingsContextProps {
 }
 
 const feedSettingsContextDefaults: FeedSettings = {
-  generatorId: {
+  [FilterName.GeneratorId]: {
+    create: false,
     story: false,
+    upscale: false,
+    controlnet: false,
+    txt2vid: false,
+    img2vid: false,
+    vid2vid: false,
   },
-  outputType: {
+  [FilterName.OutputType]: {
     image: false,
     video: false,
   },
-  visibility: {
-    private: false,
-    public: false,
-  },
+  [FilterName.Visibility]: 'all',
   imageSize: 'medium',
   gridImageStyle: 'contain',
 }
-
-// export const FilterQueryConfig = {
-//   image: {
-//     'mediaAttributes.type': {
-//       $eq: 'image',
-//     },
-//   },
-//   video: {
-//     'mediaAttributes.type': {
-//       $eq: 'video',
-//     },
-//   },
-//   story: {
-//     generatorId: [
-//       '6511d29ad2d97662167a76d6', // dialogue
-//       '65047b5a5c9278a72cd0ae91', // monologue
-//       '65a484ac4f1d544e3a1d9435', // story
-//     ],
-//   },
-// }
 
 // Initialized context with default value to avoid the null checks in consumers
 export const FeedSettingsContext = createContext<SettingsContextProps>({
@@ -85,7 +67,7 @@ export const FeedSettingsProvider = ({
   children: ReactElement
 }) => {
   const [feedSettings, setFeedSettings] = useLocalStorage<FeedSettings>({
-    key: 'feedSettings_v2',
+    key: 'feedSettings_v4',
     defaultValue: feedSettingsContextDefaults,
   })
 
@@ -99,16 +81,14 @@ export const FeedSettingsProvider = ({
 
   useEffect(() => {
     const filterItems = Object.keys(feedSettings)
-      .filter((key): key is FilterName =>
-        Object.values(FilterName).includes(key as FilterName),
-      )
-      .map(
-        filterName =>
-          ({
-            [filterName]: feedSettings[filterName],
-          } as Partial<FilterSettings>),
-      )
-
+      .filter((key): key is FilterName => {
+        return Object.values(FilterName).includes(key as FilterName)
+      })
+      .map(filterName => {
+        return {
+          [filterName]: feedSettings[filterName],
+        } as Partial<FilterSettings>
+      })
     setFilters(filterItems)
   }, [feedSettings])
 

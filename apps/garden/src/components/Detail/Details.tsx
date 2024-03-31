@@ -158,7 +158,7 @@ const Details = ({
                 <CardToolsDropdown
                   item={itemData}
                   itemType={itemType}
-                  onChange={setItemData as Dispatch<SetStateAction<CardData>>}
+                  onChange={updatedItem => setItemData(updatedItem as CardData)}
                   pageUrl={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${getId(
                     itemType,
                     item,
@@ -174,7 +174,7 @@ const Details = ({
 
             <div className="relative mb-2 col-span-8 p-2 pt-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
               <div className="flex gap-2 items-center justify-between">
-                <TruncatedExpandableText text={item?.name} />
+                <TruncatedExpandableText text={item?.name} lines={3} />
                 {itemType === 'concept' ? (
                   <div className="flex gap-2">
                     <ConceptCardFooter concept={item as Concept} />
@@ -211,6 +211,7 @@ const Details = ({
             query={{ conceptId: item._id }}
             modalContainerRef={modalContainerRef}
             modalContainerHeight={modalContainerHeight}
+            hasFeedFilter={false}
           />
         </div>
       ) : null}
@@ -224,6 +225,7 @@ const Details = ({
             query={{ creationId: item._id }}
             modalContainerRef={modalContainerRef}
             modalContainerHeight={modalContainerHeight}
+            hasFeedFilter={false}
           />
         </div>
       ) : null}

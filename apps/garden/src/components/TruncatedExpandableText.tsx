@@ -4,7 +4,13 @@ import { useClipboard, useElementSize } from '@mantine/hooks'
 import { App, Button } from 'antd'
 import React, { useEffect, useState } from 'react'
 
-const TruncatedExpandableText = ({ text }: { text: string }) => {
+const TruncatedExpandableText = ({
+  text,
+  lines,
+}: {
+  text: string
+  lines?: number
+}) => {
   const { message } = App.useApp()
   const { copied, copy } = useClipboard()
   const [showMore, setShowMore] = useState(false)
@@ -36,8 +42,8 @@ const TruncatedExpandableText = ({ text }: { text: string }) => {
           ref={ref}
           title={text}
           className={`relative text-sm select-text w-full ${
-            isTruncated ? 'mb-2' : ''
-          } ${showMore ? '' : 'text-ellipsis line-clamp-2'}`}
+            isTruncated ? 'mb-1' : ''
+          } ${showMore ? '' : `text-ellipsis line-clamp-${lines ? lines : 2}`}`}
         >
           {text}
         </span>

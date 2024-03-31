@@ -65,7 +65,7 @@ const CollectionHeader = ({
         title={'Opens page in new tab'}
         href={`/channels?collectionId=${collection._id}`}
         target="_blank"
-        className="mt-2"
+        className="mt-2 mr-auto"
       >
         <Button className="flex items-center gap-2 justify-between">
           <ConnectedTvOutlined fontSize="small" />

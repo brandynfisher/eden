@@ -24,7 +24,7 @@ const SliderParameter = (props: {
     // console.log(source, newValue)
     if (!newValue) return
     setFieldValue(newValue)
-    // props.onFieldChange && props.onFieldChange()
+    props.onFieldChange && props.onFieldChange()
     // specialChangeHandler()
 
     if (triggerLinked) {
@@ -79,18 +79,11 @@ const SliderParameter = (props: {
   )
   useEffect(() => {
     debouncedSave((prev: number) => {
-      console.log('SL -- useEffect::sliderValue', {
-        sliderValue,
-        prev,
-        fieldValue,
-      })
-
       if (
         props.parameter.name === 'width' ||
         props.parameter.name === 'height'
       ) {
         if (sliderValue === prev && sliderValue === fieldValue) {
-          console.log('ALL THEM THINGS', { sliderValue })
           return prev
         }
 

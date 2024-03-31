@@ -20,6 +20,8 @@ export type FeedRouteQueryParams = {
   creationId?: string | string[]
   generatorId?: string | string[]
   outputType?: string | string[]
+  isPrivate?: boolean
+  visibility?: 'all' | 'public' | 'private'
   name?: string | string[]
   conceptId?: string | string[]
   maxDate?: string

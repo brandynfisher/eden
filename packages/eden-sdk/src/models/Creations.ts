@@ -163,7 +163,7 @@ export type Creation = {
   delegateUser?: string
   delegateHasClaimed?: boolean
   uri: string
-  hlsUri?: string
+  mediaUri?: string
   thumbnail?: string
   name: string
   attributes: CreationAttributes

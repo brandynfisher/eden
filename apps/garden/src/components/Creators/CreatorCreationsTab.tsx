@@ -33,10 +33,11 @@ const CreatorCreationsTab = ({
         masonryKeySuffix={`userId_${creatorId}`}
         itemType="creation"
         key={`creations_${creatorId}`}
-        filters={filters}
+        orderParams={filters}
         query={{ userId: creatorId }}
         modalContainerRef={modalContainerRef}
         modalContainerHeight={modalContainerHeight}
+        hasFeedFilter={true}
       />
     </div>
   )

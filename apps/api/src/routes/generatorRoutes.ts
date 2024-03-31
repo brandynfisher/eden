@@ -29,10 +29,12 @@ const generatorRoutes: FastifyPluginAsync = async server => {
       response: {
         200: paginatedResponse(
           Type.Object({
+            _id: Type.Optional(Type.String()),
             generatorName: Type.String(),
             description: Type.String(),
             output: Type.String(),
             defaultVersionId: Type.Optional(Type.String()),
+            deployment: Type.Optional(Type.String()),
             versions: Type.Array(
               Type.Object({
                 versionId: Type.String(),
@@ -63,10 +65,12 @@ const generatorRoutes: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           generator: Type.Object({
+            _id: Type.Optional(Type.String()),
             generatorName: Type.String(),
             output: Type.String(),
             description: Type.String(),
             defaultVersionId: Type.Optional(Type.String()),
+            deployment: Type.Optional(Type.String()),
             versions: Type.Array(
               Type.Object({
                 versionId: Type.String(),

@@ -172,6 +172,31 @@ export const uploadBufferAsset = async (
   }
 }
 
+export const generateUploadSignedUrl = async (
+  server: FastifyInstance,
+  { filename, contentType }: { filename: string; contentType: string },
+): Promise<string> => {
+  const s3 = server.s3
+  const S3_BUCKET = server.config.AWS_S3_BUCKET as string
+
+  const params = {
+    Bucket: S3_BUCKET,
+    Key: filename,
+    Expires: 60 * 5, // URL expires in 5 minutes
+    ContentType: contentType,
+  }
+
+  return new Promise((resolve, reject) => {
+    s3.getSignedUrl('putObject', params, (err, url) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(url)
+      }
+    })
+  })
+}
+
 export const getSignedDownloadUrl = (
   server: FastifyInstance,
   assetUrl: string,
@@ -237,16 +262,24 @@ export const createSignedDownloadUrl = (
   return server.s3.getSignedUrl('getObject', params)
 }
 
-export const s3Url = (server: FastifyInstance, filename: string) => {
+export const s3BaseUrl = (server: FastifyInstance) => {
   if (server.config.AWS_CLOUDFRONT_URL) {
     // Check if AWS_CLOUDFRONT_URL already includes https://
-    const baseUrl = server.config.AWS_CLOUDFRONT_URL.startsWith('https://')
+    return server.config.AWS_CLOUDFRONT_URL.startsWith('https://')
       ? server.config.AWS_CLOUDFRONT_URL
       : `https://${server.config.AWS_CLOUDFRONT_URL}`
-    return `${baseUrl}/${filename}`
   } else {
-    return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com/${filename}`
+    return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com`
   }
+}
+
+export const rawS3BaseUrl = (server: FastifyInstance) => {
+  return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com`
+}
+
+export const s3Url = (server: FastifyInstance, filename: string) => {
+  const baseUrl = s3BaseUrl(server)
+  return `${baseUrl}/${filename}`
 }
 
 export const registerS3 = async (fastify: FastifyInstance) => {
@@ -261,6 +294,7 @@ export const registerS3 = async (fastify: FastifyInstance) => {
     fastify.decorate('uploadThumbnailAsset', uploadThumbnailAsset)
     fastify.decorate('uploadBufferAsset', uploadBufferAsset)
     fastify.decorate('getSignedDownloadUrl', getSignedDownloadUrl)
+    fastify.decorate('generateUploadSignedUrl', generateUploadSignedUrl)
     fastify.log.info('Successfully registered S3Plugin')
   } catch (err) {
     fastify.log.error('Plugin: S3, error on register', err)
@@ -289,6 +323,10 @@ declare module 'fastify' {
       server: FastifyInstance,
       assetUrl: string,
       fileName?: string,
+    ) => Promise<string>
+    generateUploadSignedUrl: (
+      server: FastifyInstance,
+      { filename, contentType }: { filename: string; contentType: string },
     ) => Promise<string>
   }
 }

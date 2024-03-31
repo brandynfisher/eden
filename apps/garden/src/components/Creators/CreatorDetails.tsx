@@ -18,7 +18,7 @@ const CreatorDetails = ({
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
 }) => {
-  const { collections } = useCollections(creator.userId)
+  const { collections, refetchCollections } = useCollections(creator.userId)
   const { userId, isAuthenticated } = useContext(UserContext)
   const isOwnProfile = isAuthenticated && creator.userId === userId
 
@@ -59,7 +59,12 @@ const CreatorDetails = ({
     {
       label: 'Collections',
       key: 'collections',
-      children: <CreatorCollectionsTab collections={collections} />,
+      children: (
+        <CreatorCollectionsTab
+          collections={collections}
+          refetchCollections={refetchCollections}
+        />
+      ),
     },
   ]
 

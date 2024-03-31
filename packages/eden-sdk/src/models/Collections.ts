@@ -1,6 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
-import { Creation } from 'src/models/Creations'
-
 import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
@@ -9,6 +6,8 @@ import {
   WebAPICallResult,
 } from '../types'
 import { Creator } from './Creators'
+import { AxiosRequestConfig } from 'axios'
+import { Creation } from 'src/models/Creations'
 
 // Arguments
 
@@ -181,6 +180,7 @@ export type Collection = {
   creatorId?: string
   creatorName?: string
   creatorImage?: string
+  contributors?: string[]
   hasItem?: boolean
   deleted?: boolean
   isPrivate?: boolean

@@ -10,8 +10,7 @@ const CreationMedia = ({ creation }: { creation: Creation }) => {
     creation.mediaAttributes.height,
   )
 
-  // const creationUri = creation?.hlsUri || creation?.uri
-  const creationUri = creation?.uri
+  const creationUri = creation?.mediaUri || creation?.uri
 
   return isImageUrl(creation.uri) ? (
     <MediaDisplay

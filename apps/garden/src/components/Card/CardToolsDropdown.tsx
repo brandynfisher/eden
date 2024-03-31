@@ -17,7 +17,7 @@ import { isImageUrl, sanitize } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
-import { Concept, Creation, Creator } from '@edenlabs/eden-sdk'
+import { Collection, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import { Dropdown } from 'antd'
 import React, {
   ReactNode,
@@ -158,9 +158,9 @@ const CardToolsDropdown = ({
   pageUrl,
 }: {
   onOpen?: Function
-  item: CardData | Creator
+  item: CardData | Creator | Collection
   itemType: ItemType
-  onChange: (updatedData: CardData) => void
+  onChange: (updatedData: CardData | Creator | Collection) => void
   pageUrl: string
 }) => {
   const { user, isAuthenticated } = useContext(UserContext)

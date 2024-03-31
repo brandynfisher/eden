@@ -21,6 +21,7 @@ export interface FeedCreationsArguments
   conceptId?: string | string[]
   generatorId?: string | string[]
   outputType?: string | string[]
+  isPrivate?: string
   name?: string
   maxDate?: string
   minDate?: string
