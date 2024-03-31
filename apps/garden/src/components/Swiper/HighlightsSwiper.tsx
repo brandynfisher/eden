@@ -1,7 +1,8 @@
-import HighlightSlideSkeleton from '@/components/Swiper/HighlightSlideSkeleton'
+// import HighlightSlideSkeleton from '@/components/Swiper/HighlightSlideSkeleton'
 import HorizontalSwiper from '@/components/Swiper/HorizontalSwiper/HorizontalSwiper'
 import HighlightCard from '@/pages/new/HighlightCard'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { SwiperOptions } from 'swiper/types/swiper-options'
 
 const dummyItems = [
   {
@@ -11,38 +12,65 @@ const dummyItems = [
   },
 ]
 
+const swiperBreakpoints: SwiperOptions['breakpoints'] = {
+  420: {
+    slidesPerView: 1.25,
+    navigation: {
+      disabledClass: '!opacity-0 pointer-events-none',
+    },
+  },
+  768: {
+    slidesPerView: 2.25,
+    navigation: {
+      disabledClass: '!opacity-0 pointer-events-none',
+    },
+  },
+  1024: {
+    slidesPerView: 'auto',
+    navigation: {
+      disabledClass: '!opacity-0 pointer-events-none',
+    },
+  },
+}
+
 const HighlightsSwiper = () => {
-  const [isLoading, setIsLoading] = useState(true)
-  const [highlightItems, setHighlightItems] = useState()
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const idsQuery = dummyItems
-        .map(item => `conceptId=${item.conceptId}`)
-        .join('&')
-      const result = await fetch(`/api/concepts?${idsQuery}`)
-      const jsonResponse = await result.json()
-      console.log(jsonResponse)
-      setHighlightItems(jsonResponse)
-      setIsLoading(false)
-    }
-
-    fetchData()
-  }, [])
+  // const [isLoading, setIsLoading] = useState(true)
+  // const [highlightItems, setHighlightItems] = useState()
+  //
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const idsQuery = dummyItems
+  //       .map(item => `conceptId=${item.conceptId}`)
+  //       .join('&')
+  //     const result = await fetch(`/api/concepts/${idsQuery}`)
+  //     const jsonResponse = await result.json()
+  //     setHighlightItems(jsonResponse)
+  //     setIsLoading(false)
+  //   }
+  //
+  //   fetchData()
+  // }, [])
 
   return (
     <HorizontalSwiper
       title={'Highlights'}
-      // slideClasses={'max-w-[300px]'}
-      slides={(isLoading ? Array.from(new Array(3)) : highlightItems || []).map(
-        (item, index) => {
-          return item ? (
-            <HighlightCard key={index} concept={item} coverImageUri={''} />
-          ) : (
-            <HighlightSlideSkeleton key={index} />
-          )
-        },
-      )}
+      breakpoints={swiperBreakpoints}
+      // slides={(isLoading ? Array.from(new Array(3)) : highlightItems || []).map(
+      //   (item, index) => {
+      //     return item ? (
+      //       <HighlightCard key={index} concept={item} coverImageUri={item.coverImageUri} />
+      //     ) : (
+      //       <HighlightSlideSkeleton key={index} />
+      //     )
+      //   }
+      // )}
+      slides={dummyItems.map(item => (
+        <HighlightCard
+          key={item.conceptId}
+          conceptId={item.conceptId}
+          coverImageUri={item.coverImageUri}
+        />
+      ))}
     />
   )
 }

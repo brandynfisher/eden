@@ -15,7 +15,12 @@ const FeaturedArtistsSwiper = () => {
       slides={(isLoading ? Array.from(new Array(10)) : creators || []).map(
         (item, index) => {
           return item ? (
-            <CreatorCard key={index} data={item} index={index} />
+            <CreatorCard
+              key={index}
+              data={item}
+              index={index}
+              lazyLoad={true}
+            />
           ) : (
             <FeaturedSlideSkeleton key={index} />
           )

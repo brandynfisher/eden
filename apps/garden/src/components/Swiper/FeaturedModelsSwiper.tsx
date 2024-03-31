@@ -15,7 +15,12 @@ const FeaturedModelsSwiper = () => {
       slides={(isLoading ? Array.from(new Array(10)) : concepts || []).map(
         (item, index) => {
           return item ? (
-            <ConceptCard key={index} data={item} index={index} />
+            <ConceptCard
+              key={index}
+              data={item}
+              index={index}
+              lazyLoad={true}
+            />
           ) : (
             <FeaturedSlideSkeleton key={index} />
           )

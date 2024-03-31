@@ -1,7 +1,8 @@
 import FeaturedArtistsSwiper from '@/components/Swiper/FeaturedArtistsSwiper'
 import FeaturedModelsSwiper from '@/components/Swiper/FeaturedModelsSwiper'
 import HighlightsSwiper from '@/components/Swiper/HighlightsSwiper'
-import FeaturedCreations from '@/pages/new/FeaturedCreations'
+
+// import FeaturedCreations from '@/pages/new/FeaturedCreations'
 
 const HomePage = () => {
   return (
@@ -9,7 +10,7 @@ const HomePage = () => {
       <HighlightsSwiper />
       <FeaturedModelsSwiper />
       <FeaturedArtistsSwiper />
-      <FeaturedCreations />
+      {/*<FeaturedCreations />*/}
     </div>
   )
 }

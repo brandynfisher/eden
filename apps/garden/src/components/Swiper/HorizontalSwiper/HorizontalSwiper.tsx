@@ -6,11 +6,12 @@ import ArrowRight from '@mui/icons-material/ArrowRight'
 import Link from 'next/link'
 import React, { ReactNode, useRef } from 'react'
 import 'swiper/css'
-import { A11y, Navigation } from 'swiper/modules'
+import { A11y, FreeMode, Mousewheel, Navigation } from 'swiper/modules'
 import { Swiper, SwiperClass } from 'swiper/react'
 import { SwiperSlide } from 'swiper/react'
+import { SwiperOptions } from 'swiper/types/swiper-options'
 
-const swiperBreakpoints = {
+const defaultBreakpoints: SwiperOptions['breakpoints'] = {
   420: {
     slidesPerView: 1.25,
     navigation: {
@@ -42,11 +43,13 @@ const HorizontalSwiper = ({
   url,
   slides,
   slideClasses,
+  breakpoints,
 }: {
   title: string
   url?: string
   slides: ReactNode[]
   slideClasses?: string
+  breakpoints?: SwiperOptions['breakpoints']
 }) => {
   const swiperRef = useRef<SwiperClass>()
   const prevElRef = useRef(null)
@@ -57,8 +60,8 @@ const HorizontalSwiper = ({
       <div className="flex justify-between flex-wrap items-center">
         <h2 className="mb-2">{title}</h2>
         {url ? (
-          <Link title={'Show all'} href={url} className="flex items-center">
-            Show all <ArrowRight />
+          <Link title={'Explore'} href={url} className="flex items-center">
+            Explore <ArrowRight />
           </Link>
         ) : null}
       </div>
@@ -75,15 +78,20 @@ const HorizontalSwiper = ({
             swiperRef.current = swiper
           }}
           onInit={(swiper: SwiperClass) => {
-            // working around references being null when initially assigned which then breaks event handling etc by reassigning refs when they are actually populated
+            // navigation fix: working around references being null when initially assigned which then breaks event handling etc by reassigning refs when they are actually populated
             swiper.navigation.prevEl = prevElRef.current
             swiper.navigation.nextEl = nextElRef.current
             swiper.navigation.init()
             swiper.navigation.update()
           }}
-          modules={[Navigation, A11y]}
+          modules={[Navigation, Mousewheel, FreeMode, A11y]}
           spaceBetween={16}
-          breakpoints={swiperBreakpoints}
+          breakpoints={breakpoints ? breakpoints : defaultBreakpoints}
+          direction="horizontal"
+          mousewheel={{ forceToAxis: true }}
+          freeMode={{
+            enabled: true,
+          }}
         >
           {slides.map((slide, index) => (
             <SwiperSlide key={index} className={slideClasses}>

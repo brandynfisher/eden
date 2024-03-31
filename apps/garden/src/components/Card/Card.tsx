@@ -39,6 +39,7 @@ export interface CardProps {
   sizes?: string
   className?: string
   updateHandler?: (data: CardData | Creator | Collection) => void
+  lazyLoad?: boolean
 }
 
 export type CardWithTypeProps = CardProps & { itemType: ItemType }
@@ -69,6 +70,7 @@ const Card: FC<CardWithTypeProps> = ({
   sizes,
   className,
   updateHandler,
+  lazyLoad,
 }) => {
   const router = useRouter()
   const [debugMode, setDebugMode] = useState<boolean>(false)
@@ -166,7 +168,8 @@ const Card: FC<CardWithTypeProps> = ({
                 uri={(itemData as Concept).thumbnail || ''}
                 width={0}
                 height={0}
-                priority={index < 10}
+                priority={!lazyLoad && index < 10}
+                loading={lazyLoad ? 'lazy' : undefined}
                 sizes={sizes}
                 className="!rounded-none"
               />
