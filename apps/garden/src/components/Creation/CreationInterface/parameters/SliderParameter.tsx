@@ -24,7 +24,7 @@ const SliderParameter = (props: {
     // console.log(source, newValue)
     if (!newValue) return
     setFieldValue(newValue)
-    // props.onFieldChange && props.onFieldChange()
+    props.onFieldChange && props.onFieldChange()
     // specialChangeHandler()
 
     if (triggerLinked) {
