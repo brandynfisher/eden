@@ -60,8 +60,8 @@ const collectionsAggregate = (
   userId: string,
   creationId: string,
   filter?: {
-    isPrivate?: { $ne?: boolean }
-    deleted?: { $ne?: boolean }
+    isPrivate?: { $eq?: boolean }
+    deleted?: { $eq?: boolean }
   },
 ) => {
   const pipelines: PipelineStage[] = [
@@ -127,7 +127,7 @@ export const listCollections = async (
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId.toString()
   if (!isUserRequestingOwnProfileFeed) {
-    sortFilter['isPrivate'] = { $ne: true }
+    sortFilter['isPrivate'] = { $eq: false }
   }
 
   const collectionRepository = new CollectionRepository(Collection)
@@ -137,7 +137,7 @@ export const listCollections = async (
         await collectionRepository.aggregateQuery(
           collectionsAggregate(creatorId, creationId as string, {
             ...sortFilter,
-            deleted: { $ne: true },
+            deleted: { $eq: false },
           }),
           {
             limit,

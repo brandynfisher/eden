@@ -60,8 +60,8 @@ const aggregateCreationsByFollowerId = (
             $match: {
               $and: [
                 { $expr: { $eq: ['$user', '$$followingId'] } },
-                { isPrivate: { $ne: true } },
-                { deleted: { $ne: true } },
+                { isPrivate: { $eq: false } },
+                { deleted: { $eq: false } },
                 { ...filters },
               ],
             },
@@ -120,8 +120,8 @@ const aggregateCreationsByUserLikes = (
             $match: {
               $and: [
                 { $expr: { $eq: ['$_id', '$$reactionsCreationId'] } },
-                { isPrivate: { $ne: true } },
-                { deleted: { $ne: true } },
+                { isPrivate: { $eq: false } },
+                { deleted: { $eq: false } },
                 { ...filters },
               ],
             },
@@ -389,7 +389,7 @@ export const getCreationsFeed = async (
         collection.user.toString() === ownUserId.toString()
       )
     ) {
-      sortFilter['isPrivate'] = { $ne: true }
+      sortFilter['isPrivate'] = { $eq: false }
     }
 
     // needed to not end up with duplicates in aggregations wtf mongo
@@ -522,8 +522,8 @@ const conceptsAggregate = (
   searchText: string,
   userId: string,
   filter?: {
-    isPrivate?: { $ne?: boolean }
-    deleted?: { $ne?: boolean }
+    isPrivate?: { $eq?: boolean }
+    deleted?: { $eq?: boolean }
   },
 ) => {
   const pipelines: PipelineStage[] = [
@@ -644,7 +644,7 @@ export const getConceptsFeed = async (
   }
 
   if (!isUserRequestingOwnProfileFeed) {
-    sortFilter['isPrivate'] = { $ne: true }
+    sortFilter['isPrivate'] = { $eq: false }
   }
 
   // needed to not end up with duplicates in aggregations wtf mongo
@@ -655,7 +655,7 @@ export const getConceptsFeed = async (
   if (name) {
     const aggregate = conceptsAggregate(name, creatorId, {
       ...sortFilter,
-      deleted: { $ne: true },
+      deleted: { $eq: false },
     })
     // console.log(JSON.stringify(aggregate))
     const sortObj = Object.fromEntries(sort)
@@ -727,8 +727,8 @@ const charactersAggregate = (
   searchText: string,
   userId: string,
   filter?: {
-    isPrivate?: { $ne?: boolean }
-    deleted?: { $ne?: boolean }
+    isPrivate?: { $eq?: boolean }
+    deleted?: { $eq?: boolean }
   },
 ) => {
   const pipelines: PipelineStage[] = [
@@ -835,7 +835,7 @@ export const getCharactersFeed = async (
   }
 
   if (!isUserRequestingOwnProfileFeed) {
-    sortFilter['isPrivate'] = { $ne: true }
+    sortFilter['isPrivate'] = { $eq: false }
   }
 
   // needed to not end up with duplicates in aggregations wtf mongo
@@ -846,7 +846,7 @@ export const getCharactersFeed = async (
   if (name) {
     const aggregate = charactersAggregate(name, creatorId, {
       ...sortFilter,
-      deleted: { $ne: true },
+      deleted: { $eq: false },
     })
     const sortObj = Object.fromEntries(sort)
     characters = await characterRepo.aggregateQuery(aggregate, {
@@ -910,7 +910,7 @@ const creatorsAggregate = (searchText: string) => {
 
   pipelines.push({
     $match: {
-      deleted: { $ne: true },
+      deleted: { $eq: false },
     },
   })
 
