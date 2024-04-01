@@ -22,7 +22,7 @@ const HighlightCard = ({
         ) : (
           <Image
             src={coverImageUri}
-            alt={concept.name}
+            alt={concept?.name}
             fill={true}
             className="object-cover"
           />
@@ -30,23 +30,26 @@ const HighlightCard = ({
       </div>
       <div className="flex flex-col justify-between p-4 bg-gray-100 dark:bg-gray-900">
         <div>
-          <h3>{isLoading ? <Skeleton variant="text" /> : concept.name}</h3>
+          <h3>{isLoading ? <Skeleton variant="text" /> : concept?.name}</h3>
           <div>
             {isLoading ? (
               <Skeleton variant="text" />
-            ) : concept.description ? (
+            ) : concept?.description ? (
               concept.description
             ) : (
               ''
             )}
           </div>
           {isLoading ? (
-            <Skeleton variant="text" />
+            <div className="flex gap-1">
+              <Skeleton variant="circular" />
+              <Skeleton variant="text" />
+            </div>
           ) : (
             <CreatorProfileLink
-              creatorName={concept.user.username}
-              creatorId={concept.user.userId}
-              creatorImage={concept.user.userImage}
+              creatorName={concept?.user.username}
+              creatorId={concept?.user.userId}
+              creatorImage={concept?.user.userImage}
             />
           )}
         </div>

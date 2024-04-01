@@ -11,6 +11,7 @@ const FeaturedModelsSwiper = () => {
     <HorizontalSwiper
       title={'Featured Models'}
       url={'/concepts'}
+      freeMode={true}
       slideClasses={'max-w-[300px]'}
       slides={(isLoading ? Array.from(new Array(10)) : concepts || []).map(
         (item, index) => {

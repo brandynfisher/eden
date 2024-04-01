@@ -11,6 +11,7 @@ const FeaturedArtistsSwiper = () => {
     <HorizontalSwiper
       title={'Featured Artists'}
       url={'/creators'}
+      freeMode={true}
       slideClasses={'max-w-[300px]'}
       slides={(isLoading ? Array.from(new Array(10)) : creators || []).map(
         (item, index) => {

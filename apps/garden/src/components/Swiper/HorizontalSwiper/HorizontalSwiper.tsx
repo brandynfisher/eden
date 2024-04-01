@@ -44,12 +44,14 @@ const HorizontalSwiper = ({
   slides,
   slideClasses,
   breakpoints,
+  freeMode,
 }: {
   title: string
   url?: string
   slides: ReactNode[]
   slideClasses?: string
   breakpoints?: SwiperOptions['breakpoints']
+  freeMode?: boolean
 }) => {
   const swiperRef = useRef<SwiperClass>()
   const prevElRef = useRef(null)
@@ -90,8 +92,9 @@ const HorizontalSwiper = ({
           direction="horizontal"
           mousewheel={{ forceToAxis: true }}
           freeMode={{
-            enabled: true,
+            enabled: freeMode,
           }}
+          // grabCursor={true}
         >
           {slides.map((slide, index) => (
             <SwiperSlide key={index} className={slideClasses}>
