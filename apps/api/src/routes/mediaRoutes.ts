@@ -19,10 +19,6 @@ const mediaRoutes: FastifyPluginAsync = async server => {
           apiSecret: [],
         },
       ],
-      body: Type.Object({
-        filename: Type.String(),
-        contentType: Type.String(),
-      }),
       response: {
         200: Type.Object({
           url: Type.String(),
@@ -43,6 +39,10 @@ const mediaRoutes: FastifyPluginAsync = async server => {
           apiSecret: [],
         },
       ],
+      body: Type.Object({
+        filename: Type.String(),
+        contentType: Type.String(),
+      }),
       response: {
         200: Type.Object({
           signedUrl: Type.String(),
