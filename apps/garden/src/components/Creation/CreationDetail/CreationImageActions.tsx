@@ -69,7 +69,11 @@ export const UpscaleImageMenu = ({
 
   const baseConfig = useMemo(() => {
     return {
-      input_images: [imageUri],
+      image: imageUri,
+      resemblance: 0.75,
+      creativity: 0.37,
+      downscaling: true,
+      downscaling_resolution: 1024,
       isPrivate,
     }
   }, [isPrivate, imageUri])
@@ -117,11 +121,10 @@ export const UpscaleImageMenu = ({
   }
 
   const handleItemClick = useCallback(
-    async (resolution: number) => {
+    async (scale_factor: number) => {
       await handleTaskCreate(generatorName, {
         ...baseConfig,
-        width: resolution,
-        height: resolution,
+        scale_factor: scale_factor,
       })
     },
     [baseConfig, generatorName, handleTaskCreate],
@@ -156,18 +159,18 @@ export const UpscaleImageMenu = ({
           Upscale Resolution
         </MenuItem>
         <MenuItem
-          onClick={() => handleItemClick(2048)}
+          onClick={() => handleItemClick(2)}
           className="flex gap-1"
           disabled={isSubmittingTask}
         >
           2k
           <MannaCostDisplay
             generatorName={generatorName}
-            config={{ ...baseConfig, width: 2048, height: 2048 }}
+            config={{ ...baseConfig, scale_factor: 2 }}
           />
         </MenuItem>
         <MenuItem
-          onClick={() => handleItemClick(3072)}
+          onClick={() => handleItemClick(4)}
           className="flex gap-1"
           disabled={isSubmittingTask}
         >
@@ -177,7 +180,7 @@ export const UpscaleImageMenu = ({
           4k
           <MannaCostDisplay
             generatorName={generatorName}
-            config={{ ...baseConfig, width: 3072, height: 3072 }}
+            config={{ ...baseConfig, scale_factor: 4 }}
           />
         </MenuItem>
       </Menu>
