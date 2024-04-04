@@ -1,5 +1,5 @@
 import { Creation } from '../models/Creation'
-import { rawS3BaseUrl } from '../plugins/s3Plugin'
+import { s3BaseUrl } from '../plugins/s3Plugin'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { fileTypeFromBuffer } from 'file-type'
 
@@ -122,7 +122,7 @@ export const receiveMediaTranscodeUpdate = async (
   }
 
   // const baseUrl = s3BaseUrl(server)
-  const baseUrl = rawS3BaseUrl(server)
+  const baseUrl = s3BaseUrl(server)
   const creationUri = `${baseUrl}/${s3key}`
   const parts = s3key.split('/')
   const ogFileName = parts.pop() || '' // Provide a fallback empty string if pop() returns undefined
