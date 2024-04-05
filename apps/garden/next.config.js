@@ -102,11 +102,19 @@ module.exports = withTM({
         port: '',
         pathname: '**',
       },
+      {
+        protocol: 'https',
+        hostname: 'dtut5r9j4w7j4.cloudfront.net',
+        port: '',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'https://d14i3advvh2bvd.cloudfront.net',
+        port: '',
+        pathname: '**',
+      },
     ],
-  },
-  env: {
-    XYZ: process.env.XYZ,
-    NEXT_PUBLIC_XYZ: process.env.XYZ,
   },
   modularizeImports: {
     '@ant-design/icons': {
