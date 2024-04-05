@@ -110,7 +110,7 @@ module.exports = withTM({
       },
       {
         protocol: 'https',
-        hostname: 'https://d14i3advvh2bvd.cloudfront.net',
+        hostname: 'd14i3advvh2bvd.cloudfront.net',
         port: '',
         pathname: '**',
       },
