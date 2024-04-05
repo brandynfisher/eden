@@ -15,10 +15,14 @@ const defaultImageDomains = [
   'eden-creations-stg.s3.us-east-1.amazonaws.com',
   'eden-creations-prod.s3.us-east-1.amazonaws.com',
   'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
+  'edenartlab-prod-data.s3.amazonaws.com',
   'edenartlab-stg-data.s3.us-east-1.amazonaws.com',
   'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
   'edenartlab-stage-data.s3.amazonaws.com',
+  'edenartlab-stage-data.s3-accelerate.amazonaws.com',
+  'edenartlab-prod-data.s3-accelerate.amazonaws.com',
   'dtut5r9j4w7j4.cloudfront.net',
+  'd14i3advvh2bvd.cloudfront.net',
 ]
 
 const devImageDomains = ['localhost']

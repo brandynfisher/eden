@@ -176,7 +176,12 @@ export const generateUploadSignedUrl = async (
   server: FastifyInstance,
   { filename, contentType }: { filename: string; contentType: string },
 ): Promise<string> => {
-  const s3 = server.s3
+  const s3 = new AWS.S3({
+    accessKeyId: server.config.AWS_ACCESS_KEY, // Assuming these are set up in your config
+    secretAccessKey: server.config.AWS_SECRET_KEY,
+    region: server.config.AWS_REGION,
+    useAccelerateEndpoint: true, // Enable S3 Transfer Acceleration
+  })
   const S3_BUCKET = server.config.AWS_S3_BUCKET as string
 
   const params = {
@@ -196,7 +201,6 @@ export const generateUploadSignedUrl = async (
     })
   })
 }
-
 export const getSignedDownloadUrl = (
   server: FastifyInstance,
   assetUrl: string,
