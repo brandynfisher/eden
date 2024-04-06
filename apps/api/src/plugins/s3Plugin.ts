@@ -211,7 +211,12 @@ export const getSignedDownloadUrl = (
   //  currentBucketUrl = s3Url(server, '')
   // const isLegacyBucket = !assetUrl.includes(currentBucketUrl)
   const fileBucketUrlParts = assetUrl.split('/')
-  const bucketName = fileBucketUrlParts[2].split('.')[0]
+  const bucketName = server.config.AWS_S3_BUCKET
+
+  if (!bucketName) {
+    throw new Error('No bucket name found')
+  }
+
   const assetPath = fileBucketUrlParts[fileBucketUrlParts.length - 1]
 
   const params = {
