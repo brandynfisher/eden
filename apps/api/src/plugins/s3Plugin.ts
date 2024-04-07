@@ -176,7 +176,12 @@ export const generateUploadSignedUrl = async (
   server: FastifyInstance,
   { filename, contentType }: { filename: string; contentType: string },
 ): Promise<string> => {
-  const s3 = server.s3
+  const s3 = new AWS.S3({
+    accessKeyId: server.config.AWS_ACCESS_KEY, // Assuming these are set up in your config
+    secretAccessKey: server.config.AWS_SECRET_KEY,
+    region: server.config.AWS_REGION,
+    useAccelerateEndpoint: true, // Enable S3 Transfer Acceleration
+  })
   const S3_BUCKET = server.config.AWS_S3_BUCKET as string
 
   const params = {
@@ -196,7 +201,6 @@ export const generateUploadSignedUrl = async (
     })
   })
 }
-
 export const getSignedDownloadUrl = (
   server: FastifyInstance,
   assetUrl: string,
@@ -207,7 +211,12 @@ export const getSignedDownloadUrl = (
   //  currentBucketUrl = s3Url(server, '')
   // const isLegacyBucket = !assetUrl.includes(currentBucketUrl)
   const fileBucketUrlParts = assetUrl.split('/')
-  const bucketName = fileBucketUrlParts[2].split('.')[0]
+  const bucketName = server.config.AWS_S3_BUCKET
+
+  if (!bucketName) {
+    throw new Error('No bucket name found')
+  }
+
   const assetPath = fileBucketUrlParts[fileBucketUrlParts.length - 1]
 
   const params = {
@@ -262,16 +271,24 @@ export const createSignedDownloadUrl = (
   return server.s3.getSignedUrl('getObject', params)
 }
 
-export const s3Url = (server: FastifyInstance, filename: string) => {
+export const s3BaseUrl = (server: FastifyInstance) => {
   if (server.config.AWS_CLOUDFRONT_URL) {
     // Check if AWS_CLOUDFRONT_URL already includes https://
-    const baseUrl = server.config.AWS_CLOUDFRONT_URL.startsWith('https://')
+    return server.config.AWS_CLOUDFRONT_URL.startsWith('https://')
       ? server.config.AWS_CLOUDFRONT_URL
       : `https://${server.config.AWS_CLOUDFRONT_URL}`
-    return `${baseUrl}/${filename}`
   } else {
-    return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com/${filename}`
+    return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com`
   }
+}
+
+export const rawS3BaseUrl = (server: FastifyInstance) => {
+  return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com`
+}
+
+export const s3Url = (server: FastifyInstance, filename: string) => {
+  const baseUrl = s3BaseUrl(server)
+  return `${baseUrl}/${filename}`
 }
 
 export const registerS3 = async (fastify: FastifyInstance) => {
