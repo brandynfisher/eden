@@ -68,7 +68,7 @@ const HorizontalSwiper = ({
           <Link
             title={'Explore all'}
             href={url}
-            className="flex items-center text-lg text-gray-500 hover:text-gray-300"
+            className="flex items-center text-lg text-gray-400 hover:text-gray-300"
           >
             Explore all
             <ArrowRight />
