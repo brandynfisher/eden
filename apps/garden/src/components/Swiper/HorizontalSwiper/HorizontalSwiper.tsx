@@ -4,7 +4,7 @@ import {
 } from '@/components/Swiper/HorizontalSwiper/HorizontalSwiperNav'
 import ArrowRight from '@mui/icons-material/ArrowRight'
 import Link from 'next/link'
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode, useRef, useState } from 'react'
 import 'swiper/css'
 import { A11y, FreeMode, Mousewheel, Navigation } from 'swiper/modules'
 import { Swiper, SwiperClass } from 'swiper/react'
@@ -57,27 +57,50 @@ const HorizontalSwiper = ({
   const prevElRef = useRef(null)
   const nextElRef = useRef(null)
 
+  const [showPrev, setShowPrev] = useState(false)
+  const [showNext, setShowNext] = useState(slides.length > 1)
+
   return (
     <div className="mb-4">
-      <div className="flex justify-between flex-wrap items-center">
+      <div className="flex justify-between flex-wrap items-center mb-2">
         <h2 className="mb-2">{title}</h2>
         {url ? (
-          <Link title={'Explore'} href={url} className="flex items-center">
-            Explore <ArrowRight />
+          <Link
+            title={'Explore all'}
+            href={url}
+            className="flex items-center text-lg text-gray-500 hover:text-gray-300"
+          >
+            Explore all
+            <ArrowRight />
           </Link>
         ) : null}
       </div>
 
       <div className="relative">
-        <HorizontalSwiperNavPrev
-          navRef={prevElRef}
-          onClick={() => swiperRef.current?.slidePrev()}
-        />
+        <div className={`${showPrev ? '' : 'hidden'}`}>
+          <HorizontalSwiperNavPrev
+            navRef={prevElRef}
+            onClick={() => swiperRef.current?.slidePrev()}
+          />
+        </div>
         <Swiper
           ref={swiperRef}
           onBeforeInit={(swiper: SwiperClass) => {
             // swiper ref is null on initial render, reassign for instance ref to actually work (nav buttons etc)
             swiperRef.current = swiper
+          }}
+          onSlideChange={(swiper: SwiperClass) => {
+            if (swiper.isBeginning) {
+              setShowPrev(false)
+            } else {
+              setShowPrev(true)
+            }
+
+            if (swiper.isEnd) {
+              setShowNext(false)
+            } else {
+              setShowNext(true)
+            }
           }}
           onInit={(swiper: SwiperClass) => {
             // navigation fix: working around references being null when initially assigned which then breaks event handling etc by reassigning refs when they are actually populated
@@ -102,10 +125,12 @@ const HorizontalSwiper = ({
             </SwiperSlide>
           ))}
         </Swiper>
-        <HorizontalSwiperNavNext
-          navRef={nextElRef}
-          onClick={() => swiperRef.current?.slideNext()}
-        />
+        <div className={`${showNext ? '' : 'hidden'}`}>
+          <HorizontalSwiperNavNext
+            navRef={nextElRef}
+            onClick={() => swiperRef.current?.slideNext()}
+          />
+        </div>
       </div>
     </div>
   )
