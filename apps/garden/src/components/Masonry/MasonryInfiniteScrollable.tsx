@@ -84,7 +84,7 @@ const MasonryInfiniteScrollable = ({
       : containerRef,
     { offset: 30 },
   )
-  const { height: windowHeight, width: windowWidth } = useViewportSize()
+  const { height: windowHeight } = useViewportSize()
 
   const { settings } = useContext(UserContext)
   const positioner = usePositioner(
@@ -93,15 +93,15 @@ const MasonryInfiniteScrollable = ({
       columnGutter: itemType === 'creation' ? 8 : 20,
       rowGutter: itemType === 'creation' ? 8 : 20,
       maxColumnCount:
-        windowWidth && windowWidth < 768
+        containerWidth && containerWidth < 768
           ? 1
           : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
           ? settings.maxGridCols.value
-          : windowWidth && windowWidth > 1920
+          : containerWidth && containerWidth > 1920
           ? itemType === 'concept'
             ? 5
             : 6
-          : windowWidth && windowWidth > 1440
+          : containerWidth && containerWidth > 1440
           ? itemType === 'concept'
             ? 4
             : 5
