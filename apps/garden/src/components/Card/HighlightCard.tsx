@@ -8,13 +8,18 @@ import React from 'react'
 const HighlightCard = ({
   concept,
   coverImageUri,
+  onCoverImageClick,
 }: {
   concept: Concept
   coverImageUri: string
+  onCoverImageClick: () => void
 }) => {
   return (
-    <div className="relative grid grid-cols-1 md:grid-cols-2 md:h-80 rounded-lg overflow-hidden">
-      <div className="relative overflow-hidden h-48 sm:h-52 md:h-auto rounded-md sm:rounded-none">
+    <div className="grid grid-cols-1 md:grid-cols-2 md:h-80 rounded-lg overflow-hidden">
+      <div
+        className="relative overflow-hidden h-48 sm:h-52 md:h-auto rounded-md sm:rounded-none cursor-zoom-in"
+        onClick={() => onCoverImageClick && onCoverImageClick()}
+      >
         <Image
           src={coverImageUri}
           alt={concept?.name}

@@ -1,21 +1,20 @@
 import FeaturedArtistsSwiper from '@/components/Swiper/FeaturedArtistsSwiper'
 import FeaturedModelsSwiper from '@/components/Swiper/FeaturedModelsSwiper'
-import HighlightsSwiper from '@/components/Swiper/HighlightsSwiper'
-import { Concept } from '@edenlabs/eden-sdk'
+import HighlightsSwiper, {
+  HighlightItem,
+} from '@/components/Swiper/HighlightsSwiper'
 
 // import FeaturedCreations from '@/pages/new/FeaturedCreations'
 
-const HomePage = ({
-  highlightItems,
-}: {
-  highlightItems: { concept?: Concept; coverImageUri: string }[]
-}) => {
+const HomePage = ({ highlightItems }: { highlightItems: HighlightItem[] }) => {
   return (
-    <div className="flex flex-col gap-4">
+    <div>
       <HighlightsSwiper items={highlightItems} />
-      <FeaturedModelsSwiper />
-      <FeaturedArtistsSwiper />
-      {/*<FeaturedCreations />*/}
+      <div className="flex flex-col gap-4">
+        <FeaturedModelsSwiper />
+        <FeaturedArtistsSwiper />
+        {/*<FeaturedCreations />*/}
+      </div>
     </div>
   )
 }

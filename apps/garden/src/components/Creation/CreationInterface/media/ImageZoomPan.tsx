@@ -3,15 +3,17 @@ import ZoomInOutlined from '@ant-design/icons/ZoomInOutlined'
 import ZoomOutOutlined from '@ant-design/icons/ZoomOutOutlined'
 import { Button } from 'antd'
 import Image from 'next/image'
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { ReactNode, useCallback, useEffect, useRef } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const ImageZoomPan = ({
   imageUrl,
   onCloseHandler,
+  overlayContent,
 }: {
   imageUrl: string
   onCloseHandler: () => void
+  overlayContent?: ReactNode | string
 }) => {
   const componentWrapRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLImageElement>(null)
@@ -73,7 +75,7 @@ const ImageZoomPan = ({
       >
         {({ zoomIn, zoomOut, centerView }) => (
           <>
-            <div className="absolute tools z-30 flex gap-2 p-2 bg-gray-400 bg-opacity-40 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
+            <div className="absolute tools z-30 flex gap-2 p-2 bg-gray-400 bg-opacity-70 dark:bg-gray-950 dark:bg-opacity-40 rounded-bl-lg right-0">
               <Button.Group>
                 <Button type="text" onClick={() => zoomIn()}>
                   <ZoomInOutlined className="text-xl" />
@@ -112,6 +114,11 @@ const ImageZoomPan = ({
                 />
               </div>
             </TransformComponent>
+            {overlayContent ? (
+              <div className="absolute p-4 bg-gray-100 dark:bg-gray-800 bg-opacity-70 dark:bg-opacity-75 bottom-0 rounded-tr-lg">
+                {overlayContent}
+              </div>
+            ) : null}
           </>
         )}
       </TransformWrapper>
