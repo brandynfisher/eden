@@ -1,5 +1,6 @@
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { Concept } from '@edenlabs/eden-sdk'
+import ZoomIn from '@mui/icons-material/ZoomIn'
 import { Button } from '@mui/material'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -17,7 +18,7 @@ const HighlightCard = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 md:h-80 rounded-lg overflow-hidden">
       <div
-        className="relative overflow-hidden h-48 sm:h-52 md:h-auto rounded-md sm:rounded-none cursor-zoom-in"
+        className="relative overflow-hidden h-48 sm:h-52 md:h-auto rounded-md sm:rounded-none cursor-zoom-in group"
         onClick={() => onCoverImageClick && onCoverImageClick()}
       >
         <Image
@@ -26,6 +27,9 @@ const HighlightCard = ({
           fill={true}
           className="object-cover"
         />
+        <div className="absolute flex items-center text-white bottom-2 left-2 bg-gray-600 bg-opacity-70 p-1 rounded-full opacity-50 group-hover:opacity-100">
+          <ZoomIn className="h-6" />
+        </div>
       </div>
       <div className="flex flex-col md:justify-between p-4 bg-gray-100 dark:bg-gray-900 h-60 md:h-auto mx-4 sm:mx-0 sm:px-8 md:px-4 relative top-[-24px] sm:top-auto rounded-lg drop-shadow sm:drop-shadow-none sm:rounded-none">
         <div className="mb-2">
