@@ -6,8 +6,14 @@ import React from 'react'
 import { SwiperOptions } from 'swiper/types/swiper-options'
 
 const swiperBreakpoints: SwiperOptions['breakpoints'] = {
-  640: {
+  320: {
     slidesPerView: 1,
+    navigation: {
+      disabledClass: '!opacity-0 pointer-events-none',
+    },
+  },
+  640: {
+    slidesPerView: 1.1,
     navigation: {
       disabledClass: '!opacity-0 pointer-events-none',
     },
