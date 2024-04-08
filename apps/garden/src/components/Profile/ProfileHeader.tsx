@@ -154,7 +154,7 @@ const ProfileHeader = ({
           ) : (
             <div className="flex items-center flex-wrap md:flex-nowrap">
               <ProfileHeaderName
-                isOwnProfile={isOwnProfile}
+                editable={isOwnProfile}
                 displayName={displayName}
                 setDisplayName={setDisplayName}
               />

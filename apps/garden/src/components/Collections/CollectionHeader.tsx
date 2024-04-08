@@ -24,13 +24,10 @@ const CollectionHeader = ({
     <div className="flex flex-col bg-gray-200 dark:bg-gray-900 rounded-lg p-4 relative">
       <div className="flex w-full items-center justify-start gap-4">
         <div className="flex flex-col max-w-full">
-          <CollectionName
-            collectionId={collection._id}
-            isOwnProfile={isAuthUser}
-          />
+          <CollectionName collectionId={collection._id} editable={isAuthUser} />
           <CollectionDescription
             collectionId={collection._id}
-            isOwnProfile={isAuthUser}
+            editable={isAuthUser}
           />
 
           <div className="dark:text-gray-400 text-sm">

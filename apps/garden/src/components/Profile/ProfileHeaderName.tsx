@@ -1,40 +1,30 @@
-import { handleAxiosError } from '@/lib/fetcher'
+import TextInlineEditable from '@/components/Forms/TextInlineEditable'
 import { UserContext } from '@/providers/UserProvider'
 import EditOutlined from '@ant-design/icons/EditOutlined'
 import { useUser } from '@clerk/nextjs'
-import { useClickOutside } from '@mantine/hooks'
 import { App, Button } from 'antd'
 import React, { useContext, useState } from 'react'
 
 const ProfileHeaderName = ({
   displayName,
   setDisplayName,
-  isOwnProfile,
+  editable,
 }: {
   displayName: string
   setDisplayName: (displayName: string) => void
-  isOwnProfile: boolean
+  editable: boolean
 }) => {
   const { message } = App.useApp()
   const { maybeAuthenticate } = useContext(UserContext)
   const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [updatedName, setUpdatedName] = useState(displayName)
-  const clickOutsideTargetRef = useClickOutside(() => setIsEditing(false))
   const { user } = useUser()
 
   const handleEditNameClick = async () => {
     if (!(await maybeAuthenticate())) return
     setIsEditing(true)
-    setUpdatedName(displayName)
   }
-  const handleNameInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = ev.target.value
-    const isValid = newValue.match(/^[a-zA-Z0-9_.-]*$/)
-    if (!isValid) {
-      return
-    }
-    setUpdatedName(newValue.trim())
+  const nameValidator = (updatedText: string) => {
+    return !!updatedText.match(/^[a-zA-Z0-9_.-]*$/)
   }
 
   const updateClerkUsername = async (newName: string) => {
@@ -43,26 +33,15 @@ const ProfileHeaderName = ({
     })
   }
 
-  const handleNameSubmit = async () => {
-    setLoading(true)
-    message.destroy()
-
-    try {
-      await updateClerkUsername(updatedName)
-      setDisplayName(updatedName)
-      setIsEditing(false)
-      message.success('Name updated successfully!')
-    } catch (err) {
-      handleAxiosError(err, message)
-      message.error('Failed to update name!')
-    }
-    setLoading(false)
+  const handleNameSubmit = async (updatedText: string) => {
+    await updateClerkUsername(updatedText)
+    setDisplayName(updatedText)
+    message.success('Name updated successfully!')
   }
 
   return (
     <div className="flex items-center gap-2 w-full">
       <div
-        ref={clickOutsideTargetRef}
         className={`dark:text-white text-md font-semibold min-w-0 ${
           isEditing ? 'w-full' : ''
         }`}
@@ -71,45 +50,17 @@ const ProfileHeaderName = ({
         {!isEditing ? (
           <div className="text-lg truncate">{displayName}</div>
         ) : (
-          <div className="relative w-full flex flex-col min-w-0 z-0">
-            <input
-              autoFocus={true}
-              type="text"
-              enterKeyHint="enter"
-              value={updatedName}
-              placeholder={'Enter new Name'}
-              maxLength={32}
-              minLength={3}
-              autoCorrect="off"
-              spellCheck="false"
-              className="z-10 ml-0 border-none shadow-none !ring-none flex h-7 max-w-full items-center text-lg font-medium bg-gray-100 dark:bg-gray-950 pl-1 rounded-md underline decoration-dotted decoration-2 underline-offset-[6px] !outline-none placeholder:text-xs placeholder:font-normal"
-              onChange={handleNameInputChange}
-            />
-            <div className="z-0 flex gap-2 absolute bg-white dark:bg-gray-800 p-2 top-full border border-gray-300 dark:border-gray-700 border-solid border-t-0 rounded-b-md anim-slide-fade-down ">
-              <Button
-                size="small"
-                type="text"
-                className="font-mono text-gray-500"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleNameSubmit}
-                size="small"
-                type="text"
-                loading={loading}
-                disabled={!updatedName || updatedName === displayName}
-                className="font-mono"
-              >
-                Save
-              </Button>
-            </div>
-          </div>
+          <TextInlineEditable
+            text={displayName || ''}
+            placeholder={'Enter new description'}
+            onEditStop={() => setIsEditing(false)}
+            onSubmit={handleNameSubmit}
+            validator={nameValidator}
+          />
         )}
       </div>
 
-      {isOwnProfile && (
+      {editable && (
         <>
           {!isEditing && (
             <Button size={'small'} type="text" onClick={handleEditNameClick}>
