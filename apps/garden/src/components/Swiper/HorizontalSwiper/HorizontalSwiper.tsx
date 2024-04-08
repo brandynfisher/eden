@@ -54,8 +54,8 @@ const HorizontalSwiper = ({
   freeMode?: boolean
 }) => {
   const swiperRef = useRef<SwiperClass>(null)
-  const prevElRef = useRef(null)
-  const nextElRef = useRef(null)
+  const prevElRef = useRef<HTMLElement>(null)
+  const nextElRef = useRef<HTMLElement>(null)
 
   const [showPrev, setShowPrev] = useState(false)
   const [showNext, setShowNext] = useState(slides.length > 1)
@@ -106,8 +106,14 @@ const HorizontalSwiper = ({
           }}
           onInit={(swiper: SwiperClass) => {
             // navigation fix: working around references being null when initially assigned which then breaks event handling etc by reassigning refs when they are actually populated
-            swiper.navigation.prevEl = prevElRef.current
-            swiper.navigation.nextEl = nextElRef.current
+            if (prevElRef && prevElRef.current) {
+              swiper.navigation.prevEl = prevElRef.current
+            }
+
+            if (nextElRef && nextElRef.current) {
+              swiper.navigation.nextEl = nextElRef.current
+            }
+
             swiper.navigation.init()
             swiper.navigation.update()
           }}
