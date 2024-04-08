@@ -112,8 +112,11 @@ const ConceptParameter = (props: {
   }, [concept, preselectedConceptId])
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search)
-    const conceptParam = queryParams.get('concept') // world
+    // const queryParams = new URLSearchParams(window.location.search)
+    const conceptParam =
+      router.query && router.query.concept
+        ? String(router.query.concept)
+        : undefined // world
     if (conceptParam) {
       onChange(String(conceptParam))
       setPreselectedConceptId(conceptParam)
@@ -128,16 +131,12 @@ const ConceptParameter = (props: {
     }
   }, [setValue, loraId])
 
-  const onChange = (newValue: string | null) => {
+  const onChange = async (newValue: string | null) => {
     // hacky way to get rid of the query parameter - avoiding next.router here because it would trigger a rerender
     if (preselectedConceptId) {
       setPreselectedConceptId(null)
       const newUrl = '/create/creations'
-      window.history.pushState(
-        { ...window.history.state, as: newUrl, url: newUrl },
-        '',
-        newUrl,
-      )
+      await router.push(newUrl, newUrl)
     }
 
     setValue(newValue)

@@ -22,7 +22,7 @@ const HighlightCard = ({
           className="object-cover"
         />
       </div>
-      <div className="flex flex-col md:justify-between p-4 bg-gray-100 dark:bg-gray-900 h-60 md:h-auto mx-4 sm:mx-0 sm:px-8 relative top-[-24px] sm:top-auto rounded-lg drop-shadow sm:drop-shadow-none sm:rounded-none">
+      <div className="flex flex-col md:justify-between p-4 bg-gray-100 dark:bg-gray-900 h-60 md:h-auto mx-4 sm:mx-0 sm:px-8 md:px-4 relative top-[-24px] sm:top-auto rounded-lg drop-shadow sm:drop-shadow-none sm:rounded-none">
         <div className="mb-2">
           <h3>{concept.name}</h3>
           <CreatorProfileLink

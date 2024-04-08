@@ -339,6 +339,11 @@ const GeneratorForm = ({
     }
   }
 
+  // const router = useRouter()
+  const { query } = router
+  // const queryParams = new URLSearchParams(window.location.search)
+  const conceptParam = query && query.concept ? query.concept : undefined // world
+
   const renderFormFields = useCallback(
     (parameters: GeneratorParameter[]) => {
       const renderParameter = (parameter: GeneratorParameter) => {
@@ -574,6 +579,7 @@ const GeneratorForm = ({
 
         {advancedParameters.length > 0 || optionalParameters.length > 0 ? (
           <Collapse
+            defaultActiveKey={supportsConcepts && conceptParam ? '3' : ''}
             expandIconPosition="end"
             className={`generator-settings-collapse`}
           >
