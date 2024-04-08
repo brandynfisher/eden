@@ -53,7 +53,7 @@ const HorizontalSwiper = ({
   breakpoints?: SwiperOptions['breakpoints']
   freeMode?: boolean
 }) => {
-  const swiperRef = useRef<SwiperClass>()
+  const swiperRef = useRef<SwiperClass>(null)
   const prevElRef = useRef(null)
   const nextElRef = useRef(null)
 
