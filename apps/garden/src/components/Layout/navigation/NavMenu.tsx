@@ -4,7 +4,11 @@ import SocialLinks from '@/components/Layout/navigation/SocialLinks'
 import { UserContext } from '@/providers/UserProvider'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
-import { ConnectedTvOutlined, PeopleOutline } from '@mui/icons-material'
+import {
+  ConnectedTvOutlined,
+  HomeOutlined,
+  PeopleOutline,
+} from '@mui/icons-material'
 import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline'
 import ExploreOutlined from '@mui/icons-material/ExploreOutlined'
 import ModelTraining from '@mui/icons-material/ModelTraining'
@@ -81,9 +85,9 @@ const NavMenu = ({
 
   const exploreChildren: ItemType[] = [
     {
-      key: '/',
+      key: '/creations',
       icon: (
-        <Link href="/" data-testid="nav-explore-creations">
+        <Link href="/creations" data-testid="nav-explore-creations">
           <Yard fontSize="small" />
         </Link>
       ),
@@ -165,6 +169,15 @@ const NavMenu = ({
     {
       type: 'divider',
       key: 'd1',
+    },
+    {
+      key: '/new',
+      icon: (
+        <Link href="/new" data-testid="nav-home">
+          <HomeOutlined fontSize="small" />
+        </Link>
+      ),
+      label: 'Home',
     },
     {
       key: 'explore',

@@ -5,6 +5,7 @@ const CardImage = ({
   width,
   height,
   priority,
+  loading,
   sizes,
   className,
 }: {
@@ -12,6 +13,7 @@ const CardImage = ({
   width: number
   height: number
   priority?: boolean
+  loading?: 'lazy'
   sizes?: string
   className?: string
 }) => {
@@ -22,6 +24,7 @@ const CardImage = ({
       aspectRatio={width / height}
       sizes={sizes || '(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
       priority={priority}
+      loading={loading}
       className={className}
     />
   )

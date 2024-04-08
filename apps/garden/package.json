@@ -46,6 +46,7 @@
     "react-zoom-pan-pinch": "^3.1.0",
     "sharp": "^0.32.5",
     "speakingurl": "^14.0.1",
+    "swiper": "^11.1.0",
     "swr": "^2.1.5"
   },
   "devDependencies": {
@@ -54,6 +55,7 @@
     "@next/bundle-analyzer": "^14.1.0",
     "@playwright/test": "^1.40.1",
     "@types/formidable": "^2.0.6",
+    "@types/lodash.throttle": "^4.1.9",
     "@types/node": "20.2.5",
     "@types/probe-image-size": "^7.2.0",
     "@types/react": "18.2.7",

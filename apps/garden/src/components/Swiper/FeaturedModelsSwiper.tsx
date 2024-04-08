@@ -1,0 +1,34 @@
+import ConceptCard from '@/components/Concept/ConceptCard/ConceptCard'
+import FeaturedSlideSkeleton from '@/components/Swiper/FeaturedSlideSkeleton'
+import HorizontalSwiper from '@/components/Swiper/HorizontalSwiper/HorizontalSwiper'
+import { useFeaturedConcepts } from '@/hooks/useFeaturedConcepts'
+import React from 'react'
+
+const FeaturedModelsSwiper = () => {
+  const { concepts, isLoading } = useFeaturedConcepts()
+
+  return (
+    <HorizontalSwiper
+      title={'Featured Models'}
+      url={'/concepts'}
+      freeMode={true}
+      slideClasses={'max-w-[300px]'}
+      slides={(isLoading ? Array.from(new Array(10)) : concepts || []).map(
+        (item, index) => {
+          return item ? (
+            <ConceptCard
+              key={index}
+              data={item}
+              index={index}
+              lazyLoad={true}
+            />
+          ) : (
+            <FeaturedSlideSkeleton key={index} />
+          )
+        },
+      )}
+    />
+  )
+}
+
+export default FeaturedModelsSwiper

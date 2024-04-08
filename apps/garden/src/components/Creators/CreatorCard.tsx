@@ -10,8 +10,9 @@ import React, { FC, useCallback, useState } from 'react'
 interface CardProps {
   index: number
   data: Creator
-  onClick: () => void
+  onClick?: () => void
   hidePrompt?: boolean
+  lazyLoad?: boolean
   sizes?: string
   className?: string
   updateHandler?: (data: Creator) => void
@@ -19,21 +20,24 @@ interface CardProps {
 
 export type CardWithTypeProps = CardProps
 
-const Card: FC<CardWithTypeProps> = ({
+const CreatorCard: FC<CardWithTypeProps> = ({
   index,
   data,
   onClick,
   sizes,
   className,
   updateHandler,
+  lazyLoad,
 }) => {
   // const { items, setItems } = useContext(MasonryContext)
   const [itemData, setItemData] = useState<Creator>(data)
 
   const cardClickHandler = useCallback(
     (ev: React.MouseEvent) => {
-      ev.preventDefault()
-      onClick()
+      if (onClick) {
+        ev.preventDefault()
+        onClick()
+      }
     },
     [onClick],
   )
@@ -73,8 +77,9 @@ const Card: FC<CardWithTypeProps> = ({
           uri={itemData.userImage}
           width={0}
           height={0}
-          priority={index < 10}
+          priority={!lazyLoad && index < 10}
           sizes={sizes}
+          loading={lazyLoad ? 'lazy' : undefined}
           className="!rounded-none w-auto md:hover:scale-105 md:transition-transform"
         />
       </a>
@@ -86,4 +91,4 @@ const Card: FC<CardWithTypeProps> = ({
   )
 }
 
-export default Card
+export default CreatorCard

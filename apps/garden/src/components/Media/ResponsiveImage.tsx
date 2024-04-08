@@ -7,6 +7,7 @@ export const ResponsiveImage = ({
   aspectRatio,
   sizes,
   priority,
+  loading,
   children,
   onLoadingComplete,
   quality,
@@ -17,6 +18,7 @@ export const ResponsiveImage = ({
   aspectRatio: number
   sizes?: string
   priority?: boolean
+  loading?: 'lazy'
   children?: ReactNode
   onLoadingComplete?: () => void
   quality?: number
@@ -43,6 +45,7 @@ export const ResponsiveImage = ({
         height={0}
         quality={quality}
         priority={priority}
+        loading={loading}
         onLoadingComplete={handleOnLoadingComplete}
         className={`h-full w-full object-contain ${className ? className : ''}`}
       />

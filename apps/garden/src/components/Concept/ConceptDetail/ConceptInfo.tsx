@@ -20,12 +20,14 @@ const ConceptInfo = ({ concept }: { concept: Concept }) => {
   return (
     <div className="flex flex-col gap-2">
       {concept?.description ? (
-        <BaseParamGroup
-          label={'Description'}
-          value={
-            <TruncatedExpandableText text={concept.description} lines={3} />
-          }
-        />
+        <div className="relative">
+          <BaseParamGroup
+            label={'Description'}
+            value={
+              <TruncatedExpandableText text={concept.description} lines={3} />
+            }
+          />
+        </div>
       ) : null}
 
       <div className="flex gap-4 flex-wrap">
