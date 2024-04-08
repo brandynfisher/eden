@@ -23,7 +23,7 @@ const CreatorProfileLink = ({
           creatorName ? creatorName.toLowerCase() : creatorId
         }`,
       }}
-      className={`creator-profile-link flex items-stretch max-w-full ${
+      className={`creator-profile-link inline-flex max-w-full ${
         isOverlay
           ? 'text-gray-300 hover:text-white'
           : 'hover:text-gray-800 text-black dark:text-gray-300'

@@ -16,7 +16,7 @@ export const HorizontalSwiperNav = ({
     <div
       ref={navRef}
       onClick={onClick}
-      className={`absolute z-10 h-full w-12 top-0 opacity-100 flex items-center transition-opacity duration-300 cursor-pointer group from-transparent to-black ${
+      className={`absolute z-10 h-full w-10 top-0 opacity-100 flex items-center transition-opacity duration-300 cursor-pointer group from-transparent to-white dark:to-black ${
         className ? className : ''
       }`}
     >
@@ -40,7 +40,7 @@ export const HorizontalSwiperNavPrev = ({
     >
       <ChevronLeftRounded
         fontSize="large"
-        className="text-gray-300 group-hover:scale-125 group-hover:text-gray-200"
+        className="dark:text-gray-300 group-hover:scale-125 group-hover:dark:text-gray-200"
       />
     </HorizontalSwiperNav>
   )
@@ -61,7 +61,7 @@ export const HorizontalSwiperNavNext = ({
     >
       <ChevronRightRounded
         fontSize="large"
-        className="text-gray-300 group-hover:scale-125 group-hover:text-gray-200 !w-12"
+        className="dark:text-gray-300 group-hover:scale-125 group-hover:dark:text-gray-200 !w-12"
       />
     </HorizontalSwiperNav>
   )

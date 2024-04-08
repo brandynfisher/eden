@@ -61,7 +61,7 @@ const HorizontalSwiper = ({
   const [showNext, setShowNext] = useState(slides.length > 1)
 
   return (
-    <div className="mb-4">
+    <div className="sm:mb-2">
       <div className="flex justify-between flex-wrap items-center mb-2">
         <h2 className="mb-2">{title}</h2>
         {url ? (
