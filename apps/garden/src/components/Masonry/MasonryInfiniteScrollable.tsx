@@ -12,6 +12,7 @@ import {
   MODAL_TYPES,
   useModalContext,
 } from '@/providers/ModalProvider'
+import { UserContext } from '@/providers/UserProvider'
 import { Character, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
 import { useElementSize, useViewportSize } from '@mantine/hooks'
 import { Empty } from 'antd'
@@ -83,14 +84,30 @@ const MasonryInfiniteScrollable = ({
       : containerRef,
     { offset: 30 },
   )
-  const { height: windowHeight } = useViewportSize()
+  const { height: windowHeight, width: windowWidth } = useViewportSize()
 
+  const { settings } = useContext(UserContext)
   const positioner = usePositioner(
     {
       width: containerWidth,
       columnGutter: itemType === 'creation' ? 8 : 20,
       rowGutter: itemType === 'creation' ? 8 : 20,
-      maxColumnCount: itemType === 'creation' ? 5 : 4,
+      maxColumnCount:
+        windowWidth && windowWidth < 768
+          ? 1
+          : settings?.maxGridCols.value && settings.maxGridCols.value !== 'auto'
+          ? settings.maxGridCols.value
+          : windowWidth && windowWidth > 1920
+          ? itemType === 'concept'
+            ? 5
+            : 6
+          : windowWidth && windowWidth > 1440
+          ? itemType === 'concept'
+            ? 4
+            : 5
+          : itemType === 'concept'
+          ? 3
+          : settings?.maxGridCols.params.initialValue,
     },
     [query?.name, query?.conceptId, query?.userId, containerWidth],
   )
