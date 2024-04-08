@@ -84,6 +84,7 @@ const HorizontalSwiper = ({
           />
         </div>
         <Swiper
+          //@ts-ignore
           ref={swiperRef}
           onBeforeInit={(swiper: SwiperClass) => {
             // swiper ref is null on initial render, reassign for instance ref to actually work (nav buttons etc)
