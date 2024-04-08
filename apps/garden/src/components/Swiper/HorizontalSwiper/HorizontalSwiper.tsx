@@ -54,8 +54,8 @@ const HorizontalSwiper = ({
   freeMode?: boolean
 }) => {
   const swiperRef = useRef<SwiperClass>(null)
-  const prevElRef = useRef<HTMLElement>(null)
-  const nextElRef = useRef<HTMLElement>(null)
+  const prevElRef = useRef<HTMLDivElement>(null)
+  const nextElRef = useRef<HTMLDivElement>(null)
 
   const [showPrev, setShowPrev] = useState(false)
   const [showNext, setShowNext] = useState(slides.length > 1)
