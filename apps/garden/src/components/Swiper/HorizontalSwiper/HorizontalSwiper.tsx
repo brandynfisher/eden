@@ -88,6 +88,7 @@ const HorizontalSwiper = ({
           ref={swiperRef}
           onBeforeInit={(swiper: SwiperClass) => {
             // swiper ref is null on initial render, reassign for instance ref to actually work (nav buttons etc)
+            // @ts-ignore
             swiperRef.current = swiper
           }}
           onSlideChange={(swiper: SwiperClass) => {
