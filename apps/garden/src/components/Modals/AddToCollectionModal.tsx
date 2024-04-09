@@ -104,7 +104,7 @@ const AddToCollectionModal = ({
   return (
     <Modal
       {...rest}
-      className="modal-small max-w-md flex flex-col w-full items-center justify-center"
+      className="modal-small max-w-lg flex flex-col w-full items-center justify-center"
     >
       <ModalTitle title="Add to Collection" />
       <div className="pt-2 p-4">
@@ -112,8 +112,8 @@ const AddToCollectionModal = ({
           items={collections}
           onItemChange={handleItemChanged}
           footer={
-            <div>
-              <Divider className="m-0 mt-2 mb-3" />
+            <div className="mb-2 ml-2 mr-2">
+              <Divider className="m-0 my-2" />
               {showForm ? (
                 <div>
                   <TextField
@@ -143,7 +143,7 @@ const AddToCollectionModal = ({
               ) : (
                 <Button
                   onClick={() => setShowForm(!showForm)}
-                  className="flex items-center gap-1"
+                  className="flex gap-1 w-full"
                 >
                   <AddOutlined /> New collection
                 </Button>

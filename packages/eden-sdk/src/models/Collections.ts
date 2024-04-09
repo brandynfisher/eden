@@ -177,6 +177,7 @@ export type Collection = {
   isDefaultCollection: boolean
   creations: Creation[]
   displayImageUri?: string
+  creationCount?: number
   creatorId?: string
   creatorName?: string
   creatorImage?: string

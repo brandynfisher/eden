@@ -1,6 +1,7 @@
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { Collection } from '@edenlabs/eden-sdk'
 import Groups from '@mui/icons-material/Groups'
-import { Checkbox, FormGroup } from '@mui/material'
+import { Badge, Checkbox, FormGroup } from '@mui/material'
 import Chip from '@mui/material/Chip'
 import React, { ReactNode, useState } from 'react'
 
@@ -31,34 +32,58 @@ const Combobox = ({
       {hasSearch ? <div>search box</div> : null}
 
       <div className="overflow-auto max-h-[500px]">
-        <FormGroup className="px-2.5">
+        <FormGroup className="px-2">
           {items && items.length ? (
             items.map((item: Collection) => (
               <div
                 key={item._id}
-                className="flex justify-between items-center w-full border-0 border-solid border-b border-b-gray-100 dark:border-b-gray-900 last:border-b-0"
+                className="relative flex justify-between items-center w-full border-0 border-solid border-b border-b-gray-100 dark:border-b-gray-900 last:border-b-0 cursor-pointer group hover:bg-gray-900 hover:rounded-md"
+                onClick={() => handleItemChange(item)}
               >
-                <Checkbox
-                  checked={item.hasItem}
-                  disabled={
-                    loadingItem !== null && loadingItem._id === item._id
-                  }
-                  onChange={() => handleItemChange(item)}
-                />
-                <div className="flex justify-between items-center w-full">
-                  {item.name}
-                  {item.contributors && item.contributors.length ? (
-                    <Chip
-                      size="small"
-                      className="text-gray-400"
-                      clickable={true}
-                      label={
-                        <div className="flex items-center gap-1">
-                          <Groups fontSize="small" /> Shared
-                        </div>
-                      }
-                    />
+                <div className="relative">
+                  {loadingItem !== null && loadingItem._id === item._id ? (
+                    <div className="absolute h-full bg-gray-800 z-10 bg-opacity-50 ml-1 px-1 rounded-full">
+                      <LoadingIndicator />
+                    </div>
                   ) : null}
+                  <Checkbox
+                    className={`group-hover:text-blue-500 ${
+                      item.hasItem
+                        ? '!text-blue-300 !group-hover:text-blue-300'
+                        : ''
+                    }`}
+                    checked={item.hasItem}
+                    disabled={
+                      loadingItem !== null && loadingItem._id === item._id
+                    }
+                  />
+                </div>
+                <div
+                  className={`flex justify-between items-center w-full group-hover:text-blue-500 ${
+                    item.hasItem ? '!text-blue-300' : ''
+                  } `}
+                >
+                  {item.name}
+                  <div>
+                    {item.contributors && item.contributors.length ? (
+                      <Chip
+                        size="small"
+                        className="text-gray-400 mr-4"
+                        clickable={true}
+                        label={
+                          <div className="flex items-center gap-1">
+                            <Groups fontSize="small" />{' '}
+                            <span className="hidden sm:block">Shared</span>
+                          </div>
+                        }
+                      />
+                    ) : null}
+                    <Badge
+                      badgeContent={item.creationCount}
+                      color="primary"
+                      className={`mr-4 ${item.hasItem ? '' : 'grayscale'}`}
+                    />
+                  </div>
                 </div>
               </div>
             ))
