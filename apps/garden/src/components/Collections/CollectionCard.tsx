@@ -20,8 +20,8 @@ const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
       src={imageUri}
       preview={false}
       placeholder={true}
-      wrapperClassName="!flex justify-center items-center overflow-hidden h-full"
-      className="object-cover w-full !h-full !rounded-none"
+      wrapperClassName="!flex justify-center items-center overflow-hidden h-full "
+      className="object-cover w-full !h-full !rounded-none transition-transform duration-200 ease-in group-hover:scale-105"
     />
   )
 }
@@ -46,7 +46,10 @@ const CollectionCard = ({
   }
 
   return (
-    <Link href={`/collections/${itemData._id}`} className="h-full link-card">
+    <Link
+      href={`/collections/${itemData._id}`}
+      className="h-full link-card group"
+    >
       <Card
         onClick={cardClickHandler}
         hoverable
