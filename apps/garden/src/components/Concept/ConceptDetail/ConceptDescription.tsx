@@ -61,6 +61,7 @@ const ConceptDescription = ({
           </>
         ) : (
           <TextInlineEditable
+            multiLine={true}
             minLength={0}
             maxLength={1000}
             text={concept?.description || ''}

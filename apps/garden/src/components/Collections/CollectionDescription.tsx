@@ -57,6 +57,7 @@ const CollectionDescription = ({
           </>
         ) : (
           <TextInlineEditable
+            multiLine={true}
             minLength={0}
             maxLength={1000}
             text={collection?.description || ''}
