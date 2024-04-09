@@ -77,6 +77,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
       },
       body: Type.Object({
         isPrivate: Type.Optional(Type.Boolean()),
+        description: Type.Optional(Type.String()),
       }),
       response: {
         200: {

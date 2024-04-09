@@ -6,12 +6,16 @@ import React, { useState } from 'react'
 const TextInlineEditable = ({
   text,
   placeholder,
+  maxLength,
+  minLength,
   onEditStop,
   onSubmit,
   validator,
 }: {
   text: string
   placeholder: string
+  maxLength?: number
+  minLength?: number
   onEditStop: () => void
   onSubmit: (updatedText: string) => Promise<void>
   validator?: (updatedText: string) => boolean
@@ -31,7 +35,7 @@ const TextInlineEditable = ({
       }
     }
 
-    setUpdatedText(newValue.trim())
+    setUpdatedText(validator ? newValue.trim() : newValue)
   }
 
   const handleSubmit = async () => {
@@ -58,8 +62,8 @@ const TextInlineEditable = ({
         enterKeyHint="enter"
         value={updatedText}
         placeholder={placeholder}
-        maxLength={32}
-        minLength={3}
+        maxLength={maxLength ? maxLength : 32}
+        minLength={minLength ? minLength : 0}
         autoCorrect="off"
         spellCheck="false"
         className="z-10 ml-0 border-none shadow-none !ring-none flex h-7 max-w-full items-center  bg-gray-100 dark:bg-gray-950 pl-1 rounded-md underline decoration-dotted decoration-2 underline-offset-[3px] !outline-none placeholder:text-xs placeholder:font-normal"
@@ -79,7 +83,11 @@ const TextInlineEditable = ({
           size="small"
           type="text"
           loading={loading}
-          disabled={!updatedText || updatedText === text}
+          disabled={
+            minLength && minLength > 0
+              ? !updatedText || updatedText === text
+              : updatedText === text
+          }
           className="font-mono"
         >
           Save

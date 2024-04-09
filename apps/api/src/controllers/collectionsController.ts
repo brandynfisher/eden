@@ -1,6 +1,5 @@
 import { creationPrivacyPermissionCheck } from '../lib/authorization'
 import { Collection } from '../models/Collection'
-import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import CollectionRepository from '../repositories/CollectionRepository'
@@ -13,8 +12,6 @@ import {
   CollectionsListArguments,
   CollectionsRemoveCreationsArguments,
   CollectionsUpdateArguments,
-  ConceptsDeleteArguments,
-  ConceptsUpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'

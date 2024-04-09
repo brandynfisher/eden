@@ -57,6 +57,8 @@ const CollectionDescription = ({
           </>
         ) : (
           <TextInlineEditable
+            minLength={0}
+            maxLength={1000}
             text={collection?.description || ''}
             placeholder={'Enter new description'}
             onEditStop={() => setIsEditing(false)}

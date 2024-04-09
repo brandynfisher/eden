@@ -186,7 +186,12 @@ const Details = ({
                 <CreationInfo creation={item as Creation} />
               ) : null}
               {itemType === 'concept' ? (
-                <ConceptInfo concept={item as Concept} />
+                <ConceptInfo
+                  concept={itemData as Concept}
+                  onUpdate={(updatedConcept: Concept) =>
+                    setItemData(updatedConcept)
+                  }
+                />
               ) : null}
               {itemType === 'character' ? (
                 <CharacterInfo character={item as Character} />

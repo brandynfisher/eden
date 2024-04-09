@@ -1,10 +1,19 @@
+import ConceptDescription from '@/components/Concept/ConceptDetail/ConceptDescription'
 import { BaseParamGroup } from '@/components/Creation/CreationDetail/CreationInfo'
-import TruncatedExpandableText from '@/components/TruncatedExpandableText'
+import { UserContext } from '@/providers/UserProvider'
 import { Concept } from '@edenlabs/eden-sdk'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
-const ConceptInfo = ({ concept }: { concept: Concept }) => {
+const ConceptInfo = ({
+  concept,
+  onUpdate,
+}: {
+  concept: Concept
+  onUpdate: (updatedConcept: Concept) => void
+}) => {
   const [displayDateTime, setDisplayDateTime] = useState('')
+  const { isAuthenticated, userId } = useContext(UserContext)
+  const isAuthUser = isAuthenticated && concept?.user.userId === userId
 
   useEffect(() => {
     const createdDate = new Date(concept.createdAt)
@@ -19,16 +28,18 @@ const ConceptInfo = ({ concept }: { concept: Concept }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      {concept?.description ? (
-        <div className="relative">
-          <BaseParamGroup
-            label={'Description'}
-            value={
-              <TruncatedExpandableText text={concept.description} lines={3} />
-            }
-          />
-        </div>
-      ) : null}
+      <div className="relative">
+        <BaseParamGroup
+          label={'Description'}
+          value={
+            <ConceptDescription
+              concept={concept}
+              editable={isAuthUser}
+              onChange={onUpdate}
+            />
+          }
+        />
+      </div>
 
       <div className="flex gap-4 flex-wrap">
         {/*<BaseParamGroup label="Type" value={<div>concept</div>} />*/}

@@ -49,6 +49,8 @@ const CollectionName = ({
           <div className="text-lg truncate">Collection: {collection?.name}</div>
         ) : (
           <TextInlineEditable
+            minLength={3}
+            maxLength={32}
             text={collection?.name || ''}
             placeholder={'Enter new name'}
             onEditStop={() => setIsEditing(false)}

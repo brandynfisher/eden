@@ -51,6 +51,8 @@ const ProfileHeaderName = ({
           <div className="text-lg truncate">{displayName}</div>
         ) : (
           <TextInlineEditable
+            minLength={3}
+            maxLength={32}
             text={displayName || ''}
             placeholder={'Enter new description'}
             onEditStop={() => setIsEditing(false)}

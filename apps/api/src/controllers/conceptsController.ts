@@ -96,12 +96,12 @@ export const getReactions = async (
   return reactionsMap
 }
 
-export const getBookmarks = async (
-  userId: ObjectId,
-  concepts: ConceptDocument[],
-): Promise<{ [key: string]: boolean }> => {
-  return {}
-}
+// export const getBookmarks = async (
+//   userId: ObjectId,
+//   concepts: ConceptDocument[],
+// ): Promise<{ [key: string]: boolean }> => {
+//   return {}
+// }
 
 export const listConcepts = async (
   request: FastifyRequest,
@@ -245,7 +245,7 @@ export const conceptUpdate = async (
 ) => {
   const { userId } = request.user
   const { conceptId } = request.params as ConceptsUpdateArguments
-  const { isPrivate } = request.body as ConceptsUpdateArguments
+  const { isPrivate, description } = request.body as ConceptsUpdateArguments
 
   if (conceptPrivacyPermissionCheck(request)) {
     return reply.status(401).send({
@@ -254,28 +254,43 @@ export const conceptUpdate = async (
     })
   }
 
-  if (!userId || !conceptId || typeof isPrivate === 'undefined') {
+  if (
+    !userId ||
+    !conceptId ||
+    (typeof description === 'undefined' && typeof isPrivate === 'undefined')
+  ) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
   }
 
-  const concept = await Concept.findOneAndUpdate(
-    {
-      _id: conceptId,
-      user: userId,
-    },
-    { isPrivate },
-    {
-      new: true,
-    },
-  )
+  if (conceptPrivacyPermissionCheck(request)) {
+    return reply.status(401).send({
+      message:
+        'Only subscribers can use privacy features. Please upgrade your subscription.',
+    })
+  }
+
+  const concept = await Concept.findOne({
+    _id: conceptId,
+    user: userId,
+  })
 
   if (!concept) {
     return reply.status(404).send({
       message: 'Concept not found',
     })
   }
+
+  if (typeof description !== 'undefined') {
+    concept.description = description
+  }
+
+  if (typeof isPrivate !== 'undefined') {
+    concept.isPrivate = isPrivate
+  }
+
+  await concept.save()
 
   return reply.status(200).send({
     concept,

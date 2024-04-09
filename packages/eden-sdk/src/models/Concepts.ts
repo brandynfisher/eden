@@ -39,7 +39,8 @@ export interface ConceptsDeleteArguments extends WebAPICallOptions {
 
 export interface ConceptsUpdateArguments extends WebAPICallOptions {
   conceptId: string
-  isPrivate: boolean
+  description?: string
+  isPrivate?: boolean
 }
 
 // Requests
