@@ -247,13 +247,6 @@ export const conceptUpdate = async (
   const { conceptId } = request.params as ConceptsUpdateArguments
   const { isPrivate, description } = request.body as ConceptsUpdateArguments
 
-  if (conceptPrivacyPermissionCheck(request)) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
-  }
-
   if (
     !userId ||
     !conceptId ||

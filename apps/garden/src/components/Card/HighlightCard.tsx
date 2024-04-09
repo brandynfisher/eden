@@ -16,9 +16,9 @@ const HighlightCard = ({
   onCoverImageClick: () => void
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 md:h-80 rounded-lg overflow-hidden">
+    <div className="grid grid-cols-1 md:grid-cols-12 md:h-80 rounded-lg overflow-hidden">
       <div
-        className="relative overflow-hidden h-48 sm:h-52 md:h-auto rounded-md sm:rounded-none cursor-zoom-in group"
+        className="relative md:col-span-7 overflow-hidden h-48 sm:h-52 md:h-auto rounded-md sm:rounded-none cursor-zoom-in group"
         onClick={() => onCoverImageClick && onCoverImageClick()}
       >
         <Image
@@ -31,7 +31,7 @@ const HighlightCard = ({
           <ZoomIn className="h-6" />
         </div>
       </div>
-      <div className="flex flex-col md:justify-between p-4 bg-gray-100 dark:bg-gray-900 h-60 md:h-auto mx-4 sm:mx-0 sm:px-8 md:px-4 relative top-[-24px] sm:top-auto rounded-lg drop-shadow sm:drop-shadow-none sm:rounded-none">
+      <div className="flex flex-col md:col-span-5 md:justify-between p-4 bg-gray-100 dark:bg-gray-900 h-60 md:h-auto mx-4 sm:mx-0 sm:px-8 md:px-4 relative top-[-24px] sm:top-auto rounded-lg drop-shadow sm:drop-shadow-none sm:rounded-none">
         <div className="mb-2">
           <h3>{concept.name}</h3>
           <CreatorProfileLink

@@ -55,7 +55,9 @@ const ConceptDescription = ({
               <>
                 {editable ? (
                   <div className="text-gray-500 text-xs">Add a description</div>
-                ) : null}
+                ) : (
+                  '-'
+                )}
               </>
             )}
           </>
