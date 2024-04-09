@@ -72,7 +72,7 @@ const Combobox = ({
                     {item.contributors && item.contributors.length ? (
                       <Chip
                         size="small"
-                        className="text-gray-400 mr-4"
+                        className="text-gray-400 !mr-4"
                         clickable={true}
                         label={
                           <div className="flex items-center gap-1">
@@ -85,7 +85,7 @@ const Combobox = ({
                     <Badge
                       badgeContent={item.creationCount}
                       color="primary"
-                      className={`mr-4 ${item.hasItem ? '' : 'grayscale'}`}
+                      className={`!mr-4 ${item.hasItem ? '' : 'grayscale'}`}
                     />
                   </div>
                 </div>
