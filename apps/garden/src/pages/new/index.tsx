@@ -2,9 +2,9 @@ import { HighlightItem } from '@/components/Swiper/HighlightsSwiper'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import HomePageNew from '@/pages/new/HomePageNew'
+import { Concept, Creator } from '@edenlabs/eden-sdk'
 import { GetStaticProps } from 'next'
 
-// @todo: implement SSR: fetch at least everything above the fold on the server if possible (highlighted concepts, featured concepts)
 const highlightItemsConfig =
   process.env.NEXT_PUBLIC_APP_ENV === 'production'
     ? [
@@ -44,9 +44,23 @@ const fetchCreation = async (creationId: string) => {
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations/${creationId}`)
 }
 
+const fetchFeaturedArtists = async () => {
+  return fetcherFn(
+    `${CONFIG.NEXT_PUBLIC_HOST}/api/feed/creators?page=1&limit=10&orderBy=followerCount&direction=-1`,
+  )
+}
+
+const fetchFeaturedConcepts = async () => {
+  return fetcherFn(
+    `${CONFIG.NEXT_PUBLIC_HOST}/api/feed/concepts?page=1&limit=10&orderBy=creationCount&direction=-1`,
+  )
+}
+
 type PageProps = {
   data: {
     highlightItems: HighlightItem[]
+    featuredConcepts: Concept[]
+    featuredArtists: Creator[]
   }
   error?: string
 }
@@ -61,13 +75,26 @@ export const getStaticProps = (async () => {
     }),
   )
 
-  if (!highlightItems) {
-    return { props: { data: { highlightItems: [] } } }
-  }
+  const featuredConcepts = await fetchFeaturedConcepts()
+  const featuredArtists = await fetchFeaturedArtists()
 
-  return { props: { data: { highlightItems } } }
+  return {
+    props: {
+      data: {
+        highlightItems,
+        featuredConcepts: featuredConcepts.docs,
+        featuredArtists: featuredArtists.docs,
+      },
+    },
+  }
 }) satisfies GetStaticProps<PageProps>
 
 export default function HomeNew({ data }: PageProps) {
-  return <HomePageNew highlightItems={data.highlightItems} />
+  return (
+    <HomePageNew
+      highlightItems={data.highlightItems}
+      featuredConcepts={data.featuredConcepts}
+      featuredArtists={data.featuredArtists}
+    />
+  )
 }
