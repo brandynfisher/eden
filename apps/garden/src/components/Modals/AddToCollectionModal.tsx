@@ -107,7 +107,7 @@ const AddToCollectionModal = ({
       className="modal-small max-w-lg flex flex-col w-full items-center justify-center"
     >
       <ModalTitle title="Add to Collection" />
-      <div className="pt-2 p-4">
+      <div className="pt-2">
         <Combobox
           items={collections}
           onItemChange={handleItemChanged}
