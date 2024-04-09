@@ -3,7 +3,13 @@ import { useCreator } from '@/hooks/useCreator'
 import { Creator } from '@edenlabs/eden-sdk'
 import React from 'react'
 
-const CreatorPage = ({ data }: { data: Creator }) => {
+const CreatorPage = ({
+  data,
+  activeTab,
+}: {
+  data: Creator
+  activeTab: string
+}) => {
   const { creator: creatorData } = useCreator(data ? data.userId : null, {
     fallbackData: data,
   })
@@ -12,7 +18,12 @@ const CreatorPage = ({ data }: { data: Creator }) => {
     return null
   }
 
-  return <CreatorDetails creator={creatorData || data} />
+  return (
+    <CreatorDetails
+      creator={creatorData || data}
+      initialActiveTab={activeTab}
+    />
+  )
 }
 
 export default CreatorPage

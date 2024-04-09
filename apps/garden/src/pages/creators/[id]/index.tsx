@@ -41,7 +41,7 @@ const Creator: Page<PageProps> = ({ data }: PageProps) => {
   return (
     <>
       <CreatorHeadTags creator={data.creator} />
-      <CreatorPage data={data.creator} />
+      <CreatorPage data={data.creator} activeTab={'creations'} />
     </>
   )
 }

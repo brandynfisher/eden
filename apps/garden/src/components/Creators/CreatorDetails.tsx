@@ -7,21 +7,24 @@ import { useCollections } from '@/hooks/useCollections'
 import { UserContext } from '@/providers/UserProvider'
 import { Creator } from '@edenlabs/eden-sdk'
 import { Tabs } from 'antd'
+import { useRouter } from 'next/router'
 import React, { useContext } from 'react'
 
 const CreatorDetails = ({
   creator,
   modalContainerRef,
   modalContainerHeight,
+  initialActiveTab,
 }: {
   creator: Creator
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
+  initialActiveTab?: string
 }) => {
   const { collections, refetchCollections } = useCollections(creator.userId)
   const { userId, isAuthenticated } = useContext(UserContext)
   const isOwnProfile = isAuthenticated && creator.userId === userId
-
+  const router = useRouter()
   const creatorPageTabs = [
     {
       label: 'Creations',
@@ -77,7 +80,18 @@ const CreatorDetails = ({
         isOwnProfile={isOwnProfile}
       />
       <Tabs
-        defaultActiveKey="1"
+        onChange={async tabKey => {
+          await router.push(
+            `/creators/${creator.username}/${tabKey}`,
+            undefined,
+            { shallow: true },
+          )
+        }}
+        activeKey={
+          router.query.tab
+            ? String(router.query.tab)
+            : initialActiveTab || 'creations'
+        }
         centered
         items={creatorPageTabs}
         destroyInactiveTabPane={true}
