@@ -1,19 +1,21 @@
-import { useCreator } from '@/hooks/useCreator'
 import { handleAxiosError } from '@/lib/fetcher'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import UserAddOutlined from '@ant-design/icons/UserAddOutlined'
 import UserDeleteOutlined from '@ant-design/icons/UserDeleteOutlined'
+import { Creator } from '@edenlabs/eden-sdk'
 import { People } from '@mui/icons-material'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect } from 'react'
 
 const FollowControls = ({
+  creator,
   creatorId,
   showStats,
 }: {
   creatorId: string
+  creator?: Creator
   showStats?: boolean
 }) => {
   const { message } = App.useApp()
@@ -22,23 +24,23 @@ const FollowControls = ({
   const [followingCount, setFollowingCount] = React.useState(0)
   const [isFollowingUser, setIsFollowingUser] = React.useState(false)
   const [isOwnProfile, setIsOwnProfile] = React.useState(false)
-
-  const { creator } = useCreator(creatorId)
-  const { isAuthenticated, userId } = useContext(UserContext)
+  const { isAuthenticated, userId, maybeAuthenticate } = useContext(UserContext)
 
   const { showModal } = useModalContext()
 
-  const onFollowersClickHandler = () => {
+  const onFollowersClickHandler = async () => {
+    if (!(await maybeAuthenticate())) return
     showModal(MODAL_TYPES.FOLLOWERS_MODAL, {
-      creatorId,
+      creatorId: creatorId,
       isOwnProfile,
       className: 'modal-small',
     })
   }
 
-  const onFollowingClickHandler = () => {
+  const onFollowingClickHandler = async () => {
+    if (!(await maybeAuthenticate())) return
     showModal(MODAL_TYPES.FOLLOWING_MODAL, {
-      creatorId,
+      creatorId: creatorId,
       isOwnProfile,
       className: 'modal-small',
     })
@@ -49,31 +51,28 @@ const FollowControls = ({
     setIsFollowingUser(creator?.isFollowing || false)
     setFollowingCount(creator?.followingCount || 0)
     setIsOwnProfile(isAuthenticated && userId === creatorId)
-  }, [isAuthenticated, userId, creatorId, creator])
+  }, [isAuthenticated, userId, creator, creatorId])
 
   const onFollowButtonClick = async () => {
     setFollowLoading(true)
-    if (isFollowingUser) {
-      try {
+
+    try {
+      if (isFollowingUser) {
         await axios.post(`/api/creators/unfollow`, {
           userId: creatorId,
         })
         setFollowerCount(followerCount - 1)
-        setIsFollowingUser(!isFollowingUser)
-      } catch (error) {
-        handleAxiosError(error, message)
-      }
-    } else {
-      try {
+      } else {
         await axios.post(`/api/creators/follow`, {
           userId: creatorId,
         })
         setFollowerCount(followerCount + 1)
-        setIsFollowingUser(!isFollowingUser)
-      } catch (error) {
-        handleAxiosError(error, message)
       }
+      setIsFollowingUser(!isFollowingUser)
+    } catch (error) {
+      handleAxiosError(error, message)
     }
+
     setFollowLoading(false)
   }
 

@@ -64,12 +64,15 @@ export const listCreators = async (
   return reply.status(200).send(creators)
 }
 
-const aggregateFollowerByUserId = (userId: string) => {
-  return Follow.aggregate([
+const aggregateFollowerByUserId = (
+  followedUserId: string,
+  authenticatedUserId?: ObjectId,
+) => {
+  const pipe = [
     {
       $match: {
         following: {
-          $eq: new ObjectId(userId),
+          $eq: new ObjectId(followedUserId),
         },
       },
     },
@@ -77,6 +80,7 @@ const aggregateFollowerByUserId = (userId: string) => {
       $project: {
         _id: 0,
         follower: 1,
+        following: 1,
       },
     },
     {
@@ -93,6 +97,38 @@ const aggregateFollowerByUserId = (userId: string) => {
       },
     },
     {
+      $lookup: {
+        from: 'follows',
+        localField: 'follower',
+        foreignField: 'following',
+        let: {
+          is_following: authenticatedUserId,
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ['$$is_following', '$follower'],
+              },
+            },
+          },
+        ],
+        as: 'follower_lookup',
+      },
+    },
+    {
+      $addFields: {
+        'user.isFollowing': {
+          $gt: [
+            {
+              $size: '$follower_lookup',
+            },
+            0,
+          ],
+        },
+      },
+    },
+    {
       $replaceRoot: {
         newRoot: '$user',
       },
@@ -100,26 +136,33 @@ const aggregateFollowerByUserId = (userId: string) => {
     {
       $project: {
         _id: 1,
+        isFollowing: 1,
         userId: 1,
         username: 1,
         userImage: 1,
       },
     },
-  ])
+  ]
+  console.log(JSON.stringify(pipe, null, 2))
+  return Follow.aggregate(pipe)
 }
 
-const aggregateFollowingByUserId = (userId: string) => {
-  return Follow.aggregate([
+const aggregateFollowingByUserId = (
+  followerUserId: string,
+  authenticatedUserId?: ObjectId,
+) => {
+  const pipe = [
     {
       $match: {
         follower: {
-          $eq: new ObjectId(userId),
+          $eq: new ObjectId(followerUserId),
         },
       },
     },
     {
       $project: {
         _id: 0,
+        follower: 1,
         following: 1,
       },
     },
@@ -137,6 +180,45 @@ const aggregateFollowingByUserId = (userId: string) => {
       },
     },
     {
+      $lookup: {
+        from: 'follows',
+        localField: 'follower',
+        foreignField: 'following',
+        let: {
+          is_following: authenticatedUserId,
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ['$$is_following', '$follower'],
+              },
+            },
+          },
+        ],
+        as: 'follower_lookup',
+      },
+    },
+    {
+      $addFields: {
+        'user.isFollowing': {
+          $or: [
+            {
+              $eq: [followerUserId, authenticatedUserId],
+            },
+            {
+              $gt: [
+                {
+                  $size: '$follower_lookup',
+                },
+                0,
+              ],
+            },
+          ],
+        },
+      },
+    },
+    {
       $replaceRoot: {
         newRoot: '$user',
       },
@@ -144,12 +226,15 @@ const aggregateFollowingByUserId = (userId: string) => {
     {
       $project: {
         _id: 1,
+        isFollowing: 1,
         userId: 1,
         username: 1,
         userImage: 1,
       },
     },
-  ])
+  ]
+  console.log(JSON.stringify(pipe, null, 2))
+  return Follow.aggregate(pipe)
 }
 
 export const listCreatorFollowers = async (
@@ -157,8 +242,8 @@ export const listCreatorFollowers = async (
   reply: FastifyReply,
 ) => {
   const { limit, page } = request.query as CreatorFollowersListArguments
-  const { userId } = request.params as CreatorFollowersListArguments
-  const creatorDoc = await findCreatorByIdOrUsername(userId)
+  const { userId: creatorId } = request.params as CreatorFollowersListArguments
+  const creatorDoc = await findCreatorByIdOrUsername(creatorId)
 
   if (!creatorDoc) {
     return reply.status(404).send({
@@ -166,8 +251,11 @@ export const listCreatorFollowers = async (
     })
   }
 
+  const { userId } = request.user
+
+  console.log({ creatorId: creatorDoc._id, userId })
   const followCreationRepository = new FollowerRepository(Follow)
-  const followAggregate = aggregateFollowerByUserId(creatorDoc._id)
+  const followAggregate = aggregateFollowerByUserId(creatorDoc._id, userId)
   const followers = await followCreationRepository.aggregateQuery(
     followAggregate,
     {
@@ -177,6 +265,7 @@ export const listCreatorFollowers = async (
     },
   )
 
+  console.log(followers)
   return reply.status(200).send(followers)
 }
 
@@ -185,9 +274,9 @@ export const listCreatorFollowing = async (
   reply: FastifyReply,
 ) => {
   const { limit, page } = request.query as CreatorFollowingListArguments
-  const { userId } = request.params as CreatorFollowersListArguments
+  const { userId: creatorId } = request.params as CreatorFollowersListArguments
 
-  const creatorDoc = await findCreatorByIdOrUsername(userId)
+  const creatorDoc = await findCreatorByIdOrUsername(creatorId)
 
   if (!creatorDoc) {
     return reply.status(404).send({
@@ -195,8 +284,10 @@ export const listCreatorFollowing = async (
     })
   }
 
+  const { userId } = request.user
+  console.log({ creatorId: creatorDoc._id, userId })
   const followCreationRepository = new FollowerRepository(Follow)
-  const followAggregate = aggregateFollowingByUserId(creatorDoc._id)
+  const followAggregate = aggregateFollowingByUserId(creatorDoc._id, userId)
   const following = await followCreationRepository.aggregateQuery(
     followAggregate,
     {
@@ -205,6 +296,8 @@ export const listCreatorFollowing = async (
       sort: { createdAt: -1 },
     },
   )
+
+  console.log(following)
 
   return reply.status(200).send(following)
 }
