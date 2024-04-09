@@ -1,5 +1,6 @@
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { Concept } from '@edenlabs/eden-sdk'
+import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import { Button } from '@mui/material'
 import Image from 'next/image'
@@ -45,13 +46,18 @@ const HighlightCard = ({
         </div>
         <div className="flex gap-4 justify-between mt-auto">
           <Link href={`/create/creations?concept=${concept._id}`}>
-            <Button variant="contained" color="success" size="small">
-              Use Model
+            <Button variant="outlined" className="!flex !items-center h-9">
+              <div>Use Model</div>
+              <PlayArrowRounded fontSize="medium" />
             </Button>
           </Link>
           <Link href={`/concepts/${concept._id}`}>
-            <Button variant="outlined" size="small">
-              See Details
+            <Button
+              variant="outlined"
+              color="secondary"
+              className="!flex !items-center h-9"
+            >
+              Details
             </Button>
           </Link>
         </div>
