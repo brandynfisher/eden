@@ -80,7 +80,7 @@ const CreatorCard: FC<CardWithTypeProps> = ({
           priority={!lazyLoad && index < 10}
           sizes={sizes}
           loading={lazyLoad ? 'lazy' : undefined}
-          className="!rounded-none w-auto md:hover:scale-105 md:transition-transform"
+          className="!rounded-none w-auto transition-transform !duration-200 !ease-in md:hover:scale-105 "
         />
       </a>
 

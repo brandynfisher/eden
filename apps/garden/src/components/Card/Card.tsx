@@ -130,7 +130,7 @@ const Card: FC<CardWithTypeProps> = ({
   return (
     <div
       ref={ref}
-      className={`card w-full flex justify-center flex-col relative ${
+      className={`card w-full flex justify-center flex-col relative group ${
         className || ''
       }`}
     >
@@ -145,12 +145,12 @@ const Card: FC<CardWithTypeProps> = ({
           />
         </CardHeaderWrap>
       ) : null}
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <a
           onClick={cardClickHandler}
           href={`/${itemType}s/${itemData._id}`}
           target={'_blank'}
-          className={`card-image relative overflow-hidden cursor-pointer block  ${
+          className={`card-image relative overflow-hidden cursor-pointer block transition-transform duration-200 ease-in group-hover:scale-105  ${
             itemData.deleted ? 'grayscale' : ''
           } ${itemType === 'creation' ? 'rounded-lg' : ''}`}
         >
