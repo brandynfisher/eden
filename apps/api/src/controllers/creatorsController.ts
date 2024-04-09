@@ -143,7 +143,6 @@ const aggregateFollowerByUserId = (
       },
     },
   ]
-  console.log(JSON.stringify(pipe, null, 2))
   return Follow.aggregate(pipe)
 }
 
@@ -233,7 +232,6 @@ const aggregateFollowingByUserId = (
       },
     },
   ]
-  console.log(JSON.stringify(pipe, null, 2))
   return Follow.aggregate(pipe)
 }
 
@@ -253,7 +251,6 @@ export const listCreatorFollowers = async (
 
   const { userId } = request.user
 
-  console.log({ creatorId: creatorDoc._id, userId })
   const followCreationRepository = new FollowerRepository(Follow)
   const followAggregate = aggregateFollowerByUserId(creatorDoc._id, userId)
   const followers = await followCreationRepository.aggregateQuery(
@@ -265,7 +262,6 @@ export const listCreatorFollowers = async (
     },
   )
 
-  console.log(followers)
   return reply.status(200).send(followers)
 }
 
@@ -285,7 +281,6 @@ export const listCreatorFollowing = async (
   }
 
   const { userId } = request.user
-  console.log({ creatorId: creatorDoc._id, userId })
   const followCreationRepository = new FollowerRepository(Follow)
   const followAggregate = aggregateFollowingByUserId(creatorDoc._id, userId)
   const following = await followCreationRepository.aggregateQuery(
@@ -296,8 +291,6 @@ export const listCreatorFollowing = async (
       sort: { createdAt: -1 },
     },
   )
-
-  console.log(following)
 
   return reply.status(200).send(following)
 }
