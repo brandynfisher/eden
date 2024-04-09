@@ -47,7 +47,7 @@ const HighlightsSwiper = ({ items }: { items: HighlightItem[] }) => {
         title={'Highlights'}
         freeMode={false}
         breakpoints={swiperBreakpoints}
-        slides={items.map(item => {
+        slides={items.map((item, index) => {
           if (!item || !item.concept) {
             return
           }
@@ -58,6 +58,7 @@ const HighlightsSwiper = ({ items }: { items: HighlightItem[] }) => {
               concept={item.concept}
               coverImageUri={item.creation.uri}
               onCoverImageClick={() => setFullscreenItem(item)}
+              priority={index === 0}
             />
           )
         })}

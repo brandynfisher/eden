@@ -11,10 +11,12 @@ const HighlightCard = ({
   concept,
   coverImageUri,
   onCoverImageClick,
+  priority,
 }: {
   concept: Concept
   coverImageUri: string
   onCoverImageClick: () => void
+  priority: boolean
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 md:h-80 rounded-lg overflow-hidden">
@@ -27,6 +29,8 @@ const HighlightCard = ({
           alt={concept?.name}
           fill={true}
           className="object-cover"
+          priority={priority}
+          loading={!priority ? 'lazy' : 'eager'}
         />
         <div className="absolute flex items-center text-white bottom-2 left-2 bg-gray-600 bg-opacity-70 p-1 rounded-full opacity-50 group-hover:opacity-100">
           <ZoomIn className="h-6" />

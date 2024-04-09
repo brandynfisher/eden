@@ -11,7 +11,12 @@ const FeaturedModelsSwiper = ({ models }: { models: Concept[] }) => {
       freeMode={true}
       slideClasses={'max-w-[300px]'}
       slides={models.map((item, index) => (
-        <ConceptCard key={index} data={item} index={index} lazyLoad={true} />
+        <ConceptCard
+          key={index}
+          data={item}
+          index={index}
+          lazyLoad={index > 2}
+        />
       ))}
     />
   )
