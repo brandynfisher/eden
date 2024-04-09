@@ -150,7 +150,7 @@ const Card: FC<CardWithTypeProps> = ({
           onClick={cardClickHandler}
           href={`/${itemType}s/${itemData._id}`}
           target={'_blank'}
-          className={`card-image relative overflow-hidden cursor-pointer block transition-transform duration-200 ease-in group-hover:scale-105  ${
+          className={`card-image relative overflow-hidden cursor-pointer block  ${
             itemData.deleted ? 'grayscale' : ''
           } ${itemType === 'creation' ? 'rounded-lg' : ''}`}
         >

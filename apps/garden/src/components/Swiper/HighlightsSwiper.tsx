@@ -1,4 +1,3 @@
-// import HighlightSlideSkeleton from '@/components/Swiper/HighlightSlideSkeleton'
 import HighlightCard from '@/components/Card/HighlightCard'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
@@ -23,18 +22,6 @@ const swiperBreakpoints: SwiperOptions['breakpoints'] = {
       disabledClass: '!opacity-0 pointer-events-none',
     },
   },
-  // 768: {
-  //   slidesPerView: 1.25,
-  //   navigation: {
-  //     disabledClass: '!opacity-0 pointer-events-none',
-  //   },
-  // },
-  // 1024: {
-  //   slidesPerView: 1.25,
-  //   navigation: {
-  //     disabledClass: '!opacity-0 pointer-events-none',
-  //   },
-  // },
   1280: {
     slidesPerView: 1.2,
     navigation: {

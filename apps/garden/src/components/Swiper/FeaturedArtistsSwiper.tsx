@@ -1,8 +1,6 @@
 import CreatorCard from '@/components/Creators/CreatorCard'
-// import FeaturedSlideSkeleton from '@/components/Swiper/FeaturedSlideSkeleton'
 import HorizontalSwiper from '@/components/Swiper/HorizontalSwiper/HorizontalSwiper'
 import { Creator } from '@edenlabs/eden-sdk'
-// import { useFeaturedArtists } from '@/hooks/useFeaturedArtists'
 import React from 'react'
 
 const FeaturedArtistsSwiper = ({ creators }: { creators: Creator[] }) => {

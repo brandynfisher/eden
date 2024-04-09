@@ -25,7 +25,7 @@ const CardImage = ({
       sizes={sizes || '(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 12vw'}
       priority={priority}
       loading={loading}
-      className={className}
+      className={`transition-transform duration-200 ease-in group-hover:scale-105 ${className}`}
     />
   )
 }
