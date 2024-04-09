@@ -1,6 +1,7 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { Collection } from '@edenlabs/eden-sdk'
 import Groups from '@mui/icons-material/Groups'
+import LockIcon from '@mui/icons-material/Lock'
 import { Badge, Checkbox, FormGroup } from '@mui/material'
 import Chip from '@mui/material/Chip'
 import React, { ReactNode, useState } from 'react'
@@ -63,7 +64,10 @@ const Combobox = ({
                     item.hasItem ? '!text-blue-300' : ''
                   } `}
                 >
-                  {item.name}
+                  <div className="flex gap-1 items-center">
+                    {item.name}
+                    {item.isPrivate ? <LockIcon fontSize="small" /> : null}
+                  </div>
                   <div>
                     {item.contributors && item.contributors.length ? (
                       <Chip

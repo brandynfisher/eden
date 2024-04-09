@@ -151,8 +151,6 @@ const AddToCollectionModal = ({
             </div>
           }
         />
-        {/*<div className="text-xs text-gray-600">{creationId}</div>*/}
-        {/* // @todo: add re-usable combobox: search, list with complex items (this case checkboxes and row end icon), footer (this case "new collection" button+ slide out form) */}
       </div>
     </Modal>
   )
