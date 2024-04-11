@@ -25,6 +25,13 @@ export interface ListQueryParams {
   sort?: object
 }
 
+export interface ListCursorQueryParams {
+  cursor?: string
+  limit?: number
+  sort?: string | string[]
+  filter?: string | string[]
+}
+
 export interface PaginatedResponse<T> {
   docs?: T[]
   total?: number
@@ -36,6 +43,11 @@ export interface PaginatedResponse<T> {
   hasNextPage?: boolean
   prevPage?: number
   nextPage?: number
+}
+
+export interface PaginatedResponse<T> {
+  docs?: T[]
+  nextCursor?: number
 }
 
 export interface TaskUpdateEvent {

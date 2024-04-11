@@ -2,8 +2,10 @@ import CreatorCharactersTab from '@/components/Creators/CreatorCharactersTab'
 import CreatorCollectionsTab from '@/components/Creators/CreatorCollectionsTab'
 import CreatorConceptsTab from '@/components/Creators/CreatorConceptsTab'
 import CreatorCreationsTab from '@/components/Creators/CreatorCreationsTab'
+import LoadingIndicator from '@/components/LoadingIndicator'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import { useCollections } from '@/hooks/useCollections'
+import { useCreator } from '@/hooks/useCreator'
 import { UserContext } from '@/providers/UserProvider'
 import { Creator } from '@edenlabs/eden-sdk'
 import { Tabs } from 'antd'
@@ -21,9 +23,12 @@ const CreatorDetails = ({
   modalContainerHeight?: number
   initialActiveTab?: string
 }) => {
+  const { creator: creatorData } = useCreator(creator.userId, {
+    fallbackData: { creator },
+  })
   const { collections, refetchCollections } = useCollections(creator.userId)
   const { userId, isAuthenticated } = useContext(UserContext)
-  const isOwnProfile = isAuthenticated && creator.userId === userId
+  const isOwnProfile = isAuthenticated && creatorData?.userId === userId
   const router = useRouter()
   const creatorPageTabs = [
     {
@@ -31,7 +36,8 @@ const CreatorDetails = ({
       key: 'creations',
       children: (
         <CreatorCreationsTab
-          creatorId={creator.userId}
+          isOwnProfile={isOwnProfile}
+          creatorId={creator._id}
           modalContainerRef={modalContainerRef}
           modalContainerHeight={modalContainerHeight}
         />
@@ -42,7 +48,7 @@ const CreatorDetails = ({
       key: 'concepts',
       children: (
         <CreatorConceptsTab
-          creatorId={creator.userId}
+          creatorId={creator._id}
           modalContainerRef={modalContainerRef}
           modalContainerHeight={modalContainerHeight}
         />
@@ -53,7 +59,7 @@ const CreatorDetails = ({
       key: 'characters',
       children: (
         <CreatorCharactersTab
-          creatorId={creator.userId}
+          creatorId={creator._id}
           modalContainerRef={modalContainerRef}
           modalContainerHeight={modalContainerHeight}
         />
@@ -71,18 +77,22 @@ const CreatorDetails = ({
     },
   ]
 
+  if (!creatorData) {
+    return <LoadingIndicator />
+  }
+
   return (
     <div className={`flex flex-col gap-2`}>
       <ProfileHeader
-        creatorId={creator.userId}
-        creator={creator}
-        numCreations={creator?.creationCount}
+        creatorId={creatorData.userId}
+        creator={creatorData}
+        numCreations={creatorData?.creationCount}
         isOwnProfile={isOwnProfile}
       />
       <Tabs
         onChange={async tabKey => {
           await router.push(
-            `/creators/${creator.username}/${tabKey}`,
+            `/creators/${creatorData.username}/${tabKey}`,
             undefined,
             { shallow: true },
           )

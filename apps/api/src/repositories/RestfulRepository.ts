@@ -9,6 +9,10 @@ interface IRepository<T> {
     >,
     options?: { page?: number; limit?: number; sort?: object },
   ): Promise<PaginatedResponse<T>>
+  aggregateCursor(
+    aggregate: Aggregate<any>,
+    options: { cursor?: string; limit?: number; sort?: object },
+  ): Promise<PaginatedCursorResponse<T>>
   aggregateQuery(
     aggregate: Aggregate<any>,
     options: { page?: number; limit?: number; sort?: object },
@@ -31,6 +35,11 @@ interface PaginatedResponse<T> {
   hasNextPage: boolean
   prevPage: number
   nextPage: number
+}
+
+interface PaginatedCursorResponse<T> {
+  docs: T[]
+  nextCursor?: number
 }
 
 class RestfulRepository<T> implements IRepository<T> {
@@ -85,6 +94,42 @@ class RestfulRepository<T> implements IRepository<T> {
       populate: options.populate,
       projection,
     })
+  }
+
+  async aggregateCursor(
+    aggregate: Aggregate<any>,
+    options: { cursor?: string; limit?: number; sort?: object },
+  ): Promise<PaginatedCursorResponse<T>> {
+    // const mongooseQuery: Record<string, any> = {
+    //   deleted: false,
+    // }
+
+    // for (const prop in query) {
+    //   if (prop !== '$or' && Array.isArray(query[prop])) {
+    //     mongooseQuery[prop] = { $in: query[prop] }
+    //   } else {
+    //     mongooseQuery[prop] = query[prop]
+    //   }
+    // }
+
+    // filter any undefined values
+    // Object.keys(mongooseQuery).forEach(
+    //   key => mongooseQuery[key] === undefined && delete mongooseQuery[key],
+    // )
+
+    return await this.model
+      .aggregate([
+        {},
+        // {
+        //   cursor: options.cursor ?? undefined,
+        //   limit: options.limit ?? 100,
+        //   sort: options.sort ?? { _id: 1 },
+        //   select: options.select ?? '',
+        //   populate: options.populate,
+        //   projection,
+        // }
+      ])
+      .cursor({})
   }
 
   async aggregateQuery(

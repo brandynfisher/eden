@@ -1,10 +1,11 @@
-import { paginationProperties } from '.'
+import { cursorPaginationProperties, paginationProperties } from '.'
 import {
   getCharactersFeed,
   getConceptsFeed,
   getCreationsFeed,
   getCreatorsFeed,
 } from '../controllers/feedController'
+import { getCreationsFeedCursor } from '../controllers/feedCursorController'
 import { maybeAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -63,6 +64,42 @@ const feedRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCreationsFeed(server, request, reply),
+  })
+
+  server.get('/feed-cursor/creations', {
+    schema: {
+      tags: ['Feed'],
+      description: 'Get creations feed',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      querystring: {
+        type: 'object',
+        properties: {
+          ...cursorPaginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: Type.Object({
+          docs: Type.Array(Type.Any()),
+          bookmarks: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+          reactions: Type.Optional(
+            Type.Record(
+              Type.String(),
+              Type.Record(Type.String(), Type.Boolean()),
+            ),
+          ),
+          nextCursor: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    handler: (request, reply) => getCreationsFeedCursor(server, request, reply),
   })
 
   server.get('/feed/concepts', {

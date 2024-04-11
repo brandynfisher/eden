@@ -9,23 +9,24 @@ import React, { useContext } from 'react'
 
 const CreatorCreationsTab = ({
   creatorId,
+  isOwnProfile,
   modalContainerRef,
   modalContainerHeight,
 }: {
   creatorId: string
+  isOwnProfile?: boolean
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
 }) => {
-  const { isAuthenticated, isAuthenticating, userId } = useContext(UserContext)
+  const { isAuthenticated, isAuthenticating } = useContext(UserContext)
 
   if (!isAuthenticated && isAuthenticating) {
     return <LoadingIndicator />
   }
 
-  const filters =
-    isAuthenticated && userId === creatorId
-      ? [OrderByLatest, OrderByLikedByMe]
-      : [OrderByLatest]
+  const filters = isOwnProfile
+    ? [OrderByLatest, OrderByLikedByMe]
+    : [OrderByLatest]
 
   return (
     <div className="mt-4 ">

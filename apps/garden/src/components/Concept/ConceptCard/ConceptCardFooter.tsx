@@ -17,7 +17,7 @@ const ConceptCardFooter = ({ concept }: { concept: Concept }) => {
       <Link href={`/create/creations?concept=${concept._id}`}>
         <Popover content="Use this concept" trigger={['hover']}>
           <Tag
-            className={`flex items-center first-letter:capitalize me-0 gap-1 !pl-0 !pr-2 hover:text-blue-400 ${
+            className={`flex items-center first-letter:capitalize me-0 gap-1 !pl-0 !pr-2 bg-gray-300 dark:bg-gray-800 hover:text-blue-400 ${
               concept.creationCount === 0 ? 'text-gray-500' : ''
             }`}
             bordered={false}

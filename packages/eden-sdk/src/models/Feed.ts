@@ -1,4 +1,4 @@
-import { transformArgsIntoURLParams } from '../types'
+import { ListCursorQueryParams, transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
   PaginatedResponse,
@@ -11,9 +11,7 @@ import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
-export interface FeedCreationsArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
+interface FeedCreationsBaseArguments extends WebAPICallOptions {
   userId?: string | string[]
   creationId?: string
   characterId?: string | string[]
@@ -28,6 +26,14 @@ export interface FeedCreationsArguments
   orderBy?: string
   direction?: 1 | -1
 }
+
+export interface FeedCreationsArguments
+  extends FeedCreationsBaseArguments,
+    ListQueryParams {}
+
+export interface FeedCreationsCursorArguments
+  extends FeedCreationsBaseArguments,
+    ListCursorQueryParams {}
 
 export interface FeedConceptsArguments
   extends WebAPICallOptions,
