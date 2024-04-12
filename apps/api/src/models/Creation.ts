@@ -189,6 +189,7 @@ creation.index({ deleted: 1, isPrivate: 1, character: 1, user: 1 })
 creation.index({ uri: 1, deleted: 1, isPrivate: 1 })
 creation.index({ 'embedding.score': -1 })
 creation.index({
+  uri: 1,
   'mediaAttributes.type': 1,
   isPrivate: 1,
   deleted: 1,
@@ -207,8 +208,9 @@ creation.index({
   user: 1,
 })
 creation.index({ 'attributes.discordId': 1, deleted: 1 })
-
-creation.plugin(mongooseDelete, { overrideMethods: 'all' })
+creation.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 creation.plugin(paginate)
 creation.plugin(aggregatePaginate)
 

@@ -30,7 +30,7 @@ const HomePage = () => {
         itemType="creation"
         orderParams={filters}
         fallbackOrderParam={OrderByLatest}
-        query={{ limit: 50 }}
+        query={{ limit: 35 }}
       />
     </div>
   )

@@ -70,7 +70,7 @@ const MasonryInfiniteScrollable = ({
     isItemLoaded: (index, items) => {
       return !!items[index]
     },
-    minimumBatchSize: 50,
+    minimumBatchSize: 30,
     threshold: 50,
   })
 

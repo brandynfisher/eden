@@ -233,7 +233,7 @@ const createPipeline = async (
 
   if (cursor || Object.keys(filters).length) {
     const cursorFilterStage = maybeAddCursorFilterStage(cursor, filters)
-    if (typeof cursorFilterStage !== 'undefined') {
+    if (cursorFilterStage !== undefined) {
       pipeline.push(cursorFilterStage)
     }
   }
@@ -417,7 +417,8 @@ export const getCreationsFeedCursor = async (
       customFilterMap['generator'] = {
         $in: Array.isArray(fieldValues)
           ? fieldValues.map(val => new ObjectId(val))
-          : [new ObjectId(fieldValues)],
+          : // @ts-ignore
+            [new ObjectId(fieldValues)],
       }
     } else if (fieldName === 'isPrivate' && isUserRequestingOwnProfileFeed) {
       customFilterMap['isPrivate'] = String(fieldValues) === 'true'
@@ -569,6 +570,7 @@ export const getCreationsFeedCursor = async (
       // @ts-ignore
       maybeAddCursorFilterStage(
         cursor,
+        // @ts-ignore
         useEmbeddingsPreAggregate ? embeddingsFilter : filters,
       ),
       ...embeddingsTransform,
