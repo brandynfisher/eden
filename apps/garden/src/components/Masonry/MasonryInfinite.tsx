@@ -71,7 +71,7 @@ const MasonryInfinite = ({
     isItemLoaded: (index, items) => {
       return !!items[index]
     },
-    minimumBatchSize: 50,
+    minimumBatchSize: 35,
     threshold: windowWidth && windowWidth < 768 ? 25 : 75,
   })
 

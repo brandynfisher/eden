@@ -74,7 +74,7 @@ const MasonryInfiniteContainer = ({
         let values: FilterName[] = []
         if (typeof items[1] === 'string') {
           if (items[0] === 'visibility') {
-            if (pathname !== '/creators/[id]') {
+            if (!pathname.startsWith('/creators/[id]')) {
               return
             }
           }

@@ -67,7 +67,7 @@ const FeedFilterButtons = () => {
         .map(filterName => {
           if (typeof filterSettings[filterName] === 'string') {
             if (
-              pathname === '/creators/[id]' &&
+              pathname.startsWith('/creators/[id]') &&
               filterSettings[filterName] !== 'all'
             ) {
               return (

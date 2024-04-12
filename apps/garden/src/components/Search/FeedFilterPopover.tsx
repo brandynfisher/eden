@@ -318,7 +318,12 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
 
   const { user, isAuthenticated } = useContext(UserContext)
   useEffect(() => {
-    if (isAuthenticated && nextPath === '/creators/[id]' && query && query.id) {
+    if (
+      isAuthenticated &&
+      nextPath.startsWith('/creators/[id]') &&
+      query &&
+      query.id
+    ) {
       if (query.id === user?.username) {
         setAvailableGroups([visibilityGroup, ...(segment?.groups || [])])
         return

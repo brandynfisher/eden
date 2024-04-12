@@ -144,9 +144,12 @@ export const createCursorPaginationRoute = (
 
   const filters = []
 
-  console.log(query.userId, query.orderBy)
+  // console.log(query.userId, query.orderBy)
 
   if (query.userId) {
+    if (query.orderBy && query.orderBy === 'liked')
+      filters.push({ likedBy: query.userId })
+
     if (!query.orderBy || query.orderBy !== 'liked') {
       filters.push({ user: String(query.userId) })
     }
@@ -157,11 +160,20 @@ export const createCursorPaginationRoute = (
   if (query.creationId) {
     filters.push({ creation: String(query.creationId) })
   }
+  if (query.collectionId) {
+    filters.push({ collection: String(query.collectionId) })
+  }
   if (query.characterId) {
     filters.push({ character: String(query.characterId) })
   }
   if (query.conceptId) {
     filters.push({ concept: String(query.conceptId) })
+  }
+  if (query.maxDate) {
+    filters.push({ maxDate: query.maxDate })
+  }
+  if (query.minDate) {
+    filters.push({ minDate: query.minDate })
   }
 
   if (query.generatorId) {
@@ -191,9 +203,9 @@ export const createCursorPaginationRoute = (
   }
 
   if (query.orderBy) {
-    params.sort = [`${String(query.orderBy)}:-1`]
+    params.sort = [`${String(query.orderBy)};-1`]
     if (query.orderBy !== 'createdAt') {
-      params.sort.push(`createdAt:-1`)
+      params.sort.push(`createdAt;-1`)
     }
   }
 
@@ -214,13 +226,13 @@ export const createCursorPaginationRoute = (
 
   const filterStringArray = filters.map(filter => {
     const [field, value] = Object.entries(filter)[0]
-    return `filter=${field}:${value}`
+    return `filter=${field};${value}`
   })
   // console.log(queryStringArray)
 
   const queryString = [...queryStringArray, ...filterStringArray].join('&')
 
-  console.log(queryString)
+  // console.log(queryString)
 
   return queryString ? `${basePath}?${queryString}` : basePath
 }

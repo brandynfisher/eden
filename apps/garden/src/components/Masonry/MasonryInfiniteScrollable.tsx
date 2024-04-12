@@ -70,7 +70,7 @@ const MasonryInfiniteScrollable = ({
     isItemLoaded: (index, items) => {
       return !!items[index]
     },
-    minimumBatchSize: 25,
+    minimumBatchSize: 50,
     threshold: 50,
   })
 
@@ -226,7 +226,7 @@ const MasonryInfiniteScrollable = ({
             <LoadingIndicator />{' '}
           </div>
         ) : null}
-        {isEmpty && !items.length && (
+        {isEmpty && !items.length ? (
           <div className="flex flex-col items-center">
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -237,7 +237,7 @@ const MasonryInfiniteScrollable = ({
               }
             />
           </div>
-        )}
+        ) : null}
         {items.length && typeof items[0] === 'undefined' ? (
           <div>error fetching list</div>
         ) : (
