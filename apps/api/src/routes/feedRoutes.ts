@@ -5,7 +5,11 @@ import {
   getCreationsFeed,
   getCreatorsFeed,
 } from '../controllers/feedController'
-import { getCreationsFeedCursor } from '../controllers/feedCursorController'
+import {
+  getConceptsFeedCursor,
+  getCreationsFeedCursor,
+  getCreatorsFeedCursor,
+} from '../controllers/feedCursorController'
 import { maybeAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -95,11 +99,79 @@ const feedRoutes: FastifyPluginAsync = async server => {
             ),
           ),
           nextCursor: Type.Optional(Type.String()),
+          nextValue: Type.Optional(Type.Number()),
         }),
       },
     },
     preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getCreationsFeedCursor(server, request, reply),
+  })
+
+  server.get('/feed-cursor/concepts', {
+    schema: {
+      tags: ['Feed'],
+      description: 'Get concepts feed',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      querystring: {
+        type: 'object',
+        properties: {
+          ...cursorPaginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: Type.Object({
+          docs: Type.Array(Type.Any()),
+          bookmarks: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+          reactions: Type.Optional(
+            Type.Record(
+              Type.String(),
+              Type.Record(Type.String(), Type.Boolean()),
+            ),
+          ),
+          nextCursor: Type.Optional(Type.String()),
+          nextValue: Type.Optional(Type.Number()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    handler: (request, reply) => getConceptsFeedCursor(server, request, reply),
+  })
+
+  server.get('/feed-cursor/creators', {
+    schema: {
+      tags: ['Feed'],
+      description: 'Get creators feed',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      querystring: {
+        type: 'object',
+        properties: {
+          ...cursorPaginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: Type.Object({
+          docs: Type.Array(Type.Any()),
+          nextCursor: Type.Optional(Type.String()),
+          nextValue: Type.Optional(Type.Number()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    handler: (request, reply) => getCreatorsFeedCursor(server, request, reply),
   })
 
   server.get('/feed/concepts', {

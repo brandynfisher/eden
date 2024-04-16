@@ -1,3 +1,4 @@
+import { OrderByPopularity } from '@/components/Layout/buttons/OrderByButtons'
 import {
   CursorPaginatedFeedQuery,
   CursorPaginatedRouteQueryParams,
@@ -141,6 +142,9 @@ export const createCursorPaginationRoute = (
   if (query.cursor) {
     params.cursor = query.cursor
   }
+  if (query.nextValue) {
+    params.nextValue = query.nextValue
+  }
 
   const filters = []
 
@@ -206,6 +210,9 @@ export const createCursorPaginationRoute = (
     params.sort = [`${String(query.orderBy)};-1`]
     if (query.orderBy !== 'createdAt') {
       params.sort.push(`createdAt;-1`)
+    }
+    if (query.orderBy === OrderByPopularity.field) {
+      filters.push({ praiseCount: true })
     }
   }
 

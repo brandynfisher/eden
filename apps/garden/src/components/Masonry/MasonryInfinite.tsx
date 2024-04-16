@@ -42,6 +42,13 @@ const MasonryInfinite = ({
   orderBy: OrderByParam
   emptyResultHandler?: (orderBy: OrderByParam) => void
 }) => {
+  const {
+    items,
+    maybeLoadMore: maybeLoadNextPage,
+    isEmpty,
+    isLoadingMore,
+  } = useFeedCursorPaginated(itemType, query, orderBy)
+
   const containerRef = useRef(null)
   const router = useRouter()
 
@@ -51,13 +58,6 @@ const MasonryInfinite = ({
   const isAuthenticatedUser =
     isAuthenticated && query && query.userId && query.userId === userId
   const masonryKey = `${itemType}_${orderBy.field}`
-
-  const {
-    items,
-    maybeLoadMore: maybeLoadNextPage,
-    isEmpty,
-    isLoadingMore,
-  } = useFeedCursorPaginated(itemType, query, orderBy)
 
   const [ref, rect] = useResizeObserverMantine()
   const { width: windowWidth, height: windowHeight } = useViewportSize()

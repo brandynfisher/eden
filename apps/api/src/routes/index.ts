@@ -46,6 +46,7 @@ export const paginationProperties = () => {
 export const cursorPaginationProperties = () => {
   return {
     cursor: Type.Optional(Type.String()),
+    nextValue: Type.Optional(Type.Number()),
     sort: { type: ['string', 'array'] },
     limit: { type: 'number' },
     filter: { type: ['string', 'array'] },

@@ -31,7 +31,7 @@ const SelectModal = ({
   itemType: 'concept' | 'character'
   onChange: (concept: Concept | Character) => void
 }) => {
-  const { userId } = useContext(UserContext)
+  const { user } = useContext(UserContext)
   // const [baseQuery, setBaseQuery] = useState<PaginatedFeedQuery>()
   const [query, setQuery] = useState<PaginatedFeedQuery>()
   const [searchPublic, setSearchPublic] = useState(false)
@@ -133,7 +133,11 @@ const SelectModal = ({
               onSearchSubmit={query => {
                 setQuery(query)
               }}
-              baseQuery={!searchPublic && userId ? { userId } : undefined}
+              baseQuery={
+                !searchPublic && user && user._id
+                  ? { userId: user._id }
+                  : undefined
+              }
             />
             <div className="flex flex-wrap gap-2">
               <Switch

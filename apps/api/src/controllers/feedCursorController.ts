@@ -1,10 +1,35 @@
 import { Collection } from '../models/Collection'
+import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
+import { User } from '../models/Creator'
+import { Follow } from '../models/Follow'
 import { Reaction } from '../models/Reaction'
-import { FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
+import {
+  getBookmarks as getCreationBookmarks,
+  getReactions as getCreationReactions,
+} from './creationsController'
+import {
+  FeedConceptsCursorArguments,
+  FeedCreationsCursorArguments,
+  FeedCreatorsCursorArguments,
+  ReactionType,
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { Expression, PipelineStage } from 'mongoose'
+
+interface CreationDocumentExtension {
+  reactions: Map<ReactionType, boolean>
+  bookmarked: boolean
+}
+
+type FeedResponse = {
+  docs: CreationDocumentExtension[]
+  reactions: { [key: string]: Map<ReactionType, boolean> } | []
+  bookmarks: { [key: string]: boolean } | []
+  nextValue?: number
+  nextCursor?: string
+}
 
 type SortOptions = Record<string, 1 | -1 | Expression.Meta>
 type Filter =
@@ -32,6 +57,10 @@ type Filters = Record<string, Filter>
 
 interface QueryOptions {
   cursor?: string
+  sortCursor?:
+    | { praiseCount: { $lte?: number } }
+    | { creationCount: { $lte?: number } }
+    | { followerCount: { $lte?: number } }
   limit?: number
   filters?: Filters
   preAggregate?: []
@@ -44,6 +73,7 @@ type CustomFilters = {
       | string[]
       | (
           | { $lte?: Date | undefined; $gte?: Date | undefined }
+          | { $gt?: number }
           | { $exists: true }
           | string
           | ObjectId
@@ -67,6 +97,9 @@ type CustomFilters = {
   isPrivate?: boolean
   maxDate?: Date | undefined
   minDate?: Date | undefined
+  praiseCount?: { $gt?: number }
+  creationCount?: { $gt?: number }
+  followerCount?: { $gt?: number }
   createdAt?: Filter
 }
 
@@ -105,6 +138,7 @@ const maybeAddCursorFilterStage = (
 }
 const creationsLookup = (
   localField: string,
+  foreignField: string,
   lookupPipeline: PipelineStage[],
 ) => {
   return [
@@ -112,7 +146,7 @@ const creationsLookup = (
       $lookup: {
         from: 'creations',
         localField: localField,
-        foreignField: '_id',
+        foreignField: foreignField,
         pipeline: lookupPipeline,
         as: 'creations',
       },
@@ -129,6 +163,28 @@ const creationsLookup = (
     },
   ]
 }
+
+const followingPreAggregatePipeline = (
+  matchStage: PipelineStage[],
+  lookupPipeline: PipelineStage[],
+) => {
+  return [
+    ...matchStage,
+    {
+      $project: {
+        _id: 0,
+        following: 1,
+      },
+    },
+    ...creationsLookup('following', 'user', lookupPipeline),
+    {
+      $sort: {
+        _id: -1,
+      },
+    },
+  ]
+}
+
 const collectionsPreAggregatePipeline = (
   matchStage: PipelineStage[],
   lookupPipeline: PipelineStage[],
@@ -140,7 +196,7 @@ const collectionsPreAggregatePipeline = (
         creations: 1,
       },
     },
-    ...creationsLookup('creations', lookupPipeline),
+    ...creationsLookup('creations', '_id', lookupPipeline),
   ]
 }
 
@@ -157,7 +213,7 @@ const reactionsPreAggregatePipeline = (
         creation: 1,
       },
     },
-    ...creationsLookup('creation', lookupPipeline),
+    ...creationsLookup('creation', '_id', lookupPipeline),
   ]
 }
 
@@ -227,15 +283,21 @@ const taskLookup: PipelineStage[] = [
 const createPipeline = async (
   options: QueryOptions = {},
 ): Promise<PipelineStage[]> => {
-  const { cursor, limit, filters = {}, sortOptions } = options
-
+  const { cursor, sortCursor, limit, filters = {}, sortOptions } = options
   const pipeline: PipelineStage[] = []
 
-  if (cursor || Object.keys(filters).length) {
-    const cursorFilterStage = maybeAddCursorFilterStage(cursor, filters)
-    if (cursorFilterStage !== undefined) {
-      pipeline.push(cursorFilterStage)
-    }
+  if (cursor) {
+    const idCursor =
+      sortCursor !== undefined
+        ? { _id: { $gt: new ObjectId(cursor) } }
+        : { _id: { $lt: new ObjectId(cursor) } }
+    pipeline.push(
+      sortCursor !== undefined
+        ? { $match: { $and: [sortCursor, idCursor, filters] } }
+        : { $match: { ...idCursor, ...filters } },
+    )
+  } else if (filters) {
+    pipeline.push({ $match: filters })
   }
 
   if (sortOptions) {
@@ -246,7 +308,7 @@ const createPipeline = async (
     pipeline.push({ $limit: limit })
   }
 
-  console.log(JSON.stringify(pipeline, null, 2))
+  // console.log(JSON.stringify(pipeline, null, 2))
 
   return pipeline
 }
@@ -256,15 +318,22 @@ type FilterItem = {
   value: string | number | boolean
 }
 
-export const getCreationsFeedCursor = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { limit, cursor, sort, filter } =
-    request.query as FeedCreationsCursorArguments
-
-  console.log({ filter })
+const handleArguments = async ({
+  authUserId,
+  sort,
+  nextValue,
+  filter,
+  cursor,
+  usesPrivacy = true,
+}: {
+  authUserId?: ObjectId
+  sort?: string | string[]
+  filter?: string | string[]
+  cursor?: string
+  nextValue?: number
+  usesPrivacy?: boolean
+}) => {
+  // console.log({ filter,cursor,nextValue })
   const filterMap: FilterItem[] = []
   if (filter && filter.length) {
     (Array.isArray(filter) ? filter : [filter]).map(filterGroup => {
@@ -274,7 +343,6 @@ export const getCreationsFeedCursor = async (
   }
   //@todo: reduce to end up with groupname: [ itemvalues... ]
 
-  const authUserId = request.user ? request.user.userId : undefined
   const filterUserIds = filterMap
     ? filterMap
         ?.filter(
@@ -286,20 +354,22 @@ export const getCreationsFeedCursor = async (
     filterUserIds && filterUserIds.length === 1 && authUserId
       ? authUserId.toString() === filterUserIds[0].toString()
       : false
-  console.log({ filterMap })
-  console.log({ authUserId, filterUserIds, isUserRequestingOwnProfileFeed })
+  // console.log({ filterMap })
+  // console.log({ authUserId, filterUserIds, isUserRequestingOwnProfileFeed })
 
-  // @todo: handle aggregations for special queries
-  // sort=liked:-1
   let useReactionsPreAggregate = false
   let useEmbeddingsPreAggregate = false
   let useCollectionsPreAggregate = false
+  let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
     generator?: string[] | ObjectId[] | string | ObjectId
     outputType?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
+    praiseCount?: { $gt: 0 }
+    creationCount?: { $gt: 0 }
+    followerCount?: { $gt: 0 }
   } = {}
 
   const sortOptions = sort
@@ -311,8 +381,23 @@ export const getCreationsFeedCursor = async (
             return ['praiseCount', Number(direction)]
           }
 
+          if (field === 'creationCount') {
+            customFilterOptions['creationCount'] = { $gt: 0 }
+            return ['creationCount', Number(direction)]
+          }
+
+          if (field === 'followerCount') {
+            customFilterOptions['followerCount'] = { $gt: 0 }
+            return ['followerCount', Number(direction)]
+          }
+
           if (field === 'liked') {
             useReactionsPreAggregate = true
+            return []
+          }
+
+          if (field === 'following') {
+            useFollowingPreAggregate = true
             return []
           }
 
@@ -337,7 +422,7 @@ export const getCreationsFeedCursor = async (
             field === 'concept' ||
             field === 'collection'
           ) {
-            console.log(field, value)
+            // console.log(field, value)
             if (field === 'collection') {
               useCollectionsPreAggregate = true
               preAggregateFilterOptions['_id'] = new ObjectId(value)
@@ -350,6 +435,11 @@ export const getCreationsFeedCursor = async (
           if (field === 'likedBy') {
             useReactionsPreAggregate = true
             preAggregateFilterOptions['user'] = new ObjectId(value)
+            return []
+          }
+
+          if (field === 'praiseCount') {
+            customFilterOptions['praiseCount'] = { $gt: 0 }
             return []
           }
 
@@ -400,9 +490,6 @@ export const getCreationsFeedCursor = async (
 
   // console.log({ filterOptions, sortOptions })
 
-  const lateLookupStages = [...taskLookup, ...userLookup]
-
-  let results = []
   const customFilterMap: CustomFilters = {}
 
   for (const [fieldName, fieldValues] of Object.entries(customFilterOptions)) {
@@ -422,6 +509,12 @@ export const getCreationsFeedCursor = async (
       }
     } else if (fieldName === 'isPrivate' && isUserRequestingOwnProfileFeed) {
       customFilterMap['isPrivate'] = String(fieldValues) === 'true'
+    } else if (fieldName === 'praiseCount') {
+      customFilterMap['praiseCount'] = { $gt: 0 }
+    } else if (fieldName === 'creationCount') {
+      customFilterMap['creationCount'] = { $gt: 0 }
+    } else if (fieldName === 'followerCount') {
+      customFilterMap['followerCount'] = { $gt: 0 }
     } else if (fieldName === 'createdAt') {
       //@ts-ignore
       customFilterMap['createdAt'] = fieldValues
@@ -436,11 +529,9 @@ export const getCreationsFeedCursor = async (
   const collection = collectionFilter
     ? await Collection.findById(collectionFilter.value)
     : undefined
-  const collectionCreations =
-    collection && collection?.creations ? collection.creations : undefined
-  console.log({ collectionCreations })
 
   const defaultPrivacyFilter =
+    usesPrivacy &&
     !isUserRequestingOwnProfileFeed &&
     !(
       collection &&
@@ -451,7 +542,9 @@ export const getCreationsFeedCursor = async (
       ? { isPrivate: { $eq: false } }
       : undefined
 
-  const defaultDeletedFilter = { deleted: { $eq: false } }
+  const defaultDeletedFilter = usesPrivacy
+    ? { deleted: { $eq: false } }
+    : undefined
   const filters = {
     ...defaultPrivacyFilter,
     ...defaultDeletedFilter,
@@ -459,12 +552,49 @@ export const getCreationsFeedCursor = async (
     ...filterOptions,
   }
 
+  return {
+    filters,
+    sortOptions,
+    customFilterOptions,
+    filterMap,
+    preAggregateFilterOptions,
+    useReactionsPreAggregate,
+    useEmbeddingsPreAggregate,
+    useCollectionsPreAggregate,
+    useFollowingPreAggregate,
+  }
+}
+
+export const getCreationsFeedCursor = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { limit, cursor, nextValue, sort, filter } =
+    request.query as FeedCreationsCursorArguments
+  const authUserId = request.user ? request.user.userId : undefined
+
+  const {
+    filters,
+    sortOptions,
+    customFilterOptions,
+    filterMap,
+    preAggregateFilterOptions,
+    useReactionsPreAggregate,
+    useEmbeddingsPreAggregate,
+    useCollectionsPreAggregate,
+    useFollowingPreAggregate,
+  } = await handleArguments({ authUserId, cursor, nextValue, sort, filter })
+
+  let results = []
+  const lateLookupStages = [...taskLookup, ...userLookup]
+
   if (useCollectionsPreAggregate) {
     const lookupPipeline = await createPipeline({
       // @ts-ignore
       filters,
       sortOptions: { updatedAt: -1, ...sortOptions },
-      $limit: limit ?? 100,
+      limit: limit ?? 100,
       // cursor
     })
     const pipeline = [
@@ -478,10 +608,40 @@ export const getCreationsFeedCursor = async (
       // maybeAddCursorFilterStage(cursor),
       { $limit: limit ?? 100 },
       ...lateLookupStages,
-    ]
-    console.log(JSON.stringify(pipeline, null, 2))
+    ].filter(Boolean)
+    // console.log(JSON.stringify(pipeline, null, 2))
     // @ts-ignore
     results = await Collection.aggregate(pipeline)
+  } else if (useFollowingPreAggregate) {
+    const lookupPipeline = await createPipeline({
+      // @ts-ignore
+      filters,
+      sortOptions: { createdAt: -1 },
+      // cursor
+    })
+    const pipeline = [
+      ...followingPreAggregatePipeline(
+        [
+          {
+            $match: {
+              follower: {
+                $eq: authUserId,
+              },
+              createdAt: {
+                $lte: customFilterOptions?.createdAt?.$lte,
+              },
+            },
+          },
+        ],
+        lookupPipeline,
+      ),
+      maybeAddCursorFilterStage(cursor),
+      { $limit: limit ?? 100 },
+      ...lateLookupStages,
+    ].filter(Boolean)
+    // console.log(JSON.stringify(pipeline, null, 2))
+    // @ts-ignore
+    results = await Follow.aggregate(pipeline)
   } else if (useReactionsPreAggregate) {
     const lookupPipeline = await createPipeline({
       // @ts-ignore
@@ -498,10 +658,11 @@ export const getCreationsFeedCursor = async (
         lookupPipeline,
       ),
       maybeAddCursorFilterStage(cursor),
+      { $sort: { createdAt: -1, _id: -1 } },
       { $limit: limit ?? 100 },
       ...lateLookupStages,
-    ]
-    console.log(JSON.stringify(pipeline, null, 2))
+    ].filter(Boolean)
+    // console.log(JSON.stringify(pipeline, null, 2))
     // @ts-ignore
     results = await Reaction.aggregate(pipeline)
   } else {
@@ -543,6 +704,11 @@ export const getCreationsFeedCursor = async (
     const pipeline = await createPipeline({
       limit: limit ?? 100,
       sortOptions: { ...sortOptions, _id: -1 },
+      sortCursor:
+        customFilterOptions.praiseCount && nextValue !== undefined
+          ? { praiseCount: { $lte: nextValue } }
+          : undefined,
+      cursor,
     })
 
     const hoursAgo = 360
@@ -568,28 +734,176 @@ export const getCreationsFeedCursor = async (
     }
     const creationFeedPipeline = [
       // @ts-ignore
-      maybeAddCursorFilterStage(
-        cursor,
-        // @ts-ignore
-        useEmbeddingsPreAggregate ? embeddingsFilter : filters,
-      ),
+      { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
       ...embeddingsTransform,
       ...pipeline,
       ...lateLookupStages,
     ].filter(Boolean)
 
-    console.log(JSON.stringify(creationFeedPipeline, null, 2))
+    // console.log(JSON.stringify(creationFeedPipeline, null, 2))
 
     // @ts-ignore
     results = await Creation.aggregate(creationFeedPipeline)
   }
 
+  const feed: FeedResponse = {
+    ...results,
+    docs: [],
+    reactions: [],
+    bookmarks: [],
+  }
+
+  // gather auth users reactions/bookmarks
+  if (authUserId && results && results.length) {
+    const reactionsMap = await getCreationReactions(authUserId, results)
+    const bookmarksMap = await getCreationBookmarks(authUserId, results)
+
+    feed.docs = results.map(doc => {
+      return {
+        ...(typeof doc.toObject !== 'undefined' ? doc.toObject() : doc), //aggregate returns different format than query
+        reactions: reactionsMap[doc._id.toString()],
+        bookmarked: bookmarksMap[doc._id.toString()],
+      }
+    })
+    feed.reactions = reactionsMap
+    feed.bookmarks = bookmarksMap
+  }
+
+  try {
+    feed.nextCursor =
+      results && results.length && results[results.length - 1]._id
+
+    if (customFilterOptions.praiseCount) {
+      feed.nextValue =
+        results && results.length && results[results.length - 1].praiseCount
+    }
+
+    reply.send(feed)
+  } catch (error) {
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+}
+
+export const getConceptsFeedCursor = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { limit, cursor, nextValue, sort, filter } =
+    request.query as FeedConceptsCursorArguments
+  const authUserId = request.user ? request.user.userId : undefined
+
+  const { filters, sortOptions, customFilterOptions } = await handleArguments({
+    authUserId,
+    cursor,
+    nextValue,
+    sort,
+    filter,
+  })
+
+  let results = []
+
+  const pipeline = await createPipeline({
+    limit: limit ?? 100,
+    sortOptions: { ...sortOptions, _id: -1 },
+    cursor,
+    sortCursor: nextValue ? { creationCount: { $lte: nextValue } } : undefined,
+    //@ts-ignore
+    filters,
+  })
+  const lateLookupStages = [...userLookup]
+
+  const conceptFeedPipeline = [
+    // { $match: filters },
+    ...pipeline,
+    ...lateLookupStages,
+  ].filter(Boolean)
+
+  // console.log(JSON.stringify(conceptFeedPipeline, null, 2))
+
+  results = await Concept.aggregate(conceptFeedPipeline)
+
   try {
     const nextCursor =
       results && results.length && results[results.length - 1]._id
-    const response = {
+
+    const response: { nextValue?: number; nextCursor: string; docs?: any[] } = {
       nextCursor,
       docs: results,
+    }
+
+    if (customFilterOptions.creationCount) {
+      response.nextValue =
+        results && results.length && results[results.length - 1].creationCount
+    }
+    reply.send(response)
+  } catch (error) {
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+}
+
+export const getCreatorsFeedCursor = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  // console.log({ routeUrl: request.routeOptions.url })
+  const { limit, cursor, nextValue, sort, filter } =
+    request.query as FeedCreatorsCursorArguments
+  const authUserId = request.user ? request.user.userId : undefined
+
+  const { filters, sortOptions, customFilterOptions } = await handleArguments({
+    authUserId,
+    cursor,
+    nextValue,
+    sort,
+    filter,
+    usesPrivacy: false,
+  })
+
+  let results = []
+
+  const pipeline = await createPipeline({
+    limit: limit ?? 100,
+    sortOptions: { ...sortOptions, _id: -1 },
+    cursor,
+    // sortCursor: nextValue ? { creationCount: { $lte: nextValue } } : undefined,
+    sortCursor: nextValue
+      ? customFilterOptions.followerCount
+        ? { followerCount: { $lte: nextValue } }
+        : { creationCount: { $lte: nextValue } }
+      : undefined,
+    //@ts-ignore
+    filters,
+  })
+  // const lateLookupStages = [...userLookup]
+
+  const feedPipeline = [
+    // { $match: filters },
+    ...pipeline,
+    // ...lateLookupStages,
+  ].filter(Boolean)
+
+  // console.log(JSON.stringify(feedPipeline, null, 2))
+
+  results = await User.aggregate(feedPipeline)
+
+  try {
+    const nextCursor =
+      results && results.length && results[results.length - 1]._id
+
+    const response: { nextValue?: number; nextCursor: string; docs?: any[] } = {
+      nextCursor,
+      docs: results,
+    }
+
+    if (customFilterOptions.creationCount) {
+      response.nextValue =
+        results && results.length && results[results.length - 1].creationCount
+    }
+    if (customFilterOptions.followerCount) {
+      response.nextValue =
+        results && results.length && results[results.length - 1].followerCount
     }
     reply.send(response)
   } catch (error) {

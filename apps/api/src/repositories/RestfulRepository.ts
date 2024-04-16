@@ -36,6 +36,7 @@ interface PaginatedResponse<T> {
 interface PaginatedCursorResponse<T> {
   docs: T[]
   nextCursor?: number
+  nextValue?: number
 }
 
 class RestfulRepository<T> implements IRepository<T> {

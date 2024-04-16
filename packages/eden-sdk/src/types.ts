@@ -27,6 +27,7 @@ export interface ListQueryParams {
 
 export interface ListCursorQueryParams {
   cursor?: string
+  nextValue?: number
   limit?: number
   sort?: string | string[]
   filter?: string | string[]
@@ -45,9 +46,10 @@ export interface PaginatedResponse<T> {
   nextPage?: number
 }
 
-export interface PaginatedResponse<T> {
+export interface PaginatedCursorResponse<T> {
   docs?: T[]
-  nextCursor?: number
+  nextCursor?: string
+  nextValue?: number
 }
 
 export interface TaskUpdateEvent {

@@ -1,14 +1,19 @@
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import { shuffle } from '@/lib/array'
-import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
+import {
+  createCursorPaginationRoute,
+  createPaginationRoute,
+  fetcher,
+} from '@/lib/fetcher'
 import { ItemType } from '@/providers/ModalProvider'
-import { Creation } from '@edenlabs/eden-sdk'
-import { useMemo } from 'react'
+import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
+import { useCallback, useMemo } from 'react'
 import useSWRInfinite from 'swr/infinite'
 
 export type CursorPaginatedRouteQueryParams = {
   cursor?: string
+  nextValue?: number
   limit?: number
   orderBy?: string
 }
@@ -37,6 +42,7 @@ export type CursorPaginatedFeedQuery = FeedCursorRouteQueryParams &
 type CursorPaginatedResponse = {
   docs: Creation[]
   nextCursor: string
+  nextValue?: number
 }
 export const useFeedCursorPaginated = (
   itemType: ItemType,
@@ -49,7 +55,31 @@ export const useFeedCursorPaginated = (
       ? process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
       : undefined
 
-  const getKey = (
+  const getKey = useCallback(
+    (
+      pageIndex: number,
+      previousPageData: PaginatedResponse<Creation[]>,
+    ): string | null => {
+      if (
+        (pageIndex > 0 && !previousPageData) ||
+        (previousPageData && !previousPageData.hasNextPage)
+      ) {
+        // console.log('reached the END')
+        return null
+      }
+
+      return createPaginationRoute(`/api/feed/${itemType}s`, {
+        ...{ collectionId: featuredCollectionId, ...query },
+        limit: pageLimit,
+        page: pageIndex + 1,
+        orderBy: orderBy ? orderBy.field : undefined,
+        direction: orderBy ? orderBy.direction : undefined,
+      })
+    },
+    [itemType, query, pageLimit, orderBy],
+  )
+
+  const getCursorKey = (
     pageIndex: number,
     previousPageData: CursorPaginatedResponse,
   ) => {
@@ -63,7 +93,7 @@ export const useFeedCursorPaginated = (
       `/api/feed-cursor/${itemType}s`,
       {
         ...{
-          collection: featuredCollectionId,
+          collectionId: featuredCollectionId,
           ...query,
         },
         limit: pageLimit,
@@ -75,7 +105,11 @@ export const useFeedCursorPaginated = (
       return basePath
     }
 
-    return `${basePath}&cursor=${previousPageData.nextCursor}`
+    const nextValue =
+      previousPageData.nextValue !== undefined
+        ? `&nextValue=${previousPageData.nextValue}`
+        : ''
+    return `${basePath}&cursor=${previousPageData.nextCursor}${nextValue}`
   }
 
   const {
@@ -85,7 +119,7 @@ export const useFeedCursorPaginated = (
     setSize,
     isLoading,
     isValidating,
-  } = useSWRInfinite(getKey, fetcher, {
+  } = useSWRInfinite(itemType !== 'creation' ? getKey : getCursorKey, fetcher, {
     revalidateOnFocus: false,
     // revalidateIfStale: false,
     revalidateFirstPage: false,
@@ -103,12 +137,12 @@ export const useFeedCursorPaginated = (
       data &&
       data[data.length - 1] &&
       typeof data[data.length - 1] !== 'undefined' &&
-      data[data.length - 1]?.nextCursor)
+      (data[data.length - 1]?.nextCursor || data[data.length - 1]?.hasNextPage))
   const isEmpty =
     data?.[0] &&
     data?.[0].docs &&
     data?.[0].docs.length === 0 &&
-    data?.[0].nextCursor === '0'
+    (data?.[0].nextCursor === '0' || !data?.[0].hasNextPage)
   const maybeLoadMore = useMemo(() => {
     return () => {
       if (!data) return
@@ -130,7 +164,7 @@ export const useFeedCursorPaginated = (
         data &&
         data.length &&
         data[data.length - 1] &&
-        data[data.length - 1].nextCursor
+        (data[data.length - 1].nextCursor || data[data.length - 1].hasNextPage)
       ) {
         setSize(prevSize => {
           // console.log('maybeLoadNextPage', {size: prevSize + 1, dataHasNextPage, isLoading, isLoadingMore, isValidating, docsLength: docs.length})
@@ -140,9 +174,16 @@ export const useFeedCursorPaginated = (
     }
   }, [isValidating, isLoading, isLoadingMore, data])
 
-  const { docs } = useMemo(() => {
+  const { docs, totalItems } = useMemo(() => {
     if (data) {
       const flatData = data.flatMap(page => page)
+      const nextPageOrCursor =
+        itemType !== 'creation'
+          ? {
+              nextCursor: !!data[data.length - 1]?.nextCursor,
+              nextValue: !!data[data.length - 1]?.nextValue,
+            }
+          : { totalItems: flatData && flatData[0] ? flatData[0].total : 0 }
       return {
         docs:
           flatData && flatData[0].docs && flatData[0].docs.length
@@ -159,15 +200,20 @@ export const useFeedCursorPaginated = (
                 return page ? page.docs : []
               })
             : [],
-        nextCursor: !!data[data.length - 1]?.nextCursor,
+        ...nextPageOrCursor,
       }
     }
-    return { docs: [] }
+    return { docs: [], totalItems: itemType !== 'creation' ? null : undefined }
   }, [data])
 
   return {
-    hasNextPage: data ? !!data[data.length - 1]?.nextCursor : false,
+    hasNextPage: data
+      ? itemType !== 'creation'
+        ? !!data[data.length - 1]?.hasNextPage
+        : !!data[size - 1]?.nextCursor
+      : false,
     items: data ? ([] as Creation[]).concat(...docs) : [],
+    totalItems: itemType !== 'creation' ? totalItems : undefined,
     refetchFeed,
     size,
     setSize,

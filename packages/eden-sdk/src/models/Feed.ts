@@ -27,6 +27,27 @@ interface FeedCreationsBaseArguments extends WebAPICallOptions {
   direction?: 1 | -1
 }
 
+interface FeedConceptsBaseArguments extends WebAPICallOptions {
+  userId?: string | string[]
+  collectionId?: string | string[]
+  name?: string
+  maxDate?: string
+  minDate?: string
+  orderBy?: string
+  direction?: 1 | -1
+  creationId?: string
+  characterId?: string | string[]
+  isPrivate?: string
+}
+
+interface FeedCreatorsBaseArguments extends WebAPICallOptions {
+  userId?: string | string[]
+  name?: string
+  maxDate?: string
+  minDate?: string
+  orderBy?: string
+}
+
 export interface FeedCreationsArguments
   extends FeedCreationsBaseArguments,
     ListQueryParams {}
@@ -35,17 +56,17 @@ export interface FeedCreationsCursorArguments
   extends FeedCreationsBaseArguments,
     ListCursorQueryParams {}
 
+export interface FeedConceptsCursorArguments
+  extends FeedConceptsBaseArguments,
+    ListCursorQueryParams {}
+
+export interface FeedCreatorsCursorArguments
+  extends FeedCreatorsBaseArguments,
+    ListCursorQueryParams {}
+
 export interface FeedConceptsArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-  collectionId?: string | string[]
-  name?: string
-  maxDate?: string
-  minDate?: string
-  orderBy?: string
-  direction?: 1 | -1
-}
+  extends FeedConceptsBaseArguments,
+    ListQueryParams {}
 
 export interface FeedCharactersArguments
   extends WebAPICallOptions,
@@ -73,6 +94,17 @@ export const feedCreationsRequestConfig = (
   }
 }
 
+export const feedCursorCreationsRequestConfig = (
+  args: FeedCreationsArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'feed-cursor/creations',
+    params,
+  }
+}
+
 export const feedConceptsRequestConfig = (
   args: FeedConceptsArguments,
 ): AxiosRequestConfig => {
@@ -80,6 +112,17 @@ export const feedConceptsRequestConfig = (
   return {
     method: 'GET',
     url: 'feed/concepts',
+    params,
+  }
+}
+
+export const feedCursorConceptsRequestConfig = (
+  args: FeedCreationsArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'feed-cursor/concepts',
     params,
   }
 }
