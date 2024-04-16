@@ -1,7 +1,9 @@
+import { getSimilarCreationIds } from '../lib/similar'
 import { Collection } from '../models/Collection'
 import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
+import { Embedding, EmbeddingDocument } from '../models/Embedding'
 import { Follow } from '../models/Follow'
 import { Reaction } from '../models/Reaction'
 import {
@@ -17,6 +19,10 @@ import {
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { Expression, PipelineStage } from 'mongoose'
+
+const emptyPaginatedResponse = {
+  docs: [],
+}
 
 interface CreationDocumentExtension {
   reactions: Map<ReactionType, boolean>
@@ -69,15 +75,14 @@ interface QueryOptions {
 
 type CustomFilters = {
   'mediaAttributes.type'?: {
-    $in:
-      | string[]
-      | (
-          | { $lte?: Date | undefined; $gte?: Date | undefined }
-          | { $gt?: number }
-          | { $exists: true }
-          | string
-          | ObjectId
-        )[]
+    $in: (
+      | string
+      | ObjectId
+      | { $lte?: Date | undefined; $gte?: Date | undefined }
+      | { $exists: true }
+      | { $gt: 0 }
+      | { $in?: string[] | ObjectId[] | undefined }
+    )[]
   }
   generator?:
     | string
@@ -101,6 +106,7 @@ type CustomFilters = {
   creationCount?: { $gt?: number }
   followerCount?: { $gt?: number }
   createdAt?: Filter
+  _id?: string | ObjectId | { $in?: string[] }
 }
 
 type GenericFilters = {
@@ -289,7 +295,7 @@ const createPipeline = async (
   if (cursor) {
     const idCursor =
       sortCursor !== undefined
-        ? { _id: { $gt: new ObjectId(cursor) } }
+        ? { _id: { $lt: new ObjectId(cursor) } }
         : { _id: { $lt: new ObjectId(cursor) } }
     pipeline.push(
       sortCursor !== undefined
@@ -319,6 +325,8 @@ type FilterItem = {
 }
 
 const handleArguments = async ({
+  server,
+  reply,
   authUserId,
   sort,
   nextValue,
@@ -326,6 +334,8 @@ const handleArguments = async ({
   cursor,
   usesPrivacy = true,
 }: {
+  server: FastifyInstance
+  reply: FastifyReply
   authUserId?: ObjectId
   sort?: string | string[]
   filter?: string | string[]
@@ -341,7 +351,6 @@ const handleArguments = async ({
       filterMap.push({ name: filterItem, value: filterValue })
     })
   }
-  //@todo: reduce to end up with groupname: [ itemvalues... ]
 
   const filterUserIds = filterMap
     ? filterMap
@@ -370,6 +379,8 @@ const handleArguments = async ({
     praiseCount?: { $gt: 0 }
     creationCount?: { $gt: 0 }
     followerCount?: { $gt: 0 }
+    creation?: ObjectId
+    _id?: { $in?: string[] | ObjectId[] }
   } = {}
 
   const sortOptions = sort
@@ -432,6 +443,11 @@ const handleArguments = async ({
             return [field, new ObjectId(value)]
           }
 
+          if (field === 'creation') {
+            customFilterOptions['creation'] = new ObjectId(value)
+            return []
+          }
+
           if (field === 'likedBy') {
             useReactionsPreAggregate = true
             preAggregateFilterOptions['user'] = new ObjectId(value)
@@ -490,6 +506,29 @@ const handleArguments = async ({
 
   // console.log({ filterOptions, sortOptions })
 
+  if (customFilterOptions.creation) {
+    const embeddingDoc = (await Embedding.findOne({
+      creation: new ObjectId(customFilterOptions.creation),
+    }).lean()) as EmbeddingDocument
+
+    try {
+      if (embeddingDoc?.embedding?.length) {
+        const similarCreationIds = await getSimilarCreationIds(
+          server,
+          embeddingDoc.embedding,
+        )
+        customFilterOptions['_id'] = {
+          $in: similarCreationIds.map(item => new ObjectId(item)),
+        }
+      } else {
+        return reply.status(200).send(emptyPaginatedResponse)
+      }
+    } catch (e) {
+      console.log('Error fetching chroma embeddings', e)
+      return reply.status(200).send(emptyPaginatedResponse)
+    }
+  }
+
   const customFilterMap: CustomFilters = {}
 
   for (const [fieldName, fieldValues] of Object.entries(customFilterOptions)) {
@@ -518,6 +557,8 @@ const handleArguments = async ({
     } else if (fieldName === 'createdAt') {
       //@ts-ignore
       customFilterMap['createdAt'] = fieldValues
+    } else if (fieldName === '_id') {
+      customFilterMap['_id'] = fieldValues as ObjectId
     }
 
     // console.log({fieldName, fieldValues})
@@ -584,7 +625,15 @@ export const getCreationsFeedCursor = async (
     useEmbeddingsPreAggregate,
     useCollectionsPreAggregate,
     useFollowingPreAggregate,
-  } = await handleArguments({ authUserId, cursor, nextValue, sort, filter })
+  } = await handleArguments({
+    server,
+    reply,
+    authUserId,
+    cursor,
+    nextValue,
+    sort,
+    filter,
+  })
 
   let results = []
   const lateLookupStages = [...taskLookup, ...userLookup]
@@ -740,7 +789,7 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(creationFeedPipeline, null, 2))
+    console.log(JSON.stringify(creationFeedPipeline, null, 2))
 
     // @ts-ignore
     results = await Creation.aggregate(creationFeedPipeline)
@@ -794,6 +843,8 @@ export const getConceptsFeedCursor = async (
   const authUserId = request.user ? request.user.userId : undefined
 
   const { filters, sortOptions, customFilterOptions } = await handleArguments({
+    server,
+    reply,
     authUserId,
     cursor,
     nextValue,
@@ -853,6 +904,8 @@ export const getCreatorsFeedCursor = async (
   const authUserId = request.user ? request.user.userId : undefined
 
   const { filters, sortOptions, customFilterOptions } = await handleArguments({
+    server,
+    reply,
     authUserId,
     cursor,
     nextValue,
