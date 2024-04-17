@@ -1,4 +1,4 @@
-import { transformArgsIntoURLParams } from '../types'
+import { ListCursorQueryParams, transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
   PaginatedResponse,
@@ -11,9 +11,7 @@ import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
-export interface FeedCreationsArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
+interface FeedCreationsBaseArguments extends WebAPICallOptions {
   userId?: string | string[]
   creationId?: string
   characterId?: string | string[]
@@ -29,9 +27,7 @@ export interface FeedCreationsArguments
   direction?: 1 | -1
 }
 
-export interface FeedConceptsArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
+interface FeedConceptsBaseArguments extends WebAPICallOptions {
   userId?: string | string[]
   collectionId?: string | string[]
   name?: string
@@ -39,7 +35,38 @@ export interface FeedConceptsArguments
   minDate?: string
   orderBy?: string
   direction?: 1 | -1
+  creationId?: string
+  characterId?: string | string[]
+  isPrivate?: string
 }
+
+interface FeedCreatorsBaseArguments extends WebAPICallOptions {
+  userId?: string | string[]
+  name?: string
+  maxDate?: string
+  minDate?: string
+  orderBy?: string
+}
+
+export interface FeedCreationsArguments
+  extends FeedCreationsBaseArguments,
+    ListQueryParams {}
+
+export interface FeedCreationsCursorArguments
+  extends FeedCreationsBaseArguments,
+    ListCursorQueryParams {}
+
+export interface FeedConceptsCursorArguments
+  extends FeedConceptsBaseArguments,
+    ListCursorQueryParams {}
+
+export interface FeedCreatorsCursorArguments
+  extends FeedCreatorsBaseArguments,
+    ListCursorQueryParams {}
+
+export interface FeedConceptsArguments
+  extends FeedConceptsBaseArguments,
+    ListQueryParams {}
 
 export interface FeedCharactersArguments
   extends WebAPICallOptions,
@@ -67,6 +94,17 @@ export const feedCreationsRequestConfig = (
   }
 }
 
+export const feedCursorCreationsRequestConfig = (
+  args: FeedCreationsArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'feed-cursor/creations',
+    params,
+  }
+}
+
 export const feedConceptsRequestConfig = (
   args: FeedConceptsArguments,
 ): AxiosRequestConfig => {
@@ -74,6 +112,17 @@ export const feedConceptsRequestConfig = (
   return {
     method: 'GET',
     url: 'feed/concepts',
+    params,
+  }
+}
+
+export const feedCursorConceptsRequestConfig = (
+  args: FeedCreationsArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'feed-cursor/concepts',
     params,
   }
 }

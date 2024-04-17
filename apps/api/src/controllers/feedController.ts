@@ -251,7 +251,7 @@ export const getCreationsFeed = async (
   const creatorsRepository = new CreatorRepository(User)
   const creators = filterUserIds
     ? await creatorsRepository.query({
-        userId: filterUserIds,
+        _id: filterUserIds,
       })
     : { docs: [] }
   const ownUserId = request.user ? request.user.userId : undefined
@@ -609,9 +609,8 @@ export const getConceptsFeed = async (
   } = request.query as FeedConceptsArguments
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
-    userId: filterUserIds,
+    _id: filterUserIds,
   })
-
   const ownUserId = request.user ? request.user.userId : undefined
   const creatorId =
     filterUserIds && creators.docs && creators.docs.length
@@ -619,6 +618,7 @@ export const getConceptsFeed = async (
       : undefined
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId
+  console.log({ filterUserIds, creators, ownUserId, creatorId })
 
   const conceptRepository = new ConceptRepository(Concept)
 
@@ -800,7 +800,7 @@ export const getCharactersFeed = async (
 
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
-    userId: filterUserIds,
+    _id: filterUserIds,
   })
 
   const ownUserId = request.user ? request.user.userId : undefined

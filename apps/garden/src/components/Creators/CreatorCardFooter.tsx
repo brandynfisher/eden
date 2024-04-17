@@ -29,7 +29,7 @@ const CreatorCardFooter = ({ creator }: { creator: Creator }) => {
       <Popover content="Creations made by this user" trigger={['hover']}>
         <Link href={`/creators/${creator.username}`}>
           <Tag
-            className={`flex items-center first-letter:capitalize me-0 gap-1 hover:text-blue-400 px-1 ${
+            className={`flex items-center first-letter:capitalize me-0 gap-1 bg-gray-300 dark:bg-gray-800 hover:text-blue-400 px-1 ${
               !creator.creationCount ? 'text-gray-500' : ''
             }`}
             bordered={false}
@@ -42,7 +42,7 @@ const CreatorCardFooter = ({ creator }: { creator: Creator }) => {
 
       <Popover content="Followers" trigger={['hover']}>
         <Tag
-          className={`flex cursor-pointer items-center first-letter:capitalize me-0 gap-1 hover:text-blue-400 px-1 ${
+          className={`flex cursor-pointer items-center first-letter:capitalize me-0 gap-1 bg-gray-300 dark:bg-gray-800 hover:text-blue-400 px-1 ${
             creator.followerCount === 0 ? 'text-gray-500' : ''
           }`}
           bordered={false}

@@ -21,7 +21,7 @@ export const OrderByLatest: OrderByParam = {
 
 export const OrderByPopularity: OrderByParam = {
   label: 'Popular',
-  field: 'popularity',
+  field: 'praiseCount',
   direction: -1,
 }
 
@@ -34,18 +34,6 @@ export const OrderByUsage: OrderByParam = {
 export const OrderByLikedByMe: OrderByParam = {
   label: 'Likes',
   field: 'liked',
-  direction: -1,
-}
-
-export const OrderByPraises: OrderByParam = {
-  label: 'Likes',
-  field: 'praiseCount',
-  direction: -1,
-}
-
-export const OrderByBookmarks: OrderByParam = {
-  label: 'Bookmarks',
-  field: 'bookmarkCount',
   direction: -1,
 }
 

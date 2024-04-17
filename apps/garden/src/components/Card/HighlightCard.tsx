@@ -36,7 +36,7 @@ const HighlightCard = ({
           <ZoomIn className="h-6" />
         </div>
       </div>
-      <div className="flex flex-col md:col-span-5 md:justify-between p-4 bg-gray-100 dark:bg-gray-900 h-60 md:h-auto mx-4 sm:mx-0 sm:px-8 md:px-4 relative top-[-24px] sm:top-auto rounded-lg drop-shadow sm:drop-shadow-none sm:rounded-none">
+      <div className="flex flex-col md:col-span-5 md:justify-between p-4 bg-gray-200 dark:bg-gray-900 h-60 md:h-auto mx-4 sm:mx-0 sm:px-8 md:px-4 relative top-[-24px] sm:top-auto rounded-lg drop-shadow sm:drop-shadow-none sm:rounded-none">
         <div className="mb-2">
           <h3>{concept.name}</h3>
           <CreatorProfileLink
@@ -45,14 +45,14 @@ const HighlightCard = ({
             creatorImage={concept.user.userImage}
           />
         </div>
-        <div className="line-clamp-4 md:line-clamp-6 mb-4">
+        <div className="line-clamp-3 md:line-clamp-6 mb-4">
           {concept.description}
         </div>
-        <div className="flex gap-4 justify-between mt-auto">
+        <div className="flex gap-2 lg:gap-4 justify-between mt-auto">
           <Link href={`/create/creations?concept=${concept._id}`}>
             <Button variant="outlined" className="!flex !items-center h-9">
               <div>Use Model</div>
-              <PlayArrowRounded fontSize="medium" />
+              <PlayArrowRounded fontSize="small" className="hidden md:block" />
             </Button>
           </Link>
           <Link href={`/concepts/${concept._id}`}>

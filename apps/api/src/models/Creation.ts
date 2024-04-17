@@ -184,25 +184,33 @@ creation.pre<CreationDocument>('save', function (next) {
 })
 
 creation.index({ concept: -1 })
-creation.index({ createdAt: 1 })
+creation.index({ createdAt: -1 })
 creation.index({ deleted: 1, isPrivate: 1, character: 1, user: 1 })
-creation.index({ deleted: 1, isPrivate: 1 })
-creation.index({ praiseCount: -1, bookmarkCount: -1, createdAt: -1, _id: -1 })
-creation.index({ createdAt: -1, _id: -1, 'embedding.score': -1 })
+creation.index({ uri: 1, deleted: 1, isPrivate: 1 })
 creation.index({ 'embedding.score': -1 })
 creation.index({
+  uri: 1,
   'mediaAttributes.type': 1,
   isPrivate: 1,
   deleted: 1,
   praiseCount: -1,
   bookmarkCount: -1,
   'embedding.score': 1,
-  createdAt: 1,
+  createdAt: -1,
 })
-creation.index({ praiseCount: 1, bookmarkCount: 1, createdAt: -1, _id: -1 })
+creation.index({
+  isPrivate: 1,
+  deleted: 1,
+  praiseCount: 1,
+  bookmarkCount: 1,
+  createdAt: -1,
+  _id: -1,
+  user: 1,
+})
 creation.index({ 'attributes.discordId': 1, deleted: 1 })
-
-creation.plugin(mongooseDelete, { overrideMethods: 'all' })
+creation.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 creation.plugin(paginate)
 creation.plugin(aggregatePaginate)
 

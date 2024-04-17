@@ -42,6 +42,19 @@ export const getCollection = async (
   if (!collection) {
     return reply.status(404).send({ message: 'Collection not found' })
   }
+
+  if (collection.isPrivate) {
+    if (
+      !request.user?.userId ||
+      collection.user._id.toString() !== request.user?.userId.toString()
+    ) {
+      console.error('User not authorized to view this')
+      return reply.status(401).send({
+        message: 'User not authorized to view this',
+      })
+    }
+  }
+
   const user = await User.findById(collection.user)
   return reply.status(200).send({
     collection: {

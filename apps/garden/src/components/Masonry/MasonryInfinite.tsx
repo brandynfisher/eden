@@ -5,7 +5,8 @@ import CreationCard from '@/components/Creation/CreationCard/CreationCard'
 import CreatorCard from '@/components/Creators/CreatorCard'
 import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
-import { PaginatedFeedQuery, useFeedPaginated } from '@/hooks/useFeedPaginated'
+import { useFeedCursorPaginated } from '@/hooks/useFeedCursorPaginated'
+import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { MasonryContext } from '@/providers/MasonryProvider'
 import {
   ItemType,
@@ -41,6 +42,13 @@ const MasonryInfinite = ({
   orderBy: OrderByParam
   emptyResultHandler?: (orderBy: OrderByParam) => void
 }) => {
+  const {
+    items,
+    maybeLoadMore: maybeLoadNextPage,
+    isEmpty,
+    isLoadingMore,
+  } = useFeedCursorPaginated(itemType, query, orderBy)
+
   const containerRef = useRef(null)
   const router = useRouter()
 
@@ -50,13 +58,6 @@ const MasonryInfinite = ({
   const isAuthenticatedUser =
     isAuthenticated && query && query.userId && query.userId === userId
   const masonryKey = `${itemType}_${orderBy.field}`
-
-  const {
-    items,
-    maybeLoadMore: maybeLoadNextPage,
-    isEmpty,
-    isLoadingMore,
-  } = useFeedPaginated(itemType, query, orderBy)
 
   const [ref, rect] = useResizeObserverMantine()
   const { width: windowWidth, height: windowHeight } = useViewportSize()
@@ -70,7 +71,7 @@ const MasonryInfinite = ({
     isItemLoaded: (index, items) => {
       return !!items[index]
     },
-    minimumBatchSize: 50,
+    minimumBatchSize: 30,
     threshold: windowWidth && windowWidth < 768 ? 25 : 75,
   })
 

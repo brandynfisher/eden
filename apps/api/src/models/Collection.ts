@@ -95,8 +95,10 @@ collection.pre<CollectionDocument>('update', function (next) {
   next()
 })
 
-collection.index({ user: 1, deleted: 1, isPrivate: 1 })
-collection.plugin(mongooseDelete, { overrideMethods: 'all' })
+collection.index({ _id: -1, user: 1, deleted: 1, isPrivate: 1 })
+collection.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 collection.plugin(paginate)
 collection.plugin(aggregatePaginate)
 

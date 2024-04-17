@@ -190,7 +190,7 @@ const Card: FC<CardWithTypeProps> = ({
         </a>
 
         {itemType === 'concept' || itemType === 'character' ? (
-          <div className="!bg-opacity-75 absolute bottom-0 dark:bg-gray-900 bg-gray-100 w-full h-9 px-1 flex items-center justify-between">
+          <div className="!bg-opacity-75 absolute bottom-0 dark:bg-gray-900 bg-gray-400 w-full h-9 px-1 flex items-center justify-between">
             <CreatorProfileLink
               creatorId={itemData.user.userId}
               creatorName={itemData.user.username}

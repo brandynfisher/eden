@@ -1,5 +1,3 @@
-import { TSchema, Type } from '@sinclair/typebox'
-
 import adminRoutes from './adminRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
@@ -15,6 +13,7 @@ import mediaRoutes from './mediaRoutes'
 import paymentRoutes from './paymentRoutes'
 import sessionRoutes from './sessionRoutes'
 import taskRoutes from './taskRoutes'
+import { TSchema, Type } from '@sinclair/typebox'
 
 export const paginatedResponse = (docs: TSchema) => {
   return Type.Object({
@@ -31,12 +30,26 @@ export const paginatedResponse = (docs: TSchema) => {
   })
 }
 
+const basePaginationProperties = {
+  orderBy: { type: 'string' },
+  direction: { type: 'number' },
+  limit: { type: 'number' },
+}
+
 export const paginationProperties = () => {
   return {
     page: { type: 'number' },
+    ...basePaginationProperties,
+  }
+}
+
+export const cursorPaginationProperties = () => {
+  return {
+    cursor: Type.Optional(Type.String()),
+    nextValue: Type.Optional(Type.Number()),
+    sort: { type: ['string', 'array'] },
     limit: { type: 'number' },
-    orderBy: { type: 'string' },
-    direction: { type: 'number' },
+    filter: { type: ['string', 'array'] },
   }
 }
 
