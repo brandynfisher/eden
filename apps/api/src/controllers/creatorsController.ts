@@ -418,7 +418,7 @@ export const followCreator = async (
     })
   }
 
-  const userToFollow = await User.findOne({ userId: userIdToFollow })
+  const userToFollow = await User.findOne({ _id: userIdToFollow })
 
   if (!userToFollow) {
     return reply.status(400).send({
@@ -478,7 +478,7 @@ export const unfollowCreator = async (
     })
   }
 
-  const userToUnfollow = await User.findOne({ userId: userIdToUnfollow })
+  const userToUnfollow = await User.findOne({ _id: userIdToUnfollow })
 
   if (!userToUnfollow) {
     return reply.status(400).send({
