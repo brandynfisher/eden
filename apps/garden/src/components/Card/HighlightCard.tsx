@@ -30,6 +30,7 @@ const HighlightCard = ({
           src={coverImageUri}
           alt={concept?.name}
           fill={true}
+          sizes={'(max-width: 768px) 95vw, (max-width: 1280px) 50vw, 33vw'}
           className="object-cover"
           priority={priority}
           loading={!priority ? 'lazy' : 'eager'}

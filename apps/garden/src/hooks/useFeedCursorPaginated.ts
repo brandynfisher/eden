@@ -2,7 +2,7 @@ import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import { shuffle } from '@/lib/array'
 import {
-  // createCursorPaginationRoute,
+  createCursorPaginationRoute,
   createPaginationRoute,
   fetcher,
 } from '@/lib/fetcher'
@@ -39,16 +39,17 @@ export type FeedCursorRouteQueryParams = {
 export type CursorPaginatedFeedQuery = FeedCursorRouteQueryParams &
   CursorPaginatedRouteQueryParams
 
-// type CursorPaginatedResponse = {
-//   docs: Creation[]
-//   nextCursor: string
-//   nextValue?: number
-// }
+type CursorPaginatedResponse = {
+  docs: Creation[]
+  nextCursor: string
+  nextValue?: number
+}
 export const useFeedCursorPaginated = (
   itemType: ItemType,
   query: FeedRouteQueryParams & CursorPaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,
 ) => {
+  const useCursorPagination = itemType === 'creation'
   const pageLimit = query?.limit || 50
   const featuredCollectionId =
     orderBy && orderBy.field === 'wow'
@@ -79,38 +80,38 @@ export const useFeedCursorPaginated = (
     [itemType, query, pageLimit, orderBy],
   )
 
-  // const getCursorKey = (
-  //   pageIndex: number,
-  //   previousPageData: CursorPaginatedResponse,
-  // ) => {
-  //   if (previousPageData) {
-  //     if (!previousPageData.docs) return null
-  //     if (previousPageData.docs.length < pageLimit) return null
-  //     if (previousPageData.nextCursor === '0') return null
-  //   }
-  //
-  //   const basePath = createCursorPaginationRoute(
-  //     `/api/feed-cursor/${itemType}s`,
-  //     {
-  //       ...{
-  //         collectionId: featuredCollectionId,
-  //         ...query,
-  //       },
-  //       limit: pageLimit,
-  //       orderBy: orderBy ? orderBy.field : undefined,
-  //     },
-  //   )
-  //
-  //   if (pageIndex === 0) {
-  //     return basePath
-  //   }
-  //
-  //   const nextValue =
-  //     previousPageData.nextValue !== undefined
-  //       ? `&nextValue=${previousPageData.nextValue}`
-  //       : ''
-  //   return `${basePath}&cursor=${previousPageData.nextCursor}${nextValue}`
-  // }
+  const getCursorKey = (
+    pageIndex: number,
+    previousPageData: CursorPaginatedResponse,
+  ) => {
+    if (previousPageData) {
+      if (!previousPageData.docs) return null
+      if (previousPageData.docs.length < pageLimit) return null
+      if (previousPageData.nextCursor === '0') return null
+    }
+
+    const basePath = createCursorPaginationRoute(
+      `/api/feed-cursor/${itemType}s`,
+      {
+        ...{
+          collectionId: featuredCollectionId,
+          ...query,
+        },
+        limit: pageLimit,
+        orderBy: orderBy ? orderBy.field : undefined,
+      },
+    )
+
+    if (pageIndex === 0) {
+      return basePath
+    }
+
+    const nextValue =
+      previousPageData.nextValue !== undefined
+        ? `&nextValue=${previousPageData.nextValue}`
+        : ''
+    return `${basePath}&cursor=${previousPageData.nextCursor}${nextValue}`
+  }
 
   const {
     data,
@@ -119,8 +120,7 @@ export const useFeedCursorPaginated = (
     setSize,
     isLoading,
     isValidating,
-    // } = useSWRInfinite(itemType !== 'creation' ? getKey : getCursorKey, fetcher, {
-  } = useSWRInfinite(getKey, fetcher, {
+  } = useSWRInfinite(!useCursorPagination ? getKey : getCursorKey, fetcher, {
     revalidateOnFocus: false,
     // revalidateIfStale: false,
     revalidateFirstPage: false,
@@ -178,23 +178,18 @@ export const useFeedCursorPaginated = (
   const { docs, totalItems } = useMemo(() => {
     if (data) {
       const flatData = data.flatMap(page => page)
-      const nextPageOrCursor =
-        itemType !== 'creation'
-          ? {
-              nextCursor: !!data[data.length - 1]?.nextCursor,
-              nextValue: !!data[data.length - 1]?.nextValue,
-            }
-          : { totalItems: flatData && flatData[0] ? flatData[0].total : 0 }
+      const nextPageOrCursor = !useCursorPagination
+        ? {
+            nextCursor: !!data[data.length - 1]?.nextCursor,
+            nextValue: !!data[data.length - 1]?.nextValue,
+          }
+        : { totalItems: flatData && flatData[0] ? flatData[0].total : 0 }
       return {
         docs:
           flatData && flatData[0].docs && flatData[0].docs.length
             ? flatData.map((page, index) => {
                 // shuffle latest page of recommended feed
-                if (
-                  orderBy &&
-                  (orderBy.field === 'embedding.score' ||
-                    orderBy.field === 'wow')
-                ) {
+                if (orderBy && orderBy.field === 'embedding.score') {
                   return page
                     ? index === size - 1
                       ? shuffle(page.docs)
@@ -208,17 +203,17 @@ export const useFeedCursorPaginated = (
         ...nextPageOrCursor,
       }
     }
-    return { docs: [], totalItems: itemType !== 'creation' ? null : undefined }
+    return { docs: [], totalItems: !useCursorPagination ? null : undefined }
   }, [data])
 
   return {
     hasNextPage: data
-      ? itemType !== 'creation'
+      ? !useCursorPagination
         ? !!data[data.length - 1]?.hasNextPage
         : !!data[size - 1]?.nextCursor
       : false,
     items: data ? ([] as Creation[]).concat(...docs) : [],
-    totalItems: itemType !== 'creation' ? totalItems : undefined,
+    totalItems: !useCursorPagination ? totalItems : undefined,
     refetchFeed,
     size,
     setSize,

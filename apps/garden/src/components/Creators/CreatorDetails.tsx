@@ -23,10 +23,10 @@ const CreatorDetails = ({
   modalContainerHeight?: number
   initialActiveTab?: string
 }) => {
-  const { creator: creatorData } = useCreator(creator.userId, {
+  const { creator: creatorData } = useCreator(creator._id, {
     fallbackData: { creator },
   })
-  const { collections, refetchCollections } = useCollections(creator.userId)
+  const { collections, refetchCollections } = useCollections(creator._id)
   const { userId, isAuthenticated } = useContext(UserContext)
   const isOwnProfile = isAuthenticated && creatorData?.userId === userId
   const router = useRouter()
@@ -84,7 +84,7 @@ const CreatorDetails = ({
   return (
     <div className={`flex flex-col gap-2`}>
       <ProfileHeader
-        creatorId={creatorData.userId}
+        creatorId={creatorData._id}
         creator={creatorData}
         numCreations={creatorData?.creationCount}
         isOwnProfile={isOwnProfile}

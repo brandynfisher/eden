@@ -20,8 +20,11 @@ const AddToCollectionModal = ({
   creationId: string
 }) => {
   const { message } = App.useApp()
-  const { userId } = useContext(UserContext)
-  const { collections, refetchCollections } = useCollections(userId, creationId)
+  const { user } = useContext(UserContext)
+  const { collections, refetchCollections } = useCollections(
+    user?._id,
+    creationId,
+  )
   const [showForm, setShowForm] = useState(false)
   const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(false)
