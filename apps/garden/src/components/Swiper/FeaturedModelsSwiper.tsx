@@ -4,6 +4,10 @@ import { Concept } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 const FeaturedModelsSwiper = ({ models }: { models: Concept[] }) => {
+  if (!models) {
+    return null
+  }
+
   return (
     <HorizontalSwiper
       title={'Featured Models'}

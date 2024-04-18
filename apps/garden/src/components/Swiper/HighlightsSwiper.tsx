@@ -45,6 +45,10 @@ export type HighlightItem = {
 const HighlightsSwiper = ({ items }: { items: HighlightItem[] }) => {
   const [fullscreenItem, setFullscreenItem] = useState<HighlightItem>()
 
+  if (!items) {
+    return null
+  }
+
   return (
     <div>
       <HorizontalSwiper

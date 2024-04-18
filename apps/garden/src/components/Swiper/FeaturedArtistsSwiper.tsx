@@ -4,6 +4,10 @@ import { Creator } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 const FeaturedArtistsSwiper = ({ creators }: { creators: Creator[] }) => {
+  if (!creators) {
+    return null
+  }
+
   return (
     <HorizontalSwiper
       title={'Featured Artists'}
