@@ -11,10 +11,14 @@ const highlightItemsConfig =
         {
           conceptId: '65c96097ca4d496037182909',
           creationId: '65d8520568213d8af1c89979',
+          description:
+            'Optional Curator Description that overwrites concept description. Optional Curator Description that overwrites concept description. Optional Curator Description that overwrites concept description .Optional Curator Description that overwrites concept description',
         },
         {
           conceptId: '65c9c50fca4d4960374760bc',
           creationId: '65cb13344186294ff1c9785b',
+          description:
+            'Optional Curator Description that replaces concept description',
         },
         {
           conceptId: '656649c31652bdba650fde4b',

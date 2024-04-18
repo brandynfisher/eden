@@ -20,7 +20,6 @@ const HomePageNew = ({
       <HighlightsSwiper items={highlightItems} />
       <FeaturedModelsSwiper models={featuredConcepts} />
       <FeaturedArtistsSwiper creators={featuredArtists} />
-      {/*<FeaturedCreations />*/}
       <CreationsFeaturedFeed />
     </div>
   )
