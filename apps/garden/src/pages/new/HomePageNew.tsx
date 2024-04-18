@@ -1,3 +1,4 @@
+import CreationsFeaturedFeed from '@/components/CreationsFeaturedFeed'
 import FeaturedArtistsSwiper from '@/components/Swiper/FeaturedArtistsSwiper'
 import FeaturedModelsSwiper from '@/components/Swiper/FeaturedModelsSwiper'
 import HighlightsSwiper, {
@@ -5,9 +6,7 @@ import HighlightsSwiper, {
 } from '@/components/Swiper/HighlightsSwiper'
 import { Concept, Creator } from '@edenlabs/eden-sdk'
 
-// import FeaturedCreations from '@/pages/new/FeaturedCreations'
-
-const HomePage = ({
+const HomePageNew = ({
   highlightItems,
   featuredArtists,
   featuredConcepts,
@@ -17,14 +16,13 @@ const HomePage = ({
   featuredConcepts: Concept[]
 }) => {
   return (
-    <div>
+    <div className="flex flex-col gap-6">
       <HighlightsSwiper items={highlightItems} />
-      <div className="flex flex-col gap-4">
-        <FeaturedModelsSwiper models={featuredConcepts} />
-        <FeaturedArtistsSwiper creators={featuredArtists} />
-        {/*<FeaturedCreations />*/}
-      </div>
+      <FeaturedModelsSwiper models={featuredConcepts} />
+      <FeaturedArtistsSwiper creators={featuredArtists} />
+      {/*<FeaturedCreations />*/}
+      <CreationsFeaturedFeed />
     </div>
   )
 }
-export default HomePage
+export default HomePageNew

@@ -1,9 +1,8 @@
+import FeaturedSectionHeader from '@/components/Swiper/HorizontalSwiper/FeaturedSectionHeader'
 import {
   HorizontalSwiperNavNext,
   HorizontalSwiperNavPrev,
 } from '@/components/Swiper/HorizontalSwiper/HorizontalSwiperNav'
-import ArrowRight from '@mui/icons-material/ArrowRight'
-import Link from 'next/link'
 import React, { ReactNode, useRef, useState } from 'react'
 import 'swiper/css'
 import { A11y, FreeMode, Mousewheel, Navigation } from 'swiper/modules'
@@ -62,19 +61,7 @@ const HorizontalSwiper = ({
 
   return (
     <div className="sm:mb-2">
-      <div className="flex justify-between flex-wrap items-center mb-2">
-        <h2 className="mb-2">{title}</h2>
-        {url ? (
-          <Link
-            title={'Explore all'}
-            href={url}
-            className="flex items-center text-lg text-gray-500 dark:text-gray-300 hover:dark:text-gray-300"
-          >
-            Explore all
-            <ArrowRight />
-          </Link>
-        ) : null}
-      </div>
+      <FeaturedSectionHeader title={title} url={url} />
 
       <div className="relative">
         <div className={`${showPrev ? '' : 'hidden'}`}>

@@ -1,3 +1,11 @@
+import { creationPrivacyPermissionCheck } from '../lib/authorization'
+import { Collection } from '../models/Collection'
+import { Creation, CreationDocument } from '../models/Creation'
+import { User } from '../models/Creator'
+import { Rating } from '../models/Rating'
+import { Reaction } from '../models/Reaction'
+import CreationRepository from '../repositories/CreationRepository'
+import CreatorRepository from '../repositories/CreatorRepository'
 import {
   CreationsDeleteArguments,
   CreationsGetArguments,
@@ -9,15 +17,6 @@ import {
 } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-
-import { creationPrivacyPermissionCheck } from '../lib/authorization'
-import { Collection } from '../models/Collection'
-import { Creation, CreationDocument } from '../models/Creation'
-import { User } from '../models/Creator'
-import { Rating } from '../models/Rating'
-import { Reaction } from '../models/Reaction'
-import CreationRepository from '../repositories/CreationRepository'
-import CreatorRepository from '../repositories/CreatorRepository'
 
 export const getReactions = async (
   userId: ObjectId,
@@ -156,7 +155,10 @@ export const getCreation = async (
     .populate({
       path: 'task',
       select: 'config status generator',
-      populate: { path: 'generator' },
+      populate: {
+        path: 'generator',
+        select: 'generatorName description output',
+      },
     })
     .populate({
       path: 'user',

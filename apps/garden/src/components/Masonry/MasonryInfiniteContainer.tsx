@@ -21,11 +21,13 @@ const MasonryInfiniteContainer = ({
   query,
   orderParams,
   fallbackOrderParam,
+  disableFilters,
 }: {
   itemType: ItemType
   orderParams?: OrderByParam[]
   query?: PaginatedFeedQuery
   fallbackOrderParam?: OrderByParam
+  disableFilters?: boolean
 }) => {
   const { generators } = useGenerators()
   const [feedFilters, setFeedFilters] = useState({})
@@ -67,6 +69,10 @@ const MasonryInfiniteContainer = ({
   const router = useRouter()
   const pathname = router.pathname
   useEffect(() => {
+    if (disableFilters) {
+      return
+    }
+
     let activeFilters = {}
 
     filters.map(filter => {
@@ -112,7 +118,7 @@ const MasonryInfiniteContainer = ({
     })
 
     setFeedFilters(activeFilters)
-  }, [filters, pathname])
+  }, [disableFilters, filters, pathname, generators])
 
   useEffect(() => {
     setFetchStartDate(new Date().toISOString())
@@ -128,21 +134,28 @@ const MasonryInfiniteContainer = ({
 
   return (
     <>
-      <div className="flex flex-wrap space-y-2 justify-between mb-4">
-        {orderParams ? (
-          <OrderByButtons
-            params={orderParams.filter(
-              item => !hiddenParams.includes(item.field),
-            )}
-            initialParam={
-              orderParams.filter(item => !hiddenParams.includes(item.field))[0]
-            }
-            onOrderChange={item => handleOrderChange(item)}
-          />
-        ) : null}
+      {(orderParams && orderParams.length > 1) ||
+      (!disableFilters && itemType && itemType === 'creation') ? (
+        <div className="flex flex-wrap space-y-2 justify-between mb-4">
+          {orderParams && orderParams.length > 1 ? (
+            <OrderByButtons
+              params={orderParams.filter(
+                item => !hiddenParams.includes(item.field),
+              )}
+              initialParam={
+                orderParams.filter(
+                  item => !hiddenParams.includes(item.field),
+                )[0]
+              }
+              onOrderChange={item => handleOrderChange(item)}
+            />
+          ) : null}
 
-        {itemType && itemType === 'creation' ? <FeedFilter /> : null}
-      </div>
+          {!disableFilters && itemType && itemType === 'creation' ? (
+            <FeedFilter />
+          ) : null}
+        </div>
+      ) : null}
 
       <MasonryInfinite
         key={key}

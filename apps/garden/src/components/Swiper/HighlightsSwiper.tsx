@@ -36,13 +36,17 @@ const swiperBreakpoints: SwiperOptions['breakpoints'] = {
   },
 }
 
-export type HighlightItem = { concept: Concept; creation: Creation }
+export type HighlightItem = {
+  concept: Concept
+  creation: Creation
+  description?: string
+}
 
 const HighlightsSwiper = ({ items }: { items: HighlightItem[] }) => {
   const [fullscreenItem, setFullscreenItem] = useState<HighlightItem>()
 
   return (
-    <div className="sm:mb-8">
+    <div>
       <HorizontalSwiper
         title={'Highlights'}
         freeMode={false}
@@ -56,6 +60,7 @@ const HighlightsSwiper = ({ items }: { items: HighlightItem[] }) => {
             <HighlightCard
               key={item.concept._id}
               concept={item.concept}
+              customDescription={item.description}
               coverImageUri={item.creation.uri}
               onCoverImageClick={() => setFullscreenItem(item)}
               priority={index === 0}

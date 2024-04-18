@@ -25,6 +25,8 @@ const highlightItemsConfig =
         {
           conceptId: '655f8b0b000112de0b25db7d',
           creationId: '655fce56212b3ec332b9a6b0',
+          description:
+            'Optional Curator Description that overwrites concept description',
         },
         {
           conceptId: '655f6eb5000112de0be180c0',
@@ -71,6 +73,7 @@ export const getStaticProps = (async () => {
       return {
         ...(await fetchConcept(item.conceptId)),
         ...(await fetchCreation(item.creationId)),
+        description: item.description ? item.description : null,
       }
     }),
   )
