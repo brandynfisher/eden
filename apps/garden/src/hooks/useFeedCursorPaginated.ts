@@ -2,7 +2,7 @@ import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import { FeedRouteQueryParams } from '@/hooks/useFeedPaginated'
 import { shuffle } from '@/lib/array'
 import {
-  createCursorPaginationRoute,
+  // createCursorPaginationRoute,
   createPaginationRoute,
   fetcher,
 } from '@/lib/fetcher'
@@ -39,11 +39,11 @@ export type FeedCursorRouteQueryParams = {
 export type CursorPaginatedFeedQuery = FeedCursorRouteQueryParams &
   CursorPaginatedRouteQueryParams
 
-type CursorPaginatedResponse = {
-  docs: Creation[]
-  nextCursor: string
-  nextValue?: number
-}
+// type CursorPaginatedResponse = {
+//   docs: Creation[]
+//   nextCursor: string
+//   nextValue?: number
+// }
 export const useFeedCursorPaginated = (
   itemType: ItemType,
   query: FeedRouteQueryParams & CursorPaginatedFeedQuery = {},
@@ -79,38 +79,38 @@ export const useFeedCursorPaginated = (
     [itemType, query, pageLimit, orderBy],
   )
 
-  const getCursorKey = (
-    pageIndex: number,
-    previousPageData: CursorPaginatedResponse,
-  ) => {
-    if (previousPageData) {
-      if (!previousPageData.docs) return null
-      if (previousPageData.docs.length < pageLimit) return null
-      if (previousPageData.nextCursor === '0') return null
-    }
-
-    const basePath = createCursorPaginationRoute(
-      `/api/feed-cursor/${itemType}s`,
-      {
-        ...{
-          collectionId: featuredCollectionId,
-          ...query,
-        },
-        limit: pageLimit,
-        orderBy: orderBy ? orderBy.field : undefined,
-      },
-    )
-
-    if (pageIndex === 0) {
-      return basePath
-    }
-
-    const nextValue =
-      previousPageData.nextValue !== undefined
-        ? `&nextValue=${previousPageData.nextValue}`
-        : ''
-    return `${basePath}&cursor=${previousPageData.nextCursor}${nextValue}`
-  }
+  // const getCursorKey = (
+  //   pageIndex: number,
+  //   previousPageData: CursorPaginatedResponse,
+  // ) => {
+  //   if (previousPageData) {
+  //     if (!previousPageData.docs) return null
+  //     if (previousPageData.docs.length < pageLimit) return null
+  //     if (previousPageData.nextCursor === '0') return null
+  //   }
+  //
+  //   const basePath = createCursorPaginationRoute(
+  //     `/api/feed-cursor/${itemType}s`,
+  //     {
+  //       ...{
+  //         collectionId: featuredCollectionId,
+  //         ...query,
+  //       },
+  //       limit: pageLimit,
+  //       orderBy: orderBy ? orderBy.field : undefined,
+  //     },
+  //   )
+  //
+  //   if (pageIndex === 0) {
+  //     return basePath
+  //   }
+  //
+  //   const nextValue =
+  //     previousPageData.nextValue !== undefined
+  //       ? `&nextValue=${previousPageData.nextValue}`
+  //       : ''
+  //   return `${basePath}&cursor=${previousPageData.nextCursor}${nextValue}`
+  // }
 
   const {
     data,
@@ -119,7 +119,8 @@ export const useFeedCursorPaginated = (
     setSize,
     isLoading,
     isValidating,
-  } = useSWRInfinite(itemType !== 'creation' ? getKey : getCursorKey, fetcher, {
+    // } = useSWRInfinite(itemType !== 'creation' ? getKey : getCursorKey, fetcher, {
+  } = useSWRInfinite(getKey, fetcher, {
     revalidateOnFocus: false,
     // revalidateIfStale: false,
     revalidateFirstPage: false,
