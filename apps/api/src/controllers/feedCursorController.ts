@@ -203,6 +203,11 @@ const collectionsPreAggregatePipeline = (
       },
     },
     ...creationsLookup('creations', '_id', lookupPipeline),
+    {
+      $sort: {
+        _id: -1,
+      },
+    },
   ]
 }
 
@@ -385,40 +390,46 @@ const handleArguments = async ({
 
   const sortOptions = sort
     ? (Object.fromEntries(
-        (Array.isArray(sort) ? sort : [sort]).map(sortOption => {
-          const [field, direction] = sortOption.split(';')
+        (Array.isArray(sort) ? sort : [sort])
+          .map(sortOption => {
+            const [field, direction] = sortOption.split(';')
 
-          if (field === 'praiseCount') {
-            return ['praiseCount', Number(direction)]
-          }
+            if (field === 'praiseCount') {
+              return ['praiseCount', Number(direction)]
+            }
 
-          if (field === 'creationCount') {
-            customFilterOptions['creationCount'] = { $gt: 0 }
-            return ['creationCount', Number(direction)]
-          }
+            if (field === 'creationCount') {
+              customFilterOptions['creationCount'] = { $gt: 0 }
+              return ['creationCount', Number(direction)]
+            }
 
-          if (field === 'followerCount') {
-            customFilterOptions['followerCount'] = { $gt: 0 }
-            return ['followerCount', Number(direction)]
-          }
+            if (field === 'followerCount') {
+              customFilterOptions['followerCount'] = { $gt: 0 }
+              return ['followerCount', Number(direction)]
+            }
 
-          if (field === 'liked') {
-            useReactionsPreAggregate = true
-            return []
-          }
+            if (field === 'liked') {
+              useReactionsPreAggregate = true
+              return []
+            }
 
-          if (field === 'following') {
-            useFollowingPreAggregate = true
-            return []
-          }
+            if (field === 'following') {
+              useFollowingPreAggregate = true
+              return []
+            }
 
-          if (field === 'embedding.score') {
-            useEmbeddingsPreAggregate = true //@todo: handle aggregation below
-            return ['embedding.score_adjusted', Number(direction)]
-          }
+            if (field === 'wow') {
+              return []
+            }
 
-          return [field, Number(direction)]
-        }),
+            if (field === 'embedding.score') {
+              useEmbeddingsPreAggregate = true //@todo: handle aggregation below
+              return ['embedding.score_adjusted', Number(direction)]
+            }
+
+            return [field, Number(direction)]
+          })
+          .filter(item => item.length !== 0),
       ) as SortOptions)
     : undefined
 
@@ -642,24 +653,36 @@ export const getCreationsFeedCursor = async (
     const lookupPipeline = await createPipeline({
       // @ts-ignore
       filters,
-      sortOptions: { updatedAt: -1, ...sortOptions },
-      limit: limit ?? 100,
+      sortOptions,
+      // limit: limit ?? 100,
       // cursor
     })
     const pipeline = [
       ...collectionsPreAggregatePipeline(
         [
-          { $match: preAggregateFilterOptions },
+          {
+            $match: {
+              _id: {
+                $eq: new ObjectId('65e8da9a6d2f63925c73a89d'),
+              },
+              createdAt: {
+                $lte: customFilterOptions?.createdAt?.$lte,
+              },
+            },
+          },
+          // { $match: preAggregateFilterOptions },
           // { $sort: { createdAt: -1 } }, //@todo: only add this if we're actually sorting by reaction date and not reaction count etc
         ],
         lookupPipeline,
       ),
-      // maybeAddCursorFilterStage(cursor),
+      maybeAddCursorFilterStage(cursor),
       { $limit: limit ?? 100 },
       ...lateLookupStages,
     ].filter(Boolean)
+
     // console.log(JSON.stringify(pipeline, null, 2))
     // @ts-ignore
+
     results = await Collection.aggregate(pipeline)
   } else if (useFollowingPreAggregate) {
     const lookupPipeline = await createPipeline({
@@ -789,7 +812,7 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    console.log(JSON.stringify(creationFeedPipeline, null, 2))
+    // console.log(JSON.stringify(creationFeedPipeline, null, 2))
 
     // @ts-ignore
     results = await Creation.aggregate(creationFeedPipeline)
