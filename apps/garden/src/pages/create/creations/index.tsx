@@ -1,6 +1,6 @@
 import PageLayoutSidebar from '@/components/Layout/layouts/PageLayoutSidebar'
+import CreateCreationsPage from '@/components/Pages/CreateCreationsPage'
 import { maybeRedirectIfItemIdQuery } from '@/lib/redirect'
-import CreateCreationsPage from '@/pages/create/creations/CreateCreationsPage'
 import { NextPageContext } from 'next'
 import { AppProps } from 'next/app'
 import React from 'react'

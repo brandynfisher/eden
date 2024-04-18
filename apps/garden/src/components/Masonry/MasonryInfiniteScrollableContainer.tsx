@@ -4,10 +4,10 @@ import OrderByButtons, {
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfiniteScrollable from '@/components/Masonry/MasonryInfiniteScrollable'
+import { storyGeneratorIds } from '@/components/Pages/ChannelsPage'
 import FeedFilter from '@/components/Search/FeedFilter'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { useGenerators } from '@/hooks/useGenerators'
-import { storyGeneratorIds } from '@/pages/channels/ChannelsPage'
 import {
   FeedSettingsContext,
   FilterName,

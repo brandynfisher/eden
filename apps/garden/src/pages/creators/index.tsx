@@ -1,5 +1,5 @@
+import CreatorsPage from '@/components/Pages/CreatorsPage'
 import { maybeRedirectIfItemIdQuery } from '@/lib/redirect'
-import CreatorsPage from '@/pages/creators/CreatorsPage'
 import { NextPageContext } from 'next'
 
 const creators = () => {

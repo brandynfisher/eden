@@ -1,4 +1,4 @@
-import OrderCancelledPage from '@/pages/order/cancelled/CancelledPage'
+import OrderCancelledPage from '@/components/Pages/CancelledPage'
 
 const orderCancelled = () => {
   return <OrderCancelledPage />

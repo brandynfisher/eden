@@ -4,10 +4,10 @@ import OrderByButtons, {
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfinite from '@/components/Masonry/MasonryInfinite'
+import { storyGeneratorIds } from '@/components/Pages/ChannelsPage'
 import FeedFilter from '@/components/Search/FeedFilter'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { useGenerators } from '@/hooks/useGenerators'
-import { storyGeneratorIds } from '@/pages/channels/ChannelsPage'
 import {
   FeedSettingsContext,
   FilterName,
@@ -118,7 +118,7 @@ const MasonryInfiniteContainer = ({
     })
 
     setFeedFilters(activeFilters)
-  }, [disableFilters, filters, pathname, generators])
+  }, [disableFilters, filters, pathname])
 
   useEffect(() => {
     setFetchStartDate(new Date().toISOString())

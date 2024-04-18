@@ -1,12 +1,11 @@
+import { Page } from '../../../../types/page'
+import MyCharactersPage from '@/components/Pages/MyCharactersPage'
 import { getAuthHeaders, getAuthUserId } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
-import MyCharactersPage from '@/pages/create/characters/MyCharactersPage'
 import { Character as CharacterType } from '@edenlabs/eden-sdk'
 import { NextApiRequest, NextPageContext } from 'next'
-
-import { Page } from '../../../../types/page'
 
 interface PageProps {
   data: CharacterType[]

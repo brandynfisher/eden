@@ -1,4 +1,4 @@
-import ChannelsPage from '@/pages/channels/ChannelsPage'
+import ChannelsPage from '@/components/Pages/ChannelsPage'
 
 const channels = () => {
   return <ChannelsPage />

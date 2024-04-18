@@ -1,4 +1,4 @@
-import OrderSuccessPage from '@/pages/order/success/SuccessPage'
+import OrderSuccessPage from '@/components/Pages/SuccessPage'
 
 const orderSuccess = () => {
   return <OrderSuccessPage />

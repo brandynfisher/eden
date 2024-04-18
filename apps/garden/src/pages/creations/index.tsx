@@ -1,5 +1,5 @@
+import HomePage from '@/components/Pages/HomePage'
 import { maybeRedirectIfItemIdQuery } from '@/lib/redirect'
-import HomePage from '@/pages/HomePage'
 import { NextPageContext } from 'next'
 import React from 'react'
 
