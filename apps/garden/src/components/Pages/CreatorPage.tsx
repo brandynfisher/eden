@@ -10,7 +10,7 @@ const CreatorPage = ({
   data: Creator
   activeTab: string
 }) => {
-  const { creator: creatorData } = useCreator(data ? data.userId : null, {
+  const { creator: creatorData } = useCreator(data ? data._id : null, {
     fallbackData: data,
   })
 

@@ -43,7 +43,7 @@ const FollowList = ({
                 />
                 <div className="absolute self-center h-full right-2">
                   <FollowControls
-                    creatorId={listItem.userId}
+                    creatorId={listItem._id}
                     creator={listItem}
                     showStats={false}
                   />
