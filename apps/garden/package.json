@@ -56,7 +56,6 @@
     "@next/bundle-analyzer": "^14.1.0",
     "@playwright/test": "^1.40.1",
     "@types/formidable": "^2.0.6",
-    "@types/lodash.throttle": "^4.1.9",
     "@types/node": "20.2.5",
     "@types/probe-image-size": "^7.2.0",
     "@types/react": "18.2.7",
