@@ -26,7 +26,7 @@ const CreatorDetails = ({
   const { creator: creatorData } = useCreator(creator.userId, {
     fallbackData: { creator },
   })
-  const { collections, refetchCollections } = useCollections(creator.userId)
+  const { collections, refetchCollections } = useCollections(creator._id)
   const { userId, isAuthenticated } = useContext(UserContext)
   const isOwnProfile = isAuthenticated && creatorData?.userId === userId
   const router = useRouter()

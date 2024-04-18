@@ -79,7 +79,7 @@ const collectionsAggregate = (
       $match: {
         $or: [
           { user: new ObjectId(userId) },
-          { contributors: { $in: [new ObjectId(userId)] } },
+          { contributors: { $in: [userId] } },
         ],
       },
     },
@@ -116,6 +116,7 @@ const collectionsAggregate = (
     })
   }
 
+  console.log(JSON.stringify(pipelines, null, 2))
   return Collection.aggregate(pipelines)
 }
 
@@ -128,7 +129,7 @@ export const listCollections = async (
 
   const creatorsRepository = new CreatorRepository(User)
   const creators = await creatorsRepository.query({
-    userId,
+    _id: userId,
   })
 
   const creatorId = creators.docs[0]?._id

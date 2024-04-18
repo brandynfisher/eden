@@ -47,6 +47,7 @@ const collection = new Schema<CollectionDocument>(
       {
         type: Schema.Types.ObjectId,
         ref: 'users',
+        default: [],
       },
     ],
     name: {
@@ -62,6 +63,7 @@ const collection = new Schema<CollectionDocument>(
       {
         type: Schema.Types.ObjectId,
         ref: 'creations',
+        default: [],
       },
     ],
     isDefaultCollection: {

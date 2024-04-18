@@ -49,6 +49,7 @@ export const useFeedCursorPaginated = (
   query: FeedRouteQueryParams & CursorPaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,
 ) => {
+  const useCursorPagination = itemType === 'creation'
   const pageLimit = query?.limit || 50
   const featuredCollectionId =
     orderBy && orderBy.field === 'wow'
@@ -119,7 +120,8 @@ export const useFeedCursorPaginated = (
     setSize,
     isLoading,
     isValidating,
-  } = useSWRInfinite(itemType !== 'creation' ? getKey : getCursorKey, fetcher, {
+  } = useSWRInfinite(!useCursorPagination ? getKey : getCursorKey, fetcher, {
+    // } = useSWRInfinite(getKey, fetcher, {
     revalidateOnFocus: false,
     // revalidateIfStale: false,
     revalidateFirstPage: false,
@@ -177,23 +179,18 @@ export const useFeedCursorPaginated = (
   const { docs, totalItems } = useMemo(() => {
     if (data) {
       const flatData = data.flatMap(page => page)
-      const nextPageOrCursor =
-        itemType !== 'creation'
-          ? {
-              nextCursor: !!data[data.length - 1]?.nextCursor,
-              nextValue: !!data[data.length - 1]?.nextValue,
-            }
-          : { totalItems: flatData && flatData[0] ? flatData[0].total : 0 }
+      const nextPageOrCursor = !useCursorPagination
+        ? {
+            nextCursor: !!data[data.length - 1]?.nextCursor,
+            nextValue: !!data[data.length - 1]?.nextValue,
+          }
+        : { totalItems: flatData && flatData[0] ? flatData[0].total : 0 }
       return {
         docs:
           flatData && flatData[0].docs && flatData[0].docs.length
             ? flatData.map((page, index) => {
                 // shuffle latest page of recommended feed
-                if (
-                  orderBy &&
-                  (orderBy.field === 'embedding.score' ||
-                    orderBy.field === 'wow')
-                ) {
+                if (orderBy && orderBy.field === 'embedding.score') {
                   return page
                     ? index === size - 1
                       ? shuffle(page.docs)
@@ -207,17 +204,17 @@ export const useFeedCursorPaginated = (
         ...nextPageOrCursor,
       }
     }
-    return { docs: [], totalItems: itemType !== 'creation' ? null : undefined }
+    return { docs: [], totalItems: !useCursorPagination ? null : undefined }
   }, [data])
 
   return {
     hasNextPage: data
-      ? itemType !== 'creation'
+      ? !useCursorPagination
         ? !!data[data.length - 1]?.hasNextPage
         : !!data[size - 1]?.nextCursor
       : false,
     items: data ? ([] as Creation[]).concat(...docs) : [],
-    totalItems: itemType !== 'creation' ? totalItems : undefined,
+    totalItems: !useCursorPagination ? totalItems : undefined,
     refetchFeed,
     size,
     setSize,

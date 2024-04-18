@@ -660,17 +660,17 @@ export const getCreationsFeedCursor = async (
     const pipeline = [
       ...collectionsPreAggregatePipeline(
         [
-          {
-            $match: {
-              _id: {
-                $eq: new ObjectId('65e8da9a6d2f63925c73a89d'),
-              },
-              createdAt: {
-                $lte: customFilterOptions?.createdAt?.$lte,
-              },
-            },
-          },
-          // { $match: preAggregateFilterOptions },
+          // {
+          //   $match: {
+          //     _id: {
+          //       $eq: new ObjectId('65e8da9a6d2f63925c73a89d'),
+          //     },
+          //     createdAt: {
+          //       $lte: customFilterOptions?.createdAt?.$lte,
+          //     },
+          //   },
+          // },
+          { $match: preAggregateFilterOptions },
           // { $sort: { createdAt: -1 } }, //@todo: only add this if we're actually sorting by reaction date and not reaction count etc
         ],
         lookupPipeline,
@@ -680,7 +680,7 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(pipeline, null, 2))
+    console.log(JSON.stringify(pipeline, null, 2))
     // @ts-ignore
 
     results = await Collection.aggregate(pipeline)
