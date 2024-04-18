@@ -7,9 +7,11 @@ import React, { useEffect, useState } from 'react'
 const TruncatedExpandableText = ({
   text,
   lines,
+  hideCopy,
 }: {
   text: string
   lines?: number
+  hideCopy?: boolean
 }) => {
   const { message } = App.useApp()
   const { copied, copy } = useClipboard()
@@ -34,23 +36,27 @@ const TruncatedExpandableText = ({
 
   return (
     <div>
-      <div
-        onClick={() => handleCopyClick(text)}
-        className="hover:text-blue-500 cursor-copy"
-      >
-        <span
-          ref={ref}
-          title={text}
-          className={`relative text-sm select-text w-full ${
-            isTruncated ? 'mb-1' : ''
-          } ${showMore ? '' : `text-ellipsis line-clamp-${lines ? lines : 2}`}`}
+      {hideCopy ? null : (
+        <div
+          onClick={() => handleCopyClick(text)}
+          className="hover:text-blue-500 cursor-copy"
         >
-          {text}
-        </span>
-        <div className="absolute right-2 top-1">
-          {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+          <span
+            ref={ref}
+            title={text}
+            className={`relative text-sm select-text w-full ${
+              isTruncated ? 'mb-1' : ''
+            } ${
+              showMore ? '' : `text-ellipsis line-clamp-${lines ? lines : 2}`
+            }`}
+          >
+            {text}
+          </span>
+          <div className="absolute right-2 top-1">
+            {copied ? <CheckCircleOutlined /> : <CopyOutlined />}
+          </div>
         </div>
-      </div>
+      )}
       {isTruncated && (
         <div className="w-full flex justify-center">
           <Button

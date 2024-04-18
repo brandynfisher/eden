@@ -174,7 +174,23 @@ const Details = ({
 
             <div className="relative mb-2 col-span-8 p-2 pt-4 border border-gray-300 dark:border-gray-800 border-solid rounded-lg">
               <div className="flex gap-2 items-center justify-between">
-                <TruncatedExpandableText text={item?.name} lines={3} />
+                {itemType === 'creation' ? (
+                  <>
+                    {(item as Creation).task.generatorName}
+                    {(item as Creation).task.generator.generatorName ===
+                    'upscale' ? (
+                      'upscale'
+                    ) : (
+                      <TruncatedExpandableText text={item?.name} lines={3} />
+                    )}
+                  </>
+                ) : (
+                  <TruncatedExpandableText
+                    text={item?.name}
+                    lines={3}
+                    hideCopy={true}
+                  />
+                )}
                 {itemType === 'concept' ? (
                   <div className="flex gap-2">
                     <ConceptCardFooter concept={item as Concept} />
