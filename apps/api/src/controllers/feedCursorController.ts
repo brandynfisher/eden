@@ -680,7 +680,7 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    console.log(JSON.stringify(pipeline, null, 2))
+    // console.log(JSON.stringify(pipeline, null, 2))
     // @ts-ignore
 
     results = await Collection.aggregate(pipeline)
@@ -819,14 +819,13 @@ export const getCreationsFeedCursor = async (
   }
 
   const feed: FeedResponse = {
-    ...results,
-    docs: [],
+    docs: results,
     reactions: [],
     bookmarks: [],
   }
 
   // gather auth users reactions/bookmarks
-  if (authUserId && results && results.length) {
+  if (authUserId !== undefined && results && results.length) {
     const reactionsMap = await getCreationReactions(authUserId, results)
     const bookmarksMap = await getCreationBookmarks(authUserId, results)
 

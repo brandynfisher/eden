@@ -121,7 +121,6 @@ export const useFeedCursorPaginated = (
     isLoading,
     isValidating,
   } = useSWRInfinite(!useCursorPagination ? getKey : getCursorKey, fetcher, {
-    // } = useSWRInfinite(getKey, fetcher, {
     revalidateOnFocus: false,
     // revalidateIfStale: false,
     revalidateFirstPage: false,

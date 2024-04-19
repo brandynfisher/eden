@@ -1,15 +1,18 @@
 {
   "extends": "@edenlabs/tsconfig/garden.json",
   "compilerOptions": {
+    "jsx": "preserve",
+    "target": "es2018",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     },
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "strictNullChecks": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
