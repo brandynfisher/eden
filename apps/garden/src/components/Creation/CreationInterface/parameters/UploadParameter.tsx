@@ -169,7 +169,7 @@ const UploadParameter = (props: {
 
     setFileList(info.fileList)
 
-    if (info.file.status === 'done' || info.file.status === 'success') {
+    if (info.file.status === 'done') {
       const newUrls = [...urls, info.file.response.fileUrl]
       props.form.setFieldsValue({
         [props.parameter.name]: isArray ? newUrls : newUrls[newUrls.length - 1],
