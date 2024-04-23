@@ -5,6 +5,48 @@ import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { Concept, Creator } from '@edenlabs/eden-sdk'
 import { GetStaticProps } from 'next'
 
+const featuredConceptsConfig =
+  process.env.NEXT_PUBLIC_APP_ENV === 'production'
+    ? [
+        '657a336d0a0f7257405ad024',
+        '66239eb77249a30fcb4b470a',
+        '650599a8160561d1aff45f9f',
+        '6620298d3a1b516798ff0c86',
+        '65642f9f730b5e00f6f253df',
+        '65bc43d441d1272266fd5ab4',
+        '6575506c377857179cdea9ec',
+        '656b9be209360ec0b968dede',
+        '65634ad7730b5e00f6c672f0',
+        '65d07e1e1bbb12fb04c8c309',
+        '65846c0ec08aceee0e5b70fe',
+      ]
+    : [
+        '6532db8b592328dcf4a42df8',
+        '655f4b5e000112de0bb6d8b2',
+        '655fce1b212b3ec332b7e61b',
+        '656fb12d59d8e0fe4211547f',
+        '656171c80c11a3d5d3bcdc90',
+        '655f71ac000112de0bece126',
+      ]
+
+const featuredArtistsConfig =
+  process.env.NEXT_PUBLIC_APP_ENV === 'production'
+    ? [
+        'abraham',
+        'marzipan',
+        'chebel',
+        'avishagaya',
+        'stein',
+        'matesteinforth',
+        'va2rosa',
+        'drmbt',
+        'aleqth',
+        'infoerror',
+        // 'objektpermanenz81',
+        'xander',
+      ]
+    : ['xander', 'va2rosa', 'xander_eden', 'jmill4747', 'gene3', 'laub-local']
+
 const highlightItemsConfig =
   process.env.NEXT_PUBLIC_APP_ENV === 'production'
     ? [
@@ -50,48 +92,69 @@ const fetchCreation = async (creationId: string) => {
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations/${creationId}`)
 }
 
-const fetchFeaturedArtists = async () => {
+const fetchCreator = async (creatorId: string) => {
   return fetcherFn(
-    `${CONFIG.NEXT_PUBLIC_HOST}/api/feed/creators?page=1&limit=10&orderBy=followerCount&direction=-1`,
+    `${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${creatorId}`,
   )
 }
 
-const fetchFeaturedConcepts = async () => {
-  return fetcherFn(
-    `${CONFIG.NEXT_PUBLIC_HOST}/api/feed/concepts?page=1&limit=10&orderBy=creationCount&direction=-1`,
-  )
+type PageData = {
+  highlightItems: HighlightItem[]
+  featuredConcepts: Concept[]
+  featuredArtists: Creator[]
 }
 
 type PageProps = {
-  data: {
-    highlightItems: HighlightItem[]
-    featuredConcepts: Concept[]
-    featuredArtists: Creator[]
-  }
+  data: PageData
   error?: string
 }
 
 export const getStaticProps = (async () => {
-  const highlightItems = await Promise.all(
-    highlightItemsConfig.map(async item => {
-      return {
-        ...(await fetchConcept(item.conceptId)),
-        ...(await fetchCreation(item.creationId)),
-        description: item.description ? item.description : null,
-      }
-    }),
-  )
+  const data: PageData = {
+    highlightItems: [],
+    featuredConcepts: [],
+    featuredArtists: [],
+  }
 
-  const featuredConcepts = await fetchFeaturedConcepts()
-  const featuredArtists = await fetchFeaturedArtists()
+  try {
+    data.highlightItems = await Promise.all(
+      highlightItemsConfig.map(async item => {
+        return {
+          ...(await fetchConcept(item.conceptId)),
+          ...(await fetchCreation(item.creationId)),
+          description: item.description ? item.description : null,
+        }
+      }),
+    )
+  } catch (e) {
+    console.log('Error pre-rendering - highlightItems')
+  }
+
+  try {
+    const featuredConcepts = await Promise.all(
+      featuredConceptsConfig.map(async item => {
+        return await fetchConcept(item)
+      }),
+    )
+    data.featuredConcepts = featuredConcepts.map(item => item.concept)
+  } catch (e) {
+    console.log('Error pre-rendering - featuredConcepts')
+  }
+
+  try {
+    const featuredArtists = await Promise.all(
+      featuredArtistsConfig.map(async item => {
+        return await fetchCreator(item)
+      }),
+    )
+    data.featuredArtists = featuredArtists.map(item => item.creator)
+  } catch (e) {
+    console.log('Error pre-rendering - featuredArtists')
+  }
 
   return {
     props: {
-      data: {
-        highlightItems,
-        featuredConcepts: featuredConcepts.docs,
-        featuredArtists: featuredArtists.docs,
-      },
+      data,
     },
   }
 }) satisfies GetStaticProps<PageProps>
