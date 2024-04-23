@@ -121,6 +121,7 @@ const SelectModal = ({
               href={docsLinkUrl}
               target="_blank"
               className="flex gap-1 items-center"
+              rel="noreferrer"
             >
               Learn about {label}s
               <LinkOutlined />

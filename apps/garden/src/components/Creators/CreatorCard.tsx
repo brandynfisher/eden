@@ -72,6 +72,7 @@ const CreatorCard: FC<CardWithTypeProps> = ({
         href={`/creators/${itemData.username}`}
         target={'_blank'}
         className={`card-image relative overflow-hidden cursor-pointer block`}
+        rel="opener noreferrer"
       >
         <CardImage
           uri={itemData.userImage}

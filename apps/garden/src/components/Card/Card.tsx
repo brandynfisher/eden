@@ -150,6 +150,7 @@ const Card: FC<CardWithTypeProps> = ({
           onClick={cardClickHandler}
           href={`/${itemType}s/${itemData._id}`}
           target={'_blank'}
+          rel="opener noreferrer"
           className={`card-image relative overflow-hidden cursor-pointer block  ${
             itemData.deleted ? 'grayscale' : ''
           } ${itemType === 'creation' ? 'rounded-lg' : ''}`}
@@ -321,6 +322,7 @@ const Card: FC<CardWithTypeProps> = ({
             onClick={cardClickHandler}
             href={`/${itemType}s/${itemData._id}`}
             target={'_blank'}
+            rel="opener noreferrer"
             className={`cursor-pointer block`}
           >
             <div

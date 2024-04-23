@@ -57,6 +57,7 @@ const defaultItems: ItemType[] = [
         target="_blank"
         title="Learn about Manna"
         className="block text-small p-2"
+        rel="noreferrer"
       >
         Learn about Manna
         <InfoCircleOutlined className="ml-1" />

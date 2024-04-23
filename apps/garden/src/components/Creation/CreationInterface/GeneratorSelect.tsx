@@ -130,6 +130,7 @@ export const DocsLink = ({ generator }: { generator: Generator }) => {
         href="https://docs.eden.art/docs/guides/creation"
         target="_blank"
         className="flex gap-1 items-center"
+        rel="noreferrer"
       >
         Learn about Creations
         <LinkOutlined />
@@ -142,6 +143,7 @@ export const DocsLink = ({ generator }: { generator: Generator }) => {
       href="https://docs.eden.art/docs/guides/concepts"
       target="_blank"
       className="flex gap-1 items-center"
+      rel="noreferrer"
     >
       Learn about Concepts
       <LinkOutlined />
