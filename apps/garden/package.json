@@ -51,6 +51,7 @@
     "swr": "^2.1.5"
   },
   "devDependencies": {
+    "@types/stripe": "^8.0.417",
     "@edenlabs/config": "*",
     "@edenlabs/tsconfig": "*",
     "@next/bundle-analyzer": "^14.1.0",

@@ -67,6 +67,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/minio": "^7.0.18",
     "@types/async": "^3.2.21",
     "@types/event-source-polyfill": "^1.0.3",
     "@types/fluent-ffmpeg": "^2.1.21",
