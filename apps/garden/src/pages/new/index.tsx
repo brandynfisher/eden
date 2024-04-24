@@ -5,6 +5,45 @@ import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { Concept, Creator } from '@edenlabs/eden-sdk'
 import { GetStaticProps } from 'next'
 
+const highlightItemsConfig =
+  process.env.NEXT_PUBLIC_APP_ENV === 'production'
+    ? [
+      {
+        conceptId: '65b927bcc69501b06686d68d',
+        creationId: '65c659eb8ef56092fa0019c2',
+        description:
+          'Optional Curator Description that overwrites concept description. Optional Curator Description that overwrites concept description. Optional Curator Description that overwrites concept description .Optional Curator Description that overwrites concept description',
+      },
+      {
+        conceptId: '65687be68ed69a71559acd64',
+        creationId: '6583c4b8c08aceee0e01ac1f',
+        description:
+          'Optional Curator Description that replaces concept description',
+      },
+      {
+        conceptId: '6566750c1652bdba65a8d675',
+        creationId: '656677f91652bdba65bcddf2',
+        description:
+          'Optional Curator Description',
+      },
+    ]
+    : [
+      {
+        conceptId: '655f8b0b000112de0b25db7d',
+        creationId: '655fce56212b3ec332b9a6b0',
+        description:
+          'Optional Curator Description that overwrites concept description',
+      },
+      {
+        conceptId: '655f6eb5000112de0be180c0',
+        creationId: '6601f89c5ddda6f212229ea0',
+      },
+      {
+        conceptId: '655f71ac000112de0bece126',
+        creationId: '657f54171a2941378e53cb23',
+      },
+    ]
+
 const featuredConceptsConfig =
   process.env.NEXT_PUBLIC_APP_ENV === 'production'
     ? [
@@ -46,43 +85,6 @@ const featuredArtistsConfig =
         'xander',
       ]
     : ['xander', 'va2rosa', 'xander_eden', 'jmill4747', 'gene3', 'laub-local']
-
-const highlightItemsConfig =
-  process.env.NEXT_PUBLIC_APP_ENV === 'production'
-    ? [
-        {
-          conceptId: '65c96097ca4d496037182909',
-          creationId: '65d8520568213d8af1c89979',
-          description:
-            'Optional Curator Description that overwrites concept description. Optional Curator Description that overwrites concept description. Optional Curator Description that overwrites concept description .Optional Curator Description that overwrites concept description',
-        },
-        {
-          conceptId: '65c9c50fca4d4960374760bc',
-          creationId: '65cb13344186294ff1c9785b',
-          description:
-            'Optional Curator Description that replaces concept description',
-        },
-        {
-          conceptId: '656649c31652bdba650fde4b',
-          creationId: '6592fde7787755148ca7063c',
-        },
-      ]
-    : [
-        {
-          conceptId: '655f8b0b000112de0b25db7d',
-          creationId: '655fce56212b3ec332b9a6b0',
-          description:
-            'Optional Curator Description that overwrites concept description',
-        },
-        {
-          conceptId: '655f6eb5000112de0be180c0',
-          creationId: '6601f89c5ddda6f212229ea0',
-        },
-        {
-          conceptId: '655f71ac000112de0bece126',
-          creationId: '657f54171a2941378e53cb23',
-        },
-      ]
 
 const fetchConcept = async (conceptId: string) => {
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts/${conceptId}`)
