@@ -30,7 +30,7 @@ export type FeedRouteQueryParams = {
 
 export type PaginatedFeedQuery = FeedRouteQueryParams &
   PaginatedRouteQueryParams
-export const useFeedPaginated = (
+export const useFeedPaginated= (
   itemType: ItemType,
   query: PaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,

@@ -3,11 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "infra/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*",
+      "infra/*"
+    ],
+    "nohoist": [
+      "**/zod",
+      "**/zod/**"
+    ]
+  },
   "scripts": {
     "build": "turbo run build",
     "dev:dummy": "turbo run dev:dummy --parallel",
@@ -32,7 +38,15 @@
     "vitest-mongodb": "^0.0.4"
   },
   "lint-staged": {
-    "apps/**/*.{ts,tsx}": [
+    "apps/garden/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "apps/api/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "apps/media-playground/*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
     ],
