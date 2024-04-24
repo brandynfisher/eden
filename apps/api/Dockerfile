@@ -1,6 +1,6 @@
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
 RUN apk update
 # Set working directory
@@ -29,7 +29,7 @@ COPY turbo.json turbo.json
 
 RUN yarn turbo run build --filter=api...
 
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 COPY --from=installer /app/apps/api/build ./build
