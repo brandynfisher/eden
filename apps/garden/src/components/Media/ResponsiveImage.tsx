@@ -46,7 +46,7 @@ export const ResponsiveImage = ({
         quality={quality}
         priority={priority}
         loading={loading}
-        onLoadingComplete={handleOnLoadingComplete}
+        onLoad={handleOnLoadingComplete}
         className={`h-full w-full object-contain ${className ? className : ''}`}
       />
       {children}

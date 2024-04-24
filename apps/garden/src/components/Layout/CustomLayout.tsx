@@ -79,7 +79,6 @@ const CustomLayout = ({
   }, [])
 
   return (
-    // @ts-ignore
     <SWRConfig
       value={{ use: [myRequestCounterMiddlewareWrap(setRequestCount)] }}
     >

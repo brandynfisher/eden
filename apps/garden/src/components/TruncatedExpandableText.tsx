@@ -23,7 +23,7 @@ const TruncatedExpandableText = ({
     if (!showMore && ref && ref.current) {
       setIsTruncated(ref.current.scrollHeight > ref.current.clientHeight)
     }
-  }, [showMore, ref.current, height, width])
+  }, [showMore, ref, height, width])
 
   const handleCopyClick = async (text: string) => {
     copy(text)

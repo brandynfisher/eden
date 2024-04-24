@@ -106,7 +106,7 @@ const ImageZoomPan = ({
                   src={imageUrl}
                   alt={imageUrl}
                   sizes={'100vw'}
-                  onLoadingComplete={() => centerView(fitContentToWrapper())}
+                  onLoad={() => centerView(fitContentToWrapper())}
                   width="0"
                   height="0"
                   className="w-full h-full text-center"
