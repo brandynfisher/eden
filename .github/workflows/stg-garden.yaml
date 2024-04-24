@@ -70,6 +70,7 @@ jobs:
             "NEXT_PUBLIC_DISCORD_CLIENT_ID=1006127431389822997"
             "NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=65e8da9a6d2f63925c73a89d"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+            "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
