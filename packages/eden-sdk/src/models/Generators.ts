@@ -22,7 +22,6 @@ export interface GeneratorsGetArguments extends WebAPICallOptions {
 export const generatorsListRequestConfig = (
   args: GeneratorsListArguments,
 ): AxiosRequestConfig => {
-  console.log(args)
   const params = transformArgsIntoURLParams(args)
 
   return {
