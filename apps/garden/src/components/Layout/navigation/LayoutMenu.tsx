@@ -49,7 +49,7 @@ const LayoutMenu = ({ inDrawer }: { inDrawer?: boolean }) => {
         }`}
       >
         <a
-          href="https://github.com/abraham-ai"
+          href="https://github.com/edenartlab"
           target="_blank"
           rel="noopener noreferrer"
           title="Eden on Github"
