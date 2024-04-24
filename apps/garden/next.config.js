@@ -116,6 +116,9 @@ module.exports = withTM({
       },
     ],
   },
+  transpilePackages: [
+    'rc-util',
+  ],
   modularizeImports: {
     '@ant-design/icons': {
       transform: '@ant-design/icons/{{member}}',
