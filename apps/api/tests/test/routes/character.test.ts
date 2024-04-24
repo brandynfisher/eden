@@ -2,7 +2,6 @@ import { FastifyInstance } from 'fastify'
 import { expect, test } from 'vitest'
 
 import {
-  prepareBasicUserHeaders,
   prepareBelieverUserHeaders,
   prepareCharacterHeaders,
 } from '../../util'
@@ -42,21 +41,21 @@ const getCharacter = async (server: FastifyInstance, characterId: string) => {
   return response
 }
 
-const deleteCharacter = async (
-  server: FastifyInstance,
-  characterId: string,
-) => {
-  const headers = prepareBelieverUserHeaders()
-  const response = await server.inject({
-    method: 'POST',
-    url: '/characters/delete',
-    headers,
-    payload: {
-      characterId,
-    },
-  })
-  return response
-}
+// const deleteCharacter = async (
+//   server: FastifyInstance,
+//   characterId: string,
+// ) => {
+//   const headers = prepareBelieverUserHeaders()
+//   const response = await server.inject({
+//     method: 'POST',
+//     url: '/characters/delete',
+//     headers,
+//     payload: {
+//       characterId,
+//     },
+//   })
+//   return response
+// }
 
 test('User can create an Character', async context => {
   const { server } = context

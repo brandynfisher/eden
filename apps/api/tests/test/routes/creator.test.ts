@@ -86,7 +86,7 @@ test('User cannot follow themselves', async context => {
 test('User can unfollow a creator', async context => {
   const { server } = context
   const headers = prepareUserHeaders()
-  const followResponse = await server.inject({
+  await server.inject({
     method: 'POST',
     url: '/creators/follow',
     payload: {

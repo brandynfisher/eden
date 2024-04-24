@@ -5,7 +5,6 @@ import {
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../types'
-import { FeedCreationsArguments } from './Feed'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments

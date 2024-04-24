@@ -33,12 +33,6 @@ interface PaginatedResponse<T> {
   nextPage: number
 }
 
-interface PaginatedCursorResponse<T> {
-  docs: T[]
-  nextCursor?: number
-  nextValue?: number
-}
-
 class RestfulRepository<T> implements IRepository<T> {
   constructor(public model: any) {
     // The 'any' type is used here since the 'model' type is not specified in the provided code.

@@ -22,10 +22,10 @@
     "@types/event-source-polyfill": "^1.0.3",
     "@types/eventsource": "^1.1.15",
     "microbundle": "^0.15.1",
-    "typescript": "^5.0.4"
+    "typescript": "^5"
   },
   "dependencies": {
-    "axios": "^1.4.0",
+    "axios": "^1.6.8",
     "event-source-polyfill": "^1.0.31",
     "eventsource": "^2.0.2"
   },

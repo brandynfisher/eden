@@ -77,7 +77,7 @@
     "@types/tmp": "^0.2.4",
     "@types/uuid": "^9.0.1",
     "esbuild": "^0.14.54",
-    "eslint": "8.41.0",
+    "eslint": "8.56.0",
     "mongodb": "^4.16.0",
     "mongodb-memory-server": "^8.12.2",
     "pino-pretty": "^8.1.0",

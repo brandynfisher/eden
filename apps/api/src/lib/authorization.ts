@@ -1,7 +1,6 @@
 import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
 import { Task, TaskStatus } from '../models/Task'
 import {
-  CharactersCreateArguments,
   CharactersUpdateArguments,
   ConceptsUpdateArguments,
   CreationsUpdateArguments,

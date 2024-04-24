@@ -364,9 +364,7 @@ const handleArguments = async ({
   reply,
   authUserId,
   sort,
-  nextValue,
   filter,
-  cursor,
   usesPrivacy = true,
 }: {
   server: FastifyInstance

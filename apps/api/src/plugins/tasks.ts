@@ -1,4 +1,3 @@
-import { Assistant, Interaction } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 
 import { dummyTaskHandlers } from '../lib/taskHandlers/dummy'
@@ -15,7 +14,7 @@ export interface TaskHandlers {
     generator: GeneratorDocument,
     generatorVersion: GeneratorVersionSchema,
     config: any,
-  ) => Promise<string | undefined>
+  ) => Promise<string>
   receiveTaskUpdate: (server: FastifyInstance, update: any) => void
   getTransactionCost: (
     server: FastifyInstance,

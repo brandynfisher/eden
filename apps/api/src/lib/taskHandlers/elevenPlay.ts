@@ -18,12 +18,7 @@ const submitTask = async (
   return task
 }
 
-const getTransactionCost = (
-  _: FastifyInstance,
-  __: any,
-  ___: any,
-  config: any,
-) => 1
+const getTransactionCost = () => 1
 
 const runTask = async (server: FastifyInstance, config: any, task: any) => {
   const { elevenLabs } = server

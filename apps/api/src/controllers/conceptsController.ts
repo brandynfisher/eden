@@ -142,7 +142,7 @@ export const listConcepts = async (
   )
 
   conceptsWithPublicName = conceptsWithPublicName.map(concept => {
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { training_images, ...rest } = concept
     return rest
   })
@@ -150,7 +150,7 @@ export const listConcepts = async (
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
   if (!hasConceptExportPermission) {
     conceptsWithPublicName = conceptsWithPublicName.map(concept => {
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { uri, ...rest } = concept
       return rest
     })
@@ -232,7 +232,7 @@ export const conceptDelete = async (
     })
   }
 
-  await concept.delete({ deleteBy: 'user' })
+  await concept.delete()
 
   return reply.status(200).send({
     success: true,
@@ -375,7 +375,7 @@ export const conceptUnreact = async (
     })
   }
 
-  await existingReaction.remove()
+  await existingReaction.deleteOne()
 
   await concept.updateOne({
     $inc: {

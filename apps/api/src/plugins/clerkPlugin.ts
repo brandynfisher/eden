@@ -1,9 +1,8 @@
 import { User } from '../models/Creator'
-import { Clerk } from '@clerk/backend'
 import { clerkPlugin, createClerkClient, getAuth } from '@clerk/fastify'
 import { clerkClient } from '@clerk/fastify/dist/types/clerkClient'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyInstance, FastifyRequest } from 'fastify'
 
 export const registerClerk = async (fastify: FastifyInstance) => {
   try {
@@ -17,7 +16,7 @@ export const registerClerk = async (fastify: FastifyInstance) => {
     fastify.decorate('clerk', clerkClient)
     fastify.decorate(
       'verifyUser',
-      async (request: FastifyRequest, reply: FastifyReply) => {
+      async (request: FastifyRequest) => {
         const { userId } = getAuth(request)
         if (!userId) {
           throw new Error('Invalid session')

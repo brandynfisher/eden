@@ -9,7 +9,6 @@ import {
   updateCharacter,
 } from '../controllers/characterController'
 import { createTask } from '../controllers/taskController'
-import { characterRoutePreHandler } from '../lib/authorization'
 import { isAuth, isCharacter, maybeAuth } from '../middleware/authMiddleware'
 import { configType } from '../types/routeTypes'
 import { Type } from '@sinclair/typebox'
