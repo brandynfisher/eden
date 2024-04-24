@@ -31,7 +31,8 @@
     "sharp": "^0.32.1",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.22.5"
+    "zod": "^3.22.5",
+    "@edenlabs/eden-sdk": "*"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^1.3.3",
