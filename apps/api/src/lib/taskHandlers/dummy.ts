@@ -77,17 +77,18 @@ export const dummySubmitTask = async (
   generator: GeneratorDocument,
   generatorVersion: GeneratorVersionSchema,
   config: any,
-) => {
+): Promise<string> => {
   if (generator.generatorName === 'monologue') {
-    const taskId = submitMonologueTask(server, config)
-    return taskId
+    return await submitMonologueTask(server, config)
   } else if (generator.generatorName === 'test') {
     console.log(
       `Submitting task for generator version ${
         generatorVersion.versionId
       } with config ${JSON.stringify(config)}`,
-    )
-    return uuidv4()
+    );
+    return new Promise((resolve) => resolve(uuidv4()))
+  } else {
+    throw new Error("Invalid generator name.")
   }
 }
 

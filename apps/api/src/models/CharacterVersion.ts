@@ -3,7 +3,7 @@ import { CharacterDocument } from './Character'
 import { Capabilities, LogosData } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
-import { SoftDeleteDocument, SoftDeleteModel } from 'mongoose-delete'
+import mongooseDelete, { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 export interface CharacterVersionSchema extends VisibilitySchema {
@@ -94,8 +94,11 @@ character.index({ createdAt: 1 })
 
 character.plugin(paginate)
 character.plugin(aggregatePaginate)
+character.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 
-export const Character = model<CharacterDocument>(
+export const Character = model<CharacterVersionDocument>(
   'characters',
   character,
-) as SoftDeleteModel<CharacterDocument>
+)

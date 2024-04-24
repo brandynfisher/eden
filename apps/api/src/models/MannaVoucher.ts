@@ -48,7 +48,7 @@ const mannavoucher = new Schema<MannaVoucherDocument>(
   },
 )
 
-mannavoucher.pre<MannaVoucherDocument>('update', function (next) {
+mannavoucher.pre<MannaVoucherDocument>('save', function (next) {
   this.updatedAt = Date.now()
 
   next()

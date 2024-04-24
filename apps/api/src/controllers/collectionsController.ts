@@ -256,7 +256,7 @@ export const deleteCollection = async (
     })
   }
 
-  await collection.delete({ deleteBy: 'user' })
+  await collection.delete()
 
   return reply.status(200).send({
     success: true,

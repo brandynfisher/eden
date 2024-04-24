@@ -57,7 +57,7 @@ export const useFollowingPaginated = (query: PaginatedFollowersQuery) => {
 
   const {
     data,
-    mutate: refetch,
+    // mutate: refetch,
     size,
     setSize,
     isLoading,
@@ -80,7 +80,7 @@ export const useFollowingPaginated = (query: PaginatedFollowersQuery) => {
     data,
     totalItemCount: !isEmpty ? dataArray[0]?.total : 0,
     items: creatorDocs,
-    refetch,
+    // refetch,
     size,
     setSize,
     isLoading,
