@@ -52,6 +52,10 @@ const navItems = [
   {
     label: 'Train',
     segments: ['train']
+  },
+  {
+    label: 'Build',
+    segments: ['build']
   }
 ]
 
