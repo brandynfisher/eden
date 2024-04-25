@@ -148,7 +148,6 @@ const UploadParameter = (props: {
   const handleChange = async (info: UploadChangeParam) => {
     if (info.file.status === 'uploading') {
       showUploadInProgressMessage(info.file.name)
-      return
     }
 
     if (info.file.status === 'error') {
@@ -177,7 +176,6 @@ const UploadParameter = (props: {
       })
       setUrls(newUrls)
       showUploadSuccessMessage(info.file.name)
-      return
     }
     if (info.file.status === 'removed') {
       if (!info.file.response) return
@@ -187,7 +185,6 @@ const UploadParameter = (props: {
         [props.parameter.name]: isArray ? newUrls : newUrls[newUrls.length - 1],
       })
       setUrls(newUrls)
-      return
     }
   }
 
