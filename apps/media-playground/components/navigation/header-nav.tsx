@@ -1,7 +1,6 @@
 
 import { MenuIcon } from 'lucide-react'
-import { Sheet, SheetContent } from '../ui/sheet'
-import { SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import DesktopHeaderNav from '@/components/navigation/desktop-header-nav'
 import MobileHeaderNav from '@/components/navigation/mobile-header-nav'
@@ -21,6 +20,7 @@ const HeaderNav = () => {
           <MobileHeaderNav />
         </SheetContent>
       </Sheet>
+
     </>
   )
 }

@@ -1,8 +1,12 @@
-import { PropsWithChildren } from 'react'
+import { HTMLProps, PropsWithChildren } from 'react'
+import { cn } from '@/lib/utils'
 
-const TypographyH3 = ({...rest}: PropsWithChildren) => {
+const TypographyH3 = ({className, ...rest}:PropsWithChildren & HTMLProps<HTMLHeadingElement>) => {
   return (
-    <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight" {...rest} />
+    <h3
+      className={cn('scroll-m-20 text-2xl font-semibold tracking-tight mb-4', className)}
+      {...rest}
+    />
   )
 }
 

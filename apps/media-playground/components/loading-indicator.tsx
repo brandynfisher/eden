@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
+import { Loader2Icon } from 'lucide-react'
 
 const LoadingIndicator = ({ className }: { className?: string }) => {
   return (
-    <Loader2 className={cn('my-28 h-16 w-16 text-primary/60 animate-spin', className)} />
+    <Loader2Icon className={cn('h-8 w-8 text-primary/60 animate-spin', className)} />
   )
 }
 

@@ -5,7 +5,7 @@ const HeaderNavLinks = () => {
   return (
     <>
       <Link className="relative flex items-center gap-2 text-lg font-semibold md:text-base" href="/">
-        <EdenLogoBwGlow width={40} height={40}/>
+        <EdenLogoBwGlow />
         <span className="sr-only">Eden2.0</span>
       </Link>
       <Link className="text-muted-foreground transition-colors hover:text-foreground" href="#">

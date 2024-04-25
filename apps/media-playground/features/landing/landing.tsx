@@ -3,7 +3,7 @@ import RotatingEdenLogo from '@/components/logo/rotating-eden-logo'
 
 const Landing = () => {
   return (
-    <div className="flex flex-col justify-between items-center flex-grow">
+    <div className="flex flex-col gap-8 justify-between items-center flex-grow">
       <div className="flex flex-grow items-center">
         <RotatingEdenLogo variant={'large'}/>
       </div>

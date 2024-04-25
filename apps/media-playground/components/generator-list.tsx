@@ -9,17 +9,11 @@ import AlertDestructive from '@/components/alert-destructive'
 const GeneratorList = () => {
   const { generators, isLoading, isError } = useGeneratorsQuery()
 
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
-  if (isError) {
-    return <AlertDestructive>Failed to fetch [generators]</AlertDestructive>;
-  }
-
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       <TypographyH4>Generators</TypographyH4>
+      { isLoading ? <LoadingIndicator /> : null}
+      { isError ? <AlertDestructive>Failed to fetch [generators]</AlertDestructive> : null}
       <ul>
         {generators?.map((generator) => (
           <li key={generator._id}>{generator.generatorName}</li>
