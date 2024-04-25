@@ -1,9 +1,9 @@
-import HeaderNavLinks from '@/components/navigation/header-nav-links'
+import { PropsWithChildren } from 'react'
 
-const MobileHeaderNav = () => {
+const MobileHeaderNav = ({children}: PropsWithChildren) => {
   return (
     <nav className="grid gap-6 text-lg font-medium">
-      <HeaderNavLinks />
+      {children}
     </nav>
   )
 }

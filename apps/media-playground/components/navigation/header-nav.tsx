@@ -1,14 +1,16 @@
-
 import { MenuIcon } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import DesktopHeaderNav from '@/components/navigation/desktop-header-nav'
 import MobileHeaderNav from '@/components/navigation/mobile-header-nav'
+import HeaderNavLinks from '@/components/navigation/header-nav-links'
 
 const HeaderNav = () => {
   return (
     <>
-      <DesktopHeaderNav />
+      <DesktopHeaderNav>
+        <HeaderNavLinks />
+      </DesktopHeaderNav>
       <Sheet>
         <SheetTrigger asChild>
           <Button className="shrink-0 md:hidden" size="icon" variant="outline">
@@ -17,10 +19,11 @@ const HeaderNav = () => {
           </Button>
         </SheetTrigger>
         <SheetContent side="left">
-          <MobileHeaderNav />
+          <MobileHeaderNav>
+            <HeaderNavLinks />
+          </MobileHeaderNav>
         </SheetContent>
       </Sheet>
-
     </>
   )
 }

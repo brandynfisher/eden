@@ -3,7 +3,7 @@
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useGeneratorsQuery } from '@/hooks/useGeneratorQuery'
 import LoadingIndicator from '@/components/loading-indicator'
-import AlertDestructive from '@/components/alert-destructive'
+import AlertDestructive from '@/components/alert/alert-destructive'
 
 
 const GeneratorList = () => {

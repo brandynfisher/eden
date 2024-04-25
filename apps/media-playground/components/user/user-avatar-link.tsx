@@ -9,7 +9,7 @@ type Props = {
 
 const UserAvatarLink = ({name, image, hideName}: Props) => {
   return (
-    <Link href={`/creators/${name}`} className="group flex gap-2 items-center">
+    <Link href={`/creators/${name}`} className="group flex gap-2 items-center cursor-pointer">
       <UserAvatar image={image} name={name}/>
       { !hideName ? <div className="group-hover:text-primary text-xs transition-colors">{name}</div> : null}
     </Link>
