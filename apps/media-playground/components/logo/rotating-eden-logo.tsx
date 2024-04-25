@@ -12,32 +12,23 @@ const RotatingEdenLogo = ({ variant }: { variant?: Variant }) => {
       <RotatingImage
         src="/logo-bw.png"
         alt="Eden Logo"
-        width={180}
-        height={37}
         priority
-        className="absolute"
       />
       <RotatingImage
         src="/logo-bw.png"
         alt="Eden Logo"
-        width={180}
-        height={37}
         priority
         className="absolute !delay-100"
       />
       <RotatingImage
         src="/logo-bw.png"
         alt="Eden Logo"
-        width={180}
-        height={37}
         priority
         className="absolute !delay-200"
       />
       <RotatingImage
         src="/logo-bw.png"
         alt="Eden Logo"
-        width={180}
-        height={37}
         priority
         className="absolute !delay-300"
       />

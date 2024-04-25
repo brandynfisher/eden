@@ -7,8 +7,6 @@ interface RotatingImageProps extends ImageProps {}
 export const RotatingImage: FC<RotatingImageProps> = ({
   src,
   alt,
-  width,
-  height,
   priority,
   className,
 }) => {
@@ -33,13 +31,14 @@ export const RotatingImage: FC<RotatingImageProps> = ({
 
       <Image
         className={cn(
-          'relative drop-shadow-[0_0_0.3rem_#00000070] dark:drop-shadow-[0_0_0.3rem_#ffffff70] invert dark:invert-0 rotate',
+          'relative w-full h-auto drop-shadow-[0_0_0.3rem_#00000070] dark:drop-shadow-[0_0_0.3rem_#ffffff70] invert dark:invert-0 rotate',
           className,
         )}
         src={src}
         alt={alt}
-        width={width}
-        height={height}
+        width={0}
+        height={0}
+        sizes="100vw"
         priority={priority}
       />
     </>

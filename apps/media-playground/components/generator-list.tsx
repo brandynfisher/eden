@@ -1,31 +1,27 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { Generator } from '@edenlabs/eden-sdk'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
+import { useGeneratorsQuery } from '@/hooks/useGeneratorQuery'
+import LoadingIndicator from '@/components/loading-indicator'
+import AlertDestructive from '@/components/alert-destructive'
 
-const fetcher = async (url: string) => {
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    throw new Error('Network response was not ok')
-  }
-
-  return response.json()
-}
-
-const fetchGenerators: () => Promise<{ generators: Generator[]}> = async () => {
-  return fetcher('/api/generators')
-}
 
 const GeneratorList = () => {
-  const query = useQuery({ queryKey: ['generators'], queryFn: fetchGenerators })
+  const { generators, isLoading, isError } = useGeneratorsQuery()
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return <AlertDestructive>Failed to fetch [generators]</AlertDestructive>;
+  }
 
   return (
     <div>
       <TypographyH4>Generators</TypographyH4>
       <ul>
-        {query.data?.generators.map((generator) => (
+        {generators?.map((generator) => (
           <li key={generator._id}>{generator.generatorName}</li>
         ))}
       </ul>

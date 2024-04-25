@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/provider/theme-provider'
 import { cn } from '@/lib/utils'
 import { Inter as FontSans } from 'next/font/google'
 import { ReactElement } from 'react'
+import DefaultLayout from '@/components/layout/default-layout'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -28,7 +29,9 @@ export default function RootLayout({ children }: { children: ReactElement }) {
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <DefaultLayout>
+            {children}
+          </DefaultLayout>
         </ThemeProvider>
       </body>
     </html>

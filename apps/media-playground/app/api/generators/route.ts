@@ -1,8 +1,8 @@
 import { CONFIG } from '@/lib/config'
 import { EdenClient } from '@edenlabs/eden-sdk'
-import { type NextRequest } from 'next/server'
+import { handleAxiosServerError } from '@/lib/fetcher'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
@@ -10,8 +10,11 @@ export async function GET(request: NextRequest) {
     const res = await eden.generators.list({ visible: true })
     return Response.json({ generators: res.docs })
   } catch (error) {
-    // const errorMessage = handleAxiosServerError(error)
-    console.error(error)
-    return new Response(JSON.stringify({ message: error?.toString() }), { status: 500 })
+    const errorMessage = handleAxiosServerError(error)
+    console.error(errorMessage)
+    return new Response(
+      JSON.stringify({ message: errorMessage }),
+      { status: 500 }
+    )
   }
 }

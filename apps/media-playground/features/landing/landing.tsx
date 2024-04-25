@@ -3,8 +3,10 @@ import RotatingEdenLogo from '@/components/logo/rotating-eden-logo'
 
 const Landing = () => {
   return (
-    <>
-      <RotatingEdenLogo variant={'large'} />
+    <div className="flex flex-col justify-between items-center flex-grow">
+      <div className="flex flex-grow items-center">
+        <RotatingEdenLogo variant={'large'}/>
+      </div>
 
       <div className="mb-0 grid md:grid-cols-2 gap-4 lg:max-w-5xl lg:w-full lg:grid-cols-4 lg:text-left">
         <LinkCard
@@ -28,7 +30,7 @@ const Landing = () => {
           text={'Sandbox for Apollo/GraphQL'}
         />
       </div>
-    </>
+    </div>
   )
 }
 
