@@ -9,7 +9,7 @@ import {
 import { ItemType } from '@/providers/ModalProvider'
 import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
 import { useCallback, useMemo } from 'react'
-import useSWRInfinite from 'swr/infinite'
+import useSWRInfinite, { SWRInfiniteKeyLoader } from 'swr/infinite'
 
 export type CursorPaginatedRouteQueryParams = {
   cursor?: string
@@ -56,7 +56,7 @@ export const useFeedCursorPaginated = (
       ? process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
       : undefined
 
-  const getKey = useCallback(
+  const getKey: SWRInfiniteKeyLoader = useCallback(
     (
       pageIndex: number,
       previousPageData: PaginatedResponse<Creation[]>,
@@ -77,10 +77,10 @@ export const useFeedCursorPaginated = (
         direction: orderBy ? orderBy.direction : undefined,
       })
     },
-    [itemType, query, pageLimit, orderBy],
+    [featuredCollectionId, itemType, query, pageLimit, orderBy],
   )
 
-  const getCursorKey = (
+  const getCursorKey: SWRInfiniteKeyLoader = useCallback((
     pageIndex: number,
     previousPageData: CursorPaginatedResponse,
   ) => {
@@ -111,11 +111,10 @@ export const useFeedCursorPaginated = (
         ? `&nextValue=${previousPageData.nextValue}`
         : ''
     return `${basePath}&cursor=${previousPageData.nextCursor}${nextValue}`
-  }
+  }, [featuredCollectionId, itemType, query, pageLimit, orderBy])
 
   const {
     data,
-    mutate: refetchFeed,
     size,
     setSize,
     isLoading,
@@ -214,7 +213,6 @@ export const useFeedCursorPaginated = (
       : false,
     items: data ? ([] as Creation[]).concat(...docs) : [],
     totalItems: !useCursorPagination ? totalItems : undefined,
-    refetchFeed,
     size,
     setSize,
     isEmpty,

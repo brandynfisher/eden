@@ -4,7 +4,6 @@ import {
   HorizontalSwiperNavPrev,
 } from '@/components/Swiper/HorizontalSwiper/HorizontalSwiperNav'
 import React, { ReactNode, useRef, useState } from 'react'
-import 'swiper/css'
 import { A11y, FreeMode, Mousewheel, Navigation } from 'swiper/modules'
 import { Swiper, SwiperClass } from 'swiper/react'
 import { SwiperSlide } from 'swiper/react'

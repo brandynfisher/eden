@@ -450,6 +450,11 @@ body {
 }
 
 .modal-full {
+    > div[tabindex="-1"] {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
     &.ant-modal {
         display: flex !important;
         justify-content: center;
@@ -697,6 +702,12 @@ body {
 }
 
 .modal-grow {
+    > div[tabindex="-1"] {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
     .ant-modal-content {
         flex-grow: 1
     }

@@ -18,6 +18,7 @@ const MannaRefillModal = ({ ...rest }: {}) => {
             href="https://docs.eden.art/docs/overview/manna"
             target="_blank"
             className="flex gap-1 items-center"
+            rel="noreferrer"
           >
             Learn about Manna
             <LinkOutlined />

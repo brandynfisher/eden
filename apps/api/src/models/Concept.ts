@@ -24,7 +24,7 @@ export interface ConceptSchema extends VisibilitySchema {
   description?: string
   conceptName: string
   checkpoint: string
-  training_images: string[]
+  training_images?: string[]
   num_training_images?: number
   publishedUrl?: string
   attributes?: any
@@ -42,7 +42,7 @@ export interface ConceptInput {
   description?: string
   conceptName: string
   checkpoint: string
-  training_images: string[]
+  training_images?: string[]
   num_training_images?: number
   attributes?: Record<string, any>
   mediaAttributes?: {

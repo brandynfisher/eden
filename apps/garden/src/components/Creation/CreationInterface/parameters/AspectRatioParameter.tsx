@@ -26,22 +26,22 @@ export const presetResolutions: PresetResolution[] = [
   {
     width: 1536,
     height: 640,
-    aspectRatio: '12:5',
+    aspectRatio: '21:9',
   },
   {
     width: 1344,
     height: 768,
-    aspectRatio: '7:4',
+    aspectRatio: '16:9',
   },
   {
     width: 1216,
     height: 832,
-    aspectRatio: '19:13',
+    aspectRatio: '3:2',
   },
   {
     width: 1152,
     height: 896,
-    aspectRatio: '9:7',
+    aspectRatio: '5:4',
   },
   {
     width: 1024,
@@ -51,22 +51,22 @@ export const presetResolutions: PresetResolution[] = [
   {
     width: 896,
     height: 1152,
-    aspectRatio: '7:9',
+    aspectRatio: '4:5',
   },
   {
     width: 832,
     height: 1216,
-    aspectRatio: '13:19',
+    aspectRatio: '2:3',
   },
   {
     width: 768,
     height: 1344,
-    aspectRatio: '4:7',
+    aspectRatio: '9:16',
   },
   {
     width: 640,
     height: 1536,
-    aspectRatio: '5:12',
+    aspectRatio: '9:21',
   },
 ]
 

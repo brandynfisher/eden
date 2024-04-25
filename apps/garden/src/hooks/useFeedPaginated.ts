@@ -30,8 +30,7 @@ export type FeedRouteQueryParams = {
 
 export type PaginatedFeedQuery = FeedRouteQueryParams &
   PaginatedRouteQueryParams
-
-export const useFeedPaginated = (
+export const useFeedPaginated= (
   itemType: ItemType,
   query: PaginatedFeedQuery = {},
   orderBy: OrderByParam | undefined,
@@ -68,7 +67,6 @@ export const useFeedPaginated = (
 
   const {
     data,
-    mutate: refetchFeed,
     size,
     setSize,
     isLoading,
@@ -142,7 +140,6 @@ export const useFeedPaginated = (
     hasNextPage: data ? !!data[size - 1]?.hasNextPage : false,
     totalItems: totalItems,
     items: data ? ([] as Creation[]).concat(...docs) : [],
-    refetchFeed,
     size,
     setSize,
     isEmpty,

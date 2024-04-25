@@ -1,8 +1,15 @@
+
+// Explicitly define the env data typings, using process.env here for simplicity
 import { Static, Type } from '@sinclair/typebox'
 import Ajv from 'ajv'
 import dotenv from 'dotenv'
 import { FastifyPluginAsync } from 'fastify'
 import fp from 'fastify-plugin'
+
+interface EnvDataInterface {
+  [key: string]: string|undefined;
+}
+const envData: EnvDataInterface = process.env;
 
 dotenv.config({ path: process.env.DOTENV_PATH || '.env.dummy' })
 
@@ -69,19 +76,28 @@ const ajv = new Ajv({
 export type Config = Static<typeof ConfigSchema>
 
 const configPlugin: FastifyPluginAsync = async server => {
-  const validate = ajv.compile(ConfigSchema)
-  const valid = validate(process.env)
-  if (!valid) {
-    throw new Error(
-      `.env file validation failed - ${JSON.stringify(
-        validate.errors,
-        null,
-        2,
-      )}`,
-    )
+
+  if(ajv && ConfigSchema){
+    const validate = ajv.compile(ConfigSchema)
+    const valid = validate(envData)
+
+    if (!valid) {
+      throw new Error(
+        `.env file validation failed - ${JSON.stringify(
+          validate.errors,
+          null,
+          2,
+        )}`,
+      )
+    }
+
+    server.decorate('config', envData as Config)
   }
-  server.decorate('config', process.env)
+  else {
+    throw new Error(`ajv or ConfigSchema is not defined`);
+  }
 }
+
 
 declare module 'fastify' {
   interface FastifyInstance {

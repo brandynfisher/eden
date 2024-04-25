@@ -130,7 +130,12 @@ export const listConcepts = async (
     },
   )
 
-  let conceptsWithPublicName = await Promise.all(
+  type ConceptType = {
+    publicName?: string
+    training_images?: string[]
+    uri?: string
+  }
+  let conceptsWithPublicName: ConceptType[] = await Promise.all(
     concepts.docs.map(async doc => {
       const user = await User.findById(doc.user._id)
       const publicName = `${user?.username}:${doc.name}`
@@ -142,7 +147,7 @@ export const listConcepts = async (
   )
 
   conceptsWithPublicName = conceptsWithPublicName.map(concept => {
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { training_images, ...rest } = concept
     return rest
   })
@@ -150,7 +155,7 @@ export const listConcepts = async (
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
   if (!hasConceptExportPermission) {
     conceptsWithPublicName = conceptsWithPublicName.map(concept => {
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { uri, ...rest } = concept
       return rest
     })
@@ -232,7 +237,7 @@ export const conceptDelete = async (
     })
   }
 
-  await concept.delete({ deleteBy: 'user' })
+  await concept.delete()
 
   return reply.status(200).send({
     success: true,
@@ -375,7 +380,7 @@ export const conceptUnreact = async (
     })
   }
 
-  await existingReaction.remove()
+  await existingReaction.deleteOne()
 
   await concept.updateOne({
     $inc: {

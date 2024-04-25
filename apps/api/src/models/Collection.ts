@@ -90,7 +90,7 @@ const collection = new Schema<CollectionDocument>(
     timestamps: true,
   },
 )
-collection.pre<CollectionDocument>('update', function (next) {
+collection.pre<CollectionDocument>('save', function (next) {
   enforceUserDocumentLimit(25, 'collections', this.user)
   this.updatedAt = new Date()
 

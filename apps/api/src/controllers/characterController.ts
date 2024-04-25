@@ -83,7 +83,7 @@ export const createCharacter = async (
 
   const characterRepository = new CharacterRepository(Character)
 
-  const charactersCount = await Character.count({
+  const charactersCount = await Character.countDocuments({
     user: userId,
   })
 

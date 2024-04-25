@@ -1,3 +1,3 @@
 # Eden API
 
-Cool API
+Cool API 1

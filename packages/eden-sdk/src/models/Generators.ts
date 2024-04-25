@@ -5,7 +5,6 @@ import {
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../types'
-import { FeedCreationsArguments } from './Feed'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -23,7 +22,6 @@ export interface GeneratorsGetArguments extends WebAPICallOptions {
 export const generatorsListRequestConfig = (
   args: GeneratorsListArguments,
 ): AxiosRequestConfig => {
-  console.log(args)
   const params = transformArgsIntoURLParams(args)
 
   return {

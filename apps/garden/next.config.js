@@ -2,36 +2,104 @@ const path = require('path')
 const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
 // const runtimeCaching = require('next-pwa/cache')
 
-const defaultImageDomains = [
-  'https://minio.aws.abraham.fun/creations-stg/',
-  'https://eden-creations-prod.s3.us-east-1.amazonaws.com/',
-  'https://eden-creations-stg.s3.us-east-1.amazonaws.com/',
-  'https://edenartlab-prod-data.s3.us-east-1.amazonaws.com',
-  'https://edenartlab-stg-data.s3.us-east-1.amazonaws.com',
-  'https://edenartlab-stage-data.s3.us-east-1.amazonaws.com/',
-  'files.stripe.com',
-  'img.clerk.com',
-  'cdn.discordapp.com',
-  'eden-creations-stg.s3.us-east-1.amazonaws.com',
-  'eden-creations-prod.s3.us-east-1.amazonaws.com',
-  'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
-  'edenartlab-prod-data.s3.amazonaws.com',
-  'edenartlab-stg-data.s3.us-east-1.amazonaws.com',
-  'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
-  'edenartlab-stage-data.s3.amazonaws.com',
-  'edenartlab-stage-data.s3-accelerate.amazonaws.com',
-  'edenartlab-prod-data.s3-accelerate.amazonaws.com',
-  'dtut5r9j4w7j4.cloudfront.net',
-  'https://dtut5r9j4w7j4.cloudfront.net',
-  'd14i3advvh2bvd.cloudfront.net',
+const defaultImageRemotePatterns = [
+  {
+    protocol: 'https',
+    hostname: 'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'eden-creations-prod.s3.us-east-1.amazonaws.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'edenartlab-prod-data.s3.amazonaws.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'edenartlab-prod-data.s3-accelerate.amazonaws.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'eden-creations-stg.s3.us-east-1.amazonaws.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'edenartlab-stage-data.s3.amazonaws.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'edenartlab-stage-data.s3-accelerate.amazonaws.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'minio.aws.abraham.fun',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'dtut5r9j4w7j4.cloudfront.net',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'd14i3advvh2bvd.cloudfront.net',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'files.stripe.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'img.clerk.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'cdn.discordapp.com',
+    port: '',
+    pathname: '**',
+  },
 ]
 
-const devImageDomains = ['localhost']
+const devImageRemotePatterns = [{
+  protocol: 'http',
+  hostname: 'localhost',
+  port: '',
+  pathname: '**',
+}]
 
-const imageDomains =
+const imageRemotePatterns =
   process.env.NODE_ENV === 'development'
-    ? [...defaultImageDomains, ...devImageDomains]
-    : defaultImageDomains
+    ? [...defaultImageRemotePatterns, ...devImageRemotePatterns]
+    : defaultImageRemotePatterns
 
 // const withBundleAnalyzer = require('@next/bundle-analyzer')({
 //   enabled: process.env.ANALYZE === 'true',
@@ -69,53 +137,47 @@ module.exports = withTM({
   },
   images: {
     minimumCacheTTL: 2433600,
-    domains: imageDomains,
     deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920, 2560],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'edenartlab-prod-data.s3.us-east-1.amazonaws.com',
-        port: '',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'edenartlab-prod-data.s3.amazonaws.com',
-        port: '',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'edenartlab-stage-data.s3.us-east-1.amazonaws.com',
-        port: '',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'edenartlab-stage-data.s3.amazonaws.com',
-        port: '',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'minio.aws.abraham.fun',
-        port: '',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'dtut5r9j4w7j4.cloudfront.net',
-        port: '',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'd14i3advvh2bvd.cloudfront.net',
-        port: '',
-        pathname: '**',
-      },
-    ],
+    remotePatterns: imageRemotePatterns,
   },
+  transpilePackages: [
+    // antd & deps
+    "@ant-design",
+    "@rc-component",
+    "antd",
+    "rc-cascader",
+    "rc-checkbox",
+    "rc-collapse",
+    "rc-dialog",
+    "rc-drawer",
+    "rc-dropdown",
+    "rc-field-form",
+    "rc-image",
+    "rc-input",
+    "rc-input-number",
+    "rc-mentions",
+    "rc-menu",
+    "rc-motion",
+    "rc-notification",
+    "rc-pagination",
+    "rc-picker",
+    "rc-progress",
+    "rc-rate",
+    "rc-resize-observer",
+    "rc-segmented",
+    "rc-select",
+    "rc-slider",
+    "rc-steps",
+    "rc-switch",
+    "rc-table",
+    "rc-tabs",
+    "rc-textarea",
+    "rc-tooltip",
+    "rc-tree",
+    "rc-tree-select",
+    "rc-upload",
+    "rc-util",
+  ],
   modularizeImports: {
     '@ant-design/icons': {
       transform: '@ant-design/icons/{{member}}',

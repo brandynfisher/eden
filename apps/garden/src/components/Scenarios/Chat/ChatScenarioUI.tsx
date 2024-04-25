@@ -1,5 +1,3 @@
-import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
-
 import CharacterAvatar from '@/components/Characters/CharacterAvatar'
 import ImageZoomable from '@/components/Creation/CreationInterface/media/ImageZoomable'
 import LoadingIndicator from '@/components/LoadingIndicator'

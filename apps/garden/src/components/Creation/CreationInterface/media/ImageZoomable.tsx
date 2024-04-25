@@ -47,7 +47,7 @@ const ImageZoomable = ({
           alt={url}
           width={width}
           height={height}
-          onLoadingComplete={hidePlaceholder}
+          onLoad={hidePlaceholder}
           className="object-contain relative z-10"
         />
       </div>

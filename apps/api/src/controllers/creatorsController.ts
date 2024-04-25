@@ -505,7 +505,7 @@ export const unfollowCreator = async (
     })
   }
 
-  await follow.remove()
+  await follow.deleteOne()
 
   await userToUnfollow.updateOne({
     $inc: {

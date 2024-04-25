@@ -1,5 +1,4 @@
 import {
-  maximumTasksInProgressPermissionCheck,
   taskPrivacyPermissionCheck,
 } from '../lib/authorization'
 import {

@@ -1,3 +1,5 @@
+import 'swiper/css'
+import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import '@/styles/globals.scss'
 import 'antd/dist/reset.css'
 

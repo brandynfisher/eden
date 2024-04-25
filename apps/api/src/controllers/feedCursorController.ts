@@ -170,6 +170,36 @@ const creationsLookup = (
   ]
 }
 
+const creationsLookupId = (
+  lookupFieldName: 'followingId',
+  idFieldName: '$following',
+  lookupPipeline: PipelineStage[],
+) => {
+  const letField: { followingId?: string } = {}
+  letField[lookupFieldName] = idFieldName
+
+  return [
+    {
+      $lookup: {
+        from: 'creations',
+        let: letField,
+        pipeline: lookupPipeline,
+        as: 'creations',
+      },
+    },
+    {
+      $unwind: {
+        path: '$creations',
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$creations',
+      },
+    },
+  ]
+}
+
 const followingPreAggregatePipeline = (
   matchStage: PipelineStage[],
   lookupPipeline: PipelineStage[],
@@ -182,7 +212,7 @@ const followingPreAggregatePipeline = (
         following: 1,
       },
     },
-    ...creationsLookup('following', 'user', lookupPipeline),
+    ...creationsLookupId('followingId', '$following', lookupPipeline),
     {
       $sort: {
         _id: -1,
@@ -334,9 +364,7 @@ const handleArguments = async ({
   reply,
   authUserId,
   sort,
-  nextValue,
   filter,
-  cursor,
   usesPrivacy = true,
 }: {
   server: FastifyInstance
@@ -687,8 +715,12 @@ export const getCreationsFeedCursor = async (
   } else if (useFollowingPreAggregate) {
     const lookupPipeline = await createPipeline({
       // @ts-ignore
-      filters,
+      filters: {
+        ...{ $expr: { $eq: ['$user', '$$followingId'] } },
+        ...filters,
+      },
       sortOptions: { createdAt: -1 },
+      limit,
       // cursor
     })
     const pipeline = [
@@ -711,6 +743,7 @@ export const getCreationsFeedCursor = async (
       { $limit: limit ?? 100 },
       ...lateLookupStages,
     ].filter(Boolean)
+
     // console.log(JSON.stringify(pipeline, null, 2))
     // @ts-ignore
     results = await Follow.aggregate(pipeline)

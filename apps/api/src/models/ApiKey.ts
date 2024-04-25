@@ -3,7 +3,6 @@ import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-import { enforceUserDocumentLimit } from '../lib/data'
 import { CharacterDocument } from './Character'
 import { UserDocument } from './Creator'
 

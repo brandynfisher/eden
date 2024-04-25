@@ -205,7 +205,7 @@ export const getSignedDownloadUrl = (
   server: FastifyInstance,
   assetUrl: string,
   fileName?: string,
-) => {
+): Promise<string> => {
   // @todo: got assets floating on multiple buckets, thus this ugly solution of dissecting the url
   // @todo: swap this back to use config/ENV values whenever we're living on a single bucket
   //  currentBucketUrl = s3Url(server, '')
@@ -298,6 +298,7 @@ export const registerS3 = async (fastify: FastifyInstance) => {
       secretAccessKey: fastify.config.AWS_SECRET_KEY,
       region: fastify.config.AWS_REGION,
     })
+
     fastify.decorate('s3', s3)
     fastify.decorate('uploadUrlAsset', uploadUrlAsset)
     fastify.decorate('uploadThumbnailAsset', uploadThumbnailAsset)

@@ -241,7 +241,7 @@ export const creationDelete = async (
     })
   }
 
-  await creation.delete({ deleteBy: 'user' })
+  await creation.delete()
 
   return reply.status(200).send({
     success: true,
@@ -437,7 +437,7 @@ export const creationUnreact = async (
     })
   }
 
-  await existingReaction.remove()
+  await existingReaction.deleteOne()
 
   await creation.updateOne({
     $inc: {

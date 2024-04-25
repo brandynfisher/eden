@@ -30,8 +30,6 @@ const submitTask = async (
 const getTransactionCost = (
   _: FastifyInstance,
   generator: GeneratorDocument,
-  ___: any,
-  config: any,
 ) => {
   if (generator.generatorName.includes('kojii')) {
     return 1

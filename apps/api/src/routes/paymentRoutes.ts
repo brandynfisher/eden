@@ -53,9 +53,7 @@ const paymentRoutes: FastifyPluginAsync = async server => {
         id: Type.String(),
       },
     },
-
-    handler: async (request, reply) =>
-      handlePaymentEvent(server, request, reply),
+    handler: async (request, reply) => handlePaymentEvent(server, request, reply),
   })
 
   server.get('/payments/products', {
