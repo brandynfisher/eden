@@ -27,21 +27,17 @@ const removePrivateFields = (creator: any) => {
 }
 
 const findCreatorByIdOrUsername = async (userId: string) => {
-  const lowerCaseUserId = userId.toLowerCase()
-
+  const lowerCaseUserId = userId.toLowerCase().trim()
   const isObjectId = ObjectId.isValid(lowerCaseUserId)
 
   const creatorDoc = await User.findOne(
-    isObjectId
-      ? {
-          _id: new ObjectId(lowerCaseUserId),
-        }
-      : {
-          $or: [
-            { userId: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
-            { username: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
-          ],
-        },
+    {
+        $or: [
+          { userId: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
+          { username: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
+          ...(isObjectId ? [{ _id: new ObjectId(lowerCaseUserId) }] : [])
+        ],
+      },
   )
 
   return creatorDoc

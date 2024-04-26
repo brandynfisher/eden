@@ -84,7 +84,7 @@ const featuredArtistsConfig =
       // 'objektpermanenz81',
       'xander',
     ]
-    : ['xander', 'va2rosa', 'xander_eden', 'jmill4747', 'gene3', 'laub-local']
+    : ['xander', 'va2rosa', 'xander_eden', 'jmill4747', 'gene3', 'laub-local-new']
 
 const fetchConcept = async (conceptId: string) => {
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts/${conceptId}`)
