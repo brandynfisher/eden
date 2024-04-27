@@ -1,8 +1,10 @@
 import { Card } from '@/components/ui/card'
+import TypographyH4 from '@/components/ui/typography/TypographyH4'
 
 const SettingsSubscriptionsPage = () => {
   return (
     <>
+      <TypographyH4>Subscription</TypographyH4>
       <Card>
         subscription stuff
       {/*  <CardHeader>*/}

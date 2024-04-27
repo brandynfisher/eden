@@ -1,8 +1,10 @@
 import { Card } from '@/components/ui/card'
+import TypographyH4 from '@/components/ui/typography/TypographyH4'
 
 const SettingsIntegrationsPage = () => {
   return (
     <>
+      <TypographyH4>Integrations</TypographyH4>
       <Card>
         discord link etc
       {/*  <CardHeader>*/}

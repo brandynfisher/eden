@@ -69,7 +69,7 @@ const navItemsMake = [
 
 const HeaderNavLinks = () => {
   const segments = useSelectedLayoutSegments()
-
+  console.log(segments)
   return (
     <>
       <HomeNavLink href='/' />

@@ -42,7 +42,7 @@ const MyAccountDropdown = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user.username}`}>My Profile</Link>
+          <Link href={`/creators/${user.username}`}>Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/creators/${user.username}/models`}>Models</Link>
@@ -61,7 +61,9 @@ const MyAccountDropdown = () => {
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">Logout</DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">
+            Logout
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

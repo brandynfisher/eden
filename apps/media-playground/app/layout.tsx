@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { Inter as FontSans } from 'next/font/google'
 import { ReactElement } from 'react'
 import DefaultLayout from '@/components/layout/default-layout'
+import Header from '@/components/header/header'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -23,16 +24,17 @@ export default function RootLayout({ children }: { children: ReactElement }) {
           fontSans.variable,
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <DefaultLayout>
-            {children}
-          </DefaultLayout>
-        </ThemeProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <div className="flex min-h-screen w-full flex-col">
+          <Header />
+          {children}
+        </div>
+      </ThemeProvider>
       </body>
     </html>
   )

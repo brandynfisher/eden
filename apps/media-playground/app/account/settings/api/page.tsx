@@ -1,8 +1,10 @@
 import { Card } from '@/components/ui/card'
+import TypographyH4 from '@/components/ui/typography/TypographyH4'
 
 const SettingsAPIPage = () => {
   return (
     <>
+      <TypographyH4>API Keys</TypographyH4>
       <Card>
         api keys stuff
       {/*  <CardHeader>*/}

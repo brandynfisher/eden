@@ -1,4 +1,3 @@
-import { ThemeToggle } from '@/components/theme-toggle'
 import HeaderNav from '@/components/navigation/header-nav'
 import SearchForm from '@/components/form/search-form'
 import MyAccountDropdown from '@/components/navigation/my-account-dropdown'
