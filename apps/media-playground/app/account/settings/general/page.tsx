@@ -2,10 +2,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import TypographyH4 from '@/components/ui/typography/TypographyH4'
 
 const SettingsGeneralPage = () => {
   return (
     <>
+      <TypographyH4>General</TypographyH4>
       <Card>
         <CardHeader>
           <CardTitle>Store Name</CardTitle>

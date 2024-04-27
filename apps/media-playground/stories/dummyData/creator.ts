@@ -3,7 +3,7 @@ import squareImageFile from '@/stories/assets/placeholder/dummy_1024x1024_ffffff
 
 const CreatorData: Creator = {
   _id: '123',
-  username: 'Test',
+  username: 'tester',
   userImage: squareImageFile.src,
   userId: '2xwwewe',
   createdAt: '',
