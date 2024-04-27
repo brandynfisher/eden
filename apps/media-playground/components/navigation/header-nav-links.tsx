@@ -5,6 +5,7 @@ import EdenLogoBwGlow from '@/components/logo/eden-logo-bw-glow'
 import { PropsWithChildren } from 'react'
 import { useSelectedLayoutSegments } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { Separator } from '@/components/ui/separator'
 
 const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
   return (
@@ -36,7 +37,7 @@ const NavLink = ({ label, segments, active }: Props) => {
   )
 }
 
-const navItems = [
+const navItemsExplore = [
   {
     label: 'Featured',
     segments: []
@@ -45,6 +46,13 @@ const navItems = [
     label: 'Models',
     segments: ['models']
   },
+  {
+    label: 'Artists',
+    segments: ['artists']
+  },
+]
+
+const navItemsMake = [
   {
     label: 'Create',
     segments: ['create']
@@ -65,12 +73,24 @@ const HeaderNavLinks = () => {
   return (
     <>
       <HomeNavLink href='/' />
-      { navItems.map(item => (
+      { navItemsExplore.map(item => (
         <NavLink
           key={item.label}
           label={item.label}
           segments={item.segments}
-          active={(segments && segments.length === 0 && item.segments.length === 0) || segments && segments.length ? item.segments.every((v,i) => v === segments[i]) : false}
+          active={(segments && segments.length === 0 && item.segments.length === 0) || segments && segments.length && item.segments[0] !== undefined  ? item.segments.every((v,i) => v === segments[i]) : false}
+        />
+      )) }
+      <div className="md:self-stretch md:flex md:items-center">
+        <Separator orientation="vertical" className="hidden md:block max-h-7 " />
+        <Separator orientation="horizontal" className="md:hidden max-h-7 " />
+      </div>
+      { navItemsMake.map(item => (
+        <NavLink
+          key={item.label}
+          label={item.label}
+          segments={item.segments}
+          active={(segments && segments.length === 0 && item.segments.length === 0) || segments && segments.length && item.segments[0] !== undefined  ? item.segments.every((v,i) => v === segments[i]) : false}
         />
       )) }
     </>
