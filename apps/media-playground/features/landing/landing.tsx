@@ -15,7 +15,7 @@ const Landing = () => {
           text={'Testbed for Streaming, CDN, Scaling'}
         />
         <LinkCard
-          href={'/masonry'}
+          href={'/sandbox/masonry'}
           title={'Masonry'}
           text={'Experiments for infinite masonry layouts'}
         />

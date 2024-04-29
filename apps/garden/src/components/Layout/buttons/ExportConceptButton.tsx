@@ -51,7 +51,7 @@ const ExportConcept = ({
       showModal(MODAL_TYPES.SUBSCRIPTION_GATE_MODAL, {
         usesUrl: false,
         minimumSubscriptionTier: SubscriptionTier.Pro,
-        featureName: 'Concept Publish',
+        featureName: 'Model Publish',
       })
       return
     }

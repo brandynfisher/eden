@@ -15,7 +15,7 @@ const CreationInterfaceTabs = () => {
       href: '/create/creations',
     },
     {
-      label: 'Concepts',
+      label: 'Models',
       value: '/create/concepts',
       href: '/create/concepts',
     },

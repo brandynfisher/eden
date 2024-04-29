@@ -16,7 +16,7 @@ const CharacterCardFeatures: FC<{ character: Character }> = ({ character }) => {
       isActive: !!character.voice,
     },
     {
-      label: 'Concept',
+      label: 'Model',
       isActive: !!character.logosData?.concept,
     },
     // {

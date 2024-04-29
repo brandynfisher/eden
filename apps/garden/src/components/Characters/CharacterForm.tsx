@@ -160,8 +160,8 @@ const CreationsSection = ({
         <Form.Item
           label={
             <FormLabel
-              text="Concept"
-              description="(Optional) Select a concept that your character will use when creating images."
+              text="Model"
+              description="(Optional) Select a model that your character will use when creating images."
             />
           }
           className="label-auto-height"

@@ -1,15 +1,22 @@
 import { PropsWithChildren } from 'react'
 import SecondaryNav from '@/components/navigation/secondary-nav'
+import { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
 
-const SecondaryNavLayout = ({children}: PropsWithChildren) => {
+type Props = PropsWithChildren & {
+  title?: string
+  baseSegments?: string[]
+  navigation: SecondaryNavSection[]
+}
+
+const SecondaryNavLayout = ({children, title, navigation, baseSegments}: Props) => {
   return (
-    <>
-      <SecondaryNav />
+    <div className="md:flex min-h-[calc(100vh_-_theme(spacing.16))] bg-muted/40">
+      <SecondaryNav title={title} baseSegments={baseSegments} items={navigation} />
       <main
-        className='flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10'>
+        className='flex flex-1 flex-col gap-4 md:gap-8 md:p-10'>
         {children}
       </main>
-    </>
+    </div>
   )
 }
 

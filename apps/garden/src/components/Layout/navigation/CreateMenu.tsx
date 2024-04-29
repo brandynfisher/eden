@@ -29,7 +29,7 @@ function getItem(
 const defaultItems: MenuItem[] = [
   getItem('Creations', '/create/creations', <YardIcon fontSize="inherit" />),
   getItem(
-    'Concepts',
+    'Models',
     '/create/concepts',
     <ModelTrainingIcon fontSize="small" />,
   ),

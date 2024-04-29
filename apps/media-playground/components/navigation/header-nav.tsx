@@ -13,12 +13,12 @@ const HeaderNav = () => {
       </DesktopHeaderNav>
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="shrink-0 md:hidden" size="icon" variant="outline">
-            <MenuIcon className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
+          <Button className='shrink-0 md:hidden' size='icon' variant='outline'>
+            <MenuIcon className='h-5 w-5' />
+            <span className='sr-only'>Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left">
+        <SheetContent side='left'>
           <MobileHeaderNav>
             <HeaderNavLinks />
           </MobileHeaderNav>

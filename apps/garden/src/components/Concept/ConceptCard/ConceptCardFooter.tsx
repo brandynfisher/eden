@@ -29,7 +29,7 @@ const ConceptCardFooter = ({ concept }: { concept: Concept }) => {
       </Link>
 
       {mode ? (
-        <Popover content="Concept Training Mode" trigger={['click', 'hover']}>
+        <Popover content="Model Training Mode" trigger={['click', 'hover']}>
           <Tag
             color={trainingModeColorMap[mode]}
             className="flex items-center capitalize me-0"

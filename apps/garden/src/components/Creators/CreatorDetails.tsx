@@ -44,7 +44,7 @@ const CreatorDetails = ({
       ),
     },
     {
-      label: 'Concepts',
+      label: 'Models',
       key: 'concepts',
       children: (
         <CreatorConceptsTab

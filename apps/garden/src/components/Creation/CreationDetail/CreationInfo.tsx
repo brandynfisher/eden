@@ -90,7 +90,7 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
       {creation.task.config['lora'] ? (
         <div className="mt-4">
           <BaseParamGroup
-            label="Concept"
+            label="Model"
             value={
               isLoading ? (
                 <LoadingIndicator />

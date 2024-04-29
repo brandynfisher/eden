@@ -302,7 +302,7 @@ const CardToolsDropdown = ({
           <UseConceptButton
             conceptId={item._id}
             variant="text"
-            label="Use Concept"
+            label="Use Model"
           />
         ),
       })

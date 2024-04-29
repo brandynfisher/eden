@@ -14,7 +14,7 @@ type Props = {
   label?: string
 }
 export function ThemeToggle({label}: Props) {
-  const { setTheme } = useTheme()
+  const { setTheme, theme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -29,14 +29,14 @@ export function ThemeToggle({label}: Props) {
           <span className='sr-only'>Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end'>
-        <DropdownMenuItem onClick={() => setTheme('light')}>
+      <DropdownMenuContent align='end' className="bg-muted">
+        <DropdownMenuItem onClick={() => setTheme('light')} className={`cursor-pointer ${theme === 'light' ? 'font-bold' : ''}`}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>
+        <DropdownMenuItem onClick={() => setTheme('dark')}  className={`cursor-pointer ${theme === 'dark' ? 'font-bold' : ''}`}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
+        <DropdownMenuItem onClick={() => setTheme('system')}  className={`cursor-pointer ${theme === 'system' ? 'font-bold' : ''}`}>
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

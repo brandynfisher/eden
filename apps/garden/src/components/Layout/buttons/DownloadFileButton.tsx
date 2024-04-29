@@ -61,7 +61,7 @@ const DownloadFileButton = ({
       showModal(MODAL_TYPES.SUBSCRIPTION_GATE_MODAL, {
         usesUrl: false,
         minimumSubscriptionTier: SubscriptionTier.Pro,
-        featureName: 'Concept Download',
+        featureName: 'Model Download',
       })
       return
     }
@@ -79,7 +79,7 @@ const DownloadFileButton = ({
         content={
           <div className="text-center">
             <div className="mb-1">
-              <strong>Concept Download</strong> is a premium feature
+              <strong>Model Download</strong> is a premium feature
             </div>
             <Link href={'/account'} className="font-bold mb-2">
               Explore plans

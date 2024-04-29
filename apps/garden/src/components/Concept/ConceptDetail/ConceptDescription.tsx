@@ -38,7 +38,7 @@ const ConceptDescription = ({
     })
 
     message.destroy()
-    message.success(`Concept description changed`)
+    message.success(`Model description changed`)
   }
 
   return (

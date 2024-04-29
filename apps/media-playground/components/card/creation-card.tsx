@@ -4,17 +4,19 @@ import CardFooter from '@/components/card/components/card-footer'
 import CardMedia from '@/components/card/components/card-media'
 import { Card } from '@/components/ui/card'
 import { Creation, Creator } from '@edenlabs/eden-sdk'
+import { CSSProperties } from 'react'
 
 type Props = {
   creation: Creation
   linkHref: string
   creator?: Creator
   showFooter?: boolean
+  style?: CSSProperties
 }
 
-const CreationCard = ({ creation, creator, showFooter }: Props) => {
+const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
   return (
-    <Card className="mb-4 overflow-hidden">
+    <Card className="overflow-hidden border-0" style={style}>
       <CardMedia
         media={{
           uri: creation.uri,

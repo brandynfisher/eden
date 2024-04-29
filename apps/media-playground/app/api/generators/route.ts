@@ -14,7 +14,7 @@ export async function GET() {
     console.error(errorMessage)
     return new Response(
       JSON.stringify({ message: errorMessage }),
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

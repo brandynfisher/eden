@@ -145,7 +145,7 @@ export const DocsLink = ({ generator }: { generator: Generator }) => {
       className="flex gap-1 items-center"
       rel="noreferrer"
     >
-      Learn about Concepts
+      Learn about Models
       <LinkOutlined />
     </a>
   )

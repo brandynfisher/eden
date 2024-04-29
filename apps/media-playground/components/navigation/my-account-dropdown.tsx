@@ -52,10 +52,10 @@ const MyAccountDropdown = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/account/settings/general`}>Settings</Link>
+          <Link href={`/settings/account`}>Settings</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/account/settings/subscription`}>Subscription</Link>
+          <Link href={`/settings/subscription`}>Subscription</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />

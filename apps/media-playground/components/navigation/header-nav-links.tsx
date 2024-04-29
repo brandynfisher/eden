@@ -4,8 +4,8 @@ import Link, { LinkProps } from 'next/link'
 import EdenLogoBwGlow from '@/components/logo/eden-logo-bw-glow'
 import { PropsWithChildren } from 'react'
 import { useSelectedLayoutSegments } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
+import NavLink, { NavLinkProps } from '@/components/navigation/nav-link'
 
 const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
   return (
@@ -16,83 +16,62 @@ const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
   )
 }
 
-type Props = {
-  label: string
-  segments: string[]
-  active?: boolean
-}
-
-const NavLink = ({ label, segments, active }: Props) => {
-  const href = `/${segments.join('/')}`
-  return (
-    <Link
-      className={cn(
-        'text-muted-foreground transition-colors hover:text-foreground capitalize',
-        active ? 'text-foreground' : ''
-      )}
-      href={href}
-    >
-      {label}
-    </Link>
-  )
-}
-
-const navItemsExplore = [
+const navItemsExplore: NavLinkProps[] = [
   {
     label: 'Featured',
-    segments: []
+    segments: [],
   },
   {
     label: 'Models',
-    segments: ['models']
+    segments: ['models'],
   },
   {
     label: 'Artists',
-    segments: ['artists']
+    segments: ['artists'],
   },
 ]
 
-const navItemsMake = [
+const navItemsMake: NavLinkProps[] = [
   {
     label: 'Create',
-    segments: ['create']
+    segments: ['create'],
   },
   {
     label: 'Train',
-    segments: ['train']
+    segments: ['train'],
   },
   {
     label: 'Build',
-    segments: ['build']
-  }
+    segments: ['build'],
+  },
 ]
 
 const HeaderNavLinks = () => {
   const segments = useSelectedLayoutSegments()
-  console.log(segments)
+
   return (
     <>
       <HomeNavLink href='/' />
-      { navItemsExplore.map(item => (
+      {navItemsExplore.map(item => (
         <NavLink
           key={item.label}
           label={item.label}
           segments={item.segments}
-          active={(segments && segments.length === 0 && item.segments.length === 0) || segments && segments.length && item.segments[0] !== undefined  ? item.segments.every((v,i) => v === segments[i]) : false}
+          active={(segments && segments.length === 0 && item.segments.length === 0) || segments && segments.length && item.segments[0] !== undefined ? item.segments.every((v, i) => v === segments[i]) : false}
         />
-      )) }
-      <div className="md:self-stretch md:flex md:items-center">
-        <Separator orientation="vertical" className="hidden md:block max-h-7 " />
-        <Separator orientation="horizontal" className="md:hidden max-h-7 " />
+      ))}
+      <div className='md:self-stretch md:flex md:items-center'>
+        <Separator orientation='vertical' className='hidden md:block max-h-7 ' />
+        <Separator orientation='horizontal' className='md:hidden max-h-7 ' />
       </div>
-      { navItemsMake.map(item => (
+      {navItemsMake.map(item => (
         <NavLink
           key={item.label}
           label={item.label}
           segments={item.segments}
-          active={(segments && segments.length === 0 && item.segments.length === 0) || segments && segments.length && item.segments[0] !== undefined  ? item.segments.every((v,i) => v === segments[i]) : false}
+          active={(segments && segments.length === 0 && item.segments.length === 0) || segments && segments.length && item.segments[0] !== undefined ? item.segments.every((v, i) => v === segments[i]) : false}
         />
-      )) }
+      ))}
     </>
   )
 }
