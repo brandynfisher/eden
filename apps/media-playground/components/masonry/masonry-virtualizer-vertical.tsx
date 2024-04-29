@@ -8,6 +8,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import LoadingIndicator from '@/components/loading-indicator'
 import { useElementSize } from '@/hooks/use-element-size'
 import { Creation } from '@edenlabs/eden-sdk'
+import { useMediaQuery } from '@/hooks/use-media-query'
 
 async function fetchServerPage(
   limit: number,
@@ -39,12 +40,19 @@ const getRandomData = () => {
   }
 }
 
-const MASONRY_COLUMN_COUNT = 4
 const MASONRY_GUTTER = 16
 const QUERY_LIMIT = 35
 
 const MasonryVirtualizerVertical = () => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } = useElementSize()
+  const above480 = useMediaQuery('(min-width: 480px)')
+  const above768 = useMediaQuery('(min-width: 768px)')
+  const above1024 = useMediaQuery('(min-width: 1024px)')
+  const above1280 = useMediaQuery('(min-width: 1280px)')
+  const above1536 = useMediaQuery('(min-width: 1536px)')
+  const above1920 = useMediaQuery('(min-width: 1920px)')
+
+  const MASONRY_COLUMN_COUNT = above1920 ? 7 : above1536 ? 6 : above1280 ? 5 : above1024 ? 4 : above768 ? 3 : above480 ? 2 : 1
 
   const columnWidth = useMemo(() => {
     return (masonryWrapWidth - ((MASONRY_COLUMN_COUNT - 1) * MASONRY_GUTTER)) / MASONRY_COLUMN_COUNT
