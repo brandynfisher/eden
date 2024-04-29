@@ -7,20 +7,21 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import LoadingIndicator from '@/components/loading-indicator'
 import { useElementSize } from '@/hooks/use-element-size'
+import { Creation } from '@edenlabs/eden-sdk'
 
 async function fetchServerPage(
   limit: number,
-  nextCursor: number = 0,
-): Promise<{ rows: string[]; nextOffset: number }> {
+  nextOffset: number = 0,
+): Promise<{ rows: Creation[]; nextOffset: number }> {
   const rows = new Array(limit)
     .fill(0)
     .map(getRandomData)
 
-  console.log('fetchServerPage', rows.length, nextCursor)
+  console.log('fetchServerPage', rows.length, nextOffset)
 
   await new Promise((r) => setTimeout(r, 250))
 
-  return { rows, nextCursor: nextCursor + 1 }
+  return { rows, nextOffset: nextOffset + 1 }
 }
 
 const getRandomData = () => {
@@ -60,7 +61,8 @@ const MasonryVirtualizerVertical = () => {
   } = useInfiniteQuery({
     queryKey: ['creations'],
     queryFn: (ctx) => fetchServerPage(QUERY_LIMIT, ctx.pageParam),
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    initialPageParam: 0
   })
 
   const allRows = useMemo(() => {
