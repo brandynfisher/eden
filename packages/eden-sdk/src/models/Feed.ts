@@ -1,4 +1,8 @@
-import { ListCursorQueryParams, transformArgsIntoURLParams } from '../types'
+import {
+  ListCursorQueryParams,
+  PaginatedCursorResponse,
+  transformArgsIntoURLParams,
+} from '../types'
 import {
   ListQueryParams,
   PaginatedResponse,
@@ -11,7 +15,7 @@ import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
-interface FeedCreationsBaseArguments extends WebAPICallOptions {
+export interface FeedCreationsBaseArguments extends WebAPICallOptions {
   userId?: string | string[]
   creationId?: string
   characterId?: string | string[]
@@ -48,13 +52,40 @@ interface FeedCreatorsBaseArguments extends WebAPICallOptions {
   orderBy?: string
 }
 
+export type CursorPaginatedRouteQueryParams = {
+  cursor?: string
+  nextValue?: number
+  limit?: number
+  orderBy?: string
+}
+
+export type FeedCursorRouteQueryParams = {
+  sort?: string | string[]
+  filter?: {
+    name?: string | string[]
+    user?: string | string[]
+    character?: string | string[]
+    collection?: string | string[]
+    creation?: string | string[]
+    generator?: string | string[]
+    outputType?: string | string[]
+    concept?: string | string[]
+    isPrivate?: boolean
+    visibility?: 'all' | 'public' | 'private'
+    maxDate?: string
+    minDate?: string
+  }
+}
+
+export type CursorPaginatedFeedQuery = FeedCursorRouteQueryParams &
+  CursorPaginatedRouteQueryParams
+
 export interface FeedCreationsArguments
   extends FeedCreationsBaseArguments,
     ListQueryParams {}
 
 export interface FeedCreationsCursorArguments
-  extends FeedCreationsBaseArguments,
-    ListCursorQueryParams {}
+  extends CursorPaginatedFeedQuery {}
 
 export interface FeedConceptsCursorArguments
   extends FeedConceptsBaseArguments,
@@ -95,7 +126,7 @@ export const feedCreationsRequestConfig = (
 }
 
 export const feedCursorCreationsRequestConfig = (
-  args: FeedCreationsArguments,
+  args: FeedCreationsCursorArguments,
 ): AxiosRequestConfig => {
   const params = transformArgsIntoURLParams(args)
   return {
@@ -128,6 +159,19 @@ export const feedCursorConceptsRequestConfig = (
 }
 
 // Responses
+
+export type FeedCreationsCursorResponse = WebAPICallResult &
+  PaginatedCursorResponse<Creation> & {
+    error?: string
+    reactions?: {
+      [creationId: string]: {
+        [reaction: string]: number
+      }
+    }
+    bookmarks?: {
+      [creationId: string]: boolean
+    }
+  }
 
 export type FeedCreationsResponse = WebAPICallResult &
   PaginatedResponse<Creation> & {

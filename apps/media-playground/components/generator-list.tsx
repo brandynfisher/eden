@@ -1,7 +1,7 @@
 'use client'
 
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { useGeneratorsQuery } from '@/hooks/useGeneratorQuery'
+import { useGeneratorsQuery } from '@/hooks/query/use-generator-query'
 import LoadingIndicator from '@/components/loading-indicator'
 import AlertDestructive from '@/components/alert/alert-destructive'
 
