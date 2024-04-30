@@ -185,7 +185,7 @@ export const useFeedCursorPaginated = (
         : { totalItems: flatData && flatData.length && flatData[0] ? flatData[0].total : 0 }
       return {
         docs:
-          flatData && flatData.length && flatData[0].docs && flatData[0].docs.length
+          flatData && flatData.length && flatData[0] !== undefined && flatData[0].docs !== undefined && flatData[0].docs.length
             ? flatData.map((page, index) => {
                 // shuffle latest page of recommended feed
                 if (orderBy && orderBy.field === 'embedding.score') {

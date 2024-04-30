@@ -56,7 +56,7 @@ const MasonryVirtualizerVertical = () => {
 
   const columnWidth = useMemo(() => {
     return (masonryWrapWidth - ((MASONRY_COLUMN_COUNT - 1) * MASONRY_GUTTER)) / MASONRY_COLUMN_COUNT
-  }, [masonryWrapWidth])
+  }, [MASONRY_COLUMN_COUNT, masonryWrapWidth])
 
   const {
     // status,
