@@ -884,133 +884,133 @@ export const getCreationsFeedCursor = async (
   }
 }
 
-export const getConceptsFeedCursor = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { limit, cursor, nextValue, sort, filter } =
-    request.query as FeedConceptsCursorArguments
-  const authUserId = request.user ? request.user.userId : undefined
+// export const getConceptsFeedCursor = async (
+//   server: FastifyInstance,
+//   request: FastifyRequest,
+//   reply: FastifyReply,
+// ) => {
+//   const { limit, cursor, nextValue, sort, filter } =
+//     request.query as FeedConceptsCursorArguments
+//   const authUserId = request.user ? request.user.userId : undefined
+//
+//   const { filters, sortOptions, customFilterOptions } = await handleArguments({
+//     server,
+//     reply,
+//     authUserId,
+//     cursor,
+//     nextValue,
+//     sort,
+//     filter,
+//   })
+//
+//   let results = []
+//
+//   const pipeline = await createPipeline({
+//     limit: limit ?? 100,
+//     sortOptions: { ...sortOptions, _id: -1 },
+//     cursor,
+//     sortCursor: nextValue ? { creationCount: { $lte: nextValue } } : undefined,
+//     //@ts-ignore
+//     filters,
+//   })
+//   const lateLookupStages = [...userLookup]
+//
+//   const conceptFeedPipeline = [
+//     // { $match: filters },
+//     ...pipeline,
+//     ...lateLookupStages,
+//   ].filter(Boolean)
+//
+//   // console.log(JSON.stringify(conceptFeedPipeline, null, 2))
+//
+//   results = await Concept.aggregate(conceptFeedPipeline)
+//
+//   try {
+//     const nextCursor =
+//       results && results.length && results[results.length - 1]._id
+//
+//     const response: { nextValue?: number; nextCursor: string; docs?: any[] } = {
+//       nextCursor,
+//       docs: results,
+//     }
+//
+//     if (customFilterOptions.creationCount) {
+//       response.nextValue =
+//         results && results.length && results[results.length - 1].creationCount
+//     }
+//     reply.send(response)
+//   } catch (error) {
+//     reply.code(500).send({ error: 'Internal Server Error' })
+//   }
+// }
 
-  const { filters, sortOptions, customFilterOptions } = await handleArguments({
-    server,
-    reply,
-    authUserId,
-    cursor,
-    nextValue,
-    sort,
-    filter,
-  })
-
-  let results = []
-
-  const pipeline = await createPipeline({
-    limit: limit ?? 100,
-    sortOptions: { ...sortOptions, _id: -1 },
-    cursor,
-    sortCursor: nextValue ? { creationCount: { $lte: nextValue } } : undefined,
-    //@ts-ignore
-    filters,
-  })
-  const lateLookupStages = [...userLookup]
-
-  const conceptFeedPipeline = [
-    // { $match: filters },
-    ...pipeline,
-    ...lateLookupStages,
-  ].filter(Boolean)
-
-  // console.log(JSON.stringify(conceptFeedPipeline, null, 2))
-
-  results = await Concept.aggregate(conceptFeedPipeline)
-
-  try {
-    const nextCursor =
-      results && results.length && results[results.length - 1]._id
-
-    const response: { nextValue?: number; nextCursor: string; docs?: any[] } = {
-      nextCursor,
-      docs: results,
-    }
-
-    if (customFilterOptions.creationCount) {
-      response.nextValue =
-        results && results.length && results[results.length - 1].creationCount
-    }
-    reply.send(response)
-  } catch (error) {
-    reply.code(500).send({ error: 'Internal Server Error' })
-  }
-}
-
-export const getCreatorsFeedCursor = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  // console.log({ routeUrl: request.routeOptions.url })
-  const { limit, cursor, nextValue, sort, filter } =
-    request.query as FeedCreatorsCursorArguments
-  const authUserId = request.user ? request.user.userId : undefined
-
-  const { filters, sortOptions, customFilterOptions } = await handleArguments({
-    server,
-    reply,
-    authUserId,
-    cursor,
-    nextValue,
-    sort,
-    filter,
-    usesPrivacy: false,
-  })
-
-  let results = []
-
-  const pipeline = await createPipeline({
-    limit: limit ?? 100,
-    sortOptions: { ...sortOptions, _id: -1 },
-    cursor,
-    // sortCursor: nextValue ? { creationCount: { $lte: nextValue } } : undefined,
-    sortCursor: nextValue
-      ? customFilterOptions.followerCount
-        ? { followerCount: { $lte: nextValue } }
-        : { creationCount: { $lte: nextValue } }
-      : undefined,
-    //@ts-ignore
-    filters,
-  })
-  // const lateLookupStages = [...userLookup]
-
-  const feedPipeline = [
-    // { $match: filters },
-    ...pipeline,
-    // ...lateLookupStages,
-  ].filter(Boolean)
-
-  // console.log(JSON.stringify(feedPipeline, null, 2))
-
-  results = await User.aggregate(feedPipeline)
-
-  try {
-    const nextCursor =
-      results && results.length && results[results.length - 1]._id
-
-    const response: { nextValue?: number; nextCursor: string; docs?: any[] } = {
-      nextCursor,
-      docs: results,
-    }
-
-    if (customFilterOptions.creationCount) {
-      response.nextValue =
-        results && results.length && results[results.length - 1].creationCount
-    }
-    if (customFilterOptions.followerCount) {
-      response.nextValue =
-        results && results.length && results[results.length - 1].followerCount
-    }
-    reply.send(response)
-  } catch (error) {
-    reply.code(500).send({ error: 'Internal Server Error' })
-  }
-}
+// export const getCreatorsFeedCursor = async (
+//   server: FastifyInstance,
+//   request: FastifyRequest,
+//   reply: FastifyReply,
+// ) => {
+//   // console.log({ routeUrl: request.routeOptions.url })
+//   const { limit, cursor, nextValue, sort, filter } =
+//     request.query as FeedCreatorsCursorArguments
+//   const authUserId = request.user ? request.user.userId : undefined
+//
+//   const { filters, sortOptions, customFilterOptions } = await handleArguments({
+//     server,
+//     reply,
+//     authUserId,
+//     cursor,
+//     nextValue,
+//     sort,
+//     filter,
+//     usesPrivacy: false,
+//   })
+//
+//   let results = []
+//
+//   const pipeline = await createPipeline({
+//     limit: limit ?? 100,
+//     sortOptions: { ...sortOptions, _id: -1 },
+//     cursor,
+//     // sortCursor: nextValue ? { creationCount: { $lte: nextValue } } : undefined,
+//     sortCursor: nextValue
+//       ? customFilterOptions.followerCount
+//         ? { followerCount: { $lte: nextValue } }
+//         : { creationCount: { $lte: nextValue } }
+//       : undefined,
+//     //@ts-ignore
+//     filters,
+//   })
+//   // const lateLookupStages = [...userLookup]
+//
+//   const feedPipeline = [
+//     // { $match: filters },
+//     ...pipeline,
+//     // ...lateLookupStages,
+//   ].filter(Boolean)
+//
+//   // console.log(JSON.stringify(feedPipeline, null, 2))
+//
+//   results = await User.aggregate(feedPipeline)
+//
+//   try {
+//     const nextCursor =
+//       results && results.length && results[results.length - 1]._id
+//
+//     const response: { nextValue?: number; nextCursor: string; docs?: any[] } = {
+//       nextCursor,
+//       docs: results,
+//     }
+//
+//     if (customFilterOptions.creationCount) {
+//       response.nextValue =
+//         results && results.length && results[results.length - 1].creationCount
+//     }
+//     if (customFilterOptions.followerCount) {
+//       response.nextValue =
+//         results && results.length && results[results.length - 1].followerCount
+//     }
+//     reply.send(response)
+//   } catch (error) {
+//     reply.code(500).send({ error: 'Internal Server Error' })
+//   }
+// }
