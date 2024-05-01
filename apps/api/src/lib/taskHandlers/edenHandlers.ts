@@ -213,7 +213,7 @@ const handleUpdate = async (
       )
 
       server.eventEmitter.emit('taskUpdate', {
-        userId: task.user,
+        userId: task.user._id,
         taskId,
         status: TaskStatus.Completed,
         progress: 1.0,
@@ -309,7 +309,7 @@ const handleUpdate = async (
         })
 
         server.eventEmitter.emit('taskUpdate', {
-          userId: task.user,
+          userId: task.user._id,
           taskId,
           status: TaskStatus.Completed,
           progress: 1.0,
@@ -402,7 +402,7 @@ const handleUpdateUniversal = async (
         }
 
         server.eventEmitter.emit('taskUpdate', {
-          userId: task.user,
+          userId: task.user._id,
           taskId,
           status: TaskStatus.Completed,
           progress: 1.0,
@@ -476,7 +476,7 @@ const handleFailure = async (
   })
 
   server.eventEmitter.emit('taskUpdate', {
-    userId: task.user,
+    userId: task.user._id,
     taskId,
     status: TaskStatus.Failed,
     progress: 1.0,

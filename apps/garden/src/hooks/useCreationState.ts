@@ -172,7 +172,7 @@ export const useCreationState = () => {
           if (data) {
             console.log('taskUpdateevent', data)
             setTasks(prevState => {
-              const newState = Object.assign({}, prevState)
+              const newState = [...prevState]
               const existingTaskIndex = newState.findIndex(item => item.taskId === data.taskId)
 
               if (existingTaskIndex !== -1) {

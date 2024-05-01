@@ -119,7 +119,7 @@ export const dummyReceiveTaskUpdate = async (
   )
 
   server.eventEmitter.emit('taskUpdate', {
-    userId: task.user,
+    userId: task.user._id,
     taskId,
     status: TaskStatus.Pending,
     progress: 0.5,
@@ -161,7 +161,7 @@ export const dummyReceiveTaskUpdate = async (
   )
 
   server.eventEmitter.emit('taskUpdate', {
-    userId: task.user,
+    userId: task.user._id,
     taskId,
     status: TaskStatus.Completed,
     progress: 1.0,

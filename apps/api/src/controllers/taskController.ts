@@ -388,7 +388,7 @@ export const subscribeTaskUpdates = async (
   reply.sse({ event: 'init-ping', data: JSON.stringify({heartbeat: userId}) })
 
   reply.sse(
-    (async function * source () {
+    (async function * () {
       console.log('REPLY SSE', userId)
 
       // keep the connection alive.
@@ -399,14 +399,13 @@ export const subscribeTaskUpdates = async (
 
       try {
         for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
-          const taskUpdate = event as TaskUpdateEvent
-          console.log('SSE taskupdate')
+          const taskUpdate =  event as TaskUpdateEvent
           if (
             taskUpdate.userId.toString() === userId.toString() &&
             (!taskId || taskUpdate.taskId === taskId)
           ) {
-            console.log('SSE taskupdate::data', {
-              event: event.name,
+            console.log('sending SSE task update', {
+              event: 'task-update',
               data: JSON.stringify(event),
             })
 
