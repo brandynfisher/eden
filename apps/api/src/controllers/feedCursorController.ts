@@ -376,7 +376,7 @@ const handleArguments = async ({
 
   // console.log({ filter,cursor,nextValue })
   const filterMap: FilterItem[] = []
-  if (filter && filter.length) {
+  if (filter) {
     (Array.isArray(filter) ? filter : [filter]).map(filterGroup => {
       const [filterItem, filterValue] = filterGroup.split(';')
       filterMap.push({ name: filterItem, value: filterValue })
