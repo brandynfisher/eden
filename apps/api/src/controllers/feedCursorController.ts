@@ -1,8 +1,8 @@
 import { getSimilarCreationIds } from '../lib/similar'
 import { Collection } from '../models/Collection'
-import { Concept } from '../models/Concept'
+// import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
-import { User } from '../models/Creator'
+// import { User } from '../models/Creator'
 import { Embedding, EmbeddingDocument } from '../models/Embedding'
 import { Follow } from '../models/Follow'
 import { Reaction } from '../models/Reaction'
@@ -11,9 +11,9 @@ import {
   getReactions as getCreationReactions,
 } from './creationsController'
 import {
-  FeedConceptsCursorArguments,
+  // FeedConceptsCursorArguments,
   CursorPaginatedFeedQuery,
-  FeedCreatorsCursorArguments,
+  // FeedCreatorsCursorArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
