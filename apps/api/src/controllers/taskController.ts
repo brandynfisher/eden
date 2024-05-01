@@ -254,9 +254,9 @@ export const createTask = async (
   }
   await Transaction.create(transactionData)
 
-  server.eventEmitter.emit('taskUpdate', {
+  server.eventEmitter.emit('task-update', {
     userId: user,
-    taskId: taskId,
+    taskId: task._id,
     status: TaskStatus.Pending,
     progress: 0,
     task: task
@@ -398,7 +398,7 @@ export const subscribeTaskUpdates = async (
       }, 15000) // Send a keep-alive every 15 seconds
 
       try {
-        for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
+        for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate =  event as TaskUpdateEvent
           if (
             taskUpdate.userId.toString() === userId.toString() &&

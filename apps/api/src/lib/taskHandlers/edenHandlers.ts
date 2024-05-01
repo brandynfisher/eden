@@ -76,6 +76,13 @@ const handleUpdate = async (
     progress: Math.max(maxProgress, task.progress || 0),
   }
 
+  server.eventEmitter.emit('task-update', {
+    userId: task.user,
+    taskId: task._id,
+    task: task,
+    ...taskUpdate
+  })
+
   const filteredIntermediateOutputs = intermediateOutputs.filter(
     o => o.files && Array.isArray(o.files) && o.files.length > 0,
   )
@@ -212,7 +219,7 @@ const handleUpdate = async (
         }),
       )
 
-      server.eventEmitter.emit('taskUpdate', {
+      server.eventEmitter.emit('task-update', {
         userId: task.user._id,
         taskId,
         status: TaskStatus.Completed,
@@ -308,7 +315,7 @@ const handleUpdate = async (
           progress: 1.0,
         })
 
-        server.eventEmitter.emit('taskUpdate', {
+        server.eventEmitter.emit('task-update', {
           userId: task.user._id,
           taskId,
           status: TaskStatus.Completed,
@@ -356,9 +363,17 @@ const handleUpdateUniversal = async (
   const isCompleted = output.some(Boolean) && status == 'succeeded'
 
   const taskUpdate = {
-    status: 'running',
+    status: TaskStatus.Running,
     progress: 0,
   }
+
+  server.eventEmitter.emit('task-update', {
+    userId: task.user,
+    taskId: task._id,
+    task: task,
+    ...taskUpdate
+  })
+
   if (isCompleted) {
     Object.assign(taskUpdate, {
       status: 'completed',
@@ -401,7 +416,7 @@ const handleUpdateUniversal = async (
           })
         }
 
-        server.eventEmitter.emit('taskUpdate', {
+        server.eventEmitter.emit('task-update', {
           userId: task.user._id,
           taskId,
           status: TaskStatus.Completed,
@@ -475,7 +490,7 @@ const handleFailure = async (
     amount: task.cost,
   })
 
-  server.eventEmitter.emit('taskUpdate', {
+  server.eventEmitter.emit('task-update', {
     userId: task.user._id,
     taskId,
     status: TaskStatus.Failed,

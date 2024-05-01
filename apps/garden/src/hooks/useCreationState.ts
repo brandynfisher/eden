@@ -158,7 +158,7 @@ export const useCreationState = () => {
       const initEventSource = async () => {
         console.log('setting up eventsource', `/api/tasks/events`)
         eventSource = new EventSourcePolyfill(
-          `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/tasks/events`,
+          `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`,
           {
             headers: {
               Authorization: `Bearer ${await getToken()}`,

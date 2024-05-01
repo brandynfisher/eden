@@ -2,6 +2,8 @@ export const CONFIG = {
   API_URL: process.env.EDEN_API_URL || 'http://0.0.0.0:5050',
   NEXT_PUBLIC_EDEN_API_URL:
     process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://0.0.0.0:5050',
+  NEXT_PUBLIC_EDEN_SSE_URL:
+    process.env.NEXT_PUBLIC_EDEN_SSE_URL || 'http://0.0.0.0:5050',
   NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
   NEXT_PUBLIC_DISCORD_CLIENT_ID:
     process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '',
