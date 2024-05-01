@@ -2,7 +2,7 @@
 
 import { useWindowVirtualizer, VirtualItem } from '@tanstack/react-virtual'
 import CreationCard from '@/components/card/creation-card'
-import CreationData, { CreationDataLandscape, CreationDataPortrait } from '@/stories/dummyData/creation'
+// import CreationData, { CreationDataLandscape, CreationDataPortrait } from '@/stories/dummyData/creation'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import LoadingIndicator from '@/components/loading-indicator'
@@ -48,20 +48,20 @@ import { FeedQueryParams } from '@/types/Feed'
 //   return { rows: data, nextOffset: nextOffset + 1 }
 // }
 
-const getRandomData = () => {
-  // randomly return CreationData, CreationDataLandscape or CreationDataPortrait
-  const randomIndex = Math.floor(Math.random() * 3)
-  switch (randomIndex) {
-    case 0:
-      return CreationData
-    case 1:
-      return CreationDataLandscape
-    case 2:
-      return CreationDataPortrait
-    default:
-      return CreationData
-  }
-}
+// const getRandomData = () => {
+//   // randomly return CreationData, CreationDataLandscape or CreationDataPortrait
+//   const randomIndex = Math.floor(Math.random() * 3)
+//   switch (randomIndex) {
+//     case 0:
+//       return CreationData
+//     case 1:
+//       return CreationDataLandscape
+//     case 2:
+//       return CreationDataPortrait
+//     default:
+//       return CreationData
+//   }
+// }
 
 const MASONRY_GUTTER = 16
 const QUERY_LIMIT = 35
@@ -95,10 +95,10 @@ const MasonryVirtualizerVertical = () => {
   ]
 
   const {
-    status,
+    // status,
     data,
-    error,
-    isFetching,
+    // error,
+    // isFetching,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
