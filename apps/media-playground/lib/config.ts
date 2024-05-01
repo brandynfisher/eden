@@ -5,6 +5,10 @@ export const CONFIG = {
   NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
   NEXT_PUBLIC_DISCORD_CLIENT_ID:
     process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '',
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '',
+  NEXT_PUBLIC_CLOUDINARY_API_KEY:
+    process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '',
   DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   EDEN_ADMIN_API_KEY: process.env.EDEN_ADMIN_API_KEY || '',

@@ -1,3 +1,5 @@
+import { Task } from './models'
+
 export type Verb = 'GET' | 'POST'
 
 export const INVALID_AUTH_MESSAGE =
@@ -58,6 +60,7 @@ export interface TaskUpdateEvent {
   status: string
   progress?: number
   result?: string[]
+  task?: Task
 }
 
 export const transformArgsIntoURLParams = (

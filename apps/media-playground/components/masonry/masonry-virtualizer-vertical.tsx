@@ -91,7 +91,7 @@ const MasonryVirtualizerVertical = () => {
   const queryKey = [
     'feed',
     'creations',
-    'createdAt',
+    query
   ]
 
   const {
@@ -110,6 +110,7 @@ const MasonryVirtualizerVertical = () => {
       // console.log(queryUrl)
       return fetcher(queryUrl)
     },
+    staleTime: 1000000000,
     getNextPageParam: (lastPage: FeedCreationsCursorResponse) => {
       // console.log('nextPageParam', lastPage.nextCursor)
       return lastPage.nextCursor
@@ -141,7 +142,7 @@ const MasonryVirtualizerVertical = () => {
     }
 
     if (
-      lastItem.index >= allRows.length - 3 &&
+      lastItem.index >= allRows.length - (QUERY_LIMIT) &&
       hasNextPage &&
       !isFetchingNextPage
     ) {
@@ -189,20 +190,20 @@ const MasonryVirtualizerVertical = () => {
             </div>
           )
           : (
-            <CreationCard
-              creation={item}
-              creator={item.user}
-              linkHref={`/creations/${item._id}`}
-              showFooter={true}
-            />
+            item ?(
+              <CreationCard
+                creation={item}
+                creator={item.user}
+                linkHref={`/creations/${item._id}`}
+                showFooter={true}
+              />
+            ) : (
+              <div>Missing data</div>
+            )
           )}
       </div>
     )
   }, [allRows, hasNextPage, rowVirtualizer, columnWidth])
-
-  useEffect(() => {
-    console.log('Rendering Masonry')
-  }, [])
 
   return (
     <div

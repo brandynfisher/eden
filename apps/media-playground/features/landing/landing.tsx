@@ -10,7 +10,7 @@ const Landing = () => {
 
       <div className="mb-0 grid md:grid-cols-2 gap-4 lg:max-w-5xl lg:w-full lg:grid-cols-4 lg:text-left">
         <LinkCard
-          href={'/media'}
+          href={'/sandbox/media'}
           title={'Media'}
           text={'Testbed for Streaming, CDN, Scaling'}
         />
