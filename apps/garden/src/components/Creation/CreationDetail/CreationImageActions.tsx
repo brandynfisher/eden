@@ -51,7 +51,7 @@ export const UpscaleImageMenu = ({
 }) => {
   const { message } = App.useApp()
   const { maybeAuthenticate, refetchMe } = useContext(UserContext)
-  const { setActiveTaskId, refetchTasks } = useContext(
+  const { setActiveTaskId } = useContext(
     CreationNotificationContext,
   )
   const { isAllowed: is4kUpscaleAllowed } = useSubscriptionGate(
@@ -97,7 +97,6 @@ export const UpscaleImageMenu = ({
           generatorName,
           config,
         })
-        refetchTasks && refetchTasks()
         message.success('Task "Upscale" created!')
         const { taskId } = response.data
         setActiveTaskId && setActiveTaskId(taskId)
@@ -109,7 +108,7 @@ export const UpscaleImageMenu = ({
         handleClose()
       }
     },
-    [maybeAuthenticate, refetchMe, refetchTasks, setActiveTaskId, message],
+    [maybeAuthenticate, refetchMe, setActiveTaskId, message],
   )
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -197,7 +196,7 @@ export const AnimateImageMenu = ({
 }) => {
   const { message } = App.useApp()
   const { maybeAuthenticate, refetchMe } = useContext(UserContext)
-  const { setActiveTaskId, refetchTasks } = useContext(
+  const { setActiveTaskId} = useContext(
     CreationNotificationContext,
   )
   const { isAllowed: isAnimateLongAllowed } = useSubscriptionGate(
@@ -238,7 +237,6 @@ export const AnimateImageMenu = ({
           generatorName,
           config,
         })
-        refetchTasks && refetchTasks()
         message.success('Task "img2vid" created!')
         const { taskId } = response.data
         setActiveTaskId && setActiveTaskId(taskId)
@@ -250,7 +248,7 @@ export const AnimateImageMenu = ({
         handleClose()
       }
     },
-    [refetchTasks, refetchMe, maybeAuthenticate, message, setActiveTaskId],
+    [refetchMe, maybeAuthenticate, message, setActiveTaskId],
   )
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {

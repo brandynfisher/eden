@@ -96,7 +96,7 @@ const GeneratorForm = ({
   onSubmitSuccess?: () => void
   outputType?: GeneratorOutputType
 }) => {
-  const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
+  const { setActiveTaskId, setHasChangedGenerator } = useContext(
     CreationNotificationContext,
   )
   const { message } = App.useApp()
@@ -312,7 +312,6 @@ const GeneratorForm = ({
         generatorName: generator.generatorName,
         config: cleanedValues,
       })
-      refetchTasks && refetchTasks()
       message.success('Task created!')
       const { taskId } = response.data
       setActiveTaskId && setActiveTaskId(taskId)

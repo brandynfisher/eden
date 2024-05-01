@@ -47,7 +47,7 @@ export const useClerkUserState = () => {
   // reset user state on disconnect
   useEffect(() => {
     refetchMe()
-  }, [isAuthenticated])
+  }, [refetchMe, isAuthenticated])
 
   const { settings, updateSetting } = useSettings()
 
