@@ -185,7 +185,10 @@ export const useCreationState = () => {
                 return newState
               }
 
-              newState.push(data.task)
+              if (data.task) {
+                newState.push(data.task)
+              }
+
               return newState
             })
           }
