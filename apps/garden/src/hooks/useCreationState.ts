@@ -113,7 +113,6 @@ import { CONFIG } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
 import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
 import useSWRImmutable from 'swr/immutable'
-import { data } from 'msw/lib/types/context'
 
 export const useCreationState = () => {
   const { message } = App.useApp()
