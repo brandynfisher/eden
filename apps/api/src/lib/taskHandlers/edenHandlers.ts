@@ -72,15 +72,15 @@ const handleUpdate = async (
   )
 
   const taskUpdate = {
-    status: 'running',
+    status: TaskStatus.Running,
     progress: Math.max(maxProgress, task.progress || 0),
   }
 
   server.eventEmitter.emit('task-update', {
     userId: task.user,
-    taskId: task._id,
-    task: task,
-    ...taskUpdate
+    taskId: taskId,
+    task: { ...task, ...taskUpdate },
+    ...taskUpdate,
   })
 
   const filteredIntermediateOutputs = intermediateOutputs.filter(
@@ -107,7 +107,7 @@ const handleUpdate = async (
       const creationData: CreationInput[] = []
 
       const { nsfw_scores, ...remainingAttributes } =
-        finalOutput.attributes || {}
+      finalOutput.attributes || {}
       const finalOutputAttributes = { ...remainingAttributes }
 
       await Promise.allSettled(
@@ -219,15 +219,6 @@ const handleUpdate = async (
         }),
       )
 
-      server.eventEmitter.emit('task-update', {
-        userId: task.user._id,
-        taskId,
-        status: TaskStatus.Completed,
-        progress: 1.0,
-        result: creationData.map(item => item.uri),
-        task,
-      })
-
       if (task.webhooks) {
         for (const webhook of task.webhooks) {
           await axios.post(webhook, {
@@ -254,6 +245,19 @@ const handleUpdate = async (
         status: 'completed',
         progress: 1.0,
       })
+
+      server.eventEmitter.emit('task-update', {
+        userId: task.user._id,
+        taskId,
+        status: TaskStatus.Completed,
+        progress: 1.0,
+        result: creationData.map(item => item.uri),
+        task: {
+          ...task,
+          ...taskUpdate,
+        },
+      })
+
     } else if (generator?.output == 'concept') {
       for (let i = 0; i < finalOutput.files.length; i++) {
         // version the concept's public name (v2, v3, etc)
@@ -271,7 +275,7 @@ const handleUpdate = async (
               user: task.user,
               name: newName,
             })
-          ) {
+            ) {
             version++
             newName = `${baseName}_v${version}`
           }
@@ -369,9 +373,9 @@ const handleUpdateUniversal = async (
 
   server.eventEmitter.emit('task-update', {
     userId: task.user,
-    taskId: task._id,
-    task: task,
-    ...taskUpdate
+    taskId: taskId,
+    task: { ...task, ...taskUpdate },
+    ...taskUpdate,
   })
 
   if (isCompleted) {
@@ -407,6 +411,19 @@ const handleUpdateUniversal = async (
         // todo: make a thumbnail
         const creation = await Creation.create(creationData)
         Object.assign(taskUpdate, { creation: creation._id })
+
+        server.eventEmitter.emit('task-update', {
+          userId: task.user._id,
+          taskId,
+          status: TaskStatus.Completed,
+          progress: 1.0,
+          result: creationData.uri,
+          task: {
+            ...task,
+            ...taskUpdate,
+          },
+        })
+
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
             await axios.post(webhook, {
@@ -415,15 +432,6 @@ const handleUpdateUniversal = async (
             })
           })
         }
-
-        server.eventEmitter.emit('task-update', {
-          userId: task.user._id,
-          taskId,
-          status: TaskStatus.Completed,
-          progress: 1.0,
-          result: creationData.uri,
-          task,
-        })
       }
     }
   }
@@ -496,7 +504,7 @@ const handleFailure = async (
     status: TaskStatus.Failed,
     progress: 1.0,
     result: null,
-    task
+    task,
   })
 }
 

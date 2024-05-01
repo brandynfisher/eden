@@ -256,10 +256,13 @@ export const createTask = async (
 
   server.eventEmitter.emit('task-update', {
     userId: user,
-    taskId: task._id,
+    taskId,
     status: TaskStatus.Pending,
     progress: 0,
-    task: task
+    task: {
+      ...taskData,
+      _id: task._id
+    }
   })
 
   return reply.status(200).send({ taskId })
