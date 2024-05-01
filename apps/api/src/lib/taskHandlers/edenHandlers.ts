@@ -218,6 +218,7 @@ const handleUpdate = async (
         status: TaskStatus.Completed,
         progress: 1.0,
         result: creationData.map(item => item.uri),
+        task,
       })
 
       if (task.webhooks) {
@@ -313,6 +314,7 @@ const handleUpdate = async (
           status: TaskStatus.Completed,
           progress: 1.0,
           result: [conceptData.uri],
+          task,
         })
 
         if (task.webhooks) {
@@ -405,6 +407,7 @@ const handleUpdateUniversal = async (
           status: TaskStatus.Completed,
           progress: 1.0,
           result: creationData.uri,
+          task,
         })
       }
     }
@@ -478,6 +481,7 @@ const handleFailure = async (
     status: TaskStatus.Failed,
     progress: 1.0,
     result: null,
+    task
   })
 }
 

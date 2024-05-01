@@ -23,6 +23,7 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
           thumbnailUri: creation.thumbnail,
           width: creation.mediaAttributes.width,
           height: creation.mediaAttributes.height,
+          type: creation.mediaAttributes.type
         }}
         linkHref={`/creation/${creation._id}`}
       />

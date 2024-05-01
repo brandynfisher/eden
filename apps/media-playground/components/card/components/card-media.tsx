@@ -1,6 +1,7 @@
 import { Media } from '@/types/Media'
 import Image from 'next/image'
 import Link from 'next/link'
+import { MediaType } from '@edenlabs/eden-sdk'
 
 type Props = {
   media: Media
@@ -8,10 +9,11 @@ type Props = {
 }
 
 const CardMedia = ({ media, linkHref }: Props) => {
+  console.log(media)
   return (
     <Link href={linkHref} className="relative w-full block">
       <Image
-        src={media.thumbnailUri || ''}
+        src={media.thumbnailUri || (media.type === MediaType.Image ? media.uri : '') || ''}
         alt={'card media thumbnail'}
         width={media.width}
         height={media.height}

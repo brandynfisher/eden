@@ -103,19 +103,42 @@ import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
 import { createPaginationRoute, fetcher } from '@/lib/fetcher'
 import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
-import { Task } from '@edenlabs/eden-sdk'
+import { Task, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { useLocalStorage } from '@mantine/hooks'
 import { App } from 'antd'
 import { useCallback, useContext, useEffect, useState } from 'react'
-import useSWR, { useSWRConfig } from 'swr'
+import { useSWRConfig } from 'swr'
+import { EventSourcePolyfill } from 'event-source-polyfill'
+import { CONFIG } from '@/lib/config'
+import { useAuth } from '@clerk/nextjs'
+import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
+import useSWRImmutable from 'swr/immutable'
+import { data } from 'msw/lib/types/context'
 
 export const useCreationState = () => {
   const { message } = App.useApp()
+  const { getToken } = useAuth()
+  const { isAuthenticated } = useClerkUserState()
   const [activeTaskId, setActiveTaskId] = useState<string>()
   const [completedTasks, setCompletedTasks] = useState<Task[]>([])
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
   const [pendingTasks, setPendingTasks] = useState<Task[]>()
+  const { userId } = useContext(UserContext)
+  const { data: tasksData } = useSWRImmutable(
+    `/api/tasks/list?status=running,starting,pending,completed,failed`,
+    fetcher,
+  )
+
+  const [ tasks, setTasks ] = useState<Task[]>([])
+
+  useEffect(() => {
+    if (tasksData && tasksData.tasks !== undefined) {
+      console.log('setting tasks initially', {tasks})
+
+      setTasks(tasksData.tasks)
+    }
+  }, [tasksData])
 
   const [dismissedTaskIds, setDismissedTaskIds] = useLocalStorage<string[]>({
     key: 'tasks::dismissed',
@@ -129,15 +152,61 @@ export const useCreationState = () => {
     ])
   }
 
-  const { data: tasksData, mutate: refetchTasks } = useSWR(
-    `/api/tasks/list?status=running,starting,pending,completed,failed`,
-    fetcher,
-    { refreshInterval: 5000 },
-  )
-  const tasks = tasksData?.tasks as Task[]
+  useEffect(() => {
+    let eventSource: EventSourcePolyfill|undefined
+
+    if (isAuthenticated && userId) {
+      const initEventSource = async () => {
+        console.log('setting up eventsource', `/api/tasks/events`)
+        eventSource = new EventSourcePolyfill(
+          `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/tasks/events`,
+          {
+            headers: {
+              Authorization: `Bearer ${await getToken()}`,
+            },
+          }
+        )
+        eventSource.onmessage = event => {
+          const data: TaskUpdateEvent = JSON.parse(event.data)
+          console.log('UI eventsource.onmessage', event, data)
+
+          if (data) {
+            console.log('taskUpdateevent', data)
+            setTasks(prevState => {
+              const newState = Object.assign({}, prevState)
+              const existingTaskIndex = newState.findIndex(item => item.taskId === data.taskId)
+
+              if (existingTaskIndex !== -1) {
+                newState[existingTaskIndex] = {
+                  ...newState[existingTaskIndex],
+                  ...data.task
+                }
+
+                return newState
+              }
+
+              if (data.task) {
+                newState.push(data.task)
+              }
+
+              return newState
+            })
+          }
+        }
+        eventSource.onerror = error => {
+          // console.error(error)
+          console.error('UI eventsource.onerror', error)
+        }
+      }
+      initEventSource()
+    }
+
+    return () => {
+      eventSource && eventSource.close()
+    }
+  }, [getToken, isAuthenticated, userId])
 
   const { mutate: mutateGlobal } = useSWRConfig()
-  const { userId } = useContext(UserContext)
   const [notificationCutOffDate, setNotificationCutOffDate] =
     useState<number>(0)
 
@@ -253,6 +322,5 @@ export const useCreationState = () => {
     setActiveTaskId,
     hasChangedGenerator,
     setHasChangedGenerator,
-    refetchTasks,
   }
 }

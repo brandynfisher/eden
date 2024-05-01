@@ -84,6 +84,8 @@ import {
   FeedConceptsArguments,
   FeedConceptsResponse,
   FeedCreationsArguments,
+  FeedCreationsCursorArguments,
+  FeedCreationsCursorResponse,
   FeedCreationsResponse,
   GeneratorsGetArguments,
   GeneratorsGetResponse,
@@ -166,6 +168,7 @@ import {
   creatorsUpdateRequestConfig,
   feedConceptsRequestConfig,
   feedCreationsRequestConfig,
+  feedCursorCreationsRequestConfig,
   generatorsGetRequestConfig,
   generatorsListRequestConfig,
   mannaBalanceGetRequestConfig,
@@ -439,6 +442,13 @@ export abstract class Methods {
       this,
       feedConceptsRequestConfig,
     ),
+  }
+
+  public readonly feed_cursor = {
+    creations: bindApiCall<
+      FeedCreationsCursorArguments,
+      FeedCreationsCursorResponse
+    >(this, feedCursorCreationsRequestConfig),
   }
 
   public readonly generators = {

@@ -71,7 +71,8 @@ const useTasksPaginated = ({
   )
 
   const { data, size, setSize, mutate, isValidating, isLoading, error } =
-    useSWRInfinite(getKey, fetcher, { refreshInterval: 5000 })
+    // useSWRInfinite(getKey, fetcher, { refreshInterval: 5000 })
+    useSWRInfinite(getKey, fetcher)
 
   const isLoadingMore =
     isLoading ||

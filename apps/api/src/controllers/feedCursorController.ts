@@ -12,7 +12,7 @@ import {
 } from './creationsController'
 import {
   FeedConceptsCursorArguments,
-  FeedCreationsCursorArguments,
+  CursorPaginatedFeedQuery,
   FeedCreatorsCursorArguments,
   ReactionType,
 } from '@edenlabs/eden-sdk'
@@ -363,19 +363,17 @@ const handleArguments = async ({
   server,
   reply,
   authUserId,
-  sort,
-  filter,
+  query,
   usesPrivacy = true,
 }: {
   server: FastifyInstance
   reply: FastifyReply
   authUserId?: ObjectId
-  sort?: string | string[]
-  filter?: string | string[]
-  cursor?: string
-  nextValue?: number
+  query?: CursorPaginatedFeedQuery
   usesPrivacy?: boolean
 }) => {
+  const { filter, sort } = query || {}
+
   // console.log({ filter,cursor,nextValue })
   const filterMap: FilterItem[] = []
   if (filter && filter.length) {
@@ -650,8 +648,7 @@ export const getCreationsFeedCursor = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { limit, cursor, nextValue, sort, filter } =
-    request.query as FeedCreationsCursorArguments
+  const { query } = request
   const authUserId = request.user ? request.user.userId : undefined
 
   const {
@@ -668,11 +665,10 @@ export const getCreationsFeedCursor = async (
     server,
     reply,
     authUserId,
-    cursor,
-    nextValue,
-    sort,
-    filter,
+    query: query as CursorPaginatedFeedQuery
   })
+
+  const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
   const lateLookupStages = [...taskLookup, ...userLookup]
@@ -845,7 +841,7 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(creationFeedPipeline, null, 2))
+    console.log(JSON.stringify(creationFeedPipeline, null, 2))
 
     // @ts-ignore
     results = await Creation.aggregate(creationFeedPipeline)

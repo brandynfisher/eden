@@ -15,7 +15,7 @@ export interface TaskHandlers {
     generatorVersion: GeneratorVersionSchema,
     config: any,
   ) => Promise<string>
-  receiveTaskUpdate: (server: FastifyInstance, update: any) => void
+  receiveTaskUpdate: (server: FastifyInstance, update: any) => Promise<void>
   getTransactionCost: (
     server: FastifyInstance,
     generator: GeneratorDocument,
@@ -42,7 +42,7 @@ declare module 'fastify' {
       generatorVersion: GeneratorVersionSchema,
       config: any,
     ) => Promise<string>
-    receiveTaskUpdate: (server: FastifyInstance, update: any) => void
+    receiveTaskUpdate: (server: FastifyInstance, update: any) => Promise<void>
     getTransactionCost: (
       server: FastifyInstance,
       generator: GeneratorDocument,
