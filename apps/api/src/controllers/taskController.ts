@@ -410,7 +410,7 @@ export const subscribeTaskUpdates = async (
             })
 
             yield {
-              event: event.name,
+              event: 'task-update',
               data: JSON.stringify(event),
             }
           }
