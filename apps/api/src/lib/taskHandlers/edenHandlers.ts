@@ -47,6 +47,11 @@ const submitTask = async (
   return task.id
 }
 
+type TaskStatusUpdate = {
+  progress?: number
+  status: string
+}
+
 const handleUpdate = async (
   server: FastifyInstance,
   taskId: string,
@@ -71,9 +76,11 @@ const handleUpdate = async (
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
 
-  const taskUpdate = {
+  const taskUpdate: TaskStatusUpdate = {
     status: status === 'starting' ? 'pending' : 'running',
-    progress: Math.max(maxProgress, task.progress || 0),
+  }
+  if (taskUpdate.status === 'running') {
+    taskUpdate.progress = Math.max(maxProgress, task.progress || 0)
   }
 
   const filteredIntermediateOutputs = intermediateOutputs.filter(
@@ -373,9 +380,11 @@ const handleUpdateUniversal = async (
   }
   output = Array.isArray(output) ? output : [output]
 
-  const taskUpdate = {
-    status: 'running',
-    progress: 0,
+  const taskUpdate: TaskStatusUpdate = {
+    status: status === 'starting' ? 'pending' : 'running',
+  }
+  if (taskUpdate.status === 'running') {
+    taskUpdate.progress = 0
   }
 
   const isCompleted = output.some(Boolean) && status == 'succeeded'
@@ -547,7 +556,11 @@ export const receiveTaskUpdate = async (
   const generatorName = generator.generatorName
   switch (status) {
     case 'starting':
-      await handleUpdate(server, taskId, [],'starting')
+      if (universalGenerators.includes(generatorName)) {
+        await handleUpdateUniversal(server, taskId, output, 'starting')
+      } else {
+        await handleUpdate(server, taskId, output, 'starting')
+      }
       break
     case 'processing':
       if (universalGenerators.includes(generatorName)) {

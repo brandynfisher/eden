@@ -214,6 +214,13 @@ export const createTask = async (
     })
   }
 
+  server.eventEmitter.emit('task-update', {
+    userId: user._id,
+    taskId,
+    status: 'pending',
+    task: { config: preparedConfig, status: 'pending', generator: { generatorName: generator?.generatorName || 'n/a' } },
+  })
+
   // update db
   const taskData: TaskSchema = {
     taskId,
