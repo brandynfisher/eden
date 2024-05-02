@@ -4,7 +4,7 @@ import { Creation, CreationInput } from '../../models/Creation'
 import { User } from '../../models/Creator'
 import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
-import { Task, TaskStatus } from '../../models/Task'
+import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
 import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
@@ -90,14 +90,6 @@ const handleUpdate = async (
       intermediateOutputs: await Promise.all(intermediateResults),
     })
   }
-
-  server.eventEmitter.emit('task-update', {
-    userId: task.user,
-    taskId,
-    status: 'running',
-    progress: Math.max(maxProgress, task.progress || 0),
-    task: { ...task.toObject(), ...taskUpdate },
-  })
 
   if (isCompleted) {
     const finalOutput = finalOutputs.slice(-1)[0]
@@ -368,20 +360,13 @@ const handleUpdateUniversal = async (
     throw new Error(`Could not find task ${taskId}`)
   }
   output = Array.isArray(output) ? output : [output]
-  const isCompleted = output.some(Boolean) && status == 'succeeded'
 
   const taskUpdate = {
     status: 'running',
     progress: 0,
   }
 
-  server.eventEmitter.emit('task-update', {
-    userId: task.user,
-    taskId,
-    status: 'running',
-    progress: 0,
-    task: { ...task.toObject(), ...taskUpdate },
-  })
+  const isCompleted = output.some(Boolean) && status == 'succeeded'
 
   if (isCompleted) {
     Object.assign(taskUpdate, {
@@ -439,7 +424,16 @@ const handleUpdateUniversal = async (
         }
       }
     }
+  } else {
+    server.eventEmitter.emit('task-update', {
+      userId: task.user,
+      taskId,
+      status: 'running',
+      progress: 0,
+      task: { ...task.toObject(), ...taskUpdate },
+    })
   }
+
   await Task.updateOne(
     {
       taskId,

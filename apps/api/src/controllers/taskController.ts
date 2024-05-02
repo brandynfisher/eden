@@ -232,7 +232,7 @@ export const createTask = async (
   // update db
   const taskData: TaskSchema = {
     taskId,
-    status: TaskStatus.Pending,
+    status: 'pending' as TaskStatus.Pending,
     user,
     character,
     generator: generator._id,
@@ -404,6 +404,7 @@ export const subscribeTaskUpdates = async (
       try {
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate =  event as TaskUpdateEvent
+          console.log({taskUpdate, userId: userId.toString(), event})
           if (
             taskUpdate.userId.toString() === userId.toString() &&
             (!taskId || taskUpdate.taskId === taskId)
