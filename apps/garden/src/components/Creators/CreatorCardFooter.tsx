@@ -20,7 +20,6 @@ const CreatorCardFooter = ({ creator }: { creator: Creator }) => {
     showModal(MODAL_TYPES.FOLLOWERS_MODAL, {
       creatorId: creator.userId,
       isOwnProfile,
-      className: 'modal-small',
     })
   }
 

@@ -11,7 +11,7 @@ const FollowersModal = ({ creatorId, ...rest }: { creatorId: string }) => {
   return (
     <Modal
       {...rest}
-      className="modal-small max-w-md flex flex-col w-full items-center justify-center"
+      className="modal-small modal-grow max-w-3xl pb-0 flex flex-col w-full items-center justify-center"
     >
       <ModalTitle title={`Followers (${itemCount})`} />
       <div className="p-2">

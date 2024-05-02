@@ -34,7 +34,6 @@ const FollowControls = ({
     showModal(MODAL_TYPES.FOLLOWERS_MODAL, {
       creatorId: creatorId,
       isOwnProfile,
-      className: 'modal-small',
     })
   }
 
@@ -43,7 +42,6 @@ const FollowControls = ({
     showModal(MODAL_TYPES.FOLLOWING_MODAL, {
       creatorId: creatorId,
       isOwnProfile,
-      className: 'modal-small',
     })
   }
 
