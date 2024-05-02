@@ -251,6 +251,7 @@ export const createTask = async (
     progress: 0,
     task: {
       ...savedTask.toObject(),
+      status: 'pending',
       progress: 0,
     }
   })
