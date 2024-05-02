@@ -1,27 +1,12 @@
-import {
-  taskPrivacyPermissionCheck,
-} from '../lib/authorization'
-import {
-  getDefaultGeneratorVersion,
-  getLatestGeneratorVersion,
-  prepareConfig,
-} from '../lib/generator'
+import { taskPrivacyPermissionCheck } from '../lib/authorization'
+import { getDefaultGeneratorVersion, getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
 import { User } from '../models/Creator'
-import {
-  Generator,
-  GeneratorDocument,
-  GeneratorVersionSchema,
-} from '../models/Generator'
+import { Generator, GeneratorDocument, GeneratorVersionSchema } from '../models/Generator'
 import { Manna, MannaDocument } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
 import TaskRepository from '../repositories/TaskRepository'
-import {
-  TasksCreateArguments,
-  TasksGetArguments,
-  TasksListArguments,
-} from '@edenlabs/eden-sdk'
-import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
+import { TasksCreateArguments, TasksGetArguments, TasksListArguments, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -251,9 +236,13 @@ export const createTask = async (
     progress: 0,
     task: {
       ...savedTask.toObject(),
+      generator: {
+        generatorName: generator.generatorName,
+      },
+      user: user._id,
       status: 'pending',
       progress: 0,
-    }
+    },
   })
 
   // charge user manna
@@ -312,17 +301,17 @@ export const listTasks = async (
   const typeQuery = type
     ? type === 'creations'
       ? {
-          $or: [
-            { creation: { $ne: null } },
-            { 'config.concept_mode': { $exists: false } },
-          ],
-        }
+        $or: [
+          { creation: { $ne: null } },
+          { 'config.concept_mode': { $exists: false } },
+        ],
+      }
       : {
-          $or: [
-            { concept: { $ne: null } },
-            { 'config.concept_mode': { $exists: true } },
-          ],
-        }
+        $or: [
+          { concept: { $ne: null } },
+          { 'config.concept_mode': { $exists: true } },
+        ],
+      }
     : {}
 
   const tasksRepository = new TaskRepository(Task)
@@ -388,26 +377,24 @@ export const subscribeTaskUpdates = async (
     taskId?: string
   }
 
+  reply.header('Connection', 'keep-alive')
+
   // send initial message
-  reply.sse({ event: 'init-ping', data: JSON.stringify({heartbeat: userId}) })
+  reply.sse({ event: 'init-ping', data: JSON.stringify({ heartbeat: userId }) })
 
   // keep the connection alive.
   const keepAliveTimer = setInterval(() => {
-    console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({heartbeat: userId}) })
-    reply.sse({ event: 'keep-alive', data: JSON.stringify({heartbeat: userId}) })
+    console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
+    reply.sse({ event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
   }, 15000) // Send a keep-alive every 15 seconds
 
-  server.eventEmitter.on('error', () => {
-    clearInterval(keepAliveTimer)
-  })
-
   reply.sse(
-    (async function * () {
+    (async function* () {
       console.log('REPLY SSE', userId)
       try {
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
-          const taskUpdate =  event as TaskUpdateEvent
-          console.log({taskUpdate, userId: userId.toString(), event})
+          const taskUpdate = event as TaskUpdateEvent
+          console.log({ taskUpdate, userId: userId.toString(), event })
           if (
             taskUpdate.userId.toString() === userId.toString() &&
             (!taskId || taskUpdate.taskId === taskId)
@@ -423,12 +410,16 @@ export const subscribeTaskUpdates = async (
             }
           }
         }
-      } finally {
-        console.log('CLEARING keepAliveTimer')
-        clearInterval(keepAliveTimer)
+      } catch (e) {
+        console.error(e)
       }
     })(),
   )
 
-
+  request.socket.on('close', () => {
+      console.log('request socket close')
+      console.log('CLEARING keepAliveTimer')
+      clearInterval(keepAliveTimer)
+    },
+  )
 }

@@ -156,7 +156,7 @@ export const useCreationState = () => {
 
     if (isAuthenticated && userId) {
       const initEventSource = async () => {
-        console.log('setting up eventsource', `/api/tasks/events`)
+        console.log('setting up eventsource', `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`)
         eventSource = new EventSourcePolyfill(
           `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`,
           {
@@ -165,12 +165,21 @@ export const useCreationState = () => {
             },
           }
         )
-        eventSource.onmessage = event => {
-          const data: TaskUpdateEvent = JSON.parse(event.data)
-          console.log('UI eventsource.onmessage', event, data)
+
+        eventSource.addEventListener('init-ping', (event) => {
+          console.log(event)
+        }, false)
+
+        // eventSource.addEventListener('keep-alive', (event) => {
+        //   console.log(event)
+        // }, false)
+
+        eventSource.addEventListener('task-update', (event) => {
+          const { type, lastEventId, data: update } = event as MessageEvent
+          const data: TaskUpdateEvent = JSON.parse(update)
+          console.log('UI::task-update', type, lastEventId, data)
 
           if (data) {
-            console.log('taskUpdateevent', data)
             setTasks(prevState => {
               const newState = [...prevState]
               const existingTaskIndex = newState.findIndex(item => item.taskId === data.taskId)
@@ -181,8 +190,11 @@ export const useCreationState = () => {
                   ...data.task
                 }
 
+                console.log({newStateUpdated: newState})
                 return newState
               }
+
+              console.log({newState})
 
               if (data.task) {
                 newState.push(data.task)
@@ -191,7 +203,7 @@ export const useCreationState = () => {
               return newState
             })
           }
-        }
+        }, false)
         eventSource.onerror = error => {
           // console.error(error)
           console.error('UI eventsource.onerror', error)
