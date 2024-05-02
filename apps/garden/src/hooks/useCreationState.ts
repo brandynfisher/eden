@@ -103,14 +103,11 @@ export const useCreationState = () => {
                   ...data.task
                 }
 
-                // console.log({newStateUpdated: newState})
                 return newState
               }
 
-              // console.log({newState})
-
               if (data.task) {
-                newState.push(data.task)
+                return [ data.task, ...newState ]
               }
 
               return newState

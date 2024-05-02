@@ -37,6 +37,7 @@ const TimelineList = ({
   innerRef: RefObject<HTMLDivElement>
 }) => {
   const {
+    tasks,
     pendingTasks,
     completedTasks,
     failedTasks,
@@ -57,12 +58,12 @@ const TimelineList = ({
       maxColumnCount: 1,
       columnCount: 1,
     },
-    [failedTasks?.length, completedTasks?.length, pendingTasks?.length, containerWidth],
+    [tasks?.length, pendingTasks?.length, completedTasks?.length, failedTasks?.length, containerWidth],
   )
 
-  const tasks = [...failedTasks || [], ...pendingTasks || [], ...completedTasks || []].slice().sort((a, b) => {
-    return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0
-  })
+  // const tasks = [...failedTasks || [], ...pendingTasks || [], ...completedTasks || []].slice().sort((a, b) => {
+  //   return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0
+  // })
 
   const resizeObserver = useResizeObserver(positioner)
 
