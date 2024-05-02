@@ -72,7 +72,7 @@ const handleUpdate = async (
   )
 
   const taskUpdate = {
-    status: 'running',
+    status: status === 'starting' ? 'pending' : 'running',
     progress: Math.max(maxProgress, task.progress || 0),
   }
 
@@ -342,8 +342,8 @@ const handleUpdate = async (
     server.eventEmitter.emit('task-update', {
       userId: task.user._id,
       taskId,
-      status: 'running',
-      progress: Math.max(maxProgress, task.progress || 0),
+      status: taskUpdate.status,
+      progress: taskUpdate.progress,
       task: { ...task.toObject(), ...taskUpdate, generator: { generatorName: generator?.generatorName || 'n/a' } },
     })
   }
@@ -379,6 +379,7 @@ const handleUpdateUniversal = async (
   }
 
   const isCompleted = output.some(Boolean) && status == 'succeeded'
+  const generator = await Generator.findById(task.generator)
 
   if (isCompleted) {
     Object.assign(taskUpdate, {
@@ -386,7 +387,6 @@ const handleUpdateUniversal = async (
       progress: 1.0,
       output: output,
     })
-    const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       for (let i = 0; i < output.length; i++) {
         const creationUser = task.attributes?.delegateUserId
@@ -440,9 +440,9 @@ const handleUpdateUniversal = async (
     server.eventEmitter.emit('task-update', {
       userId: task.user._id,
       taskId,
-      status: 'running',
-      progress: 0,
-      task: { ...task.toObject(), ...taskUpdate },
+      status: taskUpdate.status,
+      progress: taskUpdate.progress,
+      task: { ...task.toObject(), ...taskUpdate, generator: { generatorName: generator?.generatorName || 'n/a' } },
     })
   }
 
@@ -547,7 +547,7 @@ export const receiveTaskUpdate = async (
   const generatorName = generator.generatorName
   switch (status) {
     case 'starting':
-      // await handleStarting(server, taskId)
+      await handleUpdate(server, taskId, [],'starting')
       break
     case 'processing':
       if (universalGenerators.includes(generatorName)) {

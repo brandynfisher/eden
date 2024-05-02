@@ -227,23 +227,7 @@ export const createTask = async (
     cost,
   }
   const task = new Task(taskData)
-  const savedTask = await task.save()
-
-  server.eventEmitter.emit('task-update', {
-    userId: user._id,
-    taskId,
-    status: 'pending',
-    progress: 0,
-    task: {
-      ...savedTask.toObject(),
-      generator: {
-        generatorName: generator.generatorName,
-      },
-      user: user._id,
-      status: 'pending',
-      progress: 0,
-    },
-  })
+  await task.save()
 
   // charge user manna
   await spendManna(manna, cost)
