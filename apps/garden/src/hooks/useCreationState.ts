@@ -75,7 +75,6 @@ export const useCreationState = () => {
             headers: {
               Authorization: `Bearer ${currentAuthToken || await getToken()}`,
             },
-            withCredentials: true,
           }
         )
 
