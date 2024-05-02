@@ -334,6 +334,14 @@ const handleUpdate = async (
         }
       }
     }
+  } else {
+    server.eventEmitter.emit('task-update', {
+      userId: task.user._id,
+      taskId,
+      status: 'running',
+      progress: Math.max(maxProgress, task.progress || 0),
+      task: { ...task.toObject(), ...taskUpdate },
+    })
   }
 
   await Task.updateOne(
@@ -426,7 +434,7 @@ const handleUpdateUniversal = async (
     }
   } else {
     server.eventEmitter.emit('task-update', {
-      userId: task.user,
+      userId: task.user._id,
       taskId,
       status: 'running',
       progress: 0,

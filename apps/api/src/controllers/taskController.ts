@@ -245,7 +245,7 @@ export const createTask = async (
   const savedTask = await task.save()
 
   server.eventEmitter.emit('task-update', {
-    userId: user,
+    userId: user._id,
     taskId,
     status: 'pending',
     progress: 0,
@@ -391,16 +391,19 @@ export const subscribeTaskUpdates = async (
   // send initial message
   reply.sse({ event: 'init-ping', data: JSON.stringify({heartbeat: userId}) })
 
+  // keep the connection alive.
+  const keepAliveTimer = setInterval(() => {
+    console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({heartbeat: userId}) })
+    reply.sse({ event: 'keep-alive', data: JSON.stringify({heartbeat: userId}) })
+  }, 15000) // Send a keep-alive every 15 seconds
+
+  server.eventEmitter.on('error', () => {
+    clearInterval(keepAliveTimer)
+  })
+
   reply.sse(
     (async function * () {
       console.log('REPLY SSE', userId)
-
-      // keep the connection alive.
-      const keepAliveTimer = setInterval(() => {
-        console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({heartbeat: userId}) })
-        reply.sse({ event: 'keep-alive', data: JSON.stringify({heartbeat: userId}) })
-      }, 15000) // Send a keep-alive every 15 seconds
-
       try {
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate =  event as TaskUpdateEvent
@@ -426,4 +429,6 @@ export const subscribeTaskUpdates = async (
       }
     })(),
   )
+
+
 }
