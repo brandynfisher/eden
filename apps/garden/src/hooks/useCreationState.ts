@@ -127,6 +127,7 @@ export const useCreationState = () => {
 
     return () => {
       eventSource && eventSource.close()
+      eventSource = undefined
     }
   }, [currentAuthToken, isAuthenticated, userId])
 
