@@ -112,7 +112,7 @@ import { EventSourcePolyfill } from 'event-source-polyfill'
 import { CONFIG } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
 import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
-import useSWRImmutable from 'swr/immutable'
+import useSWR from 'swr/immutable'
 
 export const useCreationState = () => {
   const { message } = App.useApp()
@@ -124,7 +124,7 @@ export const useCreationState = () => {
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
   const [pendingTasks, setPendingTasks] = useState<Task[]>()
   const { userId } = useContext(UserContext)
-  const { data: tasksData } = useSWRImmutable(
+  const { data: tasksData } = useSWR(
     `/api/tasks/list?status=running,starting,pending,completed,failed`,
     fetcher,
   )

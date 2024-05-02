@@ -9,7 +9,6 @@ import TaskRepository from '../repositories/TaskRepository'
 import { TasksCreateArguments, TasksGetArguments, TasksListArguments, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { response } from 'msw'
 
 const checkUserBalanceIsSufficient = (manna: MannaDocument, amount: number) => {
   const totalBalance = manna.balance + manna.subscriptionBalance
@@ -336,9 +335,9 @@ export const listTasks = async (
     },
   )
 
-  await tasksRepository.model.populate(tasks.docs, {
-    path: 'creation',
-  })
+  // await tasksRepository.model.populate(tasks.docs, {
+  //   path: 'creation',
+  // })
 
   await tasksRepository.model.populate(tasks.docs, {
     path: 'generator',
