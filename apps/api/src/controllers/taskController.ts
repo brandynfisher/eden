@@ -242,7 +242,18 @@ export const createTask = async (
     cost,
   }
   const task = new Task(taskData)
-  await task.save()
+  const savedTask = await task.save()
+
+  server.eventEmitter.emit('task-update', {
+    userId: user,
+    taskId,
+    status: TaskStatus.Pending,
+    progress: 0,
+    task: {
+      ...savedTask,
+      progress: 0,
+    }
+  })
 
   // charge user manna
   await spendManna(manna, cost)
@@ -253,17 +264,6 @@ export const createTask = async (
     amount: -cost,
   }
   await Transaction.create(transactionData)
-
-  server.eventEmitter.emit('task-update', {
-    userId: user,
-    taskId,
-    status: TaskStatus.Pending,
-    progress: 0,
-    task: {
-      ...taskData,
-      _id: task._id
-    }
-  })
 
   return reply.status(200).send({ taskId })
 }

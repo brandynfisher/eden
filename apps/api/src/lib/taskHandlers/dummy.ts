@@ -123,6 +123,10 @@ export const dummyReceiveTaskUpdate = async (
     taskId,
     status: TaskStatus.Pending,
     progress: 0.5,
+    task: {
+      ...task,
+      ...taskUpdateIntermediate
+    }
   })
 
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
@@ -166,6 +170,10 @@ export const dummyReceiveTaskUpdate = async (
     status: TaskStatus.Completed,
     progress: 1.0,
     result: asset.uri,
+    task: {
+      ...task,
+      ...taskUpdate
+    },
   })
 
   if (task.webhooks) {

@@ -76,13 +76,6 @@ const handleUpdate = async (
     progress: Math.max(maxProgress, task.progress || 0),
   }
 
-  server.eventEmitter.emit('task-update', {
-    userId: task.user,
-    taskId: taskId,
-    task: { ...task, ...taskUpdate },
-    ...taskUpdate,
-  })
-
   const filteredIntermediateOutputs = intermediateOutputs.filter(
     o => o.files && Array.isArray(o.files) && o.files.length > 0,
   )
@@ -97,6 +90,14 @@ const handleUpdate = async (
       intermediateOutputs: await Promise.all(intermediateResults),
     })
   }
+
+  server.eventEmitter.emit('task-update', {
+    userId: task.user,
+    taskId,
+    status: TaskStatus.Running,
+    progress: Math.max(maxProgress, task.progress || 0),
+    task: { ...task, ...taskUpdate },
+  })
 
   if (isCompleted) {
     const finalOutput = finalOutputs.slice(-1)[0]
@@ -242,7 +243,7 @@ const handleUpdate = async (
       // update task -
       Object.assign(taskUpdate, {
         creation: creationData[0]._id, // keep using only first creationId here to not break existing logic
-        status: 'completed',
+        status: TaskStatus.Completed,
         progress: 1.0,
       })
 
@@ -315,7 +316,7 @@ const handleUpdate = async (
         const concept = await Concept.create(conceptData)
         Object.assign(taskUpdate, {
           concept: concept._id,
-          status: 'completed',
+          status: TaskStatus.Completed,
           progress: 1.0,
         })
 
@@ -325,7 +326,10 @@ const handleUpdate = async (
           status: TaskStatus.Completed,
           progress: 1.0,
           result: [conceptData.uri],
-          task,
+          task: {
+            ...task,
+            ...taskUpdate
+          },
         })
 
         if (task.webhooks) {
@@ -374,13 +378,14 @@ const handleUpdateUniversal = async (
   server.eventEmitter.emit('task-update', {
     userId: task.user,
     taskId: taskId,
+    status: TaskStatus.Running,
+    progress: 0,
     task: { ...task, ...taskUpdate },
-    ...taskUpdate,
   })
 
   if (isCompleted) {
     Object.assign(taskUpdate, {
-      status: 'completed',
+      status: TaskStatus.Completed,
       progress: 1.0,
       output: output,
     })
@@ -504,7 +509,10 @@ const handleFailure = async (
     status: TaskStatus.Failed,
     progress: 1.0,
     result: null,
-    task,
+    task: {
+      ...task,
+      ...taskUpdate
+    },
   })
 }
 
