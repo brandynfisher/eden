@@ -133,7 +133,7 @@ export const useCreationState = () => {
 
   useEffect(() => {
     if (tasksData && tasksData.tasks !== undefined) {
-      console.log('setting tasks initially', {tasks})
+      // console.log('setting tasks initially', {tasks})
 
       setTasks(tasksData.tasks)
     }
@@ -151,33 +151,47 @@ export const useCreationState = () => {
     ])
   }
 
+  const [ currentAuthToken, setCurrentAuthToken ] = useState<string|null>()
+
+  const refreshToken = useCallback(async () => {
+    const newToken = await getToken()
+    if (newToken) {
+      setCurrentAuthToken(prev => newToken && newToken !== prev ? newToken : prev)
+    }
+  }, [getToken, setCurrentAuthToken])
+
+  useEffect(() => {
+    refreshToken()
+  }, [])
+
   useEffect(() => {
     let eventSource: EventSourcePolyfill|undefined
 
     if (isAuthenticated && userId) {
       const initEventSource = async () => {
-        console.log('setting up eventsource', `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`)
+        // console.log('setting up eventsource', `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`)
         eventSource = new EventSourcePolyfill(
           `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`,
           {
             headers: {
-              Authorization: `Bearer ${await getToken()}`,
+              Authorization: `Bearer ${currentAuthToken || await getToken()}`,
             },
           }
         )
 
-        eventSource.addEventListener('init-ping', (event) => {
-          console.log(event)
-        }, false)
-
-        // eventSource.addEventListener('keep-alive', (event) => {
+        // eventSource.addEventListener('init-ping', (event) => {
         //   console.log(event)
         // }, false)
 
+        eventSource.addEventListener('keep-alive', (event) => {
+          // console.log(event)
+          refreshToken()
+        }, false)
+
         eventSource.addEventListener('task-update', (event) => {
-          const { type, lastEventId, data: update } = event as MessageEvent
+          const { data: update } = event as MessageEvent
           const data: TaskUpdateEvent = JSON.parse(update)
-          console.log('UI::task-update', type, lastEventId, data)
+          // console.log('UI::task-update', type, lastEventId, data)
 
           if (data) {
             setTasks(prevState => {
@@ -190,11 +204,11 @@ export const useCreationState = () => {
                   ...data.task
                 }
 
-                console.log({newStateUpdated: newState})
+                // console.log({newStateUpdated: newState})
                 return newState
               }
 
-              console.log({newState})
+              // console.log({newState})
 
               if (data.task) {
                 newState.push(data.task)
@@ -215,7 +229,7 @@ export const useCreationState = () => {
     return () => {
       eventSource && eventSource.close()
     }
-  }, [getToken, isAuthenticated, userId])
+  }, [currentAuthToken, isAuthenticated, userId])
 
   const { mutate: mutateGlobal } = useSWRConfig()
   const [notificationCutOffDate, setNotificationCutOffDate] =

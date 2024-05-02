@@ -9,6 +9,7 @@ import TaskRepository from '../repositories/TaskRepository'
 import { TasksCreateArguments, TasksGetArguments, TasksListArguments, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { response } from 'msw'
 
 const checkUserBalanceIsSufficient = (manna: MannaDocument, amount: number) => {
   const totalBalance = manna.balance + manna.subscriptionBalance
@@ -384,26 +385,29 @@ export const subscribeTaskUpdates = async (
 
   // keep the connection alive.
   const keepAliveTimer = setInterval(() => {
-    console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
+    // console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
     reply.sse({ event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
   }, 15000) // Send a keep-alive every 15 seconds
 
   reply.sse(
+    // gather all accumulated emit calls for this tick
     (async function* () {
-      console.log('REPLY SSE', userId)
+      // console.log('REPLY SSE', userId)
       try {
+        // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate = event as TaskUpdateEvent
-          console.log({ taskUpdate, userId: userId.toString(), event })
+          // console.log({ taskUpdate, userId: userId.toString(), event })
           if (
             taskUpdate.userId.toString() === userId.toString() &&
             (!taskId || taskUpdate.taskId === taskId)
           ) {
-            console.log('sending SSE task update', {
-              event: 'task-update',
-              data: JSON.stringify(event),
-            })
+            // console.log('sending SSE task update', {
+            //   event: 'task-update',
+            //   data: JSON.stringify(event),
+            // })
 
+            // send SSE message
             yield {
               event: 'task-update',
               data: JSON.stringify(event),
@@ -417,9 +421,10 @@ export const subscribeTaskUpdates = async (
   )
 
   request.socket.on('close', () => {
-      console.log('request socket close')
-      console.log('CLEARING keepAliveTimer')
+      // console.log('request socket close')
+      // console.log('CLEARING keepAliveTimer')
       clearInterval(keepAliveTimer)
+      reply.raw.end()
     },
   )
 }

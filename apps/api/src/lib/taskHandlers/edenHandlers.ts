@@ -91,11 +91,12 @@ const handleUpdate = async (
     })
   }
 
+  const generator = await Generator.findById(task.generator)
+
   if (isCompleted) {
     const finalOutput = finalOutputs.slice(-1)[0]
     Object.assign(taskUpdate, { output: finalOutput })
 
-    const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
 
@@ -340,7 +341,7 @@ const handleUpdate = async (
       taskId,
       status: 'running',
       progress: Math.max(maxProgress, task.progress || 0),
-      task: { ...task.toObject(), ...taskUpdate },
+      task: { ...task.toObject(), ...taskUpdate, generator: { generatorName: generator?.generatorName || 'n/a' } },
     })
   }
 
