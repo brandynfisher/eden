@@ -72,7 +72,7 @@ const handleUpdate = async (
   )
 
   const taskUpdate = {
-    status: TaskStatus.Running,
+    status: 'running',
     progress: Math.max(maxProgress, task.progress || 0),
   }
 
@@ -94,9 +94,9 @@ const handleUpdate = async (
   server.eventEmitter.emit('task-update', {
     userId: task.user,
     taskId,
-    status: TaskStatus.Running,
+    status: 'running',
     progress: Math.max(maxProgress, task.progress || 0),
-    task: { ...task, ...taskUpdate },
+    task: { ...task.toObject(), ...taskUpdate },
   })
 
   if (isCompleted) {
@@ -243,18 +243,18 @@ const handleUpdate = async (
       // update task -
       Object.assign(taskUpdate, {
         creation: creationData[0]._id, // keep using only first creationId here to not break existing logic
-        status: TaskStatus.Completed,
+        status: 'completed',
         progress: 1.0,
       })
 
       server.eventEmitter.emit('task-update', {
         userId: task.user._id,
         taskId,
-        status: TaskStatus.Completed,
+        status: 'completed',
         progress: 1.0,
         result: creationData.map(item => item.uri),
         task: {
-          ...task,
+          ...task.toObject(),
           ...taskUpdate,
         },
       })
@@ -316,18 +316,18 @@ const handleUpdate = async (
         const concept = await Concept.create(conceptData)
         Object.assign(taskUpdate, {
           concept: concept._id,
-          status: TaskStatus.Completed,
+          status: 'completed',
           progress: 1.0,
         })
 
         server.eventEmitter.emit('task-update', {
           userId: task.user._id,
           taskId,
-          status: TaskStatus.Completed,
+          status: 'completed',
           progress: 1.0,
           result: [conceptData.uri],
           task: {
-            ...task,
+            ...task.toObject(),
             ...taskUpdate
           },
         })
@@ -371,21 +371,21 @@ const handleUpdateUniversal = async (
   const isCompleted = output.some(Boolean) && status == 'succeeded'
 
   const taskUpdate = {
-    status: TaskStatus.Running,
+    status: 'running',
     progress: 0,
   }
 
   server.eventEmitter.emit('task-update', {
     userId: task.user,
-    taskId: taskId,
-    status: TaskStatus.Running,
+    taskId,
+    status: 'running',
     progress: 0,
-    task: { ...task, ...taskUpdate },
+    task: { ...task.toObject(), ...taskUpdate },
   })
 
   if (isCompleted) {
     Object.assign(taskUpdate, {
-      status: TaskStatus.Completed,
+      status: 'completed',
       progress: 1.0,
       output: output,
     })
@@ -420,11 +420,11 @@ const handleUpdateUniversal = async (
         server.eventEmitter.emit('task-update', {
           userId: task.user._id,
           taskId,
-          status: TaskStatus.Completed,
+          status: 'completed',
           progress: 1.0,
           result: creationData.uri,
           task: {
-            ...task,
+            ...task.toObject(),
             ...taskUpdate,
           },
         })
@@ -506,11 +506,11 @@ const handleFailure = async (
   server.eventEmitter.emit('task-update', {
     userId: task.user._id,
     taskId,
-    status: TaskStatus.Failed,
+    status: 'failed',
     progress: 1.0,
     result: null,
     task: {
-      ...task,
+      ...task.toObject(),
       ...taskUpdate
     },
   })

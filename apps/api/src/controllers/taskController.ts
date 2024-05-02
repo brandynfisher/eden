@@ -247,10 +247,10 @@ export const createTask = async (
   server.eventEmitter.emit('task-update', {
     userId: user,
     taskId,
-    status: TaskStatus.Pending,
+    status: 'pending',
     progress: 0,
     task: {
-      ...savedTask,
+      ...savedTask.toObject(),
       progress: 0,
     }
   })
