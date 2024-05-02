@@ -38,7 +38,7 @@ const TimelineItemMedia = ({
         <div className="grid grid-cols-1">
           <TimelineCreationSample
             task={task}
-            creationId={task.creation?._id}
+            creationId={task.creation}
             listIndex={listIndex || 0}
           />
         </div>

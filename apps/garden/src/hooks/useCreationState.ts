@@ -169,7 +169,7 @@ export const useCreationState = () => {
 
     if (isAuthenticated && userId) {
       const initEventSource = async () => {
-        // console.log('setting up eventsource', `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`)
+        console.log('setting up eventsource', `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`)
         eventSource = new EventSourcePolyfill(
           `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`,
           {

@@ -1,12 +1,10 @@
 import TimelineItem from '@/components/Creation/CreationInterface/Timeline/TimelineItem'
-import LoadingIndicator from '@/components/LoadingIndicator'
 import { fetcher } from '@/lib/fetcher'
 import { PaginatedResponse, Task } from '@edenlabs/eden-sdk'
 import { useElementSize } from '@mantine/hooks'
 import { Alert, Card, Divider, Empty } from 'antd'
 import {
   UseMasonryOptions,
-  useInfiniteLoader,
   useMasonry,
   usePositioner,
   useResizeObserver,
@@ -15,12 +13,11 @@ import { useScroller } from 'mini-virtual-list'
 import React, {
   FC,
   RefObject,
-  useCallback,
-  useEffect,
+  useCallback, useContext,
   useMemo,
-  useState,
 } from 'react'
 import useSWRInfinite from 'swr/infinite'
+import { CreationNotificationContext } from '@/providers/CreationNotificationProvider'
 
 const TimelineListItem = ({ data, index }: { data: Task; index: number }) => {
   return (
@@ -133,37 +130,43 @@ const MasonryHookWrap: FC<UseMasonryOptions<Task>> = props => {
 }
 
 const TimelineList = ({
-  type,
   innerRef,
 }: {
-  type: 'concepts' | 'creations'
   innerRef: RefObject<HTMLDivElement>
 }) => {
-  const limit = 10
-  const [tasksDoneCount, setTasksDoneCount] = useState(0)
-
   const {
-    items,
-    // mutate,
-    // size,
-    // setSize,
-    // totalItems,
-    // hasNextPage,
-    maybeLoadMore,
-    isEmpty,
-    isLoading,
-    isLoadingMore,
-    error,
-  } = useTasksPaginated({ type, limit })
+    // tasks,
+    pendingTasks,
+    completedTasks,
+    // setCompletedTasks,
+    failedTasks,
+    // setFailedTasks,
+    // addDismissedTaskIds,
+  } = useContext(CreationNotificationContext)
 
-  const maybeLoadMoreTasks = useInfiniteLoader(maybeLoadMore, {
-    isItemLoaded: (index, items) => {
-      // console.log('isItemLoaded', index, items[index])
-      return !!items[index]
-    },
-    threshold: 2,
-    minimumBatchSize: 10,
-  })
+  // const limit = 10
+  // const {
+  //   items,
+  //   // mutate,
+  //   // size,
+  //   // setSize,
+  //   // totalItems,
+  //   // hasNextPage,
+  //   maybeLoadMore,
+  //   isEmpty,
+  //   isLoading,
+  //   isLoadingMore,
+  //   error,
+  // } = useTasksPaginated({ type, limit })
+
+  // const maybeLoadMoreTasks = useInfiniteLoader(maybeLoadMore, {
+  //   isItemLoaded: (index, items) => {
+  //     // console.log('isItemLoaded', index, items[index])
+  //     return !!items[index]
+  //   },
+  //   threshold: 2,
+  //   minimumBatchSize: 10,
+  // })
 
   const {
     ref: containerRef,
@@ -180,46 +183,14 @@ const TimelineList = ({
       maxColumnCount: 1,
       columnCount: 1,
     },
-    [tasksDoneCount, items.length, containerWidth],
+    [failedTasks?.length, completedTasks?.length, pendingTasks?.length, containerWidth],
   )
 
+  const tasks = [ ...failedTasks || [], ...pendingTasks || [], ...completedTasks || [] ].slice().sort((a, b) => {
+    return a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0
+  })
+
   const resizeObserver = useResizeObserver(positioner)
-
-  useEffect(() => {
-    if (items && items.length && typeof items[0] !== 'undefined') {
-      const counts = items.filter(
-        item => item.status === 'completed' || item.status === 'failed',
-      ).length
-      setTasksDoneCount(counts)
-    }
-  }, [items])
-
-  // useEffect(() => {
-  //   setItems(masonryKey, items)
-  // }, [masonryKey, items.length])
-  //
-  // const handleCardClick = useCallback(
-  //   (index: number) => {
-  //     setCurrentIndex(masonryKey, index)
-  //
-  //     showModal(MODAL_TYPES.DETAIL_MODAL, {
-  //       itemType: itemType,
-  //       usesUrl: true,
-  //       originPageUrl: router.asPath,
-  //       parentMasonryKey: masonryKey,
-  //       maybeLoadMoreFn: (
-  //         currentIndex: number,
-  //         currentItems: Creation[] | Concept[] | Character[] | Creator[],
-  //       ) => {
-  //         if (currentIndex === currentItems.length - 1) {
-  //           maybeLoadMore(currentIndex, currentIndex + 10, currentItems)
-  //         }
-  //         //console.log(currentItems.length)
-  //       },
-  //     })
-  //   },
-  //   [masonryKey],
-  // )
 
   return (
     <div
@@ -227,8 +198,8 @@ const TimelineList = ({
       className="flex flex-col max-h-[calc(100vh_-_72px)] pb-[105px] w-full overflow-hidden md:pb-0"
       ref={innerRef}
     >
-      {isLoading ? <LoadingIndicator /> : null}
-      {isEmpty && !items.length && (
+      {/*{isLoading ? <LoadingIndicator /> : null}*/}
+      {!tasks?.length && (
         <div className="flex flex-col items-center">
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -240,15 +211,16 @@ const TimelineList = ({
           />
         </div>
       )}
-      {items && items.length && typeof items[0] !== 'undefined' ? (
+      {tasks?.length && typeof tasks[0] !== 'undefined' ? (
         <div
           ref={containerRef}
           className="h-[calc(100%_-_72px)] md:h-full mx-auto mb-0 w-full pr-3 overflow-y-scroll overflow-x-hidden"
         >
           <MasonryHookWrap
+            key={tasks[0].updatedAt}
             positioner={positioner}
             resizeObserver={resizeObserver}
-            items={items}
+            items={tasks}
             itemHeightEstimate={500}
             itemKey={(item, _index) => item?._id ?? _index}
             height={containerHeight}
@@ -256,16 +228,16 @@ const TimelineList = ({
             isScrolling={isScrolling}
             overscanBy={3}
             render={TimelineListItem}
-            onRender={maybeLoadMoreTasks}
+            // onRender={maybeLoadMoreTasks}
           />
-          {isLoadingMore ? (
-            <div className="my-4 py-2">
-              <LoadingIndicator />
-            </div>
-          ) : null}
+          {/*{isLoadingMore ? (*/}
+          {/*  <div className="my-4 py-2">*/}
+          {/*    <LoadingIndicator />*/}
+          {/*  </div>*/}
+          {/*) : null}*/}
         </div>
       ) : null}
-      {error ? <div>{JSON.stringify(error)}</div> : null}
+      {/*{error ? <div>{JSON.stringify(error)}</div> : null}*/}
     </div>
   )
 }
