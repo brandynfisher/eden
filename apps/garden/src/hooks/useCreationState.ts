@@ -183,7 +183,7 @@ export const useCreationState = () => {
         //   console.log(event)
         // }, false)
 
-        eventSource.addEventListener('keep-alive', (event) => {
+        eventSource.addEventListener('keep-alive', () => {
           // console.log(event)
           refreshToken()
         }, false)
