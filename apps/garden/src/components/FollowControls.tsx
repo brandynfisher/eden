@@ -8,6 +8,7 @@ import { People } from '@mui/icons-material'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext, useEffect } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const FollowControls = ({
   creator,
@@ -34,7 +35,6 @@ const FollowControls = ({
     showModal(MODAL_TYPES.FOLLOWERS_MODAL, {
       creatorId: creatorId,
       isOwnProfile,
-      className: 'modal-small',
     })
   }
 
@@ -43,7 +43,6 @@ const FollowControls = ({
     showModal(MODAL_TYPES.FOLLOWING_MODAL, {
       creatorId: creatorId,
       isOwnProfile,
-      className: 'modal-small',
     })
   }
 
@@ -65,11 +64,13 @@ const FollowControls = ({
           userId: creatorId,
         })
         setFollowerCount(followerCount - 1)
+        sendGTMEvent({ event: 'unfollow', itemId: creatorId })
       } else {
         await axios.post(`/api/creators/follow`, {
           userId: creatorId,
         })
         setFollowerCount(followerCount + 1)
+        sendGTMEvent({ event: 'follow', itemId: creatorId })
       }
       setIsFollowingUser(!isFollowingUser)
     } catch (error) {

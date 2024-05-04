@@ -5,6 +5,8 @@ import { App } from 'antd'
 import axios from 'axios'
 import dynamic from 'next/dynamic'
 import React, { useContext } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
+import { getGAClientIdFromCookie, trackBeginCheckout } from '@/lib/analytics'
 
 const ProductsList = dynamic(
   () => import('@/components/Products/ProductsList'),
@@ -19,12 +21,16 @@ const MannaPage = () => {
 
   const handleCheckout = async (priceId: string, paymentMode: string) => {
     try {
+      const analyticsClientId = getGAClientIdFromCookie()
+
       const response = await axios.post('/api/payment', {
         priceId,
         paymentMode,
+        analyticsClientId
       })
       const { url } = response.data
-      window.location.href = url
+
+      trackBeginCheckout(url)
     } catch (error) {
       handleAxiosError(error, message)
     }

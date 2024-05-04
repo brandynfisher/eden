@@ -2,6 +2,7 @@ import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Character, Concept } from '@edenlabs/eden-sdk'
 import Button from '@mui/material/Button'
 import React, { ReactNode } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const SelectModalTrigger = ({
   buttonContent,
@@ -17,6 +18,7 @@ const SelectModalTrigger = ({
   const { showModal, hideModal } = useModalContext()
 
   const handleClickOpen = () => {
+    sendGTMEvent({ event: `modal`, modalType: modalType})
     showModal(modalType, {
       onChange: handleChange,
     })

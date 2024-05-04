@@ -4,6 +4,7 @@ import { ItemType } from '@/providers/ModalProvider'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { App } from 'antd'
 import axios from 'axios'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 // import { useState } from 'react';
 const DeleteButton = ({
@@ -28,6 +29,7 @@ const DeleteButton = ({
       await axios.delete(`/api/${itemType}s/${itemId}`)
       message.destroy()
       message.success(`${itemType} deleted`)
+      sendGTMEvent({ event: 'delete', itemType: itemType, itemId: itemId })
       onChange && onChange()
     } catch (err) {
       handleAxiosError(err, message)

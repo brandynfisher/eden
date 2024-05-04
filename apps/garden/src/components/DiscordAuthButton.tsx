@@ -5,6 +5,7 @@ import { UserContext } from '@/providers/UserProvider'
 import { App, Button } from 'antd'
 import axios from 'axios'
 import React, { useContext } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const DiscordAuthButton: React.FC = () => {
   const { message } = App.useApp()
@@ -13,11 +14,18 @@ const DiscordAuthButton: React.FC = () => {
     if (!(await maybeAuthenticate())) return
 
     try {
-      window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${
-        CONFIG.NEXT_PUBLIC_DISCORD_CLIENT_ID
-      }&redirect_uri=${encodeURIComponent(
-        `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/auth/discord/callback`,
-      )}&response_type=code&scope=identify&state=${userId}`
+      sendGTMEvent({
+        event: 'discord-connect',
+        event_callback: () => {
+          window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${
+            CONFIG.NEXT_PUBLIC_DISCORD_CLIENT_ID
+          }&redirect_uri=${encodeURIComponent(
+            `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/auth/discord/callback`,
+          )}&response_type=code&scope=identify&state=${userId}`
+        },
+        eventTimeout : 2000
+      })
+
     } catch (err) {
       handleAxiosError(err, message)
     }
@@ -29,6 +37,9 @@ const DiscordAuthButton: React.FC = () => {
     try {
       await axios.get('/api/auth/discord/disconnect')
       refetchMe()
+      sendGTMEvent({
+        event: 'discord-disconnect',
+      })
     } catch (err) {
       handleAxiosError(err, message)
     }

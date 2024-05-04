@@ -13,6 +13,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import NebulaShaderCanvas from '@/components/Creation/CreationInterface/Timeline/NebulaShaderCanvas'
 
 const CreationInterface = ({
   generatorName,
@@ -109,6 +110,10 @@ const CreationInterface = ({
       document.removeEventListener('mousedown', handleTimelineClick)
     }
   }, [drawerOpen])
+
+  return (
+    <NebulaShaderCanvas colors={[0, 0.2, 0.4, 0.6, 0.8, 0.1, 0.3, 0.5]} />
+  )
 
   return (
     <div className="relative h-full md:flex md:gap-4 creation-interface mt-2">

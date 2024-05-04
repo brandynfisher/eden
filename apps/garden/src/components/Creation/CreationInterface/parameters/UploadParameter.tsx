@@ -8,6 +8,7 @@ import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import axios, { AxiosProgressEvent } from 'axios'
 import React, { useEffect, useState } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const { Dragger } = Upload
 
@@ -60,6 +61,8 @@ const UploadParameter = (props: {
 }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const showUploadInProgressMessage = async (messageKey: string) => {
+    sendGTMEvent({ event: 'upload', name: props.parameter.name })
+
     await messageApi.open({
       key: messageKey,
       type: 'loading',

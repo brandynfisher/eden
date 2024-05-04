@@ -61,10 +61,6 @@ const TimelineList = ({
     [tasks?.length, pendingTasks?.length, completedTasks?.length, failedTasks?.length, containerWidth],
   )
 
-  // const tasks = [...failedTasks || [], ...pendingTasks || [], ...completedTasks || []].slice().sort((a, b) => {
-  //   return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0
-  // })
-
   const resizeObserver = useResizeObserver(positioner)
 
   return (

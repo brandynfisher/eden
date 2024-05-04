@@ -12,6 +12,7 @@ import axios from 'axios'
 import React, { useContext } from 'react'
 
 import { CardData } from './Card'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 export const PraiseButton = ({
   item,
@@ -36,12 +37,14 @@ export const PraiseButton = ({
   ) => {
     ev.stopPropagation()
 
-    if (!(await maybeAuthenticate())) return
-
     const reactionData = {
       id: item._id,
       reaction: 'praise',
     }
+
+    sendGTMEvent({ event: 'like', itemType, itemId: item._id })
+
+    if (!(await maybeAuthenticate())) return
 
     try {
       if (item.reactions?.praise) {

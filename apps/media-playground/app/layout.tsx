@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactElement }) {
             {children}
           </div>
           {process.env.NODE_ENV === 'production' ? (
-            <GoogleTagManager gtmId="G-W4718WCZQK" />
+            <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
           ) : null}
         </ThemeProvider>
       </body>

@@ -10,6 +10,7 @@ import MovieFilter from '@mui/icons-material/MovieFilter'
 import Wallpaper from '@mui/icons-material/Wallpaper'
 import Button from '@mui/material/Button'
 import React from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const GeneratorSelectModalTrigger = ({
   outputType,
@@ -25,6 +26,7 @@ const GeneratorSelectModalTrigger = ({
   const { showModal, hideModal } = useModalContext()
 
   const handleClickOpen = () => {
+    sendGTMEvent({ event: `modal`, modalType: MODAL_TYPES.GENERATOR_SELECT_MODAL})
     if (generators.length === 1) return
 
     showModal(MODAL_TYPES.GENERATOR_SELECT_MODAL, {
