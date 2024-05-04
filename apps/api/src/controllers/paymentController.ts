@@ -24,11 +24,13 @@ interface StripeDataObject {
 
 interface TopUpMetadata {
   manna: string
+  analyticsClientId?: string
 }
 
 interface SubscriptionMetadata {
   subscriptionTier: string
   manna: string
+  analyticsClientId?: string
 }
 
 const discountMap = (
@@ -458,6 +460,25 @@ const handlePaymentSuccess = async (
   } else {
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
   }
+
+  await trackCheckoutComplete(metadata.analyticsClientId, {
+    transaction_id: sessionId,
+    currency: session.currency || '',
+    value: session.amount_total !== null ? session.amount_total - (session?.total_details?.amount_tax || 0) : 0,
+    tax: session?.total_details?.amount_tax || 0,
+    items: session.line_items.data.map((item: Stripe.LineItem, index) => {
+      return {
+        item_id: item.id,
+        item_name: item.description,
+        currency: item.currency.toUpperCase(),
+        index: index,
+        item_brand: 'Eden',
+        item_category: metadata.subscriptionTier ? 'subscription' : 'top-up',
+        price: item.price?.unit_amount || 0,
+        quantity: item.quantity || 0
+      }
+    })
+  })
 }
 
 export const createCheckoutSession = async (
@@ -583,8 +604,6 @@ export const handlePaymentEvent = async (
 
   const dataObject = event.data.object
   // @ts-ignore
-  const analyticsClientId = dataObject.metadata?.analyticsClientId
-  // @ts-ignore
   const userId = dataObject.client_reference_id
   // @ts-ignore
   const customerId = dataObject.customer
@@ -616,7 +635,6 @@ export const handlePaymentEvent = async (
     // checkout events
     case 'checkout.session.completed':
       await handlePaymentSuccess(server, reply, stripeDataObject)
-      await trackCheckoutComplete(analyticsClientId)
       return
 
     case 'invoice.payment_succeeded':
