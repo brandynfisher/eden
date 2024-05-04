@@ -8,19 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { FileType } from '@/types/Media'
 
 interface FileUploadProgress {
   progress: number;
   File: File;
   source: CancelTokenSource | null;
-}
-
-export enum FileTypes {
-  Image = 'image',
-  Pdf = 'pdf',
-  Audio = 'audio',
-  Video = 'video',
-  Other = 'other',
 }
 
 const ImageColor = {
@@ -49,33 +42,33 @@ const OtherColor = {
 }
 
 type Props = {
-  allowedFileTypes?: FileTypes[]
+  allowedFileTypes?: FileType[]
 }
 
 const getFileIconAndColor = (fileType: File['type']) => {
   console.log(fileType)
-  if (fileType === `${FileTypes.Image}`) {
+  if (fileType === `image`) {
     return {
       icon: <FileImage size={40} className={ImageColor.fillColor} />,
       color: ImageColor.bgColor,
     }
   }
 
-  if (fileType === `${FileTypes.Pdf}`) {
+  if (fileType === `pdf`) {
     return {
       icon: <FileIcon size={40} className={PdfColor.fillColor} />,
       color: PdfColor.bgColor,
     }
   }
 
-  if (fileType === `${FileTypes.Audio}`) {
+  if (fileType === `audio`) {
     return {
       icon: <AudioWaveform size={40} className={AudioColor.fillColor} />,
       color: AudioColor.bgColor,
     }
   }
 
-  if (fileType === `${FileTypes.Video}`) {
+  if (fileType === `video`) {
     return {
       icon: <Video size={40} className={VideoColor.fillColor} />,
       color: VideoColor.bgColor,

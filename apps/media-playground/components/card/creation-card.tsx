@@ -5,6 +5,7 @@ import CardMedia from '@/components/card/components/card-media'
 import { Card } from '@/components/ui/card'
 import { Creation, Creator } from '@edenlabs/eden-sdk'
 import { CSSProperties } from 'react'
+import { FileType } from '@/types/Media'
 
 type Props = {
   creation: Creation
@@ -23,7 +24,7 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
           thumbnailUri: creation.thumbnail,
           width: creation.mediaAttributes.width,
           height: creation.mediaAttributes.height,
-          type: creation.mediaAttributes.type
+          type: creation.mediaAttributes.type as FileType
         }}
         linkHref={`/creation/${creation._id}`}
       />
