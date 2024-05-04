@@ -54,28 +54,28 @@ type Props = {
 
 const getFileIconAndColor = (fileType: File['type']) => {
   console.log(fileType)
-  if (fileType === FileTypes.Image) {
+  if (fileType === `${FileTypes.Image}`) {
     return {
       icon: <FileImage size={40} className={ImageColor.fillColor} />,
       color: ImageColor.bgColor,
     }
   }
 
-  if (fileType ===  FileTypes.Pdf) {
+  if (fileType === `${FileTypes.Pdf}`) {
     return {
       icon: <FileIcon size={40} className={PdfColor.fillColor} />,
       color: PdfColor.bgColor,
     }
   }
 
-  if (fileType === FileTypes.Audio) {
+  if (fileType === `${FileTypes.Audio}`) {
     return {
       icon: <AudioWaveform size={40} className={AudioColor.fillColor} />,
       color: AudioColor.bgColor,
     }
   }
 
-  if (fileType === FileTypes.Video) {
+  if (fileType === `${FileTypes.Video}`) {
     return {
       icon: <Video size={40} className={VideoColor.fillColor} />,
       color: VideoColor.bgColor,
@@ -88,8 +88,8 @@ const getFileIconAndColor = (fileType: File['type']) => {
   }
 }
 
-const FileUpload = ({allowedFileTypes}: Props) => {
-  console.log({allowedFileTypes})
+const FileUpload = ({ allowedFileTypes }: Props) => {
+  console.log({ allowedFileTypes })
   // const [uploadedFiles, setUploadedFiles] = useState<File[]>([{ type: FileTypes.Image, lastModified: Date.now(), name: 'imagefile.png' }])
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
