@@ -461,7 +461,7 @@ const handlePaymentSuccess = async (
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
   }
 
-  await trackCheckoutComplete(metadata.analyticsClientId, {
+  await trackCheckoutComplete(server, metadata.analyticsClientId, {
     transaction_id: sessionId,
     currency: session.currency || '',
     value: session.amount_total !== null ? session.amount_total - (session?.total_details?.amount_tax || 0) : 0,

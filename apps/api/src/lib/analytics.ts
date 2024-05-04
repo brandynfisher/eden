@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { FastifyInstance } from 'fastify'
 
 type AnalyticsEvent = {
   name: string
@@ -30,10 +31,10 @@ type AnalyticsCheckoutData = {
   items: AnalyticsCheckoutItem[]
 }
 
-const sendAnalyticsEvents = async (data: AnalyticsData) => {
+const sendAnalyticsEvents = async (server: FastifyInstance, data: AnalyticsData) => {
   try {
     const response = await axios.post(
-      `https://www.google-analytics.com/mp/collect?measurement_id=${process.env.GOOGLE_ANALYTICS_MEASUREMENT_ID}&api_secret=${process.env.GOOGLE_ANALYTICS_API_SECRET}`,
+      `https://www.google-analytics.com/mp/collect?measurement_id=${server.config.GOOGLE_ANALYTICS_MEASUREMENT_ID}&api_secret=${server.config.GOOGLE_ANALYTICS_API_SECRET}`,
       data,
     )
     console.log('sendAnalyticsEvent', response)
@@ -42,7 +43,7 @@ const sendAnalyticsEvents = async (data: AnalyticsData) => {
   }
 }
 
-export const trackCheckoutComplete = async (analyticsClientId: string, checkoutData: AnalyticsCheckoutData) => {
+export const trackCheckoutComplete = async (server: FastifyInstance, analyticsClientId: string, checkoutData: AnalyticsCheckoutData) => {
   console.log('Purchase tracked', analyticsClientId)
 
   const data = {
@@ -53,5 +54,5 @@ export const trackCheckoutComplete = async (analyticsClientId: string, checkoutD
     }],
   }
 
-  await sendAnalyticsEvents(data)
+  await sendAnalyticsEvents(server, data)
 }
