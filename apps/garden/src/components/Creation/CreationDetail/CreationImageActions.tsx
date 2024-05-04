@@ -19,6 +19,7 @@ import React, {
   useMemo,
   useState,
 } from 'react'
+import { trackTaskCreate } from '@/lib/analytics'
 
 const MannaCostDisplay = ({
   generatorName,
@@ -49,6 +50,7 @@ export const UpscaleImageMenu = ({
   isPrivate: boolean
   imageUri: string
 }) => {
+  const { getTaskCost } = useTaskCost()
   const { message } = App.useApp()
   const { maybeAuthenticate, refetchMe } = useContext(UserContext)
   const { setActiveTaskId } = useContext(
@@ -101,6 +103,7 @@ export const UpscaleImageMenu = ({
         const { taskId } = response.data
         setActiveTaskId && setActiveTaskId(taskId)
         refetchMe()
+        trackTaskCreate(generatorName, getTaskCost(generatorName, config).cost)
       } catch (error) {
         handleAxiosError(error, message)
       } finally {

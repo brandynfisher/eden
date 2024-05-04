@@ -62,6 +62,8 @@ const ConfigSchema = Type.Strict(
     DISCORD_CLIENT_SECRET: Type.Optional(Type.String()),
     LOGOS_URL: Type.Optional(Type.String()),
     HF_TOKEN: Type.Optional(Type.String()),
+    GOOGLE_ANALYTICS_MEASUREMENT_ID: Type.Optional(Type.String()),
+    GOOGLE_ANALYTICS_API_SECRET: Type.Optional(Type.String()),
   }),
 )
 

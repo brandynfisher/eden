@@ -1,12 +1,12 @@
-import { AxiosRequestConfig } from 'axios'
-
 import { WebAPICallOptions, WebAPICallResult } from '../types'
+import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
 export interface PaymentsCreateArguments extends WebAPICallOptions {
   priceId: string
   paymentMode: 'payment' | 'subscription'
+  analyticsClientId?: string
 }
 
 export interface PaymentsSubscriptionArguments extends WebAPICallOptions {

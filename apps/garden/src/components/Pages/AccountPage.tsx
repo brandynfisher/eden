@@ -11,6 +11,7 @@ import axios from 'axios'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import React, { useContext } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const { Panel } = Collapse
 
@@ -39,7 +40,14 @@ const AccountPage = () => {
         paymentMode,
       })
       const { url } = response.data
-      window.location.href = url
+
+      sendGTMEvent({
+        event: 'begin_checkout',
+        event_callback: () => {
+          window.location.href = url
+        },
+        eventTimeout : 2000
+      })
     } catch (error) {
       handleAxiosError(error, message)
     }

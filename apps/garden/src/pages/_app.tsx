@@ -139,15 +139,12 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         </main>
       </PasswordProtection>
       {process.env.NODE_ENV === 'production' ? (
-        <GoogleTagManager gtmId="G-W4718WCZQK" />
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
       ) : null}
       {process.env.NODE_ENV === 'production' ? (
         <Script
           src="https://rum-static.pingdom.net/pa-662f1da168cac40012000a8e.js"
           strategy="lazyOnload"
-          onLoad={() =>
-            console.log(`script loaded: https://rum-static.pingdom.net/pa-662f1da168cac40012000a8e.js`)
-          }
         />
       ) : null}
     </>

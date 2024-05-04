@@ -1,10 +1,17 @@
 import { UserContext } from '@/providers/UserProvider'
 import { Button, Result } from 'antd'
 import Link from 'next/link'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const OrderCancelledPage = () => {
   const { user } = useContext(UserContext)
+
+  useEffect(() => {
+    sendGTMEvent({
+      event: 'cancel_checkout',
+    })
+  }, [])
 
   // return (
   //   <div className="flex justify-center max-w-4xl">
