@@ -41,10 +41,6 @@ const OtherColor = {
   fillColor: 'fill-gray-400',
 }
 
-type Props = {
-  allowedFileTypes?: FileType[]
-}
-
 const getFileIconAndColor = (fileType: File['type']) => {
   console.log(fileType)
   if (fileType === `image`) {
@@ -79,6 +75,10 @@ const getFileIconAndColor = (fileType: File['type']) => {
     icon: <FolderArchive size={40} className={OtherColor.fillColor} />,
     color: OtherColor.bgColor,
   }
+}
+
+type Props = {
+  allowedFileTypes?: FileType[]
 }
 
 const FileUpload = ({ allowedFileTypes }: Props) => {
