@@ -1,4 +1,4 @@
-import { MediaType } from '@edenlabs/eden-sdk'
+import { type MediaType } from '@edenlabs/eden-sdk'
 
 export type Media = {
   uri?: string

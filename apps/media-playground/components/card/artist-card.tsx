@@ -2,7 +2,7 @@ import CardFooter from '@/components/card/components/card-footer'
 import CardHeader from '@/components/card/components/card-header'
 import CardMedia from '@/components/card/components/card-media'
 import { Card } from '@/components/ui/card'
-import { Creator } from '@edenlabs/eden-sdk'
+import { Creator, MediaType } from '@edenlabs/eden-sdk'
 
 type Props = {
   creator: Creator
@@ -18,7 +18,7 @@ const ArtistCard = ({ creator }: Props) => {
           thumbnailUri: creator.userImage,
           width: 512,
           height: 512,
-          type: 'image'
+          type: MediaType.Image
         }}
         linkHref={`/creators/${creator.username}`}
       />
