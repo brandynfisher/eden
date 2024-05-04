@@ -5,7 +5,6 @@ import { App } from 'antd'
 import axios from 'axios'
 import dynamic from 'next/dynamic'
 import React, { useContext } from 'react'
-import { sendGTMEvent } from '@next/third-parties/google'
 import { getGAClientIdFromCookie, trackBeginCheckout } from '@/lib/analytics'
 
 const ProductsList = dynamic(

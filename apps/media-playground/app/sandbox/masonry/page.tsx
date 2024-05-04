@@ -5,7 +5,7 @@ const ReactQuerySandboxPage = () => {
 
   return (
     <>
-      <MasonryVirtualizerVertical query={{  }}/>
+      <MasonryVirtualizerVertical />
     </>
   )
 }
