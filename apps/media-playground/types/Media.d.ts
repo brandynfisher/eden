@@ -10,7 +10,7 @@ interface Media {
   width?: number
   height?: number,
   type: FileType
-  mimeType: MimeType
+  mimeType?: MimeType
 }
 
 interface MediaVideo extends Media {
