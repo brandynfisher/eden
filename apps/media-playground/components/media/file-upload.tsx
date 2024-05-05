@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
-import { FileType } from '@/types/Media'
+import { FileType, MimeType } from '@/types/Media'
+import { CONFIG } from '@/lib/config'
 
 interface FileUploadProgress {
   progress: number;
@@ -19,30 +20,35 @@ interface FileUploadProgress {
 const ImageColor = {
   bgColor: 'bg-purple-600',
   fillColor: 'fill-purple-600',
+  borderColor: 'border-purple-600',
 }
 
 const PdfColor = {
   bgColor: 'bg-blue-400',
   fillColor: 'fill-blue-400',
+  borderColor: 'border-blue-400',
 }
 
 const AudioColor = {
   bgColor: 'bg-yellow-400',
   fillColor: 'fill-yellow-400',
+  borderColor: 'border-yellow-400',
 }
 
 const VideoColor = {
   bgColor: 'bg-green-400',
   fillColor: 'fill-green-400',
+  borderColor: 'border-green-400',
 }
 
 const OtherColor = {
   bgColor: 'bg-gray-400',
   fillColor: 'fill-gray-400',
+  borderColor: 'border-gray-400',
 }
 
-const getFileIconAndColor = (fileType: File['type']) => {
-  console.log(fileType)
+const getFileIconAndColor = (fileType: FileType) => {
+  console.log({ fileType })
   if (fileType === `image`) {
     return {
       icon: <FileImage size={40} className={ImageColor.fillColor} />,
@@ -80,14 +86,36 @@ const getFileIconAndColor = (fileType: File['type']) => {
 type Props = {
   allowedFileTypes?: FileType[]
 }
+type SupportedFileType = {
+  type: FileType,
+  allowedMimeTypes: MimeType[]
+}
+
+const supportedFileTypes: SupportedFileType[] = [
+  {
+    type: 'image',
+    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
+  },
+  {
+    type: 'video',
+    allowedMimeTypes: ['video/mp4', 'video/webm', 'video/quicktime', 'image/gif'],
+  },
+]
+
+const getTypeByMimeType = (mimeType: MimeType) => {
+  return mimeType.split('/')[0] as FileType
+}
 
 const FileUpload = ({ allowedFileTypes }: Props) => {
-  console.log({ allowedFileTypes })
   // const [uploadedFiles, setUploadedFiles] = useState<File[]>([{ type: FileTypes.Image, lastModified: Date.now(), name: 'imagefile.png' }])
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
 
-  const fixedColorClassName = allowedFileTypes && allowedFileTypes.length === 1 ? getFileIconAndColor(allowedFileTypes[0]).color : undefined
+  const allowedTypes = supportedFileTypes.filter(item => allowedFileTypes?.includes(item.type))
+  const allowedFileMimeTypes = allowedTypes.map(type => type.allowedMimeTypes)
+  const fixedColorClassName = allowedTypes && allowedTypes.length === 1 ? getFileIconAndColor(allowedTypes[0].type).color : undefined
+
+  console.log({ allowedTypes, fixedColorClassName, uploadedFiles, filesToUpload })
 
   // feel free to mode all these functions to separate utils
   // here is just for simplicity
@@ -133,7 +161,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     cancelSource: CancelTokenSource,
   ) => {
     return axios.post(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData,
       {
         onUploadProgress,
@@ -167,13 +195,12 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     })
 
     // cloudinary upload
-
     const fileUploadBatch = acceptedFiles.map((file) => {
       const formData = new FormData()
       formData.append('file', file)
       formData.append(
         'upload_preset',
-        process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string,
+        CONFIG.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string,
       )
 
       const cancelSource = axios.CancelToken.source()
@@ -192,14 +219,20 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     }
   }, [])
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop })
+  // const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: allowedFileMimeTypes.map(item => ) })
+  const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: {
+      'image/jpg': [],
+      'image/jpeg': [],
+      'image/png': [],
+      'image/webp': [],
+    } })
 
   return (
     <div className='flex-grow'>
       <div>
         <label
           {...getRootProps()}
-          className={cn('relative flex flex-col items-center justify-center w-full py-6 border border-border rounded-lg cursor-pointer bg-card', fixedColorClassName)}
+          className={cn('relative flex flex-col items-center justify-center w-full py-6 border rounded-lg cursor-pointer bg-card', `border-${fixedColorClassName}`)}
         >
           <div className='text-center'>
             <div className=' border p-2 rounded-md max-w-min mx-auto'>
@@ -212,13 +245,16 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
             <p className='text-xs text-muted-foreground'>
               Click to upload files &#40;files should be under 10 MB &#41;
             </p>
+            <p className='text-xs text-muted-foreground'>
+              {allowedFileTypes?.join(', ')} | ({allowedFileMimeTypes.join(', ')})
+            </p>
           </div>
         </label>
 
         <Input
           {...getInputProps()}
           id='dropzone-file'
-          accept='image/png, image/jpeg'
+          accept={allowedFileMimeTypes.join(', ')}
           type='file'
           className='hidden'
         />
@@ -238,7 +274,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
                 >
                   <div className='flex items-center flex-1 p-2'>
                     <div className='text-white'>
-                      {getFileIconAndColor(fileUploadProgress.File.type).icon}
+                      {getFileIconAndColor(getTypeByMimeType(fileUploadProgress.File.type as MimeType)).icon}
                     </div>
 
                     <div className='w-full ml-2 space-y-1'>
@@ -253,7 +289,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
                       <Progress
                         value={fileUploadProgress.progress}
                         className={
-                          getFileIconAndColor(fileUploadProgress.File.type).color
+                          getFileIconAndColor(getTypeByMimeType(fileUploadProgress.File.type as MimeType)).color
                         }
                       />
                     </div>
@@ -289,7 +325,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
                 >
                   <div className='flex items-center flex-1 p-2'>
                     <div className='text-white'>
-                      {getFileIconAndColor(file.type).icon}
+                      {getFileIconAndColor(getTypeByMimeType(file.type as MimeType)).icon}
                     </div>
                     <div className='w-full ml-2 space-y-1'>
                       <div className='text-sm flex justify-between'>
