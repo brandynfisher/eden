@@ -1,46 +1,3 @@
-/** @type {import('next').NextConfig} */
-module.exports = {
-  //   trailingSlash: false,
-  //   swcMinify: true,
-    output: 'standalone',
-  //   experimental: {
-  //     optimizeCss: true, // enabling this will enable SSR for Tailwind
-  //     scrollRestoration: true,
-  //     outputFileTracingRoot: path.join(__dirname, '../../'),
-  //   },
-  //   crossOrigin: 'anonymous',
-  //   webpack: config => {
-  //     config.resolve.fallback = { fs: false, net: false, tls: false }
-  //     return config
-  //   },
-  // }
-    publicRuntimeConfig: {
-        NEXT_PUBLIC_EDEN_API_URL:
-          process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://0.0.0.0:5050',
-        NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
-        NEXT_PUBLIC_DISCORD_CLIENT_ID:
-          process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '',
-        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
-          process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '',
-        NEXT_PUBLIC_CLOUDINARY_API_KEY:
-          process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '',
-        NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:
-          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
-        NEXT_PUBLIC_GOOGLE_GTM_ID:
-          process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || '',
-        NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID:
-          process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID || '',
-        NEXT_PUBLIC_DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
-    },
-    serverRuntimeConfig: {
-        API_URL: process.env.EDEN_API_URL || 'http://0.0.0.0:5050',
-        OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
-        EDEN_ADMIN_API_KEY: process.env.EDEN_ADMIN_API_KEY || '',
-        EDEN_ADMIN_API_SECRET: process.env.EDEN_ADMIN_API_SECRET || '',
-        EDEN_MAINTENANCE_MODE: process.env.EDEN_MAINTENANCE_MODE || false,
-    }
-}
-
 const defaultImageRemotePatterns = [
     {
         protocol: 'https',
@@ -146,15 +103,54 @@ const imageRemotePatterns =
     ? [...defaultImageRemotePatterns, ...devImageRemotePatterns]
     : defaultImageRemotePatterns
 
+
 /** @type {import('next').NextConfig} */
 module.exports = {
+    output: 'standalone',
+    reactStrictMode: false,
     images: {
         minimumCacheTTL: 2433600,
         deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920, 2560],
         remotePatterns: imageRemotePatterns,
     },
-    output: 'standalone',
-    reactStrictMode: false
+  //   trailingSlash: false,
+  //   swcMinify: true,
+  //   experimental: {
+  //     optimizeCss: true, // enabling this will enable SSR for Tailwind
+  //     scrollRestoration: true,
+  //     outputFileTracingRoot: path.join(__dirname, '../../'),
+  //   },
+  //   crossOrigin: 'anonymous',
+  //   webpack: config => {
+  //     config.resolve.fallback = { fs: false, net: false, tls: false }
+  //     return config
+  //   },
+  // }
+    publicRuntimeConfig: {
+        NEXT_PUBLIC_EDEN_API_URL:
+          process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://0.0.0.0:5050',
+        NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
+        NEXT_PUBLIC_DISCORD_CLIENT_ID:
+          process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '',
+        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
+          process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '',
+        NEXT_PUBLIC_CLOUDINARY_API_KEY:
+          process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '',
+        NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:
+          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
+        NEXT_PUBLIC_GOOGLE_GTM_ID:
+          process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || '',
+        NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID:
+          process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID || '',
+        NEXT_PUBLIC_DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
+    },
+    serverRuntimeConfig: {
+        API_URL: process.env.EDEN_API_URL || 'http://0.0.0.0:5050',
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+        EDEN_ADMIN_API_KEY: process.env.EDEN_ADMIN_API_KEY || '',
+        EDEN_ADMIN_API_SECRET: process.env.EDEN_ADMIN_API_SECRET || '',
+        EDEN_MAINTENANCE_MODE: process.env.EDEN_MAINTENANCE_MODE || false,
+    }
 }
 
 // const { withSentryConfig } = require('@sentry/nextjs')
