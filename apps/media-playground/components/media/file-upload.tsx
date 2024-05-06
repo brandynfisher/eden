@@ -161,7 +161,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     cancelSource: CancelTokenSource,
   ) => {
     return axios.post(
-      `https://api.cloudinary.com/v1_1/${CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData,
       {
         onUploadProgress,

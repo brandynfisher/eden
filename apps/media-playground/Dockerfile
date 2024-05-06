@@ -36,6 +36,42 @@ COPY turbo.json turbo.json
 # ARG TURBO_TOKEN
 # ENV TURBO_TOKEN=$TURBO_TOKEN
 
+
+ARG NEXT_PUBLIC_HOST
+ENV NEXT_PUBLIC_HOST ${NEXT_PUBLIC_HOST}
+ARG NEXT_PUBLIC_EDEN_API_URL
+ENV NEXT_PUBLIC_EDEN_API_URL ${NEXT_PUBLIC_EDEN_API_URL}
+ARG NEXT_PUBLIC_EDEN_SSE_URL
+ENV NEXT_PUBLIC_EDEN_SSE_URL ${NEXT_PUBLIC_EDEN_SSE_URL}
+ARG NEXT_PUBLIC_APP_ENV
+ENV NEXT_PUBLIC_APP_ENV ${NEXT_PUBLIC_APP_ENV}
+ARG NEXT_PUBLIC_APP_PASSWORD
+ENV NEXT_PUBLIC_APP_PASSWORD ${NEXT_PUBLIC_APP_PASSWORD}
+ARG NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
+ENV NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID ${NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID}
+
+# Clerk
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+
+# Discord
+ARG NEXT_PUBLIC_DISCORD_CLIENT_ID
+ENV NEXT_PUBLIC_DISCORD_CLIENT_ID ${NEXT_PUBLIC_DISCORD_CLIENT_ID}
+
+# Analytics
+ARG NEXT_PUBLIC_GOOGLE_GTM_ID
+ENV NEXT_PUBLIC_GOOGLE_GTM_ID ${NEXT_PUBLIC_GOOGLE_GTM_ID}
+ARG NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID
+ENV NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID ${NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID}
+
+# Sentry
+ARG NEXT_PUBLIC_SENTRY_DSN
+ENV NEXT_PUBLIC_SENTRY_DSN ${NEXT_PUBLIC_SENTRY_DSN}
+ARG SENTRY_AUTH_TOKEN
+ENV SENTRY_AUTH_TOKEN ${SENTRY_AUTH_TOKEN}
+ARG SENTRY_IGNORE_API_RESOLUTION_ERROR
+ENV SENTRY_IGNORE_API_RESOLUTION_ERROR ${SENTRY_IGNORE_API_RESOLUTION_ERROR}
+
 # EVNS
 
 RUN yarn turbo run build --filter=media-playground...
@@ -43,10 +79,10 @@ RUN yarn turbo run build --filter=media-playground...
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+USER nextjs
 
 COPY --from=installer /app/apps/media-playground/next.config.js .
 COPY --from=installer /app/apps/media-playground/package.json .
@@ -57,6 +93,5 @@ COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/sta
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/static ./apps/media-playground/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/public ./apps/media-playground/public
 
-USER nextjs
 
 CMD node apps/media-playground/server.js
