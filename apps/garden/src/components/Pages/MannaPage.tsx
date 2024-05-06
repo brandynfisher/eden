@@ -5,7 +5,7 @@ import { App } from 'antd'
 import axios from 'axios'
 import dynamic from 'next/dynamic'
 import React, { useContext } from 'react'
-import { getGAClientIdFromCookie, trackBeginCheckout } from '@/lib/analytics'
+import { getGAClientIdFromCookie } from '@/lib/analytics'
 
 const ProductsList = dynamic(
   () => import('@/components/Products/ProductsList'),
@@ -29,7 +29,7 @@ const MannaPage = () => {
       })
       const { url } = response.data
 
-      trackBeginCheckout(url)
+      window.location.href = url
     } catch (error) {
       handleAxiosError(error, message)
     }

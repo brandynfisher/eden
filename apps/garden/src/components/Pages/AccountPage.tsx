@@ -11,7 +11,7 @@ import axios from 'axios'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import React, { useContext } from 'react'
-import { sendGTMEvent } from '@next/third-parties/google'
+import { getGAClientIdFromCookie } from '@/lib/analytics'
 
 const { Panel } = Collapse
 
@@ -35,19 +35,16 @@ const AccountPage = () => {
 
   const handleCheckout = async (priceId: string, paymentMode: string) => {
     try {
+      const analyticsClientId = getGAClientIdFromCookie()
+
       const response = await axios.post('/api/payment', {
         priceId,
         paymentMode,
+        analyticsClientId
       })
       const { url } = response.data
 
-      sendGTMEvent({
-        event: 'begin_checkout',
-        event_callback: () => {
-          window.location.href = url
-        },
-        eventTimeout : 2000
-      })
+      window.location.href = url
     } catch (error) {
       handleAxiosError(error, message)
     }

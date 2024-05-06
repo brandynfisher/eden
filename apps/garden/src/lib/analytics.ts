@@ -64,20 +64,3 @@ export const trackTaskCreate = (generatorName: Generator['generatorName'], cost:
     },
   ])
 }
-
-export const trackBeginCheckout = (checkoutSessionUrl: string) => {
-  sendAnalyticsEvents({
-    event: 'begin_checkout',
-    event_callback: () => {
-      sendAnalyticsEvents({
-        event: 'begin_checkout',
-        event_callback: () => {
-          window.location.href = checkoutSessionUrl
-        },
-        eventTimeout: 2000,
-      })
-    },
-    eventTimeout: 2000,
-  })
-}
-

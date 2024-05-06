@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify'
 
 type AnalyticsEvent = {
   name: string
-  params: { [key: string]: any }
+  params?: { [key: string]: any }
 }
 
 type AnalyticsData = {
@@ -51,6 +51,19 @@ export const trackCheckoutComplete = async (server: FastifyInstance, analyticsCl
     events: [{
       name: 'purchase',
       params: checkoutData,
+    }],
+  }
+
+  await sendAnalyticsEvents(server, data)
+}
+
+export const trackCheckoutBegin = async (server: FastifyInstance, analyticsClientId: string) => {
+  console.log('Checkout Begin tracked', analyticsClientId)
+
+  const data = {
+    client_id: analyticsClientId,
+    events: [{
+      name: 'begin_checkout',
     }],
   }
 

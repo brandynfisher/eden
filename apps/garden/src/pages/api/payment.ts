@@ -6,7 +6,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const authToken = await getAuthToken(req)
-  const { priceId, paymentMode } = req.body as PaymentsCreateArguments
+  const { priceId, paymentMode, analyticsClientId } = req.body as PaymentsCreateArguments
 
   if (!authToken) {
     return res.status(401).json({ error: 'Not authenticated' })
@@ -20,6 +20,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const response = await eden.payments.create({
       priceId,
       paymentMode,
+      analyticsClientId
     })
     return res.status(200).json({ url: response.url })
   } catch (error) {

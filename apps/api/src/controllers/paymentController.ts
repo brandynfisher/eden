@@ -10,7 +10,7 @@ import {
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import Stripe from 'stripe'
-import { trackCheckoutComplete } from '../lib/analytics'
+import { trackCheckoutBegin, trackCheckoutComplete } from '../lib/analytics'
 
 interface StripeDataObject {
   userId: string
@@ -461,7 +461,7 @@ const handlePaymentSuccess = async (
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
   }
 
-  await trackCheckoutComplete(server, metadata.analyticsClientId, {
+  await trackCheckoutComplete(server, metadata.analyticsClientId || '', {
     transaction_id: sessionId,
     currency: session.currency || '',
     value: session.amount_total !== null ? session.amount_total - (session?.total_details?.amount_tax || 0) : 0,
@@ -535,6 +535,8 @@ export const createCheckoutSession = async (
       analyticsClientId: analyticsClientId || '',
     },
   })
+
+  await trackCheckoutBegin(server, analyticsClientId || '')
 
   return reply.status(200).send({
     url: session.url,
