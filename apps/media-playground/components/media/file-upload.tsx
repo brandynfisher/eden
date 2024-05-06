@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
-import { CONFIG } from '@/lib/config'
+import getConfig from 'next/config'
 
 interface FileUploadProgress {
   progress: number;
@@ -106,6 +106,8 @@ const getTypeByMimeType = (mimeType: MimeType) => {
   return mimeType.split('/')[0] as FileType
 }
 
+const { publicRuntimeConfig } = getConfig()
+
 const FileUpload = ({ allowedFileTypes }: Props) => {
   // const [uploadedFiles, setUploadedFiles] = useState<File[]>([{ type: FileTypes.Image, lastModified: Date.now(), name: 'imagefile.png' }])
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
@@ -160,6 +162,8 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     onUploadProgress: (progressEvent: AxiosProgressEvent) => void,
     cancelSource: CancelTokenSource,
   ) => {
+    console.log(publicRuntimeConfig)
+
     return axios.post(
       `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData,
@@ -200,7 +204,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
       formData.append('file', file)
       formData.append(
         'upload_preset',
-        CONFIG.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string,
+        publicRuntimeConfig.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string,
       )
 
       const cancelSource = axios.CancelToken.source()
