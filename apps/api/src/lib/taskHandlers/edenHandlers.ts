@@ -148,15 +148,19 @@ const handleUpdate = async (
 
           if (finalOutput.files[index]) {
             console.log('uploading asset', finalOutput.files[index])
-            const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
-              server,
-              finalOutput.files[index],
-            )
-            console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
+            try {
+              const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
+                server,
+                finalOutput.files[index],
+              )
+              console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
 
-            creationDocument.uri = uri
-            creationDocument.mediaAttributes = mediaAttributes
-            creationDocument.thumbnail = thumbnailUri
+              creationDocument.uri = uri
+              creationDocument.mediaAttributes = mediaAttributes
+              creationDocument.thumbnail = thumbnailUri
+            } catch (e) {
+              console.error('uploadUrlAsset error', e)
+            }
           }
 
           console.log(JSON.stringify({creationDocument}, null, 2))

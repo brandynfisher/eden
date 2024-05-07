@@ -39,19 +39,23 @@ export const uploadCldBufferAsset = async (
   mediaType: MediaType,
   buffer: Buffer,
 ): Promise<Asset> => {
+  console.log('uploadCldBufferAsset', mediaType, MediaType.Image, server.cloudinary.config())
   const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
     if (mediaType === MediaType.Image) {
+      console.log('upload_stream')
       server.cloudinary.uploader.upload_stream((error, uploadResponse) => {
         if (error) {
-          console.error('upload_stream error', error)
+          console.log('upload_stream error', error)
           return reject()
         }
 
+        console.log(uploadResponse)
         return resolve(uploadResponse)
       }).end(buffer)
     } else {
+      console.log('upload_chunked_stream')
       const optionalConfig = mediaType === MediaType.Video || mediaType === MediaType.Audio ? { media_metadata: true } : {}
-
+      console.log({optionalConfig})
       server.cloudinary.uploader.upload_chunked_stream(
         {
           chunk_size: 10,
@@ -60,10 +64,11 @@ export const uploadCldBufferAsset = async (
         },
         (error, uploadResponse) => {
           if (error) {
-            console.error('upload_chunked_stream error', error)
+            console.log('upload_chunked_stream error', error)
             return reject()
           }
 
+          console.log({uploadResponse})
           return resolve(uploadResponse)
         }
       ).end(buffer)
