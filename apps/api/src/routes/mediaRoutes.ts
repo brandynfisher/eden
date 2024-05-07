@@ -2,7 +2,8 @@ import {
   getMediaDownloadUrl,
   receiveMediaTranscodeUpdate,
   uploadMedia,
-  uploadMediaRequest, uploadMediaRequestCloudinary,
+  uploadS3MediaRequest,
+  uploadMediaRequestCloudinary,
 } from '../controllers/mediaController'
 import { isAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -50,7 +51,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (req, reply) => uploadMediaRequest(server, req, reply),
+    handler: (req, reply) => uploadS3MediaRequest(server, req, reply),
   })
 
   server.get('/media/upload/sign-request', {

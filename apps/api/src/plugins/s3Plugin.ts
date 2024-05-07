@@ -4,30 +4,15 @@ import AWS from 'aws-sdk'
 import axios from 'axios'
 import { randomUUID } from 'crypto'
 import type { FastifyInstance } from 'fastify'
-import { fileTypeFromBuffer } from 'file-type'
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import sharp from 'sharp'
+import { Asset, mediaTypeMap } from './assetUploadPlugin'
+import { FileTypeResult } from 'file-type'
 
-export interface Asset {
-  uri: string
-  assetBuffer: Buffer
-  mediaAttributes: MediaAttributes
-}
-
-const mediaTypeMap: Record<string, MediaType> = {
-  mp4: MediaType.Video,
-  m3u8: MediaType.Video,
-  jpg: MediaType.Image,
-  jpeg: MediaType.Image,
-  png: MediaType.Image,
-  webp: MediaType.Image,
-  zip: MediaType.Zip,
-}
-
-const getMediaAttributes = async (
+const getS3MediaAttributes = async (
   buffer: Buffer,
   fileExtension: string,
 ): Promise<MediaAttributes> => {
@@ -95,26 +80,7 @@ const getMediaAttributes = async (
   return mediaAttributes
 }
 
-export const uploadUrlAsset = async (
-  server: FastifyInstance,
-  url: string,
-  fileExtension: string | null = null,
-): Promise<Asset> => {
-  const asset = await axios.get(url, { responseType: 'arraybuffer' })
-  const assetB64 = Buffer.from(asset.data, 'base64')
-  const { uri, mediaAttributes } = await uploadBufferAsset(
-    server,
-    assetB64,
-    fileExtension,
-  )
-  return {
-    uri,
-    assetBuffer: assetB64,
-    mediaAttributes,
-  }
-}
-
-export const uploadThumbnailAsset = async (
+export const uploadS3ThumbnailAsset = async (
   server: FastifyInstance,
   assetInput: string | Buffer,
 ) => {
@@ -131,24 +97,20 @@ export const uploadThumbnailAsset = async (
     .webp({ quality: 80 })
     .toBuffer()
 
-  const { uri } = await uploadBufferAsset(server, resizedBuffer, 'webp')
+  const { uri } = await uploadS3BufferAsset(server, resizedBuffer, { ext: 'webp', mime: 'image/webp' })
   return uri
 }
 
-export const uploadBufferAsset = async (
+export const uploadS3BufferAsset = async (
   server: FastifyInstance,
   buffer: Buffer,
-  fileExtension: string | null = null,
-): Promise<{ uri: string; mediaAttributes: MediaAttributes }> => {
+  fileType: FileTypeResult,
+): Promise<Asset> => {
   const client = server.s3
   const S3_BUCKET = server.config.AWS_S3_BUCKET as string
   const sha = util.sha256(buffer)
-  const fileType = await fileTypeFromBuffer(buffer)
-  const { ext, mime } = fileType
-    ? (fileType as { ext: string; mime: string })
-    : { ext: 'txt', mime: 'text/plain' }
-  const metadata = { 'Content-Type': mime, SHA: sha }
-  const filename = `${sha}.${fileExtension || ext}`
+  const metadata = { 'Content-Type': fileType.mime, SHA: sha }
+  const filename = `${sha}.${fileType.ext}`
   const urlUpload = s3Url(server, filename)
   try {
     await client.headObject({ Bucket: S3_BUCKET, Key: filename }).promise()
@@ -159,12 +121,12 @@ export const uploadBufferAsset = async (
         Key: filename,
         Body: buffer,
         Metadata: metadata,
-        ContentType: mime,
+        ContentType: fileType.mime,
       })
       .promise()
   }
 
-  const mediaAttributes = await getMediaAttributes(buffer, ext)
+  const mediaAttributes = await getS3MediaAttributes(buffer, fileType.ext)
 
   return {
     uri: urlUpload,
@@ -172,7 +134,7 @@ export const uploadBufferAsset = async (
   }
 }
 
-export const generateUploadSignedUrl = async (
+export const generateS3UploadSignedUrl = async (
   server: FastifyInstance,
   { filename, contentType }: { filename: string; contentType: string },
 ): Promise<string> => {
@@ -201,7 +163,7 @@ export const generateUploadSignedUrl = async (
     })
   })
 }
-export const getSignedDownloadUrl = (
+export const getS3SignedDownloadUrl = (
   server: FastifyInstance,
   assetUrl: string,
   fileName?: string,
@@ -241,7 +203,7 @@ export const getSignedDownloadUrl = (
         // }
 
         resolve(
-          createSignedDownloadUrl(server, {
+          createS3SignedDownloadUrl(server, {
             ...params,
             ResponseContentType: 'application/octet-stream',
             ResponseContentDisposition: fileName
@@ -258,7 +220,7 @@ export const getSignedDownloadUrl = (
   })
 }
 
-export const createSignedDownloadUrl = (
+export const createS3SignedDownloadUrl = (
   server: FastifyInstance,
   params: {
     Bucket: string
@@ -300,11 +262,10 @@ export const registerS3 = async (fastify: FastifyInstance) => {
     })
 
     fastify.decorate('s3', s3)
-    fastify.decorate('uploadUrlAsset', uploadUrlAsset)
-    fastify.decorate('uploadThumbnailAsset', uploadThumbnailAsset)
-    fastify.decorate('uploadBufferAsset', uploadBufferAsset)
-    fastify.decorate('getSignedDownloadUrl', getSignedDownloadUrl)
-    fastify.decorate('generateUploadSignedUrl', generateUploadSignedUrl)
+    fastify.decorate('uploadS3ThumbnailAsset', uploadS3ThumbnailAsset)
+    fastify.decorate('uploadS3BufferAsset', uploadS3BufferAsset)
+    fastify.decorate('getS3SignedDownloadUrl', getS3SignedDownloadUrl)
+    fastify.decorate('generateS3UploadSignedUrl', generateS3UploadSignedUrl)
     fastify.log.info('Successfully registered S3Plugin')
   } catch (err) {
     fastify.log.error('Plugin: S3, error on register', err)
@@ -315,26 +276,21 @@ export const registerS3 = async (fastify: FastifyInstance) => {
 declare module 'fastify' {
   interface FastifyInstance {
     s3: AWS.S3
-    uploadUrlAsset: (
-      server: FastifyInstance,
-      url: string,
-      fileExtension?: string | null,
-    ) => Promise<Asset>
-    uploadThumbnailAsset: (
+    uploadS3ThumbnailAsset: (
       server: FastifyInstance,
       assetInput: string | Buffer,
     ) => Promise<string>
-    uploadBufferAsset: (
+    uploadS3BufferAsset: (
       server: FastifyInstance,
       buffer: Buffer,
-      fileExtension?: string | null,
-    ) => Promise<{ uri: string; mediaAttributes: MediaAttributes }>
-    getSignedDownloadUrl: (
+      fileType: FileTypeResult
+    ) => Promise<Asset>
+    getS3SignedDownloadUrl: (
       server: FastifyInstance,
       assetUrl: string,
       fileName?: string,
     ) => Promise<string>
-    generateUploadSignedUrl: (
+    generateS3UploadSignedUrl: (
       server: FastifyInstance,
       { filename, contentType }: { filename: string; contentType: string },
     ) => Promise<string>

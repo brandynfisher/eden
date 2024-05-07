@@ -1,4 +1,4 @@
-import SignUpThemed from '@/components/sign-up-themed'
+import SignUpThemed from '@/components/auth/sign-up-themed'
 
 export default function Page() {
   return (

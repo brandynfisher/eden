@@ -4,7 +4,7 @@ import { handleAxiosServerError } from '@/lib/fetcher'
 export async function GET() {
   try {
     const eden = new EdenClient({
-      edenApiUrl: process.env.EDEN_API_URL,
+      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
     const res = await eden.generators.list({ visible: true })
     return Response.json({ generators: res.docs })

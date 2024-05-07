@@ -35,7 +35,7 @@ export const uploadMedia = async (
     })
   }
 
-  const { uri } = await server.uploadBufferAsset(server, buffer)
+  const { uri } = await server.uploadS3BufferAsset(server, buffer, type)
   return reply.status(200).send({ url: uri })
 }
 
@@ -53,7 +53,25 @@ export const uploadMediaAdmin = async (
   }
 
   const buffer = await data.toBuffer()
-  const { uri } = await server.uploadBufferAsset(server, buffer)
+  const type = await fileTypeFromBuffer(buffer)
+
+  // Allow images, video, audio, text, and .bin files
+  if (
+    !type ||
+    !(
+      type.mime.startsWith('image/') ||
+      type.mime.startsWith('video/') ||
+      type.mime.startsWith('audio/') ||
+      type.mime.startsWith('text/') ||
+      type.mime.startsWith('application/zip')
+    )
+  ) {
+    return reply.status(400).send({
+      message: 'Invalid file type',
+    })
+  }
+
+  const { uri } = await server.uploadS3BufferAsset(server, buffer, type)
   return reply.status(200).send({ url: uri })
 }
 
@@ -70,12 +88,12 @@ export const getMediaDownloadUrl = async (
     })
   }
 
-  const signedUrl = await server.getSignedDownloadUrl(server, url, fileName)
+  const signedUrl = await server.getS3SignedDownloadUrl(server, url, fileName)
 
   return reply.status(200).send({ signedUrl })
 }
 
-export const uploadMediaRequest = async (
+export const uploadS3MediaRequest = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
@@ -92,7 +110,7 @@ export const uploadMediaRequest = async (
   }
 
   try {
-    const signedUrl = await server.generateUploadSignedUrl(server, {
+    const signedUrl = await server.generateS3UploadSignedUrl(server, {
       filename,
       contentType,
     })

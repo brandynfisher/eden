@@ -15,7 +15,7 @@ export async function GET(request: NextApiRequest) {
 
   try {
     const response = await axios.get(
-      `${process.env.EDEN_API_URL}/media/upload/sign-request`,
+      `${process.env.NEXT_PUBLIC_EDEN_API_URL}/media/upload/sign-request`,
       {
         headers: {
           Authorization: `Bearer ${authToken}`,

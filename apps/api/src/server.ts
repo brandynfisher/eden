@@ -5,7 +5,6 @@ import config from './plugins/config'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerEventEmitter from './plugins/eventEmitterPlugin'
 import registerLogos from './plugins/logosPlugin'
-import registerMinio from './plugins/minioPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
@@ -16,6 +15,7 @@ import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
 import { routes } from './routes'
 import fastify, { FastifyRequest } from 'fastify'
+import registerAssetUpload from './plugins/assetUploadPlugin'
 
 export interface CreateServerOpts {
   mongoUri?: string
@@ -85,15 +85,13 @@ const createServer = async (
   await registerMongo(server, opts.mongoUri)
   await registerChroma(server, opts.chromaUri)
   await registerMultipart(server)
-  await registerTaskHandlers(server, opts.taskHandlers)
-  await registerStripe(server)
   await registerEventEmitter(server)
 
-  if (server.config.MINIO_URI) {
-    await registerMinio(server)
-  } else {
-    await registerS3(server)
-  }
+  registerTaskHandlers(server, opts.taskHandlers)
+  await registerStripe(server)
+
+  await registerAssetUpload(server)
+  await registerS3(server)
 
   if (server.config.CLOUDINARY_API_SECRET && server.config.CLOUDINARY_API_KEY && server.config.CLOUDINARY_CLOUD_NAME) {
     await registerCloudinary(server)

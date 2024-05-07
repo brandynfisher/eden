@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 
 import { GeneratorDocument } from '../../models/Generator'
-import { uploadBufferAsset } from '../../plugins/minioPlugin'
+import { uploadS3BufferAsset as uploadBufferAsset } from '../../plugins/s3Plugin'
 import { randomId } from '../util'
 import { receiveTaskUpdate } from './edenHandlers'
 
@@ -27,7 +27,7 @@ const runTask = async (server: FastifyInstance, config: any, task: any) => {
   }
 
   const audioBuffer = await elevenLabs.runTask(config.voice, config.text)
-  const { uri: audioUri } = await uploadBufferAsset(server, audioBuffer)
+  const { uri: audioUri } = await uploadBufferAsset(server, audioBuffer, { ext: 'wav', mime: 'audio/mpeg' }, )
 
   const output = {
     file: audioUri,

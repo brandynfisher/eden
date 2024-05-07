@@ -47,7 +47,7 @@ const OtherColor = {
 }
 
 const getFileIconAndColor = (fileType: FileType) => {
-  console.log({ fileType })
+  // console.log({ fileType })
   if (fileType === `image`) {
     return {
       icon: <FileImage size={40} className={ImageColor.fillColor} />,
@@ -114,7 +114,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
   const allowedFileMimeTypes = allowedTypes.map(type => type.allowedMimeTypes)
   const fixedColorClassName = allowedTypes && allowedTypes.length === 1 ? getFileIconAndColor(allowedTypes[0].type).color : undefined
 
-  console.log({ allowedTypes, fixedColorClassName, uploadedFiles, filesToUpload })
+  // console.log({ allowedTypes, fixedColorClassName, uploadedFiles, filesToUpload })
 
   // feel free to mode all these functions to separate utils
   // here is just for simplicity

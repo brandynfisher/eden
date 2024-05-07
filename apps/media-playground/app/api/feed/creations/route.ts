@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const feedQueryParams = extractFeedParams(searchParams)
 
     const eden = new EdenClient({
-      edenApiUrl: process.env.EDEN_API_URL,
+      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
     const res = await eden.feed_cursor.creations(feedQueryParams)
     return Response.json(res)

@@ -1,4 +1,4 @@
-import SignInThemed from '@/components/sign-in-themed'
+import SignInThemed from '@/components/auth/sign-in-themed'
 
 export default function Page() {
   return (
