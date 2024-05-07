@@ -841,7 +841,7 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    console.log(JSON.stringify(creationFeedPipeline, null, 2))
+    // console.log(JSON.stringify(creationFeedPipeline, null, 2))
 
     // @ts-ignore
     results = await Creation.aggregate(creationFeedPipeline)

@@ -224,6 +224,9 @@ const handleUpdate = async (
         }
       }
 
+      console.log(JSON.stringify(creationData, null, 2))
+      console.log(JSON.stringify(taskUpdate, null, 2))
+
       // n_samples: add samples field with other creationIds
       if (
         creationData.length > 1 &&
