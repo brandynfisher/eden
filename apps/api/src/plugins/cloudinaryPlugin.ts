@@ -1,10 +1,5 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
-import { randomUUID } from 'crypto'
 import type { FastifyInstance } from 'fastify'
-import ffmpeg from 'fluent-ffmpeg'
-import fs from 'fs'
-import { tmpdir } from 'os'
-import { join } from 'path'
 import { UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import { Asset } from './assetUploadPlugin'
 
@@ -17,66 +12,24 @@ export interface CloudinaryUploadSignature {
 
 const getMediaAttributes = async (
   uploadResponse: UploadApiResponse,
-  buffer: Buffer,
   mediaType: MediaType,
 ): Promise<MediaAttributes> => {
-  const tempFilePath = join(tmpdir(), randomUUID())
-  fs.writeFileSync(tempFilePath, buffer)
-
   const mediaAttributes: MediaAttributes = {
     type: mediaType,
   }
 
-  // @todo: once we upload videos to cloudinary, this can probably be changed as they'll deliver this to us after upload
+  console.log({uploadResponse})
 
+  // @todo: verify that this actually works. Documentation and code looks rather wonky
   if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
-    const duration = await new Promise<number | undefined>(
-      (resolve, reject) => {
-        ffmpeg.ffprobe(tempFilePath, (err, metadata) => {
-          if (err) reject(err)
-          else resolve(metadata.format.duration)
-        })
-      },
-    )
-    if (!duration) throw new Error('Could not get media duration')
-    mediaAttributes.duration = duration
+    mediaAttributes.duration = uploadResponse.duration
   }
 
-  if (mediaType === MediaType.Video) {
-    const { width, height, aspectRatio } = await new Promise<{
-      width: number
-      height: number
-      aspectRatio: number
-    }>((resolve, reject) => {
-      ffmpeg.ffprobe(tempFilePath, (err, metadata) => {
-        if (err) reject(err)
-        else {
-          const width = metadata.streams[0].width
-          const height = metadata.streams[0].height
-          const aspectRatio = width && height ? width / height : undefined
-          if (width && height && aspectRatio) {
-            resolve({ width, height, aspectRatio })
-          } else {
-            reject(new Error('Width, height or aspect ratio is undefined'))
-          }
-        }
-      })
-    })
-    if (!width || !height || !aspectRatio) {
-      throw new Error('Could not get media resolution')
-    }
-    mediaAttributes.width = width
-    mediaAttributes.height = height
-    mediaAttributes.aspectRatio = aspectRatio
-  }
-
-  if (mediaType === MediaType.Image) {
+  if (mediaType === MediaType.Image || mediaType === MediaType.Video) {
     mediaAttributes.width = uploadResponse.width
     mediaAttributes.height = uploadResponse.height
     mediaAttributes.aspectRatio = uploadResponse.width / uploadResponse.height
   }
-
-  fs.unlinkSync(tempFilePath)
 
   return mediaAttributes
 }
@@ -97,14 +50,23 @@ export const uploadCldBufferAsset = async (
         return resolve(uploadResponse)
       }).end(buffer)
     } else {
-      server.cloudinary.uploader.upload_chunked_stream({ chunk_size: 10, resource_type: 'auto' },(error, uploadResponse) => {
-        if (error) {
-          console.error('upload_chunked_stream error', error)
-          return reject()
-        }
+      const optionalConfig = mediaType === MediaType.Video || mediaType === MediaType.Audio ? { media_metadata: true } : {}
 
-        return resolve(uploadResponse)
-      }).end(buffer)
+      server.cloudinary.uploader.upload_chunked_stream(
+        {
+          chunk_size: 10,
+          resource_type: 'auto',
+          ...optionalConfig
+        },
+        (error, uploadResponse) => {
+          if (error) {
+            console.error('upload_chunked_stream error', error)
+            return reject()
+          }
+
+          return resolve(uploadResponse)
+        }
+      ).end(buffer)
     }
   })
 
@@ -119,7 +81,7 @@ export const uploadCldBufferAsset = async (
     }
   }
 
-  const mediaAttributes = await getMediaAttributes(uploadResult, buffer, mediaType)
+  const mediaAttributes = await getMediaAttributes(uploadResult, mediaType)
 
   // If video: get thumbnail url for free by changing file ending
   const thumbnailUri = mediaType == MediaType.Video ? `${uploadResult.secure_url.substring(0, uploadResult.secure_url.lastIndexOf('.'))}.webp` : uploadResult.secure_url
