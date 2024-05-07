@@ -47,4 +47,6 @@ RUN adduser --system --uid 1001 nodejs
 USER nodejs
 
 ENV NODE_ENV="production"
+ENV CLOUDINARY_API_KEY="466813977272747"
+ENV CLOUDINARY_CLOUD_NAME="dihgjel45"
 CMD ["yarn", "start"]
