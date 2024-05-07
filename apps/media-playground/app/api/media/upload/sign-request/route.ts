@@ -1,9 +1,9 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import axios from 'axios'
-import { NextApiRequest } from 'next'
 import { getAuthToken } from '@/lib/auth'
+import { NextRequest } from 'next/server'
 
-export async function GET(request: NextApiRequest) {
+export async function GET(request: NextRequest) {
   const authToken = await getAuthToken(request)
 
   if (!authToken) {
