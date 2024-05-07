@@ -147,18 +147,13 @@ const handleUpdate = async (
           }
 
           if (finalOutput.files[index]) {
-            const { uri, mediaAttributes } = await server.uploadUrlAsset(
+            const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
               server,
               finalOutput.files[index],
             )
             creationDocument.uri = uri
             creationDocument.mediaAttributes = mediaAttributes
-          }
-          if (finalOutput.thumbnails[index]) {
-            creationDocument.thumbnail = await server.uploadThumbnailAsset(
-              server,
-              finalOutput.thumbnails[index],
-            )
+            creationDocument.thumbnail = thumbnailUri
           }
 
           creationData.push(creationDocument)
@@ -308,6 +303,7 @@ const handleUpdate = async (
           )
           conceptData.uri = uri
         }
+
         if (finalOutput.thumbnails[i]) {
           const { uri } = await server.uploadUrlAsset(
             server,
@@ -406,17 +402,18 @@ const handleUpdateUniversal = async (
           character: task.character,
           task: task._id,
           uri: output[i],
-          thumbnail: null,
+          thumbnail: '',
           name: task.config.prompt,
           attributes: task.attributes,
           mediaAttributes: {},
         }
         if (output[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
+          const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
             server,
             output[i],
           )
           creationData.uri = uri
+          creationData.thumbnail = thumbnailUri || ''
           creationData.mediaAttributes = mediaAttributes
         }
         // todo: make a thumbnail

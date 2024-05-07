@@ -1,9 +1,6 @@
 import { type NextRequest } from 'next/server'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { extractFeedParams, handleAxiosServerError } from '@/lib/fetcher'
-import getConfig from 'next/config'
-
-const { serverRuntimeConfig } = getConfig()
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +8,7 @@ export async function GET(request: NextRequest) {
     const feedQueryParams = extractFeedParams(searchParams)
 
     const eden = new EdenClient({
-      edenApiUrl: serverRuntimeConfig.API_URL,
+      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
     const res = await eden.feed_cursor.creations(feedQueryParams)
     return Response.json(res)

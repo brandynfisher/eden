@@ -48,12 +48,6 @@ const ConfigSchema = Type.Strict(
     STRIPE_DISCOUNT_CODE_PRO: Type.Optional(Type.String()),
     STRIPE_DISCOUNT_CODE_BELIEVER: Type.Optional(Type.String()),
     SENTRY_DSN: Type.String(),
-    MINIO_HOST: Type.Optional(Type.String()),
-    MINIO_PORT: Type.Optional(Type.String()),
-    MINIO_ACCESS_KEY: Type.Optional(Type.String()),
-    MINIO_SECRET_KEY: Type.Optional(Type.String()),
-    MINIO_BUCKET: Type.Optional(Type.String()),
-    MINIO_URI: Type.Optional(Type.String()),
     CLERK_PUBLISHABLE_KEY: Type.Optional(Type.String()),
     CLERK_SECRET_KEY: Type.Optional(Type.String()),
     CLERK_WEBHOOK_SECRET: Type.Optional(Type.String()),
@@ -64,6 +58,9 @@ const ConfigSchema = Type.Strict(
     HF_TOKEN: Type.Optional(Type.String()),
     GOOGLE_ANALYTICS_MEASUREMENT_ID: Type.Optional(Type.String()),
     GOOGLE_ANALYTICS_API_SECRET: Type.Optional(Type.String()),
+    CLOUDINARY_API_KEY: Type.Optional(Type.String()),
+    CLOUDINARY_API_SECRET: Type.Optional(Type.String()),
+    CLOUDINARY_CLOUD_NAME: Type.Optional(Type.String()),
   }),
 )
 
