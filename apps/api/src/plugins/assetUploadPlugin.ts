@@ -5,6 +5,7 @@ import { fileTypeFromBuffer } from 'file-type'
 
 export interface Asset {
   uri: string
+  thumbnailUri?: string
   assetBuffer?: Buffer
   mediaAttributes: MediaAttributes
 }
@@ -34,11 +35,7 @@ const uploadUrlAsset = async (
 
   const mediaType = mediaTypeMap[fileType?.ext || 'txt']
 
-  if (mediaType === MediaType.Image) {
-    return server.uploadCldBufferAsset(server, mediaType, assetB64)
-  }
-
-  return server.uploadS3BufferAsset(server, assetB64, fileType)
+  return server.uploadCldBufferAsset(server, mediaType, assetB64)
 }
 
 export const registerAssetUpload = async (fastify: FastifyInstance) => {
@@ -57,10 +54,6 @@ declare module 'fastify' {
       server: FastifyInstance,
       url: string,
     ) => Promise<Asset>
-    uploadThumbnailAsset: (
-      server: FastifyInstance,
-      assetInput: string | Buffer,
-    ) => Promise<string>
   }
 }
 

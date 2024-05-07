@@ -27,6 +27,8 @@ const getMediaAttributes = async (
     type: mediaType,
   }
 
+  // @todo: once we upload videos to cloudinary, this can probably be changed as they'll deliver this to us after upload
+
   if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
     const duration = await new Promise<number | undefined>(
       (resolve, reject) => {
@@ -85,20 +87,32 @@ export const uploadCldBufferAsset = async (
   buffer: Buffer,
 ): Promise<Asset> => {
   const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
-    server.cloudinary.uploader.upload_stream((error, uploadResult) => {
-      if (error) {
-        console.error('upload_stream error', error)
-        return reject()
-      }
+    if (mediaType === MediaType.Image) {
+      server.cloudinary.uploader.upload_stream((error, uploadResponse) => {
+        if (error) {
+          console.error('upload_stream error', error)
+          return reject()
+        }
 
-      return resolve(uploadResult)
-    }).end(buffer)
+        return resolve(uploadResponse)
+      }).end(buffer)
+    } else {
+      server.cloudinary.uploader.upload_chunked_stream({ chunk_size: 10, resource_type: 'auto' },(error, uploadResponse) => {
+        if (error) {
+          console.error('upload_chunked_stream error', error)
+          return reject()
+        }
+
+        return resolve(uploadResponse)
+      }).end(buffer)
+    }
   })
 
   if (!uploadResult) {
     console.log('upload failed')
     return {
       uri: '',
+      thumbnailUri: '',
       mediaAttributes: {
         type: mediaType,
       },
@@ -107,8 +121,12 @@ export const uploadCldBufferAsset = async (
 
   const mediaAttributes = await getMediaAttributes(uploadResult, buffer, mediaType)
 
+  // If video: get thumbnail url for free by changing file ending
+  const thumbnailUri = mediaType == MediaType.Video ? `${uploadResult.secure_url.substring(0, uploadResult.secure_url.lastIndexOf('.'))}.webp` : uploadResult.secure_url
+
   return {
     uri: uploadResult.secure_url,
+    thumbnailUri,
     mediaAttributes,
   }
 }
@@ -142,7 +160,7 @@ export const generateCldUploadSignature: (server: FastifyInstance) => Cloudinary
 ) => {
   const uploadConfig = {
     // eager: 'c_pad,h_300,w_400|c_crop,h_200,w_260', //@todo: set this to something useful
-    folder: 'signed_upload_demo_form', // @todo: configure actual folder
+    folder: 'user_uploads', // @todo: configure actual folder
   }
   const sig = signRequest(server, uploadConfig)
 

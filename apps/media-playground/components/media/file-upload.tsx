@@ -154,7 +154,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     })
   }
 
-  const uploadImageToCloudinary = async (
+  const uploadAssetToCloudinary = async (
     formData: FormData,
     onUploadProgress: (progressEvent: AxiosProgressEvent) => void,
     cancelSource: CancelTokenSource,
@@ -171,10 +171,10 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     formData.append('timestamp', timestamp)
     formData.append('signature', signature)
     // formData.append('eager', 'c_pad,h_300,w_400|c_crop,h_200,w_260') // @todo: needs to match what's configured in api signing
-    formData.append('folder', 'signed_upload_demo_form') // @todo: needs to match api signature config
+    formData.append('folder', 'user_uploads') // @todo: needs to match api signature config
 
     return axios.post(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
       formData,
       {
         onUploadProgress,
@@ -213,7 +213,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
       formData.append('file', file)
 
       const cancelSource = axios.CancelToken.source()
-      return uploadImageToCloudinary(
+      return uploadAssetToCloudinary(
         formData,
         (progressEvent) => onUploadProgress(progressEvent, file, cancelSource),
         cancelSource,
@@ -233,10 +233,10 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     onDrop, accept: {
       //@todo: produce better typing based on mediaType. image: [ 'mime/type1' ], video: [ 'mime/type1']...
       //@todo: toggle this config based on prop fileType image/video/..
-      'image/jpg': [],
-      'image/jpeg': [],
-      'image/png': [],
-      'image/webp': [],
+      // 'image/jpg': [],
+      // 'image/jpeg': [],
+      // 'image/png': [],
+      // 'image/webp': [],
     },
   })
 
