@@ -131,7 +131,7 @@ export const dummyReceiveTaskUpdate = async (
 
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
   const asset = await server.uploadUrlAsset(server, image.result)
-  const thumbnail = await server.uploadThumbnailAsset(server, image.thumbnail)
+  const thumbnail = await server.uploadS3ThumbnailAsset(server, image.thumbnail)
 
   const creationUser = task.attributes?.delegateUserId
     ? new ObjectId(task.attributes.delegateUserId)
