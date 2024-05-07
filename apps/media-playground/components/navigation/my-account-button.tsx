@@ -12,9 +12,11 @@ import UserAvatar from '@/components/user/user-avatar'
 import CreatorData from '@/stories/dummyData/creator'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { forwardRef } from 'react'
+import { forwardRef, useEffect } from 'react'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
+import { useTheme } from 'next-themes'
+import { dark } from "@clerk/themes";
 
 const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(({ ...rest }, ref) => (
   <div ref={ref} className='w-full'>
@@ -87,11 +89,15 @@ const AccountDropdown = () => {
 
 const LoginButton = () => {
   const { openSignIn } = useClerk()
-  const {  isSignedIn } = useAuth()
+  const { isSignedIn } = useAuth()
+  const { theme } = useTheme()
+  const clerkTheme =  theme === 'dark' ? dark : undefined
 
   const authenticate = async () => {
     if (!isSignedIn) {
-      openSignIn(undefined)
+      openSignIn(
+        clerkTheme ? { appearance: { baseTheme: clerkTheme }} : undefined
+      )
     }
   }
 

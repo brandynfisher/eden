@@ -8,6 +8,7 @@ import { ReactElement } from 'react'
 import Header from '@/components/header/header'
 import { ClerkProvider } from '@clerk/nextjs'
 
+
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
@@ -15,7 +16,18 @@ const fontSans = FontSans({
 
 export default function RootLayout({ children }: { children: ReactElement }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        layout: {
+          socialButtonsPlacement: "bottom",
+          socialButtonsVariant: "iconButton",
+          termsPageUrl: "https://app.eden.art/terms",
+          privacyPageUrl: "https://app.eden.art/privacy",
+          helpPageUrl: "https://app.eden.art/help",
+          logoImageUrl: "https://app.eden.art/eden-logo-512x512.png",
+        },
+      }}
+    >
       <html lang='en' suppressHydrationWarning>
         <head>
           <title>Eden 2.0</title>

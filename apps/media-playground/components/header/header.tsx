@@ -1,6 +1,6 @@
 import HeaderNav from '@/components/navigation/header-nav'
 import SearchForm from '@/components/form/search-form'
-import MyAccountButton from '@/components/navigation/my-account-dropdown'
+import MyAccountButton from '@/components/navigation/my-account-button'
 
 const Header = () => {
   return (

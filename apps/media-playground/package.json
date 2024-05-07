@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.6",
+    "@clerk/themes": "^2.1.2",
     "@edenlabs/eden-sdk": "*",
     "@hookform/resolvers": "^3.3.4",
     "@next/third-parties": "^14.2.3",

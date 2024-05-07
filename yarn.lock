@@ -1870,6 +1870,14 @@
     "@clerk/types" "3.64.0"
     tslib "2.4.1"
 
+"@clerk/themes@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@clerk/themes/-/themes-2.1.2.tgz#96fe8e3d30478ab326bf6110de67e2ad90f7cb2a"
+  integrity sha512-amSxjWJGYDOKFQDa+QCSmfyjIzdPo2e5L0PA/GbP40DeBA4x0RAdXQiY8OAtglvLPw21aOWNMqSYWJXIF0SYVQ==
+  dependencies:
+    "@clerk/types" "4.2.0"
+    tslib "2.4.1"
+
 "@clerk/types@3.64.0":
   version "3.64.0"
   resolved "https://registry.yarnpkg.com/@clerk/types/-/types-3.64.0.tgz#323c57387cf28a7bc4bce401749480ce747a3750"

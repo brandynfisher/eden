@@ -1,9 +1,9 @@
-import { SignIn } from '@clerk/nextjs'
+import SignInThemed from '@/components/sign-in-themed'
 
 export default function Page() {
   return (
     <div>
-      <SignIn />
+      <SignInThemed />
     </div>
   )
 }
