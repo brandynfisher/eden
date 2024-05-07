@@ -9,7 +9,6 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
-import getConfig from 'next/config'
 
 interface FileUploadProgress {
   progress: number;
@@ -106,8 +105,6 @@ const getTypeByMimeType = (mimeType: MimeType) => {
   return mimeType.split('/')[0] as FileType
 }
 
-const { publicRuntimeConfig } = getConfig()
-
 const FileUpload = ({ allowedFileTypes }: Props) => {
   // const [uploadedFiles, setUploadedFiles] = useState<File[]>([{ type: FileTypes.Image, lastModified: Date.now(), name: 'imagefile.png' }])
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
@@ -162,10 +159,22 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     onUploadProgress: (progressEvent: AxiosProgressEvent) => void,
     cancelSource: CancelTokenSource,
   ) => {
-    console.log(publicRuntimeConfig)
+    const signResponse = await axios.get('/api/media/upload/sign-request')
+
+    if (!signResponse) {
+      throw new Error('sign request failed')
+    }
+
+    const { apiKey, timestamp, signature, cloudName } = signResponse.data
+
+    formData.append('api_key', apiKey)
+    formData.append('timestamp', timestamp)
+    formData.append('signature', signature)
+    // formData.append('eager', 'c_pad,h_300,w_400|c_crop,h_200,w_260') // @todo: needs to match what's configured in api signing
+    formData.append('folder', 'signed_upload_demo_form') // @todo: needs to match api signature config
 
     return axios.post(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
       formData,
       {
         onUploadProgress,
@@ -202,10 +211,6 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     const fileUploadBatch = acceptedFiles.map((file) => {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append(
-        'upload_preset',
-        publicRuntimeConfig.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string,
-      )
 
       const cancelSource = axios.CancelToken.source()
       return uploadImageToCloudinary(
@@ -224,12 +229,16 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
   }, [])
 
   // const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: allowedFileMimeTypes.map(item => ) })
-  const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: {
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop, accept: {
+      //@todo: produce better typing based on mediaType. image: [ 'mime/type1' ], video: [ 'mime/type1']...
+      //@todo: toggle this config based on prop fileType image/video/..
       'image/jpg': [],
       'image/jpeg': [],
       'image/png': [],
       'image/webp': [],
-    } })
+    },
+  })
 
   return (
     <div className='flex-grow'>

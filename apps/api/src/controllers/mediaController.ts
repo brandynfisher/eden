@@ -105,6 +105,22 @@ export const uploadMediaRequest = async (
   }
 }
 
+export const uploadMediaRequestCloudinary = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const signature = server.generateCldUploadSignature(server)
+    return reply.status(200).send(signature)
+  } catch (error) {
+    console.error('Error generating signed URL:', error)
+    return reply.status(500).send({
+      message: 'Error generating signed URL',
+    })
+  }
+}
+
 export const receiveMediaTranscodeUpdate = async (
   server: FastifyInstance,
   request: FastifyRequest,

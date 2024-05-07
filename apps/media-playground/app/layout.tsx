@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { Inter as FontSans } from 'next/font/google'
 import { ReactElement } from 'react'
 import Header from '@/components/header/header'
+import { ClerkProvider } from '@clerk/nextjs'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -14,31 +15,33 @@ const fontSans = FontSans({
 
 export default function RootLayout({ children }: { children: ReactElement }) {
   return (
-    <html lang='en' suppressHydrationWarning>
-      <head>
-        <title>Eden 2.0</title>
-      </head>
-      <body
-        className={cn(
-          'min-h-screen bg-background font-sans antialiased',
-          fontSans.variable,
-        )}
-      >
-        <ThemeProvider
-          attribute='class'
-          defaultTheme='system'
-          enableSystem
-          disableTransitionOnChange
+    <ClerkProvider>
+      <html lang='en' suppressHydrationWarning>
+        <head>
+          <title>Eden 2.0</title>
+        </head>
+        <body
+          className={cn(
+            'min-h-screen bg-background font-sans antialiased',
+            fontSans.variable,
+          )}
         >
-          <div className='flex min-h-screen w-full flex-col'>
-            <Header />
-            {children}
-          </div>
-          {process.env.NODE_ENV === 'production' ? (
-            <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
-          ) : null}
-        </ThemeProvider>
-      </body>
-    </html>
+          <ThemeProvider
+            attribute='class'
+            defaultTheme='system'
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className='flex min-h-screen w-full flex-col'>
+              <Header />
+              {children}
+            </div>
+            {process.env.NODE_ENV === 'production' ? (
+              <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
+            ) : null}
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

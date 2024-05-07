@@ -2,7 +2,7 @@ import {
   getMediaDownloadUrl,
   receiveMediaTranscodeUpdate,
   uploadMedia,
-  uploadMediaRequest,
+  uploadMediaRequest, uploadMediaRequestCloudinary,
 } from '../controllers/mediaController'
 import { isAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -51,6 +51,32 @@ const mediaRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (req, reply) => uploadMediaRequest(server, req, reply),
+  })
+
+  server.get('/media/upload/sign-request', {
+    schema: {
+      tags: ['Media'],
+      description: 'Upload media request - Cloudinary',
+      security: [
+        {
+          apiKey: [],
+          apiSecret: [],
+        },
+      ],
+      response: {
+        200: Type.Object({
+          signature: Type.String(),
+          timestamp: Type.Number(),
+          cloudName: Type.String(),
+          apiKey: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String()
+        })
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (req, reply) => uploadMediaRequestCloudinary(server, req, reply),
   })
 
   server.get('/media/download', {

@@ -64,6 +64,9 @@ const ConfigSchema = Type.Strict(
     HF_TOKEN: Type.Optional(Type.String()),
     GOOGLE_ANALYTICS_MEASUREMENT_ID: Type.Optional(Type.String()),
     GOOGLE_ANALYTICS_API_SECRET: Type.Optional(Type.String()),
+    CLOUDINARY_API_KEY: Type.Optional(Type.String()),
+    CLOUDINARY_API_SECRET: Type.Optional(Type.String()),
+    CLOUDINARY_CLOUD_NAME: Type.Optional(Type.String()),
   }),
 )
 

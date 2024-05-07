@@ -10,6 +10,7 @@ import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
 import registerS3 from './plugins/s3Plugin'
+import registerCloudinary from './plugins/cloudinaryPlugin'
 import registerSentry from './plugins/sentryPlugin'
 import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
@@ -92,6 +93,10 @@ const createServer = async (
     await registerMinio(server)
   } else {
     await registerS3(server)
+  }
+
+  if (server.config.CLOUDINARY_API_SECRET && server.config.CLOUDINARY_API_KEY && server.config.CLOUDINARY_CLOUD_NAME) {
+    await registerCloudinary(server)
   }
 
   if (server.config.REPLICATE_API_TOKEN) {
