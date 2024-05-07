@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState, RefObject, useRef } from 'react'
 
 type ObserverRect = Omit<DOMRectReadOnly, 'toJSON'>;
 
@@ -13,7 +13,11 @@ const defaultState: ObserverRect = {
   right: 0,
 };
 
-export function useResizeObserver<T extends HTMLElement = any>(options?: ResizeObserverOptions) {
+interface ResizeObserverOptions {
+  box: 'content-box' | 'border-box';
+}
+
+export function useResizeObserver<T extends HTMLElement>(options?: ResizeObserverOptions): [ RefObject<T>, ObserverRect ] {
   const frameID = useRef(0);
   const ref = useRef<T>(null);
 
@@ -22,7 +26,7 @@ export function useResizeObserver<T extends HTMLElement = any>(options?: ResizeO
   const observer = useMemo(
     () =>
       typeof window !== 'undefined'
-        ? new ResizeObserver((entries: any) => {
+        ? new ResizeObserver((entries: ResizeObserverEntry[]) => {
           const entry = entries[0];
 
           if (entry) {
@@ -53,10 +57,10 @@ export function useResizeObserver<T extends HTMLElement = any>(options?: ResizeO
     };
   }, [ref.current]);
 
-  return [ref, rect] as const;
+  return [ref, rect];
 }
 
-export function useElementSize<T extends HTMLElement = any>(options?: ResizeObserverOptions) {
+export function useElementSize<T extends HTMLElement>(options?: ResizeObserverOptions) {
   const [ref, { width, height }] = useResizeObserver<T>(options);
   return { ref, width, height };
 }

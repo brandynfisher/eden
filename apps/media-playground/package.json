@@ -7,7 +7,7 @@
     "dev:eden": "env-cmd -f .env.eden.local next dev --turbo",
     "build": "next build --debug",
     "start": "next start",
-    "lint": "eslint src --fix",
+    "lint": "eslint app components features hooks lib stories types --fix",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
