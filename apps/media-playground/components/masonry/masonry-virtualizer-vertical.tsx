@@ -67,7 +67,7 @@ const MASONRY_GUTTER = 16
 const QUERY_LIMIT = 35
 
 const MasonryVirtualizerVertical = () => {
-  const { ref: masonryWrapRef, width: masonryWrapWidth } = useElementSize()
+  const { ref: masonryWrapRef, width: masonryWrapWidth } = useElementSize<HTMLDivElement>()
   const above480 = useMediaQuery('(min-width: 480px)')
   const above768 = useMediaQuery('(min-width: 768px)')
   const above1024 = useMediaQuery('(min-width: 1024px)')
