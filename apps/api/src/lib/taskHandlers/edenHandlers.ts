@@ -147,14 +147,19 @@ const handleUpdate = async (
           }
 
           if (finalOutput.files[index]) {
+            console.log('uploading asset', finalOutput.files[index])
             const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
               server,
               finalOutput.files[index],
             )
+            console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
+
             creationDocument.uri = uri
             creationDocument.mediaAttributes = mediaAttributes
             creationDocument.thumbnail = thumbnailUri
           }
+
+          console.log(JSON.stringify({creationDocument}, null, 2))
 
           creationData.push(creationDocument)
         }),
@@ -411,15 +416,16 @@ const handleUpdateUniversal = async (
           mediaAttributes: {},
         }
         if (output[i]) {
+          console.log('uploading asset', output[i])
           const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
             server,
             output[i],
           )
+          console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
           creationData.uri = uri
           creationData.thumbnail = thumbnailUri || ''
           creationData.mediaAttributes = mediaAttributes
         }
-        // todo: make a thumbnail
         const creation = await Creation.create(creationData)
         Object.assign(taskUpdate, { creation: creation._id })
 
