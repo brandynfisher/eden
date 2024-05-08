@@ -5,9 +5,10 @@ import { Collection } from '@edenlabs/eden-sdk'
 import Groups from '@mui/icons-material/Groups'
 import LockIcon from '@mui/icons-material/Lock'
 import Chip from '@mui/material/Chip'
-import { Card, Image } from 'antd'
+import { Card } from 'antd'
 import Link from 'next/link'
 import React, { useCallback, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
   if (!imageUri) {
@@ -15,12 +16,12 @@ const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
   }
 
   return (
-    <Image
+    <CdnImage
       alt="example"
       src={imageUri}
-      preview={false}
-      placeholder={true}
-      wrapperClassName="!flex justify-center items-center overflow-hidden h-full "
+      // preview={false}
+      // placeholder={true}
+      // wrapperClassName="!flex justify-center items-center overflow-hidden h-full "
       className="object-cover w-full !h-full !rounded-none transition-transform duration-200 ease-in group-hover:scale-105"
     />
   )

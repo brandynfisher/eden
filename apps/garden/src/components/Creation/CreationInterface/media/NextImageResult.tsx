@@ -1,8 +1,8 @@
 import ExpandOutlined from '@ant-design/icons/ExpandOutlined'
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined'
 import { Skeleton } from 'antd'
-import Image from 'next/image'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const ImagePreviewMask = () => (
   <div className="image-preview-mask absolute inset-0 !opacity-60 hover:!opacity-100">
@@ -73,7 +73,7 @@ const NextImageResult = ({
               {/*/>*/}
 
               {previewSizeUrl ? (
-                <Image
+                <CdnImage
                   ref={previewImageRef}
                   fill
                   alt="result-nextImage"
@@ -93,7 +93,7 @@ const NextImageResult = ({
           ) : (
             <div className="relative">
               {previewSizeUrl ? (
-                <Image
+                <CdnImage
                   fill
                   alt="result-nextImage"
                   src={previewSizeUrl}

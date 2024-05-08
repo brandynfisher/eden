@@ -6,9 +6,9 @@ import { CONFIG } from '@/lib/config'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import CloseIcon from '@mui/icons-material/Close'
 import { App, Button, Form, FormInstance, Input, Tag } from 'antd'
-import Image from 'next/image'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 export const ConceptParameterUI = ({
   conceptId,
@@ -28,7 +28,7 @@ export const ConceptParameterUI = ({
           {concept ? (
             <div className="pr-1 flex gap-2 items-center w-full">
               {concept.thumbnail ? (
-                <Image
+                <CdnImage
                   width={48}
                   height={48}
                   src={

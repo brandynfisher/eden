@@ -5,9 +5,9 @@ import RobotOutlined from '@ant-design/icons/RobotOutlined'
 import { Character } from '@edenlabs/eden-sdk'
 import LockIcon from '@mui/icons-material/Lock'
 import { Divider } from 'antd'
-import Image from 'next/image'
 import Link from 'next/link'
 import React, { FC } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const CharacterCardFeatures: FC<{ character: Character }> = ({ character }) => {
   const features = [
@@ -77,7 +77,7 @@ const CharacterCard: FC<{
           </div>
         ) : null}
         {character.image ? (
-          <Image
+          <CdnImage
             src={character.image}
             alt={character.name}
             width={248}

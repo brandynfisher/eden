@@ -1,5 +1,5 @@
-import Image from 'next/image'
 import { ReactNode, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 export const ResponsiveImage = ({
   src,
@@ -37,7 +37,7 @@ export const ResponsiveImage = ({
       } rounded-lg w-auto h-full ${className ? className : ''}`}
       style={{ aspectRatio: aspectRatio || 1 }}
     >
-      <Image
+      <CdnImage
         src={src}
         alt={alt}
         sizes={sizes}

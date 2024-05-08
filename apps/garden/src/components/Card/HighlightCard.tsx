@@ -3,9 +3,9 @@ import { Concept } from '@edenlabs/eden-sdk'
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import { Button } from '@mui/material'
-import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const HighlightCard = ({
   concept,
@@ -26,7 +26,7 @@ const HighlightCard = ({
         className="relative md:col-span-7 overflow-hidden h-48 sm:h-52 md:h-auto rounded-md sm:rounded-none cursor-zoom-in group"
         onClick={() => onCoverImageClick && onCoverImageClick()}
       >
-        <Image
+        <CdnImage
           src={coverImageUri}
           alt={concept?.name}
           fill={true}

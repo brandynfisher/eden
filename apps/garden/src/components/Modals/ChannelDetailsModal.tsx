@@ -17,10 +17,10 @@ import { Creation } from '@edenlabs/eden-sdk'
 import { useFullscreen } from '@mantine/hooks'
 import { Button } from '@mui/material'
 import { Modal } from 'antd'
-import Image from 'next/image'
 import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
 import React, { useCallback, useEffect, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const CustomImage = ({
   src,
@@ -356,7 +356,7 @@ const ChannelDetailsModal = ({
                     onClick={() => handleClickItem(item)}
                   >
                     <span className="overflow-hidden rounded-md">
-                      <Image
+                      <CdnImage
                         alt={item.name}
                         src={
                           item.thumbnail
@@ -475,7 +475,7 @@ const ChannelDetailsModal = ({
                 </div>
               ) : null}
 
-              <Image
+              <CdnImage
                 key={`${focusItem._id}_placeholder`}
                 alt={focusItem.name}
                 src={

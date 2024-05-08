@@ -1,9 +1,9 @@
 import MediaDisplay from '@/components/MediaDisplay'
 import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
-import Image from 'next/image'
 import probe from 'probe-image-size'
 import React, { useEffect, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 type ProbedImage = {
   url: string
@@ -113,7 +113,7 @@ const ImageGallery = ({ images }: { images: string[] }) => {
                     })
                   }
                 >
-                  <Image
+                  <CdnImage
                     src={trainingImage.url}
                     alt={trainingImage.url}
                     width={trainingImage.thumbnailSize.width}

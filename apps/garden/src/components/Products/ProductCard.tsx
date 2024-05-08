@@ -1,8 +1,8 @@
 import { UserContext } from '@/providers/UserProvider'
 import { Product, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Button, Card } from 'antd'
-import Image from 'next/image'
 import { useContext } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const { Meta } = Card
 
@@ -60,7 +60,7 @@ const ProductCard = ({
     <Card
       className="w-64 product-card"
       cover={
-        <Image
+        <CdnImage
           width={256}
           height={256}
           alt={product.name || ''}

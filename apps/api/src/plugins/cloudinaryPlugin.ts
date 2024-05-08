@@ -106,6 +106,7 @@ type UploadConfig = {
 
 const signRequest = (server: FastifyInstance, uploadConfig: UploadConfig) => {
   if (!server.config.CLOUDINARY_API_SECRET) {
+    console.log('CLOUDINARY_API_SECRET not set')
     throw new Error('CLOUDINARY_API_SECRET not set')
   }
 

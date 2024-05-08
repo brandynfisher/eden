@@ -2,9 +2,9 @@ import FullscreenOutlined from '@ant-design/icons/FullscreenOutlined'
 import ZoomInOutlined from '@ant-design/icons/ZoomInOutlined'
 import ZoomOutOutlined from '@ant-design/icons/ZoomOutOutlined'
 import { Button } from 'antd'
-import Image from 'next/image'
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
+import CdnImage from '@/components/Media/cdn-image'
 
 const ImageZoomPan = ({
   imageUrl,
@@ -101,7 +101,7 @@ const ImageZoomPan = ({
                 onKeyDown={ev => onEscHandler(ev)}
                 className="outline-0 relative"
               >
-                <Image
+                <CdnImage
                   key={imageUrl}
                   src={imageUrl}
                   alt={imageUrl}
