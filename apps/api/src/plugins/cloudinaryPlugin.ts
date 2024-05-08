@@ -43,8 +43,11 @@ export const uploadCldBufferAsset = async (
   const optionalConfig = mediaType === MediaType.Video || mediaType === MediaType.Audio ? { media_metadata: true } : {}
   console.log({optionalConfig})
 
-  const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
-    // if (mediaType === MediaType.Image) {
+  try {
+    const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
+
+      //@todo: large files (min. 5MB) should be uploaded in chunks. will need to implement
+      // if (mediaType === MediaType.Image) {
       console.log('upload_stream')
       server.cloudinary.uploader.upload_stream({ folder: 'creations' }, (error, uploadResponse) => {
         if (error) {
@@ -55,31 +58,52 @@ export const uploadCldBufferAsset = async (
         console.log(uploadResponse)
         return resolve(uploadResponse)
       }).end(buffer)
-    // } else {
-    //   console.log('upload_chunked_stream')
-    //
-    //   server.cloudinary.uploader.upload_chunked_stream(
-    //     {
-    //       chunk_size: 10,
-    //       resource_type: 'auto',
-    //       folder: 'creations',
-    //       ...optionalConfig,
-    //     },
-    //     (error, uploadResponse) => {
-    //       if (error) {
-    //         console.log('upload_chunked_stream error', error)
-    //         return reject()
-    //       }
-    //
-    //       console.log({uploadResponse})
-    //       return resolve(uploadResponse)
-    //     }
-    //   ).end(buffer)
-    // }
-  })
+      // } else {
+      //   console.log('upload_chunked_stream')
+      //
+      //   server.cloudinary.uploader.upload_chunked_stream(
+      //     {
+      //       chunk_size: 10,
+      //       resource_type: 'auto',
+      //       folder: 'creations',
+      //       ...optionalConfig,
+      //     },
+      //     (error, uploadResponse) => {
+      //       if (error) {
+      //         console.log('upload_chunked_stream error', error)
+      //         return reject()
+      //       }
+      //
+      //       console.log({uploadResponse})
+      //       return resolve(uploadResponse)
+      //     }
+      //   ).end(buffer)
+      // }
+    })
 
-  if (!uploadResult) {
-    console.log('upload failed')
+    if (!uploadResult) {
+      console.log('upload failed')
+      return {
+        uri: '',
+        thumbnailUri: '',
+        mediaAttributes: {
+          type: mediaType,
+        },
+      }
+    }
+
+    const mediaAttributes = await getMediaAttributes(uploadResult, mediaType)
+
+    // If video: get thumbnail url for free by changing file ending
+    const thumbnailUri = mediaType == MediaType.Video ? `${uploadResult.secure_url.substring(0, uploadResult.secure_url.lastIndexOf('.'))}.webp` : uploadResult.secure_url
+
+    return {
+      uri: uploadResult.secure_url,
+      thumbnailUri,
+      mediaAttributes,
+    }
+  } catch (e) {
+    console.error('uploadCldBufferAsset failed returning dummy')
     return {
       uri: '',
       thumbnailUri: '',
@@ -87,17 +111,6 @@ export const uploadCldBufferAsset = async (
         type: mediaType,
       },
     }
-  }
-
-  const mediaAttributes = await getMediaAttributes(uploadResult, mediaType)
-
-  // If video: get thumbnail url for free by changing file ending
-  const thumbnailUri = mediaType == MediaType.Video ? `${uploadResult.secure_url.substring(0, uploadResult.secure_url.lastIndexOf('.'))}.webp` : uploadResult.secure_url
-
-  return {
-    uri: uploadResult.secure_url,
-    thumbnailUri,
-    mediaAttributes,
   }
 }
 
