@@ -26,6 +26,7 @@ const CreationCardVideo = ({
 }) => {
   return (
     <ResponsiveImage
+      assetType='video'
       src={thumbnail}
       alt={thumbnail}
       aspectRatio={width / height}

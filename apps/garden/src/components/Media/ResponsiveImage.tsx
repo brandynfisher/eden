@@ -12,6 +12,7 @@ export const ResponsiveImage = ({
   onLoadingComplete,
   quality,
   className,
+  assetType,
 }: {
   src: string
   alt: string
@@ -23,6 +24,7 @@ export const ResponsiveImage = ({
   onLoadingComplete?: () => void
   quality?: number
   className?: string
+  assetType?: 'image'|'video'
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const handleOnLoadingComplete = () => {
@@ -48,6 +50,7 @@ export const ResponsiveImage = ({
         loading={loading}
         onLoad={handleOnLoadingComplete}
         className={`h-full w-full object-contain ${className ? className : ''}`}
+        assetType={assetType}
       />
       {children}
     </div>

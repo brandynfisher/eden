@@ -39,7 +39,7 @@ export const uploadCldBufferAsset = async (
   mediaType: MediaType,
   buffer: Buffer,
 ): Promise<Asset> => {
-  console.log('uploadCldBufferAsset', mediaType, MediaType.Image, server.cloudinary.config())
+  // console.log('uploadCldBufferAsset', mediaType, server.cloudinary.config())
   try {
     const uploadConfig: UploadApiOptions = {
       media_metadata: mediaType === MediaType.Video || mediaType === MediaType.Audio,
@@ -50,7 +50,7 @@ export const uploadCldBufferAsset = async (
 
       //@todo: large files (min. 5MB) should be uploaded in chunks. will need to implement size check and then to the below
       // if (mediaType === MediaType.Image) {
-      console.log('upload_stream')
+      console.log('upload_stream', uploadConfig)
       server.cloudinary.uploader.upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
         if (error) {
           console.log('upload_stream error', error)
