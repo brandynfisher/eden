@@ -40,8 +40,11 @@ export const uploadCldBufferAsset = async (
   buffer: Buffer,
 ): Promise<Asset> => {
   console.log('uploadCldBufferAsset', mediaType, MediaType.Image, server.cloudinary.config())
+  const optionalConfig = mediaType === MediaType.Video || mediaType === MediaType.Audio ? { media_metadata: true } : {}
+  console.log({optionalConfig})
+
   const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
-    if (mediaType === MediaType.Image) {
+    // if (mediaType === MediaType.Image) {
       console.log('upload_stream')
       server.cloudinary.uploader.upload_stream({ folder: 'creations' }, (error, uploadResponse) => {
         if (error) {
@@ -52,28 +55,27 @@ export const uploadCldBufferAsset = async (
         console.log(uploadResponse)
         return resolve(uploadResponse)
       }).end(buffer)
-    } else {
-      console.log('upload_chunked_stream')
-      const optionalConfig = mediaType === MediaType.Video || mediaType === MediaType.Audio ? { media_metadata: true } : {}
-      console.log({optionalConfig})
-      server.cloudinary.uploader.upload_chunked_stream(
-        {
-          chunk_size: 10,
-          resource_type: 'auto',
-          folder: 'creations',
-          ...optionalConfig,
-        },
-        (error, uploadResponse) => {
-          if (error) {
-            console.log('upload_chunked_stream error', error)
-            return reject()
-          }
-
-          console.log({uploadResponse})
-          return resolve(uploadResponse)
-        }
-      ).end(buffer)
-    }
+    // } else {
+    //   console.log('upload_chunked_stream')
+    //
+    //   server.cloudinary.uploader.upload_chunked_stream(
+    //     {
+    //       chunk_size: 10,
+    //       resource_type: 'auto',
+    //       folder: 'creations',
+    //       ...optionalConfig,
+    //     },
+    //     (error, uploadResponse) => {
+    //       if (error) {
+    //         console.log('upload_chunked_stream error', error)
+    //         return reject()
+    //       }
+    //
+    //       console.log({uploadResponse})
+    //       return resolve(uploadResponse)
+    //     }
+    //   ).end(buffer)
+    // }
   })
 
   if (!uploadResult) {
