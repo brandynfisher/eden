@@ -1,6 +1,6 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import type { FastifyInstance } from 'fastify'
-import { UploadApiResponse, v2 as cloudinary } from 'cloudinary'
+import { UploadApiOptions, UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import { Asset } from './assetUploadPlugin'
 
 export interface CloudinaryUploadSignature {
@@ -40,16 +40,18 @@ export const uploadCldBufferAsset = async (
   buffer: Buffer,
 ): Promise<Asset> => {
   console.log('uploadCldBufferAsset', mediaType, MediaType.Image, server.cloudinary.config())
-  const optionalConfig = mediaType === MediaType.Video || mediaType === MediaType.Audio ? { media_metadata: true } : {}
-  console.log({optionalConfig})
-
   try {
+    const uploadConfig: UploadApiOptions = {
+      media_metadata: mediaType === MediaType.Video || mediaType === MediaType.Audio,
+      resource_type: mediaType === MediaType.Image ? 'image' : mediaType === MediaType.Video ? 'video' : 'raw',
+      folder: 'creations'
+    }
     const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
 
-      //@todo: large files (min. 5MB) should be uploaded in chunks. will need to implement
+      //@todo: large files (min. 5MB) should be uploaded in chunks. will need to implement size check and then to the below
       // if (mediaType === MediaType.Image) {
       console.log('upload_stream')
-      server.cloudinary.uploader.upload_stream({ folder: 'creations' }, (error, uploadResponse) => {
+      server.cloudinary.uploader.upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
         if (error) {
           console.log('upload_stream error', error)
           return reject()
