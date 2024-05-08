@@ -2,20 +2,15 @@
 
 import { CldImage as CldImageDefault, CldImageProps } from 'next-cloudinary'
 import Image, { ImageProps } from 'next/image'
-import React, { forwardRef } from 'react'
 
-const CdnImage = forwardRef<HTMLImageElement, CldImageProps&ImageProps>((
-  props,
-  ref
-) => {
+const CdnImage = (props: CldImageProps&ImageProps) => {
   const { assetType, ...rest } = props
   if (props.src.startsWith('https://res.cloudinary.com/')) {
-    return <CldImageDefault ref={ref} assetType={assetType} {...rest} />
+    return <CldImageDefault assetType={assetType} {...rest} />
   }
 
   // fallback to support local, other remote or existing s3/cloudfront assets
-  return <Image ref={ref} {...{...rest, quality: props.quality ? Number(props.quality) : undefined, alt: props.alt ? props.alt : props.src}} />
-})
-CdnImage.displayName = 'CdnImage'
+  return <Image {...{...rest, quality: props.quality ? Number(props.quality) : undefined, alt: props.alt ? props.alt : props.src}} />
+}
 
 export default CdnImage
