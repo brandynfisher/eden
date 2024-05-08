@@ -8,7 +8,7 @@ import Chip from '@mui/material/Chip'
 import { Card } from 'antd'
 import Link from 'next/link'
 import React, { useCallback, useState } from 'react'
-import CdnImage from '@/components/Media/cdn-image'
+import CardImage from '@/components/Card/CardImage'
 
 const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
   if (!imageUri) {
@@ -16,14 +16,14 @@ const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
   }
 
   return (
-    <CdnImage
-      alt="example"
-      src={imageUri}
-      // preview={false}
-      // placeholder={true}
-      // wrapperClassName="!flex justify-center items-center overflow-hidden h-full "
-      className="object-cover w-full !h-full !rounded-none transition-transform duration-200 ease-in group-hover:scale-105"
-    />
+    <div className="!flex justify-center items-center overflow-hidden h-full">
+      <CardImage
+        uri={imageUri || ''}
+        width={0}
+        height={0}
+        className="object-cover w-full !h-full !rounded-none transition-transform duration-200 ease-in group-hover:scale-105"
+      />
+    </div>
   )
 }
 

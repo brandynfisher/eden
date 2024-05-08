@@ -1,8 +1,19 @@
 'use client'
 
 import { CldImage as CldImageDefault, CldImageProps } from 'next-cloudinary'
-import { RefObject } from 'react'
+import Image, { ImageProps } from 'next/image'
+import React, { forwardRef } from 'react'
 
-export default function CdnImage(props: CldImageProps & { ref?: RefObject<HTMLImageElement> }) {
-  return <CldImageDefault {...props} />
-}
+const CdnImage = forwardRef<HTMLImageElement, CldImageProps&ImageProps>((
+  props,
+  ref
+) => {
+  if (props.src.startsWith('https://res.cloudinary.com/')) {
+    return <CldImageDefault ref={ref} {...props} />
+  }
+
+  return <Image ref={ref} {...{...props, quality: props.quality ? Number(props.quality) : undefined, alt: props.alt ? props.alt : props.src}} />
+})
+CdnImage.displayName = 'CdnImage'
+
+export default CdnImage

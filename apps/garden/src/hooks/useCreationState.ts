@@ -132,6 +132,37 @@ export const useCreationState = () => {
   const [notificationCutOffDate, setNotificationCutOffDate] =
     useState<number>(0)
 
+  const notify = useCallback(
+    async (items: Task[]) => {
+
+      if (items && items.length) {
+        items.map(item => {
+          // only show notifications for tasks that finished after the page was loaded
+          const isExpired =
+            new Date(item.updatedAt).getTime() - notificationCutOffDate < 0
+
+          if (isExpired) {
+            return
+          }
+
+          if (item.status === 'completed') {
+            // message.success(
+            //   `Task ${truncatedAddress(item.taskId)} completed successfully!`,
+            // )
+          }
+
+          if (item.status === 'failed') {
+            // message.error(
+            //   `An error occured for Task ${truncatedAddress(item.taskId)}.`,
+            // )
+          }
+        })
+      }
+      setNotificationCutOffDate(Date.now())
+    },
+    [message, notificationCutOffDate],
+  )
+
   useEffect(() => {
     if (dismissedTaskIds && dismissedTaskIds.length) {
       setCompletedTasks(prev =>
@@ -197,39 +228,7 @@ export const useCreationState = () => {
       )
       setFailedTasks(failed)
     }
-  }, [mutateGlobal, tasks, userId])
-
-  const notify = useCallback(
-    async (items: Task[]) => {
-      if (items && items.length) {
-        items.map(item => {
-          // only show notifications for tasks that finished after the page was loaded
-          const isExpired =
-            new Date(item.updatedAt).getTime() - notificationCutOffDate < 0
-
-          if (isExpired) {
-            return
-          }
-
-          if (item.status === 'completed') {
-            message.destroy()
-            message.success(
-              `Task ${truncatedAddress(item.taskId)} completed successfully!`,
-            )
-          }
-
-          if (item.status === 'failed') {
-            message.destroy()
-            message.error(
-              `An error occured for Task ${truncatedAddress(item.taskId)}.`,
-            )
-          }
-        })
-      }
-      setNotificationCutOffDate(Date.now())
-    },
-    [notificationCutOffDate],
-  )
+  }, [dismissedTaskIds, notify, mutateGlobal, tasks, userId])
 
   return {
     tasks,
