@@ -1,7 +1,7 @@
 'use client'
 
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
-import { AudioWaveform, File as FileIcon, FileImage, FolderArchive, UploadCloud, Video, X } from 'lucide-react'
+import { AudioWaveform, FileImage, FolderArchive, UploadCloud, Video, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Input } from '@/components/ui/input'
@@ -20,12 +20,6 @@ const ImageColor = {
   bgColor: 'bg-purple-600',
   fillColor: 'fill-purple-600',
   borderColor: 'border-purple-600',
-}
-
-const PdfColor = {
-  bgColor: 'bg-blue-400',
-  fillColor: 'fill-blue-400',
-  borderColor: 'border-blue-400',
 }
 
 const AudioColor = {
@@ -52,13 +46,6 @@ const getFileIconAndColor = (fileType: FileType) => {
     return {
       icon: <FileImage size={40} className={ImageColor.fillColor} />,
       color: ImageColor.bgColor,
-    }
-  }
-
-  if (fileType === `pdf`) {
-    return {
-      icon: <FileIcon size={40} className={PdfColor.fillColor} />,
-      color: PdfColor.bgColor,
     }
   }
 
