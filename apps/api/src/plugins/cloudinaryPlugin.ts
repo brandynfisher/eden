@@ -43,7 +43,7 @@ export const uploadCldBufferAsset = async (
   const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
     if (mediaType === MediaType.Image) {
       console.log('upload_stream')
-      server.cloudinary.uploader.upload_stream((error, uploadResponse) => {
+      server.cloudinary.uploader.upload_stream({ folder: 'creations' }, (error, uploadResponse) => {
         if (error) {
           console.log('upload_stream error', error)
           return reject()
@@ -60,7 +60,8 @@ export const uploadCldBufferAsset = async (
         {
           chunk_size: 10,
           resource_type: 'auto',
-          ...optionalConfig
+          folder: 'creations',
+          ...optionalConfig,
         },
         (error, uploadResponse) => {
           if (error) {
