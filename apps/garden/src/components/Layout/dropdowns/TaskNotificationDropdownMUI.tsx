@@ -128,7 +128,7 @@ const CompletedTaskMenuItem = ({
               sizes={'96px'}
               src={task.creation?.thumbnail}
               alt={task._id}
-              aspectRatio={task.creation?.mediaAttributes.aspectRatio}
+              aspectRatio={task.creation?.mediaAttributes?.aspectRatio || 1}
               className="max-w-full"
             />
           </div>

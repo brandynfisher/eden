@@ -13,6 +13,7 @@ const CdnImage = forwardRef<HTMLImageElement, CldImageProps&ImageProps>((
     return <CldImageDefault ref={ref} assetType={assetType} {...rest} />
   }
 
+  // fallback to support local, other remote or existing s3/cloudfront assets
   return <Image ref={ref} {...{...rest, quality: props.quality ? Number(props.quality) : undefined, alt: props.alt ? props.alt : props.src}} />
 })
 CdnImage.displayName = 'CdnImage'
