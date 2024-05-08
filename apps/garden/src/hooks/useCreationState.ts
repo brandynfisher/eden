@@ -1,6 +1,6 @@
 import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
 import { createPaginationRoute, fetcher } from '@/lib/fetcher'
-import { truncatedAddress } from '@/lib/string'
+// import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
 import { Task, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { useLocalStorage } from '@mantine/hooks'
