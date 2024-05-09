@@ -127,7 +127,7 @@ const CompletedTaskMenuItem = ({
             <ResponsiveImage
               sizes={'96px'}
               src={task.creation?.thumbnail}
-              alt={task._id}
+              alt={task.creation?._id}
               aspectRatio={task.creation?.mediaAttributes?.aspectRatio || 1}
               className="max-w-full"
             />

@@ -327,9 +327,9 @@ export const listTasks = async (
     },
   )
 
-  // await tasksRepository.model.populate(tasks.docs, {
-  //   path: 'creation',
-  // })
+  await tasksRepository.model.populate(tasks.docs, {
+    path: 'creation',
+  })
 
   await tasksRepository.model.populate(tasks.docs, {
     path: 'generator',
