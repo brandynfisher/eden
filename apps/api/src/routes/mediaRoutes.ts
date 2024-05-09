@@ -93,6 +93,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       querystring: {
         url: Type.String(),
         fileName: Type.Optional(Type.String()),
+        fileExtension: Type.Optional(Type.String()),
       },
       response: {
         200: Type.Object({

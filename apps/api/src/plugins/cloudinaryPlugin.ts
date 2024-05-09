@@ -1,6 +1,6 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import type { FastifyInstance } from 'fastify'
-import { UploadApiOptions, UploadApiResponse, v2 as cloudinary } from 'cloudinary'
+import {UploadApiOptions, UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import { Asset } from './assetUploadPlugin'
 
 export interface CloudinaryUploadSignature {
@@ -57,7 +57,7 @@ export const uploadCldBufferAsset = async (
           return reject()
         }
 
-        console.log(uploadResponse)
+        console.log('upload done', uploadResponse?.secure_url)
         return resolve(uploadResponse)
       }).end(buffer)
       // } else {
@@ -157,75 +157,25 @@ export const generateCldUploadSignature: (server: FastifyInstance) => Cloudinary
     apiKey: server.config.CLOUDINARY_API_KEY,
   }
 }
-// export const getSignedDownloadUrl = (
-//   server: FastifyInstance,
-//   assetUrl: string,
-//   fileName?: string,
-// ): Promise<string> => {
-//   // @todo: got assets floating on multiple buckets, thus this ugly solution of dissecting the url
-//   // @todo: swap this back to use config/ENV values whenever we're living on a single bucket
-//   //  currentBucketUrl = s3Url(server, '')
-//   // const isLegacyBucket = !assetUrl.includes(currentBucketUrl)
-//   const fileBucketUrlParts = assetUrl.split('/')
-//   const bucketName = server.config.AWS_S3_BUCKET
-//
-//   if (!bucketName) {
-//     throw new Error('No bucket name found')
-//   }
-//
-//   const assetPath = fileBucketUrlParts[fileBucketUrlParts.length - 1]
-//
-//   const params = {
-//     // Bucket: server.config.AWS_S3_BUCKET || '',
-//     Bucket: bucketName,
-//     Key: assetPath,
-//   }
-//
-//   return new Promise(function(resolve, reject) {
-//     server.s3
-//       .headObject(params)
-//       .promise()
-//       .then(function() {
-//         // console.log('s3 File exists', {
-//         //   ...params,
-//         //   ResponseContentType: 'application/octet-stream',
-//         //   ResponseContentDisposition: fileName ? `attachment; filename="${fileName}"` : undefined,
-//         //   Expires: 60 * 60 * 72, // 3 days
-//         // })
-//         // if (fileName) {
-//         //   console.log('client requested custom filename. add dispo header', { ResponseContentDisposition: 'attachment; filename="' + fileName + '"' })
-//         // }
-//
-//         resolve(
-//           createSignedDownloadUrl(server, {
-//             ...params,
-//             ResponseContentType: 'application/octet-stream',
-//             ResponseContentDisposition: fileName
-//               ? `attachment; filename="${fileName}"`
-//               : undefined,
-//             Expires: 60 * 60 * 72, // 3 days
-//           }),
-//         )
-//       })
-//       .catch(function(err) {
-//         console.log('Generating Url Failed', err)
-//         reject('Generating Url Failed: file does not exist')
-//       })
-//   })
-// }
-//
-// export const createSignedDownloadUrl = (
-//   server: FastifyInstance,
-//   params: {
-//     Bucket: string
-//     ResponseContentType: string
-//     ResponseContentDisposition: string | undefined
-//     Expires: number
-//     Key: string
-//   },
-// ) => {
-//   return server.s3.getSignedUrl('getObject', params)
-// }
+export const getCldSignedDownloadUrl = (
+  assetUrl: string,
+  fileName?: string,
+): Promise<string> => {
+  return new Promise(function(resolve) {
+    console.log(assetUrl, fileName)
+    const cloudinaryUrlSegments = assetUrl.split('/')
+    const versionSegment = cloudinaryUrlSegments[cloudinaryUrlSegments.length - 3]
+    // const folderSegment = cloudinaryUrlSegments[cloudinaryUrlSegments.length - 2]
+    // const fileSegment = cloudinaryUrlSegments[cloudinaryUrlSegments.length - 1]
+    // const [ publicId, fileExtension ] = lastSegment.split('.')
+
+    const attachmentFlag = `fl_attachment:${fileName}`
+    const signedUrl = assetUrl.replace(versionSegment, `${attachmentFlag}/${versionSegment}`)
+
+    // console.log({signedUrl})
+    resolve(signedUrl)
+  })
+}
 
 export const registerCloudinary = async (fastify: FastifyInstance) => {
   try {
@@ -239,7 +189,7 @@ export const registerCloudinary = async (fastify: FastifyInstance) => {
     // fastify.decorate('uploadCldUrlAsset', uploadCldUrlAsset)
     // fastify.decorate('uploadCldThumbnailAsset', uploadCldThumbnailAsset)
     fastify.decorate('uploadCldBufferAsset', uploadCldBufferAsset)
-    // fastify.decorate('getCldSignedDownloadUrl', getSignedCldDownloadUrl)
+    fastify.decorate('getCldSignedDownloadUrl', getCldSignedDownloadUrl)
     fastify.decorate('generateCldUploadSignature', generateCldUploadSignature)
     fastify.log.info('Successfully registered CloudinaryPlugin')
   } catch (err) {
@@ -261,7 +211,6 @@ declare module 'fastify' {
       assetInput: string | Buffer,
     ) => Promise<string>
     getCldSignedDownloadUrl: (
-      server: FastifyInstance,
       assetUrl: string,
       fileName?: string,
     ) => Promise<string>

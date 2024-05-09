@@ -1,6 +1,12 @@
 import axios, { AxiosProgressEvent } from 'axios'
 import type { RcFile } from 'antd/es/upload'
 
+export interface UploadRequestOptions {
+  file: RcFile | File
+  onSuccess: (response: object, file: File | RcFile) => void
+  onError: (error: Error) => void
+  onProgress: (event: { percent: number }) => void
+}
 // export const downloadFileBlob = async (url: string, fileName: string) => {
 //   try {
 //     const response = await fetch(url)
@@ -27,7 +33,7 @@ export const downloadFile = async (url: string, fileName: string) => {
     const parsedUrl = new URL(url)
     const extension = parsedUrl.pathname.split('.').pop()
     const response = await axios.get(
-      `/api/media/download?url=${url}&fileName=${fileName}.${extension}`,
+      `/api/media/download?url=${url}&fileName=${fileName}&fileExtension=${extension}`,
     )
     const link = document.createElement('a')
     link.download = `${fileName}.${extension}`
@@ -75,12 +81,6 @@ export const getBase64 = (file: RcFile): Promise<string> =>
 //   }
 // }
 
-export interface UploadRequestOptions {
-  file: RcFile | File
-  onSuccess: (response: object, file: File | RcFile) => void
-  onError: (error: Error) => void
-  onProgress: (event: { percent: number }) => void
-}
 
 // export const uploadFileToS3 = async (options: UploadRequestOptions) => {
 //   const { file, onSuccess, onError, onProgress } = options
