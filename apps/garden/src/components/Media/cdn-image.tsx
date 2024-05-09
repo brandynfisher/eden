@@ -5,7 +5,7 @@ import Image, { ImageProps } from 'next/image'
 
 const CdnImage = (props: CldImageProps&ImageProps) => {
   const { assetType, ...rest } = props
-  if (props.src.startsWith('https://res.cloudinary.com/')) {
+  if (props.src && props.src.startsWith('https://res.cloudinary.com/')) {
     return <CldImageDefault assetType={assetType} {...rest} />
   }
 
