@@ -6,7 +6,7 @@ import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Task } from '@edenlabs/eden-sdk'
 import React, { useCallback } from 'react'
 
-const TimelineCreationSample = ({
+const TimelineConcept = ({
   task,
   conceptId,
   listIndex,
@@ -60,4 +60,4 @@ const TimelineCreationSample = ({
   )
 }
 
-export default TimelineCreationSample
+export default TimelineConcept
