@@ -38,29 +38,6 @@ export const mediaUploadRequestConfig = (args: MediaUploadArguments) => {
         cancelToken: cancelSource.token,
       })
     })
-
-    // const signResponse = await axios.get('/media/upload/sign-request').then(() => {})
-    //
-    // if (!signResponse) {
-    //   throw new Error('sign request failed')
-    // }
-    //
-    // const formData = new FormData()
-    // const cancelSource = axios.CancelToken.source()
-    //
-    // const { apiKey, timestamp, signature, cloudName } = signResponse.data
-    //
-    // const blob = new Blob([args.media])
-    // const form = new FormData()
-    // // form.append('file', blob)
-    // return {
-    //   method: 'POST',
-    //   url: 'media/upload',
-    //   data: form,
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data',
-    //   },
-    // }
   })
 }
 

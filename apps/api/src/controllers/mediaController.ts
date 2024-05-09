@@ -90,7 +90,7 @@ export const getMediaDownloadUrl = async (
 
   const isCloudinaryAsset = url.startsWith('https://res.cloudinary.com')
   const signedUrl = isCloudinaryAsset
-    ? await server.getCldSignedDownloadUrl(server, url, fileName)
+    ? await server.getCldSignedDownloadUrl(url, fileName)
     : await server.getS3SignedDownloadUrl(server, url, `${fileName}.${fileExtension}`)
 
   return reply.status(200).send({ signedUrl })
