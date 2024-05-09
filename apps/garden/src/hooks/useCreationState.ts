@@ -4,7 +4,7 @@ import { createPaginationRoute, fetcher } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
 import { Task, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { useLocalStorage } from '@mantine/hooks'
-import { App } from 'antd'
+// import { App } from 'antd'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useSWRConfig } from 'swr'
 import { EventSourcePolyfill } from 'event-source-polyfill'
@@ -14,7 +14,7 @@ import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
 import useSWR from 'swr/immutable'
 
 export const useCreationState = () => {
-  const { message } = App.useApp()
+  // const { message } = App.useApp()
   const { getToken } = useAuth()
   const { isAuthenticated } = useClerkUserState()
   const [activeTaskId, setActiveTaskId] = useState<string>()
@@ -160,7 +160,7 @@ export const useCreationState = () => {
       }
       setNotificationCutOffDate(Date.now())
     },
-    [message, notificationCutOffDate],
+    [notificationCutOffDate],
   )
 
   useEffect(() => {
@@ -228,7 +228,7 @@ export const useCreationState = () => {
       )
       setFailedTasks(failed)
     }
-  }, [dismissedTaskIds, notify, mutateGlobal, tasks, userId])
+  }, [dismissedTaskIds, mutateGlobal, tasks, userId])
 
   return {
     tasks,

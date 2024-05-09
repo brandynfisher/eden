@@ -298,7 +298,7 @@ const handleUpdate = async (
           name: publicName,
           conceptName: finalOutput.name,
           checkpoint: task.config.checkpoint || 'JuggernautXL_v6', //task.config.checkpoint,
-          grid_prompts: task.config.grid_prompts || [], //task.config.checkpoint,
+          grid_prompts: finalOutput.attributes && finalOutput.attributes.grid_prompts !== undefined ? finalOutput.attributes.grid_prompts : [], //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
           num_training_images:
             finalOutput.attributes && finalOutput.attributes.num_training_images
