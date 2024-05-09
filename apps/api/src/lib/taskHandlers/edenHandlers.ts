@@ -309,7 +309,7 @@ const handleUpdate = async (
           isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
-          const { uri } = await server.uploadUrlAsset(
+          const { uri } = await server.uploadS3UrlAsset(
             server,
             finalOutput.files[i],
           )

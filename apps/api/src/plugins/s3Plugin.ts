@@ -10,7 +10,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import sharp from 'sharp'
 import { Asset, mediaTypeMap } from './assetUploadPlugin'
-import { FileTypeResult } from 'file-type'
+import { fileTypeFromBuffer, FileTypeResult } from 'file-type'
 
 const getS3MediaAttributes = async (
   buffer: Buffer,
@@ -78,6 +78,40 @@ const getS3MediaAttributes = async (
   await fs.unlinkSync(tempFilePath)
 
   return mediaAttributes
+}
+
+export const uploadS3UrlAsset = async (
+  server: FastifyInstance,
+  url: string,
+): Promise<Asset> => {
+  const asset = await axios.get(url, { responseType: 'arraybuffer' })
+  const assetB64 = Buffer.from(asset.data, 'base64')
+  const fileType = await fileTypeFromBuffer(assetB64)
+
+  // Allow images, video, audio, text, and .bin files
+  if (
+    !fileType ||
+    !(
+      fileType.mime.startsWith('image/') ||
+      fileType.mime.startsWith('video/') ||
+      fileType.mime.startsWith('audio/') ||
+      fileType.mime.startsWith('text/') ||
+      fileType.mime.startsWith('application/zip')
+    )
+  ) {
+    throw new Error(`unknown/unsupported file type ${url}`)
+  }
+
+  const { uri, mediaAttributes } = await uploadS3BufferAsset(
+    server,
+    assetB64,
+    fileType,
+  )
+  return {
+    uri,
+    assetBuffer: assetB64,
+    mediaAttributes,
+  }
 }
 
 export const uploadS3ThumbnailAsset = async (
@@ -264,6 +298,7 @@ export const registerS3 = async (fastify: FastifyInstance) => {
     fastify.decorate('s3', s3)
     fastify.decorate('uploadS3ThumbnailAsset', uploadS3ThumbnailAsset)
     fastify.decorate('uploadS3BufferAsset', uploadS3BufferAsset)
+    fastify.decorate('uploadS3UrlAsset', uploadS3UrlAsset)
     fastify.decorate('getS3SignedDownloadUrl', getS3SignedDownloadUrl)
     fastify.decorate('generateS3UploadSignedUrl', generateS3UploadSignedUrl)
     fastify.log.info('Successfully registered S3Plugin')
@@ -280,6 +315,10 @@ declare module 'fastify' {
       server: FastifyInstance,
       assetInput: string | Buffer,
     ) => Promise<string>
+    uploadS3UrlAsset: (
+      server: FastifyInstance,
+      assetUrl: string,
+    ) => Promise<Asset>
     uploadS3BufferAsset: (
       server: FastifyInstance,
       buffer: Buffer,
