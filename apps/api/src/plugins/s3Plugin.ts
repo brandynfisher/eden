@@ -22,7 +22,7 @@ const getS3MediaAttributes = async (
   }
 
   const tempFilePath = join(tmpdir(), randomUUID())
-  await fs.writeFileSync(tempFilePath, buffer)
+  fs.writeFileSync(tempFilePath, buffer)
 
   if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
     const duration = await new Promise<number | undefined>(
@@ -75,7 +75,7 @@ const getS3MediaAttributes = async (
     mediaAttributes.aspectRatio = metadata.width / metadata.height
   }
 
-  await fs.unlinkSync(tempFilePath)
+  fs.unlinkSync(tempFilePath)
 
   return mediaAttributes
 }
@@ -229,16 +229,6 @@ export const getS3SignedDownloadUrl = (
       .headObject(params)
       .promise()
       .then(function () {
-        // console.log('s3 File exists', {
-        //   ...params,
-        //   ResponseContentType: 'application/octet-stream',
-        //   ResponseContentDisposition: fileName ? `attachment; filename="${fileName}"` : undefined,
-        //   Expires: 60 * 60 * 72, // 3 days
-        // })
-        // if (fileName) {
-        //   console.log('client requested custom filename. add dispo header', { ResponseContentDisposition: 'attachment; filename="' + fileName + '"' })
-        // }
-
         resolve(
           createS3SignedDownloadUrl(server, {
             ...params,

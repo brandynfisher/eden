@@ -291,7 +291,7 @@ const TaskNotificationDropdownMUI = () => {
 
     completedTaskItems.push(
       ...completedTasks
-        .filter(task => !!task.creation._id)
+        .filter(task => !!task.creation || !!task.concept)
         .map(task => ({
           render: (
             <CompletedTaskMenuItem
