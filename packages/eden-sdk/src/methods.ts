@@ -212,6 +212,18 @@ function bindApiCall<
   return self.apiCall.bind(self, configFn) as Method<Arguments, Result>
 }
 
+function bindApiCallAsync<
+  Arguments extends WebAPICallOptions,
+  Result extends WebAPICallResult,
+>(
+  self: Methods,
+  configFn: (args: MediaUploadArguments) => Promise<AxiosRequestConfig>,
+): Method<Arguments, Result> {
+  // We have to "assert" that the bound method does indeed return the more specific `Result` type instead of just
+  // `WebAPICallResult`
+  return self.apiCall.bind(self, configFn) as Method<Arguments, Result>
+}
+
 export abstract class Methods {
   public abstract apiCall(
     configFn: (options: WebAPICallOptions) => AxiosRequestConfig,
@@ -476,7 +488,7 @@ export abstract class Methods {
   }
 
   public readonly media = {
-    upload: bindApiCall<MediaUploadArguments, MediaUploadResponse>(
+    upload: bindApiCallAsync<MediaUploadArguments, MediaUploadResponse>(
       this,
       mediaUploadRequestConfig,
     ),
