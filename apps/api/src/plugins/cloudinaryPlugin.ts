@@ -44,17 +44,18 @@ export const uploadCldBufferAsset = async (
     const uploadConfig: UploadApiOptions = {
       media_metadata: mediaType === MediaType.Video || mediaType === MediaType.Audio,
       resource_type: mediaType === MediaType.Image ? 'image' : mediaType === MediaType.Video ? 'video' : 'raw',
-      folder: 'creations'
+      folder: 'creations',
+      type: 'private',
     }
     const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
-
-      //@todo: IMG size max 20MB, large files (> 50-100MB) should be uploaded in chunks. will need to implement size check and then use upload_chunked_stream the below
+      //@todo: IMG size max 20MB! @ plus plan
+      //@todo: large files (> 50-100MB) should be uploaded in chunks. will need to implement size check and then use upload_chunked_stream the below
       // if (mediaType === MediaType.Image) {
       console.log('upload_stream', uploadConfig)
       server.cloudinary.uploader.upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
         if (error) {
           console.log('upload_stream error', error)
-          return reject()
+          return reject(error)
         }
 
         console.log('upload done', uploadResponse?.secure_url)
