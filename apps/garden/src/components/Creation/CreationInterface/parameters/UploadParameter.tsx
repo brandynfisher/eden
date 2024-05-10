@@ -3,19 +3,14 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { truncateText } from '@/lib/string'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined'
-import { Form, FormInstance, Modal, Row, Upload, message } from 'antd'
+import { Form, FormInstance, message, Modal, Row, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import React, { useEffect, useState } from 'react'
 import { sendGTMEvent } from '@next/third-parties/google'
-import {
-  getBase64, uploadChunkedFileToCloudinary, uploadFileToCloudinary,
-  // uploadFileToS3,
-  UploadRequestOptions,
-} from '@/lib/files'
+import { getBase64, uploadChunkedFileToCloudinary, UploadRequestOptions } from '@/lib/files'
 
 const { Dragger } = Upload
-
 
 const UploadParameter = (props: {
   form: FormInstance
@@ -46,7 +41,7 @@ const UploadParameter = (props: {
       content: (
         <div>
           <div>Upload error {truncateText(messageKey, 20)}</div>
-          <div className="text-red-500">{errorMessage}</div>
+          <div className='text-red-500'>{errorMessage}</div>
         </div>
       ),
       duration: 3,
@@ -187,7 +182,7 @@ const UploadParameter = (props: {
       {contextHolder}
       <Row>
         <Form.Item
-          className="mb-2 max-w-full w-full"
+          className='mb-2 max-w-full w-full'
           initialValue={props.parameter.default}
           label={
             props.parameter.label ? (
@@ -206,9 +201,9 @@ const UploadParameter = (props: {
           ]}
         >
           <Dragger
-            name="file"
+            name='file'
             fileList={fileList}
-            listType="picture"
+            listType='picture'
             className={shouldHideUploadButton ? 'upload-btn-hidden' : ''}
             onChange={handleChange}
             accept={props.acceptedMimeTypes ? props.acceptedMimeTypes : ''}
@@ -219,7 +214,8 @@ const UploadParameter = (props: {
             // @ts-ignore
             customRequest={customRequest}
           >
-            <div className="flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500">
+            <div
+              className='flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500'>
               <FileUploadOutlined />
               <div>
                 Click here or drag files to upload (max.{' '}
@@ -235,7 +231,7 @@ const UploadParameter = (props: {
         footer={null}
         onCancel={() => setPreviewOpen(false)}
       >
-        <img alt="example" className="w-full" src={previewImage} />
+        <img alt='example' className='w-full' src={previewImage} />
       </Modal>
     </>
   )
