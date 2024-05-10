@@ -9,7 +9,7 @@ import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import React, { useEffect, useState } from 'react'
 import { sendGTMEvent } from '@next/third-parties/google'
 import {
-  getBase64, uploadFileToCloudinary,
+  getBase64, uploadChunkedFileToCloudinary, uploadFileToCloudinary,
   // uploadFileToS3,
   UploadRequestOptions,
 } from '@/lib/files'
@@ -172,7 +172,9 @@ const UploadParameter = (props: {
 
     try {
       // await uploadFileToS3(options)
-      await uploadFileToCloudinary(options)
+      // await uploadFileToCloudinary(options)
+      // eslint-disable-next-line no-undef
+      await uploadChunkedFileToCloudinary(options)
     } catch (error) {
       handleAxiosError(error, message)
     }

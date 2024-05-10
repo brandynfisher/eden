@@ -7,6 +7,7 @@ export interface UploadRequestOptions {
   onError: (error: Error) => void
   onProgress: (event: { percent: number }) => void
 }
+
 // export const downloadFileBlob = async (url: string, fileName: string) => {
 //   try {
 //     const response = await fetch(url)
@@ -125,12 +126,12 @@ export const uploadFileToCloudinary = async (options: UploadRequestOptions) => {
 
   const { apiKey, timestamp, signature, cloudName } = signResponse.data
 
-  formData.append('file', file)
   formData.append('api_key', apiKey)
-  formData.append('timestamp', timestamp)
+  formData.append('timestamp', timestamp.toString())
   formData.append('signature', signature)
-  // formData.append('eager', 'c_pad,h_300,w_400|c_crop,h_200,w_260') // @todo: needs to match what's configured in api signing
-  formData.append('folder', 'user_uploads') // @todo: needs to match api signature config
+  formData.append('folder', 'user_uploads')
+
+  formData.append('file', file)
 
   const response = await axios.post(
     `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
@@ -155,3 +156,116 @@ export const uploadFileToCloudinary = async (options: UploadRequestOptions) => {
     onError(new Error('Upload failed'))
   }
 }
+
+const generateUniqueUploadId = () => {
+  return `uqid-${Date.now()}`
+}
+
+export const uploadChunkedFileToCloudinary = async (options: UploadRequestOptions) => {
+  const { file } = options
+
+  const signResponse = await axios.get('/api/media/upload/sign-request')
+
+  if (!signResponse) {
+    throw new Error('sign request failed')
+  }
+  const uniqueUploadId = generateUniqueUploadId()
+  const { apiKey, timestamp, signature, cloudName } = signResponse.data
+  const chunkSize = 20 * 1024 * 1024
+  const totalChunks = Math.ceil(file.size / chunkSize)
+  let currentChunk = 0
+
+  const chunkConfig: ChunkConfig = {
+    apiKey,
+    timestamp,
+    signature,
+    cloudName,
+    currentChunk,
+    totalChunks,
+    chunkSize,
+    uniqueUploadId
+  }
+
+  const start = 0
+  const end = Math.min(chunkSize, file.size)
+  await uploadChunk(file, chunkConfig, start, end, options)
+}
+
+type ChunkConfig = {
+  apiKey: string
+  timestamp: number
+  signature: string,
+  cloudName: string,
+  uniqueUploadId: string,
+  chunkSize: number,
+  totalChunks: number,
+  currentChunk: number,
+}
+export const uploadChunk = async (file: File, config: ChunkConfig, start: number, end: number, options: UploadRequestOptions) => {
+  const formData = new FormData()
+  const cancelSource = axios.CancelToken.source()
+
+  const { apiKey, timestamp, uniqueUploadId, currentChunk, totalChunks, chunkSize , signature, cloudName } = config
+  const { onProgress, onError, onSuccess } = options
+
+  formData.append('file', file.slice(start, end))
+  formData.append('api_key', apiKey)
+  formData.append('timestamp', timestamp.toString())
+  formData.append('signature', signature)
+  // formData.append('eager', 'c_pad,h_300,w_400|c_crop,h_200,w_260') // @todo: needs to match what's configured in api signing
+  formData.append('folder', 'user_uploads') // @todo: needs to match api signature config
+  const contentRange = `bytes ${start}-${end - 1}/${file.size}`
+
+  console.log(
+    `Uploading chunk for uniqueUploadId: ${uniqueUploadId}; start: ${start}, end: ${
+      end - 1
+    }, total: ${file.size}`,
+  )
+
+  try {
+    const response = await axios.post(
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+      formData,
+      {
+        headers: {
+          'X-Unique-Upload-Id': uniqueUploadId,
+          'Content-Range': contentRange,
+        },
+        onUploadProgress: (event: AxiosProgressEvent) => {
+          onProgress({ percent: (event.loaded / file.size) * 100 })
+        },
+        cancelToken: cancelSource.token,
+      },
+    )
+
+    if (response.status !== 200) {
+      onError(new Error('Upload failed'))
+      return
+    }
+
+    const nextChunk = currentChunk + 1
+
+    if (nextChunk < totalChunks) {
+      const nextStart = nextChunk * chunkSize
+      const nextEnd = Math.min(nextStart + chunkSize, file.size)
+      await uploadChunk(file, { ...config, currentChunk: nextChunk }, nextStart, nextEnd, options)
+    } else {
+      onSuccess(
+        {
+          fileUrl: response.data.secure_url,
+        },
+        file,
+      )
+      // setUploadComplete(true)
+      // setUploading(false)
+      //
+      // const fetchResponse = await response.json()
+      // setCldResponse(fetchResponse)
+      console.info('File upload complete.')
+    }
+  } catch (error) {
+    console.error('Error uploading chunk:', error)
+    onError(new Error('Upload failed'))
+  }
+}
+

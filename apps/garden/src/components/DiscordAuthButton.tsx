@@ -25,7 +25,6 @@ const DiscordAuthButton: React.FC = () => {
         },
         eventTimeout : 2000
       })
-
     } catch (err) {
       handleAxiosError(err, message)
     }
