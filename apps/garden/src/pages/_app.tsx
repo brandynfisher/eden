@@ -138,9 +138,9 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           </ThemeProvider>
         </main>
       </PasswordProtection>
-      {/*{process.env.NODE_ENV === 'production' ? (*/}
+      {process.env.NEXT_PUBLIC_APP_ENV === 'production' ? (
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
-      {/*// ) : null}*/}
+      ) : null}
       {process.env.NODE_ENV === 'production' ? (
         <Script
           src="https://rum-static.pingdom.net/pa-662f1da168cac40012000a8e.js"

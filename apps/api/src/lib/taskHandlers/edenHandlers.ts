@@ -263,6 +263,7 @@ const handleUpdate = async (
         task: {
           ...task.toObject(),
           ...taskUpdate,
+          creation: creationData[0],
           generator: {
             generatorName: generator.generatorName
           }
@@ -442,6 +443,7 @@ const handleUpdateUniversal = async (
           task: {
             ...task.toObject(),
             ...taskUpdate,
+            creation,
           },
         })
 
