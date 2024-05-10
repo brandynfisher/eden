@@ -233,9 +233,6 @@ const handleUpdate = async (
         }
       }
 
-      console.log(JSON.stringify(creationData, null, 2))
-      console.log(JSON.stringify(taskUpdate, null, 2))
-
       // n_samples: add samples field with other creationIds
       if (
         creationData.length > 1 &&
@@ -421,15 +418,19 @@ const handleUpdateUniversal = async (
           mediaAttributes: {},
         }
         if (output[i]) {
-          console.log('uploading asset', output[i])
-          const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
-            server,
-            output[i],
-          )
-          console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
-          creationData.uri = uri
-          creationData.thumbnail = thumbnailUri || ''
-          creationData.mediaAttributes = mediaAttributes
+          try {
+            console.log('uploading asset', output[i])
+            const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
+              server,
+              output[i],
+            )
+            console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
+            creationData.uri = uri
+            creationData.thumbnail = thumbnailUri || ''
+            creationData.mediaAttributes = mediaAttributes
+          } catch (e) {
+            console.error('uploadUrlAsset error', e)
+          }
         }
         const creation = await Creation.create(creationData)
         Object.assign(taskUpdate, { creation: creation._id })

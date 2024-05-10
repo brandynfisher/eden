@@ -48,7 +48,7 @@ export const uploadCldBufferAsset = async (
     }
     const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
 
-      //@todo: large files (min. 5MB) should be uploaded in chunks. will need to implement size check and then to the below
+      //@todo: IMG size max 20MB, large files (> 50-100MB) should be uploaded in chunks. will need to implement size check and then use upload_chunked_stream the below
       // if (mediaType === MediaType.Image) {
       console.log('upload_stream', uploadConfig)
       server.cloudinary.uploader.upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
@@ -186,8 +186,6 @@ export const registerCloudinary = async (fastify: FastifyInstance) => {
     })
 
     fastify.decorate('cloudinary', cloudinary)
-    // fastify.decorate('uploadCldUrlAsset', uploadCldUrlAsset)
-    // fastify.decorate('uploadCldThumbnailAsset', uploadCldThumbnailAsset)
     fastify.decorate('uploadCldBufferAsset', uploadCldBufferAsset)
     fastify.decorate('getCldSignedDownloadUrl', getCldSignedDownloadUrl)
     fastify.decorate('generateCldUploadSignature', generateCldUploadSignature)
