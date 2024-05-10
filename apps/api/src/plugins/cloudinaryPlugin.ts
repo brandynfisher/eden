@@ -45,7 +45,6 @@ export const uploadCldBufferAsset = async (
       media_metadata: mediaType === MediaType.Video || mediaType === MediaType.Audio,
       resource_type: mediaType === MediaType.Image ? 'image' : mediaType === MediaType.Video ? 'video' : 'raw',
       folder: 'creations',
-      type: 'private',
     }
     const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
       //@todo: IMG size max 20MB! @ plus plan
