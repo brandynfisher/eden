@@ -2,6 +2,9 @@ import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import type { FastifyInstance } from 'fastify'
 import {UploadApiOptions, UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import { Asset } from './assetUploadPlugin'
+import server from '../server'
+import { reject } from 'async'
+import { resolve } from 'path'
 
 export interface CloudinaryUploadSignature {
   signature: string,
@@ -39,7 +42,6 @@ export const uploadCldBufferAsset = async (
   mediaType: MediaType,
   buffer: Buffer,
 ): Promise<Asset> => {
-  // console.log('uploadCldBufferAsset', mediaType, server.cloudinary.config())
   try {
     const uploadConfig: UploadApiOptions = {
       media_metadata: mediaType === MediaType.Video || mediaType === MediaType.Audio,
@@ -47,40 +49,44 @@ export const uploadCldBufferAsset = async (
       folder: 'creations',
     }
     const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
-      //@todo: IMG size max 20MB! @ plus plan
-      //@todo: large files (> 50-100MB) should be uploaded in chunks. will need to implement size check and then use upload_chunked_stream the below
-      // if (mediaType === MediaType.Image) {
-      console.log('upload_stream', uploadConfig)
-      server.cloudinary.uploader.upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
-        if (error) {
-          console.log('upload_stream error', error)
-          return reject(error)
-        }
+      // determine the estimated filesize of buffer and use upload_chunked_stream if it is above 50MB
+      const chunkingRequiredLimit = 50 * 1024 * 1024
+      const estimatedFileSize = buffer.byteLength;
 
-        console.log('upload done', uploadResponse?.secure_url)
-        return resolve(uploadResponse)
-      }).end(buffer)
-      // } else {
-      //   console.log('upload_chunked_stream')
-      //
-      //   server.cloudinary.uploader.upload_chunked_stream(
-      //     {
-      //       chunk_size: 10,
-      //       resource_type: 'auto',
-      //       folder: 'creations',
-      //       ...optionalConfig,
-      //     },
-      //     (error, uploadResponse) => {
-      //       if (error) {
-      //         console.log('upload_chunked_stream error', error)
-      //         return reject()
-      //       }
-      //
-      //       console.log({uploadResponse})
-      //       return resolve(uploadResponse)
-      //     }
-      //   ).end(buffer)
-      // }
+      console.log('upload: file size bigger 50MB, use upload_chunked_stream', estimatedFileSize)
+
+      if (estimatedFileSize > chunkingRequiredLimit) {
+        console.log('upload_chunked_stream', {
+          chunk_size: 6000000,
+          ...uploadConfig
+        })
+        server.cloudinary.uploader.upload_chunked_stream(
+          {
+            chunk_size: 6000000,
+            ...uploadConfig
+          },
+          (error, uploadResponse) => {
+            if (error) {
+              console.log('upload_chunked_stream error', error)
+              return reject()
+            }
+
+            console.log('upload_chunked_stream done', uploadResponse?.secure_url)
+            return resolve(uploadResponse)
+          }
+        ).end(buffer)
+      } else {
+        console.log('upload_stream', uploadConfig)
+        server.cloudinary.uploader.upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
+          if (error) {
+            console.log('upload_stream error', error)
+            return reject(error)
+          }
+
+          console.log('upload_stream done', uploadResponse?.secure_url)
+          return resolve(uploadResponse)
+        }).end(buffer)
+      }
     })
 
     if (!uploadResult) {
