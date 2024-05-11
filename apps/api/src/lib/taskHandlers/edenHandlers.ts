@@ -337,7 +337,8 @@ const handleUpdate = async (
           result: [conceptData.uri],
           task: {
             ...task.toObject(),
-            ...taskUpdate
+            ...taskUpdate,
+            concept
           },
         })
 

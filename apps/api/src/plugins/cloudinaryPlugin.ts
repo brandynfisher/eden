@@ -64,11 +64,11 @@ export const uploadCldBufferAsset = async (
           (error, uploadResponse) => {
             if (error) {
               console.log('upload_chunked_stream error', error)
-              return reject()
+              reject(new Error(error.message))
             }
 
             console.log('upload_chunked_stream done', uploadResponse?.secure_url)
-            return resolve(uploadResponse)
+            resolve(uploadResponse)
           }
         ).end(buffer)
       } else {
@@ -76,11 +76,11 @@ export const uploadCldBufferAsset = async (
         server.cloudinary.uploader.upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
           if (error) {
             console.log('upload_stream error', error)
-            return reject(error)
+            reject(new Error(error.message))
           }
 
           console.log('upload_stream done', uploadResponse?.secure_url)
-          return resolve(uploadResponse)
+          resolve(uploadResponse)
         }).end(buffer)
       }
     })
