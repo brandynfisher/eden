@@ -120,6 +120,7 @@ export const uploadS3UrlAsset = async (
 export const uploadS3ThumbnailAsset = async (
   server: FastifyInstance,
   assetInput: string | Buffer,
+  maxWidth?: number
 ) => {
   let assetB64: Buffer
   if (typeof assetInput === 'string') {
@@ -130,7 +131,7 @@ export const uploadS3ThumbnailAsset = async (
   }
 
   const resizedBuffer = await sharp(assetB64)
-    .resize({ width: 500, withoutEnlargement: true })
+    .resize({ width: maxWidth || 500, withoutEnlargement: true })
     .webp({ quality: 80 })
     .toBuffer()
 

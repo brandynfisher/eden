@@ -206,10 +206,6 @@ declare module 'fastify' {
       mediaType: MediaType,
       buffer: Buffer,
     ) => Promise<Asset>
-    uploadCldThumbnailAsset: (
-      server: FastifyInstance,
-      assetInput: string | Buffer,
-    ) => Promise<string>
     getCldSignedDownloadUrl: (
       assetUrl: string,
       fileName?: string,
