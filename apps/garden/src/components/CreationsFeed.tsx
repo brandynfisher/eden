@@ -3,7 +3,7 @@ import {
   OrderByFollowing,
   OrderByLatest,
   OrderByPopularity,
-  OrderByScore,
+  // OrderByScore,
 } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import MasonryInfiniteContainer from '@/components/Masonry/MasonryInfiniteContainer'
@@ -21,7 +21,8 @@ const CreationsFeed = () => {
     ? [OrderByFeatured]
     : []
 
-  filters.push(OrderByScore, OrderByLatest, OrderByPopularity)
+  // filters.push(OrderByScore, OrderByLatest, OrderByPopularity)
+  filters.push(OrderByLatest, OrderByPopularity)
   isAuthenticated && filters.push(OrderByFollowing)
 
   return (
