@@ -27,6 +27,14 @@ RUN yarn install
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
+# Cloudinary
+ARG CLOUDINARY_CLOUD_NAME
+ENV CLOUDINARY_CLOUD_NAME ${CLOUDINARY_CLOUD_NAME}
+ARG CLOUDINARY_API_KEY
+ENV CLOUDINARY_API_KEY ${CLOUDINARY_API_KEY}
+ARG CLOUDINARY_API_SECRET
+ENV CLOUDINARY_API_SECRET ${CLOUDINARY_API_SECRET}
+
 RUN yarn turbo run build --filter=api...
 
 FROM node:18-alpine AS runner
@@ -47,4 +55,5 @@ RUN adduser --system --uid 1001 nodejs
 USER nodejs
 
 ENV NODE_ENV="production"
+
 CMD ["yarn", "start"]

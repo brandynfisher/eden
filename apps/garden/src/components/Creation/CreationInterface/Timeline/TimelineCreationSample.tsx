@@ -3,7 +3,7 @@ import { ProgressCard } from '@/components/Creation/CreationInterface/Timeline/T
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useCreation } from '@/hooks/useCreation'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
-import { Task } from '@edenlabs/eden-sdk'
+import { Creation, Task } from '@edenlabs/eden-sdk'
 import React, { useCallback } from 'react'
 
 const TimelineCreationSample = ({
@@ -12,10 +12,10 @@ const TimelineCreationSample = ({
   listIndex,
 }: {
   task: Task
-  creationId: string
+  creationId: string|Creation
   listIndex: number
 }) => {
-  const { creation, mutate, isLoading } = useCreation(creationId, {
+  const { creation, mutate, isLoading } = useCreation(typeof creationId === 'string' ? creationId : creationId._id, {
     revalidateFirstPage: false,
     revalidateOnFocus: false,
     revalidateIfStale: false,

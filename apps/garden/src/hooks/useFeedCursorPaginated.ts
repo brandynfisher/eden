@@ -7,37 +7,9 @@ import {
   fetcher,
 } from '@/lib/fetcher'
 import { ItemType } from '@/providers/ModalProvider'
-import { Creation, PaginatedResponse } from '@edenlabs/eden-sdk'
+import { Creation, CursorPaginatedFeedQuery, PaginatedResponse } from '@edenlabs/eden-sdk'
 import { useCallback, useMemo } from 'react'
 import useSWRInfinite, { SWRInfiniteKeyLoader } from 'swr/infinite'
-
-export type CursorPaginatedRouteQueryParams = {
-  cursor?: string
-  nextValue?: number
-  limit?: number
-  orderBy?: string
-}
-
-export type FeedCursorRouteQueryParams = {
-  sort?: string | string[]
-  filter?: {
-    name?: string | string[]
-    user?: string | string[]
-    character?: string | string[]
-    collection?: string | string[]
-    creation?: string | string[]
-    generator?: string | string[]
-    outputType?: string | string[]
-    concept?: string | string[]
-    isPrivate?: boolean
-    visibility?: 'all' | 'public' | 'private'
-    maxDate?: string
-    minDate?: string
-  }
-}
-
-export type CursorPaginatedFeedQuery = FeedCursorRouteQueryParams &
-  CursorPaginatedRouteQueryParams
 
 type CursorPaginatedResponse = {
   docs: Creation[]
@@ -182,10 +154,10 @@ export const useFeedCursorPaginated = (
             nextCursor: !!data[data.length - 1]?.nextCursor,
             nextValue: !!data[data.length - 1]?.nextValue,
           }
-        : { totalItems: flatData && flatData[0] ? flatData[0].total : 0 }
+        : { totalItems: flatData && flatData.length && flatData[0] ? flatData[0].total : 0 }
       return {
         docs:
-          flatData && flatData[0].docs && flatData[0].docs.length
+          flatData && flatData.length && flatData[0] !== undefined && flatData[0].docs !== undefined && flatData[0].docs.length
             ? flatData.map((page, index) => {
                 // shuffle latest page of recommended feed
                 if (orderBy && orderBy.field === 'embedding.score') {

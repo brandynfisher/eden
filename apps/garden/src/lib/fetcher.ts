@@ -1,14 +1,11 @@
 import { OrderByPopularity } from '@/components/Layout/buttons/OrderByButtons'
-import {
-  CursorPaginatedFeedQuery,
-  CursorPaginatedRouteQueryParams,
-} from '@/hooks/useFeedCursorPaginated'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
 import { message } from 'antd'
 import { MessageInstance } from 'antd/es/message/interface'
 import axios, { AxiosError } from 'axios'
 import queryString from 'query-string'
+import { CursorPaginatedFeedQuery, CursorPaginatedRouteQueryParams } from '@edenlabs/eden-sdk'
 
 // @ts-ignore
 export const fetcher = (...args) =>

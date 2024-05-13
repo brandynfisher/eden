@@ -1,6 +1,6 @@
 const path = require('path')
 const withTM = require('next-transpile-modules')(['@edenlabs/eden-sdk'])
-// const runtimeCaching = require('next-pwa/cache')
+const runtimeCaching = require('next-pwa/cache')
 
 const defaultImageRemotePatterns = [
   {
@@ -84,6 +84,12 @@ const defaultImageRemotePatterns = [
   {
     protocol: 'https',
     hostname: 'cdn.discordapp.com',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'res.cloudinary.com',
     port: '',
     pathname: '**',
   },
@@ -196,7 +202,7 @@ module.exports = withTM({
 
 const withNextPWA = require('next-pwa')({
   dest: 'public',
-  // runtimeCaching,
+  runtimeCaching,
   disable: process.env.NODE_ENV === 'development',
   register: true,
 })

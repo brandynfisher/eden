@@ -46,7 +46,7 @@ const MainNavButtons = ({ inDrawer }: { inDrawer?: boolean }) => {
       path: '/',
     },
     {
-      text: 'Concepts',
+      text: 'Models',
       icon: <ModelTrainingIcon fontSize="small" />,
       path: '/concepts',
     },

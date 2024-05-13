@@ -5,12 +5,14 @@ import { WorkspacePremium } from '@mui/icons-material'
 import HelpOutline from '@mui/icons-material/HelpOutline'
 import { Form, Popover, Switch } from 'antd'
 import React from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const PrivacyToggle = () => {
   const { isAllowed } = useSubscriptionGate(GatedActions.MakePrivate)
 
   const { showModal } = useModalContext()
   const handleClick = async (ev: React.MouseEvent) => {
+    sendGTMEvent({ event: 'create-private-toggle', hasPermission: isAllowed })
     if (!isAllowed) {
       ev.stopPropagation()
       ev.preventDefault()

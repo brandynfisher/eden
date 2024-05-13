@@ -16,7 +16,6 @@ export interface CreationNotificationContextType {
   setActiveTaskId?: (taskId: string) => void
   hasChangedGenerator?: boolean
   setHasChangedGenerator?: (hasChangedGenerator: boolean) => void
-  refetchTasks?: () => void
 }
 
 export const CreationNotificationContext =
@@ -34,7 +33,6 @@ export const CreationNotificationContext =
     setActiveTaskId: undefined,
     hasChangedGenerator: undefined,
     setHasChangedGenerator: undefined,
-    refetchTasks: undefined,
   })
 
 function CreationNotificationProvider({ children }: PropsWithChildren) {

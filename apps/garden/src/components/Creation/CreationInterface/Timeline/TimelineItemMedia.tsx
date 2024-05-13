@@ -15,7 +15,8 @@ const TimelineItemMedia = ({
     return (
       <TimelineConcept
         task={task}
-        conceptId={task.concept}
+        //@ts-ignore
+        conceptId={task.concept ? task.concept._id : task.concept}
         listIndex={listIndex || 0}
       />
     )
@@ -38,7 +39,7 @@ const TimelineItemMedia = ({
         <div className="grid grid-cols-1">
           <TimelineCreationSample
             task={task}
-            creationId={task.creation?._id}
+            creationId={task.creation ? task.creation._id : task.creation}
             listIndex={listIndex || 0}
           />
         </div>

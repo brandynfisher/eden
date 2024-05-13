@@ -7,7 +7,7 @@ type Props = {
 }
 const UserAvatar = ({ image, name }: Props) => {
   return (
-    <Avatar className='h-6 w-6 sm:h-7 sm:w-7 group-hover:brightness-105 transition-all'>
+    <Avatar className='h-5 w-5 sm:h-6 sm:w-6 group-hover:brightness-105 transition-all'>
       {image ? (
         <AvatarImage asChild src={image}>
           <Image src={image} alt='logo' width={40} height={40} />

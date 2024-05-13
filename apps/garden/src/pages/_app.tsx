@@ -22,6 +22,7 @@ import dynamic from 'next/dynamic'
 import { Inter } from 'next/font/google'
 import Head from 'next/head'
 import { ReactElement } from 'react'
+import Script from 'next/script'
 
 type Props = AppProps & {
   Component: Page
@@ -137,8 +138,14 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           </ThemeProvider>
         </main>
       </PasswordProtection>
+      {process.env.NEXT_PUBLIC_APP_ENV === 'production' ? (
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
+      ) : null}
       {process.env.NODE_ENV === 'production' ? (
-        <GoogleTagManager gtmId="G-W4718WCZQK" />
+        <Script
+          src="https://rum-static.pingdom.net/pa-662f1da168cac40012000a8e.js"
+          strategy="lazyOnload"
+        />
       ) : null}
     </>
   )

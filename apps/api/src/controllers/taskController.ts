@@ -1,27 +1,12 @@
-import {
-  taskPrivacyPermissionCheck,
-} from '../lib/authorization'
-import {
-  getDefaultGeneratorVersion,
-  getLatestGeneratorVersion,
-  prepareConfig,
-} from '../lib/generator'
+import { taskPrivacyPermissionCheck } from '../lib/authorization'
+import { getDefaultGeneratorVersion, getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
 import { User } from '../models/Creator'
-import {
-  Generator,
-  GeneratorDocument,
-  GeneratorVersionSchema,
-} from '../models/Generator'
+import { Generator, GeneratorDocument, GeneratorVersionSchema } from '../models/Generator'
 import { Manna, MannaDocument } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
 import TaskRepository from '../repositories/TaskRepository'
-import {
-  TasksCreateArguments,
-  TasksGetArguments,
-  TasksListArguments,
-} from '@edenlabs/eden-sdk'
-import { TaskUpdateEvent } from '@edenlabs/eden-sdk'
+import { TasksCreateArguments, TasksGetArguments, TasksListArguments, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -229,10 +214,18 @@ export const createTask = async (
     })
   }
 
+  // @todo: this is kinda ugly but somehow
+  server.eventEmitter.emit('task-update', {
+    userId: user._id,
+    taskId,
+    status: 'pending',
+    task: { taskId, config: preparedConfig, status: 'pending', generator: { generatorName: generator?.generatorName || 'n/a' } },
+  })
+
   // update db
   const taskData: TaskSchema = {
     taskId,
-    status: TaskStatus.Pending,
+    status: 'pending' as TaskStatus.Pending,
     user,
     character,
     generator: generator._id,
@@ -300,17 +293,17 @@ export const listTasks = async (
   const typeQuery = type
     ? type === 'creations'
       ? {
-          $or: [
-            { creation: { $ne: null } },
-            { 'config.concept_mode': { $exists: false } },
-          ],
-        }
+        $or: [
+          { creation: { $ne: null } },
+          { 'config.concept_mode': { $exists: false } },
+        ],
+      }
       : {
-          $or: [
-            { concept: { $ne: null } },
-            { 'config.concept_mode': { $exists: true } },
-          ],
-        }
+        $or: [
+          { concept: { $ne: null } },
+          { 'config.concept_mode': { $exists: true } },
+        ],
+      }
     : {}
 
   const tasksRepository = new TaskRepository(Task)
@@ -336,6 +329,10 @@ export const listTasks = async (
 
   await tasksRepository.model.populate(tasks.docs, {
     path: 'creation',
+  })
+
+  await tasksRepository.model.populate(tasks.docs, {
+    path: 'concept',
   })
 
   await tasksRepository.model.populate(tasks.docs, {
@@ -376,29 +373,53 @@ export const subscribeTaskUpdates = async (
     taskId?: string
   }
 
-  reply.sse(
-    (async function* () {
-      const keepAliveTimer = setInterval(() => {
-        // keep the connection alive.
-        reply.sse({ event: 'keep-alive', data: '' })
-      }, 15000) // Send a keep-alive every 15 seconds
+  reply.header('Connection', 'keep-alive')
 
+  // send initial message
+  reply.sse({ event: 'init-ping', data: JSON.stringify({ heartbeat: userId }) })
+
+  // keep the connection alive.
+  const keepAliveTimer = setInterval(() => {
+    // console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
+    reply.sse({ event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
+  }, 15000) // Send a keep-alive every 15 seconds
+
+  reply.sse(
+    // gather all accumulated emit calls for this tick
+    (async function* () {
+      // console.log('REPLY SSE', userId)
       try {
-        for await (const [event] of on(server.eventEmitter, 'taskUpdate')) {
+        // handle task update emits
+        for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate = event as TaskUpdateEvent
+          // console.log({ taskUpdate, userId: userId.toString(), event })
           if (
             taskUpdate.userId.toString() === userId.toString() &&
             (!taskId || taskUpdate.taskId === taskId)
           ) {
+            // console.log('sending SSE task update', {
+            //   event: 'task-update',
+            //   data: JSON.stringify(event),
+            // })
+
+            // send SSE message
             yield {
-              event: event.name,
+              event: 'task-update',
               data: JSON.stringify(event),
             }
           }
         }
-      } finally {
-        clearInterval(keepAliveTimer)
+      } catch (e) {
+        console.error(e)
       }
     })(),
+  )
+
+  request.socket.on('close', () => {
+      // console.log('request socket close')
+      // console.log('CLEARING keepAliveTimer')
+      clearInterval(keepAliveTimer)
+      reply.raw.end()
+    },
   )
 }

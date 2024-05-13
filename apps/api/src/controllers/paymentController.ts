@@ -10,6 +10,7 @@ import {
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import Stripe from 'stripe'
+import { trackCheckoutBegin, trackCheckoutComplete } from '../lib/analytics'
 
 interface StripeDataObject {
   userId: string
@@ -23,11 +24,13 @@ interface StripeDataObject {
 
 interface TopUpMetadata {
   manna: string
+  analyticsClientId?: string
 }
 
 interface SubscriptionMetadata {
   subscriptionTier: string
   manna: string
+  analyticsClientId?: string
 }
 
 const discountMap = (
@@ -457,6 +460,25 @@ const handlePaymentSuccess = async (
   } else {
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
   }
+
+  await trackCheckoutComplete(server, metadata.analyticsClientId || '', {
+    transaction_id: sessionId,
+    currency: session.currency || '',
+    value: session.amount_total !== null ? session.amount_total - (session?.total_details?.amount_tax || 0) : 0,
+    tax: session?.total_details?.amount_tax || 0,
+    items: session.line_items.data.map((item: Stripe.LineItem, index) => {
+      return {
+        item_id: item.id,
+        item_name: item.description,
+        currency: item.currency.toUpperCase(),
+        index: index,
+        item_brand: 'Eden',
+        item_category: metadata.subscriptionTier ? 'subscription' : 'top-up',
+        price: item.price?.unit_amount || 0,
+        quantity: item.quantity || 0
+      }
+    })
+  })
 }
 
 export const createCheckoutSession = async (
@@ -465,7 +487,7 @@ export const createCheckoutSession = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { priceId, paymentMode } = request.body as PaymentsCreateArguments
+  const { priceId, paymentMode, analyticsClientId } = request.body as PaymentsCreateArguments
 
   const user = await User.findById(userId)
   if (!user) {
@@ -507,9 +529,14 @@ export const createCheckoutSession = async (
     customer_creation,
     customer: user.stripeCustomerId,
     client_reference_id: user.userId,
-    success_url: `${server.config.FRONTEND_URL}/order/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${server.config.FRONTEND_URL}/order/cancelled?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${server.config.FRONTEND_URL}/order/success?session_id={CHECKOUT_SESSION_ID}&gacid=${analyticsClientId}`,
+    cancel_url: `${server.config.FRONTEND_URL}/order/cancelled?session_id={CHECKOUT_SESSION_ID}&gacid=${analyticsClientId}`,
+    metadata: {
+      analyticsClientId: analyticsClientId || '',
+    },
   })
+
+  await trackCheckoutBegin(server, analyticsClientId || '')
 
   return reply.status(200).send({
     url: session.url,
@@ -618,7 +645,7 @@ export const handlePaymentEvent = async (
       }
       console.log(dataObject)
       console.log(stripeDataObject)
-      handleRenewal(server, reply, stripeDataObject)
+      await handleRenewal(server, reply, stripeDataObject)
       return
 
     // subscription events
@@ -628,10 +655,6 @@ export const handlePaymentEvent = async (
 
     case 'customer.subscription.deleted':
       await handleSubscriptionDeleted(server, reply, stripeDataObject)
-      return
-
-      // TODO: handle subscription renewal.
-
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)

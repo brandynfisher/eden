@@ -42,7 +42,6 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     subscriptionBalance: isAuthenticated
       ? data?.subscriptionBalance
       : undefined,
-    pendingTasks: isAuthenticated ? data?.pendingTasks : undefined,
     refetchMe: mutate,
   }
 }

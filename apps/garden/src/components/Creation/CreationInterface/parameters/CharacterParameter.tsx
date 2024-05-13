@@ -7,9 +7,9 @@ import { Character, GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Edit } from '@mui/icons-material'
 import CloseIcon from '@mui/icons-material/Close'
 import { App, Button, Form, FormInstance, Input } from 'antd'
-import Image from 'next/image'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 export const CharacterParameterUI = ({
   characterId,
@@ -46,7 +46,7 @@ export const CharacterParameterUI = ({
           {character ? (
             <div className="pl-0 pr-1 py-1 flex gap-1 items-center w-full">
               {character.image ? (
-                <Image
+                <CdnImage
                   width={48}
                   height={48}
                   src={

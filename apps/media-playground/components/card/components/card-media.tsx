@@ -8,10 +8,11 @@ type Props = {
 }
 
 const CardMedia = ({ media, linkHref }: Props) => {
+  console.log(media)
   return (
     <Link href={linkHref} className="relative w-full block">
       <Image
-        src={media.thumbnailUri || ''}
+        src={media.thumbnailUri || (media.type === 'image' ? media.uri : '') || ''}
         alt={'card media thumbnail'}
         width={media.width}
         height={media.height}

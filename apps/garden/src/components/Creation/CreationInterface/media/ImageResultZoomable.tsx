@@ -1,8 +1,8 @@
 import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/media/ImageLoadingPlaceholder'
 import ImagePreviewMask from '@/components/Creation/CreationInterface/media/ImagePreviewMask'
 import LoadingOutlined from '@ant-design/icons/LoadingOutlined'
-import Image from 'next/image'
 import React, { ReactNode, useCallback, useEffect, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const ImagePlaceholder = ({
   imageUrl,
@@ -17,7 +17,7 @@ const ImagePlaceholder = ({
     <div
       className={`absolute inset-0 z-10 ${limitHeight ? 'max-h-[80vh]' : ''}`}
     >
-      <Image
+      <CdnImage
         src={imageUrl}
         alt={''}
         width="0"
@@ -114,7 +114,7 @@ const ImageResultZoomable = ({
         <div
           className={`absolute inset-0 ${limitHeight ? 'max-h-[80vh]' : ''}`}
         >
-          <Image
+          <CdnImage
             key={previewSizeUrl}
             src={previewSizeUrl}
             alt={previewSizeUrl}

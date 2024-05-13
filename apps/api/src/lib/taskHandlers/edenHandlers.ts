@@ -4,7 +4,7 @@ import { Creation, CreationInput } from '../../models/Creation'
 import { User } from '../../models/Creator'
 import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
-import { Task, TaskStatus } from '../../models/Task'
+import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
 import { TaskHandlers } from '../../plugins/tasks'
 import * as elevenPlay from './elevenPlay'
@@ -47,6 +47,11 @@ const submitTask = async (
   return task.id
 }
 
+type TaskStatusUpdate = {
+  progress?: number
+  status: string
+}
+
 const handleUpdate = async (
   server: FastifyInstance,
   taskId: string,
@@ -71,9 +76,11 @@ const handleUpdate = async (
     ...intermediateOutputs.map((o: TaskOutput) => o.progress),
   )
 
-  const taskUpdate = {
-    status: 'running',
-    progress: Math.max(maxProgress, task.progress || 0),
+  const taskUpdate: TaskStatusUpdate = {
+    status: status === 'starting' ? 'pending' : 'running',
+  }
+  if (taskUpdate.status === 'running') {
+    taskUpdate.progress = Math.max(maxProgress, task.progress || 0)
   }
 
   const filteredIntermediateOutputs = intermediateOutputs.filter(
@@ -91,16 +98,17 @@ const handleUpdate = async (
     })
   }
 
+  const generator = await Generator.findById(task.generator)
+
   if (isCompleted) {
     const finalOutput = finalOutputs.slice(-1)[0]
     Object.assign(taskUpdate, { output: finalOutput })
 
-    const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       const creationData: CreationInput[] = []
 
       const { nsfw_scores, ...remainingAttributes } =
-        finalOutput.attributes || {}
+      finalOutput.attributes || {}
       const finalOutputAttributes = { ...remainingAttributes }
 
       await Promise.allSettled(
@@ -139,19 +147,23 @@ const handleUpdate = async (
           }
 
           if (finalOutput.files[index]) {
-            const { uri, mediaAttributes } = await server.uploadUrlAsset(
-              server,
-              finalOutput.files[index],
-            )
-            creationDocument.uri = uri
-            creationDocument.mediaAttributes = mediaAttributes
+            console.log('uploading asset', finalOutput.files[index])
+            try {
+              const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
+                server,
+                finalOutput.files[index],
+              )
+              console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
+
+              creationDocument.uri = uri
+              creationDocument.mediaAttributes = mediaAttributes
+              creationDocument.thumbnail = thumbnailUri
+            } catch (e) {
+              console.error('uploadUrlAsset error', e)
+            }
           }
-          if (finalOutput.thumbnails[index]) {
-            creationDocument.thumbnail = await server.uploadThumbnailAsset(
-              server,
-              finalOutput.thumbnails[index],
-            )
-          }
+
+          console.log(JSON.stringify({creationDocument}, null, 2))
 
           creationData.push(creationDocument)
         }),
@@ -212,14 +224,6 @@ const handleUpdate = async (
         }),
       )
 
-      server.eventEmitter.emit('taskUpdate', {
-        userId: task.user,
-        taskId,
-        status: TaskStatus.Completed,
-        progress: 1.0,
-        result: creationData.map(item => item.uri),
-      })
-
       if (task.webhooks) {
         for (const webhook of task.webhooks) {
           await axios.post(webhook, {
@@ -246,6 +250,23 @@ const handleUpdate = async (
         status: 'completed',
         progress: 1.0,
       })
+
+      server.eventEmitter.emit('task-update', {
+        userId: task.user._id,
+        taskId,
+        status: 'completed',
+        progress: 1.0,
+        result: creationData.map(item => item.uri),
+        task: {
+          ...task.toObject(),
+          ...taskUpdate,
+          creation: creationData[0],
+          generator: {
+            generatorName: generator.generatorName
+          }
+        },
+      })
+
     } else if (generator?.output == 'concept') {
       for (let i = 0; i < finalOutput.files.length; i++) {
         // version the concept's public name (v2, v3, etc)
@@ -263,7 +284,7 @@ const handleUpdate = async (
               user: task.user,
               name: newName,
             })
-          ) {
+            ) {
             version++
             newName = `${baseName}_v${version}`
           }
@@ -275,7 +296,7 @@ const handleUpdate = async (
           name: publicName,
           conceptName: finalOutput.name,
           checkpoint: task.config.checkpoint || 'JuggernautXL_v6', //task.config.checkpoint,
-          grid_prompts: task.config.grid_prompts || [], //task.config.checkpoint,
+          grid_prompts: finalOutput.attributes && finalOutput.attributes.grid_prompts !== undefined ? finalOutput.attributes.grid_prompts : [], //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
           num_training_images:
             finalOutput.attributes && finalOutput.attributes.num_training_images
@@ -286,12 +307,13 @@ const handleUpdate = async (
           isPrivate: task.config.isPrivate || false,
         }
         if (finalOutput.files[i]) {
-          const { uri } = await server.uploadUrlAsset(
+          const { uri } = await server.uploadS3UrlAsset(
             server,
             finalOutput.files[i],
           )
           conceptData.uri = uri
         }
+
         if (finalOutput.thumbnails[i]) {
           const { uri } = await server.uploadUrlAsset(
             server,
@@ -307,12 +329,17 @@ const handleUpdate = async (
           progress: 1.0,
         })
 
-        server.eventEmitter.emit('taskUpdate', {
-          userId: task.user,
+        server.eventEmitter.emit('task-update', {
+          userId: task.user._id,
           taskId,
-          status: TaskStatus.Completed,
+          status: 'completed',
           progress: 1.0,
           result: [conceptData.uri],
+          task: {
+            ...task.toObject(),
+            ...taskUpdate,
+            concept
+          },
         })
 
         if (task.webhooks) {
@@ -325,6 +352,14 @@ const handleUpdate = async (
         }
       }
     }
+  } else {
+    server.eventEmitter.emit('task-update', {
+      userId: task.user._id,
+      taskId,
+      status: taskUpdate.status,
+      progress: taskUpdate.progress,
+      task: { ...task.toObject(), ...taskUpdate, generator: { generatorName: generator?.generatorName || 'n/a' } },
+    })
   }
 
   await Task.updateOne(
@@ -351,19 +386,23 @@ const handleUpdateUniversal = async (
     throw new Error(`Could not find task ${taskId}`)
   }
   output = Array.isArray(output) ? output : [output]
-  const isCompleted = output.some(Boolean) && status == 'succeeded'
 
-  const taskUpdate = {
-    status: 'running',
-    progress: 0,
+  const taskUpdate: TaskStatusUpdate = {
+    status: status === 'starting' ? 'pending' : 'running',
   }
+  if (taskUpdate.status === 'running') {
+    taskUpdate.progress = 0
+  }
+
+  const isCompleted = output.some(Boolean) && status == 'succeeded'
+  const generator = await Generator.findById(task.generator)
+
   if (isCompleted) {
     Object.assign(taskUpdate, {
       status: 'completed',
       progress: 1.0,
       output: output,
     })
-    const generator = await Generator.findById(task.generator)
     if (generator?.output == 'creation') {
       for (let i = 0; i < output.length; i++) {
         const creationUser = task.attributes?.delegateUserId
@@ -374,22 +413,42 @@ const handleUpdateUniversal = async (
           character: task.character,
           task: task._id,
           uri: output[i],
-          thumbnail: null,
+          thumbnail: '',
           name: task.config.prompt,
           attributes: task.attributes,
           mediaAttributes: {},
         }
         if (output[i]) {
-          const { uri, mediaAttributes } = await server.uploadUrlAsset(
-            server,
-            output[i],
-          )
-          creationData.uri = uri
-          creationData.mediaAttributes = mediaAttributes
+          try {
+            console.log('uploading asset', output[i])
+            const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
+              server,
+              output[i],
+            )
+            console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
+            creationData.uri = uri
+            creationData.thumbnail = thumbnailUri || ''
+            creationData.mediaAttributes = mediaAttributes
+          } catch (e) {
+            console.error('uploadUrlAsset error', e)
+          }
         }
-        // todo: make a thumbnail
         const creation = await Creation.create(creationData)
         Object.assign(taskUpdate, { creation: creation._id })
+
+        server.eventEmitter.emit('task-update', {
+          userId: task.user._id,
+          taskId,
+          status: 'completed',
+          progress: 1.0,
+          result: creationData.uri,
+          task: {
+            ...task.toObject(),
+            ...taskUpdate,
+            creation,
+          },
+        })
+
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
             await axios.post(webhook, {
@@ -398,17 +457,18 @@ const handleUpdateUniversal = async (
             })
           })
         }
-
-        server.eventEmitter.emit('taskUpdate', {
-          userId: task.user,
-          taskId,
-          status: TaskStatus.Completed,
-          progress: 1.0,
-          result: creationData.uri,
-        })
       }
     }
+  } else {
+    server.eventEmitter.emit('task-update', {
+      userId: task.user._id,
+      taskId,
+      status: taskUpdate.status,
+      progress: taskUpdate.progress,
+      task: { ...task.toObject(), ...taskUpdate, generator: { generatorName: generator?.generatorName || 'n/a' } },
+    })
   }
+
   await Task.updateOne(
     {
       taskId,
@@ -472,12 +532,16 @@ const handleFailure = async (
     amount: task.cost,
   })
 
-  server.eventEmitter.emit('taskUpdate', {
-    userId: task.user,
+  server.eventEmitter.emit('task-update', {
+    userId: task.user._id,
     taskId,
-    status: TaskStatus.Failed,
+    status: 'failed',
     progress: 1.0,
     result: null,
+    task: {
+      ...task.toObject(),
+      ...taskUpdate
+    },
   })
 }
 
@@ -506,7 +570,11 @@ export const receiveTaskUpdate = async (
   const generatorName = generator.generatorName
   switch (status) {
     case 'starting':
-      // await handleStarting(server, taskId)
+      if (universalGenerators.includes(generatorName)) {
+        await handleUpdateUniversal(server, taskId, output, 'starting')
+      } else {
+        await handleUpdate(server, taskId, output, 'starting')
+      }
       break
     case 'processing':
       if (universalGenerators.includes(generatorName)) {

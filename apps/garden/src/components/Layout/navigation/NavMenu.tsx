@@ -97,7 +97,7 @@ const NavMenu = ({
           <ModelTraining fontSize="small" />
         </Link>
       ),
-      label: 'Concepts',
+      label: 'Models',
     },
     {
       key: '/characters',
@@ -149,7 +149,7 @@ const NavMenu = ({
           <ModelTraining fontSize="small" />
         </Link>
       ),
-      label: 'Concepts',
+      label: 'Models',
     },
     {
       key: '/create/characters',

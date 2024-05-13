@@ -19,6 +19,7 @@ import React, {
   useMemo,
   useState,
 } from 'react'
+import { trackTaskCreate } from '@/lib/analytics'
 
 const MannaCostDisplay = ({
   generatorName,
@@ -49,9 +50,10 @@ export const UpscaleImageMenu = ({
   isPrivate: boolean
   imageUri: string
 }) => {
+  const { getTaskCost } = useTaskCost()
   const { message } = App.useApp()
   const { maybeAuthenticate, refetchMe } = useContext(UserContext)
-  const { setActiveTaskId, refetchTasks } = useContext(
+  const { setActiveTaskId } = useContext(
     CreationNotificationContext,
   )
   const { isAllowed: is4kUpscaleAllowed } = useSubscriptionGate(
@@ -97,11 +99,11 @@ export const UpscaleImageMenu = ({
           generatorName,
           config,
         })
-        refetchTasks && refetchTasks()
         message.success('Task "Upscale" created!')
         const { taskId } = response.data
         setActiveTaskId && setActiveTaskId(taskId)
         refetchMe()
+        trackTaskCreate(generatorName, getTaskCost(generatorName, config).cost)
       } catch (error) {
         handleAxiosError(error, message)
       } finally {
@@ -109,7 +111,7 @@ export const UpscaleImageMenu = ({
         handleClose()
       }
     },
-    [maybeAuthenticate, refetchMe, refetchTasks, setActiveTaskId, message],
+    [maybeAuthenticate, refetchMe, setActiveTaskId, message],
   )
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -197,7 +199,7 @@ export const AnimateImageMenu = ({
 }) => {
   const { message } = App.useApp()
   const { maybeAuthenticate, refetchMe } = useContext(UserContext)
-  const { setActiveTaskId, refetchTasks } = useContext(
+  const { setActiveTaskId} = useContext(
     CreationNotificationContext,
   )
   const { isAllowed: isAnimateLongAllowed } = useSubscriptionGate(
@@ -238,7 +240,6 @@ export const AnimateImageMenu = ({
           generatorName,
           config,
         })
-        refetchTasks && refetchTasks()
         message.success('Task "img2vid" created!')
         const { taskId } = response.data
         setActiveTaskId && setActiveTaskId(taskId)
@@ -250,7 +251,7 @@ export const AnimateImageMenu = ({
         handleClose()
       }
     },
-    [refetchTasks, refetchMe, maybeAuthenticate, message, setActiveTaskId],
+    [refetchMe, maybeAuthenticate, message, setActiveTaskId],
   )
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {

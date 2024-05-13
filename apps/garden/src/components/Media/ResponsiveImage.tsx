@@ -1,5 +1,5 @@
-import Image from 'next/image'
 import { ReactNode, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 export const ResponsiveImage = ({
   src,
@@ -12,6 +12,7 @@ export const ResponsiveImage = ({
   onLoadingComplete,
   quality,
   className,
+  assetType,
 }: {
   src: string
   alt: string
@@ -23,6 +24,7 @@ export const ResponsiveImage = ({
   onLoadingComplete?: () => void
   quality?: number
   className?: string
+  assetType?: 'image'|'video'
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const handleOnLoadingComplete = () => {
@@ -37,7 +39,7 @@ export const ResponsiveImage = ({
       } rounded-lg w-auto h-full ${className ? className : ''}`}
       style={{ aspectRatio: aspectRatio || 1 }}
     >
-      <Image
+      <CdnImage
         src={src}
         alt={alt}
         sizes={sizes}
@@ -48,6 +50,7 @@ export const ResponsiveImage = ({
         loading={loading}
         onLoad={handleOnLoadingComplete}
         className={`h-full w-full object-contain ${className ? className : ''}`}
+        assetType={assetType}
       />
       {children}
     </div>

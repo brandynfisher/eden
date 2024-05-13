@@ -1,6 +1,6 @@
 import CharacterAvatarFallback from '@/components/Characters/CharacterAvatarFallback'
-import Image from 'next/image'
 import React, { useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const CharacterAvatar = ({
   id,
@@ -27,7 +27,7 @@ const CharacterAvatar = ({
       }`}
     >
       {imageUri && !imgError ? (
-        <Image
+        <CdnImage
           priority={true}
           key={id}
           src={imageUri}

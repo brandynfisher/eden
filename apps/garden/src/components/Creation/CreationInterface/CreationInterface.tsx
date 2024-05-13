@@ -3,7 +3,6 @@ import TestGeneratorInterface from '@/components/Creation/CreationInterface/Test
 import TimelineList from '@/components/Creation/CreationInterface/Timeline/TimelineList'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { CONFIG } from '@/lib/config'
-import { conceptGenerator } from '@/lib/generator'
 import { EdenContext } from '@/providers/EdenProvider'
 import { Creation, Generator } from '@edenlabs/eden-sdk'
 import { useViewportSize } from '@mantine/hooks'
@@ -14,6 +13,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+// import NebulaShaderCanvas from '@/components/Creation/CreationInterface/Timeline/NebulaShaderCanvas'
 
 const CreationInterface = ({
   generatorName,
@@ -111,6 +111,10 @@ const CreationInterface = ({
     }
   }, [drawerOpen])
 
+  // return (
+  //   <NebulaShaderCanvas colors={[0, 0.2, 0.4, 0.6, 0.8, 0.1, 0.3, 0.5]} />
+  // )
+
   return (
     <div className="relative h-full md:flex md:gap-4 creation-interface mt-2">
       {usesDrawer && drawerOpen ? (
@@ -145,14 +149,7 @@ const CreationInterface = ({
         {!generators || !activeGenerator || !availableGenerators ? (
           <LoadingIndicator />
         ) : (
-          <TimelineList
-            innerRef={timelineListRef}
-            type={
-              activeGenerator.generatorName === conceptGenerator.name
-                ? 'concepts'
-                : 'creations'
-            }
-          />
+          <TimelineList innerRef={timelineListRef} />
         )}
       </div>
 

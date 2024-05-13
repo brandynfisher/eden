@@ -50,4 +50,7 @@ jobs:
           tags:
             ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
             }}:latest
-
+          build-args: |
+            "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}"
+            "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
+            "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}"

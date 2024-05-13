@@ -3,53 +3,14 @@ import { handleAxiosError } from '@/lib/fetcher'
 import { truncateText } from '@/lib/string'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined'
-import { Form, FormInstance, Modal, Row, Upload, message } from 'antd'
+import { Form, FormInstance, message, Modal, Row, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
-import axios, { AxiosProgressEvent } from 'axios'
 import React, { useEffect, useState } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
+import { getBase64, uploadChunkedFileToCloudinary, uploadFileToS3, UploadRequestOptions } from '@/lib/files'
 
 const { Dragger } = Upload
-
-const getBase64 = (file: RcFile): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = error => reject(error)
-  })
-
-interface CustomRequestOptions {
-  file: RcFile | File
-  onSuccess: (response: object, file: File | RcFile) => void
-  onError: (error: Error) => void
-  onProgress: (event: { percent: number }) => void
-}
-
-const getFileHash = async (file: File): Promise<string> => {
-  const arrayBuffer = await file.arrayBuffer()
-  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
-  const hashArray = Array.from(new Uint8Array(hashBuffer)) // Convert buffer to byte array
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('') // Convert bytes to hex string
-  return hashHex
-}
-
-// Function to request a signed URL from the server
-async function requestSignedUrl(
-  fileHash: string,
-  fileType: string,
-): Promise<string> {
-  try {
-    const response = await axios.post('/api/media/upload', {
-      filename: `${fileHash}.${fileType.split('/')[1]}`,
-      contentType: fileType,
-    })
-    return response.data.signedUrl // Adjust according to your actual API response
-  } catch (error) {
-    console.error('Error requesting signed URL:', error)
-    throw new Error('Failed to get signed URL')
-  }
-}
 
 const UploadParameter = (props: {
   form: FormInstance
@@ -60,6 +21,8 @@ const UploadParameter = (props: {
 }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const showUploadInProgressMessage = async (messageKey: string) => {
+    sendGTMEvent({ event: 'upload', name: props.parameter.name })
+
     await messageApi.open({
       key: messageKey,
       type: 'loading',
@@ -78,7 +41,7 @@ const UploadParameter = (props: {
       content: (
         <div>
           <div>Upload error {truncateText(messageKey, 20)}</div>
-          <div className="text-red-500">{errorMessage}</div>
+          <div className='text-red-500'>{errorMessage}</div>
         </div>
       ),
       duration: 3,
@@ -185,6 +148,7 @@ const UploadParameter = (props: {
         [props.parameter.name]: isArray ? newUrls : newUrls[newUrls.length - 1],
       })
       setUrls(newUrls)
+      messageApi.destroy(info.file.name)
     }
   }
 
@@ -199,48 +163,27 @@ const UploadParameter = (props: {
     )
   }
 
-  const customRequest = async (options: CustomRequestOptions) => {
-    const { file, onSuccess, onError, onProgress } = options
-
+  const customRequest = async (options: UploadRequestOptions) => {
     try {
-      const fileHash = await getFileHash(file)
-      const signedUrl = await requestSignedUrl(fileHash, file.type)
-      const config = {
-        headers: {
-          'Content-Type': file.type,
-        },
-        onUploadProgress: (event: AxiosProgressEvent) => {
-          const total = event.total ? event.total : 1
-          onProgress({ percent: (event.loaded / total) * 100 })
-        },
+      // Only image/video should go to cloudinary. Raw/Zip goes to S3
+      if (options.file.type.startsWith('application')) {
+        await uploadFileToS3(options)
+        return
       }
-
-      const response = await axios.put(signedUrl, file, config)
-
-      if (response.status === 200) {
-        onSuccess(
-          {
-            fileUrl: signedUrl.split('?')[0],
-          },
-          file,
-        )
-      } else {
-        onError(new Error('Upload failed'))
-      }
+      await uploadChunkedFileToCloudinary(options)
     } catch (error) {
       handleAxiosError(error, message)
     }
   }
 
-  const shouldHideUploadButton =
-    fileList.length >= (props.parameter.maxLength || 1)
+  const shouldHideUploadButton = fileList.length >= (props.parameter.maxLength || 1)
 
   return (
     <>
       {contextHolder}
       <Row>
         <Form.Item
-          className="mb-2 max-w-full w-full"
+          className='mb-2 max-w-full w-full'
           initialValue={props.parameter.default}
           label={
             props.parameter.label ? (
@@ -259,9 +202,9 @@ const UploadParameter = (props: {
           ]}
         >
           <Dragger
-            name="file"
+            name='file'
             fileList={fileList}
-            listType="picture"
+            listType='picture'
             className={shouldHideUploadButton ? 'upload-btn-hidden' : ''}
             onChange={handleChange}
             accept={props.acceptedMimeTypes ? props.acceptedMimeTypes : ''}
@@ -272,7 +215,8 @@ const UploadParameter = (props: {
             // @ts-ignore
             customRequest={customRequest}
           >
-            <div className="flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500">
+            <div
+              className='flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500'>
               <FileUploadOutlined />
               <div>
                 Click here or drag files to upload (max.{' '}
@@ -288,7 +232,7 @@ const UploadParameter = (props: {
         footer={null}
         onCancel={() => setPreviewOpen(false)}
       >
-        <img alt="example" className="w-full" src={previewImage} />
+        <img alt='example' className='w-full' src={previewImage} />
       </Modal>
     </>
   )

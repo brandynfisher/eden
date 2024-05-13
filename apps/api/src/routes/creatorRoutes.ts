@@ -198,7 +198,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
           balance: Type.Number(),
           subscriptionBalance: Type.Number(),
           foreverBalance: Type.Number(),
-          pendingTasks: Type.Optional(Type.Any()),
         }),
       },
     },

@@ -49,6 +49,8 @@ import React, {
   useMemo,
   useState,
 } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
+import { trackTaskCreate } from '@/lib/analytics'
 
 // import UpscaleParameter from './parameters/UpscaleParameter'
 const { Panel } = Collapse
@@ -96,7 +98,7 @@ const GeneratorForm = ({
   onSubmitSuccess?: () => void
   outputType?: GeneratorOutputType
 }) => {
-  const { setActiveTaskId, setHasChangedGenerator, refetchTasks } = useContext(
+  const { setActiveTaskId, setHasChangedGenerator } = useContext(
     CreationNotificationContext,
   )
   const { message } = App.useApp()
@@ -312,11 +314,14 @@ const GeneratorForm = ({
         generatorName: generator.generatorName,
         config: cleanedValues,
       })
-      refetchTasks && refetchTasks()
       message.success('Task created!')
       const { taskId } = response.data
+
+      trackTaskCreate(generator.generatorName, getTaskCost(generator.generatorName, cleanedValues).cost)
+
       setActiveTaskId && setActiveTaskId(taskId)
       setHasChangedGenerator && setHasChangedGenerator(false)
+
       refetchMe()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
@@ -518,6 +523,9 @@ const GeneratorForm = ({
             <div className="flex flex-col mt-2 bg-gray-100 dark:bg-gray-900">
               <SelectCharacterModalTrigger
                 onChange={character => {
+                  if (character) {
+                    sendGTMEvent({ event: `create-use-character`, itemId: character._id})
+                  }
                   form.setFieldsValue({
                     ['characterId']: character ? character._id : null,
                   })
@@ -640,6 +648,9 @@ const GeneratorForm = ({
                 <div className="px-2 flex flex-col gap-2 py-4 bg-gray-100 dark:bg-gray-900">
                   <SelectConceptModalTrigger
                     onChange={concept => {
+                      if (concept) {
+                        sendGTMEvent({ event: `create-use-concept`, itemId: concept._id})
+                      }
                       form.setFieldsValue({
                         ['lora']: concept ? concept._id : null,
                       })

@@ -12,6 +12,7 @@ import Button from '@mui/material/Button'
 import { App, Divider, Modal } from 'antd'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const AddToCollectionModal = ({
   creationId,
@@ -29,7 +30,7 @@ const AddToCollectionModal = ({
   const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(false)
 
-  console.log({ collections })
+  // console.log({ collections })
 
   const handleCreationAdd = async (
     creationId: string,
@@ -42,6 +43,7 @@ const AddToCollectionModal = ({
         creationIds: [creationId],
       })
       message.success(`Creation added to ${collection.name}`)
+      sendGTMEvent({ event: 'collection-item-add', itemType: 'creation', itemId: creationId, collection: collection._id })
     } catch (e) {
       handleAxiosError(e, message)
     }
@@ -58,6 +60,7 @@ const AddToCollectionModal = ({
         creationIds: [creationId],
       })
       message.success(`Creation removed from ${collection.name}`)
+      sendGTMEvent({ event: 'collection-item-remove', itemType: 'creation', itemId: creationId, collection: collection._id })
     } catch (e) {
       handleAxiosError(e, message)
     }
@@ -97,6 +100,7 @@ const AddToCollectionModal = ({
 
       refetchCollections()
       message.success('Collection created successfully')
+      sendGTMEvent({ event: 'collection-create'})
     } catch (e) {
       handleAxiosError(e, message)
     }

@@ -29,9 +29,9 @@ import {
 } from 'antd'
 import axios from 'axios'
 import { ConfirmProvider, useConfirm } from 'material-ui-confirm'
-import Image from 'next/image'
 import { useRouter } from 'next/router'
 import React, { useCallback, useEffect, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const { Panel } = Collapse
 const EXAMPLE_CHARACTER = {
@@ -160,8 +160,8 @@ const CreationsSection = ({
         <Form.Item
           label={
             <FormLabel
-              text="Concept"
-              description="(Optional) Select a concept that your character will use when creating images."
+              text="Model"
+              description="(Optional) Select a model that your character will use when creating images."
             />
           }
           className="label-auto-height"
@@ -732,7 +732,7 @@ const CharacterForm = ({ character }: { character?: Character }) => {
                         >
                           {characterImageFieldValue &&
                           typeof characterImageFieldValue === 'string' ? (
-                            <Image
+                            <CdnImage
                               src={characterImageFieldValue}
                               width={64}
                               height={64}

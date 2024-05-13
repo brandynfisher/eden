@@ -59,9 +59,9 @@ const ConceptInfo = ({
         <BaseParamGroup
           label={'Grid Prompts'}
           value={
-            <ol className="pl-3" type="a">
+            <ol className="pl-3">
               {concept?.grid_prompts?.map((prompt, index) => (
-                <div key={index}>{prompt}</div>
+              <li key={index} className="mb-2">{prompt ? prompt : 'n/a'}</li>
               ))}
             </ol>
           }

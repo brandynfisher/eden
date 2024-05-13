@@ -16,7 +16,6 @@ export const useClerkUserState = () => {
     balance,
     foreverBalance,
     subscriptionBalance,
-    pendingTasks,
     refetchMe,
     hasMinimumSubscriptionTier,
   } = useMe({ isAuthenticated })
@@ -47,7 +46,7 @@ export const useClerkUserState = () => {
   // reset user state on disconnect
   useEffect(() => {
     refetchMe()
-  }, [isAuthenticated])
+  }, [refetchMe, isAuthenticated])
 
   const { settings, updateSetting } = useSettings()
 
@@ -62,7 +61,6 @@ export const useClerkUserState = () => {
     mannaBalance: balance,
     mannaForeverBalance: foreverBalance,
     mannaSubscriptionBalance: subscriptionBalance,
-    pendingTasks,
     settings,
     updateSetting,
     user: user ? user : undefined,

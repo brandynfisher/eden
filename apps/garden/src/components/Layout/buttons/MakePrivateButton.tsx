@@ -12,6 +12,7 @@ import { App, Popover } from 'antd'
 import axios from 'axios'
 import Link from 'next/link'
 import React, { ReactElement } from 'react'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 const ButtonElement = ({
   label,
@@ -72,6 +73,8 @@ const MakePrivateButton = ({
       })
       message.destroy()
       message.success(`${itemType} set to private`)
+      sendGTMEvent({ event: 'make-private', itemType: itemType, itemId: itemId })
+
       onChange && onChange({ isPrivate: true })
     } catch (err) {
       handleAxiosError(err, message)

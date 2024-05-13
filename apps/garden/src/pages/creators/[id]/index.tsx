@@ -21,7 +21,7 @@ const fetchCreator = async (context: NextPageContext) => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creators?creatorId=${id}`, {
+  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creators/${id}`, {
     headers: await getAuthHeaders(req as NextApiRequest),
   })
 }

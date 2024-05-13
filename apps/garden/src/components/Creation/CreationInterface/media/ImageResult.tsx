@@ -1,6 +1,6 @@
 import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/media/ImageLoadingPlaceholder'
-import Image from 'next/image'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const ImageResult = ({
   previewSizeUrl,
@@ -41,7 +41,7 @@ const ImageResult = ({
         className={`relative w-full h-full rounded-lg overflow-hidden inline-flex`}
         style={{ paddingTop: `${aspectRatio}%` }}
       >
-        <Image
+        <CdnImage
           src={previewSizeUrl}
           alt={previewSizeUrl}
           fill={true}

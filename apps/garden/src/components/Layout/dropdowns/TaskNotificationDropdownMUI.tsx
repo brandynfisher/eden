@@ -127,8 +127,8 @@ const CompletedTaskMenuItem = ({
             <ResponsiveImage
               sizes={'96px'}
               src={task.creation?.thumbnail}
-              alt={task._id}
-              aspectRatio={task.creation?.mediaAttributes.aspectRatio}
+              alt={task.creation?._id}
+              aspectRatio={task.creation?.mediaAttributes?.aspectRatio || 1}
               className="max-w-full"
             />
           </div>
@@ -291,7 +291,7 @@ const TaskNotificationDropdownMUI = () => {
 
     completedTaskItems.push(
       ...completedTasks
-        .filter(task => !!task.creation)
+        .filter(task => !!task.creation || !!task.concept)
         .map(task => ({
           render: (
             <CompletedTaskMenuItem

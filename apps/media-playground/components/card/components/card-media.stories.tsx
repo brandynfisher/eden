@@ -1,6 +1,7 @@
 import CardMedia from '@/components/card/components/card-media'
 import squareImageFile from '@/stories/assets/placeholder/dummy_1024x1024_ffffff_333.webp'
 import type { Meta, StoryObj } from '@storybook/react'
+import { MediaType } from '@edenlabs/eden-sdk'
 
 const meta: Meta<typeof CardMedia> = {
   title: 'Molecules/Card/CardMedia',
@@ -25,6 +26,7 @@ export const Default: Story = {
       thumbnailUri: squareImageFile.src,
       width: squareImageFile.width,
       height: squareImageFile.height,
+      type: MediaType.Image
     },
     linkHref: '/item/id',
   },
@@ -37,6 +39,7 @@ export const Loading: Story = {
       thumbnailUri: '/image/does/not/exist',
       width: squareImageFile.width,
       height: squareImageFile.height,
+      type: MediaType.Image
     },
     linkHref: '/item/id',
   },
@@ -49,6 +52,7 @@ export const Error: Story = {
       thumbnailUri: '',
       width: squareImageFile.width,
       height: squareImageFile.height,
+      type: MediaType.Image
     },
     linkHref: '/item/id',
   },

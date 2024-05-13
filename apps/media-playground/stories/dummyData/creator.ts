@@ -1,9 +1,9 @@
 import { Creator } from '@edenlabs/eden-sdk'
-import squareImageFile from '@/stories/assets/placeholder/dummy_1024x1024_ffffff_333.webp'
+import squareImageFile from '@/stories/assets/placeholder/dummy_512x512_ffffff_b635f2.webp'
 
 const CreatorData: Creator = {
   _id: '123',
-  username: 'Test',
+  username: 'tester',
   userImage: squareImageFile.src,
   userId: '2xwwewe',
   createdAt: '',

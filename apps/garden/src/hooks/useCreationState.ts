@@ -1,121 +1,42 @@
-// import { CONFIG } from '@/lib/config'
-// import { fetcher } from '@/lib/fetcher'
-// import { truncatedAddress } from '@/lib/string'
-// import { useAuth } from '@clerk/nextjs'
-// import { Task } from '@edenlabs/eden-sdk'
-// import { App } from 'antd'
-// import { EventSourcePolyfill } from 'event-source-polyfill'
-// import { useEffect, useState } from 'react'
-// import useSWR from 'swr'
-// interface TaskUpdateEvent {
-//   userId: string
-//   taskId: string
-//   status: string
-//   progress?: number
-//   result?: string
-// }
-// export const useCreationState = () => {
-//   const { message } = App.useApp()
-//   const { userId, getToken } = useAuth()
-//   const [activeTaskId, setActiveTaskId] = useState<string>()
-//   const [pendingTasks, setPendingTasks] = useState<Task[]>([])
-//   const [completedTasks, setCompletedTasks] = useState<Task[]>([])
-//   const [failedTasks, setFailedTasks] = useState<Task[]>([])
-//   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
-//   const { data: tasksData, mutate: refetchTasks } = useSWR(
-//     `/api/tasks/list`,
-//     fetcher,
-//     { keepPreviousData: true },
-//   )
-//   const tasks = tasksData?.tasks as Task[]
-//   useEffect(() => {
-//     if (tasks && tasks.length) {
-//       setPendingTasks(
-//         tasks?.filter(
-//           task =>
-//             task.status === 'pending' ||
-//             task.status === 'processing' ||
-//             task.status === 'running' ||
-//             task.status === 'starting',
-//         ),
-//       )
-//       setCompletedTasks(tasks?.filter(task => task.status === 'completed'))
-//       setFailedTasks(tasks?.filter(task => task.status === 'failed'))
-//     }
-//   }, [tasks])
-//   // Set up event listener
-//   // useEffect(() => {
-//   //   const handleTaskUpdate = (event: TaskUpdateEvent) => {
-//   //     const taskId = event.taskId
-//   //     if (event.status === 'completed') {
-//   //       refetchTasks()
-//   //       message.destroy()
-//   //       message.success(
-//   //         `Task ${truncatedAddress(taskId)} completed successfully!`,
-//   //       )
-//   //     } else if (event.status === 'failed') {
-//   //       refetchTasks()
-//   //       message.destroy()
-//   //       message.error(`An error occured for Task ${truncatedAddress(taskId)}!`)
-//   //     }
-//   //   }
-//   //   const setupEventSource = async () => {
-//   //     if (userId) {
-//   //       const token = await getToken()
-//   //       const eventSource = new EventSourcePolyfill(
-//   //         `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/tasks/events`,
-//   //         {
-//   //           headers: {
-//   //             Authorization: `Bearer ${token}`,
-//   //           },
-//   //         },
-//   //       )
-//   //       eventSource.onmessage = event => {
-//   //         const data = JSON.parse(event.data)
-//   //         handleTaskUpdate(data)
-//   //       }
-//   //       eventSource.onerror = error => {
-//   //         console.error(error)
-//   //       }
-//   //       return () => {
-//   //         eventSource.close()
-//   //       }
-//   //     }
-//   //   }
-//   //   setupEventSource()
-//   // }, [userId, getToken])
-//   return {
-//     tasks,
-//     pendingTasks,
-//     setPendingTasks,
-//     completedTasks,
-//     setCompletedTasks,
-//     failedTasks,
-//     setFailedTasks,
-//     activeTaskId,
-//     setActiveTaskId,
-//     hasChangedGenerator,
-//     setHasChangedGenerator,
-//     refetchTasks,
-//   }
-// }
 import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
 import { createPaginationRoute, fetcher } from '@/lib/fetcher'
-import { truncatedAddress } from '@/lib/string'
+// import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
-import { Task } from '@edenlabs/eden-sdk'
+import { Task, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { useLocalStorage } from '@mantine/hooks'
-import { App } from 'antd'
+// import { App } from 'antd'
 import { useCallback, useContext, useEffect, useState } from 'react'
-import useSWR, { useSWRConfig } from 'swr'
+import { useSWRConfig } from 'swr'
+import { EventSourcePolyfill } from 'event-source-polyfill'
+import { CONFIG } from '@/lib/config'
+import { useAuth } from '@clerk/nextjs'
+import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
+import useSWR from 'swr/immutable'
 
 export const useCreationState = () => {
-  const { message } = App.useApp()
+  // const { message } = App.useApp()
+  const { getToken } = useAuth()
+  const { isAuthenticated } = useClerkUserState()
   const [activeTaskId, setActiveTaskId] = useState<string>()
   const [completedTasks, setCompletedTasks] = useState<Task[]>([])
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
   const [pendingTasks, setPendingTasks] = useState<Task[]>()
+  const { userId } = useContext(UserContext)
+  const { data: tasksData } = useSWR(
+    `/api/tasks/list?status=running,starting,pending,completed,failed`,
+    fetcher,
+  )
+
+  const [ tasks, setTasks ] = useState<Task[]>([])
+
+  useEffect(() => {
+    if (tasksData && tasksData.tasks !== undefined) {
+      // console.log('setting tasks initially', {tasks})
+
+      setTasks(tasksData.tasks)
+    }
+  }, [tasksData])
 
   const [dismissedTaskIds, setDismissedTaskIds] = useLocalStorage<string[]>({
     key: 'tasks::dismissed',
@@ -129,17 +50,118 @@ export const useCreationState = () => {
     ])
   }
 
-  const { data: tasksData, mutate: refetchTasks } = useSWR(
-    `/api/tasks/list?status=running,starting,pending,completed,failed`,
-    fetcher,
-    { refreshInterval: 5000 },
-  )
-  const tasks = tasksData?.tasks as Task[]
+  const [ currentAuthToken, setCurrentAuthToken ] = useState<string|null>()
+
+  const refreshToken = useCallback(async () => {
+    const newToken = await getToken()
+    if (newToken) {
+      setCurrentAuthToken(prev => newToken && newToken !== prev ? newToken : prev)
+    }
+  }, [getToken, setCurrentAuthToken])
+
+  useEffect(() => {
+    refreshToken()
+  }, [activeTaskId])
+
+  useEffect(() => {
+    let eventSource: EventSourcePolyfill|undefined
+
+    if (isAuthenticated && userId) {
+      const initEventSource = async () => {
+        console.log('setting up eventsource', `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`)
+        eventSource = new EventSourcePolyfill(
+          `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentAuthToken || await getToken()}`,
+            },
+          }
+        )
+
+        // eventSource.addEventListener('init-ping', (event) => {
+        //   console.log(event)
+        // }, false)
+
+        eventSource.addEventListener('keep-alive', () => {
+          // console.log(event)
+          refreshToken()
+        }, false)
+
+        eventSource.addEventListener('task-update', (event) => {
+          const { data: update } = event as MessageEvent
+          const data: TaskUpdateEvent = JSON.parse(update)
+          // console.log('UI::task-update', type, lastEventId, data)
+
+          if (data) {
+            setTasks(prevState => {
+              const newState = [...prevState]
+              const existingTaskIndex = newState.findIndex(item => item.taskId === data.taskId)
+
+              if (existingTaskIndex !== -1) {
+                newState[existingTaskIndex] = {
+                  ...newState[existingTaskIndex],
+                  ...data.task
+                }
+
+                return newState
+              }
+
+              if (data.task) {
+                return [ data.task, ...newState ]
+              }
+
+              return newState
+            })
+          }
+        }, false)
+        eventSource.onerror = error => {
+          // console.error(error)
+          console.error('UI eventsource.onerror', error)
+        }
+      }
+      initEventSource()
+    }
+
+    return () => {
+      eventSource && eventSource.close()
+      eventSource = undefined
+    }
+  }, [currentAuthToken, isAuthenticated, userId])
 
   const { mutate: mutateGlobal } = useSWRConfig()
-  const { userId } = useContext(UserContext)
   const [notificationCutOffDate, setNotificationCutOffDate] =
     useState<number>(0)
+
+  const notify = useCallback(
+    async (items: Task[]) => {
+
+      if (items && items.length) {
+        items.map(item => {
+          // only show notifications for tasks that finished after the page was loaded
+          const isExpired =
+            new Date(item.updatedAt).getTime() - notificationCutOffDate < 0
+
+          if (isExpired) {
+            return
+          }
+
+          if (item.status === 'completed') {
+            // message.success(
+            //   `Task ${truncatedAddress(item.taskId)} completed successfully!`,
+            // )
+          }
+
+          if (item.status === 'failed') {
+            // message.error(
+            //   `An error occured for Task ${truncatedAddress(item.taskId)}.`,
+            // )
+          }
+        })
+      }
+      setNotificationCutOffDate(Date.now())
+    },
+    [notificationCutOffDate],
+  )
 
   useEffect(() => {
     if (dismissedTaskIds && dismissedTaskIds.length) {
@@ -206,39 +228,7 @@ export const useCreationState = () => {
       )
       setFailedTasks(failed)
     }
-  }, [mutateGlobal, tasks, userId])
-
-  const notify = useCallback(
-    async (items: Task[]) => {
-      if (items && items.length) {
-        items.map(item => {
-          // only show notifications for tasks that finished after the page was loaded
-          const isExpired =
-            new Date(item.updatedAt).getTime() - notificationCutOffDate < 0
-
-          if (isExpired) {
-            return
-          }
-
-          if (item.status === 'completed') {
-            message.destroy()
-            message.success(
-              `Task ${truncatedAddress(item.taskId)} completed successfully!`,
-            )
-          }
-
-          if (item.status === 'failed') {
-            message.destroy()
-            message.error(
-              `An error occured for Task ${truncatedAddress(item.taskId)}.`,
-            )
-          }
-        })
-      }
-      setNotificationCutOffDate(Date.now())
-    },
-    [notificationCutOffDate],
-  )
+  }, [dismissedTaskIds, mutateGlobal, tasks, userId])
 
   return {
     tasks,
@@ -253,6 +243,5 @@ export const useCreationState = () => {
     setActiveTaskId,
     hasChangedGenerator,
     setHasChangedGenerator,
-    refetchTasks,
   }
 }

@@ -45,7 +45,7 @@ const SelectModal = ({
   const modalContainerRef = useRef<HTMLDivElement | null>(null)
 
   const docsLinkUrl = `https://docs.eden.art/docs/guides/${itemType}s`
-  const label = itemType === 'concept' ? 'Concept' : 'Character'
+  const label = itemType === 'concept' ? 'Model' : 'Character'
 
   useEffect(() => {
     const observer = new MutationObserver(mutations => {

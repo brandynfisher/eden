@@ -534,15 +534,6 @@ export const getCreatorMe = async (
 
   const manna = await Manna.findOne({ user: user._id })
 
-  const date = new Date()
-  date.setHours(date.getHours() - 24)
-
-  const pendingTasks = await Task.find({
-    user: user._id,
-    status: 'pending' || 'processing' || 'running' || 'starting',
-    createdAt: { $gte: date },
-  })
-
   const subscriptionBalance = manna?.subscriptionBalance || 0
   const balance = manna?.balance || 0
   const totalBalance = subscriptionBalance + balance
@@ -552,6 +543,5 @@ export const getCreatorMe = async (
     balance: totalBalance,
     subscriptionBalance,
     foreverBalance: balance,
-    pendingTasks,
   }
 }

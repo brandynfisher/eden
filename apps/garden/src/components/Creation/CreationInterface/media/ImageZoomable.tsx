@@ -1,7 +1,7 @@
 import ImageLoadingPlaceholder from '@/components/Creation/CreationInterface/media/ImageLoadingPlaceholder'
 import ImageZoomPan from '@/components/Creation/CreationInterface/media/ImageZoomPan'
-import Image from 'next/image'
 import React, { useState } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 const ImageZoomable = ({
   url,
@@ -42,7 +42,7 @@ const ImageZoomable = ({
           </div>
         ) : null}
 
-        <Image
+        <CdnImage
           src={url}
           alt={url}
           width={width}

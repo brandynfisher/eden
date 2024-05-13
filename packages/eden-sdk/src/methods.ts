@@ -84,6 +84,8 @@ import {
   FeedConceptsArguments,
   FeedConceptsResponse,
   FeedCreationsArguments,
+  FeedCreationsCursorArguments,
+  FeedCreationsCursorResponse,
   FeedCreationsResponse,
   GeneratorsGetArguments,
   GeneratorsGetResponse,
@@ -166,6 +168,7 @@ import {
   creatorsUpdateRequestConfig,
   feedConceptsRequestConfig,
   feedCreationsRequestConfig,
+  feedCursorCreationsRequestConfig,
   generatorsGetRequestConfig,
   generatorsListRequestConfig,
   mannaBalanceGetRequestConfig,
@@ -203,6 +206,18 @@ function bindApiCall<
 >(
   self: Methods,
   configFn: (options) => AxiosRequestConfig,
+): Method<Arguments, Result> {
+  // We have to "assert" that the bound method does indeed return the more specific `Result` type instead of just
+  // `WebAPICallResult`
+  return self.apiCall.bind(self, configFn) as Method<Arguments, Result>
+}
+
+function bindApiCallAsync<
+  Arguments extends WebAPICallOptions,
+  Result extends WebAPICallResult,
+>(
+  self: Methods,
+  configFn: (args: MediaUploadArguments) => Promise<AxiosRequestConfig>,
 ): Method<Arguments, Result> {
   // We have to "assert" that the bound method does indeed return the more specific `Result` type instead of just
   // `WebAPICallResult`
@@ -441,6 +456,13 @@ export abstract class Methods {
     ),
   }
 
+  public readonly feed_cursor = {
+    creations: bindApiCall<
+      FeedCreationsCursorArguments,
+      FeedCreationsCursorResponse
+    >(this, feedCursorCreationsRequestConfig),
+  }
+
   public readonly generators = {
     list: bindApiCall<GeneratorsListArguments, GeneratorsListResponse>(
       this,
@@ -466,7 +488,7 @@ export abstract class Methods {
   }
 
   public readonly media = {
-    upload: bindApiCall<MediaUploadArguments, MediaUploadResponse>(
+    upload: bindApiCallAsync<MediaUploadArguments, MediaUploadResponse>(
       this,
       mediaUploadRequestConfig,
     ),

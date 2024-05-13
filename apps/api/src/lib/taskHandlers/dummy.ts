@@ -118,16 +118,20 @@ export const dummyReceiveTaskUpdate = async (
     },
   )
 
-  server.eventEmitter.emit('taskUpdate', {
-    userId: task.user,
+  server.eventEmitter.emit('task-update', {
+    userId: task.user._id,
     taskId,
     status: TaskStatus.Pending,
     progress: 0.5,
+    task: {
+      ...task,
+      ...taskUpdateIntermediate
+    }
   })
 
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
   const asset = await server.uploadUrlAsset(server, image.result)
-  const thumbnail = await server.uploadThumbnailAsset(server, image.thumbnail)
+  const thumbnail = await server.uploadS3ThumbnailAsset(server, image.thumbnail)
 
   const creationUser = task.attributes?.delegateUserId
     ? new ObjectId(task.attributes.delegateUserId)
@@ -160,12 +164,16 @@ export const dummyReceiveTaskUpdate = async (
     },
   )
 
-  server.eventEmitter.emit('taskUpdate', {
-    userId: task.user,
+  server.eventEmitter.emit('task-update', {
+    userId: task.user._id,
     taskId,
     status: TaskStatus.Completed,
     progress: 1.0,
     result: asset.uri,
+    task: {
+      ...task,
+      ...taskUpdate
+    },
   })
 
   if (task.webhooks) {

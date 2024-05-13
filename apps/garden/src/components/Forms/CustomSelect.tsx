@@ -1,8 +1,8 @@
 import { CONFIG } from '@/lib/config'
 import { Select, SelectProps } from 'antd'
-import Image from 'next/image'
 import { DefaultOptionType } from 'rc-select/lib/Select'
 import { ReactNode } from 'react'
+import CdnImage from '@/components/Media/cdn-image'
 
 type ExtendedOptionType = DefaultOptionType & { thumbnail?: string }
 
@@ -36,7 +36,7 @@ export const CustomOption = ({
   return (
     <div className="flex gap-2 items-center">
       {thumbnail ? (
-        <Image
+        <CdnImage
           width={40}
           height={40}
           src={thumbnail || `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}
