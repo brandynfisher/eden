@@ -51,6 +51,6 @@ jobs:
             ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
             }}:latest
           build-args: |
-            "CLOUDINARY_CLOUD_NAME=prdg34ew78adsg"
-            "CLOUDINARY_API_KEY=684785425828364"
+            "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}"
             "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
+            "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}"
