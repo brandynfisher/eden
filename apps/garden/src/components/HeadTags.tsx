@@ -16,7 +16,7 @@ export const getItemMediaUrl = (
   itemType: ItemType,
   item: Creation | Concept,
 ) => {
-  if (itemType === 'creation') {
+  if (itemType === 'creation' && (item as Creation).mediaAttributes.type !== 'image') {
     return item.uri
   }
 

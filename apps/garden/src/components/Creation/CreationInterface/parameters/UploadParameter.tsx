@@ -8,7 +8,7 @@ import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import React, { useEffect, useState } from 'react'
 import { sendGTMEvent } from '@next/third-parties/google'
-import { getBase64, uploadChunkedFileToCloudinary, UploadRequestOptions } from '@/lib/files'
+import { getBase64, uploadChunkedFileToCloudinary, uploadFileToS3, UploadRequestOptions } from '@/lib/files'
 
 const { Dragger } = Upload
 
@@ -148,6 +148,7 @@ const UploadParameter = (props: {
         [props.parameter.name]: isArray ? newUrls : newUrls[newUrls.length - 1],
       })
       setUrls(newUrls)
+      messageApi.destroy(info.file.name)
     }
   }
 
@@ -163,12 +164,12 @@ const UploadParameter = (props: {
   }
 
   const customRequest = async (options: UploadRequestOptions) => {
-    // console.log('customRequest', options)
-
     try {
-      // await uploadFileToS3(options)
-      // await uploadFileToCloudinary(options)
-      // eslint-disable-next-line no-undef
+      // Only image/video should go to cloudinary. Raw/Zip goes to S3
+      if (options.file.type.startsWith('application')) {
+        await uploadFileToS3(options)
+        return
+      }
       await uploadChunkedFileToCloudinary(options)
     } catch (error) {
       handleAxiosError(error, message)

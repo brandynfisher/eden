@@ -57,60 +57,60 @@ export const getBase64 = (file: RcFile): Promise<string> =>
     reader.onerror = error => reject(error)
   })
 
-// export const getFileHash = async (file: File): Promise<string> => {
-//   const arrayBuffer = await file.arrayBuffer()
-//   const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
-//   const hashArray = Array.from(new Uint8Array(hashBuffer)) // Convert buffer to byte array
-//   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('') // Convert bytes to hex string
-//   return hashHex
-// }
-//
-// // Function to request a signed URL from S3
-// export const requestSignedUrl = async (
-//   fileHash: string,
-//   fileType: string,
-// ): Promise<string> => {
-//   try {
-//     const response = await axios.post('/api/media/upload', {
-//       filename: `${fileHash}.${fileType.split('/')[1]}`,
-//       contentType: fileType,
-//     })
-//     return response.data.signedUrl // Adjust according to your actual API response
-//   } catch (error) {
-//     console.error('Error requesting signed URL:', error)
-//     throw new Error('Failed to get signed URL')
-//   }
-// }
+export const getFileHash = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer()
+  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
+  const hashArray = Array.from(new Uint8Array(hashBuffer)) // Convert buffer to byte array
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('') // Convert bytes to hex string
+  return hashHex
+}
+
+// Function to request a signed URL from S3
+export const requestSignedUrl = async (
+  fileHash: string,
+  fileType: string,
+): Promise<string> => {
+  try {
+    const response = await axios.post('/api/media/upload', {
+      filename: `${fileHash}.${fileType.split('/')[1]}`,
+      contentType: fileType,
+    })
+    return response.data.signedUrl // Adjust according to your actual API response
+  } catch (error) {
+    console.error('Error requesting signed URL:', error)
+    throw new Error('Failed to get signed URL')
+  }
+}
 
 
-// export const uploadFileToS3 = async (options: UploadRequestOptions) => {
-//   const { file, onSuccess, onError, onProgress } = options
-//
-//   const fileHash = await getFileHash(file)
-//   const signedUrl = await requestSignedUrl(fileHash, file.type)
-//   const config = {
-//     headers: {
-//       'Content-Type': file.type,
-//     },
-//     onUploadProgress: (event: AxiosProgressEvent) => {
-//       const total = event.total ? event.total : 1
-//       onProgress({ percent: (event.loaded / total) * 100 })
-//     },
-//   }
-//
-//   const response = await axios.put(signedUrl, file, config)
-//
-//   if (response.status === 200) {
-//     onSuccess(
-//       {
-//         fileUrl: signedUrl.split('?')[0],
-//       },
-//       file,
-//     )
-//   } else {
-//     onError(new Error('Upload failed'))
-//   }
-// }
+export const uploadFileToS3 = async (options: UploadRequestOptions) => {
+  const { file, onSuccess, onError, onProgress } = options
+
+  const fileHash = await getFileHash(file)
+  const signedUrl = await requestSignedUrl(fileHash, file.type)
+  const config = {
+    headers: {
+      'Content-Type': file.type,
+    },
+    onUploadProgress: (event: AxiosProgressEvent) => {
+      const total = event.total ? event.total : 1
+      onProgress({ percent: (event.loaded / total) * 100 })
+    },
+  }
+
+  const response = await axios.put(signedUrl, file, config)
+
+  if (response.status === 200) {
+    onSuccess(
+      {
+        fileUrl: signedUrl.split('?')[0],
+      },
+      file,
+    )
+  } else {
+    onError(new Error('Upload failed'))
+  }
+}
 
 export const uploadFileToCloudinary = async (options: UploadRequestOptions) => {
   const { file, onSuccess, onError, onProgress } = options
@@ -256,11 +256,6 @@ export const uploadChunk = async (file: File, config: ChunkConfig, start: number
         },
         file,
       )
-      // setUploadComplete(true)
-      // setUploading(false)
-      //
-      // const fetchResponse = await response.json()
-      // setCldResponse(fetchResponse)
       console.info('File upload complete.')
     }
   } catch (error) {

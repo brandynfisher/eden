@@ -3,7 +3,7 @@ import { ProgressCard } from '@/components/Creation/CreationInterface/Timeline/T
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useConcept } from '@/hooks/useConcept'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
-import { Task } from '@edenlabs/eden-sdk'
+import { Concept, Task } from '@edenlabs/eden-sdk'
 import React, { useCallback } from 'react'
 
 const TimelineConcept = ({
@@ -12,10 +12,10 @@ const TimelineConcept = ({
   listIndex,
 }: {
   task: Task
-  conceptId: string
+  conceptId: string|Concept
   listIndex: number
 }) => {
-  const { concept, isLoading } = useConcept(conceptId, {
+  const { concept, isLoading } = useConcept(typeof conceptId === 'string' ? conceptId : conceptId._id, {
     revalidateOnFocus: false,
     revalidateIfStale: false,
     revalidateAll: false,

@@ -332,6 +332,10 @@ export const listTasks = async (
   })
 
   await tasksRepository.model.populate(tasks.docs, {
+    path: 'concept',
+  })
+
+  await tasksRepository.model.populate(tasks.docs, {
     path: 'generator',
     select: 'generatorName',
   })
