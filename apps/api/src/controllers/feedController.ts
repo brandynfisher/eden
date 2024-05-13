@@ -33,7 +33,7 @@ const aggregateCreationsByFollowerId = (
   dateEndCutOff: string,
   filters: Filters,
 ) => {
-  console.log({ filters })
+  // console.log({ filters })
   return Follow.aggregate([
     {
       $match: {
@@ -618,7 +618,7 @@ export const getConceptsFeed = async (
       : undefined
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId
-  console.log({ filterUserIds, creators, ownUserId, creatorId })
+  // console.log({ filterUserIds, creators, ownUserId, creatorId })
 
   const conceptRepository = new ConceptRepository(Concept)
 

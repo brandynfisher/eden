@@ -6,16 +6,8 @@ import { Creation } from '../models/Creation'
 import { Embedding, EmbeddingDocument } from '../models/Embedding'
 import { Follow } from '../models/Follow'
 import { Reaction } from '../models/Reaction'
-import {
-  getBookmarks as getCreationBookmarks,
-  getReactions as getCreationReactions,
-} from './creationsController'
-import {
-  // FeedConceptsCursorArguments,
-  CursorPaginatedFeedQuery,
-  // FeedCreatorsCursorArguments,
-  ReactionType,
-} from '@edenlabs/eden-sdk'
+import { getBookmarks as getCreationBookmarks, getReactions as getCreationReactions } from './creationsController'
+import { CursorPaginatedFeedQuery, ReactionType } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { Expression, PipelineStage } from 'mongoose'
@@ -48,17 +40,17 @@ type Filter =
   | ObjectId[]
   | Date
   | {
-      $in?: string | string[] | ObjectId[]
-      $eq?:
-        | boolean
-        | {
-            $lte?: Date | undefined
-            $gte?: Date | undefined
-          }
-        | string
-        | ObjectId
-      $exists?: boolean | string | ObjectId
-    }
+  $in?: string | string[] | ObjectId[]
+  $eq?:
+    | boolean
+    | {
+    $lte?: Date | undefined
+    $gte?: Date | undefined
+  }
+    | string
+    | ObjectId
+  $exists?: boolean | string | ObjectId
+}
 type Filters = Record<string, Filter>
 
 interface QueryOptions {
@@ -82,7 +74,7 @@ type CustomFilters = {
       | { $exists: true }
       | { $gt: 0 }
       | { $in?: string[] | ObjectId[] | undefined }
-    )[]
+      )[]
   }
   generator?:
     | string
@@ -90,15 +82,15 @@ type CustomFilters = {
     | ObjectId[]
     | string[]
     | {
-        $in:
-          | string[]
-          | (
-              | { $lte?: Date | undefined; $gte?: Date | undefined }
-              | { $exists: true }
-              | string
-              | ObjectId
-            )[]
-      }
+    $in:
+      | string[]
+      | (
+      | { $lte?: Date | undefined; $gte?: Date | undefined }
+      | { $exists: true }
+      | string
+      | ObjectId
+      )[]
+  }
   isPrivate?: boolean
   maxDate?: Date | undefined
   minDate?: Date | undefined
@@ -130,15 +122,15 @@ const maybeAddCursorFilterStage = (
 ): PipelineStage | undefined => {
   const match = cursor
     ? {
-        $and: [
-          // only add _id match-filter if cursor is defined
-          ...createCursorMatch(cursor),
-          { ...filters },
-        ],
-      }
+      $and: [
+        // only add _id match-filter if cursor is defined
+        ...createCursorMatch(cursor),
+        { ...filters },
+      ],
+    }
     : {
-        ...filters,
-      }
+      ...filters,
+    }
 
   return Object.keys(match).length ? { $match: match } : undefined
 }
@@ -385,10 +377,10 @@ const handleArguments = async ({
 
   const filterUserIds = filterMap
     ? filterMap
-        ?.filter(
-          item => item.name === 'user' && item.value === authUserId?.toString(),
-        )
-        .map(item => item.value)
+      ?.filter(
+        item => item.name === 'user' && item.value === authUserId?.toString(),
+      )
+      .map(item => item.value)
     : undefined
   const isUserRequestingOwnProfileFeed =
     filterUserIds && filterUserIds.length === 1 && authUserId
@@ -416,129 +408,129 @@ const handleArguments = async ({
 
   const sortOptions = sort
     ? (Object.fromEntries(
-        (Array.isArray(sort) ? sort : [sort])
-          .map(sortOption => {
-            const [field, direction] = sortOption.split(';')
+      (Array.isArray(sort) ? sort : [sort])
+        .map(sortOption => {
+          const [field, direction] = sortOption.split(';')
 
-            if (field === 'praiseCount') {
-              return ['praiseCount', Number(direction)]
-            }
+          if (field === 'praiseCount') {
+            return ['praiseCount', Number(direction)]
+          }
 
-            if (field === 'creationCount') {
-              customFilterOptions['creationCount'] = { $gt: 0 }
-              return ['creationCount', Number(direction)]
-            }
+          if (field === 'creationCount') {
+            customFilterOptions['creationCount'] = { $gt: 0 }
+            return ['creationCount', Number(direction)]
+          }
 
-            if (field === 'followerCount') {
-              customFilterOptions['followerCount'] = { $gt: 0 }
-              return ['followerCount', Number(direction)]
-            }
+          if (field === 'followerCount') {
+            customFilterOptions['followerCount'] = { $gt: 0 }
+            return ['followerCount', Number(direction)]
+          }
 
-            if (field === 'liked') {
-              useReactionsPreAggregate = true
-              return []
-            }
+          if (field === 'liked') {
+            useReactionsPreAggregate = true
+            return []
+          }
 
-            if (field === 'following') {
-              useFollowingPreAggregate = true
-              return []
-            }
+          if (field === 'following') {
+            useFollowingPreAggregate = true
+            return []
+          }
 
-            if (field === 'wow') {
-              return []
-            }
+          if (field === 'wow') {
+            return []
+          }
 
-            if (field === 'embedding.score') {
-              useEmbeddingsPreAggregate = true //@todo: handle aggregation below
-              return ['embedding.score_adjusted', Number(direction)]
-            }
+          if (field === 'embedding.score') {
+            useEmbeddingsPreAggregate = true //@todo: handle aggregation below
+            return ['embedding.score_adjusted', Number(direction)]
+          }
 
-            return [field, Number(direction)]
-          })
-          .filter(item => item.length !== 0),
-      ) as SortOptions)
+          return [field, Number(direction)]
+        })
+        .filter(item => item.length !== 0),
+    ) as SortOptions)
     : undefined
 
   const filterOptions = filter
     ? (Object.fromEntries(
-        (Array.isArray(filter) ? filter : [filter]).map(filterOption => {
-          const [field, value] = filterOption.split(';')
+      (Array.isArray(filter) ? filter : [filter]).map(filterOption => {
+        const [field, value] = filterOption.split(';')
 
-          if (
-            field === 'user' ||
-            field === 'character' ||
-            field === 'concept' ||
-            field === 'collection'
-          ) {
-            // console.log(field, value)
-            if (field === 'collection') {
-              useCollectionsPreAggregate = true
-              preAggregateFilterOptions['_id'] = new ObjectId(value)
-              return []
-            }
-
-            return [field, new ObjectId(value)]
-          }
-
-          if (field === 'creation') {
-            customFilterOptions['creation'] = new ObjectId(value)
+        if (
+          field === 'user' ||
+          field === 'character' ||
+          field === 'concept' ||
+          field === 'collection'
+        ) {
+          // console.log(field, value)
+          if (field === 'collection') {
+            useCollectionsPreAggregate = true
+            preAggregateFilterOptions['_id'] = new ObjectId(value)
             return []
           }
 
-          if (field === 'likedBy') {
-            useReactionsPreAggregate = true
-            preAggregateFilterOptions['user'] = new ObjectId(value)
-            return []
-          }
+          return [field, new ObjectId(value)]
+        }
 
-          if (field === 'praiseCount') {
-            customFilterOptions['praiseCount'] = { $gt: 0 }
-            return []
-          }
+        if (field === 'creation') {
+          customFilterOptions['creation'] = new ObjectId(value)
+          return []
+        }
 
-          if (field === 'generator') {
-            if (!customFilterOptions['generator']) {
-              customFilterOptions['generator'] = [value]
-            } else {
-              // @ts-ignore
-              customFilterOptions['generator'].push(value)
-            }
-            return []
-          }
+        if (field === 'likedBy') {
+          useReactionsPreAggregate = true
+          preAggregateFilterOptions['user'] = new ObjectId(value)
+          return []
+        }
 
-          if (field === 'outputType') {
-            if (!customFilterOptions['outputType']) {
-              customFilterOptions['outputType'] = [value]
-            } else {
-              customFilterOptions['outputType'].push(value)
-            }
-            return []
-          }
+        if (field === 'praiseCount') {
+          customFilterOptions['praiseCount'] = { $gt: 0 }
+          return []
+        }
 
-          if (field === 'isPrivate' && isUserRequestingOwnProfileFeed) {
-            return [field, value === 'true']
+        if (field === 'generator') {
+          if (!customFilterOptions['generator']) {
+            customFilterOptions['generator'] = [value]
+          } else {
+            // @ts-ignore
+            customFilterOptions['generator'].push(value)
           }
+          return []
+        }
 
-          if (field === 'minDate' && value) {
-            if (!customFilterOptions['createdAt']) {
-              customFilterOptions['createdAt'] = {}
-            }
-            //@ts-ignore
-            customFilterOptions['createdAt']['$gte'] = new Date(value)
-            return []
+        if (field === 'outputType') {
+          if (!customFilterOptions['outputType']) {
+            customFilterOptions['outputType'] = [value]
+          } else {
+            customFilterOptions['outputType'].push(value)
           }
+          return []
+        }
 
-          if (field === 'maxDate') {
-            if (!customFilterOptions['createdAt']) {
-              customFilterOptions['createdAt'] = {}
-            }
-            customFilterOptions['createdAt']['$lte'] = new Date(value)
-            return []
+        if (field === 'isPrivate' && isUserRequestingOwnProfileFeed) {
+          return [field, value === 'true']
+        }
+
+        if (field === 'minDate' && value) {
+          if (!customFilterOptions['createdAt']) {
+            customFilterOptions['createdAt'] = {}
           }
+          //@ts-ignore
+          customFilterOptions['createdAt']['$gte'] = new Date(value)
+          return []
+        }
 
-          return [field, value]
-        }),
-      ) as Filters)
+        if (field === 'maxDate') {
+          if (!customFilterOptions['createdAt']) {
+            customFilterOptions['createdAt'] = {}
+          }
+          customFilterOptions['createdAt']['$lte'] = new Date(value)
+          return []
+        }
+
+        return [field, value]
+      }),
+    ) as Filters)
     : undefined
 
   // console.log({ filterOptions, sortOptions })
@@ -581,7 +573,7 @@ const handleArguments = async ({
         $in: Array.isArray(fieldValues)
           ? fieldValues.map(val => new ObjectId(val))
           : // @ts-ignore
-            [new ObjectId(fieldValues)],
+          [new ObjectId(fieldValues)],
       }
     } else if (fieldName === 'isPrivate' && isUserRequestingOwnProfileFeed) {
       customFilterMap['isPrivate'] = String(fieldValues) === 'true'
@@ -631,7 +623,7 @@ const handleArguments = async ({
   }
 
   return {
-    filters,
+    filters: filters || {},
     sortOptions,
     customFilterOptions,
     filterMap,
@@ -665,7 +657,7 @@ export const getCreationsFeedCursor = async (
     server,
     reply,
     authUserId,
-    query: query as CursorPaginatedFeedQuery
+    query: query as CursorPaginatedFeedQuery,
   })
 
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
