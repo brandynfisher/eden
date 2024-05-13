@@ -28,17 +28,17 @@ const getFakeProgressIncrement = (
     noProgressImageGeneratorNames.includes(generatorName) &&
     taskConfig['n_samples']
   ) {
-    return (15 / taskConfig['n_samples']) * resolutionMultiplier
+    return (10 / taskConfig['n_samples']) * resolutionMultiplier
   }
 
   if (
     noProgressVideoGeneratorNames.includes(generatorName) &&
     taskConfig['n_frames']
   ) {
-    return (20 / taskConfig['n_frames']) * resolutionMultiplier
+    return (15 / taskConfig['n_frames']) * resolutionMultiplier
   }
 
-  return 12 * resolutionMultiplier
+  return 9 * resolutionMultiplier
 }
 
 const TimelineItem = ({
