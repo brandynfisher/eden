@@ -12,7 +12,7 @@ const ConceptPage = ({ data }: { data: { concept: Concept } }) => {
     },
   )
 
-  console.log({ process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
+  console.log('conceptPage page', { process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
   console.log({conceptData})
 
   if (!data) {

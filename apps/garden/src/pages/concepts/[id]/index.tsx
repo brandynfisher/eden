@@ -19,6 +19,8 @@ const fetchConcept = async (context: NextPageContext) => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
+  console.log('conceptPage fetchConcept', id, { process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
+
   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts/${id}`, {
     headers: await getAuthHeaders(req as NextApiRequest),
   })
@@ -35,6 +37,9 @@ const Concept: Page<PageProps> = ({ data }: PageProps) => {
   if (!data) {
     return <Error statusCode={404} withDarkMode={true} />
   }
+
+  console.log('conceptPage index', { process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
+  console.log({data})
 
   return (
     <>
