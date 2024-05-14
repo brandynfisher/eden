@@ -2,7 +2,6 @@ import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
 import { Follow, FollowDocument } from '../models/Follow'
 import { Manna } from '../models/Manna'
-import { Task } from '../models/Task'
 import CreatorRepository from '../repositories/CreatorRepository'
 import FollowerRepository from '../repositories/FollowerRepository'
 import {
