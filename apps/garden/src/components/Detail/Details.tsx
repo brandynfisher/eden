@@ -239,20 +239,20 @@ const Details = ({
           />
         </div>
       ) : null}
-      {itemType === 'creation' ? (
-        <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>
-          <ModalMasonry
-            key={`creationId_${item._id}`}
-            itemType="creation"
-            masonryKeySuffix={`creationId_${item._id}`}
-            title="Similar Creations"
-            query={{ creationId: item._id }}
-            modalContainerRef={modalContainerRef}
-            modalContainerHeight={modalContainerHeight}
-            hasFeedFilter={false}
-          />
-        </div>
-      ) : null}
+      {/*{itemType === 'creation' ? (*/}
+      {/*  <div className={`${isModal ? 'px-2 md:px-0' : ''} md:mt-2`}>*/}
+      {/*    <ModalMasonry*/}
+      {/*      key={`creationId_${item._id}`}*/}
+      {/*      itemType="creation"*/}
+      {/*      masonryKeySuffix={`creationId_${item._id}`}*/}
+      {/*      title="Similar Creations"*/}
+      {/*      query={{ creationId: item._id }}*/}
+      {/*      modalContainerRef={modalContainerRef}*/}
+      {/*      modalContainerHeight={modalContainerHeight}*/}
+      {/*      hasFeedFilter={false}*/}
+      {/*    />*/}
+      {/*  </div>*/}
+      {/*) : null}*/}
     </>
   )
 }
