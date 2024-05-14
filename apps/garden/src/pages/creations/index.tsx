@@ -7,8 +7,8 @@ export async function getServerSideProps(ctx: NextPageContext) {
   return maybeRedirectIfItemIdQuery(ctx)
 }
 
-const creations = () => {
+const Creations = () => {
   return <HomePage />
 }
 
-export default creations
+export default Creations
