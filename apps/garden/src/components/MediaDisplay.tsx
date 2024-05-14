@@ -54,9 +54,7 @@ const MediaDisplay = ({
         <ImageResultZoomable
           key={creationUri}
           aspectRatio={aspectRatio}
-          previewSizeUrl={
-            previewUri || `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-          }
+          previewSizeUrl={previewUri}
           fullSizeUrl={creationUri}
           thumbnailSizeUrl={thumbnailUri}
           showPreview={showPreview}

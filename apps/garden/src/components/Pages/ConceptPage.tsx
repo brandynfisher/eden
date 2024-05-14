@@ -11,6 +11,8 @@ const ConceptPage = ({ data }: { data: { concept: Concept } }) => {
     },
   )
 
+  console.log({data, conceptData})
+
   if (!data) {
     return null
   }

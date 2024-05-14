@@ -42,7 +42,7 @@ const ListItem = ({
             src={imgSrc}
             alt={imgSrc}
             onError={() => {
-              setImgSrc('/placeholder.png')
+              // setImgSrc('/placeholder.png')
             }}
             className="object-contain"
           />

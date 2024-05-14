@@ -2,7 +2,6 @@ import { trainingModeColorMap } from '@/components/Concept/ConceptCard/ConceptCa
 import LoadingIndicator from '@/components/LoadingIndicator'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { useConcept } from '@/hooks/useConcept'
-import { CONFIG } from '@/lib/config'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import CloseIcon from '@mui/icons-material/Close'
 import { App, Button, Form, FormInstance, Input, Tag } from 'antd'
@@ -31,10 +30,7 @@ export const ConceptParameterUI = ({
                 <CdnImage
                   width={48}
                   height={48}
-                  src={
-                    concept.thumbnail ||
-                    `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                  }
+                  src={concept?.thumbnail}
                   alt={`${concept.conceptName} - ${concept.checkpoint}`}
                   className="rounded"
                 />

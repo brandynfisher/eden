@@ -39,7 +39,7 @@ export const CustomOption = ({
         <CdnImage
           width={40}
           height={40}
-          src={thumbnail || `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`}
+          src={thumbnail}
           alt={label || ''}
           className="rounded"
         />

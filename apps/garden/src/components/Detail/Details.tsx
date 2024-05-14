@@ -45,7 +45,7 @@ const Details = ({
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
 }) => {
-  console.log({item, itemType})
+  // console.log({item, itemType})
   const [itemData, setItemData] = useState<CardData>(item)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
@@ -128,9 +128,7 @@ const Details = ({
                   aspectRatio={100}
                   className={'media-display__main'}
                   creationUri={
-                    (item as Character).image
-                      ? (item as Character).image || ''
-                      : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                    (item as Character).image || ''
                   }
                   previewUri={(item as Character)?.image}
                 />

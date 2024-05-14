@@ -49,10 +49,7 @@ export const CharacterParameterUI = ({
                 <CdnImage
                   width={48}
                   height={48}
-                  src={
-                    character.image ||
-                    `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
-                  }
+                  src={character.image}
                   alt={`${character.name}`}
                   className="rounded object-contain max-h-full"
                 />

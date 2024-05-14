@@ -6,10 +6,6 @@ import Image, { ImageProps } from 'next/image'
 const CdnImage = (props: CldImageProps&ImageProps) => {
   const { src, assetType, ...rest } = props
 
-  if (!src) {
-    return null
-  }
-
   if (src && src.startsWith('https://res.cloudinary.com/')) {
     return <CldImageDefault src={src} assetType={assetType} {...rest} />
   }

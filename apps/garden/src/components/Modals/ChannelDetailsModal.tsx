@@ -5,10 +5,7 @@ import { OrderByParam } from '@/components/Layout/buttons/OrderByButtons'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import ModalTitle from '@/components/Modals/ModalTitle'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
-import {
-  FeedRouteQueryParams,
-  useFeedPaginated,
-} from '@/hooks/useFeedPaginated'
+import { FeedRouteQueryParams, useFeedPaginated } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
 import { createPaginationRoute } from '@/lib/fetcher'
 import { isVideoUrl } from '@/lib/string'
@@ -317,20 +314,20 @@ const ChannelDetailsModal = ({
   return (
     <Modal
       {...rest}
-      className="modal-small modal-grow max-w-6xl pb-0 flex flex-col w-full items-center justify-center"
+      className='modal-small modal-grow max-w-6xl pb-0 flex flex-col w-full items-center justify-center'
     >
       <ModalTitle
         title={`Channel: ${title ? title : orderBy.label}`}
         link={
           <>
-            <div className="flex items-center gap-2">
-              <Button onClick={handleNextItem} variant="outlined">
+            <div className='flex items-center gap-2'>
+              <Button onClick={handleNextItem} variant='outlined'>
                 Next
               </Button>
-              <div className="text-xs text-gray-500">
+              <div className='text-xs text-gray-500'>
                 index: {focusItemIndex !== null ? focusItemIndex : 'n/a'}
               </div>
-              <Button onClick={toggle} variant="outlined">
+              <Button onClick={toggle} variant='outlined'>
                 {fullscreen ? 'Exit Fullscreen' : 'View Fullscreen'}
               </Button>
             </div>
@@ -338,7 +335,7 @@ const ChannelDetailsModal = ({
         }
       />
 
-      <div className="relative mt-2 !pt-0 p-2 flex flex-col">
+      <div className='relative mt-2 !pt-0 p-2 flex flex-col'>
         {isLoading ? (
           <div>
             <LoadingIndicator />
@@ -347,21 +344,19 @@ const ChannelDetailsModal = ({
           <div>No items found</div>
         ) : (
           <>
-            <div className="grid grid-flow-col mb-6 auto-cols-max gap-1 items-center overflow-x-clip">
+            <div className='grid grid-flow-col mb-6 auto-cols-max gap-1 items-center overflow-x-clip'>
               {galleryItems &&
                 galleryItems.map((item, index) => (
                   <div
                     key={item._id}
-                    className="relative h-20 md:h-32 p-1 hover:cursor-pointer hover:scale-105"
+                    className='relative h-20 md:h-32 p-1 hover:cursor-pointer hover:scale-105'
                     onClick={() => handleClickItem(item)}
                   >
-                    <span className="overflow-hidden rounded-md">
+                    <span className='overflow-hidden rounded-md'>
                       <CdnImage
                         alt={item.name}
                         src={
-                          item.thumbnail
-                            ? item.thumbnail
-                            : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                          item.thumbnail || ''
                         }
                         width={96}
                         height={96}
@@ -382,18 +377,17 @@ const ChannelDetailsModal = ({
                               loop={false}
                               key={item._id}
                               src={item.uri}
-                              className="hidden"
+                              className='hidden'
                             />
                           </>
                         ) : (
                           <CustomImage
                             key={item._id}
                             src={
-                              item.uri ||
-                              `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                              item.uri || ''
                             }
                             alt={item.name}
-                            className="hidden"
+                            className='hidden'
                           />
                         )}
                       </>
@@ -470,7 +464,7 @@ const ChannelDetailsModal = ({
               {/*  <DurationProgressBar key={focusItem._id} duration={5000} />*/}
               {/*</div>*/}
               {isImageLoading ? (
-                <div className="absolute inset-0 rounded-md">
+                <div className='absolute inset-0 rounded-md'>
                   <LoadingIndicator />
                 </div>
               ) : null}
@@ -479,9 +473,7 @@ const ChannelDetailsModal = ({
                 key={`${focusItem._id}_placeholder`}
                 alt={focusItem.name}
                 src={
-                  focusItem.thumbnail
-                    ? focusItem.thumbnail
-                    : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                  focusItem.thumbnail || ''
                 }
                 width={120}
                 height={120}
@@ -504,54 +496,53 @@ const ChannelDetailsModal = ({
                 <CustomImage
                   key={focusItem._id}
                   src={
-                    focusItem.uri ||
-                    `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                    focusItem.uri
                   }
                   alt={focusItem.name}
                   onLoadStart={handleMediaLoadStart}
                   onLoad={handleMediaLoaded}
-                  className="z-10 w-auto"
+                  className='z-10 w-auto'
                 />
               )}
 
               {settings.showPrompt ? (
-                <div className="absolute z-10 bottom-0 left-0 max-w-[40%]">
-                  <div className="bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg min-h-11">
-                    <div className="line-clamp-3">{focusItem.name}</div>
+                <div className='absolute z-10 bottom-0 left-0 max-w-[40%]'>
+                  <div className='bg-gray-900 flex items-center bg-opacity-50 px-4 py-2 rounded-tr-lg min-h-11'>
+                    <div className='line-clamp-3'>{focusItem.name}</div>
                   </div>
                 </div>
               ) : null}
               {settings.showCreator || settings.showQrCode ? (
-                <div className="absolute flex flex-col justify-center z-10 bottom-0 right-0">
+                <div className='absolute flex flex-col justify-center z-10 bottom-0 right-0'>
                   {settings.showQrCode ? (
-                    <div className="flex items-center justify-end px-4 py-4 pointer-events-none">
-                      <div className="flex p-1 bg-white">
+                    <div className='flex items-center justify-end px-4 py-4 pointer-events-none'>
+                      <div className='flex p-1 bg-white'>
                         <QRCodeCanvas
                           value={`/creations/${focusItem._id}`}
                           size={96}
-                          level="L"
+                          level='L'
                         />
                       </div>
                     </div>
                   ) : null}
                   {settings.showCreator ? (
-                    <div className="flex gap-1 items-center bg-black bg-opacity-50 px-4 py-2 rounded-tl-lg">
+                    <div className='flex gap-1 items-center bg-black bg-opacity-50 px-4 py-2 rounded-tl-lg'>
                       <Link
                         href={`/creations/${focusItem._id}`}
-                        target="_blank"
-                        className="!text-gray-200 hover:!text-gray-400"
+                        target='_blank'
+                        className='!text-gray-200 hover:!text-gray-400'
                       >
                         <strong>
                           /{focusItem.task.generator.generatorName}
                         </strong>
                       </Link>
-                      <div className="flex items-center">
-                        <span className="mr-2">by</span>{' '}
+                      <div className='flex items-center'>
+                        <span className='mr-2'>by</span>{' '}
                         <CreatorProfileLink
                           creatorId={focusItem.user.userId}
                           creatorName={focusItem.user.username}
                           creatorImage={focusItem.user.userImage}
-                          target="_blank"
+                          target='_blank'
                         />
                         {/*<div*/}
                         {/*  className="text-gray-700 dark:text-gray-400 text-xs"*/}

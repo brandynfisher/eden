@@ -129,9 +129,7 @@ const ImageGallery = ({ images }: { images: string[] }) => {
                 aspectRatio={displayImage.aspectRatio}
                 className={'media-display__main'}
                 creationUri={
-                  displayImage?.thumbnail
-                    ? displayImage.thumbnail
-                    : `${CONFIG.NEXT_PUBLIC_HOST}/placeholder.png`
+                  displayImage?.thumbnail || ''
                 }
                 previewUri={displayImage?.thumbnail}
                 // onLoad={() => {

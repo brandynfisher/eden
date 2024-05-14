@@ -48,8 +48,7 @@ class ErrorBoundary extends Component<Props, State> {
             <div className="py-16 md:py-24 lg:py-32">
               <div className="mx-auto flex-col flex w-full max-w-3xl items-center">
                 <div className="relative h-48 w-48">
-                  <Image
-                    fill={true}
+                  <img
                     style={{ objectFit: 'contain' }}
                     src="/placeholder.png"
                     alt=""
