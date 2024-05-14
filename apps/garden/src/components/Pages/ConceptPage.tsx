@@ -1,6 +1,6 @@
 import Details from '@/components/Detail/Details'
 import { useConcept } from '@/hooks/useConcept'
-import { Concept } from '@edenlabs/eden-sdk'
+// import { Concept } from '@edenlabs/eden-sdk'
 import React from 'react'
 import { CONFIG } from '@/lib/config'
 

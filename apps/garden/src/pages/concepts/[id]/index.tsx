@@ -1,11 +1,11 @@
-import { Page } from '@/../types/page'
-import { ConceptHeadTags } from '@/components/HeadTags'
+// import { Page } from '@/../types/page'
+// import { ConceptHeadTags } from '@/components/HeadTags'
 import ConceptPage from '@/components/Pages/ConceptPage'
 // import { getAuthHeaders } from '@/lib/auth'
-import { CONFIG } from '@/lib/config'
+// import { CONFIG } from '@/lib/config'
 // import { fetcher as fetcherFn } from '@/lib/fetcher'
 // import { getServerSidePropsBase } from '@/lib/ssr'
-import { Concept as ConceptType } from '@edenlabs/eden-sdk'
+// import { Concept as ConceptType } from '@edenlabs/eden-sdk'
 // import { NextApiRequest, NextPageContext } from 'next'
 import Error from 'next/error'
 import React, { useEffect, useState } from 'react'
@@ -13,10 +13,10 @@ import { NextPageContext } from 'next'
 import { maybeRedirectIfItemIdQuery } from '@/lib/redirect'
 import { useRouter } from 'next/router'
 
-interface PageProps {
-  data: { concept: ConceptType }
-  error?: string
-}
+// interface PageProps {
+//   data: { concept: ConceptType }
+//   error?: string
+// }
 
 // const fetchConcept = async (context: NextPageContext) => {
 //   const { req, query } = context
