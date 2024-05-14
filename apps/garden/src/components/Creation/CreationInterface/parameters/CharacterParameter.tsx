@@ -1,7 +1,6 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { useCharacter } from '@/hooks/useCharacter'
-import { CONFIG } from '@/lib/config'
 import { MODAL_TYPES, useModalContext } from '@/providers/ModalProvider'
 import { Character, GeneratorParameter } from '@edenlabs/eden-sdk'
 import { Edit } from '@mui/icons-material'
