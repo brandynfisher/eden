@@ -1,3 +1,5 @@
+'use client'
+
 import MediaDisplay from '@/components/MediaDisplay'
 import { getAspectRatio } from '@/lib/media'
 import { isImageUrl } from '@/lib/string'

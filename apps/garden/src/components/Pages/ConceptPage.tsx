@@ -2,6 +2,7 @@ import Details from '@/components/Detail/Details'
 import { useConcept } from '@/hooks/useConcept'
 import { Concept } from '@edenlabs/eden-sdk'
 import React from 'react'
+import { CONFIG } from '@/lib/config'
 
 const ConceptPage = ({ data }: { data: { concept: Concept } }) => {
   const { concept: conceptData } = useConcept(
@@ -11,7 +12,8 @@ const ConceptPage = ({ data }: { data: { concept: Concept } }) => {
     },
   )
 
-  console.log({data, conceptData})
+  console.log({ process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
+  console.log({conceptData})
 
   if (!data) {
     return null

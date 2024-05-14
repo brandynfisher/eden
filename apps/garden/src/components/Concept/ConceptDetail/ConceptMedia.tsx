@@ -1,3 +1,5 @@
+'use client'
+
 import MediaDisplay from '@/components/MediaDisplay'
 import { Concept } from '@edenlabs/eden-sdk'
 import React from 'react'
