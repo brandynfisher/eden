@@ -45,6 +45,7 @@ const Details = ({
   modalContainerRef?: React.MutableRefObject<HTMLDivElement>
   modalContainerHeight?: number
 }) => {
+  console.log({item, itemType})
   const [itemData, setItemData] = useState<CardData>(item)
   const [showFollowControls, setShowFollowControls] = useState(false)
   const [zoomedInImageUrl, setZoomedInImageUrl] = useState<null | string>(null)
@@ -62,6 +63,8 @@ const Details = ({
   useEffect(() => {
     setItemData(item)
   }, [item])
+
+  console.log({itemData, zoomedInImageUrl})
 
   const hideMediaViewer = () => {
     setZoomedInImageUrl(null)

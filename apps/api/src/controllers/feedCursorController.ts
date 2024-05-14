@@ -615,12 +615,15 @@ const handleArguments = async ({
   const defaultDeletedFilter = usesPrivacy
     ? { deleted: { $eq: false } }
     : undefined
+
   const filters = {
     ...defaultPrivacyFilter,
     ...defaultDeletedFilter,
     ...customFilterMap,
     ...filterOptions,
   }
+
+  console.log('feedCursorController', JSON.stringify(filters))
 
   return {
     filters: filters || {},
@@ -642,6 +645,8 @@ export const getCreationsFeedCursor = async (
 ) => {
   const { query } = request
   const authUserId = request.user ? request.user.userId : undefined
+
+  console.log({query})
 
   const {
     filters,
