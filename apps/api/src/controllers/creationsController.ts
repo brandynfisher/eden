@@ -161,6 +161,9 @@ export const getCreation = async (
       },
     })
     .populate({
+      path: 'concept',
+    })
+    .populate({
       path: 'user',
       select: '_id userId username userImage',
     })) as CreationDocument & {
