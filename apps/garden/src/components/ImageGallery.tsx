@@ -1,5 +1,4 @@
 import MediaDisplay from '@/components/MediaDisplay'
-import { CONFIG } from '@/lib/config'
 import { isImageUrl } from '@/lib/string'
 import probe from 'probe-image-size'
 import React, { useEffect, useState } from 'react'

@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
 import { Button } from 'antd'
-import Image from 'next/image'
 import { NextRouter, withRouter } from 'next/router'
 import React, { Component } from 'react'
 

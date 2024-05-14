@@ -1,6 +1,5 @@
 import ImageResultZoomable from '@/components/Creation/CreationInterface/media/ImageResultZoomable'
 import VideoResultV2 from '@/components/Creation/CreationInterface/media/VideoResultV2'
-import { CONFIG } from '@/lib/config'
 import { isImageUrl, isVideoUrl } from '@/lib/string'
 
 const MediaDisplay = ({

@@ -1,4 +1,3 @@
-import { CONFIG } from '@/lib/config'
 import { Select, SelectProps } from 'antd'
 import { DefaultOptionType } from 'rc-select/lib/Select'
 import { ReactNode } from 'react'
