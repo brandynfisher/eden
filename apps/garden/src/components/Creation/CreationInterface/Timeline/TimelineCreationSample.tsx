@@ -15,7 +15,9 @@ const TimelineCreationSample = ({
   creationId: string|Creation
   listIndex: number
 }) => {
-  const { creation, mutate, isLoading } = useCreation(typeof creationId === 'string' ? creationId : creationId._id, {
+  console.log({creationId, task})
+
+  const { creation, mutate, isLoading } = useCreation( !creationId ? null : typeof creationId === 'string' ? creationId : creationId._id, {
     revalidateFirstPage: false,
     revalidateOnFocus: false,
     revalidateIfStale: false,
