@@ -27,7 +27,13 @@ export const uploadMedia = async (
       type.mime.startsWith('video/') ||
       type.mime.startsWith('audio/') ||
       type.mime.startsWith('text/') ||
-      type.mime.startsWith('application/zip')
+      type.mime.startsWith('application/zip') ||
+      type.mime.startsWith('application/gzip') ||
+      type.mime.startsWith('application/tar') ||
+      type.mime.startsWith('application/x-tar') ||
+      type.mime.startsWith('application/rar') ||
+      type.mime.startsWith('application/vnd.rar') ||
+      type.mime.startsWith('application/x-7z-compressed')
     )
   ) {
     return reply.status(400).send({
@@ -63,7 +69,13 @@ export const uploadMediaAdmin = async (
       type.mime.startsWith('video/') ||
       type.mime.startsWith('audio/') ||
       type.mime.startsWith('text/') ||
-      type.mime.startsWith('application/zip')
+      type.mime.startsWith('application/zip') ||
+      type.mime.startsWith('application/gzip') ||
+      type.mime.startsWith('application/tar') ||
+      type.mime.startsWith('application/x-tar') ||
+      type.mime.startsWith('application/rar') ||
+      type.mime.startsWith('application/vnd.rar') ||
+      type.mime.startsWith('application/x-7z-compressed')
     )
   ) {
     return reply.status(400).send({

@@ -125,6 +125,7 @@ export type CreationsListResponse = WebAPICallResult &
 
 export type CreationsGetResponse = WebAPICallResult & {
   error?: string
+  message?: string
   creation?: Creation
 }
 

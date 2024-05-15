@@ -1,25 +1,21 @@
 import Details from '@/components/Detail/Details'
 import { useConcept } from '@/hooks/useConcept'
-import { Concept } from '@edenlabs/eden-sdk'
 import React from 'react'
-import { CONFIG } from '@/lib/config'
+import { Concept } from '@edenlabs/eden-sdk'
 
-const ConceptPage = ({ data }: { data: { concept: Concept } }) => {
+const ConceptPage = ({ initialData }: { initialData: Concept }) => {
   const { concept: conceptData } = useConcept(
-    data && data.concept ? data?.concept._id : null,
+    initialData && initialData ? initialData._id : null,
     {
-      fallbackData: data,
+      fallbackData: initialData,
     },
   )
 
-  console.log('conceptPage page', { process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
-  console.log({conceptData})
-
-  if (!data) {
+  if (!initialData && !conceptData) {
     return null
   }
 
-  return <Details itemType="concept" item={conceptData || data.concept} />
+  return <Details itemType="concept" item={conceptData || initialData} />
 }
 
 export default ConceptPage

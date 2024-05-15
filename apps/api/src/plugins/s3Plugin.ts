@@ -99,7 +99,10 @@ export const uploadS3UrlAsset = async (
       fileType.mime.startsWith('application/zip') ||
       fileType.mime.startsWith('application/gzip') ||
       fileType.mime.startsWith('application/tar') ||
-      fileType.mime.startsWith('application/x-tar')
+      fileType.mime.startsWith('application/x-tar') ||
+      fileType.mime.startsWith('application/rar') ||
+      fileType.mime.startsWith('application/vnd.rar') ||
+      fileType.mime.startsWith('application/x-7z-compressed')
     )
   ) {
     throw new Error(`unknown/unsupported file type ${url}`)

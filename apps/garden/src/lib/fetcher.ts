@@ -29,7 +29,7 @@ export const handleAxiosError = (
 
 export const handleAxiosServerError = (error: AxiosError | unknown) => {
   if (axios.isAxiosError(error)) {
-    return error.response?.data.message || 'Unknown Error has occurred'
+    return 'ServerError:' + (error.response?.data.message || 'Unknown Error has occurred')
   }
 
   return 'Unknown Error has occurred'

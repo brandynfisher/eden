@@ -1,52 +1,87 @@
-import { Page } from '@/../types/page'
+import { fetcher } from '@/lib/fetcher'
+import { Concept } from '@edenlabs/eden-sdk'
+import type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+  InferGetServerSidePropsType,
+  NextApiRequest,
+} from 'next'
+import { CONFIG } from '@/lib/config'
+import { getAuthHeaders } from '@/lib/auth'
 import { ConceptHeadTags } from '@/components/HeadTags'
 import ConceptPage from '@/components/Pages/ConceptPage'
-import { getAuthHeaders } from '@/lib/auth'
-import { CONFIG } from '@/lib/config'
-import { fetcher as fetcherFn } from '@/lib/fetcher'
-import { getServerSidePropsBase } from '@/lib/ssr'
-import { Concept as ConceptType } from '@edenlabs/eden-sdk'
-import { NextApiRequest, NextPageContext } from 'next'
-import Error from 'next/error'
-import React from 'react'
 
-interface PageProps {
-  data: { concept: ConceptType }
+type Repo = {
+  concept: Concept | null
+}
+
+type RepoResult = {
+  repo: Repo,
   error?: string
 }
 
-const fetchConcept = async (context: NextPageContext) => {
+const fetchConcept = async (context: GetServerSidePropsContext): Promise<{ concept: Concept}> => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  console.log('conceptPage fetchConcept', id, { process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
-
-  return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts/${id}`, {
+  return fetcher(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts/${id}`, {
     headers: await getAuthHeaders(req as NextApiRequest),
   })
 }
 
-export const getServerSideProps = getServerSidePropsBase([
-  {
-    responseFieldName: 'concept',
-    dataFetcher: fetchConcept,
-  },
-])
+export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
+  try {
+    const res = await fetchConcept(ctx)
 
-const Concept: Page<PageProps> = ({ data }: PageProps) => {
-  if (!data) {
-    return <Error statusCode={404} withDarkMode={true} />
+    if (!res || !res.concept) {
+      return {
+        notFound: true,
+      }
+    }
+
+    return { props: { repo: { concept: res.concept } } }
+  } catch (err) {
+    return { props: { repo: { concept: null }, error: 'Something went wrong' } }
+  }
+}
+
+export default function Page({
+  repo, error
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  console.log({ repo })
+
+  if (error) {
+    console.error('SSR error', repo, error)
+    return (
+      <>
+        <h4>SSR ERROR</h4>
+        <pre>
+          {error}
+        </pre>
+      </>
+    )
   }
 
-  console.log('conceptPage index', { process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
-  console.log({data})
+  if (!repo || !repo.concept) {
+    console.error('SSR data empty', repo, error)
+    return (
+      <>
+        <h4>SSR data not found</h4>
+        <div>SHOULD 404</div>
+        <pre>
+          {error}
+        </pre>
+      </>
+    )
+  }
+
+  console.log('not empty', repo)
 
   return (
     <>
-      <ConceptHeadTags concept={data.concept} />
-      <ConceptPage data={data} />
+      <ConceptHeadTags concept={repo.concept} />
+      <ConceptPage initialData={repo.concept} />
     </>
   )
 }
-
-export default Concept
