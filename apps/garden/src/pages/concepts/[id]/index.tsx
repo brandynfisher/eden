@@ -11,6 +11,7 @@ import { CONFIG } from '@/lib/config'
 import { getAuthHeaders } from '@/lib/auth'
 import { ConceptHeadTags } from '@/components/HeadTags'
 import ConceptPage from '@/components/Pages/ConceptPage'
+import { handleQueryStringRedirects } from '@/lib/ssr'
 
 type Repo = {
   concept: Concept | null
@@ -32,6 +33,11 @@ const fetchConcept = async (context: GetServerSidePropsContext): Promise<{ conce
 
 export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
+    const maybeRedirect = await handleQueryStringRedirects(ctx)
+    if (maybeRedirect) {
+      return maybeRedirect as GetServerSidePropsResult<RepoResult>
+    }
+
     const res = await fetchConcept(ctx)
 
     if (!res || !res.concept) {
@@ -49,8 +55,6 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
 export default function Page({
   repo, error
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  console.log({ repo })
-
   if (error) {
     console.error('SSR error', repo, error)
     return (
@@ -75,8 +79,6 @@ export default function Page({
       </>
     )
   }
-
-  console.log('not empty', repo)
 
   return (
     <>

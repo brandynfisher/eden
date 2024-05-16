@@ -11,6 +11,7 @@ import { CONFIG } from '@/lib/config'
 import { getAuthHeaders } from '@/lib/auth'
 import { CreationHeadTags } from '@/components/HeadTags'
 import CreationPage from '@/components/Pages/CreationPage'
+import { handleQueryStringRedirects } from '@/lib/ssr'
 
 type Repo = {
   creation: Creation | null
@@ -21,7 +22,7 @@ type RepoResult = {
   error?: string
 }
 
-const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ creation: Creation}> => {
+const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ creation: Creation }> => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
@@ -32,6 +33,11 @@ const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ crea
 
 export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
+    const maybeRedirect = await handleQueryStringRedirects(ctx)
+    if (maybeRedirect) {
+      return maybeRedirect as GetServerSidePropsResult<RepoResult>
+    }
+
     const res = await fetchCreation(ctx)
 
     if (!res || !res.creation) {
@@ -47,10 +53,8 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
 }
 
 export default function Page({
-  repo, error
+  repo, error,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  console.log({ repo })
-
   if (error) {
     console.error('SSR error', repo, error)
     return (
@@ -75,8 +79,6 @@ export default function Page({
       </>
     )
   }
-
-  console.log('not empty', repo)
 
   return (
     <>

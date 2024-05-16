@@ -1,9 +1,9 @@
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext, Redirect } from 'next'
 
 // this is used for the pattern of opening modal, replacing url and presenting the detail page on refresh
 export const maybeRedirectIfCreationIdQuery = async (
-  context: NextPageContext,
-) => {
+  context: GetServerSidePropsContext,
+): Promise<false|{redirect: Redirect}> => {
   const { query } = context
   const creationId = query.creationId ? query.creationId : false
 
@@ -19,11 +19,13 @@ export const maybeRedirectIfCreationIdQuery = async (
       }
     }
   }
+
+  return false
 }
 
 export const maybeRedirectIfConceptIdQuery = async (
-  context: NextPageContext,
-) => {
+  context: GetServerSidePropsContext,
+): Promise<false|{redirect: Redirect}> => {
   const { query } = context
   const conceptId = query.conceptId ? query.conceptId : false
 
@@ -39,11 +41,13 @@ export const maybeRedirectIfConceptIdQuery = async (
       }
     }
   }
+
+  return false
 }
 
 export const maybeRedirectIfCharacterIdQuery = async (
-  context: NextPageContext,
-) => {
+  context: GetServerSidePropsContext,
+): Promise<false|{redirect: Redirect}> => {
   const { query } = context
   const characterId = query.characterId ? query.characterId : false
 
@@ -59,9 +63,11 @@ export const maybeRedirectIfCharacterIdQuery = async (
       }
     }
   }
+
+  return false
 }
 
-export const maybeRedirectIfItemIdQuery = async (context: NextPageContext) => {
+export const maybeRedirectIfItemIdQuery = async (context: GetServerSidePropsContext,) => {
   return (
     (await maybeRedirectIfCreationIdQuery(context)) ||
     (await maybeRedirectIfCharacterIdQuery(context)) ||
