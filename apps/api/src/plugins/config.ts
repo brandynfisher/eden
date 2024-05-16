@@ -75,7 +75,6 @@ const ajv = new Ajv({
 export type Config = Static<typeof ConfigSchema>
 
 const configPlugin: FastifyPluginAsync = async server => {
-
   if(ajv && ConfigSchema){
     const validate = ajv.compile(ConfigSchema)
     const valid = validate(envData)

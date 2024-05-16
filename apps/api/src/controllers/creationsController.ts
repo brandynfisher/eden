@@ -183,9 +183,6 @@ export const getCreation = async (
     })
   }
 
-  // delete creation?.concept?.training_images
-  // delete creation?.concept?.task.config.lora_training_urls
-
   if (creation.isPrivate) {
     if (creation.user._id.toString() !== request.user?.userId.toString()) {
       console.error('User not authorized to view this')
