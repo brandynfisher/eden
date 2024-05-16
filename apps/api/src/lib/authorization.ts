@@ -8,7 +8,7 @@ import {
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import userAllowList from '../allowList.staging'
+import userAllowList from '../allowList'
 
 export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
