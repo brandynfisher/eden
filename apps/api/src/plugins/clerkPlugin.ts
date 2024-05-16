@@ -12,9 +12,6 @@ export const registerClerk = async (fastify: FastifyInstance) => {
       secretKey: fastify.config.CLERK_SECRET_KEY,
     }
 
-    //@todo: implement some sort of whitelisting for staging
-      // @todo: also do that in the frontend?
-
     const clerkClient = createClerkClient(clerkOptions)
     fastify.register(clerkPlugin, clerkOptions)
     fastify.decorate('clerk', clerkClient)

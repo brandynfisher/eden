@@ -65,16 +65,16 @@ const CollectionPageContent = ({ collection }: { collection: Collection }) => {
   )
 }
 
-const CollectionPage = ({ data }: { data: Collection }) => {
-  const { collection: collectionData } = useCollection(data ? data._id : null, {
-    fallbackData: data,
+const CollectionPage = ({ initialData }: { initialData: Collection }) => {
+  const { collection: collectionData } = useCollection(initialData ? initialData._id : null, {
+    fallbackData: initialData,
   })
 
-  if (!data) {
+  if (!initialData && !collectionData) {
     return null
   }
 
-  return <CollectionPageContent collection={collectionData || data} />
+  return <CollectionPageContent collection={collectionData || initialData} />
 }
 
 export default CollectionPage

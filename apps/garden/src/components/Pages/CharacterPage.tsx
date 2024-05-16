@@ -3,16 +3,16 @@ import { useCharacter } from '@/hooks/useCharacter'
 import { Character } from '@edenlabs/eden-sdk'
 import React from 'react'
 
-const CharacterPage = ({ data }: { data: Character }) => {
-  const { character: characterData } = useCharacter(data ? data._id : null, {
-    fallbackData: data,
+const CharacterPage = ({ initialData }: { initialData: Character }) => {
+  const { character: characterData } = useCharacter(initialData ? initialData._id : null, {
+    fallbackData: initialData,
   })
 
-  if (!data) {
+  if (!initialData && !characterData) {
     return null
   }
 
-  return <CharacterDetails character={characterData || data} />
+  return <CharacterDetails character={characterData || initialData} />
 }
 
 export default CharacterPage
