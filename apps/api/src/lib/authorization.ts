@@ -7,7 +7,8 @@ import {
   SubscriptionTier,
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import userAllowList from '../allowList.staging'
 
 export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
@@ -160,5 +161,26 @@ export const maximumTasksInProgressPermissionCheck = async (
     return true
   }
 
+  return false
+}
+
+
+export const isAllowedAccess = (server: FastifyInstance, userId: string) => {
+  // Access control is only relevant for staging atm
+  if (!server.config.ENV_API || server.config.ENV_API !== 'stg') {
+    return true
+  }
+
+  // allow all if there's no list for the current ENV
+  if (!userAllowList || !userAllowList[server.config.ENV_API]) {
+    return true
+  }
+
+  if(userAllowList[server.config.ENV_API].includes(userId)) {
+    console.log(`User ${userId} is whitelisted for ENV ${server.config.ENV_API}`)
+    return true
+  }
+
+  console.error(`User ${userId} is not allowed to access ENV ${server.config.ENV_API}`)
   return false
 }

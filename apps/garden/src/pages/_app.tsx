@@ -5,7 +5,6 @@ import 'antd/dist/reset.css'
 
 import { Page } from '../../types/page'
 import ErrorBoundary from '@/ErrorBoundary'
-import PasswordProtection from '@/components/PasswordProtection'
 import AntConfigWrapProvider from '@/providers/AntConfigWrapProvider'
 import ClerkWrapProvider from '@/providers/ClerkWrapProvider'
 import CreationNotificationProvider from '@/providers/CreationNotificationProvider'
@@ -48,103 +47,101 @@ export default function App({ Component, pageProps }: Props): ReactElement {
       <Head>
         <title>Garden of Eden</title>
         <meta
-          property="description"
-          content="The Garden of Artificial Delights"
+          property='description'
+          content='The Garden of Artificial Delights'
         />
-        <meta property="og:title" key="title" content="Garden of Eden" />
+        <meta property='og:title' key='title' content='Garden of Eden' />
         <meta
-          property="og:description"
-          content="The Garden of Artificial Delights"
-          key="description"
+          property='og:description'
+          content='The Garden of Artificial Delights'
+          key='description'
         />
         <meta
-          property="og:image"
-          content="https://app.eden.art/apple-touch-icon.png"
-          key="image"
+          property='og:image'
+          content='https://app.eden.art/apple-touch-icon.png'
+          key='image'
         />
-        <meta property="og:site_name" content="Garden of Eden" />
+        <meta property='og:site_name' content='Garden of Eden' />
         <meta
-          name="viewport"
-          content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+          name='viewport'
+          content='width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no'
         />
-        <meta property="og:type" content="website" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        <meta property='og:type' content='website' />
+        <link rel='shortcut icon' href='/favicon.ico' />
         {/*<link rel="mask-icon" href="/icons/mask-icon.svg" color="#FFFFFF" />*/}
-        <meta name="theme-color" content="#030712" />
-        <meta name="background-color" content="#030712" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <meta name='theme-color' content='#030712' />
+        <meta name='background-color' content='#030712' />
+        <link rel='apple-touch-icon' href='/apple-touch-icon.png' />
+        <link rel='manifest' href='/manifest.json' />
         <link
-          rel="apple-touch-icon"
-          sizes="152x152"
-          href="/apple-touch-icon.png"
+          rel='apple-touch-icon'
+          sizes='152x152'
+          href='/apple-touch-icon.png'
         />
         <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-touch-icon.png"
+          rel='apple-touch-icon'
+          sizes='180x180'
+          href='/apple-touch-icon.png'
         />
         <link
-          rel="apple-touch-icon"
-          sizes="167x167"
-          href="/apple-touch-icon.png"
+          rel='apple-touch-icon'
+          sizes='167x167'
+          href='/apple-touch-icon.png'
         />
         <link
-          rel="apple-touch-startup-image"
-          href="/eden-logo-512x512.png"
-          sizes="640x1136"
+          rel='apple-touch-startup-image'
+          href='/eden-logo-512x512.png'
+          sizes='640x1136'
         />
         {process.env.NODE_ENV === 'production' ? (
           <>
-            <link rel="preconnect" href="https://clerk.eden.art" />
-            <link rel="preconnect" href="https://www.googletagmanager.com" />
+            <link rel='preconnect' href='https://clerk.eden.art' />
+            <link rel='preconnect' href='https://www.googletagmanager.com' />
           </>
         ) : (
           <>
             <link
-              rel="preconnect"
-              href="https://oriented-glider-22.clerk.accounts.dev/"
+              rel='preconnect'
+              href='https://oriented-glider-22.clerk.accounts.dev/'
             />
           </>
         )}
       </Head>
 
-      <PasswordProtection>
-        <main className={`${inter.className}`}>
-          <ThemeProvider attribute="class">
-            <MUIConfigWrapProvider>
-              <AntConfigWrapProvider>
-                <EdenProvider>
-                  <ClerkWrapProvider>
-                    <UserProvider>
-                      <FeedSettingsProvider>
-                        <CreationNotificationProvider>
-                          <MasonryProvider>
-                            <ModalProvider>
-                              {getLayout(
-                                <ErrorBoundary>
-                                  <Component {...pageProps} />
-                                </ErrorBoundary>,
-                              )}
-                            </ModalProvider>
-                          </MasonryProvider>
-                        </CreationNotificationProvider>
-                      </FeedSettingsProvider>
-                    </UserProvider>
-                  </ClerkWrapProvider>
-                </EdenProvider>
-              </AntConfigWrapProvider>
-            </MUIConfigWrapProvider>
-          </ThemeProvider>
-        </main>
-      </PasswordProtection>
+      <main className={`${inter.className}`}>
+        <ThemeProvider attribute='class'>
+          <MUIConfigWrapProvider>
+            <AntConfigWrapProvider>
+              <EdenProvider>
+                <ClerkWrapProvider>
+                  <UserProvider>
+                    <FeedSettingsProvider>
+                      <CreationNotificationProvider>
+                        <MasonryProvider>
+                          <ModalProvider>
+                            {getLayout(
+                              <ErrorBoundary>
+                                <Component {...pageProps} />
+                              </ErrorBoundary>,
+                            )}
+                          </ModalProvider>
+                        </MasonryProvider>
+                      </CreationNotificationProvider>
+                    </FeedSettingsProvider>
+                  </UserProvider>
+                </ClerkWrapProvider>
+              </EdenProvider>
+            </AntConfigWrapProvider>
+          </MUIConfigWrapProvider>
+        </ThemeProvider>
+      </main>
       {process.env.NEXT_PUBLIC_APP_ENV === 'production' ? (
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
       ) : null}
       {process.env.NODE_ENV === 'production' ? (
         <Script
-          src="https://rum-static.pingdom.net/pa-662f1da168cac40012000a8e.js"
-          strategy="lazyOnload"
+          src='https://rum-static.pingdom.net/pa-662f1da168cac40012000a8e.js'
+          strategy='lazyOnload'
         />
       ) : null}
     </>

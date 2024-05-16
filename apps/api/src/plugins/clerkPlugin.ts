@@ -3,6 +3,7 @@ import { clerkPlugin, createClerkClient, getAuth } from '@clerk/fastify'
 import { clerkClient } from '@clerk/fastify/dist/types/clerkClient'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import type { FastifyInstance, FastifyRequest } from 'fastify'
+import { isAllowedAccess } from '../lib/authorization'
 
 export const registerClerk = async (fastify: FastifyInstance) => {
   try {
@@ -10,6 +11,9 @@ export const registerClerk = async (fastify: FastifyInstance) => {
       publishableKey: fastify.config.CLERK_PUBLISHABLE_KEY,
       secretKey: fastify.config.CLERK_SECRET_KEY,
     }
+
+    //@todo: implement some sort of whitelisting for staging
+      // @todo: also do that in the frontend?
 
     const clerkClient = createClerkClient(clerkOptions)
     fastify.register(clerkPlugin, clerkOptions)
@@ -28,6 +32,10 @@ export const registerClerk = async (fastify: FastifyInstance) => {
 
         if (!user) {
           throw new Error('User not found')
+        }
+
+        if (!isAllowedAccess(fastify, userId)) {
+          throw new Error('User not allowed')
         }
 
         request.user = {
