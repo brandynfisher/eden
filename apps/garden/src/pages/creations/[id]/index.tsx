@@ -10,7 +10,7 @@ import type {
 import { getAuthHeaders } from '@/lib/auth'
 import { CreationHeadTags } from '@/components/HeadTags'
 import CreationPage from '@/components/Pages/CreationPage'
-import { handleQueryStringRedirects } from '@/lib/ssr'
+// import { handleQueryStringRedirects } from '@/lib/ssr'
 import { CldOgImage } from 'next-cloudinary'
 import { capitalize } from '@/lib/string'
 
