@@ -36,7 +36,7 @@ const CdnImage = (props: CldImageProps&ImageProps) => {
       return null
     }
 
-    // console.log({cldConfig})
+    console.log({cldConfig})
 
     return <CldImage src={src} assetType={assetType} {...rest} config={cldConfig}/>
   }
