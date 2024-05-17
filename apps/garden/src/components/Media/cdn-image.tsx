@@ -4,16 +4,17 @@ import { CldImage, CldImageProps } from 'next-cloudinary'
 import Image, { ImageProps } from 'next/image'
 // import { CONFIG } from '@/lib/config'
 import { useEffect, useState } from 'react'
+import { CONFIG } from '@/lib/config'
 
 const CdnImage = (props: CldImageProps&ImageProps) => {
   const { src, assetType, ...rest } = props
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || CONFIG.NEXT_PUBLIC_CLOUDINARY_API_KEY
   // const cloudName = CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
   // const apiKey = CONFIG.NEXT_PUBLIC_CLOUDINARY_API_KEY
 
-  const [ cldConfig, setCldConfig ] = useState<{cloud: {cloudName: string, apiKey: string}}|undefined>(cloudName && apiKey ? { cloud: { cloudName, apiKey } }: undefined)
+  const [ cldConfig, setCldConfig ] = useState<{cloud: {cloudName: string, apiKey: string}}|undefined>()
 
   useEffect(() => {
     if (!cloudName || !apiKey) {
