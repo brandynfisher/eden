@@ -34,16 +34,20 @@ const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ crea
 
 export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
+    console.log('getServerSideProps')
     const maybeRedirect = await handleQueryStringRedirects(ctx)
     if (maybeRedirect) {
-      return maybeRedirect as GetServerSidePropsResult<RepoResult>
+      console.log('getServerSideProps -- needs to redirect', maybeRedirect)
+      // return maybeRedirect as GetServerSidePropsResult<RepoResult>
     }
 
-    console.log('getServerSideProps', {cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY})
+    console.log('getServerSideProps - no redirect', {maybeRedirect})
+
+    console.log('getServerSideProps fetch', {cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY})
 
     const res = await fetchCreation(ctx)
 
-    console.log('api response', res)
+    console.log('getServerSideProps api response', res)
 
     if (!res || !res.creation) {
       return {

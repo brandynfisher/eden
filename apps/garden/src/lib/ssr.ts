@@ -11,27 +11,28 @@ type FieldRequest = {
 }
 
 export const handleQueryStringRedirects = async (ctx: GetServerSidePropsContext) => {
-  const shouldRedirectToCreationDetail =
-    await maybeRedirectIfCreationIdQuery(ctx)
-
-  if (shouldRedirectToCreationDetail) {
-    return shouldRedirectToCreationDetail
-  }
-
-  const shouldRedirectToConceptDetail = await maybeRedirectIfConceptIdQuery(
-    ctx,
-  )
-
-  if (shouldRedirectToConceptDetail) {
-    return shouldRedirectToConceptDetail
-  }
-
-  const shouldRedirectToCharacterDetail =
-    await maybeRedirectIfCharacterIdQuery(ctx)
-
-  if (shouldRedirectToCharacterDetail) {
-    return shouldRedirectToCharacterDetail
-  }
+  console.log(ctx.query)
+  // const shouldRedirectToCreationDetail =
+  //   await maybeRedirectIfCreationIdQuery(ctx)
+  //
+  // if (shouldRedirectToCreationDetail) {
+  //   return shouldRedirectToCreationDetail
+  // }
+  //
+  // const shouldRedirectToConceptDetail = await maybeRedirectIfConceptIdQuery(
+  //   ctx,
+  // )
+  //
+  // if (shouldRedirectToConceptDetail) {
+  //   return shouldRedirectToConceptDetail
+  // }
+  //
+  // const shouldRedirectToCharacterDetail =
+  //   await maybeRedirectIfCharacterIdQuery(ctx)
+  //
+  // if (shouldRedirectToCharacterDetail) {
+  //   return shouldRedirectToCharacterDetail
+  // }
 
   return false
 }
@@ -79,7 +80,7 @@ export const getServerSidePropsBase = (fieldRequests: FieldRequest[]) => {
 
       return { props: { data: allFieldResults[0] } }
     } catch (err) {
-      console.error(err)
+      console.error('SSR caughgt error', err)
       return { props: { data: null, error: 'Something went wrong' } }
     }
   }

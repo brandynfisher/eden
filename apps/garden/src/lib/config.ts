@@ -16,6 +16,7 @@ export const CONFIG = {
     process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '',
   NEXT_PUBLIC_CLOUDINARY_API_KEY:
     process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '',
+  // SECRET / SERVER SIDE
   DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   EDEN_ADMIN_API_KEY: process.env.EDEN_ADMIN_API_KEY || '',
