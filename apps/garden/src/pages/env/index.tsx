@@ -8,6 +8,7 @@ import type {
 } from 'next'
 import { getAuthHeaders } from '@/lib/auth'
 import { handleQueryStringRedirects } from '@/lib/ssr'
+import CdnImage from '@/components/Media/cdn-image'
 
 type Repo = {
   response: {}|null
@@ -78,6 +79,10 @@ export default function Page({
   return (
     <>
       {JSON.stringify(repo)}
+      <div>
+        <CdnImage alt={'123'} src={'/123.notfound.png'} width={64} height={64}/>
+        <CdnImage alt={'123'} src={'https://res.cloudinary.com/dihgjel45/image/upload/v1715859085/creations/rvqvh7ht4qpbiptke6si.jpg'} width={64} height={64}/>
+      </div>
     </>
   )
 }
