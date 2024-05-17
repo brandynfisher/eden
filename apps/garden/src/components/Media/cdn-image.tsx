@@ -3,17 +3,19 @@
 import { CldImage, CldImageProps } from 'next-cloudinary'
 import Image, { ImageProps } from 'next/image'
 import { useEffect, useState } from 'react'
-import { CONFIG } from '@/lib/config'
-
-const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || CONFIG.NEXT_PUBLIC_CLOUDINARY_API_KEY
 
 const CdnImage = (props: CldImageProps&ImageProps) => {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
   const { src, assetType, ...rest } = props
 
   const [ cldConfig, setCldConfig ] = useState<{cloud: {cloudName: string, apiKey: string}}|undefined>()
 
   useEffect(() => {
+    if (!cloudName || !apiKey) {
+      return
+    }
+
     setCldConfig({
       cloud: {
         cloudName,
@@ -29,8 +31,8 @@ const CdnImage = (props: CldImageProps&ImageProps) => {
   if (src && src.startsWith('https://res.cloudinary.com/')) {
     console.log({ cldConfig })
 
-    if (cldConfig && cldConfig?.cloud?.cloudName && cldConfig?.cloud?.apiKey) {
-      return <CldImage src={src} assetType={assetType} {...rest} config={cldConfig}/>
+    if (cldConfig) {
+      return <CldImage src={src} assetType={assetType} {...rest}/>
     }
 
     console.log('CLOUDINARY NAME OR APIKEY MISSING!', src)
