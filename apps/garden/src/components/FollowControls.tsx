@@ -53,7 +53,7 @@ const FollowControls = ({
     setIsOwnProfile(
       isAuthenticated && user?.userId === userId && user._id === creatorId,
     )
-  }, [isAuthenticated, userId, creator, creatorId])
+  }, [isAuthenticated, userId, creator, creatorId, user])
 
   const onFollowButtonClick = async () => {
     setFollowLoading(true)

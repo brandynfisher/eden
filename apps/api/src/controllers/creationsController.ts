@@ -162,6 +162,7 @@ export const getCreation = async (
     })
     .populate({
       path: 'concept',
+      select: '_id name user conceptName creationCount uri thumbnail',
     })
     .populate({
       path: 'user',
@@ -220,7 +221,7 @@ export const getCreation = async (
     })
   }
 
-  return await reply.status(200).send({ creation })
+  return reply.status(200).send({ creation })
 }
 
 export const creationDelete = async (
