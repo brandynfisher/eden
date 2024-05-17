@@ -5,14 +5,14 @@ import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import { Character } from '@edenlabs/eden-sdk'
-import { NextApiRequest, NextPageContext } from 'next'
+import { NextApiRequest, GetServerSidePropsContext } from 'next'
 
 interface PageProps {
   data: Character
   error?: string
 }
 
-const fetchCharacter = async (context: NextPageContext) => {
+const fetchCharacter = async (context: GetServerSidePropsContext) => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
