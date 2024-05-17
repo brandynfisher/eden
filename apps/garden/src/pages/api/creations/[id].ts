@@ -56,11 +56,9 @@ const getCreation = async (
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
-  try {
-    const response = await eden.creations.get({
-      creationId: id,
-    })
-
+  await eden.creations.get({
+    creationId: id,
+  }).then((response) => {
     if (!response || response.message) {
       return res.status(500).json({ message: response.message || 'Internal Error - unknown' })
     }
@@ -70,9 +68,13 @@ const getCreation = async (
     }
 
     return res.status(200).json({ creation: response.creation })
-  } catch (e) {
-    return res.status(500).json({ message: 'Internal Exception', error: e })
-  }
+  })
+  .catch((error) => {
+    return res.status(error.response.status || 500).json({
+      message: error?.response?.data?.message || error.response.statusText || 'Internal Exception',
+      error: process.env.NEXT_PUBLIC_APP_ENV === 'production' ? '- redacted -' : error,
+    })
+  })
 }
 
 const updateCreation = async (

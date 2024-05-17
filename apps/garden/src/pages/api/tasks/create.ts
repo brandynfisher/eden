@@ -15,7 +15,6 @@ const createTask = async (
     generatorName,
     config,
   }).then((response) => {
-    // console.log('then', response)
     if (!response || response.message) {
       return res.status(500).json({ message: response.message || 'Internal Error - unknown' })
     }
@@ -27,10 +26,9 @@ const createTask = async (
     return res.status(200).json({ taskId: response.taskId })
   })
   .catch((error) => {
-    // console.log('catch', error, error.response.data)
-    return res.status(req.statusCode || 500).json({
-      message: error?.response?.data?.message || 'Internal Exception',
-      error: error,
+    return res.status(error.response.status || 500).json({
+      message: error?.response?.data?.message || error.response.statusText || 'Internal Exception',
+      error: process.env.NEXT_PUBLIC_APP_ENV === 'production' ? '- redacted -' : error,
     })
   })
 }
