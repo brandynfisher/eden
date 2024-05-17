@@ -30,7 +30,7 @@ const CdnImage = (props: CldImageProps&ImageProps) => {
   }, [cloudName, apiKey])
 
   if (src && src.startsWith('https://res.cloudinary.com/')) {
-    if (!cldConfig) {
+    if (!cldConfig?.cloud?.cloudName || !cldConfig?.cloud?.apiKey) {
       console.log('CLOUDINARY NAME OR APIKEY MISSING!', src)
       return null
     }
