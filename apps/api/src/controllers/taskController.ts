@@ -333,7 +333,7 @@ export const listTasks = async (
 
   await tasksRepository.model.populate(tasks.docs, {
     path: 'concept',
-    select: '_id name user conceptName creationCount uri thumbnail',
+    select: '_id name user conceptName creationCount thumbnail',
   })
 
   await tasksRepository.model.populate(tasks.docs, {

@@ -162,7 +162,7 @@ export const getCreation = async (
     })
     .populate({
       path: 'concept',
-      select: '_id name user conceptName creationCount uri thumbnail',
+      select: '_id name user conceptName creationCount thumbnail',
     })
     .populate({
       path: 'user',
