@@ -10,7 +10,22 @@ import {
 } from '@edenlabs/eden-sdk'
 import Head from 'next/head'
 import React from 'react'
-import { getCldVideoUrl } from 'next-cloudinary'
+import { getCldOgImageUrl, getCldVideoUrl } from 'next-cloudinary'
+
+
+export const getItemCldThumbnailUrl = (thumbnailUrl: string|undefined) => {
+  if (!thumbnailUrl) {
+    return ''
+  }
+
+  return getCldOgImageUrl({
+    // width: 1200,
+    // height: 600,
+    src: thumbnailUrl,
+    // quality: 'auto',
+    // format: 'auto'
+  })
+}
 
 export const getItemMediaUrl = (
   itemType: ItemType,
@@ -179,12 +194,12 @@ const HeadTags = ({
           <meta property="og:description" content={''} key="description" />
           {/*<meta*/}
           {/*  property="og:image"*/}
-          {/*  content={(item as Creation).thumbnail}*/}
+          {/*  content={getItemCldThumbnailUrl((item as Creation).thumbnail)}*/}
           {/*  key="image"*/}
           {/*/>*/}
           {/*<meta*/}
           {/*  property="og:image:secure_url"*/}
-          {/*  content={(item as Creation).thumbnail}*/}
+          {/*  content={getItemCldThumbnailUrl((item as Creation).thumbnail)}*/}
           {/*  key="image_secure"*/}
           {/*/>*/}
           <meta
@@ -192,11 +207,11 @@ const HeadTags = ({
             content={getItemMediaUrl(itemType, item as Creation)}
           />
           <meta property="og:type" content="video.other" key="type" />
-          {/*<meta*/}
-          {/*  property="og:video:secure_url"*/}
-          {/*  content={getItemMediaUrl(itemType, item as Creation)}*/}
-          {/*/>*/}
-          {/*<meta property="og:video:type" content="video/mp4" key="video_type" />*/}
+          <meta
+            property="og:video:secure_url"
+            content={getItemMediaUrl(itemType, item as Creation)}
+          />
+          <meta property="og:video:type" content="video/mp4" key="video_type" />
           <meta
             property="og:video:duration"
             content={String(getItemMediaAttributes(item as Creation).duration)}
@@ -209,10 +224,10 @@ const HeadTags = ({
             name="og:video:height"
             content={String(getItemMediaAttributes(item as Creation).height)}
           />
-          {/*<meta*/}
-          {/*  name="twitter:image"*/}
-          {/*  content={(item as Creation).thumbnail}*/}
-          {/*/>*/}
+          <meta
+            name="twitter:image"
+            content={getItemCldThumbnailUrl((item as Creation).thumbnail)}
+          />
           <meta property="twitter:card" content="player" />
           <meta
             property="twitter:player"
@@ -241,28 +256,18 @@ const HeadTags = ({
           />
         </>
       )}
-      ```{/*{(itemType === 'creation' &&*/}
-      {/*  isImageUrl(getItemMediaUrl(itemType, item as Creation))) ||*/}
-      {/*itemType === 'concept' ? (*/}
-      {/*  <>*/}
-      {/*    <meta property="og:image:alt" content={title} />*/}
-      {/*    <meta property="og:image:type" content="image/jpeg" />*/}
-      {/*    <meta*/}
-      {/*      property="og:image"*/}
-      {/*      content={getItemMediaUrl(itemType, item as Creation | Concept)}*/}
-      {/*      key="image"*/}
-      {/*    />*/}
-      {/*    <meta*/}
-      {/*      property="og:image:secure_url"*/}
-      {/*      key="image_secure"*/}
-      {/*      content={getItemMediaUrl(itemType, item as Creation | Concept)}*/}
-      {/*    />*/}
-      {/*    <meta*/}
-      {/*      name="twitter:image:src"*/}
-      {/*      content={getItemMediaUrl(itemType, item as Creation | Concept)}*/}
-      {/*    />*/}
-      {/*  </>*/}
-      {/*) : null}*/}```
+      {(itemType === 'creation' &&
+        isImageUrl(getItemMediaUrl(itemType, item as Creation))) ||
+      itemType === 'concept' ? (
+        <>
+          {/*<meta property="og:image:alt" content={title} />*/}
+          {/*<meta property="og:image:type" content="image/jpeg" />*/}
+          <meta
+            name="twitter:image"
+            content={getItemCldThumbnailUrl((item as Creation | Concept).thumbnail)}
+          />
+        </>
+      ) : null}
       {itemType === 'creation' &&
       isImageUrl(getItemMediaUrl(itemType, item as Creation)) ? (
         <>
