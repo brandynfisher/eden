@@ -35,13 +35,13 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
 
     const res = await fetchData(ctx)
 
-    if (!res || !res.response) {
+    if (!res) {
       return {
         notFound: true,
       }
     }
 
-    return { props: { repo: { response: res.response } } }
+    return { props: { repo: { response: res } } }
   } catch (err) {
     return { props: { repo: { response: null }, error: 'Something went wrong' } }
   }
