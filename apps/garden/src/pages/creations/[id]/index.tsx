@@ -35,13 +35,13 @@ const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ crea
 export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
     console.log('getServerSideProps')
-    const maybeRedirect = await handleQueryStringRedirects(ctx)
-    if (maybeRedirect) {
-      console.log('getServerSideProps -- needs to redirect', maybeRedirect)
-      // return maybeRedirect as GetServerSidePropsResult<RepoResult>
-    }
+    // const maybeRedirect = await handleQueryStringRedirects(ctx)
+    // if (maybeRedirect) {
+    //   console.log('getServerSideProps -- needs to redirect', maybeRedirect)
+    //   // return maybeRedirect as GetServerSidePropsResult<RepoResult>
+    // }
 
-    console.log('getServerSideProps - no redirect', {maybeRedirect})
+    console.log('getServerSideProps - no redirect' )
 
     console.log('getServerSideProps fetch', {cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY})
 
@@ -96,9 +96,9 @@ export default function Page({
     <>
       {/* //@todo: this will break for non cloudinary ASSETS! */}
       {/* //@todo: old assets need exactly the old handling... fuck */}
-      <CldOgImage alt={repo.creation.name} src={repo.creation.thumbnail || ''} twitterTitle={title} title={title} assetType={repo.creation.mediaAttributes.type}/>
       <CreationHeadTags creation={repo.creation} />
       <CreationPage initialData={repo.creation} />
+      <CldOgImage alt={repo.creation.name} src={repo.creation.thumbnail || ''} twitterTitle={title} title={title} assetType={repo.creation.mediaAttributes.type}/>
     </>
   )
 }
