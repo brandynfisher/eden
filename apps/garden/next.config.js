@@ -127,6 +127,9 @@ module.exports = withTM({
         },
     ]
   },
+  compiler: {
+    removeConsole: false // exclude: ['error'],
+  },
   trailingSlash: false,
   swcMinify: true,
   output: 'standalone',
