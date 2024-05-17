@@ -39,7 +39,11 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
       return maybeRedirect as GetServerSidePropsResult<RepoResult>
     }
 
+    console.log('getServerSideProps', {cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY})
+
     const res = await fetchCreation(ctx)
+
+    console.log('api response', res)
 
     if (!res || !res.creation) {
       return {
@@ -56,6 +60,7 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
 export default function Page({
   repo, error,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  console.log('Page', {cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY})
   if (error) {
     console.error('SSR error', repo, error)
     return (
