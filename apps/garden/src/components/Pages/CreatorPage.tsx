@@ -4,23 +4,23 @@ import { Creator } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 const CreatorPage = ({
-  data,
+  initialData,
   activeTab,
 }: {
-  data: Creator
+  initialData: Creator
   activeTab: string
 }) => {
-  const { creator: creatorData } = useCreator(data ? data._id : null, {
-    fallbackData: data,
+  const { creator: creatorData } = useCreator(initialData ? initialData._id : null, {
+    fallbackData: initialData,
   })
 
-  if (!data) {
+  if (!creatorData && !initialData) {
     return null
   }
 
   return (
     <CreatorDetails
-      creator={creatorData || data}
+      creator={creatorData || initialData}
       initialActiveTab={activeTab}
     />
   )

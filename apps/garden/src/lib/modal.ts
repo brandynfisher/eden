@@ -11,7 +11,7 @@ const specialHandlingRoutes: ISpecialRouteIndex<{ basePath: string }> = {
   '/characters/[id]': {
     basePath: 'characters',
   },
-  '/creators/[id]/[tab]': {
+  '/creators/[id]/[[...tab]]': {
     basePath: 'creators',
   },
   '/creators/[id]': {
