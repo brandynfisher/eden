@@ -7,7 +7,6 @@ import type {
   InferGetServerSidePropsType,
   NextApiRequest,
 } from 'next'
-import { CONFIG } from '@/lib/config'
 import { getAuthHeaders } from '@/lib/auth'
 import { CreationHeadTags } from '@/components/HeadTags'
 import CreationPage from '@/components/Pages/CreationPage'
@@ -28,7 +27,7 @@ const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ crea
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
-  return fetcher(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations/${id}`, {
+  return fetcher(`${process.env.NEXT_PUBLIC_HOST}/api/creations/${id}`, {
     headers: await getAuthHeaders(req as NextApiRequest),
   })
 }
@@ -70,7 +69,7 @@ export default function Page({
   }
 
   if (!repo || !repo.creation) {
-    console.error('SSR data empty', repo, error)
+    console.error('SSR data empty - 404', repo, error)
     return (
       <>
         <h4>SSR data not found</h4>
