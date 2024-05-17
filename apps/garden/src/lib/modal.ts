@@ -76,7 +76,7 @@ export const getModalUrls = (
   // special workaround: modalUrl has id as query param - when we're trying to open modals on routes with dynamic parameters
   const basePath = specialHandlingRoutes[router.pathname].basePath
   urls.modalUrl = `/${basePath}${router.query.id ? `/${router.query.id}` : ''}${
-    router.query.tab ? `/${router.query.tab}` : `?${itemType}Id=${id}`
+    router.query.tab ? `/${String(router.query.tab)}` : `?${itemType}Id=${id}`
   }`
   urls.pageUrl = urls.modalUrl
 

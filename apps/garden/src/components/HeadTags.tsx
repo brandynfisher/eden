@@ -1,5 +1,4 @@
 import { CardData } from '@/components/Card/Card'
-import { CONFIG } from '@/lib/config'
 import { capitalize, isImageUrl, isVideoUrl, possessivy } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import {
@@ -11,13 +10,27 @@ import {
 } from '@edenlabs/eden-sdk'
 import Head from 'next/head'
 import React from 'react'
+import { getCldVideoUrl } from 'next-cloudinary'
 
 export const getItemMediaUrl = (
   itemType: ItemType,
   item: Creation | Concept,
 ) => {
   if (itemType === 'creation' && (item as Creation).mediaAttributes.type !== 'image') {
-    return item.uri
+
+    //@todo: don't do this on NON cloudinary assets!
+    console.log((item as Creation).mediaAttributes.type)
+
+    const videoUrl = getCldVideoUrl({
+      width: 1200,
+      height: 600,
+      src: item.uri,
+      quality: 'auto',
+      format: 'auto'
+    })
+
+    console.log(itemType, (item as Creation).mediaAttributes.type, item.uri, videoUrl)
+    return videoUrl
   }
 
   return item.thumbnail || ''
@@ -65,22 +78,22 @@ export const CollectionHeadTags = ({
         content={`${collection.creations.length} creations curated by ${collection.creatorName}`}
         key="description"
       />
-      <meta
-        property="og:image"
-        content={collection.displayImageUri}
-        key="image"
-      />
-      <meta
-        property="og:image:secure_url"
-        content={collection.displayImageUri}
-      />
-      <meta
-        property="og:image:alt"
-        content={`${collection.name} - Collection by ${collection.creatorName}`}
-      />
+      {/*<meta*/}
+      {/*  property="og:image"*/}
+      {/*  content={collection.displayImageUri}*/}
+      {/*  key="image"*/}
+      {/*/>*/}
+      {/*<meta*/}
+      {/*  property="og:image:secure_url"*/}
+      {/*  content={collection.displayImageUri}*/}
+      {/*/>*/}
+      {/*<meta*/}
+      {/*  property="og:image:alt"*/}
+      {/*  content={`${collection.name} - Collection by ${collection.creatorName}`}*/}
+      {/*/>*/}
       <meta
         property="og:url"
-        content={`${CONFIG.NEXT_PUBLIC_HOST}/collections/${collection._id}`}
+        content={`${process.env.NEXT_PUBLIC_HOST}/collections/${collection._id}`}
       />
     </Head>
   )
@@ -98,28 +111,28 @@ export const CreatorHeadTags = ({ creator }: { creator: Creator }) => {
         content={`${creator.creationsCount} Creations | ${creator.followerCount} Followers`}
         key="description"
       />
-      <meta
-        property="og:image"
-        content={
-          creator.userImage
-            ? creator.userImage
-            : 'https://app.eden.art/apple-touch-icon.png'
-        }
-        key="image"
-      />
-      <meta
-        property="og:image:secure_url"
-        content={
-          creator.userImage
-            ? creator.userImage
-            : 'https://app.eden.art/apple-touch-icon.png'
-        }
-      />
-      <meta property="og:image:alt" content={title} />
+      {/*<meta*/}
+      {/*  property="og:image"*/}
+      {/*  content={*/}
+      {/*    creator.userImage*/}
+      {/*      ? creator.userImage*/}
+      {/*      : 'https://app.eden.art/apple-touch-icon.png'*/}
+      {/*  }*/}
+      {/*  key="image"*/}
+      {/*/>*/}
+      {/*<meta*/}
+      {/*  property="og:image:secure_url"*/}
+      {/*  content={*/}
+      {/*    creator.userImage*/}
+      {/*      ? creator.userImage*/}
+      {/*      : 'https://app.eden.art/apple-touch-icon.png'*/}
+      {/*  }*/}
+      {/*/>*/}
+      {/*<meta property="og:image:alt" content={title} />*/}
       <meta
         property="og:url"
         content={`${
-          CONFIG.NEXT_PUBLIC_HOST
+          process.env.NEXT_PUBLIC_HOST
         }/creators/${creator.username?.toLowerCase()}`}
       />
     </Head>
@@ -145,45 +158,45 @@ const HeadTags = ({
     <Head>
       <title>{`${title} | Garden of Eden`}</title>
       <meta property="og:title" key="title" content={title} />
-      {itemType === 'character' ? (
-        <>
-          <meta
-            property="og:image"
-            content={(item as Character).image}
-            key="image"
-          />
-          <meta
-            property="og:image:secure_url"
-            content={(item as Character).image}
-            key="image_secure"
-          />
-          <meta name="twitter:image:src" content={(item as Character).image} />
-        </>
-      ) : null}
+      {/*{itemType === 'character' ? (*/}
+      {/*  <>*/}
+      {/*    <meta*/}
+      {/*      property="og:image"*/}
+      {/*      content={(item as Character).image}*/}
+      {/*      key="image"*/}
+      {/*    />*/}
+      {/*    <meta*/}
+      {/*      property="og:image:secure_url"*/}
+      {/*      content={(item as Character).image}*/}
+      {/*      key="image_secure"*/}
+      {/*    />*/}
+      {/*    <meta name="twitter:image:src" content={(item as Character).image} />*/}
+      {/*  </>*/}
+      {/*) : null}*/}
       {itemType === 'creation' &&
       isVideoUrl(getItemMediaUrl(itemType, item as Creation)) ? (
         <>
           <meta property="og:description" content={''} key="description" />
-          <meta
-            property="og:image"
-            content={(item as Creation).thumbnail}
-            key="image"
-          />
-          <meta
-            property="og:image:secure_url"
-            content={(item as Creation).thumbnail}
-            key="image_secure"
-          />
+          {/*<meta*/}
+          {/*  property="og:image"*/}
+          {/*  content={(item as Creation).thumbnail}*/}
+          {/*  key="image"*/}
+          {/*/>*/}
+          {/*<meta*/}
+          {/*  property="og:image:secure_url"*/}
+          {/*  content={(item as Creation).thumbnail}*/}
+          {/*  key="image_secure"*/}
+          {/*/>*/}
           <meta
             property="og:video"
             content={getItemMediaUrl(itemType, item as Creation)}
           />
           <meta property="og:type" content="video.other" key="type" />
-          <meta
-            property="og:video:secure_url"
-            content={getItemMediaUrl(itemType, item as Creation)}
-          />
-          <meta property="og:video:type" content="video/mp4" key="video_type" />
+          {/*<meta*/}
+          {/*  property="og:video:secure_url"*/}
+          {/*  content={getItemMediaUrl(itemType, item as Creation)}*/}
+          {/*/>*/}
+          {/*<meta property="og:video:type" content="video/mp4" key="video_type" />*/}
           <meta
             property="og:video:duration"
             content={String(getItemMediaAttributes(item as Creation).duration)}
@@ -196,27 +209,31 @@ const HeadTags = ({
             name="og:video:height"
             content={String(getItemMediaAttributes(item as Creation).height)}
           />
-          <meta name="twitter:card" content="player" />
+          {/*<meta*/}
+          {/*  name="twitter:image"*/}
+          {/*  content={(item as Creation).thumbnail}*/}
+          {/*/>*/}
+          <meta property="twitter:card" content="player" />
           <meta
-            name="twitter:player"
+            property="twitter:player"
             content={getItemMediaUrl(itemType, item as Creation)}
           />
           <meta
-            name="twitter:player:stream"
+            property="twitter:player:stream"
             content={getItemMediaUrl(itemType, item as Creation)}
           />
-          <meta
-            name="twitter:player:width"
-            content={String(getItemMediaAttributes(item as Creation).width)}
-          />
-          <meta
-            name="twitter:player:height"
-            content={String(getItemMediaAttributes(item as Creation).height)}
-          />
+          {/*<meta*/}
+          {/*  property="twitter:player:width"*/}
+          {/*  content={String(getItemMediaAttributes(item as Creation).width)}*/}
+          {/*/>*/}
+          {/*<meta*/}
+          {/*  property="twitter:player:height"*/}
+          {/*  content={String(getItemMediaAttributes(item as Creation).height)}*/}
+          {/*/>*/}
         </>
       ) : (
         <>
-          <meta name="twitter:card" content="summary_large_image" />
+          <meta property="twitter:card" content="summary_large_image" />
           <meta
             property="og:description"
             content={item.name}
@@ -224,53 +241,40 @@ const HeadTags = ({
           />
         </>
       )}
-      {(itemType === 'creation' &&
-        isImageUrl(getItemMediaUrl(itemType, item as Creation))) ||
-      itemType === 'concept' ? (
-        <>
-          <meta property="og:image:alt" content={title} />
-          <meta property="og:image:type" content="image/jpeg" />
-          <meta
-            property="og:image"
-            content={getItemMediaUrl(itemType, item as Creation | Concept)}
-            key="image"
-          />
-          <meta
-            property="og:image:secure_url"
-            key="image_secure"
-            content={getItemMediaUrl(itemType, item as Creation | Concept)}
-          />
-          <meta
-            name="twitter:image:src"
-            content={getItemMediaUrl(itemType, item as Creation | Concept)}
-          />
-        </>
-      ) : null}
+      ```{/*{(itemType === 'creation' &&*/}
+      {/*  isImageUrl(getItemMediaUrl(itemType, item as Creation))) ||*/}
+      {/*itemType === 'concept' ? (*/}
+      {/*  <>*/}
+      {/*    <meta property="og:image:alt" content={title} />*/}
+      {/*    <meta property="og:image:type" content="image/jpeg" />*/}
+      {/*    <meta*/}
+      {/*      property="og:image"*/}
+      {/*      content={getItemMediaUrl(itemType, item as Creation | Concept)}*/}
+      {/*      key="image"*/}
+      {/*    />*/}
+      {/*    <meta*/}
+      {/*      property="og:image:secure_url"*/}
+      {/*      key="image_secure"*/}
+      {/*      content={getItemMediaUrl(itemType, item as Creation | Concept)}*/}
+      {/*    />*/}
+      {/*    <meta*/}
+      {/*      name="twitter:image:src"*/}
+      {/*      content={getItemMediaUrl(itemType, item as Creation | Concept)}*/}
+      {/*    />*/}
+      {/*  </>*/}
+      {/*) : null}*/}```
       {itemType === 'creation' &&
       isImageUrl(getItemMediaUrl(itemType, item as Creation)) ? (
         <>
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta
-            property="og:image:width"
-            content={String((item as Creation).mediaAttributes.width || 1024)}
-          />
-          <meta
-            property="og:image:height"
-            content={String((item as Creation).mediaAttributes.height || 1024)}
-          />
+          <meta property="twitter:card" content="summary_large_image" />
         </>
-      ) : (
-        <>
-          <meta property="og:image:width" content={String(1024)} />
-          <meta property="og:image:height" content={String(1024)} />
-        </>
-      )}
-      <meta name="twitter:site" content="@eden_art_" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={item.name} />
+      ) : null}
+      <meta property="twitter:site" content="@eden_art_" />
+      <meta property="twitter:title" content={title} />
+      <meta property="twitter:description" content={item.name} />
       <meta
         property="og:url"
-        content={`${CONFIG.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
+        content={`${process.env.NEXT_PUBLIC_HOST}/${itemType}s/${item._id}`}
       />
     </Head>
   )

@@ -12,6 +12,8 @@ import { getAuthHeaders } from '@/lib/auth'
 import { CreationHeadTags } from '@/components/HeadTags'
 import CreationPage from '@/components/Pages/CreationPage'
 import { handleQueryStringRedirects } from '@/lib/ssr'
+import { CldOgImage } from 'next-cloudinary'
+import { capitalize } from '@/lib/string'
 
 type Repo = {
   creation: Creation | null
@@ -80,8 +82,13 @@ export default function Page({
     )
   }
 
+  const title = `${capitalize('creation')} by ${repo.creation?.user?.username}${repo.creation.task?.generator?.generatorName ? ` | ${repo.creation.task?.generator?.generatorName}` : ''}`
+
   return (
     <>
+      {/* //@todo: this will break for non cloudinary ASSETS! */}
+      {/* //@todo: old assets need exactly the old handling... fuck */}
+      <CldOgImage alt={repo.creation.name} src={repo.creation.thumbnail || ''} twitterTitle={title} title={title} assetType={repo.creation.mediaAttributes.type}/>
       <CreationHeadTags creation={repo.creation} />
       <CreationPage initialData={repo.creation} />
     </>
