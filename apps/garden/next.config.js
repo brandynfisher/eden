@@ -128,8 +128,7 @@ module.exports = withTM({
     ]
   },
   compiler: {
-    removeConsole: false,
-    //removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
   },
   trailingSlash: false,
   swcMinify: true,

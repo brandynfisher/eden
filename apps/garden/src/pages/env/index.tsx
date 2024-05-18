@@ -9,7 +9,7 @@ import type {
 import { getAuthHeaders } from '@/lib/auth'
 import { handleQueryStringRedirects } from '@/lib/ssr'
 import CdnImage from '@/components/Media/cdn-image'
-import { CldOgImage } from 'next-cloudinary'
+import CdnOgImage from '@/components/Media/cdn-og-image'
 
 type Repo = {
   response: {} | null
@@ -88,12 +88,7 @@ export default function Page({
           width={64}
           height={64}
         />
-        <CldOgImage
-          alt={'123 og'}
-          title={'image og title'}
-          twitterTitle={'image twitter title'}
-          src={'https://res.cloudinary.com/dihgjel45/image/upload/v1715859085/creations/rvqvh7ht4qpbiptke6si.jpg'}
-        />
+        <CdnOgImage alt={'123'} src={'https://res.cloudinary.com/dihgjel45/image/upload/v1715859085/creations/rvqvh7ht4qpbiptke6si.jpg'} />
       </div>
     </>
   )
