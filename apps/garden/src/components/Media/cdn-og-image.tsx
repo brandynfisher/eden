@@ -1,4 +1,4 @@
-import { CldOgImage, CldOgImageProps } from 'next-cloudinary'
+import CldOgImage, { CldOgImageProps } from '@/components/Media/next-cloudinary/CldOgImage/CldOgImage'
 
 const cloudConfig = {
   cloud: {
