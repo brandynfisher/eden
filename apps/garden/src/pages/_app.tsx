@@ -51,6 +51,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           content='The Garden of Artificial Delights'
         />
         <meta property='og:title' key='title' content='Garden of Eden' />
+        <meta property='twitter:title' key='twitter-title' content='Garden of Eden' />
         <meta
           property='og:description'
           content='The Garden of Artificial Delights'
@@ -66,7 +67,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
           name='viewport'
           content='width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no'
         />
-        <meta property='og:type' content='website' />
+        <meta property='og:type' content='website' key="type" />
         <link rel='shortcut icon' href='/favicon.ico' />
         {/*<link rel="mask-icon" href="/icons/mask-icon.svg" color="#FFFFFF" />*/}
         <meta name='theme-color' content='#030712' />

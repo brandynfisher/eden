@@ -187,11 +187,11 @@ const HeadTags = ({
             content={String(getItemMediaAttributes(item as Creation).duration)}
           />
           <meta
-            name="og:video:width"
+            property="og:video:width"
             content={String(getItemMediaAttributes(item as Creation).width)}
           />
           <meta
-            name="og:video:height"
+            property="og:video:height"
             content={String(getItemMediaAttributes(item as Creation).height)}
           />
           <meta
@@ -213,7 +213,6 @@ const HeadTags = ({
         </>
       )}
       <meta property="twitter:site" content="@eden_art_" />
-      <meta property="twitter:title" content={title} />
       <meta property="twitter:description" content={item.name} />
       <meta
         property="og:url"

@@ -95,7 +95,6 @@ export default function Page({
     <>
       {/* //@todo: this will break for non cloudinary ASSETS! */}
       {/* //@todo: old assets need exactly the old handling... fuck */}
-      <CreationHeadTags creation={repo.creation} />
       <CdnOgImage
         alt={repo.creation.name}
         src={repo.creation.thumbnail || ''}
@@ -104,6 +103,7 @@ export default function Page({
         title={title}
         assetType={repo.creation.mediaAttributes.type}
       />
+      <CreationHeadTags creation={repo.creation} />
 
       <CreationPage initialData={repo.creation} />
       {/*<CldOgImage alt={repo.creation.name} src={repo.creation.thumbnail || ''} twitterTitle={title} title={title} assetType={repo.creation.mediaAttributes.type}/>*/}
