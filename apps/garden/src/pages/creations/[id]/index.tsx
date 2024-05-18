@@ -134,7 +134,11 @@ export default function Page({
         title={title}
         itemType="creation"
         item={repo.creation}
-        description={repo.creation.name}
+        description={
+          repo.creation.mediaAttributes.type !== 'video'
+            ? repo.creation.name
+            : ''
+        }
       />
       <CreationPage initialData={repo.creation} />
     </>
