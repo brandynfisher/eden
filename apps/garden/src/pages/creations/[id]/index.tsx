@@ -11,7 +11,6 @@ import { getAuthHeaders } from '@/lib/auth'
 import HeadTags, { createShareTitle } from '@/components/HeadTags'
 import CreationPage from '@/components/Pages/CreationPage'
 import CdnOgImage from '@/components/Media/cdn-og-image'
-import { capitalize } from '@/lib/string'
 import { handleQueryStringRedirects } from '@/lib/ssr'
 import React from 'react'
 
