@@ -1,8 +1,8 @@
 'use client'
 
-import { CldImage, CldImageProps } from 'next-cloudinary'
 import Image, { ImageProps } from 'next/image'
 import { useEffect, useState } from 'react'
+import CldImage, { CldImageProps } from '@/components/Media/next-cloudinary/CldImage/CldImage'
 
 const CdnImage = (props: CldImageProps&ImageProps) => {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
