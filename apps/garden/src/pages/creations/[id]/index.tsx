@@ -104,6 +104,10 @@ export default function Page({
     itemSuffix: repo.creation.task?.generator?.generatorName,
   })
 
+  const isCloudinaryAsset = repo.creation?.thumbnail?.startsWith(
+    'https://res.cloudinary.com/',
+  )
+
   return (
     <>
       {/* //@todo: this will break for non cloudinary ASSETS! */}
@@ -119,8 +123,12 @@ export default function Page({
         }
         title={title}
         assetType={repo.creation.mediaAttributes.type}
-        width={repo.creation.mediaAttributes.width}
-        height={repo.creation.mediaAttributes.height}
+        width={
+          isCloudinaryAsset ? undefined : repo.creation.mediaAttributes.width
+        }
+        height={
+          isCloudinaryAsset ? undefined : repo.creation.mediaAttributes.height
+        }
       />
       <HeadTags
         title={title}

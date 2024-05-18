@@ -89,6 +89,10 @@ export default function Page({
     userName: repo.character?.user?.username || '',
   })
 
+  const isCloudinaryAsset = repo.character?.image?.startsWith(
+    'https://res.cloudinary.com/',
+  )
+
   return (
     <>
       <CdnOgImageTags
@@ -96,8 +100,8 @@ export default function Page({
         src={repo.character.image || ''}
         twitterTitle={title}
         title={title}
-        width={1024}
-        height={1024}
+        width={isCloudinaryAsset ? undefined : 1024}
+        height={isCloudinaryAsset ? undefined : 1024}
       />
       <HeadTags title={title} itemType="character" item={repo.character} />
       <CharacterPage initialData={repo.character} />

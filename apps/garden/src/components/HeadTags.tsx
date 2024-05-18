@@ -18,21 +18,12 @@ export const getItemMediaUrl = (
     itemType === 'creation' &&
     (item as Creation).mediaAttributes.type === 'video'
   ) {
-    //@todo: don't do this on NON cloudinary assets!
-    console.log((item as Creation).mediaAttributes.type)
-
     const videoUrl = item.uri.startsWith('https://res.cloudinary.com/')
       ? getCldVideoUrl({
           src: item.uri,
         })
       : item.uri
 
-    console.log(
-      itemType,
-      (item as Creation).mediaAttributes.type,
-      item.uri,
-      videoUrl,
-    )
     return videoUrl
   }
 

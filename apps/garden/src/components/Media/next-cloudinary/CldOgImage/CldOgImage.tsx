@@ -23,7 +23,6 @@ const CldOgImage = ({
   // We need to separately handle the width and the height to allow our user to pass in
   // a custom value, but also we need to know this at the component level so that we can
   // use it when rendering the meta tags
-
   let { width = OG_IMAGE_WIDTH, height = OG_IMAGE_HEIGHT } = props
 
   // Normalize the width and height
