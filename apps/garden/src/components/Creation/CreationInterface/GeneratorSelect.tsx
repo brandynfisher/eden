@@ -3,8 +3,8 @@ import { Generator } from '@edenlabs/eden-sdk'
 import LinkOutlined from '@mui/icons-material/LinkOutlined'
 import MovieFilter from '@mui/icons-material/MovieFilter'
 import Wallpaper from '@mui/icons-material/Wallpaper'
+import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
-import CdnImage from '@/components/Media/cdn-image'
 
 const ListItem = ({
   title,
@@ -36,13 +36,13 @@ const ListItem = ({
     >
       <div className="relative flex gap-2 flex-col sm:flex-row">
         <div className="flex items-center justify-center relative">
-          <CdnImage
+          <Image
             width={198}
             height={140}
             src={imgSrc}
             alt={imgSrc}
             onError={() => {
-              // setImgSrc('/placeholder.png')
+              setImgSrc('/placeholder.png')
             }}
             className="object-contain"
           />
