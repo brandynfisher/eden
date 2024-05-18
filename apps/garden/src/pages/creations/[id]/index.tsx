@@ -11,8 +11,8 @@ import { getAuthHeaders } from '@/lib/auth'
 import { CreationHeadTags } from '@/components/HeadTags'
 import CreationPage from '@/components/Pages/CreationPage'
 import CdnOgImage from '@/components/Media/cdn-og-image'
-// import { handleQueryStringRedirects } from '@/lib/ssr'
 import { capitalize } from '@/lib/string'
+import { handleQueryStringRedirects } from '@/lib/ssr'
 
 type Repo = {
   creation: Creation | null
@@ -35,11 +35,10 @@ const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ crea
 export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
     console.log('getServerSideProps')
-    // const maybeRedirect = await handleQueryStringRedirects(ctx)
-    // if (maybeRedirect) {
-    //   console.log('getServerSideProps -- needs to redirect', maybeRedirect)
-    //   // return maybeRedirect as GetServerSidePropsResult<RepoResult>
-    // }
+    const maybeRedirect = await handleQueryStringRedirects(ctx)
+    if (maybeRedirect) {
+      return maybeRedirect as GetServerSidePropsResult<RepoResult>
+    }
 
     console.log('getServerSideProps - no redirect' )
 
@@ -97,9 +96,17 @@ export default function Page({
       {/* //@todo: this will break for non cloudinary ASSETS! */}
       {/* //@todo: old assets need exactly the old handling... fuck */}
       <CreationHeadTags creation={repo.creation} />
+      <CdnOgImage
+        alt={repo.creation.name}
+        src={repo.creation.thumbnail || ''}
+        twitterTitle={title}
+        twitterCard={repo.creation.mediaAttributes.type !== 'video' ? 'summary_large_image' : 'player' }
+        title={title}
+        assetType={repo.creation.mediaAttributes.type}
+      />
+
       <CreationPage initialData={repo.creation} />
       {/*<CldOgImage alt={repo.creation.name} src={repo.creation.thumbnail || ''} twitterTitle={title} title={title} assetType={repo.creation.mediaAttributes.type}/>*/}
-      <CdnOgImage alt={repo.creation.name} src={repo.creation.thumbnail || ''} twitterTitle={title} title={title} assetType={repo.creation.mediaAttributes.type}/>
     </>
   )
 }

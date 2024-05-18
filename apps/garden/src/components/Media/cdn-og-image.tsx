@@ -7,6 +7,8 @@ const CdnOgImage = (props: CldOgImageProps) => {
     )
   }
 
+  //@todo: else return S3 compatible image/video/media related meta tags
+
   return null
 }
 

@@ -5,15 +5,16 @@ import { CldImageProps } from '../CldImage/CldImage';
 import { getCldOgImageUrl } from '../../helpers/getCldOgImageUrl';
 import { OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT } from '../../constants/sizes';
 
-const TWITTER_CARD = 'summary_large_image';
+type TwitterCardType = 'summary_large_image'|'player'
 
 export type CldOgImageProps = CldImageProps & {
   excludeTags?: Array<string>;
   keys?: object;
   twitterTitle?: string;
+  twitterCard?: TwitterCardType
 }
 
-const CldOgImage = ({ excludeTags = [], twitterTitle, keys = {}, ...props }: CldOgImageProps) => {
+const CldOgImage = ({ excludeTags = [], twitterTitle, twitterCard = 'summary_large_image', keys = {}, ...props }: CldOgImageProps) => {
   const { alt } = props;
 
   // We need to separately handle the width and the height to allow our user to pass in
@@ -75,13 +76,15 @@ const CldOgImage = ({ excludeTags = [], twitterTitle, keys = {}, ...props }: Cld
 
       {/* Required for summary_large_image, exclude vai excludeTags */}
       {/* https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image */}
-
       {!excludeTags.includes('twitter:title') && (
         <meta key={metaKeys['twitter:title']} property="twitter:title" content={twitterTitle || ' '} />
       )}
 
-      <meta key={metaKeys['twitter:card']} property="twitter:card" content={TWITTER_CARD} />
-      <meta key={metaKeys['twitter:image']} property="twitter:image" content={twitterImageUrl} />
+      {!excludeTags.includes('twitter:card') && (
+        <meta key={metaKeys['twitter:card']} property='twitter:card' content={twitterCard} />
+      )}
+
+      <meta key={metaKeys['twitter:image']} property='twitter:image' content={twitterImageUrl} />
     </Head>
   );
 }
