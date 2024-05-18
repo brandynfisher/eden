@@ -55,10 +55,25 @@ const getConcept = async (
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
-  const response = await eden.concepts.get({
+  await eden.concepts.get({
     conceptId: id,
+  }).then((response) => {
+    if (!response || response.message) {
+      return res.status(500).json({ message: response.message || 'Internal Error - unknown' })
+    }
+
+    if (response && !response.concept) {
+      return res.status(404).json({ message: response.message || `Concept ${id} not found` })
+    }
+
+    return res.status(200).json({ concept: response.concept })
   })
-  return res.status(200).json({ concept: response.concept })
+  .catch((error) => {
+    return res.status(error.response.status || 500).json({
+      message: error?.response?.data?.message || error.response.statusText || 'Internal Exception',
+      error: process.env.NEXT_PUBLIC_APP_ENV === 'production' ? '- redacted -' : error,
+    })
+  })
 }
 
 const updateConcept = async (

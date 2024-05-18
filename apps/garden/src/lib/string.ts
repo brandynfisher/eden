@@ -18,11 +18,11 @@ export const truncateText = (text: string, maxLength = 20) => {
 }
 
 export const isImageUrl = (url: string) => {
-  return /\.(jpg|jpeg|png|webp|avif|gif|svg)$/.test(url)
+  return /(\/image\/)|(\.(jpg|jpeg|png|webp|avif|gif|svg))$/.test(url)
 }
 
 export const isVideoUrl = (url: string) => {
-  return /\.(mp4|webm|m3u8)$/.test(url)
+  return /(\/video\/)|(\.(mp4|webm|m3u8))$/.test(url)
 }
 
 export const capitalize = (text: string) => {

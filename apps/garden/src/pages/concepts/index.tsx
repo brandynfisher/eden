@@ -1,8 +1,8 @@
 import ConceptsPage from '@/components/Pages/ConceptsPage'
 import { maybeRedirectIfItemIdQuery } from '@/lib/redirect'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 
-export async function getServerSideProps(ctx: NextPageContext) {
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   return maybeRedirectIfItemIdQuery(ctx)
 }
 

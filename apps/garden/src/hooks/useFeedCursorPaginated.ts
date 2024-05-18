@@ -157,25 +157,19 @@ export const useFeedCursorPaginated = (
         : { totalItems: flatData && flatData.length && flatData[0] ? flatData[0].total : 0 }
       return {
         docs:
-          flatData && flatData.length && flatData[0] !== undefined && flatData[0].docs !== undefined && flatData[0].docs.length
-            ? flatData.map((page, index) => {
-                // shuffle latest page of recommended feed
-                if (orderBy && orderBy.field === 'embedding.score') {
-                  return page
-                    ? index === size - 1
-                      ? shuffle(page.docs)
-                      : page.docs
-                    : []
-                }
+          flatData?.[0]?.docs?.length ? flatData.map((page, index) => {
+            // shuffle latest page of recommended feed
+            if (orderBy?.field === 'embedding.score') {
+              return index === size - 1 ? shuffle(page.docs) : page.docs;
+            }
 
-                return page ? page.docs : []
-              })
-            : [],
+            return page?.docs ?? [];
+          }) : [],
         ...nextPageOrCursor,
       }
     }
     return { docs: [], totalItems: !useCursorPagination ? null : undefined }
-  }, [data])
+  }, [data, useCursorPagination])
 
   return {
     hasNextPage: data

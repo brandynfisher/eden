@@ -5,14 +5,14 @@ import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import { Session } from '@edenlabs/eden-sdk'
-import { NextApiRequest, NextPageContext } from 'next'
+import { NextApiRequest, GetServerSidePropsContext } from 'next'
 
 interface PageProps {
   data: Session
   error?: string
 }
 
-const fetchSession = async (context: NextPageContext) => {
+const fetchSession = async (context: GetServerSidePropsContext) => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 

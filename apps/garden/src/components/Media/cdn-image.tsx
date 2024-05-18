@@ -1,13 +1,13 @@
 'use client'
 
-import { CldImage, CldImageProps } from 'next-cloudinary'
 import Image, { ImageProps } from 'next/image'
+import CldImage, { CldImageProps } from '@/components/Media/next-cloudinary/CldImage/CldImage'
 
 const CdnImage = (props: CldImageProps&ImageProps) => {
   const { src, assetType, ...rest } = props
 
   if (src && src.startsWith('https://res.cloudinary.com/')) {
-    return <CldImage src={src} assetType={assetType} {...rest} />
+      return <CldImage src={src} assetType={assetType} {...rest}/>
   }
 
   // fallback to support local, other remote or existing s3/cloudfront assets

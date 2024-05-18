@@ -27,6 +27,7 @@ const ConfigSchema = Type.Strict(
     API_HOST: Type.String(),
     API_PORT: Type.String(),
     API_URL: Type.String(),
+    ENV_API: Type.Optional(Type.String()),
     EDEN_ADMIN_API_KEY: Type.String(),
     EDEN_ADMIN_API_SECRET: Type.String(),
     FRONTEND_URL: Type.String(),
@@ -75,7 +76,6 @@ const ajv = new Ajv({
 export type Config = Static<typeof ConfigSchema>
 
 const configPlugin: FastifyPluginAsync = async server => {
-
   if(ajv && ConfigSchema){
     const validate = ajv.compile(ConfigSchema)
     const valid = validate(envData)

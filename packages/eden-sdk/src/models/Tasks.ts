@@ -78,6 +78,7 @@ export const tasksGetRequestConfig = (
 
 export type TasksCreateResponse = WebAPICallResult & {
   error?: string
+  message?: string
   taskId?: string
 }
 

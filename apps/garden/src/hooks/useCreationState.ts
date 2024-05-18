@@ -8,7 +8,6 @@ import { useLocalStorage } from '@mantine/hooks'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useSWRConfig } from 'swr'
 import { EventSourcePolyfill } from 'event-source-polyfill'
-import { CONFIG } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
 import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
 import useSWR from 'swr/immutable'
@@ -68,9 +67,9 @@ export const useCreationState = () => {
 
     if (isAuthenticated && userId) {
       const initEventSource = async () => {
-        console.log('setting up eventsource', `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`)
+        // console.log('setting up eventsource', `${process.env.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`)
         eventSource = new EventSourcePolyfill(
-          `${CONFIG.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`,
+          `${process.env.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`,
           {
             headers: {
               Authorization: `Bearer ${currentAuthToken || await getToken()}`,

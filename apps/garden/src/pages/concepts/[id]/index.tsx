@@ -1,89 +1,111 @@
-// import { Page } from '@/../types/page'
-// import { ConceptHeadTags } from '@/components/HeadTags'
+import HeadTags, { createShareTitle } from '@/components/HeadTags'
+import CdnOgImageTags from '@/components/Media/cdn-og-image-tags'
 import ConceptPage from '@/components/Pages/ConceptPage'
-// import { getAuthHeaders } from '@/lib/auth'
-// import { CONFIG } from '@/lib/config'
-// import { fetcher as fetcherFn } from '@/lib/fetcher'
-// import { getServerSidePropsBase } from '@/lib/ssr'
-// import { Concept as ConceptType } from '@edenlabs/eden-sdk'
-// import { NextApiRequest, NextPageContext } from 'next'
-import Error from 'next/error'
-import React, { useEffect, useState } from 'react'
-import { NextPageContext } from 'next'
-import { maybeRedirectIfItemIdQuery } from '@/lib/redirect'
-import { useRouter } from 'next/router'
+import { getAuthHeaders } from '@/lib/auth'
+import { CONFIG } from '@/lib/config'
+import { fetcher } from '@/lib/fetcher'
+import { handleQueryStringRedirects } from '@/lib/ssr'
+import { Concept } from '@edenlabs/eden-sdk'
+import type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+  InferGetServerSidePropsType,
+  NextApiRequest,
+} from 'next'
+import React from 'react'
 
-// interface PageProps {
-//   data: { concept: ConceptType }
-//   error?: string
-// }
-
-// const fetchConcept = async (context: NextPageContext) => {
-//   const { req, query } = context
-//   const id = query.id ? String(query.id).trim() : false
-//
-//   console.log('conceptPage fetchConcept', id, { process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
-//
-//   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts/${id}`, {
-//     headers: await getAuthHeaders(req as NextApiRequest),
-//   })
-// }
-
-// export const getServerSideProps = getServerSidePropsBase([
-//   {
-//     responseFieldName: 'concept',
-//     dataFetcher: fetchConcept,
-//   },
-// ])
-
-// const Concept: Page<PageProps> = ({ data }: PageProps) => {
-//   if (!data) {
-//     return <Error statusCode={404} withDarkMode={true} />
-//   }
-//
-//   console.log('conceptPage index', { process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
-//   console.log({data})
-//
-//   return (
-//     <>
-//       <ConceptHeadTags concept={data.concept} />
-//       <ConceptPage data={data} />
-//     </>
-//   )
-// }
-
-export async function getServerSideProps(ctx: NextPageContext) {
-  return maybeRedirectIfItemIdQuery(ctx)
+type Repo = {
+  concept: Concept | null
 }
 
-const Concept = () => {
-  // console.log(context)
-  // const { query } = context
-  // console.log(query)
-  // const id = query.id ? String(query.id).trim() : false
-  //
-  // console.log('conceptPage index', {id, process: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, config: CONFIG.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME })
-  // // console.log({data})
+type RepoResult = {
+  repo: Repo
+  error?: string
+}
 
-  const [ conceptId, setConceptId ] = useState<string>()
-  const router = useRouter()
-  useEffect(() => {
-    if (router.query && router.query.id) {
-      setConceptId(router.query.id.toString())
+const fetchConcept = async (
+  context: GetServerSidePropsContext,
+): Promise<{ concept: Concept }> => {
+  const { req, query } = context
+  const id = query.id ? String(query.id).trim() : false
+
+  return fetcher(`${CONFIG.NEXT_PUBLIC_HOST}/api/concepts/${id}`, {
+    headers: await getAuthHeaders(req as NextApiRequest),
+  })
+}
+
+export const getServerSideProps: GetServerSideProps<RepoResult> = async (
+  ctx,
+): Promise<GetServerSidePropsResult<RepoResult>> => {
+  try {
+    const maybeRedirect = await handleQueryStringRedirects(ctx)
+    if (maybeRedirect) {
+      return maybeRedirect as GetServerSidePropsResult<RepoResult>
     }
-  }, [router])
 
-  if (!conceptId) {
-    return (<Error statusCode={404} withDarkMode={true} />)
+    const res = await fetchConcept(ctx)
+
+    if (!res || !res.concept) {
+      return {
+        notFound: true,
+      }
+    }
+
+    return { props: { repo: { concept: res.concept } } }
+  } catch (err) {
+    return { props: { repo: { concept: null }, error: 'Something went wrong' } }
   }
+}
+
+export default function Page({
+  repo,
+  error,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  if (error) {
+    console.error('SSR error', repo, error)
+    return (
+      <>
+        <h4>SSR ERROR</h4>
+        <pre>{error}</pre>
+      </>
+    )
+  }
+
+  if (!repo || !repo.concept) {
+    console.error('SSR data empty', repo, error)
+    return (
+      <>
+        <h4>SSR data not found</h4>
+        <div>SHOULD 404</div>
+        <pre>{error}</pre>
+      </>
+    )
+  }
+
+  const title = createShareTitle({
+    itemType: 'concept',
+    itemName: repo.concept.name,
+    userName: repo.concept?.user?.username || '',
+  })
 
   return (
     <>
-      {/*<ConceptHeadTags concept={data.concept} />*/}
-      <ConceptPage conceptId={conceptId} />
+      <CdnOgImageTags
+        alt={repo.concept.name}
+        src={repo.concept.thumbnail || ''}
+        twitterTitle={title}
+        title={title}
+        width={1024}
+        height={1024}
+      />
+      <HeadTags
+        title={title}
+        itemType="concept"
+        item={repo.concept}
+        description={repo.concept.description || ''}
+      />
+      <ConceptPage initialData={repo.concept} />
     </>
   )
 }
-
-
-export default Concept

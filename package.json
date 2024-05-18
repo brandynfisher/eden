@@ -38,15 +38,15 @@
     "vitest-mongodb": "^0.0.4"
   },
   "lint-staged": {
-    "apps/garden/*.{ts,tsx}": [
+    "apps/garden/**/*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
     ],
-    "apps/api/*.{ts,tsx}": [
+    "apps/api/**/*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
     ],
-    "apps/media-playground/*.{ts,tsx}": [
+    "apps/media-playground/**/*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
     ],

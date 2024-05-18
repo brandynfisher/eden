@@ -1,9 +1,9 @@
 import HomePage from '@/components/Pages/HomePage'
 import { maybeRedirectIfItemIdQuery } from '@/lib/redirect'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import React from 'react'
 
-export async function getServerSideProps(ctx: NextPageContext) {
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   return maybeRedirectIfItemIdQuery(ctx)
 }
 

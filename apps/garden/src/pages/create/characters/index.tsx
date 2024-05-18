@@ -5,14 +5,14 @@ import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
 import { getServerSidePropsBase } from '@/lib/ssr'
 import { Character as CharacterType } from '@edenlabs/eden-sdk'
-import { NextApiRequest, NextPageContext } from 'next'
+import { NextApiRequest, GetServerSidePropsContext } from 'next'
 
 interface PageProps {
   data: CharacterType[]
   error?: string
 }
 
-const fetchCharacters = async (context: NextPageContext) => {
+const fetchCharacters = async (context: GetServerSidePropsContext) => {
   const { req } = context
   const userId = await getAuthUserId(req as NextApiRequest)
 

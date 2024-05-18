@@ -1,7 +1,6 @@
 import { OrderByPopularity } from '@/components/Layout/buttons/OrderByButtons'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
-import { message } from 'antd'
 import { MessageInstance } from 'antd/es/message/interface'
 import axios, { AxiosError } from 'axios'
 import queryString from 'query-string'
@@ -22,14 +21,14 @@ export const handleAxiosError = (
       customMessage ??
       (error.response?.data.message || 'Unknown Error has occurred')
 
-    message.destroy()
-    message.error(toastMessage)
+    messageInstance.destroy()
+    messageInstance.error(toastMessage)
   }
 }
 
 export const handleAxiosServerError = (error: AxiosError | unknown) => {
   if (axios.isAxiosError(error)) {
-    return error.response?.data.message || 'Unknown Error has occurred'
+    return 'ServerError: ' + (error.response?.data.message || 'Unknown Error has occurred')
   }
 
   return 'Unknown Error has occurred'

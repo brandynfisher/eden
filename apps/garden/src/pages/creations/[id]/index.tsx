@@ -1,71 +1,142 @@
-// import { Page } from '@/../types/page'
-// import { CreationHeadTags } from '@/components/HeadTags'
+import HeadTags, { createShareTitle } from '@/components/HeadTags'
+import CdnOgImageTags from '@/components/Media/cdn-og-image-tags'
 import CreationPage from '@/components/Pages/CreationPage'
-// import { getAuthHeaders } from '@/lib/auth'
-// import { CONFIG } from '@/lib/config'
-// import { fetcher as fetcherFn } from '@/lib/fetcher'
-// import { getServerSidePropsBase } from '@/lib/ssr'
-// import { Creation } from '@edenlabs/eden-sdk'
-// import { NextApiRequest, NextPageContext } from 'next'
-import Error from 'next/error'
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
-//
-// interface PageProps {
-//   data: {
-//     creation: Creation
-//   }
-//   error?: string
-// }
-//
-// const fetchCreation = async (context: NextPageContext) => {
-//   const { req, query } = context
-//   const id = query.id ? String(query.id).trim() : false
-//
-//   return fetcherFn(`${CONFIG.NEXT_PUBLIC_HOST}/api/creations/${id}`, {
-//     headers: await getAuthHeaders(req as NextApiRequest),
-//   })
-// }
-//
-// export const getServerSideProps = getServerSidePropsBase([
-//   {
-//     responseFieldName: 'creation',
-//     dataFetcher: fetchCreation,
-//   },
-// ])
-//
-// const creation: Page<PageProps> = ({ data }: PageProps) => {
-//   if (!data) {
-//     return <Error statusCode={404} withDarkMode={true} />
-//   }
-//
-//   return (
-//     <>
-//       <CreationHeadTags creation={data.creation} />
-//       <CreationPage data={data.creation} />
-//     </>
-//   )
-// }
+import { getAuthHeaders } from '@/lib/auth'
+import { fetcher } from '@/lib/fetcher'
+import { handleQueryStringRedirects } from '@/lib/ssr'
+import { Creation } from '@edenlabs/eden-sdk'
+import type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+  InferGetServerSidePropsType,
+  NextApiRequest,
+} from 'next'
+import React from 'react'
 
-const Creation = () => {
-  const [ creationId, setCreationId ] = useState<string>()
-  const router = useRouter()
-  useEffect(() => {
-    if (router.query && router.query.id) {
-      setCreationId(router.query.id.toString())
+type Repo = {
+  creation: Creation | null
+}
+
+type RepoResult = {
+  repo: Repo
+  error?: string
+}
+
+const fetchCreation = async (
+  context: GetServerSidePropsContext,
+): Promise<{ creation: Creation }> => {
+  const { req, query } = context
+  const id = query.id ? String(query.id).trim() : false
+
+  return fetcher(`${process.env.NEXT_PUBLIC_HOST}/api/creations/${id}`, {
+    headers: await getAuthHeaders(req as NextApiRequest),
+  })
+}
+
+export const getServerSideProps: GetServerSideProps<RepoResult> = async (
+  ctx,
+): Promise<GetServerSidePropsResult<RepoResult>> => {
+  try {
+    console.log('getServerSideProps')
+    const maybeRedirect = await handleQueryStringRedirects(ctx)
+    if (maybeRedirect) {
+      return maybeRedirect as GetServerSidePropsResult<RepoResult>
     }
-  }, [router])
 
-  if (!creationId) {
-    return <Error statusCode={404} withDarkMode={true} />
+    console.log('getServerSideProps - no redirect')
+
+    console.log('getServerSideProps fetch', {
+      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+    })
+
+    const res = await fetchCreation(ctx)
+
+    console.log('getServerSideProps api response', res)
+
+    if (!res || !res.creation) {
+      return {
+        notFound: true,
+      }
+    }
+
+    return { props: { repo: { creation: res.creation } } }
+  } catch (err) {
+    return {
+      props: { repo: { creation: null }, error: 'Something went wrong' },
+    }
   }
+}
+
+export default function Page({
+  repo,
+  error,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  console.log('Page', {
+    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  })
+  if (error) {
+    console.error('SSR error', repo, error)
+    return (
+      <>
+        <h4>SSR ERROR</h4>
+        <pre>{error}</pre>
+      </>
+    )
+  }
+
+  if (!repo || !repo.creation) {
+    console.error('SSR data empty - 404', repo, error)
+    return (
+      <>
+        <h4>SSR data not found</h4>
+        <div>SHOULD 404</div>
+        <pre>{error}</pre>
+      </>
+    )
+  }
+
+  const title = createShareTitle({
+    itemType: 'creation',
+    userName: repo.creation?.user?.username,
+    itemSuffix: repo.creation.task?.generator?.generatorName,
+  })
+
+  const isCloudinaryAsset = repo.creation?.thumbnail?.startsWith(
+    'https://res.cloudinary.com/',
+  )
 
   return (
     <>
-      {/*<CreationHeadTags creation={data.creation} />*/}
-      <CreationPage creationId={creationId} />
+      {/* //@todo: this will break for non cloudinary ASSETS! */}
+      {/* //@todo: old assets need exactly the old handling... fuck */}
+      <CdnOgImageTags
+        alt={repo.creation.name}
+        src={repo.creation.thumbnail || ''}
+        twitterTitle={title}
+        twitterCard={
+          repo.creation.mediaAttributes.type !== 'video'
+            ? 'summary_large_image'
+            : 'player'
+        }
+        title={title}
+        assetType={repo.creation.mediaAttributes.type}
+        width={
+          isCloudinaryAsset ? undefined : repo.creation.mediaAttributes.width
+        }
+        height={
+          isCloudinaryAsset ? undefined : repo.creation.mediaAttributes.height
+        }
+      />
+      <HeadTags
+        title={title}
+        itemType="creation"
+        item={repo.creation}
+        description={repo.creation.name}
+      />
+      <CreationPage initialData={repo.creation} />
     </>
   )
 }
-
-export default Creation

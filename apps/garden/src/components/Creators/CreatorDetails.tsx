@@ -10,7 +10,7 @@ import { UserContext } from '@/providers/UserProvider'
 import { Creator } from '@edenlabs/eden-sdk'
 import { Tabs } from 'antd'
 import { useRouter } from 'next/router'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const CreatorDetails = ({
   creator,
@@ -23,6 +23,7 @@ const CreatorDetails = ({
   modalContainerHeight?: number
   initialActiveTab?: string
 }) => {
+  const [ activeTabKey, setActiveTabKey ] = useState(initialActiveTab)
   const { creator: creatorData } = useCreator(creator._id, {
     fallbackData: { creator },
   })
@@ -77,6 +78,11 @@ const CreatorDetails = ({
     },
   ]
 
+  useEffect(() => {
+    setActiveTabKey(router.query.tab
+      ? String(router.query.tab)
+      : initialActiveTab || 'creations')
+  }, [router])
   if (!creatorData) {
     return <LoadingIndicator />
   }
@@ -92,16 +98,12 @@ const CreatorDetails = ({
       <Tabs
         onChange={async tabKey => {
           await router.push(
+            `/creators/[id]/[[...tab]]`,
             `/creators/${creatorData.username}/${tabKey}`,
-            undefined,
             { shallow: true },
           )
         }}
-        activeKey={
-          router.query.tab
-            ? String(router.query.tab)
-            : initialActiveTab || 'creations'
-        }
+        activeKey={activeTabKey}
         centered
         items={creatorPageTabs}
         destroyInactiveTabPane={true}
