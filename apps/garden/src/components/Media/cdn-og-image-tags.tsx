@@ -5,14 +5,20 @@ import OgImageTags from '@/components/Media/next-cloudinary/CldOgImage/OgImageTa
 import React from 'react'
 
 const CdnOgImageTags = (props: CldOgImageProps) => {
+  const { width, height, ...rest } = props
+
   if (props.src && props.src.startsWith('https://res.cloudinary.com/')) {
-    return <CldOgImage {...props} />
+    return <CldOgImage {...rest} />
   }
 
-  //@todo: else return S3 compatible image/video/media related meta tags
-
   return (
-    <OgImageTags {...props} imageUrl={props.src} twitterImageUrl={props.src} />
+    <OgImageTags
+      {...rest}
+      width={width}
+      height={height}
+      imageUrl={props.src}
+      twitterImageUrl={props.src}
+    />
   )
 }
 
