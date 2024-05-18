@@ -34,18 +34,21 @@ const CldOgImage = ({
   // webp for Twitter as it supports it (and we can control with tags) where
   // other platforms may not support webp, so we deliver jpg
 
-  const ogImageUrl = getCldOgImageUrl({
-    ...props,
-    width,
-    height,
-  })
+  const ogImageUrl =
+    getCldOgImageUrl({
+      ...props,
+      format: 'jpg',
+      width,
+      height,
+    }) + '.jpg'
 
-  const twitterImageUrl = getCldOgImageUrl({
-    ...props,
-    width,
-    height,
-    format: props.format || 'webp',
-  })
+  const twitterImageUrl =
+    getCldOgImageUrl({
+      ...props,
+      width,
+      height,
+      format: props.format || 'webp',
+    }) + (props.format || '.webp')
 
   return (
     <OgImageTags
