@@ -63,7 +63,7 @@ const getCreation = async (
       return res.status(500).json({ message: response.message || 'Internal Error - unknown' })
     }
 
-    if (response && !response.creation) {
+    if (!response.creation) {
       return res.status(404).json({ message: response.message || `Creation ${id} not found` })
     }
 

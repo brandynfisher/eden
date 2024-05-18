@@ -9,9 +9,10 @@ import type {
 import { getAuthHeaders } from '@/lib/auth'
 import { handleQueryStringRedirects } from '@/lib/ssr'
 import CdnImage from '@/components/Media/cdn-image'
+import { CldOgImage } from 'next-cloudinary'
 
 type Repo = {
-  response: {}|null
+  response: {} | null
 }
 
 type RepoResult = {
@@ -19,7 +20,7 @@ type RepoResult = {
   error?: string
 }
 
-const fetchData = async (context: GetServerSidePropsContext): Promise<{ response: {}|null }> => {
+const fetchData = async (context: GetServerSidePropsContext): Promise<{ response: {} | null }> => {
   const { req } = context
 
   return fetcher(`${process.env.NEXT_PUBLIC_HOST}/api/env`, {
@@ -80,8 +81,19 @@ export default function Page({
     <>
       {JSON.stringify(repo)}
       <div>
-        <CdnImage alt={'123'} src={'/123.notfound.png'} width={64} height={64}/>
-        <CdnImage alt={'123'} src={'https://res.cloudinary.com/dihgjel45/image/upload/v1715859085/creations/rvqvh7ht4qpbiptke6si.jpg'} width={64} height={64}/>
+        {/*<CdnImage alt={'123'} src={'/123.notfound.png'} width={64} height={64}/>*/}
+        <CdnImage
+          alt={'123'}
+          src={'https://res.cloudinary.com/dihgjel45/image/upload/v1715859085/creations/rvqvh7ht4qpbiptke6si.jpg'}
+          width={64}
+          height={64}
+        />
+        <CldOgImage
+          alt={'123 og'}
+          title={'image og title'}
+          twitterTitle={'image twitter title'}
+          src={'https://res.cloudinary.com/dihgjel45/image/upload/v1715859085/creations/rvqvh7ht4qpbiptke6si.jpg'}
+        />
       </div>
     </>
   )
