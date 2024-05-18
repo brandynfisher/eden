@@ -1,4 +1,4 @@
-import { CreatorHeadTags } from '@/components/HeadTags'
+import HeadTags from '@/components/HeadTags'
 import CreatorPage from '@/components/Pages/CreatorPage'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
@@ -12,6 +12,8 @@ import {
 import React from 'react'
 import { Creator } from '@edenlabs/eden-sdk'
 import { handleQueryStringRedirects } from '@/lib/ssr'
+import CdnOgImage from '@/components/Media/cdn-og-image'
+import { possessivy } from '@/lib/string'
 
 type Repo = {
   creator: Creator | null
@@ -60,7 +62,6 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
 export default function Page({
   repo, error,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  // console.log({repo, error})
   if (error) {
     console.error('SSR error', repo, error)
     return (
@@ -86,9 +87,22 @@ export default function Page({
     )
   }
 
+  const title = `${possessivy(repo.creator.username || '')} Profile`
+
   return (
     <>
-      <CreatorHeadTags creator={repo.creator} />
+      <CdnOgImage
+        alt={repo.creator.username || ''}
+        src={repo.creator.userImage || ''}
+        twitterTitle={title}
+        title={title}
+      />
+      <HeadTags
+        title={title}
+        itemType='creator'
+        item={repo.creator}
+        description={`${repo.creator.creationsCount} Creations | ${repo.creator.followerCount} Followers`}
+      />
       <CreatorPage initialData={repo.creator} activeTab={repo.tab} />
     </>
   )

@@ -1,4 +1,4 @@
-import { CharacterHeadTags } from '@/components/HeadTags'
+import HeadTags, { createShareTitle } from '@/components/HeadTags'
 import CharacterPage from '@/components/Pages/CharacterPage'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
@@ -13,6 +13,7 @@ import type {
 } from 'next'
 import { Character } from '@edenlabs/eden-sdk'
 import { handleQueryStringRedirects } from '@/lib/ssr'
+import CdnOgImage from '@/components/Media/cdn-og-image'
 
 type Repo = {
   character: Character | null
@@ -82,9 +83,25 @@ export default function Page({
     )
   }
 
+  const title = createShareTitle({
+    itemType: 'character',
+    itemName: repo.character.name,
+    userName: repo.character?.user?.username || '',
+  })
+
   return (
     <>
-      <CharacterHeadTags character={repo.character} />
+      <CdnOgImage
+        alt={repo.character.name}
+        src={repo.character.image || ''}
+        twitterTitle={title}
+        title={title}
+      />
+      <HeadTags
+        title={title}
+        itemType='character'
+        item={repo.character}
+      />
       <CharacterPage initialData={repo.character} />
     </>
   )

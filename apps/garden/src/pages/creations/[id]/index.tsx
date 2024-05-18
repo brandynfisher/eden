@@ -8,11 +8,12 @@ import type {
   NextApiRequest,
 } from 'next'
 import { getAuthHeaders } from '@/lib/auth'
-import { CreationHeadTags } from '@/components/HeadTags'
+import HeadTags, { createShareTitle } from '@/components/HeadTags'
 import CreationPage from '@/components/Pages/CreationPage'
 import CdnOgImage from '@/components/Media/cdn-og-image'
 import { capitalize } from '@/lib/string'
 import { handleQueryStringRedirects } from '@/lib/ssr'
+import React from 'react'
 
 type Repo = {
   creation: Creation | null
@@ -89,7 +90,11 @@ export default function Page({
     )
   }
 
-  const title = `${capitalize('creation')} by ${repo.creation?.user?.username}${repo.creation.task?.generator?.generatorName ? ` | ${repo.creation.task?.generator?.generatorName}` : ''}`
+  const title = createShareTitle({
+    itemType: 'creation',
+    userName: repo.creation?.user?.username,
+    itemSuffix: repo.creation.task?.generator?.generatorName
+  })
 
   return (
     <>
@@ -103,10 +108,13 @@ export default function Page({
         title={title}
         assetType={repo.creation.mediaAttributes.type}
       />
-      <CreationHeadTags creation={repo.creation} />
-
+      <HeadTags
+        title={title}
+        itemType='creation'
+        item={repo.creation}
+        description={repo.creation.name}
+      />
       <CreationPage initialData={repo.creation} />
-      {/*<CldOgImage alt={repo.creation.name} src={repo.creation.thumbnail || ''} twitterTitle={title} title={title} assetType={repo.creation.mediaAttributes.type}/>*/}
     </>
   )
 }

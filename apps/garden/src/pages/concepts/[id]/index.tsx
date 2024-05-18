@@ -9,9 +9,11 @@ import type {
 } from 'next'
 import { CONFIG } from '@/lib/config'
 import { getAuthHeaders } from '@/lib/auth'
-import { ConceptHeadTags } from '@/components/HeadTags'
+import HeadTags, { createShareTitle } from '@/components/HeadTags'
 import ConceptPage from '@/components/Pages/ConceptPage'
 import { handleQueryStringRedirects } from '@/lib/ssr'
+import CdnOgImage from '@/components/Media/cdn-og-image'
+import React from 'react'
 
 type Repo = {
   concept: Concept | null
@@ -80,9 +82,26 @@ export default function Page({
     )
   }
 
+  const title = createShareTitle({
+    itemType: 'concept',
+    itemName: repo.concept.name,
+    userName: repo.concept?.user?.username || '',
+  })
+
   return (
     <>
-      <ConceptHeadTags concept={repo.concept} />
+      <CdnOgImage
+        alt={repo.concept.name}
+        src={repo.concept.thumbnail || ''}
+        twitterTitle={title}
+        title={title}
+      />
+      <HeadTags
+        title={title}
+        itemType='concept'
+        item={repo.concept}
+        description={repo.concept.description || ''}
+      />
       <ConceptPage initialData={repo.concept} />
     </>
   )

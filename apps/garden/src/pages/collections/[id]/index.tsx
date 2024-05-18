@@ -1,4 +1,4 @@
-import { CollectionHeadTags } from '@/components/HeadTags'
+import HeadTags from '@/components/HeadTags'
 import CollectionPage from '@/components/Pages/CollectionPage'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
@@ -12,6 +12,7 @@ import {
 } from 'next'
 import React from 'react'
 import { Collection } from '@edenlabs/eden-sdk'
+import CdnOgImage from '@/components/Media/cdn-og-image'
 
 type Repo = {
   collection: Collection | null
@@ -82,9 +83,22 @@ export default function Page({
     )
   }
 
+  const title = `Collection "${repo.collection.name}" by ${repo.collection.creatorName} | Garden of Eden`
+
   return (
     <>
-      <CollectionHeadTags collection={repo.collection} />
+      <CdnOgImage
+        alt={`${repo.collection.name} - Collection by ${repo.collection.creatorName}`}
+        src={repo.collection.displayImageUri || ''}
+        twitterTitle={title}
+        title={title}
+      />
+      <HeadTags
+        title={title}
+        description={`${repo.collection.creations.length} creations curated by ${repo.collection.creatorName}`}
+        itemType='collection'
+        item={repo.collection}
+      />
       <CollectionPage initialData={repo.collection} />
     </>
   )
