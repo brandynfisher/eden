@@ -1,35 +1,35 @@
-import React from 'react';
-import Head from 'next/head';
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '../../constants/sizes'
+import { getCldOgImageUrl } from '../../helpers/getCldOgImageUrl'
+import { CldImageProps } from '../CldImage/CldImage'
+import OgImageTags from '@/components/Media/next-cloudinary/CldOgImage/OgImageTags'
+import React from 'react'
 
-import { CldImageProps } from '../CldImage/CldImage';
-import { getCldOgImageUrl } from '../../helpers/getCldOgImageUrl';
-import { OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT } from '../../constants/sizes';
-
-type TwitterCardType = 'summary_large_image'|'player'
+type TwitterCardType = 'summary_large_image' | 'player'
 
 export type CldOgImageProps = CldImageProps & {
-  excludeTags?: Array<string>;
-  keys?: object;
-  twitterTitle?: string;
+  excludeTags?: Array<string>
+  keys?: object
+  twitterTitle?: string
   twitterCard?: TwitterCardType
 }
 
-const CldOgImage = ({ excludeTags = [], twitterTitle, twitterCard = 'summary_large_image', keys = {}, ...props }: CldOgImageProps) => {
-  const { alt } = props;
-
+const CldOgImage = ({
+  excludeTags = [],
+  twitterTitle,
+  twitterCard = 'summary_large_image',
+  keys = {},
+  ...props
+}: CldOgImageProps) => {
   // We need to separately handle the width and the height to allow our user to pass in
   // a custom value, but also we need to know this at the component level so that we can
   // use it when rendering the meta tags
 
-  let {
-    width = OG_IMAGE_WIDTH,
-    height = OG_IMAGE_HEIGHT
-  } = props;
+  let { width = OG_IMAGE_WIDTH, height = OG_IMAGE_HEIGHT } = props
 
   // Normalize the width and height
 
-  width = typeof width === 'string' ? parseInt(width) : width;
-  height = typeof height === 'string' ? parseInt(height) : height;
+  width = typeof width === 'string' ? parseInt(width) : width
+  height = typeof height === 'string' ? parseInt(height) : height
 
   // Render the final URLs. We use two different format versions to deliver
   // webp for Twitter as it supports it (and we can control with tags) where
@@ -38,55 +38,29 @@ const CldOgImage = ({ excludeTags = [], twitterTitle, twitterCard = 'summary_lar
   const ogImageUrl = getCldOgImageUrl({
     ...props,
     width,
-    height
-  });
+    height,
+  })
 
   const twitterImageUrl = getCldOgImageUrl({
     ...props,
     width,
     height,
     format: props.format || 'webp',
-  });
-
-  const metaKeys = {
-    'og:image': 'og-image',
-    'og:image:secure_url': 'og-image-secureurl',
-    'og:image:width': 'og-image-width',
-    'og:image:height': 'og-image-height',
-    'og:image:alt': 'og-image-alt',
-    'twitter:title': 'twitter-title',
-    'twitter:card': 'twitter-card',
-    'twitter:image': 'twitter-image',
-    ...keys
-  }
-
-  // We need to include the tags within the Next.js Head component rather than
-  // directly adding them inside the Head otherwise we get unexpected results
+  })
 
   return (
-    <Head>
-      <meta key={metaKeys['og:image']} property="og:image" content={ogImageUrl} />
-      <meta key={metaKeys['og:image:secure_url']} property="og:image:secure_url" content={ogImageUrl} />
-      <meta key={metaKeys['og:image:width']} property="og:image:width" content={`${width}`} />
-      <meta key={metaKeys['og:image:height']} property="og:image:height" content={`${height}`} />
-
-      {alt && (
-        <meta key={metaKeys['og:image:alt']} property="og:image:alt" content={alt} />
-      )}
-
-      {/* Required for summary_large_image, exclude vai excludeTags */}
-      {/* https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image */}
-      {!excludeTags.includes('twitter:title') && (
-        <meta key={metaKeys['twitter:title']} property="twitter:title" content={twitterTitle || ' '} />
-      )}
-
-      {!excludeTags.includes('twitter:card') && (
-        <meta key={metaKeys['twitter:card']} property='twitter:card' content={twitterCard} />
-      )}
-
-      <meta key={metaKeys['twitter:image']} property='twitter:image' content={twitterImageUrl} />
-    </Head>
-  );
+    <OgImageTags
+      {...props}
+      keys={keys}
+      twitterTitle={twitterTitle}
+      twitterCard={twitterCard}
+      imageUrl={ogImageUrl}
+      twitterImageUrl={twitterImageUrl}
+      width={width}
+      height={height}
+      excludeTags={excludeTags}
+    />
+  )
 }
 
-export default CldOgImage;
+export default CldOgImage

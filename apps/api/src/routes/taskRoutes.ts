@@ -58,21 +58,21 @@ const taskRoutes: FastifyPluginAsync = async server => {
           taskId: Type.String(),
         }),
         400: {
-          error: Type.Optional(Type.String()),
+          // error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
         },
         401: {
-          error: Type.Optional(Type.String()),
+          // error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
         },
         404: {
-          error: Type.Optional(Type.String()),
+          // error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
         },
         500: {
-          error: Type.Optional(Type.String()),
+          // error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
-        }
+        },
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],

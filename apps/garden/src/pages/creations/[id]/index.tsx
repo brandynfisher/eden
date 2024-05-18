@@ -1,4 +1,9 @@
+import HeadTags, { createShareTitle } from '@/components/HeadTags'
+import CdnOgImageTags from '@/components/Media/cdn-og-image-tags'
+import CreationPage from '@/components/Pages/CreationPage'
+import { getAuthHeaders } from '@/lib/auth'
 import { fetcher } from '@/lib/fetcher'
+import { handleQueryStringRedirects } from '@/lib/ssr'
 import { Creation } from '@edenlabs/eden-sdk'
 import type {
   GetServerSideProps,
@@ -7,11 +12,6 @@ import type {
   InferGetServerSidePropsType,
   NextApiRequest,
 } from 'next'
-import { getAuthHeaders } from '@/lib/auth'
-import HeadTags, { createShareTitle } from '@/components/HeadTags'
-import CreationPage from '@/components/Pages/CreationPage'
-import CdnOgImage from '@/components/Media/cdn-og-image'
-import { handleQueryStringRedirects } from '@/lib/ssr'
 import React from 'react'
 
 type Repo = {
@@ -19,11 +19,13 @@ type Repo = {
 }
 
 type RepoResult = {
-  repo: Repo,
+  repo: Repo
   error?: string
 }
 
-const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ creation: Creation }> => {
+const fetchCreation = async (
+  context: GetServerSidePropsContext,
+): Promise<{ creation: Creation }> => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
@@ -32,7 +34,9 @@ const fetchCreation = async (context: GetServerSidePropsContext): Promise<{ crea
   })
 }
 
-export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
+export const getServerSideProps: GetServerSideProps<RepoResult> = async (
+  ctx,
+): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
     console.log('getServerSideProps')
     const maybeRedirect = await handleQueryStringRedirects(ctx)
@@ -40,9 +44,12 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
       return maybeRedirect as GetServerSidePropsResult<RepoResult>
     }
 
-    console.log('getServerSideProps - no redirect' )
+    console.log('getServerSideProps - no redirect')
 
-    console.log('getServerSideProps fetch', {cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY})
+    console.log('getServerSideProps fetch', {
+      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+    })
 
     const res = await fetchCreation(ctx)
 
@@ -56,22 +63,26 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
 
     return { props: { repo: { creation: res.creation } } }
   } catch (err) {
-    return { props: { repo: { creation: null }, error: 'Something went wrong' } }
+    return {
+      props: { repo: { creation: null }, error: 'Something went wrong' },
+    }
   }
 }
 
 export default function Page({
-  repo, error,
+  repo,
+  error,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  console.log('Page', {cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY})
+  console.log('Page', {
+    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  })
   if (error) {
     console.error('SSR error', repo, error)
     return (
       <>
         <h4>SSR ERROR</h4>
-        <pre>
-          {error}
-        </pre>
+        <pre>{error}</pre>
       </>
     )
   }
@@ -82,9 +93,7 @@ export default function Page({
       <>
         <h4>SSR data not found</h4>
         <div>SHOULD 404</div>
-        <pre>
-          {error}
-        </pre>
+        <pre>{error}</pre>
       </>
     )
   }
@@ -92,24 +101,30 @@ export default function Page({
   const title = createShareTitle({
     itemType: 'creation',
     userName: repo.creation?.user?.username,
-    itemSuffix: repo.creation.task?.generator?.generatorName
+    itemSuffix: repo.creation.task?.generator?.generatorName,
   })
 
   return (
     <>
       {/* //@todo: this will break for non cloudinary ASSETS! */}
       {/* //@todo: old assets need exactly the old handling... fuck */}
-      <CdnOgImage
+      <CdnOgImageTags
         alt={repo.creation.name}
         src={repo.creation.thumbnail || ''}
         twitterTitle={title}
-        twitterCard={repo.creation.mediaAttributes.type !== 'video' ? 'summary_large_image' : 'player' }
+        twitterCard={
+          repo.creation.mediaAttributes.type !== 'video'
+            ? 'summary_large_image'
+            : 'player'
+        }
         title={title}
         assetType={repo.creation.mediaAttributes.type}
+        width={repo.creation.mediaAttributes.width}
+        height={repo.creation.mediaAttributes.height}
       />
       <HeadTags
         title={title}
-        itemType='creation'
+        itemType="creation"
         item={repo.creation}
         description={repo.creation.name}
       />

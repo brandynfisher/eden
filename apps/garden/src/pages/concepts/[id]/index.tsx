@@ -1,4 +1,10 @@
+import HeadTags, { createShareTitle } from '@/components/HeadTags'
+import CdnOgImageTags from '@/components/Media/cdn-og-image-tags'
+import ConceptPage from '@/components/Pages/ConceptPage'
+import { getAuthHeaders } from '@/lib/auth'
+import { CONFIG } from '@/lib/config'
 import { fetcher } from '@/lib/fetcher'
+import { handleQueryStringRedirects } from '@/lib/ssr'
 import { Concept } from '@edenlabs/eden-sdk'
 import type {
   GetServerSideProps,
@@ -7,12 +13,6 @@ import type {
   InferGetServerSidePropsType,
   NextApiRequest,
 } from 'next'
-import { CONFIG } from '@/lib/config'
-import { getAuthHeaders } from '@/lib/auth'
-import HeadTags, { createShareTitle } from '@/components/HeadTags'
-import ConceptPage from '@/components/Pages/ConceptPage'
-import { handleQueryStringRedirects } from '@/lib/ssr'
-import CdnOgImage from '@/components/Media/cdn-og-image'
 import React from 'react'
 
 type Repo = {
@@ -20,11 +20,13 @@ type Repo = {
 }
 
 type RepoResult = {
-  repo: Repo,
+  repo: Repo
   error?: string
 }
 
-const fetchConcept = async (context: GetServerSidePropsContext): Promise<{ concept: Concept}> => {
+const fetchConcept = async (
+  context: GetServerSidePropsContext,
+): Promise<{ concept: Concept }> => {
   const { req, query } = context
   const id = query.id ? String(query.id).trim() : false
 
@@ -33,7 +35,9 @@ const fetchConcept = async (context: GetServerSidePropsContext): Promise<{ conce
   })
 }
 
-export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
+export const getServerSideProps: GetServerSideProps<RepoResult> = async (
+  ctx,
+): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
     const maybeRedirect = await handleQueryStringRedirects(ctx)
     if (maybeRedirect) {
@@ -55,16 +59,15 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
 }
 
 export default function Page({
-  repo, error
+  repo,
+  error,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   if (error) {
     console.error('SSR error', repo, error)
     return (
       <>
         <h4>SSR ERROR</h4>
-        <pre>
-          {error}
-        </pre>
+        <pre>{error}</pre>
       </>
     )
   }
@@ -75,9 +78,7 @@ export default function Page({
       <>
         <h4>SSR data not found</h4>
         <div>SHOULD 404</div>
-        <pre>
-          {error}
-        </pre>
+        <pre>{error}</pre>
       </>
     )
   }
@@ -90,15 +91,17 @@ export default function Page({
 
   return (
     <>
-      <CdnOgImage
+      <CdnOgImageTags
         alt={repo.concept.name}
         src={repo.concept.thumbnail || ''}
         twitterTitle={title}
         title={title}
+        width={1024}
+        height={1024}
       />
       <HeadTags
         title={title}
-        itemType='concept'
+        itemType="concept"
         item={repo.concept}
         description={repo.concept.description || ''}
       />

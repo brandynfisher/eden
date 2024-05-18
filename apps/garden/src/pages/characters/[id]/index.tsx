@@ -1,9 +1,11 @@
 import HeadTags, { createShareTitle } from '@/components/HeadTags'
+import CdnOgImageTags from '@/components/Media/cdn-og-image-tags'
 import CharacterPage from '@/components/Pages/CharacterPage'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { fetcher as fetcherFn } from '@/lib/fetcher'
-import React from 'react'
+import { handleQueryStringRedirects } from '@/lib/ssr'
+import { Character } from '@edenlabs/eden-sdk'
 import type {
   GetServerSideProps,
   GetServerSidePropsContext,
@@ -11,16 +13,14 @@ import type {
   InferGetServerSidePropsType,
   NextApiRequest,
 } from 'next'
-import { Character } from '@edenlabs/eden-sdk'
-import { handleQueryStringRedirects } from '@/lib/ssr'
-import CdnOgImage from '@/components/Media/cdn-og-image'
+import React from 'react'
 
 type Repo = {
   character: Character | null
 }
 
 type RepoResult = {
-  repo: Repo,
+  repo: Repo
   error?: string
 }
 
@@ -33,7 +33,9 @@ const fetchCharacter = async (context: GetServerSidePropsContext) => {
   })
 }
 
-export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): Promise<GetServerSidePropsResult<RepoResult>> => {
+export const getServerSideProps: GetServerSideProps<RepoResult> = async (
+  ctx,
+): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
     const maybeRedirect = await handleQueryStringRedirects(ctx)
     if (maybeRedirect) {
@@ -50,22 +52,22 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (ctx): P
 
     return { props: { repo: { character: res.character } } }
   } catch (err) {
-    return { props: { repo: { character: null }, error: 'Something went wrong' } }
+    return {
+      props: { repo: { character: null }, error: 'Something went wrong' },
+    }
   }
 }
 
-
 export default function Page({
-  repo, error,
+  repo,
+  error,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   if (error) {
     console.error('SSR error', repo, error)
     return (
       <>
         <h4>SSR ERROR</h4>
-        <pre>
-          {error}
-        </pre>
+        <pre>{error}</pre>
       </>
     )
   }
@@ -76,9 +78,7 @@ export default function Page({
       <>
         <h4>SSR data not found</h4>
         <div>SHOULD 404</div>
-        <pre>
-          {error}
-        </pre>
+        <pre>{error}</pre>
       </>
     )
   }
@@ -91,17 +91,15 @@ export default function Page({
 
   return (
     <>
-      <CdnOgImage
+      <CdnOgImageTags
         alt={repo.character.name}
         src={repo.character.image || ''}
         twitterTitle={title}
         title={title}
+        width={1024}
+        height={1024}
       />
-      <HeadTags
-        title={title}
-        itemType='character'
-        item={repo.character}
-      />
+      <HeadTags title={title} itemType="character" item={repo.character} />
       <CharacterPage initialData={repo.character} />
     </>
   )

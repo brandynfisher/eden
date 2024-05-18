@@ -1,5 +1,5 @@
 import HeadTags from '@/components/HeadTags'
-import CdnOgImage from '@/components/Media/cdn-og-image'
+import CdnOgImageTags from '@/components/Media/cdn-og-image-tags'
 import CollectionPage from '@/components/Pages/CollectionPage'
 import { getAuthHeaders } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
@@ -87,11 +87,13 @@ export default function Page({
 
   return (
     <>
-      <CdnOgImage
+      <CdnOgImageTags
         alt={`${repo.collection.name} - Collection by ${repo.collection.creatorName}`}
         src={repo.collection.displayImageUri || ''}
         twitterTitle={title}
         title={title}
+        width={1024}
+        height={1024}
       />
       <HeadTags
         title={title}
