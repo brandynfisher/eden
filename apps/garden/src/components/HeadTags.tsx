@@ -10,7 +10,8 @@ import {
 } from '@edenlabs/eden-sdk'
 import Head from 'next/head'
 import React from 'react'
-import { getCldOgImageUrl, getCldVideoUrl } from 'next-cloudinary'
+import { getCldOgImageUrl } from '@/components/Media/helpers/getCldOgImageUrl'
+import { getCldVideoUrl } from '@/components/Media/helpers/getCldVideoUrl'
 
 
 export const getItemCldThumbnailUrl = (thumbnailUrl: string|undefined) => {
