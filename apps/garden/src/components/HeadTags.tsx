@@ -112,11 +112,14 @@ const HeadTags = ({
         </>
       ) : null}
       <meta property="twitter:site" content="@eden_art_" key="twitter-site" />
-      <meta
-        property="twitter:description"
-        content={description || ''}
-        key="twitter-description"
-      />
+
+      {description ? (
+        <meta
+          property="twitter:description"
+          content={description}
+          key="twitter-description"
+        />
+      ) : null}
 
       {itemType === 'creation' ||
       itemType === 'concept' ||
