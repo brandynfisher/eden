@@ -90,6 +90,9 @@ export default function Page({
   }
 
   const title = `${possessivy(repo.creator.username || '')} Profile`
+  const isCloudinaryAsset = repo.creator?.userImage?.startsWith(
+    'https://res.cloudinary.com/',
+  )
 
   return (
     <>
@@ -98,8 +101,8 @@ export default function Page({
         src={repo.creator.userImage || ''}
         twitterTitle={title}
         title={title}
-        width={1024}
-        height={1024}
+        width={isCloudinaryAsset ? undefined : 1024}
+        height={isCloudinaryAsset ? undefined : 1024}
       />
       <HeadTags
         title={title}
