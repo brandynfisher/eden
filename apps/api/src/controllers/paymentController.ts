@@ -500,10 +500,11 @@ const handlePaymentSuccess = async (
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
   }
 
-  //@ts-ignore
   const sessionMetaData =
+    //@ts-ignore
     rawStripeEventDataObject && rawStripeEventDataObject.metadata
-      ? rawStripeEventDataObject.metadata
+      ? //@ts-ignore
+        rawStripeEventDataObject.metadata
       : {}
   await trackCheckoutComplete(server, sessionMetaData.analyticsClientId || '', {
     transaction_id: sessionId,
