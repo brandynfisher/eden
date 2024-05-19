@@ -447,6 +447,7 @@ const handlePaymentSuccess = async (
   server: FastifyInstance,
   reply: FastifyReply,
   { userId, sessionId }: StripeDataObject,
+  rawStripeEventDataObject: Stripe.Event.Data.Object,
 ) => {
   if (!server.stripe) {
     return reply.status(500).send({
@@ -499,7 +500,12 @@ const handlePaymentSuccess = async (
     await handleTopUp(server, reply, metadata as TopUpMetadata, user)
   }
 
-  await trackCheckoutComplete(server, metadata.analyticsClientId || '', {
+  //@ts-ignore
+  const sessionMetaData =
+    rawStripeEventDataObject && rawStripeEventDataObject.metadata
+      ? rawStripeEventDataObject.metadata
+      : {}
+  await trackCheckoutComplete(server, sessionMetaData.analyticsClientId || '', {
     transaction_id: sessionId,
     currency: session.currency || '',
     value:
@@ -679,7 +685,7 @@ export const handlePaymentEvent = async (
   switch (event.type) {
     // checkout events
     case 'checkout.session.completed':
-      await handlePaymentSuccess(server, reply, stripeDataObject)
+      await handlePaymentSuccess(server, reply, stripeDataObject, dataObject)
       return
 
     case 'invoice.payment_succeeded':
@@ -697,7 +703,7 @@ export const handlePaymentEvent = async (
         server,
         reply,
         stripeDataObject,
-        event.data.object,
+        dataObject,
         previousAttributes,
       )
       return
