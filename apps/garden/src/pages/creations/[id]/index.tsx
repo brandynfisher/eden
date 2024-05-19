@@ -38,22 +38,11 @@ export const getServerSideProps: GetServerSideProps<RepoResult> = async (
   ctx,
 ): Promise<GetServerSidePropsResult<RepoResult>> => {
   try {
-    console.log('getServerSideProps')
     const maybeRedirect = await handleQueryStringRedirects(ctx)
     if (maybeRedirect) {
       return maybeRedirect as GetServerSidePropsResult<RepoResult>
     }
-
-    console.log('getServerSideProps - no redirect')
-
-    console.log('getServerSideProps fetch', {
-      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
-    })
-
     const res = await fetchCreation(ctx)
-
-    console.log('getServerSideProps api response', res)
 
     if (!res || !res.creation) {
       return {
@@ -73,10 +62,6 @@ export default function Page({
   repo,
   error,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  console.log('Page', {
-    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
-  })
   if (error) {
     console.error('SSR error', repo, error)
     return (
@@ -110,8 +95,6 @@ export default function Page({
 
   return (
     <>
-      {/* //@todo: this will break for non cloudinary ASSETS! */}
-      {/* //@todo: old assets need exactly the old handling... fuck */}
       <CdnOgImageTags
         alt={repo.creation.name}
         src={repo.creation.thumbnail || ''}

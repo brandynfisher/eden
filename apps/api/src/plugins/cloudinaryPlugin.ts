@@ -1,12 +1,16 @@
-import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
-import type { FastifyInstance } from 'fastify'
-import {UploadApiOptions, UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import { Asset } from './assetUploadPlugin'
+import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
+import {
+  UploadApiOptions,
+  UploadApiResponse,
+  v2 as cloudinary,
+} from 'cloudinary'
+import type { FastifyInstance } from 'fastify'
 
 export interface CloudinaryUploadSignature {
-  signature: string,
-  timestamp: number,
-  cloudName: string | undefined,
+  signature: string
+  timestamp: number
+  cloudName: string | undefined
   apiKey: string | undefined
 }
 
@@ -18,7 +22,7 @@ const getMediaAttributes = async (
     type: mediaType,
   }
 
-  console.log({uploadResponse})
+  console.log({ uploadResponse })
 
   // @todo: verify that this actually works. Documentation and code looks rather wonky
   if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
@@ -41,49 +45,71 @@ export const uploadCldBufferAsset = async (
 ): Promise<Asset> => {
   try {
     const uploadConfig: UploadApiOptions = {
-      media_metadata: mediaType === MediaType.Video || mediaType === MediaType.Audio,
-      resource_type: mediaType === MediaType.Image ? 'image' : mediaType === MediaType.Video ? 'video' : 'raw',
+      media_metadata:
+        mediaType === MediaType.Video || mediaType === MediaType.Audio,
+      resource_type:
+        mediaType === MediaType.Image
+          ? 'image'
+          : mediaType === MediaType.Video
+          ? 'video'
+          : 'raw',
+      eager:
+        mediaType === MediaType.Video
+          ? 'c_fill,w_1200,h_630,g_center/c_limit,w_1200/f_webp/q_auto|c_fill,w_1200,h_630,g_center/c_limit,w_1200/f_jpg/q_auto'
+          : undefined,
       folder: 'creations',
     }
-    const uploadResult = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
-      // determine the estimated filesize of buffer and use upload_chunked_stream if it is above 50MB
-      const chunkingRequiredLimit = 90 * 1024 * 1024
-      const estimatedFileSize = buffer.byteLength;
+    const uploadResult = await new Promise<UploadApiResponse | undefined>(
+      (resolve, reject) => {
+        // determine the estimated filesize of buffer and use upload_chunked_stream if it is above 50MB
+        const chunkingRequiredLimit = 90 * 1024 * 1024
+        const estimatedFileSize = buffer.byteLength
 
-      if (estimatedFileSize > chunkingRequiredLimit) {
-        console.log('upload: file size bigger 50MB, use upload_chunked_stream', estimatedFileSize)
-        console.log('upload_chunked_stream', {
-          chunk_size: 20000000,
-          ...uploadConfig
-        })
-        server.cloudinary.uploader.upload_chunked_stream(
-          {
+        if (estimatedFileSize > chunkingRequiredLimit) {
+          console.log(
+            'upload: file size bigger 50MB, use upload_chunked_stream',
+            estimatedFileSize,
+          )
+          console.log('upload_chunked_stream', {
             chunk_size: 20000000,
-            ...uploadConfig
-          },
-          (error, uploadResponse) => {
-            if (error) {
-              console.log('upload_chunked_stream error', error)
-              reject(new Error(error.message))
-            }
+            ...uploadConfig,
+          })
+          server.cloudinary.uploader
+            .upload_chunked_stream(
+              {
+                chunk_size: 20000000,
+                ...uploadConfig,
+              },
+              (error, uploadResponse) => {
+                if (error) {
+                  console.log('upload_chunked_stream error', error)
+                  reject(new Error(error.message))
+                }
 
-            console.log('upload_chunked_stream done', uploadResponse?.secure_url)
-            resolve(uploadResponse)
-          }
-        ).end(buffer)
-      } else {
-        console.log('upload_stream', uploadConfig)
-        server.cloudinary.uploader.upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
-          if (error) {
-            console.log('upload_stream error', error)
-            reject(new Error(error.message))
-          }
+                console.log(
+                  'upload_chunked_stream done',
+                  uploadResponse?.secure_url,
+                )
+                resolve(uploadResponse)
+              },
+            )
+            .end(buffer)
+        } else {
+          console.log('upload_stream', uploadConfig)
+          server.cloudinary.uploader
+            .upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
+              if (error) {
+                console.log('upload_stream error', error)
+                reject(new Error(error.message))
+              }
 
-          console.log('upload_stream done', uploadResponse?.secure_url)
-          resolve(uploadResponse)
-        }).end(buffer)
-      }
-    })
+              console.log('upload_stream done', uploadResponse?.secure_url)
+              resolve(uploadResponse)
+            })
+            .end(buffer)
+        }
+      },
+    )
 
     if (!uploadResult) {
       console.log('upload failed')
@@ -98,8 +124,25 @@ export const uploadCldBufferAsset = async (
 
     const mediaAttributes = await getMediaAttributes(uploadResult, mediaType)
 
+    console.log(
+      uploadResult.type,
+      uploadResult.public_id,
+      uploadResult.format,
+      uploadResult.version,
+    )
     // If video: get thumbnail url for free by changing file ending
-    const thumbnailUri = mediaType == MediaType.Video ? `${uploadResult.secure_url.substring(0, uploadResult.secure_url.lastIndexOf('.'))}.webp` : uploadResult.secure_url
+    const formatVideoThumbnailUri = (uploadResult: UploadApiResponse) => {
+      const { secure_url, version } = uploadResult
+      // const updatedUri = secure_url.replace(`/v${version}/`, '/c_fill,g_center,h_630,w_1200/f_jpg/q_auto/')
+      const updatedUri = secure_url.replace(`/v${version}/`, '')
+
+      return `${updatedUri.substring(0, updatedUri.lastIndexOf('.'))}`
+    }
+
+    const thumbnailUri =
+      mediaType == MediaType.Video
+        ? formatVideoThumbnailUri(uploadResult)
+        : uploadResult.secure_url
 
     return {
       uri: uploadResult.secure_url,
@@ -118,10 +161,9 @@ export const uploadCldBufferAsset = async (
   }
 }
 
-
 type UploadConfig = {
-  eager?: string,
-  folder?: string,
+  eager?: string
+  folder?: string
 }
 
 const signRequest = (server: FastifyInstance, uploadConfig: UploadConfig) => {
@@ -130,7 +172,7 @@ const signRequest = (server: FastifyInstance, uploadConfig: UploadConfig) => {
     throw new Error('CLOUDINARY_API_SECRET not set')
   }
 
-  const timestamp = Math.round((new Date).getTime() / 1000)
+  const timestamp = Math.round(new Date().getTime() / 1000)
 
   const signature = server.cloudinary.utils.api_sign_request(
     {
@@ -143,11 +185,10 @@ const signRequest = (server: FastifyInstance, uploadConfig: UploadConfig) => {
   return { timestamp, signature }
 }
 
-export const generateCldUploadSignature: (server: FastifyInstance) => CloudinaryUploadSignature = (
+export const generateCldUploadSignature: (
   server: FastifyInstance,
-) => {
+) => CloudinaryUploadSignature = (server: FastifyInstance) => {
   const uploadConfig = {
-    // eager: 'c_pad,h_300,w_400|c_crop,h_200,w_260', //@todo: set this to something useful
     folder: 'user_uploads', // @todo: configure actual folder
   }
   const sig = signRequest(server, uploadConfig)
@@ -163,16 +204,20 @@ export const getCldSignedDownloadUrl = (
   assetUrl: string,
   fileName?: string,
 ): Promise<string> => {
-  return new Promise(function(resolve) {
+  return new Promise(function (resolve) {
     console.log(assetUrl, fileName)
     const cloudinaryUrlSegments = assetUrl.split('/')
-    const versionSegment = cloudinaryUrlSegments[cloudinaryUrlSegments.length - 3]
+    const versionSegment =
+      cloudinaryUrlSegments[cloudinaryUrlSegments.length - 3]
     // const folderSegment = cloudinaryUrlSegments[cloudinaryUrlSegments.length - 2]
     // const fileSegment = cloudinaryUrlSegments[cloudinaryUrlSegments.length - 1]
     // const [ publicId, fileExtension ] = lastSegment.split('.')
 
     const attachmentFlag = `fl_attachment:${fileName}`
-    const signedUrl = assetUrl.replace(versionSegment, `${attachmentFlag}/${versionSegment}`)
+    const signedUrl = assetUrl.replace(
+      versionSegment,
+      `${attachmentFlag}/${versionSegment}`,
+    )
 
     // console.log({signedUrl})
     resolve(signedUrl)

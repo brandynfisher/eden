@@ -1,5 +1,5 @@
-import axios, { AxiosProgressEvent } from 'axios'
 import type { RcFile } from 'antd/es/upload'
+import axios, { AxiosProgressEvent } from 'axios'
 
 export interface UploadRequestOptions {
   file: RcFile | File
@@ -82,7 +82,6 @@ export const requestSignedUrl = async (
   }
 }
 
-
 export const uploadFileToS3 = async (options: UploadRequestOptions) => {
   const { file, onSuccess, onError, onProgress } = options
 
@@ -161,7 +160,20 @@ const generateUniqueUploadId = () => {
   return `uqid-${Date.now()}`
 }
 
-export const uploadChunkedFileToCloudinary = async (options: UploadRequestOptions) => {
+type ChunkConfig = {
+  apiKey: string
+  timestamp: number
+  signature: string
+  cloudName: string
+  uniqueUploadId: string
+  chunkSize: number
+  totalChunks: number
+  currentChunk: number
+}
+
+export const uploadChunkedFileToCloudinary = async (
+  options: UploadRequestOptions,
+) => {
   const { file } = options
 
   const signResponse = await axios.get('/api/media/upload/sign-request')
@@ -183,7 +195,7 @@ export const uploadChunkedFileToCloudinary = async (options: UploadRequestOption
     currentChunk,
     totalChunks,
     chunkSize,
-    uniqueUploadId
+    uniqueUploadId,
   }
 
   const start = 0
@@ -191,28 +203,32 @@ export const uploadChunkedFileToCloudinary = async (options: UploadRequestOption
   await uploadChunk(file, chunkConfig, start, end, options)
 }
 
-type ChunkConfig = {
-  apiKey: string
-  timestamp: number
-  signature: string,
-  cloudName: string,
-  uniqueUploadId: string,
-  chunkSize: number,
-  totalChunks: number,
-  currentChunk: number,
-}
-export const uploadChunk = async (file: File, config: ChunkConfig, start: number, end: number, options: UploadRequestOptions) => {
+export const uploadChunk = async (
+  file: File,
+  config: ChunkConfig,
+  start: number,
+  end: number,
+  options: UploadRequestOptions,
+) => {
   const formData = new FormData()
   const cancelSource = axios.CancelToken.source()
 
-  const { apiKey, timestamp, uniqueUploadId, currentChunk, totalChunks, chunkSize , signature, cloudName } = config
+  const {
+    apiKey,
+    timestamp,
+    uniqueUploadId,
+    currentChunk,
+    totalChunks,
+    chunkSize,
+    signature,
+    cloudName,
+  } = config
   const { onProgress, onError, onSuccess } = options
 
   formData.append('file', file.slice(start, end))
   formData.append('api_key', apiKey)
   formData.append('timestamp', timestamp.toString())
   formData.append('signature', signature)
-  // formData.append('eager', 'c_pad,h_300,w_400|c_crop,h_200,w_260') // @todo: needs to match what's configured in api signing
   formData.append('folder', 'user_uploads') // @todo: needs to match api signature config
   const contentRange = `bytes ${start}-${end - 1}/${file.size}`
 
@@ -248,7 +264,13 @@ export const uploadChunk = async (file: File, config: ChunkConfig, start: number
     if (nextChunk < totalChunks) {
       const nextStart = nextChunk * chunkSize
       const nextEnd = Math.min(nextStart + chunkSize, file.size)
-      await uploadChunk(file, { ...config, currentChunk: nextChunk }, nextStart, nextEnd, options)
+      await uploadChunk(
+        file,
+        { ...config, currentChunk: nextChunk },
+        nextStart,
+        nextEnd,
+        options,
+      )
     } else {
       onSuccess(
         {
@@ -263,4 +285,3 @@ export const uploadChunk = async (file: File, config: ChunkConfig, start: number
     onError(new Error('Upload failed'))
   }
 }
-
