@@ -134,7 +134,7 @@ export const uploadCldBufferAsset = async (
     const formatVideoThumbnailUri = (uploadResult: UploadApiResponse) => {
       const { secure_url, version } = uploadResult
       // const updatedUri = secure_url.replace(`/v${version}/`, '/c_fill,g_center,h_630,w_1200/f_jpg/q_auto/')
-      const updatedUri = secure_url.replace(`/v${version}/`, '')
+      const updatedUri = secure_url.replace(`/v${version}/`, '/')
 
       return `${updatedUri.substring(0, updatedUri.lastIndexOf('.'))}`
     }
