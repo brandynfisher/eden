@@ -130,13 +130,11 @@ export const uploadCldBufferAsset = async (
       uploadResult.format,
       uploadResult.version,
     )
-    // If video: get thumbnail url for free by changing file ending
     const formatVideoThumbnailUri = (uploadResult: UploadApiResponse) => {
-      const { secure_url, version } = uploadResult
+      const { secure_url } = uploadResult
       // const updatedUri = secure_url.replace(`/v${version}/`, '/c_fill,g_center,h_630,w_1200/f_jpg/q_auto/')
-      const updatedUri = secure_url.replace(`/v${version}/`, '/')
-
-      return `${updatedUri.substring(0, updatedUri.lastIndexOf('.'))}`
+      // const updatedUri = secure_url.replace(`/v${version}/`, '/')
+      return `${secure_url.substring(0, secure_url.lastIndexOf('.'))}`
     }
 
     const thumbnailUri =
