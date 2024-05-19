@@ -1,12 +1,12 @@
-import { sendGTMEvent } from '@next/third-parties/google'
 import { conceptGenerator } from '@/lib/generator'
 import { Generator } from '@edenlabs/eden-sdk'
+import { sendGTMEvent } from '@next/third-parties/google'
 
 export type AnalyticsEvent = {
   event: string
 } & { [key: string]: number | string | object }
 
-type Cookie = { [key: string]: string | undefined };
+type Cookie = { [key: string]: string | undefined }
 
 // Helper function to get a cookie by name
 const getCookie = (name: string, cookieObject: Cookie): string | undefined => {
@@ -34,24 +34,29 @@ export const getGAClientIdFromCookie = (): string => {
   return gaCookie ? getIdFromGACookie(gaCookie) : ''
 }
 
-export const getGASessionIdFromCookie = (): string => {
-  // Defensive check for server-side rendering as 'document' would not exist
-  if (typeof document === 'undefined') return ''
+// export const getGASessionIdFromCookie = (): string => {
+//   // Defensive check for server-side rendering as 'document' would not exist
+//   if (typeof document === 'undefined') return ''
+//
+//   const cookie: Cookie = {}
+//
+//   const gaCookie = getCookie(`_ga_${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID}`, cookie)
+//   return gaCookie ? getIdFromGACookie(gaCookie) : ''
+// }
 
-  const cookie: Cookie = {}
-
-  const gaCookie = getCookie(`_ga_${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID}`, cookie)
-  return gaCookie ? getIdFromGACookie(gaCookie) : ''
-}
-
-export const sendAnalyticsEvents = (events: AnalyticsEvent | AnalyticsEvent[]) => {
+export const sendAnalyticsEvents = (
+  events: AnalyticsEvent | AnalyticsEvent[],
+) => {
   (Array.isArray(events) ? events : [events]).map(event => {
     sendGTMEvent(event)
   })
 }
 
-export const trackTaskCreate = (generatorName: Generator['generatorName'], cost: number) => {
-  sendAnalyticsEvents([
+export const trackTaskCreate = (
+  generatorName: Generator['generatorName'],
+  cost: number,
+) => {
+  const events: AnalyticsEvent[] = [
     {
       event: 'task-create',
       generator: generatorName,
@@ -60,7 +65,12 @@ export const trackTaskCreate = (generatorName: Generator['generatorName'], cost:
       event: 'spend_virtual_currency',
       virtual_currency_name: 'Manna',
       value: cost,
-      item_name: generatorName !== conceptGenerator.name ? `Create - ${generatorName}` : `Train - Concept`,
+      item_name:
+        generatorName !== conceptGenerator.name
+          ? `Create - ${generatorName}`
+          : `Train - Concept`,
     },
-  ])
+  ]
+  console.log('trackTaskCreate', events)
+  sendAnalyticsEvents(events)
 }
