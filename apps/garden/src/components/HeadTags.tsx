@@ -73,7 +73,7 @@ const HeadTags = ({
           <meta property="og:description" content={''} key="og-description" />
           <meta
             property="og:video:url"
-            content={getItemMediaUrl(itemType, item as Creation)}
+            content={getItemMediaUrl(itemType, item as Creation) + '.mp4'}
           />
           <meta
             property="og:video:secure_url"
@@ -100,6 +100,7 @@ const HeadTags = ({
                 : (item as Creation).mediaAttributes.height,
             )}
           />
+          <meta property="og:video:type" content="video/mp4" key="video_type" />
           <meta
             property="twitter:player"
             content={getItemMediaUrl(itemType, item as Creation)}
@@ -107,6 +108,11 @@ const HeadTags = ({
           <meta
             property="twitter:player:stream"
             content={getItemMediaUrl(itemType, item as Creation)}
+          />
+          <meta
+            property="twitter:content_type"
+            content="video/mp4"
+            key="twitter-content-type"
           />
         </>
       ) : null}
