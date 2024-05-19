@@ -1,3 +1,4 @@
+import { trackCheckoutBegin, trackCheckoutComplete } from '../lib/analytics'
 import { getAdminHeaders } from '../lib/util'
 import { User, UserDocument } from '../models/Creator'
 import { Manna } from '../models/Manna'
@@ -10,7 +11,6 @@ import {
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import Stripe from 'stripe'
-import { trackCheckoutBegin, trackCheckoutComplete } from '../lib/analytics'
 
 interface StripeDataObject {
   userId: string
@@ -193,13 +193,25 @@ const handleNewSubscription = async (
       }
     }
 
-    return reply.status(200).send({})
+    return reply.status(200).send({
+      message: 'new subscription created',
+      newSubscriptionTier: subscriptionTier,
+      existingTier: user.subscriptionTier,
+      highestTier: user.highestMonthlySubscriptionTier,
+    })
   } catch (error) {
     console.error(error)
     return reply.status(500).send({
       message: 'Error updating subscription',
+      newSubscriptionTier: subscriptionTier,
+      existingTier: user.subscriptionTier,
+      highestTier: user.highestMonthlySubscriptionTier,
     })
   }
+}
+
+type GenericStripeEventDataObject = {
+  [K in keyof Stripe.Event.Data.Object]?: any
 }
 
 const handleSubscriptionUpdated = async (
@@ -211,6 +223,8 @@ const handleSubscriptionUpdated = async (
     current_period_end,
     current_period_start,
   }: StripeDataObject,
+  rawStripeEventDataObject: Stripe.Event.Data.Object,
+  previousAttributes?: Stripe.Event.Data.PreviousAttributes,
 ) => {
   if (!server.stripe) {
     return reply.status(500).send({
@@ -223,27 +237,34 @@ const handleSubscriptionUpdated = async (
   })
 
   if (!user) {
-    return reply.status(400).send({
+    return reply.status(404).send({
       message: 'User not found',
     })
   }
 
   const product = await server.stripe.products.retrieve(productId)
-  const metadata = {
-    subscriptionTier: product.metadata.subscriptionTier,
-    manna: product.metadata.manna,
-  }
 
-  if (!metadata) {
+  if (!product || !product.metadata) {
     return reply.status(400).send({
       message: 'No metadata found',
     })
   }
 
+  if (product.metadata.subscriptionTier === undefined) {
+    return reply.status(400).send({
+      message: 'Product metadata is missing subscription tier',
+    })
+  }
+
+  const metadata = {
+    subscriptionTier: product.metadata.subscriptionTier,
+    manna: product.metadata.manna,
+  }
+
+  // is this update trying to upgrade the tier?
   if (
-    metadata.subscriptionTier &&
     parseInt(metadata.subscriptionTier) >
-      (user.highestMonthlySubscriptionTier || 0)
+    (user.highestMonthlySubscriptionTier || 0)
   ) {
     const currentDate = Math.floor(Date.now() / 1000) // Convert to seconds since Stripe uses seconds
 
@@ -261,9 +282,32 @@ const handleSubscriptionUpdated = async (
 
     await handleNewSubscription(server, reply, metadata, user, proration)
   } else {
-    return reply.status(400).send({
-      message: 'No subscription tier found',
+    // nothing to do here, report acknowledgement
+
+    // gather updates
+    const updatedAttributes: GenericStripeEventDataObject = {}
+    if (previousAttributes && rawStripeEventDataObject) {
+      Object.keys(previousAttributes).forEach(attributeKey => {
+        if (attributeKey in rawStripeEventDataObject) {
+          updatedAttributes[
+            attributeKey as keyof GenericStripeEventDataObject
+          ] =
+            rawStripeEventDataObject[
+              attributeKey as keyof GenericStripeEventDataObject
+            ]
+        }
+      })
+    }
+
+    return reply.status(200).send({
+      message:
+        'noop - event is informal change to subscription (renewal date change, address, ...)',
+      previousAttributes: previousAttributes || {},
+      updatedAttributes,
     })
+    // return reply.status(400).send({
+    //   message: `New subscription tier is equal or lower current tier, no-op - metadata:${metadata.subscriptionTier} | highestMonthlySubscriptionTier:${user.highestMonthlySubscriptionTier || 0}`,
+    // })
   }
 }
 
@@ -342,12 +386,6 @@ const handleRenewal = async (
   }
 
   console.log('Metadata', metadata)
-
-  if (!metadata) {
-    return reply.status(400).send({
-      message: 'No metadata found',
-    })
-  }
 
   const user = await User.findOne({
     stripeCustomerId: customerId,
@@ -464,7 +502,10 @@ const handlePaymentSuccess = async (
   await trackCheckoutComplete(server, metadata.analyticsClientId || '', {
     transaction_id: sessionId,
     currency: session.currency || '',
-    value: session.amount_total !== null ? session.amount_total - (session?.total_details?.amount_tax || 0) : 0,
+    value:
+      session.amount_total !== null
+        ? session.amount_total - (session?.total_details?.amount_tax || 0)
+        : 0,
     tax: session?.total_details?.amount_tax || 0,
     items: session.line_items.data.map((item: Stripe.LineItem, index) => {
       return {
@@ -475,9 +516,9 @@ const handlePaymentSuccess = async (
         item_brand: 'Eden',
         item_category: metadata.subscriptionTier ? 'subscription' : 'top-up',
         price: item.price?.unit_amount || 0,
-        quantity: item.quantity || 0
+        quantity: item.quantity || 0,
       }
-    })
+    }),
   })
 }
 
@@ -487,7 +528,8 @@ export const createCheckoutSession = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { priceId, paymentMode, analyticsClientId } = request.body as PaymentsCreateArguments
+  const { priceId, paymentMode, analyticsClientId } =
+    request.body as PaymentsCreateArguments
 
   const user = await User.findById(userId)
   if (!user) {
@@ -605,6 +647,7 @@ export const handlePaymentEvent = async (
   )
 
   const dataObject = event.data.object
+  const previousAttributes = event.data.previous_attributes
   // @ts-ignore
   const userId = dataObject.client_reference_id
   // @ts-ignore
@@ -650,7 +693,13 @@ export const handlePaymentEvent = async (
 
     // subscription events
     case 'customer.subscription.updated':
-      await handleSubscriptionUpdated(server, reply, stripeDataObject)
+      await handleSubscriptionUpdated(
+        server,
+        reply,
+        stripeDataObject,
+        event.data.object,
+        previousAttributes,
+      )
       return
 
     case 'customer.subscription.deleted':
@@ -658,7 +707,9 @@ export const handlePaymentEvent = async (
       return
     default:
       console.log(`Stripe: Unhandled event type ${event.type}`)
-      return reply.status(200).send({})
+      return reply
+        .status(200)
+        .send({ message: `unhandled event - ${event.type}` })
   }
 }
 
