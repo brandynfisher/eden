@@ -40,15 +40,15 @@
   "lint-staged": {
     "apps/garden/**/*.{ts,tsx}": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --fix --quiet"
     ],
     "apps/api/**/*.{ts,tsx}": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --fix --quiet"
     ],
     "apps/media-playground/**/*.{ts,tsx}": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --fix --quiet"
     ],
     "packages/eden-sdk/**/*.{ts,tsx}": [
       "prettier --write",
