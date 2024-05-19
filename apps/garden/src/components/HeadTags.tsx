@@ -21,7 +21,7 @@ export const getItemMediaUrl = (
     const videoUrl = item.uri.startsWith('https://res.cloudinary.com/')
       ? getCldVideoUrl({
           src: item.uri,
-        })
+        }) + '.mp4'
       : item.uri
 
     return videoUrl
