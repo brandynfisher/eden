@@ -46,7 +46,7 @@ export default function App({ Component, pageProps }: Props): ReactElement {
     <>
       <Head>
         <title>Garden of Eden</title>
-        <meta property="og:title" key="title" content="Garden of Eden" />
+        <meta property="og:title" key="og-title" content="Garden of Eden" />
         <meta
           property="twitter:title"
           key="twitter-title"
@@ -65,14 +65,23 @@ export default function App({ Component, pageProps }: Props): ReactElement {
         <meta
           property="og:image"
           content="https://app.eden.art/apple-touch-icon.png"
-          key="image"
+          key="og-image"
         />
-        <meta property="og:site_name" content="Garden of Eden" />
+        <meta
+          property="og:image:secure_url"
+          content="https://app.eden.art/apple-touch-icon.png"
+          key="og-image-secureurl"
+        />
+        <meta
+          property="og:site_name"
+          content="Garden of Eden"
+          key={'og-site_name'}
+        />
         <meta
           name="viewport"
           content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
-        <meta property="og:type" content="website" key="type" />
+        <meta property="og:type" content="website" key="og-type" />
         <link rel="shortcut icon" href="/favicon.ico" />
         {/*<link rel="mask-icon" href="/icons/mask-icon.svg" color="#FFFFFF" />*/}
         <meta name="theme-color" content="#030712" />

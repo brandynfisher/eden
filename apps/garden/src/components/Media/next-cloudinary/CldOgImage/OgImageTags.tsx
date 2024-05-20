@@ -32,6 +32,7 @@ const OgImageTags = ({
     'twitter:card': 'twitter-card',
     'twitter:image': 'twitter-image',
     'twitter:player:content_type': 'twitter-player-content_type',
+    'twitter:description': 'twitter-description',
     ...keys,
   }
 
@@ -67,11 +68,20 @@ const OgImageTags = ({
 
       {assetType === 'video' ? (
         <>
-          <meta property="og:video:type" content="video/mp4" key="video_type" />
           <meta property="og:video:url" content={uri} />
           <meta property="og:video:secure_url" content={uri} />
           <meta property="twitter:player" content={uri} />
           <meta property="twitter:player:stream" content={uri} />
+          <meta
+            property="twitter:player:width"
+            content={`${width}`}
+            key={metaKeys['og:video:width']}
+          />
+          <meta
+            property="twitter:player:height"
+            content={`${height}`}
+            key={metaKeys['og:video:height']}
+          />
           <meta
             property="twitter:player:content_type"
             content="video/mp4"
@@ -84,9 +94,10 @@ const OgImageTags = ({
           />
           <meta
             property="og:video:height"
-            content={`${width}`}
+            content={`${height}`}
             key={metaKeys['og:video:height']}
           />
+          <meta property="og:video:type" content="video/mp4" key="video_type" />
         </>
       ) : null}
 

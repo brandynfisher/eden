@@ -1,20 +1,22 @@
-import { constructCloudinaryUrl } from '@cloudinary-util/url-loader';
-import type { ImageOptions, ConfigOptions, AnalyticsOptions } from '@cloudinary-util/url-loader';
-
-import { getCloudinaryConfig, getCloudinaryAnalytics } from "../lib/cloudinary";
+import { getCloudinaryConfig } from '../lib/cloudinary'
+import { constructCloudinaryUrl } from '@cloudinary-util/url-loader'
+import type { ConfigOptions, ImageOptions } from '@cloudinary-util/url-loader'
 
 /**
  * getCldImageUrl
  */
 
-export type GetCldImageUrlOptions = ImageOptions;
-export type GetCldImageUrlConfig = ConfigOptions;
-export type GetCldImageUrlAnalytics = AnalyticsOptions;
+export type GetCldImageUrlOptions = ImageOptions
+export type GetCldImageUrlConfig = ConfigOptions
 
-export function getCldImageUrl(options: GetCldImageUrlOptions, config?: GetCldImageUrlConfig, analytics?: GetCldImageUrlAnalytics) {
+export function getCldImageUrl(
+  options: GetCldImageUrlOptions,
+  config?: GetCldImageUrlConfig,
+) {
   return constructCloudinaryUrl({
     options,
     config: getCloudinaryConfig(config),
-    analytics: getCloudinaryAnalytics(analytics)
-  });
+    // analytics: getCloudinaryAnalytics(analytics)
+    analytics: false,
+  })
 }

@@ -61,33 +61,34 @@ const HeadTags = ({
 }) => {
   return (
     <Head>
-      <title>{`${title} | Garden of Eden`}</title>
-      <meta property="og:title" key="title" content={title} />
-      <meta
-        property="og:description"
-        content={description || ''}
-        key="og-description"
-      />
+      <title>{`${title} | Eden.art`}</title>
+      <meta property="og:title" key="og-title" content={title} />
+
       {itemType === 'creation' && isVideoUrl((item as Creation).uri) ? (
         <>
-          <meta property="description" content={''} key="description" />
-          <meta property="og:description" content={''} key="og-description" />
-          <meta property="og:type" content="video.other" key="type" />
+          <meta property="og:type" content="video.other" key="og-type" />
           <meta
             property="og:video:duration"
             content={String(getItemMediaAttributes(item as Creation).duration)}
           />
         </>
       ) : null}
-      <meta property="twitter:site" content="@eden_art_" key="twitter-site" />
+      <meta
+        property="twitter:site"
+        content="@eden_art_"
+        key="og-twitter-site"
+      />
 
-      {description ? (
-        <meta
-          property="twitter:description"
-          content={description}
-          key="twitter-description"
-        />
-      ) : null}
+      <meta
+        property="og:description"
+        content={description}
+        key="og-description"
+      />
+      <meta
+        property="twitter:description"
+        content={description}
+        key="twitter-description"
+      />
 
       {itemType === 'creation' ||
       itemType === 'concept' ||

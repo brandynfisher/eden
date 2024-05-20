@@ -1,9 +1,14 @@
 import HeadTags, { createShareTitle } from '@/components/HeadTags'
 import CdnOgImageTags from '@/components/Media/cdn-og-image-tags'
+import {
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
+} from '@/components/Media/constants/sizes'
 import { getCldVideoUrl } from '@/components/Media/helpers/getCldVideoUrl'
 import CreationPage from '@/components/Pages/CreationPage'
 import { getAuthHeaders } from '@/lib/auth'
 import { fetcher } from '@/lib/fetcher'
+import { getLimitedMediaDimensions } from '@/lib/media'
 import { handleQueryStringRedirects } from '@/lib/ssr'
 import { Creation } from '@edenlabs/eden-sdk'
 import type {
@@ -90,6 +95,11 @@ export default function Page({
     itemSuffix: repo.creation.task?.generator?.generatorName,
   })
 
+  const limitedDimensions = getLimitedMediaDimensions(
+    Number(repo.creation.mediaAttributes.width || OG_IMAGE_WIDTH),
+    Number(repo.creation.mediaAttributes.height || OG_IMAGE_HEIGHT),
+  )
+
   return (
     <>
       <CdnOgImageTags
@@ -99,6 +109,8 @@ export default function Page({
           repo.creation.uri.startsWith('https://res.cloudinary.com/')
             ? getCldVideoUrl({
                 src: repo.creation.uri,
+                width: limitedDimensions.width,
+                height: limitedDimensions.height,
               }) + '.mp4'
             : repo.creation.uri
         }
@@ -110,8 +122,8 @@ export default function Page({
         }
         title={title}
         assetType={repo.creation.mediaAttributes.type}
-        width={repo.creation.mediaAttributes.width}
-        height={repo.creation.mediaAttributes.height}
+        width={limitedDimensions.width}
+        height={limitedDimensions.height}
       />
       <HeadTags
         title={title}
