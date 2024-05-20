@@ -68,37 +68,14 @@ const HeadTags = ({
         content={description || ''}
         key="og-description"
       />
-      {itemType === 'creation' &&
-      isVideoUrl(getItemMediaUrl(itemType, item as Creation)) ? (
+      {itemType === 'creation' && isVideoUrl((item as Creation).uri) ? (
         <>
           <meta property="description" content={''} key="description" />
           <meta property="og:description" content={''} key="og-description" />
-          <meta
-            property="og:video:url"
-            content={getItemMediaUrl(itemType, item as Creation)}
-          />
-          <meta
-            property="og:video:secure_url"
-            content={getItemMediaUrl(itemType, item as Creation)}
-          />
           <meta property="og:type" content="video.other" key="type" />
           <meta
             property="og:video:duration"
             content={String(getItemMediaAttributes(item as Creation).duration)}
-          />
-          <meta property="og:video:type" content="video/mp4" key="video_type" />
-          <meta
-            property="twitter:player"
-            content={getItemMediaUrl(itemType, item as Creation)}
-          />
-          <meta
-            property="twitter:player:stream"
-            content={getItemMediaUrl(itemType, item as Creation)}
-          />
-          <meta
-            property="twitter:player:content_type"
-            content="video/mp4"
-            key="twitter-content-type"
           />
         </>
       ) : null}

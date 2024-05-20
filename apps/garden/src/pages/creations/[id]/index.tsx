@@ -1,5 +1,6 @@
 import HeadTags, { createShareTitle } from '@/components/HeadTags'
 import CdnOgImageTags from '@/components/Media/cdn-og-image-tags'
+import { getCldVideoUrl } from '@/components/Media/helpers/getCldVideoUrl'
 import CreationPage from '@/components/Pages/CreationPage'
 import { getAuthHeaders } from '@/lib/auth'
 import { fetcher } from '@/lib/fetcher'
@@ -94,6 +95,13 @@ export default function Page({
       <CdnOgImageTags
         alt={repo.creation.name}
         src={repo.creation.thumbnail || ''}
+        uri={
+          repo.creation.uri.startsWith('https://res.cloudinary.com/')
+            ? getCldVideoUrl({
+                src: repo.creation.uri,
+              }) + '.mp4'
+            : repo.creation.uri
+        }
         twitterTitle={title}
         twitterCard={
           repo.creation.mediaAttributes.type !== 'video'

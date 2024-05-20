@@ -4,7 +4,7 @@ import CldOgImage, {
 import OgImageTags from '@/components/Media/next-cloudinary/CldOgImage/OgImageTags'
 import React from 'react'
 
-const CdnOgImageTags = (props: CldOgImageProps) => {
+const CdnOgImageTags = (props: CldOgImageProps & { uri?: string }) => {
   if (props.src && props.src.startsWith('https://res.cloudinary.com/')) {
     return <CldOgImage {...props} />
   }

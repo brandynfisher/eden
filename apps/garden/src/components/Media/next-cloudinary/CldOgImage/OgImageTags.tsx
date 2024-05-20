@@ -7,6 +7,7 @@ type OgImageTagsProps = {
   twitterImageUrl: string
   width?: number | string
   height?: number | string
+  uri?: string
 }
 
 const OgImageTags = ({
@@ -16,17 +17,21 @@ const OgImageTags = ({
   keys = {},
   ...props
 }: CldOgImageProps & OgImageTagsProps) => {
-  const { alt, width, height, imageUrl, twitterImageUrl, assetType } = props
+  const { uri, alt, width, height, imageUrl, twitterImageUrl, assetType } =
+    props
 
   const metaKeys = {
     'og:image': 'og-image',
     'og:image:secure_url': 'og-image-secureurl',
     'og:image:width': 'og-image-width',
     'og:image:height': 'og-image-height',
+    'og:video:width': 'og-video-width',
+    'og:video:height': 'og-video-height',
     'og:image:alt': 'og-image-alt',
     'twitter:title': 'twitter-title',
     'twitter:card': 'twitter-card',
     'twitter:image': 'twitter-image',
+    'twitter:player:content_type': 'twitter-player-content_type',
     ...keys,
   }
 
@@ -62,8 +67,26 @@ const OgImageTags = ({
 
       {assetType === 'video' ? (
         <>
-          <meta property="og:video:width" content={`${width}`} />
-          <meta property="og:video:height" content={`${width}`} />
+          <meta property="og:video:type" content="video/mp4" key="video_type" />
+          <meta property="og:video:url" content={uri} />
+          <meta property="og:video:secure_url" content={uri} />
+          <meta property="twitter:player" content={uri} />
+          <meta property="twitter:player:stream" content={uri} />
+          <meta
+            property="twitter:player:content_type"
+            content="video/mp4"
+            key={metaKeys['twitter:player:content_type']}
+          />
+          <meta
+            property="og:video:width"
+            content={`${width}`}
+            key={metaKeys['og:video:width']}
+          />
+          <meta
+            property="og:video:height"
+            content={`${width}`}
+            key={metaKeys['og:video:height']}
+          />
         </>
       ) : null}
 
