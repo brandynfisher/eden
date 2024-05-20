@@ -1,18 +1,22 @@
-import { constructCloudinaryUrl } from '@cloudinary-util/url-loader';
-import type { VideoOptions, ConfigOptions, AnalyticsOptions } from '@cloudinary-util/url-loader';
-
-import { getCloudinaryConfig, getCloudinaryAnalytics } from "../lib/cloudinary";
-import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/components/Media/constants/sizes'
+import { getCloudinaryConfig } from '../lib/cloudinary'
+import {
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
+} from '@/components/Media/constants/sizes'
+import { constructCloudinaryUrl } from '@cloudinary-util/url-loader'
+import type { ConfigOptions, VideoOptions } from '@cloudinary-util/url-loader'
 
 /**
  * getCldVideoUrl
  */
 
-export type GetCldVideoUrlOptions = VideoOptions;
-export type GetCldVideoUrlConfig = ConfigOptions;
-export type GetCldVideoUrlAnalytics = AnalyticsOptions;
+export type GetCldVideoUrlOptions = VideoOptions
+export type GetCldVideoUrlConfig = ConfigOptions
 
-export function getCldVideoUrl(options: GetCldVideoUrlOptions, config?: GetCldVideoUrlConfig, analytics?: GetCldVideoUrlAnalytics) {
+export function getCldVideoUrl(
+  options: GetCldVideoUrlOptions,
+  config?: GetCldVideoUrlConfig,
+) {
   return constructCloudinaryUrl({
     options: {
       assetType: 'video',
@@ -23,6 +27,7 @@ export function getCldVideoUrl(options: GetCldVideoUrlOptions, config?: GetCldVi
       height: options.height || OG_IMAGE_HEIGHT,
     },
     config: getCloudinaryConfig(config),
-    analytics: getCloudinaryAnalytics(analytics)
-  });
+    // analytics: getCloudinaryAnalytics(analytics)
+    analytics: false,
+  })
 }
