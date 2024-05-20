@@ -16,7 +16,7 @@ const OgImageTags = ({
   keys = {},
   ...props
 }: CldOgImageProps & OgImageTagsProps) => {
-  const { alt, width, height, imageUrl, twitterImageUrl } = props
+  const { alt, width, height, imageUrl, twitterImageUrl, assetType } = props
 
   const metaKeys = {
     'og:image': 'og-image',
@@ -59,6 +59,13 @@ const OgImageTags = ({
           content={alt}
         />
       )}
+
+      {assetType === 'video' ? (
+        <>
+          <meta property="og:video:width" content={`${width}`} />
+          <meta property="og:video:height" content={`${width}`} />
+        </>
+      ) : null}
 
       {/* Required for summary_large_image, exclude vai excludeTags */}
       {/* https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image */}

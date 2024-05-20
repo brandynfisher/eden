@@ -2,6 +2,7 @@ import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '../../constants/sizes'
 import { getCldOgImageUrl } from '../../helpers/getCldOgImageUrl'
 import { CldImageProps } from '../CldImage/CldImage'
 import OgImageTags from '@/components/Media/next-cloudinary/CldOgImage/OgImageTags'
+import { getLimitedMediaDimensions } from '@/lib/media'
 import React from 'react'
 
 type TwitterCardType = 'summary_large_image' | 'player'
@@ -30,6 +31,11 @@ const CldOgImage = ({
   width = typeof width === 'string' ? parseInt(width) : width
   height = typeof height === 'string' ? parseInt(height) : height
 
+  const limitedDimensions = getLimitedMediaDimensions(
+    Number(width || OG_IMAGE_WIDTH),
+    Number(height || OG_IMAGE_HEIGHT),
+  )
+
   // Render the final URLs. We use two different format versions to deliver
   // webp for Twitter as it supports it (and we can control with tags) where
   // other platforms may not support webp, so we deliver jpg
@@ -38,15 +44,15 @@ const CldOgImage = ({
     getCldOgImageUrl({
       ...props,
       format: 'jpg',
-      width,
-      height,
+      width: limitedDimensions.width,
+      height: limitedDimensions.height,
     }) + '.jpg'
 
   const twitterImageUrl =
     getCldOgImageUrl({
       ...props,
-      width,
-      height,
+      width: limitedDimensions.width,
+      height: limitedDimensions.height,
       format: props.format || 'webp',
     }) + (props.format || '.webp')
 
@@ -58,8 +64,8 @@ const CldOgImage = ({
       twitterCard={twitterCard}
       imageUrl={ogImageUrl}
       twitterImageUrl={twitterImageUrl}
-      width={width}
-      height={height}
+      width={limitedDimensions.width}
+      height={limitedDimensions.height}
       excludeTags={excludeTags}
     />
   )

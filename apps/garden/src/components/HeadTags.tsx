@@ -1,12 +1,14 @@
 import { CardData } from '@/components/Card/Card'
-import {
-  OG_IMAGE_HEIGHT,
-  OG_IMAGE_WIDTH,
-} from '@/components/Media/constants/sizes'
 import { getCldVideoUrl } from '@/components/Media/helpers/getCldVideoUrl'
 import { capitalize, isVideoUrl } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
-import { Collection, Concept, Creation, Creator } from '@edenlabs/eden-sdk'
+import {
+  Collection,
+  Concept,
+  Creation,
+  Creator,
+  MediaType,
+} from '@edenlabs/eden-sdk'
 import Head from 'next/head'
 import React from 'react'
 
@@ -16,7 +18,7 @@ export const getItemMediaUrl = (
 ) => {
   if (
     itemType === 'creation' &&
-    (item as Creation).mediaAttributes.type === 'video'
+    (item as Creation).mediaAttributes.type === MediaType.Video
   ) {
     const videoUrl = item.uri.startsWith('https://res.cloudinary.com/')
       ? getCldVideoUrl({
@@ -84,22 +86,6 @@ const HeadTags = ({
             property="og:video:duration"
             content={String(getItemMediaAttributes(item as Creation).duration)}
           />
-          <meta
-            property="og:video:width"
-            content={String(
-              (item as Creation).uri.startsWith('https://res.cloudinary.com/')
-                ? String(OG_IMAGE_WIDTH)
-                : (item as Creation).mediaAttributes.width,
-            )}
-          />
-          <meta
-            property="og:video:height"
-            content={String(
-              (item as Creation).uri.startsWith('https://res.cloudinary.com/')
-                ? String(OG_IMAGE_HEIGHT)
-                : (item as Creation).mediaAttributes.height,
-            )}
-          />
           <meta property="og:video:type" content="video/mp4" key="video_type" />
           <meta
             property="twitter:player"
@@ -110,7 +96,7 @@ const HeadTags = ({
             content={getItemMediaUrl(itemType, item as Creation)}
           />
           <meta
-            property="twitter:content_type"
+            property="twitter:player:content_type"
             content="video/mp4"
             key="twitter-content-type"
           />
