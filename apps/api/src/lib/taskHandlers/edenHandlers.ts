@@ -108,7 +108,7 @@ const handleUpdate = async (
       const creationData: CreationInput[] = []
 
       const { nsfw_scores, ...remainingAttributes } =
-      finalOutput.attributes || {}
+        finalOutput.attributes || {}
       const finalOutputAttributes = { ...remainingAttributes }
 
       await Promise.allSettled(
@@ -149,11 +149,9 @@ const handleUpdate = async (
           if (finalOutput.files[index]) {
             console.log('uploading asset', finalOutput.files[index])
             try {
-              const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
-                server,
-                finalOutput.files[index],
-              )
-              console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
+              const { uri, mediaAttributes, thumbnailUri } =
+                await server.uploadUrlAsset(server, finalOutput.files[index])
+              console.log('uploaded asset', uri, mediaAttributes)
 
               creationDocument.uri = uri
               creationDocument.mediaAttributes = mediaAttributes
@@ -163,7 +161,17 @@ const handleUpdate = async (
             }
           }
 
-          console.log(JSON.stringify({creationDocument}, null, 2))
+          console.log(
+            JSON.stringify(
+              {
+                _id: creationDocument._id,
+                uri: creationDocument.uri,
+                thumbnail: creationDocument.thumbnail,
+              },
+              null,
+              2,
+            ),
+          )
 
           creationData.push(creationDocument)
         }),
@@ -262,11 +270,10 @@ const handleUpdate = async (
           ...taskUpdate,
           creation: creationData[0],
           generator: {
-            generatorName: generator.generatorName
-          }
+            generatorName: generator.generatorName,
+          },
         },
       })
-
     } else if (generator?.output == 'concept') {
       for (let i = 0; i < finalOutput.files.length; i++) {
         // version the concept's public name (v2, v3, etc)
@@ -284,7 +291,7 @@ const handleUpdate = async (
               user: task.user,
               name: newName,
             })
-            ) {
+          ) {
             version++
             newName = `${baseName}_v${version}`
           }
@@ -296,7 +303,11 @@ const handleUpdate = async (
           name: publicName,
           conceptName: finalOutput.name,
           checkpoint: task.config.checkpoint || 'JuggernautXL_v6', //task.config.checkpoint,
-          grid_prompts: finalOutput.attributes && finalOutput.attributes.grid_prompts !== undefined ? finalOutput.attributes.grid_prompts : [], //task.config.checkpoint,
+          grid_prompts:
+            finalOutput.attributes &&
+            finalOutput.attributes.grid_prompts !== undefined
+              ? finalOutput.attributes.grid_prompts
+              : [], //task.config.checkpoint,
           training_images: task.config.lora_training_urls,
           num_training_images:
             finalOutput.attributes && finalOutput.attributes.num_training_images
@@ -338,7 +349,7 @@ const handleUpdate = async (
           task: {
             ...task.toObject(),
             ...taskUpdate,
-            concept
+            concept,
           },
         })
 
@@ -358,7 +369,11 @@ const handleUpdate = async (
       taskId,
       status: taskUpdate.status,
       progress: taskUpdate.progress,
-      task: { ...task.toObject(), ...taskUpdate, generator: { generatorName: generator?.generatorName || 'n/a' } },
+      task: {
+        ...task.toObject(),
+        ...taskUpdate,
+        generator: { generatorName: generator?.generatorName || 'n/a' },
+      },
     })
   }
 
@@ -421,10 +436,8 @@ const handleUpdateUniversal = async (
         if (output[i]) {
           try {
             console.log('uploading asset', output[i])
-            const { uri, mediaAttributes, thumbnailUri } = await server.uploadUrlAsset(
-              server,
-              output[i],
-            )
+            const { uri, mediaAttributes, thumbnailUri } =
+              await server.uploadUrlAsset(server, output[i])
             console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
             creationData.uri = uri
             creationData.thumbnail = thumbnailUri || ''
@@ -465,7 +478,11 @@ const handleUpdateUniversal = async (
       taskId,
       status: taskUpdate.status,
       progress: taskUpdate.progress,
-      task: { ...task.toObject(), ...taskUpdate, generator: { generatorName: generator?.generatorName || 'n/a' } },
+      task: {
+        ...task.toObject(),
+        ...taskUpdate,
+        generator: { generatorName: generator?.generatorName || 'n/a' },
+      },
     })
   }
 
@@ -540,7 +557,7 @@ const handleFailure = async (
     result: null,
     task: {
       ...task.toObject(),
-      ...taskUpdate
+      ...taskUpdate,
     },
   })
 }

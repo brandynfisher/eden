@@ -22,9 +22,6 @@ const getMediaAttributes = async (
     type: mediaType,
   }
 
-  console.log({ uploadResponse })
-
-  // @todo: verify that this actually works. Documentation and code looks rather wonky
   if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
     mediaAttributes.duration = uploadResponse.duration
   }
@@ -95,7 +92,7 @@ export const uploadCldBufferAsset = async (
             )
             .end(buffer)
         } else {
-          console.log('upload_stream', uploadConfig)
+          // console.log('upload_stream', uploadConfig)
           server.cloudinary.uploader
             .upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
               if (error) {
@@ -103,7 +100,7 @@ export const uploadCldBufferAsset = async (
                 reject(new Error(error.message))
               }
 
-              console.log('upload_stream done', uploadResponse?.secure_url)
+              // console.log('upload_stream done', uploadResponse?.secure_url)
               resolve(uploadResponse)
             })
             .end(buffer)
@@ -124,16 +121,8 @@ export const uploadCldBufferAsset = async (
 
     const mediaAttributes = await getMediaAttributes(uploadResult, mediaType)
 
-    console.log(
-      uploadResult.type,
-      uploadResult.public_id,
-      uploadResult.format,
-      uploadResult.version,
-    )
     const formatVideoThumbnailUri = (uploadResult: UploadApiResponse) => {
       const { secure_url } = uploadResult
-      // const updatedUri = secure_url.replace(`/v${version}/`, '/c_fill,g_center,h_630,w_1200/f_jpg/q_auto/')
-      // const updatedUri = secure_url.replace(`/v${version}/`, '/')
       return `${secure_url.substring(0, secure_url.lastIndexOf('.'))}`
     }
 

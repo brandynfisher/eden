@@ -1,4 +1,5 @@
 import CardHeaderWrap from '@/components/Card/CardHeaderWrap'
+import CardImage from '@/components/Card/CardImage'
 import CardToolsDropdown from '@/components/Card/CardToolsDropdown'
 import { CONFIG } from '@/lib/config'
 import { Collection } from '@edenlabs/eden-sdk'
@@ -8,7 +9,6 @@ import Chip from '@mui/material/Chip'
 import { Card } from 'antd'
 import Link from 'next/link'
 import React, { useCallback, useState } from 'react'
-import CardImage from '@/components/Card/CardImage'
 
 const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
   if (!imageUri) {
@@ -18,9 +18,8 @@ const CoverImage = ({ imageUri }: { imageUri: string | undefined }) => {
   return (
     <div className="!flex justify-center items-center overflow-hidden h-full">
       <CardImage
-        uri={imageUri || ''}
-        width={0}
-        height={0}
+        assetType={imageUri.includes('/video/') ? 'video' : 'image'}
+        uri={imageUri}
         className="object-cover w-full !h-full !rounded-none transition-transform duration-200 ease-in group-hover:scale-105"
       />
     </div>

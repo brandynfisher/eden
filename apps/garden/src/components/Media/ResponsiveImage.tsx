@@ -1,5 +1,6 @@
-import { ReactNode, useState } from 'react'
 import CdnImage from '@/components/Media/cdn-image'
+import { AssetType } from '@/components/Media/lib/cloudinary'
+import { ReactNode, useState } from 'react'
 
 export const ResponsiveImage = ({
   src,
@@ -24,7 +25,7 @@ export const ResponsiveImage = ({
   onLoadingComplete?: () => void
   quality?: number
   className?: string
-  assetType?: 'image'|'video'
+  assetType?: AssetType
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const handleOnLoadingComplete = () => {
