@@ -206,7 +206,12 @@ export const getConcept = async (
 
   const conceptObject = concept.toObject()
   delete conceptObject.training_images
-  delete conceptObject.task.config.lora_training_urls
+  if (
+    conceptObject.task !== undefined &&
+    conceptObject.task.config !== undefined
+  ) {
+    delete conceptObject.task.config.lora_training_urls
+  }
 
   const hasConceptExportPermission = conceptExportPermissionCheck(request)
   if (!hasConceptExportPermission) {
