@@ -517,12 +517,19 @@ const handlePaymentSuccess = async (
     items: session.line_items.data.map((item: Stripe.LineItem, index) => {
       return {
         item_id: item.id,
-        item_name: item.description,
+        item_name:
+          (metadata.subscriptionTier ? 'subscription' : 'top-up') +
+          ' - ' +
+          item.description,
         currency: item.currency.toUpperCase(),
         index: index,
         item_brand: 'Eden',
         item_category: metadata.subscriptionTier ? 'subscription' : 'top-up',
-        price: item.price?.unit_amount || 0,
+        // amount from stripe as integer needs to be a float for GA
+        price:
+          item.price?.unit_amount && item.price?.unit_amount > 0
+            ? item.price?.unit_amount / 100
+            : 0,
         quantity: item.quantity || 0,
       }
     }),
