@@ -118,7 +118,7 @@ const concept = new Schema<ConceptDocument>(
     grid_prompts: {
       type: [String],
       required: false,
-      default: []
+      default: [],
     },
     publishedUrl: {
       type: String,
@@ -159,6 +159,12 @@ concept.index({
   creationCount: -1,
   praiseCount: -1,
   bookmarkCount: -1,
+})
+concept.index({
+  isPrivate: 1,
+  createdAt: -1,
+  _id: -1,
+  deleted: 1,
 })
 
 // concept.plugin(mongooseDelete, { overrideMethods: 'all' })
