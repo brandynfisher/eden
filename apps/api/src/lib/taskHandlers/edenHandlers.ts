@@ -350,6 +350,9 @@ const handleUpdate = async (
             ...task.toObject(),
             ...taskUpdate,
             concept,
+            generator: {
+              generatorName: generator.generatorName,
+            },
           },
         })
 
