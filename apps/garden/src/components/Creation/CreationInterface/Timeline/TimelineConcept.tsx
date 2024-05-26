@@ -31,8 +31,6 @@ const TimelineConcept = ({
   )
   const { showModal, hideModal } = useModalContext()
 
-  console.log({ task, conceptId, concept, isLoading })
-
   const handleCardClick = useCallback(() => {
     if (!concept) return
     hideModal(null, MODAL_TYPES.DETAIL_STATIC_MODAL)

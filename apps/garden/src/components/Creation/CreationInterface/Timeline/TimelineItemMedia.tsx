@@ -11,14 +11,7 @@ const TimelineItemMedia = ({
   task: Task
   listIndex?: number
 }) => {
-  console.log(
-    task,
-    task.generator.generatorName,
-    conceptGenerator.name,
-    task.concept,
-  )
   if (task.generator.generatorName === conceptGenerator.name && task.concept) {
-    console.log('TimeLineConcept', task.concept)
     return (
       <TimelineConcept
         task={task}
