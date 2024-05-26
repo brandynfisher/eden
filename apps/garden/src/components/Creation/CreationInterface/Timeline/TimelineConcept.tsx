@@ -22,11 +22,11 @@ const TimelineConcept = ({
       ? conceptId
       : conceptId._id,
     {
-      // revalidateOnFocus: false,
-      // revalidateIfStale: false,
-      // revalidateAll: false,
-      // revalidateOnReconnect: false,
-      // shouldRetryOnError: false,
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      revalidateAll: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
     },
   )
   const { showModal, hideModal } = useModalContext()
