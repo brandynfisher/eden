@@ -104,7 +104,7 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
                   </Link>
                   <ImageZoomable
                     key={concept.thumbnail}
-                    url={concept.thumbnail}
+                    url={concept.thumbnail || ''}
                     width={thumbnailSize}
                     height={thumbnailSize}
                   />
