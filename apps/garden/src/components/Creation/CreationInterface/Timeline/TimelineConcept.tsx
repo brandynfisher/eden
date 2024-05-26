@@ -15,7 +15,6 @@ const TimelineConcept = ({
   conceptId: string | Concept
   listIndex: number
 }) => {
-  console.log({ conceptId, task })
   const { concept, isLoading } = useConcept(
     !conceptId
       ? null
@@ -23,16 +22,16 @@ const TimelineConcept = ({
       ? conceptId
       : conceptId._id,
     {
-      revalidateOnFocus: false,
-      revalidateIfStale: false,
-      revalidateAll: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false,
+      // revalidateOnFocus: false,
+      // revalidateIfStale: false,
+      // revalidateAll: false,
+      // revalidateOnReconnect: false,
+      // shouldRetryOnError: false,
     },
   )
   const { showModal, hideModal } = useModalContext()
 
-  console.log({ concept })
+  console.log({ task, conceptId, concept, isLoading })
 
   const handleCardClick = useCallback(() => {
     if (!concept) return
@@ -44,7 +43,7 @@ const TimelineConcept = ({
     })
   }, [showModal, hideModal, concept])
 
-  if (isLoading) {
+  if (!concept || isLoading) {
     return (
       <div className="relative w-full h-full">
         <ProgressCard task={task} />
@@ -53,10 +52,6 @@ const TimelineConcept = ({
         </div>
       </div>
     )
-  }
-
-  if (!concept) {
-    return <div className="text-sm text-gray-600">deleted</div>
   }
 
   return (
