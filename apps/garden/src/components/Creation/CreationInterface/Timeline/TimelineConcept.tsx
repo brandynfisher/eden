@@ -43,7 +43,7 @@ const TimelineConcept = ({
     })
   }, [showModal, hideModal, concept])
 
-  if (!concept || isLoading) {
+  if (typeof conceptId === 'string' && (!concept || isLoading)) {
     return (
       <div className="relative w-full h-full">
         <ProgressCard task={task} />
@@ -57,7 +57,8 @@ const TimelineConcept = ({
   return (
     <ConceptCard
       index={listIndex < 3 ? listIndex : 9999}
-      data={concept}
+      // @ts-ignore
+      data={typeof conceptId === 'string' ? concept : conceptId}
       onClick={handleCardClick}
       hidePrompt={true}
       sizes={'(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 30vw)'}
