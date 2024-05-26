@@ -12,16 +12,23 @@ const TimelineConcept = ({
   listIndex,
 }: {
   task: Task
-  conceptId: string|Concept
+  conceptId: string | Concept
   listIndex: number
 }) => {
-  const { concept, isLoading } = useConcept(typeof conceptId === 'string' ? conceptId : conceptId._id, {
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    revalidateAll: false,
-    revalidateOnReconnect: false,
-    shouldRetryOnError: false,
-  })
+  const { concept, isLoading } = useConcept(
+    !conceptId
+      ? null
+      : typeof conceptId === 'string'
+      ? conceptId
+      : conceptId._id,
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      revalidateAll: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+    },
+  )
   const { showModal, hideModal } = useModalContext()
 
   const handleCardClick = useCallback(() => {
@@ -34,7 +41,7 @@ const TimelineConcept = ({
     })
   }, [showModal, hideModal, concept])
 
-  if (isLoading) {
+  if (typeof conceptId === 'string' && (!concept || isLoading)) {
     return (
       <div className="relative w-full h-full">
         <ProgressCard task={task} />
@@ -45,14 +52,11 @@ const TimelineConcept = ({
     )
   }
 
-  if (!concept) {
-    return <div className="text-sm text-gray-600">deleted</div>
-  }
-
   return (
     <ConceptCard
       index={listIndex < 3 ? listIndex : 9999}
-      data={concept}
+      // @ts-ignore
+      data={typeof conceptId === 'string' ? concept : conceptId}
       onClick={handleCardClick}
       hidePrompt={true}
       sizes={'(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 30vw)'}

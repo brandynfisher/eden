@@ -1,12 +1,25 @@
 import { taskPrivacyPermissionCheck } from '../lib/authorization'
-import { getDefaultGeneratorVersion, getLatestGeneratorVersion, prepareConfig } from '../lib/generator'
+import {
+  getDefaultGeneratorVersion,
+  getLatestGeneratorVersion,
+  prepareConfig,
+} from '../lib/generator'
 import { User } from '../models/Creator'
-import { Generator, GeneratorDocument, GeneratorVersionSchema } from '../models/Generator'
+import {
+  Generator,
+  GeneratorDocument,
+  GeneratorVersionSchema,
+} from '../models/Generator'
 import { Manna, MannaDocument } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
 import TaskRepository from '../repositories/TaskRepository'
-import { TasksCreateArguments, TasksGetArguments, TasksListArguments, TaskUpdateEvent } from '@edenlabs/eden-sdk'
+import {
+  TaskUpdateEvent,
+  TasksCreateArguments,
+  TasksGetArguments,
+  TasksListArguments,
+} from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -219,7 +232,12 @@ export const createTask = async (
     userId: user._id,
     taskId,
     status: 'pending',
-    task: { taskId, config: preparedConfig, status: 'pending', generator: { generatorName: generator?.generatorName || 'n/a' } },
+    task: {
+      taskId,
+      config: preparedConfig,
+      status: 'pending',
+      generator: { generatorName: generator?.generatorName || 'n/a' },
+    },
   })
 
   // update db
@@ -259,6 +277,11 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
   })
 
   await Task.populate(task, {
+    path: 'concept',
+    select: '_id name user conceptName creationCount thumbnail',
+  })
+
+  await Task.populate(task, {
     path: 'generator',
     select: 'generatorName',
   })
@@ -293,17 +316,17 @@ export const listTasks = async (
   const typeQuery = type
     ? type === 'creations'
       ? {
-        $or: [
-          { creation: { $ne: null } },
-          { 'config.concept_mode': { $exists: false } },
-        ],
-      }
+          $or: [
+            { creation: { $ne: null } },
+            { 'config.concept_mode': { $exists: false } },
+          ],
+        }
       : {
-        $or: [
-          { concept: { $ne: null } },
-          { 'config.concept_mode': { $exists: true } },
-        ],
-      }
+          $or: [
+            { concept: { $ne: null } },
+            { 'config.concept_mode': { $exists: true } },
+          ],
+        }
     : {}
 
   const tasksRepository = new TaskRepository(Task)
@@ -338,7 +361,7 @@ export const listTasks = async (
 
   await tasksRepository.model.populate(tasks.docs, {
     path: 'generator',
-    select: 'generatorName',
+    select: '_id generatorName',
   })
 
   return reply.status(200).send(tasks)
@@ -382,7 +405,10 @@ export const subscribeTaskUpdates = async (
   // keep the connection alive.
   const keepAliveTimer = setInterval(() => {
     // console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
-    reply.sse({ event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
+    reply.sse({
+      event: 'keep-alive',
+      data: JSON.stringify({ heartbeat: userId }),
+    })
   }, 15000) // Send a keep-alive every 15 seconds
 
   reply.sse(
@@ -417,10 +443,9 @@ export const subscribeTaskUpdates = async (
   )
 
   request.socket.on('close', () => {
-      // console.log('request socket close')
-      // console.log('CLEARING keepAliveTimer')
-      clearInterval(keepAliveTimer)
-      reply.raw.end()
-    },
-  )
+    // console.log('request socket close')
+    // console.log('CLEARING keepAliveTimer')
+    clearInterval(keepAliveTimer)
+    reply.raw.end()
+  })
 }

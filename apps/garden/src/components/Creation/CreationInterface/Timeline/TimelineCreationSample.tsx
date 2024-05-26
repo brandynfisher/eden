@@ -12,19 +12,24 @@ const TimelineCreationSample = ({
   listIndex,
 }: {
   task: Task
-  creationId: string|Creation
+  creationId: string | Creation
   listIndex: number
 }) => {
-  console.log({creationId, task})
-
-  const { creation, mutate, isLoading } = useCreation( !creationId ? null : typeof creationId === 'string' ? creationId : creationId._id, {
-    revalidateFirstPage: false,
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    revalidateAll: false,
-    revalidateOnReconnect: false,
-    shouldRetryOnError: false,
-  })
+  const { creation, mutate, isLoading } = useCreation(
+    !creationId
+      ? null
+      : typeof creationId === 'string'
+      ? creationId
+      : creationId._id,
+    {
+      revalidateFirstPage: false,
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      revalidateAll: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+    },
+  )
   const { showModal, hideModal } = useModalContext()
 
   const handleCardClick = useCallback(() => {
