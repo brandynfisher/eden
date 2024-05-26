@@ -15,8 +15,7 @@ const TimelineItemMedia = ({
     return (
       <TimelineConcept
         task={task}
-        //@ts-ignore
-        conceptId={!task.concept ? null : typeof task.concept === 'string' ? task.concept : task.concept._id}
+        conceptId={task.concept}
         listIndex={listIndex || 0}
       />
     )

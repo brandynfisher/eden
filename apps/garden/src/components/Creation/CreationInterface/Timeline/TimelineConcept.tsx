@@ -12,17 +12,27 @@ const TimelineConcept = ({
   listIndex,
 }: {
   task: Task
-  conceptId: string|Concept
+  conceptId: string | Concept
   listIndex: number
 }) => {
-  const { concept, isLoading } = useConcept(typeof conceptId === 'string' ? conceptId : conceptId._id, {
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    revalidateAll: false,
-    revalidateOnReconnect: false,
-    shouldRetryOnError: false,
-  })
+  console.log({ conceptId, task })
+  const { concept, isLoading } = useConcept(
+    !conceptId
+      ? null
+      : typeof conceptId === 'string'
+      ? conceptId
+      : conceptId._id,
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      revalidateAll: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+    },
+  )
   const { showModal, hideModal } = useModalContext()
+
+  console.log({ concept })
 
   const handleCardClick = useCallback(() => {
     if (!concept) return
