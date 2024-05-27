@@ -13,6 +13,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+
 // import NebulaShaderCanvas from '@/components/Creation/CreationInterface/Timeline/NebulaShaderCanvas'
 
 const CreationInterface = ({
@@ -149,7 +150,10 @@ const CreationInterface = ({
         {!generators || !activeGenerator || !availableGenerators ? (
           <LoadingIndicator />
         ) : (
-          <TimelineList innerRef={timelineListRef} />
+          <TimelineList
+            innerRef={timelineListRef}
+            selectedGenerators={selectedGenerators}
+          />
         )}
       </div>
 
