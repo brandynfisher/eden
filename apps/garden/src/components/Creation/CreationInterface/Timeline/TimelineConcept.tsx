@@ -55,6 +55,7 @@ const TimelineConcept = ({
   return (
     <ConceptCard
       index={listIndex < 3 ? listIndex : 9999}
+      //@ts-ignore
       data={{ ...(typeof conceptId === 'string' ? concept : conceptId), task }}
       onClick={handleCardClick}
       hidePrompt={true}
