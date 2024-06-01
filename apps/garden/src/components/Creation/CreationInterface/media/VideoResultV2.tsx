@@ -24,7 +24,7 @@ const VideoResultV2 = ({
   const optimizedVideoUrl = resultUrl.startsWith('https://res.cloudinary.com/')
     ? getCldVideoUrl({
         src: resultUrl,
-        quality: 50,
+        quality: 90,
       }) + '.mp4'
     : resultUrl
 

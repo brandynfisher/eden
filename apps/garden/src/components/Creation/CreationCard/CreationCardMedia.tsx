@@ -31,7 +31,7 @@ const CreationCardVideo = ({
   const optimizedVideoUrl = uri.startsWith('https://res.cloudinary.com/')
     ? getCldVideoUrl({
         src: uri,
-        quality: 50,
+        quality: 40,
       }) + '.mp4'
     : uri
 
