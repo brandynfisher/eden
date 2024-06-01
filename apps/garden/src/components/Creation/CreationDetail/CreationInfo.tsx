@@ -209,9 +209,13 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
               <div
                 ref={refInputVideo}
                 key={creation.task.config['input_video_path']}
-                className="overflow-hidden rounded-lg cursor-pointer max-h-[128px] max-w-[128px]"
+                className={`overflow-hidden rounded-lg cursor-pointer max-h-64`}
+                style={{
+                  aspectRatio: `${creation.mediaAttributes.aspectRatio}/1`,
+                }}
               >
                 <CreationCardMedia
+                  allowFullscreenToggle={true}
                   hovered={hoveredInputVideo}
                   creation={{
                     ...creation,

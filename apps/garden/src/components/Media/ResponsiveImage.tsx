@@ -14,6 +14,7 @@ export const ResponsiveImage = ({
   quality,
   className,
   assetType,
+  onClick,
 }: {
   src: string
   alt: string
@@ -26,6 +27,7 @@ export const ResponsiveImage = ({
   quality?: number
   className?: string
   assetType?: AssetType
+  onClick?: () => void
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const handleOnLoadingComplete = () => {
@@ -35,6 +37,7 @@ export const ResponsiveImage = ({
 
   return (
     <div
+      onClick={() => onClick && onClick()}
       className={`relative ${
         !isLoaded ? 'bg-gray-100 dark:bg-gray-800' : ''
       } rounded-lg w-auto h-full ${className ? className : ''}`}
