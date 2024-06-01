@@ -1,10 +1,13 @@
 import { OrderByPopularity } from '@/components/Layout/buttons/OrderByButtons'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
 import { CONFIG } from '@/lib/config'
+import {
+  CursorPaginatedFeedQuery,
+  CursorPaginatedRouteQueryParams,
+} from '@edenlabs/eden-sdk'
 import { MessageInstance } from 'antd/es/message/interface'
 import axios, { AxiosError } from 'axios'
 import queryString from 'query-string'
-import { CursorPaginatedFeedQuery, CursorPaginatedRouteQueryParams } from '@edenlabs/eden-sdk'
 
 // @ts-ignore
 export const fetcher = (...args) =>
@@ -28,7 +31,10 @@ export const handleAxiosError = (
 
 export const handleAxiosServerError = (error: AxiosError | unknown) => {
   if (axios.isAxiosError(error)) {
-    return 'ServerError: ' + (error.response?.data.message || 'Unknown Error has occurred')
+    return (
+      'ServerError: ' +
+      (error.response?.data.message || 'Unknown Error has occurred')
+    )
   }
 
   return 'Unknown Error has occurred'
@@ -144,12 +150,21 @@ export const createCursorPaginationRoute = (
 
   // console.log(query.userId, query.orderBy)
 
-  if (query.userId) {
-    if (query.orderBy && query.orderBy === 'liked')
-      filters.push({ likedBy: query.userId })
+  const userIdExists = !!query.userId
+  const isOrderByLiked = query.orderBy === 'liked'
+  const isOrderByOther = !query.orderBy || !isOrderByLiked
 
-    if (!query.orderBy || query.orderBy !== 'liked') {
-      filters.push({ user: String(query.userId) })
+  const likedByUserFilter = { likedBy: query.userId }
+  const userFilter = { user: String(query.userId) }
+
+  if (userIdExists) {
+    if (isOrderByLiked) {
+      filters.push(likedByUserFilter)
+      filters.push({ isPrivate: true })
+    }
+
+    if (isOrderByOther) {
+      filters.push(userFilter)
     }
   }
   if (query.name && query.name.length > 0) {

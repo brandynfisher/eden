@@ -1,8 +1,6 @@
 import { getSimilarCreationIds } from '../lib/similar'
 import { Collection } from '../models/Collection'
-// import { Concept } from '../models/Concept'
 import { Creation } from '../models/Creation'
-// import { User } from '../models/Creator'
 import { Embedding, EmbeddingDocument } from '../models/Embedding'
 import { Follow } from '../models/Follow'
 import { Reaction } from '../models/Reaction'
@@ -53,6 +51,7 @@ type Filter =
         | string
         | ObjectId
       $exists?: boolean | string | ObjectId
+      $or?: []
     }
 type Filters = Record<string, Filter>
 
@@ -102,6 +101,7 @@ type CustomFilters = {
   followerCount?: { $gt?: number }
   createdAt?: Filter
   _id?: string | ObjectId | { $in?: string[] }
+  $or?: { user: { $ne?: ObjectId; $eq?: ObjectId }; isPrivate: boolean }[]
 }
 
 type GenericFilters = {
@@ -378,6 +378,18 @@ const handleArguments = async ({
     })
   }
 
+  const usesLikedFilter = filterMap
+    ? filterMap.filter(item => item.name === 'likedBy').length > 0
+    : undefined
+  // console.log({usesLikedFilter})
+  if (usesLikedFilter) {
+    const indexPrivacyParam = filterMap.findIndex(
+      item => item.name === 'isPrivate',
+    )
+    if (filterMap[indexPrivacyParam] !== undefined) {
+      delete filterMap[indexPrivacyParam]
+    }
+  }
   const filterUserIds = filterMap
     ? filterMap
         ?.filter(
@@ -385,6 +397,7 @@ const handleArguments = async ({
         )
         .map(item => item.value)
     : undefined
+
   const isUserRequestingOwnProfileFeed =
     filterUserIds && filterUserIds.length === 1 && authUserId
       ? authUserId.toString() === filterUserIds[0].toString()
@@ -407,6 +420,7 @@ const handleArguments = async ({
     followerCount?: { $gt: 0 }
     creation?: ObjectId
     _id?: { $in?: string[] | ObjectId[] }
+    $or?: { user?: { $ne?: ObjectId; $eq?: ObjectId }; isPrivate: boolean }[]
   } = {}
 
   const sortOptions = sort
@@ -458,6 +472,7 @@ const handleArguments = async ({
     ? (Object.fromEntries(
         (Array.isArray(filter) ? filter : [filter]).map(filterOption => {
           const [field, value] = filterOption.split(';')
+          // console.log({filterOption, field, value})
 
           if (
             field === 'user' ||
@@ -483,6 +498,10 @@ const handleArguments = async ({
           if (field === 'likedBy') {
             useReactionsPreAggregate = true
             preAggregateFilterOptions['user'] = new ObjectId(value)
+            customFilterOptions['$or'] = [
+              { user: { $ne: new ObjectId(value) }, isPrivate: false },
+              { user: { $eq: new ObjectId(value) }, isPrivate: true },
+            ]
             return []
           }
 
@@ -510,10 +529,12 @@ const handleArguments = async ({
             return []
           }
 
-          if (field === 'isPrivate' && isUserRequestingOwnProfileFeed) {
-            return [field, value === 'true']
+          if (field === 'isPrivate') {
+            if (!usesLikedFilter && isUserRequestingOwnProfileFeed) {
+              return [field, value === 'true']
+            }
+            return []
           }
-
           if (field === 'minDate' && value) {
             if (!customFilterOptions['createdAt']) {
               customFilterOptions['createdAt'] = {}
@@ -568,17 +589,23 @@ const handleArguments = async ({
 
     if (fieldName === 'outputType') {
       customFilterMap['mediaAttributes.type'] = {
+        // @ts-ignore
         $in: Array.isArray(fieldValues) ? fieldValues : [fieldValues],
       }
     } else if (fieldName === 'generator') {
       // @ts-ignore
       customFilterMap['generator'] = {
         $in: Array.isArray(fieldValues)
-          ? fieldValues.map(val => new ObjectId(val))
+          ? // @ts-ignore
+            fieldValues.map(val => new ObjectId(val))
           : // @ts-ignore
             [new ObjectId(fieldValues)],
       }
-    } else if (fieldName === 'isPrivate' && isUserRequestingOwnProfileFeed) {
+    } else if (
+      !usesLikedFilter &&
+      fieldName === 'isPrivate' &&
+      isUserRequestingOwnProfileFeed
+    ) {
       customFilterMap['isPrivate'] = String(fieldValues) === 'true'
     } else if (fieldName === 'praiseCount') {
       customFilterMap['praiseCount'] = { $gt: 0 }
@@ -591,6 +618,9 @@ const handleArguments = async ({
       customFilterMap['createdAt'] = fieldValues
     } else if (fieldName === '_id') {
       customFilterMap['_id'] = fieldValues as ObjectId
+    } else if (fieldName === '$or') {
+      // @ts-ignore
+      customFilterMap['$or'] = fieldValues
     }
 
     // console.log({fieldName, fieldValues})
@@ -604,6 +634,7 @@ const handleArguments = async ({
     : undefined
 
   const defaultPrivacyFilter =
+    !usesLikedFilter &&
     usesPrivacy &&
     !isUserRequestingOwnProfileFeed &&
     !(
@@ -705,8 +736,8 @@ export const getCreationsFeedCursor = async (
     ].filter(Boolean)
 
     // console.log(JSON.stringify(pipeline, null, 2))
-    // @ts-ignore
 
+    // @ts-ignore
     results = await Collection.aggregate(pipeline)
   } else if (useFollowingPreAggregate) {
     const lookupPipeline = await createPipeline({
