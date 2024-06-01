@@ -382,6 +382,8 @@ const handleArguments = async ({
     ? filterMap.filter(item => item.name === 'likedBy').length > 0
     : undefined
   // console.log({usesLikedFilter})
+
+  // if using "likedBy me" filter: remove default privacy filter as we'll need to handle that conditionally based on creation.user
   if (usesLikedFilter) {
     const indexPrivacyParam = filterMap.findIndex(
       item => item.name === 'isPrivate',
