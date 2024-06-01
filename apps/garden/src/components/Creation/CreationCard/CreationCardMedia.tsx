@@ -2,6 +2,7 @@ import CardImage from '@/components/Card/CardImage'
 import { VideoLengthBadge } from '@/components/Creation/CreationInterface/media/VideoPreview'
 import VideoResult from '@/components/Creation/CreationInterface/media/VideoResult'
 import { ResponsiveImage } from '@/components/Media/ResponsiveImage'
+import { getCldVideoUrl } from '@/components/Media/helpers/getCldVideoUrl'
 import { Creation, MediaType } from '@edenlabs/eden-sdk'
 import { useFullscreen } from '@mantine/hooks'
 
@@ -27,6 +28,12 @@ const CreationCardVideo = ({
   allowFullscreenToggle?: boolean
 }) => {
   const { ref, toggle, fullscreen } = useFullscreen()
+  const optimizedVideoUrl = uri.startsWith('https://res.cloudinary.com/')
+    ? getCldVideoUrl({
+        src: uri,
+        quality: 50,
+      }) + '.mp4'
+    : uri
 
   return (
     <ResponsiveImage
@@ -47,7 +54,7 @@ const CreationCardVideo = ({
             }`}
           >
             <VideoResult
-              src={uri}
+              src={optimizedVideoUrl}
               disableControls={!fullscreen}
               autoPlay={true}
             />

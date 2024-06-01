@@ -1,4 +1,5 @@
 import ImageResultZoomable from '@/components/Creation/CreationInterface/media/ImageResultZoomable'
+import { getCldVideoUrl } from '@/components/Media/helpers/getCldVideoUrl'
 import { useEffect, useState } from 'react'
 import ReactPlayer from 'react-player'
 
@@ -18,8 +19,14 @@ const VideoResultV2 = ({
   onLoad?: () => void
 }) => {
   // const [isLoaded, setIsLoaded] = useState(false)
-
   const [isMounted, setIsMounted] = useState(false)
+
+  const optimizedVideoUrl = resultUrl.startsWith('https://res.cloudinary.com/')
+    ? getCldVideoUrl({
+        src: resultUrl,
+        quality: 50,
+      }) + '.mp4'
+    : resultUrl
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -36,7 +43,7 @@ const VideoResultV2 = ({
       >
         {isMounted ? (
           <ReactPlayer
-            url={resultUrl}
+            url={optimizedVideoUrl}
             className={`w-full h-full object-contain absolute z-10 inset-0 rounded-lg max-h-[80vh]`}
             style={{ objectFit: 'contain', objectPosition: 'top center' }}
             width="100%"
