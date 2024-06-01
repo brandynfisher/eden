@@ -161,18 +161,6 @@ const handleUpdate = async (
             }
           }
 
-          console.log(
-            JSON.stringify(
-              {
-                _id: creationDocument._id,
-                uri: creationDocument.uri,
-                thumbnail: creationDocument.thumbnail,
-              },
-              null,
-              2,
-            ),
-          )
-
           creationData.push(creationDocument)
         }),
       )
