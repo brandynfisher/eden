@@ -56,7 +56,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
     },
@@ -71,7 +71,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       params: {
@@ -108,7 +108,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: {
@@ -129,7 +129,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       params: Type.Object({
@@ -175,7 +175,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       querystring: {

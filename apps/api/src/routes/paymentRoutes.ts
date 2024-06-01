@@ -1,6 +1,3 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import {
   createCheckoutSession,
   createSubscriptionSession,
@@ -8,6 +5,8 @@ import {
   handlePaymentEvent,
 } from '../controllers/paymentController'
 import { isAuth } from '../middleware/authMiddleware'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const paymentRoutes: FastifyPluginAsync = async server => {
   server.post('/payments/create', {
@@ -18,7 +17,7 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: {
@@ -47,14 +46,15 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: {
         id: Type.String(),
       },
     },
-    handler: async (request, reply) => handlePaymentEvent(server, request, reply),
+    handler: async (request, reply) =>
+      handlePaymentEvent(server, request, reply),
   })
 
   server.get('/payments/products', {
@@ -65,7 +65,7 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       response: {
@@ -86,7 +86,7 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: {

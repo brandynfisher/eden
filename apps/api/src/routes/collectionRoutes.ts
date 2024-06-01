@@ -20,7 +20,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       querystring: {
@@ -47,7 +47,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       params: {
@@ -70,7 +70,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       params: {
@@ -96,7 +96,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: Type.Object({
@@ -118,7 +118,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: Type.Object({
@@ -140,7 +140,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       params: {
@@ -161,7 +161,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: Type.Object({

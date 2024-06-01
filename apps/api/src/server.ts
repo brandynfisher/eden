@@ -1,6 +1,8 @@
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
+import registerAssetUpload from './plugins/assetUploadPlugin'
 import registerChroma from './plugins/chromaPlugin'
 import registerClerk from './plugins/clerkPlugin'
+import registerCloudinary from './plugins/cloudinaryPlugin'
 import config from './plugins/config'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerEventEmitter from './plugins/eventEmitterPlugin'
@@ -9,13 +11,11 @@ import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
 import registerS3 from './plugins/s3Plugin'
-import registerCloudinary from './plugins/cloudinaryPlugin'
 import registerSentry from './plugins/sentryPlugin'
 import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
 import { routes } from './routes'
 import fastify, { FastifyRequest } from 'fastify'
-import registerAssetUpload from './plugins/assetUploadPlugin'
 
 export interface CreateServerOpts {
   mongoUri?: string
@@ -93,7 +93,11 @@ const createServer = async (
   await registerAssetUpload(server)
   await registerS3(server)
 
-  if (server.config.CLOUDINARY_API_SECRET && server.config.CLOUDINARY_API_KEY && server.config.CLOUDINARY_CLOUD_NAME) {
+  if (
+    server.config.CLOUDINARY_API_SECRET &&
+    server.config.CLOUDINARY_API_KEY &&
+    server.config.CLOUDINARY_CLOUD_NAME
+  ) {
     await registerCloudinary(server)
   }
 
@@ -122,11 +126,11 @@ const createServer = async (
           name: 'X-Api-Key',
           in: 'header',
         },
-        apiSecret: {
-          type: 'apiKey',
-          name: 'X-Api-Secret',
-          in: 'header',
-        },
+        // apiSecret: {
+        //   type: 'apiKey',
+        //   name: 'X-Api-Secret',
+        //   in: 'header',
+        // },
       },
     },
   })

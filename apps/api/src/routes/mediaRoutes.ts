@@ -2,8 +2,8 @@ import {
   getMediaDownloadUrl,
   receiveMediaTranscodeUpdate,
   uploadMedia,
-  uploadS3MediaRequest,
   uploadMediaRequestCloudinary,
+  uploadS3MediaRequest,
 } from '../controllers/mediaController'
 import { isAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -17,7 +17,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       response: {
@@ -37,7 +37,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: Type.Object({
@@ -61,7 +61,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       response: {
@@ -72,8 +72,8 @@ const mediaRoutes: FastifyPluginAsync = async server => {
           apiKey: Type.String(),
         }),
         500: Type.Object({
-          message: Type.String()
-        })
+          message: Type.String(),
+        }),
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
@@ -87,7 +87,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       querystring: {

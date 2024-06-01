@@ -1,6 +1,3 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   createApiKey,
@@ -9,6 +6,8 @@ import {
 } from '../controllers/apiKeyController'
 import { apiKeyCreatePreHandler } from '../lib/authorization'
 import { isAuth } from '../middleware/authMiddleware'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const apiKeyRoutes: FastifyPluginAsync = async server => {
   server.post('/apikeys/create', {
@@ -29,7 +28,7 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
     },
@@ -53,7 +52,7 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
     },
@@ -85,7 +84,7 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
     },

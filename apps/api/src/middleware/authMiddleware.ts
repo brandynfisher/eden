@@ -1,22 +1,24 @@
+import { isAllowedAccess } from '../lib/authorization'
+import { ApiKey } from '../models/ApiKey'
+import { User } from '../models/Creator'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import { ApiKey } from '../models/ApiKey'
-import { User } from '../models/Creator'
-import { isAllowedAccess } from '../lib/authorization'
-
-const apiKeyVerify = async (server: FastifyInstance, request: FastifyRequest) => {
-  if (!request.headers['x-api-secret']) {
-    throw new Error('Missing API secret')
+const apiKeyVerify = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+) => {
+  if (!request.headers['x-api-key']) {
+    throw new Error('Missing API key')
   }
 
   const apiKey = await ApiKey.findOne({
     apiKey: request.headers['x-api-key'],
-    apiSecret: request.headers['x-api-secret'],
+    // apiSecret: request.headers['x-api-secret'],
   })
 
   if (!apiKey) {
-    throw new Error('Invalid API key or secret provided')
+    throw new Error('Invalid API key provided')
   }
 
   const user = await User.findById(apiKey.user)

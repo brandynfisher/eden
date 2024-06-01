@@ -1,10 +1,9 @@
+import { CharacterDocument } from './Character'
+import { UserDocument } from './Creator'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
-
-import { CharacterDocument } from './Character'
-import { UserDocument } from './Creator'
 
 export interface ApiKeySchema {
   user: UserDocument
@@ -41,7 +40,7 @@ const apiKey = new Schema<ApiKeyDocument>(
     },
     apiSecret: {
       type: String,
-      required: true,
+      required: false,
     },
     note: {
       type: String,

@@ -1,6 +1,3 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import { paginatedResponse, paginationProperties } from '.'
 import {
   addCharactersToSession,
@@ -14,6 +11,8 @@ import {
 } from '../controllers/sessionController'
 import { isAdmin, isAuth } from '../middleware/authMiddleware'
 import { sessionType } from '../types/routeTypes'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/create', {
@@ -23,7 +22,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       response: {
@@ -43,7 +42,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       body: Type.Object({
@@ -64,7 +63,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       hide: true,
@@ -87,7 +86,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       hide: true,
@@ -110,7 +109,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       hide: true,
@@ -138,7 +137,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       querystring: {
@@ -164,7 +163,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       params: Type.Object({
@@ -187,7 +186,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       params: Type.Object({

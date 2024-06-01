@@ -7,8 +7,7 @@ import {
 } from '../controllers/feedController'
 import {
   // getConceptsFeedCursor,
-  getCreationsFeedCursor,
-  // getCreatorsFeedCursor,
+  getCreationsFeedCursor, // getCreatorsFeedCursor,
 } from '../controllers/feedCursorController'
 import { maybeAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -23,7 +22,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       querystring: {
@@ -78,7 +77,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       querystring: {
@@ -115,7 +114,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
   //     security: [
   //       {
   //         apiKey: [],
-  //         apiSecret: [],
+  //         // apiSecret: [],
   //       },
   //     ],
   //     querystring: {
@@ -152,7 +151,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
   //     security: [
   //       {
   //         apiKey: [],
-  //         apiSecret: [],
+  //         // apiSecret: [],
   //       },
   //     ],
   //     querystring: {
@@ -182,7 +181,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          apiSecret: [],
+          // apiSecret: [],
         },
       ],
       querystring: {
