@@ -1,9 +1,13 @@
+'use client'
+
+import CreationCardMedia from '@/components/Creation/CreationCard/CreationCardMedia'
 import CreationImageActions from '@/components/Creation/CreationDetail/CreationImageActions'
 import ImageZoomable from '@/components/Creation/CreationInterface/media/ImageZoomable'
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { useConcept } from '@/hooks/useConcept'
 import { isImageUrl } from '@/lib/string'
 import { Creation } from '@edenlabs/eden-sdk'
+import { useHover } from '@mantine/hooks'
 import { Divider } from 'antd'
 import Link from 'next/link'
 import React, { ReactNode, useEffect, useState } from 'react'
@@ -56,6 +60,8 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
     )
     setDisplayDateTime(`${dateString} ${timeStringFormatted}`)
   }, [creation.createdAt])
+
+  const { hovered: hoveredInputVideo, ref: refInputVideo } = useHover()
 
   return (
     <div>
@@ -180,6 +186,58 @@ const CreationInfo = ({ creation }: { creation: Creation }) => {
             value={
               <div className="grid grid-cols-2 gap-2 mt-1">
                 {creation.task.config['input_images'].map(
+                  (initImage: string) => (
+                    <ImageZoomable
+                      key={initImage}
+                      url={initImage}
+                      width={thumbnailSize}
+                      height={thumbnailSize}
+                    />
+                  ),
+                )}
+              </div>
+            }
+          />
+        </div>
+      ) : null}
+
+      {creation.task.config['input_video_path'] ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Input Video"
+            value={
+              <div
+                ref={refInputVideo}
+                key={creation.task.config['input_video_path']}
+                className="overflow-hidden rounded-lg cursor-pointer max-h-[128px] max-w-[128px]"
+              >
+                <CreationCardMedia
+                  hovered={hoveredInputVideo}
+                  creation={{
+                    ...creation,
+                    uri: creation.task.config['input_video_path'],
+                    thumbnail: `${creation.task.config[
+                      'input_video_path'
+                    ].substring(
+                      0,
+                      creation.task.config['input_video_path'].lastIndexOf('.'),
+                    )}`,
+                  }}
+                />
+              </div>
+            }
+          />
+        </div>
+      ) : null}
+
+      {creation.task.config['style_images'] &&
+      creation.task.config['style_images'].length ? (
+        <div className="mt-4">
+          <BaseParamGroup
+            label="Style Images"
+            value={
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                {creation.task.config['style_images'].map(
                   (initImage: string) => (
                     <ImageZoomable
                       key={initImage}

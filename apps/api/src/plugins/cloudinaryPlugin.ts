@@ -176,10 +176,9 @@ export const generateCldUploadSignature: (
   server: FastifyInstance,
 ) => CloudinaryUploadSignature = (server: FastifyInstance) => {
   const uploadConfig = {
-    folder: 'user_uploads', // @todo: configure actual folder
+    folder: 'user_uploads',
   }
   const sig = signRequest(server, uploadConfig)
-
   return {
     signature: sig.signature,
     timestamp: sig.timestamp,
