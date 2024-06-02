@@ -13,7 +13,7 @@ import ShareLinkButton from '@/components/Layout/buttons/ShareLinkButton'
 import UnpublishButton from '@/components/Layout/buttons/UnpublishButton'
 import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import { CONFIG } from '@/lib/config'
-import { isImageUrl, sanitize } from '@/lib/string'
+import { capitalize, isImageUrl, sanitize } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
@@ -138,8 +138,10 @@ const getDownloadMenuItems = (
           itemType={itemType}
           url={downloadUrl}
           fileName={encodeURIComponent(
-            `Eden-${item.user.username}-${
-              item && item.name ? sanitize(item.name.slice(0, 128)) : '___'
+            `Eden-${capitalize(item.user.username)}-${
+              item && item.name
+                ? capitalize(sanitize(item.name.slice(0, 128)))
+                : '___'
             }-${item._id}`,
           )}
           label="Download"

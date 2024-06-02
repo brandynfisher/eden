@@ -62,8 +62,8 @@ const CreationCardVideo = ({
         )}
         {!fullscreen ? (
           <div
-            className={`absolute z-10 inset-0 flex flex-col justify-between items-center pointer-events-none ${
-              hovered ? 'md:top-10 md:z-20' : ''
+            className={`absolute z-10 inset-0 flex flex-col justify-between items-center pointer-events-none transition-opacity ${
+              hovered ? 'opacity-0' : ''
             }`}
           >
             <VideoLengthBadge duration={duration} />
