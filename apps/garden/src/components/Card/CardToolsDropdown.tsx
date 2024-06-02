@@ -13,7 +13,7 @@ import ShareLinkButton from '@/components/Layout/buttons/ShareLinkButton'
 import UnpublishButton from '@/components/Layout/buttons/UnpublishButton'
 import UseAsPresetButton from '@/components/Layout/buttons/UseAsPresetButton'
 import { CONFIG } from '@/lib/config'
-import { capitalize, isImageUrl, sanitize } from '@/lib/string'
+import { isImageUrl, sanitize } from '@/lib/string'
 import { ItemType } from '@/providers/ModalProvider'
 import { UserContext } from '@/providers/UserProvider'
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined'
@@ -112,6 +112,21 @@ const getDownloadUrl = (
 
   return item.uri
 }
+
+// Cloudinary currently breaks when any word starts with lower case `original` - fix pending
+const sanitizeFilenameForCloudinaryBug = (fileName: string) => {
+  return fileName.replace('original', 'Original')
+}
+
+const getFileName = (item: CardData) => {
+  const fileName = encodeURIComponent(
+    `Eden-${item.user.username}-${
+      item && item.name ? sanitize(item.name.slice(0, 128)) : '___'
+    }-${item._id}`,
+  )
+  return sanitizeFilenameForCloudinaryBug(fileName)
+}
+
 const getDownloadMenuItems = (
   itemType: ItemType,
   item: CardData,
@@ -137,13 +152,7 @@ const getDownloadMenuItems = (
         <DownloadFileButton
           itemType={itemType}
           url={downloadUrl}
-          fileName={encodeURIComponent(
-            `Eden-${capitalize(item.user.username)}-${
-              item && item.name
-                ? capitalize(sanitize(item.name.slice(0, 128)))
-                : '___'
-            }-${item._id}`,
-          )}
+          fileName={getFileName(item)}
           label="Download"
         />
       ),
