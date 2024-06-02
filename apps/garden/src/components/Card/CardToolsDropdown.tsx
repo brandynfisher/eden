@@ -46,10 +46,10 @@ const getImageCopyMenuItems = (item: Concept | Creation) => {
       key: '1-1',
     })
 
-    otherTypeCopyItems.push({
-      icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
-      key: '1-2',
-    })
+    // otherTypeCopyItems.push({
+    //   icon: <CopyUrlButton url={item.uri} variant="text" label="File URL" />,
+    //   key: '1-2',
+    // })
   }
 
   return isImageUrl(item.uri)
@@ -115,7 +115,7 @@ const getDownloadUrl = (
 
 // Cloudinary currently breaks when any word starts with lower case `original` - fix pending
 const sanitizeFilenameForCloudinaryBug = (fileName: string) => {
-  return fileName.replace('original', 'Original')
+  return fileName.replaceAll('original', 'Original')
 }
 
 const getFileName = (item: CardData) => {
