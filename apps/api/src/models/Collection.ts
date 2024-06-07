@@ -1,4 +1,3 @@
-import { enforceUserDocumentLimit } from '../lib/data'
 import { VisibilitySchema } from '../types/baseSchemas'
 import { CreationDocument } from './Creation'
 import { UserDocument } from './Creator'
@@ -90,12 +89,6 @@ const collection = new Schema<CollectionDocument>(
     timestamps: true,
   },
 )
-collection.pre<CollectionDocument>('save', function (next) {
-  enforceUserDocumentLimit(25, 'collections', this.user)
-  this.updatedAt = new Date()
-
-  next()
-})
 
 collection.index({ _id: -1, user: 1, deleted: 1, isPrivate: 1 })
 collection.plugin(mongooseDelete, {

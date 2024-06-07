@@ -1,4 +1,5 @@
 import { creationPrivacyPermissionCheck } from '../lib/authorization'
+import { enforceUserDocumentLimit } from '../lib/data'
 import { Collection } from '../models/Collection'
 import { Creation } from '../models/Creation'
 import { User } from '../models/Creator'
@@ -365,6 +366,18 @@ export const addCreationsToCollection = async (
   if (creationDocs.length !== creationIds.length) {
     return reply.status(400).send({
       message: 'Invalid creation(s)',
+    })
+  }
+
+  const withinDocumentLimits = await enforceUserDocumentLimit(
+    150,
+    'collections',
+    userId.toString(),
+  )
+
+  if (!withinDocumentLimits) {
+    return reply.status(400).send({
+      message: 'User has reached the maximum number of collections',
     })
   }
 

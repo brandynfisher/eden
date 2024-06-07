@@ -1,25 +1,19 @@
-import { FeatureFlag } from '@edenlabs/eden-sdk'
-import mongoose, { ObjectId } from 'mongoose'
-
 import { UserDocument } from '../models/Creator'
-
-export type IdInput = string | ObjectId
+import { FeatureFlag } from '@edenlabs/eden-sdk'
+import mongoose from 'mongoose'
 
 export const enforceUserDocumentLimit = async (
   limit: number,
   modelName: string,
-  creatorDoc: UserDocument,
+  userId: string,
 ) => {
-  const creator = await mongoose.model('users').findById(creatorDoc)
+  const creator = await mongoose.model('users').findById(userId)
   if (creator) {
     const count = await mongoose
       .model(modelName)
       .countDocuments({ user: creator._id })
-    if (count >= limit) {
-      throw new Error(
-        `Maximum number of ${modelName} reached for this creator.`,
-      )
-    }
+
+    return count < limit
   }
 }
 
