@@ -73,6 +73,12 @@ export const createMannaVoucher = async (
     })
   }
 
+  if (numVouchers > 100) {
+    return reply.status(400).send({
+      message: `Maximum numberOfUses is 100, you requested ${numVouchers}`,
+    })
+  }
+
   let newCode
   for (let i = 0; i < numVouchers; i++) {
     newCode = code || randomId(16)
