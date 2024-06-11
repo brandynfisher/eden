@@ -54,25 +54,39 @@ export const modifyManna = async (
 interface MannaVoucherCreateRequestBody {
   amount: number
   allowedUserIds?: string[]
+  numberOfUses?: number
+  code?: string
 }
 
 export const createMannaVoucher = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { allowedUserIds, amount } =
+  const { allowedUserIds, amount, numberOfUses, code } =
     request.body as MannaVoucherCreateRequestBody
 
-  const code = randomId(16)
-  const mannaVoucher = new MannaVoucher({
-    allowedUserIds: allowedUserIds || null,
-    amount,
-    code,
-  })
-  await mannaVoucher.save()
+  const numVouchers = numberOfUses || 1
+
+  if (numVouchers > 1 && !code) {
+    return reply.status(400).send({
+      message: 'Code is required if numberOfUses > 1',
+    })
+  }
+
+  let newCode
+  for (let i = 0; i < numVouchers; i++) {
+    newCode = code || randomId(16)
+    const mannaVoucher = new MannaVoucher({
+      allowedUserIds: allowedUserIds || null,
+      amount,
+      code: newCode,
+    })
+
+    await mannaVoucher.save()
+  }
 
   return reply.status(200).send({
-    code: mannaVoucher.code,
+    code: newCode,
   })
 }
 
@@ -121,19 +135,24 @@ export const redeemMannaVoucher = async (
     })
   }
 
-  const mannaVoucher = await MannaVoucher.findOne({
+  const mannaVouchersAll = await MannaVoucher.findOne({
     code,
   })
 
-  if (!mannaVoucher) {
+  if (!mannaVouchersAll) {
     return reply.status(400).send({
       message: `Manna voucher ${code} not found`,
     })
   }
 
-  if (mannaVoucher.used) {
+  const mannaVoucher = await MannaVoucher.findOne({
+    code,
+    used: false,
+  })
+
+  if (!mannaVoucher) {
     return reply.status(400).send({
-      message: `Manna voucher ${code} already used`,
+      message: `Manna voucher ${code} already finished`,
     })
   }
 

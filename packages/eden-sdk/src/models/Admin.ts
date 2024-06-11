@@ -15,6 +15,8 @@ export interface AdminMannaModifyArguments extends WebAPICallOptions {
 export interface AdminMannaVouchersCreateArguments extends WebAPICallOptions {
   amount: number
   allowedUserIds?: string[]
+  numberOfUses?: number
+  code?: string
 }
 
 export interface AdminAuthChallengeArguments extends WebAPICallOptions {
