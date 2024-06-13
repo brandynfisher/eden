@@ -1,17 +1,19 @@
 import DiscordAuthButton from '@/components/DiscordAuthButton'
 import SvgDiscord from '@/components/Layout/icons/DiscordIcon'
 import LoadingIndicator from '@/components/LoadingIndicator'
+import { getGAClientIdFromCookie } from '@/lib/analytics'
 import { handleAxiosError } from '@/lib/fetcher'
 import { UserContext } from '@/providers/UserProvider'
+import { UserProfile } from '@clerk/nextjs'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
-import { AddShoppingCartOutlined } from '@mui/icons-material'
+import AccountCircle from '@mui/icons-material/AccountCircle'
+import AddShoppingCartOutlined from '@mui/icons-material/AddShoppingCartOutlined'
 import KeyOutlined from '@mui/icons-material/KeyOutlined'
 import { App, Collapse } from 'antd'
 import axios from 'axios'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import React, { useContext } from 'react'
-import { getGAClientIdFromCookie } from '@/lib/analytics'
 
 const { Panel } = Collapse
 
@@ -40,7 +42,7 @@ const AccountPage = () => {
       const response = await axios.post('/api/payment', {
         priceId,
         paymentMode,
-        analyticsClientId
+        analyticsClientId,
       })
       const { url } = response.data
 
@@ -58,6 +60,15 @@ const AccountPage = () => {
             expandIconPosition="start"
             defaultActiveKey={'subscription'}
           >
+            <Panel
+              key={'profile'}
+              header={'User Profile'}
+              extra={<AccountCircle />}
+            >
+              <div className="mb-4">
+                <UserProfile />
+              </div>
+            </Panel>
             <Panel
               key={'subscription'}
               header={'Subscription & Manna'}
