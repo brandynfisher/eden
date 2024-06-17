@@ -151,6 +151,20 @@ export const redeemMannaVoucher = async (
     })
   }
 
+  const mannaVouchersUsedByUser = await MannaVoucher.find({
+    code: code,
+    redeemedBy: user._id,
+  })
+
+  console.log(mannaVouchersUsedByUser)
+
+  if (mannaVouchersUsedByUser.length > 0) {
+    console.log('ITS THIS:', mannaVouchersUsedByUser)
+    return reply.status(400).send({
+      message: `User has already redeemed this voucher`,
+    })
+  }
+
   const mannaVoucher = await MannaVoucher.findOne({
     code,
     used: false,
@@ -167,7 +181,7 @@ export const redeemMannaVoucher = async (
     !mannaVoucher.allowedUserIds.includes(user.userId)
   ) {
     return reply.status(400).send({
-      message: `You cannot redeem this voucher`,
+      message: `User not in allow list of this voucher`,
     })
   }
 
