@@ -156,8 +156,6 @@ export const redeemMannaVoucher = async (
     redeemedBy: user._id,
   })
 
-  console.log(mannaVouchersUsedByUser)
-
   if (mannaVouchersUsedByUser.length > 0) {
     return reply.status(400).send({
       message: `User has already redeemed this voucher`,
