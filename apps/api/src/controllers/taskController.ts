@@ -1,4 +1,3 @@
-import { taskPrivacyPermissionCheck } from '../lib/authorization'
 import {
   getDefaultGeneratorVersion,
   getLatestGeneratorVersion,
@@ -138,13 +137,6 @@ export const createTask = async (
   const { userId, character } = request.user
   const { generatorName, versionId, config, attributes } =
     request.body as TasksCreateArguments
-
-  if (taskPrivacyPermissionCheck(request)) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
-  }
 
   // const submittedMaxTasks = await maximumTasksInProgressPermissionCheck(request)
   // if (submittedMaxTasks) {
