@@ -1,7 +1,4 @@
-import {
-  conceptExportPermissionCheck,
-  conceptPrivacyPermissionCheck,
-} from '../lib/authorization'
+import { conceptExportPermissionCheck } from '../lib/authorization'
 import { Concept, ConceptDocument } from '../models/Concept'
 import { User } from '../models/Creator'
 import { Reaction } from '../models/Reaction'
@@ -264,13 +261,6 @@ export const conceptUpdate = async (
   ) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
-    })
-  }
-
-  if (conceptPrivacyPermissionCheck(request)) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
     })
   }
 

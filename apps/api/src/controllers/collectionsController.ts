@@ -1,4 +1,3 @@
-import { creationPrivacyPermissionCheck } from '../lib/authorization'
 import { enforceUserDocumentLimit } from '../lib/data'
 import { Collection } from '../models/Collection'
 import { Creation } from '../models/Creation'
@@ -283,13 +282,6 @@ export const updateCollection = async (
   ) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
-    })
-  }
-
-  if (creationPrivacyPermissionCheck(request)) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
     })
   }
 

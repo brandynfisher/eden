@@ -20,6 +20,7 @@ const MannaVoucherRedeem = () => {
       })
 
       message.success('Voucher redeemed!')
+      setVoucherCode('')
       refetchMe()
     } catch (error) {
       handleAxiosError(error, message)

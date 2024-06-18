@@ -1,7 +1,4 @@
-import {
-  characterLimitPermissionCheck,
-  characterPrivacyPermissionCheck,
-} from '../lib/authorization'
+import { characterLimitPermissionCheck } from '../lib/authorization'
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
 import { User } from '../models/Creator'
@@ -52,13 +49,6 @@ export const createCharacter = async (
     knowledgeSummary: logosData?.knowledgeSummary
       ? logosData.knowledgeSummary
       : undefined,
-  }
-
-  if (characterPrivacyPermissionCheck(request)) {
-    return reply.status(401).send({
-      message:
-        'Only subscribers can use privacy features. Please upgrade your subscription.',
-    })
   }
 
   const input: {
