@@ -10,21 +10,17 @@ const ButtonElement = ({
   label,
   itemType,
   handleClick,
-  isAllowed,
   children,
 }: {
   label: string
   itemType: ItemType
   handleClick: () => void
-  isAllowed: boolean
   children?: ReactElement
 }) => {
   return (
     <div
       onClick={handleClick}
-      className={`flex items-center gap-2 w-full ${
-        !isAllowed ? 'text-gray-500' : ''
-      }`}
+      className={`flex items-center gap-2 w-full`}
       title={`Make ${itemType} private`}
     >
       {children ? children : null}
@@ -71,7 +67,6 @@ const MakePrivateButton = ({
       label={label || ''}
       itemType={itemType}
       handleClick={() => handleClick()}
-      isAllowed={true}
     />
   )
 }
