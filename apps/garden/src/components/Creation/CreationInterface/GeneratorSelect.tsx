@@ -59,6 +59,14 @@ const ListItem = ({
   )
 }
 
+const availableThumbnailImages = [
+  'blend',
+  'controlnet',
+  'create',
+  'remix',
+  'upscale',
+]
+
 const GeneratorList = ({
   generators,
   activeGenerator,
@@ -108,7 +116,11 @@ const GeneratorList = ({
                   key={generator.generatorName}
                   title={generator.generatorName}
                   text={generator.description}
-                  imageUrl={`/images/${generator.generatorName}.png`}
+                  imageUrl={
+                    availableThumbnailImages.includes(generator.generatorName)
+                      ? `/images/${generator.generatorName}.png`
+                      : '/placeholder.png'
+                  }
                   selected={
                     generator.generatorName === activeGenerator.generatorName
                   }
