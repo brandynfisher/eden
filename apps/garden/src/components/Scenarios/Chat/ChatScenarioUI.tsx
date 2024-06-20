@@ -295,7 +295,7 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
           className="!bg-gray-200 dark:!bg-gray-800 !py-4 !border-t-0"
           placeholder="Type your message here..."
           onSend={submit}
-          onChange={(e, text) => {
+          onChange={(_e, text) => {
             setText(text)
           }}
           sendButton={true}

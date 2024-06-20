@@ -32,7 +32,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const getSession = async (
   id: string,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
