@@ -85,10 +85,10 @@ export const dummySubmitTask = async (
       `Submitting task for generator version ${
         generatorVersion.versionId
       } with config ${JSON.stringify(config)}`,
-    );
-    return new Promise((resolve) => resolve(uuidv4()))
+    )
+    return new Promise(resolve => resolve(uuidv4()))
   } else {
-    throw new Error("Invalid generator name.")
+    throw new Error('Invalid generator name.')
   }
 }
 
@@ -125,8 +125,8 @@ export const dummyReceiveTaskUpdate = async (
     progress: 0.5,
     task: {
       ...task,
-      ...taskUpdateIntermediate
-    }
+      ...taskUpdateIntermediate,
+    },
   })
 
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
@@ -172,7 +172,7 @@ export const dummyReceiveTaskUpdate = async (
     result: asset.uri,
     task: {
       ...task,
-      ...taskUpdate
+      ...taskUpdate,
     },
   })
 
@@ -192,6 +192,7 @@ export const dummyReceiveTaskUpdate = async (
 
 export const dummyGetTransactionCost = (
   _: FastifyInstance,
+  //@ts-ignore
   generator: GeneratorDocument,
   generatorVersion: GeneratorVersionSchema,
   config: any,

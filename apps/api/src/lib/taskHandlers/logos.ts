@@ -7,6 +7,7 @@ const makeWebhookUrl = (server: FastifyInstance) =>
 const submitTask = async (
   server: FastifyInstance,
   generator: GeneratorDocument,
+  //@ts-ignore
   generatorVersion: any,
   config: any,
 ) => {

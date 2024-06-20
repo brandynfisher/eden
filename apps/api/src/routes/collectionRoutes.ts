@@ -36,7 +36,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => listCollections(request, reply),
   })
 
@@ -59,7 +59,7 @@ const collectionRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCollection(request, reply),
   })
 

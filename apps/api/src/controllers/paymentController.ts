@@ -131,6 +131,7 @@ const handleTopUp = async (
 }
 
 const handleNewSubscription = async (
+  //@ts-ignore - unused
   server: FastifyInstance,
   reply: FastifyReply,
   metadata: SubscriptionMetadata,

@@ -92,7 +92,11 @@ export const getMediaDownloadUrl = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { url, fileName, fileExtension } = request.query as { url: string; fileName: string, fileExtension?: string }
+  const { url, fileName, fileExtension } = request.query as {
+    url: string
+    fileName: string
+    fileExtension?: string
+  }
 
   if (!url) {
     return reply.status(500).send({
@@ -103,7 +107,11 @@ export const getMediaDownloadUrl = async (
   const isCloudinaryAsset = url.startsWith('https://res.cloudinary.com')
   const signedUrl = isCloudinaryAsset
     ? await server.getCldSignedDownloadUrl(url, fileName)
-    : await server.getS3SignedDownloadUrl(server, url, `${fileName}.${fileExtension}`)
+    : await server.getS3SignedDownloadUrl(
+        server,
+        url,
+        `${fileName}.${fileExtension}`,
+      )
 
   return reply.status(200).send({ signedUrl })
 }
@@ -140,6 +148,7 @@ export const uploadS3MediaRequest = async (
 
 export const uploadMediaRequestCloudinary = async (
   server: FastifyInstance,
+  //@ts-ignore - unused
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {

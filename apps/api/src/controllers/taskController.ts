@@ -451,6 +451,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
   request: FastifyRequest,
   // reply: FastifyReply,
 ) {
+  //@ts-ignore
   const authPromise = this.verifyUser(request)
 
   console.log(authPromise)

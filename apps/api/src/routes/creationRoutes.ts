@@ -75,7 +75,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCreation(request, reply),
   })
 
