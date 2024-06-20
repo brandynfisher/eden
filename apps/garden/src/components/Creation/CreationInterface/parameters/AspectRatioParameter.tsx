@@ -190,8 +190,7 @@ const AspectRatioParameter = ({
             required: false,
           },
           () => ({
-            //@ts-ignore
-            validator(rule, incomingValue) {
+            validator(_rule, incomingValue) {
               // console.log({incomingValue})
               setValues({
                 fieldValue: incomingValue,
