@@ -65,6 +65,7 @@ const MaxColumnSelector = () => {
             <Switch
               title="Toggle column count (automatic/fixed number)"
               checked={currentSetting.value === 'auto'}
+              //@ts-ignore
               onClick={(newValue, ev) => {
                 updateMaxGridCols(
                   currentSetting.value === 'auto'

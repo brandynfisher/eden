@@ -1,9 +1,9 @@
-import { PropsWithChildren } from 'react'
 import SecondaryNavLayout from '@/components/layout/secondary-nav-layout'
 import { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
+import { PropsWithChildren } from 'react'
 
 const PageLayout = ({ children }: PropsWithChildren) => {
-  const baseSegments = ['build']
+  const baseSegment = 'build'
 
   const navItems: SecondaryNavSection[] = [
     {
@@ -11,15 +11,15 @@ const PageLayout = ({ children }: PropsWithChildren) => {
       links: [
         {
           label: 'Browse All',
-          segments: [...baseSegments, 'all'],
+          segments: [baseSegment, 'all'],
         },
         {
           label: 'Featured',
-          segments: [...baseSegments, 'featured'],
+          segments: [baseSegment, 'featured'],
         },
         {
           label: 'Newest',
-          segments: [...baseSegments, 'newest'],
+          segments: [baseSegment, 'newest'],
         },
       ],
     },
@@ -28,18 +28,22 @@ const PageLayout = ({ children }: PropsWithChildren) => {
       links: [
         {
           label: 'Browse',
-          segments: [...baseSegments, 'all'],
+          segments: [baseSegment, 'all'],
         },
         {
           label: 'Publish',
-          segments: [...baseSegments, 'publish'],
+          segments: [baseSegment, 'publish'],
         },
       ],
     },
   ]
 
   return (
-    <SecondaryNavLayout title={'Build'} baseSegments={baseSegments} navigation={navItems}>
+    <SecondaryNavLayout
+      title={'Build'}
+      baseSegment={baseSegment}
+      navigation={navItems}
+    >
       {children}
     </SecondaryNavLayout>
   )

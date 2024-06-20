@@ -1,7 +1,7 @@
 import '@/styles/globals.css'
 
 //@ts-ignore
-import { ThemeProvider, theme } from '@/components/provider/theme-provider'
+import { ThemeProvider, theme } from '@/provider/theme-provider'
 import { Decorator, Preview } from '@storybook/react'
 import { ReactNode } from 'react'
 

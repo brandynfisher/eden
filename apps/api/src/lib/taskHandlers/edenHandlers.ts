@@ -112,6 +112,7 @@ const handleUpdate = async (
       const finalOutputAttributes = { ...remainingAttributes }
 
       await Promise.allSettled(
+        //@ts-ignore
         finalOutput.files.map(async (files, index) => {
           const creationId = new ObjectId()
           const creationUser = task.attributes?.delegateUserId

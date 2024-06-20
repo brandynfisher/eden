@@ -1,45 +1,47 @@
-import { PropsWithChildren } from 'react'
 import SecondaryNavLayout from '@/components/layout/secondary-nav-layout'
 import { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
+import { PropsWithChildren } from 'react'
 
+const baseSegment = 'train'
+const navItems: SecondaryNavSection[] = [
+  {
+    title: 'Public Models',
+    links: [
+      {
+        label: 'Browse All',
+        segments: [baseSegment, 'all'],
+      },
+      {
+        label: 'Featured',
+        segments: [baseSegment, 'featured'],
+      },
+      {
+        label: 'Newest',
+        segments: [baseSegment, 'newest'],
+      },
+    ],
+  },
+  {
+    title: 'Your Models',
+    links: [
+      {
+        label: 'Browse',
+        segments: [baseSegment, 'all'],
+      },
+      {
+        label: 'Publish',
+        segments: [baseSegment, 'publish'],
+      },
+    ],
+  },
+]
 const PageLayout = ({ children }: PropsWithChildren) => {
-  const baseSegments = ['train']
-
-  const navItems: SecondaryNavSection[] = [
-    {
-      title: 'Public Models',
-      links: [
-        {
-          label: 'Browse All',
-          segments: [...baseSegments, 'all'],
-        },
-        {
-          label: 'Featured',
-          segments: [...baseSegments, 'featured'],
-        },
-        {
-          label: 'Newest',
-          segments: [...baseSegments, 'newest'],
-        },
-      ],
-    },
-    {
-      title: 'Your Models',
-      links: [
-        {
-          label: 'Browse',
-          segments: [...baseSegments, 'all'],
-        },
-        {
-          label: 'Publish',
-          segments: [...baseSegments, 'publish'],
-        },
-      ],
-    },
-  ]
-
   return (
-    <SecondaryNavLayout title={'Train'} baseSegments={baseSegments} navigation={navItems}>
+    <SecondaryNavLayout
+      title={'Train'}
+      baseSegment={baseSegment}
+      navigation={navItems}
+    >
       {children}
     </SecondaryNavLayout>
   )

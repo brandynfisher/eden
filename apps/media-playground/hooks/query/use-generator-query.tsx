@@ -12,10 +12,10 @@ export const useGeneratorsQuery = () => {
     isLoadingError,
     isRefetchError,
     isSuccess,
-    status
+    status,
   } = useQuery({
     queryKey: ['generators'],
-    queryFn: () => fetcher<{generators: Generator[]}>('/api/generators')
+    queryFn: () => fetcher<{ generators: Generator[] }>('/api/generators'),
   })
 
   return {
@@ -27,6 +27,6 @@ export const useGeneratorsQuery = () => {
     isLoadingError,
     isRefetchError,
     isSuccess,
-    status
+    status,
   }
 }

@@ -8,7 +8,7 @@ interface Props {
   height?: number
 }
 
-export const EdenLogoBwGlow: FC<Props> = ({width, height, className }) => {
+export const EdenLogoBwGlow: FC<Props> = ({ width, height, className }) => {
   return (
     <Image
       width={width || 0}

@@ -1,3 +1,4 @@
+import { subscribeWebSocketTaskUpdates } from './controllers/taskController'
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerAssetUpload from './plugins/assetUploadPlugin'
 import registerChroma from './plugins/chromaPlugin'
@@ -14,6 +15,7 @@ import registerS3 from './plugins/s3Plugin'
 import registerSentry from './plugins/sentryPlugin'
 import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
+import registerWebSocket from './plugins/webSocketPlugin'
 import { routes } from './routes'
 import fastify, { FastifyRequest } from 'fastify'
 
@@ -86,6 +88,7 @@ const createServer = async (
   await registerChroma(server, opts.chromaUri)
   await registerMultipart(server)
   await registerEventEmitter(server)
+  await registerWebSocket(server)
 
   registerTaskHandlers(server, opts.taskHandlers)
   await registerStripe(server)
@@ -157,6 +160,13 @@ const createServer = async (
       return header
     },
   })
+
+  // register websocket route before all others
+  server.get(
+    '/tasks/updates',
+    { websocket: true },
+    subscribeWebSocketTaskUpdates,
+  )
 
   routes.map(async route => {
     await server.register(route)

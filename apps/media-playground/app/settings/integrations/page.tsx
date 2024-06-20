@@ -1,7 +1,14 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import TypographyH4 from '@/components/ui/typography/TypographyH4'
 
 const SettingsIntegrationsPage = () => {
   return (
@@ -10,7 +17,9 @@ const SettingsIntegrationsPage = () => {
       <Card>
         <CardHeader>
           <CardTitle>Discord</CardTitle>
-          <CardDescription>Connect your Discord account to Eden</CardDescription>
+          <CardDescription>
+            Connect your Discord account to Eden
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form>

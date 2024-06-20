@@ -21,6 +21,10 @@ import {
 } from '@edenlabs/eden-sdk'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+// import FastifyWebSocket from '@fastify/websocket'
+import WebSocket from 'ws'
+
+// import { isAuth } from '../middleware/authMiddleware'
 
 const checkUserBalanceIsSufficient = (manna: MannaDocument, amount: number) => {
   const totalBalance = manna.balance + manna.subscriptionBalance
@@ -440,4 +444,27 @@ export const subscribeTaskUpdates = async (
     clearInterval(keepAliveTimer)
     reply.raw.end()
   })
+}
+
+export const subscribeWebSocketTaskUpdates = function wsHandler(
+  socket: WebSocket.WebSocket,
+  request: FastifyRequest,
+  // reply: FastifyReply,
+) {
+  const authPromise = this.verifyUser(request)
+
+  console.log(authPromise)
+
+  socket.on('message', async message => {
+    const isAuth = await authPromise()
+    console.log({ isAuth })
+    console.log('message', message.toString())
+    // message.toString() === 'hi from client'
+    socket.send('hi from server')
+  })
+  // const { userId } = request.user
+  // const { taskId } = request.query as {
+  //   taskId?: string
+  // }
+  // console.log(socket)
 }

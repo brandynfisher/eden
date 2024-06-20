@@ -1,16 +1,23 @@
+import SecondaryNavLinks, {
+  SecondaryNavSection,
+} from '@/components/navigation/secondary-nav-links'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import SecondaryNavLinks, { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
+import Link from 'next/link'
 
 type Props = {
   title?: string
-  baseSegments?: string[]
+  baseSegment: string
   items: SecondaryNavSection[]
 }
-const SecondaryNav = ({title, baseSegments, items}: Props) => {
+const SecondaryNav = ({ title, baseSegment, items }: Props) => {
   return (
-    <div className="bg-muted/60 p-4">
-      { title ? <TypographyH4 className="mb-6">{title}</TypographyH4> : undefined}
-      <SecondaryNavLinks baseSegments={baseSegments} items={items}/>
+    <div className="bg-muted/60 p-4 min-w-48">
+      {title ? (
+        <Link href={`/${baseSegment}`}>
+          <TypographyH4 className="mb-6">{title}</TypographyH4>
+        </Link>
+      ) : undefined}
+      <SecondaryNavLinks baseSegment={baseSegment} items={items} />
     </div>
   )
 }
