@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 const VideoResult = ({
   src,
@@ -49,6 +49,7 @@ const VideoResult = ({
         muted={typeof muted !== 'undefined' ? muted : true}
         loop={typeof loop !== 'undefined' ? loop : true}
         controls={!disableControls}
+        onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
         controlsList={'nodownload'}
         onPlay={onLoad}
         onEnded={onEnded}
