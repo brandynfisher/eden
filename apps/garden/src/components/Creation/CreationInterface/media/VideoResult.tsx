@@ -49,6 +49,7 @@ const VideoResult = ({
         muted={typeof muted !== 'undefined' ? muted : true}
         loop={typeof loop !== 'undefined' ? loop : true}
         controls={!disableControls}
+        controlsList={'nodownload'}
         onPlay={onLoad}
         onEnded={onEnded}
       />
