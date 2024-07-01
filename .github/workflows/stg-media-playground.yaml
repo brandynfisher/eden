@@ -66,7 +66,7 @@ jobs:
             "NEXT_PUBLIC_HOST=https://staging2.app.eden.art"
             "NEXT_PUBLIC_EDEN_API_URL=https://staging.api.eden.art"
             "NEXT_PUBLIC_EDEN_SSE_URL=https://staging.api.eden.art"
-            "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://staging2.api.eden.art/ws/updates"
+            "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://staging.api.eden.art/ws/updates"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STG }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             "NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=65edf6c6730ba08c8cfc4b18"
