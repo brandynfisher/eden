@@ -55,6 +55,7 @@ jobs:
             "NEXT_PUBLIC_HOST=https://app2.eden.art"
             "NEXT_PUBLIC_EDEN_API_URL=https://api.eden.art"
             "NEXT_PUBLIC_EDEN_SSE_URL=https://api.eden.art"
+            "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://api.eden.art/ws/updates"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             "NEXT_PUBLIC_DISCORD_CLIENT_ID=1001489981694554243"
