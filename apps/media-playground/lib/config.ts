@@ -24,4 +24,6 @@ export const CONFIG = {
   EDEN_ADMIN_API_KEY: process.env.EDEN_ADMIN_API_KEY || '',
   EDEN_ADMIN_API_SECRET: process.env.EDEN_ADMIN_API_SECRET || '',
   EDEN_MAINTENANCE_MODE: process.env.EDEN_MAINTENANCE_MODE || false,
+  EDEN_COMPUTE_API_KEY: process.env.EDEN_COMPUTE_API_KEY || '',
+  EDEN_COMPUTE_API_URL: process.env.EDEN_COMPUTE_API_URL || '',
 }
