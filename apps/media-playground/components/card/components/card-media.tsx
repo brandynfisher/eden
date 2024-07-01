@@ -8,7 +8,7 @@ type Props = {
 }
 
 const CardMedia = ({ media, linkHref }: Props) => {
-  console.log(media)
+  // console.log(media)
   return (
     <Link href={linkHref} className="relative w-full block">
       <Image

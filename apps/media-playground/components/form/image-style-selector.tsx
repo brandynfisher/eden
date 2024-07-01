@@ -26,10 +26,6 @@ const dummyStyles: ImageStyle[] = [
     _id: 'style_d',
     label: 'Style D',
   },
-  {
-    _id: 'style_e',
-    label: 'Style E',
-  },
 ]
 
 type Props = {

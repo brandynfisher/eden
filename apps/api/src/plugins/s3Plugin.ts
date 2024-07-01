@@ -1,16 +1,16 @@
 import * as util from '../lib/util'
+import { Asset, mediaTypeMap } from './assetUploadPlugin'
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
 import AWS from 'aws-sdk'
 import axios from 'axios'
 import { randomUUID } from 'crypto'
 import type { FastifyInstance } from 'fastify'
+import { FileTypeResult, fileTypeFromBuffer } from 'file-type'
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import sharp from 'sharp'
-import { Asset, mediaTypeMap } from './assetUploadPlugin'
-import { fileTypeFromBuffer, FileTypeResult } from 'file-type'
 
 const getS3MediaAttributes = async (
   buffer: Buffer,
@@ -123,7 +123,7 @@ export const uploadS3UrlAsset = async (
 export const uploadS3ThumbnailAsset = async (
   server: FastifyInstance,
   assetInput: string | Buffer,
-  maxWidth?: number
+  maxWidth?: number,
 ) => {
   let assetB64: Buffer
   if (typeof assetInput === 'string') {
@@ -138,7 +138,10 @@ export const uploadS3ThumbnailAsset = async (
     .webp({ quality: 80 })
     .toBuffer()
 
-  const { uri } = await uploadS3BufferAsset(server, resizedBuffer, { ext: 'webp', mime: 'image/webp' })
+  const { uri } = await uploadS3BufferAsset(server, resizedBuffer, {
+    ext: 'webp',
+    mime: 'image/webp',
+  })
   return uri
 }
 
@@ -298,7 +301,7 @@ export const registerS3 = async (fastify: FastifyInstance) => {
     fastify.decorate('uploadS3UrlAsset', uploadS3UrlAsset)
     fastify.decorate('getS3SignedDownloadUrl', getS3SignedDownloadUrl)
     fastify.decorate('generateS3UploadSignedUrl', generateS3UploadSignedUrl)
-    fastify.log.info('Successfully registered S3Plugin')
+    fastify.log.info('Successfully registered plugin: S3')
   } catch (err) {
     fastify.log.error('Plugin: S3, error on register', err)
     console.error(err)
@@ -319,7 +322,7 @@ declare module 'fastify' {
     uploadS3BufferAsset: (
       server: FastifyInstance,
       buffer: Buffer,
-      fileType: FileTypeResult
+      fileType: FileTypeResult,
     ) => Promise<Asset>
     getS3SignedDownloadUrl: (
       server: FastifyInstance,

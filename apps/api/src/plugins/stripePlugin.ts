@@ -7,9 +7,9 @@ export const registerStripe = async (fastify: FastifyInstance) => {
       apiVersion: '2022-11-15',
     })
     fastify.decorate('stripe', stripe)
-    fastify.log.info('Successfully registered StripePlugin')
+    fastify.log.info('Successfully registered plugin: Stripe')
   } catch (err) {
-    fastify.log.error('Plugin: Replicate, error on register', err)
+    fastify.log.error('Plugin: Stripe, error on register', err)
   }
 }
 

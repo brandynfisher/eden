@@ -6,7 +6,9 @@ import { Generator, GeneratorDocument } from '../../models/Generator'
 import { Manna } from '../../models/Manna'
 import { Task } from '../../models/Task'
 import { Transaction } from '../../models/Transaction'
+import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
 import { TaskHandlers } from '../../plugins/tasks'
+import * as eden2 from '../eden2'
 import * as elevenPlay from './elevenPlay'
 import * as logos from './logos'
 import * as replicate from './replicate'
@@ -14,12 +16,13 @@ import axios from 'axios'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
-type TaskProvider = 'replicate' | 'elevenPlay' | 'logos'
+type TaskProvider = 'replicate' | 'elevenPlay' | 'logos' | 'eden2'
 
 const providers = new Map<TaskProvider, any>([
   ['elevenPlay', elevenPlay],
   ['replicate', replicate],
   ['logos', logos],
+  ['eden2', eden2],
 ])
 
 const universalGenerators = ['zeroscope-v2-xl', 'upscale']
@@ -248,7 +251,7 @@ const handleUpdate = async (
         progress: 1.0,
       })
 
-      server.eventEmitter.emit('task-update', {
+      const taskCompletedEventMessage = {
         userId: task.user._id,
         taskId,
         status: 'completed',
@@ -262,7 +265,12 @@ const handleUpdate = async (
             generatorName: generator.generatorName,
           },
         },
-      })
+      }
+      server.eventEmitter.emit('task-update', taskCompletedEventMessage)
+      server.internalMessages.publish(
+        InternalMessagesQueues.TaskUpdates,
+        taskCompletedEventMessage,
+      )
     } else if (generator?.output == 'concept') {
       for (let i = 0; i < finalOutput.files.length; i++) {
         // version the concept's public name (v2, v3, etc)
@@ -329,7 +337,7 @@ const handleUpdate = async (
           progress: 1.0,
         })
 
-        server.eventEmitter.emit('task-update', {
+        const taskCompletedEventMessage = {
           userId: task.user._id,
           taskId,
           status: 'completed',
@@ -343,7 +351,12 @@ const handleUpdate = async (
               generatorName: generator.generatorName,
             },
           },
-        })
+        }
+        server.eventEmitter.emit('task-update', taskCompletedEventMessage)
+        server.internalMessages.publish(
+          InternalMessagesQueues.TaskUpdates,
+          taskCompletedEventMessage,
+        )
 
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
@@ -356,7 +369,7 @@ const handleUpdate = async (
       }
     }
   } else {
-    server.eventEmitter.emit('task-update', {
+    const taskProcessingEventMessage = {
       userId: task.user._id,
       taskId,
       status: taskUpdate.status,
@@ -366,7 +379,12 @@ const handleUpdate = async (
         ...taskUpdate,
         generator: { generatorName: generator?.generatorName || 'n/a' },
       },
-    })
+    }
+    server.eventEmitter.emit('task-update', taskProcessingEventMessage)
+    server.internalMessages.publish(
+      InternalMessagesQueues.TaskUpdates,
+      taskProcessingEventMessage,
+    )
   }
 
   await Task.updateOne(
@@ -441,7 +459,7 @@ const handleUpdateUniversal = async (
         const creation = await Creation.create(creationData)
         Object.assign(taskUpdate, { creation: creation._id })
 
-        server.eventEmitter.emit('task-update', {
+        const taskSuccessEventMessage = {
           userId: task.user._id,
           taskId,
           status: 'completed',
@@ -452,7 +470,12 @@ const handleUpdateUniversal = async (
             ...taskUpdate,
             creation,
           },
-        })
+        }
+        server.eventEmitter.emit('task-update', taskSuccessEventMessage)
+        server.internalMessages.publish(
+          InternalMessagesQueues.TaskUpdates,
+          taskSuccessEventMessage,
+        )
 
         if (task.webhooks) {
           task.webhooks.forEach(async (webhook: string) => {
@@ -465,7 +488,7 @@ const handleUpdateUniversal = async (
       }
     }
   } else {
-    server.eventEmitter.emit('task-update', {
+    const taskProcessingEventMessage = {
       userId: task.user._id,
       taskId,
       status: taskUpdate.status,
@@ -475,7 +498,12 @@ const handleUpdateUniversal = async (
         ...taskUpdate,
         generator: { generatorName: generator?.generatorName || 'n/a' },
       },
-    })
+    }
+    server.eventEmitter.emit('task-update', taskProcessingEventMessage)
+    server.internalMessages.publish(
+      InternalMessagesQueues.TaskUpdates,
+      taskProcessingEventMessage,
+    )
   }
 
   await Task.updateOne(
@@ -541,7 +569,7 @@ const handleFailure = async (
     amount: task.cost,
   })
 
-  server.eventEmitter.emit('task-update', {
+  const taskFailedEventMessage = {
     userId: task.user._id,
     taskId,
     status: 'failed',
@@ -551,7 +579,13 @@ const handleFailure = async (
       ...task.toObject(),
       ...taskUpdate,
     },
-  })
+  }
+
+  server.eventEmitter.emit('task-update', taskFailedEventMessage)
+  server.internalMessages.publish(
+    InternalMessagesQueues.TaskUpdates,
+    taskFailedEventMessage,
+  )
 }
 
 export const receiveTaskUpdate = async (

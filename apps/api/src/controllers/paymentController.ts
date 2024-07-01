@@ -110,22 +110,16 @@ const handleTopUp = async (
     })
   }
 
-  try {
-    await axios.post(
-      `${server.config.API_URL}/admin/manna/modify`,
-      {
-        userId: user.userId,
-        amount: mannaAmountInt,
-      },
-      {
-        headers: getAdminHeaders(server),
-      },
-    )
-  } catch (error) {
-    return reply.status(500).send({
-      message: 'Error adding manna',
-    })
-  }
+  await axios.post(
+    `${server.config.API_URL}/admin/manna/modify`,
+    {
+      userId: user.userId,
+      amount: mannaAmountInt,
+    },
+    {
+      headers: getAdminHeaders(server),
+    },
+  )
 
   return reply.status(200).send({})
 }

@@ -222,7 +222,7 @@ export const registerCloudinary = async (fastify: FastifyInstance) => {
     fastify.decorate('uploadCldBufferAsset', uploadCldBufferAsset)
     fastify.decorate('getCldSignedDownloadUrl', getCldSignedDownloadUrl)
     fastify.decorate('generateCldUploadSignature', generateCldUploadSignature)
-    fastify.log.info('Successfully registered CloudinaryPlugin')
+    fastify.log.info('Successfully registered plugin: Cloudinary')
   } catch (err) {
     fastify.log.error('Plugin: Cloudinary, error on register', err)
     console.error(err)

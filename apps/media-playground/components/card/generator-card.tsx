@@ -7,12 +7,12 @@ import Link from 'next/link'
 
 type Props = {
   title: string
+  description?: string
   image: string
   link: string
-  description?: string
 }
 
-const WorkflowCard = ({ title, image, link, description }: Props) => {
+const GeneratorCard = ({ title, image, link, description }: Props) => {
   return (
     <Link href={link} className="group">
       <Card className="relative min-h-64 flex flex-col justify-between overflow-hidden border-0">
@@ -42,4 +42,4 @@ const WorkflowCard = ({ title, image, link, description }: Props) => {
   )
 }
 
-export default WorkflowCard
+export default GeneratorCard

@@ -7,7 +7,7 @@ export const registerReplicate = async (fastify: FastifyInstance) => {
       auth: process.env.REPLICATE_TOKEN as string,
     })
     fastify.decorate('replicate', replicate)
-    fastify.log.info('Successfully registered ReplicatePlugin')
+    fastify.log.info('Successfully registered plugin: Replicate')
   } catch (err) {
     fastify.log.error('Plugin: Replicate, error on register', err)
   }

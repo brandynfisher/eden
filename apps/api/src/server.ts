@@ -5,18 +5,23 @@ import registerChroma from './plugins/chromaPlugin'
 import registerClerk from './plugins/clerkPlugin'
 import registerCloudinary from './plugins/cloudinaryPlugin'
 import config from './plugins/config'
+import registerEden2Tasks from './plugins/eden2TasksPlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerEventEmitter from './plugins/eventEmitterPlugin'
+import registerGeneratorConfigs from './plugins/generatorConfig'
+import { registerInternalMessages } from './plugins/internalMessagesPlugin'
 import registerLogos from './plugins/logosPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import registerReplicate from './plugins/replicatePlugin'
 import registerS3 from './plugins/s3Plugin'
 import registerSentry from './plugins/sentryPlugin'
+import registerSSE from './plugins/ssePlugin'
 import registerStripe from './plugins/stripePlugin'
 import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
 import registerWebSocket from './plugins/webSocketPlugin'
 import { routes } from './routes'
+import { routes as routesV2 } from './routes/v2'
 import fastify, { FastifyRequest } from 'fastify'
 
 export interface CreateServerOpts {
@@ -87,14 +92,17 @@ const createServer = async (
   await registerMongo(server, opts.mongoUri)
   await registerChroma(server, opts.chromaUri)
   await registerMultipart(server)
+  await registerWebSocket(server, opts)
   await registerEventEmitter(server)
-  await registerWebSocket(server)
-
-  registerTaskHandlers(server, opts.taskHandlers)
+  await registerGeneratorConfigs(server, opts)
+  await registerInternalMessages(server, opts)
+  await registerSSE(server)
   await registerStripe(server)
-
   await registerAssetUpload(server)
   await registerS3(server)
+  await registerEden2Tasks(server, opts)
+
+  registerTaskHandlers(server, opts.taskHandlers)
 
   if (
     server.config.CLOUDINARY_API_SECRET &&
@@ -161,16 +169,21 @@ const createServer = async (
     },
   })
 
-  // register websocket route before all others
-  server.get(
-    '/tasks/updates',
-    { websocket: true },
-    subscribeWebSocketTaskUpdates,
-  )
+  // Register Routes
+  // websocket route before all others
+  server.get('/ws/updates', { websocket: true }, subscribeWebSocketTaskUpdates)
 
+  // all other routes
   routes.map(async route => {
     await server.register(route)
   })
+
+  routesV2.map(async route => {
+    await server.register(route, {
+      prefix: '/v2',
+    })
+  })
+
   await server.ready()
   return server
 }

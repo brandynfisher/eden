@@ -13,6 +13,7 @@ import mediaRoutes from './mediaRoutes'
 import paymentRoutes from './paymentRoutes'
 import sessionRoutes from './sessionRoutes'
 import taskRoutes from './taskRoutes'
+import testRoutes from './testRoutes'
 import { TSchema, Type } from '@sinclair/typebox'
 
 export const paginatedResponse = (docs: TSchema) => {
@@ -69,4 +70,5 @@ export const routes = [
   feedRoutes,
   sessionRoutes,
   paymentRoutes,
+  testRoutes,
 ]

@@ -13,9 +13,18 @@ export const registerMongo = async (
     })
     mongoose.set('strictQuery', true)
     await mongoose.connect(process.env.MONGO_URI as string)
-    fastify.log.info('Successfully registered MongoPlugin')
+
+    fastify.decorate('mongoose', mongoose)
+
+    fastify.log.info('Successfully registered plugin: Mongo')
   } catch (err) {
     fastify.log.error('Plugin: Mongo, error on register', err)
+  }
+}
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    mongoose: typeof mongoose
   }
 }
 

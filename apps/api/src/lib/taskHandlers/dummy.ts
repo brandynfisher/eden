@@ -4,6 +4,7 @@ import {
   GeneratorVersionSchema,
 } from '../../models/Generator'
 import { Task, TaskStatus } from '../../models/Task'
+import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
 import { TaskHandlers } from '../../plugins/tasks'
 import { submitMonologueTask } from './airflow'
 import axios from 'axios'
@@ -118,7 +119,7 @@ export const dummyReceiveTaskUpdate = async (
     },
   )
 
-  server.eventEmitter.emit('task-update', {
+  const eventMessage = {
     userId: task.user._id,
     taskId,
     status: TaskStatus.Pending,
@@ -127,7 +128,13 @@ export const dummyReceiveTaskUpdate = async (
       ...task,
       ...taskUpdateIntermediate,
     },
-  })
+  }
+
+  server.eventEmitter.emit('task-update', eventMessage)
+  server.internalMessages.publish(
+    InternalMessagesQueues.TaskUpdates,
+    eventMessage,
+  )
 
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
   const asset = await server.uploadUrlAsset(server, image.result)
@@ -164,7 +171,7 @@ export const dummyReceiveTaskUpdate = async (
     },
   )
 
-  server.eventEmitter.emit('task-update', {
+  const taskCompletedEventMessage = {
     userId: task.user._id,
     taskId,
     status: TaskStatus.Completed,
@@ -174,7 +181,12 @@ export const dummyReceiveTaskUpdate = async (
       ...task,
       ...taskUpdate,
     },
-  })
+  }
+  server.eventEmitter.emit('task-update', taskCompletedEventMessage)
+  server.internalMessages.publish(
+    InternalMessagesQueues.TaskUpdates,
+    taskCompletedEventMessage,
+  )
 
   if (task.webhooks) {
     await Promise.all(

@@ -190,6 +190,14 @@ import {
   tasksGetRequestConfig,
   tasksListRequestConfig,
 } from './models'
+import {
+  GeneratorsGetArgumentsV2,
+  GeneratorsGetResponseV2,
+  GeneratorsListArgumentsV2,
+  GeneratorsListResponseV2,
+  generatorsGetRequestConfigV2,
+  generatorsListRequestConfigV2,
+} from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
 
@@ -471,6 +479,17 @@ export abstract class Methods {
     get: bindApiCall<GeneratorsGetArguments, GeneratorsGetResponse>(
       this,
       generatorsGetRequestConfig,
+    ),
+  }
+
+  public readonly generatorsV2 = {
+    list: bindApiCall<GeneratorsListArgumentsV2, GeneratorsListResponseV2>(
+      this,
+      generatorsListRequestConfigV2,
+    ),
+    get: bindApiCall<GeneratorsGetArgumentsV2, GeneratorsGetResponseV2>(
+      this,
+      generatorsGetRequestConfigV2,
     ),
   }
 

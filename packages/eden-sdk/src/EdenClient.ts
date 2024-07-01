@@ -1,4 +1,5 @@
 import { Methods } from './methods'
+import { TasksCreateArguments } from './models'
 import {
   TaskUpdateEvent,
   WebAPICallOptions,
@@ -7,7 +8,6 @@ import {
 } from './types'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import EventSourcePolyfill from 'event-source-polyfill'
-import { TasksCreateArguments } from 'src/models'
 
 const NodeEventSource = require('eventsource')
 
@@ -42,6 +42,8 @@ export class EdenClient extends Methods {
   }
 
   public subscribe(taskId?: string) {
+    console.log('subscribe', taskId, this.apiKey, this.apiSecret)
+
     const headers = {
       'X-Api-Key': this.apiKey,
       'X-Api-Secret': this.apiSecret,
@@ -61,12 +63,15 @@ export class EdenClient extends Methods {
       { headers },
     )
 
+    console.log(`${this.edenApiUrl}/tasks/events${query}`, eventSource, headers)
+
     const eventIterable = {
       [Symbol.asyncIterator]: () => {
         const queue = []
         let resolver
 
         eventSource.onmessage = event => {
+          console.log(event)
           if (event && event.data) {
             const data = JSON.parse(event.data)
             if (data && data.taskId === taskId) {

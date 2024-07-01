@@ -12,7 +12,7 @@ export const registerMultipart = async (fastify: FastifyInstance) => {
         headerPairs: 2000, // Max number of header key=>value pairs
       },
     })
-    fastify.log.info('Successfully registered Multipart Plugin')
+    fastify.log.info('Successfully registered plugin: Multipart')
   } catch (err) {
     fastify.log.error(err)
     fastify.log.error('Plugin: Multipart, error on register', err)

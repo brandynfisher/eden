@@ -62,7 +62,7 @@ export const registerPlayHt = async (fastify: FastifyInstance) => {
       process.env.PLAYHT_API_SECRET!,
     )
     fastify.decorate('playHt', playHt)
-    fastify.log.info('Successfully registered playHtPlugin')
+    fastify.log.info('Successfully registered plugin: PlayHt')
   } catch (err) {
     fastify.log.error('Plugin: PlayHt, error on register', err)
   }

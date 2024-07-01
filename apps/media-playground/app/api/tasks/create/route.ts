@@ -1,6 +1,6 @@
 import { getAuthToken } from '@/lib/auth'
-import { handleAxiosServerError } from '@/lib/fetcher'
-import { EdenClient } from '@edenlabs/eden-sdk'
+import { CONFIG } from '@/lib/config'
+import axios from 'axios'
 import type { NextRequest } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -12,21 +12,81 @@ export async function POST(request: NextRequest) {
     })
   }
 
+  const requestJson = await request.json()
+
+  if (!requestJson) {
+    return new Response(JSON.stringify({ message: 'No data passed' }), {
+      status: 401,
+    })
+  }
+
+  if (!requestJson.workflow) {
+    return new Response(JSON.stringify({ message: 'Missing workflow name' }), {
+      status: 401,
+    })
+  }
+
+  if (!requestJson.args) {
+    return new Response(JSON.stringify({ message: 'Missing generator args' }), {
+      status: 401,
+    })
+  }
+
   try {
-    // @todo: splice in a post request towards modal instead of the classic eden sdk create call
-    const eden = new EdenClient({
-      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-      token: authToken,
+    const userIdResponse = await axios.get(
+      `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/v2/users/own-id`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    )
+
+    if (!userIdResponse || !userIdResponse.data || !userIdResponse.data.id) {
+      return new Response(JSON.stringify({ message: 'Creator not found' }), {
+        status: 401,
+      })
+    }
+
+    const modalRequest = {
+      endpoint: CONFIG.EDEN_COMPUTE_API_URL,
+      data: {
+        workflow: requestJson.workflow,
+        user: userIdResponse.data.id,
+        args: requestJson.args,
+      },
+    }
+
+    console.log('> modal::request', modalRequest)
+
+    const res = await axios.post(modalRequest.endpoint, modalRequest.data, {
+      headers: {
+        Authorization: `Bearer ${CONFIG.EDEN_COMPUTE_API_KEY}`,
+      },
     })
-    const res = await eden.tasks.create({
-      generatorName: 'create',
-      config: { text_prompt: 'test123' },
-    })
-    return Response.json(res)
+
+    if (!res || !res.data) {
+      return new Response(
+        JSON.stringify({ message: 'Invalid modal response' }),
+        {
+          status: 500,
+        },
+      )
+    }
+
+    console.log('< modal::response', res.data)
+
+    return Response.json(res.data)
   } catch (error) {
-    const errorMessage = handleAxiosServerError(error)
-    console.error(errorMessage)
-    return new Response(JSON.stringify({ message: errorMessage }), {
+    if (axios.isAxiosError(error)) {
+      if (error.response && error.response.data) {
+        return new Response(JSON.stringify({ message: error.response.data }), {
+          status: 500,
+        })
+      }
+    }
+
+    return new Response(JSON.stringify({ message: error }), {
       status: 500,
     })
   }
