@@ -1,6 +1,11 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import {
+  DialogCloseProps,
+  DialogPortalProps,
+  DialogTriggerProps,
+} from '@radix-ui/react-dialog'
 import * as React from 'react'
 import { Drawer as DrawerPrimitive } from 'vaul'
 
@@ -15,13 +20,23 @@ const Drawer = ({
 )
 Drawer.displayName = 'Drawer'
 
-const DrawerTrigger = DrawerPrimitive.Trigger
+const DrawerTrigger: React.ForwardRefExoticComponent<
+  DialogTriggerProps & React.RefAttributes<HTMLButtonElement>
+> = DrawerPrimitive.Trigger
+// @ts-expect-error shadcn/ui component has borked types
+const DrawerPortal: React.FunctionComponent<DialogPortalProps> =
+  DrawerPrimitive.Portal
 
-const DrawerPortal = DrawerPrimitive.Portal
+const DrawerClose: React.ForwardRefExoticComponent<
+  DialogCloseProps & React.RefAttributes<HTMLButtonElement>
+> = DrawerPrimitive.Close
 
-const DrawerClose = DrawerPrimitive.Close
-
-const DrawerOverlay = React.forwardRef<
+const DrawerOverlay: React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<
+    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
+  > &
+    React.RefAttributes<React.ElementRef<typeof DrawerPrimitive.Overlay>>
+> = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
@@ -33,7 +48,12 @@ const DrawerOverlay = React.forwardRef<
 ))
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName
 
-const DrawerContent = React.forwardRef<
+const DrawerContent: React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<
+    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
+  > &
+    React.RefAttributes<React.ElementRef<typeof DrawerPrimitive.Content>>
+> = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
@@ -76,7 +96,12 @@ const DrawerFooter = ({
 )
 DrawerFooter.displayName = 'DrawerFooter'
 
-const DrawerTitle = React.forwardRef<
+const DrawerTitle: React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<
+    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
+  > &
+    React.RefAttributes<React.ElementRef<typeof DrawerPrimitive.Title>>
+> = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
 >(({ className, ...props }, ref) => (
@@ -91,7 +116,12 @@ const DrawerTitle = React.forwardRef<
 ))
 DrawerTitle.displayName = DrawerPrimitive.Title.displayName
 
-const DrawerDescription = React.forwardRef<
+const DrawerDescription: React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<
+    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
+  > &
+    React.RefAttributes<React.ElementRef<typeof DrawerPrimitive.Description>>
+> = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
 >(({ className, ...props }, ref) => (
