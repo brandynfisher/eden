@@ -29,7 +29,8 @@ const ImageGeneratorPage = ({ params }: Props) => {
       <TypographyH3>create - image - {generator}</TypographyH3>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <GeneratorForm generator={generatorMetaData} />
-        <Timeline generator={generatorMetaData} />
+        {/*<Timeline generator={generatorMetaData} />*/}
+        <Timeline />
       </div>
     </div>
   )
