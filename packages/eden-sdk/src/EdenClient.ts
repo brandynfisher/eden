@@ -42,8 +42,6 @@ export class EdenClient extends Methods {
   }
 
   public subscribe(taskId?: string) {
-    console.log('subscribe', taskId, this.apiKey, this.apiSecret)
-
     const headers = {
       'X-Api-Key': this.apiKey,
       'X-Api-Secret': this.apiSecret,
@@ -63,15 +61,13 @@ export class EdenClient extends Methods {
       { headers },
     )
 
-    console.log(`${this.edenApiUrl}/tasks/events${query}`, eventSource, headers)
-
     const eventIterable = {
       [Symbol.asyncIterator]: () => {
         const queue = []
         let resolver
 
-        eventSource.onmessage = event => {
-          console.log(event)
+        eventSource.addEventListener('task-update', event => {
+          // console.log('task-update', event)
           if (event && event.data) {
             const data = JSON.parse(event.data)
             if (data && data.taskId === taskId) {
@@ -83,7 +79,7 @@ export class EdenClient extends Methods {
               }
             }
           }
-        }
+        })
 
         eventSource.onerror = error => {
           console.error('EventSource error:', error)
@@ -131,6 +127,7 @@ export class EdenClient extends Methods {
     } finally {
       // Close the subscription
       if (subscription.close) {
+        // console.log('closing subscription')
         subscription.close()
       }
     }
