@@ -14,10 +14,16 @@ const registerWebSocket: FastifyPluginAsync = async (
         clientTracking: true,
         maxPayload: 1048576, // limit message size to 1 MiB
         verifyClient: (info, next) => {
-          if (info.origin !== fastify.config.FRONTEND_URL) {
+          if (
+            info.origin !== fastify.config.FRONTEND_URL &&
+            info.origin !== fastify.config.EDEN2_FRONTEND_URL
+          ) {
             fastify.log.warn('WebSocket connection rejected', {
               origin: info.origin,
-              allowedOrigin: fastify.config.FRONTEND_URL,
+              allowedOrigin: [
+                fastify.config.FRONTEND_URL,
+                fastify.config.EDEN2_FRONTEND_URL,
+              ],
             })
             return next(false)
           }

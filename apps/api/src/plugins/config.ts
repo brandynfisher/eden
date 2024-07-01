@@ -30,6 +30,7 @@ const ConfigSchema = Type.Strict(
     EDEN_ADMIN_API_KEY: Type.String(),
     EDEN_ADMIN_API_SECRET: Type.String(),
     FRONTEND_URL: Type.String(),
+    EDEN2_FRONTEND_URL: Type.String(),
     MONGO_URI: Type.String(),
     CHROMA_URI: Type.String(),
     REPLICATE_API_TOKEN: Type.String(),

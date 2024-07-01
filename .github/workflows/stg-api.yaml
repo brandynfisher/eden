@@ -65,6 +65,15 @@ jobs:
             "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}"
             "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
             "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}"
+            "CLERK_JWT_KEY=-----BEGIN PUBLIC KEY-----
+              MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv69ongvlkVgp5UrCVYyv
+              d+s5OyWUlok4qWebnT82ctRm+cDP6WBLZKA88i+5uqMuxFKMWCrprU+mSyYUuiD2
+              86B4y4lw0tnl1xdfssuINn7hKqt9FR1V/lyZacWXrJ1qvviRYKEPgSNgxGi8NfEi
+              H0wTaZgtXCBKrX/Vq05RgvPJoCMVoPQmodfzFjG6sFw1wkT3Wsnj/RMkvE16aepY
+              LDsC1sx64CiCH8/Czt5H2APvRpijopPiODuhG6Ol40Rrrv5HMkHsRkGvAD38hAt7
+              fpwtWsaRd9zpTeWBgD6Q6T667AFbTGftcaHkSL9zh+Z6uvafm+VN0LA1O4MGNhZy
+              iQIDAQAB
+              -----END PUBLIC KEY-----"
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 

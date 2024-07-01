@@ -565,7 +565,11 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
             msgJson.data?.userId,
           )
           const tokenClaims = await verifyToken(msgJson.data.token, {
-            authorizedParties: [this.config.FRONTEND_URL, this.config.API_URL],
+            authorizedParties: [
+              this.config.FRONTEND_URL,
+              this.config.API_URL,
+              this.config.EDEN2_FRONTEND_URL,
+            ],
             jwtKey: this.config.CLERK_JWT_KEY,
           })
 
