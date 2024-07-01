@@ -74,6 +74,7 @@ jobs:
               fpwtWsaRd9zpTeWBgD6Q6T667AFbTGftcaHkSL9zh+Z6uvafm+VN0LA1O4MGNhZy
               iQIDAQAB
               -----END PUBLIC KEY-----"
+            "EDEN2_FRONTEND_URL=https://staging2.app.eden.art"
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
