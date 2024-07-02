@@ -9,7 +9,7 @@ const createTask = async (
   args: Task['config'],
   eden: EdenClient,
 ) => {
-  await eden.tasks
+  return eden.tasks
     .createV2({
       workflow,
       args,
@@ -29,10 +29,12 @@ const createTask = async (
       if (response && !response._id) {
         return new Response(
           JSON.stringify({
-            message: response.message || `Could not create task`,
+            message:
+              response.message ||
+              `Could not create task - invalid compute response`,
           }),
           {
-            status: 404,
+            status: 500,
           },
         )
       }
@@ -93,47 +95,27 @@ export async function POST(request: NextRequest) {
       token: authToken,
     })
 
-    // const userIdResponse = await axios.get(
-    //   `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/v2/users/own-id`,
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${authToken}`,
-    //     },
-    //   },
-    // )
-    //
-    // if (!userIdResponse || !userIdResponse.data || !userIdResponse.data.id) {
-    //   return new Response(JSON.stringify({ message: 'Creator not found' }), {
-    //     status: 401,
-    //   })
-    // }
+    const createdTaskResponse = await createTask(
+      requestJson.workflow,
+      requestJson.args,
+      eden,
+    )
+    const createdTaskJson = await createdTaskResponse.json()
 
-    // const modalRequest = {
-    //   endpoint: CONFIG.EDEN_COMPUTE_API_URL,
-    //   data: {
-    //     workflow: requestJson.workflow,
-    //     user: userIdResponse.data.id,
-    //     args: requestJson.args,
-    //   },
-    // }
+    console.log(createdTaskJson)
 
-    // console.log('> modal::request', modalRequest)
-    //
-    // const res = await axios.post(modalRequest.endpoint, modalRequest.data, {
-    //   headers: {
-    //     Authorization: `Bearer ${CONFIG.EDEN_COMPUTE_API_KEY}`,
-    //   },
-    // })
-    //
-    // if (!res || !res.data) {
-    //   return new Response(
-    //     JSON.stringify({ message: 'Invalid modal response' }),
-    //     {
-    //       status: 500,
-    //     },
-    //   )
-    // }
-    return createTask(requestJson.workflow, requestJson.args, eden)
+    if (createdTaskResponse.status !== 200) {
+      return new Response(
+        JSON.stringify({
+          message: createdTaskJson.message || 'Error creating task',
+        }),
+        {
+          status: 500,
+        },
+      )
+    }
+
+    return Response.json(createdTaskJson)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response && error.response.data) {

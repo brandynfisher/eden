@@ -1,9 +1,9 @@
 import {
-  createTask,
   getTask,
   getTaskCost,
   listTasks,
 } from '../../controllers/taskController'
+import { createTask } from '../../controllers/v2/taskControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { argsType } from '../../types/routeTypes'
 import { paginatedResponse, paginationProperties } from '../index'
@@ -49,7 +49,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
       },
       response: {
         200: Type.Object({
-          taskId: Type.String(),
+          task: Type.Optional(Type.Any()),
         }),
         400: {
           // error: Type.Optional(Type.String()),

@@ -2,19 +2,15 @@ import { User } from '../../models/Creator'
 import { TaskV2Document } from '../../models/v2/TaskV2'
 import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
 import { verifyToken } from '@clerk/clerk-sdk-node'
-import { FastifyInstance } from 'fastify'
+import { TaskV2, TasksV2CreateArguments } from '@edenlabs/eden-sdk'
+import axios from 'axios'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
-
-// export type SocketClientEventName = 'auth'|'task-create'
 
 export enum SocketClientEventName {
   Auth = 'auth',
   TaskCreate = 'task-create',
-}
-
-export enum SocketServerEventName {
-  TaskUpdate = 'task-update',
 }
 
 export type SocketClientEvent = {
@@ -26,6 +22,76 @@ export type SocketMetaData = {
   connectionId: string
   isAuthenticated: boolean
   userId: null | string
+}
+
+export const createTask = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { workflow, args } = request.body as TasksV2CreateArguments
+
+  if (!server.generatorConfigs) {
+    return reply.status(500).send({
+      message: `No generators configured`,
+    })
+  }
+
+  const generatorConfig = server.generatorConfigs.find(
+    config => config.name === workflow,
+  )
+
+  if (!generatorConfig) {
+    return reply.status(404).send({
+      message: `Generator ${workflow} not available`,
+    })
+  }
+
+  const userDocument = await User.findById(userId)
+  if (!userDocument) {
+    return reply.status(404).send({
+      message: `User not found`,
+    })
+  }
+
+  const modalRequest = {
+    endpoint: server.config.EDEN_COMPUTE_API_URL,
+    data: {
+      workflow,
+      args,
+      user: userId,
+    },
+  }
+
+  server.log.info('> modal::request')
+  server.log.info(modalRequest)
+
+  const modalResponse = await axios.post(
+    modalRequest.endpoint,
+    modalRequest.data,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  server.log.info('< modal::response')
+  server.log.info(modalResponse.data)
+
+  if (!modalResponse || !modalResponse.data) {
+    console.log('malformed response', modalResponse)
+    return reply.status(500).send({
+      message: `Empty / Unexpected response from compute api`,
+    })
+  }
+
+  const task = modalResponse.data as TaskV2
+
+  server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, task)
+
+  return reply.status(200).send({ task })
 }
 
 export const subscribeWebSocketTaskUpdates = function wsHandler(

@@ -78,6 +78,7 @@ const GeneratorForm = ({ generator }: Props) => {
         // action: <ToastAction altText="Go to task">Show Task</ToastAction>,
       })
     } catch (err) {
+      console.log(err)
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'
