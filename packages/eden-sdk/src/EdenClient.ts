@@ -136,10 +136,10 @@ export class EdenClient extends Methods {
 
   async createV2(args: TasksV2CreateArguments) {
     // Submit the task and get the ID
-    const { taskId } = await this.tasks.createV2(args)
+    const { _id } = await this.tasks.createV2(args)
 
     // Subscribe to task updates
-    const subscription = this.subscribe(taskId)
+    const subscription = this.subscribe(_id)
     try {
       for await (const event of subscription) {
         if (event.status === 'completed' || event.status === 'error') {

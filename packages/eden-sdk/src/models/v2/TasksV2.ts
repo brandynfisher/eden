@@ -74,12 +74,10 @@ export const tasksV2GetRequestConfig = (
 
 // Responses
 
-export type TasksV2CreateResponse =
-  | (WebAPICallResult & {
-      error?: string
-      message?: string
-    })
-  | TaskV2
+export type TasksV2CreateResponse = WebAPICallResult & {
+  error?: string
+  message?: string
+} & TaskV2
 
 export type TasksV2ListResponse = WebAPICallResult &
   PaginatedResponse<TaskV2> & {
