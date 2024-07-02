@@ -39,36 +39,6 @@ type Props = {
   generator: GeneratorV2
 }
 
-export type Task2 = {
-  _id: string
-  args: {
-    prompt?: string
-    negative_prompt?: string
-    width?: number
-    height?: number
-    seed?: number
-    lora?: string | null
-    lora_strength?: number
-  }
-  // {
-  // prompt: 'Fat cat, tiny hat, big spliff',
-  // negative_prompt: 'ugly, watermark, blurry, low-resolution, bad',
-  // width: 896,
-  // height: 512,
-  // seed: 1444997644986439,
-  // lora: null,
-  // lora_strength: 0.5
-  // },
-  error: string | null
-  result: string[]
-  status: 'pending' | 'running' | 'failed' | 'completed'
-  user: string
-  workflow: string
-  created_at: Date | string
-  modified_at: Date | string
-  updated_at: Date | string
-}
-
 const GeneratorForm = ({ generator }: Props) => {
   const [imageStyles, setImageStyles] = useState<ImageStyle[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)

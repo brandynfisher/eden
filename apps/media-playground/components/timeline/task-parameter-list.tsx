@@ -1,8 +1,8 @@
-import { Task2 } from '@/components/form/generator-form'
 import TaskParameter from '@/components/timeline/task-parameter'
+import { TaskV2 } from '@edenlabs/eden-sdk'
 
 type Props = {
-  task: Task2
+  task: TaskV2
 }
 const TaskParameterList = ({ task }: Props) => {
   const { prompt, height, width } = task.args

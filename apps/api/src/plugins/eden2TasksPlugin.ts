@@ -4,15 +4,20 @@ import { FastifyPluginAsync } from 'fastify'
 import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
 
 const WATCHED_COLLECTION = 'tasks2'
-// const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
   try {
     const task2Collection =
       fastify.mongoose.connection.collection(WATCHED_COLLECTION)
     const taskChangeStream = task2Collection.watch(
-      // @todo: !!!! uncomment/enable filter pipeline for production to ensure we're never flooding events when batch processing / updating old task for whatever reason
-      // [ { $match: { 'fullDocument.updatedAt': { $gt: dayAgo } } }],
-      [],
+      [
+        {
+          $match: {
+            'fullDocument.updatedAt': {
+              $gt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+          },
+        },
+      ],
       { fullDocument: 'updateLookup' },
     )
 

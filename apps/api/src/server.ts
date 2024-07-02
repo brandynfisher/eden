@@ -1,4 +1,4 @@
-import { subscribeWebSocketTaskUpdates } from './controllers/taskController'
+import { subscribeWebSocketTaskUpdates } from './controllers/v2/taskControllerV2'
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerAssetUpload from './plugins/assetUploadPlugin'
 import registerChroma from './plugins/chromaPlugin'

@@ -1,7 +1,7 @@
 'use client'
 
-import { Task2 } from '@/components/form/generator-form'
 import { useAuth } from '@clerk/nextjs'
+import { TaskV2 } from '@edenlabs/eden-sdk'
 import React, {
   PropsWithChildren,
   createContext,
@@ -20,7 +20,7 @@ type JsonMessage = {
   event: string
   data:
     | {
-        task?: Task2
+        task?: TaskV2
       }
     | GenericObject
 }

@@ -1,12 +1,12 @@
 'use client'
 
 import TaskStatusBadge from '@/components/badge/task-status-badge'
-import { Task2 } from '@/components/form/generator-form'
 import TaskParameterList from '@/components/timeline/task-parameter-list'
 // import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useWebSocketContext } from '@/provider/websocket-provider'
+import { TaskV2 } from '@edenlabs/eden-sdk'
 // import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react'
 //   generator: GeneratorV2
 // }
 
-const dummyTasks: Task2[] = [
+const dummyTasks: TaskV2[] = [
   {
     _id: '6681eaea78f7a93ef54d96c3',
     args: {
@@ -27,14 +27,13 @@ const dummyTasks: Task2[] = [
       lora: null,
       lora_strength: 0.5,
     },
-    created_at: '2024-06-30T23:31:54.120Z',
+    createdAt: '2024-06-30T23:31:54.120Z',
     error: null,
-    modified_at: '2024-06-30T23:31:54.120Z',
     result: [
       'https://edenartlab-stage-data.s3.amazonaws.com/431e284fb9b7d06adf1ca1849e2f6ee17c9ea6ddfa69cdcfea3bdd7cffe5dae0.jpg',
     ],
     status: 'completed',
-    updated_at: '2024-06-30T23:32:49.404Z',
+    updatedAt: '2024-06-30T23:32:49.404Z',
     user: '652bfd262ea937e07378268c',
     workflow: 'txt2img',
   },
@@ -43,7 +42,7 @@ const dummyTasks: Task2[] = [
 const Timeline = () => {
   const { lastMessageJson } = useWebSocketContext()
   // @todo: handle tasks via global state (zustand?) OR re-implement messageHistory in Websocket Context?
-  const [tasks, setTasks] = useState<Task2[]>(dummyTasks)
+  const [tasks, setTasks] = useState<TaskV2[]>(dummyTasks)
 
   useEffect(() => {
     if (!lastMessageJson) {
@@ -51,7 +50,7 @@ const Timeline = () => {
     }
 
     if (lastMessageJson.event === 'task-update') {
-      const taskUpdate = lastMessageJson.data.task as Task2
+      const taskUpdate = lastMessageJson.data.task as TaskV2
       console.log('received task-update', taskUpdate)
       setTasks(prev => {
         // add task to array if no object with a value of task._id exists in prev yet, otherwise update/replace the existing entry

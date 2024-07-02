@@ -1,11 +1,11 @@
-import { Task2 } from '@/components/form/generator-form'
 import LoadingIndicator from '@/components/loading-indicator'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { TaskV2 } from '@edenlabs/eden-sdk'
 import { CheckCheckIcon, HourglassIcon, TriangleAlertIcon } from 'lucide-react'
 
 type Props = {
-  status: Task2['status']
+  status: TaskV2['status']
   hideText?: boolean
 }
 const TaskStatusBadge = ({ status, hideText }: Props) => {

@@ -1,5 +1,6 @@
 import { Methods } from './methods'
 import { TasksCreateArguments } from './models'
+import { TasksV2CreateArguments } from './models/v2'
 import {
   TaskUpdateEvent,
   WebAPICallOptions,
@@ -113,6 +114,29 @@ export class EdenClient extends Methods {
   async create(args: TasksCreateArguments) {
     // Submit the task and get the ID
     const { taskId } = await this.tasks.create(args)
+
+    // Subscribe to task updates
+    const subscription = this.subscribe(taskId)
+    try {
+      for await (const event of subscription) {
+        if (event.status === 'completed' || event.status === 'error') {
+          return event.result
+        }
+      }
+    } catch (error) {
+      console.error('Error during subscription:', error)
+    } finally {
+      // Close the subscription
+      if (subscription.close) {
+        // console.log('closing subscription')
+        subscription.close()
+      }
+    }
+  }
+
+  async createV2(args: TasksV2CreateArguments) {
+    // Submit the task and get the ID
+    const { taskId } = await this.tasks.createV2(args)
 
     // Subscribe to task updates
     const subscription = this.subscribe(taskId)
