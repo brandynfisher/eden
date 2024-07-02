@@ -1,18 +1,16 @@
-import { paginatedResponse, paginationProperties } from '.'
 import {
   createTask,
   getTask,
   getTaskCost,
   listTasks,
-  receiveTaskUpdate,
-  subscribeTaskUpdates,
-} from '../controllers/taskController'
-import { isAuth } from '../middleware/authMiddleware'
-import { configType } from '../types/routeTypes'
+} from '../../controllers/taskController'
+import { isAuth } from '../../middleware/authMiddleware'
+import { argsType } from '../../types/routeTypes'
+import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-const taskRoutes: FastifyPluginAsync = async server => {
+const taskRoutesV2: FastifyPluginAsync = async server => {
   server.post('/tasks/cost', {
     schema: {
       tags: ['Tasks'],
@@ -20,13 +18,11 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: {
-        generatorName: Type.String(),
-        versionId: Type.Optional(Type.String()),
-        config: Type.Optional(configType),
+        workflow: Type.String(),
+        args: Type.Optional(argsType),
       },
       response: {
         200: Type.Object({
@@ -45,13 +41,11 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: {
-        generatorName: Type.String(),
-        versionId: Type.Optional(Type.String()),
-        config: Type.Optional(configType),
+        workflow: Type.String(),
+        args: Type.Optional(argsType),
       },
       response: {
         200: Type.Object({
@@ -86,7 +80,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       querystring: {
@@ -114,7 +107,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       params: {
@@ -128,36 +120,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
     },
     handler: (request, reply) => getTask(request, reply),
   })
-
-  server.post('/tasks/update', {
-    schema: {
-      tags: ['Tasks'],
-      description: 'Update a task',
-      hide: true,
-      querystring: {
-        secret: Type.String(),
-      },
-    },
-    handler: (request, reply) => receiveTaskUpdate(server, request, reply),
-  })
-
-  server.get('/tasks/events', {
-    schema: {
-      tags: ['Tasks'],
-      description: 'Get task events',
-      security: [
-        {
-          apiKey: [],
-          // apiSecret: [],
-        },
-      ],
-      querystring: {
-        taskId: Type.Optional(Type.String()),
-      },
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
-  })
 }
 
-export default taskRoutes
+export default taskRoutesV2
