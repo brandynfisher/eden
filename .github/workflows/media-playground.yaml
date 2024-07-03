@@ -1,4 +1,4 @@
-name: 'Build and Deploy - Garden'
+name: 'Build and Deploy - Media Playground'
 
 on:
   workflow_dispatch:
