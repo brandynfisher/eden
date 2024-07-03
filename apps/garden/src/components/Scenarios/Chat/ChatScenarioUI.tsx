@@ -133,7 +133,7 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
           `/api/sessions/creation`,
           createInput,
           {
-            timeout: 3000000,
+            signal: AbortSignal.timeout(50 * 60 * 1000),
           },
         )
         const { uri } = createRes.data

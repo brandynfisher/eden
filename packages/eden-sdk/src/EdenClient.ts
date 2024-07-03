@@ -22,7 +22,6 @@ export class EdenClient extends Methods {
   public readonly token?: string
   public readonly apiKey?: string
   public readonly apiSecret?: string
-  public readonly timeout?: number
   private axios: AxiosInstance
 
   public constructor({
@@ -30,7 +29,6 @@ export class EdenClient extends Methods {
     token = undefined,
     apiKey = undefined,
     apiSecret = undefined,
-    timeout = undefined,
   }: WebClientOptions = {}) {
     super()
 
@@ -38,7 +36,6 @@ export class EdenClient extends Methods {
     this.apiKey = apiKey
     this.apiSecret = apiSecret
     this.edenApiUrl = edenApiUrl
-    this.timeout = timeout || 3000000
 
     this.axios = axios.create({
       baseURL: edenApiUrl,
@@ -172,7 +169,7 @@ export class EdenClient extends Methods {
     }
     const requestConfig = configFn(options)
     requestConfig.headers = headers
-    requestConfig.timeout = this.timeout
+    requestConfig.signal = AbortSignal.timeout(50 * 60 * 1000)
 
     const response = await this.makeRequest(requestConfig)
     const result = await this.buildResult(response)
