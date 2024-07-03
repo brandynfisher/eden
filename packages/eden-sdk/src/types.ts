@@ -10,6 +10,7 @@ export interface WebClientOptions {
   token?: string
   apiKey?: string
   apiSecret?: string
+  timeout?: number
 }
 
 export interface WebAPICallResult {
