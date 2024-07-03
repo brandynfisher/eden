@@ -23,8 +23,6 @@ const apiKeyVerify = async (
 
   const user = await User.findById(apiKey.user)
 
-  server.log.info({ apiKey, user })
-
   if (!user) {
     throw new Error('User not found')
   }
@@ -47,7 +45,6 @@ const getCredential = async (
   request: FastifyRequest,
   // reply: FastifyReply,
 ) => {
-  server.log.info('getCredential', request.headers)
   if (request.headers['x-api-key']) {
     await apiKeyVerify(server, request)
   } else {
