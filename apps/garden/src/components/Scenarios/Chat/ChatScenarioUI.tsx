@@ -41,7 +41,9 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
   const activeCharacter = session.characters[0] as Character
   const { message } = App.useApp()
   const { isAuthenticated, userId } = useContext(UserContext)
-  const { creator } = useCreator(isAuthenticated && userId ? userId : null)
+  const { creator } = useCreator(isAuthenticated && userId ? userId : null, {
+    revalidateOnFocus: false,
+  })
 
   const [text, setText] = useState('')
   const [conversation, setConversation] = useState<ConversationEntry[]>([])
