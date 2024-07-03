@@ -53,7 +53,10 @@ mannavoucher.pre<MannaVoucherDocument>('save', function (next) {
   next()
 })
 
-mannavoucher.index({ code: 1 }, { collation: { locale: 'en', strength: 2 } })
+mannavoucher.index(
+  { code: 1, used: 1 },
+  { collation: { locale: 'en', strength: 2 } },
+)
 
 export const MannaVoucher = model<MannaVoucherDocument>(
   'mannavouchers',
