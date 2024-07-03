@@ -18,7 +18,7 @@ const ArtistCard = ({ creator }: Props) => {
           thumbnailUri: creator.userImage,
           width: 512,
           height: 512,
-          type: 'image'
+          type: 'image',
         }}
         linkHref={`/creators/${creator.username}`}
       />

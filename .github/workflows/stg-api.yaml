@@ -65,6 +65,10 @@ jobs:
             "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}"
             "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
             "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}"
+            "EDEN_COMPUTE_API_URL=${{ secrets.EDEN_COMPUTE_API_URL }}"
+            "EDEN_COMPUTE_API_KEY=${{ secrets.EDEN_COMPUTE_API_KEY }}"
+            "EDEN2_FRONTEND_URL=https://staging2.app.eden.art"
+            "CLERK_JWT_KEY=${{ secrets.CLERK_JWT_KEY }}"
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 

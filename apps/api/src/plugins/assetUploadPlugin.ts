@@ -1,6 +1,6 @@
 import { MediaAttributes, MediaType } from '@edenlabs/eden-sdk'
-import type { FastifyInstance } from 'fastify'
 import axios from 'axios'
+import type { FastifyInstance } from 'fastify'
 import { fileTypeFromBuffer } from 'file-type'
 import sharp from 'sharp'
 
@@ -21,14 +21,11 @@ export const mediaTypeMap: Record<string, MediaType> = {
   zip: MediaType.Zip,
 }
 
-const uploadUrlAsset = async (
-  server: FastifyInstance,
-  url: string,
-) => {
+const uploadUrlAsset = async (server: FastifyInstance, url: string) => {
   const asset = await axios.get(url, { responseType: 'arraybuffer' })
   const assetB64 = Buffer.from(asset.data, 'base64')
   const fileType = await fileTypeFromBuffer(assetB64)
-  const fileSize = assetB64.byteLength;
+  const fileSize = assetB64.byteLength
 
   if (!fileType) {
     throw new Error('fileType from buffer is undefined')
@@ -39,11 +36,15 @@ const uploadUrlAsset = async (
   // all non-video assets larger 50 MB need to be stored on S3
   if (!fileType.mime.startsWith('video') && fileSize >= 52428800) {
     // upload original to s3, return S3 asset url for `uri` field
-    const originalAsset = await server.uploadS3BufferAsset(server, assetB64, fileType);
+    const originalAsset = await server.uploadS3BufferAsset(
+      server,
+      assetB64,
+      fileType,
+    )
     const uploadedOriginalAsset: Asset = {
       uri: originalAsset.uri,
       thumbnailUri: originalAsset.thumbnailUri,
-      mediaAttributes: originalAsset.mediaAttributes
+      mediaAttributes: originalAsset.mediaAttributes,
     }
 
     // produce a smaller version of images and upload them to cloudinary
@@ -53,13 +54,17 @@ const uploadUrlAsset = async (
         .webp({ quality: 80 })
         .toBuffer()
 
-      const thumbnailAsset = await server.uploadCldBufferAsset(server, MediaType.Image, thumbnailBuffer)
+      const thumbnailAsset = await server.uploadCldBufferAsset(
+        server,
+        MediaType.Image,
+        thumbnailBuffer,
+      )
       uploadedOriginalAsset.thumbnailUri = thumbnailAsset.uri
     } else {
       uploadedOriginalAsset.thumbnailUri = originalAsset.thumbnailUri
     }
 
-    return new Promise<Asset>((resolve) => resolve(uploadedOriginalAsset))
+    return new Promise<Asset>(resolve => resolve(uploadedOriginalAsset))
   }
 
   return server.uploadCldBufferAsset(server, mediaType, assetB64)
@@ -68,19 +73,16 @@ const uploadUrlAsset = async (
 export const registerAssetUpload = async (fastify: FastifyInstance) => {
   try {
     fastify.decorate('uploadUrlAsset', uploadUrlAsset)
-    fastify.log.info('Successfully registered Asset Upload Plugin')
+    fastify.log.info('Successfully registered plugin: AssetUpload')
   } catch (err) {
-    fastify.log.error('Plugin: Asset Upload, error on register', err)
+    fastify.log.error('Plugin: AssetUpload, error on register', err)
     console.error(err)
   }
 }
 
 declare module 'fastify' {
   interface FastifyInstance {
-    uploadUrlAsset: (
-      server: FastifyInstance,
-      url: string,
-    ) => Promise<Asset>
+    uploadUrlAsset: (server: FastifyInstance, url: string) => Promise<Asset>
   }
 }
 

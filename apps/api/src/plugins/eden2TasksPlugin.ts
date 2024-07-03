@@ -1,0 +1,80 @@
+import { handleTaskUpdateStreamEvent } from '../lib/eden2'
+import { TaskDocument } from '../models/Task'
+import { FastifyPluginAsync } from 'fastify'
+import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
+
+const WATCHED_COLLECTION = 'tasks2'
+export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
+  try {
+    const task2Collection =
+      fastify.mongoose.connection.collection(WATCHED_COLLECTION)
+    const taskChangeStream = task2Collection.watch(
+      [
+        {
+          $match: {
+            'fullDocument.updatedAt': {
+              $gt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+          },
+        },
+      ],
+      { fullDocument: 'updateLookup' },
+    )
+
+    taskChangeStream.on(
+      'change',
+      async (data: ChangeStreamDocument<TaskDocument>) => {
+        try {
+          fastify.log.debug('Task change stream event received', {
+            operationType: data.operationType,
+          })
+
+          if (
+            data.operationType === 'insert' ||
+            data.operationType === 'update'
+          ) {
+            fastify.log.info(`Task ${data.operationType} event`, {
+              taskId: data.fullDocument?._id,
+            })
+
+            const updatedFields =
+              data.operationType === 'update'
+                ? (data.updateDescription as UpdateDescription).updatedFields
+                : undefined
+
+            await handleTaskUpdateStreamEvent(
+              fastify,
+              data.fullDocument as TaskDocument,
+              updatedFields,
+            )
+          }
+        } catch (err) {
+          fastify.log.error(
+            'Failed to handle change stream onChange: Eden2Tasks',
+            { err },
+          )
+        }
+      },
+    )
+
+    fastify.addHook('onClose', (_instance, done) => {
+      const streamClosePromise = taskChangeStream.close()
+
+      if (streamClosePromise) {
+        streamClosePromise.then(() => {
+          fastify.log.info('Task change stream closed')
+          done()
+          return
+        })
+      }
+
+      done()
+    })
+
+    fastify.log.info('Successfully registered plugin: Eden2Tasks')
+  } catch (err) {
+    fastify.log.error('Failed to register plugin: Eden2Tasks', { err })
+  }
+}
+
+export default registerEden2Tasks

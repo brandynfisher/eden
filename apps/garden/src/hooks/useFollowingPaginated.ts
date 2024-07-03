@@ -23,7 +23,7 @@ export const useFollowingPaginated = (query: PaginatedFollowersQuery) => {
   const pageLimit = query?.limit || PAGE_SIZE || 10
   const type = query.type
 
-  const route = (limit: number, page: number) => {
+  const route = (_limit: number, page: number) => {
     const basePath = `/api/${type}`
     const params: PaginatedFeedQuery = {}
 

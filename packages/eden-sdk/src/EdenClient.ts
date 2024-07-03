@@ -1,4 +1,6 @@
 import { Methods } from './methods'
+import { TasksCreateArguments } from './models'
+import { TasksV2CreateArguments } from './models/v2'
 import {
   TaskUpdateEvent,
   WebAPICallOptions,
@@ -7,7 +9,6 @@ import {
 } from './types'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import EventSourcePolyfill from 'event-source-polyfill'
-import { TasksCreateArguments } from 'src/models'
 
 const NodeEventSource = require('eventsource')
 
@@ -66,7 +67,8 @@ export class EdenClient extends Methods {
         const queue = []
         let resolver
 
-        eventSource.onmessage = event => {
+        eventSource.addEventListener('task-update', event => {
+          // console.log('task-update', event)
           if (event && event.data) {
             const data = JSON.parse(event.data)
             if (data && data.taskId === taskId) {
@@ -78,7 +80,7 @@ export class EdenClient extends Methods {
               }
             }
           }
-        }
+        })
 
         eventSource.onerror = error => {
           console.error('EventSource error:', error)
@@ -126,6 +128,30 @@ export class EdenClient extends Methods {
     } finally {
       // Close the subscription
       if (subscription.close) {
+        // console.log('closing subscription')
+        subscription.close()
+      }
+    }
+  }
+
+  async createV2(args: TasksV2CreateArguments) {
+    // Submit the task and get the ID
+    const { _id } = await this.tasks.createV2(args)
+
+    // Subscribe to task updates
+    const subscription = this.subscribe(_id)
+    try {
+      for await (const event of subscription) {
+        if (event.status === 'completed' || event.status === 'error') {
+          return event.result
+        }
+      }
+    } catch (error) {
+      console.error('Error during subscription:', error)
+    } finally {
+      // Close the subscription
+      if (subscription.close) {
+        // console.log('closing subscription')
         subscription.close()
       }
     }
@@ -143,6 +169,7 @@ export class EdenClient extends Methods {
     }
     const requestConfig = configFn(options)
     requestConfig.headers = headers
+    requestConfig.signal = AbortSignal.timeout(50 * 60 * 1000)
 
     const response = await this.makeRequest(requestConfig)
     const result = await this.buildResult(response)

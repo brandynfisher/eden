@@ -43,12 +43,12 @@ const apiKeyVerify = async (
 const getCredential = async (
   server: FastifyInstance,
   request: FastifyRequest,
-  reply: FastifyReply,
+  // reply: FastifyReply,
 ) => {
   if (request.headers['x-api-key']) {
     await apiKeyVerify(server, request)
   } else {
-    await server.verifyUser(request, reply)
+    await server.verifyUser(request)
   }
 }
 
@@ -58,7 +58,7 @@ export const isAuth = async (
   reply: FastifyReply,
 ) => {
   try {
-    await getCredential(server, request, reply)
+    await getCredential(server, request)
   } catch (error: any) {
     return reply.status(401).send({
       statusCode: 401,
@@ -74,7 +74,7 @@ export const isAdmin = async (
   reply: FastifyReply,
 ) => {
   try {
-    await getCredential(server, request, reply)
+    await getCredential(server, request)
   } catch (error: any) {
     return reply.status(401).send({
       statusCode: 401,
@@ -97,7 +97,7 @@ export const isCharacter = async (
   reply: FastifyReply,
 ) => {
   try {
-    await getCredential(server, request, reply)
+    await getCredential(server, request)
   } catch (error: any) {
     return reply.status(401).send({
       statusCode: 401,
@@ -139,10 +139,9 @@ export const hasFeatureFlag = (
 export const maybeAuth = async (
   server: FastifyInstance,
   request: FastifyRequest,
-  reply: FastifyReply,
 ) => {
   try {
-    await getCredential(server, request, reply)
+    await getCredential(server, request)
   } catch (error) {
     // Ignore
   }
@@ -150,6 +149,6 @@ export const maybeAuth = async (
 
 declare module 'fastify' {
   interface FastifyInstance {
-    verifyUser: (request: FastifyRequest, reply: FastifyReply) => Promise<void>
+    verifyUser: (request: FastifyRequest) => Promise<void>
   }
 }

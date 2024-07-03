@@ -1,4 +1,3 @@
-
 // Explicitly define the env data typings, using process.env here for simplicity
 import { Static, Type } from '@sinclair/typebox'
 import Ajv from 'ajv'
@@ -7,9 +6,9 @@ import { FastifyPluginAsync } from 'fastify'
 import fp from 'fastify-plugin'
 
 interface EnvDataInterface {
-  [key: string]: string|undefined;
+  [key: string]: string | undefined
 }
-const envData: EnvDataInterface = process.env;
+const envData: EnvDataInterface = process.env
 
 dotenv.config({ path: process.env.DOTENV_PATH || '.env.dummy' })
 
@@ -30,7 +29,10 @@ const ConfigSchema = Type.Strict(
     ENV_API: Type.Optional(Type.String()),
     EDEN_ADMIN_API_KEY: Type.String(),
     EDEN_ADMIN_API_SECRET: Type.String(),
+    EDEN_COMPUTE_API_URL: Type.String(),
+    EDEN_COMPUTE_API_KEY: Type.String(),
     FRONTEND_URL: Type.String(),
+    EDEN2_FRONTEND_URL: Type.String(),
     MONGO_URI: Type.String(),
     CHROMA_URI: Type.String(),
     REPLICATE_API_TOKEN: Type.String(),
@@ -52,6 +54,7 @@ const ConfigSchema = Type.Strict(
     CLERK_PUBLISHABLE_KEY: Type.Optional(Type.String()),
     CLERK_SECRET_KEY: Type.Optional(Type.String()),
     CLERK_WEBHOOK_SECRET: Type.Optional(Type.String()),
+    CLERK_JWT_KEY: Type.Optional(Type.String()),
     AIRFLOW_BASE_URL: Type.Optional(Type.String()),
     DISCORD_CLIENT_ID: Type.Optional(Type.String()),
     DISCORD_CLIENT_SECRET: Type.Optional(Type.String()),
@@ -76,7 +79,7 @@ const ajv = new Ajv({
 export type Config = Static<typeof ConfigSchema>
 
 const configPlugin: FastifyPluginAsync = async server => {
-  if(ajv && ConfigSchema){
+  if (ajv && ConfigSchema) {
     const validate = ajv.compile(ConfigSchema)
     const valid = validate(envData)
 
@@ -91,12 +94,10 @@ const configPlugin: FastifyPluginAsync = async server => {
     }
 
     server.decorate('config', envData as Config)
-  }
-  else {
-    throw new Error(`ajv or ConfigSchema is not defined`);
+  } else {
+    throw new Error(`ajv or ConfigSchema is not defined`)
   }
 }
-
 
 declare module 'fastify' {
   interface FastifyInstance {

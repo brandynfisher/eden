@@ -54,7 +54,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const getCollection = async (
   id: string,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
@@ -67,7 +67,7 @@ const getCollection = async (
 const updateCollection = async (
   id: string,
   updatePartial: CollectionUpdatePartial,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
@@ -85,7 +85,7 @@ const updateCollection = async (
 
 const deleteCollection = async (
   id: string,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {

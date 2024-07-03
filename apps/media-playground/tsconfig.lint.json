@@ -1,0 +1,15 @@
+{
+  "extends": "@edenlabs/tsconfig/media-playground.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "target": "es2018",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["apps/media-playground/*"]
+    },
+    "incremental": false,
+    "strictNullChecks": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

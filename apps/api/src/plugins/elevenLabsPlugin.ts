@@ -551,9 +551,9 @@ export const registerElevenLabs = async (fastify: FastifyInstance) => {
   try {
     const elevenLabs = new ElevenLabs(fastify.config.ELEVENLABS_API_KEY)
     fastify.decorate('elevenLabs', elevenLabs)
-    fastify.log.info('Successfully registered ElevenLabsPlugin')
+    fastify.log.info('Successfully registered plugin: ElevenLabs')
   } catch (err) {
-    fastify.log.error('Plugin: elevenLabs, error on register', err)
+    fastify.log.error('Plugin: ElevenLabs, error on register', err)
   }
 }
 

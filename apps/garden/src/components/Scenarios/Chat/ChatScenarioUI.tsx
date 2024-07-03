@@ -41,7 +41,9 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
   const activeCharacter = session.characters[0] as Character
   const { message } = App.useApp()
   const { isAuthenticated, userId } = useContext(UserContext)
-  const { creator } = useCreator(isAuthenticated && userId ? userId : null)
+  const { creator } = useCreator(isAuthenticated && userId ? userId : null, {
+    revalidateOnFocus: false,
+  })
 
   const [text, setText] = useState('')
   const [conversation, setConversation] = useState<ConversationEntry[]>([])
@@ -130,6 +132,9 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
         const createRes = await axios.post(
           `/api/sessions/creation`,
           createInput,
+          {
+            signal: AbortSignal.timeout(50 * 60 * 1000),
+          },
         )
         const { uri } = createRes.data
         setConversation(state => [
@@ -295,7 +300,7 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
           className="!bg-gray-200 dark:!bg-gray-800 !py-4 !border-t-0"
           placeholder="Type your message here..."
           onSend={submit}
-          onChange={(e, text) => {
+          onChange={(_e, text) => {
             setText(text)
           }}
           sendButton={true}

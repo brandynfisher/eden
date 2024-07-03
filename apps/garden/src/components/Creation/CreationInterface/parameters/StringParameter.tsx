@@ -55,7 +55,7 @@ const StringParameter = (props: {
             ]}
           >
             <>
-              {values.map((value, index) => (
+              {values.map((_value, index) => (
                 <Row key={index} className="mb-2">
                   <Badge
                     className="flex w-full pointer-events-none"

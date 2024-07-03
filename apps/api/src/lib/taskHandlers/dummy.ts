@@ -4,6 +4,7 @@ import {
   GeneratorVersionSchema,
 } from '../../models/Generator'
 import { Task, TaskStatus } from '../../models/Task'
+import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
 import { TaskHandlers } from '../../plugins/tasks'
 import { submitMonologueTask } from './airflow'
 import axios from 'axios'
@@ -85,10 +86,10 @@ export const dummySubmitTask = async (
       `Submitting task for generator version ${
         generatorVersion.versionId
       } with config ${JSON.stringify(config)}`,
-    );
-    return new Promise((resolve) => resolve(uuidv4()))
+    )
+    return new Promise(resolve => resolve(uuidv4()))
   } else {
-    throw new Error("Invalid generator name.")
+    throw new Error('Invalid generator name.')
   }
 }
 
@@ -118,16 +119,22 @@ export const dummyReceiveTaskUpdate = async (
     },
   )
 
-  server.eventEmitter.emit('task-update', {
+  const eventMessage = {
     userId: task.user._id,
     taskId,
     status: TaskStatus.Pending,
     progress: 0.5,
     task: {
       ...task,
-      ...taskUpdateIntermediate
-    }
-  })
+      ...taskUpdateIntermediate,
+    },
+  }
+
+  server.eventEmitter.emit('task-update', eventMessage)
+  server.internalMessages.publish(
+    InternalMessagesQueues.TaskUpdates,
+    eventMessage,
+  )
 
   const image = dummyImages[Math.floor(Math.random() * dummyImages.length)]
   const asset = await server.uploadUrlAsset(server, image.result)
@@ -164,7 +171,7 @@ export const dummyReceiveTaskUpdate = async (
     },
   )
 
-  server.eventEmitter.emit('task-update', {
+  const taskCompletedEventMessage = {
     userId: task.user._id,
     taskId,
     status: TaskStatus.Completed,
@@ -172,9 +179,14 @@ export const dummyReceiveTaskUpdate = async (
     result: asset.uri,
     task: {
       ...task,
-      ...taskUpdate
+      ...taskUpdate,
     },
-  })
+  }
+  server.eventEmitter.emit('task-update', taskCompletedEventMessage)
+  server.internalMessages.publish(
+    InternalMessagesQueues.TaskUpdates,
+    taskCompletedEventMessage,
+  )
 
   if (task.webhooks) {
     await Promise.all(
@@ -192,6 +204,7 @@ export const dummyReceiveTaskUpdate = async (
 
 export const dummyGetTransactionCost = (
   _: FastifyInstance,
+  //@ts-ignore
   generator: GeneratorDocument,
   generatorVersion: GeneratorVersionSchema,
   config: any,

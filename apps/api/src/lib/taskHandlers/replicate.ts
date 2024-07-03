@@ -137,6 +137,7 @@ const submitTask = async (
 const getTransactionCost = (
   _: FastifyInstance,
   generator: any,
+  //@ts-ignore
   generatorVersion: any,
   config: any,
 ) => {

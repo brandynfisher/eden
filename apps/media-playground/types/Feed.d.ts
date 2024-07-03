@@ -1,4 +1,3 @@
-
 export type CursorPaginationQueryParams = {
   cursor?: string
   nextValue?: number
@@ -24,4 +23,5 @@ export type FeedFilterQueryParams = {
   }
 }
 
-export type FeedQueryParams = FeedFilterQueryParams & CursorPaginationQueryParams
+export type FeedQueryParams = FeedFilterQueryParams &
+  CursorPaginationQueryParams

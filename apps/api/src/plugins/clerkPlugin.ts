@@ -1,9 +1,9 @@
+import { isAllowedAccess } from '../lib/authorization'
 import { User } from '../models/Creator'
 import { clerkPlugin, createClerkClient, getAuth } from '@clerk/fastify'
 import { clerkClient } from '@clerk/fastify/dist/types/clerkClient'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import type { FastifyInstance, FastifyRequest } from 'fastify'
-import { isAllowedAccess } from '../lib/authorization'
 
 export const registerClerk = async (fastify: FastifyInstance) => {
   try {
@@ -15,35 +15,32 @@ export const registerClerk = async (fastify: FastifyInstance) => {
     const clerkClient = createClerkClient(clerkOptions)
     fastify.register(clerkPlugin, clerkOptions)
     fastify.decorate('clerk', clerkClient)
-    fastify.decorate(
-      'verifyUser',
-      async (request: FastifyRequest) => {
-        const { userId } = getAuth(request)
-        if (!userId) {
-          throw new Error('Invalid session')
-        }
+    fastify.decorate('verifyUser', async (request: FastifyRequest) => {
+      const { userId } = getAuth(request)
+      if (!userId) {
+        throw new Error('Invalid session')
+      }
 
-        const user = await User.findOne({
-          userId,
-        })
+      const user = await User.findOne({
+        userId,
+      })
 
-        if (!user) {
-          throw new Error('User not found')
-        }
+      if (!user) {
+        throw new Error('User not found')
+      }
 
-        if (!isAllowedAccess(fastify, userId)) {
-          throw new Error('User not allowed')
-        }
+      if (!isAllowedAccess(fastify, userId)) {
+        throw new Error('User not allowed')
+      }
 
-        request.user = {
-          userId: user._id,
-          subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
-          featureFlags: user.featureFlags || [],
-          isAdmin: user.isAdmin || false,
-        }
-      },
-    )
-    fastify.log.info('Successfully registered ClerkPlugin')
+      request.user = {
+        userId: user._id,
+        subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
+        featureFlags: user.featureFlags || [],
+        isAdmin: user.isAdmin || false,
+      }
+    })
+    fastify.log.info('Successfully registered plugin: Clerk')
   } catch (err) {
     fastify.log.error('Plugin: Clerk, error on register', err)
   }

@@ -43,7 +43,7 @@ export const registerAirflow = async (fastify: FastifyInstance) => {
       },
     })
 
-    fastify.log.info('Successfully registered AirflowPlugin')
+    fastify.log.info('Successfully registered plugin: Airflow')
   } catch (err) {
     fastify.log.error('Plugin: Airflow, error on register', err)
   }

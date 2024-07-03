@@ -12,6 +12,7 @@ import {
 import { Manna, MannaDocument } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
+import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
 import TaskRepository from '../repositories/TaskRepository'
 import {
   TaskUpdateEvent,
@@ -219,8 +220,7 @@ export const createTask = async (
     })
   }
 
-  // @todo: this is kinda ugly but somehow
-  server.eventEmitter.emit('task-update', {
+  const taskPendingEventMessage = {
     userId: user._id,
     taskId,
     status: 'pending',
@@ -230,7 +230,13 @@ export const createTask = async (
       status: 'pending',
       generator: { generatorName: generator?.generatorName || 'n/a' },
     },
-  })
+  }
+
+  server.eventEmitter.emit('task-update', taskPendingEventMessage)
+  server.internalMessages.publish(
+    InternalMessagesQueues.TaskUpdates,
+    taskPendingEventMessage,
+  )
 
   // update db
   const taskData: TaskSchema = {
@@ -405,21 +411,26 @@ export const subscribeTaskUpdates = async (
 
   reply.sse(
     // gather all accumulated emit calls for this tick
-    (async function* () {
-      // console.log('REPLY SSE', userId)
+    (async function* source() {
+      server.log.info('REPLY SSE', userId)
       try {
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate = event as TaskUpdateEvent
-          // console.log({ taskUpdate, userId: userId.toString(), event })
+          server.log.info({
+            taskUpdate,
+            userId: userId.toString(),
+            taskId,
+            event,
+          })
           if (
             taskUpdate.userId.toString() === userId.toString() &&
             (!taskId || taskUpdate.taskId === taskId)
           ) {
-            // console.log('sending SSE task update', {
-            //   event: 'task-update',
-            //   data: JSON.stringify(event),
-            // })
+            server.log.info('sending SSE task update', {
+              event: 'task-update',
+              data: JSON.stringify(event),
+            })
 
             // send SSE message
             yield {

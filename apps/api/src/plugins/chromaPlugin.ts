@@ -12,7 +12,7 @@ export const registerChroma = async (
       auth: { provider: 'basic', credentials: 'chromadb:changeme' },
     })
     fastify.decorate('chromadb', chromadb)
-    fastify.log.info('Successfully registered ChromaPlugin')
+    fastify.log.info('Successfully registered plugin: Chroma')
   } catch (err) {
     fastify.log.error('Plugin: Chroma, error on register', err)
   }

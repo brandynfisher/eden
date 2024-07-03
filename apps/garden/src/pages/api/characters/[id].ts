@@ -58,7 +58,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const getCharacter = async (
   id: string,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
@@ -68,7 +68,7 @@ const getCharacter = async (
 
 const updateCharacter = async (
   updatePartial: CharactersUpdateArguments,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
@@ -78,7 +78,7 @@ const updateCharacter = async (
 
 const deleteCharacter = async (
   id: string,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {

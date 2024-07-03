@@ -1,7 +1,11 @@
 export const CONFIG = {
   // publicRuntimeConfig
+  NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV || 'staging',
+  NEXT_PUBLIC_DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
   NEXT_PUBLIC_EDEN_API_URL:
     process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://0.0.0.0:5050',
+  NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL:
+    process.env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || '',
   NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
   NEXT_PUBLIC_DISCORD_CLIENT_ID:
     process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '',
@@ -11,11 +15,9 @@ export const CONFIG = {
     process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '',
   NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:
     process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
-  NEXT_PUBLIC_GOOGLE_GTM_ID:
-    process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || '',
+  NEXT_PUBLIC_GOOGLE_GTM_ID: process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || '',
   NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID:
     process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID || '',
-  NEXT_PUBLIC_DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
 
   // serverRuntimeConfig
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',

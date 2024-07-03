@@ -3,10 +3,8 @@ type Props = {
 }
 const CardHeader = ({ title }: Props) => {
   return (
-    <div className="bg-muted text-muted-foreground p-1">
-      <div className="h-6 md:h-9 flex justify-between items-center">
-        {title}
-      </div>
+    <div className="relative bg-muted text-muted-foreground group-hover:text-primary h-6 md:h-9 p-1 z-10">
+      <div className="flex justify-between items-center">{title}</div>
     </div>
   )
 }

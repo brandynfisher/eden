@@ -1,5 +1,5 @@
-import HeaderNav from '@/components/navigation/header-nav'
 import SearchForm from '@/components/form/search-form'
+import HeaderNav from '@/components/navigation/header-nav'
 import MyAccountButton from '@/components/navigation/my-account-button'
 
 const Header = () => {

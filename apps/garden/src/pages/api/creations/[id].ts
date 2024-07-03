@@ -52,35 +52,47 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const getCreation = async (
   id: string,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
-  await eden.creations.get({
-    creationId: id,
-  }).then((response) => {
-    if (!response || response.message) {
-      return res.status(500).json({ message: response.message || 'Internal Error - unknown' })
-    }
-
-    if (!response.creation) {
-      return res.status(404).json({ message: response.message || `Creation ${id} not found` })
-    }
-
-    return res.status(200).json({ creation: response.creation })
-  })
-  .catch((error) => {
-    return res.status(error.response.status || 500).json({
-      message: error?.response?.data?.message || error.response.statusText || 'Internal Exception',
-      error: process.env.NEXT_PUBLIC_APP_ENV === 'production' ? '- redacted -' : error,
+  await eden.creations
+    .get({
+      creationId: id,
     })
-  })
+    .then(response => {
+      if (!response || response.message) {
+        return res
+          .status(500)
+          .json({ message: response.message || 'Internal Error - unknown' })
+      }
+
+      if (!response.creation) {
+        return res
+          .status(404)
+          .json({ message: response.message || `Creation ${id} not found` })
+      }
+
+      return res.status(200).json({ creation: response.creation })
+    })
+    .catch(error => {
+      return res.status(error.response.status || 500).json({
+        message:
+          error?.response?.data?.message ||
+          error.response.statusText ||
+          'Internal Exception',
+        error:
+          process.env.NEXT_PUBLIC_APP_ENV === 'production'
+            ? '- redacted -'
+            : error,
+      })
+    })
 }
 
 const updateCreation = async (
   id: string,
   updatePartial: CreationUpdatePartial,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {
@@ -103,7 +115,7 @@ const updateCreation = async (
 
 const deleteCreation = async (
   id: string,
-  req: NextApiRequest,
+  _req: NextApiRequest,
   res: NextApiResponse,
   eden: EdenClient,
 ) => {

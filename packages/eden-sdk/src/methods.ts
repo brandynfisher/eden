@@ -190,6 +190,17 @@ import {
   tasksGetRequestConfig,
   tasksListRequestConfig,
 } from './models'
+import {
+  GeneratorsGetArgumentsV2,
+  GeneratorsGetResponseV2,
+  GeneratorsListArgumentsV2,
+  GeneratorsListResponseV2,
+  TasksV2CreateArguments,
+  TasksV2CreateResponse,
+  generatorsGetRequestConfigV2,
+  generatorsListRequestConfigV2,
+  tasksV2CreateRequestConfig,
+} from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
 
@@ -474,6 +485,17 @@ export abstract class Methods {
     ),
   }
 
+  public readonly generatorsV2 = {
+    list: bindApiCall<GeneratorsListArgumentsV2, GeneratorsListResponseV2>(
+      this,
+      generatorsListRequestConfigV2,
+    ),
+    get: bindApiCall<GeneratorsGetArgumentsV2, GeneratorsGetResponseV2>(
+      this,
+      generatorsGetRequestConfigV2,
+    ),
+  }
+
   public readonly manna = {
     balance: bindApiCall<MannaBalanceGetArguments, MannaBalanceGetResponse>(
       this,
@@ -557,6 +579,10 @@ export abstract class Methods {
     create: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,
       tasksCreateRequestConfig,
+    ),
+    createV2: bindApiCall<TasksV2CreateArguments, TasksV2CreateResponse>(
+      this,
+      tasksV2CreateRequestConfig,
     ),
     cost: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
       this,

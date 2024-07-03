@@ -1,16 +1,19 @@
 'use client'
 
-import { useWindowVirtualizer, VirtualItem } from '@tanstack/react-virtual'
 import CreationCard from '@/components/card/creation-card'
-// import CreationData, { CreationDataLandscape, CreationDataPortrait } from '@/stories/dummyData/creation'
-import { useCallback, useEffect, useMemo } from 'react'
-import { useInfiniteQuery } from '@tanstack/react-query'
 import LoadingIndicator from '@/components/loading-indicator'
 import { useElementSize } from '@/hooks/use-element-size'
-import { FeedCreationsCursorResponse, transformArgsIntoURLParams } from '@edenlabs/eden-sdk'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { fetcher } from '@/lib/fetcher'
 import { FeedQueryParams } from '@/types/Feed'
+import {
+  FeedCreationsCursorResponse,
+  transformArgsIntoURLParams,
+} from '@edenlabs/eden-sdk'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
+// import CreationData, { CreationDataLandscape, CreationDataPortrait } from '@/stories/dummyData/creation'
+import { useCallback, useEffect, useMemo } from 'react'
 
 // async function fetchDummyData(
 //   limit: number,
@@ -67,7 +70,8 @@ const MASONRY_GUTTER = 16
 const QUERY_LIMIT = 35
 
 const MasonryVirtualizerVertical = () => {
-  const { ref: masonryWrapRef, width: masonryWrapWidth } = useElementSize<HTMLDivElement>()
+  const { ref: masonryWrapRef, width: masonryWrapWidth } =
+    useElementSize<HTMLDivElement>()
   const above480 = useMediaQuery('(min-width: 480px)')
   const above768 = useMediaQuery('(min-width: 768px)')
   const above1024 = useMediaQuery('(min-width: 1024px)')
@@ -75,24 +79,35 @@ const MasonryVirtualizerVertical = () => {
   const above1536 = useMediaQuery('(min-width: 1536px)')
   const above1920 = useMediaQuery('(min-width: 1920px)')
 
-  const MASONRY_COLUMN_COUNT = above1920 ? 7 : above1536 ? 6 : above1280 ? 5 : above1024 ? 4 : above768 ? 3 : above480 ? 2 : 1
+  const MASONRY_COLUMN_COUNT = above1920
+    ? 7
+    : above1536
+    ? 6
+    : above1280
+    ? 5
+    : above1024
+    ? 4
+    : above768
+    ? 3
+    : above480
+    ? 2
+    : 1
 
   const columnWidth = useMemo(() => {
-    return (masonryWrapWidth - ((MASONRY_COLUMN_COUNT - 1) * MASONRY_GUTTER)) / MASONRY_COLUMN_COUNT
+    return (
+      (masonryWrapWidth - (MASONRY_COLUMN_COUNT - 1) * MASONRY_GUTTER) /
+      MASONRY_COLUMN_COUNT
+    )
   }, [MASONRY_COLUMN_COUNT, masonryWrapWidth])
 
   // @todo: pass this in as props
   const query: FeedQueryParams = {
     limit: 35,
-    sort: ['createdAt;-1']
+    sort: ['createdAt;-1'],
   }
 
   // @todo: generate key from relevant filter / query params
-  const queryKey = [
-    'feed',
-    'creations',
-    query
-  ]
+  const queryKey = ['feed', 'creations', query]
 
   const {
     // status,
@@ -104,9 +119,16 @@ const MasonryVirtualizerVertical = () => {
     hasNextPage,
   } = useInfiniteQuery({
     queryKey: queryKey,
-    queryFn: ({pageParam}) => {
+    queryFn: ({ pageParam }) => {
       // console.log(pageParam)
-      const queryUrl = `/api/feed/creations?${transformArgsIntoURLParams(pageParam ? { ...query, cursor: pageParam } : query)}`
+      const queryUrl = `/api/feed/creations?${transformArgsIntoURLParams(
+        pageParam
+          ? {
+              ...query,
+              cursor: pageParam,
+            }
+          : query,
+      )}`
       // console.log(queryUrl)
       return fetcher(queryUrl)
     },
@@ -115,13 +137,13 @@ const MasonryVirtualizerVertical = () => {
       // console.log('nextPageParam', lastPage.nextCursor)
       return lastPage.nextCursor
     },
-    initialPageParam: undefined
+    initialPageParam: undefined,
   })
 
   // console.log({queryKey, query})
 
   const allRows = useMemo(() => {
-    return data?.pages?.flatMap((d) => d.docs) || []
+    return data?.pages?.flatMap(d => d.docs) || []
   }, [data])
 
   const rowVirtualizer = useWindowVirtualizer({
@@ -134,7 +156,9 @@ const MasonryVirtualizerVertical = () => {
 
   const virtualItems = rowVirtualizer.getVirtualItems()
   const lastItem = virtualItems[virtualItems.length - 1]
-  const virtualItemsStringified = JSON.stringify(rowVirtualizer.getVirtualItems())
+  const virtualItemsStringified = JSON.stringify(
+    rowVirtualizer.getVirtualItems(),
+  )
 
   useEffect(() => {
     if (!lastItem) {
@@ -142,7 +166,7 @@ const MasonryVirtualizerVertical = () => {
     }
 
     if (
-      lastItem.index >= allRows.length - (QUERY_LIMIT) &&
+      lastItem.index >= allRows.length - QUERY_LIMIT &&
       hasNextPage &&
       !isFetchingNextPage
     ) {
@@ -157,59 +181,56 @@ const MasonryVirtualizerVertical = () => {
     lastItem,
   ])
 
-  const renderItem = useCallback((virtualItem: VirtualItem) => {
-    const item = allRows[virtualItem.index]
-    const isLoaderRow = virtualItem.index > allRows.length - 1
+  const renderItem = useCallback(
+    (virtualItem: VirtualItem) => {
+      const item = allRows[virtualItem.index]
+      const isLoaderRow = virtualItem.index > allRows.length - 1
 
-    if (!item && !isLoaderRow) {
-      return null
-    }
+      if (!item && !isLoaderRow) {
+        return null
+      }
 
-    return (
-      <div
-        key={virtualItem.index}
-        ref={rowVirtualizer.measureElement}
-        data-index={virtualItem.index}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: virtualItem.lane ? `${(columnWidth + MASONRY_GUTTER) * virtualItem.lane}px` : 0,
-          width: `${columnWidth}px`,
-          transform: `translateY(${virtualItem.start}px)`,
-        }}
-      >
-        {isLoaderRow
-          ? (
-            <div className='flex items-center justify-center'>
-              {hasNextPage
-                ? (
-                  <LoadingIndicator className='h-6 w-6' />
-                )
-                : 'Nothing more to load'
-              }
+      return (
+        <div
+          key={virtualItem.index}
+          ref={rowVirtualizer.measureElement}
+          data-index={virtualItem.index}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: virtualItem.lane
+              ? `${(columnWidth + MASONRY_GUTTER) * virtualItem.lane}px`
+              : 0,
+            width: `${columnWidth}px`,
+            transform: `translateY(${virtualItem.start}px)`,
+          }}
+        >
+          {isLoaderRow ? (
+            <div className="flex items-center justify-center">
+              {hasNextPage ? (
+                <LoadingIndicator className="h-6 w-6" />
+              ) : (
+                'Nothing more to load'
+              )}
             </div>
-          )
-          : (
-            item ?(
-              <CreationCard
-                creation={item}
-                creator={item.user}
-                linkHref={`/creations/${item._id}`}
-                showFooter={true}
-              />
-            ) : (
-              <div>Missing data</div>
-            )
+          ) : item ? (
+            <CreationCard
+              creation={item}
+              creator={item.user}
+              linkHref={`/creations/${item._id}`}
+              showFooter={true}
+            />
+          ) : (
+            <div>Missing data</div>
           )}
-      </div>
-    )
-  }, [allRows, hasNextPage, rowVirtualizer, columnWidth])
+        </div>
+      )
+    },
+    [allRows, hasNextPage, rowVirtualizer, columnWidth],
+  )
 
   return (
-    <div
-      ref={masonryWrapRef}
-      className='flex'
-    >
+    <div ref={masonryWrapRef} className="flex">
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
@@ -217,7 +238,9 @@ const MasonryVirtualizerVertical = () => {
           position: 'relative',
         }}
       >
-        {rowVirtualizer.getVirtualItems().map((virtualItem) => renderItem(virtualItem))}
+        {rowVirtualizer
+          .getVirtualItems()
+          .map(virtualItem => renderItem(virtualItem))}
       </div>
     </div>
   )

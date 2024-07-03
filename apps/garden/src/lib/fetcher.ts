@@ -1,6 +1,5 @@
 import { OrderByPopularity } from '@/components/Layout/buttons/OrderByButtons'
 import { PaginatedFeedQuery } from '@/hooks/useFeedPaginated'
-import { CONFIG } from '@/lib/config'
 import {
   CursorPaginatedFeedQuery,
   CursorPaginatedRouteQueryParams,
@@ -38,13 +37,6 @@ export const handleAxiosServerError = (error: AxiosError | unknown) => {
   }
 
   return 'Unknown Error has occurred'
-}
-
-export const getAdminHeaders = () => {
-  return {
-    'X-Api-Key': CONFIG.EDEN_ADMIN_API_KEY,
-    'X-Api-Secret': CONFIG.EDEN_ADMIN_API_SECRET,
-  }
 }
 
 export const createPaginationRoute = (

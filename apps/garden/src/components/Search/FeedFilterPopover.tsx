@@ -253,7 +253,7 @@ const CheckboxGroup = ({
                 />
               }
               label={<span className="text-sm select-none">{item.label}</span>}
-              onChange={(event, checked) =>
+              onChange={(_event, checked) =>
                 onChange(group.id, group.type, item.value, checked)
               }
             />
@@ -361,7 +361,7 @@ const AccordionBody = ({ segment }: { segment: Segment }) => {
                           {item.label}
                         </span>
                       }
-                      onChange={(evt, checked) =>
+                      onChange={(_evt, checked) =>
                         handleItemChange(
                           group.id,
                           group.type,
@@ -397,7 +397,7 @@ const ControlledAccordion = ({
     segment.defaultOpen || false,
   )
 
-  const handleChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded)
   }
 

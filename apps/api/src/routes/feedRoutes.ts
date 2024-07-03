@@ -65,7 +65,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCreationsFeed(server, request, reply),
   })
 
@@ -102,7 +102,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCreationsFeedCursor(server, request, reply),
   })
 
@@ -218,7 +218,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getConceptsFeed(request, reply),
   })
 
@@ -255,7 +255,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCharactersFeed(request, reply),
   })
 
@@ -284,7 +284,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCreatorsFeed(request, reply),
   })
 }

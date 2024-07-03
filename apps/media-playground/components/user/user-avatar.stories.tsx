@@ -23,6 +23,6 @@ export const Default: Story = {
 
 export const ImageFallback: Story = {
   args: {
-    name: CreatorData.username
+    name: CreatorData.username,
   },
 }

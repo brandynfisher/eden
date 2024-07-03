@@ -1,5 +1,3 @@
-import { Model } from 'mongoose'
-
 import { ApiKey, ApiKeyDocument } from './ApiKey'
 import Challenge, { ChallengeDocument } from './Challenge'
 import { Character, CharacterDocument } from './Character'
@@ -18,6 +16,8 @@ import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
 import { UserMigration, UserMigrationDocument } from './UserMigration'
+import { TaskV2, TaskV2Document } from './v2/TaskV2'
+import { Model } from 'mongoose'
 
 export interface Database {
   User: Model<UserDocument>
@@ -26,6 +26,7 @@ export interface Database {
   ApiKey: Model<ApiKeyDocument>
   Follow: Model<FollowDocument>
   Task: Model<TaskDocument>
+  TaskV2: Model<TaskV2Document>
   Creation: Model<CreationDocument>
   Embedding: Model<EmbeddingDocument>
   Concept: Model<ConceptDocument>
@@ -48,6 +49,7 @@ export const models: Database = {
   Follow,
   Embedding,
   Task,
+  TaskV2,
   Creation,
   Concept,
   Reaction,

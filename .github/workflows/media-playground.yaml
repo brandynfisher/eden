@@ -1,0 +1,68 @@
+name: 'Build and Deploy - Garden'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/media-playground/**'
+      - '.github/workflows/media-playground.yaml'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  ENV_GARDEN: prod
+
+jobs:
+  build-and-push-to-ghcr:
+    name: Build
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.prep.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="${{ env.REGISTRY }}/edenartlab/media-playground-${{ env.ENV_GARDEN }}"
+          echo ::set-output name=tagged_image::${IMAGE}:${TAG}
+          echo ::set-output name=tag::${TAG}
+          echo ::set-output name=image::${IMAGE}
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./apps/media-playground/Dockerfile
+          push: true
+          tags:
+            ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
+            }}:latest
+          build-args: |
+            "NEXT_PUBLIC_APP_ENV=production"
+            "NEXT_PUBLIC_HOST=https://app2.eden.art"
+            "NEXT_PUBLIC_EDEN_API_URL=https://api.eden.art"
+            "NEXT_PUBLIC_EDEN_SSE_URL=https://api.eden.art"
+            "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://api.eden.art/ws/updates"
+            "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}"
+            "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
+            "NEXT_PUBLIC_DISCORD_CLIENT_ID=1001489981694554243"
+            "NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=65edf6c6730ba08c8cfc4b18"
+            "NEXT_PUBLIC_GOOGLE_GTM_ID=GTM-MR2LV55Z"
+            "NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID=G-W4718WCZQK"
+            "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=prdg34ew78adsg"
+            "NEXT_PUBLIC_CLOUDINARY_API_KEY=684785425828364"
+            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+            "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"

@@ -1,6 +1,6 @@
 import ImageResultZoomable from '@/components/Creation/CreationInterface/media/ImageResultZoomable'
 import { getCldVideoUrl } from '@/components/Media/helpers/getCldVideoUrl'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactPlayer from 'react-player'
 
 // import { useState } from 'react'
@@ -51,15 +51,20 @@ const VideoResultV2 = ({
             muted={false}
             loop={true}
             controls={!disableControls}
+            onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
             onPlay={() => {
               onLoad && onLoad()
             }}
             preload="none"
-            // config={{
-            //   file: {
-            //     forceHLS: true,
-            //   },
-            // }}
+            config={{
+              file: {
+                attributes: {
+                  // Disable right click
+                  controlsList: 'nodownload',
+                },
+                // forceHLS: true
+              },
+            }}
           />
         ) : null}
       </ImageResultZoomable>
