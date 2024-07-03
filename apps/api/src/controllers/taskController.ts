@@ -452,27 +452,3 @@ export const subscribeTaskUpdates = async (
     reply.raw.end()
   })
 }
-
-export const subscribeWebSocketTaskUpdates = function wsHandler(
-  socket: WebSocket.WebSocket,
-  request: FastifyRequest,
-  // reply: FastifyReply,
-) {
-  //@ts-ignore
-  const authPromise = this.verifyUser(request)
-
-  console.log(authPromise)
-
-  socket.on('message', async message => {
-    const isAuth = await authPromise()
-    console.log({ isAuth })
-    console.log('message', message.toString())
-    // message.toString() === 'hi from client'
-    socket.send('hi from server')
-  })
-  // const { userId } = request.user
-  // const { taskId } = request.query as {
-  //   taskId?: string
-  // }
-  // console.log(socket)
-}
