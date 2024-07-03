@@ -1,6 +1,5 @@
-import { Document, Schema, model } from 'mongoose'
-
 import { UserDocument } from './Creator'
+import { Document, Schema, model } from 'mongoose'
 
 export interface MannaVoucherSchema {
   amount: number
@@ -53,6 +52,8 @@ mannavoucher.pre<MannaVoucherDocument>('save', function (next) {
 
   next()
 })
+
+mannavoucher.index({ code: 1 }, { collation: { locale: 'en', strength: 2 } })
 
 export const MannaVoucher = model<MannaVoucherDocument>(
   'mannavouchers',
