@@ -182,8 +182,9 @@ export const redeemMannaVoucher = async (
     })
   }
 
-  const manna = await Manna.findOne({ user: user._id }, null, {
-    collation: { locale: 'en', strength: 2 },
+  const manna = await Manna.findOne({ user: user._id }).collation({
+    locale: 'en',
+    strength: 2,
   })
 
   let newBalance
