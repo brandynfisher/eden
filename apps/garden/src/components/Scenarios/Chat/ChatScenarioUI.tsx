@@ -130,6 +130,9 @@ const ChatScenarioUI = ({ session }: { session: Session }) => {
         const createRes = await axios.post(
           `/api/sessions/creation`,
           createInput,
+          {
+            timeout: 300000,
+          },
         )
         const { uri } = createRes.data
         setConversation(state => [
