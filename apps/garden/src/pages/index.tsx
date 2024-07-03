@@ -48,7 +48,7 @@ const featuredConceptsConfig =
   process.env.NEXT_PUBLIC_APP_ENV === 'production'
     ? [
         '657a336d0a0f7257405ad024',
-        // '66239eb77249a30fcb4b470a',
+        // '66239eb77249a30fcb4b470a', private
         '650599a8160561d1aff45f9f',
         '6620298d3a1b516798ff0c86',
         '65642f9f730b5e00f6f253df',
@@ -56,7 +56,7 @@ const featuredConceptsConfig =
         '6575506c377857179cdea9ec',
         '656b9be209360ec0b968dede',
         '65634ad7730b5e00f6c672f0',
-        '65d07e1e1bbb12fb04c8c309',
+        // '65d07e1e1bbb12fb04c8c309', private
         '65846c0ec08aceee0e5b70fe',
       ]
     : [
@@ -142,10 +142,18 @@ export const getStaticProps = (async () => {
   try {
     const featuredConcepts = await Promise.all(
       featuredConceptsConfig.map(async item => {
-        return await fetchConcept(item)
+        const concept = await fetchConcept(item)
+
+        if (concept) {
+          return concept
+        }
+
+        return null
       }),
     )
-    data.featuredConcepts = featuredConcepts.map(item => item.concept)
+    data.featuredConcepts = featuredConcepts
+      .filter(Boolean)
+      .map(item => item.concept)
   } catch (e) {
     console.log('Error pre-rendering - featuredConcepts')
   }
