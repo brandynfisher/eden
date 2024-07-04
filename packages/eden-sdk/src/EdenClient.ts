@@ -42,7 +42,7 @@ export class EdenClient extends Methods {
     })
   }
 
-  public subscribe(taskId?: string) {
+  public subscribe(taskId?: string, edenVersion?: 'v2') {
     const headers = {
       'X-Api-Key': this.apiKey,
       'X-Api-Secret': this.apiSecret,
@@ -58,7 +58,9 @@ export class EdenClient extends Methods {
       : EventSourcePolyfill
 
     const eventSource = new EventSource(
-      `${this.edenApiUrl}/tasks/events${query}`,
+      `${this.edenApiUrl}${
+        edenVersion ? `/${edenVersion}` : ''
+      }/tasks/events${query}`,
       { headers },
     )
 
@@ -139,7 +141,7 @@ export class EdenClient extends Methods {
     const { _id } = await this.tasks.createV2(args)
 
     // Subscribe to task updates
-    const subscription = this.subscribe(_id)
+    const subscription = this.subscribe(_id, 'v2')
     try {
       for await (const event of subscription) {
         if (event.status === 'completed' || event.status === 'error') {

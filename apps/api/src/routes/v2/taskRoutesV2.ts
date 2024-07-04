@@ -2,9 +2,11 @@ import {
   getTask,
   getTaskCost,
   listTasks,
-  subscribeTaskUpdates,
 } from '../../controllers/taskController'
-import { createTask } from '../../controllers/v2/taskControllerV2'
+import {
+  createTask,
+  subscribeTaskUpdates,
+} from '../../controllers/v2/taskControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { argsType } from '../../types/routeTypes'
 import { paginatedResponse, paginationProperties } from '../index'

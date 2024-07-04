@@ -4,6 +4,7 @@ import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import { TaskV2, TasksV2CreateArguments } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
@@ -97,6 +98,74 @@ export const createTask = async (
   server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, task)
 
   return reply.status(200).send({ task })
+}
+
+export const subscribeTaskUpdates = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { taskId } = request.query as {
+    taskId?: string
+  }
+
+  reply.header('Connection', 'keep-alive')
+
+  // send initial message
+  reply.sse({ event: 'init-ping', data: JSON.stringify({ heartbeat: userId }) })
+
+  // keep the connection alive.
+  const keepAliveTimer = setInterval(() => {
+    // console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
+    reply.sse({
+      event: 'keep-alive',
+      data: JSON.stringify({ heartbeat: userId }),
+    })
+  }, 15000) // Send a keep-alive every 15 seconds
+
+  reply.sse(
+    // gather all accumulated emit calls for this tick
+    (async function* source() {
+      server.log.info('REPLY SSE', userId)
+      try {
+        // handle task update emits
+        for await (const [event] of on(server.eventEmitter, 'task-update')) {
+          const taskUpdate = event as TaskV2
+          server.log.info({
+            taskUpdate,
+            userId: userId.toString(),
+            taskId,
+          })
+
+          if (
+            taskUpdate.user.toString() === userId.toString() &&
+            (!taskId || taskUpdate._id === taskId)
+          ) {
+            server.log.info('sending SSE task update', {
+              event: 'task-update',
+              data: JSON.stringify(event),
+            })
+
+            // send SSE message
+            yield {
+              event: 'task-update',
+              data: JSON.stringify(event),
+            }
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    })(),
+  )
+
+  request.socket.on('close', () => {
+    // console.log('request socket close')
+    // console.log('CLEARING keepAliveTimer')
+    clearInterval(keepAliveTimer)
+    reply.raw.end()
+  })
 }
 
 export const subscribeWebSocketTaskUpdates = function wsHandler(
