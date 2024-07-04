@@ -1,8 +1,12 @@
 import { User } from '../../models/Creator'
-import { TaskV2Document } from '../../models/v2/TaskV2'
+import { TaskV2, TaskV2Document } from '../../models/v2/TaskV2'
 import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
+import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
-import { TaskV2, TasksV2CreateArguments } from '@edenlabs/eden-sdk'
+import {
+  TasksV2CreateArguments,
+  TasksV2ListArguments,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -98,6 +102,90 @@ export const createTask = async (
   server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, task)
 
   return reply.status(200).send({ task })
+}
+
+export const listTasks = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const {
+    // type,
+    status,
+    taskId,
+    limit,
+    page,
+    sort,
+  } = request.query as TasksV2ListArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  //@todo: Revisit to take care of concept task outputs
+  // const typeQuery = type
+  //   ? type === 'creations'
+  //     ? {
+  //       $or: [
+  //         { creation: { $ne: null } },
+  //         { 'config.concept_mode': { $exists: false } },
+  //       ],
+  //     }
+  //     : {
+  //       $or: [
+  //         { concept: { $ne: null } },
+  //         { 'config.concept_mode': { $exists: true } },
+  //       ],
+  //     }
+  //   : {}
+
+  const tasksRepository = new TaskV2Repository(TaskV2)
+  const query: TasksV2ListArguments = {
+    // _id: taskId,
+    user: user._id.toString(),
+    // status,
+    // createdAt: {
+    //   $gte: new Date(new Date().getTime() - (7 * 24 * 60 * 60 * 1000)),
+    // },
+    // ...typeQuery,
+  }
+
+  if (status) {
+    query.status = status
+  }
+
+  if (status) {
+    query.taskId = taskId
+  }
+
+  const tasks = await tasksRepository.query(query, {
+    limit,
+    page,
+    sort: {
+      ...sort,
+      createdAt: -1,
+    },
+  })
+
+  console.log({ tasks })
+
+  // @todo: Once data model is decided on and implemented, add populations back in as needed
+  // await tasksRepository.model.populate(tasks.docs, {
+  //   path: 'creation',
+  // })
+  // await tasksRepository.model.populate(tasks.docs, {
+  //   path: 'concept',
+  //   select: '_id name user conceptName creationCount thumbnail',
+  // })
+  // await tasksRepository.model.populate(tasks.docs, {
+  //   path: 'generator',
+  //   select: '_id generatorName',
+  // })
+
+  return reply.status(200).send(tasks)
 }
 
 export const subscribeTaskUpdates = async (

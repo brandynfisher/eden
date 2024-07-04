@@ -8,7 +8,6 @@ import {
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
-
 export interface TasksV2CreateArguments extends WebAPICallOptions {
   workflow: string
   args?: any

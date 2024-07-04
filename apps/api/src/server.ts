@@ -178,10 +178,9 @@ const createServer = async (
     await server.register(route)
   })
 
+  // eden2 specific - routes
   routesV2.map(async route => {
-    await server.register(route, {
-      prefix: '/v2',
-    })
+    await server.register(route)
   })
 
   await server.ready()

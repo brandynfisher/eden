@@ -17,9 +17,7 @@ export async function GET(request: NextRequest) {
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken,
     })
-    const res = await eden.tasks.list({
-      status: ['running', 'completed', 'failed'],
-    })
+    const res = await eden.tasks.listV2()
     return Response.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)

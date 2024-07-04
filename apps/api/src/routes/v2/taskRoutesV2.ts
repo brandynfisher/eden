@@ -1,10 +1,7 @@
-import {
-  getTask,
-  getTaskCost,
-  listTasks,
-} from '../../controllers/taskController'
+import { getTask, getTaskCost } from '../../controllers/taskController'
 import {
   createTask,
+  listTasks,
   subscribeTaskUpdates,
 } from '../../controllers/v2/taskControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
@@ -14,7 +11,7 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const taskRoutesV2: FastifyPluginAsync = async server => {
-  server.post('/tasks/cost', {
+  server.post('/v2/tasks/cost', {
     schema: {
       tags: ['Tasks'],
       description: 'Get task cost',
@@ -37,7 +34,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
     handler: (request, reply) => getTaskCost(server, request, reply),
   })
 
-  server.post('/tasks/create', {
+  server.post('/v2/tasks/create', {
     schema: {
       tags: ['Tasks'],
       description: 'Create a task',
@@ -76,7 +73,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
     handler: (request, reply) => createTask(server, request, reply),
   })
 
-  server.get('/tasks', {
+  server.get('/v2/tasks', {
     schema: {
       tags: ['Tasks'],
       description: 'List tasks',
@@ -88,8 +85,8 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
       querystring: {
         type: 'object',
         properties: {
-          status: { type: ['string', 'array'] },
-          taskId: { type: ['string', 'array'] },
+          status: Type.Optional(Type.Any()), //{ type: ['string', 'array'] },
+          taskId: Type.Optional(Type.Any()), //{ type: ['string', 'array'] },
           type: Type.Optional(Type.String()),
           ...paginationProperties(),
         },
@@ -103,7 +100,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
     handler: (request, reply) => listTasks(request, reply),
   })
 
-  server.get('/tasks/:taskId', {
+  server.get('/v2/tasks/:taskId', {
     schema: {
       tags: ['Tasks'],
       description: 'Get a task',
@@ -124,7 +121,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
     handler: (request, reply) => getTask(request, reply),
   })
 
-  server.get('/tasks/events', {
+  server.get('/v2/tasks/events', {
     schema: {
       tags: ['Tasks'],
       description: 'Get task events',

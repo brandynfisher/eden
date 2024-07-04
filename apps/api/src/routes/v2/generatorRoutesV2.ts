@@ -6,7 +6,7 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const generatorRoutesV2: FastifyPluginAsync = async server => {
-  server.get('/generators/:generatorName', {
+  server.get('/v2/generators/:generatorName', {
     schema: {
       tags: ['Generators'],
       description: 'Get a generator',
@@ -19,7 +19,7 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
         generatorName: Type.String(),
       }),
       response: {
-        // @todo: declare expected response
+        // @todo: declare expected response for new workflow structure
         200: Type.Object({
           generator: Type.Object({
             name: Type.String(),
@@ -33,7 +33,7 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
     handler: (request, reply) => getGenerator(server, request, reply),
   })
 
-  server.get('/generators', {
+  server.get('/v2/generators', {
     schema: {
       tags: ['Generators'],
       description: 'List generators',

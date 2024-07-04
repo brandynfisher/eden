@@ -2,24 +2,18 @@
 
 import TaskStatusBadge from '@/components/badge/task-status-badge'
 import TaskParameterList from '@/components/timeline/task-parameter-list'
-// import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useWebSocketContext } from '@/provider/websocket-provider'
 import { TaskV2 } from '@edenlabs/eden-sdk'
-// import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-
-// type Props = {
-//   generator: GeneratorV2
-// }
 
 const dummyTasks: TaskV2[] = [
   {
     _id: '6681eaea78f7a93ef54d96c3',
     args: {
-      prompt: 'Scrotum Butterfly',
+      prompt: 'I am a STATIC DUMMY CREATION Butterfly',
       negative_prompt: 'ugly, watermark, blurry, low-resolution, bad',
       width: 896,
       height: 512,
@@ -49,7 +43,12 @@ const Timeline = () => {
       return
     }
 
-    if (lastMessageJson.event === 'task-update') {
+    if (
+      lastMessageJson.event &&
+      lastMessageJson.event === 'task-update' &&
+      lastMessageJson.data &&
+      lastMessageJson.data.task
+    ) {
       const taskUpdate = lastMessageJson.data.task as TaskV2
       console.log('received task-update', taskUpdate)
       setTasks(prev => {
