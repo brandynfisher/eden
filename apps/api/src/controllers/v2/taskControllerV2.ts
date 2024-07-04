@@ -10,7 +10,12 @@ import WebSocket from 'ws'
 
 export enum SocketClientEventName {
   Auth = 'auth',
-  TaskCreate = 'task-create',
+}
+
+export enum ServerEventName {
+  TaskUpdate = 'task-update',
+  AuthInfo = 'auth-info',
+  MessageError = 'message-error',
 }
 
 export type SocketClientEvent = {
@@ -124,9 +129,13 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
 
       // ensure socket message is only sent to the intended recipient
       if (metaData?.userId === userDocument.userId) {
+        // emit SSE Event
+        this.eventEmitter.emit(ServerEventName.TaskUpdate, task)
+
+        // emit WS Event
         socket.send(
           JSON.stringify({
-            event: 'task-update',
+            event: ServerEventName.TaskUpdate,
             data: {
               task,
             },
@@ -147,7 +156,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         if (!msgJson) {
           socket.send(
             JSON.stringify({
-              event: 'message-info',
+              event: ServerEventName.MessageError,
               data: {
                 message: `onMessage::error - invalid msgJson - received message: ${message.toString()}`,
               },
@@ -159,7 +168,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         if (!msgJson.event) {
           socket.send(
             JSON.stringify({
-              event: 'message-info',
+              event: ServerEventName.MessageError,
               data: {
                 message: `onMessage::error - missing event name - received message: ${message.toString()}`,
               },
@@ -196,7 +205,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
             metaData.userId = null
             socket.send(
               JSON.stringify({
-                event: 'auth-info',
+                event: ServerEventName.AuthInfo,
                 data: {
                   message: `onMessage::error - invalid token - received message: ${message.toString()}`,
                 },
@@ -215,7 +224,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
           )
           socket.send(
             JSON.stringify({
-              event: 'auth-info',
+              event: ServerEventName.AuthInfo,
               data: {
                 message: `onMessage::success - authenticated - ${metaData.userId}, ${metaData.connectionId}`,
               },
@@ -228,7 +237,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         if (!metaData.isAuthenticated) {
           socket.send(
             JSON.stringify({
-              event: 'auth-info',
+              event: ServerEventName.AuthInfo,
               data: {
                 message: `onMessage::error - not authenticated - received message: ${message.toString()}`,
               },
@@ -246,7 +255,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         console.error('Caught error in websocket onMessage handler', e)
         socket.send(
           JSON.stringify({
-            event: 'message-error',
+            event: ServerEventName.MessageError,
             data: { message: `onMessage::error - caught ${e}` },
           }),
         )
