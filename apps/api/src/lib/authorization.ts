@@ -1,3 +1,4 @@
+import userAllowList from '../allowList'
 import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
 import { Task, TaskStatus } from '../models/Task'
 import {
@@ -8,7 +9,6 @@ import {
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import userAllowList from '../allowList'
 
 export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
@@ -51,7 +51,7 @@ export const characterLimitPermissionCheck = (
 
   if (
     isUser &&
-    currentCharactersCount >= 1 &&
+    currentCharactersCount >= 2 &&
     !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
   ) {
     return false
@@ -164,7 +164,6 @@ export const maximumTasksInProgressPermissionCheck = async (
   return false
 }
 
-
 export const isAllowedAccess = (server: FastifyInstance, userId: string) => {
   // Access control is only relevant for staging atm
   if (!server.config.ENV_API || server.config.ENV_API !== 'stg') {
@@ -176,11 +175,15 @@ export const isAllowedAccess = (server: FastifyInstance, userId: string) => {
     return true
   }
 
-  if(userAllowList[server.config.ENV_API].includes(userId)) {
-    console.log(`User ${userId} is whitelisted for ENV ${server.config.ENV_API}`)
+  if (userAllowList[server.config.ENV_API].includes(userId)) {
+    console.log(
+      `User ${userId} is whitelisted for ENV ${server.config.ENV_API}`,
+    )
     return true
   }
 
-  console.error(`User ${userId} is not allowed to access ENV ${server.config.ENV_API}`)
+  console.error(
+    `User ${userId} is not allowed to access ENV ${server.config.ENV_API}`,
+  )
   return false
 }
