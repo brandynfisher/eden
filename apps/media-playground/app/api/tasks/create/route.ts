@@ -18,7 +18,7 @@ const createTask = async (
       if (!response || response.message) {
         return new Response(
           JSON.stringify({
-            message: response.message || 'Internal Error - unknown',
+            message: response.message || 'Internal Error - unknown reason',
           }),
           {
             status: 500,
