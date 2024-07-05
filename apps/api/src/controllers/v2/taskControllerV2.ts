@@ -227,9 +227,18 @@ export const subscribeTaskUpdates = async (
             taskId,
           })
 
+          console.log(
+            'VERIFY',
+            taskUpdate.user.toString(),
+            userId.toString(),
+            taskUpdate.user.toString() === userId.toString(),
+            !taskId || taskUpdate._id.toString() === taskId.toString(),
+            taskUpdate.user.toString() === userId.toString() &&
+              (!taskId || taskUpdate._id.toString() === taskId.toString()),
+          )
           if (
             taskUpdate.user.toString() === userId.toString() &&
-            (!taskId || taskUpdate._id === taskId)
+            (!taskId || taskUpdate._id.toString() === taskId.toString())
           ) {
             server.log.info('sending SSE V2 task update', {
               event: 'task-update',
