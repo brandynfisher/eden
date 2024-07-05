@@ -74,7 +74,12 @@ export class EdenClient extends Methods {
           console.log('task-update', edenVersion, event)
           if (event && event.data) {
             const data = JSON.parse(event.data)
-            if (data && data.taskId === taskId) {
+            const eventTaskId = data
+              ? data.taskId
+                ? data.taskId
+                : data._id
+              : undefined
+            if (eventTaskId === taskId) {
               if (resolver) {
                 resolver({ value: data, done: false })
                 resolver = null
