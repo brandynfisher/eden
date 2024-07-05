@@ -198,6 +198,39 @@ export const subscribeTaskUpdates = async (
     taskId?: string
   }
 
+  const internalEmitterEventHandler = async (task: TaskV2Document) => {
+    console.log('subscribeTaskUpdates::internalEmitterEventHandler', task)
+
+    const userDocument = await User.findOne({ _id: task.user })
+
+    if (!userDocument) {
+      server.log.error(`User not found ${task.user}`)
+      return
+    }
+    // console.log(metaData?.userId, userDocument.userId)
+
+    // ensure socket message is only sent to the intended recipient
+    if (userId.toString() === userDocument.userId) {
+      // emit SSE Event
+      server.eventEmitter.emit(ServerEventName.TaskUpdate, task)
+      //
+      // // emit WS Event
+      // socket.send(
+      //   JSON.stringify({
+      //     event: ServerEventName.TaskUpdate,
+      //     data: {
+      //       task,
+      //     },
+      //   }),
+      // )
+    }
+  }
+
+  server.internalMessages.connection.on(
+    InternalMessagesQueues.TaskUpdates,
+    internalEmitterEventHandler,
+  )
+
   reply.header('Connection', 'keep-alive')
 
   // send initial message
@@ -225,7 +258,7 @@ export const subscribeTaskUpdates = async (
 
   reply.sse(
     // gather all accumulated emit calls for this tick
-    (async function* source() {
+    (async function* () {
       server.log.info(`REPLY SSE V2 to user ${userId}`)
       try {
         // handle task update emits
@@ -292,6 +325,10 @@ export const subscribeTaskUpdates = async (
     // console.log('CLEARING keepAliveTimer')
     clearInterval(keepAliveTimer)
     reply.raw.end()
+    server.internalMessages.connection.off(
+      InternalMessagesQueues.TaskUpdates,
+      internalEmitterEventHandler,
+    )
   })
 }
 
@@ -326,7 +363,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
       // ensure socket message is only sent to the intended recipient
       if (metaData?.userId === userDocument.userId) {
         // emit SSE Event
-        this.eventEmitter.emit(ServerEventName.TaskUpdate, task)
+        // this.eventEmitter.emit(ServerEventName.TaskUpdate, task)
 
         // emit WS Event
         socket.send(
