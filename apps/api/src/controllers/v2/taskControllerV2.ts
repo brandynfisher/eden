@@ -99,7 +99,7 @@ export const createTask = async (
 
   const task = modalResponse.data as TaskV2
 
-  server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, task)
+  // server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, task)
 
   return reply.status(200).send({ task })
 }
