@@ -53,7 +53,7 @@ const testRoutes: FastifyPluginAsync = async server => {
       ],
       response: {
         200: Type.Object({
-          state: Type.String(),
+          sentUpdate: Type.Optional(Type.Any()),
         }),
       },
     },
