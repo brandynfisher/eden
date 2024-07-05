@@ -239,6 +239,12 @@ export const subscribeTaskUpdates = async (
           })
 
           if (taskId === 'all') {
+            console.log(
+              'YIELDING ALL TASK UPDATES',
+              taskUpdate.user,
+              taskUpdate._id,
+              taskUpdate.status,
+            )
             yield {
               event: 'task-update',
               data: JSON.stringify(taskUpdate),
