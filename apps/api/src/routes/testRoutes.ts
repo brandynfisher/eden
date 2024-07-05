@@ -13,38 +13,31 @@ const triggerEventEmitter = (
   reply: FastifyReply,
 ) => {
   server.eventEmitter.emit('task-update', {
-    userId: '652bfd262ea937e07378268c',
-    taskId: '9d72v3t615rgj0cgdt89nvyz0g',
-    status: 'completed',
-    progress: 1,
-    task: {
-      _id: '9d72v3t615rgj0cgdt89nvyz0g',
-      user: '652bfd262ea937e07378268c',
-      // ...task,
-      // ...taskUpdateIntermediate,
+    _id: '123',
+    user: '456',
+    workflow: 'TEST',
+    args: {
+      test: 'test',
     },
   })
   server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, {
-    event: 'task-update',
-    data: {
-      userId: 'test',
-      taskId: '123123123',
-      status: 'completed',
-      progress: 1.0,
-      // result: creationData.map(item => item.uri),
-      task: {
-        // ...task.toObject(),
-        // ...taskUpdate,
-        // creation: creationData[0],
-        // generator: {
-        //   generatorName: generator.generatorName,
-        // },
-      },
+    _id: '123',
+    user: '456',
+    workflow: 'TEST',
+    args: {
+      test: 'test',
     },
   })
 
   return reply.status(200).send({
-    state: 'Good!',
+    sentUpdate: {
+      _id: '123',
+      user: '456',
+      workflow: 'TEST',
+      args: {
+        test: 'test',
+      },
+    },
   })
 }
 
