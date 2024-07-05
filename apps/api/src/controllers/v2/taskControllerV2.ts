@@ -207,22 +207,12 @@ export const subscribeTaskUpdates = async (
       server.log.error(`User not found ${task.user}`)
       return
     }
-    // console.log(metaData?.userId, userDocument.userId)
+    console.log(userId.toString(), userDocument._id)
 
     // ensure socket message is only sent to the intended recipient
-    if (userId.toString() === userDocument.userId) {
+    if (userId.toString() === userDocument._id) {
       // emit SSE Event
       server.eventEmitter.emit(ServerEventName.TaskUpdate, task)
-      //
-      // // emit WS Event
-      // socket.send(
-      //   JSON.stringify({
-      //     event: ServerEventName.TaskUpdate,
-      //     data: {
-      //       task,
-      //     },
-      //   }),
-      // )
     }
   }
 
