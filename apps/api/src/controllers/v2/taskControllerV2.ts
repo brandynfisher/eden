@@ -201,21 +201,32 @@ export const subscribeTaskUpdates = async (
   reply.header('Connection', 'keep-alive')
 
   // send initial message
-  reply.sse({ event: 'init-ping', data: JSON.stringify({ heartbeat: userId }) })
+  reply.sse({
+    event: 'init-ping',
+    data: JSON.stringify({
+      version: 'v2',
+      rand: Math.random(),
+      heartbeat: userId,
+    }),
+  })
 
   // keep the connection alive.
   const keepAliveTimer = setInterval(() => {
     // console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
     reply.sse({
       event: 'keep-alive',
-      data: JSON.stringify({ heartbeat: userId }),
+      data: JSON.stringify({
+        version: 'v2',
+        rand: Math.random(),
+        heartbeat: userId,
+      }),
     })
   }, 15000) // Send a keep-alive every 15 seconds
 
   reply.sse(
     // gather all accumulated emit calls for this tick
     (async function* source() {
-      server.log.info('REPLY SSE V2', userId)
+      server.log.info('REPLY SSE', 'v2', userId)
       try {
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
@@ -231,8 +242,10 @@ export const subscribeTaskUpdates = async (
             'VERIFY',
             taskUpdate.user.toString(),
             userId.toString(),
+
             taskUpdate.user.toString() === userId.toString(),
             !taskId || taskUpdate._id.toString() === taskId.toString(),
+
             taskUpdate.user.toString() === userId.toString() &&
               (!taskId || taskUpdate._id.toString() === taskId.toString()),
           )
