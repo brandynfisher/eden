@@ -210,7 +210,7 @@ export const subscribeTaskUpdates = async (
     console.log(userId.toString(), userDocument._id)
 
     // ensure socket message is only sent to the intended recipient
-    if (userId.toString() === userDocument._id) {
+    if (userId.toString() === userDocument._id.toString()) {
       // emit SSE Event
       server.eventEmitter.emit(ServerEventName.TaskUpdate, task)
     }
