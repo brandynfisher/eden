@@ -12,12 +12,17 @@ export async function GET(request: NextRequest) {
     })
   }
 
+  const urlSearchParams = request.nextUrl.searchParams
+
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken,
     })
-    const res = await eden.tasks.listV2()
+    const res = await eden.tasks.listV2({
+      limit: Number(urlSearchParams.get('limit')) || 10,
+      // nextValue
+    })
     return Response.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
