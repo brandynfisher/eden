@@ -13,19 +13,19 @@ const triggerEventEmitter = (
   reply: FastifyReply,
 ) => {
   server.eventEmitter.emit('task-update', {
-    _id: '123',
-    user: '456',
-    workflow: 'TEST',
+    _id: '6686c950dbb95f860bf4118e',
+    user: '652bfd262ea937e07378268c',
+    workflow: 'txt2img',
     args: {
-      test: 'test',
+      prompt: 'TEST UPDATE',
     },
   })
   server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, {
-    _id: '123',
-    user: '456',
-    workflow: 'TEST',
+    _id: '6686c950dbb95f860bf4118e',
+    user: '652bfd262ea937e07378268c',
+    workflow: 'txt2img',
     args: {
-      test: 'test',
+      prompt: 'TEST UPDATE',
     },
   })
 
