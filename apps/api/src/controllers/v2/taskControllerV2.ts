@@ -226,7 +226,7 @@ export const subscribeTaskUpdates = async (
   reply.sse(
     // gather all accumulated emit calls for this tick
     (async function* source() {
-      server.log.info('REPLY SSE', 'v2', userId)
+      server.log.info(`REPLY SSE V2 to user ${userId}`)
       try {
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
@@ -238,30 +238,40 @@ export const subscribeTaskUpdates = async (
             taskId,
           })
 
-          console.log(
-            'VERIFY',
-            taskUpdate.user.toString(),
-            userId.toString(),
-
-            taskUpdate.user.toString() === userId.toString(),
-            !taskId || taskUpdate._id.toString() === taskId.toString(),
-
-            taskUpdate.user.toString() === userId.toString() &&
-              (!taskId || taskUpdate._id.toString() === taskId.toString()),
-          )
-          if (
-            taskUpdate.user.toString() === userId.toString() &&
-            (!taskId || taskUpdate._id.toString() === taskId.toString())
-          ) {
-            server.log.info('sending SSE V2 task update', {
-              event: 'task-update',
-              data: JSON.stringify(event),
-            })
-
-            // send SSE message
+          if (taskId === 'all') {
             yield {
               event: 'task-update',
-              data: JSON.stringify(event),
+              data: JSON.stringify(taskUpdate),
+            }
+          } else {
+            console.log(
+              'VERIFY',
+              taskId,
+              taskUpdate.user.toString(),
+              userId.toString(),
+              'isRecipient?',
+              taskUpdate.user.toString() === userId.toString(),
+              'isTask?',
+              !taskId || taskUpdate._id.toString() === taskId.toString(),
+              'shouldPushUpdate?',
+              taskUpdate.user.toString() === userId.toString() &&
+                (!taskId || taskUpdate._id.toString() === taskId.toString()),
+            )
+
+            if (
+              taskUpdate.user.toString() === userId.toString() &&
+              (!taskId || taskUpdate._id.toString() === taskId.toString())
+            ) {
+              server.log.info('sending SSE V2 task update to', {
+                event: 'task-update',
+                data: JSON.stringify(taskUpdate),
+              })
+
+              // send SSE message
+              yield {
+                event: 'task-update',
+                data: JSON.stringify(taskUpdate),
+              }
             }
           }
         }
