@@ -147,6 +147,8 @@ export class EdenClient extends Methods {
   async createV2(args: TasksV2CreateArguments) {
     // Submit the task and get the ID
     const res = await this.tasks.createV2(args)
+    console.log('tasks.createV2 response', res)
+
     const { task } = res as { task: TaskV2 }
 
     console.log(task)

@@ -102,8 +102,6 @@ export async function POST(request: NextRequest) {
     )
     const createdTaskJson = await createdTaskResponse.json()
 
-    console.log(createdTaskJson)
-
     if (createdTaskResponse.status !== 200) {
       return new Response(
         JSON.stringify({
