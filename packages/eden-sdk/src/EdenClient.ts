@@ -70,10 +70,15 @@ export class EdenClient extends Methods {
         const queue = []
         let resolver
 
-        eventSource.onmessage = msg => console.log(msg)
+        eventSource.onmessage = msg => console.log('onmessage', msg)
 
         eventSource.addEventListener('task-update', event => {
-          console.log('task-update', edenVersion, event)
+          console.log(
+            'eventSource event handler',
+            'task-update',
+            edenVersion,
+            event,
+          )
           if (event && event.data) {
             const data = JSON.parse(event.data)
             const eventTaskId = data
