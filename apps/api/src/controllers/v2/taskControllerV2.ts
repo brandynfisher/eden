@@ -282,7 +282,7 @@ export const subscribeTaskUpdates = async (
   )
 
   request.socket.on('close', () => {
-    // console.log('request socket close')
+    // console.log('request socket close')`
     // console.log('CLEARING keepAliveTimer')
     clearInterval(keepAliveTimer)
     reply.raw.end()

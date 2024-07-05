@@ -26,7 +26,7 @@ const createTask = async (
         )
       }
 
-      if (response && !response._id) {
+      if (response && !response.task) {
         return new Response(
           JSON.stringify({
             message:
