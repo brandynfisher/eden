@@ -215,10 +215,11 @@ export const subscribeTaskUpdates = async (
   reply.sse(
     // gather all accumulated emit calls for this tick
     (async function* source() {
-      server.log.info('REPLY SSE', userId)
+      server.log.info('REPLY SSE V2', userId)
       try {
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
+          console.log('v2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!', event)
           const taskUpdate = event as TaskV2
           server.log.info({
             taskUpdate,
@@ -230,7 +231,7 @@ export const subscribeTaskUpdates = async (
             taskUpdate.user.toString() === userId.toString() &&
             (!taskId || taskUpdate._id === taskId)
           ) {
-            server.log.info('sending SSE task update', {
+            server.log.info('sending SSE V2 task update', {
               event: 'task-update',
               data: JSON.stringify(event),
             })

@@ -1,6 +1,6 @@
 import { Methods } from './methods'
 import { TasksCreateArguments } from './models'
-import { TasksV2CreateArguments } from './models/v2'
+import { TaskV2, TasksV2CreateArguments } from './models/v2'
 import {
   TaskUpdateEvent,
   WebAPICallOptions,
@@ -57,12 +57,13 @@ export class EdenClient extends Methods {
       ? NodeEventSource
       : EventSourcePolyfill
 
-    const eventSource = new EventSource(
-      `${this.edenApiUrl}${
-        edenVersion ? `/${edenVersion}` : ''
-      }/tasks/events${query}`,
-      { headers },
-    )
+    const endpointSSE = `${this.edenApiUrl}${
+      edenVersion ? `/${edenVersion}` : ''
+    }/tasks/events${query}`
+
+    console.log(endpointSSE)
+
+    const eventSource = new EventSource(endpointSSE, { headers })
 
     const eventIterable = {
       [Symbol.asyncIterator]: () => {
@@ -70,7 +71,7 @@ export class EdenClient extends Methods {
         let resolver
 
         eventSource.addEventListener('task-update', event => {
-          // console.log('task-update', event)
+          console.log('task-update', edenVersion, event)
           if (event && event.data) {
             const data = JSON.parse(event.data)
             if (data && data.taskId === taskId) {
@@ -138,12 +139,15 @@ export class EdenClient extends Methods {
 
   async createV2(args: TasksV2CreateArguments) {
     // Submit the task and get the ID
-    const { _id } = await this.tasks.createV2(args)
+    const res = await this.tasks.createV2(args)
+    const { task } = res as { task: TaskV2 }
 
+    console.log(task)
     // Subscribe to task updates
-    const subscription = this.subscribe(_id, 'v2')
+    const subscription = this.subscribe(task._id, 'v2')
     try {
       for await (const event of subscription) {
+        console.log('processing taskupdateEvent', event)
         if (event.status === 'completed' || event.status === 'error') {
           return event.result
         }
