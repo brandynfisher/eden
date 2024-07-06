@@ -14,7 +14,6 @@ const apiKeyVerify = async (
 
   const apiKey = await ApiKey.findOne({
     apiKey: request.headers['x-api-key'],
-    // apiSecret: request.headers['x-api-secret'],
   })
 
   if (!apiKey) {

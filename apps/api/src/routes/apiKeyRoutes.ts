@@ -21,14 +21,12 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           apiKey: Type.Object({
             apiKey: Type.String(),
-            apiSecret: Type.String(),
           }),
         }),
       },
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
     },
@@ -52,7 +50,6 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
     },
@@ -75,7 +72,6 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             apiKey: Type.String(),
-            apiSecret: Type.String(),
             note: Type.Optional(Type.String()),
             createdAt: Type.String(),
           }),
@@ -84,7 +80,6 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
     },
