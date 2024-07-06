@@ -32,6 +32,7 @@ export type SocketMetaData = {
   connectionId: string
   isAuthenticated: boolean
   userId: null | string
+  _id: null | string
 }
 
 export const createTask = async (
@@ -98,8 +99,6 @@ export const createTask = async (
   }
 
   const task = modalResponse.data as TaskV2
-
-  // server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, task)
 
   return reply.status(200).send({ task })
 }
@@ -316,6 +315,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     connectionId: uuidv4(),
     isAuthenticated: false,
     userId: null,
+    _id: null,
   }
 
   // we assume the connection to be unauthenticated by default
@@ -323,7 +323,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
   try {
     // listen to internal message queue and forward task update events to the respective client
     const internalEmitterEventHandler = async (task: TaskV2Document) => {
-      // console.log('internalEmitterEventHandler', metaData, task)
+      console.log('internalEmitterEventHandler', metaData, task)
 
       if (!metaData.userId) {
         this.log.error(`User not authenticated/not found - ${task.user}`)
@@ -331,7 +331,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
       }
 
       // socket message is only sent to the intended recipient
-      if (metaData?.userId === task.user.toString()) {
+      if (metaData?._id?.toString() === task.user.toString()) {
         // emit WS Event
         socket.send(
           JSON.stringify({
@@ -414,8 +414,25 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
             return
           }
 
+          const userDocument = await User.findOne({
+            userId: msgJson.data.userId,
+          })
+
+          if (!userDocument) {
+            socket.send(
+              JSON.stringify({
+                event: ServerEventName.AuthInfo,
+                data: {
+                  message: `onMessage::error - user ${msgJson.data.userId} not found`,
+                },
+              }),
+            )
+            return
+          }
+
           metaData.isAuthenticated = true
           metaData.userId = msgJson.data.userId
+          metaData._id = userDocument._id
           console.log(
             'WS:',
             metaData.connectionId,
