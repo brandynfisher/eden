@@ -198,19 +198,20 @@ export const subscribeTaskUpdates = async (
     taskId?: string
   }
 
+  if (!userId) {
+    server.log.error(`User not found ${userId}`)
+    return
+  }
+
   const internalEmitterEventHandler = async (task: TaskV2Document) => {
     console.log('subscribeTaskUpdates::internalEmitterEventHandler', task)
+    console.log(userId.toString(), task.user._id)
 
-    const userDocument = await User.findOne({ _id: task.user })
-
-    if (!userDocument) {
-      server.log.error(`User not found ${task.user}`)
-      return
-    }
-    console.log(userId.toString(), userDocument._id)
+    // @todo: Could this be done more efficiently?
+    // @todo: atm we'd publish events for all connected users internally to then discard all but one
 
     // ensure socket message is only sent to the intended recipient
-    if (taskId === 'all' || userId.toString() === userDocument._id.toString()) {
+    if (taskId === 'all' || userId.toString() === task.user.toString()) {
       // emit SSE Event
       server.eventEmitter.emit(ServerEventName.TaskUpdate, task)
     }
@@ -249,11 +250,10 @@ export const subscribeTaskUpdates = async (
   reply.sse(
     // gather all accumulated emit calls for this tick
     (async function* () {
-      server.log.info(`REPLY SSE V2 to user ${userId}`)
+      server.log.info(`SSE V2 to user ${userId}`)
       try {
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
-          console.log('v2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!', event)
           const taskUpdate = event as TaskV2
           server.log.info({
             taskUpdate,
@@ -273,20 +273,6 @@ export const subscribeTaskUpdates = async (
               data: JSON.stringify(taskUpdate),
             }
           } else {
-            console.log(
-              'VERIFY',
-              taskId,
-              taskUpdate.user.toString(),
-              userId.toString(),
-              'isRecipient?',
-              taskUpdate.user.toString() === userId.toString(),
-              'isTask?',
-              !taskId || taskUpdate._id.toString() === taskId.toString(),
-              'shouldPushUpdate?',
-              taskUpdate.user.toString() === userId.toString() &&
-                (!taskId || taskUpdate._id.toString() === taskId.toString()),
-            )
-
             if (
               taskUpdate.user.toString() === userId.toString() &&
               (!taskId || taskUpdate._id.toString() === taskId.toString())
@@ -325,10 +311,7 @@ export const subscribeTaskUpdates = async (
 export const subscribeWebSocketTaskUpdates = function wsHandler(
   this: FastifyInstance,
   socket: WebSocket.WebSocket,
-  // request: FastifyRequest,
 ) {
-  // console.log('subscribeWebSocketTaskUpdates')
-
   const metaData: SocketMetaData = {
     connectionId: uuidv4(),
     isAuthenticated: false,
@@ -340,21 +323,15 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
   try {
     // listen to internal message queue and forward task update events to the respective client
     const internalEmitterEventHandler = async (task: TaskV2Document) => {
-      console.log('internalEmitterEventHandler', metaData, task)
+      // console.log('internalEmitterEventHandler', metaData, task)
 
-      const userDocument = await User.findOne({ _id: task.user })
-
-      if (!userDocument) {
-        this.log.error(`User not found ${task.user}`)
+      if (!metaData.userId) {
+        this.log.error(`User not authenticated/not found - ${task.user}`)
         return
       }
-      // console.log(metaData?.userId, userDocument.userId)
 
-      // ensure socket message is only sent to the intended recipient
-      if (metaData?.userId === userDocument.userId) {
-        // emit SSE Event
-        // this.eventEmitter.emit(ServerEventName.TaskUpdate, task)
-
+      // socket message is only sent to the intended recipient
+      if (metaData?.userId === task.user.toString()) {
         // emit WS Event
         socket.send(
           JSON.stringify({

@@ -10,6 +10,29 @@ const dummyConfig: GeneratorV2[] = [
       {
         name: 'prompt',
         label: 'Text Prompt',
+        type: 'text',
+      },
+    ],
+  },
+  {
+    name: 'xhibit/vton',
+    title: 'xhibit/vton',
+    outputType: 'image',
+    parameters: [
+      {
+        name: 'prompt',
+        label: 'Text Prompt',
+        type: 'text',
+      },
+      {
+        name: 'look_image',
+        label: 'Look Image',
+        type: 'image',
+      },
+      {
+        name: 'lora',
+        label: 'Lora',
+        type: 'model',
       },
     ],
   },
@@ -23,7 +46,7 @@ const fetchConfigs = async (
   return dummyConfig
 }
 
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000
 
 const registerGeneratorConfigs: FastifyPluginAsync = async fastify => {
   try {
