@@ -203,14 +203,14 @@ export const subscribeTaskUpdates = async (
   }
 
   const internalEmitterEventHandler = async (task: TaskV2Document) => {
-    console.log('subscribeTaskUpdates::internalEmitterEventHandler', task)
-    console.log(userId.toString(), task.user._id)
+    // console.log('subscribeTaskUpdates::internalEmitterEventHandler', task)
+    // console.log(userId.toString(), task.user._id)
 
     // @todo: Could this be done more efficiently?
     // @todo: atm we'd publish events for all connected users internally to then discard all but one
 
     // ensure socket message is only sent to the intended recipient
-    if (taskId === 'all' || userId.toString() === task.user.toString()) {
+    if (userId.toString() === task.user.toString()) {
       // emit SSE Event
       server.eventEmitter.emit(ServerEventName.TaskUpdate, task)
     }
@@ -249,45 +249,45 @@ export const subscribeTaskUpdates = async (
   reply.sse(
     // gather all accumulated emit calls for this tick
     (async function* () {
-      server.log.info(`SSE V2 to user ${userId}`)
+      // server.log.info(`SSE V2 to user ${userId}`)
       try {
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate = event as TaskV2
-          server.log.info({
-            taskUpdate,
-            userId: userId.toString(),
-            taskId,
-          })
+          // server.log.info({
+          //   taskUpdate,
+          //   userId: userId.toString(),
+          //   taskId,
+          // })
 
-          if (taskId === 'all') {
-            console.log(
-              'YIELDING ALL TASK UPDATES',
-              taskUpdate.user,
-              taskUpdate._id,
-              taskUpdate.status,
-            )
+          // if (taskId === 'all') {
+          //   console.log(
+          //     'YIELDING ALL TASK UPDATES',
+          //     taskUpdate.user,
+          //     taskUpdate._id,
+          //     taskUpdate.status,
+          //   )
+          //   yield {
+          //     event: 'task-update',
+          //     data: JSON.stringify(taskUpdate),
+          //   }
+          // } else {
+          if (
+            taskUpdate.user.toString() === userId.toString() &&
+            (!taskId || taskUpdate._id.toString() === taskId.toString())
+          ) {
+            // server.log.info('sending SSE V2 task update to', {
+            //   event: 'task-update',
+            //   data: JSON.stringify(taskUpdate),
+            // })
+
+            // send SSE message
             yield {
               event: 'task-update',
               data: JSON.stringify(taskUpdate),
             }
-          } else {
-            if (
-              taskUpdate.user.toString() === userId.toString() &&
-              (!taskId || taskUpdate._id.toString() === taskId.toString())
-            ) {
-              server.log.info('sending SSE V2 task update to', {
-                event: 'task-update',
-                data: JSON.stringify(taskUpdate),
-              })
-
-              // send SSE message
-              yield {
-                event: 'task-update',
-                data: JSON.stringify(taskUpdate),
-              }
-            }
           }
+          // }
         }
       } catch (e) {
         console.error(e)
@@ -319,11 +319,11 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
   }
 
   // we assume the connection to be unauthenticated by default
-  console.log('WS:', metaData.connectionId, '[ Awaiting auth event ]')
+  // console.log('WS:', metaData.connectionId, '[ Awaiting auth event ]')
   try {
     // listen to internal message queue and forward task update events to the respective client
     const internalEmitterEventHandler = async (task: TaskV2Document) => {
-      console.log('internalEmitterEventHandler', metaData, task)
+      // console.log('internalEmitterEventHandler', metaData, task)
 
       if (!metaData.userId) {
         this.log.error(`User not authenticated/not found - ${task.user}`)
@@ -384,12 +384,12 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
           msgJson.data.userId &&
           msgJson.data.token
         ) {
-          console.log(
-            'WS:',
-            metaData.connectionId,
-            '[ Received auth event ]',
-            msgJson.data?.userId,
-          )
+          // console.log(
+          //   'WS:',
+          //   metaData.connectionId,
+          //   '[ Received auth event ]',
+          //   msgJson.data?.userId,
+          // )
           const tokenClaims = await verifyToken(msgJson.data.token, {
             authorizedParties: [
               this.config.FRONTEND_URL,
@@ -433,12 +433,12 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
           metaData.isAuthenticated = true
           metaData.userId = msgJson.data.userId
           metaData._id = userDocument._id
-          console.log(
-            'WS:',
-            metaData.connectionId,
-            '[ Authenticated ]',
-            metaData.userId,
-          )
+          // console.log(
+          //   'WS:',
+          //   metaData.connectionId,
+          //   '[ Authenticated ]',
+          //   metaData.userId,
+          // )
           socket.send(
             JSON.stringify({
               event: ServerEventName.AuthInfo,
@@ -464,7 +464,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         }
 
         // assume authenticated socket from here on
-        console.log('onMessage', msgJson)
+        // console.log('onMessage', msgJson)
         // socket.send(
         //   `server echo: ${message.toString()} ${JSON.stringify(metaData)}`,
         // )

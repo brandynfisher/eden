@@ -8,9 +8,9 @@ type GenericUpdate = { [key: string]: string | number | boolean }
 export const handleTaskUpdateStreamEvent = async (
   server: FastifyInstance,
   task: TaskDocument,
-  updatedFields?: GenericUpdate,
+  _updatedFields?: GenericUpdate,
 ) => {
-  console.log('handleTaskUpdateStreamEvent', { updatedFields, task })
+  // console.log('handleTaskUpdateStreamEvent', { updatedFields, task })
   // const isStatusChange = !updatedFields || !!updatedFields.status
 
   // // @todo: is there any thing specific we need to do based on
