@@ -28,12 +28,12 @@ const TaskParameter = ({ name, label, value }: Props) => {
         </div>
       ) : null}
 
-      {/*{ name === 'date' ? (*/}
-      {/*  <div className='col-span-3 flex gap-2'>*/}
-      {/*    <div className='text-primary/60 w-[72px]'>{label}</div>*/}
-      {/*    <div className='w-[72px]'>{value}</div>*/}
-      {/*  </div>*/}
-      {/*) : null}*/}
+      {name === 'createdAt' && value ? (
+        <div className="col-span-3 flex gap-2">
+          <div className="text-primary/60 w-[72px]">{label}</div>
+          <div className="w-[72px]">{value}</div>
+        </div>
+      ) : null}
     </>
   )
 }

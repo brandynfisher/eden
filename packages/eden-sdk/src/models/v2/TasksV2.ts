@@ -1,9 +1,9 @@
-import { transformArgsIntoURLParams } from '../../types'
 import {
   ListQueryParams,
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
+  transformArgsIntoURLParams,
 } from '../../types'
 import { AxiosRequestConfig } from 'axios'
 
@@ -19,6 +19,7 @@ export interface TasksV2ListArguments
   taskId?: string | string[]
   status?: string | string[]
   type?: 'concepts' | 'creations'
+  workflow?: string
 }
 
 export interface TasksV2GetArguments extends WebAPICallOptions {

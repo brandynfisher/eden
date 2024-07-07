@@ -110,6 +110,7 @@ export const listTasks = async (
   const { userId } = request.user
   const {
     // type,
+    workflow,
     status,
     taskId,
     limit,
@@ -156,8 +157,12 @@ export const listTasks = async (
     query.status = status
   }
 
-  if (status) {
+  if (taskId) {
     query.taskId = taskId
+  }
+
+  if (workflow) {
+    query.workflow = workflow
   }
 
   const tasks = await tasksRepository.query(query, {
@@ -169,7 +174,7 @@ export const listTasks = async (
     },
   })
 
-  console.log({ tasks })
+  console.log(tasks.docs[0])
 
   // @todo: Once data model is decided on and implemented, add populations back in as needed
   // await tasksRepository.model.populate(tasks.docs, {

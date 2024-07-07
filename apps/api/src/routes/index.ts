@@ -31,10 +31,23 @@ export const paginatedResponse = (docs: TSchema) => {
   })
 }
 
+export const cursorPaginatedResponse = (docs: TSchema) => {
+  return Type.Object({
+    docs: Type.Array(docs),
+    nextCursor: Type.Optional(Type.Any()),
+  })
+}
+
 const basePaginationProperties = {
   orderBy: { type: 'string' },
   direction: { type: 'number' },
   limit: { type: 'number' },
+}
+
+const baseCursorPaginationProperties = {
+  sort: { type: ['string', 'array'] },
+  limit: { type: 'number' },
+  filter: { type: ['string', 'array'] },
 }
 
 export const paginationProperties = () => {
@@ -46,11 +59,8 @@ export const paginationProperties = () => {
 
 export const cursorPaginationProperties = () => {
   return {
-    cursor: Type.Optional(Type.String()),
-    nextValue: Type.Optional(Type.Number()),
-    sort: { type: ['string', 'array'] },
-    limit: { type: 'number' },
-    filter: { type: ['string', 'array'] },
+    cursor: { type: 'string' },
+    ...baseCursorPaginationProperties,
   }
 }
 

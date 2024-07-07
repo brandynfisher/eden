@@ -1,12 +1,9 @@
 'use client'
 
-import TaskStatusBadge from '@/components/badge/task-status-badge'
-import TaskParameterList from '@/components/timeline/task-parameter-list'
-import { AspectRatio } from '@/components/ui/aspect-ratio'
-import { Skeleton } from '@/components/ui/skeleton'
+import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
+import TimelineItem from '@/components/timeline/timeline-item'
 import { useWebSocketContext } from '@/provider/websocket-provider'
-import { TaskV2 } from '@edenlabs/eden-sdk'
-import Image from 'next/image'
+import { GeneratorV2, TaskV2 } from '@edenlabs/eden-sdk'
 import { useEffect, useState } from 'react'
 
 const dummyTasks: TaskV2[] = [
@@ -33,7 +30,11 @@ const dummyTasks: TaskV2[] = [
   },
 ]
 
-const Timeline = () => {
+type Props = {
+  workflow: GeneratorV2
+}
+
+const Timeline = ({ workflow }: Props) => {
   const { lastMessageJson } = useWebSocketContext()
   // @todo: handle tasks via global state (zustand?) OR re-implement messageHistory in Websocket Context?
   const [tasks, setTasks] = useState<TaskV2[]>(dummyTasks)
@@ -68,62 +69,18 @@ const Timeline = () => {
   }, [lastMessageJson])
 
   return (
-    <div>
+    <div className="2xl:col-span-2">
       {!tasks || !tasks.length ? (
         <div className="bg-primary/5 w-full h-full flex justify-center rounded-lg">
           <div className="py-3 px-4 self-center">No recent tasks found.</div>
         </div>
       ) : null}
-      {tasks.map(task => (
-        <div key={task._id} className="relative">
-          <TaskStatusBadge status={task.status} hideText={true} />
-          {task.status === 'failed' ? (
-            <div>
-              <div className="text-destructive">Task failed</div>
-              <div>{task.error}</div>
-            </div>
-          ) : null}
-
-          {task.status === 'pending' || task.status === 'running' ? (
-            <div className="w-full">
-              <AspectRatio
-                ratio={(task.args.width || 1024) / (task.args.height || 1024)}
-              >
-                <Skeleton className="w-full h-full" />
-              </AspectRatio>
-            </div>
-          ) : null}
-
-          {task.status === 'completed'
-            ? task.result.map(result => (
-                <div className="relative" key={result}>
-                  <Image
-                    src={result}
-                    alt={result}
-                    // fill={true}
-                    objectFit={'cover'}
-                    width={task.args.width}
-                    height={task.args.height}
-                    className="object-cover w-full rounded-lg"
-                  />
-                </div>
-              ))
-            : null}
-
-          <TaskParameterList task={task} />
-
-          {/*<Accordion type='single' collapsible>*/}
-          {/*  <AccordionItem value='item-1'>*/}
-          {/*    <AccordionTrigger>DEBUG: Task Config</AccordionTrigger>*/}
-          {/*    <AccordionContent>*/}
-          {/*      <div className='text-xs'>*/}
-          {/*        {JSON.stringify(task.args, null, 2)}*/}
-          {/*      </div>*/}
-          {/*    </AccordionContent>*/}
-          {/*  </AccordionItem>*/}
-          {/*</Accordion>*/}
-        </div>
-      ))}
+      <ListVirtualizerVertical
+        apiEndpoint={'/api/tasks/list'}
+        filter={{ workflow: workflow.name }}
+        baseQueryKey={['tasks', workflow.name]}
+        render={TimelineItem}
+      />
     </div>
   )
 }

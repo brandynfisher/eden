@@ -5,7 +5,7 @@ import {
   subscribeTaskUpdates,
 } from '../../controllers/v2/taskControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
-import { argsType } from '../../types/routeTypes'
+import { argsType, taskV2Type } from '../../types/routeTypes'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -88,12 +88,13 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
           status: Type.Optional(Type.Any()), //{ type: ['string', 'array'] },
           taskId: Type.Optional(Type.Any()), //{ type: ['string', 'array'] },
           type: Type.Optional(Type.String()),
+          workflow: Type.Optional(Type.String()),
           ...paginationProperties(),
         },
         required: [],
       },
       response: {
-        200: paginatedResponse(Type.Any()),
+        200: paginatedResponse(taskV2Type),
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
@@ -114,7 +115,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
       },
       response: {
         200: Type.Object({
-          task: Type.Any(),
+          task: taskV2Type,
         }),
       },
     },

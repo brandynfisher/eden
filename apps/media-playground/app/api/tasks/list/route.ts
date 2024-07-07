@@ -1,5 +1,5 @@
 import { getAuthToken } from '@/lib/auth'
-import { handleAxiosServerError } from '@/lib/fetcher'
+import { extractPaginationParams, handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import type { NextRequest } from 'next/server'
 
@@ -12,17 +12,15 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  const urlSearchParams = request.nextUrl.searchParams
+  const paginationParams = extractPaginationParams(request.nextUrl.searchParams)
+  const workflow = request.nextUrl.searchParams.get('workflow') || undefined
 
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken,
     })
-    const res = await eden.tasks.listV2({
-      limit: Number(urlSearchParams.get('limit')) || 10,
-      // nextValue
-    })
+    const res = await eden.tasks.listV2({ ...paginationParams, workflow })
     return Response.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)

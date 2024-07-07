@@ -5,6 +5,7 @@ import { PreloadResources } from '@/components/preload-resources'
 import { Toaster } from '@/components/ui/toaster'
 import { CONFIG } from '@/lib/config'
 import { cn } from '@/lib/utils'
+import { ReactQueryProvider } from '@/provider/react-query-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { WebSocketProvider } from '@/provider/websocket-provider'
 import { ClerkProvider } from '@clerk/nextjs'
@@ -59,15 +60,17 @@ export default function RootLayout({ children }: { children: ReactElement }) {
             enableSystem
             disableTransitionOnChange
           >
-            <WebSocketProvider
-              endpoint={CONFIG.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
-            >
-              <div className="flex min-h-screen w-full flex-col">
-                <Header />
-                {children}
-              </div>
-              <Toaster />
-            </WebSocketProvider>
+            <ReactQueryProvider>
+              <WebSocketProvider
+                endpoint={CONFIG.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
+              >
+                <div className="flex min-h-screen w-full flex-col">
+                  <Header />
+                  {children}
+                </div>
+                <Toaster />
+              </WebSocketProvider>
+            </ReactQueryProvider>
           </ThemeProvider>
           {CONFIG.NEXT_PUBLIC_APP_ENV === 'production' ? (
             <GoogleTagManager gtmId={CONFIG.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />

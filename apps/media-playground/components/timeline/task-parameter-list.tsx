@@ -8,7 +8,7 @@ const TaskParameterList = ({ task }: Props) => {
   const { prompt, height, width } = task.args
 
   return (
-    <div className="flex flex-wrap gap-2 mt-4 text-sm">
+    <div className="flex flex-wrap gap-2 text-sm">
       {prompt ? (
         <TaskParameter name={'prompt'} label={'Prompt'} value={prompt} />
       ) : null}
@@ -22,6 +22,7 @@ const TaskParameterList = ({ task }: Props) => {
         label={'Resolution'}
         value={`${width} x ${height}`}
       />
+      <TaskParameter name={'createdAt'} label={'Date'} value={task.createdAt} />
       {/*<TaskParameter name={'date'} label={'Date'} value={`${task.created_at}`} />*/}
 
       {/*{Object.entries(rest).map((arg) => {*/}
