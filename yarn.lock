@@ -12757,6 +12757,11 @@ next-themes@^0.3.0:
   resolved "https://registry.yarnpkg.com/next-themes/-/next-themes-0.3.0.tgz#b4d2a866137a67d42564b07f3a3e720e2ff3871a"
   integrity sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==
 
+next-timeago@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.npmjs.org/next-timeago/-/next-timeago-0.2.0.tgz#b91a75d4709bfdaea824844f429a7bc19d46ebf2"
+  integrity sha512-XBvTTlzqHD95WN4bdhEDMEt17vDJmfICNeBOty/e2/cHA9R7vingBdnatYRBWN9AsMkns0B4W+zlUG4Ma3Aw8g==
+
 next-transpile-modules@^10.0.1:
   version "10.0.1"
   resolved "https://registry.yarnpkg.com/next-transpile-modules/-/next-transpile-modules-10.0.1.tgz#1ca2b735b14781f4792f6214f808b600574e0348"
