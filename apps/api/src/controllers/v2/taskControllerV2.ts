@@ -174,7 +174,7 @@ export const listTasks = async (
     },
   })
 
-  console.log(tasks.docs[0])
+  // console.log(tasks.docs[0])
 
   // @todo: Once data model is decided on and implemented, add populations back in as needed
   // await tasksRepository.model.populate(tasks.docs, {
@@ -208,8 +208,8 @@ export const subscribeTaskUpdates = async (
   }
 
   const internalEmitterEventHandler = async (task: TaskV2Document) => {
-    // console.log('subscribeTaskUpdates::internalEmitterEventHandler', task)
-    // console.log(userId.toString(), task.user._id)
+    // server.log.info({ msg: 'subscribeTaskUpdates::internalEmitterEventHandler', task })
+    // server.log.info({ userId: userId, taskUser: task.user })
 
     // @todo: Could this be done more efficiently?
     // @todo: atm we'd publish events for all connected users internally to then discard all but one
@@ -222,7 +222,7 @@ export const subscribeTaskUpdates = async (
   }
 
   server.internalMessages.connection.on(
-    InternalMessagesQueues.TaskUpdates,
+    InternalMessagesQueues.TaskUpdatesV2,
     internalEmitterEventHandler,
   )
 
@@ -261,7 +261,7 @@ export const subscribeTaskUpdates = async (
           const taskUpdate = event as TaskV2
           // server.log.info({
           //   taskUpdate,
-          //   userId: userId.toString(),
+          //   userId,
           //   taskId,
           // })
 
@@ -306,7 +306,7 @@ export const subscribeTaskUpdates = async (
     clearInterval(keepAliveTimer)
     reply.raw.end()
     server.internalMessages.connection.off(
-      InternalMessagesQueues.TaskUpdates,
+      InternalMessagesQueues.TaskUpdatesV2,
       internalEmitterEventHandler,
     )
   })
@@ -350,7 +350,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     }
 
     this.internalMessages.connection.on(
-      InternalMessagesQueues.TaskUpdates,
+      InternalMessagesQueues.TaskUpdatesV2,
       internalEmitterEventHandler,
     )
 
@@ -487,7 +487,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     // clean up on socket close
     socket.on('close', () => {
       this.internalMessages.connection.off(
-        InternalMessagesQueues.TaskUpdates,
+        InternalMessagesQueues.TaskUpdatesV2,
         internalEmitterEventHandler,
       )
     })

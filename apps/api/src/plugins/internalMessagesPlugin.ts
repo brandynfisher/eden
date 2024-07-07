@@ -4,6 +4,7 @@ import fastifyPlugin from 'fastify-plugin'
 
 export enum InternalMessagesQueues {
   TaskUpdates = 'task-updates',
+  TaskUpdatesV2 = 'task-updates-v2',
 }
 
 export interface InternalMessagesOptions {

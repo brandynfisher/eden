@@ -20,8 +20,8 @@ const triggerEventEmitter = (
       prompt: 'TEST UPDATE',
     },
   }
-  server.eventEmitter.emit('task-update', update)
-  server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, update)
+  // server.eventEmitter.emit('task-update', update)
+  server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, update)
 
   return reply.status(200).send({
     sentUpdate: update,

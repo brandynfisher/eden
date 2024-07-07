@@ -7,7 +7,8 @@ const WATCHED_COLLECTION = 'tasks2'
 export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
   try {
     const task2Collection =
-      fastify.mongoose.connection.collection(WATCHED_COLLECTION)
+      fastify.mongoose.connection.db.collection(WATCHED_COLLECTION)
+
     const taskChangeStream = task2Collection.watch(
       [
         {

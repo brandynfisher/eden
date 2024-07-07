@@ -140,10 +140,10 @@ const ApiKeys = () => {
                   <div className="w-full">API Key</div>
                   <TruncatedField name="API Key" text={record.apiKey} />
                 </div>
-                <div className="flex gap-2 items-center w-full">
-                  <div className="w-full">API Secret</div>
-                  <TruncatedField name="API Secret" text={record.apiSecret} />
-                </div>
+                {/*<div className="flex gap-2 items-center w-full">*/}
+                {/*  <div className="w-full">API Secret</div>*/}
+                {/*  <TruncatedField name="API Secret" text={record.apiSecret} />*/}
+                {/*</div>*/}
               </div>
             ),
           }}
