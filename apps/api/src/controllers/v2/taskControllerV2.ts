@@ -174,7 +174,7 @@ export const listTasks = async (
     },
   })
 
-  console.log(tasks.docs[0])
+  // console.log(tasks.docs[0])
 
   // @todo: Once data model is decided on and implemented, add populations back in as needed
   // await tasksRepository.model.populate(tasks.docs, {
@@ -208,8 +208,8 @@ export const subscribeTaskUpdates = async (
   }
 
   const internalEmitterEventHandler = async (task: TaskV2Document) => {
-    // console.log('subscribeTaskUpdates::internalEmitterEventHandler', task)
-    // console.log(userId.toString(), task.user._id)
+    console.log('subscribeTaskUpdates::internalEmitterEventHandler', task)
+    console.log(userId.toString(), task.user._id)
 
     // @todo: Could this be done more efficiently?
     // @todo: atm we'd publish events for all connected users internally to then discard all but one
@@ -259,11 +259,11 @@ export const subscribeTaskUpdates = async (
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate = event as TaskV2
-          // server.log.info({
-          //   taskUpdate,
-          //   userId: userId.toString(),
-          //   taskId,
-          // })
+          server.log.info({
+            taskUpdate,
+            userId: userId.toString(),
+            taskId,
+          })
 
           // if (taskId === 'all') {
           //   console.log(
@@ -281,10 +281,10 @@ export const subscribeTaskUpdates = async (
             taskUpdate.user.toString() === userId.toString() &&
             (!taskId || taskUpdate._id.toString() === taskId.toString())
           ) {
-            // server.log.info('sending SSE V2 task update to', {
-            //   event: 'task-update',
-            //   data: JSON.stringify(taskUpdate),
-            // })
+            server.log.info('sending SSE V2 task update to', {
+              event: 'task-update',
+              data: JSON.stringify(taskUpdate),
+            })
 
             // send SSE message
             yield {
