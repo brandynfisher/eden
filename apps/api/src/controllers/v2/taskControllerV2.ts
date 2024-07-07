@@ -222,7 +222,7 @@ export const subscribeTaskUpdates = async (
   }
 
   server.internalMessages.connection.on(
-    InternalMessagesQueues.TaskUpdates,
+    InternalMessagesQueues.TaskUpdatesV2,
     internalEmitterEventHandler,
   )
 
@@ -306,7 +306,7 @@ export const subscribeTaskUpdates = async (
     clearInterval(keepAliveTimer)
     reply.raw.end()
     server.internalMessages.connection.off(
-      InternalMessagesQueues.TaskUpdates,
+      InternalMessagesQueues.TaskUpdatesV2,
       internalEmitterEventHandler,
     )
   })
@@ -350,7 +350,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     }
 
     this.internalMessages.connection.on(
-      InternalMessagesQueues.TaskUpdates,
+      InternalMessagesQueues.TaskUpdatesV2,
       internalEmitterEventHandler,
     )
 
@@ -487,7 +487,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     // clean up on socket close
     socket.on('close', () => {
       this.internalMessages.connection.off(
-        InternalMessagesQueues.TaskUpdates,
+        InternalMessagesQueues.TaskUpdatesV2,
         internalEmitterEventHandler,
       )
     })

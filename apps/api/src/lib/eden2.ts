@@ -30,5 +30,5 @@ export const handleTaskUpdateStreamEvent = async (
   //   }
   // }
 
-  server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, task)
+  server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, task)
 }
