@@ -18,7 +18,7 @@ const createTask = async (
       if (!response || response.message) {
         return new Response(
           JSON.stringify({
-            message: response.message || 'Internal Error - unknown',
+            message: response.message || 'Internal Error - unknown reason',
           }),
           {
             status: 500,
@@ -26,7 +26,7 @@ const createTask = async (
         )
       }
 
-      if (response && !response._id) {
+      if (response && !response.task) {
         return new Response(
           JSON.stringify({
             message:
@@ -101,8 +101,6 @@ export async function POST(request: NextRequest) {
       eden,
     )
     const createdTaskJson = await createdTaskResponse.json()
-
-    console.log(createdTaskJson)
 
     if (createdTaskResponse.status !== 200) {
       return new Response(

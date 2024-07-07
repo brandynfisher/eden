@@ -20,7 +20,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: {
@@ -45,7 +44,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: {
@@ -86,7 +84,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       querystring: {
@@ -114,7 +111,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       params: {
@@ -148,7 +144,6 @@ const taskRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       querystring: {

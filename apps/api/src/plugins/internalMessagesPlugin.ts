@@ -50,8 +50,8 @@ export const registerInternalMessages: FastifyPluginAsync = async fastify => {
       queues: [
         {
           topic: InternalMessagesQueues.TaskUpdates,
-          onMessage: async message => {
-            fastify.log.info('Internal message received', { message })
+          onMessage: async _message => {
+            // fastify.log.info('Internal message received', { message })
           },
         },
       ],

@@ -64,10 +64,18 @@ export type GeneratorV2 = {
   outputType: GeneratorOutputTypeV2
 }
 
+export type GeneratorParameterType =
+  | 'video'
+  | 'image'
+  | 'model'
+  | 'text'
+  | 'audio'
+
 export type GeneratorParameterV2 = {
   name: string
   label: string
   description?: string
+  type: GeneratorParameterType
   isRequired?: boolean
   optional?: boolean
   default?: any

@@ -113,4 +113,4 @@ task.index({ user: 1, status: 1, creation: 1, concept: 1, createdAt: -1 })
 task.index({ status: 1, createdAt: -1 })
 task.plugin(paginate)
 
-export const TaskV2 = model<TaskV2Document>('tasksV2', task)
+export const TaskV2 = model<TaskV2Document>('tasks2', task)

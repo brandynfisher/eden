@@ -1,6 +1,6 @@
 import { Methods } from './methods'
 import { TasksCreateArguments } from './models'
-import { TasksV2CreateArguments } from './models/v2'
+import { TaskV2, TasksV2CreateArguments } from './models/v2'
 import {
   TaskUpdateEvent,
   WebAPICallOptions,
@@ -21,20 +21,17 @@ export class EdenClient extends Methods {
   public readonly edenApiUrl: string
   public readonly token?: string
   public readonly apiKey?: string
-  public readonly apiSecret?: string
   private axios: AxiosInstance
 
   public constructor({
     edenApiUrl = 'https://api.eden.art',
     token = undefined,
     apiKey = undefined,
-    apiSecret = undefined,
   }: WebClientOptions = {}) {
     super()
 
     this.token = token
     this.apiKey = apiKey
-    this.apiSecret = apiSecret
     this.edenApiUrl = edenApiUrl
 
     this.axios = axios.create({
@@ -42,10 +39,9 @@ export class EdenClient extends Methods {
     })
   }
 
-  public subscribe(taskId?: string) {
+  public subscribe(taskId?: string, edenVersion?: 'v2') {
     const headers = {
       'X-Api-Key': this.apiKey,
-      'X-Api-Secret': this.apiSecret,
     }
     const query = taskId ? `?taskId=${taskId}` : ''
 
@@ -57,10 +53,13 @@ export class EdenClient extends Methods {
       ? NodeEventSource
       : EventSourcePolyfill
 
-    const eventSource = new EventSource(
-      `${this.edenApiUrl}/tasks/events${query}`,
-      { headers },
-    )
+    const endpointSSE = `${this.edenApiUrl}${
+      edenVersion ? `/${edenVersion}` : ''
+    }/tasks/events${query}`
+
+    // console.log(endpointSSE)
+
+    const eventSource = new EventSource(endpointSSE, { headers })
 
     const eventIterable = {
       [Symbol.asyncIterator]: () => {
@@ -68,10 +67,20 @@ export class EdenClient extends Methods {
         let resolver
 
         eventSource.addEventListener('task-update', event => {
-          // console.log('task-update', event)
+          // console.log(
+          //   'eventSource event handler',
+          //   'task-update',
+          //   edenVersion,
+          //   event,
+          // )
           if (event && event.data) {
             const data = JSON.parse(event.data)
-            if (data && data.taskId === taskId) {
+            const eventTaskId = data
+              ? data.taskId
+                ? data.taskId
+                : data._id
+              : undefined
+            if (eventTaskId === taskId) {
               if (resolver) {
                 resolver({ value: data, done: false })
                 resolver = null
@@ -136,12 +145,15 @@ export class EdenClient extends Methods {
 
   async createV2(args: TasksV2CreateArguments) {
     // Submit the task and get the ID
-    const { _id } = await this.tasks.createV2(args)
+    const res = await this.tasks.createV2(args)
+    // console.log('tasks.createV2 response', res)
 
+    const { task } = res as { task: TaskV2 }
     // Subscribe to task updates
-    const subscription = this.subscribe(_id)
+    const subscription = this.subscribe(task._id, 'v2')
     try {
       for await (const event of subscription) {
+        // console.log('processing taskupdateEvent', event)
         if (event.status === 'completed' || event.status === 'error') {
           return event.result
         }
@@ -163,9 +175,8 @@ export class EdenClient extends Methods {
   ): Promise<WebAPICallResult> {
     const headers: Record<string, string> = {}
     if (this.token) headers.Authorization = `Bearer ${this.token}`
-    if (this.apiKey && this.apiSecret) {
+    if (this.apiKey) {
       headers['X-Api-Key'] = this.apiKey as string
-      headers['X-Api-Secret'] = this.apiSecret as string
     }
     const requestConfig = configFn(options)
     requestConfig.headers = headers

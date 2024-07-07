@@ -1,14 +1,13 @@
-import { transformArgsIntoURLParams } from '../../types'
 import {
   ListQueryParams,
   PaginatedResponse,
   WebAPICallOptions,
   WebAPICallResult,
+  transformArgsIntoURLParams,
 } from '../../types'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
-
 export interface TasksV2CreateArguments extends WebAPICallOptions {
   workflow: string
   args?: any
@@ -20,6 +19,7 @@ export interface TasksV2ListArguments
   taskId?: string | string[]
   status?: string | string[]
   type?: 'concepts' | 'creations'
+  workflow?: string
 }
 
 export interface TasksV2GetArguments extends WebAPICallOptions {
@@ -74,10 +74,14 @@ export const tasksV2GetRequestConfig = (
 
 // Responses
 
-export type TasksV2CreateResponse = WebAPICallResult & {
-  error?: string
-  message?: string
-} & TaskV2
+export type TasksV2CreateResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { task: TaskV2 }
+  )
 
 export type TasksV2ListResponse = WebAPICallResult &
   PaginatedResponse<TaskV2> & {

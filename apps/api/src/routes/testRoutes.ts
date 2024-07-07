@@ -12,39 +12,19 @@ const triggerEventEmitter = (
   _request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  server.eventEmitter.emit('task-update', {
-    userId: '652bfd262ea937e07378268c',
-    taskId: '9d72v3t615rgj0cgdt89nvyz0g',
-    status: 'completed',
-    progress: 1,
-    task: {
-      _id: '9d72v3t615rgj0cgdt89nvyz0g',
-      user: '652bfd262ea937e07378268c',
-      // ...task,
-      // ...taskUpdateIntermediate,
+  const update = {
+    _id: '6686c950dbb95f860bf4118e',
+    user: '652bfd262ea937e07378268c',
+    workflow: 'txt2img',
+    args: {
+      prompt: 'TEST UPDATE',
     },
-  })
-  server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, {
-    event: 'task-update',
-    data: {
-      userId: 'test',
-      taskId: '123123123',
-      status: 'completed',
-      progress: 1.0,
-      // result: creationData.map(item => item.uri),
-      task: {
-        // ...task.toObject(),
-        // ...taskUpdate,
-        // creation: creationData[0],
-        // generator: {
-        //   generatorName: generator.generatorName,
-        // },
-      },
-    },
-  })
+  }
+  server.eventEmitter.emit('task-update', update)
+  server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, update)
 
   return reply.status(200).send({
-    state: 'Good!',
+    sentUpdate: update,
   })
 }
 
@@ -60,7 +40,7 @@ const testRoutes: FastifyPluginAsync = async server => {
       ],
       response: {
         200: Type.Object({
-          state: Type.String(),
+          sentUpdate: Type.Optional(Type.Any()),
         }),
       },
     },

@@ -57,3 +57,16 @@ export const sessionType = Type.Object({
   users: Type.Array(Type.Any()),
   characters: Type.Array(Type.Any()),
 })
+
+export const taskV2Type = Type.Object({
+  _id: Type.String(),
+  user: Type.String(),
+  workflow: Type.String(),
+  args: Type.Any(),
+  status: Type.String(),
+  result: Type.Optional(Type.Array(Type.Any())),
+  error: Type.Optional(Type.Any()),
+  progress: Type.Optional(Type.Number()),
+  updatedAt: Type.Optional(Type.String()),
+  createdAt: Type.Optional(Type.String()),
+})

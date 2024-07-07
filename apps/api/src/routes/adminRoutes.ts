@@ -118,7 +118,6 @@ const adminRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       hide: true,

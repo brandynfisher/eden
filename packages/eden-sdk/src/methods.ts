@@ -197,9 +197,16 @@ import {
   GeneratorsListResponseV2,
   TasksV2CreateArguments,
   TasksV2CreateResponse,
+  TasksV2GetArguments,
+  TasksV2GetResponse,
+  TasksV2ListArguments,
+  TasksV2ListResponse,
   generatorsGetRequestConfigV2,
   generatorsListRequestConfigV2,
+  tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
+  tasksV2GetRequestConfig,
+  tasksV2ListRequestConfig,
 } from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
@@ -588,13 +595,25 @@ export abstract class Methods {
       this,
       tasksCostRequestConfig,
     ),
+    costV2: bindApiCall<TasksV2CreateArguments, TasksV2CreateResponse>(
+      this,
+      tasksV2CostRequestConfig,
+    ),
     get: bindApiCall<TasksGetArguments, TasksGetResponse>(
       this,
       tasksGetRequestConfig,
     ),
+    getV2: bindApiCall<TasksV2GetArguments, TasksV2GetResponse>(
+      this,
+      tasksV2GetRequestConfig,
+    ),
     list: bindApiCall<TasksListArguments, TasksListResponse>(
       this,
       tasksListRequestConfig,
+    ),
+    listV2: bindApiCall<TasksV2ListArguments, TasksV2ListResponse>(
+      this,
+      tasksV2ListRequestConfig,
     ),
   }
 }

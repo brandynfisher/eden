@@ -1,8 +1,9 @@
+import { CursorPaginatedFeedQuery, ListQueryParams } from '@edenlabs/eden-sdk'
 import axios, { AxiosError } from 'axios'
-import { CursorPaginatedFeedQuery } from '@edenlabs/eden-sdk'
-// import { FeedCreationsBaseArguments } from '@edenlabs/eden-sdk'
 
-export const fetcher = async <T>(...args: Parameters<typeof fetch>): Promise<T> => {
+export const fetcher = async <T>(
+  ...args: Parameters<typeof fetch>
+): Promise<T> => {
   const response = await fetch(...args)
 
   if (!response.ok) {
@@ -20,7 +21,9 @@ export const handleAxiosServerError = (error: AxiosError | unknown) => {
   return 'Unknown Error has occurred'
 }
 
-export const extractFeedParams = (params: URLSearchParams): Partial<CursorPaginatedFeedQuery> => {
+export const extractFeedParams = (
+  params: URLSearchParams,
+): Partial<CursorPaginatedFeedQuery> => {
   const feedQuery: Partial<CursorPaginatedFeedQuery> = {}
 
   const sort = params.getAll('sort')
@@ -35,10 +38,23 @@ export const extractFeedParams = (params: URLSearchParams): Partial<CursorPagina
   const nextValue = params.get('nextValue')
   if (nextValue) feedQuery.nextValue = Number(nextValue)
 
-  const filterKeys = ['name', 'user', 'character', 'collection', 'creation', 'generator', 'outputType', 'concept', 'isPrivate', 'visibility', 'maxDate', 'minDate']
+  const filterKeys = [
+    'name',
+    'user',
+    'character',
+    'collection',
+    'creation',
+    'generator',
+    'outputType',
+    'concept',
+    'isPrivate',
+    'visibility',
+    'maxDate',
+    'minDate',
+  ]
   const filter: Partial<CursorPaginatedFeedQuery['filter']> = {}
 
-  filterKeys.forEach((key) => {
+  filterKeys.forEach(key => {
     let value = params.getAll(`filter.${key}`)
 
     if (value) {
@@ -56,4 +72,41 @@ export const extractFeedParams = (params: URLSearchParams): Partial<CursorPagina
   if (Object.keys(filter).length) feedQuery.filter = filter
 
   return feedQuery
+}
+
+export const extractPaginationParams = (
+  params: URLSearchParams,
+): Partial<ListQueryParams> => {
+  const query: Partial<ListQueryParams> = {}
+
+  const sort = params.getAll('sort')
+  if (sort) query.sort = sort
+
+  const limit = params.get('limit')
+  if (limit) query.limit = Number(limit)
+
+  const page = params.get('page')
+  if (page) query.page = Number(page)
+
+  // const filterKeys = ['name', 'user', 'character', 'collection', 'creation', 'generator', 'outputType', 'concept', 'isPrivate', 'visibility', 'maxDate', 'minDate']
+  // const filter: Partial<TasksV2ListArguments['filter']> = {}
+
+  // filterKeys.forEach((key) => {
+  //   let value = params.getAll(`filter.${key}`)
+
+  // if (value) {
+  //   if (key === 'isPrivate') {
+  //     filter.isPrivate = value[0] === 'true'
+  //   } else if (key === 'visibility') {
+  //     filter.visibility = value[0] as 'all' | 'public' | 'private'
+  //   } else {
+  //     // @ts-ignore
+  //     filter[key] = value
+  //   }
+  // }
+  // })
+
+  // if (Object.keys(filter).length) feedQuery.filter = filter
+
+  return query
 }

@@ -9,7 +9,7 @@ export interface ApiKeySchema {
   user: UserDocument
   character?: CharacterDocument
   apiKey: string
-  apiSecret: string
+  apiSecret?: string
   note?: string
   createdAt?: Date
 }
@@ -17,7 +17,7 @@ export interface ApiKeySchema {
 export interface ApiKeyInput {
   user: ObjectId
   apiKey: string
-  apiSecret: string
+  apiSecret?: string
   note?: string
 }
 

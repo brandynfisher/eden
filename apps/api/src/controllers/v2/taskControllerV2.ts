@@ -1,16 +1,26 @@
 import { User } from '../../models/Creator'
-import { TaskV2Document } from '../../models/v2/TaskV2'
+import { TaskV2, TaskV2Document } from '../../models/v2/TaskV2'
 import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
+import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
-import { TaskV2, TasksV2CreateArguments } from '@edenlabs/eden-sdk'
+import {
+  TasksV2CreateArguments,
+  TasksV2ListArguments,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
 
 export enum SocketClientEventName {
   Auth = 'auth',
-  TaskCreate = 'task-create',
+}
+
+export enum ServerEventName {
+  TaskUpdate = 'task-update',
+  AuthInfo = 'auth-info',
+  MessageError = 'message-error',
 }
 
 export type SocketClientEvent = {
@@ -22,6 +32,7 @@ export type SocketMetaData = {
   connectionId: string
   isAuthenticated: boolean
   userId: null | string
+  _id: null | string
 }
 
 export const createTask = async (
@@ -89,44 +100,247 @@ export const createTask = async (
 
   const task = modalResponse.data as TaskV2
 
-  server.internalMessages.publish(InternalMessagesQueues.TaskUpdates, task)
-
   return reply.status(200).send({ task })
+}
+
+export const listTasks = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const {
+    // type,
+    workflow,
+    status,
+    taskId,
+    limit,
+    page,
+    sort,
+  } = request.query as TasksV2ListArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  //@todo: Revisit to take care of concept task outputs
+  // const typeQuery = type
+  //   ? type === 'creations'
+  //     ? {
+  //       $or: [
+  //         { creation: { $ne: null } },
+  //         { 'config.concept_mode': { $exists: false } },
+  //       ],
+  //     }
+  //     : {
+  //       $or: [
+  //         { concept: { $ne: null } },
+  //         { 'config.concept_mode': { $exists: true } },
+  //       ],
+  //     }
+  //   : {}
+
+  const tasksRepository = new TaskV2Repository(TaskV2)
+  const query: TasksV2ListArguments = {
+    // _id: taskId,
+    user: user._id.toString(),
+    // status,
+    // createdAt: {
+    //   $gte: new Date(new Date().getTime() - (7 * 24 * 60 * 60 * 1000)),
+    // },
+    // ...typeQuery,
+  }
+
+  if (status) {
+    query.status = status
+  }
+
+  if (taskId) {
+    query.taskId = taskId
+  }
+
+  if (workflow) {
+    query.workflow = workflow
+  }
+
+  const tasks = await tasksRepository.query(query, {
+    limit,
+    page,
+    sort: {
+      ...sort,
+      createdAt: -1,
+    },
+  })
+
+  console.log(tasks.docs[0])
+
+  // @todo: Once data model is decided on and implemented, add populations back in as needed
+  // await tasksRepository.model.populate(tasks.docs, {
+  //   path: 'creation',
+  // })
+  // await tasksRepository.model.populate(tasks.docs, {
+  //   path: 'concept',
+  //   select: '_id name user conceptName creationCount thumbnail',
+  // })
+  // await tasksRepository.model.populate(tasks.docs, {
+  //   path: 'generator',
+  //   select: '_id generatorName',
+  // })
+
+  return reply.status(200).send(tasks)
+}
+
+export const subscribeTaskUpdates = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { taskId } = request.query as {
+    taskId?: string
+  }
+
+  if (!userId) {
+    server.log.error(`User not found ${userId}`)
+    return
+  }
+
+  const internalEmitterEventHandler = async (task: TaskV2Document) => {
+    // console.log('subscribeTaskUpdates::internalEmitterEventHandler', task)
+    // console.log(userId.toString(), task.user._id)
+
+    // @todo: Could this be done more efficiently?
+    // @todo: atm we'd publish events for all connected users internally to then discard all but one
+
+    // ensure socket message is only sent to the intended recipient
+    if (userId.toString() === task.user.toString()) {
+      // emit SSE Event
+      server.eventEmitter.emit(ServerEventName.TaskUpdate, task)
+    }
+  }
+
+  server.internalMessages.connection.on(
+    InternalMessagesQueues.TaskUpdates,
+    internalEmitterEventHandler,
+  )
+
+  reply.header('Connection', 'keep-alive')
+
+  // send initial message
+  reply.sse({
+    event: 'init-ping',
+    data: JSON.stringify({
+      version: 'v2',
+      rand: Math.random(),
+      heartbeat: userId,
+    }),
+  })
+
+  // keep the connection alive.
+  const keepAliveTimer = setInterval(() => {
+    // console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
+    reply.sse({
+      event: 'keep-alive',
+      data: JSON.stringify({
+        version: 'v2',
+        rand: Math.random(),
+        heartbeat: userId,
+      }),
+    })
+  }, 15000) // Send a keep-alive every 15 seconds
+
+  reply.sse(
+    // gather all accumulated emit calls for this tick
+    (async function* () {
+      // server.log.info(`SSE V2 to user ${userId}`)
+      try {
+        // handle task update emits
+        for await (const [event] of on(server.eventEmitter, 'task-update')) {
+          const taskUpdate = event as TaskV2
+          // server.log.info({
+          //   taskUpdate,
+          //   userId: userId.toString(),
+          //   taskId,
+          // })
+
+          // if (taskId === 'all') {
+          //   console.log(
+          //     'YIELDING ALL TASK UPDATES',
+          //     taskUpdate.user,
+          //     taskUpdate._id,
+          //     taskUpdate.status,
+          //   )
+          //   yield {
+          //     event: 'task-update',
+          //     data: JSON.stringify(taskUpdate),
+          //   }
+          // } else {
+          if (
+            taskUpdate.user.toString() === userId.toString() &&
+            (!taskId || taskUpdate._id.toString() === taskId.toString())
+          ) {
+            // server.log.info('sending SSE V2 task update to', {
+            //   event: 'task-update',
+            //   data: JSON.stringify(taskUpdate),
+            // })
+
+            // send SSE message
+            yield {
+              event: 'task-update',
+              data: JSON.stringify(taskUpdate),
+            }
+          }
+          // }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    })(),
+  )
+
+  request.socket.on('close', () => {
+    // console.log('request socket close')`
+    // console.log('CLEARING keepAliveTimer')
+    clearInterval(keepAliveTimer)
+    reply.raw.end()
+    server.internalMessages.connection.off(
+      InternalMessagesQueues.TaskUpdates,
+      internalEmitterEventHandler,
+    )
+  })
 }
 
 export const subscribeWebSocketTaskUpdates = function wsHandler(
   this: FastifyInstance,
   socket: WebSocket.WebSocket,
-  // request: FastifyRequest,
 ) {
-  // console.log('subscribeWebSocketTaskUpdates')
-
   const metaData: SocketMetaData = {
     connectionId: uuidv4(),
     isAuthenticated: false,
     userId: null,
+    _id: null,
   }
 
   // we assume the connection to be unauthenticated by default
-  console.log('WS:', metaData.connectionId, '[ Awaiting auth event ]')
+  // console.log('WS:', metaData.connectionId, '[ Awaiting auth event ]')
   try {
     // listen to internal message queue and forward task update events to the respective client
     const internalEmitterEventHandler = async (task: TaskV2Document) => {
-      console.log('internalEmitterEventHandler', metaData, task)
+      // console.log('internalEmitterEventHandler', metaData, task)
 
-      const userDocument = await User.findOne({ _id: task.user })
-
-      if (!userDocument) {
-        this.log.error(`User not found ${task.user}`)
+      if (!metaData.userId) {
+        this.log.error(`User not authenticated/not found - ${task.user}`)
         return
       }
-      // console.log(metaData?.userId, userDocument.userId)
 
-      // ensure socket message is only sent to the intended recipient
-      if (metaData?.userId === userDocument.userId) {
+      // socket message is only sent to the intended recipient
+      if (metaData?._id?.toString() === task.user.toString()) {
+        // emit WS Event
         socket.send(
           JSON.stringify({
-            event: 'task-update',
+            event: ServerEventName.TaskUpdate,
             data: {
               task,
             },
@@ -147,7 +361,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         if (!msgJson) {
           socket.send(
             JSON.stringify({
-              event: 'message-info',
+              event: ServerEventName.MessageError,
               data: {
                 message: `onMessage::error - invalid msgJson - received message: ${message.toString()}`,
               },
@@ -159,7 +373,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         if (!msgJson.event) {
           socket.send(
             JSON.stringify({
-              event: 'message-info',
+              event: ServerEventName.MessageError,
               data: {
                 message: `onMessage::error - missing event name - received message: ${message.toString()}`,
               },
@@ -175,12 +389,12 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
           msgJson.data.userId &&
           msgJson.data.token
         ) {
-          console.log(
-            'WS:',
-            metaData.connectionId,
-            '[ Received auth event ]',
-            msgJson.data?.userId,
-          )
+          // console.log(
+          //   'WS:',
+          //   metaData.connectionId,
+          //   '[ Received auth event ]',
+          //   msgJson.data?.userId,
+          // )
           const tokenClaims = await verifyToken(msgJson.data.token, {
             authorizedParties: [
               this.config.FRONTEND_URL,
@@ -196,7 +410,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
             metaData.userId = null
             socket.send(
               JSON.stringify({
-                event: 'auth-info',
+                event: ServerEventName.AuthInfo,
                 data: {
                   message: `onMessage::error - invalid token - received message: ${message.toString()}`,
                 },
@@ -205,17 +419,34 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
             return
           }
 
+          const userDocument = await User.findOne({
+            userId: msgJson.data.userId,
+          })
+
+          if (!userDocument) {
+            socket.send(
+              JSON.stringify({
+                event: ServerEventName.AuthInfo,
+                data: {
+                  message: `onMessage::error - user ${msgJson.data.userId} not found`,
+                },
+              }),
+            )
+            return
+          }
+
           metaData.isAuthenticated = true
           metaData.userId = msgJson.data.userId
-          console.log(
-            'WS:',
-            metaData.connectionId,
-            '[ Authenticated ]',
-            metaData.userId,
-          )
+          metaData._id = userDocument._id
+          // console.log(
+          //   'WS:',
+          //   metaData.connectionId,
+          //   '[ Authenticated ]',
+          //   metaData.userId,
+          // )
           socket.send(
             JSON.stringify({
-              event: 'auth-info',
+              event: ServerEventName.AuthInfo,
               data: {
                 message: `onMessage::success - authenticated - ${metaData.userId}, ${metaData.connectionId}`,
               },
@@ -228,7 +459,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         if (!metaData.isAuthenticated) {
           socket.send(
             JSON.stringify({
-              event: 'auth-info',
+              event: ServerEventName.AuthInfo,
               data: {
                 message: `onMessage::error - not authenticated - received message: ${message.toString()}`,
               },
@@ -238,7 +469,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         }
 
         // assume authenticated socket from here on
-        console.log('onMessage', msgJson)
+        // console.log('onMessage', msgJson)
         // socket.send(
         //   `server echo: ${message.toString()} ${JSON.stringify(metaData)}`,
         // )
@@ -246,7 +477,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         console.error('Caught error in websocket onMessage handler', e)
         socket.send(
           JSON.stringify({
-            event: 'message-error',
+            event: ServerEventName.MessageError,
             data: { message: `onMessage::error - caught ${e}` },
           }),
         )

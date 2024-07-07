@@ -1,4 +1,8 @@
-import { cursorPaginationProperties, paginationProperties } from '.'
+import {
+  cursorPaginatedResponse,
+  cursorPaginationProperties,
+  paginationProperties,
+} from '.'
 import {
   getCharactersFeed,
   getConceptsFeed,
@@ -88,18 +92,19 @@ const feedRoutes: FastifyPluginAsync = async server => {
         required: [],
       },
       response: {
-        200: Type.Object({
-          docs: Type.Array(Type.Any()),
-          bookmarks: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
-          reactions: Type.Optional(
-            Type.Record(
-              Type.String(),
+        200: cursorPaginatedResponse(
+          Type.Object({
+            bookmarks: Type.Optional(
               Type.Record(Type.String(), Type.Boolean()),
             ),
-          ),
-          nextCursor: Type.Optional(Type.String()),
-          nextValue: Type.Optional(Type.Number()),
-        }),
+            reactions: Type.Optional(
+              Type.Record(
+                Type.String(),
+                Type.Record(Type.String(), Type.Boolean()),
+              ),
+            ),
+          }),
+        ),
       },
     },
     preHandler: [request => maybeAuth(server, request)],
