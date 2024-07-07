@@ -92,19 +92,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
         required: [],
       },
       response: {
-        200: cursorPaginatedResponse(
-          Type.Object({
-            bookmarks: Type.Optional(
-              Type.Record(Type.String(), Type.Boolean()),
-            ),
-            reactions: Type.Optional(
-              Type.Record(
-                Type.String(),
-                Type.Record(Type.String(), Type.Boolean()),
-              ),
-            ),
-          }),
-        ),
+        200: cursorPaginatedResponse(Type.Any()),
       },
     },
     preHandler: [request => maybeAuth(server, request)],
