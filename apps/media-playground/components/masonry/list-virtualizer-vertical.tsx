@@ -44,7 +44,7 @@ const ListVirtualizerVertical = ({
   }, [MASONRY_COLUMN_COUNT, masonryWrapWidth])
 
   const {
-    // status,
+    status,
     data,
     error,
     // isFetching,
@@ -163,17 +163,23 @@ const ListVirtualizerVertical = ({
           position: 'relative',
         }}
       >
-        {error ? <div className="text-destructive">{error.message}</div> : null}
-
         {!allRows.length ? (
-          <div className="bg-primary/5 w-full h-full flex justify-center rounded-lg">
-            <div className="py-3 px-4 self-center">No recent tasks found.</div>
+          <div className="bg-primary/10 w-full h-full flex justify-center rounded-lg">
+            {status === 'pending' ? (
+              <LoadingIndicator />
+            ) : (
+              <div className="py-3 px-4 self-center">
+                No recent tasks found.
+              </div>
+            )}
           </div>
         ) : null}
 
         {rowVirtualizer
           .getVirtualItems()
           .map(virtualItem => renderItem(virtualItem))}
+
+        {error ? <div className="text-destructive">{error.message}</div> : null}
       </div>
     </div>
   )
