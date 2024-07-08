@@ -9,10 +9,7 @@ import {
   getCreationsFeed,
   getCreatorsFeed,
 } from '../controllers/feedController'
-import {
-  // getConceptsFeedCursor,
-  getCreationsFeedCursor, // getCreatorsFeedCursor,
-} from '../controllers/feedCursorController'
+import { getCreationsFeedCursor } from '../controllers/feedCursorController'
 import { maybeAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -26,7 +23,6 @@ const feedRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       querystring: {
@@ -81,7 +77,6 @@ const feedRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       querystring: {

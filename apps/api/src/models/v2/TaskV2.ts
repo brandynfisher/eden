@@ -109,7 +109,7 @@ const task = new Schema<TaskV2Document>(
 )
 
 task.index({ createdAt: -1 })
-task.index({ user: 1, status: 1, creation: 1, concept: 1, createdAt: -1 })
+task.index({ user: 1, status: 1, workflow: 1, createdAt: -1 })
 task.index({ status: 1, createdAt: -1 })
 task.plugin(paginate)
 

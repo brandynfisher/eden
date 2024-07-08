@@ -9,6 +9,10 @@ type Props = {
   }
 }
 
+// export const getServerSideProps = () => {
+//
+// }
+
 const ImageGeneratorPage = ({ params }: Props) => {
   const { generator } = params
 
