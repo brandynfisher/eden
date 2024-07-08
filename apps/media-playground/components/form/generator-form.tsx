@@ -69,9 +69,9 @@ const GeneratorForm = ({ generator }: Props) => {
         className: 'flex p-4',
         title: 'Task submitted',
         description: (
-          <div className="mt-2 rounded-md bg-slate-950 p-2">
+          <div className="mt-2 rounded-md bg-popover p-2">
             <code className=" text-xs text-foreground">
-              {JSON.stringify(formData, null, 2)}
+              x{JSON.stringify(formData, null, 2)}
             </code>
           </div>
         ),

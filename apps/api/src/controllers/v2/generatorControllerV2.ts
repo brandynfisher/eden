@@ -38,7 +38,5 @@ export const listGenerators = async (
     })
   }
 
-  console.log(server.generatorConfigs)
-
   return reply.status(200).send({ generators: server.generatorConfigs })
 }

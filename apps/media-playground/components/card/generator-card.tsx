@@ -25,9 +25,9 @@ const GeneratorCard = ({ title, image, link, description }: Props) => {
           }}
           fill={true}
           sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 15vw'}
-          className="object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 data-[loaded=false]:dark:bg-gray-500/10"
+          className="object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10"
         />
-        <div className="relative flex flex-col group bg-gradient-to-b from-black to-50% hover:to-100% [@media(pointer:coarse)]:to-75% to-transparent flex-grow transition-all">
+        <div className="relative flex flex-col group bg-gradient-to-b from-popover to-50% hover:to-100% [@media(pointer:coarse)]:to-75% to-transparent flex-grow transition-all">
           <div className="px-3 py-2">
             <TypographyH6 className="opacity-75 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-all">
               {title}

@@ -33,23 +33,23 @@ export default function RootLayout({ children }: { children: ReactElement }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <PreloadResources />
-      <Providers>
-        <body
-          className={cn(
-            'min-h-screen bg-background font-sans antialiased',
-            fontSans.variable,
-          )}
-        >
+      <body
+        className={cn(
+          'min-h-screen bg-background font-sans antialiased',
+          fontSans.variable,
+        )}
+      >
+        <Providers>
           <div className="flex min-h-screen w-full flex-col">
             <Header />
             {children}
           </div>
-          <Toaster />
           {CONFIG.NEXT_PUBLIC_APP_ENV === 'production' ? (
             <GoogleTagManager gtmId={CONFIG.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
           ) : null}
-        </body>
-      </Providers>
+        </Providers>
+        <Toaster />
+      </body>
     </html>
   )
 }
