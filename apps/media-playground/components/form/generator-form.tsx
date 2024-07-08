@@ -97,54 +97,59 @@ const GeneratorForm = ({ generator }: Props) => {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="bg-popover rounded-lg overflow-hidden">
-          <FormField
-            control={form.control}
-            name="prompt"
-            render={({ field }) => (
-              <FormItem className="mt-0 !px-4 !py-3">
-                <FormLabel className="sr-only">Text Prompt</FormLabel>
-                <FormControl>
-                  <Textarea
-                    spellCheck={false}
-                    placeholder="What do you want to create?"
-                    className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <ImageStyleSelector
-            onChange={selectedStyles => setImageStyles(selectedStyles)}
-          />
-          {imageStyles && imageStyles.length ? (
-            <div className="text-xs">
-              debug: selected styles
-              <pre>{JSON.stringify(imageStyles, null, 2)}</pre>
-            </div>
-          ) : null}
-        </div>
+    <div className="flex flex-col items-start">
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="w-full sticky top-24"
+        >
+          <div className="bg-popover rounded-lg overflow-hidden">
+            <FormField
+              control={form.control}
+              name="prompt"
+              render={({ field }) => (
+                <FormItem className="mt-0 !px-4 !py-3">
+                  <FormLabel className="sr-only">Text Prompt</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      spellCheck={false}
+                      placeholder="What do you want to create?"
+                      className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <ImageStyleSelector
+              onChange={selectedStyles => setImageStyles(selectedStyles)}
+            />
+            {imageStyles && imageStyles.length ? (
+              <div className="text-xs">
+                debug: selected styles
+                <pre>{JSON.stringify(imageStyles, null, 2)}</pre>
+              </div>
+            ) : null}
+          </div>
 
-        <div className="flex gap-4 mt-4">
-          <SettingsFormDrawer />
+          <div className="flex gap-4 mt-4">
+            <SettingsFormDrawer />
 
-          <Button type="submit" className="ml-auto" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </>
-            ) : (
-              <>Create</>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+            <Button type="submit" className="ml-auto" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </>
+              ) : (
+                <>Create</>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   )
 }
 

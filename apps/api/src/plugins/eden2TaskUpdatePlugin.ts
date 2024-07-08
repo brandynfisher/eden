@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify'
 import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
 
 const WATCHED_COLLECTION = 'tasks2'
-export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
+export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
   try {
     const task2Collection =
       fastify.mongoose.connection.db.collection(WATCHED_COLLECTION)
@@ -78,4 +78,4 @@ export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
   }
 }
 
-export default registerEden2Tasks
+export default registerEden2TaskUpdates

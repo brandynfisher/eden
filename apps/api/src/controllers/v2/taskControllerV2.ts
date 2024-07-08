@@ -67,7 +67,7 @@ export const createTask = async (
   }
 
   const modalRequest = {
-    endpoint: server.config.EDEN_COMPUTE_API_URL,
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/create`,
     data: {
       workflow,
       args,

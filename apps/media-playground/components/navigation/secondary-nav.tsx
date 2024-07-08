@@ -11,13 +11,15 @@ type Props = {
 }
 const SecondaryNav = ({ title, baseSegment, items }: Props) => {
   return (
-    <div className="bg-muted/60 p-4 min-w-48">
-      {title ? (
-        <Link href={`/${baseSegment}`}>
-          <TypographyH4 className="mb-6">{title}</TypographyH4>
-        </Link>
-      ) : undefined}
-      <SecondaryNavLinks baseSegment={baseSegment} items={items} />
+    <div className="bg-muted/60 p-4 min-w-48 flex flex-col items-start">
+      <div className="sticky top-20">
+        {title ? (
+          <Link href={`/${baseSegment}`}>
+            <TypographyH4 className="mb-6">{title}</TypographyH4>
+          </Link>
+        ) : undefined}
+        <SecondaryNavLinks baseSegment={baseSegment} items={items} />
+      </div>
     </div>
   )
 }
