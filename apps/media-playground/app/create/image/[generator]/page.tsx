@@ -1,6 +1,5 @@
 import GeneratorForm from '@/components/form/generator-form'
 import Timeline from '@/components/timeline/timeline'
-import TypographyH3 from '@/components/ui/typography/TypographyH3'
 import { generators } from '@/features/generators/dummyConfig'
 
 type Props = {
@@ -29,12 +28,9 @@ const ImageGeneratorPage = ({ params }: Props) => {
   }
 
   return (
-    <div>
-      <TypographyH3>create - image - {generator}</TypographyH3>
-      <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-8">
-        <GeneratorForm generator={generatorMetaData} />
-        <Timeline workflow={generatorMetaData} />
-      </div>
+    <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-8">
+      <GeneratorForm generator={generatorMetaData} />
+      <Timeline workflow={generatorMetaData} />
     </div>
   )
 }

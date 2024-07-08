@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
+import TypographyH3 from '@/components/ui/typography/TypographyH3'
 import { useToast } from '@/components/ui/use-toast'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -33,6 +34,22 @@ const FormSchema = z.object({
     .max(2000, {
       message: 'Text Prompt must not be longer than 2000 characters.',
     }),
+  width: z
+    .number()
+    .min(512, {
+      message: 'Width must be at least 512 pixels.',
+    })
+    .max(2048, {
+      message: 'Width must cannot be more than 2048 pixels.',
+    }),
+  height: z
+    .number()
+    .min(512, {
+      message: 'Height must be at least 512 pixels.',
+    })
+    .max(2048, {
+      message: 'Height must cannot be more than 2048 pixels.',
+    }),
 })
 
 type Props = {
@@ -48,6 +65,8 @@ const GeneratorForm = ({ generator }: Props) => {
     //@todo: derive values and their defaults from passed in generator metadata
     defaultValues: {
       prompt: '',
+      width: 1024,
+      height: 1024,
     },
   })
 
@@ -71,7 +90,7 @@ const GeneratorForm = ({ generator }: Props) => {
         description: (
           <div className="mt-2 rounded-md bg-popover p-2">
             <code className=" text-xs text-foreground">
-              x{JSON.stringify(formData, null, 2)}
+              {JSON.stringify(formData, null, 2)}
             </code>
           </div>
         ),
@@ -101,8 +120,9 @@ const GeneratorForm = ({ generator }: Props) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full sticky top-24"
+          className="w-full sticky top-20"
         >
+          <TypographyH3>create - image - {generator.name}</TypographyH3>
           <div className="bg-popover rounded-lg overflow-hidden">
             <FormField
               control={form.control}

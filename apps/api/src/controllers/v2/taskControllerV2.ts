@@ -4,6 +4,7 @@ import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
+  TasksGetArguments,
   TasksV2CreateArguments,
   TasksV2ListArguments,
 } from '@edenlabs/eden-sdk'
@@ -144,9 +145,7 @@ export const listTasks = async (
 
   const tasksRepository = new TaskV2Repository(TaskV2)
   const query: TasksV2ListArguments = {
-    // _id: taskId,
     user: user._id.toString(),
-    // status,
     // createdAt: {
     //   $gte: new Date(new Date().getTime() - (7 * 24 * 60 * 60 * 1000)),
     // },
@@ -174,8 +173,6 @@ export const listTasks = async (
     },
   })
 
-  // console.log(tasks.docs[0])
-
   // @todo: Once data model is decided on and implemented, add populations back in as needed
   // await tasksRepository.model.populate(tasks.docs, {
   //   path: 'creation',
@@ -190,6 +187,45 @@ export const listTasks = async (
   // })
 
   return reply.status(200).send(tasks)
+}
+
+export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
+  const { userId } = request.user
+  const { taskId } = request.params as TasksGetArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  const task = await TaskV2.findOne({ _id: taskId, user: userId })
+
+  // await Task.populate(task, {
+  //   path: 'creation',
+  // })
+
+  // await Task.populate(task, {
+  //   path: 'concept',
+  //   select: '_id name user conceptName creationCount thumbnail',
+  // })
+
+  // await Task.populate(task, {
+  //   path: 'generator',
+  //   select: 'generatorName',
+  // })
+
+  if (!task) {
+    return reply.status(404).send({
+      message: 'Task not found',
+    })
+  }
+
+  // const taskObject = task.toObject()
+  // delete taskObject.config.lora_training_urls
+
+  return reply.status(200).send({ task })
 }
 
 export const subscribeTaskUpdates = async (
