@@ -17,7 +17,7 @@ export type GeneratorOutputTypeV2 =
 export type GeneratorsListArgumentsV2 = WebAPICallOptions & ListQueryParams
 
 export interface GeneratorsGetArgumentsV2 extends WebAPICallOptions {
-  generatorName: string
+  generatorKey: string
 }
 
 // Requests
@@ -38,7 +38,7 @@ export const generatorsGetRequestConfigV2 = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `v2/generators/${args.generatorName}`,
+    url: `v2/generators/${args.generatorKey}`,
   }
 }
 
@@ -57,9 +57,10 @@ export type GeneratorsGetResponseV2 = WebAPICallResult & {
 // Types
 
 export type GeneratorV2 = {
+  key: string
   name: string
-  title: string
   description?: string
+  hidden: boolean
   parameters: GeneratorParameterV2[]
   outputType: GeneratorOutputTypeV2
 }

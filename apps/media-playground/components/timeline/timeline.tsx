@@ -12,40 +12,16 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 
-// const dummyTasks: TaskV2[] = [
-//   {
-//     _id: '6681eaea78f7a93ef54d96c3',
-//     args: {
-//       prompt: 'I am a STATIC DUMMY CREATION Butterfly',
-//       negative_prompt: 'ugly, watermark, blurry, low-resolution, bad',
-//       width: 896,
-//       height: 512,
-//       seed: 98540735953,
-//       lora: null,
-//       lora_strength: 0.5,
-//     },
-//     createdAt: '2024-06-30T23:31:54.120Z',
-//     error: null,
-//     result: [
-//       'https://edenartlab-stage-data.s3.amazonaws.com/431e284fb9b7d06adf1ca1849e2f6ee17c9ea6ddfa69cdcfea3bdd7cffe5dae0.jpg',
-//     ],
-//     status: 'completed',
-//     updatedAt: '2024-06-30T23:32:49.404Z',
-//     user: '652bfd262ea937e07378268c',
-//     workflow: 'txt2img',
-//   },
-// ]
-
 type TaskData = {
   pageParams: number[]
   pages: TasksV2ListResponse[]
 }
 
 type Props = {
-  workflow: GeneratorV2
+  generator: GeneratorV2
 }
 
-const Timeline = ({ workflow }: Props) => {
+const Timeline = ({ generator }: Props) => {
   const queryClient = useQueryClient()
   const { lastMessageJson } = useWebSocketContext()
 
@@ -53,14 +29,14 @@ const Timeline = ({ workflow }: Props) => {
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
-      workflow: workflow.name,
+      workflow: generator.key,
     }),
-    [workflow.name],
+    [generator.key],
   )
 
   const queryKey = useMemo(
-    () => [['tasks', workflow.name], query],
-    [workflow.name, query],
+    () => [['tasks', generator.key], query],
+    [generator.key, query],
   )
 
   useEffect(() => {

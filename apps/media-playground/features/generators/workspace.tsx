@@ -8,14 +8,14 @@ import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
 
 type Props = {
-  generatorName: GeneratorV2['name']
+  generatorKey: GeneratorV2['key']
 }
-const Workspace = ({ generatorName }: Props) => {
+const Workspace = ({ generatorKey }: Props) => {
   const { generators } = useGeneratorsQuery()
 
   const generatorMetaData =
-    generatorName && generators
-      ? generators.filter(gen => gen.name === generatorName)[0]
+    generatorKey && generators
+      ? generators.filter(gen => gen.key === generatorKey)[0]
       : undefined
 
   if (!generatorMetaData) {

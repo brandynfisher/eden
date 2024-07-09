@@ -6,7 +6,7 @@ export const getGenerator = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { generatorName } = request.params as GeneratorsGetArgumentsV2
+  const { generatorKey } = request.params as GeneratorsGetArgumentsV2
 
   if (!server.generatorConfigs) {
     return reply.status(500).send({
@@ -15,12 +15,12 @@ export const getGenerator = async (
   }
 
   const generatorConfig = server.generatorConfigs.find(
-    config => config.name === generatorName,
+    generator => generator.key === generatorKey,
   )
 
   if (!generatorConfig) {
     return reply.status(404).send({
-      message: `Generator '${generatorName}' not found`,
+      message: `Generator '${generatorKey}' not found`,
     })
   }
 

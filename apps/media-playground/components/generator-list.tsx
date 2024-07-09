@@ -17,7 +17,7 @@ const GeneratorList = () => {
       ) : null}
       <ul>
         {generators?.map(generator => (
-          <li key={generator.name}>{generator.name}</li>
+          <li key={generator.key}>{generator.key}</li>
         ))}
       </ul>
     </div>

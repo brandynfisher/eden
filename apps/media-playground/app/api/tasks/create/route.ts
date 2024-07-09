@@ -1,12 +1,12 @@
 import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
-import { EdenClient, Task } from '@edenlabs/eden-sdk'
+import { EdenClient, TaskV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { NextRequest } from 'next/server'
 
 const createTask = async (
   workflow: string,
-  args: Task['config'],
+  args: TaskV2['args'],
   eden: EdenClient,
 ) => {
   return eden.tasks
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!requestJson.workflow) {
-    return new Response(JSON.stringify({ message: 'Missing workflow name' }), {
+    return new Response(JSON.stringify({ message: 'Missing workflow key' }), {
       status: 401,
     })
   }

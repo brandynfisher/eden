@@ -3,10 +3,11 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 
 const dummyConfig: GeneratorV2[] = [
   {
-    name: 'txt2img',
-    title: 'Text to Image',
-    description: '',
+    key: 'txt2img',
+    name: 'Text to Image',
+    description: 'Colorful description of what this thing does',
     outputType: 'image',
+    hidden: false,
     parameters: [
       {
         name: 'prompt',
@@ -16,8 +17,34 @@ const dummyConfig: GeneratorV2[] = [
     ],
   },
   {
+    key: 'inpaint',
+    name: 'In-painting',
+    description: 'Colorful description of what this thing does',
+    outputType: 'image',
+    hidden: false,
+    parameters: [
+      {
+        name: 'prompt',
+        label: 'Text Prompt',
+        type: 'text',
+      },
+      {
+        name: 'starting_image',
+        label: 'Starting Image',
+        type: 'image',
+      },
+      {
+        name: 'mask',
+        label: 'Mask Image',
+        type: 'image',
+      },
+    ],
+  },
+  {
+    key: 'xhibit/vton',
     name: 'xhibit/vton',
-    title: 'xhibit/vton',
+    description: 'Colorful description of what this thing does',
+    hidden: true,
     outputType: 'image',
     parameters: [
       {

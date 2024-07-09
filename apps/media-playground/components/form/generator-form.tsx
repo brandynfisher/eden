@@ -16,6 +16,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
 import { useToast } from '@/components/ui/use-toast'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -57,6 +58,7 @@ type Props = {
 }
 
 const GeneratorForm = ({ generator }: Props) => {
+  const { verifyAuth } = useAuthState()
   const [imageStyles, setImageStyles] = useState<ImageStyle[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -73,12 +75,16 @@ const GeneratorForm = ({ generator }: Props) => {
   const { toast } = useToast()
 
   async function onSubmit(formData: z.infer<typeof FormSchema>) {
+    if (!(await verifyAuth())) {
+      return
+    }
+
     console.log('onSubmit', formData)
     setIsSubmitting(true)
 
     try {
       const response = await axios.post('/api/tasks/create', {
-        workflow: generator.name,
+        workflow: generator.key,
         args: formData,
       })
 
@@ -122,7 +128,7 @@ const GeneratorForm = ({ generator }: Props) => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="w-full sticky top-20"
         >
-          <TypographyH3>create - image - {generator.name}</TypographyH3>
+          <TypographyH3>{generator.name}</TypographyH3>
           <div className="bg-popover rounded-lg overflow-hidden">
             <FormField
               control={form.control}
