@@ -51,7 +51,7 @@ export const createTask = async (
   }
 
   const generatorConfig = server.generatorConfigs.find(
-    config => config.name === workflow,
+    generator => generator.key === workflow,
   )
 
   if (!generatorConfig) {
