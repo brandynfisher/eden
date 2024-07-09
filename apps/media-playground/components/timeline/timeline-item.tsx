@@ -49,17 +49,6 @@ const TimelineItem = ({ item }: Props) => {
               </div>
             ))
           : null}
-
-        {/*<Accordion type='single' collapsible>*/}
-        {/*  <AccordionItem value='item-1'>*/}
-        {/*    <AccordionTrigger>DEBUG: Task Config</AccordionTrigger>*/}
-        {/*    <AccordionContent>*/}
-        {/*      <div className='text-xs'>*/}
-        {/*        {JSON.stringify(task.args, null, 2)}*/}
-        {/*      </div>*/}
-        {/*    </AccordionContent>*/}
-        {/*  </AccordionItem>*/}
-        {/*</Accordion>*/}
       </div>
     </div>
   )

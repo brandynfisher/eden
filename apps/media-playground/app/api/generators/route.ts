@@ -6,7 +6,7 @@ export async function GET() {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
-    const res = await eden.generatorsV2.list()
+    const res = await eden.generators.listV2()
     return Response.json({ generators: res.generators })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)

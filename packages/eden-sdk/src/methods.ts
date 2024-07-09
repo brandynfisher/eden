@@ -490,14 +490,11 @@ export abstract class Methods {
       this,
       generatorsGetRequestConfig,
     ),
-  }
-
-  public readonly generatorsV2 = {
-    list: bindApiCall<GeneratorsListArgumentsV2, GeneratorsListResponseV2>(
+    listV2: bindApiCall<GeneratorsListArgumentsV2, GeneratorsListResponseV2>(
       this,
       generatorsListRequestConfigV2,
     ),
-    get: bindApiCall<GeneratorsGetArgumentsV2, GeneratorsGetResponseV2>(
+    getV2: bindApiCall<GeneratorsGetArgumentsV2, GeneratorsGetResponseV2>(
       this,
       generatorsGetRequestConfigV2,
     ),
