@@ -3,10 +3,10 @@
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { useGeneratorsQuery } from '@/hooks/query/use-generator-query'
+import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
 
 const GeneratorList = () => {
-  const { generators, isLoading, isError } = useGeneratorsQuery()
+  const { generators, isLoading, isError } = useGeneratorsListQuery()
 
   return (
     <div className="flex flex-col gap-2">

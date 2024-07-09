@@ -44,13 +44,13 @@ export const createTask = async (
   const { userId } = request.user
   const { workflow, args } = request.body as TasksV2CreateArguments
 
-  if (!server.generatorConfigs) {
+  if (!server.generatorConfigs || !server.generatorConfigs.configs) {
     return reply.status(500).send({
       message: `No generators configured`,
     })
   }
 
-  const generatorConfig = server.generatorConfigs.find(
+  const generatorConfig = server.generatorConfigs.configs.find(
     generator => generator.key === workflow,
   )
 

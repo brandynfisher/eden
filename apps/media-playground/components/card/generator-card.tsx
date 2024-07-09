@@ -14,7 +14,7 @@ type Props = {
 
 const GeneratorCard = ({ title, image, link, description }: Props) => {
   return (
-    <Link href={link} className="group">
+    <Link href={link} className="group" prefetch={false}>
       <Card className="relative min-h-64 flex flex-col justify-between overflow-hidden border-0">
         <Image
           src={image}

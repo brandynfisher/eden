@@ -14,7 +14,10 @@ export type GeneratorOutputTypeV2 =
   | 'audio'
 
 // Arguments
-export type GeneratorsListArgumentsV2 = WebAPICallOptions & ListQueryParams
+export type GeneratorsListArgumentsV2 = WebAPICallOptions &
+  ListQueryParams & {
+    hideParams?: boolean
+  }
 
 export interface GeneratorsGetArgumentsV2 extends WebAPICallOptions {
   generatorKey: string
@@ -60,8 +63,8 @@ export type GeneratorV2 = {
   key: string
   name: string
   description?: string
-  hidden: boolean
-  parameters: GeneratorParameterV2[]
+  hidden?: boolean
+  parameters?: GeneratorParameterV2[]
   outputType: GeneratorOutputTypeV2
 }
 

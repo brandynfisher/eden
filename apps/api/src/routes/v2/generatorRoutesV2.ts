@@ -23,9 +23,10 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
           generator: Type.Object({
             key: Type.String(),
             name: Type.String(),
+            description: Type.Optional(Type.String()),
             outputType: Type.String(),
             // @todo: declare expected response for new workflow structure
-            parameters: Type.Array(Type.Any()),
+            parameters: Type.Optional(Type.Array(Type.Any())),
           }),
         }),
       },
@@ -42,15 +43,19 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
           apiKey: [],
         },
       ],
+      querystring: {
+        hideParams: Type.Optional(Type.String()),
+      },
       response: {
         200: Type.Object({
           generators: Type.Array(
             Type.Object({
               key: Type.String(),
               name: Type.String(),
+              description: Type.Optional(Type.String()),
               outputType: Type.String(),
               // @todo: declare expected response for new workflow structure
-              parameters: Type.Array(Type.Any()),
+              parameters: Type.Optional(Type.Array(Type.Any())),
             }),
           ),
         }),

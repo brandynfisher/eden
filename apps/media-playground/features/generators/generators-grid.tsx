@@ -2,10 +2,10 @@
 
 import GeneratorCard from '@/components/card/generator-card'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { useGeneratorsQuery } from '@/hooks/query/use-generator-query'
+import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
 
 const GeneratorsGrid = () => {
-  const { generators } = useGeneratorsQuery()
+  const { generators } = useGeneratorsListQuery()
 
   return (
     <div>

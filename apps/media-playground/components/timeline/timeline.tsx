@@ -50,7 +50,16 @@ const Timeline = ({ generator }: Props) => {
       lastMessageJson.data.task
     ) {
       const taskUpdate = lastMessageJson.data.task as TaskV2
-      console.log('received task-update', taskUpdate)
+
+      if (taskUpdate.workflow !== generator.key) {
+        console.log(
+          `discarding task-update for ${taskUpdate.workflow}`,
+          taskUpdate,
+        )
+        return
+      }
+
+      console.log(`received task-update for ${taskUpdate.workflow}`, taskUpdate)
 
       queryClient.setQueryData(queryKey, (old: TaskData | undefined) => {
         // Copy the old pages array

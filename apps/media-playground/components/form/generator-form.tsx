@@ -138,6 +138,7 @@ const GeneratorForm = ({ generator }: Props) => {
                   <FormLabel className="sr-only">Text Prompt</FormLabel>
                   <FormControl>
                     <Textarea
+                      autoResize={true}
                       spellCheck={false}
                       placeholder="What do you want to create?"
                       className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"

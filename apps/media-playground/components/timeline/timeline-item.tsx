@@ -4,6 +4,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TaskV2 } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
+import React from 'react'
 
 type Props = {
   item: TaskV2
@@ -37,15 +38,24 @@ const TimelineItem = ({ item }: Props) => {
         {item.status === 'completed' && item.result && item.result.length
           ? item.result.map(result => (
               <div className="relative border-transparent" key={result}>
-                <Image
-                  src={result}
-                  alt={result}
-                  // fill={true}
-                  objectFit={'cover'}
-                  width={item.args.width || 0}
-                  height={item.args.height || 0}
-                  className="object-cover w-full rounded-lg"
-                />
+                {result.endsWith('.mp4') ? (
+                  <video
+                    src={result}
+                    controls={true}
+                    controlsList={'nodownload'}
+                    onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
+                  />
+                ) : (
+                  <Image
+                    src={result}
+                    alt={result}
+                    // fill={true}
+                    objectFit={'cover'}
+                    width={item.args.width || 0}
+                    height={item.args.height || 0}
+                    className="object-cover w-full rounded-lg"
+                  />
+                )}
               </div>
             ))
           : null}

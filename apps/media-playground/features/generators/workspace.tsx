@@ -3,7 +3,7 @@
 import GeneratorForm from '@/components/form/generator-form'
 import LoadingIndicator from '@/components/loading-indicator'
 import Timeline from '@/components/timeline/timeline'
-import { useGeneratorsQuery } from '@/hooks/query/use-generator-query'
+import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
 
@@ -11,7 +11,7 @@ type Props = {
   generatorKey: GeneratorV2['key']
 }
 const Workspace = ({ generatorKey }: Props) => {
-  const { generators } = useGeneratorsQuery()
+  const { generators } = useGeneratorsListQuery()
 
   const generatorMetaData =
     generatorKey && generators

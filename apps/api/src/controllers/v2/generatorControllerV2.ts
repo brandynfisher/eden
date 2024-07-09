@@ -1,4 +1,7 @@
-import { GeneratorsGetArgumentsV2 } from '@edenlabs/eden-sdk'
+import {
+  GeneratorsGetArgumentsV2,
+  GeneratorsListArgumentsV2,
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getGenerator = async (
@@ -8,13 +11,13 @@ export const getGenerator = async (
 ) => {
   const { generatorKey } = request.params as GeneratorsGetArgumentsV2
 
-  if (!server.generatorConfigs) {
+  if (!server.generatorConfigs || !server.generatorConfigs.configs) {
     return reply.status(500).send({
       message: `No generators configured`,
     })
   }
 
-  const generatorConfig = server.generatorConfigs.find(
+  const generatorConfig = server.generatorConfigs.configs.find(
     generator => generator.key === generatorKey,
   )
 
@@ -29,14 +32,22 @@ export const getGenerator = async (
 
 export const listGenerators = async (
   server: FastifyInstance,
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  if (!server.generatorConfigs) {
+  const { hideParams } = request.query as GeneratorsListArgumentsV2
+
+  if (!server.generatorConfigs || !server.generatorConfigs.configs) {
     return reply.status(500).send({
       message: `No generators configured`,
     })
   }
 
-  return reply.status(200).send({ generators: server.generatorConfigs })
+  return reply
+    .status(200)
+    .send({
+      generators: hideParams
+        ? server.generatorConfigs.list
+        : server.generatorConfigs.configs,
+    })
 }
