@@ -13,14 +13,14 @@ const GeneratorsGrid = () => {
         <TypographyH4 className="mb-4">Video</TypographyH4>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {generators
-            ?.filter(gen => gen.outputType === 'video')
-            .map(gen => (
+            ?.filter(generator => generator.outputType === 'video')
+            .map(generator => (
               <GeneratorCard
-                key={gen.name}
-                title={gen.title}
-                description={gen.description}
-                image={`/images/generators/${gen.name}.jpeg`}
-                link={`/create/${gen.outputType}/${gen.name}`}
+                key={generator.key}
+                title={generator.name}
+                description={generator.description}
+                image={`/images/generators/${generator.key}.jpeg`}
+                link={`/create/${generator.outputType}/${generator.key}`}
               />
             ))}
         </div>
@@ -33,11 +33,11 @@ const GeneratorsGrid = () => {
             ?.filter(gen => gen.outputType === 'image')
             .map(gen => (
               <GeneratorCard
-                key={gen.name}
-                title={gen.title}
+                key={gen.key}
+                title={gen.name}
                 description={gen.description}
-                image={`/images/generators/${gen.name}.jpeg`}
-                link={`/create/${gen.outputType}/${gen.name}`}
+                image={`/images/generators/${gen.key}.jpeg`}
+                link={`/create/${gen.outputType}/${gen.key}`}
               />
             ))}
         </div>

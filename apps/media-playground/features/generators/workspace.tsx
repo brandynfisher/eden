@@ -15,7 +15,7 @@ const Workspace = ({ generatorKey }: Props) => {
 
   const generatorMetaData =
     generatorKey && generators
-      ? generators.filter(gen => gen.key === generatorKey)[0]
+      ? generators.filter(generator => generator.key === generatorKey)[0]
       : undefined
 
   if (!generatorMetaData) {
@@ -26,7 +26,7 @@ const Workspace = ({ generatorKey }: Props) => {
     <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-8">
       <GeneratorForm generator={generatorMetaData} />
       <Suspense fallback={<LoadingIndicator />}>
-        <Timeline workflow={generatorMetaData} />
+        <Timeline generator={generatorMetaData} />
       </Suspense>
     </div>
   )
