@@ -1,77 +1,85 @@
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import axios from 'axios'
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 
-const dummyConfig: GeneratorV2[] = [
-  {
-    key: 'txt2img',
-    name: 'Text to Image',
-    description: 'Colorful description of what this thing does',
-    outputType: 'image',
-    hidden: false,
-    parameters: [
-      {
-        name: 'prompt',
-        label: 'Text Prompt',
-        type: 'text',
-      },
-    ],
-  },
-  {
-    key: 'inpaint',
-    name: 'In-painting',
-    description: 'Colorful description of what this thing does',
-    outputType: 'image',
-    hidden: false,
-    parameters: [
-      {
-        name: 'prompt',
-        label: 'Text Prompt',
-        type: 'text',
-      },
-      {
-        name: 'starting_image',
-        label: 'Starting Image',
-        type: 'image',
-      },
-      {
-        name: 'mask',
-        label: 'Mask Image',
-        type: 'image',
-      },
-    ],
-  },
-  {
-    key: 'xhibit/vton',
-    name: 'xhibit/vton',
-    description: 'Colorful description of what this thing does',
-    hidden: true,
-    outputType: 'image',
-    parameters: [
-      {
-        name: 'prompt',
-        label: 'Text Prompt',
-        type: 'text',
-      },
-      {
-        name: 'look_image',
-        label: 'Look Image',
-        type: 'image',
-      },
-      {
-        name: 'lora',
-        label: 'Lora',
-        type: 'model',
-      },
-    ],
-  },
-]
+// const dummyConfig: GeneratorV2[] = [
+//   {
+//     key: 'txt2img',
+//     name: 'Text to Image',
+//     description: 'Colorful description of what this thing does',
+//     outputType: 'image',
+//     hidden: false,
+//     parameters: [
+//       {
+//         name: 'prompt',
+//         label: 'Text Prompt',
+//         type: 'text',
+//       },
+//     ],
+//   },
+//   {
+//     key: 'inpaint',
+//     name: 'In-painting',
+//     description: 'Colorful description of what this thing does',
+//     outputType: 'image',
+//     hidden: false,
+//     parameters: [
+//       {
+//         name: 'prompt',
+//         label: 'Text Prompt',
+//         type: 'text',
+//       },
+//       {
+//         name: 'starting_image',
+//         label: 'Starting Image',
+//         type: 'image',
+//       },
+//       {
+//         name: 'mask',
+//         label: 'Mask Image',
+//         type: 'image',
+//       },
+//     ],
+//   },
+//   {
+//     key: 'xhibit/vton',
+//     name: 'xhibit/vton',
+//     description: 'Colorful description of what this thing does',
+//     hidden: true,
+//     outputType: 'image',
+//     parameters: [
+//       {
+//         name: 'prompt',
+//         label: 'Text Prompt',
+//         type: 'text',
+//       },
+//       {
+//         name: 'look_image',
+//         label: 'Look Image',
+//         type: 'image',
+//       },
+//       {
+//         name: 'lora',
+//         label: 'Lora',
+//         type: 'model',
+//       },
+//     ],
+//   },
+// ]
 
-// TODO: Implement actual GET request towards modal API app
 const fetchConfigs = async (
-  _fastify: FastifyInstance,
+  server: FastifyInstance,
 ): Promise<GeneratorV2[]> => {
-  // return fastify.generatorConfigs ? [dummyConfigB] : [dummyConfigA]
-  return dummyConfig
+  const modalResponse = await axios.get(
+    `${server.config.EDEN_COMPUTE_API_URL}/tools`,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  return modalResponse.data as GeneratorV2[]
 }
 
 const REFRESH_INTERVAL_MS = 10 * 60 * 1000
