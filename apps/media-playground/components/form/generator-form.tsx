@@ -96,7 +96,8 @@ const GeneratorForm = ({ generator }: Props) => {
         description: (
           <div className="mt-2 rounded-md bg-popover p-2">
             <code className=" text-xs text-foreground">
-              {JSON.stringify(formData, null, 2)}
+              Workflow: {generator.key}
+              {/*{JSON.stringify(formData, null, 2)}*/}
             </code>
           </div>
         ),

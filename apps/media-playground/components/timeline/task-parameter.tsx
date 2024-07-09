@@ -14,7 +14,7 @@ const TaskParameter = ({ name, label, value }: Props) => {
       {name === 'prompt' ? (
         <div className="w-full flex gap-2">
           <div className="flex-shrink-0 text-primary/60">{label}</div>
-          <div>{value}</div>
+          <div className="line-clamp-2">{value}</div>
         </div>
       ) : null}
 
