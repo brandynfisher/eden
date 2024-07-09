@@ -22,8 +22,8 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
         // @todo: declare expected response for new workflow structure
         200: Type.Object({
           generator: Type.Object({
+            key: Type.String(),
             name: Type.String(),
-            title: Type.String(),
             outputType: Type.String(),
             parameters: Type.Array(Type.Any()),
           }),
@@ -46,8 +46,8 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
         200: Type.Object({
           generators: Type.Array(
             Type.Object({
+              key: Type.String(),
               name: Type.String(),
-              title: Type.String(),
               outputType: Type.String(),
               parameters: Type.Array(Type.Any()),
             }),

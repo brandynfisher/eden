@@ -70,6 +70,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 const fetchConfigs = async (
   server: FastifyInstance,
 ): Promise<GeneratorV2[]> => {
+  console.log('fetch ', `${server.config.EDEN_COMPUTE_API_URL}/tools`)
   const modalResponse = await axios.get(
     `${server.config.EDEN_COMPUTE_API_URL}/tools`,
     {
