@@ -11,11 +11,12 @@ type Props = {
 
 const TimelineItem = ({ item }: Props) => {
   return (
-    <div key={item._id} className="mb-6">
+    <div key={item._id}>
       <TaskParameterList task={item} />
 
-      <div className="relative mt-4">
+      <div className="relative">
         <TaskStatusBadge status={item.status} hideText={true} />
+
         {item.status === 'failed' ? (
           <div>
             <div className="text-destructive">Task failed</div>
@@ -35,7 +36,7 @@ const TimelineItem = ({ item }: Props) => {
 
         {item.status === 'completed' && item.result && item.result.length
           ? item.result.map(result => (
-              <div className="relative" key={result}>
+              <div className="relative border-transparent" key={result}>
                 <Image
                   src={result}
                   alt={result}

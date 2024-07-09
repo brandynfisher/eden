@@ -5,6 +5,7 @@ const dummyConfig: GeneratorV2[] = [
   {
     name: 'txt2img',
     title: 'Text to Image',
+    description: '',
     outputType: 'image',
     parameters: [
       {

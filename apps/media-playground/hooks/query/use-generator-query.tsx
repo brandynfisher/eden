@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
-import { Generator } from '@edenlabs/eden-sdk'
+import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 
 export const useGeneratorsQuery = () => {
@@ -15,11 +15,11 @@ export const useGeneratorsQuery = () => {
     status,
   } = useQuery({
     queryKey: ['generators'],
-    queryFn: () => fetcher<{ generators: Generator[] }>('/api/generators'),
+    queryFn: () => fetcher<{ generators: GeneratorV2[] }>('/api/generators'),
   })
 
   return {
-    generators: data?.generators as Generator[] | undefined,
+    generators: data?.generators as GeneratorV2[] | undefined,
     error,
     isError,
     isPending,

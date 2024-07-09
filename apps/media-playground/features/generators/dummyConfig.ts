@@ -15,6 +15,13 @@ const imageGenerators: GeneratorV2[] = [
     outputType: 'image',
     parameters: [],
   },
+  {
+    name: 'img2img',
+    title: 'Image to Image',
+    description: 'Generate images with image prompts',
+    outputType: 'image',
+    parameters: [],
+  },
 ]
 
 const videoGenerators: GeneratorV2[] = [

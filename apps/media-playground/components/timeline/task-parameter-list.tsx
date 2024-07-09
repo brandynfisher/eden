@@ -8,7 +8,7 @@ const TaskParameterList = ({ task }: Props) => {
   const { prompt, height, width } = task.args
 
   return (
-    <div className="flex flex-wrap gap-2 text-sm">
+    <div className="relative flex flex-wrap gap-2 text-sm py-2 px-2 pb-6 top-4 rounded-t-lg bg-popover-foreground/5 ">
       {prompt ? (
         <TaskParameter name={'prompt'} label={'Prompt'} value={prompt} />
       ) : null}
