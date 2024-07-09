@@ -9,7 +9,7 @@ async function run() {
   } catch (error) {
     console.error(error)
   } finally {
-    console.log('Done')
+    console.log('Done ')
   }
 }
 
