@@ -1,8 +1,8 @@
 'use client'
 
-import ImageStyleSelector, {
-  ImageStyle,
-} from '@/components/form/image-style-selector'
+// import ImageStyleSelector, {
+//   ImageStyle,
+// } from '@/components/form/image-style-selector'
 import SettingsFormDrawer from '@/components/form/settings-form-drawer'
 import { Button } from '@/components/ui/button'
 import {
@@ -59,7 +59,7 @@ type Props = {
 
 const GeneratorForm = ({ generator }: Props) => {
   const { verifyAuth } = useAuthState()
-  const [imageStyles, setImageStyles] = useState<ImageStyle[]>([])
+  // const [imageStyles, setImageStyles] = useState<ImageStyle[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -150,15 +150,15 @@ const GeneratorForm = ({ generator }: Props) => {
                 </FormItem>
               )}
             />
-            <ImageStyleSelector
-              onChange={selectedStyles => setImageStyles(selectedStyles)}
-            />
-            {imageStyles && imageStyles.length ? (
-              <div className="text-xs">
-                debug: selected styles
-                <pre>{JSON.stringify(imageStyles, null, 2)}</pre>
-              </div>
-            ) : null}
+            {/*<ImageStyleSelector*/}
+            {/*  onChange={selectedStyles => setImageStyles(selectedStyles)}*/}
+            {/*/>*/}
+            {/*{imageStyles && imageStyles.length ? (*/}
+            {/*  <div className="text-xs">*/}
+            {/*    debug: selected styles*/}
+            {/*    <pre>{JSON.stringify(imageStyles, null, 2)}</pre>*/}
+            {/*  </div>*/}
+            {/*) : null}*/}
           </div>
 
           <div className="flex gap-4 mt-4">
