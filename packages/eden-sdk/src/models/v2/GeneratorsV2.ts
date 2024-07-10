@@ -12,6 +12,7 @@ export type GeneratorOutputTypeV2 =
   | 'model'
   | 'text'
   | 'audio'
+  | 'lora'
 
 // Arguments
 export type GeneratorsListArgumentsV2 = WebAPICallOptions &

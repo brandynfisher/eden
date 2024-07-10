@@ -3,18 +3,21 @@
 import GeneratorCard from '@/components/card/generator-card'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
+import { GeneratorV2 } from '@edenlabs/eden-sdk'
 
-const GeneratorsGrid = () => {
-  const { generators } = useGeneratorsListQuery()
+type Props = {
+  title: string
+  generators?: GeneratorV2[]
+}
 
+const GridSection = ({ title, generators }: Props) => {
   return (
     <div>
-      <div>
-        <TypographyH4 className="mb-4">Video</TypographyH4>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {generators
-            ?.filter(generator => generator.outputType === 'video')
-            .map(generator => (
+      <TypographyH4 className="mb-4">{title}</TypographyH4>
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+        {generators && generators.length ? (
+          <>
+            {generators.map(generator => (
               <GeneratorCard
                 key={generator.key}
                 title={generator.name}
@@ -23,25 +26,34 @@ const GeneratorsGrid = () => {
                 link={`/create/${generator.outputType}/${generator.key}`}
               />
             ))}
-        </div>
+          </>
+        ) : (
+          <div>Nothing found here.</div>
+        )}
       </div>
+    </div>
+  )
+}
 
-      <div>
-        <TypographyH4 className="mb-4">Image</TypographyH4>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {generators
-            ?.filter(gen => gen.outputType === 'image')
-            .map(gen => (
-              <GeneratorCard
-                key={gen.key}
-                title={gen.name}
-                description={gen.description}
-                image={`/images/generators/${gen.key}.jpeg`}
-                link={`/create/${gen.outputType}/${gen.key}`}
-              />
-            ))}
-        </div>
-      </div>
+const GeneratorsGrid = () => {
+  const { generators } = useGeneratorsListQuery()
+
+  return (
+    <div>
+      <GridSection
+        title={'Video'}
+        generators={generators?.filter(gen => gen.outputType === 'video')}
+      />
+
+      <GridSection
+        title={'Image'}
+        generators={generators?.filter(gen => gen.outputType === 'image')}
+      />
+
+      <GridSection
+        title={'Model'}
+        generators={generators?.filter(gen => gen.outputType === 'lora')}
+      />
     </div>
   )
 }
