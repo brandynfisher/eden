@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
         : undefined
 
     const res = await eden.generators.listV2(query)
-    console.log(res.generators)
     return Response.json({ generators: res.generators })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)

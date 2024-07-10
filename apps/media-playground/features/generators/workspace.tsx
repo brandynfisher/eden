@@ -3,7 +3,7 @@
 import GeneratorForm from '@/components/form/generator-form'
 import LoadingIndicator from '@/components/loading-indicator'
 import Timeline from '@/components/timeline/timeline'
-import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
+import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
 
@@ -11,22 +11,17 @@ type Props = {
   generatorKey: GeneratorV2['key']
 }
 const Workspace = ({ generatorKey }: Props) => {
-  const { generators } = useGeneratorsListQuery()
+  const { generator } = useGeneratorQuery({ key: generatorKey })
 
-  const generatorMetaData =
-    generatorKey && generators
-      ? generators.filter(generator => generator.key === generatorKey)[0]
-      : undefined
-
-  if (!generatorMetaData) {
+  if (!generator) {
     return null
   }
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-8">
-      <GeneratorForm generator={generatorMetaData} />
+      <GeneratorForm generator={generator} />
       <Suspense fallback={<LoadingIndicator />}>
-        <Timeline generator={generatorMetaData} />
+        <Timeline generator={generator} />
       </Suspense>
     </div>
   )
