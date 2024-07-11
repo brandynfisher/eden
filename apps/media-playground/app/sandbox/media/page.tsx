@@ -1,4 +1,3 @@
-import ImageTest from '@/components/image-test'
 import FileUpload from '@/components/media/file-upload'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 
@@ -10,7 +9,6 @@ const MediaSandboxPage = () => {
         <FileUpload allowedFileTypes={['image']} />
         <FileUpload allowedFileTypes={['video']} />
       </div>
-      <ImageTest />
     </>
   )
 }

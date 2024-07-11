@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { useToast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
@@ -14,7 +14,8 @@ import {
   Video,
   X,
 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import Image from 'next/image'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 
 interface FileUploadProgress {
@@ -104,9 +105,13 @@ const getTypeByMimeType = (mimeType: MimeType) => {
   return mimeType.split('/')[0] as FileType
 }
 
+type FileWithPreview = File & {
+  preview?: string
+}
+
 const FileUpload = ({ allowedFileTypes }: Props) => {
-  // const [uploadedFiles, setUploadedFiles] = useState<File[]>([{ type: FileTypes.Image, lastModified: Date.now(), name: 'imagefile.png' }])
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const { toast } = useToast()
+  const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
 
   const allowedTypes = supportedFileTypes.filter(item =>
@@ -131,7 +136,11 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
 
     if (progress === 100) {
       setUploadedFiles(prevUploadedFiles => {
-        return [...prevUploadedFiles, file]
+        const fileWithPreview = Object.assign(file, {
+          preview: URL.createObjectURL(file),
+        })
+
+        return [...prevUploadedFiles, fileWithPreview]
       })
 
       setFilesToUpload(prevUploadProgress => {
@@ -220,7 +229,18 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
 
     try {
       await Promise.all(fileUploadBatch)
-      alert('All files uploaded successfully')
+      toast({
+        className: 'flex p-4',
+        title: 'Upload finished',
+        description: (
+          <div className="mt-2 rounded-md bg-popover p-2">
+            <code className=" text-xs text-foreground">
+              {acceptedFiles.length} Files
+            </code>
+          </div>
+        ),
+        // action: <ToastAction altText="Go to task">Show Task</ToastAction>,
+      })
     } catch (error) {
       console.error('Error uploading files: ', error)
     }
@@ -229,6 +249,8 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
   // const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: allowedFileMimeTypes.map(item => ) })
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
+    multiple: true, // @todo: config based on passed in prop
+    maxFiles: 2, //@todo: config based on passed in prop
     accept: allowedFileMimeTypes
       .flatMap(mimeTypes => mimeTypes)
       .reduce((acc: { [key: string]: string[] }, mimeType) => {
@@ -236,6 +258,12 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
         return acc
       }, {}),
   })
+
+  useEffect(() => {
+    // Make sure to revoke the data uris to avoid memory leaks, will run on unmount
+    return () =>
+      uploadedFiles.forEach(file => URL.revokeObjectURL(file.preview || ''))
+  }, [uploadedFiles])
 
   return (
     <div className="flex-grow">
@@ -275,7 +303,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
       </div>
 
       {filesToUpload.length > 0 && (
-        <ScrollArea className="h-40">
+        <div className="bg-card p-2 mt-4 rounded-lg">
           <p className="font-medium my-2 mt-4 text-muted-foreground text-sm">
             Uploading...
           </p>
@@ -322,7 +350,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
                         fileUploadProgress.source.cancel('Upload cancelled')
                       removeFile(fileUploadProgress.File)
                     }}
-                    className="bg-destructive text-destructive-foreground transition-all items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
+                    className="bg-destructive text-destructive-foreground items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
                   >
                     <X size={20} />
                   </button>
@@ -330,28 +358,59 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
               )
             })}
           </div>
-        </ScrollArea>
+        </div>
       )}
 
       {uploadedFiles.length > 0 && (
-        <div className="bg-card">
-          <p className="font-medium my-2 mt-6 text-muted-foreground text-sm">
+        <div className="bg-card p-2 mt-4 rounded-lg">
+          <p className="font-medium mb-2 text-muted-foreground text-sm">
             Uploaded Files
           </p>
-          <div className="space-y-2 pr-3">
+          <div className="space-y-2">
             {uploadedFiles.map(file => {
               return (
                 <div
                   key={file.lastModified}
-                  className="flex justify-between gap-2 rounded-lg overflow-hidden border border-border group hover:pr-0 pr-2 hover:border-border transition-all"
+                  className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group h-14"
                 >
-                  <div className="flex items-center flex-1 p-2">
-                    <div className="text-white">
-                      {
-                        getFileIconAndColor(
-                          getTypeByMimeType(file.type as MimeType),
-                        ).icon
-                      }
+                  <div className="flex items-center p-2">
+                    <div className="relative flex text-white h-14 w-14 rounded overflow-hidden">
+                      {file.preview ? (
+                        <>
+                          {file.type.startsWith('image') ? (
+                            <Image
+                              src={file.preview}
+                              alt={file.preview}
+                              fill={true}
+                              objectFit={'contain'}
+                              onLoad={() =>
+                                URL.revokeObjectURL(file.preview || '')
+                              }
+                            />
+                          ) : (
+                            <video
+                              src={file.preview}
+                              controls={false}
+                              controlsList={'nodownload'}
+                              className="absolute object-contain self-center"
+                              onContextMenu={(e: React.MouseEvent) =>
+                                e.preventDefault()
+                              }
+                              onLoad={() =>
+                                URL.revokeObjectURL(file.preview || '')
+                              }
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {
+                            getFileIconAndColor(
+                              getTypeByMimeType(file.type as MimeType),
+                            ).icon
+                          }
+                        </>
+                      )}
                     </div>
                     <div className="w-full ml-2 space-y-1">
                       <div className="text-sm flex justify-between">
@@ -363,7 +422,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
                   </div>
                   <button
                     onClick={() => removeFile(file)}
-                    className="bg-destructive text-destructive-foreground transition-all items-center justify-center px-2 hidden group-hover:flex"
+                    className="absolute h-full right-0 bg-destructive text-destructive-foreground items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
                   >
                     <X size={20} />
                   </button>
