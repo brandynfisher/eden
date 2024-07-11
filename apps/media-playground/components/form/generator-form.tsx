@@ -62,6 +62,8 @@ const GeneratorForm = ({ generator }: Props) => {
   // const [imageStyles, setImageStyles] = useState<ImageStyle[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  console.log({ generator })
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     //@todo: derive values and their defaults from passed in generator metadata
