@@ -154,7 +154,11 @@ export class EdenClient extends Methods {
     try {
       for await (const event of subscription) {
         // console.log('processing taskupdateEvent', event)
-        if (event.status === 'completed' || event.status === 'error') {
+        if (
+          event.status === 'completed' ||
+          event.status === 'failed' ||
+          event.status === 'error'
+        ) {
           return event.result
         }
       }
