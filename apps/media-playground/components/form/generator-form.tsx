@@ -13,11 +13,14 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
 import { useToast } from '@/components/ui/use-toast'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { createZodFormSchema } from '@/lib/forms'
+import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2 } from 'lucide-react'
@@ -25,36 +28,97 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-// @todo: also needs to be derived from fastify
-const FormSchema = z.object({
-  prompt: z
-    .string()
-    .min(3, {
-      message: 'Text Prompt must be at least 3 characters.',
-    })
-    .max(2000, {
-      message: 'Text Prompt must not be longer than 2000 characters.',
-    }),
-  width: z
-    .number()
-    .min(512, {
-      message: 'Width must be at least 512 pixels.',
-    })
-    .max(2048, {
-      message: 'Width must cannot be more than 2048 pixels.',
-    }),
-  height: z
-    .number()
-    .min(512, {
-      message: 'Height must be at least 512 pixels.',
-    })
-    .max(2048, {
-      message: 'Height must cannot be more than 2048 pixels.',
-    }),
-})
-
 type Props = {
   generator: GeneratorV2
+}
+
+const renderFormField = (parameter: GeneratorParameterV2) => {
+  const { name, label } = parameter
+  return (
+    <FormField
+      name={name}
+      render={({ field, fieldState }) => {
+        const { onChange, onBlur, value } = field
+        switch (parameter.type) {
+          case 'int':
+          case 'float':
+            return (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel>{label}</FormLabel>
+                <FormControl id={field.name}>
+                  <Input
+                    type="number"
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value || parameter.default || 0}
+                  />
+                </FormControl>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          case 'boolean':
+            return (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel>{label}</FormLabel>
+                <FormControl id={field.name}>
+                  <Switch
+                    checked={value}
+                    onChange={e =>
+                      onChange((e.target as HTMLInputElement).checked)
+                    }
+                  />
+                </FormControl>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          case 'string':
+            return field.name === 'prompt' ? (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel className="sr-only">{label}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    autoResize={true}
+                    spellCheck={false}
+                    placeholder={parameter.description}
+                    className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value || parameter.default || ''}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            ) : (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel>{label}</FormLabel>
+                <FormControl id={field.name}>
+                  <Input
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value || parameter.default || ''}
+                  />
+                </FormControl>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          default:
+            return (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel>{label}</FormLabel>
+                <FormControl id={field.name}>
+                  <Input
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value || parameter.default || ''}
+                  />
+                </FormControl>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+        }
+      }}
+    />
+  )
 }
 
 const GeneratorForm = ({ generator }: Props) => {
@@ -62,21 +126,20 @@ const GeneratorForm = ({ generator }: Props) => {
   // const [imageStyles, setImageStyles] = useState<ImageStyle[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  console.log({ generator })
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    //@todo: derive values and their defaults from passed in generator metadata
-    defaultValues: {
-      prompt: '',
-      width: 1024,
-      height: 1024,
-    },
+  const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
+  const form = useForm({
+    resolver: zodResolver(parameterSchema), // use generated form schema for resolver
+    defaultValues: generator.parameters?.reduce((accum, currParameter) => {
+      return {
+        ...accum,
+        [currParameter.name]: currParameter.default,
+      }
+    }, {}),
   })
 
   const { toast } = useToast()
 
-  async function onSubmit(formData: z.infer<typeof FormSchema>) {
+  async function onSubmit(formData: z.infer<typeof parameterSchema>) {
     if (!(await verifyAuth())) {
       return
     }
@@ -129,39 +192,26 @@ const GeneratorForm = ({ generator }: Props) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full sticky top-20"
+          className="w-full sticky top-20 flex flex-col gap-2"
         >
           <TypographyH3>{generator.name}</TypographyH3>
-          <div className="bg-popover rounded-lg overflow-hidden">
-            <FormField
-              control={form.control}
-              name="prompt"
-              render={({ field }) => (
-                <FormItem className="mt-0 !px-4 !py-3">
-                  <FormLabel className="sr-only">Text Prompt</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      autoResize={true}
-                      spellCheck={false}
-                      placeholder="What do you want to create?"
-                      className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/*<ImageStyleSelector*/}
-            {/*  onChange={selectedStyles => setImageStyles(selectedStyles)}*/}
-            {/*/>*/}
-            {/*{imageStyles && imageStyles.length ? (*/}
-            {/*  <div className="text-xs">*/}
-            {/*    debug: selected styles*/}
-            {/*    <pre>{JSON.stringify(imageStyles, null, 2)}</pre>*/}
-            {/*  </div>*/}
-            {/*) : null}*/}
-          </div>
+          {generator.parameters?.map(parameter => (
+            <div
+              key={parameter.name}
+              className="bg-popover rounded-lg overflow-hidden"
+            >
+              {renderFormField(parameter)}
+              {/*<ImageStyleSelector*/}
+              {/*  onChange={selectedStyles => setImageStyles(selectedStyles)}*/}
+              {/*/>*/}
+              {/*{imageStyles && imageStyles.length ? (*/}
+              {/*  <div className="text-xs">*/}
+              {/*    debug: selected styles*/}
+              {/*    <pre>{JSON.stringify(imageStyles, null, 2)}</pre>*/}
+              {/*  </div>*/}
+              {/*) : null}*/}
+            </div>
+          ))}
 
           <div className="flex gap-4 mt-4">
             <SettingsFormDrawer />

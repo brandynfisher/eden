@@ -73,23 +73,48 @@ export type GeneratorParameterType =
   | 'video'
   | 'image'
   | 'model'
-  | 'text'
   | 'audio'
+  | 'string'
+  | 'int'
+  | 'float'
+  | 'boolean'
+  | 'lora'
+  | 'video[]'
+  | 'image[]'
+  | 'model[]'
+  | 'audio[]'
+  | 'string[]'
+  | 'int[]'
+  | 'float[]'
+  | 'boolean[]'
+  | 'lora[]'
 
 export type GeneratorParameterV2 = {
   name: string
   label: string
-  description?: string
+  description: string
+  tip: string | null
   type: GeneratorParameterType
-  isRequired?: boolean
-  optional?: boolean
-  default?: any
-  allowedValues?: any[]
-  allowedValuesFrom?: string
-  minimum?: number
-  maximum?: number
-  step?: number
-  minLength?: number
-  maxLength?: number
-  mediaUpload?: string
+  required: boolean
+  default: string | number | null
+  minimum: number | null
+  maximum: number | null
+  min_length: number | null
+  max_length: number | null
+  choices: Array<string | number> | null
+  // name: string
+  // label: string
+  // type: 'string' | 'image' | 'int' | 'float' | 'lora' | 'boo'
+  // description?: string
+  // isRequired?: boolean
+  // optional?: boolean
+  // default?: any
+  // allowedValues?: any[]
+  // allowedValuesFrom?: string
+  // minimum?: number
+  // maximum?: number
+  // step?: number
+  // minLength?: number
+  // maxLength?: number
+  // mediaUpload?: string
 }
