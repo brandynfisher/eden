@@ -157,15 +157,13 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
   }
 
   const uploadAsset = async (
-    filename: File['name'],
-    contentType: File['type'],
-    formData: FormData,
+    file: File,
     onUploadProgress: (progressEvent: AxiosProgressEvent) => void,
     cancelSource: CancelTokenSource,
   ) => {
     const signResponse = await axios.post('/api/media/upload/sign-request', {
-      filename,
-      contentType,
+      filename: file.name,
+      contentType: file.type,
     })
 
     if (!signResponse || !signResponse.data) {
@@ -174,7 +172,10 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
 
     const { signedUrl } = signResponse.data as { signedUrl: string }
 
-    return axios.post(signedUrl, formData, {
+    return axios.put(signedUrl, file, {
+      headers: {
+        'Content-Type': file.type,
+      },
       onUploadProgress,
       cancelToken: cancelSource.token,
     })
@@ -211,9 +212,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
 
       const cancelSource = axios.CancelToken.source()
       return uploadAsset(
-        file.name,
-        file.type,
-        formData,
+        file,
         progressEvent => onUploadProgress(progressEvent, file, cancelSource),
         cancelSource,
       )
