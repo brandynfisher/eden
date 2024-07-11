@@ -1,5 +1,5 @@
 import { handleTaskUpdateStreamEvent } from '../lib/eden2'
-import { TaskDocument } from '../models/Task'
+import { TaskV2Document } from '../models/v2/TaskV2'
 import { FastifyPluginAsync } from 'fastify'
 import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
 
@@ -24,9 +24,10 @@ export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
 
     taskChangeStream.on(
       'change',
-      async (data: ChangeStreamDocument<TaskDocument>) => {
+      async (data: ChangeStreamDocument<TaskV2Document>) => {
         try {
-          fastify.log.debug('Task change stream event received', {
+          fastify.log.info({
+            msg: 'Task change stream event received',
             operationType: data.operationType,
           })
 
@@ -35,7 +36,7 @@ export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
             data.operationType === 'update'
           ) {
             fastify.log.info({
-              msg: `Task ${data.operationType} event`,
+              msg: `Task DB event: ${data.operationType} `,
               doc: data.fullDocument,
             })
 
@@ -46,7 +47,7 @@ export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
 
             await handleTaskUpdateStreamEvent(
               fastify,
-              data.fullDocument as TaskDocument,
+              data.fullDocument as TaskV2Document,
               updatedFields,
             )
           }

@@ -155,7 +155,11 @@ const ListVirtualizerVertical = ({
   )
 
   return (
-    <div ref={masonryWrapRef} className="flex">
+    <div
+      data-test-id="list-virtualizer-vertical"
+      ref={masonryWrapRef}
+      className="flex"
+    >
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,

@@ -67,12 +67,12 @@ export class EdenClient extends Methods {
         let resolver
 
         eventSource.addEventListener('task-update', event => {
-          // console.log(
-          //   'eventSource event handler',
-          //   'task-update',
-          //   edenVersion,
-          //   event,
-          // )
+          console.log(
+            'eventSource event handler',
+            'task-update',
+            edenVersion,
+            event,
+          )
           if (event && event.data) {
             const data = JSON.parse(event.data)
             const eventTaskId = data
@@ -114,7 +114,10 @@ export class EdenClient extends Methods {
           },
         }
       },
-      close: () => eventSource.close(),
+      close: () => {
+        console.log('closing eventsource.')
+        eventSource.close()
+      },
     }
 
     return eventIterable
@@ -154,11 +157,8 @@ export class EdenClient extends Methods {
     try {
       for await (const event of subscription) {
         // console.log('processing taskupdateEvent', event)
-        if (
-          event.status === 'completed' ||
-          event.status === 'failed' ||
-          event.status === 'error'
-        ) {
+
+        if (event.status === 'completed' || event.status === 'failed') {
           return event.result
         }
       }

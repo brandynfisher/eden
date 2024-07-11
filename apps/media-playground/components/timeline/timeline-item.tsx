@@ -12,14 +12,14 @@ type Props = {
 
 const TimelineItem = ({ item }: Props) => {
   return (
-    <div key={item._id}>
+    <div data-test-id="timeline-item" key={item._id}>
       <TaskParameterList task={item} />
 
-      <div className="relative">
+      <div className="relative flex flex-col min-h-32 items-center justify-around">
         <TaskStatusBadge status={item.status} hideText={true} />
 
         {item.status === 'failed' ? (
-          <div>
+          <div className="h-full">
             <div className="text-destructive">Task failed</div>
             <div>{item.error}</div>
           </div>
@@ -38,23 +38,33 @@ const TimelineItem = ({ item }: Props) => {
         {item.status === 'completed' && item.result && item.result.length
           ? item.result.map(result => (
               <div className="relative border-transparent" key={result}>
-                {result.endsWith('.mp4') ? (
-                  <video
-                    src={result}
-                    controls={true}
-                    controlsList={'nodownload'}
-                    onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
-                  />
+                {result.startsWith('http') ? (
+                  <>
+                    {result.endsWith('.mp4') ? (
+                      <video
+                        src={result}
+                        controls={true}
+                        controlsList={'nodownload'}
+                        onContextMenu={(e: React.MouseEvent) =>
+                          e.preventDefault()
+                        }
+                      />
+                    ) : (
+                      <Image
+                        src={result}
+                        alt={result}
+                        // fill={true}
+                        objectFit={'cover'}
+                        width={item.args.width || 0}
+                        height={item.args.height || 0}
+                        className="object-cover w-full rounded-lg"
+                      />
+                    )}
+                  </>
                 ) : (
-                  <Image
-                    src={result}
-                    alt={result}
-                    // fill={true}
-                    objectFit={'cover'}
-                    width={item.args.width || 0}
-                    height={item.args.height || 0}
-                    className="object-cover w-full rounded-lg"
-                  />
+                  // result is model / concept
+                  // @todo: fetch model data by it's id or pre-populate this api-side for a successful task
+                  <>concept: {result}</>
                 )}
               </div>
             ))
