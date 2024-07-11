@@ -1,43 +1,50 @@
 'use client'
 
-import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
-import { AudioWaveform, FileImage, FolderArchive, UploadCloud, Video, X } from 'lucide-react'
-import { useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
+import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
+import {
+  AudioWaveform,
+  FileImage,
+  FolderArchive,
+  UploadCloud,
+  Video,
+  X,
+} from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
 
 interface FileUploadProgress {
-  progress: number;
-  File: File;
-  source: CancelTokenSource | null;
+  progress: number
+  File: File
+  source: CancelTokenSource | null
 }
 
 const ImageColor = {
-  bgColor: 'bg-purple-600',
-  fillColor: 'fill-purple-600',
-  borderColor: 'border-purple-600',
+  bgColor: 'purple-600',
+  fillColor: 'purple-600',
+  borderColor: 'purple-600',
 }
 
 const AudioColor = {
-  bgColor: 'bg-yellow-400',
-  fillColor: 'fill-yellow-400',
-  borderColor: 'border-yellow-400',
+  bgColor: 'yellow-400',
+  fillColor: 'yellow-400',
+  borderColor: 'yellow-400',
 }
 
 const VideoColor = {
-  bgColor: 'bg-green-400',
-  fillColor: 'fill-green-400',
-  borderColor: 'border-green-400',
+  bgColor: 'green-400',
+  fillColor: 'green-400',
+  borderColor: 'green-400',
 }
 
 const OtherColor = {
-  bgColor: 'bg-gray-400',
-  fillColor: 'fill-gray-400',
-  borderColor: 'border-gray-400',
+  bgColor: 'gray-400',
+  fillColor: 'gray-400',
+  borderColor: 'gray-400',
 }
 
 const getFileIconAndColor = (fileType: FileType) => {
@@ -73,7 +80,7 @@ type Props = {
   allowedFileTypes?: FileType[]
 }
 type SupportedFileType = {
-  type: FileType,
+  type: FileType
   allowedMimeTypes: MimeType[]
 }
 
@@ -84,7 +91,12 @@ const supportedFileTypes: SupportedFileType[] = [
   },
   {
     type: 'video',
-    allowedMimeTypes: ['video/mp4', 'video/webm', 'video/quicktime', 'image/gif'],
+    allowedMimeTypes: [
+      'video/mp4',
+      'video/webm',
+      'video/quicktime',
+      'image/gif',
+    ],
   },
 ]
 
@@ -97,14 +109,17 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
 
-  const allowedTypes = supportedFileTypes.filter(item => allowedFileTypes?.includes(item.type))
+  const allowedTypes = supportedFileTypes.filter(item =>
+    allowedFileTypes?.includes(item.type),
+  )
   const allowedFileMimeTypes = allowedTypes.map(type => type.allowedMimeTypes)
-  const fixedColorClassName = allowedTypes && allowedTypes.length === 1 ? getFileIconAndColor(allowedTypes[0].type).color : undefined
+  const fixedColorClassName =
+    allowedTypes && allowedTypes.length === 1
+      ? getFileIconAndColor(allowedTypes[0].type).color
+      : undefined
 
   // console.log({ allowedTypes, fixedColorClassName, uploadedFiles, filesToUpload })
 
-  // feel free to mode all these functions to separate utils
-  // here is just for simplicity
   const onUploadProgress = (
     progressEvent: AxiosProgressEvent,
     file: File,
@@ -115,19 +130,19 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     )
 
     if (progress === 100) {
-      setUploadedFiles((prevUploadedFiles) => {
+      setUploadedFiles(prevUploadedFiles => {
         return [...prevUploadedFiles, file]
       })
 
-      setFilesToUpload((prevUploadProgress) => {
-        return prevUploadProgress.filter((item) => item.File !== file)
+      setFilesToUpload(prevUploadProgress => {
+        return prevUploadProgress.filter(item => item.File !== file)
       })
 
       return
     }
 
-    setFilesToUpload((prevUploadProgress) => {
-      return prevUploadProgress.map((item) => {
+    setFilesToUpload(prevUploadProgress => {
+      return prevUploadProgress.map(item => {
         if (item.File.name === file.name) {
           return {
             ...item,
@@ -141,50 +156,45 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     })
   }
 
-  const uploadAssetToCloudinary = async (
+  const uploadAsset = async (
+    filename: File['name'],
+    contentType: File['type'],
     formData: FormData,
     onUploadProgress: (progressEvent: AxiosProgressEvent) => void,
     cancelSource: CancelTokenSource,
   ) => {
-    const signResponse = await axios.get('/api/media/upload/sign-request')
+    const signResponse = await axios.post('/api/media/upload/sign-request', {
+      filename,
+      contentType,
+    })
 
-    if (!signResponse) {
+    if (!signResponse || !signResponse.data) {
       throw new Error('sign request failed')
     }
 
-    const { apiKey, timestamp, signature, cloudName } = signResponse.data
+    const { signedUrl } = signResponse.data as { signedUrl: string }
 
-    formData.append('api_key', apiKey)
-    formData.append('timestamp', timestamp)
-    formData.append('signature', signature)
-    // formData.append('eager', 'c_pad,h_300,w_400|c_crop,h_200,w_260') // @todo: needs to match what's configured in api signing
-    formData.append('folder', 'user_uploads') // @todo: needs to match api signature config
-
-    return axios.post(
-      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-      formData,
-      {
-        onUploadProgress,
-        cancelToken: cancelSource.token,
-      },
-    )
+    return axios.post(signedUrl, formData, {
+      onUploadProgress,
+      cancelToken: cancelSource.token,
+    })
   }
 
   const removeFile = (file: File) => {
-    setFilesToUpload((prevUploadProgress) => {
-      return prevUploadProgress.filter((item) => item.File !== file)
+    setFilesToUpload(prevUploadProgress => {
+      return prevUploadProgress.filter(item => item.File !== file)
     })
 
-    setUploadedFiles((prevUploadedFiles) => {
-      return prevUploadedFiles.filter((item) => item !== file)
+    setUploadedFiles(prevUploadedFiles => {
+      return prevUploadedFiles.filter(item => item !== file)
     })
   }
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setFilesToUpload((prevUploadProgress) => {
+    setFilesToUpload(prevUploadProgress => {
       return [
         ...prevUploadProgress,
-        ...acceptedFiles.map((file) => {
+        ...acceptedFiles.map(file => {
           return {
             progress: 0,
             File: file,
@@ -195,14 +205,16 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
     })
 
     // cloudinary upload
-    const fileUploadBatch = acceptedFiles.map((file) => {
+    const fileUploadBatch = acceptedFiles.map(file => {
       const formData = new FormData()
       formData.append('file', file)
 
       const cancelSource = axios.CancelToken.source()
-      return uploadAssetToCloudinary(
+      return uploadAsset(
+        file.name,
+        file.type,
         formData,
-        (progressEvent) => onUploadProgress(progressEvent, file, cancelSource),
+        progressEvent => onUploadProgress(progressEvent, file, cancelSource),
         cancelSource,
       )
     })
@@ -217,80 +229,91 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
 
   // const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: allowedFileMimeTypes.map(item => ) })
   const { getRootProps, getInputProps } = useDropzone({
-    onDrop, accept: {
-      //@todo: produce better typing based on mediaType. image: [ 'mime/type1' ], video: [ 'mime/type1']...
-      //@todo: toggle this config based on prop fileType image/video/..
-      // 'image/jpg': [],
-      // 'image/jpeg': [],
-      // 'image/png': [],
-      // 'image/webp': [],
-    },
+    onDrop,
+    accept: allowedFileMimeTypes
+      .flatMap(mimeTypes => mimeTypes)
+      .reduce((acc: { [key: string]: string[] }, mimeType) => {
+        acc[mimeType] = []
+        return acc
+      }, {}),
   })
 
   return (
-    <div className='flex-grow'>
+    <div className="flex-grow">
       <div>
         <label
           {...getRootProps()}
-          className={cn('relative flex flex-col items-center justify-center w-full py-6 border rounded-lg cursor-pointer bg-card', `border-${fixedColorClassName}`)}
+          className={cn(
+            'relative flex flex-col items-center justify-center w-full py-6 border rounded-lg cursor-pointer bg-card',
+            `border-${fixedColorClassName}`,
+          )}
         >
-          <div className='text-center'>
-            <div className=' border p-2 rounded-md max-w-min mx-auto'>
+          <div className="text-center">
+            <div className=" border p-2 rounded-md max-w-min mx-auto">
               <UploadCloud size={20} />
             </div>
 
-            <p className='mt-2 text-sm text-muted-foreground'>
-              <span className='font-semibold'>Drag files</span>
+            <p className="mt-2 text-sm text-muted-foreground">
+              <span className="font-semibold">Drag files</span>
             </p>
-            <p className='text-xs text-muted-foreground'>
+            <p className="text-xs text-muted-foreground">
               Click to upload files &#40;files should be under 10 MB &#41;
             </p>
-            <p className='text-xs text-muted-foreground'>
-              {allowedFileTypes?.join(', ')} | ({allowedFileMimeTypes.join(', ')})
+            <p className="text-xs text-muted-foreground">
+              {allowedFileTypes?.join(', ')} | (
+              {allowedFileMimeTypes.join(', ')})
             </p>
           </div>
         </label>
 
         <Input
           {...getInputProps()}
-          id='dropzone-file'
+          id="dropzone-file"
           accept={allowedFileMimeTypes.join(', ')}
-          type='file'
-          className='hidden'
+          type="file"
+          className="hidden"
         />
       </div>
 
       {filesToUpload.length > 0 && (
-        <ScrollArea className='h-40'>
-          <p className='font-medium my-2 mt-4 text-muted-foreground text-sm'>
+        <ScrollArea className="h-40">
+          <p className="font-medium my-2 mt-4 text-muted-foreground text-sm">
             Uploading...
           </p>
-          <div className='bg-card space-y-2'>
-            {filesToUpload.map((fileUploadProgress) => {
+          <div className="bg-card space-y-2">
+            {filesToUpload.map(fileUploadProgress => {
               return (
                 <div
                   key={fileUploadProgress.File.lastModified}
-                  className='flex justify-between gap-2 rounded-lg overflow-hidden border border-border group'
+                  className="flex justify-between gap-2 rounded-lg overflow-hidden border border-border group"
                 >
-                  <div className='flex items-center flex-1 p-2'>
-                    <div className='text-white'>
-                      {getFileIconAndColor(getTypeByMimeType(fileUploadProgress.File.type as MimeType)).icon}
+                  <div className="flex items-center flex-1 p-2">
+                    <div className="text-white">
+                      {
+                        getFileIconAndColor(
+                          getTypeByMimeType(
+                            fileUploadProgress.File.type as MimeType,
+                          ),
+                        ).icon
+                      }
                     </div>
 
-                    <div className='w-full ml-2 space-y-1'>
-                      <div className='text-xs flex justify-between'>
-                        <p className='text-muted-foreground'>
+                    <div className="w-full ml-2 space-y-1">
+                      <div className="text-xs flex justify-between">
+                        <p className="text-muted-foreground">
                           {fileUploadProgress.File.name.slice(0, 25)}
                         </p>
-                        <span>
-                          {fileUploadProgress.progress}%
-                        </span>
+                        <span>{fileUploadProgress.progress}%</span>
                       </div>
                       <Progress
                         value={fileUploadProgress.progress}
-                        className={
-                          getFileIconAndColor(getTypeByMimeType(fileUploadProgress.File.type as MimeType)).color
-                        }
+                        className={`bg-${
+                          getFileIconAndColor(
+                            getTypeByMimeType(
+                              fileUploadProgress.File.type as MimeType,
+                            ),
+                          ).color
+                        }`}
                       />
                     </div>
                   </div>
@@ -300,7 +323,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
                         fileUploadProgress.source.cancel('Upload cancelled')
                       removeFile(fileUploadProgress.File)
                     }}
-                    className='bg-destructive text-destructive-foreground transition-all items-center justify-center cursor-pointer px-2 hidden group-hover:flex'
+                    className="bg-destructive text-destructive-foreground transition-all items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
                   >
                     <X size={20} />
                   </button>
@@ -312,24 +335,28 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
       )}
 
       {uploadedFiles.length > 0 && (
-        <div className='bg-card'>
-          <p className='font-medium my-2 mt-6 text-muted-foreground text-sm'>
+        <div className="bg-card">
+          <p className="font-medium my-2 mt-6 text-muted-foreground text-sm">
             Uploaded Files
           </p>
-          <div className='space-y-2 pr-3'>
-            {uploadedFiles.map((file) => {
+          <div className="space-y-2 pr-3">
+            {uploadedFiles.map(file => {
               return (
                 <div
                   key={file.lastModified}
-                  className='flex justify-between gap-2 rounded-lg overflow-hidden border border-border group hover:pr-0 pr-2 hover:border-border transition-all'
+                  className="flex justify-between gap-2 rounded-lg overflow-hidden border border-border group hover:pr-0 pr-2 hover:border-border transition-all"
                 >
-                  <div className='flex items-center flex-1 p-2'>
-                    <div className='text-white'>
-                      {getFileIconAndColor(getTypeByMimeType(file.type as MimeType)).icon}
+                  <div className="flex items-center flex-1 p-2">
+                    <div className="text-white">
+                      {
+                        getFileIconAndColor(
+                          getTypeByMimeType(file.type as MimeType),
+                        ).icon
+                      }
                     </div>
-                    <div className='w-full ml-2 space-y-1'>
-                      <div className='text-sm flex justify-between'>
-                        <p className='text-muted-foreground'>
+                    <div className="w-full ml-2 space-y-1">
+                      <div className="text-sm flex justify-between">
+                        <p className="text-muted-foreground">
                           {file.name.slice(0, 25)}
                         </p>
                       </div>
@@ -337,7 +364,7 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
                   </div>
                   <button
                     onClick={() => removeFile(file)}
-                    className='bg-destructive text-destructive-foreground transition-all items-center justify-center px-2 hidden group-hover:flex'
+                    className="bg-destructive text-destructive-foreground transition-all items-center justify-center px-2 hidden group-hover:flex"
                   >
                     <X size={20} />
                   </button>
