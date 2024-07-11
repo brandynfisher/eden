@@ -77,7 +77,7 @@ export type GeneratorParameterType =
   | 'string'
   | 'int'
   | 'float'
-  | 'boolean'
+  | 'bool'
   | 'lora'
   | 'video[]'
   | 'image[]'
@@ -86,7 +86,7 @@ export type GeneratorParameterType =
   | 'string[]'
   | 'int[]'
   | 'float[]'
-  | 'boolean[]'
+  | 'bool[]'
   | 'lora[]'
 
 export type GeneratorParameterV2 = {

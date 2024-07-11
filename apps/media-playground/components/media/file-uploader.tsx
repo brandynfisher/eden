@@ -109,7 +109,7 @@ type FileWithPreview = File & {
   preview?: string
 }
 
-const FileUpload = ({ allowedFileTypes }: Props) => {
+const FileUploader = ({ allowedFileTypes }: Props) => {
   const { toast } = useToast()
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
@@ -436,4 +436,4 @@ const FileUpload = ({ allowedFileTypes }: Props) => {
   )
 }
 
-export default FileUpload
+export default FileUploader

@@ -55,7 +55,8 @@ const registerGeneratorConfigs: FastifyPluginAsync = async fastify => {
 
       console.log(
         'New generator configs received:',
-        JSON.stringify(fastify.generatorConfigs.configs, null, 2),
+        // JSON.stringify(fastify.generatorConfigs.configs, null, 2),
+        fastify.generatorConfigs.configs.length,
       )
     }
 

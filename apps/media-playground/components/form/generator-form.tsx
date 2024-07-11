@@ -1,9 +1,6 @@
 'use client'
 
-// import ImageStyleSelector, {
-//   ImageStyle,
-// } from '@/components/form/image-style-selector'
-import SettingsFormDrawer from '@/components/form/settings-form-drawer'
+import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -20,10 +17,11 @@ import TypographyH3 from '@/components/ui/typography/TypographyH3'
 import { useToast } from '@/components/ui/use-toast'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema } from '@/lib/forms'
+import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Settings2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -50,13 +48,13 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                     type="number"
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value || parameter.default || 0}
+                    value={value === null ? undefined : value}
                   />
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
-          case 'boolean':
+          case 'bool':
             return (
               <FormItem className="mt-0 !px-4 !py-3">
                 <FormLabel>{label}</FormLabel>
@@ -83,7 +81,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                     className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value || parameter.default || ''}
+                    value={value === null ? '' : value}
                   />
                 </FormControl>
                 <FormMessage />
@@ -95,9 +93,51 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <Input
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value || parameter.default || ''}
+                    value={value === null ? '' : value}
                   />
                 </FormControl>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          case 'image':
+          case 'image[]':
+            return (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel>{label}</FormLabel>
+                <FormControl id={field.name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value}
+                  />
+                </FormControl>
+                <FileUploader
+                  allowedFileTypes={['image']}
+                  // maxFiles={parameter.max_length}
+                  // minFiles={parameter.min_length}
+                />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          case 'video':
+          case 'video[]':
+            return (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel>{label}</FormLabel>
+                <FormControl id={field.name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value}
+                  />
+                </FormControl>
+                <FileUploader
+                  allowedFileTypes={['video']}
+                  // maxFiles={parameter.max_length}
+                  // minFiles={parameter.min_length}
+                />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
@@ -109,7 +149,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <Input
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value || parameter.default || ''}
+                    value={value === null ? '' : value}
                   />
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -187,6 +227,8 @@ const GeneratorForm = ({ generator }: Props) => {
     }
   }
 
+  const [showForm, setShowForm] = useState(false)
+
   return (
     <div className="flex flex-col items-start">
       <Form {...form}>
@@ -195,26 +237,27 @@ const GeneratorForm = ({ generator }: Props) => {
           className="w-full sticky top-20 flex flex-col gap-2"
         >
           <TypographyH3>{generator.name}</TypographyH3>
-          {generator.parameters?.map(parameter => (
-            <div
-              key={parameter.name}
-              className="bg-popover rounded-lg overflow-hidden"
-            >
-              {renderFormField(parameter)}
-              {/*<ImageStyleSelector*/}
-              {/*  onChange={selectedStyles => setImageStyles(selectedStyles)}*/}
-              {/*/>*/}
-              {/*{imageStyles && imageStyles.length ? (*/}
-              {/*  <div className="text-xs">*/}
-              {/*    debug: selected styles*/}
-              {/*    <pre>{JSON.stringify(imageStyles, null, 2)}</pre>*/}
-              {/*  </div>*/}
-              {/*) : null}*/}
-            </div>
-          ))}
+          {generator.parameters
+            ?.filter(parameter => parameter.required)
+            ?.map(parameter => (
+              <div
+                key={parameter.name}
+                className="bg-popover rounded-lg overflow-hidden"
+              >
+                {renderFormField(parameter)}
+              </div>
+            ))}
 
-          <div className="flex gap-4 mt-4">
-            <SettingsFormDrawer />
+          <div className="flex gap-4 mt-4 mb-4">
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex items-center gap-2"
+              onClick={() => setShowForm(!showForm)}
+            >
+              <Settings2Icon className="h-4 w-4" />
+              Settings
+            </Button>
 
             <Button type="submit" className="ml-auto" disabled={isSubmitting}>
               {isSubmitting ? (
@@ -226,6 +269,23 @@ const GeneratorForm = ({ generator }: Props) => {
                 <>Create</>
               )}
             </Button>
+          </div>
+          <div
+            className={cn([
+              'w-full relative transition-all overflow-hidden',
+              showForm ? 'max-h-screen' : 'max-h-0',
+            ])}
+          >
+            {generator.parameters
+              ?.filter(parameter => !parameter.required)
+              ?.map(parameter => (
+                <div
+                  key={parameter.name}
+                  className="bg-popover rounded-lg overflow-hidden"
+                >
+                  {renderFormField(parameter)}
+                </div>
+              ))}
           </div>
         </form>
       </Form>

@@ -359,8 +359,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     _id: null,
   }
 
-  // we assume the connection to be unauthenticated by default
-  // console.log('WS:', metaData.connectionId, '[ Awaiting auth event ]')
+  // assume the connection to be unauthenticated by default
   try {
     // listen to internal message queue and forward task update events to the respective client
     const internalEmitterEventHandler = async (task: TaskV2Document) => {
