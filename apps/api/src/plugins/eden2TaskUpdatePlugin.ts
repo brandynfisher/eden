@@ -34,8 +34,9 @@ export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
             data.operationType === 'insert' ||
             data.operationType === 'update'
           ) {
-            fastify.log.info(`Task ${data.operationType} event`, {
-              taskId: data.fullDocument?._id,
+            fastify.log.info({
+              msg: `Task ${data.operationType} event`,
+              doc: data.fullDocument,
             })
 
             const updatedFields =

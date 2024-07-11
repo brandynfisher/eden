@@ -244,7 +244,10 @@ export const subscribeTaskUpdates = async (
   }
 
   const internalEmitterEventHandler = async (task: TaskV2Document) => {
-    // server.log.info({ msg: 'subscribeTaskUpdates::internalEmitterEventHandler', task })
+    server.log.info({
+      msg: 'subscribeTaskUpdates::internalEmitterEventHandler',
+      task,
+    })
     // server.log.info({ userId: userId, taskUser: task.user })
 
     // @todo: Could this be done more efficiently?
