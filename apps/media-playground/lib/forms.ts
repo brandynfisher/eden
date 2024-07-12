@@ -10,7 +10,7 @@ import {
 
 function defaultHelper<T extends ZodTypeAny>(
   schema: T,
-  defaultValue: string | number | null,
+  defaultValue: string | number | null | undefined,
 ): (T & ZodDefault<T>) | T {
   if (defaultValue !== null) {
     return schema.default(defaultValue) as T & ZodDefault<T>
@@ -28,9 +28,66 @@ function optionalHelper<T extends ZodTypeAny>(
   return schema
 }
 
+// function createNumberSchema(
+//   parameter: GeneratorParameterV2,
+// ): ZodNumber | ZodOptional<ZodNumber> | ZodDefault<ZodNumber> {
+//   let schema: ZodNumber = z.number()
+//
+//   if (parameter.minimum !== null) {
+//     schema = schema.min(parameter.minimum)
+//   }
+//
+//   if (parameter.maximum !== null) {
+//     schema = schema.max(parameter.maximum)
+//   }
+//
+//   // console.log(parameter.default, parameter.default === 'random' ? null : parameter.default)
+//   schema = defaultHelper(
+//     schema,
+//     parameter.default === 'random' || parameter.default === null
+//       ? null
+//       : parameter.default,
+//   )
+//   schema = optionalHelper(schema, !parameter.required)
+//
+//   if (parameter.type === 'int' || parameter.type === 'int[]') {
+//     schema = schema.refine(
+//       Number.isInteger,
+//       'Must be an integer',
+//     ) as unknown as ZodNumber
+//   }
+//
+//   return schema
+// }
+
 function createNumberSchema(
   parameter: GeneratorParameterV2,
 ): ZodNumber | ZodOptional<ZodNumber> | ZodDefault<ZodNumber> {
+  const isRandomSupported = parameter.default === 'random'
+
+  if (isRandomSupported) {
+    return z
+      .string()
+      .refine(
+        value => {
+          if (value === '' || value === 'random') {
+            return true
+          }
+          const numberValue = Number(value)
+          return Number.isInteger(numberValue) && numberValue > 0
+        },
+        {
+          message: 'Expected a positive number or random',
+        },
+      )
+      .transform(value => {
+        if (value === '' || value === 'random') {
+          return undefined
+        }
+        return Number(value)
+      })
+  }
+
   let schema: ZodNumber = z.number()
 
   if (parameter.minimum !== null) {
@@ -41,21 +98,12 @@ function createNumberSchema(
     schema = schema.max(parameter.maximum)
   }
 
-  // console.log(parameter.default, parameter.default === 'random' ? null : parameter.default)
-  schema = defaultHelper(
-    schema,
-    parameter.default === 'random' || parameter.default === null
-      ? null
-      : parameter.default,
-  )
-  schema = optionalHelper(schema, !parameter.required)
-
   if (parameter.type === 'int' || parameter.type === 'int[]') {
-    schema = schema.refine(
-      Number.isInteger,
-      'Must be an integer',
-    ) as unknown as ZodNumber
+    schema = schema.refine(Number.isInteger, 'Must be an integer')
   }
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
 
   return schema
 }
