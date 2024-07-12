@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,18 +38,22 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
       name={name}
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value } = field
+
         switch (parameter.type) {
           case 'int':
           case 'float':
             return (
               <FormItem className="mt-0 !px-4 !py-3">
-                <FormLabel>{label}</FormLabel>
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
                 <FormControl id={field.name}>
                   <Input
                     type="number"
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? undefined : value}
+                    value={value}
                   />
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -56,20 +61,26 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           case 'bool':
             return (
-              <FormItem className="mt-0 !px-4 !py-3">
-                <FormLabel>{label}</FormLabel>
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
                 <FormControl id={field.name}>
                   <Switch
                     checked={value}
-                    onChange={e =>
-                      onChange((e.target as HTMLInputElement).checked)
-                    }
+                    onCheckedChange={checked => onChange(checked)}
                   />
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
+              // <FormItem className="mt-0 !px-4 !py-3">
+              //   <FormLabel>{label}</FormLabel>
+              //
+              // </FormItem>
             )
           case 'string':
+          case 'string[]':
             return field.name === 'prompt' ? (
               <FormItem className="mt-0 !px-4 !py-3">
                 <FormLabel className="sr-only">{label}</FormLabel>
@@ -88,7 +99,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
               </FormItem>
             ) : (
               <FormItem className="mt-0 !px-4 !py-3">
-                <FormLabel>{label}</FormLabel>
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
                 <FormControl id={field.name}>
                   <Input
                     onChange={onChange}
@@ -104,6 +118,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             return (
               <FormItem className="mt-0 !px-4 !py-3">
                 <FormLabel>{label}</FormLabel>
+                <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
                   <Input
                     className={'hidden'}
@@ -125,6 +140,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             return (
               <FormItem className="mt-0 !px-4 !py-3">
                 <FormLabel>{label}</FormLabel>
+                <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
                   <Input
                     className={'hidden'}
@@ -145,6 +161,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             return (
               <FormItem className="mt-0 !px-4 !py-3">
                 <FormLabel>{label}</FormLabel>
+                <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
                   <Input
                     onChange={onChange}
@@ -163,7 +180,6 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
 
 const GeneratorForm = ({ generator }: Props) => {
   const { verifyAuth } = useAuthState()
-  // const [imageStyles, setImageStyles] = useState<ImageStyle[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
@@ -180,6 +196,7 @@ const GeneratorForm = ({ generator }: Props) => {
   const { toast } = useToast()
 
   async function onSubmit(formData: z.infer<typeof parameterSchema>) {
+    console.log('try onSubmit', formData)
     if (!(await verifyAuth())) {
       return
     }
@@ -237,16 +254,19 @@ const GeneratorForm = ({ generator }: Props) => {
           className="w-full sticky top-20 flex flex-col gap-2"
         >
           <TypographyH3>{generator.name}</TypographyH3>
-          {generator.parameters
-            ?.filter(parameter => parameter.required)
-            ?.map(parameter => (
-              <div
-                key={parameter.name}
-                className="bg-popover rounded-lg overflow-hidden"
-              >
-                {renderFormField(parameter)}
-              </div>
-            ))}
+
+          <div className="flex flex-col gap-4">
+            {generator.parameters
+              ?.filter(parameter => parameter.required)
+              ?.map(parameter => (
+                <div
+                  key={parameter.name}
+                  className="bg-popover rounded-lg overflow-hidden"
+                >
+                  {renderFormField(parameter)}
+                </div>
+              ))}
+          </div>
 
           <div className="flex gap-4 mt-4 mb-4">
             <Button
@@ -272,7 +292,7 @@ const GeneratorForm = ({ generator }: Props) => {
           </div>
           <div
             className={cn([
-              'w-full relative transition-all overflow-hidden',
+              'flex flex-col gap-2 w-full relative transition-all overflow-hidden',
               showForm ? 'max-h-screen' : 'max-h-0',
             ])}
           >

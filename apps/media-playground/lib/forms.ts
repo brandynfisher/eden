@@ -36,6 +36,7 @@ function createNumberSchema(
   if (parameter.minimum !== null) {
     schema = schema.min(parameter.minimum)
   }
+
   if (parameter.maximum !== null) {
     schema = schema.max(parameter.maximum)
   }
@@ -43,7 +44,9 @@ function createNumberSchema(
   // console.log(parameter.default, parameter.default === 'random' ? null : parameter.default)
   schema = defaultHelper(
     schema,
-    parameter.default === 'random' ? null : parameter.default,
+    parameter.default === 'random' || parameter.default === null
+      ? null
+      : parameter.default,
   )
   schema = optionalHelper(schema, !parameter.required)
 
