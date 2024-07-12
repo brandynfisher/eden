@@ -96,25 +96,10 @@ export type GeneratorParameterV2 = {
   tip: string | null
   type: GeneratorParameterType
   required: boolean
-  default: string | number | null
-  minimum: number | null
-  maximum: number | null
-  min_length: number | null
-  max_length: number | null
-  choices: Array<string | number> | null
-  // name: string
-  // label: string
-  // type: 'string' | 'image' | 'int' | 'float' | 'lora' | 'boo'
-  // description?: string
-  // isRequired?: boolean
-  // optional?: boolean
-  // default?: any
-  // allowedValues?: any[]
-  // allowedValuesFrom?: string
-  // minimum?: number
-  // maximum?: number
-  // step?: number
-  // minLength?: number
-  // maxLength?: number
-  // mediaUpload?: string
+  default: string | number | null | undefined
+  minimum: number | null | undefined
+  maximum: number | null | undefined
+  min_length: number | null | undefined
+  max_length: number | null | undefined
+  choices: Array<string | number> | null | undefined
 }

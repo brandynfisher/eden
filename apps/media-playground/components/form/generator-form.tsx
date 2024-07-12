@@ -38,10 +38,15 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
       name={name}
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value } = field
-
+        let parsedValue: number | undefined
         switch (parameter.type) {
           case 'int':
           case 'float':
+            parsedValue = Number(value)
+            if (isNaN(parsedValue)) {
+              parsedValue = undefined
+            }
+
             return (
               <FormItem className="mt-0 !px-4 !py-3">
                 <div className="space-y-0.5">
@@ -51,9 +56,13 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                 <FormControl id={field.name}>
                   <Input
                     type="number"
-                    onChange={onChange}
+                    onChange={e =>
+                      onChange(
+                        e.target.value ? parseFloat(e.target.value) : undefined,
+                      )
+                    }
                     onBlur={onBlur}
-                    value={value}
+                    value={parsedValue}
                   />
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -74,10 +83,6 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
-              // <FormItem className="mt-0 !px-4 !py-3">
-              //   <FormLabel>{label}</FormLabel>
-              //
-              // </FormItem>
             )
           case 'string':
           case 'string[]':
@@ -92,7 +97,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                     className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? '' : value}
+                    value={value || ''}
                   />
                 </FormControl>
                 <FormMessage />
@@ -259,10 +264,7 @@ const GeneratorForm = ({ generator }: Props) => {
             {generator.parameters
               ?.filter(parameter => parameter.required)
               ?.map(parameter => (
-                <div
-                  key={parameter.name}
-                  className="bg-popover rounded-lg overflow-hidden"
-                >
+                <div key={parameter.name} className="bg-popover rounded-lg">
                   {renderFormField(parameter)}
                 </div>
               ))}
@@ -293,16 +295,13 @@ const GeneratorForm = ({ generator }: Props) => {
           <div
             className={cn([
               'flex flex-col gap-2 w-full relative transition-all overflow-hidden',
-              showForm ? 'max-h-screen' : 'max-h-0',
+              showForm ? 'max-h-full' : 'max-h-0',
             ])}
           >
             {generator.parameters
               ?.filter(parameter => !parameter.required)
               ?.map(parameter => (
-                <div
-                  key={parameter.name}
-                  className="bg-popover rounded-lg overflow-hidden"
-                >
+                <div key={parameter.name} className="bg-popover rounded-lg">
                   {renderFormField(parameter)}
                 </div>
               ))}
