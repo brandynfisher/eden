@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/components/ui/use-toast'
+import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
@@ -77,9 +78,6 @@ const getFileIconAndColor = (fileType: FileType) => {
   }
 }
 
-type Props = {
-  allowedFileTypes?: FileType[]
-}
 type SupportedFileType = {
   type: FileType
   allowedMimeTypes: MimeType[]
@@ -107,9 +105,16 @@ const getTypeByMimeType = (mimeType: MimeType) => {
 
 type FileWithPreview = File & {
   preview?: string
+  fileUrl?: string
 }
 
-const FileUploader = ({ allowedFileTypes }: Props) => {
+type Props = {
+  onChange: (fileUrls: string | string[]) => void
+  allowedFileTypes?: FileType[]
+  maxFiles?: number
+}
+
+const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
   const { toast } = useToast()
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
@@ -117,6 +122,7 @@ const FileUploader = ({ allowedFileTypes }: Props) => {
   const allowedTypes = supportedFileTypes.filter(item =>
     allowedFileTypes?.includes(item.type),
   )
+
   const allowedFileMimeTypes = allowedTypes.map(type => type.allowedMimeTypes)
   const fixedColorClassName =
     allowedTypes && allowedTypes.length === 1
@@ -170,24 +176,20 @@ const FileUploader = ({ allowedFileTypes }: Props) => {
     onUploadProgress: (progressEvent: AxiosProgressEvent) => void,
     cancelSource: CancelTokenSource,
   ) => {
-    const signResponse = await axios.post('/api/media/upload/sign-request', {
-      filename: file.name,
-      contentType: file.type,
-    })
-
-    if (!signResponse || !signResponse.data) {
-      throw new Error('sign request failed')
+    try {
+      return uploadFileToS3({
+        file,
+        onUploadProgress,
+        cancelSource,
+      })
+    } catch (e) {
+      console.log(e)
+      toast({
+        className: 'flex p-4 text-red-600',
+        title: 'Failed to upload file',
+        description: <div className="rounded-md text-primary">{file.name}</div>,
+      })
     }
-
-    const { signedUrl } = signResponse.data as { signedUrl: string }
-
-    return axios.put(signedUrl, file, {
-      headers: {
-        'Content-Type': file.type,
-      },
-      onUploadProgress,
-      cancelToken: cancelSource.token,
-    })
   }
 
   const removeFile = (file: File) => {
@@ -196,61 +198,85 @@ const FileUploader = ({ allowedFileTypes }: Props) => {
     })
 
     setUploadedFiles(prevUploadedFiles => {
-      return prevUploadedFiles.filter(item => item !== file)
+      const newState = prevUploadedFiles.filter(item => item !== file)
+      console.log(
+        'onChange',
+        newState.map(item => (item ? item.fileUrl || '' : '')).filter(Boolean),
+      )
+
+      const filtered = newState
+        .map(item => (item ? item.fileUrl || '' : ''))
+        .filter(Boolean)
+      onChange(maxFiles === 1 ? filtered[0] : filtered)
+      return newState
     })
   }
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setFilesToUpload(prevUploadProgress => {
-      return [
-        ...prevUploadProgress,
-        ...acceptedFiles.map(file => {
-          return {
-            progress: 0,
-            File: file,
-            source: null,
-          }
-        }),
-      ]
-    })
-
-    // cloudinary upload
-    const fileUploadBatch = acceptedFiles.map(file => {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const cancelSource = axios.CancelToken.source()
-      return uploadAsset(
-        file,
-        progressEvent => onUploadProgress(progressEvent, file, cancelSource),
-        cancelSource,
-      )
-    })
-
-    try {
-      await Promise.all(fileUploadBatch)
-      toast({
-        className: 'flex p-4',
-        title: 'Upload finished',
-        description: (
-          <div className="mt-2 rounded-md bg-popover p-2">
-            <code className=" text-xs text-foreground">
-              {acceptedFiles.length} Files
-            </code>
-          </div>
-        ),
-        // action: <ToastAction altText="Go to task">Show Task</ToastAction>,
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      setFilesToUpload(prevUploadProgress => {
+        return [
+          ...prevUploadProgress,
+          ...acceptedFiles.map(file => {
+            return {
+              progress: 0,
+              File: file,
+              source: null,
+            }
+          }),
+        ]
       })
-    } catch (error) {
-      console.error('Error uploading files: ', error)
-    }
-  }, [])
+
+      // upload a batch of files
+      const fileUploadBatch = acceptedFiles.map(file => {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const cancelSource = axios.CancelToken.source()
+        return uploadAsset(
+          file,
+          progressEvent => onUploadProgress(progressEvent, file, cancelSource),
+          cancelSource,
+        )
+      })
+
+      try {
+        const uploadRes = await Promise.all(fileUploadBatch)
+
+        if (!uploadRes) {
+          return false
+        }
+
+        const newUrls = uploadRes
+          .map(item => (item ? item?.fileUrl : ''))
+          .filter(Boolean)
+        // console.log('onChange', newUrls)
+        onChange(maxFiles === 1 ? newUrls[0] : newUrls)
+
+        toast({
+          className: 'flex p-4',
+          title: 'Upload finished',
+          description: (
+            <div className="mt-2 rounded-md bg-popover p-2">
+              <code className=" text-xs text-foreground">
+                {acceptedFiles.length} Files
+              </code>
+            </div>
+          ),
+          // action: <ToastAction altText="Go to task">Show Task</ToastAction>,
+        })
+      } catch (error) {
+        console.error('Error uploading files: ', error)
+      }
+    },
+    [onChange],
+  )
 
   // const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: allowedFileMimeTypes.map(item => ) })
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    multiple: true, // @todo: config based on passed in prop
-    maxFiles: 2, //@todo: config based on passed in prop
+    multiple: !!(maxFiles && maxFiles > 1),
+    maxFiles: maxFiles && maxFiles > 1 ? maxFiles : 1,
     accept: allowedFileMimeTypes
       .flatMap(mimeTypes => mimeTypes)
       .reduce((acc: { [key: string]: string[] }, mimeType) => {

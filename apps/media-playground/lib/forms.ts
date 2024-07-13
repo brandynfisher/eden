@@ -1,5 +1,6 @@
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import {
+  ZodArray,
   ZodDefault,
   ZodNumber,
   ZodOptional,
@@ -76,9 +77,61 @@ function createStringSchema(
   return schema
 }
 
+function createFileUrlSchema(
+  parameter: GeneratorParameterV2,
+): ZodString | ZodOptional<ZodString> | ZodDefault<ZodString> {
+  let schema: ZodString = z.string()
+
+  if (parameter.min_length !== undefined && parameter.min_length !== null) {
+    schema = schema.min(
+      parameter.min_length,
+      `Must be at least ${parameter.min_length} characters long`,
+    )
+  }
+  if (parameter.max_length !== undefined && parameter.max_length !== null) {
+    schema = schema.max(
+      parameter.max_length,
+      `Must be less than ${parameter.max_length} characters long`,
+    )
+  }
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
+
+  return schema
+}
+
+function createFileUrlArraySchema(
+  parameter: GeneratorParameterV2,
+):
+  | ZodArray<ZodString>
+  | ZodOptional<ZodArray<ZodString>>
+  | ZodDefault<ZodArray<ZodString>> {
+  let schema: ZodArray<ZodString> = z.array(z.string())
+
+  if (parameter.min_length !== undefined && parameter.min_length !== null) {
+    schema = schema.min(
+      parameter.min_length,
+      `Must be at least ${parameter.min_length} characters long`,
+    )
+  }
+  if (parameter.max_length !== undefined && parameter.max_length !== null) {
+    schema = schema.max(
+      parameter.max_length,
+      `Must be less than ${parameter.max_length} characters long`,
+    )
+  }
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
+
+  return schema
+}
+
 export function createZodParameterSchema(
   parameter: GeneratorParameterV2,
 ): ZodTypeAny {
+  //@todo: make array[type] schema validation explicit
   switch (parameter.type) {
     case 'int':
     case 'int[]':
@@ -88,14 +141,17 @@ export function createZodParameterSchema(
     case 'bool':
     case 'bool[]':
     case 'string':
-    case 'string[]':
-    case 'video':
-    case 'video[]':
-    case 'image':
-    case 'image[]':
     case 'lora':
     case 'lora[]':
       return createStringSchema(parameter)
+    case 'video':
+      return createFileUrlSchema(parameter)
+    case 'image':
+      return createFileUrlSchema(parameter)
+    case 'video[]':
+      return createFileUrlArraySchema(parameter)
+    case 'image[]':
+      return createFileUrlArraySchema(parameter)
     default:
       throw new Error(`${parameter.type} not supported.`)
   }

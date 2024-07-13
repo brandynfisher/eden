@@ -133,8 +133,11 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   />
                 </FormControl>
                 <FileUploader
+                  onChange={onChange}
                   allowedFileTypes={['image']}
-                  // maxFiles={parameter.max_length}
+                  maxFiles={
+                    parameter.max_length !== null ? parameter.max_length : 1
+                  }
                   // minFiles={parameter.min_length}
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -155,8 +158,11 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   />
                 </FormControl>
                 <FileUploader
+                  onChange={onChange}
                   allowedFileTypes={['video']}
-                  // maxFiles={parameter.max_length}
+                  maxFiles={
+                    parameter.max_length !== null ? parameter.max_length : 1
+                  }
                   // minFiles={parameter.min_length}
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
