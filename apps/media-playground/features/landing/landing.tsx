@@ -24,11 +24,6 @@ const Landing = () => {
           title={'React Query'}
           text={'Sandbox for ReactQuery'}
         />
-        <LinkCard
-          href={'/sandbox/graphql'}
-          title={'Apollo'}
-          text={'Sandbox for Apollo/GraphQL'}
-        />
       </div>
     </div>
   )

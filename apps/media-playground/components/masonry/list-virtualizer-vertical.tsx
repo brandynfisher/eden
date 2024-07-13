@@ -6,7 +6,6 @@ import { useMediaQuery } from '@/hooks/use-media-query'
 import { fetcher } from '@/lib/fetcher'
 import {
   TaskV2,
-  TasksV2ListArguments,
   TasksV2ListResponse,
   transformArgsIntoURLParams,
 } from '@edenlabs/eden-sdk'
@@ -20,15 +19,15 @@ const QUERY_LIMIT = 35
 type Props = {
   apiEndpoint: string
   render: ({ item }: { item: TaskV2 }) => React.JSX.Element
-  baseQueryKey: string[]
-  filter: { [key: string]: string }
+  query: { [key: string]: unknown }
+  queryKey: unknown[]
 }
 
 const ListVirtualizerVertical = ({
   apiEndpoint,
   render,
-  filter,
-  baseQueryKey,
+  query,
+  queryKey,
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
@@ -44,20 +43,10 @@ const ListVirtualizerVertical = ({
     )
   }, [MASONRY_COLUMN_COUNT, masonryWrapWidth])
 
-  // @todo: pass this in as props
-  const query: TasksV2ListArguments = {
-    limit: 35,
-    sort: ['createdAt;-1'],
-    ...filter,
-  }
-
-  // @todo: generate key from relevant filter / query params
-  const queryKey = [...baseQueryKey, query]
-
   const {
-    // status,
+    status,
     data,
-    // error,
+    error,
     // isFetching,
     isFetchingNextPage,
     fetchNextPage,
@@ -74,18 +63,14 @@ const ListVirtualizerVertical = ({
             }
           : query,
       )}`
-      // console.log(queryUrl)
       return fetcher(queryUrl)
     },
     staleTime: 1000000000,
     getNextPageParam: (lastPage: TasksV2ListResponse) => {
-      // console.log('nextPageParam', lastPage.nextCursor)
-      return lastPage.nextPage
+      return lastPage.nextPage ? lastPage.nextPage : undefined
     },
     initialPageParam: 1,
   })
-
-  // console.log({queryKey, query})
 
   const allRows = useMemo(() => {
     return data?.pages?.flatMap(d => d.docs) || []
@@ -166,11 +151,15 @@ const ListVirtualizerVertical = ({
         </div>
       )
     },
-    [allRows, hasNextPage, rowVirtualizer, columnWidth],
+    [render, allRows, hasNextPage, rowVirtualizer, columnWidth],
   )
 
   return (
-    <div ref={masonryWrapRef} className="flex">
+    <div
+      data-test-id="list-virtualizer-vertical"
+      ref={masonryWrapRef}
+      className="flex"
+    >
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
@@ -178,9 +167,23 @@ const ListVirtualizerVertical = ({
           position: 'relative',
         }}
       >
+        {!allRows.length ? (
+          <div className="bg-primary/10 w-full h-full flex justify-center rounded-lg">
+            {status === 'pending' ? (
+              <LoadingIndicator />
+            ) : (
+              <div className="py-3 px-4 self-center">
+                No recent tasks found.
+              </div>
+            )}
+          </div>
+        ) : null}
+
         {rowVirtualizer
           .getVirtualItems()
           .map(virtualItem => renderItem(virtualItem))}
+
+        {error ? <div className="text-destructive">{error.message}</div> : null}
       </div>
     </div>
   )

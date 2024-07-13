@@ -1,4 +1,7 @@
-import { GeneratorsGetArgumentsV2 } from '@edenlabs/eden-sdk'
+import {
+  GeneratorsGetArgumentsV2,
+  GeneratorsListArgumentsV2,
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getGenerator = async (
@@ -6,21 +9,21 @@ export const getGenerator = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { generatorName } = request.params as GeneratorsGetArgumentsV2
+  const { generatorKey } = request.params as GeneratorsGetArgumentsV2
 
-  if (!server.generatorConfigs) {
+  if (!server.generatorConfigs || !server.generatorConfigs.configs) {
     return reply.status(500).send({
       message: `No generators configured`,
     })
   }
 
-  const generatorConfig = server.generatorConfigs.find(
-    config => config.name === generatorName,
+  const generatorConfig = server.generatorConfigs.configs.find(
+    generator => generator.key === generatorKey,
   )
 
   if (!generatorConfig) {
     return reply.status(404).send({
-      message: `Generator '${generatorName}' not found`,
+      message: `Generator '${generatorKey}' not found`,
     })
   }
 
@@ -29,16 +32,22 @@ export const getGenerator = async (
 
 export const listGenerators = async (
   server: FastifyInstance,
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  if (!server.generatorConfigs) {
+  const { hideParams } = request.query as GeneratorsListArgumentsV2
+
+  if (!server.generatorConfigs || !server.generatorConfigs.configs) {
     return reply.status(500).send({
       message: `No generators configured`,
     })
   }
 
-  console.log(server.generatorConfigs)
-
-  return reply.status(200).send({ generators: server.generatorConfigs })
+  return reply
+    .status(200)
+    .send({
+      generators: hideParams
+        ? server.generatorConfigs.list
+        : server.generatorConfigs.configs,
+    })
 }

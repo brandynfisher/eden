@@ -1,49 +1,37 @@
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import axios from 'axios'
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 
-const dummyConfig: GeneratorV2[] = [
-  {
-    name: 'txt2img',
-    title: 'Text to Image',
-    outputType: 'image',
-    parameters: [
-      {
-        name: 'prompt',
-        label: 'Text Prompt',
-        type: 'text',
-      },
-    ],
-  },
-  {
-    name: 'xhibit/vton',
-    title: 'xhibit/vton',
-    outputType: 'image',
-    parameters: [
-      {
-        name: 'prompt',
-        label: 'Text Prompt',
-        type: 'text',
-      },
-      {
-        name: 'look_image',
-        label: 'Look Image',
-        type: 'image',
-      },
-      {
-        name: 'lora',
-        label: 'Lora',
-        type: 'model',
-      },
-    ],
-  },
-]
+export type GeneratorConfig = {
+  configs: GeneratorV2[]
+  list: Partial<GeneratorV2[]>
+}
 
-// TODO: Implement actual GET request towards modal API app
 const fetchConfigs = async (
-  _fastify: FastifyInstance,
-): Promise<GeneratorV2[]> => {
-  // return fastify.generatorConfigs ? [dummyConfigB] : [dummyConfigA]
-  return dummyConfig
+  server: FastifyInstance,
+): Promise<GeneratorConfig> => {
+  console.log('fetchConfigs', `${server.config.EDEN_COMPUTE_API_URL}/tools`)
+  const modalResponse = await axios.get(
+    `${server.config.EDEN_COMPUTE_API_URL}/tools`,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  const configs = Array.from(modalResponse.data as GeneratorV2[])
+  const list = Array.from(modalResponse.data as GeneratorV2[]).map(config => {
+    return {
+      ...config,
+      parameters: undefined,
+    }
+  })
+
+  return {
+    configs,
+    list,
+  }
 }
 
 const REFRESH_INTERVAL_MS = 10 * 60 * 1000
@@ -64,9 +52,11 @@ const registerGeneratorConfigs: FastifyPluginAsync = async fastify => {
       }
 
       fastify.generatorConfigs = newConfigs
+
       console.log(
         'New generator configs received:',
-        JSON.stringify(fastify.generatorConfigs, null, 2),
+        // JSON.stringify(fastify.generatorConfigs.configs, null, 2),
+        fastify.generatorConfigs.configs.length,
       )
     }
 
@@ -87,6 +77,6 @@ export default registerGeneratorConfigs
 
 declare module 'fastify' {
   interface FastifyInstance {
-    generatorConfigs: GeneratorV2[]
+    generatorConfigs: GeneratorConfig
   }
 }

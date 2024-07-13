@@ -1,4 +1,4 @@
-import { TaskDocument } from '../models/Task'
+import { TaskV2Document } from '../models/v2/TaskV2'
 import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
 import { FastifyInstance } from 'fastify'
 
@@ -7,10 +7,10 @@ type GenericUpdate = { [key: string]: string | number | boolean }
 // updated fields are a flat structure that uses dot notation for sub documents, e.g. { 'task.output.files.0': 'http://12312312' }
 export const handleTaskUpdateStreamEvent = async (
   server: FastifyInstance,
-  task: TaskDocument,
+  task: TaskV2Document,
   _updatedFields?: GenericUpdate,
 ) => {
-  // console.log('handleTaskUpdateStreamEvent', { updatedFields, task })
+  server.log.info({ msg: 'handleTaskUpdateStreamEvent', task })
   // const isStatusChange = !updatedFields || !!updatedFields.status
 
   // // @todo: is there any thing specific we need to do based on

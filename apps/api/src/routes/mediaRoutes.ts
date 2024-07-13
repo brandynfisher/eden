@@ -17,7 +17,6 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       response: {
@@ -37,7 +36,6 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: Type.Object({
@@ -61,7 +59,6 @@ const mediaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       response: {

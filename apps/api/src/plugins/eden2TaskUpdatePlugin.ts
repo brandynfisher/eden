@@ -1,10 +1,10 @@
 import { handleTaskUpdateStreamEvent } from '../lib/eden2'
-import { TaskDocument } from '../models/Task'
+import { TaskV2Document } from '../models/v2/TaskV2'
 import { FastifyPluginAsync } from 'fastify'
 import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
 
 const WATCHED_COLLECTION = 'tasks2'
-export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
+export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
   try {
     const task2Collection =
       fastify.mongoose.connection.db.collection(WATCHED_COLLECTION)
@@ -24,9 +24,10 @@ export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
 
     taskChangeStream.on(
       'change',
-      async (data: ChangeStreamDocument<TaskDocument>) => {
+      async (data: ChangeStreamDocument<TaskV2Document>) => {
         try {
-          fastify.log.debug('Task change stream event received', {
+          fastify.log.info({
+            msg: 'Task change stream event received',
             operationType: data.operationType,
           })
 
@@ -34,8 +35,9 @@ export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
             data.operationType === 'insert' ||
             data.operationType === 'update'
           ) {
-            fastify.log.info(`Task ${data.operationType} event`, {
-              taskId: data.fullDocument?._id,
+            fastify.log.info({
+              msg: `Task DB event: ${data.operationType} `,
+              doc: data.fullDocument,
             })
 
             const updatedFields =
@@ -45,7 +47,7 @@ export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
 
             await handleTaskUpdateStreamEvent(
               fastify,
-              data.fullDocument as TaskDocument,
+              data.fullDocument as TaskV2Document,
               updatedFields,
             )
           }
@@ -78,4 +80,4 @@ export const registerEden2Tasks: FastifyPluginAsync = async fastify => {
   }
 }
 
-export default registerEden2Tasks
+export default registerEden2TaskUpdates

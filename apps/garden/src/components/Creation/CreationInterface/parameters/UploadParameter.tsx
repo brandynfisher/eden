@@ -1,14 +1,14 @@
 import ParameterLabel from '@/components/Creation/CreationInterface/parameters/ParameterLabel'
 import { handleAxiosError } from '@/lib/fetcher'
+import { UploadRequestOptions, getBase64, uploadFileToS3 } from '@/lib/files'
 import { truncateText } from '@/lib/string'
 import { GeneratorParameter } from '@edenlabs/eden-sdk'
 import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined'
-import { Form, FormInstance, message, Modal, Row, Upload } from 'antd'
+import { sendGTMEvent } from '@next/third-parties/google'
+import { Form, FormInstance, Modal, Row, Upload, message } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface'
 import React, { useEffect, useState } from 'react'
-import { sendGTMEvent } from '@next/third-parties/google'
-import { getBase64, uploadChunkedFileToCloudinary, uploadFileToS3, UploadRequestOptions } from '@/lib/files'
 
 const { Dragger } = Upload
 
@@ -41,7 +41,7 @@ const UploadParameter = (props: {
       content: (
         <div>
           <div>Upload error {truncateText(messageKey, 20)}</div>
-          <div className='text-red-500'>{errorMessage}</div>
+          <div className="text-red-500">{errorMessage}</div>
         </div>
       ),
       duration: 3,
@@ -166,24 +166,25 @@ const UploadParameter = (props: {
   const customRequest = async (options: UploadRequestOptions) => {
     try {
       // Only image/video should go to cloudinary. Raw/Zip goes to S3
-      if (options.file.type.startsWith('application')) {
-        await uploadFileToS3(options)
-        return
-      }
-      await uploadChunkedFileToCloudinary(options)
+      // if (options.file.type.startsWith('application')) {
+      await uploadFileToS3(options)
+      // return
+      // }
+      // await uploadChunkedFileToCloudinary(options)
     } catch (error) {
       handleAxiosError(error, message)
     }
   }
 
-  const shouldHideUploadButton = fileList.length >= (props.parameter.maxLength || 1)
+  const shouldHideUploadButton =
+    fileList.length >= (props.parameter.maxLength || 1)
 
   return (
     <>
       {contextHolder}
       <Row>
         <Form.Item
-          className='mb-2 max-w-full w-full'
+          className="mb-2 max-w-full w-full"
           initialValue={props.parameter.default}
           label={
             props.parameter.label ? (
@@ -202,9 +203,9 @@ const UploadParameter = (props: {
           ]}
         >
           <Dragger
-            name='file'
+            name="file"
             fileList={fileList}
-            listType='picture'
+            listType="picture"
             className={shouldHideUploadButton ? 'upload-btn-hidden' : ''}
             onChange={handleChange}
             accept={props.acceptedMimeTypes ? props.acceptedMimeTypes : ''}
@@ -215,8 +216,7 @@ const UploadParameter = (props: {
             // @ts-ignore
             customRequest={customRequest}
           >
-            <div
-              className='flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500'>
+            <div className="flex gap-2 items-center justify-center px-2 text-gray-700 dark:text-gray-500 hover:!text-blue-500">
               <FileUploadOutlined />
               <div>
                 Click here or drag files to upload (max.{' '}
@@ -232,7 +232,7 @@ const UploadParameter = (props: {
         footer={null}
         onCancel={() => setPreviewOpen(false)}
       >
-        <img alt='example' className='w-full' src={previewImage} />
+        <img alt="example" className="w-full" src={previewImage} />
       </Modal>
     </>
   )

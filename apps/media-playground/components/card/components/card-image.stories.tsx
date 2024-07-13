@@ -1,20 +1,20 @@
-import CardMedia from '@/components/card/components/card-media'
+import CardImage from '@/components/card/components/card-image'
 import squareImageFile from '@/stories/assets/placeholder/dummy_1024x1024_ffffff_333.webp'
 import { MediaType } from '@edenlabs/eden-sdk'
 import type { Meta, StoryObj } from '@storybook/react'
 
-const meta: Meta<typeof CardMedia> = {
-  title: 'Molecules/Card/CardMedia',
-  component: CardMedia,
+const meta: Meta<typeof CardImage> = {
+  title: 'Molecules/Card/CardImage',
+  component: CardImage,
   render: ({ ...args }) => (
     <div className="min-w-64 max-w-sm">
-      <CardMedia {...args} />
+      <CardImage {...args} />
     </div>
   ),
   parameters: {
     layout: 'centered',
   },
-} satisfies Meta<typeof CardMedia>
+} satisfies Meta<typeof CardImage>
 
 export default meta
 type Story = StoryObj<typeof meta>
@@ -28,7 +28,6 @@ export const Default: Story = {
       height: squareImageFile.height,
       type: MediaType.Image,
     },
-    linkHref: '/item/id',
   },
 }
 
@@ -41,7 +40,6 @@ export const Loading: Story = {
       height: squareImageFile.height,
       type: MediaType.Image,
     },
-    linkHref: '/item/id',
   },
 }
 
@@ -54,6 +52,5 @@ export const Error: Story = {
       height: squareImageFile.height,
       type: MediaType.Image,
     },
-    linkHref: '/item/id',
   },
 }

@@ -1,8 +1,12 @@
 import { fetcher } from '@/lib/fetcher'
-import { Generator } from '@edenlabs/eden-sdk'
+import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 
-export const useGeneratorsQuery = () => {
+type Props = {
+  key: GeneratorV2['key']
+}
+
+export const useGeneratorQuery = ({ key }: Props) => {
   const {
     data,
     error,
@@ -14,12 +18,13 @@ export const useGeneratorsQuery = () => {
     isSuccess,
     status,
   } = useQuery({
-    queryKey: ['generators'],
-    queryFn: () => fetcher<{ generators: Generator[] }>('/api/generators'),
+    queryKey: ['generator', key],
+    queryFn: () =>
+      fetcher<{ generator: GeneratorV2 }>(`/api/generators/${key}`),
   })
 
   return {
-    generators: data?.generators as Generator[] | undefined,
+    generator: data?.generator as GeneratorV2 | undefined,
     error,
     isError,
     isPending,

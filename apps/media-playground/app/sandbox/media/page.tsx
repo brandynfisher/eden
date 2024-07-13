@@ -1,5 +1,4 @@
-import ImageTest from '@/components/image-test'
-import FileUpload from '@/components/media/file-upload'
+import FileUploader from '@/components/media/file-uploader'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 
 const MediaSandboxPage = () => {
@@ -7,10 +6,9 @@ const MediaSandboxPage = () => {
     <>
       <TypographyH4 className="mb-4">Cloudinary Upload</TypographyH4>
       <div className="flex gap-4">
-        <FileUpload allowedFileTypes={['image']} />
-        <FileUpload allowedFileTypes={['video']} />
+        <FileUploader allowedFileTypes={['image']} />
+        <FileUploader allowedFileTypes={['video']} />
       </div>
-      <ImageTest />
     </>
   )
 }

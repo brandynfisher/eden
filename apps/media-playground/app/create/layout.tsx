@@ -80,14 +80,14 @@ const navItems: SecondaryNavSection[] = [
         label: 'Text to Video',
         segments: [baseSegment, 'video', 'txt2vid'],
       },
-      {
-        label: 'Image to Video',
-        segments: [baseSegment, 'video', 'img2vid'],
-      },
-      {
-        label: 'Video to Video',
-        segments: [baseSegment, 'video', 'vid2vid'],
-      },
+      // {
+      //   label: 'Image to Video',
+      //   segments: [baseSegment, 'video', 'img2vid'],
+      // },
+      // {
+      //   label: 'Video to Video',
+      //   segments: [baseSegment, 'video', 'vid2vid'],
+      // },
     ],
   },
   {
@@ -98,8 +98,21 @@ const navItems: SecondaryNavSection[] = [
         segments: [baseSegment, 'image', 'txt2img'],
       },
       {
-        label: 'Image to Image',
-        segments: [baseSegment, 'image', 'img2img'],
+        label: 'SD3 - Text to Image',
+        segments: [baseSegment, 'image', 'SD3'],
+      },
+      // {
+      //   label: 'In-painting',
+      //   segments: [baseSegment, 'image', 'inpaint'],
+      // },
+    ],
+  },
+  {
+    title: 'Model',
+    links: [
+      {
+        label: 'LoRA Trainer',
+        segments: [baseSegment, 'model', 'lora_trainer'],
       },
     ],
   },

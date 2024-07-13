@@ -1,10 +1,11 @@
 import LikeButton from '@/components/button/like-button'
 import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
-import CardMedia from '@/components/card/components/card-media'
+import CardImage from '@/components/card/components/card-image'
 import { Card } from '@/components/ui/card'
 import { FileType } from '@/types/Media'
 import { Creation, Creator } from '@edenlabs/eden-sdk'
+import Link from 'next/link'
 import { CSSProperties } from 'react'
 
 type Props = {
@@ -18,16 +19,21 @@ type Props = {
 const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
   return (
     <Card className="overflow-hidden border-0" style={style}>
-      <CardMedia
-        media={{
-          uri: creation.uri,
-          thumbnailUri: creation.thumbnail,
-          width: creation.mediaAttributes.width,
-          height: creation.mediaAttributes.height,
-          type: creation.mediaAttributes.type as FileType,
-        }}
-        linkHref={`/creation/${creation._id}`}
-      />
+      <Link
+        href={`/creation/${creation._id}`}
+        prefetch={false}
+        className="relative w-full block"
+      >
+        <CardImage
+          media={{
+            uri: creation.uri,
+            thumbnailUri: creation.thumbnail,
+            width: creation.mediaAttributes.width,
+            height: creation.mediaAttributes.height,
+            type: creation.mediaAttributes.type as FileType,
+          }}
+        />
+      </Link>
       {showFooter ? (
         <CardFooter
           creator={creator}

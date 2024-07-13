@@ -4,6 +4,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TaskV2 } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
+import React from 'react'
 
 type Props = {
   item: TaskV2
@@ -11,13 +12,14 @@ type Props = {
 
 const TimelineItem = ({ item }: Props) => {
   return (
-    <div key={item._id} className="mb-6">
+    <div data-test-id="timeline-item" key={item._id}>
       <TaskParameterList task={item} />
 
-      <div className="relative mt-4">
+      <div className="relative flex flex-col min-h-32 items-center justify-around">
         <TaskStatusBadge status={item.status} hideText={true} />
+
         {item.status === 'failed' ? (
-          <div>
+          <div className="h-full">
             <div className="text-destructive">Task failed</div>
             <div>{item.error}</div>
           </div>
@@ -35,30 +37,38 @@ const TimelineItem = ({ item }: Props) => {
 
         {item.status === 'completed' && item.result && item.result.length
           ? item.result.map(result => (
-              <div className="relative" key={result}>
-                <Image
-                  src={result}
-                  alt={result}
-                  // fill={true}
-                  objectFit={'cover'}
-                  width={item.args.width || 0}
-                  height={item.args.height || 0}
-                  className="object-cover w-full rounded-lg"
-                />
+              <div className="relative border-transparent" key={result}>
+                {result.startsWith('http') ? (
+                  <>
+                    {result.endsWith('.mp4') ? (
+                      <video
+                        src={result}
+                        controls={true}
+                        controlsList={'nodownload'}
+                        onContextMenu={(e: React.MouseEvent) =>
+                          e.preventDefault()
+                        }
+                      />
+                    ) : (
+                      <Image
+                        src={result}
+                        alt={result}
+                        // fill={true}
+                        objectFit={'cover'}
+                        width={item.args.width || 0}
+                        height={item.args.height || 0}
+                        className="object-cover w-full rounded-lg"
+                      />
+                    )}
+                  </>
+                ) : (
+                  // result is model / concept
+                  // @todo: fetch model data by it's id or pre-populate this api-side for a successful task
+                  <>concept: {result}</>
+                )}
               </div>
             ))
           : null}
-
-        {/*<Accordion type='single' collapsible>*/}
-        {/*  <AccordionItem value='item-1'>*/}
-        {/*    <AccordionTrigger>DEBUG: Task Config</AccordionTrigger>*/}
-        {/*    <AccordionContent>*/}
-        {/*      <div className='text-xs'>*/}
-        {/*        {JSON.stringify(task.args, null, 2)}*/}
-        {/*      </div>*/}
-        {/*    </AccordionContent>*/}
-        {/*  </AccordionItem>*/}
-        {/*</Accordion>*/}
       </div>
     </div>
   )

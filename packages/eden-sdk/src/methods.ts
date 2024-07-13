@@ -230,17 +230,17 @@ function bindApiCall<
   return self.apiCall.bind(self, configFn) as Method<Arguments, Result>
 }
 
-function bindApiCallAsync<
-  Arguments extends WebAPICallOptions,
-  Result extends WebAPICallResult,
->(
-  self: Methods,
-  configFn: (args: MediaUploadArguments) => Promise<AxiosRequestConfig>,
-): Method<Arguments, Result> {
-  // We have to "assert" that the bound method does indeed return the more specific `Result` type instead of just
-  // `WebAPICallResult`
-  return self.apiCall.bind(self, configFn) as Method<Arguments, Result>
-}
+// function bindApiCallAsync<
+//   Arguments extends WebAPICallOptions,
+//   Result extends WebAPICallResult,
+// >(
+//   self: Methods,
+//   configFn: (args: MediaUploadArguments) => Promise<AxiosRequestConfig>,
+// ): Method<Arguments, Result> {
+//   // We have to "assert" that the bound method does indeed return the more specific `Result` type instead of just
+//   // `WebAPICallResult`
+//   return self.apiCall.bind(self, configFn) as Method<Arguments, Result>
+// }
 
 export abstract class Methods {
   public abstract apiCall(
@@ -490,14 +490,11 @@ export abstract class Methods {
       this,
       generatorsGetRequestConfig,
     ),
-  }
-
-  public readonly generatorsV2 = {
-    list: bindApiCall<GeneratorsListArgumentsV2, GeneratorsListResponseV2>(
+    listV2: bindApiCall<GeneratorsListArgumentsV2, GeneratorsListResponseV2>(
       this,
       generatorsListRequestConfigV2,
     ),
-    get: bindApiCall<GeneratorsGetArgumentsV2, GeneratorsGetResponseV2>(
+    getV2: bindApiCall<GeneratorsGetArgumentsV2, GeneratorsGetResponseV2>(
       this,
       generatorsGetRequestConfigV2,
     ),
@@ -517,7 +514,7 @@ export abstract class Methods {
   }
 
   public readonly media = {
-    upload: bindApiCallAsync<MediaUploadArguments, MediaUploadResponse>(
+    upload: bindApiCall<MediaUploadArguments, MediaUploadResponse>(
       this,
       mediaUploadRequestConfig,
     ),

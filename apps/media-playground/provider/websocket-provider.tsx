@@ -68,7 +68,7 @@ export const WebSocketProvider = ({ endpoint, children }: Props) => {
         // },
         onClose: event => console.log('ws - onClose', event),
         onError: event => console.log('ws - onError', event),
-        onMessage: event => console.log('ws - onMessage', event),
+        // onMessage: event => console.log('ws - onMessage', event),
         shouldReconnect: event => {
           console.log('ws - shouldReconnect', isSignedIn, event)
           return !!isSignedIn
@@ -111,7 +111,7 @@ export const WebSocketProvider = ({ endpoint, children }: Props) => {
     let timerId: ReturnType<typeof setInterval>
 
     if (readyState === ReadyState.OPEN) {
-      console.log('WS::OPEN')
+      // console.log('WS::OPEN')
       refreshToken()
 
       timerId = setInterval(() => refreshToken(), 25000)

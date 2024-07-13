@@ -12,12 +12,16 @@ export type GeneratorOutputTypeV2 =
   | 'model'
   | 'text'
   | 'audio'
+  | 'lora'
 
 // Arguments
-export type GeneratorsListArgumentsV2 = WebAPICallOptions & ListQueryParams
+export type GeneratorsListArgumentsV2 = WebAPICallOptions &
+  ListQueryParams & {
+    hideParams?: boolean
+  }
 
 export interface GeneratorsGetArgumentsV2 extends WebAPICallOptions {
-  generatorName: string
+  generatorKey: string
 }
 
 // Requests
@@ -38,7 +42,7 @@ export const generatorsGetRequestConfigV2 = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `v2/generators/${args.generatorName}`,
+    url: `v2/generators/${args.generatorKey}`,
   }
 }
 
@@ -57,10 +61,11 @@ export type GeneratorsGetResponseV2 = WebAPICallResult & {
 // Types
 
 export type GeneratorV2 = {
+  key: string
   name: string
-  title: string
   description?: string
-  parameters: GeneratorParameterV2[]
+  hidden?: boolean
+  parameters?: GeneratorParameterV2[]
   outputType: GeneratorOutputTypeV2
 }
 
@@ -68,23 +73,33 @@ export type GeneratorParameterType =
   | 'video'
   | 'image'
   | 'model'
-  | 'text'
   | 'audio'
+  | 'string'
+  | 'int'
+  | 'float'
+  | 'bool'
+  | 'lora'
+  | 'video[]'
+  | 'image[]'
+  | 'model[]'
+  | 'audio[]'
+  | 'string[]'
+  | 'int[]'
+  | 'float[]'
+  | 'bool[]'
+  | 'lora[]'
 
 export type GeneratorParameterV2 = {
   name: string
   label: string
-  description?: string
+  description: string
+  tip: string | null
   type: GeneratorParameterType
-  isRequired?: boolean
-  optional?: boolean
-  default?: any
-  allowedValues?: any[]
-  allowedValuesFrom?: string
-  minimum?: number
-  maximum?: number
-  step?: number
-  minLength?: number
-  maxLength?: number
-  mediaUpload?: string
+  required: boolean
+  default: string | number | null | undefined
+  minimum: number | null | undefined
+  maximum: number | null | undefined
+  min_length: number | null | undefined
+  max_length: number | null | undefined
+  choices: Array<string | number> | null | undefined
 }

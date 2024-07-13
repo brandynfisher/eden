@@ -1,6 +1,7 @@
-import { getTask, getTaskCost } from '../../controllers/taskController'
+import { getTaskCost } from '../../controllers/taskController'
 import {
   createTask,
+  getTask,
   listTasks,
   subscribeTaskUpdates,
 } from '../../controllers/v2/taskControllerV2'
@@ -119,6 +120,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getTask(request, reply),
   })
 

@@ -12,21 +12,21 @@ const TaskParameter = ({ name, label, value }: Props) => {
   return (
     <>
       {name === 'prompt' ? (
-        <div className="w-full flex gap-2">
-          <div className="flex-shrink-0 text-primary/60">{label}</div>
-          <div>{value}</div>
+        <div className="w-full flex gap-2 text-xs">
+          {/*<div className="flex-shrink-0 text-primary/60">{label}</div>*/}
+          <div className="line-clamp-2">{value}</div>
         </div>
       ) : null}
 
       {name === 'workflow' ? (
-        <div className="flex gap-2">
+        <div className="flex gap-2 text-xs">
           <div className="text-primary/60">{label}</div>
           <div>{value}</div>
         </div>
       ) : null}
 
       {name === 'resolution' ? (
-        <div className="col-span-3 flex gap-2">
+        <div className="col-span-3 flex gap-2 text-xs">
           <div className="text-primary/60">{label}</div>
           <div>{value}</div>
         </div>
