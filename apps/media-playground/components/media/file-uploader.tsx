@@ -129,7 +129,7 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
       ? getFileIconAndColor(allowedTypes[0].type).color
       : undefined
 
-  // console.log({ allowedTypes, fixedColorClassName, uploadedFiles, filesToUpload })
+  // console.log({ maxFiles, allowedTypes, fixedColorClassName, uploadedFiles, filesToUpload, })
 
   const onUploadProgress = (
     progressEvent: AxiosProgressEvent,
@@ -183,7 +183,7 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
         cancelSource,
       })
     } catch (e) {
-      console.log(e)
+      console.error(e)
       toast({
         className: 'flex p-4 text-red-600',
         title: 'Failed to upload file',
@@ -199,14 +199,14 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
 
     setUploadedFiles(prevUploadedFiles => {
       const newState = prevUploadedFiles.filter(item => item !== file)
-      console.log(
-        'onChange',
-        newState.map(item => (item ? item.fileUrl || '' : '')).filter(Boolean),
-      )
-
       const filtered = newState
         .map(item => (item ? item.fileUrl || '' : ''))
         .filter(Boolean)
+      // console.log(
+      //   'onChange',
+      //   filtered[0],
+      //   maxFiles === 1 ? filtered[0] : filtered,
+      // )
       onChange(maxFiles === 1 ? filtered[0] : filtered)
       return newState
     })
@@ -250,7 +250,8 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
         const newUrls = uploadRes
           .map(item => (item ? item?.fileUrl : ''))
           .filter(Boolean)
-        // console.log('onChange', newUrls)
+
+        // console.log('onChange', maxFiles === 1 ? newUrls[0] : newUrls)
         onChange(maxFiles === 1 ? newUrls[0] : newUrls)
 
         toast({
