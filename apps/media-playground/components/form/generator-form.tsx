@@ -252,15 +252,18 @@ const GeneratorForm = ({ generator }: Props) => {
   const [showForm, setShowForm] = useState(false)
 
   return (
-    <div className="flex flex-col items-start">
+    <div data-test-id="generator-form" className="flex flex-col items-start">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full sticky top-20 flex flex-col gap-2"
+          className="w-full sticky top-[96px] flex flex-col gap-2 max-h-[calc(100vh_-_96px)]"
         >
           <TypographyH3>{generator.name}</TypographyH3>
 
-          <div className="flex flex-col gap-4">
+          <div
+            data-test-id="generator-form-settings-required"
+            className="flex flex-col gap-4"
+          >
             {generator.parameters
               ?.filter(parameter => parameter.required)
               ?.map(parameter => (
@@ -293,18 +296,23 @@ const GeneratorForm = ({ generator }: Props) => {
             </Button>
           </div>
           <div
-            className={cn([
-              'flex flex-col gap-2 w-full relative transition-all overflow-hidden',
-              showForm ? 'max-h-full' : 'max-h-0',
-            ])}
+            data-test-id="generator-form-settings-optional"
+            className={cn([showForm ? 'overflow-y-scroll' : 'overflow-hidden'])}
           >
-            {generator.parameters
-              ?.filter(parameter => !parameter.required)
-              ?.map(parameter => (
-                <div key={parameter.name} className="bg-popover rounded-lg">
-                  {renderFormField(parameter)}
-                </div>
-              ))}
+            <div
+              className={cn([
+                'flex flex-col gap-2 w-full relative transition-all',
+                showForm ? ' mb-4' : 'max-h-0 ',
+              ])}
+            >
+              {generator.parameters
+                ?.filter(parameter => !parameter.required)
+                ?.map(parameter => (
+                  <div key={parameter.name} className="bg-popover rounded-lg">
+                    {renderFormField(parameter)}
+                  </div>
+                ))}
+            </div>
           </div>
         </form>
       </Form>
