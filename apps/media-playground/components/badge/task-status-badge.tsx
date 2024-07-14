@@ -2,7 +2,12 @@ import LoadingIndicator from '@/components/loading-indicator'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { TaskV2 } from '@edenlabs/eden-sdk'
-import { CheckCheckIcon, HourglassIcon, TriangleAlertIcon } from 'lucide-react'
+import {
+  BanIcon,
+  CheckCheckIcon,
+  HourglassIcon,
+  TriangleAlertIcon,
+} from 'lucide-react'
 
 type Props = {
   status: TaskV2['status']
@@ -16,6 +21,9 @@ const TaskStatusBadge = ({ status, hideText }: Props) => {
     >
       {status === 'pending' ? <HourglassIcon className="h-4 w-4" /> : null}
       {status === 'running' ? <LoadingIndicator className="h-4 w-4" /> : null}
+      {status === 'cancelled' ? (
+        <BanIcon className="h-4 w-4 text-warning" />
+      ) : null}
       {status === 'failed' ? (
         <TriangleAlertIcon className="h-4 w-4 text-destructive" />
       ) : null}

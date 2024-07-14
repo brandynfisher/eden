@@ -96,7 +96,7 @@ const Timeline = ({ generator }: Props) => {
         apiEndpoint={'/api/tasks/list'}
         query={query}
         queryKey={queryKey}
-        render={TimelineItem}
+        render={item => <TimelineItem item={item.item} />}
       />
     </div>
   )

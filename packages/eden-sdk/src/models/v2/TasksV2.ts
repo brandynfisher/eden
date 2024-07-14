@@ -26,6 +26,10 @@ export interface TasksV2GetArguments extends WebAPICallOptions {
   taskId: string
 }
 
+export interface TasksV2CancelArguments extends WebAPICallOptions {
+  taskId: string
+}
+
 // Requests
 
 export const tasksV2CreateRequestConfig = (
@@ -72,6 +76,18 @@ export const tasksV2GetRequestConfig = (
   }
 }
 
+export const tasksV2CancelRequestConfig = (
+  args: TasksV2CancelArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/tasks/cancel',
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type TasksV2CreateResponse = WebAPICallResult &
@@ -91,6 +107,11 @@ export type TasksV2ListResponse = WebAPICallResult &
 export type TasksV2GetResponse = WebAPICallResult & {
   error?: string
   task?: TaskV2
+}
+
+export type TasksV2CancelResponse = WebAPICallResult & {
+  error?: string
+  taskStatus?: TaskV2['status']
 }
 
 // Types

@@ -195,6 +195,8 @@ import {
   GeneratorsGetResponseV2,
   GeneratorsListArgumentsV2,
   GeneratorsListResponseV2,
+  TasksV2CancelArguments,
+  TasksV2CancelResponse,
   TasksV2CreateArguments,
   TasksV2CreateResponse,
   TasksV2GetArguments,
@@ -203,6 +205,7 @@ import {
   TasksV2ListResponse,
   generatorsGetRequestConfigV2,
   generatorsListRequestConfigV2,
+  tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
   tasksV2GetRequestConfig,
@@ -611,6 +614,10 @@ export abstract class Methods {
     listV2: bindApiCall<TasksV2ListArguments, TasksV2ListResponse>(
       this,
       tasksV2ListRequestConfig,
+    ),
+    cancelV2: bindApiCall<TasksV2CancelArguments, TasksV2CancelResponse>(
+      this,
+      tasksV2CancelRequestConfig,
     ),
   }
 }

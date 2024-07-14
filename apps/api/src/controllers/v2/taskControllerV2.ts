@@ -1,10 +1,10 @@
 import { User } from '../../models/Creator'
-import { TaskV2, TaskV2Document } from '../../models/v2/TaskV2'
-// import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
+import { TaskV2, TaskV2Document, TaskV2Status } from '../../models/v2/TaskV2'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
   TasksGetArguments,
+  TasksV2CancelArguments,
   TasksV2CreateArguments,
   TasksV2ListArguments,
 } from '@edenlabs/eden-sdk'
@@ -76,7 +76,7 @@ export const createTask = async (
     },
   }
 
-  server.log.info('> modal::request')
+  server.log.info('> modal::request::create')
   server.log.info(modalRequest)
 
   const modalResponse = await axios.post(
@@ -89,7 +89,7 @@ export const createTask = async (
     },
   )
 
-  server.log.info('< modal::response')
+  server.log.info('< modal::response::create')
   server.log.info(modalResponse.data)
 
   if (!modalResponse || !modalResponse.data) {
@@ -538,4 +538,61 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
   } catch (e) {
     console.log('Caught error subscribeWebSocketTaskUpdates', e)
   }
+}
+
+export const cancelTask = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { taskId } = request.body as TasksV2CancelArguments
+
+  if (!taskId) {
+    return reply.status(404).send({
+      message: `TaskId missing`,
+    })
+  }
+
+  const userDocument = await User.findById(userId)
+  if (!userDocument) {
+    return reply.status(404).send({
+      message: `User not found`,
+    })
+  }
+
+  const modalRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/cancel`,
+    data: {
+      taskId,
+      user: userId,
+    },
+  }
+
+  server.log.info('> modal::request::cancel')
+  server.log.info(modalRequest)
+
+  const modalResponse = await axios.post(
+    modalRequest.endpoint,
+    modalRequest.data,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  server.log.info('< modal::response::cancel')
+  server.log.info(modalResponse.data)
+
+  if (!modalResponse || !modalResponse.data) {
+    console.log('malformed response', modalResponse)
+    return reply.status(500).send({
+      message: `Empty / Unexpected response from compute api`,
+    })
+  }
+
+  const taskStatus = modalResponse.data.status as TaskV2Status
+
+  return reply.status(200).send({ taskStatus })
 }

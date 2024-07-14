@@ -1,7 +1,7 @@
 const eden = require('../../init_eden.js')
 
 const args = {
-  prompt: "Garden of Eden"
+  prompt: "Garden of Eden V2"
 }
 
 const input = {

@@ -1,5 +1,6 @@
 import { getTaskCost } from '../../controllers/taskController'
 import {
+  cancelTask,
   createTask,
   getTask,
   listTasks,
@@ -139,6 +140,28 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
+  })
+
+  server.post('/v2/tasks/cancel', {
+    schema: {
+      tags: ['Tasks'],
+      description: 'Cancel a task in progress',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        taskId: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          taskStatus: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => cancelTask(server, request, reply),
   })
 }
 
