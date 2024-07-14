@@ -136,9 +136,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   onChange={onChange}
                   allowedFileTypes={['image']}
                   maxFiles={
-                    parameter.max_length !== null
-                      ? parameter.max_length || 1
-                      : 1
+                    parameter.max_length === null ||
+                    parameter.max_length === undefined
+                      ? 128
+                      : parameter.max_length || 1
                   }
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -162,9 +163,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   onChange={onChange}
                   allowedFileTypes={['video']}
                   maxFiles={
-                    parameter.max_length !== null
-                      ? parameter.max_length || 1
-                      : 1
+                    parameter.max_length === null ||
+                    parameter.max_length === undefined
+                      ? 128
+                      : parameter.max_length || 1
                   }
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>

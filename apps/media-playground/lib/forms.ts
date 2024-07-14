@@ -1,6 +1,7 @@
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import {
   ZodArray,
+  ZodBoolean,
   ZodDefault,
   ZodNumber,
   ZodOptional,
@@ -53,6 +54,17 @@ function createNumberSchema(
   return schema
 }
 
+function createBoolSchema(
+  parameter: GeneratorParameterV2,
+): ZodBoolean | ZodOptional<ZodBoolean> | ZodDefault<ZodBoolean> {
+  let schema: ZodBoolean = z.boolean()
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
+
+  return schema
+}
+
 function createStringSchema(
   parameter: GeneratorParameterV2,
 ): ZodString | ZodOptional<ZodString> | ZodDefault<ZodString> {
@@ -82,19 +94,6 @@ function createFileUrlSchema(
 ): ZodString | ZodOptional<ZodString> | ZodDefault<ZodString> {
   let schema: ZodString = z.string()
 
-  if (parameter.min_length !== undefined && parameter.min_length !== null) {
-    schema = schema.min(
-      parameter.min_length,
-      `Must be at least ${parameter.min_length} characters long`,
-    )
-  }
-  if (parameter.max_length !== undefined && parameter.max_length !== null) {
-    schema = schema.max(
-      parameter.max_length,
-      `Must be less than ${parameter.max_length} characters long`,
-    )
-  }
-
   schema = defaultHelper(schema, parameter.default)
   schema = optionalHelper(schema, !parameter.required)
 
@@ -112,13 +111,13 @@ function createFileUrlArraySchema(
   if (parameter.min_length !== undefined && parameter.min_length !== null) {
     schema = schema.min(
       parameter.min_length,
-      `Must be at least ${parameter.min_length} characters long`,
+      `Must provide at least ${parameter.min_length} file`,
     )
   }
   if (parameter.max_length !== undefined && parameter.max_length !== null) {
     schema = schema.max(
       parameter.max_length,
-      `Must be less than ${parameter.max_length} characters long`,
+      `Must provide less than ${parameter.max_length} files`,
     )
   }
 
@@ -140,6 +139,7 @@ export function createZodParameterSchema(
       return createNumberSchema(parameter)
     case 'bool':
     case 'bool[]':
+      return createBoolSchema(parameter)
     case 'string':
     case 'lora':
     case 'lora[]':

@@ -129,7 +129,13 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
       ? getFileIconAndColor(allowedTypes[0].type).color
       : undefined
 
-  // console.log({ maxFiles, allowedTypes, fixedColorClassName, uploadedFiles, filesToUpload, })
+  console.log({
+    maxFiles,
+    allowedTypes,
+    fixedColorClassName,
+    uploadedFiles,
+    filesToUpload,
+  })
 
   const onUploadProgress = (
     progressEvent: AxiosProgressEvent,
@@ -198,15 +204,16 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
     })
 
     setUploadedFiles(prevUploadedFiles => {
-      const newState = prevUploadedFiles.filter(item => item !== file)
+      const newState = prevUploadedFiles.filter(item => item.name !== file.name)
+      console.log('remove', newState)
       const filtered = newState
         .map(item => (item ? item.fileUrl || '' : ''))
         .filter(Boolean)
-      // console.log(
-      //   'onChange',
-      //   filtered[0],
-      //   maxFiles === 1 ? filtered[0] : filtered,
-      // )
+      console.log(
+        'onChange',
+        filtered[0],
+        maxFiles === 1 ? filtered[0] : filtered,
+      )
       onChange(maxFiles === 1 ? filtered[0] : filtered)
       return newState
     })
@@ -247,19 +254,29 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
           return false
         }
 
+        console.log('upload success batch', uploadRes)
+
         const newUrls = uploadRes
           .map(item => (item ? item?.fileUrl : ''))
           .filter(Boolean)
 
-        // console.log('onChange', maxFiles === 1 ? newUrls[0] : newUrls)
-        onChange(maxFiles === 1 ? newUrls[0] : newUrls)
+        // Get the URLs of previously uploaded files
+        const previousUrls = uploadedFiles
+          .map(file => file.fileUrl || '')
+          .filter(Boolean)
+
+        // merge the arrays and filter out duplicates
+        const uniqueUrls = Array.from(new Set([...previousUrls, ...newUrls]))
+
+        // Call onChange according to the maxFiles prop
+        onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
 
         toast({
           className: 'flex p-4',
           title: 'Upload finished',
           description: (
             <div className="mt-2 rounded-md bg-popover p-2">
-              <code className=" text-xs text-foreground">
+              <code className="text-xs text-foreground">
                 {acceptedFiles.length} Files
               </code>
             </div>
@@ -270,7 +287,7 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
         console.error('Error uploading files: ', error)
       }
     },
-    [onChange],
+    [maxFiles, onChange, uploadedFiles], // Include uploadedFiles in dependency array
   )
 
   // const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: allowedFileMimeTypes.map(item => ) })
