@@ -1,5 +1,5 @@
 import { TaskV2Document } from '../models/v2/TaskV2'
-import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
+// import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
 import { FastifyInstance } from 'fastify'
 
 type GenericUpdate = { [key: string]: string | number | boolean }
@@ -30,5 +30,6 @@ export const handleTaskUpdateStreamEvent = async (
   //   }
   // }
 
-  server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, task)
+  // server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, task)
+  server.internalMessages.publish('task-updates-v2', task)
 }

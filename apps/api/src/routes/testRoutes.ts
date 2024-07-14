@@ -1,4 +1,4 @@
-import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
+// import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
 import { Type } from '@sinclair/typebox'
 import {
   FastifyInstance,
@@ -21,7 +21,8 @@ const triggerEventEmitter = (
     },
   }
   // server.eventEmitter.emit('task-update', update)
-  server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, update)
+  // server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, update)
+  server.internalMessages.publish('task-updates-v2', update)
 
   return reply.status(200).send({
     sentUpdate: update,

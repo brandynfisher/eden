@@ -1,6 +1,6 @@
 import { User } from '../../models/Creator'
 import { TaskV2, TaskV2Document } from '../../models/v2/TaskV2'
-import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
+// import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
@@ -261,7 +261,8 @@ export const subscribeTaskUpdates = async (
   }
 
   server.internalMessages.connection.on(
-    InternalMessagesQueues.TaskUpdatesV2,
+    // InternalMessagesQueues.TaskUpdatesV2,
+    'task-updates-v2',
     internalEmitterEventHandler,
   )
 
@@ -345,7 +346,8 @@ export const subscribeTaskUpdates = async (
     clearInterval(keepAliveTimer)
     reply.raw.end()
     server.internalMessages.connection.off(
-      InternalMessagesQueues.TaskUpdatesV2,
+      // InternalMessagesQueues.TaskUpdatesV2,
+      'task-updates-v2',
       internalEmitterEventHandler,
     )
   })
@@ -388,7 +390,8 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     }
 
     this.internalMessages.connection.on(
-      InternalMessagesQueues.TaskUpdatesV2,
+      // InternalMessagesQueues.TaskUpdatesV2,
+      'task-updates-v2',
       internalEmitterEventHandler,
     )
 
@@ -525,7 +528,8 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     // clean up on socket close
     socket.on('close', () => {
       this.internalMessages.connection.off(
-        InternalMessagesQueues.TaskUpdatesV2,
+        // InternalMessagesQueues.TaskUpdatesV2,
+        'task-updates-v2',
         internalEmitterEventHandler,
       )
     })
