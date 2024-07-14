@@ -1,5 +1,7 @@
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import {
+  ZodArray,
+  ZodBoolean,
   ZodDefault,
   ZodNumber,
   ZodOptional,
@@ -52,6 +54,17 @@ function createNumberSchema(
   return schema
 }
 
+function createBoolSchema(
+  parameter: GeneratorParameterV2,
+): ZodBoolean | ZodOptional<ZodBoolean> | ZodDefault<ZodBoolean> {
+  let schema: ZodBoolean = z.boolean()
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
+
+  return schema
+}
+
 function createStringSchema(
   parameter: GeneratorParameterV2,
 ): ZodString | ZodOptional<ZodString> | ZodDefault<ZodString> {
@@ -76,9 +89,48 @@ function createStringSchema(
   return schema
 }
 
+function createFileUrlSchema(
+  parameter: GeneratorParameterV2,
+): ZodString | ZodOptional<ZodString> | ZodDefault<ZodString> {
+  let schema: ZodString = z.string()
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
+
+  return schema
+}
+
+function createFileUrlArraySchema(
+  parameter: GeneratorParameterV2,
+):
+  | ZodArray<ZodString>
+  | ZodOptional<ZodArray<ZodString>>
+  | ZodDefault<ZodArray<ZodString>> {
+  let schema: ZodArray<ZodString> = z.array(z.string())
+
+  if (parameter.min_length !== undefined && parameter.min_length !== null) {
+    schema = schema.min(
+      parameter.min_length,
+      `Must provide at least ${parameter.min_length} file`,
+    )
+  }
+  if (parameter.max_length !== undefined && parameter.max_length !== null) {
+    schema = schema.max(
+      parameter.max_length,
+      `Must provide less than ${parameter.max_length} files`,
+    )
+  }
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
+
+  return schema
+}
+
 export function createZodParameterSchema(
   parameter: GeneratorParameterV2,
 ): ZodTypeAny {
+  //@todo: make array[type] schema validation explicit
   switch (parameter.type) {
     case 'int':
     case 'int[]':
@@ -87,15 +139,19 @@ export function createZodParameterSchema(
       return createNumberSchema(parameter)
     case 'bool':
     case 'bool[]':
+      return createBoolSchema(parameter)
     case 'string':
-    case 'string[]':
-    case 'video':
-    case 'video[]':
-    case 'image':
-    case 'image[]':
     case 'lora':
     case 'lora[]':
       return createStringSchema(parameter)
+    case 'video':
+      return createFileUrlSchema(parameter)
+    case 'image':
+      return createFileUrlSchema(parameter)
+    case 'video[]':
+      return createFileUrlArraySchema(parameter)
+    case 'image[]':
+      return createFileUrlArraySchema(parameter)
     default:
       throw new Error(`${parameter.type} not supported.`)
   }

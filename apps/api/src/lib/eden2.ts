@@ -1,5 +1,5 @@
 import { TaskV2Document } from '../models/v2/TaskV2'
-import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
+// import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
 import { FastifyInstance } from 'fastify'
 
 type GenericUpdate = { [key: string]: string | number | boolean }
@@ -10,7 +10,7 @@ export const handleTaskUpdateStreamEvent = async (
   task: TaskV2Document,
   _updatedFields?: GenericUpdate,
 ) => {
-  server.log.info({ msg: 'handleTaskUpdateStreamEvent', task })
+  // server.log.info({ msg: 'handleTaskUpdateStreamEvent', task })
   // const isStatusChange = !updatedFields || !!updatedFields.status
 
   // // @todo: is there any thing specific we need to do based on
@@ -30,5 +30,6 @@ export const handleTaskUpdateStreamEvent = async (
   //   }
   // }
 
-  server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, task)
+  // server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, task)
+  server.internalMessages.publish('task-updates-v2', task)
 }

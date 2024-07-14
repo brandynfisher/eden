@@ -26,19 +26,19 @@ export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
       'change',
       async (data: ChangeStreamDocument<TaskV2Document>) => {
         try {
-          fastify.log.info({
-            msg: 'Task change stream event received',
-            operationType: data.operationType,
-          })
+          // fastify.log.info({
+          //   msg: 'Task change stream event received',
+          //   operationType: data.operationType,
+          // })
 
           if (
             data.operationType === 'insert' ||
             data.operationType === 'update'
           ) {
-            fastify.log.info({
-              msg: `Task DB event: ${data.operationType} `,
-              doc: data.fullDocument,
-            })
+            // fastify.log.info({
+            //   msg: `Task DB event: ${data.operationType} `,
+            //   doc: data.fullDocument,
+            // })
 
             const updatedFields =
               data.operationType === 'update'
