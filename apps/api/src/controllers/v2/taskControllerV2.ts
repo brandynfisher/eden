@@ -256,7 +256,7 @@ export const subscribeTaskUpdates = async (
     // ensure socket message is only sent to the intended recipient
     if (userId.toString() === task.user.toString()) {
       // emit SSE Event
-      server.eventEmitter.emit(ServerEventName.TaskUpdate, task)
+      server.eventEmitter.emit('SSE-task-update-v2', task)
     }
   }
 
@@ -297,7 +297,10 @@ export const subscribeTaskUpdates = async (
       // server.log.info(`SSE V2 to user ${userId}`)
       try {
         // handle task update emits
-        for await (const [event] of on(server.eventEmitter, 'task-update')) {
+        for await (const [event] of on(
+          server.eventEmitter,
+          'SSE-task-update-v2',
+        )) {
           const taskUpdate = event as TaskV2
           // server.log.info({
           //   taskUpdate,
