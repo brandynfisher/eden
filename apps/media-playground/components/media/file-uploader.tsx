@@ -103,7 +103,7 @@ const getTypeByMimeType = (mimeType: MimeType) => {
   return mimeType.split('/')[0] as FileType
 }
 
-type FileWithPreview = File & {
+export type FileWithPreview = File & {
   preview?: string
   fileUrl?: string
 }
@@ -112,9 +112,15 @@ type Props = {
   onChange: (fileUrls: string | string[]) => void
   allowedFileTypes?: FileType[]
   maxFiles?: number
+  allowMultiple?: boolean
 }
 
-const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
+const FileUploader = ({
+  allowedFileTypes,
+  maxFiles,
+  allowMultiple,
+  onChange,
+}: Props) => {
   const { toast } = useToast()
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
@@ -147,17 +153,19 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
     )
 
     if (progress === 100) {
-      setUploadedFiles(prevUploadedFiles => {
-        const fileWithPreview = Object.assign(file, {
-          preview: URL.createObjectURL(file),
-        })
+      // setUploadedFiles(prevUploadedFiles => {
+      //   console.log('progress 100', prevUploadedFiles, file)
+      //   const fileWithPreview = Object.assign(file, {
+      //     preview: URL.createObjectURL(file),
+      //     fileUrl: file.fileUrl,
+      //   })
+      //
+      //   return [...prevUploadedFiles, fileWithPreview]
+      // })
 
-        return [...prevUploadedFiles, fileWithPreview]
-      })
-
-      setFilesToUpload(prevUploadProgress => {
-        return prevUploadProgress.filter(item => item.File !== file)
-      })
+      // setFilesToUpload(prevUploadProgress => {
+      //   return prevUploadProgress.filter(item => item.File !== file)
+      // })
 
       return
     }
@@ -204,16 +212,17 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
     })
 
     setUploadedFiles(prevUploadedFiles => {
+      // console.log({prevUploadedFiles})
       const newState = prevUploadedFiles.filter(item => item.name !== file.name)
-      console.log('remove', newState)
+      // console.log('remove', newState)
       const filtered = newState
         .map(item => (item ? item.fileUrl || '' : ''))
         .filter(Boolean)
-      console.log(
-        'onChange',
-        filtered[0],
-        maxFiles === 1 ? filtered[0] : filtered,
-      )
+      // console.log(
+      //   'onChange',
+      //   filtered[0],
+      //   maxFiles === 1 ? filtered[0] : filtered,
+      // )
       onChange(maxFiles === 1 ? filtered[0] : filtered)
       return newState
     })
@@ -235,41 +244,112 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
       })
 
       // upload a batch of files
-      const fileUploadBatch = acceptedFiles.map(file => {
+      const fileUploadBatch = acceptedFiles.map(async file => {
         const formData = new FormData()
         formData.append('file', file)
 
         const cancelSource = axios.CancelToken.source()
-        return uploadAsset(
+        const asset = await uploadAsset(
           file,
           progressEvent => onUploadProgress(progressEvent, file, cancelSource),
           cancelSource,
         )
+
+        setUploadedFiles(previousFiles => {
+          console.log({ previousFiles, asset })
+
+          const previousUrls = previousFiles
+            .map(prevFile => prevFile.fileUrl || '')
+            .filter(Boolean)
+          // merge the arrays and filter out duplicates
+
+          if (!asset) {
+            console.log('not asset')
+            return previousFiles
+          }
+
+          const existingFile = previousFiles.filter(
+            prevItem => prevItem.fileUrl === asset.fileUrl,
+          )
+
+          if (existingFile.length) {
+            console.log('existing file', asset)
+            return previousFiles
+          }
+
+          const uniqueUrls = Array.from(
+            new Set([...previousUrls, asset.fileUrl]),
+          )
+
+          console.log(maxFiles, maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+          // Call onChange according to the maxFiles prop
+          onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+
+          return [...previousFiles, asset as FileWithPreview]
+        })
+
+        setFilesToUpload(prevUploadProgress => {
+          return prevUploadProgress.filter(item => item.File !== file)
+        })
+
+        return asset
       })
 
       try {
         const uploadRes = await Promise.all(fileUploadBatch)
 
         if (!uploadRes) {
+          // errored or something
+          // @todo: handle error, show toast, etc?
           return false
         }
 
-        console.log('upload success batch', uploadRes)
+        // console.log('upload success batch', uploadRes)
+        //
+        // const newUrls = uploadRes
+        //   .map(item => (item ? item?.fileUrl : ''))
+        //   .filter(Boolean)
+        //
+        // // console.log({newUrls, uploadedFiles})
+        // if (!newUrls) {
+        //   return
+        // }
 
-        const newUrls = uploadRes
-          .map(item => (item ? item?.fileUrl : ''))
-          .filter(Boolean)
+        // setUploadedFiles(previousFiles => {
+        //   console.log({previousFiles})
+        //
+        //   const previousUrls = previousFiles.map(prevFile => prevFile.fileUrl || '').filter(Boolean)
+        //   // merge the arrays and filter out duplicates
+        //   const uniqueUrls = Array.from(new Set([...previousUrls, ...newUrls]))
+        //
+        //   console.log(maxFiles, maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+        //   // Call onChange according to the maxFiles prop
+        //   onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+        //
+        //   if (!uploadRes) {
+        //     return previousFiles
+        //   }
+        //
+        //   const uploads = uploadRes.filter(item => item && !previousUrls.includes(item?.fileUrl))
+        //
+        //   if (!uploads) {
+        //     return previousFiles
+        //   }
+        //
+        //   return [ ...previousFiles, ...(uploads as FileWithPreview[]) ]
+        // })
 
         // Get the URLs of previously uploaded files
-        const previousUrls = uploadedFiles
-          .map(file => file.fileUrl || '')
-          .filter(Boolean)
+        // const previousUrls = uploadedFiles
+        //   .map(file => file.fileUrl || '')
+        //   .filter(Boolean)
 
-        // merge the arrays and filter out duplicates
-        const uniqueUrls = Array.from(new Set([...previousUrls, ...newUrls]))
-
-        // Call onChange according to the maxFiles prop
-        onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+        // // merge the arrays and filter out duplicates
+        // const uniqueUrls = Array.from(new Set([...previousUrls, ...newUrls]))
+        //
+        // console.log(maxFiles, maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+        // // Call onChange according to the maxFiles prop
+        // onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
 
         toast({
           className: 'flex p-4',
@@ -287,13 +367,13 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
         console.error('Error uploading files: ', error)
       }
     },
-    [maxFiles, onChange, uploadedFiles], // Include uploadedFiles in dependency array
+    [maxFiles, onChange], // Include uploadedFiles in dependency array
   )
 
   // const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: allowedFileMimeTypes.map(item => ) })
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    multiple: !!(maxFiles && maxFiles > 1),
+    multiple: allowMultiple,
     maxFiles: maxFiles && maxFiles > 1 ? maxFiles : 1,
     accept: allowedFileMimeTypes
       .flatMap(mimeTypes => mimeTypes)
@@ -325,7 +405,12 @@ const FileUploader = ({ allowedFileTypes, maxFiles, onChange }: Props) => {
             </div>
 
             <p className="mt-2 text-sm text-muted-foreground">
-              <span className="font-semibold">Drag files</span>
+              <span className="font-semibold">
+                Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
+                {allowedFileTypes
+                  ?.map(type => `${type}${allowMultiple ? 's' : ''}`)
+                  .join(',')}
+              </span>
             </p>
             <p className="text-xs text-muted-foreground">
               Click to upload files &#40;files should be under 10 MB &#41;

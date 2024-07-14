@@ -14,7 +14,7 @@ const task = {
   args: {
     prompt: 'a professional photo of <concept> as a fashion model, runway, cat walk',
     look_image: 'https://i.pinimg.com/236x/e4/af/3f/e4af3fefdf4777cef1d584e379b12791.jpg',
-    lora: '66904ec042b902d8eb3b41e6',
+    lora: '665fc0371b2e7f3691aaac24',
 
     // look_image: 'https://www.refinery29.com/images/11118508.jpg',
     // lora: 'https://edenartlab-stage-data.s3.amazonaws.com/1190777f9d3337e2202fd0a27fc9e1c048a094d90e86f7d135bb21e09c9a2e15.tar',

@@ -119,6 +119,27 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
               </FormItem>
             )
           case 'image':
+            return (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel>{label}</FormLabel>
+                <FormDescription>{parameter.description}</FormDescription>
+                <FormControl id={field.name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value}
+                  />
+                </FormControl>
+                <FileUploader
+                  onChange={onChange}
+                  allowedFileTypes={['image']}
+                  maxFiles={1}
+                  allowMultiple={false}
+                />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
           case 'image[]':
             return (
               <FormItem className="mt-0 !px-4 !py-3">
@@ -141,11 +162,33 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                       ? 128
                       : parameter.max_length || 1
                   }
+                  allowMultiple={true}
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
           case 'video':
+            return (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <FormLabel>{label}</FormLabel>
+                <FormDescription>{parameter.description}</FormDescription>
+                <FormControl id={field.name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value}
+                  />
+                </FormControl>
+                <FileUploader
+                  onChange={onChange}
+                  allowedFileTypes={['video']}
+                  maxFiles={1}
+                  allowMultiple={false}
+                />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
           case 'video[]':
             return (
               <FormItem className="mt-0 !px-4 !py-3">
@@ -168,6 +211,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                       ? 128
                       : parameter.max_length || 1
                   }
+                  allowMultiple={parameter.max_length !== 1}
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>

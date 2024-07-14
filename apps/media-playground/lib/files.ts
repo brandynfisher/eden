@@ -54,12 +54,14 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
 
   const response = await axios.put(signedUrl, file, config)
 
-  if (response.status === 200) {
-    return {
-      file: file,
-      fileUrl: signedUrl.split('?')[0],
-    }
+  const fileWithExtra = Object.assign(file, {
+    fileUrl: signedUrl.split('?')[0],
+    preview: URL.createObjectURL(file),
+  })
+
+  if (response.status !== 200) {
+    throw new Error(`Upload error - status ${response.status}`)
   }
 
-  return false
+  return fileWithExtra
 }
