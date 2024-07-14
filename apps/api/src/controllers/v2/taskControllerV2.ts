@@ -261,7 +261,6 @@ export const subscribeTaskUpdates = async (
   }
 
   server.internalMessages.connection.on(
-    // InternalMessagesQueues.TaskUpdatesV2,
     'task-updates-v2',
     internalEmitterEventHandler,
   )
