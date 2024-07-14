@@ -80,6 +80,22 @@ const navItems: SecondaryNavSection[] = [
         label: 'Text to Video',
         segments: [baseSegment, 'video', 'txt2vid'],
       },
+      {
+        label: 'Image to Video',
+        segments: [baseSegment, 'video', 'img2vid'],
+      },
+      {
+        label: 'Video to Video',
+        segments: [baseSegment, 'video', 'vid2vid'],
+      },
+      {
+        label: 'Style Mixing',
+        segments: [baseSegment, 'video', 'style_mixing'],
+      },
+      {
+        label: 'Video Upscaler',
+        segments: [baseSegment, 'video', 'video_upscaler'],
+      },
       // {
       //   label: 'Image to Video',
       //   segments: [baseSegment, 'video', 'img2vid'],
@@ -98,8 +114,16 @@ const navItems: SecondaryNavSection[] = [
         segments: [baseSegment, 'image', 'txt2img'],
       },
       {
-        label: 'SD3 - Text to Image',
+        label: 'Text to Image (SD3)',
         segments: [baseSegment, 'image', 'SD3'],
+      },
+      {
+        label: 'Inpaint',
+        segments: [baseSegment, 'image', 'inpaint'],
+      },
+      {
+        label: 'Image Upscaler',
+        segments: [baseSegment, 'image', 'clarity_upscaler'],
       },
       // {
       //   label: 'In-painting',

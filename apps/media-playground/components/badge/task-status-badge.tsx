@@ -17,7 +17,7 @@ const TaskStatusBadge = ({ status, hideText }: Props) => {
   return (
     <Badge
       variant="secondary"
-      className="absolute top-2 left-2 z-10 border-gray-900"
+      className="absolute top-2 left-2 z-10 border-popover-foreground/20"
     >
       {status === 'pending' ? <HourglassIcon className="h-4 w-4" /> : null}
       {status === 'running' ? <LoadingIndicator className="h-4 w-4" /> : null}

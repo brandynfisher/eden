@@ -78,7 +78,7 @@ const TimelineItem = ({ item }: Props) => {
     <div data-test-id="timeline-item" key={item._id}>
       <TaskParameterList task={item} />
 
-      <div className="relative flex flex-col min-h-32 items-center justify-around">
+      <div className="relative flex flex-col min-h-32 items-center justify-around bg-popover rounded-bl-lg rounded-br-lg">
         <TaskStatusBadge status={item.status} hideText={true} />
 
         {item.status === 'failed' ? (
@@ -90,7 +90,7 @@ const TimelineItem = ({ item }: Props) => {
 
         {item.status === 'cancelled' ? (
           <div className="h-full">
-            <div className="text-warning-foreground">Task cancelled</div>
+            <div className="text-warning">Task cancelled</div>
             <div>{item.error}</div>
           </div>
         ) : null}
@@ -100,7 +100,7 @@ const TimelineItem = ({ item }: Props) => {
             <AspectRatio
               ratio={(item.args.width || 1024) / (item.args.height || 1024)}
             >
-              <Skeleton className="w-full h-full" />
+              <Skeleton className="w-full h-full rounded-t-none rounded-bl-lg rounded-br-lg" />
             </AspectRatio>
             <Button
               size="sm"
@@ -131,6 +131,7 @@ const TimelineItem = ({ item }: Props) => {
                         onContextMenu={(e: React.MouseEvent) =>
                           e.preventDefault()
                         }
+                        className="object-cover w-full rounded-bl-lg rounded-br-lg"
                       />
                     ) : (
                       <Image
@@ -140,7 +141,7 @@ const TimelineItem = ({ item }: Props) => {
                         objectFit={'cover'}
                         width={item.args.width || 0}
                         height={item.args.height || 0}
-                        className="object-cover w-full rounded-lg"
+                        className="object-cover w-full rounded-bl-lg rounded-br-lg"
                       />
                     )}
                   </>
