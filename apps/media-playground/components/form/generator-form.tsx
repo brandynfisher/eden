@@ -310,10 +310,9 @@ const GeneratorForm = ({ generator }: Props) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full sticky top-[96px] flex flex-col gap-2 max-h-[calc(100vh_-_96px)]"
+          className="w-full sticky top-[96px] flex flex-col max-h-[calc(100vh_-_96px)]"
         >
           <TypographyH3>{generator.name}</TypographyH3>
-
           <div
             data-test-id="generator-form-settings-required"
             className="flex flex-col gap-4"

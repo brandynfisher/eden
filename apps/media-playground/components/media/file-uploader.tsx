@@ -9,6 +9,7 @@ import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 import {
   AudioWaveform,
+  BanIcon,
   FileImage,
   FolderArchive,
   UploadCloud,
@@ -18,6 +19,7 @@ import {
 import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
+import Truncate from 'react-truncate-inside/es'
 
 interface FileUploadProgress {
   progress: number
@@ -27,53 +29,62 @@ interface FileUploadProgress {
 
 const ImageColor = {
   bgColor: 'purple-600',
-  fillColor: 'purple-600',
-  borderColor: 'purple-600',
+  fillColor: 'text-purple-600',
+  borderColor: 'border-purple-600',
 }
 
 const AudioColor = {
   bgColor: 'yellow-400',
-  fillColor: 'yellow-400',
-  borderColor: 'yellow-400',
+  fillColor: 'text-yellow-400',
+  borderColor: 'border-yellow-400',
 }
 
 const VideoColor = {
   bgColor: 'green-400',
-  fillColor: 'green-400',
-  borderColor: 'green-400',
+  fillColor: 'text-green-400',
+  borderColor: 'border-green-400',
 }
 
 const OtherColor = {
   bgColor: 'gray-400',
-  fillColor: 'gray-400',
-  borderColor: 'gray-400',
+  fillColor: 'text-gray-400',
+  borderColor: 'border-gray-400',
 }
 
 const getFileIconAndColor = (fileType: FileType) => {
   // console.log({ fileType })
   if (fileType === `image`) {
     return {
-      icon: <FileImage size={40} className={ImageColor.fillColor} />,
+      icon: (
+        <FileImage size={40} className={`${ImageColor.fillColor} w-[72px]`} />
+      ),
       color: ImageColor.bgColor,
     }
   }
 
   if (fileType === `audio`) {
     return {
-      icon: <AudioWaveform size={40} className={AudioColor.fillColor} />,
+      icon: (
+        <AudioWaveform
+          size={40}
+          className={`${ImageColor.fillColor} w-[72px]`}
+        />
+      ),
       color: AudioColor.bgColor,
     }
   }
 
   if (fileType === `video`) {
     return {
-      icon: <Video size={40} className={VideoColor.fillColor} />,
+      icon: <Video size={40} className={`${ImageColor.fillColor} w-[72px]`} />,
       color: VideoColor.bgColor,
     }
   }
 
   return {
-    icon: <FolderArchive size={40} className={OtherColor.fillColor} />,
+    icon: (
+      <FolderArchive size={40} className={`${ImageColor.fillColor} w-[72px]`} />
+    ),
     color: OtherColor.bgColor,
   }
 }
@@ -106,6 +117,7 @@ const getTypeByMimeType = (mimeType: MimeType) => {
 export type FileWithPreview = File & {
   preview?: string
   fileUrl?: string
+  dimensions?: { width: number; height: number }
 }
 
 type Props = {
@@ -153,20 +165,6 @@ const FileUploader = ({
     )
 
     if (progress === 100) {
-      // setUploadedFiles(prevUploadedFiles => {
-      //   console.log('progress 100', prevUploadedFiles, file)
-      //   const fileWithPreview = Object.assign(file, {
-      //     preview: URL.createObjectURL(file),
-      //     fileUrl: file.fileUrl,
-      //   })
-      //
-      //   return [...prevUploadedFiles, fileWithPreview]
-      // })
-
-      // setFilesToUpload(prevUploadProgress => {
-      //   return prevUploadProgress.filter(item => item.File !== file)
-      // })
-
       return
     }
 
@@ -256,7 +254,7 @@ const FileUploader = ({
         )
 
         setUploadedFiles(previousFiles => {
-          console.log({ previousFiles, asset })
+          // console.log({ previousFiles, asset })
 
           const previousUrls = previousFiles
             .map(prevFile => prevFile.fileUrl || '')
@@ -264,7 +262,7 @@ const FileUploader = ({
           // merge the arrays and filter out duplicates
 
           if (!asset) {
-            console.log('not asset')
+            // console.log('not asset')
             return previousFiles
           }
 
@@ -273,7 +271,7 @@ const FileUploader = ({
           )
 
           if (existingFile.length) {
-            console.log('existing file', asset)
+            // console.log('existing file', asset)
             return previousFiles
           }
 
@@ -281,7 +279,7 @@ const FileUploader = ({
             new Set([...previousUrls, asset.fileUrl]),
           )
 
-          console.log(maxFiles, maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+          // console.log(maxFiles, maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
           // Call onChange according to the maxFiles prop
           onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
 
@@ -299,57 +297,9 @@ const FileUploader = ({
         const uploadRes = await Promise.all(fileUploadBatch)
 
         if (!uploadRes) {
-          // errored or something
           // @todo: handle error, show toast, etc?
           return false
         }
-
-        // console.log('upload success batch', uploadRes)
-        //
-        // const newUrls = uploadRes
-        //   .map(item => (item ? item?.fileUrl : ''))
-        //   .filter(Boolean)
-        //
-        // // console.log({newUrls, uploadedFiles})
-        // if (!newUrls) {
-        //   return
-        // }
-
-        // setUploadedFiles(previousFiles => {
-        //   console.log({previousFiles})
-        //
-        //   const previousUrls = previousFiles.map(prevFile => prevFile.fileUrl || '').filter(Boolean)
-        //   // merge the arrays and filter out duplicates
-        //   const uniqueUrls = Array.from(new Set([...previousUrls, ...newUrls]))
-        //
-        //   console.log(maxFiles, maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
-        //   // Call onChange according to the maxFiles prop
-        //   onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
-        //
-        //   if (!uploadRes) {
-        //     return previousFiles
-        //   }
-        //
-        //   const uploads = uploadRes.filter(item => item && !previousUrls.includes(item?.fileUrl))
-        //
-        //   if (!uploads) {
-        //     return previousFiles
-        //   }
-        //
-        //   return [ ...previousFiles, ...(uploads as FileWithPreview[]) ]
-        // })
-
-        // Get the URLs of previously uploaded files
-        // const previousUrls = uploadedFiles
-        //   .map(file => file.fileUrl || '')
-        //   .filter(Boolean)
-
-        // // merge the arrays and filter out duplicates
-        // const uniqueUrls = Array.from(new Set([...previousUrls, ...newUrls]))
-        //
-        // console.log(maxFiles, maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
-        // // Call onChange according to the maxFiles prop
-        // onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
 
         toast({
           className: 'flex p-4',
@@ -370,7 +320,6 @@ const FileUploader = ({
     [maxFiles, onChange], // Include uploadedFiles in dependency array
   )
 
-  // const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: allowedFileMimeTypes.map(item => ) })
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     multiple: allowMultiple,
@@ -389,6 +338,14 @@ const FileUploader = ({
       uploadedFiles.forEach(file => URL.revokeObjectURL(file.preview || ''))
   }, [uploadedFiles])
 
+  const supportsVideo = allowedFileTypes?.includes('video')
+  const supportsImage = allowedFileTypes?.includes('image')
+  const supportsAny = supportsImage && supportsVideo
+
+  const typeWordPluralised = allowedFileTypes
+    ?.map(type => `${type}${allowMultiple ? 's' : ''}`)
+    .join(',')
+
   return (
     <div className="flex-grow">
       <div>
@@ -396,7 +353,9 @@ const FileUploader = ({
           {...getRootProps()}
           className={cn(
             'relative flex flex-col items-center justify-center w-full py-6 border rounded-lg cursor-pointer bg-card',
-            `border-${fixedColorClassName}`,
+            supportsVideo ? VideoColor.borderColor : '',
+            supportsImage ? ImageColor.borderColor : '',
+            supportsAny ? OtherColor.borderColor : '',
           )}
         >
           <div className="text-center">
@@ -407,18 +366,17 @@ const FileUploader = ({
             <p className="mt-2 text-sm text-muted-foreground">
               <span className="font-semibold">
                 Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
-                {allowedFileTypes
-                  ?.map(type => `${type}${allowMultiple ? 's' : ''}`)
-                  .join(',')}
+                {typeWordPluralised}
               </span>
             </p>
             <p className="text-xs text-muted-foreground">
-              Click to upload files &#40;files should be under 10 MB &#41;
+              Click here or drop files to upload
+              {/*&#40;files should be under xx MB &#41;*/}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {allowedFileTypes?.join(', ')} | (
-              {allowedFileMimeTypes.join(', ')})
-            </p>
+            {/*<p className='text-xs text-muted-foreground'>*/}
+            {/*  {allowedFileTypes?.join(', ')} | (*/}
+            {/*  {allowedFileMimeTypes.join(', ')})*/}
+            {/*</p>*/}
           </div>
         </label>
 
@@ -431,136 +389,142 @@ const FileUploader = ({
         />
       </div>
 
-      {filesToUpload.length > 0 && (
+      {filesToUpload.length || uploadedFiles.length ? (
         <div className="bg-card p-2 mt-4 rounded-lg">
-          <p className="font-medium my-2 mt-4 text-muted-foreground text-sm">
-            Uploading...
+          <p className="font-medium mb-2 text-muted-foreground text-sm">
+            Uploaded Files ({uploadedFiles.length + filesToUpload.length})
           </p>
-          <div className="bg-card space-y-2">
-            {filesToUpload.map(fileUploadProgress => {
-              return (
-                <div
-                  key={fileUploadProgress.File.lastModified}
-                  className="flex justify-between gap-2 rounded-lg overflow-hidden border border-border group"
-                >
-                  <div className="flex items-center flex-1 p-2">
-                    <div className="text-white">
-                      {
-                        getFileIconAndColor(
-                          getTypeByMimeType(
-                            fileUploadProgress.File.type as MimeType,
-                          ),
-                        ).icon
-                      }
-                    </div>
-
-                    <div className="w-full ml-2 space-y-1">
-                      <div className="text-xs flex justify-between">
-                        <p className="text-muted-foreground">
-                          {fileUploadProgress.File.name.slice(0, 25)}
-                        </p>
-                        <span>{fileUploadProgress.progress}%</span>
+          <div className="space-y-2">
+            {uploadedFiles.length > 0 &&
+              uploadedFiles.map(file => {
+                return (
+                  <div
+                    key={file.lastModified}
+                    className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group"
+                  >
+                    <div className="flex items-center pl-2 h-20">
+                      <div className="relative text-white rounded overflow-hidden shrink-0 mr-2">
+                        {file.preview ? (
+                          <>
+                            {file.type.startsWith('image') ? (
+                              <Image
+                                src={file.preview}
+                                alt={file.preview}
+                                height={64}
+                                width={64}
+                                // objectFit={'cover'}
+                                onLoad={() =>
+                                  URL.revokeObjectURL(file.preview || '')
+                                }
+                                className="object-contain w-full h-[64px]"
+                              />
+                            ) : (
+                              <video
+                                src={file.preview}
+                                controls={false}
+                                controlsList={'nodownload'}
+                                className="absolute object-contain self-center"
+                                onContextMenu={(e: React.MouseEvent) =>
+                                  e.preventDefault()
+                                }
+                                onLoad={() =>
+                                  URL.revokeObjectURL(file.preview || '')
+                                }
+                              />
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {
+                              getFileIconAndColor(
+                                getTypeByMimeType(file.type as MimeType),
+                              ).icon
+                            }
+                          </>
+                        )}
                       </div>
-                      <Progress
-                        value={fileUploadProgress.progress}
-                        className={`bg-${
+                      <div className="space-y-1 w-[254px]">
+                        <div className="text-sm text-muted-foreground">
+                          <Truncate text={file.name} />
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {file.dimensions?.width}
+                          <span> x </span>
+                          {file.dimensions?.height}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeFile(file)}
+                      className="absolute h-full right-0 bg-destructive text-destructive-foreground items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                )
+              })}
+
+            {filesToUpload.length > 0 &&
+              filesToUpload.map(fileUploadProgress => {
+                return (
+                  <div
+                    key={fileUploadProgress.File.lastModified}
+                    className="flex justify-between gap-2 rounded-lg overflow-hidden border border-border group h-20"
+                  >
+                    <div className="flex items-center w-full pr-2">
+                      <div
+                        className={`text-${
                           getFileIconAndColor(
                             getTypeByMimeType(
                               fileUploadProgress.File.type as MimeType,
                             ),
                           ).color
-                        }`}
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (fileUploadProgress.source)
-                        fileUploadProgress.source.cancel('Upload cancelled')
-                      removeFile(fileUploadProgress.File)
-                    }}
-                    className="bg-destructive text-destructive-foreground items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {uploadedFiles.length > 0 && (
-        <div className="bg-card p-2 mt-4 rounded-lg">
-          <p className="font-medium mb-2 text-muted-foreground text-sm">
-            Uploaded Files
-          </p>
-          <div className="space-y-2">
-            {uploadedFiles.map(file => {
-              return (
-                <div
-                  key={file.lastModified}
-                  className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group h-14"
-                >
-                  <div className="flex items-center p-2">
-                    <div className="relative flex text-white h-14 w-14 rounded overflow-hidden">
-                      {file.preview ? (
-                        <>
-                          {file.type.startsWith('image') ? (
-                            <Image
-                              src={file.preview}
-                              alt={file.preview}
-                              fill={true}
-                              objectFit={'contain'}
-                              onLoad={() =>
-                                URL.revokeObjectURL(file.preview || '')
-                              }
-                            />
-                          ) : (
-                            <video
-                              src={file.preview}
-                              controls={false}
-                              controlsList={'nodownload'}
-                              className="absolute object-contain self-center"
-                              onContextMenu={(e: React.MouseEvent) =>
-                                e.preventDefault()
-                              }
-                              onLoad={() =>
-                                URL.revokeObjectURL(file.preview || '')
-                              }
-                            />
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          {
+                        } flex justify-center mr-2`}
+                      >
+                        {
+                          getFileIconAndColor(
+                            getTypeByMimeType(
+                              fileUploadProgress.File.type as MimeType,
+                            ),
+                          ).icon
+                        }
+                      </div>
+                      <div className="w-full space-y-1">
+                        <div className="text-xs flex justify-between">
+                          <div className="text-sm text-muted-foreground w-[254px]">
+                            <Truncate text={fileUploadProgress.File.name} />
+                          </div>
+                          <span>{fileUploadProgress.progress}%</span>
+                        </div>
+                        <Progress
+                          value={fileUploadProgress.progress}
+                          className={`bg-${
                             getFileIconAndColor(
-                              getTypeByMimeType(file.type as MimeType),
-                            ).icon
-                          }
-                        </>
-                      )}
-                    </div>
-                    <div className="w-full ml-2 space-y-1">
-                      <div className="text-sm flex justify-between">
-                        <p className="text-muted-foreground">
-                          {file.name.slice(0, 25)}
-                        </p>
+                              getTypeByMimeType(
+                                fileUploadProgress.File.type as MimeType,
+                              ),
+                            ).color
+                          }`}
+                        />
                       </div>
                     </div>
+                    <button
+                      onClick={() => {
+                        if (fileUploadProgress.source) {
+                          fileUploadProgress.source.cancel('Upload cancelled')
+                        }
+                        removeFile(fileUploadProgress.File)
+                      }}
+                      className="bg-warning text-destructive-foreground items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
+                    >
+                      <BanIcon size={20} />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeFile(file)}
-                    className="absolute h-full right-0 bg-destructive text-destructive-foreground items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              )
-            })}
+                )
+              })}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

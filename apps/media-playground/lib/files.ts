@@ -54,9 +54,12 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
 
   const response = await axios.put(signedUrl, file, config)
 
+  const fileObjURL = URL.createObjectURL(file)
+
   const fileWithExtra = Object.assign(file, {
     fileUrl: signedUrl.split('?')[0],
-    preview: URL.createObjectURL(file),
+    preview: fileObjURL,
+    dimensions: await getDimensionsFromImgBlob(file),
   })
 
   if (response.status !== 200) {
@@ -64,4 +67,16 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
   }
 
   return fileWithExtra
+}
+
+export const getDimensionsFromImgBlob = async (file: File) => {
+  const blob = new Blob([file], { type: file.type })
+  const imgBitmap = await createImageBitmap(blob)
+  const { width, height } = imgBitmap
+  imgBitmap.close()
+
+  return {
+    width,
+    height,
+  }
 }

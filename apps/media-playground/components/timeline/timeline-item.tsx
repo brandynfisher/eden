@@ -102,11 +102,16 @@ const TimelineItem = ({ item }: Props) => {
             >
               <Skeleton className="w-full h-full rounded-t-none rounded-bl-lg rounded-br-lg" />
             </AspectRatio>
+            <div className="absolute inset-0 text-center self-center">
+              {item.status === 'pending'
+                ? 'Waiting to start...'
+                : `Generating... ${55}%`}
+            </div>
             <Button
-              size="sm"
+              // size='xs'
               variant="outline"
               type="button"
-              className="absolute bottom-4 right-4 text-warning text-xs"
+              className="absolute px-2 py-0 h-6 bottom-4 right-4 text-warning/40 text-xs bg-popover/40 hover:bg-popover/70"
               onClick={() => handleCancel(item._id)}
               disabled={isCancelling}
             >
@@ -126,6 +131,7 @@ const TimelineItem = ({ item }: Props) => {
                     {result.endsWith('.mp4') ? (
                       <video
                         src={result}
+                        loop={true}
                         controls={true}
                         controlsList={'nodownload'}
                         onContextMenu={(e: React.MouseEvent) =>
