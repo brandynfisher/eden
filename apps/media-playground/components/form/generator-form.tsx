@@ -86,15 +86,26 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           case 'string':
           case 'string[]':
-            return field.name === 'prompt' ? (
-              <FormItem className="mt-0 !px-4 !py-3">
-                <FormLabel className="sr-only">{label}</FormLabel>
+            return field.name === 'prompt' ||
+              field.name === 'negative_prompt' ? (
+              <FormItem
+                className={`mt-0 ${parameter.required ? '' : '!px-4 !py-3'}`}
+              >
+                {parameter.required ? (
+                  <FormLabel className="sr-only">{label}</FormLabel>
+                ) : (
+                  <div className="space-y-0.5 mb-2">
+                    <FormLabel className="text-base">{label}</FormLabel>
+                    <FormDescription>{parameter.description}</FormDescription>
+                  </div>
+                )}
                 <FormControl>
                   <Textarea
                     autoResize={true}
                     spellCheck={false}
                     placeholder={parameter.description}
-                    className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
+                    className={`!mt-0 !ml-0 border-0 resize-none overflow-hidden rounded-lg ${parameter.required ? '!outline-none !px-4 !py-3' : 'rounded-lg border p-2 '}`}
+                    // className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
                     onChange={onChange}
                     onBlur={onBlur}
                     value={value || ''}
