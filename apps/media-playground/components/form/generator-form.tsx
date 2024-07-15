@@ -321,7 +321,7 @@ const GeneratorForm = ({ generator }: Props) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full sticky top-[96px] flex flex-col max-h-[calc(100vh_-_96px)]"
+          className="w-full sticky top-[106px] flex flex-col max-h-[calc(100vh_-_106px)]"
         >
           <TypographyH3>{generator.name}</TypographyH3>
           <div
