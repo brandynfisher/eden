@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/lib/auth'
+import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import axios from 'axios'
-import { CONFIG } from 'garden/src/lib/config'
 import { NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await axios.get(
-      `${CONFIG.API_URL}/media/download?url=${url}&fileName=${fileName}&fileExtension=${fileExtension}`,
+      `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/media/download?url=${url}&fileName=${fileName}&fileExtension=${fileExtension}`,
       {
         headers: {
           Authorization: `Bearer ${authToken}`,

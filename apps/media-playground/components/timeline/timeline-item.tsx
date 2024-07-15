@@ -139,7 +139,7 @@ const TimelineItem = ({ item }: Props) => {
                             onContextMenu={(e: React.MouseEvent) =>
                               e.preventDefault()
                             }
-                            className="object-cover w-full rounded-bl-lg rounded-br-lg"
+                            className="w-full rounded-bl-lg rounded-br-lg"
                           />
                         ) : (
                           <Image
@@ -147,8 +147,8 @@ const TimelineItem = ({ item }: Props) => {
                             alt={result}
                             // fill={true}
                             objectFit={'cover'}
-                            width={item.args.width || 0}
-                            height={item.args.height || 0}
+                            width={item.args.width || 1024}
+                            height={item.args.height || 1024}
                             className="object-cover w-full rounded-bl-lg rounded-br-lg"
                           />
                         )}
