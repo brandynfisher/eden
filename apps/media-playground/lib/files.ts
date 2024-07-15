@@ -60,7 +60,9 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
   const fileWithExtra = Object.assign(file, {
     fileUrl: signedUrl.split('?')[0],
     preview: fileObjURL,
-    dimensions: await getDimensionsFromImgBlob(file),
+    dimensions: file.type.startsWith('image')
+      ? await getDimensionsFromImgBlob(file)
+      : undefined,
   })
 
   if (response.status !== 200) {
