@@ -1,5 +1,5 @@
+import { sanitize } from '@/lib/strings'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
-import { sanitize } from 'garden/src/lib/string'
 
 type UploadOptions = {
   file: File
