@@ -1,4 +1,5 @@
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
+import { sanitize } from 'garden/src/lib/string'
 
 type UploadOptions = {
   file: File
@@ -78,5 +79,42 @@ export const getDimensionsFromImgBlob = async (file: File) => {
   return {
     width,
     height,
+  }
+}
+
+const sanitizeFilenameForCloudinaryBug = (fileName: string) => {
+  return fileName.replaceAll('original', 'Original')
+}
+
+export const getDownloadFileName = (
+  userName: string,
+  itemId: string,
+  itemName?: string,
+) => {
+  const fileName = encodeURIComponent(
+    `Eden-${userName}-${
+      itemName ? sanitize(itemName.slice(0, 128)) : '___'
+    }-${itemId}`,
+  )
+  return sanitizeFilenameForCloudinaryBug(fileName)
+}
+
+export const downloadFile = async (url: string, fileName: string) => {
+  try {
+    const parsedUrl = new URL(url)
+    const extension = parsedUrl.pathname.split('.').pop()
+    const response = await axios.get(
+      `/api/media/download?url=${url}&fileName=${fileName}&fileExtension=${extension}`,
+    )
+    const link = document.createElement('a')
+    link.download = `${fileName}.${extension}`
+    link.href = response.data.signedUrl
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    return true
+  } catch (error) {
+    console.error('Error downloading creation:', error)
+    return false
   }
 }
