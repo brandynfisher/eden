@@ -148,6 +148,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
       title={'Workflows'}
       baseSegment={baseSegment}
       navigation={navItems}
+      wrapClassName={'!pb-0'}
     >
       {children}
     </SecondaryNavLayout>
