@@ -1,5 +1,6 @@
 'use client'
 
+import SliderInput from '@/components/form/slider-input'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import {
@@ -41,7 +42,6 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
         let parsedValue: number | undefined
         switch (parameter.type) {
           case 'int':
-          case 'float':
             parsedValue = Number(value)
             if (isNaN(parsedValue)) {
               parsedValue = undefined
@@ -58,11 +58,35 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                     type="number"
                     onChange={e =>
                       onChange(
-                        e.target.value ? parseFloat(e.target.value) : undefined,
+                        e.target.value ? parseInt(e.target.value) : undefined,
                       )
                     }
                     onBlur={onBlur}
                     value={parsedValue}
+                  />
+                </FormControl>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          case 'float':
+            parsedValue = Number(value)
+            if (isNaN(parsedValue)) {
+              parsedValue = undefined
+            }
+
+            return (
+              <FormItem className="mt-0 !px-4 !py-3">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
+                <FormControl id={field.name}>
+                  <SliderInput
+                    min={parameter.minimum || 0}
+                    max={parameter.maximum || 1}
+                    step={0.1}
+                    defaultValue={parsedValue || 0}
+                    onChange={onChange}
                   />
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
