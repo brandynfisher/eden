@@ -104,10 +104,10 @@ const TimelineItem = ({ item }: Props) => {
               >
                 <Skeleton className="w-full h-full rounded-t-none rounded-bl-lg rounded-br-lg" />
               </AspectRatio>
-              <div className="absolute inset-0 text-center self-center">
+              <div className="absolute inset-0 text-center self-center text-sm text-muted-foreground">
                 {item.status === 'pending'
                   ? 'Waiting to start...'
-                  : `Generating... ${55}%`}
+                  : `Generating...`}
               </div>
               <Button
                 // size='xs'
