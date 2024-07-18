@@ -142,18 +142,18 @@ const FileUploader = ({
   )
 
   const allowedFileMimeTypes = allowedTypes.map(type => type.allowedMimeTypes)
-  const fixedColorClassName =
-    allowedTypes && allowedTypes.length === 1
-      ? getFileIconAndColor(allowedTypes[0].type).color
-      : undefined
+  // const fixedColorClassName =
+  //   allowedTypes && allowedTypes.length === 1
+  //     ? getFileIconAndColor(allowedTypes[0].type).color
+  //     : undefined
 
-  console.log({
-    maxFiles,
-    allowedTypes,
-    fixedColorClassName,
-    uploadedFiles,
-    filesToUpload,
-  })
+  // console.log({
+  //   maxFiles,
+  //   allowedTypes,
+  //   fixedColorClassName,
+  //   uploadedFiles,
+  //   filesToUpload,
+  // })
 
   const onUploadProgress = (
     progressEvent: AxiosProgressEvent,
@@ -422,8 +422,10 @@ const FileUploader = ({
                               <video
                                 src={file.preview}
                                 controls={false}
+                                width={64}
+                                height={64}
                                 controlsList={'nodownload'}
-                                className="absolute object-contain self-center"
+                                className="object-contain self-center w-full h-[64px]"
                                 onContextMenu={(e: React.MouseEvent) =>
                                   e.preventDefault()
                                 }
@@ -447,11 +449,13 @@ const FileUploader = ({
                         <div className="text-sm text-muted-foreground">
                           <Truncate text={file.name} />
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {file.dimensions?.width}
-                          <span> x </span>
-                          {file.dimensions?.height}
-                        </div>
+                        {file.dimensions ? (
+                          <div className="text-xs text-muted-foreground">
+                            {file.dimensions?.width}
+                            <span> x </span>
+                            {file.dimensions?.height}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                     <button
