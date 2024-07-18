@@ -48,7 +48,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             }
 
             return (
-              <FormItem className="mt-0 !px-4 !py-3">
+              <FormItem className="mt-0 !p-4 !pt-3">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
@@ -75,7 +75,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             }
 
             return (
-              <FormItem className="mt-0 !px-4 !py-3">
+              <FormItem className="mt-0 !p-4 !pt-3">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
@@ -85,8 +85,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                     min={parameter.minimum || 0}
                     max={parameter.maximum || 1}
                     step={0.1}
-                    defaultValue={parsedValue || 0}
-                    onChange={onChange}
+                    defaultValue={Number(parameter.default) || 0}
+                    onChange={newVal => {
+                      onChange(newVal)
+                    }}
                   />
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -113,7 +115,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             return field.name === 'prompt' ||
               field.name === 'negative_prompt' ? (
               <FormItem
-                className={`mt-0 ${parameter.required ? '' : '!px-4 !py-3'}`}
+                className={`mt-0 ${parameter.required ? '' : '!p-4 !pt-3'}`}
               >
                 {parameter.required ? (
                   <FormLabel className="sr-only">{label}</FormLabel>
@@ -128,7 +130,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                     autoResize={true}
                     spellCheck={false}
                     placeholder={parameter.description}
-                    className={`!mt-0 !ml-0 border-0 resize-none overflow-hidden rounded-lg ${parameter.required ? '!outline-none !px-4 !py-3' : 'rounded-lg border p-2 '}`}
+                    className={`!mt-0 !ml-0 border-0 resize-none overflow-hidden rounded-lg ${parameter.required ? '!outline-none !p-4 !pt-3' : 'rounded-lg border p-2 '}`}
                     // className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
                     onChange={onChange}
                     onBlur={onBlur}
@@ -138,7 +140,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                 <FormMessage />
               </FormItem>
             ) : (
-              <FormItem className="mt-0 !px-4 !py-3">
+              <FormItem className="mt-0 !p-4 !pt-3">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
@@ -155,7 +157,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           case 'image':
             return (
-              <FormItem className="mt-0 !px-4 !py-3">
+              <FormItem className="mt-0 !p-4 !pt-3">
                 <FormLabel>{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
@@ -177,7 +179,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           case 'image[]':
             return (
-              <FormItem className="mt-0 !px-4 !py-3">
+              <FormItem className="mt-0 !p-4 !pt-3">
                 <FormLabel>{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
@@ -204,7 +206,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           case 'video':
             return (
-              <FormItem className="mt-0 !px-4 !py-3">
+              <FormItem className="mt-0 !p-4 !pt-3">
                 <FormLabel>{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
@@ -226,7 +228,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           case 'video[]':
             return (
-              <FormItem className="mt-0 !px-4 !py-3">
+              <FormItem className="mt-0 !p-4 !pt-3">
                 <FormLabel>{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
@@ -253,7 +255,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           default:
             return (
-              <FormItem className="mt-0 !px-4 !py-3">
+              <FormItem className="mt-0 !p-4 !pt-3">
                 <FormLabel>{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
@@ -290,7 +292,7 @@ const GeneratorForm = ({ generator }: Props) => {
   const { toast } = useToast()
 
   async function onSubmit(formData: z.infer<typeof parameterSchema>) {
-    console.log('try onSubmit', formData)
+    // console.log('try onSubmit', formData)
     if (!(await verifyAuth())) {
       return
     }
@@ -343,7 +345,7 @@ const GeneratorForm = ({ generator }: Props) => {
   return (
     <div
       data-test-id="generator-form"
-      className="flex flex-col items-start overflow-y-auto xl:sticky xl:top-[106px] xl:max-h-[calc(100vh_-_106px)]"
+      className="flex flex-col items-start overflow-y-auto xl:pr-4 xl:sticky xl:top-[106px] xl:max-h-[calc(100vh_-_106px)]"
     >
       <Form {...form}>
         <form

@@ -81,12 +81,24 @@ const navItems: SecondaryNavSection[] = [
         segments: [baseSegment, 'video', 'txt2vid'],
       },
       {
+        label: 'Text to Video (LoRA)',
+        segments: [baseSegment, 'video', 'txt2vid_lora'],
+      },
+      {
         label: 'Image to Video',
         segments: [baseSegment, 'video', 'img2vid'],
       },
+      // {
+      //   label: 'Image to Video (MuseV)',
+      //   segments: [baseSegment, 'video', 'img2vid_museV'],
+      // },
       {
-        label: 'Video to Video',
-        segments: [baseSegment, 'video', 'vid2vid'],
+        label: 'Video to Video (SD1.5)',
+        segments: [baseSegment, 'video', 'vid2vid_sd15'],
+      },
+      {
+        label: 'Video to Video (SDXL)',
+        segments: [baseSegment, 'video', 'vid2vid_sdxl'],
       },
       {
         label: 'Style Mixing',
@@ -118,17 +130,43 @@ const navItems: SecondaryNavSection[] = [
         segments: [baseSegment, 'image', 'SD3'],
       },
       {
+        label: 'Face Styler',
+        segments: [baseSegment, 'image', 'face_styler'],
+      },
+      {
         label: 'Inpaint',
         segments: [baseSegment, 'image', 'inpaint'],
+      },
+      {
+        label: 'Background Removal',
+        segments: [baseSegment, 'image', 'background_removal'],
       },
       {
         label: 'Image Upscaler',
         segments: [baseSegment, 'image', 'clarity_upscaler'],
       },
-      // {
-      //   label: 'In-painting',
-      //   segments: [baseSegment, 'image', 'inpaint'],
-      // },
+      {
+        label: 'Moodmix',
+        segments: [baseSegment, 'image', 'moodmix'],
+      },
+    ],
+  },
+  {
+    title: 'Story',
+    links: [
+      {
+        label: 'Reel',
+        segments: [baseSegment, 'story', 'reel'],
+      },
+    ],
+  },
+  {
+    title: 'Audio',
+    links: [
+      {
+        label: 'Audiocraft',
+        segments: [baseSegment, 'audio', 'audiocraft'],
+      },
     ],
   },
   {
