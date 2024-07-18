@@ -91,7 +91,7 @@ const Timeline = ({ generator }: Props) => {
   }, [lastMessageJson, queryClient, queryKey])
 
   return (
-    <div data-test-id="timeline" className="2xl:col-span-2 mb-8">
+    <div data-test-id="timeline" className="mb-8 2xl:col-span-2">
       <ListVirtualizerVertical
         apiEndpoint={'/api/tasks/list'}
         query={query}

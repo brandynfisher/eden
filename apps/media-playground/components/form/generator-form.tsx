@@ -341,11 +341,14 @@ const GeneratorForm = ({ generator }: Props) => {
   const [showForm, setShowForm] = useState(false)
 
   return (
-    <div data-test-id="generator-form" className="flex flex-col items-start">
+    <div
+      data-test-id="generator-form"
+      className="flex flex-col items-start overflow-y-auto xl:sticky xl:top-[106px] xl:max-h-[calc(100vh_-_106px)]"
+    >
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full sticky top-[106px] flex flex-col max-h-[calc(100vh_-_106px)]"
+          className="flex flex-col w-full"
         >
           <TypographyH3>{generator.name}</TypographyH3>
           <div
@@ -385,7 +388,7 @@ const GeneratorForm = ({ generator }: Props) => {
           </div>
           <div
             data-test-id="generator-form-settings-optional"
-            className={cn([showForm ? 'overflow-y-scroll' : 'overflow-hidden'])}
+            className={cn([showForm ? '' : 'overflow-hidden'])}
           >
             <div
               className={cn([

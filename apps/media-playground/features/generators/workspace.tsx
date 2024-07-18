@@ -18,7 +18,7 @@ const Workspace = ({ generatorKey }: Props) => {
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-8">
+    <div className="grid grid-cols-1 gap-4 xl:gap-8 xl:grid-cols-2 2xl:grid-cols-3">
       <GeneratorForm generator={generator} />
       <Suspense fallback={<LoadingIndicator />}>
         <Timeline generator={generator} />
