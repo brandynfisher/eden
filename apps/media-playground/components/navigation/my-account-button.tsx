@@ -76,18 +76,18 @@ const AccountDropdown = () => {
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/creators/${user.username}/models`}>Models</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user.username}/collections`}>
-            Collections
-          </Link>
-        </DropdownMenuItem>
+        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
+        {/*  <Link href={`/creators/${user.username}/collections`}>*/}
+        {/*    Collections*/}
+        {/*  </Link>*/}
+        {/*</DropdownMenuItem>*/}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/settings/account`}>Settings</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/settings/subscription`}>Subscription</Link>
-        </DropdownMenuItem>
+        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
+        {/*  <Link href={`/settings/account`}>Settings</Link>*/}
+        {/*</DropdownMenuItem>*/}
+        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
+        {/*  <Link href={`/settings/subscription`}>Subscription</Link>*/}
+        {/*</DropdownMenuItem>*/}
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
