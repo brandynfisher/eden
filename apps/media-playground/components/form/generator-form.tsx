@@ -97,7 +97,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           case 'bool':
             return (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <FormItem className="flex flex-row items-center justify-between rounded-lg p-4">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
@@ -115,7 +115,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'string[]':
             return field.name === 'prompt' ||
               field.name === 'negative_prompt' ? (
-              <FormItem className={`mt-0 !p-4 !pt-3`}>
+              <FormItem className={`mt-0 !p-4 !pt-3 `}>
                 {parameter.required ? (
                   <FormLabel className="sr-only">{label}</FormLabel>
                 ) : (
