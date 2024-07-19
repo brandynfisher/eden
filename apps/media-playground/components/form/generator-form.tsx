@@ -115,14 +115,14 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'string[]':
             return field.name === 'prompt' ||
               field.name === 'negative_prompt' ? (
-              <FormItem
-                className={`mt-0 ${parameter.required ? '' : '!p-4 !pt-3'}`}
-              >
+              <FormItem className={`mt-0 !p-4 !pt-3`}>
                 {parameter.required ? (
                   <FormLabel className="sr-only">{label}</FormLabel>
                 ) : (
                   <div className="space-y-0.5 mb-2">
-                    <FormLabel className="text-base">{label}</FormLabel>
+                    <FormLabel className="text-base capitalize">
+                      {label}
+                    </FormLabel>
                     <FormDescription>{parameter.description}</FormDescription>
                   </div>
                 )}
@@ -146,7 +146,9 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             ) : (
               <FormItem className="mt-0 !p-4 !pt-3">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">{label}</FormLabel>
+                  <FormLabel className="text-base capitalize">
+                    {label}
+                  </FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
                 <FormControl id={field.name}>
@@ -171,7 +173,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'image':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel>{label}</FormLabel>
+                <FormLabel className="capitalize">{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
                   <Input
@@ -193,7 +195,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'image[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel>{label}</FormLabel>
+                <FormLabel className="capitalize">{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
                   <Input
@@ -220,7 +222,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'video':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel>{label}</FormLabel>
+                <FormLabel className="capitalize">{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
                   <Input
@@ -242,7 +244,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'video[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel>{label}</FormLabel>
+                <FormLabel className="capitalize">{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
                   <Input
@@ -269,7 +271,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           default:
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel>{label}</FormLabel>
+                <FormLabel className="capitalize">{label}</FormLabel>
                 <FormDescription>{parameter.description}</FormDescription>
                 <FormControl id={field.name}>
                   <Input
