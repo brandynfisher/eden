@@ -64,9 +64,23 @@ export const taskV2Type = Type.Object({
   workflow: Type.String(),
   args: Type.Any(),
   status: Type.String(),
-  result: Type.Optional(Type.Array(Type.Any())),
+  result: Type.Optional(Type.Any()),
+  model: Type.Optional(Type.Any()),
   error: Type.Optional(Type.Any()),
   progress: Type.Optional(Type.Number()),
+  updatedAt: Type.Optional(Type.String()),
+  createdAt: Type.Optional(Type.String()),
+})
+
+export const modelV2Type = Type.Object({
+  _id: Type.String(),
+  name: Type.String(),
+  user: Type.String(),
+  args: Type.Any(),
+  checkpoint: Type.String(),
+  public: Type.Boolean(),
+  slug: Type.String(),
+  thumbnail: Type.String(),
   updatedAt: Type.Optional(Type.String()),
   createdAt: Type.Optional(Type.String()),
 })

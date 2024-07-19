@@ -116,22 +116,34 @@ export type TasksV2CancelResponse = WebAPICallResult & {
 
 // Types
 
+export type TaskV2Args = {
+  // creations
+  prompt?: string
+  negative_prompt?: string
+  width?: number
+  height?: number
+  seed?: number
+  lora?: string | null
+  lora_strength?: number
+  // models
+  name?: string
+  lora_training_urls?: string[]
+  sd_model_version?: string
+  concept_mode?: string
+  max_train_steps?: number
+  resolution?: number
+}
+
 export type TaskV2 = {
   _id: string
   user: string
   workflow: string
-  args: {
-    prompt?: string
-    negative_prompt?: string
-    width?: number
-    height?: number
-    seed?: number
-    lora?: string | null
-    lora_strength?: number
-  }
+  model?: string
+  name?: string
+  args: TaskV2Args
   status: string
   error: string | null
-  result: string[]
+  result: string | string[]
   createdAt: string
   updatedAt: string
 }

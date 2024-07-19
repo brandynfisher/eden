@@ -1,16 +1,23 @@
 import { User } from '../../models/Creator'
-import { TaskV2, TaskV2Document, TaskV2Status } from '../../models/v2/TaskV2'
+import {
+  TaskV2,
+  TaskV2Document,
+  TaskV2Status,
+  taskSchema,
+} from '../../models/v2/TaskV2'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
-  TasksGetArguments,
+  PaginatedResponse,
   TasksV2CancelArguments,
   TasksV2CreateArguments,
+  TasksV2GetArguments,
   TasksV2ListArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { PipelineStage } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
 
@@ -114,7 +121,7 @@ export const listTasks = async (
     workflow,
     status,
     taskId,
-    limit,
+    limit = 25,
     page,
     sort,
   } = request.query as TasksV2ListArguments
@@ -164,34 +171,64 @@ export const listTasks = async (
     query.workflow = workflow
   }
 
-  const tasks = await tasksRepository.query(query, {
+  let tasks: PaginatedResponse<TaskV2Document> = {}
+  const queryOptions = {
+    select: '-args.lora_training_urls',
     limit,
     page,
     sort: {
       ...sort,
       createdAt: -1,
     },
-  })
+  }
 
-  // @todo: Once data model is decided on and implemented, add populations back in as needed
-  // await tasksRepository.model.populate(tasks.docs, {
-  //   path: 'creation',
-  // })
-  // await tasksRepository.model.populate(tasks.docs, {
-  //   path: 'concept',
-  //   select: '_id name user conceptName creationCount thumbnail',
-  // })
-  // await tasksRepository.model.populate(tasks.docs, {
-  //   path: 'generator',
-  //   select: '_id generatorName',
-  // })
+  // handle workflows that returns models  resolve `result: ObjectId` to `models._id`
+  if (query.workflow === 'lora_trainer') {
+    const pipelines: PipelineStage[] = [
+      {
+        $match: {
+          workflow: workflow,
+        },
+      },
+      {
+        $lookup: {
+          from: 'models',
+          localField: 'result',
+          foreignField: '_id',
+          as: 'model',
+        },
+      },
+      {
+        $unwind: {
+          path: '$model',
+        },
+      },
+      {
+        // @todo: Remove training image urls only if not authenticated / subscription requirements - if any - are fulfilled?
+        $unset: ['args.lora_training_urls', 'model.args.lora_training_urls'],
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]
+
+    tasks = await tasksRepository.aggregateQuery(
+      TaskV2.aggregate(pipelines),
+      queryOptions,
+    )
+  } else {
+    // all other workflows return array of external asset URIs in `result` and don't need to be resolved further
+    tasks = await tasksRepository.query(query, queryOptions)
+  }
 
   return reply.status(200).send(tasks)
 }
 
 export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
   const { userId } = request.user
-  const { taskId } = request.params as TasksGetArguments
+  const { taskId } = request.params as TasksV2GetArguments
 
   const user = await User.findById(userId)
   if (!user) {
@@ -200,30 +237,35 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
     })
   }
 
-  const task = await TaskV2.findOne({ _id: taskId, user: userId })
+  // populating with a virtual field
+  // @todo: do this only when we're dealing with a task that produced a model = boy this is ugly
+  taskSchema.virtual('model', {
+    ref: 'models',
+    localField: 'result',
+    foreignField: '_id',
+    justOne: true,
+  })
+  taskSchema.set('toObject', { virtuals: true })
+  taskSchema.set('toJSON', { virtuals: true })
+
+  const task = await TaskV2.findOne({ _id: taskId, user: userId }).select(
+    '-args.lora_training_urls',
+  )
 
   // await Task.populate(task, {
   //   path: 'creation',
   // })
 
-  // await Task.populate(task, {
-  //   path: 'concept',
-  //   select: '_id name user conceptName creationCount thumbnail',
-  // })
-
-  // await Task.populate(task, {
-  //   path: 'generator',
-  //   select: 'generatorName',
-  // })
+  await TaskV2.populate(task, {
+    path: 'model',
+    select: '-args.lora_training_urls',
+  })
 
   if (!task) {
     return reply.status(404).send({
       message: 'Task not found',
     })
   }
-
-  // const taskObject = task.toObject()
-  // delete taskObject.config.lora_training_urls
 
   return reply.status(200).send({ task })
 }

@@ -74,6 +74,15 @@ const navItems: SecondaryNavSection[] = [
   //   ],
   // },
   {
+    title: 'Model',
+    links: [
+      {
+        label: 'LoRA Trainer',
+        segments: [baseSegment, 'model', 'lora_trainer'],
+      },
+    ],
+  },
+  {
     title: 'Video',
     links: [
       {
@@ -166,15 +175,6 @@ const navItems: SecondaryNavSection[] = [
       {
         label: 'Audiocraft',
         segments: [baseSegment, 'audio', 'audiocraft'],
-      },
-    ],
-  },
-  {
-    title: 'Model',
-    links: [
-      {
-        label: 'LoRA Trainer',
-        segments: [baseSegment, 'model', 'lora_trainer'],
       },
     ],
   },

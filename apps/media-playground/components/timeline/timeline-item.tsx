@@ -1,15 +1,14 @@
 import TaskStatusBadge from '@/components/badge/task-status-badge'
 import TaskParameterList from '@/components/timeline/task-parameter-list'
+import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
+import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/use-toast'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { downloadFile, getDownloadFileName } from '@/lib/files'
-import { TaskV2 } from '@edenlabs/eden-sdk'
+import { ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
 import axios, { AxiosError } from 'axios'
-import { DownloadIcon } from 'lucide-react'
-import Image from 'next/image'
 import React, { useCallback, useState } from 'react'
 
 type Props = {
@@ -22,29 +21,17 @@ const TimelineItem = ({ item }: Props) => {
 
   const [isCancelling, setIsCancelling] = useState(false)
 
-  // const handleCancel = async (taskId: TaskV2['_id']) => {
-  //   setIsCancelling(true)
-  //   console.log('try cancel', taskId)
-  // setTimeout(() => {
-  // setIsCancelling(false)
-  // }, 1000)
-  // }
   const handleCancel = useCallback(async (taskId: TaskV2['_id']) => {
-    console.log('try cancel', taskId)
     if (!(await verifyAuth())) {
       return
     }
 
-    console.log('onCancel', taskId)
     setIsCancelling(true)
 
     try {
       const response = await axios.post('/api/tasks/cancel', {
         taskId,
       })
-
-      console.log({ response })
-      console.log(response.data)
 
       toast({
         className: 'flex p-4',
@@ -124,65 +111,25 @@ const TimelineItem = ({ item }: Props) => {
         </div>
       ) : (
         <div>
-          {item.status === 'completed' && item.result && item.result.length
-            ? item.result.map(result => (
-                <div key={`${item._id}_${result}`}>
-                  <div className="relative border-transparent bg-popover">
-                    {result.startsWith('http') ? (
-                      <>
-                        {result.endsWith('.mp4') ? (
-                          <video
-                            src={result}
-                            loop={true}
-                            controls={true}
-                            controlsList={'nodownload'}
-                            onContextMenu={(e: React.MouseEvent) =>
-                              e.preventDefault()
-                            }
-                            className="w-full rounded-bl-lg rounded-br-lg"
-                          />
-                        ) : (
-                          <Image
-                            src={result}
-                            alt={result}
-                            // fill={true}
-                            objectFit={'cover'}
-                            width={item.args.width || 1024}
-                            height={item.args.height || 1024}
-                            className="object-cover w-full rounded-bl-lg rounded-br-lg"
-                          />
-                        )}
-                      </>
-                    ) : (
-                      // result is model / concept
-                      // @todo: fetch model data by it's id or pre-populate this api-side for a successful task
-                      <>concept: {result}</>
-                    )}
-                  </div>
-                  {/* //@todo: extract tool button/s to re-usable components */}
-                  <div className="mt-2">
-                    {/*// @todo: show toast 'Downloading file...' to indicate something is happening */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      title="Download"
-                      onClick={() =>
-                        downloadFile(
-                          result,
-                          getDownloadFileName(
-                            item.user,
-                            item._id,
-                            item.args?.prompt,
-                          ),
-                        )
-                      }
-                    >
-                      <DownloadIcon size={20} />
-                    </Button>
-                  </div>
-                </div>
-              ))
-            : null}
+          {item.status === 'completed' &&
+          item.result &&
+          Array.isArray(item.result) ? (
+            item.result.map((result, index) => (
+              // task result is an array of image/video/audio URIs
+              <TimelineItemMediaResult
+                key={`${item._id}_${result}`}
+                index={index}
+                task={item}
+                mediaUri={result as string}
+              />
+            ))
+          ) : (
+            // task result is ObjectId of model, api populates a model property with the full model document
+            <TimelineItemModelResult
+              task={item}
+              model={item.model as unknown as ModelV2}
+            />
+          )}
         </div>
       )}
     </div>

@@ -142,10 +142,6 @@ const FileUploader = ({
   )
 
   const allowedFileMimeTypes = allowedTypes.map(type => type.allowedMimeTypes)
-  // const fixedColorClassName =
-  //   allowedTypes && allowedTypes.length === 1
-  //     ? getFileIconAndColor(allowedTypes[0].type).color
-  //     : undefined
 
   // console.log({
   //   maxFiles,
