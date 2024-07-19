@@ -1,5 +1,6 @@
 'use client'
 
+import SelectInput from '@/components/form/select-input'
 import SliderInput from '@/components/form/slider-input'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
@@ -101,7 +102,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="text-base">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={field.name} className="ml-4">
                   <Switch
                     checked={value}
                     onCheckedChange={checked => onChange(checked)}
@@ -135,7 +136,6 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                         ? '!outline-none !p-4 !pt-3'
                         : 'rounded-lg border p-2 '
                     }`}
-                    // className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
                     onChange={onChange}
                     onBlur={onBlur}
                     value={value || ''}
@@ -150,11 +150,20 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
                 <FormControl id={field.name}>
-                  <Input
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value}
-                  />
+                  {parameter.choices && parameter.choices.length ? (
+                    <SelectInput
+                      placeholder={label}
+                      onChange={onChange}
+                      defaultValue={parameter.default ? parameter.default : ''}
+                      options={parameter.choices}
+                    />
+                  ) : (
+                    <Input
+                      onChange={onChange}
+                      onBlur={onBlur}
+                      value={value === null ? '' : value}
+                    />
+                  )}
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
