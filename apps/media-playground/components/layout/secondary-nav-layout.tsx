@@ -18,7 +18,7 @@ const SecondaryNavLayout = ({
   wrapClassName,
 }: Props) => {
   return (
-    <div className="md:flex min-h-[calc(100vh_-_theme(spacing.16))] bg-muted/40">
+    <div className="md:flex min-h-[calc(100vh_-_theme(spacing.16))] bg-background">
       <SecondaryNav
         title={title}
         baseSegment={baseSegment}

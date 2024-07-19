@@ -10,7 +10,6 @@ type Props = {
 }
 
 const TimelineItemMediaResult = ({ task, mediaUri, index }: Props) => {
-  console.log(mediaUri)
   return (
     <>
       <div className="relative border-transparent bg-popover">
@@ -21,7 +20,7 @@ const TimelineItemMediaResult = ({ task, mediaUri, index }: Props) => {
             controls={true}
             controlsList={'nodownload'}
             onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
-            className="w-full rounded-bl-lg rounded-br-lg"
+            className="w-full"
           />
         ) : (
           <Image
@@ -31,17 +30,15 @@ const TimelineItemMediaResult = ({ task, mediaUri, index }: Props) => {
             objectFit={'cover'}
             width={task.args.width || 1024}
             height={task.args.height || 1024}
-            className="object-cover w-full rounded-bl-lg rounded-br-lg"
+            className="object-cover w-full"
           />
         )}
       </div>
-      <div className="mt-2">
-        <TimelineItemResultTools
-          task={task}
-          downloadUri={mediaUri}
-          fileName={`${task.args?.prompt || '_noname'}_${index}`}
-        />
-      </div>
+      <TimelineItemResultTools
+        task={task}
+        downloadUri={mediaUri}
+        fileName={`${task.args?.prompt || '_noname'}_${index}`}
+      />
     </>
   )
 }

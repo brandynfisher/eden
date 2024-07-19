@@ -67,7 +67,7 @@ const TimelineItem = ({ item }: Props) => {
     <div data-test-id="timeline-item" key={item._id}>
       <TaskParameterList task={item} />
       {item.status !== 'completed' ? (
-        <div className="relative flex flex-col min-h-32 items-center justify-around bg-popover rounded-bl-lg rounded-br-lg">
+        <div className="relative flex flex-col min-h-32 items-center justify-around bg-muted rounded-bl-lg rounded-br-lg">
           <TaskStatusBadge status={item.status} hideText={true} />
 
           {item.status === 'failed' ? (
@@ -123,12 +123,16 @@ const TimelineItem = ({ item }: Props) => {
                 mediaUri={result as string}
               />
             ))
-          ) : (
+          ) : item.model !== undefined ? (
             // task result is ObjectId of model, api populates a model property with the full model document
             <TimelineItemModelResult
               task={item}
               model={item.model as unknown as ModelV2}
             />
+          ) : (
+            <div className="text-warning">
+              Unhandled result: {item.workflow} - {item._id}
+            </div>
           )}
         </div>
       )}

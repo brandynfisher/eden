@@ -17,18 +17,16 @@ const TimelineItemModelResult = ({ model, task }: Props) => {
           alt={model.name}
           // fill={true}
           objectFit={'cover'}
-          width={task.args.width || 1024}
-          height={task.args.height || 1024}
-          className="object-cover w-full rounded-bl-lg rounded-br-lg"
+          width={1024}
+          height={1024}
+          className="object-cover w-full"
         />
       </div>
-      <div className="mt-2">
-        <TimelineItemResultTools
-          task={task}
-          downloadUri={model.checkpoint}
-          fileName={model.slug.replace('/', '_') || '_noname_'}
-        />
-      </div>
+      <TimelineItemResultTools
+        task={task}
+        downloadUri={model.checkpoint}
+        fileName={model.slug.replace('/', '_') || '_noname_'}
+      />
     </>
   )
 }

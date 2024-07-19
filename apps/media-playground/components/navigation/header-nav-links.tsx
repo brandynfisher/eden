@@ -21,7 +21,7 @@ const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
 
 const navItemsExplore: NavLinkProps[] = [
   {
-    label: 'Featured',
+    label: 'Explore',
     segments: [],
   },
   {

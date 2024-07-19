@@ -11,7 +11,10 @@ type Props = {
 }
 const TimelineItemResultTools = ({ task, downloadUri, fileName }: Props) => {
   return (
-    <>
+    <div
+      data-test-id="timeline-item-result-tools"
+      className="relative flex flex-wrap gap-2 text-sm py-2 px-2 p-4 rounded-b-lg bg-muted/60"
+    >
       <Button
         variant="outline"
         size="sm"
@@ -25,7 +28,7 @@ const TimelineItemResultTools = ({ task, downloadUri, fileName }: Props) => {
       >
         <DownloadIcon size={20} />
       </Button>
-    </>
+    </div>
   )
 }
 

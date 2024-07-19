@@ -130,7 +130,11 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                     autoResize={true}
                     spellCheck={false}
                     placeholder={parameter.description}
-                    className={`!mt-0 !ml-0 border-0 resize-none overflow-hidden rounded-lg ${parameter.required ? '!outline-none !p-4 !pt-3' : 'rounded-lg border p-2 '}`}
+                    className={`!mt-0 !ml-0 border-0 resize-none overflow-hidden rounded-lg ${
+                      parameter.required
+                        ? '!outline-none !p-4 !pt-3'
+                        : 'rounded-lg border p-2 '
+                    }`}
                     // className="!mt-0 !ml-0 !px-0 !py-0 resize-none border-0 !outline-0 !outline-none !ring-0 overflow-hidden rounded-none"
                     onChange={onChange}
                     onBlur={onBlur}
@@ -360,7 +364,7 @@ const GeneratorForm = ({ generator }: Props) => {
             {generator.parameters
               ?.filter(parameter => parameter.required)
               ?.map(parameter => (
-                <div key={parameter.name} className="bg-popover rounded-lg">
+                <div key={parameter.name} className="bg-muted/60 rounded-lg">
                   {renderFormField(parameter)}
                 </div>
               ))}
@@ -401,7 +405,7 @@ const GeneratorForm = ({ generator }: Props) => {
               {generator.parameters
                 ?.filter(parameter => !parameter.required)
                 ?.map(parameter => (
-                  <div key={parameter.name} className="bg-popover rounded-lg">
+                  <div key={parameter.name} className="bg-muted/50 rounded-lg">
                     {renderFormField(parameter)}
                   </div>
                 ))}
