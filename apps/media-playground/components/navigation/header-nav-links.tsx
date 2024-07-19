@@ -24,14 +24,14 @@ const navItemsExplore: NavLinkProps[] = [
     label: 'Explore',
     segments: [],
   },
-  {
-    label: 'Models',
-    segments: ['models'],
-  },
-  {
-    label: 'Artists',
-    segments: ['artists'],
-  },
+  // {
+  //   label: 'Models',
+  //   segments: ['models'],
+  // },
+  // {
+  //   label: 'Artists',
+  //   segments: ['artists'],
+  // },
 ]
 
 const navItemsMake: NavLinkProps[] = [
