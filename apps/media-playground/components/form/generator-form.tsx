@@ -173,8 +173,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'image':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel className="capitalize">{label}</FormLabel>
-                <FormDescription>{parameter.description}</FormDescription>
+                <div className="space-y-0.5">
+                  <FormLabel className="capitalize">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
                 <FormControl id={field.name}>
                   <Input
                     className={'hidden'}
@@ -195,8 +197,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'image[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel className="capitalize">{label}</FormLabel>
-                <FormDescription>{parameter.description}</FormDescription>
+                <div className="space-y-0.5">
+                  <FormLabel className="capitalize">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
                 <FormControl id={field.name}>
                   <Input
                     className={'hidden'}
@@ -222,8 +226,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'video':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel className="capitalize">{label}</FormLabel>
-                <FormDescription>{parameter.description}</FormDescription>
+                <div className="space-y-0.5">
+                  <FormLabel className="capitalize">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
                 <FormControl id={field.name}>
                   <Input
                     className={'hidden'}
@@ -244,8 +250,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'video[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel className="capitalize">{label}</FormLabel>
-                <FormDescription>{parameter.description}</FormDescription>
+                <div className="space-y-0.5">
+                  <FormLabel className="capitalize">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
                 <FormControl id={field.name}>
                   <Input
                     className={'hidden'}
@@ -271,8 +279,10 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           default:
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <FormLabel className="capitalize">{label}</FormLabel>
-                <FormDescription>{parameter.description}</FormDescription>
+                <div className="space-y-0.5">
+                  <FormLabel className="capitalize">{label}</FormLabel>
+                  <FormDescription>{parameter.description}</FormDescription>
+                </div>
                 <FormControl id={field.name}>
                   <Input
                     onChange={onChange}
