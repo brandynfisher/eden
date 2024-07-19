@@ -173,7 +173,7 @@ export const listTasks = async (
 
   let tasks: PaginatedResponse<TaskV2Document> = {}
   const queryOptions = {
-    select: '-args.lora_training_urls',
+    select: '',
     limit,
     page,
     sort: {
@@ -184,10 +184,13 @@ export const listTasks = async (
 
   // handle workflows that returns models  resolve `result: ObjectId` to `models._id`
   if (query.workflow === 'lora_trainer') {
+    queryOptions.select = '-args.lora_training_urls'
+
     const pipelines: PipelineStage[] = [
       {
         $match: {
           workflow: workflow,
+          user: userId,
         },
       },
       {
@@ -196,11 +199,19 @@ export const listTasks = async (
           localField: 'result',
           foreignField: '_id',
           as: 'model',
+          pipeline: [
+            {
+              $match: {
+                user: userId,
+              },
+            },
+          ],
         },
       },
       {
         $unwind: {
           path: '$model',
+          preserveNullAndEmptyArrays: true,
         },
       },
       {

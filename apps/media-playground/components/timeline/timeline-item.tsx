@@ -71,14 +71,14 @@ const TimelineItem = ({ item }: Props) => {
           <TaskStatusBadge status={item.status} hideText={true} />
 
           {item.status === 'failed' ? (
-            <div className="h-full">
+            <div className="h-full p-2">
               <div className="text-destructive">Task failed</div>
-              <div>{item.error}</div>
+              <div className="text-muted-foreground text-sm">{item.error}</div>
             </div>
           ) : null}
 
           {item.status === 'cancelled' ? (
-            <div className="h-full">
+            <div className="h-full p-2">
               <div className="text-warning">Task cancelled</div>
               <div>{item.error}</div>
             </div>
