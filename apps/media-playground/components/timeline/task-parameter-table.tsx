@@ -1,3 +1,4 @@
+import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import {
   Table,
   TableBody,
@@ -11,6 +12,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { getToastConfig } from '@/lib/toast'
 import { TaskV2 } from '@edenlabs/eden-sdk'
+import { SquareCheckBigIcon, SquareIcon } from 'lucide-react'
 import Image from 'next/image'
 import React from 'react'
 
@@ -74,7 +76,7 @@ const TaskParameterTable = ({ task }: Props) => {
             <TableCell className="py-2 text-muted-foreground">
               {taskArg[0]}
             </TableCell>
-            <TableCell className="py-2">
+            <TableCell className="pt-0 pb-2 md:py-2">
               {imageInputParameterNames.includes(taskArg[0]) ? (
                 <div className="flex flex-wrap gap-2">
                   {(
@@ -99,20 +101,20 @@ const TaskParameterTable = ({ task }: Props) => {
                       ? taskArg[1]
                       : [taskArg[1]]) as string[]
                   ).map(inputVideoUrl => (
-                    <video
+                    <PreviewVideoPlayer
                       key={inputVideoUrl}
                       src={inputVideoUrl}
-                      loop={false}
-                      controls={true}
-                      controlsList={'nodownload'}
-                      onContextMenu={(e: React.MouseEvent) =>
-                        e.preventDefault()
-                      }
                       width={64}
                       height={64}
                     />
                   ))}
                 </div>
+              ) : typeof taskArg[1] === 'boolean' ? (
+                taskArg[1] ? (
+                  <SquareCheckBigIcon size={16} />
+                ) : (
+                  <SquareIcon size={16} />
+                )
               ) : (
                 taskArg[1]
               )}
