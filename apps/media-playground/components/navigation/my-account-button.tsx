@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
-import CreatorData from '@/stories/dummyData/creator'
+import { useCreatorQuery } from '@/hooks/query/use-me-query'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { useTheme } from 'next-themes'
@@ -29,8 +29,7 @@ ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 
 const AccountDropdown = () => {
   const router = useRouter()
-  // @todo: replace with fetched (authed) data from /api/me
-  const user = CreatorData
+  const { user } = useCreatorQuery({ key: 'me' })
 
   // @todo: abstract all of this away
   const { isSignedIn } = useAuth()
@@ -50,8 +49,8 @@ const AccountDropdown = () => {
       <DropdownMenuTrigger asChild>
         <Button className="rounded-full group" size="icon" variant="secondary">
           <UserAvatar
-            image={user.userImage}
-            name={user.username}
+            image={user?.userImage}
+            name={user?.username}
             variant="large"
           />
           <span className="sr-only">Toggle user menu</span>
@@ -60,21 +59,21 @@ const AccountDropdown = () => {
       <DropdownMenuContent align="end">
         <DropdownMenuItem className="cursor-pointer group" asChild>
           <Link
-            href={`/creators/${user.username}`}
+            href={`/creators/${user?.username}`}
             className="group flex gap-2 items-center cursor-pointer"
           >
-            <UserAvatar image={user.userImage} name={user.username} />
+            <UserAvatar image={user?.userImage} name={user?.username} />
             <div className="group-hover:text-primary text-xs transition-colors">
-              {user.username}
+              {user?.username}
             </div>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user.username}`}>Profile</Link>
+          <Link href={`/creators/${user?.username}`}>Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user.username}/models`}>Models</Link>
+          <Link href={`/creators/${user?.username}/models`}>Models</Link>
         </DropdownMenuItem>
         {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
         {/*  <Link href={`/creators/${user.username}/collections`}>*/}

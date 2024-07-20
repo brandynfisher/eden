@@ -13,7 +13,6 @@ const PreviewVideoPlayer: React.FC<VideoPlayerProps> = ({
   height,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
-
   const [isPlaying, setIsPlaying] = useState(false)
 
   const handlePlayPause = async (e: React.MouseEvent) => {
@@ -32,6 +31,7 @@ const PreviewVideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div className="relative rounded-lg overflow-hidden">
       <video
+        preload="none"
         ref={videoRef}
         src={src}
         loop={true}

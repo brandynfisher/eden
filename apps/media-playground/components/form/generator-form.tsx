@@ -192,6 +192,7 @@ const renderFormField = (
                   />
                 </FormControl>
                 <FileUploader
+                  value={value === null ? [] : value}
                   onChange={onChange}
                   allowedFileTypes={['image']}
                   maxFiles={1}
@@ -216,6 +217,7 @@ const renderFormField = (
                   />
                 </FormControl>
                 <FileUploader
+                  value={value === null ? [] : value}
                   onChange={onChange}
                   allowedFileTypes={['image']}
                   maxFiles={
@@ -245,6 +247,7 @@ const renderFormField = (
                   />
                 </FormControl>
                 <FileUploader
+                  value={value === null ? [] : value}
                   onChange={onChange}
                   allowedFileTypes={['video']}
                   maxFiles={1}
@@ -269,6 +272,7 @@ const renderFormField = (
                   />
                 </FormControl>
                 <FileUploader
+                  value={value === null ? [] : value}
                   onChange={onChange}
                   allowedFileTypes={['video']}
                   maxFiles={

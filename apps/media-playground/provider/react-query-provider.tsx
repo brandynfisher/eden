@@ -36,6 +36,7 @@ function getQueryClient() {
     return browserQueryClient
   }
 }
+
 export function ReactQueryProvider({ children }: PropsWithChildren) {
   const queryClient = getQueryClient()
 

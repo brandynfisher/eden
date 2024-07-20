@@ -27,6 +27,7 @@ const TimelineItemMediaResult = ({
             controlsList={'nodownload'}
             onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
             className="w-full"
+            preload="none"
           />
         ) : (
           <Image

@@ -82,16 +82,16 @@ const MasonryVirtualizerVertical = () => {
   const MASONRY_COLUMN_COUNT = above1920
     ? 7
     : above1536
-    ? 6
-    : above1280
-    ? 5
-    : above1024
-    ? 4
-    : above768
-    ? 3
-    : above480
-    ? 2
-    : 1
+      ? 6
+      : above1280
+        ? 5
+        : above1024
+          ? 4
+          : above768
+            ? 3
+            : above480
+              ? 2
+              : 1
 
   const columnWidth = useMemo(() => {
     return (

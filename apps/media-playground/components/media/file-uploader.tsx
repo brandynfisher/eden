@@ -122,18 +122,84 @@ export type FileWithPreview = File & {
 }
 
 type Props = {
+  value: string[]
   onChange: (fileUrls: string | string[]) => void
   allowedFileTypes?: FileType[]
   maxFiles?: number
   allowMultiple?: boolean
 }
 
+class FakeFile implements File {
+  name: string
+  size: number
+  type: string
+  lastModified: number
+
+  constructor(
+    name: string,
+    type: string = 'image/jpeg',
+    lastModified: number = Date.now(),
+    size: number = 0,
+  ) {
+    this.name = name
+    this.lastModified = lastModified
+    this.size = size
+    this.type = type
+  }
+
+  get webkitRelativePath() {
+    return ''
+  }
+
+  arrayBuffer() {
+    return new Promise<ArrayBuffer>(resolve => {
+      resolve(new ArrayBuffer(0))
+    })
+  }
+
+  slice(_start?: number, _end?: number, contentType?: string) {
+    return new Blob([], { type: contentType || '' })
+  }
+
+  stream() {
+    return new ReadableStream()
+  }
+
+  text() {
+    return Promise.resolve('')
+  }
+}
+
 const FileUploader = ({
+  value,
   allowedFileTypes,
   maxFiles,
   allowMultiple,
   onChange,
 }: Props) => {
+  useEffect(() => {
+    if (!value) {
+      return
+    }
+
+    const isArray = Array.isArray(value)
+
+    const newUrls = isArray ? value : [value]
+
+    const dummyFileList: FileWithPreview[] = newUrls.map((newUrl: string) => {
+      //@todo: super iffy. the fake class but also the file type. videos will break this?
+      const fakedFile = new FakeFile(newUrl, 'image/jpeg')
+      Object.assign(fakedFile, {
+        preview: newUrl,
+        fileUrl: newUrl,
+      })
+
+      return fakedFile as FileWithPreview
+    })
+    setUploadedFiles(dummyFileList)
+    onChange(maxFiles === 1 ? newUrls[0] : newUrls)
+  }, [])
+
   const { toast } = useToast()
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
@@ -203,17 +269,10 @@ const FileUploader = ({
     })
 
     setUploadedFiles(prevUploadedFiles => {
-      // console.log({prevUploadedFiles})
       const newState = prevUploadedFiles.filter(item => item.name !== file.name)
-      // console.log('remove', newState)
       const filtered = newState
         .map(item => (item ? item.fileUrl || '' : ''))
         .filter(Boolean)
-      // console.log(
-      //   'onChange',
-      //   filtered[0],
-      //   maxFiles === 1 ? filtered[0] : filtered,
-      // )
       onChange(maxFiles === 1 ? filtered[0] : filtered)
       return newState
     })

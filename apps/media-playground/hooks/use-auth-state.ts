@@ -1,5 +1,5 @@
-import { useAuth } from '@clerk/nextjs'
-import { useClerk } from '@clerk/nextjs'
+import { useMe } from '@/hooks/use-me'
+import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { useTheme } from 'next-themes'
 
@@ -9,6 +9,14 @@ export function useAuthState() {
   const { isSignedIn } = useAuth()
   const { theme } = useTheme()
   const clerkTheme = theme === 'dark' ? dark : undefined
+
+  const {
+    user,
+    balance,
+    foreverBalance,
+    subscriptionBalance,
+    hasMinimumSubscriptionTier,
+  } = useMe({ isAuthenticated: !!isSignedIn })
 
   const verifyAuth = async () => {
     if (isSignedIn) {
@@ -23,5 +31,10 @@ export function useAuthState() {
 
   return {
     verifyAuth,
+    user,
+    balance,
+    foreverBalance,
+    subscriptionBalance,
+    hasMinimumSubscriptionTier,
   }
 }

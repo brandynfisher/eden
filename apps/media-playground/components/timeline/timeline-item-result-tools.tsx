@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/collapsible'
 import { downloadFile, getDownloadFileName } from '@/lib/files'
 import { GeneratorOutputTypeV2, TaskV2 } from '@edenlabs/eden-sdk'
-import { DownloadIcon, ListIcon } from 'lucide-react'
+import { ClipboardCopy, DownloadIcon, ListIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
@@ -42,6 +42,15 @@ const TimelineItemResultTools = ({
             }
           >
             <DownloadIcon size={20} />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            title={`Re-Use configuration (${task.workflow})`}
+            className="h-9 w-9 p-0"
+            onClick={() => alert('Re-Use configuration - Not implemented')}
+          >
+            <ClipboardCopy size={20} />
           </Button>
           <CollapsibleTrigger asChild>
             <Button
