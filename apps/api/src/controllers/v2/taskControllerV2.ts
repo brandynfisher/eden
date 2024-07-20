@@ -1,6 +1,6 @@
 import { User } from '../../models/Creator'
 import { TaskV2, TaskV2Document } from '../../models/v2/TaskV2'
-import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
+// import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
@@ -256,12 +256,12 @@ export const subscribeTaskUpdates = async (
     // ensure socket message is only sent to the intended recipient
     if (userId.toString() === task.user.toString()) {
       // emit SSE Event
-      server.eventEmitter.emit(ServerEventName.TaskUpdate, task)
+      server.eventEmitter.emit('SSE-task-update-v2', task)
     }
   }
 
   server.internalMessages.connection.on(
-    InternalMessagesQueues.TaskUpdatesV2,
+    'task-updates-v2',
     internalEmitterEventHandler,
   )
 
@@ -296,7 +296,10 @@ export const subscribeTaskUpdates = async (
       // server.log.info(`SSE V2 to user ${userId}`)
       try {
         // handle task update emits
-        for await (const [event] of on(server.eventEmitter, 'task-update')) {
+        for await (const [event] of on(
+          server.eventEmitter,
+          'SSE-task-update-v2',
+        )) {
           const taskUpdate = event as TaskV2
           // server.log.info({
           //   taskUpdate,
@@ -345,7 +348,8 @@ export const subscribeTaskUpdates = async (
     clearInterval(keepAliveTimer)
     reply.raw.end()
     server.internalMessages.connection.off(
-      InternalMessagesQueues.TaskUpdatesV2,
+      // InternalMessagesQueues.TaskUpdatesV2,
+      'task-updates-v2',
       internalEmitterEventHandler,
     )
   })
@@ -388,7 +392,8 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     }
 
     this.internalMessages.connection.on(
-      InternalMessagesQueues.TaskUpdatesV2,
+      // InternalMessagesQueues.TaskUpdatesV2,
+      'task-updates-v2',
       internalEmitterEventHandler,
     )
 
@@ -525,7 +530,8 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     // clean up on socket close
     socket.on('close', () => {
       this.internalMessages.connection.off(
-        InternalMessagesQueues.TaskUpdatesV2,
+        // InternalMessagesQueues.TaskUpdatesV2,
+        'task-updates-v2',
         internalEmitterEventHandler,
       )
     })
