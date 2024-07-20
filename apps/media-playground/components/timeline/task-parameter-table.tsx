@@ -11,11 +11,24 @@ import { useToast } from '@/components/ui/use-toast'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { getToastConfig } from '@/lib/toast'
 import { TaskV2 } from '@edenlabs/eden-sdk'
+import Image from 'next/image'
 import React from 'react'
 
 type Props = {
   task: TaskV2
 }
+
+const imageInputParameterNames = [
+  'image',
+  'init_image',
+  'person_image',
+  'style_image',
+  'images',
+  'preference_anchor',
+  'lora_training_urls',
+]
+
+const videoInputParameterNames = ['video']
 
 const TaskParameterTable = ({ task }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
@@ -61,7 +74,49 @@ const TaskParameterTable = ({ task }: Props) => {
             <TableCell className="py-2 text-muted-foreground">
               {taskArg[0]}
             </TableCell>
-            <TableCell className="py-2">{taskArg[1]}</TableCell>
+            <TableCell className="py-2">
+              {imageInputParameterNames.includes(taskArg[0]) ? (
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    (Array.isArray(taskArg[1])
+                      ? taskArg[1]
+                      : [taskArg[1]]) as string[]
+                  ).map(inputImageUrl => (
+                    <Image
+                      className="rounded-lg"
+                      key={inputImageUrl}
+                      src={inputImageUrl}
+                      alt={taskArg[0]}
+                      width={64}
+                      height={64}
+                    />
+                  ))}
+                </div>
+              ) : videoInputParameterNames.includes(taskArg[0]) ? (
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    (Array.isArray(taskArg[1])
+                      ? taskArg[1]
+                      : [taskArg[1]]) as string[]
+                  ).map(inputVideoUrl => (
+                    <video
+                      key={inputVideoUrl}
+                      src={inputVideoUrl}
+                      loop={false}
+                      controls={true}
+                      controlsList={'nodownload'}
+                      onContextMenu={(e: React.MouseEvent) =>
+                        e.preventDefault()
+                      }
+                      width={64}
+                      height={64}
+                    />
+                  ))}
+                </div>
+              ) : (
+                taskArg[1]
+              )}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

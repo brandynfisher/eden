@@ -20,6 +20,7 @@ const SecondaryNav = ({ title, baseSegment, items }: Props) => {
             </TypographyH4>
           </Link>
         ) : undefined}
+
         <SecondaryNavLinks baseSegment={baseSegment} items={items} />
       </div>
     </div>

@@ -93,6 +93,11 @@ const config = {
       },
     },
   },
+  purge: {
+    options: {
+      safelist: ['text-red-600', 'text-green-600', 'text-blue-600'],
+    },
+  },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config
 
