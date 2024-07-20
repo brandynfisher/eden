@@ -39,7 +39,7 @@ const TaskParameterTable = ({ task }: Props) => {
         Configuration used for this task
       </TableCaption>
       <TableHeader className="rounded-t-lg overflow-hidden md:rounded-none md:overflow-auto">
-        <TableRow className="bg-popover/40 block md:table-row">
+        <TableRow className="bg-popover/50 block md:table-row">
           <TableHead className="h-10 py-2 w-full md:w-[100px]">
             Parameter
           </TableHead>

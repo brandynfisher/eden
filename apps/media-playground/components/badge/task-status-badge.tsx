@@ -9,7 +9,7 @@ type Props = {
 }
 const TaskStatusBadge = ({ status, hideText }: Props) => {
   return (
-    <div className="absolute top-2 left-2 z-10">
+    <div className="flex items-center gap-2">
       {status === 'pending' ? <HourglassIcon className="h-4 w-4" /> : null}
       {status === 'running' ? (
         <LoadingIndicator className="h-6 w-6 text-indigo-700" />
@@ -21,7 +21,12 @@ const TaskStatusBadge = ({ status, hideText }: Props) => {
         <TriangleAlertIcon className="h-4 w-4 text-destructive" />
       ) : null}
       <span
-        className={cn(['ml-1 capitalize', hideText ? 'sr-only' : undefined])}
+        className={cn([
+          'capitalize text-sm',
+          hideText ? 'sr-only' : undefined,
+          status === 'failed' ? 'text-destructive' : '',
+          status === 'cancelled' ? 'text-warning' : '',
+        ])}
       >
         {status}
       </span>

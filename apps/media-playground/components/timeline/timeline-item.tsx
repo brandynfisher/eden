@@ -65,37 +65,36 @@ const TimelineItem = ({ item, outputType }: Props) => {
     <div data-test-id="timeline-item" key={item._id}>
       <TaskParameterList task={item} />
       {item.status !== 'completed' ? (
-        <div className="relative flex flex-col min-h-32 items-center justify-around bg-muted rounded-bl-lg rounded-br-lg">
-          <TaskStatusBadge status={item.status} hideText={true} />
-
+        <div className="relative bg-muted rounded-bl-lg rounded-br-lg">
           {item.status === 'failed' ? (
             <div className="h-full p-2">
-              <div className="text-destructive">Task failed</div>
-              <div className="text-muted-foreground text-sm">{item.error}</div>
+              <TaskStatusBadge status={item.status} />
+              <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
+                {item.error}
+              </div>
             </div>
           ) : null}
 
           {item.status === 'cancelled' ? (
             <div className="h-full p-2">
-              <div className="text-warning">Task cancelled</div>
-              <div>{item.error}</div>
+              <TaskStatusBadge status={item.status} />
             </div>
           ) : null}
 
           {item.status === 'pending' || item.status === 'running' ? (
-            <div className="w-full relative">
+            <div className="w-full relative flex flex-col items-center justify-around">
               <AspectRatio
                 ratio={(item.args.width || 1024) / (item.args.height || 1024)}
               >
                 <Skeleton className="w-full h-full rounded-t-none rounded-bl-lg rounded-br-lg" />
               </AspectRatio>
-              <div className="absolute inset-0 text-center self-center text-sm text-muted-foreground">
+              <div className="absolute flex items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground">
+                <TaskStatusBadge status={item.status} hideText={true} />
                 {item.status === 'pending'
                   ? 'Waiting to start...'
                   : `Generating...`}
               </div>
               <Button
-                // size='xs'
                 variant="outline"
                 type="button"
                 className="absolute px-2 py-0 h-6 bottom-4 right-4 text-warning/40 text-xs bg-popover/40 hover:bg-popover/70"

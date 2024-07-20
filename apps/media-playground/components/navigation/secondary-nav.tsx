@@ -15,7 +15,9 @@ const SecondaryNav = ({ title, baseSegment, items }: Props) => {
       <div className="sticky top-20">
         {title ? (
           <Link href={`/${baseSegment}`}>
-            <TypographyH4 className="mb-6">{title}</TypographyH4>
+            <TypographyH4 className="mb-6 text-accent-foreground">
+              {title}
+            </TypographyH4>
           </Link>
         ) : undefined}
         <SecondaryNavLinks baseSegment={baseSegment} items={items} />

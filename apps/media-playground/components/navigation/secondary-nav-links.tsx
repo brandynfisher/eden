@@ -24,7 +24,9 @@ const SecondaryNavLinks = ({ items, baseSegment }: SecondaryNavProps) => {
     <div className="flex flex-col gap-6">
       {items.map(item => (
         <div key={item.title} className="flex flex-col gap-1">
-          <div className="font-bold mb-2">{item.title}</div>
+          <div className="font-bold mb-2 text-accent-foreground">
+            {item.title}
+          </div>
           <NavLinkList items={item.links} segments={segments} />
         </div>
       ))}

@@ -15,9 +15,8 @@ axiosRetry(axios, {
 
 const fetchConfigs = async (
   server: FastifyInstance,
-  beBroken?: boolean,
 ): Promise<GeneratorConfig> => {
-  const computeApiUrl = `${server.config.EDEN_COMPUTE_API_URL}/tools${beBroken ? 'breakurl' : ''}`
+  const computeApiUrl = `${server.config.EDEN_COMPUTE_API_URL}/tools`
 
   server.log.info(`fetchConfigs: ${computeApiUrl}`)
 
@@ -61,7 +60,7 @@ const registerGeneratorConfigs: FastifyPluginAsync = async fastify => {
       fastify.log.info('Fetching new generator configs...')
 
       try {
-        const newConfigs = await fetchConfigs(fastify, true)
+        const newConfigs = await fetchConfigs(fastify)
 
         if (!newConfigs) {
           fastify.log.error(

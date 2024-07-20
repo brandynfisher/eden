@@ -403,6 +403,7 @@ const GeneratorForm = ({ generator }: Props) => {
             <Button
               type="button"
               variant="ghost"
+              className="text-muted-foreground"
               onClick={!isSubmitting ? () => form.reset() : undefined}
               disabled={isSubmitting}
             >
