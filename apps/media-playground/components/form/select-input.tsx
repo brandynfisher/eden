@@ -9,21 +9,13 @@ import {
 type Props = {
   placeholder: string
   onChange: (newVal: string | number) => void
-  defaultValue: string | number
+  value: string | number
   options: (string | number)[]
 }
 
-const SelectInput = ({
-  placeholder,
-  onChange,
-  defaultValue,
-  options,
-}: Props) => {
+const SelectInput = ({ placeholder, onChange, value, options }: Props) => {
   return (
-    <DelayedSelect
-      onValueChange={onChange}
-      defaultValue={String(defaultValue || '')}
-    >
+    <DelayedSelect onValueChange={onChange} value={String(value || '')}>
       <SelectTrigger className="w-full">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

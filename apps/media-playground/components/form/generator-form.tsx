@@ -27,20 +27,23 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { UseFormReturn, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 type Props = {
   generator: GeneratorV2
 }
 
-const renderFormField = (parameter: GeneratorParameterV2) => {
+const renderFormField = (
+  parameter: GeneratorParameterV2,
+  form: UseFormReturn,
+) => {
   const { name, label } = parameter
   return (
     <FormField
       name={name}
       render={({ field, fieldState }) => {
-        const { onChange, onBlur, value } = field
+        const { onChange, onBlur, value, name } = field
         let parsedValue: number | undefined
         switch (parameter.type) {
           case 'int':
@@ -55,7 +58,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="text-base">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={name}>
                   <Input
                     type="number"
                     onChange={e =>
@@ -82,12 +85,13 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="text-base">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={name}>
                   <SliderInput
+                    form={form}
                     min={parameter.minimum || 0}
                     max={parameter.maximum || 1}
                     step={0.1}
-                    defaultValue={Number(parameter.default) || 0}
+                    value={value}
                     onChange={newVal => {
                       onChange(newVal)
                     }}
@@ -103,7 +107,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="text-base">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name} className="ml-4">
+                <FormControl id={name} className="ml-4">
                   <Switch
                     checked={value}
                     onCheckedChange={checked => onChange(checked)}
@@ -114,8 +118,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
             )
           case 'string':
           case 'string[]':
-            return field.name === 'prompt' ||
-              field.name === 'negative_prompt' ? (
+            return name === 'prompt' || name === 'negative_prompt' ? (
               <FormItem
                 className={`mt-0 !p-4 ${parameter.required ? '!pt-4' : '!pt-3'}`}
               >
@@ -154,12 +157,12 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   </FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={name}>
                   {parameter.choices && parameter.choices.length ? (
                     <SelectInput
                       placeholder={label}
                       onChange={onChange}
-                      defaultValue={parameter.default ? parameter.default : ''}
+                      value={value}
                       options={parameter.choices}
                     />
                   ) : (
@@ -180,7 +183,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="capitalize">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={name}>
                   <Input
                     className={'hidden'}
                     onChange={onChange}
@@ -204,7 +207,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="capitalize">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={name}>
                   <Input
                     className={'hidden'}
                     onChange={onChange}
@@ -233,7 +236,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="capitalize">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={name}>
                   <Input
                     className={'hidden'}
                     onChange={onChange}
@@ -257,7 +260,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="capitalize">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={name}>
                   <Input
                     className={'hidden'}
                     onChange={onChange}
@@ -286,7 +289,7 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
                   <FormLabel className="capitalize">{label}</FormLabel>
                   <FormDescription>{parameter.description}</FormDescription>
                 </div>
-                <FormControl id={field.name}>
+                <FormControl id={name}>
                   <Input
                     onChange={onChange}
                     onBlur={onBlur}
@@ -381,7 +384,7 @@ const GeneratorForm = ({ generator }: Props) => {
               ?.filter(parameter => parameter.required)
               ?.map(parameter => (
                 <div key={parameter.name} className="bg-muted/60 rounded-lg">
-                  {renderFormField(parameter)}
+                  {renderFormField(parameter, form)}
                 </div>
               ))}
           </div>
@@ -436,7 +439,7 @@ const GeneratorForm = ({ generator }: Props) => {
                 ?.filter(parameter => !parameter.required)
                 ?.map(parameter => (
                   <div key={parameter.name} className="bg-muted/50 rounded-lg">
-                    {renderFormField(parameter)}
+                    {renderFormField(parameter, form)}
                   </div>
                 ))}
             </div>

@@ -17,9 +17,9 @@ interface SliderProps
 
 const SliderWithTooltip = React.forwardRef<HTMLElement, SliderProps>(
   ({ className, showTooltip = false, ...props }, ref) => {
-    const [value, setValue] = React.useState<number[]>(
-      (props.defaultValue as number[]) ?? [0],
-    )
+    // const [value, setValue] = React.useState<number[]>(
+    //   (props.value as number[]) ?? [0],
+    // )
     const [showTooltipState, setShowTooltipState] = React.useState(false)
 
     const handlePointerDown = () => {
@@ -44,7 +44,7 @@ const SliderWithTooltip = React.forwardRef<HTMLElement, SliderProps>(
           'relative flex w-full touch-none select-none items-center',
           className,
         )}
-        onValueChange={setValue}
+        // onValueChange={setValue}
         onPointerDown={handlePointerDown}
         {...props}
       >
@@ -61,7 +61,7 @@ const SliderWithTooltip = React.forwardRef<HTMLElement, SliderProps>(
               />
             </TooltipTrigger>
             <TooltipContent className="bg-popover-foreground text-popover">
-              <p>{value[0]}</p>
+              <p>{props.value && props.value.length ? props.value[0] : '-'}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
