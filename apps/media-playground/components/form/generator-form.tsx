@@ -374,7 +374,7 @@ const GeneratorForm = ({ generator }: Props) => {
     >
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          // onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col w-full"
         >
           <TypographyH3>{generator.name}</TypographyH3>
@@ -402,7 +402,12 @@ const GeneratorForm = ({ generator }: Props) => {
               Settings
             </Button>
 
-            <Button type="submit" className="ml-auto" disabled={isSubmitting}>
+            <Button
+              type="button"
+              className="ml-auto"
+              onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

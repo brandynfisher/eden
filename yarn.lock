@@ -2503,6 +2503,14 @@
     rfdc "^1.3.0"
     yaml "^2.2.2"
 
+"@fastify/under-pressure@^8.2.0":
+  version "8.5.1"
+  resolved "https://registry.npmjs.org/@fastify/under-pressure/-/under-pressure-8.5.1.tgz#398e03bc26c2009e8982f5d2e8e6f4add435706b"
+  integrity sha512-4PRp1Y29yNSqNnMIwL9CyBtNP6rqLnY0JmZ0TMzCYj28k9Lw0nrqI6A2JxNQZd0jzbls/8LN4TcuRW2HEqQVmw==
+  dependencies:
+    "@fastify/error" "^3.0.0"
+    fastify-plugin "^4.0.0"
+
 "@fastify/websocket@^10.0.1":
   version "10.0.1"
   resolved "https://registry.yarnpkg.com/@fastify/websocket/-/websocket-10.0.1.tgz#ece72340870dfccc0d5abdbe7242c632a5f3340a"
@@ -9994,6 +10002,13 @@ fastfall@^1.5.0:
   integrity sha512-KH6p+Z8AKPXnmA7+Iz2Lh8ARCMr+8WNPVludm1LGkZoD2MjY6LVnRMtTKhkdzI+jr0RzQWXKzKyBJm1zoHEL4Q==
   dependencies:
     reusify "^1.0.0"
+
+fastify-healthcheck@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.npmjs.org/fastify-healthcheck/-/fastify-healthcheck-4.4.0.tgz#f5550b9af13913369aa7e0da03cf303a743ffe06"
+  integrity sha512-goP2YYBp+inqrEFixZDxsoxFN8h219ZOzCFv1sMpleaxwbo5CmoLrVzrja6vCMa1LNx6aEvOcGaqLX5Oev1q/A==
+  dependencies:
+    "@fastify/under-pressure" "^8.2.0"
 
 fastify-plugin@^4.0.0, fastify-plugin@^4.3.0, fastify-plugin@^4.5.1:
   version "4.5.1"

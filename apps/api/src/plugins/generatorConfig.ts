@@ -63,6 +63,7 @@ const registerGeneratorConfigs: FastifyPluginAsync = async fastify => {
     const intervalId = setInterval(refreshHandler, REFRESH_INTERVAL_MS)
 
     fastify.addHook('onClose', (_instance, done) => {
+      console.log('fastify::onClose')
       clearInterval(intervalId)
       done()
     })
