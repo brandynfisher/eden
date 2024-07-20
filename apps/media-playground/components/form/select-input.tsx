@@ -1,5 +1,5 @@
 import {
-  Select,
+  DelayedSelect,
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -20,7 +20,10 @@ const SelectInput = ({
   options,
 }: Props) => {
   return (
-    <Select onValueChange={onChange} defaultValue={String(defaultValue || '')}>
+    <DelayedSelect
+      onValueChange={onChange}
+      defaultValue={String(defaultValue || '')}
+    >
       <SelectTrigger className="w-full">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
@@ -31,7 +34,7 @@ const SelectInput = ({
           </SelectItem>
         ))}
       </SelectContent>
-    </Select>
+    </DelayedSelect>
   )
 }
 
