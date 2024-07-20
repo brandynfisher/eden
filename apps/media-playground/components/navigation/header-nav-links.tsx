@@ -1,7 +1,8 @@
 'use client'
 
 import EdenLogoBwGlow from '@/components/logo/eden-logo-bw-glow'
-import NavLink, { NavLinkProps } from '@/components/navigation/nav-link'
+import { NavLinkProps } from '@/components/navigation/nav-link'
+import NavLinkList from '@/components/navigation/nav-link-list'
 import { Separator } from '@/components/ui/separator'
 import Link, { LinkProps } from 'next/link'
 import { useSelectedLayoutSegments } from 'next/navigation'
@@ -48,26 +49,21 @@ const navItemsMake: NavLinkProps[] = [
   //   segments: ['build'],
   // },
 ]
+type Props = {
+  inSheet?: boolean
+}
 
-const HeaderNavLinks = () => {
+const HeaderNavLinks = ({ inSheet }: Props) => {
   const segments = useSelectedLayoutSegments()
 
   return (
     <>
       <HomeNavLink href="/" />
-      {navItemsExplore.map(item => (
-        <NavLink
-          key={item.label}
-          label={item.label}
-          segments={item.segments}
-          active={
-            (segments && segments.length === 0 && item.segments.length === 0) ||
-            (segments && segments.length && item.segments[0] !== undefined)
-              ? item.segments.every((v, i) => v === segments[i])
-              : false
-          }
-        />
-      ))}
+      <NavLinkList
+        items={navItemsExplore}
+        segments={segments}
+        inSheet={inSheet}
+      />
       <div className="md:self-stretch md:flex md:items-center">
         <Separator
           orientation="vertical"
@@ -75,19 +71,7 @@ const HeaderNavLinks = () => {
         />
         <Separator orientation="horizontal" className="md:hidden max-h-7 " />
       </div>
-      {navItemsMake.map(item => (
-        <NavLink
-          key={item.label}
-          label={item.label}
-          segments={item.segments}
-          active={
-            (segments && segments.length === 0 && item.segments.length === 0) ||
-            (segments && segments.length && item.segments[0] !== undefined)
-              ? item.segments.every((v, i) => v === segments[i])
-              : false
-          }
-        />
-      ))}
+      <NavLinkList items={navItemsMake} segments={segments} inSheet={inSheet} />
     </>
   )
 }
