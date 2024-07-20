@@ -7,15 +7,17 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/use-toast'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
+import { getToastConfig } from '@/lib/toast'
+import { GeneratorOutputTypeV2, ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
 import axios, { AxiosError } from 'axios'
 import React, { useCallback, useState } from 'react'
 
 type Props = {
   item: TaskV2
+  outputType: GeneratorOutputTypeV2
 }
 
-const TimelineItem = ({ item }: Props) => {
+const TimelineItem = ({ item, outputType }: Props) => {
   const { verifyAuth } = useAuthState()
   const { toast } = useToast()
 
@@ -33,31 +35,27 @@ const TimelineItem = ({ item }: Props) => {
         taskId,
       })
 
-      toast({
-        className: 'flex p-4',
-        title: 'Task cancelled',
-        description: (
-          <div className="mt-2 rounded-md bg-popover p-2">
-            <code className=" text-xs text-foreground">
-              taskId: {taskId} | status: {response.data.status}
-            </code>
-          </div>
+      toast(
+        getToastConfig(
+          'Task cancelled',
+          <code className=" text-xs text-foreground">
+            taskId: {taskId} | status: {response.data.status}
+          </code>,
+          'info',
         ),
-      })
+      )
     } catch (err) {
       console.log(err)
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'
-      toast({
-        className: 'flex p-4 text-red-600',
-        title: 'Failed to cancel task',
-        description: (
-          <div className="rounded-md text-primary">
-            {JSON.stringify(errorMessage)}
-          </div>
+      toast(
+        getToastConfig(
+          'Failed to cancel task',
+          JSON.stringify(errorMessage),
+          'error',
         ),
-      })
+      )
     } finally {
       setIsCancelling(false)
     }
@@ -117,6 +115,7 @@ const TimelineItem = ({ item }: Props) => {
             item.result.map((result, index) => (
               // task result is an array of image/video/audio URIs
               <TimelineItemMediaResult
+                outputType={outputType}
                 key={`${item._id}_${result}`}
                 index={index}
                 task={item}
@@ -126,6 +125,7 @@ const TimelineItem = ({ item }: Props) => {
           ) : item.model !== undefined ? (
             // task result is ObjectId of model, api populates a model property with the full model document
             <TimelineItemModelResult
+              outputType={outputType}
               task={item}
               model={item.model as unknown as ModelV2}
             />

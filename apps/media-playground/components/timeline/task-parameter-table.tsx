@@ -21,16 +21,10 @@ const TaskParameterTable = ({ task }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
   const { toast } = useToast()
 
-  const handleCopy = (parameterName: string, text: string) => () => {
+  const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
       .then(() => {
-        toast(
-          getToastConfig(
-            `Copied value for "${parameterName}"`,
-            text,
-            'success',
-          ),
-        )
+        toast(getToastConfig(`Copied "${parameterName}":`, text, 'success'))
         console.log('Copied!', { copiedText })
       })
       .catch(error => {
@@ -40,21 +34,27 @@ const TaskParameterTable = ({ task }: Props) => {
   }
 
   return (
-    <Table className="text-sm">
+    <Table className="text-xs mt-2">
       <TableCaption>Configuration used for this task</TableCaption>
       <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">Parameter</TableHead>
-          <TableHead className="py-2">Value</TableHead>
+        <TableRow className="bg-popover/40">
+          <TableHead className="h-10 py-2 w-[100px]">Parameter</TableHead>
+          <TableHead className="h-10 py-2">Value</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {Object.entries(task.args).map(taskArg => (
           <TableRow
+            className="cursor-copy text-xs"
             key={taskArg[0]}
-            onClick={handleCopy(taskArg[0], String(taskArg[1]))}
+            onClick={handleCopyString(
+              taskArg[0],
+              String(taskArg[1] !== null ? taskArg[1] : ''),
+            )}
           >
-            <TableCell className="py-2">{taskArg[0]}</TableCell>
+            <TableCell className="py-2 text-muted-foreground">
+              {taskArg[0]}
+            </TableCell>
             <TableCell className="py-2">{taskArg[1]}</TableCell>
           </TableRow>
         ))}

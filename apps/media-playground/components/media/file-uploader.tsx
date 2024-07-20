@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/components/ui/use-toast'
 import { uploadFileToS3 } from '@/lib/files'
+import { getToastConfig } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
@@ -192,11 +193,7 @@ const FileUploader = ({
       })
     } catch (e) {
       console.error(e)
-      toast({
-        className: 'flex p-4 text-red-600',
-        title: 'Failed to upload file',
-        description: <div className="rounded-md text-primary">{file.name}</div>,
-      })
+      toast(getToastConfig('Failed to upload file', file.name, 'error'))
     }
   }
 
@@ -297,18 +294,15 @@ const FileUploader = ({
           return false
         }
 
-        toast({
-          className: 'flex p-4',
-          title: 'Upload finished',
-          description: (
-            <div className="mt-2 rounded-md bg-popover p-2">
-              <code className="text-xs text-foreground">
-                {acceptedFiles.length} Files
-              </code>
-            </div>
+        toast(
+          getToastConfig(
+            'Upload finished',
+            <code className="text-xs text-foreground">
+              {acceptedFiles.length} Files
+            </code>,
+            'success',
           ),
-          // action: <ToastAction altText="Go to task">Show Task</ToastAction>,
-        })
+        )
       } catch (error) {
         console.error('Error uploading files: ', error)
       }

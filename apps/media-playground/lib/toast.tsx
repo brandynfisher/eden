@@ -1,8 +1,9 @@
 import { cn } from '@/lib/utils'
+import { ReactNode } from 'react'
 
 export function getToastConfig(
   title: string,
-  description: string,
+  description: string | ReactNode,
   variant: 'success' | 'error' | 'info' = 'info',
 ) {
   return {

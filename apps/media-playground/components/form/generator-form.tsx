@@ -20,6 +20,7 @@ import TypographyH3 from '@/components/ui/typography/TypographyH3'
 import { useToast } from '@/components/ui/use-toast'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema } from '@/lib/forms'
+import { getToastConfig } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -115,7 +116,9 @@ const renderFormField = (parameter: GeneratorParameterV2) => {
           case 'string[]':
             return field.name === 'prompt' ||
               field.name === 'negative_prompt' ? (
-              <FormItem className={`mt-0 !p-4 !pt-3 `}>
+              <FormItem
+                className={`mt-0 !p-4 ${parameter.required ? '!pt-4' : '!pt-3'}`}
+              >
                 {parameter.required ? (
                   <FormLabel className="sr-only">{label}</FormLabel>
                 ) : (
@@ -333,33 +336,28 @@ const GeneratorForm = ({ generator }: Props) => {
 
       console.log({ response })
 
-      toast({
-        className: 'flex p-4',
-        title: 'Task submitted',
-        description: (
-          <div className="mt-2 rounded-md bg-popover p-2">
-            <code className=" text-xs text-foreground">
-              Workflow: {generator.key}
-              {/*{JSON.stringify(formData, null, 2)}*/}
-            </code>
-          </div>
+      toast(
+        getToastConfig(
+          'Task submitted',
+          <code className=" text-xs text-foreground">
+            Workflow: {generator.key}
+          </code>,
+          'success',
         ),
-        // action: <ToastAction altText="Go to task">Show Task</ToastAction>,
-      })
+      )
     } catch (err) {
       console.log(err)
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'
-      toast({
-        className: 'flex p-4 text-red-600',
-        title: 'Failed to submit task',
-        description: (
-          <div className="rounded-md text-primary">
-            {JSON.stringify(errorMessage)}
-          </div>
+
+      toast(
+        getToastConfig(
+          'Failed to submit task',
+          JSON.stringify(errorMessage),
+          'error',
         ),
-      })
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -373,10 +371,7 @@ const GeneratorForm = ({ generator }: Props) => {
       className="flex flex-col items-start overflow-y-auto xl:pr-4 xl:sticky xl:top-[106px] xl:max-h-[calc(100vh_-_106px)]"
     >
       <Form {...form}>
-        <form
-          // onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col w-full"
-        >
+        <form className="flex flex-col w-full">
           <TypographyH3>{generator.name}</TypographyH3>
           <div
             data-test-id="generator-form-settings-required"
@@ -400,6 +395,15 @@ const GeneratorForm = ({ generator }: Props) => {
             >
               <Settings2Icon className="h-4 w-4" />
               Settings
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={!isSubmitting ? () => form.reset() : undefined}
+              disabled={isSubmitting}
+            >
+              Reset
             </Button>
 
             <Button

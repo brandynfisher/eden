@@ -1,5 +1,5 @@
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
-import { TaskV2 } from '@edenlabs/eden-sdk'
+import { GeneratorOutputTypeV2, TaskV2 } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
 import React from 'react'
 
@@ -7,9 +7,15 @@ type Props = {
   mediaUri: string
   task: TaskV2
   index: number
+  outputType: GeneratorOutputTypeV2
 }
 
-const TimelineItemMediaResult = ({ task, mediaUri, index }: Props) => {
+const TimelineItemMediaResult = ({
+  task,
+  mediaUri,
+  index,
+  outputType,
+}: Props) => {
   return (
     <>
       <div className="relative border-transparent bg-popover">
@@ -35,6 +41,7 @@ const TimelineItemMediaResult = ({ task, mediaUri, index }: Props) => {
         )}
       </div>
       <TimelineItemResultTools
+        outputType={outputType}
         task={task}
         downloadUri={mediaUri}
         fileName={`${task.args?.prompt || '_noname'}_${index}`}
