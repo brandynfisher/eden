@@ -34,18 +34,24 @@ const TaskParameterTable = ({ task }: Props) => {
   }
 
   return (
-    <Table className="text-xs mt-2">
-      <TableCaption>Configuration used for this task</TableCaption>
-      <TableHeader>
-        <TableRow className="bg-popover/40">
-          <TableHead className="h-10 py-2 w-[100px]">Parameter</TableHead>
-          <TableHead className="h-10 py-2">Value</TableHead>
+    <Table className="text-xs mt-2 flex flex-col md:rounded-t-lg md:overflow-hidden md:table">
+      <TableCaption className="mb-2 mt-0 md:mb-1 md:mt-2">
+        Configuration used for this task
+      </TableCaption>
+      <TableHeader className="rounded-t-lg overflow-hidden md:rounded-none md:overflow-auto">
+        <TableRow className="bg-popover/40 block md:table-row">
+          <TableHead className="h-10 py-2 w-full md:w-[100px]">
+            Parameter
+          </TableHead>
+          <TableHead className="h-10 py-2 hidden md:table-cell">
+            Value
+          </TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="bg-popover/20">
         {Object.entries(task.args).map(taskArg => (
           <TableRow
-            className="cursor-copy text-xs"
+            className="cursor-copy text-xs flex flex-col md:table-row"
             key={taskArg[0]}
             onClick={handleCopyString(
               taskArg[0],

@@ -48,7 +48,7 @@ const TimelineItemResultTools = ({
               variant="outline"
               size="sm"
               title="Show task configuration"
-              className="h-9 w-9 p-0"
+              className="h-9 w-9 p-0 ml-auto"
             >
               <ListIcon size={20} />
             </Button>
