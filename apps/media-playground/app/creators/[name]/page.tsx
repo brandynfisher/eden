@@ -15,9 +15,14 @@ const CreatorPage = ({ params }: Props) => {
 
   const queryClient = getQueryClient()
 
+  console.log(`${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`)
+
   queryClient.prefetchQuery({
     queryKey: ['creators', name],
-    queryFn: () => fetcher<CreatorsGetMeResponse>(`/api/users/${name}`),
+    queryFn: () =>
+      fetcher<CreatorsGetMeResponse>(
+        `${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`,
+      ),
   })
 
   return (

@@ -35,7 +35,7 @@ const PreviewVideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div className="relative rounded-lg overflow-hidden">
       <video
-        preload="none"
+        // preload="none"
         ref={videoRef}
         src={src}
         loop={true}

@@ -94,6 +94,10 @@ const navItems: SecondaryNavSection[] = [
         segments: [baseSegment, 'video', 'txt2vid_lora'],
       },
       {
+        label: 'Animate 3D',
+        segments: [baseSegment, 'video', 'animate_3D'],
+      },
+      {
         label: 'Image to Video',
         segments: [baseSegment, 'video', 'img2vid'],
       },

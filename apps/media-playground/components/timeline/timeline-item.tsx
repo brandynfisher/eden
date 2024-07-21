@@ -115,10 +115,10 @@ const TimelineItem = ({ item, outputType }: Props) => {
               // task result is an array of image/video/audio URIs
               <TimelineItemMediaResult
                 outputType={outputType}
-                key={`${item._id}_${result}`}
+                key={`${item._id}_${index}`}
                 index={index}
                 task={item}
-                mediaUri={result as string}
+                result={result}
               />
             ))
           ) : item.model !== undefined ? (

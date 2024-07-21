@@ -1,41 +1,53 @@
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
-import { GeneratorOutputTypeV2, TaskV2 } from '@edenlabs/eden-sdk'
+import { GeneratorOutputTypeV2, TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
 import React from 'react'
 
 type Props = {
-  mediaUri: string
   task: TaskV2
+  result: TaskV2Result
   index: number
   outputType: GeneratorOutputTypeV2
 }
 
 const TimelineItemMediaResult = ({
   task,
-  mediaUri,
+  result,
   index,
   outputType,
 }: Props) => {
+  console.log({ task, result })
   return (
     <>
       <div className="relative border-transparent bg-popover">
-        {mediaUri.endsWith('.mp4') ? (
-          <video
-            src={mediaUri}
-            loop={true}
-            controls={true}
-            controlsList={'nodownload'}
-            onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
-            className="w-full"
-            preload="none"
-          />
+        {result.url?.endsWith('.mp4') ? (
+          <>
+            {/*<Image*/}
+            {/*  src={result.thumbnail || ''}*/}
+            {/*  alt={result.thumbnail || ''}*/}
+            {/*  width={result.mediaAttributes?.width || 1024}*/}
+            {/*  height={result.mediaAttributes?.height || 1024}*/}
+            {/*/>*/}
+            {/* //@todo: add click/hoverable overlay that will drop in the video on demand and hide the image while playing */}
+            <video
+              src={result.url}
+              loop={true}
+              controls={true}
+              controlsList={'nodownload'}
+              onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
+              className="w-full"
+              width={result.mediaAttributes?.width || 1024}
+              height={result.mediaAttributes?.height || 1024}
+              // preload="none"
+            />
+          </>
         ) : (
           <Image
-            src={mediaUri}
-            alt={mediaUri}
+            src={result.url || ''}
+            alt={result.url || ''}
             objectFit={'cover'}
-            width={task.args.width || 1024}
-            height={task.args.height || 1024}
+            width={result.mediaAttributes?.width || 1024}
+            height={result.mediaAttributes?.height || 1024}
             className="object-cover w-full"
           />
         )}
@@ -43,7 +55,7 @@ const TimelineItemMediaResult = ({
       <TimelineItemResultTools
         outputType={outputType}
         task={task}
-        downloadUri={mediaUri}
+        downloadUri={result.url || ''}
         fileName={`${task.args?.prompt || '_noname'}_${index}`}
       />
     </>

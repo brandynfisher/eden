@@ -14,7 +14,7 @@ type Props = {
 }
 
 const UserCreationsFeed = ({ userName }: Props) => {
-  const { data: user } = useSuspenseQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ['creators', userName],
     queryFn: () => fetcher<CreatorsGetResponse>(`/api/users/${userName}`),
   })
@@ -23,14 +23,14 @@ const UserCreationsFeed = ({ userName }: Props) => {
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
-      userId: user?._id || '',
+      userId: data?.creator?._id || '',
     }),
-    [user?._id],
+    [data?.creator?._id],
   )
 
   const queryKey = useMemo(
-    () => [['creations', user?._id], query],
-    [user?._id, query],
+    () => [['creations', data?.creator?._id], query],
+    [data?.creator?._id, query],
   )
 
   return (

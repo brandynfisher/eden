@@ -1,7 +1,5 @@
-// import { CharacterDocument } from './Character'
-// import { CreationDocument } from './Creation'
-// import { TaskAttributes } from '@edenlabs/eden-sdk'
 import { UserDocument } from '../Creator'
+import { TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -14,29 +12,11 @@ export enum TaskV2Status {
   Failed = 'failed',
 }
 
-export type TaskV2Args = {
-  // creations
-  prompt?: string
-  negative_prompt?: string
-  width?: number
-  height?: number
-  seed?: number
-  lora?: string | null
-  lora_strength?: number
-  // models
-  name?: string
-  lora_training_urls?: string[]
-  sd_model_version?: string
-  concept_mode?: string
-  max_train_steps?: number
-  resolution?: number
-}
-
 export interface TaskV2Schema {
   user: UserDocument
   workflow: string
   args: TaskV2Args
-  result: string | string[]
+  result: TaskV2Result[]
   status: TaskV2Status
   // cost: number
   error?: string
@@ -49,7 +29,7 @@ export interface TaskV2Input {
   user: ObjectId
   workflow: string
   args: TaskV2Args
-  result: string | string[]
+  result: TaskV2Result[]
   status?: TaskV2Status
   // cost: number
   error?: string
@@ -65,7 +45,7 @@ export type TaskV2 = {
   args: TaskV2Args
   status: TaskV2Status
   error: string | null
-  result: string | string[]
+  result: TaskV2Result[]
   createdAt: Date
   updatedAt: Date
 }
@@ -98,7 +78,7 @@ export const taskSchema = new Schema<TaskV2Document>(
       default: 0,
     },
     result: {
-      type: Schema.Types.Mixed,
+      type: [],
       default: null,
     },
   },

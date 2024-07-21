@@ -30,6 +30,20 @@ export interface TasksV2CancelArguments extends WebAPICallOptions {
   taskId: string
 }
 
+export type MediaAttributesV2 = {
+  mimeType: string
+  width: number
+  height: number
+  aspectRatio: number
+}
+
+export type TaskV2Result = {
+  url?: string
+  thumbnail?: string
+  metadata?: string | null
+  mediaAttributes?: MediaAttributesV2
+}
+
 // Requests
 
 export const tasksV2CreateRequestConfig = (
@@ -143,7 +157,7 @@ export type TaskV2 = {
   args: TaskV2Args
   status: string
   error: string | null
-  result: string | string[]
+  result: TaskV2Result[]
   createdAt: string
   updatedAt: string
 }
