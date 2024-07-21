@@ -1,16 +1,12 @@
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
 
-const CreatorProfilePage = () => {
+const SettingsPage = () => {
   return (
     <>
-      <TypographyH3>
-        Account
-      </TypographyH3>
-      <div>
-        Account page
-      </div>
+      <TypographyH3>Account</TypographyH3>
+      <div>Account page</div>
     </>
   )
 }
 
-export default CreatorProfilePage
+export default SettingsPage

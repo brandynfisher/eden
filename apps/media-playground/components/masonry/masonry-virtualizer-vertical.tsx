@@ -5,71 +5,31 @@ import LoadingIndicator from '@/components/loading-indicator'
 import { useElementSize } from '@/hooks/use-element-size'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { fetcher } from '@/lib/fetcher'
-import { FeedQueryParams } from '@/types/Feed'
 import {
   FeedCreationsCursorResponse,
+  TaskV2,
   transformArgsIntoURLParams,
 } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
-// import CreationData, { CreationDataLandscape, CreationDataPortrait } from '@/stories/dummyData/creation'
-import { useCallback, useEffect, useMemo } from 'react'
-
-// async function fetchDummyData(
-//   limit: number,
-//   nextOffset: number = 0
-// ): Promise<Creation[]> {
-//   const rows = new Array(limit)
-//     .fill(0)
-//     .map(getRandomData)
-//
-//   console.log('fetchDummyData', rows.length, nextOffset)
-//
-//   await new Promise((r) => setTimeout(r, 250))
-//
-//   return rows
-// }
-
-// async function fetchApiData(
-//   nextOffset: number = 0
-// ): Promise<Creation[]> {
-//   const url = createCursorPaginationUrl(`/api/feed/creations`, { limit: 35, sort: 'createdAt;-1' })
-//   const rows = await fetcher(url)
-//
-//
-//   return rows
-// }
-//
-//
-// async function fetchServerPage(
-//   limit: number,
-//   nextOffset: number = 0,
-// ): Promise<{ rows: Creation[]; nextOffset: number }> {
-//   // const data = await fetchDummyData(limit, nextOffset)
-//   const data = await fetchApiData(nextOffset)
-//
-//   return { rows: data, nextOffset: nextOffset + 1 }
-// }
-
-// const getRandomData = () => {
-//   // randomly return CreationData, CreationDataLandscape or CreationDataPortrait
-//   const randomIndex = Math.floor(Math.random() * 3)
-//   switch (randomIndex) {
-//     case 0:
-//       return CreationData
-//     case 1:
-//       return CreationDataLandscape
-//     case 2:
-//       return CreationDataPortrait
-//     default:
-//       return CreationData
-//   }
-// }
+import React, { useCallback, useEffect, useMemo } from 'react'
 
 const MASONRY_GUTTER = 16
 const QUERY_LIMIT = 35
 
-const MasonryVirtualizerVertical = () => {
+type Props = {
+  apiEndpoint: string
+  render: ({ item }: { item: TaskV2 }) => React.JSX.Element
+  query: { [key: string]: unknown }
+  queryKey: unknown[]
+}
+
+const MasonryVirtualizerVertical = ({
+  apiEndpoint,
+  render,
+  query,
+  queryKey,
+}: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
   const above480 = useMediaQuery('(min-width: 480px)')
@@ -82,16 +42,16 @@ const MasonryVirtualizerVertical = () => {
   const MASONRY_COLUMN_COUNT = above1920
     ? 7
     : above1536
-      ? 6
-      : above1280
-        ? 5
-        : above1024
-          ? 4
-          : above768
-            ? 3
-            : above480
-              ? 2
-              : 1
+    ? 6
+    : above1280
+    ? 5
+    : above1024
+    ? 4
+    : above768
+    ? 3
+    : above480
+    ? 2
+    : 1
 
   const columnWidth = useMemo(() => {
     return (
@@ -100,28 +60,19 @@ const MasonryVirtualizerVertical = () => {
     )
   }, [MASONRY_COLUMN_COUNT, masonryWrapWidth])
 
-  // @todo: pass this in as props
-  const query: FeedQueryParams = {
-    limit: 35,
-    sort: ['createdAt;-1'],
-  }
-
-  // @todo: generate key from relevant filter / query params
-  const queryKey = ['feed', 'creations', query]
-
   const {
-    // status,
+    status,
     data,
-    // error,
+    error,
     // isFetching,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery({
-    queryKey: queryKey,
+    queryKey,
     queryFn: ({ pageParam }) => {
       // console.log(pageParam)
-      const queryUrl = `/api/feed/creations?${transformArgsIntoURLParams(
+      const queryUrl = `${apiEndpoint}?${transformArgsIntoURLParams(
         pageParam
           ? {
               ...query,
@@ -129,12 +80,12 @@ const MasonryVirtualizerVertical = () => {
             }
           : query,
       )}`
-      // console.log(queryUrl)
+      console.log(queryUrl)
       return fetcher(queryUrl)
     },
     staleTime: 1000000000,
     getNextPageParam: (lastPage: FeedCreationsCursorResponse) => {
-      // console.log('nextPageParam', lastPage.nextCursor)
+      console.log('nextPageParam', lastPage.nextCursor)
       return lastPage.nextCursor
     },
     initialPageParam: undefined,
@@ -226,11 +177,15 @@ const MasonryVirtualizerVertical = () => {
         </div>
       )
     },
-    [allRows, hasNextPage, rowVirtualizer, columnWidth],
+    [render, allRows, hasNextPage, rowVirtualizer, columnWidth],
   )
 
   return (
-    <div ref={masonryWrapRef} className="flex">
+    <div
+      data-test-id="masonry-virtualizer-vertical"
+      ref={masonryWrapRef}
+      className="flex"
+    >
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
@@ -238,9 +193,21 @@ const MasonryVirtualizerVertical = () => {
           position: 'relative',
         }}
       >
+        {!allRows.length ? (
+          <div className="bg-primary/10 w-full h-full flex justify-center rounded-lg">
+            {status === 'pending' ? (
+              <LoadingIndicator />
+            ) : (
+              <div className="py-3 px-4 self-center">Nothing found.</div>
+            )}
+          </div>
+        ) : null}
+
         {rowVirtualizer
           .getVirtualItems()
           .map(virtualItem => renderItem(virtualItem))}
+
+        {error ? <div className="text-destructive">{error.message}</div> : null}
       </div>
     </div>
   )

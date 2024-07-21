@@ -1,5 +1,6 @@
 'use client'
 
+import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/components/ui/use-toast'
@@ -177,6 +178,7 @@ const FileUploader = ({
   allowMultiple,
   onChange,
 }: Props) => {
+  console.log('fileUploader', { value })
   useEffect(() => {
     if (!value) {
       return
@@ -468,20 +470,28 @@ const FileUploader = ({
                                 className="object-contain w-full h-[64px]"
                               />
                             ) : (
-                              <video
+                              <PreviewVideoPlayer
                                 src={file.preview}
-                                controls={false}
                                 width={64}
                                 height={64}
-                                controlsList={'nodownload'}
-                                className="object-contain self-center w-full h-[64px]"
-                                onContextMenu={(e: React.MouseEvent) =>
-                                  e.preventDefault()
-                                }
                                 onLoad={() =>
                                   URL.revokeObjectURL(file.preview || '')
                                 }
                               />
+                              // <video
+                              //   src={file.preview}
+                              //   controls={false}
+                              //   width={64}
+                              //   height={64}
+                              //   controlsList={'nodownload'}
+                              //   className="object-contain self-center w-full h-[64px]"
+                              //   onContextMenu={(e: React.MouseEvent) =>
+                              //     e.preventDefault()
+                              //   }
+                              //   onLoad={() =>
+                              //     URL.revokeObjectURL(file.preview || '')
+                              //   }
+                              // />
                             )}
                           </>
                         ) : (

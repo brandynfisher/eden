@@ -5,12 +5,16 @@ type VideoPlayerProps = {
   src: string
   width: number
   height: number
-}
+} & React.DetailedHTMLProps<
+  React.VideoHTMLAttributes<HTMLVideoElement>,
+  HTMLVideoElement
+>
 
 const PreviewVideoPlayer: React.FC<VideoPlayerProps> = ({
   src,
   width,
   height,
+  ...rest
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -41,6 +45,7 @@ const PreviewVideoPlayer: React.FC<VideoPlayerProps> = ({
         onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
         width={width}
         height={height}
+        {...rest}
       />
       <div
         className="absolute inset-0 flex justify-center items-center"

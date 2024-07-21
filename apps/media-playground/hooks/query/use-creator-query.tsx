@@ -3,7 +3,7 @@ import { Creator, CreatorsGetMeResponse } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 
 type Props = {
-  key: Creator['_id']
+  key: Creator['username']
 }
 
 export const useCreatorQuery = ({ key }: Props) => {

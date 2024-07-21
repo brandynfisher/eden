@@ -1,4 +1,4 @@
-import { useCreatorQuery } from '@/hooks/query/use-me-query'
+import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 
 export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {

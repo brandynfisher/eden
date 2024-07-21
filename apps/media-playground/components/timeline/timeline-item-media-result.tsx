@@ -33,7 +33,6 @@ const TimelineItemMediaResult = ({
           <Image
             src={mediaUri}
             alt={mediaUri}
-            // fill={true}
             objectFit={'cover'}
             width={task.args.width || 1024}
             height={task.args.height || 1024}

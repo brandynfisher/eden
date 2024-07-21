@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
-import { useCreatorQuery } from '@/hooks/query/use-me-query'
+import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { useTheme } from 'next-themes'
