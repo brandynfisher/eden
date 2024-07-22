@@ -59,11 +59,7 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
   return (
     <>
       <HomeNavLink href="/" />
-      <NavLinkList
-        items={navItemsExplore}
-        segments={segments}
-        inSheet={inSheet}
-      />
+      <NavLinkList items={navItemsMake} segments={segments} inSheet={inSheet} />
       <div className="md:self-stretch md:flex md:items-center">
         <Separator
           orientation="vertical"
@@ -71,7 +67,11 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         />
         <Separator orientation="horizontal" className="md:hidden max-h-7 " />
       </div>
-      <NavLinkList items={navItemsMake} segments={segments} inSheet={inSheet} />
+      <NavLinkList
+        items={navItemsExplore}
+        segments={segments}
+        inSheet={inSheet}
+      />
     </>
   )
 }

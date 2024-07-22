@@ -1,5 +1,7 @@
 'use client'
 
+import FormItemHead from '@/components/form/form-item-head'
+import FormItemWrap from '@/components/form/form-item-wrap'
 import SelectInput from '@/components/form/select-input'
 import SliderInput from '@/components/form/slider-input'
 import FileUploader from '@/components/media/file-uploader'
@@ -7,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -53,25 +54,23 @@ const renderFormField = (
             }
 
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">{label}</FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
-                <FormControl id={name}>
-                  <Input
-                    type="number"
-                    onChange={e =>
-                      onChange(
-                        e.target.value ? parseInt(e.target.value) : undefined,
-                      )
-                    }
-                    onBlur={onBlur}
-                    value={parsedValue}
-                  />
-                </FormControl>
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
+              <FormItemWrap
+                name={name}
+                label={label}
+                description={parameter.description}
+                errorMessage={fieldState.error?.message}
+              >
+                <Input
+                  type="number"
+                  onChange={e =>
+                    onChange(
+                      e.target.value ? parseInt(e.target.value) : undefined,
+                    )
+                  }
+                  onBlur={onBlur}
+                  value={parsedValue}
+                />
+              </FormItemWrap>
             )
           case 'float':
             parsedValue = Number(value)
@@ -80,33 +79,31 @@ const renderFormField = (
             }
 
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">{label}</FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
-                <FormControl id={name}>
-                  <SliderInput
-                    form={form}
-                    min={parameter.minimum || 0}
-                    max={parameter.maximum || 1}
-                    step={0.1}
-                    value={value}
-                    onChange={newVal => {
-                      onChange(newVal)
-                    }}
-                  />
-                </FormControl>
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
+              <FormItemWrap
+                name={name}
+                label={label}
+                description={parameter.description}
+                errorMessage={fieldState.error?.message}
+              >
+                <SliderInput
+                  form={form}
+                  min={parameter.minimum || 0}
+                  max={parameter.maximum || 1}
+                  step={0.05}
+                  value={value}
+                  onChange={newVal => {
+                    onChange(newVal)
+                  }}
+                />
+              </FormItemWrap>
             )
           case 'bool':
             return (
               <FormItem className="flex flex-row items-center justify-between rounded-lg p-4">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">{label}</FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
                 <FormControl id={name} className="ml-4">
                   <Switch
                     checked={value}
@@ -120,17 +117,17 @@ const renderFormField = (
           case 'string[]':
             return name === 'prompt' || name === 'negative_prompt' ? (
               <FormItem
-                className={`mt-0 !p-4 ${parameter.required ? '!pt-4' : '!pt-3'}`}
+                className={`mt-0 !p-4 ${
+                  parameter.required ? '!pt-4' : '!pt-3'
+                }`}
               >
                 {parameter.required ? (
                   <FormLabel className="sr-only">{label}</FormLabel>
                 ) : (
-                  <div className="space-y-0.5 mb-2">
-                    <FormLabel className="text-base capitalize">
-                      {label}
-                    </FormLabel>
-                    <FormDescription>{parameter.description}</FormDescription>
-                  </div>
+                  <FormItemHead
+                    label={label}
+                    description={parameter.description}
+                  />
                 )}
                 <FormControl>
                   <Textarea
@@ -147,52 +144,48 @@ const renderFormField = (
                     value={value || ''}
                   />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            ) : (
-              <FormItem className="mt-0 !p-4 !pt-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base capitalize">
-                    {label}
-                  </FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
-                <FormControl id={name}>
-                  {parameter.choices && parameter.choices.length ? (
-                    <SelectInput
-                      placeholder={label}
-                      onChange={onChange}
-                      value={value}
-                      options={parameter.choices}
-                    />
-                  ) : (
-                    <Input
-                      onChange={onChange}
-                      onBlur={onBlur}
-                      value={value === null ? '' : value}
-                    />
-                  )}
-                </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
+            ) : (
+              <FormItemWrap
+                name={name}
+                label={label}
+                description={parameter.description}
+                errorMessage={fieldState.error?.message}
+              >
+                {parameter.choices && parameter.choices.length ? (
+                  <SelectInput
+                    placeholder={label}
+                    onChange={onChange}
+                    value={value}
+                    options={parameter.choices}
+                  />
+                ) : (
+                  <Input
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value}
+                  />
+                )}
+              </FormItemWrap>
             )
           case 'image':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="capitalize">{label}</FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
                 <FormControl id={name}>
                   <Input
                     className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? '' : value}
+                    value={value === null ? '' : value || ''}
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value}
+                  value={value === null ? [] : value || ''}
                   onChange={onChange}
                   allowedFileTypes={['image']}
                   maxFiles={1}
@@ -204,20 +197,20 @@ const renderFormField = (
           case 'image[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="capitalize">{label}</FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
                 <FormControl id={name}>
                   <Input
                     className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? '' : value}
+                    value={value === null ? '' : value || ''}
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value}
+                  value={value === null ? [] : value || []}
                   onChange={onChange}
                   allowedFileTypes={['image']}
                   maxFiles={
@@ -234,10 +227,10 @@ const renderFormField = (
           case 'video':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="capitalize">{label}</FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
                 <FormControl id={name}>
                   <Input
                     className={'hidden'}
@@ -259,10 +252,10 @@ const renderFormField = (
           case 'video[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="capitalize">{label}</FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
                 <FormControl id={name}>
                   <Input
                     className={'hidden'}
@@ -288,20 +281,18 @@ const renderFormField = (
             )
           default:
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="capitalize">{label}</FormLabel>
-                  <FormDescription>{parameter.description}</FormDescription>
-                </div>
-                <FormControl id={name}>
-                  <Input
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value}
-                  />
-                </FormControl>
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
+              <FormItemWrap
+                name={name}
+                label={label}
+                description={parameter.description}
+                errorMessage={fieldState.error?.message}
+              >
+                <Input
+                  onChange={onChange}
+                  onBlur={onBlur}
+                  value={value === null ? '' : value}
+                />
+              </FormItemWrap>
             )
         }
       }}

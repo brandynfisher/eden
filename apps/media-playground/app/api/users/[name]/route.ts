@@ -15,6 +15,8 @@ export async function GET(
 
   const authToken = await getAuthToken(request)
 
+  console.log('authToken undefined', request.url, params)
+
   if (!authToken) {
     return new Response(JSON.stringify({ message: 'Not authenticated' }), {
       status: 401,

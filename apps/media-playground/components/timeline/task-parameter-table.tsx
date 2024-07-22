@@ -12,7 +12,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { getToastConfig } from '@/lib/toast'
 import { TaskV2 } from '@edenlabs/eden-sdk'
-import { SquareCheckBigIcon, SquareIcon } from 'lucide-react'
+import { InfoIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
 import Image from 'next/image'
 import React from 'react'
 
@@ -51,7 +51,10 @@ const TaskParameterTable = ({ task }: Props) => {
   return (
     <Table className="text-xs mt-2 flex flex-col md:rounded-t-lg md:overflow-hidden md:table">
       <TableCaption className="mb-2 mt-0 md:mb-1 md:mt-2">
-        Configuration used for this task
+        <div className="flex w-full items-center justify-center gap-1 text-xs">
+          <InfoIcon size={12} />
+          Click a row to copy its value
+        </div>
       </TableCaption>
       <TableHeader className="rounded-t-lg overflow-hidden md:rounded-none md:overflow-auto">
         <TableRow className="bg-popover/50 block md:table-row">
@@ -66,7 +69,7 @@ const TaskParameterTable = ({ task }: Props) => {
       <TableBody className="bg-popover/20">
         {Object.entries(task.args).map(taskArg => (
           <TableRow
-            className="cursor-copy text-xs flex flex-col md:table-row"
+            className="cursor-pointer text-xs flex flex-col md:table-row"
             key={taskArg[0]}
             onClick={handleCopyString(
               taskArg[0],
@@ -89,8 +92,8 @@ const TaskParameterTable = ({ task }: Props) => {
                       key={inputImageUrl}
                       src={inputImageUrl}
                       alt={taskArg[0]}
-                      width={64}
-                      height={64}
+                      width={72}
+                      height={72}
                     />
                   ))}
                 </div>
@@ -104,8 +107,8 @@ const TaskParameterTable = ({ task }: Props) => {
                     <PreviewVideoPlayer
                       key={inputVideoUrl}
                       src={inputVideoUrl}
-                      width={64}
-                      height={64}
+                      width={72}
+                      height={72}
                     />
                   ))}
                 </div>

@@ -69,7 +69,7 @@ const getFileIconAndColor = (fileType: FileType) => {
       icon: (
         <AudioWaveform
           size={40}
-          className={`${ImageColor.fillColor} w-[72px]`}
+          className={`${AudioColor.fillColor} w-[72px]`}
         />
       ),
       color: AudioColor.bgColor,
@@ -78,14 +78,14 @@ const getFileIconAndColor = (fileType: FileType) => {
 
   if (fileType === `video`) {
     return {
-      icon: <Video size={40} className={`${ImageColor.fillColor} w-[72px]`} />,
+      icon: <Video size={40} className={`${VideoColor.fillColor} w-[72px]`} />,
       color: VideoColor.bgColor,
     }
   }
 
   return {
     icon: (
-      <FolderArchive size={40} className={`${ImageColor.fillColor} w-[72px]`} />
+      <FolderArchive size={40} className={`${OtherColor.fillColor} w-[72px]`} />
     ),
     color: OtherColor.bgColor,
   }
@@ -130,77 +130,77 @@ type Props = {
   allowMultiple?: boolean
 }
 
-class FakeFile implements File {
-  name: string
-  size: number
-  type: string
-  lastModified: number
-
-  constructor(
-    name: string,
-    type: string = 'image/jpeg',
-    lastModified: number = Date.now(),
-    size: number = 0,
-  ) {
-    this.name = name
-    this.lastModified = lastModified
-    this.size = size
-    this.type = type
-  }
-
-  get webkitRelativePath() {
-    return ''
-  }
-
-  arrayBuffer() {
-    return new Promise<ArrayBuffer>(resolve => {
-      resolve(new ArrayBuffer(0))
-    })
-  }
-
-  slice(_start?: number, _end?: number, contentType?: string) {
-    return new Blob([], { type: contentType || '' })
-  }
-
-  stream() {
-    return new ReadableStream()
-  }
-
-  text() {
-    return Promise.resolve('')
-  }
-}
+// class FakeFile implements File {
+//   name: string
+//   size: number
+//   type: string
+//   lastModified: number
+//
+//   constructor(
+//     name: string,
+//     type: string = 'image/jpeg',
+//     lastModified: number = Date.now(),
+//     size: number = 0,
+//   ) {
+//     this.name = name
+//     this.lastModified = lastModified
+//     this.size = size
+//     this.type = type
+//   }
+//
+//   get webkitRelativePath() {
+//     return ''
+//   }
+//
+//   arrayBuffer() {
+//     return new Promise<ArrayBuffer>(resolve => {
+//       resolve(new ArrayBuffer(0))
+//     })
+//   }
+//
+//   slice(_start?: number, _end?: number, contentType?: string) {
+//     return new Blob([], { type: contentType || '' })
+//   }
+//
+//   stream() {
+//     return new ReadableStream()
+//   }
+//
+//   text() {
+//     return Promise.resolve('')
+//   }
+// }
 
 const FileUploader = ({
-  value,
+  // value,
   allowedFileTypes,
   maxFiles,
   allowMultiple,
   onChange,
 }: Props) => {
-  console.log('fileUploader', { value })
-  useEffect(() => {
-    if (!value) {
-      return
-    }
-
-    const isArray = Array.isArray(value)
-
-    const newUrls = isArray ? value : [value]
-
-    const dummyFileList: FileWithPreview[] = newUrls.map((newUrl: string) => {
-      //@todo: super iffy. the fake class but also the file type. videos will break this?
-      const fakedFile = new FakeFile(newUrl, 'image/jpeg')
-      Object.assign(fakedFile, {
-        preview: newUrl,
-        fileUrl: newUrl,
-      })
-
-      return fakedFile as FileWithPreview
-    })
-    setUploadedFiles(dummyFileList)
-    onChange(maxFiles === 1 ? newUrls[0] : newUrls)
-  }, [])
+  // console.log('fileUploader', { value })
+  // useEffect(() => {
+  //   if (!value) {
+  //     return
+  //   }
+  //
+  //   const isArray = Array.isArray(value)
+  //
+  //   const newUrls = isArray ? value : [value]
+  //
+  //   const dummyFileList: FileWithPreview[] = newUrls.map((newUrl: string) => {
+  //     //@todo: super iffy. the fake class but also the file type. videos will break this?
+  //     const fakedFile = new FakeFile(newUrl, 'image/jpeg')
+  //     Object.assign(fakedFile, {
+  //       preview: newUrl,
+  //       fileUrl: newUrl,
+  //     })
+  //
+  //     return fakedFile as FileWithPreview
+  //   })
+  //   setUploadedFiles(dummyFileList)
+  //   onChange(maxFiles === 1 ? newUrls[0] : newUrls)
+  // }, [])
 
   const { toast } = useToast()
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([])
@@ -275,13 +275,43 @@ const FileUploader = ({
       const filtered = newState
         .map(item => (item ? item.fileUrl || '' : ''))
         .filter(Boolean)
-      onChange(maxFiles === 1 ? filtered[0] : filtered)
+
+      setTimeout(() => {
+        onChange(maxFiles === 1 ? filtered[0] : filtered)
+      }, 0)
       return newState
     })
   }
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
+      // no files, do nothing
+      if (acceptedFiles.length === 0) {
+        return
+      }
+
+      const newListLength =
+        acceptedFiles.length + uploadedFiles.length + filesToUpload.length
+      console.log({
+        maxFiles,
+        newListLength,
+        acceptedFiles,
+        uploadedFiles,
+        filesToUpload,
+      })
+
+      // more files than allowed, tell the user
+      if (newListLength > (maxFiles || 1)) {
+        toast(
+          getToastConfig(
+            'Too many files!',
+            `Maximum for this field is ${maxFiles} ${typeWordPluralised}`,
+            'error',
+          ),
+        )
+        return
+      }
+
       setFilesToUpload(prevUploadProgress => {
         return [
           ...prevUploadProgress,
@@ -403,7 +433,7 @@ const FileUploader = ({
         <label
           {...getRootProps()}
           className={cn(
-            'relative flex flex-col items-center justify-center w-full py-6 border rounded-lg cursor-pointer bg-card',
+            'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card',
             supportsVideo ? VideoColor.borderColor : '',
             supportsImage ? ImageColor.borderColor : '',
             supportsAny ? OtherColor.borderColor : '',
@@ -414,20 +444,20 @@ const FileUploader = ({
               <UploadCloud size={20} />
             </div>
 
-            <p className="mt-2 text-sm text-muted-foreground">
+            <div className="mt-2 text-sm text-muted-foreground">
               <span className="font-semibold">
                 Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
                 {typeWordPluralised}
               </span>
-            </p>
-            <p className="text-xs text-muted-foreground">
+            </div>
+            <div className="text-xs text-muted-foreground">
               Click here or drop files to upload
               {/*&#40;files should be under xx MB &#41;*/}
-            </p>
-            {/*<p className='text-xs text-muted-foreground'>*/}
+            </div>
+            {/*<div className='text-xs text-muted-foreground'>*/}
             {/*  {allowedFileTypes?.join(', ')} | (*/}
             {/*  {allowedFileMimeTypes.join(', ')})*/}
-            {/*</p>*/}
+            {/*</div>*/}
           </div>
         </label>
 
@@ -442,9 +472,13 @@ const FileUploader = ({
 
       {filesToUpload.length || uploadedFiles.length ? (
         <div className="bg-card p-2 mt-4 rounded-lg">
-          <p className="font-medium mb-2 text-muted-foreground text-sm">
-            Uploaded Files ({uploadedFiles.length + filesToUpload.length})
-          </p>
+          <div className="font-medium mb-2 text-muted-foreground text-sm flex gap-2 flex-wrap justify-between">
+            <div>
+              Uploaded {uploadedFiles.length + filesToUpload.length}{' '}
+              {typeWordPluralised}
+            </div>
+            <div>(max. {maxFiles})</div>
+          </div>
           <div className="space-y-2">
             {uploadedFiles.length > 0 &&
               uploadedFiles.map(file => {
@@ -461,8 +495,8 @@ const FileUploader = ({
                               <Image
                                 src={file.preview}
                                 alt={file.preview}
-                                height={64}
-                                width={64}
+                                height={72}
+                                width={72}
                                 // objectFit={'cover'}
                                 onLoad={() =>
                                   URL.revokeObjectURL(file.preview || '')
@@ -472,11 +506,12 @@ const FileUploader = ({
                             ) : (
                               <PreviewVideoPlayer
                                 src={file.preview}
-                                width={64}
-                                height={64}
+                                width={72}
+                                height={72}
                                 onLoad={() =>
                                   URL.revokeObjectURL(file.preview || '')
                                 }
+                                className="object-contain w-full h-[64px]"
                               />
                               // <video
                               //   src={file.preview}
@@ -504,7 +539,7 @@ const FileUploader = ({
                           </>
                         )}
                       </div>
-                      <div className="space-y-1 w-[254px]">
+                      <div className="space-y-1 max-w-[120px] md:max-w-[217px]">
                         <div className="text-sm text-muted-foreground">
                           <Truncate text={file.name} />
                         </div>
@@ -519,7 +554,7 @@ const FileUploader = ({
                     </div>
                     <button
                       onClick={() => removeFile(file)}
-                      className="absolute h-full right-0 bg-destructive text-destructive-foreground items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
+                      className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
                     >
                       <X size={20} />
                     </button>
@@ -553,8 +588,8 @@ const FileUploader = ({
                         }
                       </div>
                       <div className="w-full space-y-1">
-                        <div className="text-xs flex justify-between">
-                          <div className="text-sm text-muted-foreground w-[254px]">
+                        <div className="text-xs flex items-center justify-between">
+                          <div className="text-sm text-muted-foreground max-w-[110px] md:max-w-[217px]">
                             <Truncate text={fileUploadProgress.File.name} />
                           </div>
                           <span>{fileUploadProgress.progress}%</span>
@@ -578,7 +613,7 @@ const FileUploader = ({
                         }
                         removeFile(fileUploadProgress.File)
                       }}
-                      className="bg-warning text-destructive-foreground items-center justify-center cursor-pointer px-2 hidden group-hover:flex"
+                      className="border-l text-primary/40 hover:bg-warning hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
                     >
                       <BanIcon size={20} />
                     </button>

@@ -89,10 +89,14 @@ const TimelineItem = ({ item, outputType }: Props) => {
                 <Skeleton className="w-full h-full rounded-t-none rounded-bl-lg rounded-br-lg" />
               </AspectRatio>
               <div className="absolute flex items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground">
-                <TaskStatusBadge status={item.status} hideText={true} />
+                <TaskStatusBadge
+                  status={item.status}
+                  hideText={true}
+                  outputType={outputType}
+                />
                 {item.status === 'pending'
                   ? 'Waiting to start...'
-                  : `Generating...`}
+                  : `Generating ${outputType}... `}
               </div>
               <Button
                 variant="outline"

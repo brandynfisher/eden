@@ -9,7 +9,6 @@ const Landing = () => {
       </div>
 
       <div className="mb-0 grid md:grid-cols-2 gap-4 lg:max-w-5xl lg:w-full lg:grid-cols-3 lg:text-left">
-        <LinkCard href={'/'} title={'Explore'} text={'Browse creations'} />
         <LinkCard
           href={'/create'}
           title={'Create'}
@@ -20,6 +19,7 @@ const Landing = () => {
           title={'Train'}
           text={'Train custom models'}
         />
+        <LinkCard href={'/'} title={'Explore'} text={'Browse creations'} />
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { getQueryClient } from '@/app/get-query-client'
 import UserCreationsFeed from '@/components/user-creations-feed'
 import { fetcher } from '@/lib/fetcher'
-import { CreatorsGetMeResponse } from '@edenlabs/eden-sdk'
+import { CreatorsGetResponse } from '@edenlabs/eden-sdk'
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 
 type Props = {
@@ -15,14 +15,9 @@ const CreatorPage = ({ params }: Props) => {
 
   const queryClient = getQueryClient()
 
-  console.log(`${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`)
-
   queryClient.prefetchQuery({
     queryKey: ['creators', name],
-    queryFn: () =>
-      fetcher<CreatorsGetMeResponse>(
-        `${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`,
-      ),
+    queryFn: () => fetcher<CreatorsGetResponse>(`/api/users/${name}`),
   })
 
   return (

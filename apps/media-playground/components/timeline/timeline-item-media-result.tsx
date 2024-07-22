@@ -16,7 +16,7 @@ const TimelineItemMediaResult = ({
   index,
   outputType,
 }: Props) => {
-  console.log({ task, result })
+  // console.log({ task, result })
   return (
     <>
       <div className="relative border-transparent bg-popover">

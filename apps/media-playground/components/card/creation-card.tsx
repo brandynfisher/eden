@@ -20,7 +20,7 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
   return (
     <Card className="overflow-hidden border-0" style={style}>
       <Link
-        href={`/creation/${creation._id}`}
+        href={`/creations/${creation._id}`}
         prefetch={false}
         className="relative w-full block"
       >
