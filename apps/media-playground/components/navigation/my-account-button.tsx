@@ -29,7 +29,7 @@ ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 
 const AccountDropdown = () => {
   const router = useRouter()
-  const { user } = useCreatorQuery({ key: 'me' })
+  const { creator: user } = useCreatorQuery({ key: 'me' })
 
   // @todo: abstract all of this away
   const { isSignedIn } = useAuth()
@@ -73,13 +73,13 @@ const AccountDropdown = () => {
           <Link href={`/creators/${user?.username}`}>Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user?.username}/models`}>Models</Link>
+          <Link href={`/creators/${user?.username}?tab=models`}>Models</Link>
         </DropdownMenuItem>
-        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
-        {/*  <Link href={`/creators/${user.username}/collections`}>*/}
-        {/*    Collections*/}
-        {/*  </Link>*/}
-        {/*</DropdownMenuItem>*/}
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/creators/${user?.username}?tab=collections`}>
+            Collections
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
         {/*  <Link href={`/settings/account`}>Settings</Link>*/}

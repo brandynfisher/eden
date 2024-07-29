@@ -2,29 +2,36 @@ import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 
 export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
-  const { user, balance, foreverBalance, subscriptionBalance } =
-    useCreatorQuery({ key: 'me' })
+  const {
+    creator: currentUser,
+    balance,
+    foreverBalance,
+    subscriptionBalance,
+  } = useCreatorQuery({ key: 'me' })
 
   const hasMinimumSubscriptionTier = (minimumTier: SubscriptionTier) => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !currentUser) {
       return false
     }
 
-    if (!user.subscriptionTier && !user.featureFlags) {
+    if (!currentUser.subscriptionTier && !currentUser.featureFlags) {
       return false
     }
 
-    if (user.subscriptionTier && user.subscriptionTier >= minimumTier) {
+    if (
+      currentUser.subscriptionTier &&
+      currentUser.subscriptionTier >= minimumTier
+    ) {
       return true
     }
 
-    return user.featureFlags
-      ? user.featureFlags.includes(FeatureFlag.Preview)
+    return currentUser.featureFlags
+      ? currentUser.featureFlags.includes(FeatureFlag.Preview)
       : false
   }
 
   return {
-    user,
+    user: currentUser,
     hasMinimumSubscriptionTier,
     balance,
     foreverBalance,

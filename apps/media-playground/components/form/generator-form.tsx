@@ -60,16 +60,29 @@ const renderFormField = (
                 description={parameter.description}
                 errorMessage={fieldState.error?.message}
               >
-                <Input
-                  type="number"
-                  onChange={e =>
-                    onChange(
-                      e.target.value ? parseInt(e.target.value) : undefined,
-                    )
-                  }
-                  onBlur={onBlur}
-                  value={parsedValue}
-                />
+                {parameter.name === 'seed' ? (
+                  <Input
+                    type="number"
+                    onChange={e =>
+                      onChange(
+                        e.target.value ? parseInt(e.target.value) : undefined,
+                      )
+                    }
+                    onBlur={onBlur}
+                    value={parsedValue}
+                  />
+                ) : (
+                  <SliderInput
+                    form={form}
+                    min={parameter.minimum || 0}
+                    max={parameter.maximum || 1}
+                    step={1}
+                    value={value}
+                    onChange={newVal => {
+                      onChange(newVal)
+                    }}
+                  />
+                )}
               </FormItemWrap>
             )
           case 'float':

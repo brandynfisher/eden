@@ -276,6 +276,7 @@ const FileUploader = ({
         .map(item => (item ? item.fileUrl || '' : ''))
         .filter(Boolean)
 
+      // prevent updating the parent component while the child is re-rendering by moving the parent call to the next tick
       setTimeout(() => {
         onChange(maxFiles === 1 ? filtered[0] : filtered)
       }, 0)

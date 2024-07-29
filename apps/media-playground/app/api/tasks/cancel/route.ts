@@ -2,7 +2,7 @@ import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { EdenClient, TaskV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 const cancelTask = async (taskId: TaskV2['_id'], eden: EdenClient) => {
   return eden.tasks
@@ -12,7 +12,7 @@ const cancelTask = async (taskId: TaskV2['_id'], eden: EdenClient) => {
     .then(response => {
       console.log({ 'cancel response': response })
       if (!response || response.message) {
-        return new Response(
+        return new NextResponse(
           JSON.stringify({
             message: response.message || 'Internal Error - unknown reason',
           }),
@@ -23,7 +23,7 @@ const cancelTask = async (taskId: TaskV2['_id'], eden: EdenClient) => {
       }
 
       if (response && !response.taskStatus) {
-        return new Response(
+        return new NextResponse(
           JSON.stringify({
             message:
               response.message ||
@@ -38,7 +38,7 @@ const cancelTask = async (taskId: TaskV2['_id'], eden: EdenClient) => {
       return Response.json({ status: response.taskStatus })
     })
     .catch(error => {
-      return new Response(
+      return new NextResponse(
         JSON.stringify({
           message:
             error?.response?.data?.message ||
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   const authToken = await getAuthToken(request)
 
   if (!authToken) {
-    return new Response(JSON.stringify({ message: 'Not authenticated' }), {
+    return new NextResponse(JSON.stringify({ message: 'Not authenticated' }), {
       status: 401,
     })
   }
@@ -68,13 +68,13 @@ export async function POST(request: NextRequest) {
   const requestJson = await request.json()
 
   if (!requestJson) {
-    return new Response(JSON.stringify({ message: 'No data passed' }), {
+    return new NextResponse(JSON.stringify({ message: 'No data passed' }), {
       status: 401,
     })
   }
 
   if (!requestJson.taskId) {
-    return new Response(JSON.stringify({ message: 'Missing taskId' }), {
+    return new NextResponse(JSON.stringify({ message: 'Missing taskId' }), {
       status: 401,
     })
   }
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     const responseJson = await response.json()
 
     if (response.status !== 200) {
-      return new Response(
+      return new NextResponse(
         JSON.stringify({
           message: responseJson.message || 'Error creating task',
         }),
@@ -99,17 +99,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return Response.json(responseJson)
+    return NextResponse.json(responseJson)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response && error.response.data) {
-        return new Response(JSON.stringify({ message: error.response.data }), {
-          status: 500,
-        })
+        return new NextResponse(
+          JSON.stringify({ message: error.response.data }),
+          {
+            status: 500,
+          },
+        )
       }
     }
 
-    return new Response(JSON.stringify({ message: error }), {
+    return new NextResponse(JSON.stringify({ message: error }), {
       status: 500,
     })
   }

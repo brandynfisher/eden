@@ -2,13 +2,13 @@ import { getAuthToken } from '@/lib/auth'
 import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import axios from 'axios'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const authToken = await getAuthToken(request)
 
   if (!authToken) {
-    return new Response(JSON.stringify({ message: 'Not authenticated' }), {
+    return new NextResponse(JSON.stringify({ message: 'Not authenticated' }), {
       status: 401,
     })
   }
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const fileExtension = queryParams.get('fileExtension')
 
     if (!url || !fileName || !fileExtension) {
-      return new Response(JSON.stringify({ message: 'Invalid request' }), {
+      return new NextResponse(JSON.stringify({ message: 'Invalid request' }), {
         status: 401,
       })
     }
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     console.log(error)
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
-    return new Response(JSON.stringify({ message: errorMessage }), {
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })
   }

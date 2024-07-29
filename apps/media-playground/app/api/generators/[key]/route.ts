@@ -1,6 +1,6 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient, GeneratorParameterV2 } from '@edenlabs/eden-sdk'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 function replaceNullWithUndefined(
   arr: GeneratorParameterV2[],
@@ -49,7 +49,7 @@ export async function GET(
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
-    return new Response(JSON.stringify({ message: errorMessage }), {
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })
   }

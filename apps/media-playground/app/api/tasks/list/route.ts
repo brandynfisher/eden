@@ -1,13 +1,13 @@
 import { getAuthToken } from '@/lib/auth'
 import { extractPaginationParams, handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
-import type { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const authToken = await getAuthToken(request)
 
   if (!authToken) {
-    return new Response(JSON.stringify({ message: 'Not authenticated' }), {
+    return new NextResponse(JSON.stringify({ message: 'Not authenticated' }), {
       status: 401,
     })
   }
@@ -21,11 +21,11 @@ export async function GET(request: NextRequest) {
       token: authToken,
     })
     const res = await eden.tasks.listV2({ ...paginationParams, workflow })
-    return Response.json(res)
+    return NextResponse.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
-    return new Response(JSON.stringify({ message: errorMessage }), {
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })
   }

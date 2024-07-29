@@ -1,47 +1,42 @@
-import { getAuthToken } from '@/lib/auth'
 import { handleAxiosServerError } from '@/lib/fetcher'
+import { auth } from '@clerk/nextjs/server'
 import { EdenClient } from '@edenlabs/eden-sdk'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } },
+  { params: { name } }: { params: { name: string } },
 ) {
-  if (!params || !params.name) {
-    return new Response(JSON.stringify({ message: 'Missing name' }), {
+  if (!name) {
+    return new NextResponse(JSON.stringify({ message: 'Missing name' }), {
       status: 400,
     })
   }
 
-  const authToken = await getAuthToken(request)
+  const { getToken } = auth()
+  const authToken = await getToken()
 
-  console.log('authToken undefined', request.url, params)
-
-  if (!authToken) {
-    return new Response(JSON.stringify({ message: 'Not authenticated' }), {
-      status: 401,
-    })
-  }
+  console.log('auth()', name, request.url)
 
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-      token: authToken,
+      token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.creators.get({ userId: params.name })
+    const res = await eden.creators.get({ userId: name })
 
     if (!res) {
-      return new Response(JSON.stringify({ message: 'User not found' }), {
+      return new NextResponse(JSON.stringify({ message: 'User not found' }), {
         status: 404,
       })
     }
 
-    return Response.json(res)
+    return NextResponse.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
-    return new Response(JSON.stringify({ message: errorMessage }), {
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })
   }

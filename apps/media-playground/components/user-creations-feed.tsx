@@ -14,9 +14,20 @@ type Props = {
 }
 
 const UserCreationsFeed = ({ userName }: Props) => {
+  console.log(
+    'useSuspenseQuery',
+    `${process.env.NEXT_PUBLIC_HOST}/api/users/${userName}`,
+  )
+
   const { data } = useSuspenseQuery({
     queryKey: ['creators', userName],
-    queryFn: () => fetcher<CreatorsGetResponse>(`/api/users/${userName}`),
+    queryFn: () =>
+      fetcher<CreatorsGetResponse>(
+        `${process.env.NEXT_PUBLIC_HOST}/api/users/${userName}`,
+        {
+          credentials: 'same-origin',
+        },
+      ),
   })
 
   const query: FeedCreationsCursorArguments = useMemo(

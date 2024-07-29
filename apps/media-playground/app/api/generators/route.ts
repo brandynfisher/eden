@@ -1,6 +1,6 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
-    return new Response(JSON.stringify({ message: errorMessage }), {
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })
   }

@@ -4,9 +4,16 @@ import axios, { AxiosError } from 'axios'
 export const fetcher = async <T>(
   ...args: Parameters<typeof fetch>
 ): Promise<T> => {
+  console.log('fetcher', ...args)
   const response = await fetch(...args)
 
   if (!response.ok) {
+    console.log(
+      response.url,
+      response.status,
+      response.statusText,
+      response.headers,
+    )
     throw new Error('Network response was not ok')
   }
 

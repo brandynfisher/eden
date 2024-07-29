@@ -1,6 +1,6 @@
-import { type NextRequest } from 'next/server'
-import { EdenClient } from '@edenlabs/eden-sdk'
 import { extractFeedParams, handleAxiosServerError } from '@/lib/fetcher'
+import { EdenClient } from '@edenlabs/eden-sdk'
+import { type NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,13 +11,12 @@ export async function GET(request: NextRequest) {
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
     const res = await eden.feed_cursor.creations(feedQueryParams)
-    return Response.json(res)
+    return NextResponse.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
-    return new Response(
-      JSON.stringify({ message: errorMessage }),
-      { status: 500 },
-    )
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
+      status: 500,
+    })
   }
 }
