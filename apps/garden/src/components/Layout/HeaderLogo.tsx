@@ -14,6 +14,7 @@ const HeaderLogo = () => {
           src="/favicon-32x32.png"
           alt="Logo"
           className="relative"
+          sizes={'100vw'}
         />
       </Link>
     </div>

@@ -152,6 +152,12 @@ export class EdenClient extends Methods {
     // console.log('tasks.createV2 response', res)
 
     const { task } = res as { task: TaskV2 }
+
+    if (!task) {
+      const { error, message } = res
+      throw new Error(`Failed to create task - Reason: ${message || error}`)
+    }
+
     // Subscribe to task updates
     const subscription = this.subscribe(task._id, 'v2')
     try {

@@ -86,29 +86,33 @@ export const createTask = async (
   server.log.info('> modal::request::create')
   server.log.info(modalRequest)
 
-  const modalResponse = await axios.post(
-    modalRequest.endpoint,
-    modalRequest.data,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+  try {
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
       },
-    },
-  )
+    )
 
-  server.log.info('< modal::response::create')
-  server.log.info(modalResponse.data)
+    server.log.info('< modal::response::create')
+    server.log.info(modalResponse.data)
 
-  if (!modalResponse || !modalResponse.data) {
-    console.log('malformed response', modalResponse)
-    return reply.status(500).send({
-      message: `Empty / Unexpected response from compute api`,
-    })
+    if (!modalResponse || !modalResponse.data) {
+      console.log('malformed response', modalResponse)
+      return reply.status(500).send({
+        message: `Empty / Unexpected response from compute api`,
+      })
+    }
+
+    const task = modalResponse.data as TaskV2
+
+    return reply.status(200).send({ task })
+  } catch (e) {
+    server.log.error({ message: 'Failed to create task', error: e })
   }
-
-  const task = modalResponse.data as TaskV2
-
-  return reply.status(200).send({ task })
 }
 
 export const listTasks = async (

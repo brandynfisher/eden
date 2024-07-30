@@ -2,7 +2,6 @@
 
 import { Badge } from '@/components/ui/badge'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
-import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Creator } from '@edenlabs/eden-sdk'
@@ -17,11 +16,12 @@ const ProfileHeader = ({ name, creatorInitData }: Props) => {
   const { user } = useAuthState()
   const { creator } = useCreatorQuery({
     key: name,
-    initialData: { creator: creatorInitData },
+    initialData: {
+      creator: creatorInitData,
+    },
   })
   const currentData = creatorInitData || creator
 
-  console.log({ currentData, user })
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -45,21 +45,21 @@ const ProfileHeader = ({ name, creatorInitData }: Props) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 mt-6">
-        <TypographyH4>clientQuery data</TypographyH4>
-        <code>
-          <pre className="font-mono bg-popover overflow-scroll">
-            {JSON.stringify(creator, null, 2)}
-          </pre>
-        </code>
+      {/*<div className="flex flex-col gap-4 mt-6">*/}
+      {/*  <TypographyH4>clientQuery data</TypographyH4>*/}
+      {/*  <code>*/}
+      {/*    <pre className="font-mono bg-popover overflow-scroll">*/}
+      {/*      {JSON.stringify(creator, null, 2)}*/}
+      {/*    </pre>*/}
+      {/*  </code>*/}
 
-        <TypographyH4>SSR Init</TypographyH4>
-        <code>
-          <pre className="font-mono bg-popover overflow-scroll">
-            {JSON.stringify(creatorInitData, null, 2)}
-          </pre>
-        </code>
-      </div>
+      {/*  <TypographyH4>SSR Init</TypographyH4>*/}
+      {/*  <code>*/}
+      {/*    <pre className="font-mono bg-popover overflow-scroll">*/}
+      {/*      {JSON.stringify(creatorInitData, null, 2)}*/}
+      {/*    </pre>*/}
+      {/*  </code>*/}
+      {/*</div>*/}
     </div>
   )
 }

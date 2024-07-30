@@ -126,7 +126,8 @@ const TimelineItem = ({ item, outputType }: Props) => {
               />
             ))
           ) : item.model !== undefined ? (
-            // task result is ObjectId of model, api populates a model property with the full model document
+            // task result is ObjectId of model document
+            // api populates a model property with full model document
             <TimelineItemModelResult
               outputType={outputType}
               task={item}
