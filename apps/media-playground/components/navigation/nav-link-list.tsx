@@ -9,10 +9,10 @@ type Props = {
 const NavLinkList = ({ items, segments, inSheet }: Props) => {
   return (
     <>
-      {items.map(item => (
+      {items.map((item, index) => (
         <NavLink
           inSheet={inSheet}
-          key={item.label}
+          key={`${item.label}_${index}`}
           label={item.label}
           segments={item.segments}
           active={
