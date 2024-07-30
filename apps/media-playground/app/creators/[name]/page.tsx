@@ -69,7 +69,8 @@ const CreatorProfilePage = async ({ params: { name } }: Props) => {
   return (
     <>
       <ProfileHeader name={name} creatorInitData={creatorResponse.creator} />
-      <ProfileTabs creator={creatorResponse.creator} />
+      {/*<ProfileTabs creator={creatorResponse.creator} />*/}
+      <ProfileTabs />
     </>
   )
 }

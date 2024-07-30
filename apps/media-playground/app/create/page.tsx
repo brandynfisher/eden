@@ -8,7 +8,7 @@ const CreatePage = () => {
     <div className="flex flex-col gap-4">
       <TypographyH3>Create</TypographyH3>
       <Suspense fallback={<LoadingIndicator />}>
-        <GeneratorsGrid />
+        <GeneratorsGrid outputType={['image', 'video', 'audio']} />
       </Suspense>
     </div>
   )

@@ -3,7 +3,7 @@
 import GeneratorCard from '@/components/card/generator-card'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { GeneratorOutputTypeV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 
 type Props = {
   title: string
@@ -13,7 +13,7 @@ type Props = {
 const GridSection = ({ title, generators }: Props) => {
   return (
     <div className="mb-8">
-      <TypographyH4 className="mb-4">{title}</TypographyH4>
+      <TypographyH4 className="mb-4 capitalize">{title}</TypographyH4>
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {generators && generators.length ? (
           <>
@@ -23,7 +23,7 @@ const GridSection = ({ title, generators }: Props) => {
                 title={generator.name}
                 description={generator.description}
                 image={`/images/generators/${generator.key}.jpeg`}
-                link={`/create/${generator.outputType}/${generator.key}`}
+                link={`/${generator.outputType === 'lora' ? 'train' : `create/${generator.outputType}`}/${generator.key}`}
               />
             ))}
           </>
@@ -35,25 +35,22 @@ const GridSection = ({ title, generators }: Props) => {
   )
 }
 
-const GeneratorsGrid = () => {
-  const { generators } = useGeneratorsListQuery()
+type GeneratorsGridProps = {
+  outputType: GeneratorOutputTypeV2[]
+}
+
+const GeneratorsGrid = ({ outputType }: GeneratorsGridProps) => {
+  const { generators } = useGeneratorsListQuery({ outputType })
 
   return (
     <div>
-      <GridSection
-        title={'Video'}
-        generators={generators?.filter(gen => gen.outputType === 'video')}
-      />
-
-      <GridSection
-        title={'Image'}
-        generators={generators?.filter(gen => gen.outputType === 'image')}
-      />
-
-      <GridSection
-        title={'Model'}
-        generators={generators?.filter(gen => gen.outputType === 'lora')}
-      />
+      {outputType?.map(type => (
+        <GridSection
+          key={type}
+          title={type}
+          generators={generators?.filter(gen => gen.outputType === type)}
+        />
+      ))}
     </div>
   )
 }

@@ -10,10 +10,15 @@ export async function GET(request: NextRequest) {
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
 
-    const query =
-      searchParams.get('hideParams') === 'true'
-        ? { hideParams: true }
-        : undefined
+    const query: { hideParams?: boolean; outputType?: string } = {}
+
+    if (searchParams.has('hideParams')) {
+      query.hideParams = searchParams.get('hideParams') === 'true'
+    }
+
+    if (searchParams.has('outputType')) {
+      query.outputType = searchParams.get('outputType') || ''
+    }
 
     const res = await eden.generators.listV2(query)
     return Response.json({ generators: res.generators })
