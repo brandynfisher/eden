@@ -4,24 +4,22 @@ import CreationCard from '@/components/card/creation-card'
 import LoadingIndicator from '@/components/loading-indicator'
 import { useElementSize } from '@/hooks/use-element-size'
 import { useMediaQuery } from '@/hooks/use-media-query'
-import { fetcher } from '@/lib/fetcher'
-import {
-  FeedCreationsCursorResponse,
-  TaskV2,
-  transformArgsIntoURLParams,
-} from '@edenlabs/eden-sdk'
+import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
+import { FeedCreationsCursorResponse, TaskV2 } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
 const MASONRY_GUTTER = 16
-const QUERY_LIMIT = 35
+const DEFAULT_PAGE_LIMIT = 35
 
 type Props = {
   apiEndpoint: string
   render: ({ item }: { item: TaskV2 }) => React.JSX.Element
   query: { [key: string]: unknown }
   queryKey: unknown[]
+  minCols?: number
+  limit?: number
 }
 
 const MasonryVirtualizerVertical = ({
@@ -29,29 +27,25 @@ const MasonryVirtualizerVertical = ({
   render,
   query,
   queryKey,
+  minCols = 1,
+  limit = DEFAULT_PAGE_LIMIT,
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
-  const above480 = useMediaQuery('(min-width: 480px)')
-  const above768 = useMediaQuery('(min-width: 768px)')
-  const above1024 = useMediaQuery('(min-width: 1024px)')
-  const above1280 = useMediaQuery('(min-width: 1280px)')
-  const above1536 = useMediaQuery('(min-width: 1536px)')
-  const above1920 = useMediaQuery('(min-width: 1920px)')
 
-  const MASONRY_COLUMN_COUNT = above1920
-    ? 7
-    : above1536
-    ? 6
-    : above1280
-    ? 5
-    : above1024
-    ? 4
-    : above768
-    ? 3
-    : above480
-    ? 2
-    : 1
+  const mediaQueries = [
+    useMediaQuery('(min-width: 1920px)'),
+    useMediaQuery('(min-width: 1536px)'),
+    useMediaQuery('(min-width: 1280px)'),
+    useMediaQuery('(min-width: 1024px)'),
+    useMediaQuery('(min-width: 768px)'),
+    useMediaQuery('(min-width: 640px)'),
+    useMediaQuery('(min-width: 480px)'),
+  ].reverse()
+
+  const activeMQ = mediaQueries.lastIndexOf(true)
+  const MASONRY_COLUMN_COUNT =
+    activeMQ !== -1 ? minCols + (activeMQ + 1) : minCols
 
   const columnWidth = useMemo(() => {
     return (
@@ -71,17 +65,15 @@ const MasonryVirtualizerVertical = ({
   } = useInfiniteQuery({
     queryKey,
     queryFn: ({ pageParam }) => {
-      // console.log(pageParam)
-      const queryUrl = `${apiEndpoint}?${transformArgsIntoURLParams(
-        pageParam
-          ? {
-              ...query,
-              cursor: pageParam,
-            }
-          : query,
-      )}`
-      console.log(queryUrl)
-      return fetcher(queryUrl)
+      const paginationRoute = createCursorPaginationRoute(apiEndpoint, {
+        // collectionId: featuredCollectionId,
+        ...query,
+        cursor: pageParam || '',
+        limit: limit,
+      })
+
+      // console.log({paginationRoute})
+      return fetcher(paginationRoute)
     },
     staleTime: 1000000000,
     getNextPageParam: (lastPage: FeedCreationsCursorResponse) => {
@@ -98,8 +90,8 @@ const MasonryVirtualizerVertical = ({
 
   const rowVirtualizer = useWindowVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,
-    estimateSize: () => 300,
-    overscan: QUERY_LIMIT,
+    estimateSize: () => 156,
+    overscan: limit,
     lanes: MASONRY_COLUMN_COUNT,
     gap: MASONRY_GUTTER,
   })
@@ -116,7 +108,7 @@ const MasonryVirtualizerVertical = ({
     }
 
     if (
-      lastItem.index >= allRows.length - QUERY_LIMIT &&
+      lastItem.index >= allRows.length - DEFAULT_PAGE_LIMIT &&
       hasNextPage &&
       !isFetchingNextPage
     ) {
@@ -168,7 +160,7 @@ const MasonryVirtualizerVertical = ({
               creation={item}
               creator={item.user}
               linkHref={`/creations/${item._id}`}
-              showFooter={true}
+              // showFooter={true}
             />
           ) : (
             <div>Missing data</div>

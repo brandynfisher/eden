@@ -1,17 +1,28 @@
-import { extractFeedParams, handleAxiosServerError } from '@/lib/fetcher'
-import { EdenClient } from '@edenlabs/eden-sdk'
+import { CONFIG } from '@/lib/config'
+import { handleAxiosServerError } from '@/lib/fetcher'
+import axios from 'axios'
 import { type NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
+  // const { getToken } = auth()
+  // const authToken = await getToken()
+
   try {
     const searchParams = request.nextUrl.searchParams
-    const feedQueryParams = extractFeedParams(searchParams)
+    const route = `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/feed-cursor/creations?${searchParams.toString()}`
+    // console.log({route})
+    // const eden = new EdenClient({
+    //   edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
+    //   token: authToken !== null ? authToken : undefined,
+    // })
+    //
+    // const res = await eden.feed_cursor.creations(feedQueryParams)
 
-    const eden = new EdenClient({
-      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
+    const response = await axios.get(route, {
+      withCredentials: true,
     })
-    const res = await eden.feed_cursor.creations(feedQueryParams)
-    return NextResponse.json(res)
+
+    return NextResponse.json(response.data)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
