@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     if (!url || !fileName || !fileExtension) {
       return new NextResponse(JSON.stringify({ message: 'Invalid request' }), {
-        status: 401,
+        status: 400,
       })
     }
 

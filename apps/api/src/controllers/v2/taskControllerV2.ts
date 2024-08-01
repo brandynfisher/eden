@@ -13,6 +13,7 @@ import {
   TasksV2CreateArguments,
   TasksV2GetArguments,
   TasksV2ListArguments,
+  TasksV2PublishArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { on } from 'events'
@@ -606,7 +607,7 @@ export const cancelTask = async (
   const { taskId } = request.body as TasksV2CancelArguments
 
   if (!taskId) {
-    return reply.status(404).send({
+    return reply.status(400).send({
       message: `TaskId missing`,
     })
   }
@@ -652,4 +653,40 @@ export const cancelTask = async (
   const taskStatus = modalResponse.data.status as TaskV2Status
 
   return reply.status(200).send({ taskStatus })
+}
+
+export const publishTask = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { taskId, resultUrl } = request.body as TasksV2PublishArguments
+
+  if (!taskId) {
+    return reply.status(400).send({
+      message: `taskId missing`,
+    })
+  }
+
+  if (!resultUrl) {
+    return reply.status(400).send({
+      message: `resultUrl missing`,
+    })
+  }
+
+  const userDocument = await User.findById(userId)
+  if (!userDocument) {
+    return reply.status(400).send({
+      message: `User not found`,
+    })
+  }
+
+  console.log('publishing', taskId, resultUrl)
+
+  const creation = {
+    test: 123,
+  }
+
+  return reply.status(200).send({ creation })
 }

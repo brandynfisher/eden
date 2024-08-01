@@ -5,6 +5,7 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { MediaAttributes } from './Media'
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { Task } from 'src/models/Tasks'
@@ -178,14 +179,6 @@ export type Creation = {
   isPrivate?: boolean
   createdAt: string
   updatedAt: string
-}
-
-export interface MediaAttributes {
-  type: MediaType
-  duration?: number
-  width?: number
-  height?: number
-  aspectRatio?: number
 }
 
 export interface CreationAttributes {

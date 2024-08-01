@@ -1,3 +1,4 @@
+import LoadingIndicator from '@/components/loading-indicator'
 import TaskParameterTable from '@/components/timeline/task-parameter-table'
 import { Button } from '@/components/ui/button'
 import {
@@ -7,6 +8,7 @@ import {
 } from '@/components/ui/collapsible'
 import { downloadFile, getDownloadFileName } from '@/lib/files'
 import { GeneratorOutputTypeV2, TaskV2 } from '@edenlabs/eden-sdk'
+import axios from 'axios'
 import {
   BookHeartIcon,
   ClipboardCopy,
@@ -14,19 +16,53 @@ import {
   ListIcon,
 } from 'lucide-react'
 import React from 'react'
+import { toast } from 'sonner'
 
 type Props = {
-  downloadUri: string
+  originalFileUrl: string
   fileName: string
   task: TaskV2
   outputType: GeneratorOutputTypeV2
 }
+
 const TimelineItemResultTools = ({
   task,
-  downloadUri,
+  originalFileUrl,
   fileName,
   outputType,
 }: Props) => {
+  const publishTaskResult = async (taskId: string, originalFileUrl: string) => {
+    console.log('publishTaskResult', taskId, originalFileUrl)
+
+    const publishToast = toast(
+      <div className="flex gap-2 items-center justify-center">
+        <LoadingIndicator className="h-6" />
+        Publishing creation...
+      </div>,
+      { dismissible: true },
+    )
+
+    const response = await axios.post(`/api/tasks/publish`, {
+      taskId,
+      resultUrl: originalFileUrl,
+    })
+
+    const responseData = response.data
+
+    console.log({ responseData })
+
+    toast.success(`Published result`, {
+      id: publishToast,
+      description: 'Creation added to your profile',
+      action: {
+        label: 'Show',
+        onClick: () => console.log('Action!'),
+      },
+      dismissible: true,
+      richColors: true,
+    })
+  }
+
   return (
     <div
       data-test-id="timeline-item-result-tools"
@@ -39,7 +75,7 @@ const TimelineItemResultTools = ({
             size="sm"
             title={`Re-Use configuration (${task.workflow})`}
             className="px-2 flex gap-2 items-center justify-center"
-            onClick={() => alert('Publish creation - Not implemented')}
+            onClick={() => publishTaskResult(task._id, originalFileUrl)}
           >
             <BookHeartIcon size={20} />
             Publish
@@ -51,7 +87,7 @@ const TimelineItemResultTools = ({
             className="px-2"
             onClick={() =>
               downloadFile(
-                downloadUri,
+                originalFileUrl,
                 getDownloadFileName(task.user, task._id, fileName),
               )
             }

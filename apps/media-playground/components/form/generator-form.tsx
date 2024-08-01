@@ -18,10 +18,8 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
-import { useToast } from '@/components/ui/use-toast'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema } from '@/lib/forms'
-import { getToastConfig } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -29,6 +27,7 @@ import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { UseFormReturn, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 type Props = {
@@ -328,8 +327,6 @@ const GeneratorForm = ({ generator }: Props) => {
     }, {}),
   })
 
-  const { toast } = useToast()
-
   async function onSubmit(formData: z.infer<typeof parameterSchema>) {
     // console.log('try onSubmit', formData)
     if (!(await verifyAuth())) {
@@ -347,28 +344,26 @@ const GeneratorForm = ({ generator }: Props) => {
 
       console.log({ response })
 
-      toast(
-        getToastConfig(
-          'Task submitted',
+      toast.info(`Task submitted`, {
+        description: (
           <code className=" text-xs text-foreground">
             Workflow: {generator.key}
-          </code>,
-          'success',
+          </code>
         ),
-      )
+        dismissible: true,
+        richColors: true,
+      })
     } catch (err) {
       console.log(err)
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'
 
-      toast(
-        getToastConfig(
-          'Failed to submit task',
-          JSON.stringify(errorMessage),
-          'error',
-        ),
-      )
+      toast.error(`Failed to submit task!`, {
+        description: JSON.stringify(errorMessage),
+        dismissible: true,
+        richColors: true,
+      })
     } finally {
       setIsSubmitting(false)
     }

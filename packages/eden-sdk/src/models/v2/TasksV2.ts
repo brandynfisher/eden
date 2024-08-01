@@ -5,6 +5,8 @@ import {
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../../types'
+import { MediaAttributes } from '../Media'
+import { CreationV2 } from './CreationsV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -30,18 +32,16 @@ export interface TasksV2CancelArguments extends WebAPICallOptions {
   taskId: string
 }
 
-export type MediaAttributesV2 = {
-  mimeType: string
-  width: number
-  height: number
-  aspectRatio: number
+export interface TasksV2PublishArguments extends WebAPICallOptions {
+  taskId: string
+  resultUrl: string
 }
 
 export type TaskV2Result = {
   url?: string
   thumbnail?: string
   metadata?: string | null
-  mediaAttributes?: MediaAttributesV2
+  mediaAttributes?: MediaAttributes
 }
 
 // Requests
@@ -102,6 +102,18 @@ export const tasksV2CancelRequestConfig = (
   }
 }
 
+export const tasksV2PublishRequestConfig = (
+  args: TasksV2PublishArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/tasks/publish',
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type TasksV2CreateResponse = WebAPICallResult &
@@ -126,6 +138,11 @@ export type TasksV2GetResponse = WebAPICallResult & {
 export type TasksV2CancelResponse = WebAPICallResult & {
   error?: string
   taskStatus?: TaskV2['status']
+}
+
+export type TasksV2PublishResponse = WebAPICallResult & {
+  error?: string
+  creation?: CreationV2
 }
 
 // Types

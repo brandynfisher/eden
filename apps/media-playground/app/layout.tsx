@@ -3,7 +3,7 @@ import '@/styles/globals.css'
 import Providers from '@/app/providers'
 import Header from '@/components/header/header'
 import { PreloadResources } from '@/components/preload-resources'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from '@/components/ui/sonner'
 import { CONFIG } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { GoogleTagManager } from '@next/third-parties/google'
@@ -44,11 +44,11 @@ export default function RootLayout({ children }: { children: ReactElement }) {
             <Header />
             {children}
           </div>
+          <Toaster expand={false} visibleToasts={9} closeButton={true} />
           {CONFIG.NEXT_PUBLIC_APP_ENV === 'production' ? (
             <GoogleTagManager gtmId={CONFIG.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
           ) : null}
         </Providers>
-        <Toaster />
       </body>
     </html>
   )

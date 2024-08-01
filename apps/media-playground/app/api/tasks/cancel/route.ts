@@ -69,13 +69,13 @@ export async function POST(request: NextRequest) {
 
   if (!requestJson) {
     return new NextResponse(JSON.stringify({ message: 'No data passed' }), {
-      status: 401,
+      status: 400,
     })
   }
 
   if (!requestJson.taskId) {
     return new NextResponse(JSON.stringify({ message: 'Missing taskId' }), {
-      status: 401,
+      status: 400,
     })
   }
 

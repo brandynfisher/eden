@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
   if (!requestJson) {
     return new NextResponse(JSON.stringify({ message: 'No data passed' }), {
-      status: 401,
+      status: 400,
     })
   }
 
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     return new NextResponse(
       JSON.stringify({ message: 'Missing workflow key' }),
       {
-        status: 401,
+        status: 400,
       },
     )
   }
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     return new NextResponse(
       JSON.stringify({ message: 'Missing generator args' }),
       {
-        status: 401,
+        status: 400,
       },
     )
   }

@@ -5,12 +5,11 @@ import TimelineItemModelResult from '@/components/timeline/timeline-item-model-r
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useToast } from '@/components/ui/use-toast'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { getToastConfig } from '@/lib/toast'
 import { GeneratorOutputTypeV2, ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
 import axios, { AxiosError } from 'axios'
 import React, { useCallback, useState } from 'react'
+import { toast } from 'sonner'
 
 type Props = {
   item: TaskV2
@@ -19,7 +18,6 @@ type Props = {
 
 const TimelineItem = ({ item, outputType }: Props) => {
   const { verifyAuth } = useAuthState()
-  const { toast } = useToast()
 
   const [isCancelling, setIsCancelling] = useState(false)
 
@@ -35,27 +33,25 @@ const TimelineItem = ({ item, outputType }: Props) => {
         taskId,
       })
 
-      toast(
-        getToastConfig(
-          'Task cancelled',
+      toast.info(`Task cancelled`, {
+        description: (
           <code className=" text-xs text-foreground">
             taskId: {taskId} | status: {response.data.status}
-          </code>,
-          'info',
+          </code>
         ),
-      )
+        dismissible: true,
+        richColors: true,
+      })
     } catch (err) {
       console.log(err)
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'
-      toast(
-        getToastConfig(
-          'Failed to cancel task',
-          JSON.stringify(errorMessage),
-          'error',
-        ),
-      )
+      toast.error(`Failed to cancel task`, {
+        description: JSON.stringify(errorMessage),
+        dismissible: true,
+        richColors: true,
+      })
     } finally {
       setIsCancelling(false)
     }

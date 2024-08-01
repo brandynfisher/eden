@@ -24,7 +24,7 @@ const TimelineItemModelResult = ({ model, task, outputType }: Props) => {
       <TimelineItemResultTools
         outputType={outputType}
         task={task}
-        downloadUri={model.checkpoint}
+        originalFileUrl={model.checkpoint}
         fileName={model.slug.replace('/', '_') || '_noname_'}
       />
     </>

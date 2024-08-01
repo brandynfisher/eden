@@ -3,9 +3,7 @@
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { useToast } from '@/components/ui/use-toast'
 import { uploadFileToS3 } from '@/lib/files'
-import { getToastConfig } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
@@ -22,6 +20,7 @@ import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import Truncate from 'react-truncate-inside/es'
+import { toast } from 'sonner'
 
 interface FileUploadProgress {
   progress: number
@@ -202,7 +201,6 @@ const FileUploader = ({
   //   onChange(maxFiles === 1 ? newUrls[0] : newUrls)
   // }, [])
 
-  const { toast } = useToast()
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
 
@@ -261,7 +259,11 @@ const FileUploader = ({
       })
     } catch (e) {
       console.error(e)
-      toast(getToastConfig('Failed to upload file', file.name, 'error'))
+      toast.error(`Failed to upload file!`, {
+        description: file.name,
+        dismissible: true,
+        richColors: true,
+      })
     }
   }
 
@@ -303,13 +305,11 @@ const FileUploader = ({
 
       // more files than allowed, tell the user
       if (newListLength > (maxFiles || 1)) {
-        toast(
-          getToastConfig(
-            'Too many files!',
-            `Maximum for this field is ${maxFiles} ${typeWordPluralised}`,
-            'error',
-          ),
-        )
+        toast.error(`Too many files!`, {
+          description: `Maximum for this field is ${maxFiles} ${typeWordPluralised}`,
+          dismissible: true,
+          richColors: true,
+        })
         return
       }
 
@@ -386,15 +386,15 @@ const FileUploader = ({
           return false
         }
 
-        toast(
-          getToastConfig(
-            'Upload finished',
+        toast.success(`Upload finished`, {
+          description: (
             <code className="text-xs text-foreground">
               {acceptedFiles.length} Files
-            </code>,
-            'success',
+            </code>
           ),
-        )
+          dismissible: true,
+          richColors: true,
+        })
       } catch (error) {
         console.error('Error uploading files: ', error)
       }

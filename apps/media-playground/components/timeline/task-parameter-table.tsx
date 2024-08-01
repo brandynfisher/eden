@@ -8,13 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useToast } from '@/components/ui/use-toast'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
-import { getToastConfig } from '@/lib/toast'
 import { TaskV2 } from '@edenlabs/eden-sdk'
 import { InfoIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
 import Image from 'next/image'
 import React from 'react'
+import { toast } from 'sonner'
 
 type Props = {
   task: TaskV2
@@ -34,16 +33,23 @@ const videoInputParameterNames = ['video']
 
 const TaskParameterTable = ({ task }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
-  const { toast } = useToast()
 
   const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
       .then(() => {
-        toast(getToastConfig(`Copied "${parameterName}":`, text, 'success'))
+        toast.success(`Copied "${parameterName}"`, {
+          description: text,
+          dismissible: true,
+          richColors: true,
+        })
         console.log('Copied!', { copiedText })
       })
       .catch(error => {
-        toast(getToastConfig(`Failed to copy!`, error, 'error'))
+        toast.error(`Failed to copy!`, {
+          description: error,
+          dismissible: true,
+          richColors: true,
+        })
         console.error('Failed to copy!', error)
       })
   }

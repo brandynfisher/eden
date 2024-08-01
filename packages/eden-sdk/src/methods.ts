@@ -203,6 +203,8 @@ import {
   TasksV2GetResponse,
   TasksV2ListArguments,
   TasksV2ListResponse,
+  TasksV2PublishArguments,
+  TasksV2PublishResponse,
   generatorsGetRequestConfigV2,
   generatorsListRequestConfigV2,
   tasksV2CancelRequestConfig,
@@ -210,6 +212,7 @@ import {
   tasksV2CreateRequestConfig,
   tasksV2GetRequestConfig,
   tasksV2ListRequestConfig,
+  tasksV2PublishRequestConfig,
 } from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
@@ -618,6 +621,10 @@ export abstract class Methods {
     cancelV2: bindApiCall<TasksV2CancelArguments, TasksV2CancelResponse>(
       this,
       tasksV2CancelRequestConfig,
+    ),
+    publishV2: bindApiCall<TasksV2PublishArguments, TasksV2PublishResponse>(
+      this,
+      tasksV2PublishRequestConfig,
     ),
   }
 }

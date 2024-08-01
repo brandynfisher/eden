@@ -1,4 +1,13 @@
 import { WebAPICallOptions, WebAPICallResult } from '../types'
+import { MediaType } from './Creations'
+
+export interface MediaAttributes {
+  type: MediaType
+  duration?: number
+  width?: number
+  height?: number
+  aspectRatio?: number
+}
 
 // Arguments
 

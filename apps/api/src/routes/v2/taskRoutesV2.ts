@@ -4,6 +4,7 @@ import {
   createTask,
   getTask,
   listTasks,
+  publishTask,
   subscribeTaskUpdates,
 } from '../../controllers/v2/taskControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
@@ -162,6 +163,29 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => cancelTask(server, request, reply),
+  })
+
+  server.post('/v2/tasks/publish', {
+    schema: {
+      tags: ['Tasks'],
+      description: 'Publish a task result',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        taskId: Type.String(),
+        resultUrl: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          creation: Type.Any(), //@todo: creationV2Type
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => publishTask(server, request, reply),
   })
 }
 
