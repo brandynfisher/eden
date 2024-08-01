@@ -12,15 +12,13 @@ type Props = {
 const TimelineItemModelResult = ({ model, task, outputType }: Props) => {
   return (
     <>
-      <div className="relative border-transparent bg-popover">
+      <div className="relative border-transparent bg-popover aspect-square">
         <Image
           src={model.thumbnail}
           alt={model.name}
-          // fill={true}
-          objectFit={'cover'}
           width={1024}
           height={1024}
-          className="object-cover w-full"
+          className="w-full h-full"
         />
       </div>
       <TimelineItemResultTools
