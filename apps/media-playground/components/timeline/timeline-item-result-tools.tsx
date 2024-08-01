@@ -7,7 +7,12 @@ import {
 } from '@/components/ui/collapsible'
 import { downloadFile, getDownloadFileName } from '@/lib/files'
 import { GeneratorOutputTypeV2, TaskV2 } from '@edenlabs/eden-sdk'
-import { ClipboardCopy, DownloadIcon, ListIcon } from 'lucide-react'
+import {
+  BookHeartIcon,
+  ClipboardCopy,
+  DownloadIcon,
+  ListIcon,
+} from 'lucide-react'
 import React from 'react'
 
 type Props = {
@@ -32,8 +37,18 @@ const TimelineItemResultTools = ({
           <Button
             variant="outline"
             size="sm"
+            title={`Re-Use configuration (${task.workflow})`}
+            className="px-2 flex gap-2 items-center justify-center"
+            onClick={() => alert('Publish creation - Not implemented')}
+          >
+            <BookHeartIcon size={20} />
+            Publish
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             title={`Download ${outputType}`}
-            className="h-9 w-9 p-0"
+            className="px-2"
             onClick={() =>
               downloadFile(
                 downloadUri,
@@ -47,8 +62,10 @@ const TimelineItemResultTools = ({
             variant="outline"
             size="sm"
             title={`Re-Use configuration (${task.workflow})`}
-            className="h-9 w-9 p-0"
-            onClick={() => alert('Re-Use configuration - Not implemented')}
+            className="px-2"
+            onClick={() =>
+              alert('Re-use configuration/Preset - Not implemented')
+            }
           >
             <ClipboardCopy size={20} />
           </Button>
@@ -57,7 +74,7 @@ const TimelineItemResultTools = ({
               variant="outline"
               size="sm"
               title="Show task configuration"
-              className="h-9 w-9 p-0 ml-auto"
+              className="px-2 ml-auto"
             >
               <ListIcon size={20} />
             </Button>

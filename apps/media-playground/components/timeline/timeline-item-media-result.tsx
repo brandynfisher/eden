@@ -1,7 +1,7 @@
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { GeneratorOutputTypeV2, TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
-import React from 'react'
+import React, { Ref, useRef, useState } from 'react'
 
 type Props = {
   task: TaskV2
@@ -16,7 +16,19 @@ const TimelineItemMediaResult = ({
   index,
   outputType,
 }: Props) => {
+  const [initialPlay, setInitialPlay] = useState(false)
   // console.log({ task, result })
+  const mediaRef = useRef<HTMLVideoElement | HTMLImageElement>(null)
+
+  const handleVideoClick = async () => {
+    const videoElement = mediaRef.current as HTMLVideoElement
+
+    if (videoElement.paused) {
+      await videoElement.play()
+      setInitialPlay(true)
+    }
+  }
+
   return (
     <>
       <div
@@ -25,6 +37,8 @@ const TimelineItemMediaResult = ({
       >
         {result.url?.endsWith('.mp4') ? (
           <video
+            ref={mediaRef as Ref<HTMLVideoElement>}
+            poster={result.thumbnail || ''}
             src={result.url}
             loop={true}
             controls={true}
@@ -33,12 +47,13 @@ const TimelineItemMediaResult = ({
             className="w-full h-full"
             width={result.mediaAttributes?.width || task.args.width || 1024}
             height={result.mediaAttributes?.height || task.args.height || 1024}
-            // preload="none"
+            preload={'none'}
+            onClick={!initialPlay ? handleVideoClick : undefined}
           />
         ) : (
           <Image
-            src={result.url || ''}
-            alt={result.url || ''}
+            src={result.thumbnail || result.url || ''}
+            alt={result.thumbnail || result.url || ''}
             objectFit={'cover'}
             width={result.mediaAttributes?.width || task.args.width || 1024}
             height={result.mediaAttributes?.height || task.args.height || 1024}
