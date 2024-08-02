@@ -10,10 +10,12 @@ import { downloadFile, getDownloadFileName } from '@/lib/files'
 import {
   GeneratorOutputTypeV2,
   TaskV2,
+  TaskV2Result,
   TasksV2PublishResponse,
 } from '@edenlabs/eden-sdk'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
+  BookCheckIcon,
   BookHeartIcon,
   ClipboardCopy,
   DownloadIcon,
@@ -27,11 +29,13 @@ type Props = {
   originalFileUrl: string
   fileName: string
   task: TaskV2
+  result: TaskV2Result
   outputType: GeneratorOutputTypeV2
 }
 
 const TimelineItemResultTools = ({
   task,
+  result,
   originalFileUrl,
   fileName,
   outputType,
@@ -93,14 +97,31 @@ const TimelineItemResultTools = ({
       <Collapsible>
         <div className="flex flex-wrap gap-2">
           <Button
-            variant="outline"
+            variant={result.published ? 'ghost' : 'outline'}
             size="sm"
-            title={`Publish creation to profile`}
-            className="px-2 flex gap-2 items-center justify-center"
-            onClick={() => publishTaskResult(task._id, originalFileUrl)}
+            title={
+              result.published
+                ? 'Creation was published'
+                : `Publish creation to profile`
+            }
+            className={`px-2 flex gap-2 items-center justify-center ${result.published ? 'cursor-default' : ''}`}
+            onClick={
+              result.published
+                ? undefined
+                : () => publishTaskResult(task._id, originalFileUrl)
+            }
           >
-            <BookHeartIcon size={20} />
-            Publish
+            {result.published ? (
+              <>
+                <BookCheckIcon size={20} className="text-success" />
+                Published
+              </>
+            ) : (
+              <>
+                <BookHeartIcon size={20} />
+                Publish
+              </>
+            )}
           </Button>
           <Button
             variant="outline"

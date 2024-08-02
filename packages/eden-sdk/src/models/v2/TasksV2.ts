@@ -42,6 +42,7 @@ export type TaskV2Result = {
   thumbnail?: string
   metadata?: string | null
   mediaAttributes?: MediaAttributes
+  published?: boolean
 }
 
 // Requests

@@ -657,7 +657,7 @@ export const cancelTask = async (
   return reply.status(200).send({ taskStatus })
 }
 
-export const publishTask = async (
+export const publishTaskResult = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
@@ -691,15 +691,23 @@ export const publishTask = async (
     })
   }
 
-  const taskResult = taskDocument.result.filter(val => {
+  const taskResultIndex = taskDocument.result.findIndex(val => {
     return val.url === resultUrl
-  })[0]
+  })
+
+  if (taskResultIndex === -1) {
+    return reply.status(404).send({
+      message: `Task result not found`,
+    })
+  }
+
+  const taskResult = taskDocument.result[taskResultIndex]
 
   const existingCreation = await CreationV2.exists({
     url: resultUrl,
     task: taskId,
   })
-  // @todo: verify that this creation doesn't exist yet (query for taskId + resultUrl)
+
   if (existingCreation) {
     return reply.status(409).send({
       message: `Creation already exists`,
@@ -720,6 +728,18 @@ export const publishTask = async (
   creation.thumbnail = taskResult.thumbnail
 
   await creation.save()
+  const remainingResults = [...taskDocument.result]
+  const publishedResult = remainingResults.splice(taskResultIndex, 1)[0]
+
+  taskDocument.result = [
+    ...remainingResults,
+    {
+      ...publishedResult,
+      published: true,
+    },
+  ]
+
+  await taskDocument.save()
 
   return reply.status(200).send({ creation })
 }

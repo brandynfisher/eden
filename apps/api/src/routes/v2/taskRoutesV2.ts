@@ -4,7 +4,7 @@ import {
   createTask,
   getTask,
   listTasks,
-  publishTask,
+  publishTaskResult,
   subscribeTaskUpdates,
 } from '../../controllers/v2/taskControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
@@ -185,7 +185,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => publishTask(server, request, reply),
+    handler: (request, reply) => publishTaskResult(server, request, reply),
   })
 }
 

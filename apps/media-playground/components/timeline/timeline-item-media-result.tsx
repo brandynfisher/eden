@@ -46,6 +46,7 @@ const TimelineItemMediaResult = ({
       <TimelineItemResultTools
         outputType={outputType}
         task={task}
+        result={result}
         originalFileUrl={result.url || ''}
         fileName={`${task.args?.prompt || '_noname'}_${index}`}
       />
