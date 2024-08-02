@@ -24,6 +24,7 @@ const PreviewVideoPlayer: React.FC<VideoPlayerProps> = ({
     if (videoRef.current) {
       if (videoRef.current.paused) {
         setIsPlaying(true)
+        await videoRef.current.requestFullscreen()
         await videoRef.current.play()
       } else {
         setIsPlaying(false)
@@ -35,6 +36,7 @@ const PreviewVideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div className="relative rounded-lg overflow-hidden">
       <video
+        onClick={e => e.stopPropagation()}
         // preload="none"
         ref={videoRef}
         src={src}
