@@ -125,6 +125,7 @@ const TimelineItem = ({ item, outputType }: Props) => {
             // task result is ObjectId of model document
             // api populates a model property with full model document
             <TimelineItemModelResult
+              result={item.result[0]}
               outputType={outputType}
               task={item}
               model={item.model as unknown as ModelV2}

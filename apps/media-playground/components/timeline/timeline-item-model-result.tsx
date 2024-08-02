@@ -1,15 +1,26 @@
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
-import { GeneratorOutputTypeV2, ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
+import {
+  GeneratorOutputTypeV2,
+  ModelV2,
+  TaskV2,
+  TaskV2Result,
+} from '@edenlabs/eden-sdk'
 import Image from 'next/image'
 import React from 'react'
 
 type Props = {
+  result: TaskV2Result
   model: ModelV2
   task: TaskV2
   outputType: GeneratorOutputTypeV2
 }
 
-const TimelineItemModelResult = ({ model, task, outputType }: Props) => {
+const TimelineItemModelResult = ({
+  result,
+  model,
+  task,
+  outputType,
+}: Props) => {
   return (
     <>
       <div className="relative border-transparent bg-popover aspect-square">
@@ -22,6 +33,7 @@ const TimelineItemModelResult = ({ model, task, outputType }: Props) => {
         />
       </div>
       <TimelineItemResultTools
+        result={result}
         outputType={outputType}
         task={task}
         originalFileUrl={model.checkpoint}
