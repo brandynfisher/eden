@@ -22,7 +22,7 @@ import {
   ListIcon,
 } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -40,9 +40,10 @@ const TimelineItemResultTools = ({
   fileName,
   outputType,
 }: Props) => {
+  const [isPublishing, setIsPublishing] = useState(false)
   const publishTaskResult = async (taskId: string, originalFileUrl: string) => {
     console.log('publishTaskResult', taskId, originalFileUrl)
-
+    setIsPublishing(true)
     const publishToast = toast(
       <div className="flex gap-2 items-center justify-center">
         <LoadingIndicator className="h-6" />
@@ -86,6 +87,8 @@ const TimelineItemResultTools = ({
         dismissible: true,
         richColors: true,
       })
+    } finally {
+      setIsPublishing(false)
     }
   }
 
@@ -110,11 +113,17 @@ const TimelineItemResultTools = ({
                 ? undefined
                 : () => publishTaskResult(task._id, originalFileUrl)
             }
+            disabled={isPublishing}
           >
             {result.published ? (
               <>
                 <BookCheckIcon size={20} className="text-success" />
-                Published
+                {/*Published*/}
+              </>
+            ) : isPublishing ? (
+              <>
+                <LoadingIndicator className="h-4 w-4" />
+                Publishing
               </>
             ) : (
               <>
@@ -127,7 +136,7 @@ const TimelineItemResultTools = ({
             variant="outline"
             size="sm"
             title={`Download ${outputType}`}
-            className="px-2"
+            className="px-2 ml-auto"
             onClick={() =>
               downloadFile(
                 originalFileUrl,
@@ -153,7 +162,7 @@ const TimelineItemResultTools = ({
               variant="outline"
               size="sm"
               title="Show task configuration"
-              className="px-2 ml-auto"
+              className="px-2"
             >
               <ListIcon size={20} />
             </Button>
