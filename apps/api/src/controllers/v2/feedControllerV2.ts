@@ -126,7 +126,7 @@ const handleArguments = async ({
 }) => {
   const { filter, sort } = query || {}
 
-  // console.log({ filter,cursor,nextValue })
+  console.log({ filter, sort, authUserId })
   const filterMap: FilterItem[] = []
   if (filter) {
     (Array.isArray(filter) ? filter : [filter]).map(filterGroup => {
@@ -405,13 +405,13 @@ const handleArguments = async ({
       ? { isPrivate: { $eq: false } }
       : undefined
 
-  const defaultDeletedFilter = usesPrivacy
-    ? { deleted: { $eq: false } }
-    : undefined
+  // const defaultDeletedFilter = usesPrivacy
+  //   ? { deleted: { $eq: false } }
+  //   : undefined
 
   const filters = {
     ...defaultPrivacyFilter,
-    ...defaultDeletedFilter,
+    // ...defaultDeletedFilter,
     ...customFilterMap,
     ...filterOptions,
   }
@@ -492,11 +492,11 @@ export const getCreationsFeedCursorV2 = async (
   reply: FastifyReply,
 ) => {
   const { query } = request
-  const authUserId = request.user ? request.user.userId : undefined
+  const { userId: authUserId } = request.user
   // const currentDate = new Date()
 
   const {
-    // filters,
+    filters,
     sortOptions,
     customFilterOptions,
     // filterMap,
@@ -551,16 +551,16 @@ export const getCreationsFeedCursorV2 = async (
 
   // let embeddingsTransform: PipelineStage[] = []
   const creationFeedPipeline = [
-    //   // @ts-ignore
-    //   { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
+    // @ts-ignore
+    // { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
+    { $match: filters },
     //   ...embeddingsTransform,
     ...pipeline,
     ...lateLookupStages,
   ].filter(Boolean)
 
-  // console.log(JSON.stringify(creationFeedPipeline, null, 2))
+  console.log(JSON.stringify(creationFeedPipeline, null, 2))
 
-  // @ts-ignore
   results = await CreationV2.aggregate(creationFeedPipeline)
 
   const feed: FeedResponse = {

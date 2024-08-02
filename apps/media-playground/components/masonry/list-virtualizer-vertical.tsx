@@ -172,9 +172,7 @@ const ListVirtualizerVertical = ({
             {status === 'pending' ? (
               <LoadingIndicator />
             ) : (
-              <div className="py-3 px-4 self-center">
-                No recent tasks found.
-              </div>
+              <div className="px-4">No recent tasks found.</div>
             )}
           </div>
         ) : null}

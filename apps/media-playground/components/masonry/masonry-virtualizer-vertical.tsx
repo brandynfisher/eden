@@ -75,7 +75,7 @@ const MasonryVirtualizerVertical = ({
       // console.log({paginationRoute})
       return fetcher(paginationRoute)
     },
-    staleTime: 1000000000,
+    staleTime: 60,
     getNextPageParam: (lastPage: FeedCreationsCursorResponse) => {
       return lastPage.nextCursor ? lastPage.nextCursor : undefined
     },
@@ -189,7 +189,7 @@ const MasonryVirtualizerVertical = ({
             {status === 'pending' ? (
               <LoadingIndicator />
             ) : (
-              <div className="py-3 px-4 self-center">Nothing found.</div>
+              <div className="px-4">Nothing found.</div>
             )}
           </div>
         ) : null}

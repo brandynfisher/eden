@@ -1,11 +1,12 @@
 import { CONFIG } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
+import { auth } from '@clerk/nextjs/server'
 import axios from 'axios'
 import { type NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  // const { getToken } = auth()
-  // const authToken = await getToken()
+  const { getToken } = auth()
+  const authToken = await getToken()
 
   try {
     const searchParams = request.nextUrl.searchParams
@@ -20,6 +21,9 @@ export async function GET(request: NextRequest) {
 
     const response = await axios.get(route, {
       withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
     })
 
     return NextResponse.json(response.data)
