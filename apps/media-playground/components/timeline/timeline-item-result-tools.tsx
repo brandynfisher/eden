@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/collapsible'
 import { downloadFile, getDownloadFileName } from '@/lib/files'
 import { GeneratorOutputTypeV2, TaskV2 } from '@edenlabs/eden-sdk'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import {
   BookHeartIcon,
   ClipboardCopy,
@@ -42,25 +42,37 @@ const TimelineItemResultTools = ({
       { dismissible: true },
     )
 
-    const response = await axios.post(`/api/tasks/publish`, {
-      taskId,
-      resultUrl: originalFileUrl,
-    })
+    try {
+      const response = await axios.post(`/api/tasks/publish`, {
+        taskId,
+        resultUrl: originalFileUrl,
+      })
 
-    const responseData = response.data
+      const responseData = response.data
 
-    console.log({ responseData })
+      console.log({ responseData })
 
-    toast.success(`Published result`, {
-      id: publishToast,
-      description: 'Creation added to your profile',
-      action: {
-        label: 'Show',
-        onClick: () => console.log('Action!'),
-      },
-      dismissible: true,
-      richColors: true,
-    })
+      toast.success(`Published result`, {
+        id: publishToast,
+        description: 'Creation added to your profile',
+        action: {
+          label: 'Show',
+          // @todo: show detail page (and dismiss this toast as the default onClick here does)
+          onClick: () => console.log('Action!'),
+        },
+        dismissible: true,
+        richColors: true,
+      })
+    } catch (e: unknown) {
+      toast.error(`Failed to publish`, {
+        id: publishToast,
+        description: JSON.stringify(
+          (e as AxiosError<{ message: string }>)?.response?.data?.message,
+        ),
+        dismissible: true,
+        richColors: true,
+      })
+    }
   }
 
   return (
@@ -73,7 +85,7 @@ const TimelineItemResultTools = ({
           <Button
             variant="outline"
             size="sm"
-            title={`Re-Use configuration (${task.workflow})`}
+            title={`Publish creation to profile`}
             className="px-2 flex gap-2 items-center justify-center"
             onClick={() => publishTaskResult(task._id, originalFileUrl)}
           >

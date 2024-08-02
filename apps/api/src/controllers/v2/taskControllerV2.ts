@@ -1,4 +1,5 @@
 import { User } from '../../models/Creator'
+import { CreationV2 } from '../../models/v2/CreationV2'
 import {
   TaskV2,
   TaskV2Document,
@@ -18,6 +19,7 @@ import {
 import axios from 'axios'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 import { PipelineStage } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
@@ -682,11 +684,42 @@ export const publishTask = async (
     })
   }
 
-  console.log('publishing', taskId, resultUrl)
-
-  const creation = {
-    test: 123,
+  const taskDocument = await TaskV2.findById(taskId)
+  if (!taskDocument) {
+    return reply.status(404).send({
+      message: `Task not found`,
+    })
   }
+
+  const taskResult = taskDocument.result.filter(val => {
+    return val.url === resultUrl
+  })[0]
+
+  const existingCreation = await CreationV2.exists({
+    url: resultUrl,
+    task: taskId,
+  })
+  // @todo: verify that this creation doesn't exist yet (query for taskId + resultUrl)
+  if (existingCreation) {
+    return reply.status(409).send({
+      message: `Creation already exists`,
+    })
+  }
+
+  server.log.info('Publishing...')
+  server.log.info({ taskId, resultUrl, taskResult })
+  const creation = new CreationV2()
+
+  creation.task = new ObjectId(taskId)
+  creation.user = new ObjectId(userId)
+
+  creation.args = taskDocument.args
+  creation.mediaAttributes = taskResult.mediaAttributes
+  creation.metadata = taskResult.metadata
+  creation.url = taskResult.url
+  creation.thumbnail = taskResult.thumbnail
+
+  await creation.save()
 
   return reply.status(200).send({ creation })
 }

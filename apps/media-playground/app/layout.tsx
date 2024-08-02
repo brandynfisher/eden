@@ -44,11 +44,11 @@ export default function RootLayout({ children }: { children: ReactElement }) {
             <Header />
             {children}
           </div>
-          <Toaster expand={false} visibleToasts={9} closeButton={true} />
           {CONFIG.NEXT_PUBLIC_APP_ENV === 'production' ? (
             <GoogleTagManager gtmId={CONFIG.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
           ) : null}
         </Providers>
+        <Toaster expand={false} visibleToasts={9} closeButton={true} />
       </body>
     </html>
   )

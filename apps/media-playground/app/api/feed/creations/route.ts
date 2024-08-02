@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams
-    const route = `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/feed-cursor/creations?${searchParams.toString()}`
+    const route = `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/v2/feed-cursor/creations?${searchParams.toString()}`
     // console.log({route})
     // const eden = new EdenClient({
     //   edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
