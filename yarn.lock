@@ -15080,6 +15080,11 @@ react-joyride@^2.7.2:
     tree-changes "^0.11.2"
     type-fest "^4.15.0"
 
+react-photo-view@^1.2.6:
+  version "1.2.6"
+  resolved "https://registry.npmjs.org/react-photo-view/-/react-photo-view-1.2.6.tgz#0302ad35e4590a15a62edb271b5524f76f2777e4"
+  integrity sha512-Fq17yxkMIv0oFp7HOJr39HgCZRP6A9K5T5rixJ4flSUYT2OO3V8vNxEExjhIKgIrfmTu+mDnHYEsI9RRWi1JHw==
+
 react-player@^2.14.1:
   version "2.16.0"
   resolved "https://registry.yarnpkg.com/react-player/-/react-player-2.16.0.tgz#89070700b03f5a5ded9f0b3165d4717390796481"
