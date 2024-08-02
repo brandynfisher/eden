@@ -77,7 +77,18 @@ const MasonryVirtualizerVertical = ({
     },
     staleTime: 60,
     getNextPageParam: (lastPage: FeedCreationsCursorResponse) => {
-      return lastPage.nextCursor ? lastPage.nextCursor : undefined
+      console.log(lastPage)
+      if (
+        lastPage &&
+        lastPage?.docs?.length &&
+        lastPage.docs.length === limit
+      ) {
+        if (lastPage.nextCursor) {
+          return lastPage.nextCursor
+        }
+      }
+
+      return undefined
     },
     initialPageParam: undefined,
   })
