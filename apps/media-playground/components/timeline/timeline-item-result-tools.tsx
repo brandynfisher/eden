@@ -7,14 +7,19 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { downloadFile, getDownloadFileName } from '@/lib/files'
-import { GeneratorOutputTypeV2, TaskV2 } from '@edenlabs/eden-sdk'
-import axios, { AxiosError } from 'axios'
+import {
+  GeneratorOutputTypeV2,
+  TaskV2,
+  TasksV2PublishResponse,
+} from '@edenlabs/eden-sdk'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
   BookHeartIcon,
   ClipboardCopy,
   DownloadIcon,
   ListIcon,
 } from 'lucide-react'
+import Link from 'next/link'
 import React from 'react'
 import { toast } from 'sonner'
 
@@ -43,22 +48,27 @@ const TimelineItemResultTools = ({
     )
 
     try {
-      const response = await axios.post(`/api/tasks/publish`, {
-        taskId,
-        resultUrl: originalFileUrl,
-      })
+      const response: AxiosResponse<TasksV2PublishResponse> = await axios.post(
+        `/api/tasks/publish`,
+        {
+          taskId,
+          resultUrl: originalFileUrl,
+        },
+      )
 
       const responseData = response.data
 
       console.log({ responseData })
 
-      toast.success(`Published result`, {
+      toast.success(`Published`, {
         id: publishToast,
-        description: 'Creation added to your profile',
+        description: 'Creation was added to your profile',
         action: {
-          label: 'Show',
-          // @todo: show detail page (and dismiss this toast as the default onClick here does)
-          onClick: () => console.log('Action!'),
+          label: (
+            <Link href={`/creations/${responseData?.creation?._id}`}>Show</Link>
+          ),
+          onClick: () =>
+            console.log(`/creations/${responseData?.creation?._id}`),
         },
         dismissible: true,
         richColors: true,
