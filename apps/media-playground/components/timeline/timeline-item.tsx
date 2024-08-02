@@ -111,25 +111,25 @@ const TimelineItem = ({ item, outputType }: Props) => {
           {item.status === 'completed' &&
           item.result &&
           Array.isArray(item.result) ? (
-            item.result.map((result, index) => (
-              // task result is an array of image/video/audio URIs
-              <TimelineItemMediaResult
+            item.model === undefined ? (
+              item.result.map((result, index) => (
+                <TimelineItemMediaResult
+                  outputType={outputType}
+                  key={`${item._id}_${index}`}
+                  index={index}
+                  task={item}
+                  result={result}
+                />
+              ))
+            ) : (
+              // api populates a model property with full model document
+              <TimelineItemModelResult
+                result={item.result[0]}
                 outputType={outputType}
-                key={`${item._id}_${index}`}
-                index={index}
                 task={item}
-                result={result}
+                model={item.model as unknown as ModelV2}
               />
-            ))
-          ) : item.model !== undefined ? (
-            // task result is ObjectId of model document
-            // api populates a model property with full model document
-            <TimelineItemModelResult
-              result={item.result[0]}
-              outputType={outputType}
-              task={item}
-              model={item.model as unknown as ModelV2}
-            />
+            )
           ) : (
             <div className="text-warning">
               Unhandled result: {item.workflow} - {item._id}
