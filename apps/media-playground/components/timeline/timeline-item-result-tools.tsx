@@ -6,6 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { downloadFile, getDownloadFileName } from '@/lib/files'
 import {
   GeneratorOutputTypeV2,
@@ -18,6 +19,7 @@ import {
   BookCheckIcon,
   BookHeartIcon,
   ClipboardCopy,
+  CopyIcon,
   DownloadIcon,
   ListIcon,
 } from 'lucide-react'
@@ -40,6 +42,28 @@ const TimelineItemResultTools = ({
   fileName,
   outputType,
 }: Props) => {
+  const [copiedText, copy] = useCopyToClipboard()
+
+  const handleCopyString = (text: string) => () => {
+    copy(text)
+      .then(() => {
+        toast.success(`Copied Model Id`, {
+          description: text,
+          dismissible: true,
+          richColors: true,
+        })
+        console.log('Copied!', { copiedText })
+      })
+      .catch(error => {
+        toast.error(`Failed to copy!`, {
+          description: error,
+          dismissible: true,
+          richColors: true,
+        })
+        console.error('Failed to copy!', error)
+      })
+  }
+
   const [isPublishing, setIsPublishing] = useState(false)
   const publishTaskResult = async (taskId: string, originalFileUrl: string) => {
     console.log('publishTaskResult', taskId, originalFileUrl)
@@ -99,44 +123,56 @@ const TimelineItemResultTools = ({
     >
       <Collapsible>
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant={result.published ? 'ghost' : 'outline'}
-            size="sm"
-            title={
-              result.published
-                ? 'Creation was published'
-                : `Publish creation to profile`
-            }
-            className={`px-2 flex gap-2 items-center justify-center ${result.published ? 'cursor-default' : ''}`}
-            onClick={
-              result.published
-                ? undefined
-                : () => publishTaskResult(task._id, originalFileUrl)
-            }
-            disabled={isPublishing}
-          >
-            {result.published ? (
-              <>
-                <BookCheckIcon size={20} className="text-success" />
-                {/*Published*/}
-              </>
-            ) : isPublishing ? (
-              <>
-                <LoadingIndicator className="h-4 w-4" />
-                Publishing
-              </>
-            ) : (
-              <>
-                <BookHeartIcon size={20} />
-                Publish
-              </>
-            )}
-          </Button>
+          {outputType !== 'lora' ? (
+            <Button
+              variant={result.published ? 'ghost' : 'outline'}
+              size="sm"
+              title={
+                result.published
+                  ? 'Creation was published'
+                  : `Publish creation to profile`
+              }
+              className={`px-2 flex gap-2 items-center justify-center ${result.published ? 'cursor-default' : ''}`}
+              onClick={
+                result.published
+                  ? undefined
+                  : () => publishTaskResult(task._id, originalFileUrl)
+              }
+              disabled={isPublishing}
+            >
+              {result.published ? (
+                <>
+                  <BookCheckIcon size={20} className="text-success" />
+                  {/*Published*/}
+                </>
+              ) : isPublishing ? (
+                <>
+                  <LoadingIndicator className="h-4 w-4" />
+                  Publishing
+                </>
+              ) : (
+                <>
+                  <BookHeartIcon size={20} />
+                  Publish
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="px-2 flex gap-2 items-center justify-center"
+              onClick={handleCopyString(result.model || '')}
+            >
+              <CopyIcon size={20} />
+              Copy ID
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
-            title={`Download ${outputType}`}
             className="px-2 ml-auto"
+            title={`Download ${outputType}`}
             onClick={() =>
               downloadFile(
                 originalFileUrl,

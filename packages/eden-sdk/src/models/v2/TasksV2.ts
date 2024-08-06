@@ -43,6 +43,7 @@ export type TaskV2Result = {
   metadata?: string | null
   mediaAttributes?: MediaAttributes
   published?: boolean
+  model?: string
 }
 
 // Requests

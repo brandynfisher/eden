@@ -3,6 +3,7 @@ import '@/styles/globals.css'
 import Providers from '@/app/providers'
 import Header from '@/components/header/header'
 import { PreloadResources } from '@/components/preload-resources'
+import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Toaster } from '@/components/ui/sonner'
 import { CONFIG } from '@/lib/config'
 import { cn } from '@/lib/utils'
@@ -44,11 +45,15 @@ export default function RootLayout({ children }: { children: ReactElement }) {
             <Header />
             {children}
           </div>
+
           {CONFIG.NEXT_PUBLIC_APP_ENV === 'production' ? (
             <GoogleTagManager gtmId={CONFIG.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
-          ) : null}
+          ) : (
+            <TailwindIndicator />
+          )}
+
+          <Toaster expand={false} visibleToasts={9} closeButton={true} />
         </Providers>
-        <Toaster expand={false} visibleToasts={9} closeButton={true} />
       </body>
     </html>
   )

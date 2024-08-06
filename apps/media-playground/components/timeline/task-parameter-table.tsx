@@ -97,8 +97,9 @@ const TaskParameterTable = ({ task }: Props) => {
                       <PhotoView key={inputImageUrl} src={inputImageUrl}>
                         <Image
                           onClick={e => e.stopPropagation()}
-                          className="rounded-lg"
+                          className="rounded-lg cursor-zoom-in"
                           src={inputImageUrl}
+                          title="Click to show image in fullscreen"
                           alt={taskArg[0]}
                           width={72}
                           height={72}
