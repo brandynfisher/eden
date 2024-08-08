@@ -206,7 +206,7 @@ const TimelineItemResultTools = ({
           </CollapsibleTrigger>
         </div>
         <CollapsibleContent>
-          <ParameterTable task={task} />
+          <ParameterTable args={task.args} />
         </CollapsibleContent>
       </Collapsible>
     </div>
