@@ -154,6 +154,7 @@ export enum TaskV2Status {
   Running = 'running',
   Completed = 'completed',
   Failed = 'failed',
+  Cancelled = 'cancelled',
 }
 
 export type TaskV2Args = {

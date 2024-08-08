@@ -1,11 +1,11 @@
 import LoadingIndicator from '@/components/loading-indicator'
 import { cn } from '@/lib/utils'
-import { GeneratorOutputTypeV2, TaskV2 } from '@edenlabs/eden-sdk'
+import { GeneratorOutputTypeV2, TaskV2Status } from '@edenlabs/eden-sdk'
 import { BanIcon, HourglassIcon, TriangleAlertIcon } from 'lucide-react'
 
 type Props = {
   outputType?: GeneratorOutputTypeV2
-  status: TaskV2['status']
+  status: TaskV2Status
   hideText?: boolean
 }
 const TaskStatusBadge = ({ outputType, status, hideText }: Props) => {
