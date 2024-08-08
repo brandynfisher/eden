@@ -10,7 +10,7 @@ type Props = {
 const CreationMediaPreview = ({ creation }: Props) => {
   return (
     <div
-      className="relative flex items-center justify-center border-transparent bg-popover max-w-full max-h-[calc(100dvh_-_38px_-_64px)]"
+      className="relative flex items-center justify-center border-transparent bg-popover max-w-full max-h-[calc(100dvh_-_38px_-_64px)] rounded-lg overflow-hidden"
       style={{ aspectRatio: creation?.mediaAttributes?.aspectRatio || 1 }}
     >
       {creation.url?.endsWith('.mp4') ? (

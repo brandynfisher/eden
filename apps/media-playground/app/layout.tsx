@@ -47,8 +47,9 @@ export default function RootLayout({
         )}
       >
         <Providers>
-          <div className="relative flex min-h-screen w-full flex-col">
+          <div className="flex min-h-screen w-full flex-col">
             <Header />
+
             {children}
             {modal}
           </div>
