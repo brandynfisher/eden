@@ -1,16 +1,9 @@
 import { UserDocument } from '../Creator'
-import { TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
+import { TaskV2Args, TaskV2Result, TaskV2Status } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
-
-export enum TaskV2Status {
-  Pending = 'pending',
-  Running = 'running',
-  Completed = 'completed',
-  Failed = 'failed',
-}
 
 export interface TaskV2Schema {
   user: UserDocument

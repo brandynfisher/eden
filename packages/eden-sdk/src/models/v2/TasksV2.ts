@@ -7,7 +7,6 @@ import {
 } from '../../types'
 import { MediaAttributes } from '../Media'
 import { CreationV2 } from './CreationsV2'
-import { TaskV2Status } from 'api/src/models/v2/TaskV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -149,6 +148,13 @@ export type TasksV2PublishResponse = WebAPICallResult & {
 }
 
 // Types
+
+export enum TaskV2Status {
+  Pending = 'pending',
+  Running = 'running',
+  Completed = 'completed',
+  Failed = 'failed',
+}
 
 export type TaskV2Args = {
   // creations
