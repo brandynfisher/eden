@@ -3,7 +3,6 @@ import { CreationV2 } from '../../models/v2/CreationV2'
 import {
   TaskV2Document,
   TaskV2 as TaskV2Model,
-  TaskV2Status,
   taskSchema,
 } from '../../models/v2/TaskV2'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
@@ -11,6 +10,7 @@ import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
   PaginatedResponse,
   TaskV2,
+  TaskV2Status,
   TasksV2CancelArguments,
   TasksV2CreateArguments,
   TasksV2GetArguments,
