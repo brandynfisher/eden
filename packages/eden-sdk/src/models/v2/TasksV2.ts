@@ -7,6 +7,7 @@ import {
 } from '../../types'
 import { MediaAttributes } from '../Media'
 import { CreationV2 } from './CreationsV2'
+import { TaskV2Status } from 'api/src/models/v2/TaskV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -174,11 +175,11 @@ export type TaskV2 = {
   model?: string
   name?: string
   args: TaskV2Args
-  status: string
+  status: TaskV2Status
   error: string | null
   result: TaskV2Result[]
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface TaskV2Attributes {

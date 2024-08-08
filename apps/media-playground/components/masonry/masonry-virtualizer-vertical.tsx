@@ -75,7 +75,7 @@ const MasonryVirtualizerVertical = ({
       // console.log({paginationRoute})
       return fetcher(paginationRoute)
     },
-    staleTime: 60,
+    staleTime: 60000,
     getNextPageParam: (lastPage: FeedCreationsCursorResponse) => {
       // console.log(lastPage)
       if (

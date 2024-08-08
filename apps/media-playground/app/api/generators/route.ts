@@ -21,7 +21,15 @@ export async function GET(request: NextRequest) {
     }
 
     const res = await eden.generators.listV2(query)
-    return Response.json({ generators: res.generators })
+
+    if (!res || !res.generators) {
+      return NextResponse
+    }
+
+    const publicGenerators = res?.generators?.filter(
+      generator => !generator.private,
+    )
+    return NextResponse.json({ generators: publicGenerators })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

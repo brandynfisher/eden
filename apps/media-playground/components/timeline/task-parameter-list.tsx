@@ -30,7 +30,11 @@ const TaskParameterList = ({ task }: Props) => {
           value={`${width} x ${height}`}
         />
       ) : null}
-      <TaskParameter name={'createdAt'} label={'Date'} value={task.createdAt} />
+      <TaskParameter
+        name={'createdAt'}
+        label={'Date'}
+        value={task.createdAt.toLocaleDateString()}
+      />
     </div>
   )
 }

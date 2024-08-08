@@ -191,6 +191,8 @@ import {
   tasksListRequestConfig,
 } from './models'
 import {
+  CreationsV2GetArguments,
+  CreationsV2GetResponse,
   GeneratorsGetArgumentsV2,
   GeneratorsGetResponseV2,
   GeneratorsListArgumentsV2,
@@ -205,6 +207,7 @@ import {
   TasksV2ListResponse,
   TasksV2PublishArguments,
   TasksV2PublishResponse,
+  creationsV2GetRequestConfig,
   generatorsGetRequestConfigV2,
   generatorsListRequestConfigV2,
   tasksV2CancelRequestConfig,
@@ -411,6 +414,10 @@ export abstract class Methods {
     get: bindApiCall<CreationsGetArguments, CreationsGetResponse>(
       this,
       creationsGetRequestConfig,
+    ),
+    getV2: bindApiCall<CreationsV2GetArguments, CreationsV2GetResponse>(
+      this,
+      creationsV2GetRequestConfig,
     ),
     react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
       this,

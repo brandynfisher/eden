@@ -1,5 +1,5 @@
 import LoadingIndicator from '@/components/loading-indicator'
-import TaskParameterTable from '@/components/timeline/task-parameter-table'
+import ParameterTable from '@/components/timeline/parameter-table'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -47,7 +47,7 @@ const TimelineItemResultTools = ({
   const handleCopyString = (text: string) => () => {
     copy(text)
       .then(() => {
-        toast.success(`Copied Model Id`, {
+        toast.success(`Copied Model ID`, {
           description: text,
           dismissible: true,
           richColors: true,
@@ -60,7 +60,6 @@ const TimelineItemResultTools = ({
           dismissible: true,
           richColors: true,
         })
-        console.error('Failed to copy!', error)
       })
   }
 
@@ -132,7 +131,9 @@ const TimelineItemResultTools = ({
                   ? 'Creation was published'
                   : `Publish creation to profile`
               }
-              className={`px-2 flex gap-2 items-center justify-center ${result.published ? 'cursor-default' : ''}`}
+              className={`px-2 flex gap-2 items-center justify-center ${
+                result.published ? 'cursor-default' : ''
+              }`}
               onClick={
                 result.published
                   ? undefined
@@ -205,7 +206,7 @@ const TimelineItemResultTools = ({
           </CollapsibleTrigger>
         </div>
         <CollapsibleContent>
-          <TaskParameterTable task={task} />
+          <ParameterTable task={task} />
         </CollapsibleContent>
       </Collapsible>
     </div>

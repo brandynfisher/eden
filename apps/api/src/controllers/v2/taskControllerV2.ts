@@ -1,8 +1,8 @@
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
 import {
-  TaskV2,
   TaskV2Document,
+  TaskV2 as TaskV2Model,
   TaskV2Status,
   taskSchema,
 } from '../../models/v2/TaskV2'
@@ -10,6 +10,7 @@ import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
   PaginatedResponse,
+  TaskV2,
   TasksV2CancelArguments,
   TasksV2CreateArguments,
   TasksV2GetArguments,
@@ -157,7 +158,7 @@ export const listTasks = async (
   //     }
   //   : {}
 
-  const tasksRepository = new TaskV2Repository(TaskV2)
+  const tasksRepository = new TaskV2Repository(TaskV2Model)
   const query: TasksV2ListArguments = {
     user: user._id.toString(),
     // createdAt: {
@@ -233,7 +234,7 @@ export const listTasks = async (
     ]
 
     tasks = await tasksRepository.aggregateQuery(
-      TaskV2.aggregate(pipelines),
+      TaskV2Model.aggregate(pipelines),
       queryOptions,
     )
   } else {
@@ -266,7 +267,7 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
   taskSchema.set('toObject', { virtuals: true })
   taskSchema.set('toJSON', { virtuals: true })
 
-  const task = await TaskV2.findOne({ _id: taskId, user: userId }).select(
+  const task = await TaskV2Model.findOne({ _id: taskId, user: userId }).select(
     '-args.lora_training_urls',
   )
 
@@ -274,7 +275,7 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
   //   path: 'creation',
   // })
 
-  await TaskV2.populate(task, {
+  await TaskV2Model.populate(task, {
     path: 'model',
     select: '-args.lora_training_urls',
   })
@@ -684,7 +685,7 @@ export const publishTaskResult = async (
     })
   }
 
-  const taskDocument = await TaskV2.findById(taskId)
+  const taskDocument = await TaskV2Model.findById(taskId)
   if (!taskDocument) {
     return reply.status(404).send({
       message: `Task not found`,

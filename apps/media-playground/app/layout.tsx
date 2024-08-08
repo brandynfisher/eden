@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { Metadata } from 'next'
 import { Inter as FontSans } from 'next/font/google'
-import { ReactElement } from 'react'
+import { ReactNode } from 'react'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -30,7 +30,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: ReactElement }) {
+export default function RootLayout({
+  children,
+  modal,
+}: {
+  children: ReactNode
+  modal: ReactNode
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <PreloadResources />
@@ -41,9 +47,10 @@ export default function RootLayout({ children }: { children: ReactElement }) {
         )}
       >
         <Providers>
-          <div className="flex min-h-screen w-full flex-col">
+          <div className="relative flex min-h-screen w-full flex-col">
             <Header />
             {children}
+            {modal}
           </div>
 
           {CONFIG.NEXT_PUBLIC_APP_ENV === 'production' ? (
@@ -52,6 +59,7 @@ export default function RootLayout({ children }: { children: ReactElement }) {
             <TailwindIndicator />
           )}
 
+          <div id="modal-root" />
           <Toaster expand={false} visibleToasts={9} closeButton={true} />
         </Providers>
       </body>

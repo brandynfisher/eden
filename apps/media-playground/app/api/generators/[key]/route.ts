@@ -43,7 +43,7 @@ export async function GET(
     const transformedParameters = res.generator?.parameters
       ? replaceNullWithUndefined(res.generator?.parameters)
       : []
-    return Response.json({
+    return NextResponse.json({
       generator: { ...res.generator, parameters: transformedParameters },
     })
   } catch (error) {

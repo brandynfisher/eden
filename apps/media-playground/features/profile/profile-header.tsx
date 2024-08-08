@@ -9,26 +9,27 @@ import Image from 'next/image'
 
 type Props = {
   name: string
-  creatorInitData: Creator
+  creatorSSRData: Creator
 }
 
-const ProfileHeader = ({ name, creatorInitData }: Props) => {
+const ProfileHeader = ({ name, creatorSSRData }: Props) => {
   const { user } = useAuthState()
-  const { creator } = useCreatorQuery({
+  const { creator: creatorClientData } = useCreatorQuery({
     key: name,
     initialData: {
-      creator: creatorInitData,
+      creator: creatorSSRData,
     },
   })
-  const currentData = creatorInitData || creator
+
+  const creator = creatorSSRData || creatorClientData
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="rounded-full overflow-hidden w-fit border-popover-foreground border-2">
           <Image
-            src={currentData.userImage || ''}
-            alt={currentData.username || ''}
+            src={creator.userImage || ''}
+            alt={creator.username || ''}
             width={96}
             height={96}
           />
@@ -36,6 +37,7 @@ const ProfileHeader = ({ name, creatorInitData }: Props) => {
         <div>
           <TypographyH3>{name}</TypographyH3>
           <div>
+            <div>debug</div>
             {user?._id === creator?._id ? (
               <Badge variant={'destructive'}>authed profile</Badge>
             ) : (
@@ -44,22 +46,6 @@ const ProfileHeader = ({ name, creatorInitData }: Props) => {
           </div>
         </div>
       </div>
-
-      {/*<div className="flex flex-col gap-4 mt-6">*/}
-      {/*  <TypographyH4>clientQuery data</TypographyH4>*/}
-      {/*  <code>*/}
-      {/*    <pre className="font-mono bg-popover overflow-scroll">*/}
-      {/*      {JSON.stringify(creator, null, 2)}*/}
-      {/*    </pre>*/}
-      {/*  </code>*/}
-
-      {/*  <TypographyH4>SSR Init</TypographyH4>*/}
-      {/*  <code>*/}
-      {/*    <pre className="font-mono bg-popover overflow-scroll">*/}
-      {/*      {JSON.stringify(creatorInitData, null, 2)}*/}
-      {/*    </pre>*/}
-      {/*  </code>*/}
-      {/*</div>*/}
     </div>
   )
 }

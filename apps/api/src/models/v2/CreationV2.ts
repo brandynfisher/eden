@@ -1,7 +1,11 @@
 import { TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 export interface CreationV2Schema extends TaskV2Result {
@@ -10,6 +14,7 @@ export interface CreationV2Schema extends TaskV2Result {
   args: TaskV2Args
   createdAt: Date
   updatedAt: Date
+  isPrivate?: boolean
 }
 
 export interface CreationV2Input extends TaskV2Result {
@@ -18,16 +23,9 @@ export interface CreationV2Input extends TaskV2Result {
   args: TaskV2Args
 }
 
-export interface CreationV2Document extends CreationV2Schema, Document {}
-
-export type CreationV2 = TaskV2Result & {
-  _id: string
-  user: ObjectId
-  task: ObjectId
-  args: TaskV2Args
-  createdAt: Date
-  updatedAt: Date
-}
+export interface CreationV2Document
+  extends SoftDeleteDocument,
+    CreationV2Schema {}
 
 export const creationSchema = new Schema<CreationV2Document>(
   {
@@ -79,6 +77,14 @@ export const creationSchema = new Schema<CreationV2Document>(
         type: Number,
       },
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -89,8 +95,11 @@ creationSchema.index({ createdAt: -1 })
 creationSchema.index({ user: 1, task: -1, createdAt: -1 })
 creationSchema.plugin(paginate)
 creationSchema.plugin(aggregatePaginate)
+creationSchema.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 
 export const CreationV2 = model<CreationV2Document>(
   'creations2',
   creationSchema,
-)
+) as SoftDeleteModel<CreationV2Document>

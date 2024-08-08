@@ -1,10 +1,11 @@
+import LoadingIndicator from '@/components/loading-indicator'
 import ProfileHeader from '@/features/profile/profile-header'
 import ProfileTabs from '@/features/profile/profile-tabs'
 import { fetcher } from '@/lib/fetcher'
 import { CreatorsGetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
-import { cache } from 'react'
+import { Suspense, cache } from 'react'
 
 type Props = {
   params: {
@@ -68,9 +69,10 @@ const CreatorProfilePage = async ({ params: { name } }: Props) => {
 
   return (
     <>
-      <ProfileHeader name={name} creatorInitData={creatorResponse.creator} />
-      {/*<ProfileTabs creator={creatorResponse.creator} />*/}
-      <ProfileTabs />
+      <ProfileHeader name={name} creatorSSRData={creatorResponse.creator} />
+      <Suspense fallback={<LoadingIndicator />}>
+        <ProfileTabs />
+      </Suspense>
     </>
   )
 }

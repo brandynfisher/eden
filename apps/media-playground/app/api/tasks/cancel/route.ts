@@ -35,7 +35,7 @@ const cancelTask = async (taskId: TaskV2['_id'], eden: EdenClient) => {
         )
       }
 
-      return Response.json({ status: response.taskStatus })
+      return NextResponse.json({ status: response.taskStatus })
     })
     .catch(error => {
       return new NextResponse(

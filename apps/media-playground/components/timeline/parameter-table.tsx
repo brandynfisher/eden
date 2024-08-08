@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
-import { TaskV2 } from '@edenlabs/eden-sdk'
+import { TaskV2Args } from '@edenlabs/eden-sdk'
 import { InfoIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
 import Image from 'next/image'
 import React from 'react'
@@ -17,7 +17,7 @@ import { PhotoProvider, PhotoView } from 'react-photo-view'
 import { toast } from 'sonner'
 
 type Props = {
-  task: TaskV2
+  args: TaskV2Args
 }
 
 const imageInputParameterNames = [
@@ -32,7 +32,7 @@ const imageInputParameterNames = [
 
 const videoInputParameterNames = ['video']
 
-const TaskParameterTable = ({ task }: Props) => {
+const ParameterTable = ({ args }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
 
   const handleCopyString = (parameterName: string, text: string) => () => {
@@ -51,7 +51,6 @@ const TaskParameterTable = ({ task }: Props) => {
           dismissible: true,
           richColors: true,
         })
-        console.error('Failed to copy!', error)
       })
   }
 
@@ -74,7 +73,7 @@ const TaskParameterTable = ({ task }: Props) => {
         </TableRow>
       </TableHeader>
       <TableBody className="bg-popover/20">
-        {Object.entries(task.args).map(taskArg => (
+        {Object.entries(args).map(taskArg => (
           <PhotoProvider key={taskArg[0]}>
             <TableRow
               className="cursor-pointer text-xs flex flex-col md:table-row"
@@ -140,4 +139,4 @@ const TaskParameterTable = ({ task }: Props) => {
   )
 }
 
-export default TaskParameterTable
+export default ParameterTable

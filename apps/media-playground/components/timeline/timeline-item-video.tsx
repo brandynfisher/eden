@@ -30,7 +30,7 @@ const TimelineItemVideo = ({ width, height, videoUrl, posterUrl }: Props) => {
       autoPlay={false}
       controlsList={'nodownload'}
       onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
-      className="w-full h-full"
+      className="w-full h-full outline-none"
       width={width || 1024}
       height={height || 1024}
       preload={'none'}

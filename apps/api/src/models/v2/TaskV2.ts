@@ -38,18 +38,6 @@ export interface TaskV2Input {
 
 export interface TaskV2Document extends TaskV2Schema, Document {}
 
-export type TaskV2 = {
-  _id: string
-  user: string
-  workflow: string
-  args: TaskV2Args
-  status: TaskV2Status
-  error: string | null
-  result: TaskV2Result[]
-  createdAt: Date
-  updatedAt: Date
-}
-
 export const taskSchema = new Schema<TaskV2Document>(
   {
     user: {

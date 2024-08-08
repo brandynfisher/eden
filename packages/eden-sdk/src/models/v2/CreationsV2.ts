@@ -5,9 +5,11 @@ import {
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../../types'
+import { ReactionType } from '../Creations'
 import { Creator } from '../Creators'
-import { MediaAttributes } from '../Media'
+import { TaskV2Args, TaskV2Result } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
+import { ObjectId } from 'mongodb'
 
 // Arguments
 
@@ -48,7 +50,7 @@ export interface CreationsV2UpdateArguments extends WebAPICallOptions {
 
 // Requests
 
-export const creationsListRequestConfig = (
+export const creationsV2ListRequestConfig = (
   args: CreationsV2ListArguments,
 ): AxiosRequestConfig => {
   const params = transformArgsIntoURLParams(args)
@@ -59,7 +61,7 @@ export const creationsListRequestConfig = (
   }
 }
 
-export const creationsGetRequestConfig = (
+export const creationsV2GetRequestConfig = (
   args: CreationsV2GetArguments,
 ): AxiosRequestConfig => {
   return {
@@ -68,7 +70,7 @@ export const creationsGetRequestConfig = (
   }
 }
 
-export const creationsReactRequestConfig = (
+export const creationsV2ReactRequestConfig = (
   args: CreationsV2ReactArguments,
 ): AxiosRequestConfig => {
   return {
@@ -80,7 +82,7 @@ export const creationsReactRequestConfig = (
   }
 }
 
-export const creationsUnreactRequestConfig = (
+export const creationsV2UnreactRequestConfig = (
   args: CreationsV2UnreactArguments,
 ): AxiosRequestConfig => {
   return {
@@ -92,7 +94,7 @@ export const creationsUnreactRequestConfig = (
   }
 }
 
-export const creationsUpdateRequestConfig = (
+export const creationsV2UpdateRequestConfig = (
   args: CreationsV2UpdateArguments,
 ): AxiosRequestConfig => {
   return {
@@ -104,7 +106,7 @@ export const creationsUpdateRequestConfig = (
   }
 }
 
-export const creationsDeleteRequestConfig = (
+export const creationsV2DeleteRequestConfig = (
   args: CreationsV2DeleteArguments,
 ): AxiosRequestConfig => {
   return {
@@ -150,50 +152,18 @@ export type CreationsV2DeleteResponse = WebAPICallResult & {
 }
 
 // Types
-
-export type Reactions = Record<string, boolean>
-
-export type CreationV2 = {
+export type CreationV2 = TaskV2Result & {
   _id: string
   user: Creator
-  character?: string
-  userId?: string
-  task: string
-  samples?: string[]
-  parent?: string
-  delegateUser?: string
-  delegateHasClaimed?: boolean
-  uri: string
-  mediaUri?: string
-  thumbnail?: string
-  name: string
-  attributes: CreationV2Attributes
-  mediaAttributes: MediaAttributes
-  creationCount?: number
-  praiseCount?: number
-  bookmarkCount?: number
-  bookmarked?: boolean
-  reactions?: Reactions
-  deleted?: boolean
+  task: ObjectId
+  args: TaskV2Args
+  createdAt: Date
+  updatedAt: Date
+  deleted: boolean
   isPrivate?: boolean
-  createdAt: string
-  updatedAt: string
 }
 
 export interface CreationV2Attributes {
   nsfw_score?: number
   interrogation?: string
-}
-
-export enum ReactionType {
-  Praise = 'praise',
-}
-
-export enum MediaType {
-  Image = 'image',
-  Video = 'video',
-  Text = 'text',
-  Audio = 'audio',
-  Zip = 'zip',
-  Unknown = 'unknown',
 }

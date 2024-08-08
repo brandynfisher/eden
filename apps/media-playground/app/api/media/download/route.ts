@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     )
 
     const { signedUrl } = response.data
-    return Response.json({ signedUrl })
+    return NextResponse.json({ signedUrl })
   } catch (error) {
     console.log(error)
     const errorMessage = handleAxiosServerError(error)

@@ -15,12 +15,12 @@ export const fetcher = async <T>(
   const response = await fetch(...args)
 
   if (!response.ok) {
-    // console.log(
-    //   response.url,
-    //   response.status,
-    //   response.statusText,
-    //   response.headers,
-    // )
+    console.log(
+      response.url,
+      response.status,
+      response.statusText,
+      response.headers,
+    )
     throw new Error('Network response was not ok')
   }
 
