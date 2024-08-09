@@ -19,6 +19,7 @@ import {
 import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { PhotoProvider, PhotoView } from 'react-photo-view'
 import Truncate from 'react-truncate-inside/es'
 import { toast } from 'sonner'
 
@@ -481,98 +482,100 @@ const FileUploader = ({
             <div>(max. {maxFiles})</div>
           </div>
           <div className="space-y-2">
-            {uploadedFiles.length > 0 &&
-              uploadedFiles.map(file => {
-                return (
-                  <div
-                    key={file.lastModified}
-                    className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group"
-                  >
-                    <div className="flex items-center pl-2 h-20">
-                      <div className="relative text-white rounded overflow-hidden shrink-0 mr-2">
-                        {file.preview ? (
-                          <>
-                            {file.type.startsWith('image') ? (
-                              <Image
-                                src={file.preview}
-                                alt={file.preview}
-                                height={72}
-                                width={72}
-                                // objectFit={'cover'}
-                                onLoad={() =>
-                                  URL.revokeObjectURL(file.preview || '')
-                                }
-                                className="object-contain w-full h-[64px]"
-                              />
-                            ) : (
-                              <PreviewVideoPlayer
-                                src={file.preview}
-                                width={72}
-                                height={72}
-                                onLoad={() =>
-                                  URL.revokeObjectURL(file.preview || '')
-                                }
-                                className="object-contain w-full h-[64px]"
-                              />
-                              // <video
-                              //   src={file.preview}
-                              //   controls={false}
-                              //   width={64}
-                              //   height={64}
-                              //   controlsList={'nodownload'}
-                              //   className="object-contain self-center w-full h-[64px]"
-                              //   onContextMenu={(e: React.MouseEvent) =>
-                              //     e.preventDefault()
-                              //   }
-                              //   onLoad={() =>
-                              //     URL.revokeObjectURL(file.preview || '')
-                              //   }
-                              // />
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {
-                              getFileIconAndColor(
-                                getTypeByMimeType(file.type as MimeType),
-                              ).icon
-                            }
-                          </>
-                        )}
-                      </div>
-                      <div className="space-y-1 max-w-[120px] md:max-w-[217px]">
-                        <div className="text-sm text-muted-foreground">
-                          <Truncate text={file.name} />
-                        </div>
-                        <div className="text-xs text-muted-foreground/70">
-                          {file.dimensions ? (
-                            <div>
-                              {file.dimensions?.width}
-                              <span> x </span>
-                              {file.dimensions?.height}
-                            </div>
-                          ) : null}
-                          {file.size ? (
-                            <div>
-                              {convertBytes(file.size, {
-                                useBinaryUnits: false,
-                                decimals: 2,
-                              })}
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeFile(file)}
-                      className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
+            <PhotoProvider>
+              {uploadedFiles.length > 0 &&
+                uploadedFiles.map(file => {
+                  return (
+                    <div
+                      key={file.lastModified}
+                      className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group"
                     >
-                      <X size={20} />
-                    </button>
-                  </div>
-                )
-              })}
-
+                      <div className="flex items-center pl-2 h-20">
+                        <div className="relative text-white rounded overflow-hidden shrink-0 mr-2">
+                          {file.preview ? (
+                            <>
+                              {file.type.startsWith('image') ? (
+                                <PhotoView src={file.fileUrl}>
+                                  <Image
+                                    src={file.preview}
+                                    alt={file.preview}
+                                    height={72}
+                                    width={72}
+                                    onLoad={() =>
+                                      URL.revokeObjectURL(file.preview || '')
+                                    }
+                                    className="object-contain w-full h-[64px] cursor-zoom-in"
+                                  />
+                                </PhotoView>
+                              ) : (
+                                <PreviewVideoPlayer
+                                  src={file.preview}
+                                  width={72}
+                                  height={72}
+                                  onLoad={() =>
+                                    URL.revokeObjectURL(file.preview || '')
+                                  }
+                                  className="object-contain w-full h-[64px]"
+                                />
+                                // <video
+                                //   src={file.preview}
+                                //   controls={false}
+                                //   width={64}
+                                //   height={64}
+                                //   controlsList={'nodownload'}
+                                //   className="object-contain self-center w-full h-[64px]"
+                                //   onContextMenu={(e: React.MouseEvent) =>
+                                //     e.preventDefault()
+                                //   }
+                                //   onLoad={() =>
+                                //     URL.revokeObjectURL(file.preview || '')
+                                //   }
+                                // />
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {
+                                getFileIconAndColor(
+                                  getTypeByMimeType(file.type as MimeType),
+                                ).icon
+                              }
+                            </>
+                          )}
+                        </div>
+                        <div className="space-y-1 max-w-[120px] md:max-w-[217px]">
+                          <div className="text-sm text-muted-foreground">
+                            <Truncate text={file.name} />
+                          </div>
+                          <div className="text-xs text-muted-foreground/70">
+                            {file.dimensions ? (
+                              <div>
+                                {file.dimensions?.width}
+                                <span> x </span>
+                                {file.dimensions?.height}
+                              </div>
+                            ) : null}
+                            {file.size ? (
+                              <div>
+                                {convertBytes(file.size, {
+                                  useBinaryUnits: false,
+                                  decimals: 2,
+                                })}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeFile(file)}
+                        className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                  )
+                })}
+            </PhotoProvider>
             {filesToUpload.length > 0 &&
               filesToUpload.map(fileUploadProgress => {
                 return (
