@@ -3,7 +3,7 @@
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { uploadFileToS3 } from '@/lib/files'
+import { convertBytes, uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
@@ -544,13 +544,23 @@ const FileUploader = ({
                         <div className="text-sm text-muted-foreground">
                           <Truncate text={file.name} />
                         </div>
-                        {file.dimensions ? (
-                          <div className="text-xs text-muted-foreground">
-                            {file.dimensions?.width}
-                            <span> x </span>
-                            {file.dimensions?.height}
-                          </div>
-                        ) : null}
+                        <div className="text-xs text-muted-foreground/70">
+                          {file.dimensions ? (
+                            <div>
+                              {file.dimensions?.width}
+                              <span> x </span>
+                              {file.dimensions?.height}
+                            </div>
+                          ) : null}
+                          {file.size ? (
+                            <div>
+                              {convertBytes(file.size, {
+                                useBinaryUnits: false,
+                                decimals: 2,
+                              })}
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                     <button
