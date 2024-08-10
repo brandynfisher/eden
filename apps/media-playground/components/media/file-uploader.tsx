@@ -469,36 +469,38 @@ const FileUploader = ({
   return (
     <div className="flex-grow">
       <div>
-        <label
-          {...getRootProps()}
-          className={cn(
-            'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card',
-            supportsVideo ? VideoColor.borderColor : '',
-            supportsImage ? ImageColor.borderColor : '',
-            supportsAny ? OtherColor.borderColor : '',
-          )}
-        >
-          <div className="text-center">
-            <div className=" border p-2 rounded-md max-w-min mx-auto">
-              <UploadCloud size={20} />
-            </div>
+        {uploadedFiles.length + filesToUpload.length < (maxFiles || 1) ? (
+          <label
+            {...getRootProps()}
+            className={cn(
+              'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card',
+              supportsVideo ? VideoColor.borderColor : '',
+              supportsImage ? ImageColor.borderColor : '',
+              supportsAny ? OtherColor.borderColor : '',
+            )}
+          >
+            <div className="text-center">
+              <div className=" border p-2 rounded-md max-w-min mx-auto">
+                <UploadCloud size={20} />
+              </div>
 
-            <div className="mt-2 text-sm text-muted-foreground">
-              <span className="font-semibold">
-                Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
-                {typeWordPluralised}
-              </span>
+              <div className="mt-2 text-sm text-muted-foreground">
+                <span className="font-semibold">
+                  Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
+                  {typeWordPluralised}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Click here or drop files to upload
+                {/*&#40;files should be under xx MB &#41;*/}
+              </div>
+              {/*<div className='text-xs text-muted-foreground'>*/}
+              {/*  {allowedFileTypes?.join(', ')} | (*/}
+              {/*  {allowedFileMimeTypes.join(', ')})*/}
+              {/*</div>*/}
             </div>
-            <div className="text-xs text-muted-foreground">
-              Click here or drop files to upload
-              {/*&#40;files should be under xx MB &#41;*/}
-            </div>
-            {/*<div className='text-xs text-muted-foreground'>*/}
-            {/*  {allowedFileTypes?.join(', ')} | (*/}
-            {/*  {allowedFileMimeTypes.join(', ')})*/}
-            {/*</div>*/}
-          </div>
-        </label>
+          </label>
+        ) : null}
 
         <Input
           {...getInputProps()}
