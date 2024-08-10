@@ -19,7 +19,7 @@ import {
   FileImage,
   FolderArchive,
   GripVerticalIcon,
-  UploadCloud,
+  UploadCloudIcon,
   Video,
   X,
 } from 'lucide-react'
@@ -473,23 +473,21 @@ const FileUploader = ({
           <label
             {...getRootProps()}
             className={cn(
-              'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card',
+              'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card hover:brightness-110',
               supportsVideo ? VideoColor.borderColor : '',
               supportsImage ? ImageColor.borderColor : '',
               supportsAny ? OtherColor.borderColor : '',
             )}
           >
             <div className="text-center">
-              <div className=" border p-2 rounded-md max-w-min mx-auto">
-                <UploadCloud size={20} />
-              </div>
-
-              <div className="mt-2 text-sm text-muted-foreground">
-                <span className="font-semibold">
+              <div className="flex items-center justify-center">
+                <UploadCloudIcon className="mr-2 h-4 w-4" />
+                <div className="text-sm text-muted-foreground font-semibold">
                   Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
                   {typeWordPluralised}
-                </span>
+                </div>
               </div>
+
               <div className="text-xs text-muted-foreground">
                 Click here or drop files to upload
                 {/*&#40;files should be under xx MB &#41;*/}
@@ -573,7 +571,7 @@ const FileUploader = ({
                                             file.preview || '',
                                           )
                                         }
-                                        className="object-contain w-full h-[64px] cursor-zoom-in"
+                                        className="object-contain w-full h-[64px] cursor-zoom-in hover:brightness-105"
                                       />
                                     </PhotoView>
                                   ) : (
@@ -584,7 +582,7 @@ const FileUploader = ({
                                       onLoad={() =>
                                         URL.revokeObjectURL(file.preview || '')
                                       }
-                                      className="object-contain w-full h-[64px]"
+                                      className="object-contain w-full h-[64px] hover:brightness-105"
                                     />
                                     // <video
                                     //   src={file.preview}

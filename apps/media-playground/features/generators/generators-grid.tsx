@@ -22,7 +22,7 @@ const GridSection = ({ title, generators }: Props) => {
                 key={generator.key}
                 title={generator.name}
                 description={generator.description}
-                image={`/images/generators/${generator.key}.jpeg`}
+                image={`/images/generators/${generator.key}.${generator.outputType === 'video' ? 'mp4' : 'jpeg'}`}
                 link={`/${generator.outputType === 'lora' ? 'train' : `create/${generator.outputType}`}/${generator.key}`}
               />
             ))}

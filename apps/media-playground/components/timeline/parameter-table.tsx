@@ -96,7 +96,7 @@ const ParameterTable = ({ args }: Props) => {
                       <PhotoView key={inputImageUrl} src={inputImageUrl}>
                         <Image
                           onClick={e => e.stopPropagation()}
-                          className="rounded-lg cursor-zoom-in"
+                          className="rounded-lg cursor-zoom-in hover:brightness-105"
                           src={inputImageUrl}
                           title="Click to show image in fullscreen"
                           alt={taskArg[0]}
@@ -118,6 +118,7 @@ const ParameterTable = ({ args }: Props) => {
                         src={inputVideoUrl}
                         width={72}
                         height={72}
+                        className="hover:brightness-105"
                       />
                     ))}
                   </div>
