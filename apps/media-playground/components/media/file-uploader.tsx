@@ -1,17 +1,24 @@
 'use client'
 
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
+import {
+  Sortable,
+  SortableDragHandle,
+  SortableItem,
+} from '@/components/ui/custom/sortable'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { convertBytes, uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
+import { arrayMove } from '@dnd-kit/sortable'
 import axios, { AxiosError, AxiosProgressEvent, CancelTokenSource } from 'axios'
 import {
   AudioWaveform,
   BanIcon,
   FileImage,
   FolderArchive,
+  GripVerticalIcon,
   UploadCloud,
   Video,
   X,
@@ -442,6 +449,23 @@ const FileUploader = ({
     ?.map(type => `${type}${allowMultiple ? 's' : ''}`)
     .join(',')
 
+  const handleMove = (activeIndex: number, overIndex: number) => {
+    // console.log('handleMove', { activeIndex, overIndex })
+
+    const previousUrls = uploadedFiles
+      .map(prevFile => prevFile.fileUrl || '')
+      .filter(Boolean)
+
+    setUploadedFiles(arrayMove(uploadedFiles, activeIndex, overIndex))
+
+    setTimeout(() => {
+      // const oldOrder = previousUrls
+      const newOrder = arrayMove(previousUrls, activeIndex, overIndex)
+      // console.log({oldOrder, newOrder})
+      onChange(newOrder)
+    }, 0)
+  }
+
   return (
     <div className="flex-grow">
       <div>
@@ -496,98 +520,130 @@ const FileUploader = ({
           </div>
           <div className="space-y-2">
             <PhotoProvider>
-              {uploadedFiles.length > 0 &&
-                uploadedFiles.map(file => {
-                  return (
-                    <div
-                      key={file.lastModified}
-                      className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group"
-                    >
-                      <div className="flex items-center pl-2 h-20">
-                        <div className="relative text-white rounded overflow-hidden shrink-0 mr-2">
-                          {file.preview ? (
-                            <>
-                              {file.type.startsWith('image') ? (
-                                <PhotoView src={file.fileUrl}>
-                                  <Image
-                                    src={file.preview}
-                                    alt={file.preview}
-                                    height={72}
-                                    width={72}
-                                    onLoad={() =>
-                                      URL.revokeObjectURL(file.preview || '')
-                                    }
-                                    className="object-contain w-full h-[64px] cursor-zoom-in"
-                                  />
-                                </PhotoView>
-                              ) : (
-                                <PreviewVideoPlayer
-                                  src={file.preview}
-                                  width={72}
-                                  height={72}
-                                  onLoad={() =>
-                                    URL.revokeObjectURL(file.preview || '')
-                                  }
-                                  className="object-contain w-full h-[64px]"
-                                />
-                                // <video
-                                //   src={file.preview}
-                                //   controls={false}
-                                //   width={64}
-                                //   height={64}
-                                //   controlsList={'nodownload'}
-                                //   className="object-contain self-center w-full h-[64px]"
-                                //   onContextMenu={(e: React.MouseEvent) =>
-                                //     e.preventDefault()
-                                //   }
-                                //   onLoad={() =>
-                                //     URL.revokeObjectURL(file.preview || '')
-                                //   }
-                                // />
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              {
-                                getFileIconAndColor(
-                                  getTypeByMimeType(file.type as MimeType),
-                                ).icon
-                              }
-                            </>
-                          )}
-                        </div>
-                        <div className="space-y-1 max-w-[120px] md:max-w-[217px]">
-                          <div className="text-sm text-muted-foreground">
-                            <Truncate text={file.name} />
-                          </div>
-                          <div className="text-xs text-muted-foreground/70">
-                            {file.dimensions ? (
-                              <div>
-                                {file.dimensions?.width}
-                                <span> x </span>
-                                {file.dimensions?.height}
-                              </div>
-                            ) : null}
-                            {file.size ? (
-                              <div>
-                                {convertBytes(file.size, {
-                                  useBinaryUnits: false,
-                                  decimals: 2,
-                                })}
-                              </div>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => removeFile(file)}
-                        className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
+              <Sortable
+                value={uploadedFiles.map(file => ({
+                  id: `${file.name}_${file.lastModified}`,
+                }))}
+                onMove={({ activeIndex, overIndex }) =>
+                  handleMove(activeIndex, overIndex)
+                }
+                // overlay={
+                //   <div className='grid grid-cols-[0.5fr,1fr,auto,auto] items-center gap-2'>
+                //     <div className='h-8 w-full rounded-sm bg-primary/10' />
+                //     <div className='h-8 w-full rounded-sm bg-primary/10' />
+                //     <div className='size-8 shrink-0 rounded-sm bg-primary/10' />
+                //     <div className='size-8 shrink-0 rounded-sm bg-primary/10' />
+                //   </div>
+                // }
+              >
+                {uploadedFiles.length > 0 &&
+                  uploadedFiles.map(file => {
+                    return (
+                      <SortableItem
+                        key={`${file.name}_${file.lastModified}`}
+                        value={`${file.name}_${file.lastModified}`}
+                        asChild
                       >
-                        <X size={20} />
-                      </button>
-                    </div>
-                  )
-                })}
+                        <div className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group">
+                          <div className="flex items-center pl-2 h-20">
+                            {maxFiles && maxFiles > 1 ? (
+                              <SortableDragHandle
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="size-8 shrink-0 mr-4"
+                              >
+                                <GripVerticalIcon aria-hidden="true" />
+                              </SortableDragHandle>
+                            ) : null}
+                            <div className="relative text-white rounded overflow-hidden shrink-0 mr-2">
+                              {file.preview ? (
+                                <>
+                                  {file.type.startsWith('image') ? (
+                                    <PhotoView src={file.fileUrl}>
+                                      <Image
+                                        src={file.preview}
+                                        alt={file.preview}
+                                        height={72}
+                                        width={72}
+                                        onLoad={() =>
+                                          URL.revokeObjectURL(
+                                            file.preview || '',
+                                          )
+                                        }
+                                        className="object-contain w-full h-[64px] cursor-zoom-in"
+                                      />
+                                    </PhotoView>
+                                  ) : (
+                                    <PreviewVideoPlayer
+                                      src={file.preview}
+                                      width={72}
+                                      height={72}
+                                      onLoad={() =>
+                                        URL.revokeObjectURL(file.preview || '')
+                                      }
+                                      className="object-contain w-full h-[64px]"
+                                    />
+                                    // <video
+                                    //   src={file.preview}
+                                    //   controls={false}
+                                    //   width={64}
+                                    //   height={64}
+                                    //   controlsList={'nodownload'}
+                                    //   className="object-contain self-center w-full h-[64px]"
+                                    //   onContextMenu={(e: React.MouseEvent) =>
+                                    //     e.preventDefault()
+                                    //   }
+                                    //   onLoad={() =>
+                                    //     URL.revokeObjectURL(file.preview || '')
+                                    //   }
+                                    // />
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  {
+                                    getFileIconAndColor(
+                                      getTypeByMimeType(file.type as MimeType),
+                                    ).icon
+                                  }
+                                </>
+                              )}
+                            </div>
+                            <div className="space-y-1 max-w-[120px] md:max-w-[217px]">
+                              <div className="text-sm text-muted-foreground">
+                                <Truncate text={file.name} />
+                              </div>
+                              <div className="text-xs text-muted-foreground/70">
+                                {file.dimensions ? (
+                                  <div>
+                                    {file.dimensions?.width}
+                                    <span> x </span>
+                                    {file.dimensions?.height}
+                                  </div>
+                                ) : null}
+                                {file.size ? (
+                                  <div>
+                                    {convertBytes(file.size, {
+                                      useBinaryUnits: false,
+                                      decimals: 2,
+                                    })}
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeFile(file)}
+                            className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
+                      </SortableItem>
+                    )
+                  })}
+              </Sortable>
             </PhotoProvider>
 
             {filesToUpload.length > 0 &&
