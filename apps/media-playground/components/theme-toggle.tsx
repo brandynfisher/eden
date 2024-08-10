@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Moon, SettingsIcon, Sun } from 'lucide-react'
+import { Moon, MoonIcon, Sun, SunIcon, SunMoonIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import * as React from 'react'
 
@@ -39,21 +39,21 @@ export function ThemeToggle({ label }: Props) {
           onClick={() => setTheme('light')}
           className={`cursor-pointer ${theme === 'light' ? 'font-bold' : ''}`}
         >
-          <Sun className="mr-2 h-4 w-4" />
+          <SunIcon className="mr-2 h-4 w-4" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme('dark')}
           className={`cursor-pointer ${theme === 'dark' ? 'font-bold' : ''}`}
         >
-          <Moon className="mr-2 h-4 w-4" />
+          <MoonIcon className="mr-2 h-4 w-4" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme('system')}
           className={`cursor-pointer ${theme === 'system' ? 'font-bold' : ''}`}
         >
-          <SettingsIcon className="mr-2 h-4 w-4" />
+          <SunMoonIcon className="mr-2 h-4 w-4" />
           System
         </DropdownMenuItem>
       </DropdownMenuContent>
