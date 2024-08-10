@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { convertBytes, uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
-import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
+import axios, { AxiosError, AxiosProgressEvent, CancelTokenSource } from 'axios'
 import {
   AudioWaveform,
   BanIcon,
@@ -383,6 +383,10 @@ const FileUploader = ({
         const uploadRes = await Promise.all(fileUploadBatch)
 
         if (!uploadRes) {
+          toast.error('Upload failed', {
+            dismissible: true,
+            richColors: true,
+          })
           // @todo: handle error, show toast, etc?
           return false
         }
@@ -398,6 +402,15 @@ const FileUploader = ({
         })
       } catch (error) {
         console.error('Error uploading files: ', error)
+        const errorMessage = axios.isAxiosError(error)
+          ? JSON.parse((error as AxiosError).request.responseText)?.message
+          : 'Unknown Error'
+
+        toast.error('Error while uploading files', {
+          description: JSON.stringify(errorMessage),
+          dismissible: true,
+          richColors: true,
+        })
       }
     },
     [maxFiles, onChange], // Include uploadedFiles in dependency array
@@ -576,6 +589,7 @@ const FileUploader = ({
                   )
                 })}
             </PhotoProvider>
+
             {filesToUpload.length > 0 &&
               filesToUpload.map(fileUploadProgress => {
                 return (
