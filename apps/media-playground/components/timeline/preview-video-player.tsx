@@ -43,6 +43,7 @@ const PreviewVideoPlayer: React.FC<VideoPlayerProps> = ({
         loop={true}
         autoPlay={false}
         controls={false}
+        playsInline={true}
         controlsList={'nodownload'}
         onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
         width={width}

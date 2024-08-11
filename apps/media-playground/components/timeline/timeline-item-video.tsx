@@ -28,6 +28,7 @@ const TimelineItemVideo = ({ width, height, videoUrl, posterUrl }: Props) => {
       loop={true}
       controls={true}
       autoPlay={false}
+      playsInline={true}
       controlsList={'nodownload'}
       onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
       className="w-full h-full outline-none"

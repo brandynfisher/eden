@@ -16,6 +16,7 @@ const NavLink = ({ label, segments, active, inSheet }: NavLinkProps) => {
     return (
       <SheetClose asChild>
         <Link
+          prefetch={false}
           className={cn(
             'text-muted-foreground transition-colors hover:text-foreground capitalize',
             active ? 'text-foreground' : '',
@@ -35,6 +36,7 @@ const NavLink = ({ label, segments, active, inSheet }: NavLinkProps) => {
         active ? 'text-foreground' : '',
       )}
       href={href}
+      prefetch={false}
     >
       {label}
     </Link>
