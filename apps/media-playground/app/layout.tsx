@@ -48,7 +48,6 @@ export default function RootLayout({
       >
         <Providers>
           <div className="flex min-h-screen w-full flex-col">
-            {/*<div vaul-drawer-wrapper=""  className="bg-background flex min-h-screen w-full flex-col">*/}
             <Header />
             {modal}
             {children}
