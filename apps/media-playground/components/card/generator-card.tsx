@@ -14,7 +14,7 @@ type Props = {
 
 const GeneratorCard = ({ title, image, link, description }: Props) => {
   return (
-    <Link href={link} className="group aspect-square" prefetch={false}>
+    <Link prefetch={false} href={link} className="group aspect-square">
       <Card className="relative min-h-64 flex flex-col justify-between overflow-hidden border-0 h-full w-full">
         {image.endsWith('mp4') ? (
           <video

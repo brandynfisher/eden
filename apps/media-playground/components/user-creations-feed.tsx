@@ -1,7 +1,7 @@
 'use client'
 
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import { CONFIG } from '@/lib/config'
+import { env } from '@/lib/config'
 import { fetcher } from '@/lib/fetcher'
 import {
   CreatorsGetResponse,
@@ -24,7 +24,7 @@ const UserCreationsFeed = ({ userName }: Props) => {
     queryKey: ['creators', userName],
     queryFn: () =>
       fetcher<CreatorsGetResponse>(
-        `${CONFIG.NEXT_PUBLIC_HOST}/api/users/${userName}`,
+        `${env.NEXT_PUBLIC_HOST}/api/users/${userName}`,
       ),
   })
 

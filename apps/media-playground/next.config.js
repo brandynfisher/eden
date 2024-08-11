@@ -113,6 +113,12 @@ module.exports = {
     deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920, 2560],
     remotePatterns: imageRemotePatterns,
   },
+  experimental: {
+    staleTimes: {
+      dynamic: 0,
+      static: 180
+    }
+  }
   //   trailingSlash: false,
   //   swcMinify: true,
   //   experimental: {

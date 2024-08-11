@@ -1,4 +1,4 @@
-import { CONFIG } from '@/lib/config'
+import { env } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { auth } from '@clerk/nextjs/server'
 import axios from 'axios'
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams
-    const route = `${CONFIG.NEXT_PUBLIC_EDEN_API_URL}/v2/feed-cursor/creations?${searchParams.toString()}`
+    const route = `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/feed-cursor/creations?${searchParams.toString()}`
     // console.log({route})
     // const eden = new EdenClient({
     //   edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,

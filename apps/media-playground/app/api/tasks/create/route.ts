@@ -1,5 +1,5 @@
 import { getAuthToken } from '@/lib/auth'
-import { CONFIG } from '@/lib/config'
+import { env } from '@/lib/config'
 import { EdenClient, TaskV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const eden = new EdenClient({
-      edenApiUrl: CONFIG.NEXT_PUBLIC_EDEN_API_URL,
+      edenApiUrl: env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken,
     })
 

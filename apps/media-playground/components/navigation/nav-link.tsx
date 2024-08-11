@@ -31,12 +31,12 @@ const NavLink = ({ label, segments, active, inSheet }: NavLinkProps) => {
 
   return (
     <Link
+      prefetch={false}
       className={cn(
         'text-muted-foreground transition-colors hover:text-foreground capitalize',
         active ? 'text-foreground' : '',
       )}
       href={href}
-      prefetch={false}
     >
       {label}
     </Link>

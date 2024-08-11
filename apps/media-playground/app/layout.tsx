@@ -5,7 +5,7 @@ import Header from '@/components/header/header'
 import { PreloadResources } from '@/components/preload-resources'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Toaster } from '@/components/ui/sonner'
-import { CONFIG } from '@/lib/config'
+import { env } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { Metadata } from 'next'
@@ -18,7 +18,7 @@ const fontSans = FontSans({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(CONFIG.NEXT_PUBLIC_HOST),
+  metadataBase: new URL(env.NEXT_PUBLIC_HOST),
   title: 'Garden of Eden',
   description: 'The Garden of Artificial Delights',
   openGraph: {
@@ -48,14 +48,14 @@ export default function RootLayout({
       >
         <Providers>
           <div className="flex min-h-screen w-full flex-col">
+            {/*<div vaul-drawer-wrapper=""  className="bg-background flex min-h-screen w-full flex-col">*/}
             <Header />
-
-            {children}
             {modal}
+            {children}
           </div>
 
-          {CONFIG.NEXT_PUBLIC_APP_ENV === 'production' ? (
-            <GoogleTagManager gtmId={CONFIG.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
+          {env.NEXT_PUBLIC_APP_ENV === 'production' ? (
+            <GoogleTagManager gtmId={env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
           ) : (
             <TailwindIndicator />
           )}

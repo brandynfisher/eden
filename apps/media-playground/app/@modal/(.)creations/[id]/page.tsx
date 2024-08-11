@@ -1,4 +1,5 @@
-import { Modal } from './modal'
+// import { Modal } from './modal'
+import CreationDetailModal from '@/components/modal/creation-detail-modal'
 import CreationDetail from '@/features/detail/creation-detail'
 
 type Props = {
@@ -7,8 +8,8 @@ type Props = {
 
 export default function CreationsModal({ params: { id: creationId } }: Props) {
   return (
-    <Modal>
+    <CreationDetailModal>
       <CreationDetail id={creationId} />
-    </Modal>
+    </CreationDetailModal>
   )
 }

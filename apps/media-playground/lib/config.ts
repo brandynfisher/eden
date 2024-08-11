@@ -1,5 +1,6 @@
-export const CONFIG = {
-  // publicRuntimeConfig
+import { SiteConfig } from '@/types/SiteConfig'
+
+export const env = {
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV || 'staging',
   NEXT_PUBLIC_DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
   NEXT_PUBLIC_EDEN_API_URL:
@@ -24,4 +25,31 @@ export const CONFIG = {
   EDEN_ADMIN_API_KEY: process.env.EDEN_ADMIN_API_KEY || '',
   EDEN_ADMIN_API_SECRET: process.env.EDEN_ADMIN_API_SECRET || '',
   EDEN_MAINTENANCE_MODE: process.env.EDEN_MAINTENANCE_MODE || false,
+}
+
+export const siteConfig: SiteConfig = {
+  name: 'Eden',
+  author: 'edenlabs',
+  description: 'Garden of Artificial Delights',
+  keywords: [
+    'sdxl',
+    'flux',
+    'artist',
+    'community',
+    'stablediffusion',
+    'generative art',
+    'digital art',
+  ],
+  url: {
+    base: env.NEXT_PUBLIC_HOST,
+    author: 'https://rdev.pro',
+  },
+  links: {
+    homepage: 'https://eden.art',
+    instagram: 'https://instagram.com/eden.art____',
+    twitter: 'https://x.com/eden_art_',
+    linkedIn: 'https://www.linkedin.com/company/eden-labs-inc/',
+    github: 'https://github.com/edenartlabs/eden',
+  },
+  ogImage: `${env.NEXT_PUBLIC_HOST}/logo-bw.png`,
 }
