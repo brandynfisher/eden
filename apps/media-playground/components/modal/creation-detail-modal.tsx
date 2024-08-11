@@ -20,7 +20,7 @@ const CreationDetailModal = ({ children }: PropsWithChildren) => {
 
   return (
     <Dialog defaultOpen={true} open={true} onOpenChange={handleOpenChange}>
-      <DialogContentScrollable>
+      <DialogContentScrollable className="min-h-[calc(100dvh_-_32px)] h-fit">
         <VisuallyHidden>
           <DialogHeader>
             <DialogTitle>Modal Header Title</DialogTitle>

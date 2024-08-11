@@ -34,7 +34,6 @@ const videoInputParameterNames = ['video']
 
 const ParameterTable = ({ args }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
-
   const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
       .then(() => {
@@ -74,19 +73,20 @@ const ParameterTable = ({ args }: Props) => {
       </TableHeader>
       <TableBody className="bg-popover/20">
         {Object.entries(args).map(taskArg => (
-          <PhotoProvider key={taskArg[0]}>
-            <TableRow
-              className="cursor-pointer text-xs flex flex-col md:table-row"
-              onClick={handleCopyString(
-                taskArg[0],
-                String(taskArg[1] !== null ? taskArg[1] : ''),
-              )}
-            >
-              <TableCell className="py-2 text-muted-foreground">
-                {taskArg[0]}
-              </TableCell>
-              <TableCell className="pt-0 pb-2 md:py-2">
-                {imageInputParameterNames.includes(taskArg[0]) ? (
+          <TableRow
+            key={taskArg[0]}
+            className="cursor-pointer text-xs flex flex-col md:table-row"
+            onClick={handleCopyString(
+              taskArg[0],
+              String(taskArg[1] !== null ? taskArg[1] : ''),
+            )}
+          >
+            <TableCell className="py-2 text-muted-foreground">
+              {taskArg[0]}
+            </TableCell>
+            <TableCell className="pt-0 pb-2 md:py-2">
+              {imageInputParameterNames.includes(taskArg[0]) ? (
+                <PhotoProvider>
                   <div className="flex flex-wrap gap-2">
                     {(
                       (Array.isArray(taskArg[1])
@@ -106,34 +106,34 @@ const ParameterTable = ({ args }: Props) => {
                       </PhotoView>
                     ))}
                   </div>
-                ) : videoInputParameterNames.includes(taskArg[0]) ? (
-                  <div className="flex flex-wrap gap-2">
-                    {(
-                      (Array.isArray(taskArg[1])
-                        ? taskArg[1]
-                        : [taskArg[1]]) as string[]
-                    ).map(inputVideoUrl => (
-                      <PreviewVideoPlayer
-                        key={inputVideoUrl}
-                        src={inputVideoUrl}
-                        width={72}
-                        height={72}
-                        className="hover:brightness-105"
-                      />
-                    ))}
-                  </div>
-                ) : typeof taskArg[1] === 'boolean' ? (
-                  taskArg[1] ? (
-                    <SquareCheckBigIcon size={16} />
-                  ) : (
-                    <SquareIcon size={16} />
-                  )
+                </PhotoProvider>
+              ) : videoInputParameterNames.includes(taskArg[0]) ? (
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    (Array.isArray(taskArg[1])
+                      ? taskArg[1]
+                      : [taskArg[1]]) as string[]
+                  ).map(inputVideoUrl => (
+                    <PreviewVideoPlayer
+                      key={inputVideoUrl}
+                      src={inputVideoUrl}
+                      width={72}
+                      height={72}
+                      className="hover:brightness-105"
+                    />
+                  ))}
+                </div>
+              ) : typeof taskArg[1] === 'boolean' ? (
+                taskArg[1] ? (
+                  <SquareCheckBigIcon size={16} />
                 ) : (
-                  taskArg[1]
-                )}
-              </TableCell>
-            </TableRow>
-          </PhotoProvider>
+                  <SquareIcon size={16} />
+                )
+              ) : (
+                taskArg[1]
+              )}
+            </TableCell>
+          </TableRow>
         ))}
       </TableBody>
     </Table>

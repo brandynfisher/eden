@@ -1,7 +1,5 @@
 'use client'
 
-import 'react-photo-view/dist/react-photo-view.css'
-
 import GeneratorForm from '@/components/form/generator-form'
 import LoadingIndicator from '@/components/loading-indicator'
 import Timeline from '@/components/timeline/timeline'

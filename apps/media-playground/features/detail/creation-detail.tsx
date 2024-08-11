@@ -49,7 +49,7 @@ const CreationDetail = ({ id, creationSSRData }: Props) => {
       {/*<div>hasSSRData: {JSON.stringify(!!creationSSRData)}</div>*/}
       {/*<div>hasClientData: {JSON.stringify(!!creationClientData)}</div>*/}
 
-      <div className="h-full w-full flex flex-col justify-center">
+      <div className="h-full w-full flex flex-col gap-2">
         {creation ? (
           <>
             <CreationMediaPreview creation={creation} />
@@ -60,7 +60,7 @@ const CreationDetail = ({ id, creationSSRData }: Props) => {
                 <Button variant={'outline'}>Action3</Button>
               </div>
             ) : null}
-            <ParameterTable args={creation.args} />
+            {creation.args ? <ParameterTable args={creation.args} /> : null}
             {/*{JSON.stringify(creation, null, 2)}*/}
           </>
         ) : (
