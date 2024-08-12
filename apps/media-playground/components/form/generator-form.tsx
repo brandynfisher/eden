@@ -25,10 +25,12 @@ import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { UseFormReturn, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+
+// import FormPersist from '@/components/form-persist'
 
 type Props = {
   generator: GeneratorV2
@@ -44,18 +46,18 @@ const renderFormField = (
       name={name}
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value, name } = field
-        let parsedValue: number | undefined
+        let parsedValue: number | ''
         switch (parameter.type) {
           case 'int':
             parsedValue = Number(value)
             if (isNaN(parsedValue)) {
-              parsedValue = undefined
+              parsedValue = ''
             }
 
             return (
               <FormItemWrap
                 name={name}
-                label={label}
+                label={label + '-' + parsedValue + '-' + value}
                 description={parameter.description}
                 errorMessage={fieldState.error?.message}
               >
@@ -85,11 +87,6 @@ const renderFormField = (
               </FormItemWrap>
             )
           case 'float':
-            parsedValue = Number(value)
-            if (isNaN(parsedValue)) {
-              parsedValue = undefined
-            }
-
             return (
               <FormItemWrap
                 name={name}
@@ -141,7 +138,7 @@ const renderFormField = (
                     description={parameter.description}
                   />
                 )}
-                <FormControl>
+                <FormControl id={name}>
                   <Textarea
                     autoResize={true}
                     spellCheck={false}
@@ -190,7 +187,7 @@ const renderFormField = (
                 />
                 <FormControl id={name}>
                   <Input
-                    className={'hidden'}
+                    // className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
                     value={value === null ? '' : value || ''}
@@ -316,15 +313,19 @@ const GeneratorForm = ({ generator }: Props) => {
   const { verifyAuth } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const defaultValues = generator.parameters?.reduce((accum, currParameter) => {
+    return {
+      ...accum,
+      [currParameter.name]: currParameter.default,
+    }
+  }, {})
+
+  // console.log({defaultValues})
+
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
   const form = useForm({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
-    defaultValues: generator.parameters?.reduce((accum, currParameter) => {
-      return {
-        ...accum,
-        [currParameter.name]: currParameter.default,
-      }
-    }, {}),
+    defaultValues,
   })
 
   async function onSubmit(formData: z.infer<typeof parameterSchema>) {
@@ -370,12 +371,27 @@ const GeneratorForm = ({ generator }: Props) => {
   }
 
   const [showForm, setShowForm] = useState(false)
+  // const [resetKey, setResetKey] = useState(0)
+
+  // console.log({defaultValues})
+
+  const handleReset = useCallback(() => {
+    console.log('handleReset tap reset key')
+    form.reset(defaultValues, { keepDefaultValues: true })
+    // setResetKey(prev => prev + 1)
+    //
+    // setTimeout(() => {
+    //   console.log('before reset', {defaultValues})
+    //   form.reset(defaultValues, { keepDefaultValues: true })
+    // }, 100)
+  }, [])
 
   return (
     <div
       data-test-id="generator-form"
       className="flex flex-col items-start overflow-y-auto xl:pr-4 xl:sticky xl:top-[106px] xl:max-h-[calc(100vh_-_106px)]"
     >
+      {/*<FormPersist resetKey={resetKey} formKey={`form_tool_${generator.key}`} form={form} defaultValues={defaultValues}/>*/}
       <Form {...form}>
         <form className="flex flex-col w-full">
           <TypographyH3>{generator.name}</TypographyH3>
@@ -407,7 +423,7 @@ const GeneratorForm = ({ generator }: Props) => {
               type="button"
               variant="ghost"
               className="text-muted-foreground"
-              onClick={!isSubmitting ? () => form.reset() : undefined}
+              onClick={!isSubmitting ? handleReset : undefined}
               disabled={isSubmitting}
             >
               Reset

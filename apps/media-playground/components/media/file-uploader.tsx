@@ -137,49 +137,49 @@ type Props = {
   allowMultiple?: boolean
 }
 
-// class FakeFile implements File {
-//   name: string
-//   size: number
-//   type: string
-//   lastModified: number
-//
-//   constructor(
-//     name: string,
-//     type: string = 'image/jpeg',
-//     lastModified: number = Date.now(),
-//     size: number = 0,
-//   ) {
-//     this.name = name
-//     this.lastModified = lastModified
-//     this.size = size
-//     this.type = type
-//   }
-//
-//   get webkitRelativePath() {
-//     return ''
-//   }
-//
-//   arrayBuffer() {
-//     return new Promise<ArrayBuffer>(resolve => {
-//       resolve(new ArrayBuffer(0))
-//     })
-//   }
-//
-//   slice(_start?: number, _end?: number, contentType?: string) {
-//     return new Blob([], { type: contentType || '' })
-//   }
-//
-//   stream() {
-//     return new ReadableStream()
-//   }
-//
-//   text() {
-//     return Promise.resolve('')
-//   }
-// }
+class FakeFile implements File {
+  name: string
+  size: number
+  type: string
+  lastModified: number
+
+  constructor(
+    name: string,
+    type: string = 'image/jpeg',
+    lastModified: number = Date.now(),
+    size: number = 0,
+  ) {
+    this.name = name
+    this.lastModified = lastModified
+    this.size = size
+    this.type = type
+  }
+
+  get webkitRelativePath() {
+    return ''
+  }
+
+  arrayBuffer() {
+    return new Promise<ArrayBuffer>(resolve => {
+      resolve(new ArrayBuffer(0))
+    })
+  }
+
+  slice(_start?: number, _end?: number, contentType?: string) {
+    return new Blob([], { type: contentType || '' })
+  }
+
+  stream() {
+    return new ReadableStream()
+  }
+
+  text() {
+    return Promise.resolve('')
+  }
+}
 
 const FileUploader = ({
-  // value,
+  value,
   allowedFileTypes,
   maxFiles,
   allowMultiple,
@@ -209,9 +209,36 @@ const FileUploader = ({
   //   onChange(maxFiles === 1 ? newUrls[0] : newUrls)
   // }, [])
 
-  const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([])
+  const initUploadedFiles = (defaultValue: string | string[]) => {
+    // console.log({ defaultValue })
+    if (!defaultValue || !defaultValue.length) {
+      return []
+    }
+
+    const initFiles: FileWithPreview[] = (
+      Array.isArray(defaultValue) ? defaultValue : [defaultValue]
+    ).map(val => {
+      const fakedFile = new FakeFile(val, 'image/jpeg')
+      Object.assign(fakedFile, {
+        preview: val,
+        fileUrl: val,
+        size: 1,
+      })
+
+      return fakedFile
+    })
+
+    // console.log({ initFiles })
+
+    return initFiles
+  }
+
+  const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>(
+    initUploadedFiles(value),
+  )
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
 
+  // console.log({uploadedFiles})
   const allowedTypes = supportedFileTypes.filter(item =>
     allowedFileTypes?.includes(item.type),
   )
