@@ -1,4 +1,4 @@
-import { TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
+import { MediaType, TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -59,11 +59,11 @@ export const creationSchema = new Schema<CreationV2Document>(
         type: String,
         required: true,
       },
-      // type: {
-      //   type: String,
-      //   enum: Object.values(MediaType),
-      //   required: true,
-      // },
+      type: {
+        type: String,
+        enum: Object.values(MediaType),
+        required: true,
+      },
       duration: {
         type: Number,
       },

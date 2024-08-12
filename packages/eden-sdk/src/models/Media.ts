@@ -1,12 +1,22 @@
 import { WebAPICallOptions, WebAPICallResult } from '../types'
-import { MediaType } from './Creations'
 
 export interface MediaAttributes {
-  type: MediaType
+  type: string
+  mimeType: string
   duration?: number
   width?: number
   height?: number
   aspectRatio?: number
+}
+
+export enum MediaType {
+  Image = 'image',
+  Video = 'video',
+  Text = 'text',
+  Audio = 'audio',
+  Zip = 'zip',
+  Model = 'model',
+  Unknown = 'unknown',
 }
 
 // Arguments

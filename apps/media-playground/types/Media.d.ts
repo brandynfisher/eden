@@ -13,8 +13,8 @@ export type MimeTypesImage =
 export type MimeType = MimeTypesVideo | MimeTypesImage
 
 interface Media {
-  uri?: string
-  thumbnailUri?: string
+  url?: string
+  thumbnail?: string
   width?: number
   height?: number
   type: FileType

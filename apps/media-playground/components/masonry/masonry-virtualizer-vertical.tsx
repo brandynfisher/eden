@@ -5,7 +5,7 @@ import LoadingIndicator from '@/components/loading-indicator'
 import { useElementSize } from '@/hooks/use-element-size'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
-import { FeedCreationsCursorResponse, TaskV2 } from '@edenlabs/eden-sdk'
+import { FeedCreationsV2CursorResponse, TaskV2 } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
@@ -76,7 +76,7 @@ const MasonryVirtualizerVertical = ({
       return fetcher(paginationRoute)
     },
     staleTime: 60000,
-    getNextPageParam: (lastPage: FeedCreationsCursorResponse) => {
+    getNextPageParam: (lastPage: FeedCreationsV2CursorResponse) => {
       // console.log(lastPage)
       if (
         lastPage &&

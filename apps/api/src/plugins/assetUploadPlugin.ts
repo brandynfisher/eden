@@ -19,6 +19,7 @@ export const mediaTypeMap: Record<string, MediaType> = {
   png: MediaType.Image,
   webp: MediaType.Image,
   zip: MediaType.Zip,
+  tar: MediaType.Zip,
 }
 
 const uploadUrlAsset = async (server: FastifyInstance, url: string) => {

@@ -1,4 +1,5 @@
 import { sanitize } from '@/lib/strings'
+import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 
 type UploadOptions = {
@@ -139,4 +140,8 @@ export const downloadFile = async (url: string, fileName: string) => {
     console.error('Error downloading creation:', error)
     return false
   }
+}
+
+export const getFileTypeByMimeType = (mimeType: MimeType) => {
+  return mimeType.split('/')[0] as FileType
 }

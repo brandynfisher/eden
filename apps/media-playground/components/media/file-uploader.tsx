@@ -8,7 +8,11 @@ import {
 } from '@/components/ui/custom/sortable'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { convertBytes, uploadFileToS3 } from '@/lib/files'
+import {
+  convertBytes,
+  getFileTypeByMimeType,
+  uploadFileToS3,
+} from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import { arrayMove } from '@dnd-kit/sortable'
@@ -118,10 +122,6 @@ const supportedFileTypes: SupportedFileType[] = [
     ],
   },
 ]
-
-const getTypeByMimeType = (mimeType: MimeType) => {
-  return mimeType.split('/')[0] as FileType
-}
 
 export type FileWithPreview = File & {
   preview?: string
@@ -631,7 +631,9 @@ const FileUploader = ({
                                 <>
                                   {
                                     getFileIconAndColor(
-                                      getTypeByMimeType(file.type as MimeType),
+                                      getFileTypeByMimeType(
+                                        file.type as MimeType,
+                                      ),
                                     ).icon
                                   }
                                 </>
@@ -684,7 +686,7 @@ const FileUploader = ({
                       <div
                         className={`text-${
                           getFileIconAndColor(
-                            getTypeByMimeType(
+                            getFileTypeByMimeType(
                               fileUploadProgress.File.type as MimeType,
                             ),
                           ).color
@@ -692,7 +694,7 @@ const FileUploader = ({
                       >
                         {
                           getFileIconAndColor(
-                            getTypeByMimeType(
+                            getFileTypeByMimeType(
                               fileUploadProgress.File.type as MimeType,
                             ),
                           ).icon
@@ -709,7 +711,7 @@ const FileUploader = ({
                           value={fileUploadProgress.progress}
                           className={`bg-${
                             getFileIconAndColor(
-                              getTypeByMimeType(
+                              getFileTypeByMimeType(
                                 fileUploadProgress.File.type as MimeType,
                               ),
                             ).color

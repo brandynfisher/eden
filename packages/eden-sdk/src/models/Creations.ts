@@ -189,12 +189,3 @@ export interface CreationAttributes {
 export enum ReactionType {
   Praise = 'praise',
 }
-
-export enum MediaType {
-  Image = 'image',
-  Video = 'video',
-  Text = 'text',
-  Audio = 'audio',
-  Zip = 'zip',
-  Unknown = 'unknown',
-}

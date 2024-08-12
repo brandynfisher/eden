@@ -1,3 +1,4 @@
+import { getFileTypeByMimeType } from '../../lib/eden2'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
 import {
@@ -723,7 +724,14 @@ export const publishTaskResult = async (
   creation.user = new ObjectId(userId)
 
   creation.args = taskDocument.args
-  creation.mediaAttributes = taskResult.mediaAttributes
+  creation.mediaAttributes = {
+    ...taskResult.mediaAttributes,
+    type:
+      getFileTypeByMimeType(
+        taskResult.mediaAttributes?.mimeType || 'image/jpeg',
+      ) || 'image',
+    mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
+  }
   creation.metadata = taskResult.metadata
   creation.url = taskResult.url
   creation.thumbnail = taskResult.thumbnail
