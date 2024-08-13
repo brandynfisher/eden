@@ -8,6 +8,7 @@ interface FormPersistProps<T extends FieldValues> {
   defaultValues: any // eslint-disable-line @typescript-eslint/no-explicit-any
   resetKey: number
 }
+
 const isBrowser = () => typeof window !== 'undefined'
 
 export default function FormPersist<T extends FieldValues>(

@@ -3,7 +3,7 @@ import { SearchIcon } from 'lucide-react'
 
 const SearchForm = () => {
   return (
-    <form className="ml-auto flex-1 sm:flex-initial">
+    <form className="flex-1 sm:flex-initial">
       <div className="relative flex items-center">
         <SearchIcon className="absolute left-2.5 h-4 w-4 text-muted-foreground" />
         <Input

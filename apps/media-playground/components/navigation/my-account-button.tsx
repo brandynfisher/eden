@@ -17,8 +17,8 @@ import { CreditCardIcon, LogOutIcon, SettingsIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { forwardRef } from 'react'
 import * as React from 'react'
+import { forwardRef } from 'react'
 
 const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
   ({ ...rest }, ref) => (
