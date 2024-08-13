@@ -8,7 +8,7 @@ export interface Asset {
   uri: string
   thumbnailUri?: string
   assetBuffer?: Buffer
-  mediaAttributes: MediaAttributes
+  mediaAttributes: Omit<MediaAttributes, 'mimeType'>
 }
 
 export const mediaTypeMap: Record<string, MediaType> = {
