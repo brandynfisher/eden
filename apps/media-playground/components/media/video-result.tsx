@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import React, { Ref, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 type Props = {
   className?: string
@@ -10,6 +10,7 @@ type Props = {
   autoPlay?: boolean
   loop?: boolean
   controls?: boolean
+  allowFullscreen?: boolean
   muted?: boolean
 }
 
@@ -22,23 +23,44 @@ const VideoResult = ({
   loop,
   autoPlay,
   controls,
+  allowFullscreen = false,
   muted = true,
 }: Props) => {
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [initialPlay, setInitialPlay] = useState(false)
-  const mediaRef = useRef<HTMLVideoElement | HTMLImageElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
 
-  const handleVideoClick = async () => {
-    const videoElement = mediaRef.current as HTMLVideoElement
+  const handleVideoClick = async (ev: React.MouseEvent) => {
+    if (videoRef.current) {
+      const videoElement = videoRef.current as HTMLVideoElement
 
-    if (videoElement.paused) {
-      await videoElement.play()
-      setInitialPlay(true)
+      if (allowFullscreen) {
+        ev.stopPropagation()
+        if (videoElement.paused) {
+          setIsPlaying(false)
+        } else {
+          setIsPlaying(true)
+        }
+
+        await videoElement.requestFullscreen()
+
+        if (!isPlaying) {
+          await videoElement.play()
+        }
+      } else {
+        if (videoElement.paused) {
+          await videoElement.play()
+          setInitialPlay(true)
+        } else {
+          setIsPlaying(false)
+        }
+      }
     }
   }
 
   return (
     <video
-      ref={mediaRef as Ref<HTMLVideoElement>}
+      ref={videoRef}
       poster={posterUrl}
       src={videoUrl}
       loop={loop}

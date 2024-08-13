@@ -245,13 +245,13 @@ const FileUploader = ({
 
   const allowedFileMimeTypes = allowedTypes.map(type => type.allowedMimeTypes)
 
-  console.log({
-    value,
-    maxFiles,
-    allowedTypes,
-    uploadedFiles,
-    filesToUpload,
-  })
+  // console.log({
+  //   value,
+  //   maxFiles,
+  //   allowedTypes,
+  //   uploadedFiles,
+  //   filesToUpload,
+  // })
 
   useEffect(() => {
     if (!value || value.length === 0) {
@@ -336,13 +336,13 @@ const FileUploader = ({
 
       const newListLength =
         acceptedFiles.length + uploadedFiles.length + filesToUpload.length
-      console.log({
-        maxFiles,
-        newListLength,
-        acceptedFiles,
-        uploadedFiles,
-        filesToUpload,
-      })
+      // console.log({
+      //   maxFiles,
+      //   newListLength,
+      //   acceptedFiles,
+      //   uploadedFiles,
+      //   filesToUpload,
+      // })
 
       // more files than allowed, tell the user
       if (newListLength > (maxFiles || 1)) {
@@ -617,20 +617,6 @@ const FileUploader = ({
                                       }
                                       className="object-contain w-full h-[64px] hover:brightness-105"
                                     />
-                                    // <video
-                                    //   src={file.preview}
-                                    //   controls={false}
-                                    //   width={64}
-                                    //   height={64}
-                                    //   controlsList={'nodownload'}
-                                    //   className="object-contain self-center w-full h-[64px]"
-                                    //   onContextMenu={(e: React.MouseEvent) =>
-                                    //     e.preventDefault()
-                                    //   }
-                                    //   onLoad={() =>
-                                    //     URL.revokeObjectURL(file.preview || '')
-                                    //   }
-                                    // />
                                   )}
                                 </>
                               ) : (
