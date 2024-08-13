@@ -126,7 +126,7 @@ const handleArguments = async ({
 }) => {
   const { filter, sort } = query || {}
 
-  console.log({ filter, sort, authUserId })
+  // console.log({ filter, sort, authUserId })
   const filterMap: FilterItem[] = []
   if (filter) {
     (Array.isArray(filter) ? filter : [filter]).map(filterGroup => {
@@ -492,7 +492,7 @@ export const getCreationsFeedCursorV2 = async (
   reply: FastifyReply,
 ) => {
   const { query } = request
-  const { userId: authUserId } = request.user
+  const { userId: authUserId } = request.user || {}
   // const currentDate = new Date()
 
   const {
@@ -559,7 +559,7 @@ export const getCreationsFeedCursorV2 = async (
     ...lateLookupStages,
   ].filter(Boolean)
 
-  console.log(JSON.stringify(creationFeedPipeline, null, 2))
+  // console.log(JSON.stringify(creationFeedPipeline, null, 2))
 
   results = await CreationV2.aggregate(creationFeedPipeline)
 
