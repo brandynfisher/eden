@@ -32,9 +32,12 @@ const ListVirtualizerVertical = ({
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
   const above1536 = useMediaQuery('(min-width: 1536px)')
+  const above1280 = useMediaQuery('(min-width: 1280px)')
+  const above1024 = useMediaQuery('(min-width: 1024px)')
+  // const above768 = useMediaQuery('(min-width: 768px)')
   // const above1920 = useMediaQuery('(min-width: 1920px)')
 
-  const MASONRY_COLUMN_COUNT = above1536 ? 2 : 1
+  const MASONRY_COLUMN_COUNT = above1536 ? 2 : above1280 ? 1 : above1024 ? 2 : 1
 
   const columnWidth = useMemo(() => {
     return (
