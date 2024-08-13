@@ -130,7 +130,7 @@ export type FileWithPreview = File & {
 }
 
 type Props = {
-  value: string[]
+  value: string | string[]
   onChange: (fileUrls: string | string[]) => void
   allowedFileTypes?: FileType[]
   maxFiles?: number
@@ -245,13 +245,19 @@ const FileUploader = ({
 
   const allowedFileMimeTypes = allowedTypes.map(type => type.allowedMimeTypes)
 
-  // console.log({
-  //   maxFiles,
-  //   allowedTypes,
-  //   fixedColorClassName,
-  //   uploadedFiles,
-  //   filesToUpload,
-  // })
+  console.log({
+    value,
+    maxFiles,
+    allowedTypes,
+    uploadedFiles,
+    filesToUpload,
+  })
+
+  useEffect(() => {
+    if (!value || value.length === 0) {
+      setUploadedFiles([])
+    }
+  }, [value])
 
   const onUploadProgress = (
     progressEvent: AxiosProgressEvent,
