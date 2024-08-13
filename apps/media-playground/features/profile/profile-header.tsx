@@ -37,12 +37,9 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
         <div>
           <TypographyH3>{name}</TypographyH3>
           <div>
-            <div>debug</div>
             {user?._id === creator?._id ? (
-              <Badge variant={'destructive'}>authed profile</Badge>
-            ) : (
-              <Badge variant={'default'}>other profile</Badge>
-            )}
+              <Badge variant={'outline'}>My profile</Badge>
+            ) : null}
           </div>
         </div>
       </div>
