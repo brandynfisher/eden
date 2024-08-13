@@ -1,13 +1,29 @@
+import { cn } from '@/lib/utils'
 import React, { Ref, useRef, useState } from 'react'
 
 type Props = {
+  className?: string
   width?: number
   height?: number
   videoUrl: string
   posterUrl?: string
+  autoPlay?: boolean
+  loop?: boolean
+  controls?: boolean
+  muted?: boolean
 }
 
-const TimelineItemVideo = ({ width, height, videoUrl, posterUrl }: Props) => {
+const VideoResult = ({
+  className,
+  width,
+  height,
+  videoUrl,
+  posterUrl,
+  loop,
+  autoPlay,
+  controls,
+  muted = true,
+}: Props) => {
   const [initialPlay, setInitialPlay] = useState(false)
   const mediaRef = useRef<HTMLVideoElement | HTMLImageElement>(null)
 
@@ -25,13 +41,14 @@ const TimelineItemVideo = ({ width, height, videoUrl, posterUrl }: Props) => {
       ref={mediaRef as Ref<HTMLVideoElement>}
       poster={posterUrl}
       src={videoUrl}
-      loop={true}
-      controls={true}
-      autoPlay={false}
-      playsInline={true}
+      loop={loop}
+      muted={muted}
+      controls={controls}
+      autoPlay={autoPlay}
+      playsInline={autoPlay}
       controlsList={'nodownload'}
       onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
-      className="w-full h-full outline-none"
+      className={cn(['w-full h-full outline-none', className])}
       width={width || 1024}
       height={height || 1024}
       preload={'none'}
@@ -40,4 +57,4 @@ const TimelineItemVideo = ({ width, height, videoUrl, posterUrl }: Props) => {
   )
 }
 
-export default TimelineItemVideo
+export default VideoResult

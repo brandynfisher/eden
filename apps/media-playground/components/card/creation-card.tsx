@@ -3,7 +3,9 @@ import LikeButton from '@/components/button/like-button'
 import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
+import VideoResult from '@/components/media/video-result'
 import { Card } from '@/components/ui/card'
+import { useHover } from '@/hooks/use-hover'
 import { FileType } from '@/types/Media'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
@@ -18,8 +20,10 @@ type Props = {
 }
 
 const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
+  const { hovered, ref } = useHover()
+
   return (
-    <Card className="overflow-hidden border-0" style={style}>
+    <Card ref={ref} className="overflow-hidden border-0" style={style}>
       <Link
         href={`/creations/${creation._id}`}
         prefetch={false}
@@ -34,8 +38,24 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
             type: creation.mediaAttributes?.type as FileType,
           }}
         />
+
         {creation.mediaAttributes?.type === 'video' ? (
-          <VideoDurationBadge duration={creation.mediaAttributes.duration} />
+          <>
+            <VideoDurationBadge duration={creation.mediaAttributes.duration} />
+            {hovered ? (
+              <VideoResult
+                className="absolute inset-0"
+                videoUrl={creation.url || ''}
+                width={creation.mediaAttributes.width}
+                height={creation.mediaAttributes.height}
+                posterUrl={creation.thumbnail}
+                muted={true}
+                loop={true}
+                autoPlay={true}
+                controls={false}
+              />
+            ) : null}
+          </>
         ) : null}
       </Link>
       {showFooter ? (

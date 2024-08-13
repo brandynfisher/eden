@@ -1,5 +1,5 @@
+import VideoResult from '@/components/media/video-result'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
-import TimelineItemVideo from '@/components/timeline/timeline-item-video'
 import { GeneratorOutputTypeV2, TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
 import React from 'react'
@@ -26,7 +26,7 @@ const TimelineItemMediaResult = ({
         style={{ aspectRatio: result?.mediaAttributes?.aspectRatio || 1 }}
       >
         {result.url?.endsWith('.mp4') ? (
-          <TimelineItemVideo
+          <VideoResult
             width={result.mediaAttributes?.width || task.args.width}
             height={result.mediaAttributes?.height || task.args.height}
             videoUrl={result.url}
