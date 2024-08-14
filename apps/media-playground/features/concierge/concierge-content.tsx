@@ -10,7 +10,7 @@ const ConciergeContent = () => {
         Eden Create is in <span className="italic"> Early Access</span>
       </TypographyH3>
 
-      <div className="flex items-center my-4">
+      <div className="flex items-center my-4 opacity-75">
         <RotatingEdenLogo variant={'medium'} />
       </div>
 
@@ -28,7 +28,9 @@ const ConciergeContent = () => {
       </div>
       <div className="mt-8">
         <Button asChild variant="link">
-          <Link href={'/sign-in'}>Already whitelisted? Login</Link>
+          <Link href={'/sign-in'}>
+            Already whitelisted? Click here to login
+          </Link>
         </Button>
       </div>
     </div>
