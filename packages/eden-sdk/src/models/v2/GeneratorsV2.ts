@@ -101,6 +101,7 @@ export type GeneratorParameterV2 = {
   maximum: number | null | undefined
   min_length: number | null | undefined
   max_length: number | null | undefined
+  step: number | null | undefined
   choices: Array<string | number> | null | undefined
   hide_from_agent?: boolean
 }

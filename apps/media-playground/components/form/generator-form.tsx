@@ -77,7 +77,7 @@ const renderFormField = (
                     form={form}
                     min={parameter.minimum || 0}
                     max={parameter.maximum || 1}
-                    step={1}
+                    step={parameter.step ? parameter.step : 1}
                     value={value}
                     onChange={newVal => {
                       onChange(newVal)
@@ -98,7 +98,7 @@ const renderFormField = (
                   form={form}
                   min={parameter.minimum || 0}
                   max={parameter.maximum || 1}
-                  step={0.05}
+                  step={parameter.step ? parameter.step : 0.05}
                   value={value}
                   onChange={newVal => {
                     onChange(newVal)
