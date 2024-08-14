@@ -31,7 +31,7 @@ const ConciergeContent = () => {
       <div className="flex gap-2 mt-8">
         <Button asChild variant="secondary">
           <a href={'https://eden.art/early-access'} target={'_blank'}>
-            Join the wait list!
+            Join the Waitlist!
           </a>
         </Button>
         <Button variant={'outline'} asChild>
@@ -42,9 +42,7 @@ const ConciergeContent = () => {
       </div>
       <div className="mt-8">
         <Button asChild variant="link">
-          <Link href={'/sign-in'}>
-            Already whitelisted? Click here to login
-          </Link>
+          <Link href={'/sign-in'}>Already invited? Click here to login</Link>
         </Button>
       </div>
     </div>
