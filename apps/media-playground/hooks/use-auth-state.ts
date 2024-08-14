@@ -28,6 +28,7 @@ export function useAuthState() {
     subscriptionBalance,
     hasMinimumSubscriptionTier,
     hasEden2EarlyAccess,
+    isLoading,
   } = useMe({ isAuthenticated: !!isSignedIn })
 
   const router = useRouter()
@@ -44,7 +45,11 @@ export function useAuthState() {
     })
 
     // console.log({ isPublicRoute, isSignedIn, access: hasEden2EarlyAccess() })
-    if (!isPublicRoute && (!isSignedIn || !hasEden2EarlyAccess())) {
+    if (
+      !isLoading &&
+      !isPublicRoute &&
+      (!isSignedIn || !hasEden2EarlyAccess())
+    ) {
       router.push('/concierge')
     }
   }, [pathname, router, hasEden2EarlyAccess, isSignedIn])
@@ -55,6 +60,7 @@ export function useAuthState() {
     }
 
     if (!hasEden2EarlyAccess()) {
+      console.log('verifying auth redirect')
       window.location.href = '/concierge'
       return false
     }

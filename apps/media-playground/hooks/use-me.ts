@@ -7,6 +7,7 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     balance,
     foreverBalance,
     subscriptionBalance,
+    isLoading,
   } = useCreatorQuery({ key: 'me', enabled: isAuthenticated })
 
   const hasMinimumSubscriptionTier = (minimumTier: SubscriptionTier) => {
@@ -47,5 +48,6 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     balance,
     foreverBalance,
     subscriptionBalance,
+    isLoading,
   }
 }
