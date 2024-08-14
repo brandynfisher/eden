@@ -1,17 +1,7 @@
 import { paginatedResponse, paginationProperties } from '..'
-import {
-  // creationDelete,
-  // creationRate,
-  // creationReact,
-  // creationUnreact,
-  // creationUpdate,
-  listCreations,
-} from '../../controllers/creationsController'
+import { listCreations } from '../../controllers/creationsController'
 import { getCreation } from '../../controllers/v2/creationControllerV2'
-import {
-  // isAuth,
-  maybeAuth,
-} from '../../middleware/authMiddleware'
+import { maybeAuthEden2 } from '../../middleware/authMiddleware'
 // import { ReactionType } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -78,7 +68,7 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [request => maybeAuth(server, request)],
+    preHandler: [request => maybeAuthEden2(server, request)],
     handler: (request, reply) => getCreation(request, reply),
   })
 

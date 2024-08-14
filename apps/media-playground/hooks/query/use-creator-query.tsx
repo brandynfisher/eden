@@ -4,10 +4,15 @@ import { useQuery } from '@tanstack/react-query'
 
 type Props = {
   key: Creator['username']
+  enabled?: boolean
   initialData?: CreatorsGetResponse
 }
 
-export const useCreatorQuery = ({ key, initialData }: Props) => {
+export const useCreatorQuery = ({
+  key,
+  initialData,
+  enabled = true,
+}: Props) => {
   const {
     data,
     error,
@@ -19,6 +24,7 @@ export const useCreatorQuery = ({ key, initialData }: Props) => {
     isSuccess,
     status,
   } = useQuery({
+    enabled,
     initialData,
     queryKey: ['creators', key],
     queryFn: () => fetcher<CreatorsGetResponse>(`/api/users/${key}`),

@@ -162,7 +162,9 @@ import {
   creatorFollowingListRequestConfig,
   creatorsFollowRequestConfig,
   creatorsGetMeRequestConfig,
+  creatorsGetMeV2RequestConfig,
   creatorsGetRequestConfig,
+  creatorsGetV2RequestConfig,
   creatorsListRequestConfig,
   creatorsUnfollowRequestConfig,
   creatorsUpdateRequestConfig,
@@ -454,6 +456,10 @@ export abstract class Methods {
       this,
       creatorsGetRequestConfig,
     ),
+    getV2: bindApiCall<CreatorsGetArguments, CreatorsGetResponse>(
+      this,
+      creatorsGetV2RequestConfig,
+    ),
     update: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
       this,
       creatorsUpdateRequestConfig,
@@ -461,6 +467,10 @@ export abstract class Methods {
     me: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
       this,
       creatorsGetMeRequestConfig,
+    ),
+    meV2: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
+      this,
+      creatorsGetMeV2RequestConfig,
     ),
   }
 

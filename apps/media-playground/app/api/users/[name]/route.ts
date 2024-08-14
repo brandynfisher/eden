@@ -24,7 +24,7 @@ export async function GET(
       token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.creators.get({ userId: name })
+    const res = await eden.creators.getV2({ userId: name })
 
     if (!res) {
       return new NextResponse(JSON.stringify({ message: 'User not found' }), {

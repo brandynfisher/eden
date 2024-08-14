@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { CreditCardIcon, LogOutIcon, SettingsIcon } from 'lucide-react'
@@ -130,6 +131,10 @@ const LoginButton = () => {
 }
 
 const MyAccountButton = () => {
+  // @todo: this is a stupid way to enforce the hook to run everywhere
+  const { isSignedIn } = useAuthState()
+  console.log({ isSignedIn })
+
   return (
     <>
       <SignedIn>

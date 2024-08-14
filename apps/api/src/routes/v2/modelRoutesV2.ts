@@ -1,5 +1,5 @@
 import { getModel, listModels } from '../../controllers/v2/modelControllerV2'
-import { isAuth } from '../../middleware/authMiddleware'
+import { isAuthEden2 } from '../../middleware/authMiddleware'
 import { modelV2Type } from '../../types/routeTypes'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
@@ -26,7 +26,7 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
         200: paginatedResponse(modelV2Type),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => listModels(request, reply),
   })
 
@@ -48,7 +48,7 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => getModel(request, reply),
   })
 }

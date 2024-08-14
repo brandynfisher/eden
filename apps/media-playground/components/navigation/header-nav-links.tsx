@@ -21,10 +21,10 @@ const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
 }
 
 const navItemsExplore: NavLinkProps[] = [
-  {
-    label: 'Explore',
-    segments: [],
-  },
+  // {
+  //   label: 'Explore',
+  //   segments: ['explore'],
+  // },
   // {
   //   label: 'Models',
   //   segments: ['models'],

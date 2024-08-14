@@ -7,7 +7,7 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     balance,
     foreverBalance,
     subscriptionBalance,
-  } = useCreatorQuery({ key: 'me' })
+  } = useCreatorQuery({ key: 'me', enabled: isAuthenticated })
 
   const hasMinimumSubscriptionTier = (minimumTier: SubscriptionTier) => {
     if (!isAuthenticated || !currentUser) {
@@ -30,9 +30,20 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
       : false
   }
 
+  const hasEden2EarlyAccess = () => {
+    if (!isAuthenticated || !currentUser) {
+      return false
+    }
+
+    return currentUser.featureFlags
+      ? currentUser.featureFlags.includes(FeatureFlag.Eden2EarlyAccess)
+      : false
+  }
+
   return {
     user: currentUser,
     hasMinimumSubscriptionTier,
+    hasEden2EarlyAccess,
     balance,
     foreverBalance,
     subscriptionBalance,

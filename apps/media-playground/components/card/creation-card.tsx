@@ -44,7 +44,7 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
             <VideoDurationBadge duration={creation.mediaAttributes.duration} />
             {hovered ? (
               <VideoResult
-                className="absolute inset-0"
+                className="absolute inset-0 pointer-events-none"
                 videoUrl={creation.url || ''}
                 width={creation.mediaAttributes.width}
                 height={creation.mediaAttributes.height}

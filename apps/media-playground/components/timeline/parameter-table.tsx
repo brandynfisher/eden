@@ -1,3 +1,4 @@
+import LoadingIndicator from '@/components/loading-indicator'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import {
   Table,
@@ -88,7 +89,7 @@ const ParameterTable = ({ args }: Props) => {
             </TableCell>
             <TableCell className="pt-0 pb-2 md:py-2">
               {imageInputParameterNames.includes(taskArg[0]) ? (
-                <PhotoProvider>
+                <PhotoProvider loadingElement={<LoadingIndicator />}>
                   <div className="flex flex-wrap gap-2">
                     {(
                       (Array.isArray(taskArg[1])

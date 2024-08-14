@@ -1,5 +1,6 @@
 'use client'
 
+import LoadingIndicator from '@/components/loading-indicator'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import {
   Sortable,
@@ -552,7 +553,7 @@ const FileUploader = ({
             <div>(max. {maxFiles})</div>
           </div>
           <div className="space-y-2">
-            <PhotoProvider>
+            <PhotoProvider loadingElement={<LoadingIndicator />}>
               <Sortable
                 value={uploadedFiles.map(file => ({
                   id: `${file.name}_${file.lastModified}`,

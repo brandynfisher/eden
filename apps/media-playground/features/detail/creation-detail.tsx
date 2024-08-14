@@ -2,10 +2,10 @@
 
 import CreationMediaPreview from '@/components/media/creation-media-preview'
 import ParameterTable from '@/components/timeline/parameter-table'
-import { Button } from '@/components/ui/button'
+// import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
-import { useAuthState } from '@/hooks/use-auth-state'
+// import { useAuthState } from '@/hooks/use-auth-state'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 
 type Props = {
@@ -26,7 +26,7 @@ const MediaSkeleton = () => {
 }
 
 const CreationDetail = ({ id, creationSSRData }: Props) => {
-  const { user } = useAuthState()
+  // const { user } = useAuthState()
   const { creation: creationClientData } = useCreationQuery({
     key: id,
     initialData: creationSSRData
@@ -53,13 +53,13 @@ const CreationDetail = ({ id, creationSSRData }: Props) => {
         {creation ? (
           <>
             <CreationMediaPreview creation={creation} />
-            {user?._id === creation.user._id ? (
-              <div>
-                <Button variant={'outline'}>Action1</Button>
-                <Button variant={'outline'}>Action2</Button>
-                <Button variant={'outline'}>Action3</Button>
-              </div>
-            ) : null}
+            {/*{user?._id === creation.user._id ? (*/}
+            {/*  <div>*/}
+            {/*    <Button variant={'outline'}>Action1</Button>*/}
+            {/*    <Button variant={'outline'}>Action2</Button>*/}
+            {/*    <Button variant={'outline'}>Action3</Button>*/}
+            {/*  </div>*/}
+            {/*) : null}*/}
             {creation.args ? <ParameterTable args={creation.args} /> : null}
             {/*{JSON.stringify(creation, null, 2)}*/}
           </>

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       token: authToken,
     })
 
-    const res = await eden.creators.me()
+    const res = await eden.creators.meV2()
 
     if (!res) {
       return new NextResponse(JSON.stringify({ message: 'User not found' }), {
@@ -26,7 +26,11 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // if (res.creator?.featureFlags && res.creator?.featureFlags.includes(FeatureFlag.Eden2EarlyAccess)) {
     return NextResponse.json(res)
+    // }
+
+    // return new NextResponse(JSON.stringify({ message: 'User not whitelisted for early access' }), { status: 403 })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
