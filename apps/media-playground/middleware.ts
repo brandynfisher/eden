@@ -1,6 +1,5 @@
 import { env } from '@/lib/config'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-// import { clerkMiddleware } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 const isPublicRoute = createRouteMatcher([
@@ -16,7 +15,7 @@ const isPublicRoute = createRouteMatcher([
 export default clerkMiddleware(
   (auth, request) => {
     if (!isPublicRoute(request)) {
-      console.log('not a public route, protect it', auth().userId, request.url)
+      // console.log('not a public route, protect it', auth().userId, request.url)
       if (!auth().userId) {
         console.log('non valid user, send back to sign-in')
         return NextResponse.redirect(`${env.NEXT_PUBLIC_HOST}/concierge`)

@@ -72,6 +72,7 @@ export function useAuthState() {
     foreverBalance,
     subscriptionBalance,
     hasMinimumSubscriptionTier,
+    hasEden2EarlyAccess,
     isSignedIn,
   }
 }

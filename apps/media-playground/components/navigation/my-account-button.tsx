@@ -14,6 +14,7 @@ import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { CreditCardIcon, LogOutIcon, SettingsIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
@@ -133,10 +134,10 @@ const LoginButton = () => {
 const MyAccountButton = () => {
   // @todo: this is a stupid way to enforce the hook to run everywhere
   const { isSignedIn } = useAuthState()
-  console.log({ isSignedIn })
 
   return (
     <>
+      <VisuallyHidden>isSignedIn: {JSON.stringify(isSignedIn)}</VisuallyHidden>
       <SignedIn>
         <AccountDropdown />
       </SignedIn>
