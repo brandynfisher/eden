@@ -1,82 +1,95 @@
 import { cn } from '@/lib/utils'
-import React, { useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-type Props = {
-  className?: string
-  width?: number
-  height?: number
+type VideoProps = {
   videoUrl: string
+  className?: string
   posterUrl?: string
   autoPlay?: boolean
   loop?: boolean
   controls?: boolean
   allowFullscreen?: boolean
   muted?: boolean
+  width?: number
+  height?: number
 }
 
-const VideoResult = ({
-  className,
-  width,
-  height,
+const VideoCard: React.FC<VideoProps> = ({
   videoUrl,
+  className,
   posterUrl,
-  loop,
-  autoPlay,
-  controls,
+  autoPlay = true,
+  loop = true,
+  controls = true,
   allowFullscreen = false,
   muted = true,
-}: Props) => {
+  width,
+  height,
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [initialPlay, setInitialPlay] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [playing, setPlaying] = useState(false)
 
-  const handleVideoClick = async (ev: React.MouseEvent) => {
+  const safePlay = useCallback(() => {
     if (videoRef.current) {
-      const videoElement = videoRef.current as HTMLVideoElement
+      setPlaying(true)
+      videoRef.current.play().catch(() => setPlaying(false))
+    }
+  }, [])
 
-      if (allowFullscreen) {
-        ev.stopPropagation()
-        if (videoElement.paused) {
-          setIsPlaying(false)
-        } else {
-          setIsPlaying(true)
-        }
+  const safePause = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+      setPlaying(false)
+    }
+  }, [])
 
-        await videoElement.requestFullscreen()
+  const handleMouseOver = safePlay
+  const handleMouseOut = safePause
 
-        if (!isPlaying) {
-          await videoElement.play()
-        }
+  const handleClick = async event => {
+    event.preventDefault()
+
+    if (videoRef.current) {
+      if (document.fullscreenElement === null && allowFullscreen) {
+        await videoRef.current.requestFullscreen()
+      }
+
+      if (playing) {
+        safePause()
       } else {
-        if (videoElement.paused) {
-          await videoElement.play()
-          setInitialPlay(true)
-        } else {
-          setIsPlaying(false)
-        }
+        safePlay()
       }
     }
   }
 
+  useEffect(() => {
+    return () => {
+      safePause()
+    }
+  }, [safePause])
+
   return (
     <video
       ref={videoRef}
-      poster={posterUrl}
+      autoPlay={autoPlay}
+      controls={controls}
+      playsInline={autoPlay}
       src={videoUrl}
       loop={loop}
       muted={muted}
-      controls={controls}
-      autoPlay={autoPlay}
-      playsInline={autoPlay}
+      width={width}
+      height={height}
       controlsList={'nodownload'}
       onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
       className={cn(['w-full h-full outline-none', className])}
-      width={width || 1024}
-      height={height || 1024}
-      preload={'none'}
-      onClick={!initialPlay ? handleVideoClick : undefined}
-    />
+      poster={posterUrl}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
+      onClick={handleClick}
+    >
+      <source src={videoUrl} type="video/mp4" />
+    </video>
   )
 }
 
-export default VideoResult
+export default VideoCard
