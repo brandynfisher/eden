@@ -212,4 +212,5 @@ export enum SubscriptionTier {
 
 export enum FeatureFlag {
   Preview = 'preview',
+  Eden2EarlyAccess = 'eden2earlyaccess',
 }

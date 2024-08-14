@@ -46,7 +46,7 @@ const VideoCard: React.FC<VideoProps> = ({
   const handleMouseOver = safePlay
   const handleMouseOut = safePause
 
-  const handleClick = async event => {
+  const handleClick = async (event: React.MouseEvent) => {
     event.preventDefault()
 
     if (videoRef.current) {
