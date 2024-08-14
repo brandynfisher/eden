@@ -54,8 +54,8 @@ export const uploadCldBufferAsset = async (
         mediaType === MediaType.Image
           ? 'image'
           : mediaType === MediaType.Video
-          ? 'video'
-          : 'raw',
+            ? 'video'
+            : 'raw',
       eager:
         mediaType === MediaType.Video
           ? 'c_fill,w_1200,h_630,g_center/c_limit,w_1200/f_webp/q_auto|c_fill,w_1200,h_630,g_center/c_limit,w_1200/f_jpg/q_auto'
@@ -121,7 +121,7 @@ export const uploadCldBufferAsset = async (
         thumbnailUri: '',
         mediaAttributes: {
           type: mediaType,
-          mimeType: fileType?.mime || 'image/jpeg',
+          // mimeType: fileType?.mime || 'image/jpeg',
         },
       }
     }
@@ -154,7 +154,7 @@ export const uploadCldBufferAsset = async (
       thumbnailUri: '',
       mediaAttributes: {
         type: mediaType,
-        mimeType: fileType?.mime || 'image/jpeg',
+        // mimeType: fileType?.mime || 'image/jpeg',
       },
     }
   }
