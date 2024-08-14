@@ -23,6 +23,8 @@ type Props = {
 const imageInputParameterNames = [
   'image',
   'init_image',
+  'control_image',
+  'dummy_image',
   'person_image',
   'style_image',
   'images',

@@ -57,7 +57,7 @@ const renderFormField = (
             return (
               <FormItemWrap
                 name={name}
-                label={label + '-' + parsedValue + '-' + value}
+                label={label}
                 description={parameter.description}
                 errorMessage={fieldState.error?.message}
               >
