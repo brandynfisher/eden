@@ -1,11 +1,13 @@
-'use client' // Error components must be Client Components
+'use client'
 
-import { useEffect } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+// Error components must be Client Components
 import EdenLogoBwGlow from '@/components/logo/eden-logo-bw-glow'
+import { Button } from '@/components/ui/button'
+import * as Sentry from '@sentry/nextjs'
+import Link from 'next/link'
+import { useEffect } from 'react'
 
-export default function Error({
+export default function GlobalError({
   error,
   reset,
 }: {
@@ -13,22 +15,20 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    //@todo: Log the error to an error reporting service
     console.error(error)
+    Sentry.captureException(error)
   }, [error])
 
   return (
-    <section className='block'>
-      <div className='px-5 md:px-10'>
-        <div className='py-16 md:py-24 lg:py-32'>
-          <div className='mx-auto flex-col flex w-full max-w-3xl items-center'>
+    <section className="block">
+      <div className="px-5 md:px-10">
+        <div className="py-16 md:py-24 lg:py-32">
+          <div className="mx-auto flex-col flex w-full max-w-3xl items-center">
             <EdenLogoBwGlow />
-            <div className='text-center mt-4'>
-              <h2 className='font-bold mb-4 text-2xl md:text-4xl'>
-                Error
-              </h2>
-              <div className='mx-auto max-w-[528px] mb-5 md:mb-6 lg:mb-8'>
-                <p className='text-[#636262] max-[479px]:text-sm'>
+            <div className="text-center mt-4">
+              <h2 className="font-bold mb-4 text-2xl md:text-4xl">Error</h2>
+              <div className="mx-auto max-w-[528px] mb-5 md:mb-6 lg:mb-8">
+                <p className="text-[#636262] max-[479px]:text-sm">
                   Oops! 🌿 Looks like our server's gone rogue. You've stumbled
                   into the Orchard of Technical Difficulties 🍎.
                   <br />
@@ -40,8 +40,12 @@ export default function Error({
                   state.
                 </p>
               </div>
-              <Link href='/' passHref>
-                <Button className='font-mono'>Back Home</Button>
+              <div className="mt-4 font-mono line-clamp-2">
+                {error && error.name ? error.name : ''} -{' '}
+                {error && error.message ? error.message : ''}
+              </div>
+              <Link href="/" passHref>
+                <Button className="font-mono">Back Home</Button>
               </Link>
               <Button
                 onClick={
