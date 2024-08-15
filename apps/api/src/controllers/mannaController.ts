@@ -231,17 +231,20 @@ const handleEden2AccessVoucher = async (
       .send({ message: 'User already has Early Access flag' })
   }
 
+  // update user document
   user.featureFlags = [
     ...(user.featureFlags || []),
     FeatureFlag.Eden2EarlyAccess,
   ]
   await user.save()
 
+  // update voucher document
   voucher.used = true
   voucher.redeemedBy = user._id
   await voucher.save()
 
   return reply.status(200).send({
+    action: voucher.action,
     success: true,
   })
 }
