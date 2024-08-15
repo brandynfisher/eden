@@ -18,6 +18,7 @@ const brokenGeneratorsToOmit = [
   'reel',
   'story',
   'img2vid_museV',
+  'stable_audio',
 ]
 
 const fetchConfigs = async (
