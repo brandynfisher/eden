@@ -1,8 +1,8 @@
 import { env } from '@/lib/config'
+import ClerkWrapProvider from '@/provider/clerk-wrap-provider'
 import { ReactQueryProvider } from '@/provider/react-query-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { WebSocketProvider } from '@/provider/websocket-provider'
-import { ClerkProvider } from '@clerk/nextjs'
 import { PropsWithChildren } from 'react'
 
 export default function Providers({ children }: PropsWithChildren) {
@@ -13,18 +13,7 @@ export default function Providers({ children }: PropsWithChildren) {
       enableSystem
       disableTransitionOnChange
     >
-      <ClerkProvider
-        appearance={{
-          layout: {
-            socialButtonsPlacement: 'bottom',
-            socialButtonsVariant: 'iconButton',
-            termsPageUrl: 'https://app.eden.art/terms',
-            privacyPageUrl: 'https://app.eden.art/privacy',
-            helpPageUrl: 'https://app.eden.art/help',
-            logoImageUrl: 'https://app.eden.art/eden-logo-512x512.png',
-          },
-        }}
-      >
+      <ClerkWrapProvider>
         <ReactQueryProvider>
           <WebSocketProvider
             endpoint={env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
@@ -32,7 +21,7 @@ export default function Providers({ children }: PropsWithChildren) {
             {children}
           </WebSocketProvider>
         </ReactQueryProvider>
-      </ClerkProvider>
+      </ClerkWrapProvider>
     </ThemeProvider>
   )
 }
