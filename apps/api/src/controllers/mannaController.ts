@@ -202,7 +202,7 @@ export const redeemMannaVoucher = async (
     default:
       return reply
         .status(400)
-        .send({ message: `Unhandled voucher action: ${mannaVoucher.action}` }) //@todo: unhandled action error
+        .send({ message: `Unhandled voucher action: ${mannaVoucher.action}` })
   }
 }
 
