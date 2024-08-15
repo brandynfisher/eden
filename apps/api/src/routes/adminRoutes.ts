@@ -57,6 +57,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
           allowedUserIds: Type.Optional(Type.Array(Type.String())),
           numberOfUses: Type.Optional(Type.Number()),
           code: Type.Optional(Type.String()),
+          action: Type.Optional(Type.String()),
         }),
       },
       response: {

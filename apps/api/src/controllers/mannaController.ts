@@ -60,7 +60,7 @@ interface MannaVoucherCreateRequestBody {
   allowedUserIds?: string[]
   numberOfUses?: number
   code?: string
-  action?: string
+  action?: VoucherAction
 }
 
 export const createMannaVoucher = async (
@@ -69,6 +69,17 @@ export const createMannaVoucher = async (
 ) => {
   const { allowedUserIds, amount, numberOfUses, code, action } =
     request.body as MannaVoucherCreateRequestBody
+
+  if (action) {
+    if (
+      action !== VoucherAction.AddManna &&
+      action !== VoucherAction.GrantEden2Access
+    ) {
+      return reply
+        .status(400)
+        .send({ message: `Unknown voucher action ${action}` })
+    }
+  }
 
   const numVouchers = numberOfUses || 1
 
@@ -224,6 +235,7 @@ const handleEden2AccessVoucher = async (
     ...(user.featureFlags || []),
     FeatureFlag.Eden2EarlyAccess,
   ]
+  await user.save()
 
   voucher.used = true
   voucher.redeemedBy = user._id
