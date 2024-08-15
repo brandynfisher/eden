@@ -46,23 +46,85 @@ const TimelineItemMediaResult = ({
           </PhotoView>
         </PhotoProvider>
         {result.url?.endsWith('.mp4') ? (
-          <>
+          <PhotoProvider loadingElement={<LoadingIndicator />}>
             <VideoDurationBadge duration={result.mediaAttributes?.duration} />
-            {hovered ? (
-              <VideoResult
-                className="absolute inset-0 cursor-zoom-in"
-                videoUrl={result.url || ''}
-                width={result.mediaAttributes?.width}
-                height={result.mediaAttributes?.height}
-                posterUrl={result.thumbnail}
-                muted={true}
-                loop={true}
-                autoPlay={true}
-                controls={false}
-                allowFullscreen={true}
-              />
-            ) : null}
-          </>
+            <PhotoView
+              width={1024}
+              height={1024}
+              render={({ attrs }) => {
+                // Get the available viewport dimensions
+                const viewportWidth = document.body.clientWidth
+                const viewportHeight = document.body.clientHeight
+
+                // Calculate the original video dimensions and aspect ratio
+                const videoOriginalWidth = result.mediaAttributes?.width || 1024
+                const videoOriginalHeight =
+                  result.mediaAttributes?.height || 1024
+                const aspectRatio = videoOriginalHeight / videoOriginalWidth
+
+                // Calculate the scaled dimensions based on the viewport size
+                let scaledWidth = viewportWidth
+                let scaledHeight = scaledWidth * aspectRatio
+
+                if (scaledHeight > viewportHeight) {
+                  scaledHeight = viewportHeight
+                  scaledWidth = scaledHeight / aspectRatio
+                }
+
+                // Center the video using flexbox and scale it appropriately
+                return (
+                  <div
+                    {...attrs}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: '100%',
+                      height: '100%',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${scaledWidth}px`,
+                        height: `${scaledHeight}px`,
+                        // transform: `scale(${scale})`,
+                        // transformOrigin: 'center',
+                      }}
+                    >
+                      <VideoResult
+                        className="absolute inset-0 cursor-zoom-in con"
+                        videoUrl={result.url || ''}
+                        width={scaledWidth}
+                        height={scaledHeight}
+                        posterUrl={result.thumbnail}
+                        muted={true}
+                        loop={true}
+                        autoPlay={true}
+                        controls={true}
+                      />
+                    </div>
+                  </div>
+                )
+              }}
+            >
+              <div>
+                {hovered ? (
+                  <VideoResult
+                    className="absolute inset-0 cursor-zoom-in"
+                    videoUrl={result.url || ''}
+                    width={result.mediaAttributes?.width}
+                    height={result.mediaAttributes?.height}
+                    posterUrl={result.thumbnail}
+                    muted={true}
+                    loop={true}
+                    autoPlay={true}
+                    controls={false}
+                  />
+                ) : null}
+              </div>
+            </PhotoView>
+          </PhotoProvider>
         ) : null}
       </div>
       <TimelineItemResultTools
