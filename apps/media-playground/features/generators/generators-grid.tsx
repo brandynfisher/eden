@@ -57,7 +57,7 @@ const getImageUrl = (generatorKey: GeneratorV2['key']) => {
 
 const GridSection = ({ generators }: Props) => {
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {generators && generators.length ? (
         <>
           {generators.map(generator => (
