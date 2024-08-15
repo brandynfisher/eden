@@ -8,12 +8,18 @@ const Landing = () => {
         <RotatingEdenLogo variant={'large'} />
       </div>
 
-      <div className="mb-0 grid md:grid-cols-2 gap-4 lg:max-w-5xl lg:w-full lg:grid-cols-4 lg:text-left">
+      <div className="mb-0 grid sm:grid-cols-2 gap-4 lg:max-w-5xl lg:w-full lg:grid-cols-3 lg:text-left">
         <LinkCard
-          href={'/sandbox/masonry'}
-          title={'Masonry'}
-          text={'Experiments for infinite masonry layouts'}
+          href={'/create'}
+          title={'Create'}
+          text={'Start creating with Eden'}
         />
+        <LinkCard
+          href={'/train'}
+          title={'Train'}
+          text={'Train custom models'}
+        />
+        {/*<LinkCard href={'/explore'} title={'Explore'} text={'Browse creations'} />*/}
       </div>
     </div>
   )

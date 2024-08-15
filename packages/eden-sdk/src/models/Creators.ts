@@ -5,8 +5,8 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { Task } from './Tasks'
 import { AxiosRequestConfig } from 'axios'
-import { Task } from 'src/models/Tasks'
 
 // Arguments
 
@@ -92,10 +92,26 @@ export const creatorsGetRequestConfig = (
   }
 }
 
+export const creatorsGetV2RequestConfig = (
+  args: CreatorsGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/creators/${args.userId}`,
+  }
+}
+
 export const creatorsGetMeRequestConfig = (): AxiosRequestConfig => {
   return {
     method: 'GET',
     url: `creators/me`,
+  }
+}
+
+export const creatorsGetMeV2RequestConfig = (): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/creators/me`,
   }
 }
 
@@ -105,6 +121,18 @@ export const creatorsUpdateRequestConfig = (
   return {
     method: 'POST',
     url: 'creators/update',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const creatorsUpdateV2RequestConfig = (
+  args: CreatorsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/creators/update',
     data: {
       ...args,
     },
@@ -212,4 +240,5 @@ export enum SubscriptionTier {
 
 export enum FeatureFlag {
   Preview = 'preview',
+  Eden2EarlyAccess = 'eden2earlyaccess',
 }

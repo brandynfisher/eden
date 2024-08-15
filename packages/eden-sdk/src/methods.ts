@@ -162,7 +162,9 @@ import {
   creatorFollowingListRequestConfig,
   creatorsFollowRequestConfig,
   creatorsGetMeRequestConfig,
+  creatorsGetMeV2RequestConfig,
   creatorsGetRequestConfig,
+  creatorsGetV2RequestConfig,
   creatorsListRequestConfig,
   creatorsUnfollowRequestConfig,
   creatorsUpdateRequestConfig,
@@ -191,22 +193,31 @@ import {
   tasksListRequestConfig,
 } from './models'
 import {
+  CreationsV2GetArguments,
+  CreationsV2GetResponse,
   GeneratorsGetArgumentsV2,
   GeneratorsGetResponseV2,
   GeneratorsListArgumentsV2,
   GeneratorsListResponseV2,
+  TasksV2CancelArguments,
+  TasksV2CancelResponse,
   TasksV2CreateArguments,
   TasksV2CreateResponse,
   TasksV2GetArguments,
   TasksV2GetResponse,
   TasksV2ListArguments,
   TasksV2ListResponse,
+  TasksV2PublishArguments,
+  TasksV2PublishResponse,
+  creationsV2GetRequestConfig,
   generatorsGetRequestConfigV2,
   generatorsListRequestConfigV2,
+  tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
   tasksV2GetRequestConfig,
   tasksV2ListRequestConfig,
+  tasksV2PublishRequestConfig,
 } from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
@@ -406,6 +417,10 @@ export abstract class Methods {
       this,
       creationsGetRequestConfig,
     ),
+    getV2: bindApiCall<CreationsV2GetArguments, CreationsV2GetResponse>(
+      this,
+      creationsV2GetRequestConfig,
+    ),
     react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
       this,
       creationsReactRequestConfig,
@@ -441,6 +456,10 @@ export abstract class Methods {
       this,
       creatorsGetRequestConfig,
     ),
+    getV2: bindApiCall<CreatorsGetArguments, CreatorsGetResponse>(
+      this,
+      creatorsGetV2RequestConfig,
+    ),
     update: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
       this,
       creatorsUpdateRequestConfig,
@@ -448,6 +467,10 @@ export abstract class Methods {
     me: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
       this,
       creatorsGetMeRequestConfig,
+    ),
+    meV2: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
+      this,
+      creatorsGetMeV2RequestConfig,
     ),
   }
 
@@ -611,6 +634,14 @@ export abstract class Methods {
     listV2: bindApiCall<TasksV2ListArguments, TasksV2ListResponse>(
       this,
       tasksV2ListRequestConfig,
+    ),
+    cancelV2: bindApiCall<TasksV2CancelArguments, TasksV2CancelResponse>(
+      this,
+      tasksV2CancelRequestConfig,
+    ),
+    publishV2: bindApiCall<TasksV2PublishArguments, TasksV2PublishResponse>(
+      this,
+      tasksV2PublishRequestConfig,
     ),
   }
 }

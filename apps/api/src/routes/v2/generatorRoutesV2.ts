@@ -54,6 +54,7 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
               name: Type.String(),
               description: Type.Optional(Type.String()),
               outputType: Type.String(),
+              private: Type.Boolean(),
               // @todo: declare expected response for new workflow structure
               parameters: Type.Optional(Type.Array(Type.Any())),
             }),

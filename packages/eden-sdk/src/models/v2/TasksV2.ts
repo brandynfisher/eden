@@ -5,6 +5,8 @@ import {
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../../types'
+import { MediaAttributes } from '../Media'
+import { CreationV2 } from './CreationsV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -24,6 +26,24 @@ export interface TasksV2ListArguments
 
 export interface TasksV2GetArguments extends WebAPICallOptions {
   taskId: string
+}
+
+export interface TasksV2CancelArguments extends WebAPICallOptions {
+  taskId: string
+}
+
+export interface TasksV2PublishArguments extends WebAPICallOptions {
+  taskId: string
+  resultUrl: string
+}
+
+export type TaskV2Result = {
+  url?: string
+  thumbnail?: string
+  metadata?: string | null
+  mediaAttributes?: MediaAttributes
+  published?: boolean
+  model?: string
 }
 
 // Requests
@@ -72,6 +92,30 @@ export const tasksV2GetRequestConfig = (
   }
 }
 
+export const tasksV2CancelRequestConfig = (
+  args: TasksV2CancelArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/tasks/cancel',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const tasksV2PublishRequestConfig = (
+  args: TasksV2PublishArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/tasks/publish',
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type TasksV2CreateResponse = WebAPICallResult &
@@ -93,26 +137,56 @@ export type TasksV2GetResponse = WebAPICallResult & {
   task?: TaskV2
 }
 
+export type TasksV2CancelResponse = WebAPICallResult & {
+  error?: string
+  taskStatus?: TaskV2['status']
+}
+
+export type TasksV2PublishResponse = WebAPICallResult & {
+  error?: string
+  creation?: CreationV2
+}
+
 // Types
+
+export enum TaskV2Status {
+  Pending = 'pending',
+  Running = 'running',
+  Completed = 'completed',
+  Failed = 'failed',
+  Cancelled = 'cancelled',
+}
+
+export type TaskV2Args = {
+  // creations
+  prompt?: string
+  negative_prompt?: string
+  width?: number
+  height?: number
+  seed?: number
+  lora?: string | null
+  lora_strength?: number
+  // models
+  name?: string
+  lora_training_urls?: string[]
+  sd_model_version?: string
+  concept_mode?: string
+  max_train_steps?: number
+  resolution?: number
+}
 
 export type TaskV2 = {
   _id: string
   user: string
   workflow: string
-  args: {
-    prompt?: string
-    negative_prompt?: string
-    width?: number
-    height?: number
-    seed?: number
-    lora?: string | null
-    lora_strength?: number
-  }
-  status: string
+  model?: string
+  name?: string
+  args: TaskV2Args
+  status: TaskV2Status
   error: string | null
-  result: string[]
-  createdAt: string
-  updatedAt: string
+  result: TaskV2Result[]
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface TaskV2Attributes {

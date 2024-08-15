@@ -1,16 +1,28 @@
+import { getFileTypeByMimeType } from '../../lib/eden2'
 import { User } from '../../models/Creator'
-import { TaskV2, TaskV2Document } from '../../models/v2/TaskV2'
-// import { InternalMessagesQueues } from '../../plugins/internalMessagesPlugin'
+import { CreationV2 } from '../../models/v2/CreationV2'
+import {
+  TaskV2Document,
+  TaskV2 as TaskV2Model,
+  taskSchema,
+} from '../../models/v2/TaskV2'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
-  TasksGetArguments,
+  PaginatedResponse,
+  TaskV2,
+  TaskV2Status,
+  TasksV2CancelArguments,
   TasksV2CreateArguments,
+  TasksV2GetArguments,
   TasksV2ListArguments,
+  TasksV2PublishArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
+import { PipelineStage } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
 
@@ -76,32 +88,36 @@ export const createTask = async (
     },
   }
 
-  server.log.info('> modal::request')
+  server.log.info('> modal::request::create')
   server.log.info(modalRequest)
 
-  const modalResponse = await axios.post(
-    modalRequest.endpoint,
-    modalRequest.data,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+  try {
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
       },
-    },
-  )
+    )
 
-  server.log.info('< modal::response')
-  server.log.info(modalResponse.data)
+    server.log.info('< modal::response::create')
+    server.log.info(modalResponse.data)
 
-  if (!modalResponse || !modalResponse.data) {
-    console.log('malformed response', modalResponse)
-    return reply.status(500).send({
-      message: `Empty / Unexpected response from compute api`,
-    })
+    if (!modalResponse || !modalResponse.data) {
+      console.log('malformed response', modalResponse)
+      return reply.status(500).send({
+        message: `Empty / Unexpected response from compute api`,
+      })
+    }
+
+    const task = modalResponse.data as TaskV2
+
+    return reply.status(200).send({ task })
+  } catch (e) {
+    server.log.error({ message: 'Failed to create task', error: e })
   }
-
-  const task = modalResponse.data as TaskV2
-
-  return reply.status(200).send({ task })
 }
 
 export const listTasks = async (
@@ -114,7 +130,7 @@ export const listTasks = async (
     workflow,
     status,
     taskId,
-    limit,
+    limit = 25,
     page,
     sort,
   } = request.query as TasksV2ListArguments
@@ -143,7 +159,7 @@ export const listTasks = async (
   //     }
   //   : {}
 
-  const tasksRepository = new TaskV2Repository(TaskV2)
+  const tasksRepository = new TaskV2Repository(TaskV2Model)
   const query: TasksV2ListArguments = {
     user: user._id.toString(),
     // createdAt: {
@@ -164,34 +180,75 @@ export const listTasks = async (
     query.workflow = workflow
   }
 
-  const tasks = await tasksRepository.query(query, {
+  let tasks: PaginatedResponse<TaskV2Document> = {}
+  const queryOptions = {
+    select: '',
     limit,
     page,
     sort: {
       ...sort,
       createdAt: -1,
     },
-  })
+  }
 
-  // @todo: Once data model is decided on and implemented, add populations back in as needed
-  // await tasksRepository.model.populate(tasks.docs, {
-  //   path: 'creation',
-  // })
-  // await tasksRepository.model.populate(tasks.docs, {
-  //   path: 'concept',
-  //   select: '_id name user conceptName creationCount thumbnail',
-  // })
-  // await tasksRepository.model.populate(tasks.docs, {
-  //   path: 'generator',
-  //   select: '_id generatorName',
-  // })
+  // handle workflows that returns models  resolve `result: ObjectId` to `models._id`
+  if (query.workflow === 'lora_trainer') {
+    queryOptions.select = '-args.lora_training_urls'
+
+    const pipelines: PipelineStage[] = [
+      {
+        $match: {
+          workflow: workflow,
+          user: userId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'models',
+          localField: 'result',
+          foreignField: '_id',
+          as: 'model',
+          pipeline: [
+            {
+              $match: {
+                user: userId,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$model',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        // @todo: Remove training image urls only if not authenticated / subscription requirements - if any - are fulfilled?
+        $unset: ['args.lora_training_urls', 'model.args.lora_training_urls'],
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]
+
+    tasks = await tasksRepository.aggregateQuery(
+      TaskV2Model.aggregate(pipelines),
+      queryOptions,
+    )
+  } else {
+    // all other workflows return array of external asset URIs in `result` and don't need to be resolved further
+    tasks = await tasksRepository.query(query, queryOptions)
+  }
 
   return reply.status(200).send(tasks)
 }
 
 export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
   const { userId } = request.user
-  const { taskId } = request.params as TasksGetArguments
+  const { taskId } = request.params as TasksV2GetArguments
 
   const user = await User.findById(userId)
   if (!user) {
@@ -200,30 +257,35 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
     })
   }
 
-  const task = await TaskV2.findOne({ _id: taskId, user: userId })
+  // populating with a virtual field
+  // @todo: do this only when we're dealing with a task that produced a model = boy this is ugly
+  taskSchema.virtual('model', {
+    ref: 'models',
+    localField: 'result',
+    foreignField: '_id',
+    justOne: true,
+  })
+  taskSchema.set('toObject', { virtuals: true })
+  taskSchema.set('toJSON', { virtuals: true })
+
+  const task = await TaskV2Model.findOne({ _id: taskId, user: userId }).select(
+    '-args.lora_training_urls',
+  )
 
   // await Task.populate(task, {
   //   path: 'creation',
   // })
 
-  // await Task.populate(task, {
-  //   path: 'concept',
-  //   select: '_id name user conceptName creationCount thumbnail',
-  // })
-
-  // await Task.populate(task, {
-  //   path: 'generator',
-  //   select: 'generatorName',
-  // })
+  await TaskV2Model.populate(task, {
+    path: 'model',
+    select: '-args.lora_training_urls',
+  })
 
   if (!task) {
     return reply.status(404).send({
       message: 'Task not found',
     })
   }
-
-  // const taskObject = task.toObject()
-  // delete taskObject.config.lora_training_urls
 
   return reply.status(200).send({ task })
 }
@@ -538,4 +600,155 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
   } catch (e) {
     console.log('Caught error subscribeWebSocketTaskUpdates', e)
   }
+}
+
+export const cancelTask = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { taskId } = request.body as TasksV2CancelArguments
+
+  if (!taskId) {
+    return reply.status(400).send({
+      message: `TaskId missing`,
+    })
+  }
+
+  const userDocument = await User.findById(userId)
+  if (!userDocument) {
+    return reply.status(404).send({
+      message: `User not found`,
+    })
+  }
+
+  const modalRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/cancel`,
+    data: {
+      taskId,
+      user: userId,
+    },
+  }
+
+  server.log.info('> modal::request::cancel')
+  server.log.info(modalRequest)
+
+  const modalResponse = await axios.post(
+    modalRequest.endpoint,
+    modalRequest.data,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  server.log.info('< modal::response::cancel')
+  server.log.info(modalResponse.data)
+
+  if (!modalResponse || !modalResponse.data) {
+    console.log('malformed response', modalResponse)
+    return reply.status(500).send({
+      message: `Empty / Unexpected response from compute api`,
+    })
+  }
+
+  const taskStatus = modalResponse.data.status as TaskV2Status
+
+  return reply.status(200).send({ taskStatus })
+}
+
+export const publishTaskResult = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { taskId, resultUrl } = request.body as TasksV2PublishArguments
+
+  if (!taskId) {
+    return reply.status(400).send({
+      message: `taskId missing`,
+    })
+  }
+
+  if (!resultUrl) {
+    return reply.status(400).send({
+      message: `resultUrl missing`,
+    })
+  }
+
+  const userDocument = await User.findById(userId)
+  if (!userDocument) {
+    return reply.status(400).send({
+      message: `User not found`,
+    })
+  }
+
+  const taskDocument = await TaskV2Model.findById(taskId)
+  if (!taskDocument) {
+    return reply.status(404).send({
+      message: `Task not found`,
+    })
+  }
+
+  const taskResultIndex = taskDocument.result.findIndex(val => {
+    return val.url === resultUrl
+  })
+
+  if (taskResultIndex === -1) {
+    return reply.status(404).send({
+      message: `Task result not found`,
+    })
+  }
+
+  const taskResult = taskDocument.result[taskResultIndex]
+
+  const existingCreation = await CreationV2.exists({
+    url: resultUrl,
+    task: taskId,
+  })
+
+  if (existingCreation) {
+    return reply.status(409).send({
+      message: `Creation already exists`,
+    })
+  }
+
+  server.log.info('Publishing...')
+  server.log.info({ taskId, resultUrl, taskResult })
+  const creation = new CreationV2()
+
+  creation.task = new ObjectId(taskId)
+  creation.user = new ObjectId(userId)
+
+  creation.args = taskDocument.args
+  creation.mediaAttributes = {
+    ...taskResult.mediaAttributes,
+    type:
+      getFileTypeByMimeType(
+        taskResult.mediaAttributes?.mimeType || 'image/jpeg',
+      ) || 'image',
+    mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
+  }
+  creation.metadata = taskResult.metadata
+  creation.url = taskResult.url
+  creation.thumbnail = taskResult.thumbnail
+
+  await creation.save()
+  const remainingResults = [...taskDocument.result]
+  const publishedResult = remainingResults.splice(taskResultIndex, 1)[0]
+
+  taskDocument.result = [
+    ...remainingResults,
+    {
+      ...publishedResult,
+      published: true,
+    },
+  ]
+
+  await taskDocument.save()
+
+  return reply.status(200).send({ creation })
 }

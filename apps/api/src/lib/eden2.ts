@@ -33,3 +33,7 @@ export const handleTaskUpdateStreamEvent = async (
   // server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, task)
   server.internalMessages.publish('task-updates-v2', task)
 }
+
+export const getFileTypeByMimeType = (mimeType: string) => {
+  return mimeType.split('/')[0]
+}

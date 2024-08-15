@@ -10,12 +10,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
-import CreatorData from '@/stories/dummyData/creator'
+import { useCreatorQuery } from '@/hooks/query/use-creator-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { CreditCardIcon, LogOutIcon, SettingsIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import * as React from 'react'
 import { forwardRef } from 'react'
 
 const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
@@ -26,22 +30,16 @@ const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
   ),
 )
 ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
-
 const AccountDropdown = () => {
   const router = useRouter()
-  // @todo: replace with fetched (authed) data from /api/me
-  const user = CreatorData
-
-  // @todo: abstract all of this away
+  const { creator: user } = useCreatorQuery({ key: 'me' })
   const { isSignedIn } = useAuth()
   const { signOut } = useClerk()
 
-  // move this to user state/provider of some sort - analog to garden
   const logout = async () => {
     if (isSignedIn) {
       await signOut()
     }
-
     router.push('/sign-in')
   }
 
@@ -50,50 +48,66 @@ const AccountDropdown = () => {
       <DropdownMenuTrigger asChild>
         <Button className="rounded-full group" size="icon" variant="secondary">
           <UserAvatar
-            image={user.userImage}
-            name={user.username}
+            image={user?.userImage}
+            name={user?.username}
             variant="large"
           />
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {/*<DropdownMenuLabel>My Account</DropdownMenuLabel>*/}
+        {/*<DropdownMenuSeparator />*/}
         <DropdownMenuItem className="cursor-pointer group" asChild>
           <Link
-            href={`/creators/${user.username}`}
+            href={`/creators/${user?.username}`}
             className="group flex gap-2 items-center cursor-pointer"
           >
-            <UserAvatar image={user.userImage} name={user.username} />
+            <UserAvatar image={user?.userImage} name={user?.username} />
             <div className="group-hover:text-primary text-xs transition-colors">
-              {user.username}
+              {user?.username}
             </div>
           </Link>
+          {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user.username}`}>Profile</Link>
+          <Link href={`/creators/${user?.username}`}>Profile</Link>
+          {/*<DropdownMenuShortcut>⌘B</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user.username}/models`}>Models</Link>
+          <Link href={`/creators/${user?.username}?tab=models`}>Models</Link>
+          {/*<DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user.username}/collections`}>
+          <Link href={`/creators/${user?.username}?tab=collections`}>
             Collections
           </Link>
+          {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/settings/account`}>Settings</Link>
+          <Link href={`/settings/account`}>
+            <SettingsIcon className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+          {/*  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/settings/subscription`}>Subscription</Link>
+          <Link href={`/settings/subscription`}>
+            <CreditCardIcon className="mr-2 h-4 w-4" />
+            <span>Subscription</span>
+            {/*<DropdownMenuShortcut>⇧⌘S</DropdownMenuShortcut>*/}
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={logout}>
-          Logout
+          <LogOutIcon className="mr-2 h-4 w-4" />
+          <span>Log out</span>
+          {/*<DropdownMenuShortcut>⇧Q</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -118,8 +132,12 @@ const LoginButton = () => {
 }
 
 const MyAccountButton = () => {
+  // @todo: this is a stupid way to enforce the hook to run everywhere
+  const { isSignedIn } = useAuthState()
+
   return (
     <>
+      <VisuallyHidden>isSignedIn: {JSON.stringify(isSignedIn)}</VisuallyHidden>
       <SignedIn>
         <AccountDropdown />
       </SignedIn>

@@ -9,9 +9,7 @@ const CardImage = ({ media }: Props) => {
   // console.log(media)
   return (
     <Image
-      src={
-        media.thumbnailUri || (media.type === 'image' ? media.uri : '') || ''
-      }
+      src={media.thumbnail || (media.type === 'image' ? media.url : '') || ''}
       alt={'card media thumbnail'}
       width={media.width}
       height={media.height}

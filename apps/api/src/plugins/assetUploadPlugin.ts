@@ -8,7 +8,7 @@ export interface Asset {
   uri: string
   thumbnailUri?: string
   assetBuffer?: Buffer
-  mediaAttributes: MediaAttributes
+  mediaAttributes: Omit<MediaAttributes, 'mimeType'>
 }
 
 export const mediaTypeMap: Record<string, MediaType> = {
@@ -19,6 +19,7 @@ export const mediaTypeMap: Record<string, MediaType> = {
   png: MediaType.Image,
   webp: MediaType.Image,
   zip: MediaType.Zip,
+  tar: MediaType.Zip,
 }
 
 const uploadUrlAsset = async (server: FastifyInstance, url: string) => {

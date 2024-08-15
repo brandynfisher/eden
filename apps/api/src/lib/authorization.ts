@@ -1,10 +1,14 @@
 import userAllowList from '../allowList'
-import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
+import {
+  hasFeatureFlag,
+  hasMinimumSubscriptionTier,
+} from '../middleware/authMiddleware'
 import { Task, TaskStatus } from '../models/Task'
 import {
   CharactersUpdateArguments,
   ConceptsUpdateArguments,
   CreationsUpdateArguments,
+  FeatureFlag,
   SubscriptionTier,
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
@@ -186,4 +190,8 @@ export const isAllowedAccess = (server: FastifyInstance, userId: string) => {
     `User ${userId} is not allowed to access ENV ${server.config.ENV_API}`,
   )
   return false
+}
+
+export const eden2EarlyAccessCheck = (request: FastifyRequest) => {
+  return hasFeatureFlag(request, FeatureFlag.Eden2EarlyAccess)
 }

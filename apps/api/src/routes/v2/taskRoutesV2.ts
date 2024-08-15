@@ -1,11 +1,13 @@
 import { getTaskCost } from '../../controllers/taskController'
 import {
+  cancelTask,
   createTask,
   getTask,
   listTasks,
+  publishTaskResult,
   subscribeTaskUpdates,
 } from '../../controllers/v2/taskControllerV2'
-import { isAuth } from '../../middleware/authMiddleware'
+import { isAuthEden2 } from '../../middleware/authMiddleware'
 import { argsType, taskV2Type } from '../../types/routeTypes'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
@@ -31,7 +33,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => getTaskCost(server, request, reply),
   })
 
@@ -70,7 +72,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => createTask(server, request, reply),
   })
 
@@ -98,7 +100,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         200: paginatedResponse(taskV2Type),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => listTasks(request, reply),
   })
 
@@ -120,7 +122,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => getTask(request, reply),
   })
 
@@ -137,8 +139,53 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         taskId: Type.Optional(Type.String()),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
+  })
+
+  server.post('/v2/tasks/cancel', {
+    schema: {
+      tags: ['Tasks'],
+      description: 'Cancel a task in progress',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        taskId: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          taskStatus: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => cancelTask(server, request, reply),
+  })
+
+  server.post('/v2/tasks/publish', {
+    schema: {
+      tags: ['Tasks'],
+      description: 'Publish a task result',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        taskId: Type.String(),
+        resultUrl: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          creation: Type.Any(), //@todo: creationV2Type
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => publishTaskResult(server, request, reply),
   })
 }
 

@@ -1,5 +1,6 @@
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import axiosRetry from 'axios-retry'
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 
 export type GeneratorConfig = {
@@ -7,21 +8,47 @@ export type GeneratorConfig = {
   list: Partial<GeneratorV2[]>
 }
 
+axiosRetry(axios, {
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
+})
+
+const brokenGeneratorsToOmit = [
+  'layer_diffusion',
+  'reel',
+  'story',
+  'img2vid_museV',
+  'stable_audio',
+]
+
 const fetchConfigs = async (
   server: FastifyInstance,
 ): Promise<GeneratorConfig> => {
-  console.log('fetchConfigs', `${server.config.EDEN_COMPUTE_API_URL}/tools`)
-  const modalResponse = await axios.get(
-    `${server.config.EDEN_COMPUTE_API_URL}/tools`,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+  const computeApiUrl = `${server.config.EDEN_COMPUTE_API_URL}/tools`
+
+  server.log.info(`fetchConfigs: ${computeApiUrl}`)
+
+  const modalResponse = await axios.get(computeApiUrl, {
+    'axios-retry': {
+      retries: Infinity,
+      retryDelay: axiosRetry.exponentialDelay,
+      onRetry: (retryCount, _error, _requestConfig) => {
+        // server.log.warn({error, requestConfig})
+        server.log.warn(
+          `Re-trying (${retryCount}) - fetchConfigs: ${computeApiUrl}`,
+        )
       },
     },
-  )
+    headers: {
+      Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+    },
+  })
 
-  const configs = Array.from(modalResponse.data as GeneratorV2[])
-  const list = Array.from(modalResponse.data as GeneratorV2[]).map(config => {
+  const filteredGenerators = Array.from(
+    modalResponse.data as GeneratorV2[],
+  ).filter(generator => !brokenGeneratorsToOmit.includes(generator.key))
+  const configs = Array.from(filteredGenerators)
+  const list = Array.from(filteredGenerators).map(config => {
     return {
       ...config,
       parameters: undefined,
@@ -41,28 +68,36 @@ const registerGeneratorConfigs: FastifyPluginAsync = async fastify => {
     fastify.decorate('generatorConfigs', await fetchConfigs(fastify))
 
     const refreshHandler = async () => {
-      console.log('Fetching new generator configs...')
-      const newConfigs = await fetchConfigs(fastify)
+      fastify.log.info('Fetching new generator configs...')
 
-      if (!newConfigs) {
-        fastify.log.error(
-          'Plugin: GeneratorConfigs, new configs response is empty!',
+      try {
+        const newConfigs = await fetchConfigs(fastify)
+
+        if (!newConfigs) {
+          fastify.log.error(
+            'Plugin: GeneratorConfigs, new configs response is empty!',
+          )
+          return
+        }
+
+        fastify.generatorConfigs = newConfigs
+
+        fastify.log.info(
+          'New generator configs received:',
+          // JSON.stringify(fastify.generatorConfigs.configs, null, 2),
+          fastify.generatorConfigs.configs.length,
         )
-        return
+      } catch (e) {
+        fastify.log.error(
+          `Failed to refresh generator configs, keep stale data`,
+        )
       }
-
-      fastify.generatorConfigs = newConfigs
-
-      console.log(
-        'New generator configs received:',
-        // JSON.stringify(fastify.generatorConfigs.configs, null, 2),
-        fastify.generatorConfigs.configs.length,
-      )
     }
 
     const intervalId = setInterval(refreshHandler, REFRESH_INTERVAL_MS)
 
     fastify.addHook('onClose', (_instance, done) => {
+      fastify.log.info('fastify::onClose')
       clearInterval(intervalId)
       done()
     })

@@ -16,6 +16,7 @@ import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
 import { UserMigration, UserMigrationDocument } from './UserMigration'
+import { ModelV2, ModelV2Document } from './v2/ModelV2'
 import { TaskV2, TaskV2Document } from './v2/TaskV2'
 import { Model } from 'mongoose'
 
@@ -30,6 +31,7 @@ export interface Database {
   Creation: Model<CreationDocument>
   Embedding: Model<EmbeddingDocument>
   Concept: Model<ConceptDocument>
+  ModelV2: Model<ModelV2Document>
   Reaction: Model<ReactionDocument>
   Collection: Model<CollectionDocument>
   Transaction: Model<TransactionDocument>
@@ -52,6 +54,7 @@ export const models: Database = {
   TaskV2,
   Creation,
   Concept,
+  ModelV2,
   Reaction,
   Collection,
   Transaction,

@@ -1,129 +1,54 @@
+'use client'
+
 import SecondaryNavLayout from '@/components/layout/secondary-nav-layout'
-import { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
+import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
 import { PropsWithChildren } from 'react'
 
 const baseSegment = 'create'
 
-const navItems: SecondaryNavSection[] = [
-  // {
-  //   title: 'Recent',
-  //   links: [
-  //     // {
-  //     //   label: 'Browse All',
-  //     //   segments: [baseSegment, '']
-  //     // },
-  //     // {
-  //     //   label: 'Featured',
-  //     //   segments: [baseSegment, 'featured']
-  //     // },
-  //     // {
-  //     //   label: 'Newest',
-  //     //   segments: [baseSegment, 'newest']
-  //     // },
-  //   ],
-  // },
-  // {
-  //   title: 'Featured',
-  //   links: [
-  //     // {
-  //     //   label: 'Browse All',
-  //     //   segments: ['create', '']
-  //     // },
-  //     // {
-  //     //   label: 'Featured',
-  //     //   segments: ['artists', 'featured']
-  //     // },
-  //     // {
-  //     //   label: 'Newest',
-  //     //   segments: ['artists', 'newest']
-  //     // },
-  //   ],
-  // },
-  // {
-  //   title: 'Popular',
-  //   links: [
-  //     // {
-  //     //   label: 'Browse All',
-  //     //   segments: ['create', '']
-  //     // },
-  //     // {
-  //     //   label: 'Featured',
-  //     //   segments: ['artists', 'featured']
-  //     // },
-  //     // {
-  //     //   label: 'Newest',
-  //     //   segments: ['artists', 'newest']
-  //     // },
-  //   ],
-  // },
-  // {
-  //   title: 'Multi Media',
-  //   links: [
-  //     // {
-  //     //   label: 'Browse All',
-  //     //   segments: ['create', '']
-  //     // },
-  //     // {
-  //     //   label: 'Featured',
-  //     //   segments: ['artists', 'featured']
-  //     // },
-  //     // {
-  //     //   label: 'Newest',
-  //     //   segments: ['artists', 'newest']
-  //     // },
-  //   ],
-  // },
-  {
-    title: 'Video',
-    links: [
-      {
-        label: 'Text to Video',
-        segments: [baseSegment, 'video', 'txt2vid'],
-      },
-      // {
-      //   label: 'Image to Video',
-      //   segments: [baseSegment, 'video', 'img2vid'],
-      // },
-      // {
-      //   label: 'Video to Video',
-      //   segments: [baseSegment, 'video', 'vid2vid'],
-      // },
-    ],
-  },
-  {
-    title: 'Image',
-    links: [
-      {
-        label: 'Text to Image',
-        segments: [baseSegment, 'image', 'txt2img'],
-      },
-      {
-        label: 'SD3 - Text to Image',
-        segments: [baseSegment, 'image', 'SD3'],
-      },
-      // {
-      //   label: 'In-painting',
-      //   segments: [baseSegment, 'image', 'inpaint'],
-      // },
-    ],
-  },
-  {
-    title: 'Model',
-    links: [
-      {
-        label: 'LoRA Trainer',
-        segments: [baseSegment, 'model', 'lora_trainer'],
-      },
-    ],
-  },
-]
-
 const PageLayout = ({ children }: PropsWithChildren) => {
+  const { generators } = useGeneratorsListQuery({
+    outputType: ['image', 'video', 'audio'],
+  })
+
+  if (!generators) {
+    return null
+  }
+
   return (
     <SecondaryNavLayout
-      title={'Workflows'}
+      title={'Tools'}
+      wrapClassName={'!pb-0'}
       baseSegment={baseSegment}
-      navigation={navItems}
+      navigation={[
+        {
+          title: 'Image',
+          links: generators
+            .filter(generator => generator.outputType === 'image')
+            .map(generator => ({
+              label: generator.name,
+              segments: [baseSegment, 'image', generator.key],
+            })),
+        },
+        {
+          title: 'Video',
+          links: generators
+            .filter(generator => generator.outputType === 'video')
+            .map(generator => ({
+              label: generator.name,
+              segments: [baseSegment, 'video', generator.key],
+            })),
+        },
+        {
+          title: 'Audio',
+          links: generators
+            .filter(generator => generator.outputType === 'audio')
+            .map(generator => ({
+              label: generator.name,
+              segments: [baseSegment, 'audio', generator.key],
+            })),
+        },
+      ]}
     >
       {children}
     </SecondaryNavLayout>

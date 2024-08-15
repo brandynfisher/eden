@@ -23,6 +23,7 @@ Drawer.displayName = 'Drawer'
 const DrawerTrigger: React.ForwardRefExoticComponent<
   DialogTriggerProps & React.RefAttributes<HTMLButtonElement>
 > = DrawerPrimitive.Trigger
+
 // @ts-expect-error shadcn/ui component has borked types
 const DrawerPortal: React.FunctionComponent<DialogPortalProps> =
   DrawerPrimitive.Portal

@@ -1,12 +1,16 @@
 import { RotatingImage } from '@/components/logo/rotating-image'
 
-type Variant = 'small' | 'large'
+type Variant = 'small' | 'medium' | 'large'
 
 const RotatingEdenLogo = ({ variant }: { variant?: Variant }) => {
   return (
     <div
       className={`relative flex items-center justify-center ${
-        variant === 'small' ? 'h-[36px] w-[36px]' : 'h-[193px] w-[193px]'
+        variant === 'small'
+          ? 'h-[36px] w-[36px]'
+          : variant === 'medium'
+            ? 'h-32 w-32'
+            : 'h-[193px] w-[193px]'
       } `}
     >
       <RotatingImage src="/logo-bw.png" alt="Eden Logo" priority />

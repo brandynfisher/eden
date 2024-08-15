@@ -1,14 +1,80 @@
-import TypographyH3 from '@/components/ui/typography/TypographyH3'
+import LoadingIndicator from '@/components/loading-indicator'
+import ProfileHeader from '@/features/profile/profile-header'
+import ProfileTabs from '@/features/profile/profile-tabs'
+import { fetcher } from '@/lib/fetcher'
+import { CreatorsGetResponse } from '@edenlabs/eden-sdk'
+import { Metadata, ResolvingMetadata } from 'next'
+import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
+import { Suspense, cache } from 'react'
 
-const CreatorProfilePage = () => {
+type Props = {
+  params: {
+    name: string
+  }
+}
+
+const getUser = async (name: string) => {
+  const response = await fetcher<CreatorsGetResponse>(
+    `${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`,
+  )
+
+  return response
+}
+
+const getUserCached = cache(getUser)
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  // read route params
+  const name = params.name
+
+  // fetch data
+  const creatorResponse = await getUserCached(name || '')
+
+  // optionally access and extend (rather than replace) parent metadata
+  const previousOg: OpenGraph | {} = (await parent).openGraph || {}
+
+  const title = `${creatorResponse.creator?.username} | Garden of Eden`
+  const description = ``
+
+  return {
+    // ...(await parent),
+    title,
+    description,
+    openGraph: {
+      ...previousOg,
+      title,
+      description,
+      images: creatorResponse.creator?.userImage
+        ? [creatorResponse.creator?.userImage]
+        : undefined,
+    },
+  }
+}
+
+const CreatorProfilePage = async ({ params: { name } }: Props) => {
+  if (!name) {
+    return <div>name missing</div>
+  }
+
+  const creatorResponse = await getUserCached(name || '')
+
+  if (!creatorResponse || !creatorResponse.creator) {
+    return <div>empty response</div>
+  }
+
+  if (creatorResponse.error) {
+    return <div>error response: {String(creatorResponse.error)}</div>
+  }
+
   return (
     <>
-      <TypographyH3>
-        Creator
-      </TypographyH3>
-      <div>
-        CreatorProfilePage
-      </div>
+      <ProfileHeader name={name} creatorSSRData={creatorResponse.creator} />
+      <Suspense fallback={<LoadingIndicator />}>
+        <ProfileTabs />
+      </Suspense>
     </>
   )
 }

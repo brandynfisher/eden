@@ -13,4 +13,6 @@ function Skeleton({
   )
 }
 
+Skeleton.displayName = 'Skeleton'
+
 export { Skeleton }

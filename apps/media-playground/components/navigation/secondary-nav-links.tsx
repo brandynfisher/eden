@@ -1,6 +1,13 @@
 'use client'
 
-import NavLink, { NavLinkProps } from '@/components/navigation/nav-link'
+import { NavLinkProps } from '@/components/navigation/nav-link'
+import NavLinkList from '@/components/navigation/nav-link-list'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { useSelectedLayoutSegments } from 'next/navigation'
 
 export type SecondaryNavSection = {
@@ -20,27 +27,23 @@ const SecondaryNavLinks = ({ items, baseSegment }: SecondaryNavProps) => {
     : partialSegments
 
   return (
-    <div className="flex flex-col gap-6">
-      {items.map(item => (
-        <div key={item.title} className="flex flex-col gap-1">
-          <div className="font-bold mb-2">{item.title}</div>
-          {item.links.map(item => (
-            <NavLink
-              key={item.label}
-              label={item.label}
-              segments={item.segments}
-              active={
-                (segments &&
-                  segments.length === 0 &&
-                  item.segments.length === 0) ||
-                (segments && segments.length && item.segments[0] !== undefined)
-                  ? item.segments.every((v, i) => v === segments[i])
-                  : false
-              }
-            />
-          ))}
-        </div>
-      ))}
+    <div className="flex flex-col gap-4 w-full">
+      <Accordion type="single" collapsible defaultValue={items[0].title}>
+        {items.map(item => (
+          <AccordionItem
+            key={item.title}
+            className="flex flex-col gap-1"
+            value={item.title}
+          >
+            <AccordionTrigger className="px-4 font-bold text-accent-foreground w-full">
+              {item.title}
+            </AccordionTrigger>
+            <AccordionContent className="flex flex-col gap-1 px-4">
+              <NavLinkList items={item.links} segments={segments} />
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   )
 }

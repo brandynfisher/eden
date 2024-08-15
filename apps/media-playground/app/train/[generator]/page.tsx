@@ -1,8 +1,12 @@
-import TypographyH3 from '@/components/ui/typography/TypographyH3'
+import LoadingIndicator from '@/components/loading-indicator'
+import Workspace from '@/features/generators/workspace'
+import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { Suspense } from 'react'
 
 type Props = {
   params: {
-    generator: string
+    generator: GeneratorV2['key']
+    outputType: GeneratorV2['outputType']
   }
 }
 
@@ -11,8 +15,9 @@ const TrainGeneratorPage = ({ params }: Props) => {
 
   return (
     <div>
-      <TypographyH3>train - {generator}</TypographyH3>
-      <div>training tools</div>
+      <Suspense fallback={<LoadingIndicator />}>
+        <Workspace generatorKey={generator} />
+      </Suspense>
     </div>
   )
 }

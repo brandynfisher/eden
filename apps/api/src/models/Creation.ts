@@ -54,7 +54,7 @@ export interface CreationInput {
   name?: string
   attributes?: Record<string, any>
   mediaAttributes?: {
-    type: MediaType
+    type: string
     duration?: number
     width?: number
     height?: number

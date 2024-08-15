@@ -22,11 +22,12 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   args: {
     media: {
-      uri: squareImageFile.src,
-      thumbnailUri: squareImageFile.src,
+      url: squareImageFile.src,
+      thumbnail: squareImageFile.src,
       width: squareImageFile.width,
       height: squareImageFile.height,
       type: MediaType.Image,
+      mimeType: 'image/jpeg',
     },
   },
 }
@@ -34,11 +35,12 @@ export const Default: Story = {
 export const Loading: Story = {
   args: {
     media: {
-      uri: '/image/does/not/exist',
-      thumbnailUri: '/image/does/not/exist',
+      url: '/image/does/not/exist',
+      thumbnail: '/image/does/not/exist',
       width: squareImageFile.width,
       height: squareImageFile.height,
       type: MediaType.Image,
+      mimeType: 'image/jpeg',
     },
   },
 }
@@ -46,11 +48,12 @@ export const Loading: Story = {
 export const Error: Story = {
   args: {
     media: {
-      uri: '',
-      thumbnailUri: '',
+      url: '',
+      thumbnail: '',
       width: squareImageFile.width,
       height: squareImageFile.height,
       type: MediaType.Image,
+      mimeType: 'image/jpeg',
     },
   },
 }

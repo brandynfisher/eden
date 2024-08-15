@@ -1,4 +1,4 @@
-import { CONFIG } from '@/lib/config'
+import { env } from '@/lib/config'
 import { ReactQueryProvider } from '@/provider/react-query-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { WebSocketProvider } from '@/provider/websocket-provider'
@@ -27,7 +27,7 @@ export default function Providers({ children }: PropsWithChildren) {
       >
         <ReactQueryProvider>
           <WebSocketProvider
-            endpoint={CONFIG.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
+            endpoint={env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
           >
             {children}
           </WebSocketProvider>

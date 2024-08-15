@@ -1,3 +1,5 @@
+import { sanitize } from '@/lib/strings'
+import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 
 type UploadOptions = {
@@ -54,12 +56,92 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
 
   const response = await axios.put(signedUrl, file, config)
 
-  if (response.status === 200) {
-    return {
-      file: file,
-      fileUrl: signedUrl.split('?')[0],
-    }
+  const fileObjURL = URL.createObjectURL(file)
+
+  const fileWithExtra = Object.assign(file, {
+    fileUrl: signedUrl.split('?')[0],
+    preview: fileObjURL,
+    dimensions: file.type.startsWith('image')
+      ? await getDimensionsFromImgBlob(file)
+      : undefined,
+  })
+
+  if (response.status !== 200) {
+    throw new Error(`Upload error - status ${response.status}`)
   }
 
-  return false
+  return fileWithExtra
+}
+
+export const getDimensionsFromImgBlob = async (file: File) => {
+  const blob = new Blob([file], { type: file.type })
+  const imgBitmap = await createImageBitmap(blob)
+  const { width, height } = imgBitmap
+  imgBitmap.close()
+
+  return {
+    width,
+    height,
+  }
+}
+
+export function convertBytes(
+  bytes: number,
+  options: { useBinaryUnits?: boolean; decimals?: number } = {},
+): string {
+  const { useBinaryUnits = false, decimals = 2 } = options
+
+  if (decimals < 0) {
+    throw new Error(`Invalid decimals ${decimals}`)
+  }
+
+  const base = useBinaryUnits ? 1024 : 1000
+  const units = useBinaryUnits
+    ? ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+    : ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+  const i = Math.floor(Math.log(bytes) / Math.log(base))
+
+  return `${(bytes / Math.pow(base, i)).toFixed(decimals)} ${units[i]}`
+}
+
+const sanitizeFilenameForCloudinaryBug = (fileName: string) => {
+  return fileName.replaceAll('original', 'Original')
+}
+
+export const getDownloadFileName = (
+  userName: string,
+  itemId: string,
+  itemName?: string,
+) => {
+  const fileName = encodeURIComponent(
+    `Eden-${userName}-${
+      itemName ? sanitize(itemName.slice(0, 128)) : '___'
+    }-${itemId}`,
+  )
+  return sanitizeFilenameForCloudinaryBug(fileName)
+}
+
+export const downloadFile = async (url: string, fileName: string) => {
+  try {
+    const parsedUrl = new URL(url)
+    const extension = parsedUrl.pathname.split('.').pop()
+    const response = await axios.get(
+      `/api/media/download?url=${url}&fileName=${fileName}&fileExtension=${extension}`,
+    )
+    const link = document.createElement('a')
+    link.download = `${fileName}.${extension}`
+    link.href = response.data.signedUrl
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    return true
+  } catch (error) {
+    console.error('Error downloading creation:', error)
+    return false
+  }
+}
+
+export const getFileTypeByMimeType = (mimeType: MimeType) => {
+  return mimeType.split('/')[0] as FileType
 }

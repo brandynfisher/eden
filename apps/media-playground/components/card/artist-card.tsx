@@ -20,8 +20,8 @@ const ArtistCard = ({ creator }: Props) => {
       >
         <CardImage
           media={{
-            uri: creator.userImage,
-            thumbnailUri: creator.userImage,
+            url: creator.userImage,
+            thumbnail: creator.userImage,
             width: 512,
             height: 512,
             type: 'image',

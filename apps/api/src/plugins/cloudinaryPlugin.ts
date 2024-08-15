@@ -6,6 +6,8 @@ import {
   v2 as cloudinary,
 } from 'cloudinary'
 import type { FastifyInstance } from 'fastify'
+import { fileTypeFromBuffer } from 'file-type'
+import { MimeType } from 'file-type/core'
 
 export interface CloudinaryUploadSignature {
   signature: string
@@ -17,9 +19,11 @@ export interface CloudinaryUploadSignature {
 const getMediaAttributes = async (
   uploadResponse: UploadApiResponse,
   mediaType: MediaType,
+  mimeType: MimeType,
 ): Promise<MediaAttributes> => {
   const mediaAttributes: MediaAttributes = {
     type: mediaType,
+    mimeType: mimeType,
   }
 
   if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
@@ -40,6 +44,8 @@ export const uploadCldBufferAsset = async (
   mediaType: MediaType,
   buffer: Buffer,
 ): Promise<Asset> => {
+  const fileType = await fileTypeFromBuffer(buffer)
+
   try {
     const uploadConfig: UploadApiOptions = {
       media_metadata:
@@ -48,8 +54,8 @@ export const uploadCldBufferAsset = async (
         mediaType === MediaType.Image
           ? 'image'
           : mediaType === MediaType.Video
-          ? 'video'
-          : 'raw',
+            ? 'video'
+            : 'raw',
       eager:
         mediaType === MediaType.Video
           ? 'c_fill,w_1200,h_630,g_center/c_limit,w_1200/f_webp/q_auto|c_fill,w_1200,h_630,g_center/c_limit,w_1200/f_jpg/q_auto'
@@ -115,11 +121,16 @@ export const uploadCldBufferAsset = async (
         thumbnailUri: '',
         mediaAttributes: {
           type: mediaType,
+          // mimeType: fileType?.mime || 'image/jpeg',
         },
       }
     }
 
-    const mediaAttributes = await getMediaAttributes(uploadResult, mediaType)
+    const mediaAttributes = await getMediaAttributes(
+      uploadResult,
+      mediaType,
+      fileType?.mime || 'image/jpeg',
+    )
 
     const formatVideoThumbnailUri = (uploadResult: UploadApiResponse) => {
       const { secure_url } = uploadResult
@@ -143,6 +154,7 @@ export const uploadCldBufferAsset = async (
       thumbnailUri: '',
       mediaAttributes: {
         type: mediaType,
+        // mimeType: fileType?.mime || 'image/jpeg',
       },
     }
   }

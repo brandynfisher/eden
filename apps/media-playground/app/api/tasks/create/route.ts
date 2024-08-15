@@ -1,8 +1,8 @@
 import { getAuthToken } from '@/lib/auth'
-import { CONFIG } from '@/lib/config'
+import { env } from '@/lib/config'
 import { EdenClient, TaskV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 const createTask = async (
   workflow: string,
@@ -16,7 +16,7 @@ const createTask = async (
     })
     .then(response => {
       if (!response || response.message) {
-        return new Response(
+        return new NextResponse(
           JSON.stringify({
             message: response.message || 'Internal Error - unknown reason',
           }),
@@ -27,7 +27,7 @@ const createTask = async (
       }
 
       if (response && !response.task) {
-        return new Response(
+        return new NextResponse(
           JSON.stringify({
             message:
               response.message ||
@@ -39,10 +39,10 @@ const createTask = async (
         )
       }
 
-      return Response.json(response.task)
+      return NextResponse.json(response.task)
     })
     .catch(error => {
-      return new Response(
+      return new NextResponse(
         JSON.stringify({
           message:
             error?.response?.data?.message ||
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   const authToken = await getAuthToken(request)
 
   if (!authToken) {
-    return new Response(JSON.stringify({ message: 'Not authenticated' }), {
+    return new NextResponse(JSON.stringify({ message: 'Not authenticated' }), {
       status: 401,
     })
   }
@@ -72,26 +72,32 @@ export async function POST(request: NextRequest) {
   const requestJson = await request.json()
 
   if (!requestJson) {
-    return new Response(JSON.stringify({ message: 'No data passed' }), {
-      status: 401,
+    return new NextResponse(JSON.stringify({ message: 'No data passed' }), {
+      status: 400,
     })
   }
 
   if (!requestJson.workflow) {
-    return new Response(JSON.stringify({ message: 'Missing workflow key' }), {
-      status: 401,
-    })
+    return new NextResponse(
+      JSON.stringify({ message: 'Missing workflow key' }),
+      {
+        status: 400,
+      },
+    )
   }
 
   if (!requestJson.args) {
-    return new Response(JSON.stringify({ message: 'Missing generator args' }), {
-      status: 401,
-    })
+    return new NextResponse(
+      JSON.stringify({ message: 'Missing generator args' }),
+      {
+        status: 400,
+      },
+    )
   }
 
   try {
     const eden = new EdenClient({
-      edenApiUrl: CONFIG.NEXT_PUBLIC_EDEN_API_URL,
+      edenApiUrl: env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken,
     })
 
@@ -103,7 +109,7 @@ export async function POST(request: NextRequest) {
     const createdTaskJson = await createdTaskResponse.json()
 
     if (createdTaskResponse.status !== 200) {
-      return new Response(
+      return new NextResponse(
         JSON.stringify({
           message: createdTaskJson.message || 'Error creating task',
         }),
@@ -113,17 +119,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return Response.json(createdTaskJson)
+    return NextResponse.json(createdTaskJson)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response && error.response.data) {
-        return new Response(JSON.stringify({ message: error.response.data }), {
-          status: 500,
-        })
+        return new NextResponse(
+          JSON.stringify({ message: error.response.data }),
+          {
+            status: 500,
+          },
+        )
       }
     }
 
-    return new Response(JSON.stringify({ message: error }), {
+    return new NextResponse(JSON.stringify({ message: error }), {
       status: 500,
     })
   }

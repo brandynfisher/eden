@@ -2,6 +2,7 @@
 
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
 import TimelineItem from '@/components/timeline/timeline-item'
+import { Switch } from '@/components/ui/switch'
 import { useWebSocketContext } from '@/provider/websocket-provider'
 import {
   GeneratorV2,
@@ -10,7 +11,7 @@ import {
   TasksV2ListResponse,
 } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 type TaskData = {
   pageParams: number[]
@@ -24,19 +25,24 @@ type Props = {
 const Timeline = ({ generator }: Props) => {
   const queryClient = useQueryClient()
   const { lastMessageJson } = useWebSocketContext()
+  const [filterTasksByCurrentWorkflow, setFilterTasksByCurrentWorkflow] =
+    useState(true)
 
   const query: TasksV2ListArguments = useMemo(
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
-      workflow: generator.key,
+      workflow: filterTasksByCurrentWorkflow ? generator.key : undefined,
     }),
-    [generator.key],
+    [filterTasksByCurrentWorkflow, generator.key],
   )
 
   const queryKey = useMemo(
-    () => [['tasks', generator.key], query],
-    [generator.key, query],
+    () => [
+      ['tasks', filterTasksByCurrentWorkflow ? generator.key : undefined],
+      query,
+    ],
+    [filterTasksByCurrentWorkflow, generator.key, query],
   )
 
   useEffect(() => {
@@ -51,15 +57,21 @@ const Timeline = ({ generator }: Props) => {
     ) {
       const taskUpdate = lastMessageJson.data.task as TaskV2
 
-      if (taskUpdate.workflow !== generator.key) {
+      if (
+        filterTasksByCurrentWorkflow &&
+        taskUpdate.workflow !== generator.key
+      ) {
         console.log(
-          `discarding task-update for ${taskUpdate.workflow}`,
+          `discarding task-update for other workflow: ${taskUpdate.workflow}`,
           taskUpdate,
         )
         return
       }
 
-      console.log(`received task-update for ${taskUpdate.workflow}`, taskUpdate)
+      console.log(
+        `received task-update for workflow: ${taskUpdate.workflow}`,
+        taskUpdate,
+      )
 
       queryClient.setQueryData(queryKey, (old: TaskData | undefined) => {
         // Copy the old pages array
@@ -91,13 +103,27 @@ const Timeline = ({ generator }: Props) => {
   }, [lastMessageJson, queryClient, queryKey])
 
   return (
-    <div data-test-id="timeline" className="2xl:col-span-2">
-      <ListVirtualizerVertical
-        apiEndpoint={'/api/tasks/list'}
-        query={query}
-        queryKey={queryKey}
-        render={TimelineItem}
-      />
+    <div className="mb-8 2xl:col-span-2">
+      <div className="flex flex-row items-center justify-between rounded-lg border p-4 mb-4">
+        <div className="space-y-0.5">
+          <label className="text-base">Only show current workflow</label>
+        </div>
+        <Switch
+          checked={filterTasksByCurrentWorkflow}
+          onCheckedChange={setFilterTasksByCurrentWorkflow}
+        />
+      </div>
+
+      <div data-test-id="timeline">
+        <ListVirtualizerVertical
+          apiEndpoint={'/api/tasks/list'}
+          query={query}
+          queryKey={queryKey}
+          render={item => (
+            <TimelineItem item={item.item} outputType={generator.outputType} />
+          )}
+        />
+      </div>
     </div>
   )
 }

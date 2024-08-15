@@ -15,9 +15,9 @@ import sharp from 'sharp'
 const getS3MediaAttributes = async (
   buffer: Buffer,
   fileExtension: string,
-): Promise<MediaAttributes> => {
+): Promise<Omit<MediaAttributes, 'mimeType'>> => {
   const mediaType = mediaTypeMap[fileExtension]
-  const mediaAttributes: MediaAttributes = {
+  const mediaAttributes: Omit<MediaAttributes, 'mimeType'> = {
     type: mediaType,
   }
 

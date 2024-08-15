@@ -5,6 +5,7 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { MediaAttributes } from './Media'
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { Task } from 'src/models/Tasks'
@@ -180,14 +181,6 @@ export type Creation = {
   updatedAt: string
 }
 
-export interface MediaAttributes {
-  type: MediaType
-  duration?: number
-  width?: number
-  height?: number
-  aspectRatio?: number
-}
-
 export interface CreationAttributes {
   nsfw_score?: number
   interrogation?: string
@@ -195,13 +188,4 @@ export interface CreationAttributes {
 
 export enum ReactionType {
   Praise = 'praise',
-}
-
-export enum MediaType {
-  Image = 'image',
-  Video = 'video',
-  Text = 'text',
-  Audio = 'audio',
-  Zip = 'zip',
-  Unknown = 'unknown',
 }

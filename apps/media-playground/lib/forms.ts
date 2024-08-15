@@ -158,10 +158,13 @@ export function createZodParameterSchema(
 }
 
 export function createZodFormSchema(parameters: GeneratorParameterV2[]) {
-  const schemaObj = parameters.reduce((prev, curr) => {
-    prev[curr.name] = createZodParameterSchema(curr)
-    return prev
-  }, {} as Record<string, ZodTypeAny>)
+  const schemaObj = parameters.reduce(
+    (prev, curr) => {
+      prev[curr.name] = createZodParameterSchema(curr)
+      return prev
+    },
+    {} as Record<string, ZodTypeAny>,
+  )
 
   return z.object(schemaObj)
 }

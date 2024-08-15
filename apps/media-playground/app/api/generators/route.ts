@@ -1,6 +1,6 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -10,17 +10,35 @@ export async function GET(request: NextRequest) {
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
 
-    const query =
-      searchParams.get('hideParams') === 'true'
-        ? { hideParams: true }
-        : undefined
+    const query: { hideParams?: boolean; outputType?: string } = {}
+
+    if (searchParams.has('hideParams')) {
+      query.hideParams = searchParams.get('hideParams') === 'true'
+    }
+
+    if (searchParams.has('outputType')) {
+      query.outputType = searchParams.get('outputType') || ''
+    }
 
     const res = await eden.generators.listV2(query)
-    return Response.json({ generators: res.generators })
+
+    if (!res || !res.generators) {
+      return new NextResponse(
+        JSON.stringify({ message: 'No generators found' }),
+        {
+          status: 404,
+        },
+      )
+    }
+
+    const publicGenerators = res?.generators?.filter(
+      generator => !generator.private,
+    )
+    return NextResponse.json({ generators: publicGenerators })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
-    return new Response(JSON.stringify({ message: errorMessage }), {
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })
   }

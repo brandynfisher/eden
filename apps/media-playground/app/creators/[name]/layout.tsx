@@ -1,17 +1,8 @@
-import { PropsWithChildren } from 'react'
 import DefaultLayout from '@/components/layout/default-layout'
+import { PropsWithChildren } from 'react'
 
-const PageLayout = ({ children }: PropsWithChildren) => {
-  return (
-    <DefaultLayout>
-      {children}
-      <div className='flex gap-6'>
-        <div>Models</div>
-        <div>Creations</div>
-        <div>Collections</div>
-      </div>
-    </DefaultLayout>
-  )
+const PageLayout = async ({ children }: PropsWithChildren) => {
+  return <DefaultLayout>{children}</DefaultLayout>
 }
 
 export default PageLayout

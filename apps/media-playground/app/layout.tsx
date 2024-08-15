@@ -1,15 +1,17 @@
 import '@/styles/globals.css'
+import 'react-photo-view/dist/react-photo-view.css'
 
 import Providers from '@/app/providers'
 import Header from '@/components/header/header'
 import { PreloadResources } from '@/components/preload-resources'
-import { Toaster } from '@/components/ui/toaster'
-import { CONFIG } from '@/lib/config'
+import { TailwindIndicator } from '@/components/tailwind-indicator'
+import { Toaster } from '@/components/ui/sonner'
+import { env } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { Metadata } from 'next'
 import { Inter as FontSans } from 'next/font/google'
-import { ReactElement } from 'react'
+import { ReactNode } from 'react'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -17,7 +19,7 @@ const fontSans = FontSans({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(CONFIG.NEXT_PUBLIC_HOST),
+  metadataBase: new URL(env.NEXT_PUBLIC_HOST),
   title: 'Garden of Eden',
   description: 'The Garden of Artificial Delights',
   openGraph: {
@@ -29,7 +31,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: ReactElement }) {
+export default function RootLayout({
+  children,
+  modal,
+}: {
+  children: ReactNode
+  modal: ReactNode
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <PreloadResources />
@@ -42,13 +50,19 @@ export default function RootLayout({ children }: { children: ReactElement }) {
         <Providers>
           <div className="flex min-h-screen w-full flex-col">
             <Header />
+            {modal}
             {children}
           </div>
-          {CONFIG.NEXT_PUBLIC_APP_ENV === 'production' ? (
-            <GoogleTagManager gtmId={CONFIG.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
-          ) : null}
+
+          {env.NEXT_PUBLIC_APP_ENV === 'production' ? (
+            <GoogleTagManager gtmId={env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
+          ) : (
+            <TailwindIndicator />
+          )}
+
+          <div id="modal-root" />
+          <Toaster expand={false} visibleToasts={9} closeButton={true} />
         </Providers>
-        <Toaster />
       </body>
     </html>
   )

@@ -1,15 +1,18 @@
+import { VideoDurationBadge } from '@/components/badge/video-duration-badge'
 import LikeButton from '@/components/button/like-button'
 import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
+import VideoResult from '@/components/media/video-result'
 import { Card } from '@/components/ui/card'
+import { useHover } from '@/hooks/use-hover'
 import { FileType } from '@/types/Media'
-import { Creation, Creator } from '@edenlabs/eden-sdk'
+import { CreationV2, Creator } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
 import { CSSProperties } from 'react'
 
 type Props = {
-  creation: Creation
+  creation: CreationV2
   linkHref: string
   creator?: Creator
   showFooter?: boolean
@@ -17,22 +20,43 @@ type Props = {
 }
 
 const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
+  const { hovered, ref } = useHover()
+
   return (
-    <Card className="overflow-hidden border-0" style={style}>
+    <Card ref={ref} className="overflow-hidden border-0" style={style}>
       <Link
-        href={`/creation/${creation._id}`}
+        href={`/creations/${creation._id}`}
         prefetch={false}
         className="relative w-full block"
       >
         <CardImage
           media={{
-            uri: creation.uri,
-            thumbnailUri: creation.thumbnail,
-            width: creation.mediaAttributes.width,
-            height: creation.mediaAttributes.height,
-            type: creation.mediaAttributes.type as FileType,
+            url: creation.url,
+            thumbnail: creation.thumbnail,
+            width: creation.mediaAttributes?.width,
+            height: creation.mediaAttributes?.height,
+            type: creation.mediaAttributes?.type as FileType,
           }}
         />
+
+        {creation.mediaAttributes?.type === 'video' ? (
+          <>
+            <VideoDurationBadge duration={creation.mediaAttributes.duration} />
+            {hovered ? (
+              <VideoResult
+                className="absolute inset-0 pointer-events-none"
+                videoUrl={creation.url || ''}
+                width={creation.mediaAttributes.width}
+                height={creation.mediaAttributes.height}
+                posterUrl={creation.thumbnail}
+                muted={true}
+                loop={true}
+                autoPlay={true}
+                controls={false}
+              />
+            ) : null}
+          </>
+        ) : null}
       </Link>
       {showFooter ? (
         <CardFooter
