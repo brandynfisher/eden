@@ -37,7 +37,7 @@ export async function generateMetadata(
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
 
   const title = `${creatorResponse.creator?.username} | Garden of Eden`
-  const description = `User Profile Description`
+  const description = ``
 
   return {
     // ...(await parent),
@@ -47,7 +47,9 @@ export async function generateMetadata(
       ...previousOg,
       title,
       description,
-      // images: ['/some-specific-page-image.jpg', ...previousOg.images],
+      images: creatorResponse.creator?.userImage
+        ? [creatorResponse.creator?.userImage]
+        : undefined,
     },
   }
 }
