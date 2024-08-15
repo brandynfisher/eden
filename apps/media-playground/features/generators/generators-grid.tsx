@@ -21,23 +21,25 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   animate_3D: 'animate_3D.mp4',
   style_mixing: 'style_mixing.mp4',
   txt2vid: 'txt2vid.mp4',
+  txt2vid_lora: 'txt2vid_lora.mp4',
+  vid2vid_sdxl: 'txt2vid_lora.mp4',
+  img2vid: 'img2vid.mp4',
+  vid2vid_sd15: 'vid2vid.mp4',
+  video_upscaler: 'video_upscaler.jpeg',
 
   // images
   background_removal: 'background_removal.jpeg',
   clarity_upscaler: 'clarity_upscaler.jpeg',
-  face_styler: 'face_styler.jpeg',
+  face_styler: 'face_styler.png',
   inpaint: 'inpaint.mp4',
   outpaint: 'outpaint.mp4',
   SD3: 'SD3.jpeg',
-  txt2img: 'txt2img.jpeg',
+  txt2img: 'txt2img.png',
   txt2img2: 'txt2img2.jpeg',
   layer_diffusion: 'layer_diffusion.png',
   controlnet: 'controlnet.png',
   remix: 'remix.png',
   lora_trainer: 'lora_trainer.png',
-  img2vid: 'img2vid.mp4',
-  vid2vid_sd15: 'vid2vid.mp4',
-  video_upscaler: 'video_upscaler.jpeg',
 }
 
 const getImageUrl = (generatorKey: GeneratorV2['key']) => {

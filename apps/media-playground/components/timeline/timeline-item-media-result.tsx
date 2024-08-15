@@ -8,6 +8,8 @@ import Image from 'next/image'
 import React from 'react'
 import { PhotoProvider, PhotoView } from 'react-photo-view'
 
+// import LightboxGallery from '@/components/media/lightbox-gallery'
+
 type Props = {
   task: TaskV2
   result: TaskV2Result
@@ -134,6 +136,7 @@ const TimelineItemMediaResult = ({
         originalFileUrl={result.url || ''}
         fileName={`${task.args?.prompt || '_noname'}_${index}`}
       />
+      {/*<LightboxGallery />*/}
     </>
   )
 }
