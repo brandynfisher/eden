@@ -1,13 +1,15 @@
+'use client'
+
 import { ClerkProvider } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { useTheme } from 'next-themes'
-import { useRouter } from 'next/router'
+import { usePathname } from 'next/navigation'
 import React, { ReactNode, useEffect, useState } from 'react'
 
 const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
   const { resolvedTheme } = useTheme()
   const [baseTheme, setBaseTheme] = useState<typeof dark | undefined>(dark)
-  const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (resolvedTheme && resolvedTheme === 'light') {
@@ -17,12 +19,12 @@ const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [resolvedTheme])
 
-  const [afterSignInUrl, setAfterSignInUrl] = useState(router.asPath)
+  const [afterSignInUrl, setAfterSignInUrl] = useState(pathname)
   useEffect(() => {
-    if (router.asPath !== '/sign-in' && router.asPath !== '/sign-up') {
-      setAfterSignInUrl(router.asPath)
+    if (pathname !== '/sign-in' && pathname !== '/sign-up') {
+      setAfterSignInUrl(pathname)
     }
-  }, [router.asPath])
+  }, [pathname])
 
   return (
     <ClerkProvider
