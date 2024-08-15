@@ -55,7 +55,7 @@ export const characterLimitPermissionCheck = (
 
   if (
     isUser &&
-    currentCharactersCount >= 2 &&
+    currentCharactersCount >= 5 &&
     !hasMinimumSubscriptionTier(request, SubscriptionTier.Basic)
   ) {
     return false
