@@ -40,6 +40,9 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   controlnet: 'controlnet.png',
   remix: 'remix.png',
   lora_trainer: 'lora_trainer.png',
+
+  // audio
+  audiocraft: 'audio_craft.mp4',
 }
 
 const getImageUrl = (generatorKey: GeneratorV2['key']) => {
