@@ -95,19 +95,21 @@ const ParameterTable = ({ args }: Props) => {
                       (Array.isArray(taskArg[1])
                         ? taskArg[1]
                         : [taskArg[1]]) as string[]
-                    ).map(inputImageUrl => (
-                      <PhotoView key={inputImageUrl} src={inputImageUrl}>
-                        <Image
-                          onClick={e => e.stopPropagation()}
-                          className="rounded-lg cursor-zoom-in hover:brightness-105"
-                          src={inputImageUrl}
-                          title="Click to show image in fullscreen"
-                          alt={taskArg[0]}
-                          width={72}
-                          height={72}
-                        />
-                      </PhotoView>
-                    ))}
+                    )
+                      .filter(Boolean)
+                      .map(inputImageUrl => (
+                        <PhotoView key={inputImageUrl} src={inputImageUrl}>
+                          <Image
+                            onClick={e => e.stopPropagation()}
+                            className="rounded-lg cursor-zoom-in hover:brightness-105"
+                            src={inputImageUrl}
+                            title="Click to show image in fullscreen"
+                            alt={taskArg[0]}
+                            width={72}
+                            height={72}
+                          />
+                        </PhotoView>
+                      ))}
                   </div>
                 </PhotoProvider>
               ) : videoInputParameterNames.includes(taskArg[0]) ? (
@@ -116,15 +118,17 @@ const ParameterTable = ({ args }: Props) => {
                     (Array.isArray(taskArg[1])
                       ? taskArg[1]
                       : [taskArg[1]]) as string[]
-                  ).map(inputVideoUrl => (
-                    <PreviewVideoPlayer
-                      key={inputVideoUrl}
-                      src={inputVideoUrl}
-                      width={72}
-                      height={72}
-                      className="hover:brightness-105"
-                    />
-                  ))}
+                  )
+                    .filter(Boolean)
+                    .map(inputVideoUrl => (
+                      <PreviewVideoPlayer
+                        key={inputVideoUrl}
+                        src={inputVideoUrl}
+                        width={72}
+                        height={72}
+                        className="hover:brightness-105"
+                      />
+                    ))}
                 </div>
               ) : typeof taskArg[1] === 'boolean' ? (
                 taskArg[1] ? (
