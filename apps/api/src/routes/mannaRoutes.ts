@@ -40,8 +40,9 @@ const mannaRoutes: FastifyPluginAsync = async server => {
       }),
       response: {
         200: Type.Object({
-          manna: Type.Number(),
-          transactionId: Type.String(),
+          action: Type.Optional(Type.String()),
+          manna: Type.Optional(Type.Number()),
+          transactionId: Type.Optional(Type.String()),
         }),
       },
     },

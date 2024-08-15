@@ -7,6 +7,7 @@ export interface MannaVoucherSchema {
   used: boolean
   allowedUserIds?: string[]
   redeemedBy?: UserDocument
+  action?: string
   createdAt?: Date
   updatedAt?: Date | number
 }
@@ -15,6 +16,12 @@ export interface MannaVoucherInput {
   amount: number
   code: string
   allowedUserIds?: string[]
+  action?: string
+}
+
+export enum VoucherAction {
+  AddManna = 'manna',
+  GrantEden2Access = 'eden2_access',
 }
 
 export interface MannaVoucherDocument extends MannaVoucherSchema, Document {}
@@ -40,6 +47,10 @@ const mannavoucher = new Schema<MannaVoucherDocument>(
     redeemedBy: {
       type: Schema.Types.ObjectId,
       ref: 'creators',
+    },
+    action: {
+      type: String,
+      enum: Object.values(VoucherAction),
     },
   },
   {

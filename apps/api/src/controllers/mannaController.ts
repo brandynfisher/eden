@@ -1,10 +1,14 @@
 import { randomId } from '../lib/util'
-import { User } from '../models/Creator'
+import { User, UserDocument } from '../models/Creator'
 import { Manna } from '../models/Manna'
-import { MannaVoucher } from '../models/MannaVoucher'
+import {
+  MannaVoucher,
+  MannaVoucherDocument,
+  VoucherAction,
+} from '../models/MannaVoucher'
 import { Transaction } from '../models/Transaction'
 import { MannaModifyRequestBody } from '../routes/adminRoutes'
-import { MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
+import { FeatureFlag, MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 export const modifyManna = async (
@@ -56,13 +60,14 @@ interface MannaVoucherCreateRequestBody {
   allowedUserIds?: string[]
   numberOfUses?: number
   code?: string
+  action?: string
 }
 
 export const createMannaVoucher = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { allowedUserIds, amount, numberOfUses, code } =
+  const { allowedUserIds, amount, numberOfUses, code, action } =
     request.body as MannaVoucherCreateRequestBody
 
   const numVouchers = numberOfUses || 1
@@ -86,6 +91,7 @@ export const createMannaVoucher = async (
       allowedUserIds: allowedUserIds || null,
       amount,
       code: newCode,
+      action,
     })
 
     await mannaVoucher.save()
@@ -185,6 +191,54 @@ export const redeemMannaVoucher = async (
     })
   }
 
+  if (!mannaVoucher.action || mannaVoucher.action === VoucherAction.AddManna) {
+    return handleMannaVoucher(reply, user, mannaVoucher)
+  }
+
+  switch (mannaVoucher.action) {
+    case VoucherAction.GrantEden2Access: {
+      return handleEden2AccessVoucher(reply, user, mannaVoucher)
+    }
+    default:
+      return reply
+        .status(400)
+        .send({ message: `Unhandled voucher action: ${mannaVoucher.action}` }) //@todo: unhandled action error
+  }
+}
+
+const handleEden2AccessVoucher = async (
+  reply: FastifyReply,
+  user: UserDocument,
+  voucher: MannaVoucherDocument,
+) => {
+  if (
+    user.featureFlags &&
+    user.featureFlags.includes(FeatureFlag.Eden2EarlyAccess)
+  ) {
+    return reply
+      .status(400)
+      .send({ message: 'User already has Early Access flag' })
+  }
+
+  user.featureFlags = [
+    ...(user.featureFlags || []),
+    FeatureFlag.Eden2EarlyAccess,
+  ]
+
+  voucher.used = true
+  voucher.redeemedBy = user._id
+  await voucher.save()
+
+  return reply.status(200).send({
+    success: true,
+  })
+}
+
+const handleMannaVoucher = async (
+  reply: FastifyReply,
+  user: UserDocument,
+  voucher: MannaVoucherDocument,
+) => {
   const manna = await Manna.findOne({ user: user._id })
 
   let newBalance
@@ -193,13 +247,13 @@ export const redeemMannaVoucher = async (
   if (!manna) {
     const newManna = new Manna({
       user: user._id,
-      balance: mannaVoucher.amount,
+      balance: voucher.amount,
     })
     newBalance = newManna.balance
     mannaId = newManna._id
     await newManna.save()
   } else {
-    manna.balance += mannaVoucher.amount
+    manna.balance += voucher.amount
     newBalance = manna.balance
     mannaId = manna._id
     await manna.save()
@@ -207,13 +261,13 @@ export const redeemMannaVoucher = async (
 
   const transaction = new Transaction({
     manna: mannaId,
-    amount: mannaVoucher.amount,
+    amount: voucher.amount,
   })
   await transaction.save()
 
-  mannaVoucher.used = true
-  mannaVoucher.redeemedBy = user._id
-  await mannaVoucher.save()
+  voucher.used = true
+  voucher.redeemedBy = user._id
+  await voucher.save()
 
   return reply.status(200).send({
     manna: newBalance,
