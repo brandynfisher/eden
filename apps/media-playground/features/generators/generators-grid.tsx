@@ -24,11 +24,11 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   txt2vid_lora: 'txt2vid_lora.mp4',
   vid2vid_sdxl: 'vid2vid_sdxl.mp4',
   img2vid: 'img2vid.mp4',
-  vid2vid_sd15: 'vid2vid.mp4',
+  vid2vid_sd15: 'vid2vid_sd15.mp4',
   video_upscaler: 'video_upscaler.jpeg',
 
   // images
-  background_removal: 'background_removal.jpeg',
+  background_removal: 'background_removal.mp4',
   clarity_upscaler: 'clarity_upscaler.jpeg',
   face_styler: 'face_styler.png',
   inpaint: 'inpaint.mp4',

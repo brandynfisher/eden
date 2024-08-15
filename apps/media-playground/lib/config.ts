@@ -40,7 +40,7 @@ export const siteConfig: SiteConfig = {
   ],
   url: {
     base: env.NEXT_PUBLIC_HOST,
-    author: 'https://rdev.pro',
+    author: 'EdenLabs',
   },
   links: {
     homepage: 'https://eden.art',
