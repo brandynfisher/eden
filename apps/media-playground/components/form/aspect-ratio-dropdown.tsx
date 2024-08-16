@@ -15,7 +15,7 @@ import { PropsWithChildren } from 'react'
 
 type Props = {
   resolutions: Resolution[]
-  activeResolution: Resolution
+  activeResolution?: Resolution
   onClick: (resolution: Resolution) => void
 } & PropsWithChildren
 
@@ -44,11 +44,11 @@ const AspectRatioDropdown = ({
           {resolutions.map(resolution => (
             <DropdownMenuItem
               key={resolution.label}
-              className={`flex items-center py-1 cursor-pointer ${resolution.label === activeResolution.label ? 'bg-muted' : ''}`}
+              className={`flex items-center py-1 cursor-pointer ${activeResolution && resolution.label === activeResolution.label ? 'bg-muted' : ''}`}
               onClick={() => onClick(resolution)}
             >
               <div
-                className={`flex items-center justify-center rounded-md h-8 w-12 ${resolution.label === activeResolution.label ? 'bg-muted-foreground/10' : 'bg-accent-foreground/10'}`}
+                className={`flex items-center justify-center rounded-md h-8 w-12 ${activeResolution && resolution.label === activeResolution.label ? 'bg-muted-foreground/10' : 'bg-accent-foreground/10'}`}
               >
                 {resolution.label}
               </div>

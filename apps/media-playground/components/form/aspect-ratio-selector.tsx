@@ -73,27 +73,31 @@ const AspectRatioSelector = ({ form }: Props) => {
   const squareAspectIndex = RESOLUTIONS.findIndex(res => res.label === '1:1')
   const squareResolution = RESOLUTIONS[squareAspectIndex]
 
-  const landscapeIndex = RESOLUTIONS.findIndex(
-    res =>
-      (res.width === activeResolution.width &&
-        res.height === activeResolution.height &&
-        res.width > res.height) ||
-      (res.width === activeResolution.height &&
-        res.height === activeResolution.width &&
-        res.width > res.height),
-  )
+  const landscapeIndex = activeResolution
+    ? RESOLUTIONS.findIndex(
+        res =>
+          (res.width === activeResolution.width &&
+            res.height === activeResolution.height &&
+            res.width > res.height) ||
+          (res.width === activeResolution.height &&
+            res.height === activeResolution.width &&
+            res.width > res.height),
+      )
+    : RESOLUTIONS.length - 1
   const landscapeResolution =
     RESOLUTIONS[landscapeIndex !== -1 ? landscapeIndex : RESOLUTIONS.length - 1]
 
-  const portraitIndex = RESOLUTIONS.findIndex(
-    res =>
-      (res.width === activeResolution.width &&
-        res.height === activeResolution.height &&
-        res.width < res.height) ||
-      (res.width === activeResolution.height &&
-        res.height === activeResolution.width &&
-        res.width < res.height),
-  )
+  const portraitIndex = activeResolution
+    ? RESOLUTIONS.findIndex(
+        res =>
+          (res.width === activeResolution.width &&
+            res.height === activeResolution.height &&
+            res.width < res.height) ||
+          (res.width === activeResolution.height &&
+            res.height === activeResolution.width &&
+            res.width < res.height),
+      )
+    : 0
   const portraitResolution =
     RESOLUTIONS[portraitIndex !== -1 ? portraitIndex : 0]
 
@@ -121,7 +125,7 @@ const AspectRatioSelector = ({ form }: Props) => {
   return (
     <ToggleGroup
       type="single"
-      value={activeResolution.label}
+      value={activeResolution ? activeResolution.label : undefined}
       className="border border-muted rounded-md p-1 flex items-center"
     >
       {visibleResolutions.map(resolution => (
@@ -154,7 +158,7 @@ const AspectRatioSelector = ({ form }: Props) => {
       ))}
       <AspectRatioDropdown
         resolutions={RESOLUTIONS}
-        activeResolution={activeResolution}
+        activeResolution={activeResolution || undefined}
         onClick={(resolution: Resolution) => updateFormValues(resolution)}
       />
     </ToggleGroup>
