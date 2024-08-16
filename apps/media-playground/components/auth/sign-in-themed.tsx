@@ -5,8 +5,8 @@ import { dark } from '@clerk/themes'
 import { useTheme } from 'next-themes'
 
 const SignInThemed = () => {
-  const { theme } = useTheme()
-  const clerkTheme = theme === 'dark' ? dark : undefined
+  const { resolvedTheme } = useTheme()
+  const clerkTheme = resolvedTheme === 'light' ? undefined : dark
 
   return <SignIn appearance={{ baseTheme: clerkTheme }} />
 }

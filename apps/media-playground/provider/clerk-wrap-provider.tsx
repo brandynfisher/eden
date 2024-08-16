@@ -21,6 +21,7 @@ const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
   }, [resolvedTheme])
 
   const [afterSignInUrl, setAfterSignInUrl] = useState(pathname)
+
   useEffect(() => {
     if (pathname !== '/sign-in' && pathname !== '/sign-up') {
       setAfterSignInUrl(pathname)

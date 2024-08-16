@@ -19,8 +19,8 @@ const publicRoutes = [
 export function useAuthState() {
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
-  const { theme } = useTheme()
-  const clerkTheme = theme === 'dark' ? dark : undefined
+  const { resolvedTheme } = useTheme()
+  const clerkTheme = resolvedTheme === 'light' ? undefined : dark
 
   const {
     user,
@@ -45,15 +45,27 @@ export function useAuthState() {
       return match
     })
 
-    // console.log({ isPublicRoute, isSignedIn, access: hasEden2EarlyAccess() })
-    if (
-      !isLoading &&
-      !isPublicRoute &&
-      (!isSignedIn || !hasEden2EarlyAccess())
-    ) {
+    if (isLoading) {
+      return
+    }
+
+    if (isPublicRoute) {
+      return
+    }
+
+    if (isSignedIn) {
+      if (
+        hasEden2EarlyAccess() &&
+        (pathname === '/concierge' ||
+          pathname === '/sign-up' ||
+          pathname === '/sign-in')
+      ) {
+        router.push('/')
+      }
+    } else {
       router.push('/concierge')
     }
-  }, [pathname, router, hasEden2EarlyAccess, isSignedIn])
+  }, [isLoading, pathname, router, hasEden2EarlyAccess, isSignedIn])
 
   const verifyAuth = async () => {
     if (isSignedIn) {
