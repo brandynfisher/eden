@@ -1,9 +1,10 @@
 'use client'
 
+import AspectRatioSelector from '@/components/form/aspect-ratio-selector'
 import FormItemHead from '@/components/form/form-item-head'
 import FormItemWrap from '@/components/form/form-item-wrap'
-import SelectInput from '@/components/form/select-input'
-import SliderInput from '@/components/form/slider-input'
+import SelectInput from '@/components/form/input/select-input'
+import SliderInput from '@/components/form/input/slider-input'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import {
@@ -322,8 +323,17 @@ const GeneratorForm = ({ generator }: Props) => {
 
   // console.log({defaultValues})
 
+  const hasAspectRatioSelector = generator.parameters?.some(
+    param => param.name === 'width' || param.name === 'height',
+  )
+
+  console.log({ hasAspectRatioSelector })
+
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
-  const form = useForm({
+
+  type FormData = z.infer<typeof parameterSchema>
+
+  const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
     defaultValues,
   })
@@ -406,6 +416,11 @@ const GeneratorForm = ({ generator }: Props) => {
                   {renderFormField(parameter, form)}
                 </div>
               ))}
+            {hasAspectRatioSelector ? (
+              <div className="flex justify-end">
+                <AspectRatioSelector form={form} />
+              </div>
+            ) : null}
           </div>
 
           <div className="flex gap-4 mt-4 mb-4">

@@ -1,10 +1,10 @@
+import CdnImage from '@/components/Media/cdn-image'
 import FullscreenOutlined from '@ant-design/icons/FullscreenOutlined'
 import ZoomInOutlined from '@ant-design/icons/ZoomInOutlined'
 import ZoomOutOutlined from '@ant-design/icons/ZoomOutOutlined'
 import { Button } from 'antd'
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
-import CdnImage from '@/components/Media/cdn-image'
 
 const ImageZoomPan = ({
   imageUrl,
@@ -60,8 +60,10 @@ const ImageZoomPan = ({
   )
 
   useEffect(() => {
-    contentRef.current?.focus()
-  }, [])
+    if (contentRef.current) {
+      contentRef.current?.focus()
+    }
+  }, [contentRef])
 
   return (
     <div ref={componentWrapRef} className={`fixed inset-0 bg-black z-30`}>
