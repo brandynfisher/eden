@@ -78,6 +78,8 @@ jobs:
             "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
             "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"
+            "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/create"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
           # cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache-new
 
