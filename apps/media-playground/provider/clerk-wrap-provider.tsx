@@ -1,5 +1,6 @@
 'use client'
 
+import { env } from '@/lib/config'
 import { ClerkProvider } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { useTheme } from 'next-themes'
@@ -28,8 +29,8 @@ const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ClerkProvider
-      signInFallbackRedirectUrl={afterSignInUrl}
-      signUpFallbackRedirectUrl={afterSignInUrl}
+      signInFallbackRedirectUrl={afterSignInUrl || env.NEXT_PUBLIC_HOST}
+      signUpFallbackRedirectUrl={afterSignInUrl || env.NEXT_PUBLIC_HOST}
       appearance={{
         baseTheme,
         layout: {

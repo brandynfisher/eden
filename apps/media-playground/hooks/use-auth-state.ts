@@ -70,6 +70,7 @@ export function useAuthState() {
       clerkTheme
         ? {
             fallbackRedirectUrl: env.NEXT_PUBLIC_HOST,
+            signUpFallbackRedirectUrl: env.NEXT_PUBLIC_HOST,
             appearance: { baseTheme: clerkTheme },
           }
         : undefined,
