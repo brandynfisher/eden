@@ -1,4 +1,11 @@
 import { FormDescription, FormLabel } from '@/components/ui/form'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { InfoIcon } from 'lucide-react'
 
 type Props = {
   label: string
@@ -7,11 +14,21 @@ type Props = {
 
 const FormItemHead = ({ label, description }: Props) => {
   return (
-    <div className="space-y-0.5 mb-1">
-      <FormLabel className="text-base first-letter:uppercase">
-        {label}
-      </FormLabel>
-      <FormDescription>{description}</FormDescription>
+    <div className="space-y-0.5 mb-2 flex">
+      <FormLabel className="text-sm first-letter:uppercase">{label}</FormLabel>
+      <FormDescription className="ml-auto">
+        <TooltipProvider delayDuration={125}>
+          <Tooltip>
+            <TooltipTrigger
+              className="hover:text-accent-foreground cursor-pointer"
+              onClick={ev => ev.preventDefault()}
+            >
+              <InfoIcon className="h-4 w-4" />
+            </TooltipTrigger>
+            <TooltipContent>{description}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </FormDescription>
     </div>
   )
 }

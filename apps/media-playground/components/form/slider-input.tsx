@@ -5,7 +5,7 @@ import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   form: UseFormReturn
-  type: string
+  type: 'float' | 'int'
   min: number
   max: number
   step: number
@@ -24,7 +24,7 @@ const SliderInputRangeLabel = ({
   return (
     <span
       className={cn([
-        'absolute text-sm font-mono pointer-events-none mix-blend-difference filter invert text-popover',
+        'absolute text-xs font-mono pointer-events-none text-accent-foreground z-50 mix-blend-difference dark:mix-blend-soft-light',
         className,
       ])}
     >
@@ -47,11 +47,11 @@ const SliderInput = ({
       <div className="relative flex items-center gap-4 w-full">
         <SliderInputRangeLabel
           text={`${min}${unit || ''}`}
-          className="text-xs left-4 z-50 filter invert opacity-60"
+          className="left-4"
         />
         <div className="flex-1 relative">
           <SliderWithTooltip
-            className="flex-1 h-10"
+            className="flex-1"
             defaultValue={[value]}
             value={[value]}
             min={min}
@@ -65,7 +65,7 @@ const SliderInput = ({
         </div>
         <SliderInputRangeLabel
           text={`${max}${unit || ''}`}
-          className="text-xs right-4 z-50 filter invert opacity-60"
+          className="right-4"
         />
       </div>
       <Input
