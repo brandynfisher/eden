@@ -23,7 +23,11 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
   const { hovered, ref } = useHover()
 
   return (
-    <Card ref={ref} className="overflow-hidden border-0" style={style}>
+    <Card
+      ref={ref}
+      className="overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
+      style={style}
+    >
       <Link
         href={`/creations/${creation._id}`}
         prefetch={false}

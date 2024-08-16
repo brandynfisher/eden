@@ -7,7 +7,7 @@ type Props = {
 
 const FormItemHead = ({ label, description }: Props) => {
   return (
-    <div className="space-y-0.5">
+    <div className="space-y-0.5 mb-1">
       <FormLabel className="text-base first-letter:uppercase">
         {label}
       </FormLabel>

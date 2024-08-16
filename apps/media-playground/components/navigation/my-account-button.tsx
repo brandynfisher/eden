@@ -46,7 +46,11 @@ const AccountDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="rounded-full group" size="icon" variant="secondary">
+        <Button
+          className="rounded-full group relative z-10 shadow-[0_0px_2px_0_#030712,0_0px_1px_-1px_#030712]"
+          size="icon"
+          variant="secondary"
+        >
           <UserAvatar
             image={user?.userImage}
             name={user?.username}

@@ -30,7 +30,7 @@ const TimelineItemMediaResult = ({
     <>
       <div
         ref={ref}
-        className="relative border-transparent bg-popover"
+        className="relative border-transparent bg-popover z-10 shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
         style={{ aspectRatio: result?.mediaAttributes?.aspectRatio || 1 }}
       >
         <PhotoProvider loadingElement={<LoadingIndicator />}>

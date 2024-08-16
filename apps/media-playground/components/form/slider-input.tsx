@@ -1,9 +1,11 @@
 import { SliderWithTooltip } from '@/components/ui/custom/slider-with-tooltip'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   form: UseFormReturn
+  type: string
   min: number
   max: number
   step: number
@@ -31,13 +33,21 @@ const SliderInputRangeLabel = ({
   )
 }
 
-const SliderInput = ({ min, max, step, onChange, value, unit }: Props) => {
+const SliderInput = ({
+  type,
+  min,
+  max,
+  step,
+  onChange,
+  value,
+  unit,
+}: Props) => {
   return (
-    <>
+    <div className="flex items-center">
       <div className="relative flex items-center gap-4 w-full">
         <SliderInputRangeLabel
           text={`${min}${unit || ''}`}
-          className="text-xs left-4 z-50 filter invert opacity-80"
+          className="text-xs left-4 z-50 filter invert opacity-60"
         />
         <div className="flex-1 relative">
           <SliderWithTooltip
@@ -55,10 +65,27 @@ const SliderInput = ({ min, max, step, onChange, value, unit }: Props) => {
         </div>
         <SliderInputRangeLabel
           text={`${max}${unit || ''}`}
-          className="text-xs right-4 z-50 filter invert opacity-80"
+          className="text-xs right-4 z-50 filter invert opacity-60"
         />
       </div>
-    </>
+      <Input
+        className="w-20 h-8 rounded-md rounded-l-none relative font-mono"
+        type="number"
+        min={max || 0}
+        max={max || 1}
+        step={step ? step : 1}
+        value={value}
+        onChange={e =>
+          onChange(
+            e.target.value
+              ? type === 'int'
+                ? parseInt(e.target.value)
+                : parseFloat(e.target.value)
+              : undefined,
+          )
+        }
+      />
+    </div>
   )
 }
 

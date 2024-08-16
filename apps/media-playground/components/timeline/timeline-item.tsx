@@ -58,7 +58,11 @@ const TimelineItem = ({ item, outputType }: Props) => {
   }, [])
 
   return (
-    <div data-test-id="timeline-item" key={item._id}>
+    <div
+      data-test-id="timeline-item"
+      key={item._id}
+      className="overflow-hidden"
+    >
       <TaskParameterList task={item} />
       {item.status !== 'completed' ? (
         <div className="relative bg-muted rounded-bl-lg rounded-br-lg">
