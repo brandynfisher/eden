@@ -1,15 +1,15 @@
 import { OrderByLatest } from '@/components/Layout/buttons/OrderByButtons'
+import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
 import { createPaginationRoute, fetcher } from '@/lib/fetcher'
 // import { truncatedAddress } from '@/lib/string'
 import { UserContext } from '@/providers/UserProvider'
+import { useAuth } from '@clerk/nextjs'
 import { Task, TaskUpdateEvent } from '@edenlabs/eden-sdk'
 import { useLocalStorage } from '@mantine/hooks'
+import { EventSourcePolyfill } from 'event-source-polyfill'
 // import { App } from 'antd'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useSWRConfig } from 'swr'
-import { EventSourcePolyfill } from 'event-source-polyfill'
-import { useAuth } from '@clerk/nextjs'
-import { useClerkUserState } from '@/hooks/auth/useClerkUserState'
 import useSWR from 'swr/immutable'
 
 export const useCreationState = () => {
@@ -21,13 +21,13 @@ export const useCreationState = () => {
   const [failedTasks, setFailedTasks] = useState<Task[]>([])
   const [hasChangedGenerator, setHasChangedGenerator] = useState(false)
   const [pendingTasks, setPendingTasks] = useState<Task[]>()
-  const { userId } = useContext(UserContext)
+  const { userId, user } = useContext(UserContext)
   const { data: tasksData } = useSWR(
     `/api/tasks/list?status=running,starting,pending,completed,failed`,
     fetcher,
   )
 
-  const [ tasks, setTasks ] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
     if (tasksData && tasksData.tasks !== undefined) {
@@ -49,12 +49,14 @@ export const useCreationState = () => {
     ])
   }
 
-  const [ currentAuthToken, setCurrentAuthToken ] = useState<string|null>()
+  const [currentAuthToken, setCurrentAuthToken] = useState<string | null>()
 
   const refreshToken = useCallback(async () => {
     const newToken = await getToken()
     if (newToken) {
-      setCurrentAuthToken(prev => newToken && newToken !== prev ? newToken : prev)
+      setCurrentAuthToken(prev =>
+        newToken && newToken !== prev ? newToken : prev,
+      )
     }
   }, [getToken, setCurrentAuthToken])
 
@@ -63,7 +65,7 @@ export const useCreationState = () => {
   }, [activeTaskId])
 
   useEffect(() => {
-    let eventSource: EventSourcePolyfill|undefined
+    let eventSource: EventSourcePolyfill | undefined
 
     if (isAuthenticated && userId) {
       const initEventSource = async () => {
@@ -72,47 +74,57 @@ export const useCreationState = () => {
           `${process.env.NEXT_PUBLIC_EDEN_SSE_URL}/tasks/events`,
           {
             headers: {
-              Authorization: `Bearer ${currentAuthToken || await getToken()}`,
+              Authorization: `Bearer ${currentAuthToken || (await getToken())}`,
             },
-          }
+          },
         )
 
         // eventSource.addEventListener('init-ping', (event) => {
         //   console.log(event)
         // }, false)
 
-        eventSource.addEventListener('keep-alive', () => {
-          // console.log(event)
-          refreshToken()
-        }, false)
+        eventSource.addEventListener(
+          'keep-alive',
+          () => {
+            // console.log(event)
+            refreshToken()
+          },
+          false,
+        )
 
-        eventSource.addEventListener('task-update', (event) => {
-          const { data: update } = event as MessageEvent
-          const data: TaskUpdateEvent = JSON.parse(update)
-          // console.log('UI::task-update', type, lastEventId, data)
+        eventSource.addEventListener(
+          'task-update',
+          event => {
+            const { data: update } = event as MessageEvent
+            const data: TaskUpdateEvent = JSON.parse(update)
+            // console.log('UI::task-update', type, lastEventId, data)
 
-          if (data) {
-            setTasks(prevState => {
-              const newState = [...prevState]
-              const existingTaskIndex = newState.findIndex(item => item.taskId === data.taskId)
+            if (data) {
+              setTasks(prevState => {
+                const newState = [...prevState]
+                const existingTaskIndex = newState.findIndex(
+                  item => item.taskId === data.taskId,
+                )
 
-              if (existingTaskIndex !== -1) {
-                newState[existingTaskIndex] = {
-                  ...newState[existingTaskIndex],
-                  ...data.task
+                if (existingTaskIndex !== -1) {
+                  newState[existingTaskIndex] = {
+                    ...newState[existingTaskIndex],
+                    ...data.task,
+                  }
+
+                  return newState
+                }
+
+                if (data.task) {
+                  return [data.task, ...newState]
                 }
 
                 return newState
-              }
-
-              if (data.task) {
-                return [ data.task, ...newState ]
-              }
-
-              return newState
-            })
-          }
-        }, false)
+              })
+            }
+          },
+          false,
+        )
         eventSource.onerror = error => {
           // console.error(error)
           console.error('UI eventsource.onerror', error)
@@ -133,7 +145,6 @@ export const useCreationState = () => {
 
   const notify = useCallback(
     async (items: Task[]) => {
-
       if (items && items.length) {
         items.map(item => {
           // only show notifications for tasks that finished after the page was loaded
@@ -196,7 +207,7 @@ export const useCreationState = () => {
           const ownCreatorFeedPageRoute = createPaginationRoute(
             `/api/feed/creations`,
             {
-              userId: userId || '',
+              userId: user?._id || userId || '',
               limit: 25,
               page: 1,
               orderBy: OrderByLatest.field,
