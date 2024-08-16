@@ -73,16 +73,29 @@ const renderFormField = (
                     value={parsedValue}
                   />
                 ) : (
-                  <SliderInput
-                    form={form}
-                    min={parameter.minimum || 0}
-                    max={parameter.maximum || 1}
-                    step={parameter.step ? parameter.step : 1}
-                    value={value}
-                    onChange={newVal => {
-                      onChange(newVal)
-                    }}
-                  />
+                  <div className="flex items-center">
+                    <SliderInput
+                      form={form}
+                      min={parameter.minimum || 0}
+                      max={parameter.maximum || 1}
+                      step={parameter.step ? parameter.step : 1}
+                      value={value}
+                      onChange={onChange}
+                    />
+                    <Input
+                      className="w-20 rounded-lg rounded-l-none relative z-50 font-mono"
+                      type="number"
+                      min={parameter.minimum || 0}
+                      max={parameter.maximum || 1}
+                      step={parameter.step ? parameter.step : 1}
+                      value={value}
+                      onChange={e =>
+                        onChange(
+                          e.target.value ? parseInt(e.target.value) : undefined,
+                        )
+                      }
+                    />
+                  </div>
                 )}
               </FormItemWrap>
             )
@@ -94,16 +107,32 @@ const renderFormField = (
                 description={parameter.description}
                 errorMessage={fieldState.error?.message}
               >
-                <SliderInput
-                  form={form}
-                  min={parameter.minimum || 0}
-                  max={parameter.maximum || 1}
-                  step={parameter.step ? parameter.step : 0.05}
-                  value={value}
-                  onChange={newVal => {
-                    onChange(newVal)
-                  }}
-                />
+                <div className="flex items-center">
+                  <SliderInput
+                    form={form}
+                    min={parameter.minimum || 0}
+                    max={parameter.maximum || 1}
+                    step={parameter.step ? parameter.step : 0.05}
+                    value={value}
+                    onChange={newVal => {
+                      onChange(newVal)
+                    }}
+                  />
+                  <Input
+                    className="w-20 rounded-lg rounded-l-none relative z-50 font-mono"
+                    type="number"
+                    min={parameter.minimum || 0}
+                    max={parameter.maximum || 1}
+                    step={parameter.step ? parameter.step : 0.05}
+                    value={value}
+                    onFocus={e => e.target.select()}
+                    onChange={e =>
+                      onChange(
+                        e.target.value ? parseFloat(e.target.value) : undefined,
+                      )
+                    }
+                  />
+                </div>
               </FormItemWrap>
             )
           case 'bool':
