@@ -396,6 +396,13 @@ const GeneratorForm = ({ generator }: Props) => {
     // }, 100)
   }, [])
 
+  const requiredParameters = generator.parameters?.filter(
+    parameter => parameter.required,
+  )
+  const otherParameters = generator.parameters?.filter(
+    parameter => !parameter.required,
+  )
+
   return (
     <div
       data-test-id="generator-form"
@@ -409,13 +416,11 @@ const GeneratorForm = ({ generator }: Props) => {
             data-test-id="generator-form-settings-required"
             className="flex flex-col gap-2"
           >
-            {generator.parameters
-              ?.filter(parameter => parameter.required)
-              ?.map(parameter => (
-                <div key={parameter.name} className="bg-muted/60 rounded-lg">
-                  {renderFormField(parameter, form)}
-                </div>
-              ))}
+            {requiredParameters?.map(parameter => (
+              <div key={parameter.name} className="bg-muted/60 rounded-lg">
+                {renderFormField(parameter, form)}
+              </div>
+            ))}
             {hasAspectRatioSelector ? (
               <div className="flex justify-end">
                 <AspectRatioSelector form={form} />
@@ -424,15 +429,17 @@ const GeneratorForm = ({ generator }: Props) => {
           </div>
 
           <div className="flex gap-4 my-2">
-            <Button
-              type="button"
-              variant="secondary"
-              className="flex items-center gap-2"
-              onClick={() => setShowForm(!showForm)}
-            >
-              <Settings2Icon className="h-4 w-4" />
-              Settings
-            </Button>
+            {otherParameters?.length ? (
+              <Button
+                type="button"
+                variant="secondary"
+                className="flex items-center gap-2"
+                onClick={() => setShowForm(!showForm)}
+              >
+                <Settings2Icon className="h-4 w-4" />
+                Settings
+              </Button>
+            ) : null}
 
             <Button
               type="button"
@@ -460,25 +467,25 @@ const GeneratorForm = ({ generator }: Props) => {
               )}
             </Button>
           </div>
-          <div
-            data-test-id="generator-form-settings-optional"
-            className={cn([showForm ? '' : 'overflow-hidden'])}
-          >
+          {otherParameters?.length ? (
             <div
-              className={cn([
-                'flex flex-col gap-2 w-full relative transition-all',
-                showForm ? ' mb-4' : 'max-h-0 ',
-              ])}
+              data-test-id="generator-form-settings-optional"
+              className={cn([showForm ? '' : 'overflow-hidden'])}
             >
-              {generator.parameters
-                ?.filter(parameter => !parameter.required)
-                ?.map(parameter => (
+              <div
+                className={cn([
+                  'flex flex-col gap-2 w-full relative transition-all',
+                  showForm ? ' mb-4' : 'max-h-0 ',
+                ])}
+              >
+                {otherParameters?.map(parameter => (
                   <div key={parameter.name} className="bg-muted/50 rounded-lg">
                     {renderFormField(parameter, form)}
                   </div>
                 ))}
+              </div>
             </div>
-          </div>
+          ) : null}
         </form>
       </Form>
     </div>
