@@ -11,18 +11,20 @@ type VideoProps = {
   muted?: boolean
   width?: number
   height?: number
+  onPlay?: () => void
 }
 
 const VideoResult: React.FC<VideoProps> = ({
   videoUrl,
   className,
   posterUrl,
+  width,
+  height,
+  onPlay,
   autoPlay = true,
   loop = true,
   controls = true,
   muted = true,
-  width,
-  height,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -41,6 +43,7 @@ const VideoResult: React.FC<VideoProps> = ({
       onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
       className={cn(['w-full h-full outline-none', className])}
       poster={posterUrl}
+      onPlay={onPlay}
     >
       <source src={videoUrl} type="video/mp4" />
     </video>
