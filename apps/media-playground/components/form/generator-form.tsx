@@ -407,7 +407,7 @@ const GeneratorForm = ({ generator }: Props) => {
           <TypographyH3>{generator.name}</TypographyH3>
           <div
             data-test-id="generator-form-settings-required"
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-2"
           >
             {generator.parameters
               ?.filter(parameter => parameter.required)
@@ -423,7 +423,7 @@ const GeneratorForm = ({ generator }: Props) => {
             ) : null}
           </div>
 
-          <div className="flex gap-4 mt-4 mb-4">
+          <div className="flex gap-4 my-2">
             <Button
               type="button"
               variant="secondary"

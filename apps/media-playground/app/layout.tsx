@@ -1,5 +1,5 @@
 import '@/styles/globals.css'
-import 'react-photo-view/dist/react-photo-view.css'
+import 'photoswipe/dist/photoswipe.css'
 
 import Providers from '@/app/providers'
 import Header from '@/components/header/header'

@@ -28,7 +28,7 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   video_upscaler: 'video_upscaler.jpeg',
 
   // images
-  background_removal: 'bg_removal.mp4',
+  background_removal: 'background_removal.mp4',
   clarity_upscaler: 'clarity_upscaler.jpeg',
   face_styler: 'face_styler.png',
   inpaint: 'inpaint.mp4',
