@@ -15,4 +15,5 @@ export type SiteConfig = {
     github: string
   }
   ogImage: string
+  mediaErrorUrl: string
 }

@@ -4,9 +4,12 @@ import { VideoDurationBadge } from '@/components/badge/video-duration-badge'
 import LoadingIndicator from '@/components/loading-indicator'
 import VideoResult from '@/components/media/video-result'
 import { useHover } from '@/hooks/use-hover'
+import { siteConfig } from '@/lib/config'
 import Image from 'next/image'
-import React, { useState } from 'react'
+import React, { PropsWithChildren, useState } from 'react'
 import { Gallery, Item } from 'react-photoswipe-gallery'
+
+// import PhotoSwipe from 'photoswipe'
 
 type GalleryItem = {
   url?: string
@@ -18,23 +21,33 @@ type GalleryItem = {
 
 type LightboxGalleryItemProps = {
   item: GalleryItem
+  forceRender?: boolean
 }
-const LightboxGalleryItem = ({ item }: LightboxGalleryItemProps) => {
+
+export const LightboxGalleryItem = ({
+  item,
+  forceRender,
+}: LightboxGalleryItemProps) => {
   const { hovered, ref: hoverRef } = useHover()
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
+
   return (
     <Item
-      original={item.url?.endsWith('.mp4') ? undefined : item.url}
-      thumbnail={item.thumbnail}
-      width={item?.width}
-      height={item?.height}
+      original={
+        item.url?.endsWith('.mp4')
+          ? undefined
+          : item.url || siteConfig.mediaErrorUrl
+      }
+      thumbnail={item.thumbnail || siteConfig.mediaErrorUrl}
+      width={item?.width || 1024}
+      height={item?.height || 1024}
       content={
         item.url?.endsWith('.mp4') ? (
           <VideoResult
-            videoUrl={item.url || ''}
-            width={item.width}
-            height={item.height}
-            posterUrl={item.thumbnail}
+            videoUrl={item.url || siteConfig.mediaErrorUrl}
+            width={item.width || 1024}
+            height={item.height || 1024}
+            posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
             muted={true}
             loop={true}
             autoPlay={true}
@@ -44,35 +57,38 @@ const LightboxGalleryItem = ({ item }: LightboxGalleryItemProps) => {
       }
     >
       {({ ref, open }) => (
-        <div ref={hoverRef}>
+        <div className="flex max-w-full max-h-full" ref={hoverRef}>
           <Image
             ref={ref}
             onClick={open}
-            src={item.thumbnail || ''}
+            src={item.thumbnail || siteConfig.mediaErrorUrl}
             alt={item.url || ''}
-            objectFit={'cover'}
-            width={item.width}
-            height={item.height}
-            className="object-cover w-full cursor-zoom-in"
+            objectFit={'contain'}
+            // fill={true}
+            width={item.width || 1024}
+            height={item.height || 1024}
+            // style={{ width: '100%', height: 'auto', maxHeight: '100%' }} // optional
+            // className="object-contain w-full h-auto max-h-full cursor-zoom-in"
+            className="absolute object-contain w-full h-full  max-h-full cursor-zoom-in"
           />
           {item.url?.endsWith('.mp4') ? (
             <>
-              {hovered && !hasStartedPlayback ? (
+              {(forceRender || hovered) && !hasStartedPlayback ? (
                 <div className="absolute inset-0 h-full w-full flex items-center justify-center pointer-events-none">
                   <LoadingIndicator className="h-16 w-16" />
                 </div>
               ) : null}
-              {hovered ? (
+              {forceRender || hovered ? (
                 <VideoResult
                   className="absolute inset-0 cursor-zoom-in pointer-events-none"
                   videoUrl={item.url || ''}
-                  width={item.width}
-                  height={item.height}
-                  posterUrl={item.thumbnail}
+                  width={item.width || 1024}
+                  height={item.height || 1024}
+                  posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
                   muted={true}
                   loop={true}
-                  autoPlay={true}
-                  controls={false}
+                  autoPlay={forceRender ? true : hovered}
+                  controls={forceRender ? true : false}
                   onPlay={() => setHasStartedPlayback(true)}
                 />
               ) : (
@@ -86,16 +102,25 @@ const LightboxGalleryItem = ({ item }: LightboxGalleryItemProps) => {
   )
 }
 
-type Props = {
-  items: GalleryItem[]
-}
+// type Props = {
+//   items: GalleryItem[]
+// }
 
-const LightboxGallery = ({ items }: Props) => {
+const LightboxGallery = ({ children }: PropsWithChildren) => {
+  // const galleryRef = useRef(null);
+  //
+  // const handleOnOpen = (photoswipeInstance: PhotoSwipe) => {
+  //   console.log('handleOnOpen')
+  //   console.log(photoswipeInstance)
+  //   photoswipeInstance?.container?.addEventListener('click', (evt) => {
+  //     console.log('evt', evt)
+  //   })
+  // }
+
   return (
-    <Gallery options={{ bgOpacity: 1 }}>
-      {items.map(item => (
-        <LightboxGalleryItem key={item.url} item={item} />
-      ))}
+    // <Gallery options={{ bgOpacity: 1 }} onBeforeOpen={handleOnOpen}>
+    <Gallery options={{ bgOpacity: 1 }} withDownloadButton={true}>
+      {children}
     </Gallery>
   )
 }

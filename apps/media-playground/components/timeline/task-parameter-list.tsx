@@ -33,7 +33,7 @@ const TaskParameterList = ({ task }: Props) => {
       <TaskParameter
         name={'createdAt'}
         label={'Date'}
-        value={task.createdAt.toString()}
+        value={(task.createdAt || new Date('1974-01-01')).toString()}
       />
     </div>
   )

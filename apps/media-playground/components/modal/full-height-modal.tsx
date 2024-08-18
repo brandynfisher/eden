@@ -11,7 +11,12 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { useRouter } from 'next/navigation'
 import { PropsWithChildren } from 'react'
 
-const CreationDetailModal = ({ children }: PropsWithChildren) => {
+type Props = {
+  title?: string
+  description?: string
+} & PropsWithChildren
+
+const FullHeightModal = ({ title, description, children }: Props) => {
   const router = useRouter()
 
   const handleOpenChange = () => {
@@ -20,11 +25,11 @@ const CreationDetailModal = ({ children }: PropsWithChildren) => {
 
   return (
     <Dialog defaultOpen={true} open={true} onOpenChange={handleOpenChange}>
-      <DialogContentScrollable className="min-h-[calc(100dvh_-_64px)] h-fit">
+      <DialogContentScrollable className="min-h-[calc(100dvh_-_32px)] h-fit md:h-[calc(100dvh_-_32px)] md:w-[calc(100dvw_-_32px)] overflow-x-hidden">
         <VisuallyHidden>
           <DialogHeader>
-            <DialogTitle>Modal Header Title</DialogTitle>
-            <DialogDescription>Modal Header Description</DialogDescription>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
         </VisuallyHidden>
         {children}
@@ -33,4 +38,4 @@ const CreationDetailModal = ({ children }: PropsWithChildren) => {
   )
 }
 
-export default CreationDetailModal
+export default FullHeightModal

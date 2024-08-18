@@ -1,4 +1,4 @@
-import CreationDetailModal from '@/components/modal/creation-detail-modal'
+import FullHeightModal from '@/components/modal/full-height-modal'
 import CreationDetail from '@/features/detail/creation-detail'
 
 type Props = {
@@ -7,8 +7,8 @@ type Props = {
 
 export default function CreationsModal({ params: { id: creationId } }: Props) {
   return (
-    <CreationDetailModal>
-      <CreationDetail id={creationId} />
-    </CreationDetailModal>
+    <FullHeightModal>
+      <CreationDetail id={creationId} isModal={true} />
+    </FullHeightModal>
   )
 }

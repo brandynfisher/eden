@@ -33,7 +33,7 @@ const imageInputParameterNames = [
   'lora_training_urls',
 ]
 
-const videoInputParameterNames = ['video']
+const videoInputParameterNames = ['video', 'input_video']
 
 const ParameterTable = ({ args }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
@@ -57,7 +57,7 @@ const ParameterTable = ({ args }: Props) => {
   }
 
   return (
-    <Table className="text-xs mt-2 flex flex-col md:rounded-t-lg md:overflow-hidden md:table">
+    <Table className="text-xs flex flex-col md:overflow-hidden md:table h-full">
       <TableCaption className="mb-2 mt-0 md:mb-1 md:mt-2">
         <div className="flex w-full items-center justify-center gap-1 text-xs">
           <InfoIcon size={12} />

@@ -2,30 +2,19 @@
 
 import CreationMediaPreview from '@/components/media/creation-media-preview'
 import ParameterTable from '@/components/timeline/parameter-table'
-// import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import UserAvatarLink from '@/components/user/user-avatar-link'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
-// import { useAuthState } from '@/hooks/use-auth-state'
+import { cn } from '@/lib/utils'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 
 type Props = {
   id: string
   creationSSRData?: CreationV2
+  isModal?: boolean
 }
 
-const MediaSkeleton = () => {
-  return (
-    <div className="relative h-full max-h-full max-w-full flex-center flex flex-col space-y-3">
-      <Skeleton className="min-h-[512px] w-full rounded-xl" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[200px]" />
-      </div>
-    </div>
-  )
-}
-
-const CreationDetail = ({ id, creationSSRData }: Props) => {
+const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
   // const { user } = useAuthState()
   const { creation: creationClientData } = useCreationQuery({
     key: id,
@@ -38,33 +27,46 @@ const CreationDetail = ({ id, creationSSRData }: Props) => {
 
   const creation = creationSSRData || creationClientData
 
-  return (
-    <div className="p-4">
-      {/*<div>*/}
-      {/*  AuthUser - {user?.username}*/}
-      {/*</div>*/}
-      {/*<div>*/}
-      {/*  Creation - {creation?.user.username}*/}
-      {/*</div>*/}
-      {/*<div>hasSSRData: {JSON.stringify(!!creationSSRData)}</div>*/}
-      {/*<div>hasClientData: {JSON.stringify(!!creationClientData)}</div>*/}
+  // const { height: viewportHeight } = useViewportSize()
 
-      <div className="h-full w-full flex flex-col gap-2">
-        {creation ? (
-          <>
-            <CreationMediaPreview creation={creation} />
-            {/*{user?._id === creation.user._id ? (*/}
-            {/*  <div>*/}
-            {/*    <Button variant={'outline'}>Action1</Button>*/}
-            {/*    <Button variant={'outline'}>Action2</Button>*/}
-            {/*    <Button variant={'outline'}>Action3</Button>*/}
-            {/*  </div>*/}
-            {/*) : null}*/}
-            {creation.args ? <ParameterTable args={creation.args} /> : null}
-            {/*{JSON.stringify(creation, null, 2)}*/}
-          </>
+  return (
+    // <div className='w-full flex flex-col flex-grow md:flex-row gap-4 md:h-[calc(100dvh_-_64px)] md:w-[calc(100dvw_-_32px)]'>
+    <div
+      className={cn([
+        `w-full flex flex-col flex-grow md:flex-row gap-4 max-h-full`,
+        isModal
+          ? 'md:h-[calc(100dvh_-_34px)] md:w-[calc(100dvw_-_32px)]'
+          : 'md:h-[calc(100dvh_-_64px)]  md:w-[calc(100dvw)]',
+      ])}
+    >
+      {creation ? (
+        <CreationMediaPreview creation={creation} />
+      ) : (
+        <Skeleton className="min-h-[512px] w-full rounded-xl" />
+      )}
+
+      <div
+        className={`flex-shrink-0 w-full md:w-[400px] px-4 overflow-y-auto  bg-accent rounded-md rounded-tr-none rounded-br-none`}
+      >
+        {creation?.user ? (
+          <div className="py-4">
+            <UserAvatarLink
+              name={creation.user.username || creation.user._id}
+              image={creation.user.userImage}
+            />
+          </div>
+        ) : null}
+
+        {creation && creation.args ? (
+          <ParameterTable args={creation.args} />
         ) : (
-          <MediaSkeleton />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+            <Skeleton className="h-4 w-[200px]" />
+            <Skeleton className="h-4 w-[180px]" />
+          </div>
         )}
       </div>
     </div>
