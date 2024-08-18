@@ -81,15 +81,12 @@ export const LightboxGalleryItem = ({
           {JSON.stringify(ref)}
           {item.url?.endsWith('.mp4') ? (
             <>
-              {/*{(forceRender || hovered) && !hasStartedPlayback ? (*/}
-              {/*  <div className="absolute inset-0 h-full w-full flex items-center justify-center pointer-events-none">*/}
-              {/*    <LoadingIndicator className="h-16 w-16" />*/}
-              {/*  </div>*/}
-              {/*) : null}*/}
-              <VideoDurationBadge
-                duration={item.duration}
-                isLoading={hovered && hasStartedPlayback}
-              />
+              {!forceRender ? (
+                <VideoDurationBadge
+                  duration={item.duration}
+                  isLoading={hovered && hasStartedPlayback}
+                />
+              ) : null}
               {forceRender || hovered ? (
                 <VideoResult
                   className={cn([
@@ -103,7 +100,7 @@ export const LightboxGalleryItem = ({
                   muted={true}
                   loop={true}
                   autoPlay={forceRender ? true : hovered}
-                  controls={forceRender ? true : false}
+                  controls={!!forceRender}
                   onPlay={() => setHasStartedPlayback(true)}
                 />
               ) : null}
