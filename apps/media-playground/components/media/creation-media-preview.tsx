@@ -11,7 +11,7 @@ type Props = {
 const CreationMediaPreview = ({ creation }: Props) => {
   return (
     <div
-      className="relative w-full"
+      className="relative w-full my-4"
       style={{ aspectRatio: creation?.mediaAttributes?.aspectRatio || 1 }}
     >
       <LightboxGallery>

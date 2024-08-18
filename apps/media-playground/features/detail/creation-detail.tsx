@@ -36,7 +36,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
         `w-full flex flex-col flex-grow md:flex-row md:gap-4 max-h-full md:ml-4`,
         isModal
           ? 'h-[calc(100dvh_-_34px)] w-[calc(100dvw_-_32px)]'
-          : 'md:h-[calc(100dvh_-_64px)] md:w-[calc(100dvw)]',
+          : 'md:h-[calc(100dvh_-_64px)] md:w-[calc(100dvw_-_16px)]',
       ])}
     >
       {creation ? (
