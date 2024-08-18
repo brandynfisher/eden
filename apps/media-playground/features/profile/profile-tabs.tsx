@@ -10,7 +10,7 @@ const ProfileTabs = () => {
     {
       key: 'creations',
       title: 'Creations',
-      content: <UserCreationsFeed userName={params.name} />,
+      content: <UserCreationsFeed userName={params.name} maxCols={7} />,
     },
     {
       key: 'models',

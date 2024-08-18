@@ -15,9 +15,7 @@ const UserAvatarLink = ({ name, image, hideName }: UserAvatarLinkProps) => {
     >
       <UserAvatar image={image} name={name} />
       {!hideName ? (
-        <div className="group-hover:text-primary text-xs transition-colors">
-          {name}
-        </div>
+        <div className="group-hover:text-primary transition-colors">{name}</div>
       ) : null}
     </Link>
   )

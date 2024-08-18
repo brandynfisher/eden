@@ -2,6 +2,7 @@
 
 import CreationCard from '@/components/card/creation-card'
 import LoadingIndicator from '@/components/loading-indicator'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useElementSize } from '@/hooks/use-element-size'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
@@ -19,7 +20,22 @@ type Props = {
   query: { [key: string]: unknown }
   queryKey: unknown[]
   minCols?: number
+  maxCols?: number
   limit?: number
+}
+
+export const MasonrySkeleton = () => {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+    </div>
+  )
 }
 
 const MasonryVirtualizerVertical = ({
@@ -28,6 +44,7 @@ const MasonryVirtualizerVertical = ({
   query,
   queryKey,
   minCols = 1,
+  maxCols = 5,
   limit = DEFAULT_PAGE_LIMIT,
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
@@ -44,8 +61,14 @@ const MasonryVirtualizerVertical = ({
   ].reverse()
 
   const activeMQ = mediaQueries.lastIndexOf(true)
-  const MASONRY_COLUMN_COUNT =
+
+  const derivedColumnCount =
     activeMQ !== -1 ? minCols + (activeMQ + 1) : minCols
+  const MASONRY_COLUMN_COUNT = maxCols
+    ? derivedColumnCount > maxCols
+      ? maxCols
+      : derivedColumnCount
+    : derivedColumnCount
 
   const columnWidth = useMemo(() => {
     return (
@@ -186,7 +209,7 @@ const MasonryVirtualizerVertical = ({
     <div
       data-test-id="masonry-virtualizer-vertical"
       ref={masonryWrapRef}
-      className="flex"
+      className="flex pb-12"
     >
       <div
         style={{
@@ -198,7 +221,7 @@ const MasonryVirtualizerVertical = ({
         {!allRows.length ? (
           <div className="bg-primary/10 w-full h-full flex justify-center rounded-lg">
             {status === 'pending' ? (
-              <LoadingIndicator />
+              <MasonrySkeleton />
             ) : (
               <div className="px-4">Nothing found.</div>
             )}

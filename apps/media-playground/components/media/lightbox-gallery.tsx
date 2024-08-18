@@ -1,7 +1,7 @@
 import 'photoswipe/dist/photoswipe.css'
 
 import { VideoDurationBadge } from '@/components/badge/video-duration-badge'
-import LoadingIndicator from '@/components/loading-indicator'
+// import LoadingIndicator from '@/components/loading-indicator'
 import VideoResult from '@/components/media/video-result'
 import { useHover } from '@/hooks/use-hover'
 import { siteConfig } from '@/lib/config'
@@ -81,11 +81,15 @@ export const LightboxGalleryItem = ({
           {JSON.stringify(ref)}
           {item.url?.endsWith('.mp4') ? (
             <>
-              {(forceRender || hovered) && !hasStartedPlayback ? (
-                <div className="absolute inset-0 h-full w-full flex items-center justify-center pointer-events-none">
-                  <LoadingIndicator className="h-16 w-16" />
-                </div>
-              ) : null}
+              {/*{(forceRender || hovered) && !hasStartedPlayback ? (*/}
+              {/*  <div className="absolute inset-0 h-full w-full flex items-center justify-center pointer-events-none">*/}
+              {/*    <LoadingIndicator className="h-16 w-16" />*/}
+              {/*  </div>*/}
+              {/*) : null}*/}
+              <VideoDurationBadge
+                duration={item.duration}
+                isLoading={hovered && hasStartedPlayback}
+              />
               {forceRender || hovered ? (
                 <VideoResult
                   className={cn([
@@ -101,12 +105,6 @@ export const LightboxGalleryItem = ({
                   autoPlay={forceRender ? true : hovered}
                   controls={forceRender ? true : false}
                   onPlay={() => setHasStartedPlayback(true)}
-                />
-              ) : null}
-              {!hovered && !hasStartedPlayback ? (
-                <VideoDurationBadge
-                  duration={item.duration}
-                  isLoading={hasStartedPlayback}
                 />
               ) : null}
             </>

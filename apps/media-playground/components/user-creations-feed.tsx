@@ -12,14 +12,11 @@ import { useMemo } from 'react'
 
 type Props = {
   userName: string
+  minCols?: number
+  maxCols?: number
 }
 
-const UserCreationsFeed = ({ userName }: Props) => {
-  // console.log(
-  //   'useSuspenseQuery',
-  //   `${CONFIG.NEXT_PUBLIC_HOST}/api/users/${userName}`,
-  // )
-
+const UserCreationsFeed = ({ userName, minCols, maxCols }: Props) => {
   const { data } = useSuspenseQuery({
     queryKey: ['creators', userName],
     queryFn: () =>
@@ -44,7 +41,8 @@ const UserCreationsFeed = ({ userName }: Props) => {
       apiEndpoint={'/api/feed/creations'}
       queryKey={queryKey}
       query={query}
-      minCols={2}
+      minCols={minCols || 2}
+      maxCols={maxCols || undefined}
       //@todo: make this actually do stuff
       render={() => <div>render comp</div>}
     />

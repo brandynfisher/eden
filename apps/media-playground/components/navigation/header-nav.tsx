@@ -17,7 +17,7 @@ const HeaderNav = () => {
       <Sheet>
         <SheetTrigger asChild>
           <Button
-            className="shrink-0 md:hidden justify-around"
+            className="shrink-0 md:hidden justify-around w-16"
             size="icon"
             variant="outline"
           >

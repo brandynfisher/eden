@@ -9,7 +9,7 @@ import { useHover } from '@/hooks/use-hover'
 import { FileType } from '@/types/Media'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
-import { CSSProperties } from 'react'
+import React, { CSSProperties, useState } from 'react'
 
 type Props = {
   creation: CreationV2
@@ -21,6 +21,7 @@ type Props = {
 
 const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
   const { hovered, ref } = useHover()
+  const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
 
   return (
     <Card
@@ -45,7 +46,10 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
 
         {creation.mediaAttributes?.type === 'video' ? (
           <>
-            <VideoDurationBadge duration={creation.mediaAttributes.duration} />
+            <VideoDurationBadge
+              duration={creation.mediaAttributes.duration}
+              isLoading={hovered && !hasStartedPlayback}
+            />
             {hovered ? (
               <VideoResult
                 className="absolute inset-0 pointer-events-none"
@@ -57,6 +61,7 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
                 loop={true}
                 autoPlay={true}
                 controls={false}
+                onPlay={() => setHasStartedPlayback(true)}
               />
             ) : null}
           </>
