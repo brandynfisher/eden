@@ -1,6 +1,8 @@
 'use client'
 
-import LoadingIndicator from '@/components/loading-indicator'
+import LightboxGallery, {
+  LightboxGalleryItem,
+} from '@/components/media/lightbox-gallery'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import {
   Sortable,
@@ -28,10 +30,8 @@ import {
   Video,
   X,
 } from 'lucide-react'
-import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { PhotoProvider, PhotoView } from 'react-photo-view'
 import Truncate from 'react-truncate-inside/es'
 import { toast } from 'sonner'
 
@@ -406,9 +406,10 @@ const FileUploader = ({
             new Set([...previousUrls, asset.fileUrl]),
           )
 
-          // console.log(maxFiles, maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
-          // Call onChange according to the maxFiles prop
-          onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+          // Wait for next tick, then call onChange according to the maxFiles prop
+          setTimeout(() => {
+            onChange(maxFiles === 1 ? uniqueUrls[0] : uniqueUrls)
+          }, 0)
 
           return [...previousFiles, asset as FileWithPreview]
         })
@@ -553,23 +554,15 @@ const FileUploader = ({
             <div>(max. {maxFiles})</div>
           </div>
           <div className="space-y-2">
-            <PhotoProvider loadingElement={<LoadingIndicator />}>
-              <Sortable
-                value={uploadedFiles.map(file => ({
-                  id: `${file.name}_${file.lastModified}`,
-                }))}
-                onMove={({ activeIndex, overIndex }) =>
-                  handleMove(activeIndex, overIndex)
-                }
-                // overlay={
-                //   <div className='grid grid-cols-[0.5fr,1fr,auto,auto] items-center gap-2'>
-                //     <div className='h-8 w-full rounded-sm bg-primary/10' />
-                //     <div className='h-8 w-full rounded-sm bg-primary/10' />
-                //     <div className='size-8 shrink-0 rounded-sm bg-primary/10' />
-                //     <div className='size-8 shrink-0 rounded-sm bg-primary/10' />
-                //   </div>
-                // }
-              >
+            <Sortable
+              value={uploadedFiles.map(file => ({
+                id: `${file.name}_${file.lastModified}`,
+              }))}
+              onMove={({ activeIndex, overIndex }) =>
+                handleMove(activeIndex, overIndex)
+              }
+            >
+              <LightboxGallery sizeOnLoad={true}>
                 {uploadedFiles.length > 0 &&
                   uploadedFiles.map(file => {
                     return (
@@ -590,24 +583,20 @@ const FileUploader = ({
                                 <GripVerticalIcon aria-hidden="true" />
                               </SortableDragHandle>
                             ) : null}
-                            <div className="relative text-white rounded overflow-hidden shrink-0 mr-2">
+                            <div className="relative text-white rounded-lg overflow-hidden shrink-0 mr-2 cursor-zoom-in">
                               {file.preview ? (
                                 <>
                                   {file.type.startsWith('image') ? (
-                                    <PhotoView src={file.fileUrl}>
-                                      <Image
-                                        src={file.preview}
-                                        alt={file.preview}
-                                        height={72}
-                                        width={72}
-                                        onLoad={() =>
-                                          URL.revokeObjectURL(
-                                            file.preview || '',
-                                          )
-                                        }
-                                        className="object-contain w-full h-[64px] cursor-zoom-in hover:brightness-105"
-                                      />
-                                    </PhotoView>
+                                    <LightboxGalleryItem
+                                      sizeOnLoad={true}
+                                      className="relative rounded-lg hover:brightness-105 h-[64px] w-full"
+                                      item={{
+                                        url: file.fileUrl,
+                                        thumbnail: file.preview,
+                                        width: 72,
+                                        height: 72,
+                                      }}
+                                    />
                                   ) : (
                                     <PreviewVideoPlayer
                                       src={file.preview}
@@ -665,8 +654,8 @@ const FileUploader = ({
                       </SortableItem>
                     )
                   })}
-              </Sortable>
-            </PhotoProvider>
+              </LightboxGallery>
+            </Sortable>
 
             {filesToUpload.length > 0 &&
               filesToUpload.map(fileUploadProgress => {

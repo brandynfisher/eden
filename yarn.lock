@@ -16090,11 +16090,6 @@ react-joyride@^2.7.2:
     tree-changes "^0.11.2"
     type-fest "^4.15.0"
 
-react-photo-view@^1.2.6:
-  version "1.2.6"
-  resolved "https://registry.npmjs.org/react-photo-view/-/react-photo-view-1.2.6.tgz#0302ad35e4590a15a62edb271b5524f76f2777e4"
-  integrity sha512-Fq17yxkMIv0oFp7HOJr39HgCZRP6A9K5T5rixJ4flSUYT2OO3V8vNxEExjhIKgIrfmTu+mDnHYEsI9RRWi1JHw==
-
 react-photoswipe-gallery@^3.0.2:
   version "3.0.2"
   resolved "https://registry.npmjs.org/react-photoswipe-gallery/-/react-photoswipe-gallery-3.0.2.tgz#e0f6c60ed2f48b85fcdc011452712bf25d797271"
