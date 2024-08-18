@@ -141,7 +141,20 @@ const LightboxGallery = ({ children, sizeOnLoad }: LightboxGalleryProps) => {
 
   return (
     <Gallery
-      options={{ bgOpacity: 1 }}
+      options={{
+        bgOpacity: 1,
+        preloaderDelay: 1000,
+        // getViewportSizeFn: function(options, pswp) {
+        //   const size = {
+        //     x: document.documentElement.clientWidth - 200,
+        //     y: window.innerHeight,
+        //   }
+        //
+        //   console.log({size})
+        //
+        //   return size
+        // },
+      }}
       withDownloadButton={true}
       onBeforeOpen={sizeOnLoad ? handleOnBeforeOpen : undefined}
       onOpen={sizeOnLoad ? handleOnOpen : undefined}
