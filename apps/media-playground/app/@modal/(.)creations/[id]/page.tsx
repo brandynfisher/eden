@@ -1,4 +1,4 @@
-import FullHeightModal from '@/components/modal/full-height-modal'
+import FullScreenModal from '@/components/modal/full-screen-modal'
 import CreationDetail from '@/features/detail/creation-detail'
 
 type Props = {
@@ -7,8 +7,8 @@ type Props = {
 
 export default function CreationsModal({ params: { id: creationId } }: Props) {
   return (
-    <FullHeightModal>
+    <FullScreenModal className="md:h-[calc(100dvh_-_32px)] md:w-[calc(100dvw_-_32px)]">
       <CreationDetail id={creationId} isModal={true} />
-    </FullHeightModal>
+    </FullScreenModal>
   )
 }
