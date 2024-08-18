@@ -34,6 +34,8 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
     useState(false)
   const observedRef = useRef<HTMLDivElement>(null)
 
+  console.log({ shouldRenderRecentCreations, ref: observedRef.current })
+
   useEffect(() => {
     let observer: IntersectionObserver
 
@@ -57,7 +59,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
         observer.disconnect()
       }
     }
-  }, [observedRef])
+  }, [observedRef, creation?.user])
 
   return (
     <>
