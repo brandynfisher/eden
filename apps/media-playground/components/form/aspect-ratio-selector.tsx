@@ -63,7 +63,7 @@ type Props = {
 const AspectRatioSelector = ({ form }: Props) => {
   const widthWatch = form.watch('width')
   const heightWatch = form.watch('height')
-  console.log({ widthWatch, heightWatch })
+  // console.log({ widthWatch, heightWatch })
 
   const activeIndex = RESOLUTIONS.findIndex(
     res => res.width === widthWatch && res.height === heightWatch,
@@ -101,13 +101,13 @@ const AspectRatioSelector = ({ form }: Props) => {
   const portraitResolution =
     RESOLUTIONS[portraitIndex !== -1 ? portraitIndex : 0]
 
-  console.log({
-    activeIndex,
-    activeResolution,
-    landscapeResolution,
-    squareResolution,
-    portraitResolution,
-  })
+  // console.log({
+  //   activeIndex,
+  //   activeResolution,
+  //   landscapeResolution,
+  //   squareResolution,
+  //   portraitResolution,
+  // })
 
   const visibleResolutions = [
     portraitResolution,
@@ -115,7 +115,7 @@ const AspectRatioSelector = ({ form }: Props) => {
     landscapeResolution,
   ]
 
-  console.log(visibleResolutions)
+  // console.log(visibleResolutions)
 
   const updateFormValues = (resolution: Resolution) => {
     form.setValue('width', resolution.width)

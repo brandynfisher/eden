@@ -1,4 +1,6 @@
-import LoadingIndicator from '@/components/loading-indicator'
+import LightboxGallery, {
+  LightboxGalleryItem,
+} from '@/components/media/lightbox-gallery'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import {
   Table,
@@ -10,15 +12,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
+import { cn } from '@/lib/utils'
 import { TaskV2Args } from '@edenlabs/eden-sdk'
 import { InfoIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
-import Image from 'next/image'
 import React from 'react'
-import { PhotoProvider, PhotoView } from 'react-photo-view'
 import { toast } from 'sonner'
 
 type Props = {
   args: TaskV2Args
+  className?: string
 }
 
 const imageInputParameterNames = [
@@ -35,7 +37,7 @@ const imageInputParameterNames = [
 
 const videoInputParameterNames = ['video', 'input_video']
 
-const ParameterTable = ({ args }: Props) => {
+const ParameterTable = ({ args, className }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
   const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
@@ -57,7 +59,12 @@ const ParameterTable = ({ args }: Props) => {
   }
 
   return (
-    <Table className="text-xs flex flex-col md:overflow-hidden md:table h-full">
+    <Table
+      className={cn([
+        `text-xs flex flex-col md:overflow-hidden md:table h-full`,
+        className,
+      ])}
+    >
       <TableCaption className="mb-2 mt-0 md:mb-1 md:mt-2">
         <div className="flex w-full items-center justify-center gap-1 text-xs">
           <InfoIcon size={12} />
@@ -87,31 +94,29 @@ const ParameterTable = ({ args }: Props) => {
             <TableCell className="py-2 text-muted-foreground">
               {taskArg[0]}
             </TableCell>
-            <TableCell className="pt-0 pb-2 md:py-2">
+            <TableCell className="pt-0 pb-2 md:py-2 flex gap-2 flex-wrap">
               {imageInputParameterNames.includes(taskArg[0]) ? (
-                <PhotoProvider loadingElement={<LoadingIndicator />}>
-                  <div className="flex flex-wrap gap-2">
-                    {(
-                      (Array.isArray(taskArg[1])
-                        ? taskArg[1]
-                        : [taskArg[1]]) as string[]
-                    )
-                      .filter(Boolean)
-                      .map(inputImageUrl => (
-                        <PhotoView key={inputImageUrl} src={inputImageUrl}>
-                          <Image
-                            onClick={e => e.stopPropagation()}
-                            className="rounded-lg cursor-zoom-in hover:brightness-105"
-                            src={inputImageUrl}
-                            title="Click to show image in fullscreen"
-                            alt={taskArg[0]}
-                            width={72}
-                            height={72}
-                          />
-                        </PhotoView>
-                      ))}
-                  </div>
-                </PhotoProvider>
+                <LightboxGallery sizeOnLoad={true}>
+                  {(
+                    (Array.isArray(taskArg[1])
+                      ? taskArg[1]
+                      : [taskArg[1]]) as string[]
+                  )
+                    .filter(Boolean)
+                    .map(inputImageUrl => (
+                      <LightboxGalleryItem
+                        sizeOnLoad={true}
+                        className="relative rounded-lg cursor-zoom-in hover:brightness-105 h-20 w-auto"
+                        key={inputImageUrl}
+                        item={{
+                          url: inputImageUrl,
+                          thumbnail: inputImageUrl,
+                          width: 72,
+                          height: 72,
+                        }}
+                      />
+                    ))}
+                </LightboxGallery>
               ) : videoInputParameterNames.includes(taskArg[0]) ? (
                 <div className="flex flex-wrap gap-2">
                   {(

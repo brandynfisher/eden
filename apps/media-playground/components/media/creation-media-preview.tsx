@@ -16,6 +16,7 @@ const CreationMediaPreview = ({ creation }: Props) => {
     >
       <LightboxGallery>
         <LightboxGalleryItem
+          className="w-full h-full max-h-full"
           forceRender={true}
           item={{
             url: creation.url,

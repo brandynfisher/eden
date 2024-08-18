@@ -327,7 +327,7 @@ const GeneratorForm = ({ generator }: Props) => {
     param => param.name === 'width' || param.name === 'height',
   )
 
-  console.log({ hasAspectRatioSelector })
+  // console.log({ hasAspectRatioSelector })
 
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
 

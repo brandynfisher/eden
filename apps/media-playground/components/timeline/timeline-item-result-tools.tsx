@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/collapsible'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { downloadFile, getDownloadFileName } from '@/lib/files'
+import { cn } from '@/lib/utils'
 import {
   GeneratorOutputTypeV2,
   TaskV2,
@@ -33,6 +34,7 @@ type Props = {
   task: TaskV2
   result: TaskV2Result
   outputType: GeneratorOutputTypeV2
+  className?: string
 }
 
 const TimelineItemResultTools = ({
@@ -41,6 +43,7 @@ const TimelineItemResultTools = ({
   originalFileUrl,
   fileName,
   outputType,
+  className,
 }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
 
@@ -118,10 +121,13 @@ const TimelineItemResultTools = ({
   return (
     <div
       data-test-id="timeline-item-result-tools"
-      className="relative text-sm py-2 px-2 rounded-b-lg bg-muted/60"
+      className={cn([
+        `relative text-sm py-2 px-2 rounded-b-lg bg-muted/60`,
+        className,
+      ])}
     >
       <Collapsible>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mb-2">
           {outputType !== 'lora' ? (
             <Button
               variant={result.published ? 'ghost' : 'outline'}

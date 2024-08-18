@@ -5,11 +5,11 @@ import LoadingIndicator from '@/components/loading-indicator'
 import VideoResult from '@/components/media/video-result'
 import { useHover } from '@/hooks/use-hover'
 import { siteConfig } from '@/lib/config'
-import Image from 'next/image'
+import { cn } from '@/lib/utils'
+import NextImage from 'next/image'
+import PhotoSwipe from 'photoswipe'
 import React, { PropsWithChildren, useState } from 'react'
 import { Gallery, Item } from 'react-photoswipe-gallery'
-
-// import PhotoSwipe from 'photoswipe'
 
 type GalleryItem = {
   url?: string
@@ -22,11 +22,15 @@ type GalleryItem = {
 type LightboxGalleryItemProps = {
   item: GalleryItem
   forceRender?: boolean
+  className?: string
+  sizeOnLoad?: boolean
 }
 
 export const LightboxGalleryItem = ({
+  sizeOnLoad,
   item,
   forceRender,
+  className,
 }: LightboxGalleryItemProps) => {
   const { hovered, ref: hoverRef } = useHover()
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
@@ -39,8 +43,8 @@ export const LightboxGalleryItem = ({
           : item.url || siteConfig.mediaErrorUrl
       }
       thumbnail={item.thumbnail || siteConfig.mediaErrorUrl}
-      width={item?.width || 1024}
-      height={item?.height || 1024}
+      width={sizeOnLoad ? undefined : item.width}
+      height={sizeOnLoad ? undefined : item.height}
       content={
         item.url?.endsWith('.mp4') ? (
           <VideoResult
@@ -57,10 +61,13 @@ export const LightboxGalleryItem = ({
       }
     >
       {({ ref, open }) => (
-        <div className="flex max-w-full max-h-full" ref={hoverRef}>
-          <Image
+        <div className={`flex max-w-full max-h-full`} ref={hoverRef}>
+          <NextImage
             ref={ref}
-            onClick={open}
+            onClick={ev => {
+              ev.stopPropagation()
+              open(ev)
+            }}
             src={item.thumbnail || siteConfig.mediaErrorUrl}
             alt={item.url || ''}
             objectFit={'contain'}
@@ -69,8 +76,12 @@ export const LightboxGalleryItem = ({
             height={item.height || 1024}
             // style={{ width: '100%', height: 'auto', maxHeight: '100%' }} // optional
             // className="object-contain w-full h-auto max-h-full cursor-zoom-in"
-            className="absolute object-contain w-full h-full  max-h-full cursor-zoom-in"
+            className={cn([
+              `absolute object-contain cursor-zoom-in`,
+              className,
+            ])}
           />
+          {JSON.stringify(ref)}
           {item.url?.endsWith('.mp4') ? (
             <>
               {(forceRender || hovered) && !hasStartedPlayback ? (
@@ -102,24 +113,39 @@ export const LightboxGalleryItem = ({
   )
 }
 
-// type Props = {
-//   items: GalleryItem[]
-// }
+type LightboxGalleryProps = {
+  sizeOnLoad?: boolean
+} & PropsWithChildren
 
-const LightboxGallery = ({ children }: PropsWithChildren) => {
-  // const galleryRef = useRef(null);
-  //
-  // const handleOnOpen = (photoswipeInstance: PhotoSwipe) => {
-  //   console.log('handleOnOpen')
-  //   console.log(photoswipeInstance)
-  //   photoswipeInstance?.container?.addEventListener('click', (evt) => {
-  //     console.log('evt', evt)
-  //   })
-  // }
+const LightboxGallery = ({ children, sizeOnLoad }: LightboxGalleryProps) => {
+  const handleOnBeforeOpen = (psInstance: PhotoSwipe) => {
+    const ds = psInstance?.options?.dataSource
+    // console.log({ds})
+    if (Array.isArray(ds)) {
+      for (let idx = 0, len = ds.length; idx < len; idx++) {
+        const item = ds[idx]
+        const img = new Image()
+        img.onload = () => {
+          item.width = img.naturalWidth
+          item.height = img.naturalHeight
+          psInstance?.refreshSlideContent(idx)
+        }
+        img.src = item.src as string
+      }
+    }
+  }
+
+  const handleOnOpen = (psInstance: PhotoSwipe) => {
+    console.log({ psInstance })
+  }
 
   return (
-    // <Gallery options={{ bgOpacity: 1 }} onBeforeOpen={handleOnOpen}>
-    <Gallery options={{ bgOpacity: 1 }} withDownloadButton={true}>
+    <Gallery
+      options={{ bgOpacity: 1 }}
+      withDownloadButton={true}
+      onBeforeOpen={sizeOnLoad ? handleOnBeforeOpen : undefined}
+      onOpen={sizeOnLoad ? handleOnOpen : undefined}
+    >
       {children}
     </Gallery>
   )
