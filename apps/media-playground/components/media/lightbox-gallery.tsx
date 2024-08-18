@@ -71,11 +71,8 @@ export const LightboxGalleryItem = ({
             src={item.thumbnail || siteConfig.mediaErrorUrl}
             alt={item.url || ''}
             objectFit={'contain'}
-            // fill={true}
             width={item.width || 1024}
             height={item.height || 1024}
-            // style={{ width: '100%', height: 'auto', maxHeight: '100%' }} // optional
-            // className="object-contain w-full h-auto max-h-full cursor-zoom-in"
             className={cn([
               `absolute object-contain cursor-zoom-in`,
               className,
@@ -91,7 +88,10 @@ export const LightboxGalleryItem = ({
               ) : null}
               {forceRender || hovered ? (
                 <VideoResult
-                  className="absolute inset-0 cursor-zoom-in pointer-events-none"
+                  className={cn([
+                    'absolute inset-0 cursor-zoom-in',
+                    forceRender ? '' : 'pointer-events-none',
+                  ])}
                   videoUrl={item.url || ''}
                   width={item.width || 1024}
                   height={item.height || 1024}
@@ -102,9 +102,13 @@ export const LightboxGalleryItem = ({
                   controls={forceRender ? true : false}
                   onPlay={() => setHasStartedPlayback(true)}
                 />
-              ) : (
-                <VideoDurationBadge duration={item.duration} />
-              )}
+              ) : null}
+              {!hovered && !hasStartedPlayback ? (
+                <VideoDurationBadge
+                  duration={item.duration}
+                  isLoading={hasStartedPlayback}
+                />
+              ) : null}
             </>
           ) : null}
         </div>

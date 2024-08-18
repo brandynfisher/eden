@@ -26,7 +26,6 @@ const TimelineItemMediaResult = ({
       >
         <LightboxGallery>
           <LightboxGalleryItem
-            // sizeOnLoad={true}
             className="w-full h-full"
             item={{
               url: result.url,

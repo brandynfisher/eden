@@ -127,7 +127,7 @@ const TimelineItemResultTools = ({
       ])}
     >
       <Collapsible>
-        <div className="flex flex-wrap gap-2 mb-2">
+        <div className="flex flex-wrap gap-2">
           {outputType !== 'lora' ? (
             <Button
               variant={result.published ? 'ghost' : 'outline'}
@@ -212,7 +212,9 @@ const TimelineItemResultTools = ({
           </CollapsibleTrigger>
         </div>
         <CollapsibleContent>
-          <ParameterTable args={task.args} />
+          <div className="mt-2">
+            <ParameterTable args={task.args} />
+          </div>
         </CollapsibleContent>
       </Collapsible>
     </div>

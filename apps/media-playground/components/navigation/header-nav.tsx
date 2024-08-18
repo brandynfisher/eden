@@ -1,3 +1,4 @@
+import EdenLogoBwGlow from '@/components/logo/eden-logo-bw-glow'
 import DesktopHeaderNav from '@/components/navigation/desktop-header-nav'
 import HeaderNavLinks from '@/components/navigation/header-nav-links'
 import MobileHeaderNav from '@/components/navigation/mobile-header-nav'
@@ -15,7 +16,12 @@ const HeaderNav = () => {
       </DesktopHeaderNav>
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="shrink-0 md:hidden" size="icon" variant="outline">
+          <Button
+            className="shrink-0 md:hidden justify-around"
+            size="icon"
+            variant="outline"
+          >
+            <EdenLogoBwGlow className="h-6 w-6" />
             <MenuIcon className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>

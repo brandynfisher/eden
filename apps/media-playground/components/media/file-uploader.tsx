@@ -621,7 +621,7 @@ const FileUploader = ({
                                 </>
                               )}
                             </div>
-                            <div className="space-y-1 max-w-[120px] md:max-w-[217px]">
+                            <div className="space-y-1 max-w-[96px] md:max-w-[120px] lg:max-w-[217px] overflow-hidden">
                               <div className="text-sm text-muted-foreground">
                                 <Truncate text={file.name} />
                               </div>

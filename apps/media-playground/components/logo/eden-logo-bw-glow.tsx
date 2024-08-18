@@ -17,7 +17,7 @@ export const EdenLogoBwGlow: FC<Props> = ({ width, height, className }) => {
       src="/logo-bw.png"
       alt="Eden Logo"
       className={cn(
-        'relative !w-[40px] !h-auto drop-shadow-[0_0_0.3rem_#00000070] dark:drop-shadow-[0_0_0.3rem_#ffffff70] invert dark:invert-0',
+        'relative w-[40px] h-auto drop-shadow-[0_0_0.3rem_#00000070] dark:drop-shadow-[0_0_0.3rem_#ffffff70] invert dark:invert-0',
         className,
       )}
       priority={true}
