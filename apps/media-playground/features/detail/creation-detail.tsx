@@ -33,10 +33,10 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
     // <div className='w-full flex flex-col flex-grow md:flex-row gap-4 md:h-[calc(100dvh_-_64px)] md:w-[calc(100dvw_-_32px)]'>
     <div
       className={cn([
-        `w-full flex flex-col flex-grow md:flex-row gap-4 max-h-full`,
+        `w-full flex flex-col flex-grow md:flex-row md:gap-4 max-h-full md:ml-4`,
         isModal
-          ? 'md:h-[calc(100dvh_-_34px)] md:w-[calc(100dvw_-_32px)]'
-          : 'md:h-[calc(100dvh_-_64px)]  md:w-[calc(100dvw)]',
+          ? 'h-[calc(100dvh_-_34px)] w-[calc(100dvw_-_32px)]'
+          : 'md:h-[calc(100dvh_-_64px)] md:w-[calc(100dvw)]',
       ])}
     >
       {creation ? (
@@ -46,7 +46,10 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
       )}
 
       <div
-        className={`flex-shrink-0 w-full md:w-[400px] px-4 overflow-y-auto  bg-accent rounded-md rounded-tr-none rounded-br-none`}
+        className={cn([
+          `flex-shrink-0 w-full md:w-[400px] px-4 overflow-y-auto bg-accent rounded-md rounded-tr-none rounded-br-none`,
+          isModal ? '' : 'my-4',
+        ])}
       >
         {creation?.user ? (
           <div className="py-4">
