@@ -181,6 +181,27 @@ const renderFormField = (
                 )}
               </FormItemWrap>
             )
+          case 'lora':
+            parsedValue = value
+            if (typeof value !== 'string') {
+              parsedValue = ''
+            }
+            return (
+              <FormItemWrap
+                name={name}
+                label={label}
+                description={parameter.description}
+                errorMessage={fieldState.error?.message}
+              >
+                {/* //@todo: add concept selector trigger */}
+                <Input
+                  type="text"
+                  onChange={onChange}
+                  onBlur={onBlur}
+                  value={parsedValue}
+                />
+              </FormItemWrap>
+            )
           case 'image':
             return (
               <FormItem className="mt-0 !p-4 !pt-3">
