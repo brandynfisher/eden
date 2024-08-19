@@ -16,7 +16,7 @@ export type FeedFilterQueryParams = {
     generator?: string | string[]
     outputType?: string | string[]
     concept?: string | string[]
-    isPrivate?: boolean
+    public?: boolean
     visibility?: 'all' | 'public' | 'private'
     maxDate?: string
     minDate?: string

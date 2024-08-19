@@ -5,6 +5,7 @@ import FormItemHead from '@/components/form/form-item-head'
 import FormItemWrap from '@/components/form/form-item-wrap'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
+import ModelSelector from '@/components/form/model-input'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,7 +48,7 @@ const renderFormField = (
       name={name}
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value, name } = field
-        let parsedValue: number | ''
+        let parsedValue: number | string | ''
         switch (parameter.type) {
           case 'int':
             parsedValue = Number(value)
@@ -182,25 +183,28 @@ const renderFormField = (
               </FormItemWrap>
             )
           case 'lora':
-            parsedValue = value
-            if (typeof value !== 'string') {
-              parsedValue = ''
-            }
+            parsedValue = typeof value !== 'string' ? '' : value
             return (
-              <FormItemWrap
-                name={name}
-                label={label}
-                description={parameter.description}
-                errorMessage={fieldState.error?.message}
-              >
-                {/* //@todo: add concept selector trigger */}
-                <Input
-                  type="text"
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  value={parsedValue}
+              <FormItem className="mt-0 !p-4 !pt-3">
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
                 />
-              </FormItemWrap>
+                <FormControl id={name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={parsedValue}
+                  />
+                </FormControl>
+                <ModelSelector
+                  form={form}
+                  value={parsedValue}
+                  onChange={onChange}
+                />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
             )
           case 'image':
             return (

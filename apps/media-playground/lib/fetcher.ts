@@ -143,7 +143,7 @@ export const createCursorPaginationRoute = (
   if (userIdExists) {
     if (isOrderByLiked) {
       filters.push(likedByUserFilter)
-      filters.push({ isPrivate: true })
+      filters.push({ public: false })
     }
 
     if (isOrderByOther) {
@@ -193,9 +193,9 @@ export const createCursorPaginationRoute = (
   }
 
   if (query.visibility && query.visibility !== 'all') {
-    filters.push({ isPrivate: query.visibility === 'private' })
+    filters.push({ public: query.visibility === 'private' })
   } else if (typeof query.isPrivate !== 'undefined') {
-    filters.push({ isPrivate: query.isPrivate })
+    filters.push({ public: query.isPrivate })
   }
 
   // if (query.orderBy) {

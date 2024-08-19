@@ -45,7 +45,7 @@ export interface CreationsV2DeleteArguments extends WebAPICallOptions {
 
 export interface CreationsV2UpdateArguments extends WebAPICallOptions {
   creationId: string
-  isPrivate: boolean
+  public: boolean
 }
 
 // Requests
@@ -160,7 +160,7 @@ export type CreationV2 = TaskV2Result & {
   createdAt: Date
   updatedAt: Date
   deleted: boolean
-  isPrivate?: boolean
+  public?: boolean
 }
 
 export interface CreationV2Attributes {

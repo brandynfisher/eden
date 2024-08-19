@@ -1,5 +1,10 @@
 import { UserDocument } from '../Creator'
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 export enum ModelV2Mode {
@@ -40,7 +45,7 @@ export interface ModelV2Input {
   thumbnail: string
 }
 
-export interface ModelV2Document extends ModelV2Schema, Document {}
+export interface ModelV2Document extends SoftDeleteDocument, ModelV2Schema {}
 
 export type ModelV2 = ModelV2Schema
 
@@ -85,5 +90,12 @@ export const modelSchema = new Schema<ModelV2Document>(
 modelSchema.index({ createdAt: -1 })
 modelSchema.index({ user: 1, createdAt: -1 })
 modelSchema.plugin(paginate)
+modelSchema.plugin(aggregatePaginate)
+modelSchema.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 
-export const ModelV2 = model<ModelV2Document>('models', modelSchema)
+export const ModelV2 = model<ModelV2Document>(
+  'models',
+  modelSchema,
+) as SoftDeleteModel<ModelV2Document>

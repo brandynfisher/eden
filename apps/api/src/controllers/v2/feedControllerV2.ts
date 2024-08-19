@@ -2,6 +2,7 @@ import { getSimilarCreationIds } from '../../lib/similar'
 import { Collection } from '../../models/Collection'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
 import { CreationV2 } from '../../models/v2/CreationV2'
+import { ModelV2 } from '../../models/v2/ModelV2'
 import { CursorPaginatedFeedQuery, ReactionType } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -91,7 +92,7 @@ type CustomFilters = {
               | ObjectId
             )[]
       }
-  isPrivate?: boolean
+  public?: boolean
   maxDate?: Date | undefined
   minDate?: Date | undefined
   praiseCount?: { $gt?: number }
@@ -99,7 +100,7 @@ type CustomFilters = {
   followerCount?: { $gt?: number }
   createdAt?: Filter
   _id?: string | ObjectId | { $in?: string[] }
-  $or?: { user: { $ne?: ObjectId; $eq?: ObjectId }; isPrivate: boolean }[]
+  $or?: { user: { $ne?: ObjectId; $eq?: ObjectId }; public: boolean }[]
 }
 
 type GenericFilters = {
@@ -143,7 +144,7 @@ const handleArguments = async ({
   // if using "likedBy me" filter: remove default privacy filter as we'll need to handle that conditionally based on creation.user
   if (usesLikedFilter) {
     const indexPrivacyParam = filterMap.findIndex(
-      item => item.name === 'isPrivate',
+      item => item.name === 'public',
     )
     if (filterMap[indexPrivacyParam] !== undefined) {
       delete filterMap[indexPrivacyParam]
@@ -179,7 +180,7 @@ const handleArguments = async ({
     followerCount?: { $gt: 0 }
     creation?: ObjectId
     _id?: { $in?: string[] | ObjectId[] }
-    $or?: { user?: { $ne?: ObjectId; $eq?: ObjectId }; isPrivate: boolean }[]
+    $or?: { user?: { $ne?: ObjectId; $eq?: ObjectId }; public: boolean }[]
   } = {}
 
   const sortOptions = sort
@@ -258,8 +259,8 @@ const handleArguments = async ({
             useReactionsPreAggregate = true
             preAggregateFilterOptions['user'] = new ObjectId(value)
             customFilterOptions['$or'] = [
-              { user: { $ne: new ObjectId(value) }, isPrivate: false },
-              { user: { $eq: new ObjectId(value) }, isPrivate: true },
+              { user: { $ne: new ObjectId(value) }, public: true },
+              { user: { $eq: new ObjectId(value) }, public: false },
             ]
             return []
           }
@@ -288,9 +289,9 @@ const handleArguments = async ({
             return []
           }
 
-          if (field === 'isPrivate') {
+          if (field === 'public') {
             if (!usesLikedFilter && isUserRequestingOwnProfileFeed) {
-              return [field, value === 'true']
+              return [field, value === 'false']
             }
             return []
           }
@@ -362,10 +363,10 @@ const handleArguments = async ({
       }
     } else if (
       !usesLikedFilter &&
-      fieldName === 'isPrivate' &&
+      fieldName === 'public' &&
       isUserRequestingOwnProfileFeed
     ) {
-      customFilterMap['isPrivate'] = String(fieldValues) === 'true'
+      customFilterMap['public'] = String(fieldValues) === 'false'
     } else if (fieldName === 'praiseCount') {
       customFilterMap['praiseCount'] = { $gt: 0 }
     } else if (fieldName === 'creationCount') {
@@ -402,7 +403,7 @@ const handleArguments = async ({
       authUserId &&
       collection.user.toString() === authUserId.toString()
     )
-      ? { isPrivate: { $eq: false } }
+      ? { public: { $eq: true } }
       : undefined
 
   // const defaultDeletedFilter = usesPrivacy
@@ -568,22 +569,106 @@ export const getCreationsFeedCursorV2 = async (
     reactions: [],
     bookmarks: [],
   }
-  //
-  // // gather auth users reactions/bookmarks
-  // if (authUserId !== undefined && results && results.length) {
-  //   const reactionsMap = await getCreationReactions(authUserId, results)
-  //   const bookmarksMap = await getCreationBookmarks(authUserId, results)
-  //
-  //   feed.docs = results.map(doc => {
-  //     return {
-  //       ...(typeof doc.toObject !== 'undefined' ? doc.toObject() : doc), //aggregate returns different format than query
-  //       reactions: reactionsMap[doc._id.toString()],
-  //       bookmarked: bookmarksMap[doc._id.toString()],
-  //     }
-  //   })
-  //   feed.reactions = reactionsMap
-  //   feed.bookmarks = bookmarksMap
+
+  try {
+    feed.nextCursor =
+      results && results.length && results[results.length - 1]._id
+
+    if (customFilterOptions.praiseCount) {
+      feed.nextValue =
+        results && results.length && results[results.length - 1].praiseCount
+    }
+
+    reply.send(feed)
+  } catch (error) {
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+}
+
+export const getConceptsFeedCursorV2 = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { query } = request
+  const { userId: authUserId } = request.user || {}
+  // const currentDate = new Date()
+
+  console.log({ query, authUserId })
+
+  const {
+    filters,
+    sortOptions,
+    customFilterOptions,
+    // filterMap,
+    // preAggregateFilterOptions,
+    // useReactionsPreAggregate,
+    // useEmbeddingsPreAggregate,
+    // useCollectionsPreAggregate,
+    // useFollowingPreAggregate,
+  } = await handleArguments({
+    server,
+    reply,
+    authUserId,
+    query: query as CursorPaginatedFeedQuery,
+  })
+
+  const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
+
+  let results = []
+  const lateLookupStages = [...userLookup]
+
+  const pipeline = await createPipeline({
+    limit: limit ?? 100,
+    sortOptions: { ...sortOptions, _id: -1 },
+    sortCursor:
+      customFilterOptions.praiseCount && nextValue !== undefined
+        ? { praiseCount: { $lte: nextValue } }
+        : undefined,
+    cursor,
+  })
+
+  // const hoursAgo = 360
+  // currentDate.setMinutes(0, 0, 0)
+  // const minDateDefault = new Date(currentDate)
+  // minDateDefault.setHours(currentDate.getHours() - hoursAgo)
+  // minDateDefault.setMinutes(0, 0, 0)
+  // const maxDate = filterMap
+  //   ? filterMap.filter(item => item.name === 'maxDate')[0]
+  //   : undefined
+  // const minDate = filterMap
+  //   ? filterMap.filter(item => item.name === 'minDate')[0]
+  //   : undefined
+  // const embeddingsFilter = {
+  //   ...filters,
+  //   createdAt: {
+  //     $gte: minDate ? minDate.value : minDateDefault,
+  //     $lte: maxDate ? maxDate?.value : undefined,
+  //   },
+  //   'embedding.score': {
+  //     $exists: true,
+  //   },
   // }
+
+  // let embeddingsTransform: PipelineStage[] = []
+  const feedPipeline = [
+    // @ts-ignore
+    // { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
+    { $match: filters },
+    //   ...embeddingsTransform,
+    ...pipeline,
+    ...lateLookupStages,
+  ].filter(Boolean)
+
+  console.log(JSON.stringify(feedPipeline, null, 2))
+
+  results = await ModelV2.aggregate(feedPipeline)
+
+  const feed: FeedResponse = {
+    docs: results,
+    reactions: [],
+    bookmarks: [],
+  }
 
   try {
     feed.nextCursor =

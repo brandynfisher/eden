@@ -716,7 +716,7 @@ export const publishTaskResult = async (
     })
   }
 
-  server.log.info('Publishing...')
+  server.log.info('Saving...')
   server.log.info({ taskId, resultUrl, taskResult })
   const creation = new CreationV2()
 

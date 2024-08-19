@@ -15,7 +15,7 @@ const CreationData: CreationV2 = {
     height: squareImageFile.height,
   },
   user: CreatorData,
-  isPrivate: false,
+  public: true,
   createdAt: new Date(),
   updatedAt: new Date(),
   // @ts-ignore

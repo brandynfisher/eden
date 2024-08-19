@@ -10,14 +10,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams
-    const route = `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/feed-cursor/creations?${searchParams.toString()}`
-    // console.log({route})
-    // const eden = new EdenClient({
-    //   edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-    //   token: authToken !== null ? authToken : undefined,
-    // })
-    //
-    // const res = await eden.feed_cursor.creations(feedQueryParams)
+    const route = `${
+      env.NEXT_PUBLIC_EDEN_API_URL
+    }/v2/feed-cursor/creations?${searchParams.toString()}`
 
     const response = await axios.get(route, {
       withCredentials: true,
