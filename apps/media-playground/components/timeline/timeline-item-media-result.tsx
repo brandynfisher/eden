@@ -24,18 +24,24 @@ const TimelineItemMediaResult = ({
         className="relative border-transparent bg-popover z-10 shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
         style={{ aspectRatio: result?.mediaAttributes?.aspectRatio || 1 }}
       >
-        <LightboxGallery>
-          <LightboxGalleryItem
-            className="w-full h-full"
-            item={{
-              url: result.url,
-              thumbnail: result.thumbnail,
-              width: result.mediaAttributes?.width,
-              height: result.mediaAttributes?.height,
-              duration: result.mediaAttributes?.duration || undefined,
-            }}
-          />
-        </LightboxGallery>
+        {outputType === 'audio' ? (
+          <div className="flex w-full h-full items-center justify-center">
+            <audio src={result.url} controls={true} />
+          </div>
+        ) : (
+          <LightboxGallery>
+            <LightboxGalleryItem
+              className="w-full h-full"
+              item={{
+                url: result.url,
+                thumbnail: result.thumbnail,
+                width: result.mediaAttributes?.width,
+                height: result.mediaAttributes?.height,
+                duration: result.mediaAttributes?.duration || undefined,
+              }}
+            />
+          </LightboxGallery>
+        )}
       </div>
       <TimelineItemResultTools
         outputType={outputType}

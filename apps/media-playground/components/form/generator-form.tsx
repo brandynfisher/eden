@@ -125,7 +125,9 @@ const renderFormField = (
             )
           case 'string':
           case 'string[]':
-            return name === 'prompt' || name === 'negative_prompt' ? (
+            return name === 'prompt' ||
+              name === 'negative_prompt' ||
+              name === 'text_input' ? (
               <FormItem
                 className={`mt-0 !p-4 ${
                   parameter.required ? '!pt-4' : '!pt-3'
