@@ -1,8 +1,8 @@
 'use client'
 
 import RouterTabs from '@/components/tabs/router-tabs'
-import UserCreationsFeed from '@/components/user-creations-feed'
-import UserModelsFeed from '@/components/user-models-feed'
+import UserCreationsFeed from '@/features/feed/user-creations-feed'
+import UserModelsFeed from '@/features/feed/user-models-feed'
 import { useParams } from 'next/navigation'
 
 const ProfileTabs = () => {
@@ -16,7 +16,9 @@ const ProfileTabs = () => {
     {
       key: 'models',
       title: 'Models',
-      content: <UserModelsFeed userName={params.name} maxCols={4} />,
+      content: (
+        <UserModelsFeed userName={params.name} minCols={1} maxCols={4} />
+      ),
     },
     // {
     //   key: 'collections',

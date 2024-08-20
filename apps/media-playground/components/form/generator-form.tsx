@@ -413,7 +413,6 @@ const GeneratorForm = ({ generator }: Props) => {
   // console.log({defaultValues})
 
   const handleReset = useCallback(() => {
-    console.log('handleReset tap reset key')
     form.reset(defaultValues, { keepDefaultValues: true })
     // setResetKey(prev => prev + 1)
     //

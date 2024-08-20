@@ -1,4 +1,4 @@
-import LikeButton from '@/components/button/like-button'
+// import LikeButton from '@/components/button/like-button'
 import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
@@ -15,7 +15,7 @@ type Props = {
   style?: CSSProperties
 }
 
-const ModelCard = ({ model, creator, showFooter, style }: Props) => {
+const ModelCard = ({ model, showFooter, style }: Props) => {
   return (
     <Card
       className="overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
@@ -38,17 +38,19 @@ const ModelCard = ({ model, creator, showFooter, style }: Props) => {
       </Link>
       {showFooter ? (
         <CardFooter
-          creator={creator}
+          // creator={creator}
           actions={[
-            <LikeButton
-              key={0}
-              count={4}
-              isActive={false}
-              onChange={() => null}
-            />,
+            // <LikeButton
+            //   key={0}
+            //   count={4}
+            //   isActive={false}
+            //   onChange={() => null}
+            // />,
             <ToolsButton key={1} />,
           ]}
-        />
+        >
+          <div className="text-xs">{model.name}</div>
+        </CardFooter>
       ) : null}
     </Card>
   )

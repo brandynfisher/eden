@@ -19,7 +19,7 @@ const CreationMediaPreview = ({ creation }: Props) => {
           <audio src={creation.url} controls={true} />
         </div>
       ) : (
-        <LightboxGallery>
+        <LightboxGallery withDownloadButton={true}>
           <LightboxGalleryItem
             className="w-full h-full max-h-full"
             forceRender={true}

@@ -29,7 +29,7 @@ const TimelineItemMediaResult = ({
             <audio src={result.url} controls={true} />
           </div>
         ) : (
-          <LightboxGallery>
+          <LightboxGallery withDownloadButton={true}>
             <LightboxGalleryItem
               className="w-full h-full"
               item={{

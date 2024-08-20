@@ -2,39 +2,25 @@
 
 import ModelCard from '@/components/card/model-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import { env } from '@/lib/config'
-import { fetcher } from '@/lib/fetcher'
 import {
   CreationV2,
-  CreatorsGetResponse,
   FeedConceptsCursorArguments,
   ModelV2,
 } from '@edenlabs/eden-sdk'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 type Props = {
-  userName: string
   minCols?: number
   maxCols?: number
 }
 
-const UserModelsFeed = ({ userName, minCols, maxCols }: Props) => {
-  const { data } = useSuspenseQuery({
-    queryKey: ['creators', userName],
-    queryFn: () =>
-      fetcher<CreatorsGetResponse>(
-        `${env.NEXT_PUBLIC_HOST}/api/users/${userName}`,
-      ),
-  })
-
+const ModelsFeed = ({ minCols, maxCols }: Props) => {
   const query: FeedConceptsCursorArguments = useMemo(
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
-      user: data?.creator?._id || '',
     }),
-    [data?.creator?._id],
+    [],
   )
 
   const queryKey = useMemo(() => ['models', query], [query])
@@ -51,10 +37,11 @@ const UserModelsFeed = ({ userName, minCols, maxCols }: Props) => {
           model={item as ModelV2}
           creator={(item as ModelV2).user}
           linkHref={`/models/${item._id}`}
+          showFooter={true}
         />
       )}
     />
   )
 }
 
-export default UserModelsFeed
+export default ModelsFeed

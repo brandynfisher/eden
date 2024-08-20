@@ -113,9 +113,14 @@ export const LightboxGalleryItem = ({
 
 type LightboxGalleryProps = {
   sizeOnLoad?: boolean
+  withDownloadButton?: boolean
 } & PropsWithChildren
 
-const LightboxGallery = ({ children, sizeOnLoad }: LightboxGalleryProps) => {
+const LightboxGallery = ({
+  children,
+  sizeOnLoad,
+  withDownloadButton,
+}: LightboxGalleryProps) => {
   const handleOnBeforeOpen = (psInstance: PhotoSwipe) => {
     const ds = psInstance?.options?.dataSource
     // console.log({ds})
@@ -153,7 +158,7 @@ const LightboxGallery = ({ children, sizeOnLoad }: LightboxGalleryProps) => {
         //   return size
         // },
       }}
-      withDownloadButton={true}
+      withDownloadButton={withDownloadButton}
       onBeforeOpen={sizeOnLoad ? handleOnBeforeOpen : undefined}
       onOpen={sizeOnLoad ? handleOnOpen : undefined}
     >

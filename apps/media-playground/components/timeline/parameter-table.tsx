@@ -96,7 +96,7 @@ const ParameterTable = ({ args, className }: Props) => {
             </TableCell>
             <TableCell className="pt-0 pb-2 md:py-2 flex gap-2 flex-wrap">
               {imageInputParameterNames.includes(taskArg[0]) ? (
-                <LightboxGallery sizeOnLoad={true}>
+                <LightboxGallery sizeOnLoad={true} withDownloadButton={true}>
                   {(
                     (Array.isArray(taskArg[1])
                       ? taskArg[1]
