@@ -141,6 +141,8 @@ const ParameterTable = ({ args, className }: Props) => {
                 ) : (
                   <SquareIcon size={16} />
                 )
+              ) : typeof taskArg[1] === 'object' ? (
+                JSON.stringify(taskArg[1])
               ) : (
                 taskArg[1]
               )}
