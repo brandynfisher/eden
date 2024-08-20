@@ -1,4 +1,5 @@
-import { UserDocument } from '../Creator'
+import { TaskV2Args } from '@edenlabs/eden-sdk'
+import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import mongooseDelete, {
@@ -7,28 +8,12 @@ import mongooseDelete, {
 } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-export enum ModelV2Mode {
-  Face = 'face',
-  Object = 'object',
-  Style = 'style',
-}
-
-export type ModelV2Args = {
-  name: string
-  lora_training_urls: string[]
-  sd_model_version: string
-  concept_mode: ModelV2Mode
-  num_train_epochs: number
-  resolution: number
-  seed: number
-}
-
 export interface ModelV2Schema {
   name: string
-  user: UserDocument
-  args: ModelV2Args
+  user: ObjectId
+  args: TaskV2Args
   checkpoint: string
-  public: boolean
+  public?: boolean
   slug: string
   thumbnail: string
   createdAt: Date
@@ -37,49 +22,52 @@ export interface ModelV2Schema {
 
 export interface ModelV2Input {
   name: string
-  user: UserDocument
-  args: ModelV2Args
+  user: ObjectId
+  args: TaskV2Args
   checkpoint: string
-  public: boolean
+  public?: boolean
   slug: string
   thumbnail: string
 }
 
 export interface ModelV2Document extends SoftDeleteDocument, ModelV2Schema {}
 
-export type ModelV2 = ModelV2Schema
-
 export const modelSchema = new Schema<ModelV2Document>(
   {
     name: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
       unique: false,
     },
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users',
+      required: true,
     },
     args: {
       type: Schema.Types.Mixed,
       default: {},
     },
     checkpoint: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
     },
     slug: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
       unique: true,
     },
-    public: {
-      type: Schema.Types.String,
+    thumbnail: {
+      type: String,
+      required: true,
+    },
+    deleted: {
+      type: Boolean,
       default: false,
     },
-    thumbnail: {
-      type: Schema.Types.String,
-      required: true,
+    public: {
+      type: Boolean,
+      default: true,
     },
   },
   {

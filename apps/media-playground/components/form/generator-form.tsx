@@ -192,16 +192,16 @@ const renderFormField = (
                 />
                 <FormControl id={name}>
                   <Input
-                    className={'hidden'}
+                    // className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
                     value={parsedValue}
                   />
                 </FormControl>
                 <ModelSelector
-                  form={form}
+                  // form={form}
                   value={parsedValue}
-                  onChange={onChange}
+                  // onChange={onChange}
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>

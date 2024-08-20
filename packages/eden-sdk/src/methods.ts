@@ -199,6 +199,10 @@ import {
   GeneratorsGetResponseV2,
   GeneratorsListArgumentsV2,
   GeneratorsListResponseV2,
+  ModelsV2GetArguments,
+  ModelsV2GetResponse,
+  ModelsV2ListArguments,
+  ModelsV2ListResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -212,6 +216,8 @@ import {
   creationsV2GetRequestConfig,
   generatorsGetRequestConfigV2,
   generatorsListRequestConfigV2,
+  modelsV2GetRequestConfig,
+  modelsV2ListRequestConfig,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -406,6 +412,33 @@ export abstract class Methods {
       this,
       conceptsUnreactRequestConfig,
     ),
+  }
+
+  public readonly models = {
+    list: bindApiCall<ModelsV2ListArguments, ModelsV2ListResponse>(
+      this,
+      modelsV2ListRequestConfig,
+    ),
+    get: bindApiCall<ModelsV2GetArguments, ModelsV2GetResponse>(
+      this,
+      modelsV2GetRequestConfig,
+    ),
+    // update: bindApiCall<ConceptsUpdateArguments, ConceptsUpdateResponse>(
+    //   this,
+    //   conceptsUpdateRequestConfig,
+    // ),
+    // delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
+    //   this,
+    //   conceptsDeleteRequestConfig,
+    // ),
+    // react: bindApiCall<ConceptsReactArguments, ConceptsReactResponse>(
+    //   this,
+    //   conceptsReactRequestConfig,
+    // ),
+    // unreact: bindApiCall<ConceptsUnreactArguments, ConceptsUnreactResponse>(
+    //   this,
+    //   conceptsUnreactRequestConfig,
+    // ),
   }
 
   public readonly creations = {

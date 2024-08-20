@@ -1,6 +1,6 @@
 import {
-  getConceptsFeedCursorV2,
   getCreationsFeedCursorV2,
+  getModelsFeedCursorV2,
 } from '../../controllers/v2/feedControllerV2'
 import { maybeAuthEden2 } from '../../middleware/authMiddleware'
 import { cursorPaginatedResponse, cursorPaginationProperties } from '../index'
@@ -56,8 +56,7 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [request => maybeAuthEden2(server, request)],
-    handler: (request, reply) =>
-      getConceptsFeedCursorV2(server, request, reply),
+    handler: (request, reply) => getModelsFeedCursorV2(server, request, reply),
   })
 }
 

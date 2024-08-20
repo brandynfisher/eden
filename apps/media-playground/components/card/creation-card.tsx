@@ -1,4 +1,4 @@
-import { VideoDurationBadge } from '@/components/badge/video-duration-badge'
+import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
 import LikeButton from '@/components/button/like-button'
 import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { useHover } from '@/hooks/use-hover'
 import { FileType } from '@/types/Media'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
+import { AudioLinesIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties, useState } from 'react'
 
@@ -34,19 +35,29 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
         prefetch={false}
         className="relative w-full block"
       >
-        <CardImage
-          media={{
-            url: creation.url,
-            thumbnail: creation.thumbnail,
-            width: creation.mediaAttributes?.width,
-            height: creation.mediaAttributes?.height,
-            type: creation.mediaAttributes?.type as FileType,
-          }}
-        />
+        {creation.mediaAttributes?.type === 'audio' ? (
+          <div className="flex items-center justify-center h-32">
+            <MediaDurationBadge
+              duration={creation.mediaAttributes.duration}
+              isLoading={false}
+            />
+            <AudioLinesIcon className="h-12 w-12" />
+          </div>
+        ) : (
+          <CardImage
+            media={{
+              url: creation.url,
+              thumbnail: creation.thumbnail,
+              width: creation.mediaAttributes?.width,
+              height: creation.mediaAttributes?.height,
+              type: creation.mediaAttributes?.type as FileType,
+            }}
+          />
+        )}
 
         {creation.mediaAttributes?.type === 'video' ? (
           <>
-            <VideoDurationBadge
+            <MediaDurationBadge
               duration={creation.mediaAttributes.duration}
               isLoading={hovered && !hasStartedPlayback}
             />

@@ -57,7 +57,7 @@ const SliderInput = ({
             min={min}
             max={max}
             step={step}
-            showTooltip={true}
+            showTooltip={false}
             onValueChange={val => {
               onChange(val[0])
             }}

@@ -585,7 +585,7 @@ export const getCreationsFeedCursorV2 = async (
   }
 }
 
-export const getConceptsFeedCursorV2 = async (
+export const getModelsFeedCursorV2 = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,

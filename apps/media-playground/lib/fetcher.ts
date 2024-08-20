@@ -11,7 +11,7 @@ import axios, { AxiosError } from 'axios'
 export const fetcher = async <T>(
   ...args: Parameters<typeof fetch>
 ): Promise<T> => {
-  // console.log('fetcher', ...args)
+  console.log('fetcher', ...args)
   const response = await fetch(...args)
 
   if (!response.ok) {
@@ -23,6 +23,8 @@ export const fetcher = async <T>(
     )
     throw new Error('Network response was not ok')
   }
+
+  console.log({ response })
 
   return response.json()
 }

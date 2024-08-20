@@ -1,6 +1,6 @@
 import 'photoswipe/dist/photoswipe.css'
 
-import { VideoDurationBadge } from '@/components/badge/video-duration-badge'
+import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
 // import LoadingIndicator from '@/components/loading-indicator'
 import VideoResult from '@/components/media/video-result'
 import { useHover } from '@/hooks/use-hover'
@@ -70,7 +70,6 @@ export const LightboxGalleryItem = ({
             }}
             src={item.thumbnail || siteConfig.mediaErrorUrl}
             alt={item.url || ''}
-            objectFit={'contain'}
             width={item.width || 1024}
             height={item.height || 1024}
             className={cn([
@@ -82,7 +81,7 @@ export const LightboxGalleryItem = ({
           {item.url?.endsWith('.mp4') ? (
             <>
               {!forceRender ? (
-                <VideoDurationBadge
+                <MediaDurationBadge
                   duration={item.duration}
                   isLoading={hovered && hasStartedPlayback}
                 />

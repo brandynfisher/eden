@@ -2,6 +2,7 @@
 
 import RouterTabs from '@/components/tabs/router-tabs'
 import UserCreationsFeed from '@/components/user-creations-feed'
+import UserModelsFeed from '@/components/user-models-feed'
 import { useParams } from 'next/navigation'
 
 const ProfileTabs = () => {
@@ -15,13 +16,13 @@ const ProfileTabs = () => {
     {
       key: 'models',
       title: 'Models',
-      content: <div>models</div>,
+      content: <UserModelsFeed userName={params.name} maxCols={4} />,
     },
-    {
-      key: 'collections',
-      title: 'Collections',
-      content: <div>collections</div>,
-    },
+    // {
+    //   key: 'collections',
+    //   title: 'Collections',
+    //   content: <div>collections</div>,
+    // },
   ]
 
   return <RouterTabs tabs={tabs} />

@@ -1,11 +1,14 @@
 'use client'
 
+import CreationCard from '@/components/card/creation-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
 import { env } from '@/lib/config'
 import { fetcher } from '@/lib/fetcher'
 import {
+  CreationV2,
   CreatorsGetResponse,
   FeedCreationsCursorArguments,
+  ModelV2,
 } from '@edenlabs/eden-sdk'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
@@ -43,8 +46,13 @@ const UserCreationsFeed = ({ userName, minCols, maxCols }: Props) => {
       query={query}
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
-      //@todo: make this actually do stuff
-      render={() => <div>render comp</div>}
+      render={(item: CreationV2 | ModelV2) => (
+        <CreationCard
+          creation={item as CreationV2}
+          creator={(item as CreationV2).user}
+          linkHref={`/creations/${item._id}`}
+        />
+      )}
     />
   )
 }
