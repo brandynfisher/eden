@@ -19,7 +19,11 @@ const Landing = () => {
           title={'Train'}
           text={'Train custom models'}
         />
-        {/*<LinkCard href={'/explore'} title={'Explore'} text={'Browse creations'} />*/}
+        <LinkCard
+          href={'/explore'}
+          title={'Explore'}
+          text={'Browse creations'}
+        />
       </div>
     </div>
   )

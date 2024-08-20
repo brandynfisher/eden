@@ -20,7 +20,7 @@ type Props = {
   style?: CSSProperties
 }
 
-const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
+const CreationCard = ({ creation, showFooter, style }: Props) => {
   const { hovered, ref } = useHover()
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
 
@@ -80,7 +80,7 @@ const CreationCard = ({ creation, creator, showFooter, style }: Props) => {
       </Link>
       {showFooter ? (
         <CardFooter
-          creator={creator}
+          // creator={creator}
           actions={[
             <LikeButton
               key={0}

@@ -1,6 +1,6 @@
 import CreationCard from './creation-card'
 import CreationData from '@/stories/dummyData/creation'
-import CreatorData from '@/stories/dummyData/creator'
+// import CreatorData from '@/stories/dummyData/creator'
 import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof CreationCard> = {
@@ -28,6 +28,6 @@ export const Default: Story = {}
 export const WithFooter: Story = {
   args: {
     showFooter: true,
-    creator: CreatorData,
+    // creator: CreatorData,
   },
 }
