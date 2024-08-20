@@ -52,4 +52,14 @@ export const siteConfig: SiteConfig = {
   ogImage: `${env.NEXT_PUBLIC_HOST}/logo-bw.png`,
   mediaErrorUrl:
     'https://edenartlab-prod-data.s3-accelerate.amazonaws.com/7c31e443f964e9d0e99c2fd45bf0b042999045e224aa7e38cb91049dc8340c93.jpeg',
+  publicRoutes: [
+    '/',
+    '/sign-in',
+    '/sign-up',
+    '/concierge',
+    '/(api|trpc)',
+    '/creators',
+    '/creations',
+    '/models',
+  ],
 }

@@ -1,12 +1,15 @@
 'use client'
 
-import CreationCard from '@/components/card/creation-card'
 import LoadingIndicator from '@/components/loading-indicator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useElementSize } from '@/hooks/use-element-size'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
-import { FeedCreationsV2CursorResponse, TaskV2 } from '@edenlabs/eden-sdk'
+import {
+  CreationV2,
+  FeedCreationsV2CursorResponse,
+  ModelV2,
+} from '@edenlabs/eden-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
@@ -16,7 +19,7 @@ const DEFAULT_PAGE_LIMIT = 35
 
 type Props = {
   apiEndpoint: string
-  render: ({ item }: { item: TaskV2 }) => React.JSX.Element
+  render: (item: CreationV2 | ModelV2) => React.JSX.Element
   query: { [key: string]: unknown }
   queryKey: unknown[]
   minCols?: number
@@ -190,12 +193,7 @@ const MasonryVirtualizerVertical = ({
               )}
             </div>
           ) : item ? (
-            <CreationCard
-              creation={item}
-              creator={item.user}
-              linkHref={`/creations/${item._id}`}
-              // showFooter={true}
-            />
+            <>{render(item)}</>
           ) : (
             <div>Missing data</div>
           )}
@@ -209,7 +207,7 @@ const MasonryVirtualizerVertical = ({
     <div
       data-test-id="masonry-virtualizer-vertical"
       ref={masonryWrapRef}
-      className="flex pb-12"
+      className="flex pb-12 outline-none"
     >
       <div
         style={{

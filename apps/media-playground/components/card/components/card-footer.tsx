@@ -1,22 +1,14 @@
-import UserAvatarLink from '@/components/user/user-avatar-link'
-import { Creator } from '@edenlabs/eden-sdk'
-import { ReactNode } from 'react'
+import { PropsWithChildren, ReactNode } from 'react'
 
 type Props = {
-  creator?: Creator
   actions?: ReactNode
-}
+} & PropsWithChildren
 
-const CardFooter = ({ creator, actions }: Props) => {
+const CardFooter = ({ actions, children }: Props) => {
   return (
     <div className="relative z-10 flex items-center justify-between h-9 bg-muted text-muted-foreground pl-1">
       <div className="h-7 sm:h-9 w-full flex justify-between items-center">
-        {creator ? (
-          <UserAvatarLink
-            name={creator.username || creator._id}
-            image={creator.userImage}
-          />
-        ) : null}
+        {children}
         <div className="ml-auto flex gap-2">{actions}</div>
       </div>
     </div>

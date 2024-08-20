@@ -14,7 +14,7 @@ export interface CreationV2Schema extends TaskV2Result {
   args: TaskV2Args
   createdAt: Date
   updatedAt: Date
-  isPrivate?: boolean
+  public?: boolean
 }
 
 export interface CreationV2Input extends TaskV2Result {
@@ -81,9 +81,9 @@ export const creationSchema = new Schema<CreationV2Document>(
       type: Boolean,
       default: false,
     },
-    isPrivate: {
+    public: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {

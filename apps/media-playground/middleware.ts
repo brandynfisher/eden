@@ -1,16 +1,12 @@
-import { env } from '@/lib/config'
+import { env, siteConfig } from '@/lib/config'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/concierge(.*)',
-  '/(api|trpc)(.*)',
-  '/creators(.*)',
-  '/creations(.*)',
-])
+const isPublicRoute = createRouteMatcher(
+  siteConfig.publicRoutes.map(route =>
+    route.length > 1 ? `${route}(.*)` : route,
+  ),
+)
 
 export default clerkMiddleware(
   (auth, request) => {

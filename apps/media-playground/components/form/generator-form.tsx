@@ -5,6 +5,7 @@ import FormItemHead from '@/components/form/form-item-head'
 import FormItemWrap from '@/components/form/form-item-wrap'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
+import ModelSelector from '@/components/form/model-input'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,7 +48,7 @@ const renderFormField = (
       name={name}
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value, name } = field
-        let parsedValue: number | ''
+        let parsedValue: number | string | ''
         switch (parameter.type) {
           case 'int':
             parsedValue = Number(value)
@@ -125,7 +126,9 @@ const renderFormField = (
             )
           case 'string':
           case 'string[]':
-            return name === 'prompt' || name === 'negative_prompt' ? (
+            return name === 'prompt' ||
+              name === 'negative_prompt' ||
+              name === 'text_input' ? (
               <FormItem
                 className={`mt-0 !p-4 ${
                   parameter.required ? '!pt-4' : '!pt-3'
@@ -178,6 +181,30 @@ const renderFormField = (
                   />
                 )}
               </FormItemWrap>
+            )
+          case 'lora':
+            parsedValue = typeof value !== 'string' ? '' : value
+            return (
+              <FormItem className="mt-0 !p-4 !pt-3">
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
+                <FormControl id={name}>
+                  <Input
+                    // className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={parsedValue}
+                  />
+                </FormControl>
+                <ModelSelector
+                  // form={form}
+                  value={parsedValue}
+                  // onChange={onChange}
+                />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
             )
           case 'image':
             return (
@@ -386,7 +413,6 @@ const GeneratorForm = ({ generator }: Props) => {
   // console.log({defaultValues})
 
   const handleReset = useCallback(() => {
-    console.log('handleReset tap reset key')
     form.reset(defaultValues, { keepDefaultValues: true })
     // setResetKey(prev => prev + 1)
     //

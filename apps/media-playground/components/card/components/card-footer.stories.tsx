@@ -1,7 +1,7 @@
 import LikeButton from '@/components/button/like-button'
 import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
-import CreatorData from '@/stories/dummyData/creator'
+// import CreatorData from '@/stories/dummyData/creator'
 import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof CardFooter> = {
@@ -26,7 +26,7 @@ export const Default: Story = {
 
 export const WithCreator: Story = {
   args: {
-    creator: CreatorData,
+    // creator: CreatorData,
   },
 }
 
@@ -41,7 +41,7 @@ export const WithActions: Story = {
 
 export const WithAll: Story = {
   args: {
-    creator: CreatorData,
+    // creator: CreatorData,
     actions: [
       <LikeButton key={0} count={4} isActive={false} onChange={() => null} />,
       <ToolsButton key={1} />,

@@ -46,7 +46,7 @@ export const getCreation = async (
     })
   }
 
-  if (creation.isPrivate) {
+  if (!creation.public) {
     if (creation.user._id.toString() !== request.user?.userId.toString()) {
       console.error('User not authorized to view this')
       return reply.status(401).send({

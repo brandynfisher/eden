@@ -9,8 +9,8 @@ const RotatingEdenLogo = ({ variant }: { variant?: Variant }) => {
         variant === 'small'
           ? 'h-[36px] w-[36px]'
           : variant === 'medium'
-            ? 'h-32 w-32'
-            : 'h-[193px] w-[193px]'
+          ? 'h-32 w-32'
+          : 'h-[175px] w-[175px]'
       } `}
     >
       <RotatingImage src="/logo-bw.png" alt="Eden Logo" priority />

@@ -9,7 +9,6 @@ export const listModels = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-
   const { modelId, limit, page, sort } = request.query as ModelsV2ListArguments
 
   const user = await User.findById(userId)
@@ -50,24 +49,38 @@ export const getModel = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
   const { modelId } = request.params as ModelsV2GetArguments
 
-  const user = await User.findById(userId)
-  if (!user) {
-    return reply.status(400).send({
-      message: 'User not found',
+  const model = await ModelV2.findOneWithDeleted({
+    _id: modelId,
+  })
+    .select('-args.lora_training_urls')
+    .populate({
+      path: 'user',
+      select: '_id userId username userImage',
     })
-  }
 
-  const model = await ModelV2.findOne({ _id: modelId }).select(
-    '-args.lora_training_urls',
-  )
+  console.log({ model })
 
-  if (!model) {
+  // nothing found or it was deleted and the user is not the owner
+  if (
+    !model ||
+    (request.user?.userId &&
+      model.deleted &&
+      model.user._id.toString() !== request.user?.userId.toString())
+  ) {
     return reply.status(404).send({
       message: 'Model not found',
     })
+  }
+
+  if (model.user._id.toString() !== request.user?.userId.toString()) {
+    if (!model.public) {
+      console.error('User not authorized to view this')
+      return reply.status(401).send({
+        message: 'User not authorized to view this',
+      })
+    }
   }
 
   return reply.status(200).send({ model })

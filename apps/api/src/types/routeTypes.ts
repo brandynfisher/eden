@@ -75,7 +75,7 @@ export const taskV2Type = Type.Object({
 export const modelV2Type = Type.Object({
   _id: Type.String(),
   name: Type.String(),
-  user: Type.String(),
+  user: Type.Any(),
   args: Type.Any(),
   checkpoint: Type.String(),
   public: Type.Boolean(),

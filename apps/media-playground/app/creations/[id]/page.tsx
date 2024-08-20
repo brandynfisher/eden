@@ -12,6 +12,7 @@ type Props = {
 const getCreation = async (id: string) => {
   const response = await fetcher<CreationsV2GetResponse>(
     `${process.env.NEXT_PUBLIC_HOST}/api/creations/${id}`,
+    { credentials: 'include' },
   )
 
   return response

@@ -14,7 +14,6 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       querystring: {
@@ -40,7 +39,6 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       params: {

@@ -5,6 +5,8 @@ import {
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../../types'
+import { Creator } from '../Creators'
+import { TaskV2Args } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -21,7 +23,7 @@ export interface ModelsV2GetArguments extends WebAPICallOptions {
 }
 
 // Requests
-export const ModelsV2ListRequestConfig = (
+export const modelsV2ListRequestConfig = (
   args: ModelsV2ListArguments,
 ): AxiosRequestConfig => {
   const params = transformArgsIntoURLParams(args)
@@ -32,7 +34,7 @@ export const ModelsV2ListRequestConfig = (
   }
 }
 
-export const ModelsV2GetRequestConfig = (
+export const modelsV2GetRequestConfig = (
   args: ModelsV2GetArguments,
 ): AxiosRequestConfig => {
   return {
@@ -58,20 +60,13 @@ export type ModelsV2GetResponse = WebAPICallResult & {
 export type ModelV2 = {
   _id: string
   name: string
-  user: string
-  args: {
-    name: string
-    lora_training_urls: string[]
-    sd_model_version: string
-    concept_mode: string
-    num_train_epochs: number
-    resolution: number
-    seed: number
-  }
+  user: Creator
+  args: TaskV2Args
   thumbnail: string
   slug: string
-  public: boolean
   checkpoint: string
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
+  deleted: boolean
+  public?: boolean
 }

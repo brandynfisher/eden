@@ -1,20 +1,14 @@
 import { useMe } from '@/hooks/use-me'
-import { env } from '@/lib/config'
+import { env, siteConfig } from '@/lib/config'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { useTheme } from 'next-themes'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-const publicRoutes = [
-  '^/$',
-  '^/sign-in.*$',
-  '^/sign-up.*$',
-  '^/concierge.*$',
-  '^/(api|trpc).*$',
-  '^/creators.*$',
-  '^/creations.*$',
-]
+const publicRoutePatterns = siteConfig.publicRoutes.map(route =>
+  route.length > 1 ? `^${route}.*$` : `^${route}$`,
+)
 
 export function useAuthState() {
   const { openSignIn } = useClerk()
@@ -38,7 +32,7 @@ export function useAuthState() {
   // console.log('use-auth-state', { pathname, isPublic: publicRoutes.some((route) => pathname.match(new RegExp(route))) })
   useEffect(() => {
     // verify that the current pathname is valid by running regexes in publicRoutes against it
-    const isPublicRoute = publicRoutes.some(route => {
+    const isPublicRoute = publicRoutePatterns.some(route => {
       const regex = new RegExp(route)
       const match = pathname.match(regex)
       // console.log({ match, pathname, route })

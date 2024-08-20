@@ -68,12 +68,11 @@ const TimelineItemResultTools = ({
 
   const [isPublishing, setIsPublishing] = useState(false)
   const publishTaskResult = async (taskId: string, originalFileUrl: string) => {
-    console.log('publishTaskResult', taskId, originalFileUrl)
     setIsPublishing(true)
     const publishToast = toast(
       <div className="flex gap-2 items-center justify-center">
         <LoadingIndicator className="h-6" />
-        Publishing creation...
+        Saving creation...
       </div>,
       { dismissible: true },
     )
@@ -91,7 +90,7 @@ const TimelineItemResultTools = ({
 
       console.log({ responseData })
 
-      toast.success(`Published`, {
+      toast.success(`Saved`, {
         id: publishToast,
         description: 'Creation was added to your profile',
         action: {
@@ -105,7 +104,7 @@ const TimelineItemResultTools = ({
         richColors: true,
       })
     } catch (e: unknown) {
-      toast.error(`Failed to publish`, {
+      toast.error(`Failed to save`, {
         id: publishToast,
         description: JSON.stringify(
           (e as AxiosError<{ message: string }>)?.response?.data?.message,
@@ -134,8 +133,8 @@ const TimelineItemResultTools = ({
               size="sm"
               title={
                 result.published
-                  ? 'Creation was published'
-                  : `Publish creation to profile`
+                  ? 'Creation was saved'
+                  : `Save creation to profile`
               }
               className={`px-2 flex gap-2 items-center justify-center ${
                 result.published ? 'cursor-default' : ''
@@ -150,17 +149,16 @@ const TimelineItemResultTools = ({
               {result.published ? (
                 <>
                   <BookCheckIcon size={20} className="text-success" />
-                  {/*Published*/}
                 </>
               ) : isPublishing ? (
                 <>
                   <LoadingIndicator className="h-4 w-4" />
-                  Publishing
+                  Saving
                 </>
               ) : (
                 <>
                   <BookHeartIcon size={20} />
-                  Publish
+                  Save
                 </>
               )}
             </Button>
