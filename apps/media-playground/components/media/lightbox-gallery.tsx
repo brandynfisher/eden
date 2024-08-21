@@ -34,7 +34,8 @@ export const LightboxGalleryItem = ({
 }: LightboxGalleryItemProps) => {
   const { hovered, ref: hoverRef } = useHover()
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
-
+  const width = item.width || 1024
+  const height = item.height || 1024
   return (
     <Item
       original={
@@ -43,14 +44,14 @@ export const LightboxGalleryItem = ({
           : item.url || siteConfig.mediaErrorUrl
       }
       thumbnail={item.thumbnail || siteConfig.mediaErrorUrl}
-      width={sizeOnLoad ? undefined : item.width}
-      height={sizeOnLoad ? undefined : item.height}
+      width={sizeOnLoad ? undefined : width}
+      height={sizeOnLoad ? undefined : height}
       content={
         item.url?.endsWith('.mp4') ? (
           <VideoResult
             videoUrl={item.url || siteConfig.mediaErrorUrl}
-            width={item.width || 1024}
-            height={item.height || 1024}
+            width={width}
+            height={height}
             posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
             muted={true}
             loop={true}
@@ -70,14 +71,13 @@ export const LightboxGalleryItem = ({
             }}
             src={item.thumbnail || siteConfig.mediaErrorUrl}
             alt={item.url || ''}
-            width={item.width || 1024}
-            height={item.height || 1024}
+            width={width}
+            height={height}
             className={cn([
-              `absolute object-contain cursor-zoom-in`,
+              `md:absolute object-contain cursor-zoom-in h-[calc(100vh_-_112px)] md:h-full w-full`,
               className,
             ])}
           />
-          {JSON.stringify(ref)}
           {item.url?.endsWith('.mp4') ? (
             <>
               {!forceRender ? (
@@ -89,12 +89,13 @@ export const LightboxGalleryItem = ({
               {forceRender || hovered ? (
                 <VideoResult
                   className={cn([
-                    'absolute inset-0 cursor-zoom-in',
+                    'absolute inset-0 cursor-zoom-in h-[calc(100vh_-_112px)] md:h-full',
                     forceRender ? '' : 'pointer-events-none',
+                    className,
                   ])}
                   videoUrl={item.url || ''}
-                  width={item.width || 1024}
-                  height={item.height || 1024}
+                  width={width}
+                  height={height}
                   posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
                   muted={true}
                   loop={true}

@@ -1,19 +1,24 @@
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
+import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 type Props = {
   model: ModelV2
+  isModal?: boolean
 }
 
-const ModelMediaPreview = ({ model }: Props) => {
+const ModelMediaPreview = ({ model, isModal }: Props) => {
   return (
     <div className="relative w-full my-4" style={{ aspectRatio: 1 }}>
       <LightboxGallery>
         <LightboxGalleryItem
-          className="w-full h-full max-h-full"
+          // className="w-full h-full max-h-full"
+          className={cn([
+            isModal ? 'h-[calc(100vh_-_112px)]' : 'h-[calc(100vh_-_176px)]',
+          ])}
           forceRender={true}
           item={{
             url: model.thumbnail,

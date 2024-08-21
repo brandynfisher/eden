@@ -1,18 +1,20 @@
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
+import { cn } from '@/lib/utils'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 type Props = {
   creation: CreationV2
+  isModal?: boolean
 }
 
-const CreationMediaPreview = ({ creation }: Props) => {
+const CreationMediaPreview = ({ creation, isModal }: Props) => {
   return (
     <div
       className="relative w-full my-4"
-      style={{ aspectRatio: creation?.mediaAttributes?.aspectRatio || 1 }}
+      // style={{ aspectRatio: creation?.mediaAttributes?.aspectRatio || 1 }}
     >
       {creation.mediaAttributes?.type === 'audio' ? (
         <div className="flex w-full h-full items-center justify-center">
@@ -21,7 +23,9 @@ const CreationMediaPreview = ({ creation }: Props) => {
       ) : (
         <LightboxGallery withDownloadButton={true}>
           <LightboxGalleryItem
-            className="w-full h-full max-h-full"
+            className={cn([
+              isModal ? 'h-[calc(100vh_-_112px)]' : 'h-[calc(100vh_-_176px)]',
+            ])}
             forceRender={true}
             item={{
               url: creation.url,

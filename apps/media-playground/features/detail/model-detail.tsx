@@ -33,19 +33,19 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
         className={cn([
           `w-full flex flex-col flex-grow md:flex-row md:gap-4 max-h-full md:ml-4`,
           isModal
-            ? 'h-[calc(100dvh_-_34px)] w-[calc(100dvw_-_32px)]'
-            : 'md:h-[calc(100dvh_-_64px)] md:w-[calc(100dvw_-_16px)]',
+            ? 'md:h-[calc(100vh_-_34px)] w-[calc(100dvw_-_32px)]'
+            : 'md:h-[calc(100vh_-_64px)] md:w-[calc(100dvw_-_16px)]',
         ])}
       >
         {model ? (
-          <ModelMediaPreview model={model} />
+          <ModelMediaPreview model={model} isModal={isModal} />
         ) : (
           <Skeleton className="min-h-[512px] w-full rounded-xl" />
         )}
 
         <div
           className={cn([
-            `flex-shrink-0 w-full md:w-[400px] px-4 overflow-y-auto bg-accent rounded-md rounded-tr-none rounded-br-none`,
+            `flex-shrink-0 w-full md:w-[388px] px-4 overflow-y-auto bg-accent rounded-md rounded-tr-none rounded-br-none`,
             isModal ? '' : 'my-4',
           ])}
         >

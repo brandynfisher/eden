@@ -5,3 +5,10 @@ import { twMerge } from 'tailwind-merge'
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export type Long = { low: number; high: number; unsigned: boolean }
+
+export function toBigInt(long: Long) {
+  let high = long.unsigned ? long.high >>> 0 : long.high
+  return (BigInt(high) << 32n) + BigInt(long.low >>> 0)
+}

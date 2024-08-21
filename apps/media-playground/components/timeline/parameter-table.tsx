@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
-import { cn } from '@/lib/utils'
+import { Long, cn, toBigInt } from '@/lib/utils'
 import { TaskV2Args } from '@edenlabs/eden-sdk'
 import { InfoIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
 import React from 'react'
@@ -106,7 +106,7 @@ const ParameterTable = ({ args, className }: Props) => {
                     .map(inputImageUrl => (
                       <LightboxGalleryItem
                         sizeOnLoad={true}
-                        className="relative rounded-lg cursor-zoom-in hover:brightness-105 h-20 w-auto"
+                        className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
                         key={inputImageUrl}
                         item={{
                           url: inputImageUrl,
@@ -141,8 +141,13 @@ const ParameterTable = ({ args, className }: Props) => {
                 ) : (
                   <SquareIcon size={16} />
                 )
-              ) : typeof taskArg[1] === 'object' ? (
-                JSON.stringify(taskArg[1])
+              ) : typeof taskArg[1] === 'object' &&
+                !Array.isArray(taskArg[1]) ? (
+                taskArg[1] !== null ? (
+                  toBigInt(taskArg[1] as unknown as Long)
+                ) : (
+                  '-'
+                )
               ) : (
                 taskArg[1]
               )}
