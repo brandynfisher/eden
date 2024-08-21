@@ -26,7 +26,7 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="rounded-full overflow-hidden w-fit border-popover-foreground border-2 z-10 shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]">
+        <div className="relative rounded-full overflow-hidden w-fit border-popover-foreground border-2">
           <Image
             src={creator.userImage || ''}
             alt={creator.username || ''}
