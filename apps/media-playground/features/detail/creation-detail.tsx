@@ -74,7 +74,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
         {creation ? (
           <CreationMediaPreview creation={creation} isModal={isModal} />
         ) : (
-          <Skeleton className="min-h-[512px] w-full rounded-xl" />
+          <Skeleton className="min-h-[512px] w-full rounded-xl opacity-0 animate-fade-in" />
         )}
 
         <div

@@ -40,7 +40,7 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
         {model ? (
           <ModelMediaPreview model={model} isModal={isModal} />
         ) : (
-          <Skeleton className="min-h-[512px] w-full rounded-xl" />
+          <Skeleton className="min-h-[512px] w-full rounded-xl fade-in" />
         )}
 
         <div

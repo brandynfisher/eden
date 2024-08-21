@@ -144,7 +144,7 @@ const ParameterTable = ({ args, className }: Props) => {
               ) : typeof taskArg[1] === 'object' &&
                 !Array.isArray(taskArg[1]) ? (
                 taskArg[1] !== null ? (
-                  toBigInt(taskArg[1] as unknown as Long)
+                  toBigInt(taskArg[1] as unknown as Long).toString()
                 ) : (
                   '-'
                 )

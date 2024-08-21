@@ -74,7 +74,7 @@ export const LightboxGalleryItem = ({
             width={width}
             height={height}
             className={cn([
-              `md:absolute object-contain cursor-zoom-in h-[calc(100vh_-_112px)] md:h-full w-full`,
+              `object-contain cursor-zoom-in md:h-full w-full`,
               className,
             ])}
           />
@@ -89,7 +89,7 @@ export const LightboxGalleryItem = ({
               {forceRender || hovered ? (
                 <VideoResult
                   className={cn([
-                    'absolute inset-0 cursor-zoom-in h-[calc(100vh_-_112px)] md:h-full',
+                    'absolute inset-0 cursor-zoom-in md:h-full',
                     forceRender ? '' : 'pointer-events-none',
                     className,
                   ])}

@@ -7,8 +7,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export type Long = { low: number; high: number; unsigned: boolean }
-
-export function toBigInt(long: Long) {
-  let high = long.unsigned ? long.high >>> 0 : long.high
-  return BigInt(high) << (BigInt(32) + BigInt(long.low >>> 0))
+export function toBigInt(longObj: Long): bigint {
+  const MAX_UINT32 = BigInt('4294967296') // Now using a string
+  const highPart = BigInt(longObj.high) * MAX_UINT32
+  const lowPart = BigInt(longObj.low)
+  return highPart + lowPart
 }

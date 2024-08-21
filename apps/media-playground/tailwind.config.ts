@@ -85,12 +85,17 @@ const config = {
           from: { height: 'var(--radix-collapsible-content-height)' },
           to: { height: '0' },
         },
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: 'initial' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'collapsible-down': 'collapsible-down 0.2s ease-out',
         'collapsible-up': 'collapsible-up 0.2s ease-out',
+        'fade-in': 'fade-in 1s ease',
       },
     },
   },
