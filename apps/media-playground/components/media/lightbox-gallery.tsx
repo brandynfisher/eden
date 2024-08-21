@@ -99,7 +99,7 @@ export const LightboxGalleryItem = ({
                   posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
                   muted={true}
                   loop={true}
-                  autoPlay={forceRender ? true : hovered}
+                  autoPlay={forceRender}
                   controls={!!forceRender}
                   onPlay={() => setHasStartedPlayback(true)}
                 />

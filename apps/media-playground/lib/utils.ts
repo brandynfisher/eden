@@ -10,5 +10,5 @@ export type Long = { low: number; high: number; unsigned: boolean }
 
 export function toBigInt(long: Long) {
   let high = long.unsigned ? long.high >>> 0 : long.high
-  return (BigInt(high) << 32n) + BigInt(long.low >>> 0)
+  return BigInt(high) << (BigInt(32) + BigInt(long.low >>> 0))
 }
