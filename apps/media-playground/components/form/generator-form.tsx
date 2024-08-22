@@ -1,8 +1,8 @@
 'use client'
 
-import AspectRatioSelector from '@/components/form/aspect-ratio-selector'
 import FormItemHead from '@/components/form/form-item-head'
 import FormItemWrap from '@/components/form/form-item-wrap'
+import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
 import ModelSelector from '@/components/form/model-input'

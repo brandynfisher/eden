@@ -1,7 +1,7 @@
+import LoginOrVoucher from '@/components/form/login-or-voucher'
 import RotatingEdenLogo from '@/components/logo/rotating-eden-logo'
 import { Button } from '@/components/ui/button'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
-import Link from 'next/link'
 
 const ConciergeContent = () => {
   return (
@@ -26,10 +26,9 @@ const ConciergeContent = () => {
           </a>
         </Button>
       </div>
-      <div className="mt-8">
-        <Button asChild variant="link">
-          <Link href={'/sign-in'}>Already invited? Click here to login</Link>
-        </Button>
+
+      <div className="mt-8 flex flex-col items-center">
+        <LoginOrVoucher />
       </div>
     </div>
   )

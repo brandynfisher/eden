@@ -11,7 +11,6 @@ const mannaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       response: {
@@ -32,7 +31,6 @@ const mannaRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: Type.Object({

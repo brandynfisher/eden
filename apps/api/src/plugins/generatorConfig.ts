@@ -32,8 +32,10 @@ const fetchConfigs = async (
     'axios-retry': {
       retries: Infinity,
       retryDelay: axiosRetry.exponentialDelay,
-      onRetry: (retryCount, _error, _requestConfig) => {
-        // server.log.warn({error, requestConfig})
+      onRetry: (retryCount, error) => {
+        server.log.error(
+          `fetchConfigs Error: ${error.response?.status} - ${error.message}`,
+        )
         server.log.warn(
           `Re-trying (${retryCount}) - fetchConfigs: ${computeApiUrl}`,
         )

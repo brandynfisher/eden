@@ -164,7 +164,7 @@ export const redeemMannaVoucher = async (
 
   if (!mannaVouchersAll) {
     return reply.status(400).send({
-      message: `Manna voucher ${code} not found`,
+      message: `Voucher ${code} not found`,
     })
   }
 

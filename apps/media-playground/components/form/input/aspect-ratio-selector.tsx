@@ -1,4 +1,4 @@
-import AspectRatioDropdown from '@/components/form/aspect-ratio-dropdown'
+import AspectRatioDropdown from '@/components/form/input/aspect-ratio-dropdown'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { UseFormReturn } from 'react-hook-form'
 

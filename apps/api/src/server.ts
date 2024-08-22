@@ -95,7 +95,6 @@ const createServer = async (
   await registerWebSocket(server, opts)
   await registerSSE(server)
   await registerEventEmitter(server)
-  await registerGeneratorConfigs(server, opts)
   await registerInternalMessages(server, opts)
   await registerStripe(server)
   await registerAssetUpload(server)
@@ -189,6 +188,9 @@ const createServer = async (
   })
 
   await server.ready()
+
+  registerGeneratorConfigs(server, opts)
+
   return server
 }
 

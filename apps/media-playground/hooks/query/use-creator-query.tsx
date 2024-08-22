@@ -1,6 +1,6 @@
 import { fetcher } from '@/lib/fetcher'
 import { Creator, CreatorsGetResponse } from '@edenlabs/eden-sdk'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Props = {
   key: Creator['username']
@@ -13,6 +13,8 @@ export const useCreatorQuery = ({
   initialData,
   enabled = true,
 }: Props) => {
+  const queryKey = ['creators', key]
+
   const {
     data,
     error,
@@ -26,11 +28,14 @@ export const useCreatorQuery = ({
   } = useQuery({
     enabled,
     initialData,
-    queryKey: ['creators', key],
+    queryKey,
     queryFn: () => fetcher<CreatorsGetResponse>(`/api/users/${key}`),
   })
 
+  const queryClient = useQueryClient()
+
   return {
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
     creator: data?.creator as Creator | undefined,
     balance: data?.balance || undefined,
     foreverBalance: data?.foreverBalance || undefined,

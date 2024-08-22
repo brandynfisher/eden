@@ -1,4 +1,4 @@
-import { Resolution } from '@/components/form/aspect-ratio-selector'
+import { Resolution } from '@/components/form/input/aspect-ratio-selector'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -44,11 +44,20 @@ const AspectRatioDropdown = ({
           {resolutions.map(resolution => (
             <DropdownMenuItem
               key={resolution.label}
-              className={`flex items-center py-1 cursor-pointer ${activeResolution && resolution.label === activeResolution.label ? 'bg-muted' : ''}`}
+              className={`flex items-center py-1 cursor-pointer ${
+                activeResolution && resolution.label === activeResolution.label
+                  ? 'bg-muted'
+                  : ''
+              }`}
               onClick={() => onClick(resolution)}
             >
               <div
-                className={`flex items-center justify-center rounded-md h-8 w-12 ${activeResolution && resolution.label === activeResolution.label ? 'bg-muted-foreground/10' : 'bg-accent-foreground/10'}`}
+                className={`flex items-center justify-center rounded-md h-8 w-12 ${
+                  activeResolution &&
+                  resolution.label === activeResolution.label
+                    ? 'bg-muted-foreground/10'
+                    : 'bg-accent-foreground/10'
+                }`}
               >
                 {resolution.label}
               </div>

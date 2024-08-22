@@ -31,38 +31,40 @@ export function useAuthState() {
 
   // console.log('use-auth-state', { pathname, isPublic: publicRoutes.some((route) => pathname.match(new RegExp(route))) })
   useEffect(() => {
-    // verify that the current pathname is valid by running regexes in publicRoutes against it
-    const isPublicRoute = publicRoutePatterns.some(route => {
-      const regex = new RegExp(route)
-      const match = pathname.match(regex)
-      // console.log({ match, pathname, route })
-      return match
-    })
-
+    // Return early during loading
     if (isLoading) {
       return
     }
 
-    if (isPublicRoute) {
+    // Verify that the current pathname is valid by running regexes in publicRoutes against it
+    const isPublicRoute = publicRoutePatterns.some(route => {
+      const regex = new RegExp(route)
+      return Boolean(pathname.match(regex))
+    })
+
+    // If it's a public route or the user isn't signed in, there's nothing more to do
+    if (isPublicRoute || !isSignedIn) {
       return
     }
 
-    if (isSignedIn) {
-      if (
-        hasEden2EarlyAccess() &&
-        (pathname === '/concierge' ||
-          pathname === '/sign-up' ||
-          pathname === '/sign-in')
-      ) {
-        router.push('/')
-      }
-    } else {
+    const hasAccessFlag = hasEden2EarlyAccess()
+    const unauthenticatedRoutes = ['/concierge', '/sign-up', '/sign-in']
+    const shouldRedirectToHome =
+      hasAccessFlag && unauthenticatedRoutes.includes(pathname)
+
+    // If the user is signed in and has early access, they should not be on unauthenticated routes
+    if (shouldRedirectToHome) {
+      router.push('/')
+      return
+    }
+
+    if (isSignedIn && !hasAccessFlag) {
       router.push('/concierge')
     }
   }, [isLoading, pathname, router, hasEden2EarlyAccess, isSignedIn])
 
   const verifyAuth = async () => {
-    if (isSignedIn) {
+    if (isSignedIn && hasEden2EarlyAccess()) {
       return true
     }
 
