@@ -11,7 +11,7 @@ type Props = {
 }
 const SecondaryNav = ({ title, baseSegment, items }: Props) => {
   return (
-    <div className="bg-muted/60 w-50 flex flex-col items-start">
+    <div className="bg-muted/60 w-52 flex flex-col items-start">
       <div className="xl:sticky xl:top-16 w-full">
         {title ? (
           <Link href={`/${baseSegment}`}>
