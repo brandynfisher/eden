@@ -17,6 +17,7 @@ import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
   PaginatedResponse,
   TaskV2,
+  TaskV2Result,
   TaskV2Status,
   TasksV2CancelArguments,
   TasksV2CreateArguments,
@@ -251,15 +252,7 @@ export const listTasks = async (
 
     queryResults.docs.forEach(doc => {
       if (doc.result) {
-        doc.result = doc.result.map(result =>
-          result.filename
-            ? {
-                ...result,
-                url: s3Url(server, result.filename),
-                thumbnail: s3ThumbnailUrl(server, result.filename),
-              }
-            : result,
-        )
+        doc.result = doc.result.map(result => injectResultUrls(server, result))
       }
     })
 
@@ -267,6 +260,16 @@ export const listTasks = async (
   }
 
   return reply.status(200).send(tasks)
+}
+
+const injectResultUrls = (server: FastifyInstance, result: TaskV2Result) => {
+  return result.filename
+    ? {
+        ...result,
+        url: s3Url(server, result.filename),
+        thumbnail: s3ThumbnailUrl(server, result.filename),
+      }
+    : result
 }
 
 export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -340,8 +343,18 @@ export const subscribeTaskUpdates = async (
 
     // ensure socket message is only sent to the intended recipient
     if (userId.toString() === task.user.toString()) {
+      const taskWithUrls =
+        task && task.result
+          ? {
+              ...task,
+              result: task.result.map(result =>
+                injectResultUrls(server, result),
+              ),
+            }
+          : task
+
       // emit SSE Event
-      server.eventEmitter.emit('SSE-task-update-v2', task)
+      server.eventEmitter.emit('SSE-task-update-v2', taskWithUrls)
     }
   }
 
@@ -469,7 +482,15 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
           JSON.stringify({
             event: ServerEventName.TaskUpdate,
             data: {
-              task,
+              task:
+                task && task.result
+                  ? {
+                      ...task,
+                      result: task.result.map(result =>
+                        injectResultUrls(this, result),
+                      ),
+                    }
+                  : task,
             },
           }),
         )
