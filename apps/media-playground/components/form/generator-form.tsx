@@ -433,7 +433,7 @@ const GeneratorForm = ({ generator }: Props) => {
   return (
     <div
       data-test-id="generator-form"
-      className="flex flex-col items-start overflow-y-auto xl:pr-4 xl:sticky xl:top-[106px] xl:max-h-[calc(100vh_-_106px)]"
+      className="flex flex-col items-start overflow-y-auto xl:pr-4 xl:sticky xl:top-16 xl:max-h-[calc(100vh_-_106px)] md:pt-4"
     >
       {/*<FormPersist resetKey={resetKey} formKey={`form_tool_${generator.key}`} form={form} defaultValues={defaultValues}/>*/}
       <Form {...form}>
