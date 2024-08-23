@@ -5,8 +5,6 @@ export function getCloudfrontUrl(filename?: string, size: number = 2560) {
     return ''
   }
 
-  console.log(filename)
-
   if (filename.startsWith(env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL)) {
     // if filename is a video or ends with _ followed by any number and then . and any extension, do nothing
     if (filename.endsWith('.mp4') || filename.match(/_\d+\.\w+$/)) {
@@ -17,6 +15,7 @@ export function getCloudfrontUrl(filename?: string, size: number = 2560) {
     return filename.replace(/\.\w+$/, `_${size}.webp`)
   }
 
+  // any other full url should be returned as is (maybe legacy or whatever)
   if (filename.startsWith('https://')) {
     return filename
   }

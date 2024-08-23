@@ -12,10 +12,7 @@ type Props = {
 
 const CreationMediaPreview = ({ creation, isModal }: Props) => {
   return (
-    <div
-      className="relative w-full my-4"
-      // style={{ aspectRatio: creation?.mediaAttributes?.aspectRatio || 1 }}
-    >
+    <div className="relative w-full my-4">
       {creation.mediaAttributes?.type === 'audio' ? (
         <div className="flex w-full h-full items-center justify-center">
           <audio src={creation.url} controls={true} />
@@ -24,8 +21,8 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
         <LightboxGallery withDownloadButton={true}>
           <LightboxGalleryItem
             className={cn([
-              'md:absolute md:h-full',
-              isModal ? 'h-[calc(100vh_-_112px)]' : 'h-[calc(100vh_-_176px)]',
+              'lg:absolute lg:h-full',
+              isModal ? 'h-[calc(100dvh_-_112px)]' : 'h-[calc(100dvh_-_176px)]',
             ])}
             forceRender={true}
             item={{

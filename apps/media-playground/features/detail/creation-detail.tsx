@@ -65,10 +65,10 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
     <>
       <div
         className={cn([
-          `w-full flex flex-col flex-grow md:flex-row md:gap-4 max-h-full md:ml-4`,
+          `w-full flex flex-col flex-grow lg:flex-row lg:gap-4 max-h-full lg:ml-4`,
           isModal
-            ? 'md:h-[calc(100vh_-_34px)] w-[calc(100dvw_-_32px)]'
-            : 'md:h-[calc(100vh_-_64px)] md:w-[calc(100dvw_-_16px)]',
+            ? 'lg:h-[calc(100vh_-_34px)] w-[calc(100dvw_-_32px)]'
+            : 'lg:h-[calc(100vh_-_64px)] lg:w-[calc(100dvw_-_16px)]',
         ])}
       >
         {creation ? (
@@ -79,7 +79,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
 
         <div
           className={cn([
-            `flex-shrink-0 w-full md:w-[388px] px-4 overflow-y-auto bg-accent rounded-md rounded-tr-none rounded-br-none`,
+            `flex-shrink-0 w-full lg:w-[388px] px-4 overflow-y-auto bg-accent rounded-md rounded-tr-none rounded-br-none`,
             isModal ? '' : 'my-4',
           ])}
         >
@@ -118,7 +118,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
               </div>
               <div
                 ref={observedRef}
-                className="md:max-w-[80%] 2xl:max-w-[70%] mx-auto pb-12"
+                className="lg:max-w-[80%] 2xl:max-w-[70%] mx-auto pb-12"
               >
                 {shouldRenderRecentCreations ? (
                   <Suspense fallback={<MasonrySkeleton />}>
