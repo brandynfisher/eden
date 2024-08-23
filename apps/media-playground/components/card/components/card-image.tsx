@@ -12,7 +12,7 @@ const CardImage = ({ media }: Props) => {
   return (
     <Image
       data-test-id={'card-image'}
-      sizes={'(max-width: 768px) 50vw, (max-width: 1280px) 25vw, 15vw'}
+      sizes={'(max-width: 768px) 30vw, (max-width: 1280px) 20vw, 15vw'}
       loader={customImageLoader}
       src={
         media.thumbnail ||
