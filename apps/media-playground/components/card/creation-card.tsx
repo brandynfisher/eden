@@ -6,6 +6,7 @@ import CardImage from '@/components/card/components/card-image'
 import VideoResult from '@/components/media/video-result'
 import { Card } from '@/components/ui/card'
 import { useHover } from '@/hooks/use-hover'
+import { getCloudfrontUrl } from '@/lib/media'
 import { FileType } from '@/types/Media'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
 import { AudioLinesIcon } from 'lucide-react'
@@ -64,10 +65,10 @@ const CreationCard = ({ creation, showFooter, style }: Props) => {
             {hovered ? (
               <VideoResult
                 className="absolute inset-0 pointer-events-none"
-                videoUrl={creation.url || ''}
+                videoUrl={getCloudfrontUrl(creation.url) || ''}
                 width={creation.mediaAttributes.width}
                 height={creation.mediaAttributes.height}
-                posterUrl={creation.thumbnail}
+                posterUrl={getCloudfrontUrl(creation.thumbnail)}
                 muted={true}
                 loop={true}
                 autoPlay={true}

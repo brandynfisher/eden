@@ -4,7 +4,9 @@ import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
 // import LoadingIndicator from '@/components/loading-indicator'
 import VideoResult from '@/components/media/video-result'
 import { useHover } from '@/hooks/use-hover'
+import customImageLoader from '@/image-loader'
 import { siteConfig } from '@/lib/config'
+import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import NextImage from 'next/image'
 import PhotoSwipe from 'photoswipe'
@@ -38,21 +40,28 @@ export const LightboxGalleryItem = ({
   const height = item.height || 1024
   return (
     <Item
+      alt={item.url}
       original={
         item.url?.endsWith('.mp4')
           ? undefined
-          : item.url || siteConfig.mediaErrorUrl
+          : customImageLoader({ src: item.url || '', width }) ||
+            siteConfig.mediaErrorUrl
       }
-      thumbnail={item.thumbnail || siteConfig.mediaErrorUrl}
+      thumbnail={
+        customImageLoader({ src: item.thumbnail || '', width }) ||
+        siteConfig.mediaErrorUrl
+      }
       width={sizeOnLoad ? undefined : width}
       height={sizeOnLoad ? undefined : height}
       content={
         item.url?.endsWith('.mp4') ? (
           <VideoResult
-            videoUrl={item.url || siteConfig.mediaErrorUrl}
+            videoUrl={getCloudfrontUrl(item.url) || siteConfig.mediaErrorUrl}
             width={width}
             height={height}
-            posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
+            posterUrl={
+              getCloudfrontUrl(item.thumbnail) || siteConfig.mediaErrorUrl
+            }
             muted={true}
             loop={true}
             autoPlay={true}
@@ -64,6 +73,7 @@ export const LightboxGalleryItem = ({
       {({ ref, open }) => (
         <div className={`flex max-w-full max-h-full`} ref={hoverRef}>
           <NextImage
+            loader={customImageLoader}
             ref={ref}
             onClick={ev => {
               ev.stopPropagation()
@@ -73,10 +83,7 @@ export const LightboxGalleryItem = ({
             alt={item.url || ''}
             width={width}
             height={height}
-            className={cn([
-              `object-contain cursor-zoom-in md:h-full w-full`,
-              className,
-            ])}
+            className={cn([`object-contain cursor-zoom-in w-full`, className])}
           />
           {item.url?.endsWith('.mp4') ? (
             <>
@@ -89,14 +96,16 @@ export const LightboxGalleryItem = ({
               {forceRender || hovered ? (
                 <VideoResult
                   className={cn([
-                    'absolute inset-0 cursor-zoom-in md:h-full',
+                    'absolute inset-0 cursor-zoom-in',
                     forceRender ? '' : 'pointer-events-none',
                     className,
                   ])}
-                  videoUrl={item.url || ''}
+                  videoUrl={getCloudfrontUrl(item.url) || ''}
                   width={width}
                   height={height}
-                  posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
+                  posterUrl={
+                    getCloudfrontUrl(item.thumbnail) || siteConfig.mediaErrorUrl
+                  }
                   muted={true}
                   loop={true}
                   autoPlay={forceRender}

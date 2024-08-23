@@ -35,7 +35,7 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   outpaint: 'outpaint.mp4',
   SD3: 'SD3.jpeg',
   txt2img: 'txt2img.png',
-  txt2img2: 'txt2img2.jpeg',
+  img2img: 'img2img.jpeg',
   layer_diffusion: 'layer_diffusion.png',
   controlnet: 'controlnet.png',
   remix: 'remix.png',
@@ -66,7 +66,11 @@ const GridSection = ({ generators }: Props) => {
               title={generator.name}
               description={generator.description}
               image={getImageUrl(generator.key)}
-              link={`/${generator.outputType === 'lora' ? 'train' : `create/${generator.outputType}`}/${generator.key}`}
+              link={`/${
+                generator.outputType === 'lora'
+                  ? 'train'
+                  : `create/${generator.outputType}`
+              }/${generator.key}`}
             />
           ))}
         </>

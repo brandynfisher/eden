@@ -282,9 +282,40 @@ export const rawS3BaseUrl = (server: FastifyInstance) => {
   return `https://${server.config.AWS_S3_BUCKET}.s3.${server.config.AWS_REGION}.amazonaws.com`
 }
 
+export enum ImageFormats {
+  JPG = 'jpg',
+  WEBP = 'webp',
+  // Add more here...
+}
+const EXTENSION_PATTERN = /(\.[\w_-]+)$/i
+export function changeExtension(
+  filename: string,
+  format: ImageFormats,
+): string {
+  return filename.replace(EXTENSION_PATTERN, `.${format}`)
+}
+
 export const s3Url = (server: FastifyInstance, filename: string) => {
+  if (filename.startsWith('https://')) {
+    return filename
+  }
+
   const baseUrl = s3BaseUrl(server)
   return `${baseUrl}/${filename}`
+}
+
+export const s3ThumbnailUrl = (server: FastifyInstance, filename: string) => {
+  if (filename.startsWith('https://')) {
+    return filename
+  }
+
+  const baseUrl = s3BaseUrl(server)
+  const srcWithSize = filename.replace(EXTENSION_PATTERN, `_${1024}$1`)
+  const filenameWithNewExtension = changeExtension(
+    srcWithSize,
+    ImageFormats.WEBP,
+  )
+  return `${baseUrl}/${filenameWithNewExtension}`
 }
 
 export const registerS3 = async (fastify: FastifyInstance) => {

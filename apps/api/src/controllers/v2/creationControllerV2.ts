@@ -2,10 +2,12 @@ import {
   CreationV2Document,
   CreationV2 as CreationV2Model,
 } from '../../models/v2/CreationV2'
+import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
 import { CreationsV2GetArguments, ReactionType } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getCreation = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -54,6 +56,9 @@ export const getCreation = async (
       })
     }
   }
+
+  creation.url = s3Url(server, creation.url || '')
+  creation.thumbnail = s3ThumbnailUrl(server, creation.thumbnail || '')
 
   return reply.status(200).send({ creation })
 }

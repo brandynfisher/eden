@@ -67,7 +67,7 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [request => maybeAuthEden2(server, request)],
-    handler: (request, reply) => getCreation(request, reply),
+    handler: (request, reply) => getCreation(server, request, reply),
   })
 
   // server.patch('/v2/creations/:creationId', {

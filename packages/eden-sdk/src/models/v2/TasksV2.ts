@@ -34,12 +34,13 @@ export interface TasksV2CancelArguments extends WebAPICallOptions {
 
 export interface TasksV2PublishArguments extends WebAPICallOptions {
   taskId: string
-  resultUrl: string
+  resultFilename: string
 }
 
 export type TaskV2Result = {
   url?: string
   thumbnail?: string
+  filename?: string
   metadata?: string | null
   mediaAttributes?: MediaAttributes
   published?: boolean

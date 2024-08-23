@@ -100,6 +100,7 @@ const createServer = async (
   await registerAssetUpload(server)
   await registerS3(server)
   await registerEden2TaskUpdates(server, opts)
+  await registerGeneratorConfigs(server, opts)
 
   registerTaskHandlers(server, opts.taskHandlers)
 
@@ -188,8 +189,6 @@ const createServer = async (
   })
 
   await server.ready()
-
-  registerGeneratorConfigs(server, opts)
 
   return server
 }

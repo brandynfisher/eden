@@ -134,7 +134,7 @@ const AspectRatioSelector = ({ form }: Props) => {
           value={resolution.label}
           aria-label={`Select aspect ratio: ${resolution.label}`}
           asChild
-          className="px-1"
+          className="px-1 data-[state=on]:bg-muted data-[state=on]:text-muted-foreground"
         >
           <div
             className={

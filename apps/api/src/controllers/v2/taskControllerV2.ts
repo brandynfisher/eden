@@ -6,6 +6,12 @@ import {
   TaskV2 as TaskV2Model,
   taskSchema,
 } from '../../models/v2/TaskV2'
+import {
+  ImageFormats,
+  changeExtension,
+  s3ThumbnailUrl,
+  s3Url,
+} from '../../plugins/s3Plugin'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
@@ -121,6 +127,7 @@ export const createTask = async (
 }
 
 export const listTasks = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -240,7 +247,23 @@ export const listTasks = async (
     )
   } else {
     // all other workflows return array of external asset URIs in `result` and don't need to be resolved further
-    tasks = await tasksRepository.query(query, queryOptions)
+    const queryResults = await tasksRepository.query(query, queryOptions)
+
+    queryResults.docs.forEach(doc => {
+      if (doc.result) {
+        doc.result = doc.result.map(result =>
+          result.filename
+            ? {
+                ...result,
+                url: s3Url(server, result.filename),
+                thumbnail: s3ThumbnailUrl(server, result.filename),
+              }
+            : result,
+        )
+      }
+    })
+
+    tasks = queryResults
   }
 
   return reply.status(200).send(tasks)
@@ -665,7 +688,7 @@ export const publishTaskResult = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { taskId, resultUrl } = request.body as TasksV2PublishArguments
+  const { taskId, resultFilename } = request.body as TasksV2PublishArguments
 
   if (!taskId) {
     return reply.status(400).send({
@@ -673,9 +696,9 @@ export const publishTaskResult = async (
     })
   }
 
-  if (!resultUrl) {
+  if (!resultFilename) {
     return reply.status(400).send({
-      message: `resultUrl missing`,
+      message: `resultFilename missing`,
     })
   }
 
@@ -694,7 +717,7 @@ export const publishTaskResult = async (
   }
 
   const taskResultIndex = taskDocument.result.findIndex(val => {
-    return val.url === resultUrl
+    return val.filename === resultFilename
   })
 
   if (taskResultIndex === -1) {
@@ -706,7 +729,7 @@ export const publishTaskResult = async (
   const taskResult = taskDocument.result[taskResultIndex]
 
   const existingCreation = await CreationV2.exists({
-    url: resultUrl,
+    url: resultFilename,
     task: taskId,
   })
 
@@ -717,7 +740,7 @@ export const publishTaskResult = async (
   }
 
   server.log.info('Saving...')
-  server.log.info({ taskId, resultUrl, taskResult })
+  server.log.info({ taskId, resultFilename, taskResult })
   const creation = new CreationV2()
 
   creation.task = new ObjectId(taskId)
@@ -733,8 +756,11 @@ export const publishTaskResult = async (
     mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
   }
   creation.metadata = taskResult.metadata
-  creation.url = taskResult.url
-  creation.thumbnail = taskResult.thumbnail
+  creation.url = taskResult.filename || taskResult.url
+  creation.thumbnail = changeExtension(
+    taskResult.filename || taskResult.thumbnail || '',
+    ImageFormats.WEBP,
+  )
 
   await creation.save()
   const remainingResults = [...taskDocument.result]

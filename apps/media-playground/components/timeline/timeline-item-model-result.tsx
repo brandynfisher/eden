@@ -1,4 +1,5 @@
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
+import customImageLoader from '@/image-loader'
 import {
   GeneratorOutputTypeV2,
   ModelV2,
@@ -25,6 +26,7 @@ const TimelineItemModelResult = ({
     <>
       <div className="relative border-transparent bg-popover aspect-square">
         <Image
+          loader={customImageLoader}
           src={model.thumbnail}
           alt={model.name}
           width={1024}
@@ -36,7 +38,7 @@ const TimelineItemModelResult = ({
         result={result}
         outputType={outputType}
         task={task}
-        originalFileUrl={model.checkpoint}
+        originalFilename={model.checkpoint}
         fileName={model.slug.replace('/', '_') || '_noname_'}
       />
     </>

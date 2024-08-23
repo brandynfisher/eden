@@ -29,7 +29,7 @@ import React, { useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
-  originalFileUrl: string
+  originalFilename: string
   fileName: string
   task: TaskV2
   result: TaskV2Result
@@ -40,11 +40,26 @@ type Props = {
 const TimelineItemResultTools = ({
   task,
   result,
-  originalFileUrl,
+  originalFilename,
   fileName,
   outputType,
   className,
 }: Props) => {
+  const [isDownloading, setIsDownloading] = useState(false)
+  const handleFileDownload = async (
+    originalFilename: string,
+    downloadFilename: string,
+  ) => {
+    setIsDownloading(true)
+    await downloadFile(originalFilename, downloadFilename)
+    setIsDownloading(false)
+    toast.info(`Downloading...`, {
+      description: downloadFilename,
+      dismissible: true,
+      richColors: true,
+    })
+  }
+
   const [copiedText, copy] = useCopyToClipboard()
 
   const handleCopyString = (text: string) => () => {
@@ -82,7 +97,7 @@ const TimelineItemResultTools = ({
         `/api/tasks/publish`,
         {
           taskId,
-          resultUrl: originalFileUrl,
+          resultFilename: originalFileUrl,
         },
       )
 
@@ -142,7 +157,11 @@ const TimelineItemResultTools = ({
               onClick={
                 result.published
                   ? undefined
-                  : () => publishTaskResult(task._id, originalFileUrl)
+                  : () =>
+                      publishTaskResult(
+                        task._id,
+                        result.filename || result.url || '',
+                      )
               }
               disabled={isPublishing}
             >
@@ -179,13 +198,17 @@ const TimelineItemResultTools = ({
             className="px-2 ml-auto"
             title={`Download ${outputType}`}
             onClick={() =>
-              downloadFile(
-                originalFileUrl,
+              handleFileDownload(
+                originalFilename,
                 getDownloadFileName(task.user, task._id, fileName),
               )
             }
           >
-            <DownloadIcon size={20} />
+            {isDownloading ? (
+              <LoadingIndicator className="h-5 w-5" />
+            ) : (
+              <DownloadIcon size={20} />
+            )}
           </Button>
           <Button
             variant="outline"

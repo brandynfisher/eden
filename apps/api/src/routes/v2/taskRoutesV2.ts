@@ -101,7 +101,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => listTasks(request, reply),
+    handler: (request, reply) => listTasks(server, request, reply),
   })
 
   server.get('/v2/tasks/:taskId', {
@@ -176,7 +176,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
       ],
       body: {
         taskId: Type.String(),
-        resultUrl: Type.String(),
+        resultFilename: Type.String(),
       },
       response: {
         200: Type.Object({

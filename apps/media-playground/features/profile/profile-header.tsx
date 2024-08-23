@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import customImageLoader from '@/image-loader'
 import { Creator } from '@edenlabs/eden-sdk'
 import Image from 'next/image'
 
@@ -28,6 +29,7 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="relative rounded-full overflow-hidden w-fit border-popover-foreground border-2">
           <Image
+            loader={customImageLoader}
             src={creator.userImage || ''}
             alt={creator.username || ''}
             width={96}

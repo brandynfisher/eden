@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import customImageLoader from '@/image-loader'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
@@ -19,7 +20,13 @@ const UserAvatar = ({ image, name, variant = 'small' }: Props) => {
     >
       {image ? (
         <AvatarImage asChild src={image}>
-          <Image src={image} alt="logo" width={40} height={40} />
+          <Image
+            loader={customImageLoader}
+            src={image}
+            alt="logo"
+            width={40}
+            height={40}
+          />
         </AvatarImage>
       ) : null}
 

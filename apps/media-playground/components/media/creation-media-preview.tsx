@@ -24,7 +24,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
         <LightboxGallery withDownloadButton={true}>
           <LightboxGalleryItem
             className={cn([
-              'md:absolute',
+              'md:absolute md:h-full',
               isModal ? 'h-[calc(100vh_-_112px)]' : 'h-[calc(100vh_-_176px)]',
             ])}
             forceRender={true}

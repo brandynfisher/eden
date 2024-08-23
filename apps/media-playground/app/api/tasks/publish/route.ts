@@ -26,20 +26,23 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  if (!requestJson.resultUrl) {
-    return new NextResponse(JSON.stringify({ message: 'Missing resultUrl' }), {
-      status: 400,
-    })
+  if (!requestJson.resultFilename) {
+    return new NextResponse(
+      JSON.stringify({ message: 'Missing resultFilename' }),
+      {
+        status: 400,
+      },
+    )
   }
 
-  const { taskId, resultUrl } = requestJson
+  const { taskId, resultFilename } = requestJson
 
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken,
     })
-    const res = await eden.tasks.publishV2({ taskId, resultUrl })
+    const res = await eden.tasks.publishV2({ taskId, resultFilename })
     return NextResponse.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
