@@ -1,5 +1,7 @@
 import CreationDetail from '@/features/detail/creation-detail'
+import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'
+import { getCloudfrontUrl } from '@/lib/media'
 import { CreationsV2GetResponse, MediaType } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
@@ -28,21 +30,27 @@ export async function generateMetadata(
   const id = params.id
 
   // fetch data
-  const creationResponse = await getCreationCached(id || '')
+  const response = await getCreationCached(id || '')
 
   // optionally access and extend (rather than replace) parent metadata
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
 
-  const title = `Creation by ${creationResponse.creation?.user.username} | Garden of Eden`
+  const title = `Creation by ${response.creation?.user.username} | Garden of Eden`
   const description = ``
   const media: { images?: string[]; videos?: string[] } = {}
-  if (creationResponse.creation?.mediaAttributes?.type === MediaType.Video) {
-    media.videos = creationResponse.creation?.url
-      ? [creationResponse.creation?.url]
+  if (response.creation?.mediaAttributes?.type === MediaType.Video) {
+    media.videos = response.creation?.url
+      ? [getCloudfrontUrl(response.creation?.url)]
       : undefined
   } else {
-    media.images = creationResponse.creation?.url
-      ? [creationResponse.creation?.url]
+    media.images = response.creation?.thumbnail
+      ? [
+          customImageLoader({
+            src: response.creation?.thumbnail || '',
+            width: 1024,
+            format: Formats.JPG,
+          }),
+        ]
       : undefined
   }
 

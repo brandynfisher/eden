@@ -737,8 +737,14 @@ export const publishTaskResult = async (
     })
   }
 
+  console.log({ resultFilename, taskDocument })
+
   const taskResultIndex = taskDocument.result.findIndex(val => {
-    return val.filename === resultFilename
+    return (
+      val.filename === resultFilename ||
+      val.filename === s3Url(server, resultFilename) ||
+      val.url === resultFilename
+    )
   })
 
   if (taskResultIndex === -1) {

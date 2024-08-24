@@ -1,4 +1,5 @@
 import ModelDetail from '@/features/detail/model-detail'
+import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'
 import { ModelsV2GetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
@@ -38,8 +39,15 @@ export async function generateMetadata(
   const title = `Model by ${model?.user.username} | Garden of Eden`
   const description = ``
   const media: { images?: string[]; videos?: string[] } = {}
-  media.images = model?.thumbnail ? [model?.thumbnail] : undefined
-
+  media.images = model?.thumbnail
+    ? [
+        customImageLoader({
+          src: model?.thumbnail || '',
+          width: 1024,
+          format: Formats.JPG,
+        }),
+      ]
+    : undefined
   return {
     // ...(await parent),
     title,

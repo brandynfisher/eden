@@ -1,6 +1,6 @@
 import { getCloudfrontUrl } from '@/lib/media'
 
-enum Formats {
+export enum Formats {
   JPG = 'jpg',
   WEBP = 'webp',
   // Add more here...
