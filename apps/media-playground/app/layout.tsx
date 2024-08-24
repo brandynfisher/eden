@@ -9,7 +9,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { env } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { GoogleTagManager } from '@next/third-parties/google'
-import { Metadata } from 'next'
+import { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
 import { ReactNode } from 'react'
 
@@ -17,6 +17,10 @@ const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 })
+
+export const viewport: Viewport = {
+  themeColor: '#000000',
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_HOST),
