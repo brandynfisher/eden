@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
-import { timeAgo } from 'garden/src/lib/time'
+import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
 
 type Props = {
@@ -14,6 +14,7 @@ type Props = {
 
 const DetailSidebar = ({ item, type, inModal }: Props) => {
   const { prompt, text_input, ...remainingArgs } = item?.args || {}
+  const { TimeAgo } = useTimeAgo()
 
   return (
     <div
@@ -30,7 +31,7 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
               image={item.user.userImage}
             />
             <div className="text-xs text-foreground/70 mt-2">
-              {timeAgo(item.createdAt)} ago
+              <TimeAgo date={item.createdAt} />
             </div>
           </div>
         ) : (
