@@ -157,6 +157,7 @@ export type CreationV2 = TaskV2Result & {
   user: Creator
   task: ObjectId
   args: TaskV2Args
+  workflow: string
   createdAt: Date
   updatedAt: Date
   deleted: boolean

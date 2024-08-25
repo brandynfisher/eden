@@ -22,6 +22,7 @@ import {
   ClipboardCopy,
   CopyIcon,
   DownloadIcon,
+  ExternalLinkIcon,
   ListIcon,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -143,55 +144,82 @@ const TimelineItemResultTools = ({
       <Collapsible>
         <div className="flex flex-wrap gap-2">
           {outputType !== 'lora' ? (
-            <Button
-              variant={result.published ? 'ghost' : 'outline'}
-              size="sm"
-              title={
-                result.published
-                  ? 'Creation was saved'
-                  : `Save creation to profile`
-              }
-              className={`px-2 flex gap-2 items-center justify-center ${
-                result.published ? 'cursor-default' : ''
-              }`}
-              onClick={
-                result.published
-                  ? undefined
-                  : () =>
-                      publishTaskResult(
-                        task._id,
-                        result.filename || result.url || '',
-                      )
-              }
-              disabled={isPublishing}
-            >
-              {result.published ? (
-                <>
-                  <BookCheckIcon size={20} className="text-success" />
-                </>
-              ) : isPublishing ? (
-                <>
-                  <LoadingIndicator className="h-4 w-4" />
-                  Saving
-                </>
-              ) : (
-                <>
-                  <BookHeartIcon size={20} />
-                  Save
-                </>
-              )}
-            </Button>
+            <>
+              <Button
+                variant={result.published ? 'ghost' : 'outline'}
+                size="sm"
+                title={
+                  result.published
+                    ? 'Creation was saved'
+                    : `Save creation to profile`
+                }
+                className={`px-2 flex gap-2 items-center justify-center ${
+                  result.published ? 'cursor-default' : ''
+                }`}
+                onClick={
+                  result.published
+                    ? undefined
+                    : () =>
+                        publishTaskResult(
+                          task._id,
+                          result.filename || result.url || '',
+                        )
+                }
+                disabled={isPublishing}
+              >
+                {result.published ? (
+                  <>
+                    <BookCheckIcon size={20} className="text-success" />
+                  </>
+                ) : isPublishing ? (
+                  <>
+                    <LoadingIndicator className="h-4 w-4" />
+                    Saving
+                  </>
+                ) : (
+                  <>
+                    <BookHeartIcon size={20} />
+                    Save
+                  </>
+                )}
+              </Button>
+              {result.published && result.creation ? (
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="px-2 flex gap-2 items-center justify-center"
+                >
+                  <Link href={`/creations/${result?.creation}`}>
+                    <ExternalLinkIcon className="h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : null}
+            </>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="px-2 flex gap-2 items-center justify-center"
-              onClick={handleCopyString(result.model || '')}
-            >
-              <CopyIcon size={20} />
-              Copy ID
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2 flex gap-2 items-center justify-center"
+                onClick={handleCopyString(result.model || '')}
+              >
+                <CopyIcon size={20} />
+                Copy ID
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="px-2 flex gap-2 items-center justify-center"
+              >
+                <Link href={`/models/${result?.model}`}>
+                  <ExternalLinkIcon className="h-4 w-4" />
+                </Link>
+              </Button>
+            </>
           )}
+
           <Button
             variant="outline"
             size="sm"

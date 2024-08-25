@@ -774,6 +774,7 @@ export const publishTaskResult = async (
   creation.user = new ObjectId(userId)
 
   creation.args = taskDocument.args
+  creation.workflow = taskDocument.workflow
   creation.mediaAttributes = {
     ...taskResult.mediaAttributes,
     type:
@@ -789,7 +790,7 @@ export const publishTaskResult = async (
     ImageFormats.WEBP,
   )
 
-  await creation.save()
+  const savedCreation = await creation.save()
   const remainingResults = [...taskDocument.result]
   const publishedResult = remainingResults.splice(taskResultIndex, 1)[0]
 
@@ -797,6 +798,7 @@ export const publishTaskResult = async (
     ...remainingResults,
     {
       ...publishedResult,
+      creation: savedCreation._id,
       published: true,
     },
   ]

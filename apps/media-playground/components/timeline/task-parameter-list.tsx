@@ -18,11 +18,7 @@ const TaskParameterList = ({ task }: Props) => {
       {prompt ? (
         <TaskParameter name={'prompt'} label={'Prompt'} value={prompt} />
       ) : null}
-      <TaskParameter
-        name={'workflow'}
-        label={'Workflow'}
-        value={task.workflow}
-      />
+      <TaskParameter name={'workflow'} label={'Tool'} value={task.workflow} />
       {width && height ? (
         <TaskParameter
           name={'resolution'}

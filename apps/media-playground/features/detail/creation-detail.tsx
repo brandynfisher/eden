@@ -2,9 +2,9 @@
 
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import CreationMediaPreview from '@/components/media/creation-media-preview'
-import ParameterTable from '@/components/timeline/parameter-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
+import DetailSidebar from '@/features/detail/detail-sidebar'
 import UserCreationsFeed from '@/features/feed/user-creations-feed'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { cn } from '@/lib/utils'
@@ -34,7 +34,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
     useState(false)
   const observedRef = useRef<HTMLDivElement>(null)
 
-  console.log({ shouldRenderRecentCreations, ref: observedRef.current })
+  // console.log({ shouldRenderRecentCreations, ref: observedRef.current })
 
   useEffect(() => {
     let observer: IntersectionObserver
@@ -77,33 +77,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
           <Skeleton className="min-h-[512px] w-full rounded-xl opacity-0 animate-fade-in" />
         )}
 
-        <div
-          className={cn([
-            `flex-shrink-0 w-full lg:w-[388px] px-4 overflow-y-auto bg-accent rounded-md rounded-tr-none rounded-br-none`,
-            isModal ? '' : 'my-4',
-          ])}
-        >
-          {creation?.user ? (
-            <div className="py-4">
-              <UserAvatarLink
-                name={creation.user.username || creation.user._id}
-                image={creation.user.userImage}
-              />
-            </div>
-          ) : null}
-
-          {creation && creation.args ? (
-            <ParameterTable args={creation.args} />
-          ) : (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-              <Skeleton className="h-4 w-[200px]" />
-              <Skeleton className="h-4 w-[180px]" />
-            </div>
-          )}
-        </div>
+        <DetailSidebar item={creation} type={'creation'} inModal={isModal} />
       </div>
       <div>
         <div className="px-4 w-full">

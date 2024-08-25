@@ -1,9 +1,8 @@
 'use client'
 
 import ModelMediaPreview from '@/components/media/model-media-preview'
-import ParameterTable from '@/components/timeline/parameter-table'
 import { Skeleton } from '@/components/ui/skeleton'
-import UserAvatarLink from '@/components/user/user-avatar-link'
+import DetailSidebar from '@/features/detail/detail-sidebar'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
@@ -40,36 +39,10 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
         {model ? (
           <ModelMediaPreview model={model} isModal={isModal} />
         ) : (
-          <Skeleton className="min-h-[512px] w-full rounded-xl fade-in" />
+          <Skeleton className="min-h-[512px] w-full rounded-xl opacity-0 animate-fade-in" />
         )}
 
-        <div
-          className={cn([
-            `flex-shrink-0 w-full lg:w-[388px] px-4 overflow-y-auto bg-accent rounded-md rounded-tr-none rounded-br-none`,
-            isModal ? '' : 'my-4',
-          ])}
-        >
-          {model?.user ? (
-            <div className="py-4">
-              <UserAvatarLink
-                name={model.user.username || model.user._id}
-                image={model.user.userImage}
-              />
-            </div>
-          ) : null}
-
-          {model && model.args ? (
-            <ParameterTable args={model.args} />
-          ) : (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-              <Skeleton className="h-4 w-[200px]" />
-              <Skeleton className="h-4 w-[180px]" />
-            </div>
-          )}
-        </div>
+        <DetailSidebar item={model} type={'model'} inModal={isModal} />
       </div>
     </>
   )

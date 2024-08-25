@@ -13,14 +13,6 @@ axiosRetry(axios, {
   retryDelay: axiosRetry.exponentialDelay,
 })
 
-const brokenGeneratorsToOmit = [
-  'layer_diffusion',
-  'reel',
-  'story',
-  'img2vid_museV',
-  'stable_audio',
-]
-
 const fetchConfigs = async (
   server: FastifyInstance,
 ): Promise<GeneratorConfig> => {
@@ -46,9 +38,7 @@ const fetchConfigs = async (
     },
   })
 
-  const filteredGenerators = Array.from(
-    modalResponse.data as GeneratorV2[],
-  ).filter(generator => !brokenGeneratorsToOmit.includes(generator.key))
+  const filteredGenerators = Array.from(modalResponse.data as GeneratorV2[])
   const configs = Array.from(filteredGenerators)
   const list = Array.from(filteredGenerators).map(config => {
     return {

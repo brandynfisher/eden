@@ -45,6 +45,7 @@ export type TaskV2Result = {
   mediaAttributes?: MediaAttributes
   published?: boolean
   model?: string
+  creation?: string
 }
 
 // Requests
@@ -162,6 +163,7 @@ export type TaskV2Args = {
   // creations
   prompt?: string
   negative_prompt?: string
+  text_input?: string
   width?: number
   height?: number
   seed?: number
