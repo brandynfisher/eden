@@ -28,6 +28,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             .map(generator => ({
               label: generator.name,
               segments: [baseSegment, 'image', generator.key],
+              description: generator.description,
             })),
         },
         {
@@ -37,6 +38,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             .map(generator => ({
               label: generator.name,
               segments: [baseSegment, 'video', generator.key],
+              description: generator.description,
             })),
         },
         {
@@ -46,6 +48,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             .map(generator => ({
               label: generator.name,
               segments: [baseSegment, 'audio', generator.key],
+              description: generator.description,
             })),
         },
       ]}

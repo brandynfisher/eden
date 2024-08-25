@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import { HTMLProps, PropsWithChildren } from 'react'
 
-const TypographyH5 = ({
+const TypographyH6 = ({
   className,
   ...rest
 }: PropsWithChildren & HTMLProps<HTMLHeadingElement>) => {
@@ -13,4 +13,4 @@ const TypographyH5 = ({
   )
 }
 
-export default TypographyH5
+export default TypographyH6

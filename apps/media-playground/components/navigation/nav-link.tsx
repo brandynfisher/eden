@@ -7,6 +7,7 @@ export type NavLinkProps = {
   segments: string[]
   active?: boolean
   inSheet?: boolean
+  description?: string
 }
 
 const NavLink = ({ label, segments, active, inSheet }: NavLinkProps) => {

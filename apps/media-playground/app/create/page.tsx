@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 
 const CreatePage = () => {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pt-4">
       <TypographyH3>Create</TypographyH3>
       <Suspense fallback={<LoadingIndicator />}>
         <GeneratorsGrid outputType={['image', 'video', 'audio']} />

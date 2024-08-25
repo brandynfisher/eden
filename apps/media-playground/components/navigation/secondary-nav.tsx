@@ -1,8 +1,9 @@
-import SecondaryNavLinks, {
-  SecondaryNavSection,
-} from '@/components/navigation/secondary-nav-links'
-import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import Link from 'next/link'
+'use client'
+
+import DesktopSecondaryNav from '@/components/navigation/desktop-secondary-nav'
+import MobileSecondaryNav from '@/components/navigation/mobile-secondary-nav'
+import { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
+import { useMediaQuery } from '@/hooks/use-media-query'
 
 type Props = {
   title?: string
@@ -10,20 +11,16 @@ type Props = {
   items: SecondaryNavSection[]
 }
 const SecondaryNav = ({ title, baseSegment, items }: Props) => {
-  return (
-    <div className="bg-muted/60 w-52 flex flex-col items-start">
-      <div className="xl:sticky xl:top-16 w-full">
-        {title ? (
-          <Link href={`/${baseSegment}`}>
-            <TypographyH4 className="p-4 text-accent-foreground">
-              {title}
-            </TypographyH4>
-          </Link>
-        ) : undefined}
+  const isDesktop = useMediaQuery('(min-width: 768px)')
 
-        <SecondaryNavLinks baseSegment={baseSegment} items={items} />
-      </div>
-    </div>
+  return isDesktop ? (
+    <DesktopSecondaryNav
+      baseSegment={baseSegment}
+      items={items}
+      title={title}
+    />
+  ) : (
+    <MobileSecondaryNav baseSegment={baseSegment} items={items} title={title} />
   )
 }
 
