@@ -2,11 +2,8 @@
 
 import CreationCard from '@/components/card/creation-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import {
-  CreationV2,
-  FeedCreationsCursorArguments,
-  ModelV2,
-} from '@edenlabs/eden-sdk'
+import { RowItem } from '@/lib/query'
+import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
 
 type Props = {
@@ -32,8 +29,9 @@ const CreationsFeed = ({ minCols, maxCols }: Props) => {
       query={query}
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
-      render={(item: CreationV2 | ModelV2) => (
+      render={(item: RowItem, onUpdate) => (
         <CreationCard
+          onUpdate={onUpdate}
           creation={item as CreationV2}
           creator={(item as CreationV2).user}
           linkHref={`/creations/${item._id}`}

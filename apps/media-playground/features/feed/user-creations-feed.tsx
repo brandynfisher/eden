@@ -4,6 +4,7 @@ import CreationCard from '@/components/card/creation-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
 import { env } from '@/lib/config'
 import { fetcher } from '@/lib/fetcher'
+import { RowItem } from '@/lib/query'
 import {
   CreationV2,
   CreatorsGetResponse,
@@ -45,11 +46,11 @@ const UserCreationsFeed = ({ userName, minCols, maxCols }: Props) => {
       query={query}
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
-      render={(item: CreationV2, onUpdate) => (
+      render={(item: RowItem, onUpdate) => (
         <CreationCard
           onUpdate={onUpdate}
-          creation={item}
-          creator={item.user}
+          creation={item as CreationV2}
+          creator={(item as CreationV2).user}
           linkHref={`/creations/${item._id}`}
         />
       )}
