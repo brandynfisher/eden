@@ -23,7 +23,7 @@ const Timeline = ({ generator }: Props) => {
   const queryClient = useQueryClient()
   const { lastMessageJson } = useWebSocketContext()
   const [filterTasksByCurrentWorkflow, setFilterTasksByCurrentWorkflow] =
-    useState(true)
+    useState(false)
 
   const query: TasksV2ListArguments = useMemo(
     () => ({
@@ -100,7 +100,7 @@ const Timeline = ({ generator }: Props) => {
     <div className="mb-8 2xl:col-span-2 md:pt-4">
       <div className="flex flex-row items-center justify-between rounded-lg border p-4 mb-4">
         <div className="space-y-0.5">
-          <label className="text-base">Only show current workflow</label>
+          <label className="text-base">Hide other tool results</label>
         </div>
         <Switch
           checked={filterTasksByCurrentWorkflow}

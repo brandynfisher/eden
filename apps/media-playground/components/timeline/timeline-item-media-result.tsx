@@ -26,7 +26,11 @@ const TimelineItemMediaResult = ({
     <>
       <div
         className="relative border-transparent bg-popover z-10 shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
-        style={{ aspectRatio: result?.mediaAttributes?.aspectRatio || 3 }}
+        style={{
+          aspectRatio:
+            result?.mediaAttributes?.aspectRatio ||
+            (fileType === 'audio' ? 3 : 1),
+        }}
       >
         {fileType === 'audio' ? (
           <div className="flex w-full h-full items-center justify-center">
