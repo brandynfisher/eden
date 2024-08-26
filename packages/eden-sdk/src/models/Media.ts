@@ -1,7 +1,7 @@
 import { WebAPICallOptions, WebAPICallResult } from '../types'
 
 export interface MediaAttributes {
-  type: string
+  type?: string
   mimeType: string
   duration?: number
   width?: number

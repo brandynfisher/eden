@@ -5,7 +5,7 @@ type Props = {
   task: TaskV2
 }
 const TaskParameterList = ({ task }: Props) => {
-  const { prompt, height, width, name } = task.args
+  const { prompt, text_input, height, width, name } = task.args
 
   return (
     <div
@@ -15,8 +15,12 @@ const TaskParameterList = ({ task }: Props) => {
       {name ? (
         <TaskParameter name={'prompt'} label={'Name'} value={name} />
       ) : null}
-      {prompt ? (
-        <TaskParameter name={'prompt'} label={'Prompt'} value={prompt} />
+      {prompt || text_input ? (
+        <TaskParameter
+          name={'prompt'}
+          label={'Prompt'}
+          value={prompt || text_input || ''}
+        />
       ) : null}
       <TaskParameter name={'workflow'} label={'Tool'} value={task.workflow} />
       {width && height ? (

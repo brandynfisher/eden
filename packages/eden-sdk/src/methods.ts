@@ -203,6 +203,8 @@ import {
   ModelsV2GetResponse,
   ModelsV2ListArguments,
   ModelsV2ListResponse,
+  ModelsV2PatchArguments,
+  ModelsV2PatchResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -218,6 +220,7 @@ import {
   generatorsListRequestConfigV2,
   modelsV2GetRequestConfig,
   modelsV2ListRequestConfig,
+  modelsV2PatchRequestConfig,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -423,10 +426,10 @@ export abstract class Methods {
       this,
       modelsV2GetRequestConfig,
     ),
-    // update: bindApiCall<ConceptsUpdateArguments, ConceptsUpdateResponse>(
-    //   this,
-    //   conceptsUpdateRequestConfig,
-    // ),
+    update: bindApiCall<ModelsV2PatchArguments, ModelsV2PatchResponse>(
+      this,
+      modelsV2PatchRequestConfig,
+    ),
     // delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
     //   this,
     //   conceptsDeleteRequestConfig,

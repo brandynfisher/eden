@@ -5,7 +5,6 @@ import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer
 import { env } from '@/lib/config'
 import { fetcher } from '@/lib/fetcher'
 import {
-  CreationV2,
   CreatorsGetResponse,
   FeedConceptsCursorArguments,
   ModelV2,
@@ -46,10 +45,11 @@ const UserModelsFeed = ({ userName, minCols, maxCols }: Props) => {
       query={query}
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
-      render={(item: CreationV2 | ModelV2) => (
+      render={(item: ModelV2, onUpdate) => (
         <ModelCard
-          model={item as ModelV2}
-          creator={(item as ModelV2).user}
+          onUpdate={onUpdate}
+          model={item}
+          creator={item.user}
           linkHref={`/models/${item._id}`}
           showFooter={true}
         />

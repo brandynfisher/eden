@@ -6,21 +6,37 @@ import { useElementSize } from '@/hooks/use-element-size'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
 import {
-  CreationV2,
-  FeedCreationsV2CursorResponse,
-  ModelV2,
-} from '@edenlabs/eden-sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+  IPage,
+  PageData,
+  RowItem,
+  addDocIfNotExistInPage,
+  updateDocInPage,
+} from '@/lib/query'
+import { FeedV2CursorResponse } from '@edenlabs/eden-sdk'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
 const MASONRY_GUTTER = 16
 const DEFAULT_PAGE_LIMIT = 35
 
+// type Props = {
+//   apiEndpoint: string
+//   render: (item: CreationV2 | ModelV2, onUpdate: () => void) => React.JSX.Element
+//   query: { [key: string]: unknown }
+//   queryKey: unknown[]
+//   minCols?: number
+//   maxCols?: number
+//   limit?: number
+// }
+
 type Props = {
   apiEndpoint: string
-  render: (item: CreationV2 | ModelV2) => React.JSX.Element
-  query: { [key: string]: unknown }
+  render: (
+    item: RowItem,
+    onUpdate: (item: RowItem) => void,
+  ) => React.JSX.Element
+  query: Record<string, unknown>
   queryKey: unknown[]
   minCols?: number
   maxCols?: number
@@ -63,6 +79,32 @@ const MasonryVirtualizerVertical = ({
     useMediaQuery('(min-width: 480px)'),
   ].reverse()
 
+  const queryClient = useQueryClient()
+
+  const onUpdate = (updatedItem: RowItem) => {
+    console.log(
+      'onUpdate - somehow update/invalidate/refetch or whatever it will be',
+    )
+
+    try {
+      queryClient.setQueryData(
+        queryKey,
+        (old: PageData<IPage<RowItem>> | undefined) => {
+          let updatedPages: IPage<RowItem>[] = old ? [...old.pages] : []
+
+          if (updatedPages.length > 0) {
+            updatedPages = addDocIfNotExistInPage(updatedItem, updatedPages)
+            updatedPages = updateDocInPage(updatedItem, updatedPages)
+          }
+
+          return { ...old, pages: updatedPages }
+        },
+      )
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   const activeMQ = mediaQueries.lastIndexOf(true)
 
   const derivedColumnCount =
@@ -102,7 +144,7 @@ const MasonryVirtualizerVertical = ({
       return fetcher(paginationRoute)
     },
     staleTime: 60000,
-    getNextPageParam: (lastPage: FeedCreationsV2CursorResponse) => {
+    getNextPageParam: (lastPage: FeedV2CursorResponse) => {
       // console.log(lastPage)
       if (
         lastPage &&
@@ -193,7 +235,7 @@ const MasonryVirtualizerVertical = ({
               )}
             </div>
           ) : item ? (
-            <>{render(item)}</>
+            <>{render(item, onUpdate)}</>
           ) : (
             <div>Missing data</div>
           )}

@@ -85,7 +85,7 @@ const AspectRatioSelector = ({ form }: Props) => {
       )
     : RESOLUTIONS.length - 1
   const landscapeResolution =
-    RESOLUTIONS[landscapeIndex !== -1 ? landscapeIndex : RESOLUTIONS.length - 1]
+    RESOLUTIONS[landscapeIndex !== -1 ? landscapeIndex : RESOLUTIONS.length - 2]
 
   const portraitIndex = activeResolution
     ? RESOLUTIONS.findIndex(
@@ -99,7 +99,7 @@ const AspectRatioSelector = ({ form }: Props) => {
       )
     : 0
   const portraitResolution =
-    RESOLUTIONS[portraitIndex !== -1 ? portraitIndex : 0]
+    RESOLUTIONS[portraitIndex !== -1 ? portraitIndex : 1]
 
   // console.log({
   //   activeIndex,

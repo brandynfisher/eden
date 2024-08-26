@@ -15,7 +15,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { CreditCardIcon, LogOutIcon, SettingsIcon } from 'lucide-react'
+import { LogOutIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -83,27 +83,27 @@ const AccountDropdown = () => {
           <Link href={`/creators/${user?.username}?tab=models`}>Models</Link>
           {/*<DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user?.username}?tab=collections`}>
-            Collections
-          </Link>
-          {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
-        </DropdownMenuItem>
+        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
+        {/*  <Link href={`/creators/${user?.username}?tab=collections`}>*/}
+        {/*    Collections*/}
+        {/*  </Link>*/}
+        {/*  /!*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*!/*/}
+        {/*</DropdownMenuItem>*/}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/settings/account`}>
-            <SettingsIcon className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </Link>
-          {/*  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*/}
-        </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/settings/subscription`}>
-            <CreditCardIcon className="mr-2 h-4 w-4" />
-            <span>Subscription</span>
-            {/*<DropdownMenuShortcut>⇧⌘S</DropdownMenuShortcut>*/}
-          </Link>
-        </DropdownMenuItem>
+        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
+        {/*  <Link href={`/settings/account`}>*/}
+        {/*    <SettingsIcon className="mr-2 h-4 w-4" />*/}
+        {/*    <span>Settings</span>*/}
+        {/*  </Link>*/}
+        {/*  /!*  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*!/*/}
+        {/*</DropdownMenuItem>*/}
+        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
+        {/*  <Link href={`/settings/subscription`}>*/}
+        {/*    <CreditCardIcon className="mr-2 h-4 w-4" />*/}
+        {/*    <span>Subscription</span>*/}
+        {/*    /!*<DropdownMenuShortcut>⇧⌘S</DropdownMenuShortcut>*!/*/}
+        {/*  </Link>*/}
+        {/*</DropdownMenuItem>*/}
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>

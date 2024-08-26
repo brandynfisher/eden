@@ -19,6 +19,7 @@ type Props = {
   creator?: Creator
   showFooter?: boolean
   style?: CSSProperties
+  onUpdate?: (item: CreationV2) => void
 }
 
 const CreationCard = ({ creation, showFooter, style }: Props) => {

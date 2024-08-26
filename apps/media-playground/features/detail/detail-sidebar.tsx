@@ -35,7 +35,10 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
             </div>
           </div>
         ) : (
-          <Skeleton className="h-4 w-[250px]" />
+          <div className="space-y-0.5">
+            <Skeleton className="h-6 w-[250px]" />
+            <Skeleton className="h-5 w-[100px]" />
+          </div>
         )}
       </div>
 
@@ -49,7 +52,7 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
               {(item as CreationV2).workflow}
             </Link>
           ) : (
-            <Skeleton className="h-4 w-[125px]" />
+            <Skeleton className="h-5 w-[125px]" />
           )}
         </div>
       ) : null}
@@ -59,11 +62,11 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
         {item && (prompt || text_input) ? (
           <div>{prompt || text_input}</div>
         ) : (
-          <>
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[250px]" />
-          </>
+          <div className="space-y-0.5">
+            <Skeleton className="h-5 w-[250px]" />
+            <Skeleton className="h-5 w-[250px]" />
+            <Skeleton className="h-5 w-[250px]" />
+          </div>
         )}
       </div>
 
@@ -72,12 +75,12 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
         {item && remainingArgs ? (
           <ParameterTable args={remainingArgs} />
         ) : (
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[200px]" />
-            <Skeleton className="h-4 w-[200px]" />
-            <Skeleton className="h-4 w-[180px]" />
+          <div className="space-y-0.5">
+            <Skeleton className="h-5 w-[250px]" />
+            <Skeleton className="h-5 w-[250px]" />
+            <Skeleton className="h-5 w-[200px]" />
+            <Skeleton className="h-5 w-[200px]" />
+            <Skeleton className="h-5 w-[180px]" />
           </div>
         )}
       </div>

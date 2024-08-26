@@ -9,6 +9,7 @@ import {
 } from '../../types'
 import { CursorPaginatedFeedQuery } from '../Feed'
 import { CreationV2 } from './CreationsV2'
+import { ModelV2 } from './ModelsV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -117,6 +118,19 @@ export const feedCursorCreationsV2RequestConfig = (
 // }
 
 // Responses
+
+export type FeedV2CursorResponse = WebAPICallResult &
+  PaginatedCursorResponse<ModelV2 | CreationV2> & {
+    error?: string
+    reactions?: {
+      [creationId: string]: {
+        [reaction: string]: number
+      }
+    }
+    bookmarks?: {
+      [creationId: string]: boolean
+    }
+  }
 
 export type FeedCreationsV2CursorResponse = WebAPICallResult &
   PaginatedCursorResponse<CreationV2> & {

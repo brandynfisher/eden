@@ -1,6 +1,6 @@
 import { fetcher } from '@/lib/fetcher'
 import { ModelV2, ModelsV2GetResponse } from '@edenlabs/eden-sdk'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Props = {
   key: ModelV2['_id']
@@ -8,6 +8,8 @@ type Props = {
 }
 
 export const useModelQuery = ({ key, initialData }: Props) => {
+  const queryKey = ['models', key]
+
   const {
     data,
     error,
@@ -20,7 +22,7 @@ export const useModelQuery = ({ key, initialData }: Props) => {
     status,
   } = useQuery({
     initialData,
-    queryKey: ['models', key],
+    queryKey,
     queryFn: () =>
       fetcher<ModelsV2GetResponse>(`/api/models/${key}`, {
         credentials: 'include',
@@ -28,7 +30,10 @@ export const useModelQuery = ({ key, initialData }: Props) => {
     staleTime: 60000,
   })
 
+  const queryClient = useQueryClient()
+
   return {
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
     model: data?.model as ModelV2 | undefined,
     error,
     isError,

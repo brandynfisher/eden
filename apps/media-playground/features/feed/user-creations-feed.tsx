@@ -8,7 +8,6 @@ import {
   CreationV2,
   CreatorsGetResponse,
   FeedCreationsCursorArguments,
-  ModelV2,
 } from '@edenlabs/eden-sdk'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
@@ -46,10 +45,11 @@ const UserCreationsFeed = ({ userName, minCols, maxCols }: Props) => {
       query={query}
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
-      render={(item: CreationV2 | ModelV2) => (
+      render={(item: CreationV2, onUpdate) => (
         <CreationCard
-          creation={item as CreationV2}
-          creator={(item as CreationV2).user}
+          onUpdate={onUpdate}
+          creation={item}
+          creator={item.user}
           linkHref={`/creations/${item._id}`}
         />
       )}

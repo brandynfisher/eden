@@ -3,20 +3,17 @@
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
 import TimelineItem from '@/components/timeline/timeline-item'
 import { Switch } from '@/components/ui/switch'
-import { useWebSocketContext } from '@/provider/websocket-provider'
 import {
-  GeneratorV2,
-  TaskV2,
-  TasksV2ListArguments,
-  TasksV2ListResponse,
-} from '@edenlabs/eden-sdk'
+  IPage,
+  PageData,
+  RowItem,
+  addDocIfNotExistInPage,
+  updateDocInPage,
+} from '@/lib/query'
+import { useWebSocketContext } from '@/provider/websocket-provider'
+import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
-
-type TaskData = {
-  pageParams: number[]
-  pages: TasksV2ListResponse[]
-}
 
 type Props = {
   generator: GeneratorV2
@@ -73,34 +70,31 @@ const Timeline = ({ generator }: Props) => {
         taskUpdate,
       )
 
-      queryClient.setQueryData(queryKey, (old: TaskData | undefined) => {
-        // Copy the old pages array
-        let updatedPages: TasksV2ListResponse[] = old ? [...old.pages] : []
-        if (updatedPages.length > 0) {
-          // Find the page that contains the task
-          const pageIndex = updatedPages.findIndex(page =>
-            page?.docs?.some(task => task._id === taskUpdate._id),
-          )
-          if (pageIndex !== -1) {
-            // The task is in one of the pages, update the task
-            updatedPages[pageIndex] = {
-              ...updatedPages[pageIndex],
-              docs: updatedPages[pageIndex]?.docs?.map(task =>
-                task._id === taskUpdate._id ? taskUpdate : task,
-              ),
+      try {
+        queryClient.setQueryData(
+          queryKey,
+          (old: PageData<IPage<RowItem>> | undefined) => {
+            let updatedPages: IPage<RowItem>[] = old ? [...old.pages] : []
+
+            if (updatedPages.length > 0) {
+              updatedPages = addDocIfNotExistInPage(taskUpdate, updatedPages)
+              updatedPages = updateDocInPage(taskUpdate, updatedPages)
             }
-          } else {
-            // The task is not in any pages, add to the beginning of docs in the first page
-            updatedPages[0] = {
-              ...updatedPages[0],
-              docs: [taskUpdate, ...(updatedPages[0].docs || [])],
-            }
-          }
-        }
-        return { ...old, pages: updatedPages }
-      })
+
+            return { ...old, pages: updatedPages }
+          },
+        )
+      } catch (e) {
+        console.log(e)
+      }
     }
-  }, [lastMessageJson, queryClient, queryKey])
+  }, [
+    filterTasksByCurrentWorkflow,
+    generator.key,
+    lastMessageJson,
+    queryClient,
+    queryKey,
+  ])
 
   return (
     <div className="mb-8 2xl:col-span-2 md:pt-4">

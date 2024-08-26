@@ -43,6 +43,22 @@ export const modelsV2GetRequestConfig = (
   }
 }
 
+export interface ModelsV2PatchArguments extends WebAPICallOptions {
+  modelId: string
+  public?: boolean
+}
+
+export const modelsV2PatchRequestConfig = (
+  args: ModelsV2PatchArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `v2/models/${args.modelId}`,
+    data: {
+      ...args,
+    },
+  }
+}
 // Responses
 
 export type ModelsV2ListResponse = WebAPICallResult &
@@ -51,6 +67,11 @@ export type ModelsV2ListResponse = WebAPICallResult &
   }
 
 export type ModelsV2GetResponse = WebAPICallResult & {
+  error?: string
+  model?: ModelV2
+}
+
+export type ModelsV2PatchResponse = WebAPICallResult & {
   error?: string
   model?: ModelV2
 }

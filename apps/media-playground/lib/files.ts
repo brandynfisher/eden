@@ -142,6 +142,6 @@ export const downloadFile = async (url: string, fileName: string) => {
   }
 }
 
-export const getFileTypeByMimeType = (mimeType: MimeType) => {
-  return mimeType.split('/')[0] as FileType
+export const getFileTypeByMimeType = (mimeType?: MimeType | string) => {
+  return mimeType ? (mimeType.split('/')[0] as FileType) : 'other'
 }

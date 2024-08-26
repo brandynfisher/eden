@@ -1,5 +1,5 @@
-import { getModel } from '../../controllers/v2/modelControllerV2'
-import { maybeAuthEden2 } from '../../middleware/authMiddleware'
+import { getModel, modelUpdate } from '../../controllers/v2/modelControllerV2'
+import { isAuthEden2, maybeAuthEden2 } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -64,6 +64,32 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [request => maybeAuthEden2(server, request)],
     handler: (request, reply) => getModel(request, reply),
+  })
+
+  server.patch('/v2/models/:modelId', {
+    schema: {
+      tags: ['Models'],
+      description: 'Update a model',
+      security: [
+        {
+          apiKey: [],
+          // apiSecret: [],
+        },
+      ],
+      params: {
+        modelId: Type.String(),
+      },
+      body: Type.Object({
+        public: Type.Optional(Type.Boolean()),
+      }),
+      response: {
+        200: {
+          model: Type.Any(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => modelUpdate(request, reply),
   })
 }
 

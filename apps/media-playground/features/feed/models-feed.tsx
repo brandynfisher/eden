@@ -2,11 +2,7 @@
 
 import ModelCard from '@/components/card/model-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import {
-  CreationV2,
-  FeedConceptsCursorArguments,
-  ModelV2,
-} from '@edenlabs/eden-sdk'
+import { FeedConceptsCursorArguments, ModelV2 } from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
 
 type Props = {
@@ -32,10 +28,11 @@ const ModelsFeed = ({ minCols, maxCols }: Props) => {
       query={query}
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
-      render={(item: CreationV2 | ModelV2) => (
+      render={(item: ModelV2, onUpdate) => (
         <ModelCard
-          model={item as ModelV2}
-          creator={(item as ModelV2).user}
+          onUpdate={onUpdate}
+          model={item}
+          creator={item.user}
           linkHref={`/models/${item._id}`}
           showFooter={true}
         />

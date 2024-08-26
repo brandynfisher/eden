@@ -1,7 +1,11 @@
 import { User } from '../../models/Creator'
 import { ModelV2 } from '../../models/v2/ModelV2'
 import ModelV2Repository from '../../repositories/ModelV2Repository'
-import { ModelsV2GetArguments, ModelsV2ListArguments } from '@edenlabs/eden-sdk'
+import {
+  ModelsV2GetArguments,
+  ModelsV2ListArguments,
+  ModelsV2PatchArguments,
+} from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 export const listModels = async (
@@ -84,4 +88,40 @@ export const getModel = async (
   }
 
   return reply.status(200).send({ model })
+}
+
+export const modelUpdate = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { modelId } = request.params as ModelsV2PatchArguments
+  const { public: isPublic } = request.body as ModelsV2PatchArguments
+
+  if (!userId || !modelId || typeof isPublic === 'undefined') {
+    return reply.status(422).send({
+      message: 'Missing parameters or malformed request body',
+    })
+  }
+
+  const model = await ModelV2.findOne({
+    _id: modelId,
+    user: userId,
+  })
+
+  if (!model) {
+    return reply.status(404).send({
+      message: 'Model not found',
+    })
+  }
+
+  if (typeof isPublic !== 'undefined') {
+    model.public = isPublic
+  }
+
+  await model.save()
+
+  return reply.status(200).send({
+    model,
+  })
 }

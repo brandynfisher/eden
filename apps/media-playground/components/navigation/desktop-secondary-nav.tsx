@@ -13,7 +13,7 @@ type Props = {
 const DesktopSecondaryNav = ({ title, baseSegment, items }: Props) => {
   return (
     <div className="bg-muted/60 w-52 flex flex-col items-start">
-      <div className="xl:sticky xl:top-16 w-full">
+      <div className="md:sticky md:top-16 w-full">
         {title ? (
           <Link href={`/${baseSegment}`}>
             <TypographyH4 className="p-4 text-accent-foreground">

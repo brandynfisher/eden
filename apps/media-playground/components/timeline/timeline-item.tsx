@@ -61,7 +61,7 @@ const TimelineItem = ({ item, outputType }: Props) => {
     <div
       data-test-id="timeline-item"
       key={item._id}
-      className="overflow-hidden"
+      // className="overflow-hidden"
     >
       <TaskParameterList task={item} />
       {item.status !== 'completed' ? (
