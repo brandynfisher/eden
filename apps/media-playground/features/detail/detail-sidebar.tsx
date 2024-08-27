@@ -60,8 +60,8 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
       {type === 'creation' ? (
         <div className="pb-4 text-sm">
           <div className="font-bold mt-2 mb-3">Prompt</div>
-          {item && (prompt || text_input) ? (
-            <div>{prompt || text_input}</div>
+          {item ? (
+            <div>{prompt || text_input || '-'}</div>
           ) : (
             <div className="space-y-1">
               <Skeleton className="h-5 w-[250px]" />
