@@ -35,7 +35,7 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
             </div>
           </div>
         ) : (
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <Skeleton className="h-6 w-[250px]" />
             <Skeleton className="h-5 w-[100px]" />
           </div>
@@ -57,25 +57,27 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
         </div>
       ) : null}
 
-      <div className="pb-4 text-sm">
-        <div className="font-bold mt-2 mb-3">Prompt</div>
-        {item && (prompt || text_input) ? (
-          <div>{prompt || text_input}</div>
-        ) : (
-          <div className="space-y-0.5">
-            <Skeleton className="h-5 w-[250px]" />
-            <Skeleton className="h-5 w-[250px]" />
-            <Skeleton className="h-5 w-[250px]" />
-          </div>
-        )}
-      </div>
+      {type === 'creation' ? (
+        <div className="pb-4 text-sm">
+          <div className="font-bold mt-2 mb-3">Prompt</div>
+          {item && (prompt || text_input) ? (
+            <div>{prompt || text_input}</div>
+          ) : (
+            <div className="space-y-1">
+              <Skeleton className="h-5 w-[250px]" />
+              <Skeleton className="h-5 w-[250px]" />
+              <Skeleton className="h-5 w-[250px]" />
+            </div>
+          )}
+        </div>
+      ) : null}
 
       <div>
         <div className="font-bold text-sm mt-2 mb-3">Parameters</div>
         {item && remainingArgs ? (
           <ParameterTable args={remainingArgs} />
         ) : (
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <Skeleton className="h-5 w-[250px]" />
             <Skeleton className="h-5 w-[250px]" />
             <Skeleton className="h-5 w-[200px]" />
