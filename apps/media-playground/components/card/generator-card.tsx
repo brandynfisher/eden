@@ -2,6 +2,7 @@
 
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
+import customImageLoader from '@/image-loader'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -30,6 +31,8 @@ const GeneratorCard = ({ title, image, link, description }: Props) => {
           />
         ) : (
           <Image
+            loading={'lazy'}
+            loader={customImageLoader}
             src={image}
             alt={title}
             data-loaded="false"
@@ -37,7 +40,7 @@ const GeneratorCard = ({ title, image, link, description }: Props) => {
               event.currentTarget.setAttribute('data-loaded', 'true')
             }}
             fill={true}
-            sizes={'(max-width: 768px) 90vw, (max-width: 1280px) 25vw, 15vw'}
+            sizes={'100vw'}
             className="object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10"
           />
         )}

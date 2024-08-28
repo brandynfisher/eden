@@ -18,27 +18,22 @@ type Props = {
 
 const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   // videos
-  animate_3D: 'https://d14i3advvh2bvd.cloudfront.net/app/animate_3D_opt.mp4',
-  style_mixing:
-    'https://d14i3advvh2bvd.cloudfront.net/app/style_mixing_opt.mp4',
-  txt2vid: 'https://d14i3advvh2bvd.cloudfront.net/app/txt2vid_opt.mp4',
-  txt2vid_lora:
-    'https://d14i3advvh2bvd.cloudfront.net/app/txt2vid_lora_opt.mp4',
-  vid2vid_sdxl:
-    'https://d14i3advvh2bvd.cloudfront.net/app/vid2vid_sdxl_opt.mp4',
-  img2vid: 'https://d14i3advvh2bvd.cloudfront.net/app/img2vid_opt.mp4',
-  vid2vid_sd15:
-    'https://d14i3advvh2bvd.cloudfront.net/app/vid2vid_sd15_opt.mp4',
-  video_upscaler: 'video_upscaler.jpeg',
+  animate_3D: 'animate_3D_opt.mp4',
+  style_mixing: 'style_mixing_opt.mp4',
+  txt2vid: 'txt2vid_opt.mp4',
+  txt2vid_lora: 'txt2vid_lora_opt.mp4',
+  vid2vid_sdxl: 'vid2vid_sdxl_opt.mp4',
+  img2vid: 'img2vid_opt.mp4',
+  vid2vid_sd15: 'vid2vid_sd15_opt.mp4',
+  video_upscaler: 'video_upscaler_opt.mp4',
 
   // images
   flux: 'flux.png',
-  background_removal:
-    'https://d14i3advvh2bvd.cloudfront.net/app/background_removal_opt.mp4',
-  clarity_upscaler: 'clarity_upscaler.jpeg',
+  background_removal: 'background_removal_opt.mp4',
+  clarity_upscaler: 'clarity_upscaler_opt.mp4',
   face_styler: 'face_styler.png',
-  inpaint: 'https://d14i3advvh2bvd.cloudfront.net/app/inpaint_opt.mp4',
-  outpaint: 'https://d14i3advvh2bvd.cloudfront.net/app/outpaint_opt.mp4',
+  inpaint: 'inpaint_opt.mp4',
+  outpaint: 'outpaint_opt.mp4',
   SD3: 'SD3.jpeg',
   txt2img: 'txt2img.png',
   img2img: 'img2img.jpeg',
@@ -48,21 +43,13 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   lora_trainer: 'lora_trainer.png',
 
   // audio
-  audiocraft: 'https://d14i3advvh2bvd.cloudfront.net/app/audio_craft_opt.mp4',
+  audiocraft: 'audio_craft_opt.mp4',
 }
 
 const getMediaUrl = (generatorKey: GeneratorV2['key']) => {
   const mediaFileName = toolThumbnails[generatorKey]
 
-  if (mediaFileName) {
-    if (mediaFileName.endsWith('.mp4')) {
-      return mediaFileName
-    }
-
-    return `/images/generators/${mediaFileName}`
-  }
-
-  return '/logo-bw.png'
+  return `https://d14i3advvh2bvd.cloudfront.net/app/${mediaFileName || 'logo-bw.png'}`
 }
 
 const GridSection = ({ generators }: Props) => {
