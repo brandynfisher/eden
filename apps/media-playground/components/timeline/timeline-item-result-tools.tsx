@@ -50,7 +50,7 @@ const TimelineItemResultTools = ({
     originalFilename: string,
     downloadFilename: string,
   ) => {
-    console.log({ originalFilename, downloadFilename })
+    // console.log({ originalFilename, downloadFilename })
 
     setIsDownloading(true)
     await downloadFile(originalFilename, downloadFilename)
@@ -105,7 +105,7 @@ const TimelineItemResultTools = ({
 
       const responseData = response.data
 
-      console.log({ responseData })
+      // console.log({ responseData })
 
       toast.success(`Saved`, {
         id: publishToast,
