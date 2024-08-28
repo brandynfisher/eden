@@ -1,14 +1,11 @@
 import { getFileTypeByMimeType } from '../../lib/eden2'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
-import {
-  TaskV2Document,
-  TaskV2 as TaskV2Model,
-  taskSchema,
-} from '../../models/v2/TaskV2'
+import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import {
   ImageFormats,
   changeExtension,
+  rawS3BaseUrl,
   s3ThumbnailUrl,
   s3Url,
 } from '../../plugins/s3Plugin'
@@ -29,7 +26,6 @@ import axios from 'axios'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-import { PipelineStage } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
 
@@ -199,65 +195,17 @@ export const listTasks = async (
     },
   }
 
-  // handle workflows that returns models  resolve `result: ObjectId` to `models._id`
-  if (query.workflow === 'lora_trainer') {
-    queryOptions.select = '-args.lora_training_urls'
+  queryOptions.select = '-args.lora_training_urls'
 
-    const pipelines: PipelineStage[] = [
-      {
-        $match: {
-          workflow: workflow,
-          user: userId,
-        },
-      },
-      {
-        $lookup: {
-          from: 'models',
-          localField: 'result',
-          foreignField: '_id',
-          as: 'model',
-          pipeline: [
-            {
-              $match: {
-                user: userId,
-              },
-            },
-          ],
-        },
-      },
-      {
-        $unwind: {
-          path: '$model',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        // @todo: Remove training image urls only if not authenticated / subscription requirements - if any - are fulfilled?
-        $unset: ['args.lora_training_urls', 'model.args.lora_training_urls'],
-      },
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-    ]
+  const queryResults = await tasksRepository.query(query, queryOptions)
 
-    tasks = await tasksRepository.aggregateQuery(
-      TaskV2Model.aggregate(pipelines),
-      queryOptions,
-    )
-  } else {
-    // all other workflows return array of external asset URIs in `result` and don't need to be resolved further
-    const queryResults = await tasksRepository.query(query, queryOptions)
+  queryResults.docs.forEach(doc => {
+    if (doc.result) {
+      doc.result = doc.result.map(result => injectResultUrls(server, result))
+    }
+  })
 
-    queryResults.docs.forEach(doc => {
-      if (doc.result) {
-        doc.result = doc.result.map(result => injectResultUrls(server, result))
-      }
-    })
-
-    tasks = queryResults
-  }
+  tasks = queryResults
 
   return reply.status(200).send(tasks)
 }
@@ -266,7 +214,9 @@ const injectResultUrls = (server: FastifyInstance, result: TaskV2Result) => {
   return result.filename
     ? {
         ...result,
-        url: s3Url(server, result.filename),
+        url: result.model
+          ? `${rawS3BaseUrl(server)}/${result.filename}`
+          : s3Url(server, result.filename),
         thumbnail: s3ThumbnailUrl(server, result.filename),
       }
     : result
@@ -283,29 +233,9 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
     })
   }
 
-  // populating with a virtual field
-  // @todo: do this only when we're dealing with a task that produced a model = boy this is ugly
-  taskSchema.virtual('model', {
-    ref: 'models',
-    localField: 'result',
-    foreignField: '_id',
-    justOne: true,
-  })
-  taskSchema.set('toObject', { virtuals: true })
-  taskSchema.set('toJSON', { virtuals: true })
-
   const task = await TaskV2Model.findOne({ _id: taskId, user: userId }).select(
     '-args.lora_training_urls',
   )
-
-  // await Task.populate(task, {
-  //   path: 'creation',
-  // })
-
-  await TaskV2Model.populate(task, {
-    path: 'model',
-    select: '-args.lora_training_urls',
-  })
 
   if (!task) {
     return reply.status(404).send({

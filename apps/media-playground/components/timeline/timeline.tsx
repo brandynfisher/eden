@@ -29,17 +29,29 @@ const Timeline = ({ generator }: Props) => {
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
-      workflow: filterTasksByCurrentWorkflow ? generator.key : undefined,
+      workflow:
+        generator.outputType === 'lora'
+          ? generator.key
+          : filterTasksByCurrentWorkflow
+            ? generator.key
+            : undefined,
     }),
-    [filterTasksByCurrentWorkflow, generator.key],
+    [filterTasksByCurrentWorkflow, generator.outputType, generator.key],
   )
 
   const queryKey = useMemo(
     () => [
-      ['tasks', filterTasksByCurrentWorkflow ? generator.key : undefined],
+      [
+        'tasks',
+        generator.outputType === 'lora'
+          ? generator.key
+          : filterTasksByCurrentWorkflow
+            ? generator.key
+            : undefined,
+      ],
       query,
     ],
-    [filterTasksByCurrentWorkflow, generator.key, query],
+    [filterTasksByCurrentWorkflow, generator.outputType, generator.key, query],
   )
 
   useEffect(() => {
@@ -98,24 +110,24 @@ const Timeline = ({ generator }: Props) => {
 
   return (
     <div className="mb-8 lg:col-span-2 md:pt-4">
-      <div className="flex flex-row items-center justify-between rounded-lg border p-4 mt-2 mb-4">
-        <div className="space-y-0.5">
-          <label className="text-base">Hide other tool results</label>
+      {generator.outputType !== 'lora' ? (
+        <div className="flex flex-row items-center justify-between rounded-lg border p-4 mt-2 mb-4">
+          <div className="space-y-0.5">
+            <label className="text-base">Hide other tool results</label>
+          </div>
+          <Switch
+            checked={filterTasksByCurrentWorkflow}
+            onCheckedChange={setFilterTasksByCurrentWorkflow}
+          />
         </div>
-        <Switch
-          checked={filterTasksByCurrentWorkflow}
-          onCheckedChange={setFilterTasksByCurrentWorkflow}
-        />
-      </div>
+      ) : null}
 
       <div data-test-id="timeline">
         <ListVirtualizerVertical
           apiEndpoint={'/api/tasks/list'}
           query={query}
           queryKey={queryKey}
-          render={item => (
-            <TimelineItem item={item.item} outputType={generator.outputType} />
-          )}
+          render={item => <TimelineItem item={item.item} />}
         />
       </div>
     </div>

@@ -10,7 +10,6 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { downloadFile, getDownloadFileName } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import {
-  GeneratorOutputTypeV2,
   TaskV2,
   TaskV2Result,
   TasksV2PublishResponse,
@@ -34,7 +33,7 @@ type Props = {
   fileName: string
   task: TaskV2
   result: TaskV2Result
-  outputType: GeneratorOutputTypeV2
+  outputType: 'creation' | 'model'
   className?: string
 }
 
@@ -51,6 +50,8 @@ const TimelineItemResultTools = ({
     originalFilename: string,
     downloadFilename: string,
   ) => {
+    console.log({ originalFilename, downloadFilename })
+
     setIsDownloading(true)
     await downloadFile(originalFilename, downloadFilename)
     setIsDownloading(false)
@@ -143,7 +144,29 @@ const TimelineItemResultTools = ({
     >
       <Collapsible>
         <div className="flex flex-wrap gap-2">
-          {outputType !== 'lora' ? (
+          {outputType === 'model' ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2 flex gap-2 items-center justify-center"
+                onClick={handleCopyString(result.model || '')}
+              >
+                <CopyIcon size={20} />
+                Copy ID
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="px-2 flex gap-2 items-center justify-center"
+              >
+                <Link href={`/models/${result?.model}`}>
+                  <ExternalLinkIcon className="h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          ) : (
             <>
               <Button
                 variant={result.published ? 'ghost' : 'outline'}
@@ -195,28 +218,6 @@ const TimelineItemResultTools = ({
                   </Link>
                 </Button>
               ) : null}
-            </>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="px-2 flex gap-2 items-center justify-center"
-                onClick={handleCopyString(result.model || '')}
-              >
-                <CopyIcon size={20} />
-                Copy ID
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="px-2 flex gap-2 items-center justify-center"
-              >
-                <Link href={`/models/${result?.model}`}>
-                  <ExternalLinkIcon className="h-4 w-4" />
-                </Link>
-              </Button>
             </>
           )}
 

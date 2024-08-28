@@ -4,22 +4,16 @@ import LightboxGallery, {
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontUrl } from '@/lib/media'
-import { GeneratorOutputTypeV2, TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
+import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 type Props = {
   task: TaskV2
   result: TaskV2Result
   index: number
-  outputType: GeneratorOutputTypeV2
 }
 
-const TimelineItemMediaResult = ({
-  task,
-  result,
-  index,
-  outputType,
-}: Props) => {
+const TimelineItemMediaResult = ({ task, result, index }: Props) => {
   const fileType = getFileTypeByMimeType(result.mediaAttributes?.mimeType)
 
   return (
@@ -52,7 +46,7 @@ const TimelineItemMediaResult = ({
         )}
       </div>
       <TimelineItemResultTools
-        outputType={outputType}
+        outputType={'creation'}
         task={task}
         result={result}
         originalFilename={result.url || getCloudfrontUrl(result.filename) || ''}

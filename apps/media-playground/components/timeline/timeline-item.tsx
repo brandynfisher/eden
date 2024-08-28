@@ -6,17 +6,16 @@ import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { GeneratorOutputTypeV2, ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
+import { TaskV2 } from '@edenlabs/eden-sdk'
 import axios, { AxiosError } from 'axios'
 import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
   item: TaskV2
-  outputType: GeneratorOutputTypeV2
 }
 
-const TimelineItem = ({ item, outputType }: Props) => {
+const TimelineItem = ({ item }: Props) => {
   const { verifyAuth } = useAuthState()
 
   const [isCancelling, setIsCancelling] = useState(false)
@@ -89,14 +88,10 @@ const TimelineItem = ({ item, outputType }: Props) => {
                 <Skeleton className="w-full h-full rounded-t-none rounded-bl-lg rounded-br-lg" />
               </AspectRatio>
               <div className="absolute flex items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground">
-                <TaskStatusBadge
-                  status={item.status}
-                  hideText={true}
-                  outputType={outputType}
-                />
+                <TaskStatusBadge status={item.status} hideText={true} />
                 {item.status === 'pending'
                   ? 'Waiting to start...'
-                  : `Generating ${outputType}... `}
+                  : `Generating... `}
               </div>
               <Button
                 variant="outline"
@@ -115,24 +110,22 @@ const TimelineItem = ({ item, outputType }: Props) => {
           {item.status === 'completed' &&
           item.result &&
           Array.isArray(item.result) ? (
-            item.model === undefined ? (
-              item.result.map((result, index) => (
+            item.result.map((result, index) =>
+              result.model === undefined ? (
                 <TimelineItemMediaResult
-                  outputType={outputType}
                   key={`${item._id}_${index}`}
                   index={index}
                   task={item}
                   result={result}
                 />
-              ))
-            ) : (
-              // api populates a model property with full model document
-              <TimelineItemModelResult
-                result={item.result[0]}
-                outputType={outputType}
-                task={item}
-                model={item.model as unknown as ModelV2}
-              />
+              ) : (
+                // api populates a model property with full model document
+                <TimelineItemModelResult
+                  key={`${item._id}_${index}`}
+                  result={result}
+                  task={item}
+                />
+              ),
             )
           ) : (
             <div className="text-warning">
