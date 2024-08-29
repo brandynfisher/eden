@@ -304,13 +304,19 @@ export const s3Url = (server: FastifyInstance, filename: string) => {
   return `${baseUrl}/${filename}`
 }
 
-export const s3ThumbnailUrl = (server: FastifyInstance, filename: string) => {
+export const s3ThumbnailUrl = (
+  server: FastifyInstance,
+  filename: string,
+  size?: number,
+) => {
   if (filename.startsWith('https://')) {
     return filename
   }
 
   const baseUrl = s3BaseUrl(server)
-  const srcWithSize = filename.replace(EXTENSION_PATTERN, `_${1024}$1`)
+  const srcWithSize = size
+    ? filename.replace(EXTENSION_PATTERN, `_${size}$1`)
+    : filename
   const filenameWithNewExtension = changeExtension(
     srcWithSize,
     ImageFormats.WEBP,

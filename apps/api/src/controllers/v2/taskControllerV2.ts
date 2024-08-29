@@ -214,7 +214,11 @@ const injectResultUrls = (server: FastifyInstance, result: TaskV2Result) => {
         url: result.model
           ? `${rawS3BaseUrl(server)}/${result.filename}`
           : s3Url(server, result.filename),
-        thumbnail: s3ThumbnailUrl(server, result.filename),
+        thumbnail: s3ThumbnailUrl(
+          server,
+          result.filename,
+          result.model ? undefined : 1024,
+        ),
       }
     : result
 }
