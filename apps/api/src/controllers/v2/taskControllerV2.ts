@@ -146,30 +146,26 @@ export const listTasks = async (
     })
   }
 
-  //@todo: Revisit to take care of concept task outputs
-  // const typeQuery = type
-  //   ? type === 'creations'
-  //     ? {
-  //       $or: [
-  //         { creation: { $ne: null } },
-  //         { 'config.concept_mode': { $exists: false } },
-  //       ],
-  //     }
-  //     : {
-  //       $or: [
-  //         { concept: { $ne: null } },
-  //         { 'config.concept_mode': { $exists: true } },
-  //       ],
-  //     }
-  //   : {}
+  const typeQuery =
+    !workflow || workflow !== 'lora_trainer'
+      ? {
+          workflow: { $ne: 'lora_trainer' },
+        }
+      : {}
 
   const tasksRepository = new TaskV2Repository(TaskV2Model)
-  const query: TasksV2ListArguments = {
+
+  const query: {
+    user?: string
+    status?: string | string[]
+    taskId?: string | string[]
+    workflow?: string | { $ne: string }
+  } = {
     user: user._id.toString(),
     // createdAt: {
     //   $gte: new Date(new Date().getTime() - (7 * 24 * 60 * 60 * 1000)),
     // },
-    // ...typeQuery,
+    ...typeQuery,
   }
 
   if (status) {
@@ -195,6 +191,7 @@ export const listTasks = async (
     },
   }
 
+  // remove training image urls from task args
   queryOptions.select = '-args.lora_training_urls'
 
   const queryResults = await tasksRepository.query(query, queryOptions)
