@@ -83,7 +83,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
         <div className="px-4 w-full">
           {creation ? (
             <>
-              <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-24 pb-12">
+              <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-16 pb-8 lg:pt-24 lg:pb-12">
                 Recent creations from
                 <UserAvatarLink
                   name={creation.user.username || creation.user._id}

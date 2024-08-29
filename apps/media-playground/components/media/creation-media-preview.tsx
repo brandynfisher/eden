@@ -14,7 +14,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
   return (
     <div className="relative w-full my-4">
       {creation.mediaAttributes?.type === 'audio' ? (
-        <div className="flex w-full h-full items-center justify-center">
+        <div className="flex w-full h-full items-center justify-center min-h-64">
           <audio src={creation.url} controls={true} />
         </div>
       ) : (
@@ -22,7 +22,9 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
           <LightboxGalleryItem
             className={cn([
               'lg:absolute lg:h-full',
-              isModal ? 'h-[calc(100dvh_-_112px)]' : 'h-[calc(100dvh_-_176px)]',
+              isModal
+                ? 'max-h-[calc(100dvh_-_125px)]'
+                : 'max-h-[calc(100dvh_-_172px)]',
             ])}
             forceRender={true}
             item={{

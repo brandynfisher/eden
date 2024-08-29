@@ -7,7 +7,7 @@ type Props = {
 
 export default function ModelsModalPage({ params: { id: modelId } }: Props) {
   return (
-    <FullScreenModal className="md:h-[calc(100vh_-_32px)] md:w-[calc(100dvw_-_32px)]">
+    <FullScreenModal className="md:w-[calc(100dvw_-_32px)]">
       <ModelDetail id={modelId} isModal={true} />
     </FullScreenModal>
   )

@@ -17,7 +17,9 @@ const ModelMediaPreview = ({ model, isModal }: Props) => {
         <LightboxGalleryItem
           className={cn([
             'lg:absolute lg:h-full',
-            isModal ? 'h-[calc(100dvh_-_112px)]' : 'h-[calc(100dvh_-_176px)]',
+            isModal
+              ? 'max-h-[calc(100dvh_-_125px)]'
+              : 'max-h-[calc(100dvh_-_172px)]',
           ])}
           forceRender={true}
           item={{

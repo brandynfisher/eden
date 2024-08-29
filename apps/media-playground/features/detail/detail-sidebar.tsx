@@ -20,7 +20,7 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
     <div
       className={cn([
         `flex-shrink-0 w-full lg:w-[388px] px-4 overflow-y-auto bg-accent rounded-md rounded-tr-none rounded-br-none`,
-        inModal ? '' : 'my-4',
+        inModal ? '' : 'mb-4',
       ])}
     >
       <div className="py-4">

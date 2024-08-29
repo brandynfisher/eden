@@ -26,8 +26,8 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="relative rounded-full overflow-hidden w-fit border-popover-foreground border-2">
+      <div className="flex items-center gap-4">
+        <div className="relative rounded-full overflow-hidden w-fit border-popover-foreground border-2 max-h-16 max-w-16 lg:max-h-full lg:max-w-full">
           <Image
             loader={customImageLoader}
             src={creator.userImage || ''}
@@ -37,7 +37,7 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
           />
         </div>
         <div>
-          <TypographyH3>{name}</TypographyH3>
+          <TypographyH3 className="text-lg md:text-xl">{name}</TypographyH3>
           <div>
             {user?._id === creator?._id ? (
               <Badge variant={'outline'}>My profile</Badge>
