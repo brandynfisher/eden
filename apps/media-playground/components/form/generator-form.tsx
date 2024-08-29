@@ -384,7 +384,7 @@ const GeneratorForm = ({ generator }: Props) => {
 
       console.log({ response })
 
-      toast.info(`Task submitted`, {
+      toast.success(`Task submitted`, {
         description: (
           <code className=" text-xs text-foreground">
             Workflow: {generator.key}

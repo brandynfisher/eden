@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { PropsWithChildren, ReactNode, useRef } from 'react'
+import { toast } from 'sonner'
 
 type Props = {
   title?: string
@@ -35,6 +36,11 @@ const ModelPickModal = ({
 
   const handleOnChange = (id: string) => {
     onChange(id)
+    toast.info(`Model selected`, {
+      description: <code className=" text-xs text-foreground">{id}</code>,
+      dismissible: true,
+      richColors: true,
+    })
     triggerRef.current?.click()
   }
 
