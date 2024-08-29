@@ -1,7 +1,7 @@
 'use client'
 
 import LoadingIndicator from '@/components/loading-indicator'
-import ModelPickModalContent from '@/components/modal/model-pick-modal-content'
+import ModelSelectorModalContent from '@/components/modal/model-selector-modal-content'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
 import {
@@ -27,11 +27,10 @@ type Props = {
   onChange: (id: string) => void
 } & PropsWithChildren
 
-const ModelPickModal = ({
+const ModelSelectorModal = ({
   title,
   description,
   className,
-  currentValue,
   onChange,
 }: Props) => {
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -72,10 +71,7 @@ const ModelPickModal = ({
         </DialogHeader>
         <div>
           <Suspense fallback={<LoadingIndicator className="p-4" />}>
-            <ModelPickModalContent
-              currentValue={currentValue}
-              onChange={handleOnChange}
-            />
+            <ModelSelectorModalContent onChange={handleOnChange} />
           </Suspense>
 
           <DialogFooter className="w-full mt-4 sm:justify-start">
@@ -91,4 +87,4 @@ const ModelPickModal = ({
   )
 }
 
-export default ModelPickModal
+export default ModelSelectorModal

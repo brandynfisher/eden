@@ -7,21 +7,15 @@ import { ModelV2 } from '@edenlabs/eden-sdk'
 import { useState } from 'react'
 
 type Props = {
-  currentValue: string
   onChange: (item: ModelV2) => void
 }
 
-const ModelPickModalContent = ({ currentValue, onChange }: Props) => {
+const ModelSelectorModalContent = ({ onChange }: Props) => {
   const { user } = useAuthState()
   const [showUserModelsOnly, setShowUserModelsOnly] = useState(true)
 
   return (
     <div>
-      <div className="mb-4">
-        <div className="bg-muted rounded-lg p-2">
-          current value: {JSON.stringify(currentValue)}
-        </div>
-      </div>
       <ToggleGroup
         type="single"
         value={showUserModelsOnly ? 'user' : 'public'}
@@ -55,4 +49,4 @@ const ModelPickModalContent = ({ currentValue, onChange }: Props) => {
   )
 }
 
-export default ModelPickModalContent
+export default ModelSelectorModalContent

@@ -1,6 +1,6 @@
 'use client'
 
-import ModelPickModal from '@/components/modal/model-pick-modal'
+import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -65,7 +65,7 @@ const ModelSelector = ({ onChange, value }: Props) => {
         </div>
       ) : null}
 
-      <ModelPickModal
+      <ModelSelectorModal
         className="p-4 md:p-8 w-full"
         title="Select model"
         description="Pick a model to use as a lora"
