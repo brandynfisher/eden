@@ -684,7 +684,7 @@ const FileUploader = ({
                       </div>
                       <div className="w-full space-y-1">
                         <div className="text-xs flex items-center justify-between">
-                          <div className="text-sm text-muted-foreground max-w-[110px] md:max-w-[217px]">
+                          <div className="text-sm text-muted-foreground max-w-[96px] md:max-w-[175px]">
                             <Truncate text={fileUploadProgress.File.name} />
                           </div>
                           <span>{fileUploadProgress.progress}%</span>

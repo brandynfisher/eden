@@ -1,6 +1,5 @@
 'use client'
 
-// import { UseFormReturn } from 'react-hook-form'
 import ModelPickModal from '@/components/modal/model-pick-modal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,16 +11,11 @@ import Image from 'next/image'
 import React from 'react'
 
 type Props = {
-  // form: UseFormReturn
   onChange: (newVal: string | undefined) => void
   value: string
 }
 
-const ModelSelector = ({
-  // form,
-  onChange,
-  value,
-}: Props) => {
+const ModelSelector = ({ onChange, value }: Props) => {
   const { model, isLoading } = useModelQuery({ key: value, enabled: !!value })
 
   return (

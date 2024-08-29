@@ -200,11 +200,7 @@ const renderFormField = (
                     value={parsedValue}
                   />
                 </FormControl>
-                <ModelSelector
-                  // form={form}
-                  value={parsedValue}
-                  onChange={onChange}
-                />
+                <ModelSelector value={parsedValue} onChange={onChange} />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
@@ -387,7 +383,7 @@ const GeneratorForm = ({ generator }: Props) => {
       toast.success(`Task submitted`, {
         description: (
           <code className=" text-xs text-foreground">
-            Workflow: {generator.key}
+            Tool: {generator.key}
           </code>
         ),
         dismissible: true,

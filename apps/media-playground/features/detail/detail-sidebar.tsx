@@ -2,6 +2,7 @@ import ParameterTable from '@/components/timeline/parameter-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { useTimeAgo } from 'next-timeago'
@@ -15,8 +16,10 @@ type Props = {
 }
 
 const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
+  const { user: creator } = item || {}
   const { prompt, text_input, ...remainingArgs } = item?.args || {}
   const { TimeAgo } = useTimeAgo()
+  const { user } = useAuthState()
 
   return (
     <div
@@ -44,15 +47,17 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
         )}
       </div>
 
-      {type === 'model' ? (
+      {type === 'model' && creator?._id === user?._id ? (
         <div className="pb-3">
           {item && item.public !== undefined ? (
-            <PrivacyToggle
-              isPublic={item.public}
-              type={type}
-              id={item._id}
-              onUpdate={onUpdate}
-            />
+            <>
+              <PrivacyToggle
+                isPublic={item.public}
+                type={type}
+                id={item._id}
+                onUpdate={onUpdate}
+              />
+            </>
           ) : (
             <Skeleton className="h-[42px] w-[142px]" />
           )}

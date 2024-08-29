@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuShortcut,
 } from '@/components/ui/dropdown-menu'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { fetcher } from '@/lib/fetcher'
 import { Creator, ModelV2, ModelsV2PatchResponse } from '@edenlabs/eden-sdk'
 import { LockClosedIcon } from '@radix-ui/react-icons'
@@ -27,6 +28,9 @@ type Props = {
 }
 
 const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
+  const { user } = useAuthState()
+  const { user: creator } = model || {}
+
   const onTogglePublic = async () => {
     try {
       const response: ModelsV2PatchResponse = await fetcher(
@@ -107,22 +111,24 @@ const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
             //   onChange={() => null}
             // />,
             <ToolsButton key={1}>
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={onTogglePublic}
-                  className="cursor-pointer"
-                >
-                  {model.public ? (
-                    <LockClosedIcon className="mr-2 h-4 w-4" />
-                  ) : (
-                    <LockOpenIcon className="mr-2 h-4 w-4" />
-                  )}
-                  <span>
-                    Set <strong>{model.public ? 'Private' : 'Public'}</strong>
-                  </span>
-                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
+              {creator._id === user?._id ? (
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={onTogglePublic}
+                    className="cursor-pointer"
+                  >
+                    {model.public ? (
+                      <LockClosedIcon className="mr-2 h-4 w-4" />
+                    ) : (
+                      <LockOpenIcon className="mr-2 h-4 w-4" />
+                    )}
+                    <span>
+                      Set <strong>{model.public ? 'Private' : 'Public'}</strong>
+                    </span>
+                    <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              ) : null}
             </ToolsButton>,
           ]}
         >

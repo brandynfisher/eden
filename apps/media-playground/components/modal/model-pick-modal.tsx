@@ -41,6 +41,8 @@ const ModelPickModal = ({
       dismissible: true,
       richColors: true,
     })
+
+    // hackish way to close the model
     triggerRef.current?.click()
   }
 
