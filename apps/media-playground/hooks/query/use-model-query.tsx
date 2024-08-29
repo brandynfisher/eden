@@ -27,7 +27,6 @@ export const useModelQuery = ({ key, initialData }: Props) => {
       fetcher<ModelsV2GetResponse>(`/api/models/${key}`, {
         credentials: 'include',
       }),
-    staleTime: 60000,
   })
 
   const queryClient = useQueryClient()

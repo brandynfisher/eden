@@ -66,7 +66,7 @@ const ListVirtualizerVertical = ({
       )}`
       return fetcher(queryUrl)
     },
-    staleTime: 60000,
+    staleTime: 1000,
     getNextPageParam: (lastPage: TasksV2ListResponse) => {
       return lastPage.nextPage ? lastPage.nextPage : undefined
     },

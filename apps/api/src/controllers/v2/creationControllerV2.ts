@@ -58,7 +58,7 @@ export const getCreation = async (
   }
 
   creation.url = s3Url(server, creation.url || '')
-  creation.thumbnail = s3ThumbnailUrl(server, creation.thumbnail || '')
+  creation.thumbnail = s3ThumbnailUrl(server, creation.thumbnail || '', 1024)
 
   return reply.status(200).send({ creation })
 }

@@ -22,7 +22,6 @@ export const useCreationQuery = ({ key, initialData }: Props) => {
     initialData,
     queryKey: ['creations', key],
     queryFn: () => fetcher<CreationsV2GetResponse>(`/api/creations/${key}`),
-    staleTime: 60000,
   })
 
   return {
