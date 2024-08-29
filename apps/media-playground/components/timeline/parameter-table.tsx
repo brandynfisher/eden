@@ -135,6 +135,8 @@ const ParameterTable = ({ args, className }: Props) => {
                       />
                     ))}
                 </div>
+              ) : taskArg[0] === 'lora' ? (
+                <></>
               ) : typeof taskArg[1] === 'boolean' ? (
                 taskArg[1] ? (
                   <SquareCheckBigIcon size={16} />

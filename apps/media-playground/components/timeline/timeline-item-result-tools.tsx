@@ -17,8 +17,7 @@ import {
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
   BookCheckIcon,
-  BookHeartIcon,
-  ClipboardCopy,
+  BookHeartIcon, // ClipboardCopy,
   CopyIcon,
   DownloadIcon,
   ExternalLinkIcon,
@@ -239,17 +238,17 @@ const TimelineItemResultTools = ({
               <DownloadIcon size={20} />
             )}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            title={`Re-Use configuration (${task.workflow})`}
-            className="px-2"
-            onClick={() =>
-              alert('Re-use configuration/Preset - Not implemented')
-            }
-          >
-            <ClipboardCopy size={20} />
-          </Button>
+          {/*<Button*/}
+          {/*  variant="outline"*/}
+          {/*  size="sm"*/}
+          {/*  title={`Re-Use configuration (${task.workflow})`}*/}
+          {/*  className="px-2"*/}
+          {/*  onClick={() =>*/}
+          {/*    alert('Re-use configuration/Preset - Not implemented')*/}
+          {/*  }*/}
+          {/*>*/}
+          {/*  <ClipboardCopy size={20} />*/}
+          {/*</Button>*/}
           <CollapsibleTrigger asChild>
             <Button
               variant="outline"

@@ -5,10 +5,8 @@ import ModelSelectorModalContent from '@/components/modal/model-selector-modal-c
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
 import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogFooter,
+  Dialog, // DialogClose,
+  DialogDescription, // DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -63,7 +61,7 @@ const ModelSelectorModal = ({
         </Button>
       </DialogTrigger>
       <DialogContentScrollable
-        className={cn([`h-fit overflow-x-hidden`, className])}
+        className={cn([`overflow-x-hidden flex flex-col`, className])}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -74,13 +72,13 @@ const ModelSelectorModal = ({
             <ModelSelectorModalContent onChange={handleOnChange} />
           </Suspense>
 
-          <DialogFooter className="w-full mt-4 sm:justify-start">
-            <DialogClose asChild>
-              <Button type="button" variant="secondary" className="ml-auto">
-                Cancel
-              </Button>
-            </DialogClose>
-          </DialogFooter>
+          {/*<DialogFooter className="w-full mt-4 sm:justify-start">*/}
+          {/*  <DialogClose asChild>*/}
+          {/*    <Button type="button" variant="secondary" className="ml-auto">*/}
+          {/*      Cancel*/}
+          {/*    </Button>*/}
+          {/*  </DialogClose>*/}
+          {/*</DialogFooter>*/}
         </div>
       </DialogContentScrollable>
     </Dialog>
