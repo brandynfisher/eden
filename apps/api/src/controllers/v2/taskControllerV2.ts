@@ -216,8 +216,8 @@ const injectResultUrls = (server: FastifyInstance, result: TaskV2Result) => {
           : s3Url(server, result.filename),
         thumbnail: s3ThumbnailUrl(
           server,
-          result.filename,
-          result.model ? undefined : 1024,
+          result.model ? result.thumbnail || '' : result.filename,
+          result.model ? undefined : 1024, //@todo: get rid of this special handling once model thumbnails are in line with creations
         ),
       }
     : result
