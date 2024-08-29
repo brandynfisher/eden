@@ -194,7 +194,7 @@ const renderFormField = (
                 />
                 <FormControl id={name}>
                   <Input
-                    // className={'hidden'}
+                    className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
                     value={parsedValue}

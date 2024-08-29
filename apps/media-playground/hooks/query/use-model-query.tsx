@@ -4,10 +4,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Props = {
   key: ModelV2['_id']
+  enabled?: boolean
   initialData?: ModelsV2GetResponse
 }
 
-export const useModelQuery = ({ key, initialData }: Props) => {
+export const useModelQuery = ({ key, enabled, initialData }: Props) => {
   const queryKey = ['models', key]
 
   const {
@@ -21,6 +22,7 @@ export const useModelQuery = ({ key, initialData }: Props) => {
     isSuccess,
     status,
   } = useQuery({
+    enabled,
     initialData,
     queryKey,
     queryFn: () =>
