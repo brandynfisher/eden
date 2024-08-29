@@ -42,12 +42,8 @@ const navItemsMake: NavLinkProps[] = [
   },
   {
     label: 'Train',
-    segments: ['train'],
+    segments: ['train', 'lora_trainer'],
   },
-  // {
-  //   label: 'Build',
-  //   segments: ['build'],
-  // },
 ]
 type Props = {
   inSheet?: boolean

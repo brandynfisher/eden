@@ -1,5 +1,6 @@
 'use client'
 
+import ModelPickModalContent from '@/components/modal/model-pick-modal-content'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
 import {
@@ -12,19 +13,34 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import { PropsWithChildren, ReactNode } from 'react'
+import { PropsWithChildren, ReactNode, useRef } from 'react'
 
 type Props = {
   title?: string
   description?: string
   className?: string
   trigger?: ReactNode
+  currentValue: string
+  onChange: (id: string) => void
 } & PropsWithChildren
 
-const ModelPickModal = ({ title, description, children, className }: Props) => {
+const ModelPickModal = ({
+  title,
+  description,
+  className,
+  currentValue,
+  onChange,
+}: Props) => {
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
+  const handleOnChange = (id: string) => {
+    onChange(id)
+    triggerRef.current?.click()
+  }
+
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger ref={triggerRef} asChild>
         <Button type="button" variant="outline" className="!mt-0">
           Select model
         </Button>
@@ -37,7 +53,10 @@ const ModelPickModal = ({ title, description, children, className }: Props) => {
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div>
-          {children}
+          <ModelPickModalContent
+            currentValue={currentValue}
+            onChange={handleOnChange}
+          />
           <DialogFooter className="w-full mt-4 sm:justify-start">
             <DialogClose asChild>
               <Button type="button" variant="secondary" className="ml-auto">

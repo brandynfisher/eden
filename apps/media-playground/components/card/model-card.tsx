@@ -1,6 +1,7 @@
 import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
   DropdownMenuGroup,
@@ -10,7 +11,7 @@ import {
 import { fetcher } from '@/lib/fetcher'
 import { Creator, ModelV2, ModelsV2PatchResponse } from '@edenlabs/eden-sdk'
 import { LockClosedIcon } from '@radix-ui/react-icons'
-import { LockOpenIcon } from 'lucide-react'
+import { LockOpenIcon, SquareMousePointerIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties } from 'react'
 import { toast } from 'sonner'
@@ -22,9 +23,10 @@ type Props = {
   showFooter?: boolean
   style?: CSSProperties
   onUpdate?: (item: ModelV2) => void
+  onClick?: (id: string) => void
 }
 
-const ModelCard = ({ model, showFooter, style, onUpdate }: Props) => {
+const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
   const onTogglePublic = async () => {
     try {
       const response: ModelsV2PatchResponse = await fetcher(
@@ -68,6 +70,17 @@ const ModelCard = ({ model, showFooter, style, onUpdate }: Props) => {
       className="overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
       style={style}
     >
+      {onClick ? (
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex items-center"
+          onClick={() => onClick(model._id)}
+        >
+          <SquareMousePointerIcon className="mr-2 h-4 w-4" />
+          Select
+        </Button>
+      ) : null}
       <Link
         href={`/models/${model._id}`}
         prefetch={false}

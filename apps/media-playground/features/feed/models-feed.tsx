@@ -9,9 +9,10 @@ import { useMemo } from 'react'
 type Props = {
   minCols?: number
   maxCols?: number
+  onClick?: (id: string) => void
 }
 
-const ModelsFeed = ({ minCols, maxCols }: Props) => {
+const ModelsFeed = ({ minCols, maxCols, onClick }: Props) => {
   const query: FeedConceptsCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -31,6 +32,7 @@ const ModelsFeed = ({ minCols, maxCols }: Props) => {
       maxCols={maxCols || undefined}
       render={(item: RowItem, onUpdate) => (
         <ModelCard
+          onClick={onClick}
           onUpdate={onUpdate}
           model={item as ModelV2}
           creator={(item as ModelV2).user}

@@ -5,7 +5,7 @@ import FormItemWrap from '@/components/form/form-item-wrap'
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
-import ModelSelector from '@/components/form/model-input'
+import ModelSelector from '@/components/form/model-selector'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import {
@@ -203,7 +203,7 @@ const renderFormField = (
                 <ModelSelector
                   // form={form}
                   value={parsedValue}
-                  // onChange={onChange}
+                  onChange={onChange}
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>

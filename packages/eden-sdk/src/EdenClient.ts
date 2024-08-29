@@ -146,7 +146,7 @@ export class EdenClient extends Methods {
     }
   }
 
-  async createV2(args: TasksV2CreateArguments) {
+  async createV2(args: TasksV2CreateArguments, awaitResult: boolean = true) {
     // Submit the task and get the ID
     const res = await this.tasks.createV2(args)
     // console.log('tasks.createV2 response', res)
@@ -156,6 +156,10 @@ export class EdenClient extends Methods {
     if (!task) {
       const { error, message } = res
       throw new Error(`Failed to create task - Reason: ${message || error}`)
+    }
+
+    if (!awaitResult) {
+      return task
     }
 
     // Subscribe to task updates

@@ -198,7 +198,13 @@ export const listTasks = async (
 
   queryResults.docs.forEach(doc => {
     if (doc.result) {
-      doc.result = doc.result.map(result => injectResultUrls(server, result))
+      doc.result = doc.result.map(result =>
+        injectResultUrls(
+          server,
+          result,
+          !!workflow && workflow === 'lora_trainer',
+        ),
+      )
     }
   })
 
@@ -207,20 +213,27 @@ export const listTasks = async (
   return reply.status(200).send(tasks)
 }
 
-const injectResultUrls = (server: FastifyInstance, result: TaskV2Result) => {
-  return result.filename
-    ? {
-        ...result,
-        url: result.model
-          ? `${rawS3BaseUrl(server)}/${result.filename}`
-          : s3Url(server, result.filename),
-        thumbnail: s3ThumbnailUrl(
-          server,
-          result.model ? result.thumbnail || '' : result.filename,
-          result.model ? undefined : 1024, //@todo: get rid of this special handling once model thumbnails are in line with creations
-        ),
-      }
-    : result
+const injectResultUrls = (
+  server: FastifyInstance,
+  result: TaskV2Result,
+  isModelResult: boolean,
+): TaskV2Result => {
+  if (!result.filename) {
+    return result
+  }
+
+  const baseS3Url = rawS3BaseUrl(server)
+  const mainUrl = isModelResult
+    ? `${baseS3Url}/${result.filename}`
+    : s3Url(server, result.filename)
+  const thumbnailName = isModelResult ? result.thumbnail || '' : result.filename
+  const thumbnailSize = isModelResult ? undefined : 1024 // get rid of this special handling once model thumbnails are in line with creations
+
+  return {
+    ...result,
+    url: mainUrl,
+    thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+  }
 }
 
 export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -279,7 +292,11 @@ export const subscribeTaskUpdates = async (
           ? {
               ...task,
               result: task.result.map(result =>
-                injectResultUrls(server, result),
+                injectResultUrls(
+                  server,
+                  result,
+                  task.workflow === 'lora_trainer',
+                ),
               ),
             }
           : task
@@ -418,7 +435,11 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
                   ? {
                       ...task,
                       result: task.result.map(result =>
-                        injectResultUrls(this, result),
+                        injectResultUrls(
+                          this,
+                          result,
+                          task.workflow === 'lora_trainer',
+                        ),
                       ),
                     }
                   : task,

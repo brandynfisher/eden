@@ -1,3 +1,5 @@
+'use client'
+
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
 import LikeButton from '@/components/button/like-button'
 import ToolsButton from '@/components/button/tools-button'

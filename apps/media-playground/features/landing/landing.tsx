@@ -15,7 +15,7 @@ const Landing = () => {
           text={'Start creating with Eden'}
         />
         <LinkCard
-          href={'/train'}
+          href={'/train/lora_trainer'}
           title={'Train'}
           text={'Train custom models'}
         />
