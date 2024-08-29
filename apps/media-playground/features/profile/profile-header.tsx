@@ -37,7 +37,9 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
           />
         </div>
         <div>
-          <TypographyH3 className="text-lg md:text-xl">{name}</TypographyH3>
+          <TypographyH3 className="text-lg md:text-xl mb-2">
+            {name}
+          </TypographyH3>
           <div>
             {user?._id === creator?._id ? (
               <Badge variant={'outline'}>My profile</Badge>

@@ -1,6 +1,7 @@
 import ParameterTable from '@/components/timeline/parameter-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
+import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { useTimeAgo } from 'next-timeago'
@@ -10,9 +11,10 @@ type Props = {
   item?: CreationV2 | ModelV2
   type: 'creation' | 'model'
   inModal?: boolean
+  onUpdate: () => void
 }
 
-const DetailSidebar = ({ item, type, inModal }: Props) => {
+const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
   const { prompt, text_input, ...remainingArgs } = item?.args || {}
   const { TimeAgo } = useTimeAgo()
 
@@ -23,7 +25,7 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
         inModal ? '' : 'mb-4',
       ])}
     >
-      <div className="py-4">
+      <div className="pt-4 pb-3">
         {item ? (
           <div>
             <UserAvatarLink
@@ -42,9 +44,24 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
         )}
       </div>
 
+      {type === 'model' ? (
+        <div className="pb-3">
+          {item && item.public !== undefined ? (
+            <PrivacyToggle
+              isPublic={item.public}
+              type={type}
+              id={item._id}
+              onUpdate={onUpdate}
+            />
+          ) : (
+            <Skeleton className="h-[42px] w-[142px]" />
+          )}
+        </div>
+      ) : null}
+
       {type === 'creation' ? (
         <div className="pb-4 text-sm">
-          <div className="font-bold mt-2 mb-3">Tool</div>
+          <div className="font-bold mb-3">Tool</div>
           {item && (item as CreationV2).workflow ? (
             <Link
               href={`/create/${(item as CreationV2).mediaAttributes?.type}/${(item as CreationV2).workflow}`}
@@ -59,7 +76,7 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
 
       {type === 'creation' ? (
         <div className="pb-4 text-sm">
-          <div className="font-bold mt-2 mb-3">Prompt</div>
+          <div className="font-bold mb-3">Prompt</div>
           {item ? (
             <div>{prompt || text_input || '-'}</div>
           ) : (
@@ -73,7 +90,7 @@ const DetailSidebar = ({ item, type, inModal }: Props) => {
       ) : null}
 
       <div>
-        <div className="font-bold text-sm mt-2 mb-3">Parameters</div>
+        <div className="font-bold text-sm mb-3">Parameters</div>
         {item && remainingArgs ? (
           <ParameterTable args={remainingArgs} />
         ) : (

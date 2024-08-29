@@ -15,7 +15,7 @@ type Props = {
 
 const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
   // const { user } = useAuthState()
-  const { model: modelClientData } = useModelQuery({
+  const { model: modelClientData, invalidate } = useModelQuery({
     key: id,
     initialData: modelSSRData
       ? {
@@ -42,7 +42,12 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
           <Skeleton className="min-h-[512px] w-full rounded-xl opacity-0 animate-fade-in" />
         )}
 
-        <DetailSidebar item={model} type={'model'} inModal={isModal} />
+        <DetailSidebar
+          item={model}
+          type={'model'}
+          inModal={isModal}
+          onUpdate={() => invalidate()}
+        />
       </div>
     </>
   )

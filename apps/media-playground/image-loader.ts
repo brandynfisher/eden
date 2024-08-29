@@ -38,7 +38,10 @@ export default function customImageLoader({
 
   // set size and change extensions
   const selectedSize = determineSize(width)
-  const srcWithSize = src.replace(EXTENSION_PATTERN, `_${selectedSize}$1`)
+  const srcWithSize = src.replace(
+    EXTENSION_PATTERN,
+    `_${selectedSize}$1?width=${selectedSize}`,
+  )
   const finalSrc = changeExtension(srcWithSize, format)
 
   // prepend cloudfront url
