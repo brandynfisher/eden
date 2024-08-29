@@ -1,7 +1,6 @@
 import { sanitize } from '@/lib/strings'
 import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
-import { document } from 'postcss'
 
 type UploadOptions = {
   file: File
@@ -88,11 +87,11 @@ export const getUploadedMediaDimensions = async (
 }
 
 export const getDimensionsFromVideo = async (fileObjURL: string) => {
-  if (!window || !window.document) {
+  if (!window || !document) {
     return undefined
   }
 
-  const video = window.document.createElement('video')
+  const video = document.createElement('video')
   video.preload = 'metadata'
 
   const dimensions = await new Promise<{ width: number; height: number }>(
@@ -171,6 +170,10 @@ export const getDownloadFileName = (
 }
 
 export const downloadFile = async (url: string, fileName: string) => {
+  if (!window || !document) {
+    return undefined
+  }
+
   try {
     const parsedUrl = new URL(url)
     const extension = parsedUrl.pathname.split('.').pop()
