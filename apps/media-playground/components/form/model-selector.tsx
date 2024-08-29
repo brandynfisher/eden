@@ -39,16 +39,13 @@ const ModelSelector = ({
             </>
           ) : (
             <>
-              <div className="relative w-16 h-full overflow-hidden">
-                <Image
-                  loader={customImageLoader}
-                  src={model?.thumbnail}
-                  alt={model?.name}
-                  sizes={'10vw'}
-                  fill={true}
-                  className="object-contain w-auto h-full"
-                />
-              </div>
+              <Image
+                loader={customImageLoader}
+                src={model?.thumbnail}
+                alt={model?.name}
+                width={64}
+                height={64}
+              />
               <div className="text-xs flex flex-col h-full py-1">
                 <div className="flex">
                   {model.name}
