@@ -6,6 +6,7 @@ import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
 import ModelSelector from '@/components/form/model-selector'
+import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,7 +28,7 @@ import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 import { UseFormReturn, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -200,7 +201,9 @@ const renderFormField = (
                     value={parsedValue}
                   />
                 </FormControl>
-                <ModelSelector value={parsedValue} onChange={onChange} />
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ModelSelector value={parsedValue} onChange={onChange} />
+                </Suspense>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )

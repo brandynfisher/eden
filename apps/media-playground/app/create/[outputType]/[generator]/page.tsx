@@ -19,7 +19,7 @@ const GeneratorPage = ({ params }: Props) => {
 
   return (
     <div>
-      <Suspense fallback={<LoadingIndicator />}>
+      <Suspense fallback={<LoadingIndicator className="p-4" />}>
         <Workspace generatorKey={generator} />
       </Suspense>
     </div>

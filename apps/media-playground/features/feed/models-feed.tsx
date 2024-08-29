@@ -9,7 +9,7 @@ import { useMemo } from 'react'
 type Props = {
   minCols?: number
   maxCols?: number
-  onClick?: (id: string) => void
+  onClick?: (item: ModelV2) => void
 }
 
 const ModelsFeed = ({ minCols, maxCols, onClick }: Props) => {

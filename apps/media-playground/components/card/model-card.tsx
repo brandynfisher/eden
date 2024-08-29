@@ -1,7 +1,6 @@
 import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
   DropdownMenuGroup,
@@ -24,7 +23,7 @@ type Props = {
   showFooter?: boolean
   style?: CSSProperties
   onUpdate?: (item: ModelV2) => void
-  onClick?: (id: string) => void
+  onClick?: (item: ModelV2) => void
 }
 
 const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
@@ -71,19 +70,17 @@ const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
 
   return (
     <Card
-      className="overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
+      className="relative overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712] group"
       style={style}
     >
       {onClick ? (
-        <Button
-          size="sm"
-          variant="outline"
-          className="flex items-center"
-          onClick={() => onClick(model._id)}
+        <div
+          className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover group-hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
+          onClick={() => onClick(model)}
         >
           <SquareMousePointerIcon className="mr-2 h-4 w-4" />
           Select
-        </Button>
+        </div>
       ) : null}
       <Link
         href={`/models/${model._id}`}

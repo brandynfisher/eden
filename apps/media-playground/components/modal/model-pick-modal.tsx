@@ -1,5 +1,6 @@
 'use client'
 
+import LoadingIndicator from '@/components/loading-indicator'
 import ModelPickModalContent from '@/components/modal/model-pick-modal-content'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
@@ -13,7 +14,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import { PropsWithChildren, ReactNode, useRef } from 'react'
+import { ModelV2 } from '@edenlabs/eden-sdk'
+import { PropsWithChildren, ReactNode, Suspense, useRef } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -34,15 +36,23 @@ const ModelPickModal = ({
 }: Props) => {
   const triggerRef = useRef<HTMLButtonElement>(null)
 
-  const handleOnChange = (id: string) => {
-    onChange(id)
+  const handleOnChange = (model: ModelV2) => {
+    onChange(model._id)
+
     toast.info(`Model selected`, {
-      description: <code className=" text-xs text-foreground">{id}</code>,
+      description: (
+        <div className="text-xs text-foreground">
+          <div>
+            {model.name} - {model.args.concept_mode}
+          </div>
+          <div>{model.args.sd_model_version}</div>
+        </div>
+      ),
       dismissible: true,
       richColors: true,
     })
 
-    // hackish way to close the model
+    //@todo: fix this hackish way to close the modal by utilizing state for open,onOpenChange on the dialog
     triggerRef.current?.click()
   }
 
@@ -61,10 +71,13 @@ const ModelPickModal = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div>
-          <ModelPickModalContent
-            currentValue={currentValue}
-            onChange={handleOnChange}
-          />
+          <Suspense fallback={<LoadingIndicator className="p-4" />}>
+            <ModelPickModalContent
+              currentValue={currentValue}
+              onChange={handleOnChange}
+            />
+          </Suspense>
+
           <DialogFooter className="w-full mt-4 sm:justify-start">
             <DialogClose asChild>
               <Button type="button" variant="secondary" className="ml-auto">

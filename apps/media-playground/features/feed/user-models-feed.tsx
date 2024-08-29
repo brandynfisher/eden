@@ -17,9 +17,10 @@ type Props = {
   userName: string
   minCols?: number
   maxCols?: number
+  onClick?: (item: ModelV2) => void
 }
 
-const UserModelsFeed = ({ userName, minCols, maxCols }: Props) => {
+const UserModelsFeed = ({ userName, minCols, maxCols, onClick }: Props) => {
   const { data } = useSuspenseQuery({
     queryKey: ['creators', userName],
     queryFn: () =>
@@ -48,6 +49,7 @@ const UserModelsFeed = ({ userName, minCols, maxCols }: Props) => {
       maxCols={maxCols || undefined}
       render={(item: RowItem, onUpdate) => (
         <ModelCard
+          onClick={onClick}
           onUpdate={onUpdate}
           model={item as ModelV2}
           creator={(item as ModelV2).user}
