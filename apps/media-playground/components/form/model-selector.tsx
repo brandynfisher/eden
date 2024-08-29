@@ -26,9 +26,9 @@ const ModelSelector = ({
 
   return (
     <div>
-      {model ? (
+      {isLoading || model ? (
         <div className="flex gap-2 items-center bg-accent border border-border rounded-lg mb-2 h-16 overflow-hidden">
-          {isLoading ? (
+          {!model ? (
             <>
               <Skeleton className="h-16 w-16" />
               <div className="text-xs flex flex-col h-full w-full space-y-0.5 mr-2 justify-center">
