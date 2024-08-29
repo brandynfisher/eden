@@ -19,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import TypographyH3 from '@/components/ui/typography/TypographyH3'
+import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema } from '@/lib/forms'
 import { cn } from '@/lib/utils'
@@ -118,6 +118,7 @@ const renderFormField = (
                 />
                 <FormControl id={name} className="ml-4">
                   <Switch
+                    className="!mt-0"
                     checked={value}
                     onCheckedChange={checked => onChange(checked)}
                   />
@@ -438,7 +439,7 @@ const GeneratorForm = ({ generator }: Props) => {
       {/*<FormPersist resetKey={resetKey} formKey={`form_tool_${generator.key}`} form={form} defaultValues={defaultValues}/>*/}
       <Form {...form}>
         <form className="flex flex-col w-full">
-          <TypographyH3>{generator.name}</TypographyH3>
+          <TypographyH4 className="mb-2">{generator.name}</TypographyH4>
           <div
             data-test-id="generator-form-settings-required"
             className="flex flex-col gap-2"

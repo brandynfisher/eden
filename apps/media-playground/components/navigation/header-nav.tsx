@@ -21,7 +21,7 @@ const HeaderNav = () => {
             size="icon"
             variant="outline"
           >
-            <EdenLogoBwGlow className="h-6 w-6" />
+            <EdenLogoBwGlow className="w-[24px]" />
             <MenuIcon className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>

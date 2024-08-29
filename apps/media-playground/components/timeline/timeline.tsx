@@ -111,7 +111,7 @@ const Timeline = ({ generator }: Props) => {
   return (
     <div className="mb-8 lg:col-span-2 md:pt-4">
       {generator.outputType !== 'lora' ? (
-        <div className="flex flex-row items-center justify-between rounded-lg border p-4 mt-2 mb-4">
+        <div className="flex flex-row items-center justify-between rounded-lg border p-4 my-2">
           <div className="space-y-0.5">
             <label className="text-base">Hide other tool results</label>
           </div>

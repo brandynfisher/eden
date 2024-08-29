@@ -12,7 +12,7 @@ type Props = {
 
 const ModelMediaPreview = ({ model, isModal }: Props) => {
   return (
-    <div className="relative w-full my-4" style={{ aspectRatio: 1 }}>
+    <div className="relative w-full my-4">
       <LightboxGallery>
         <LightboxGalleryItem
           className={cn([

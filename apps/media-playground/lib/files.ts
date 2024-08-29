@@ -1,6 +1,7 @@
 import { sanitize } from '@/lib/strings'
 import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
+import { document } from 'postcss'
 
 type UploadOptions = {
   file: File
@@ -61,9 +62,7 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
   const fileWithExtra = Object.assign(file, {
     fileUrl: signedUrl.split('?')[0],
     preview: fileObjURL,
-    dimensions: file.type.startsWith('image')
-      ? await getDimensionsFromImgBlob(file)
-      : undefined,
+    dimensions: await getUploadedMediaDimensions(file, fileObjURL),
   })
 
   if (response.status !== 200) {
@@ -71,6 +70,55 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
   }
 
   return fileWithExtra
+}
+
+export const getUploadedMediaDimensions = async (
+  file: File,
+  fileObjURL: string,
+) => {
+  if (file.type.startsWith('image')) {
+    return getDimensionsFromImgBlob(file)
+  }
+
+  if (file.type.startsWith('video')) {
+    return getDimensionsFromVideo(fileObjURL)
+  }
+
+  return undefined
+}
+
+export const getDimensionsFromVideo = async (fileObjURL: string) => {
+  if (!window || !window.document) {
+    return undefined
+  }
+
+  const video = window.document.createElement('video')
+  video.preload = 'metadata'
+
+  const dimensions = await new Promise<{ width: number; height: number }>(
+    resolve => {
+      const cleanup = () => {
+        video.removeEventListener('loadedmetadata', onMetadataLoaded)
+        video.removeEventListener('error', onError)
+      }
+
+      const onMetadataLoaded = () => {
+        resolve({ width: video.videoWidth, height: video.videoHeight })
+        cleanup()
+      }
+
+      const onError = () => {
+        console.error('An error occurred while loading video metadata')
+        cleanup()
+      }
+
+      video.addEventListener('loadedmetadata', onMetadataLoaded)
+      video.addEventListener('error', onError)
+      video.src = fileObjURL
+    },
+  )
+
+  return dimensions
 }
 
 export const getDimensionsFromImgBlob = async (file: File) => {
