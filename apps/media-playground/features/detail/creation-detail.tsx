@@ -19,7 +19,7 @@ type Props = {
 
 const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
   // const { user } = useAuthState()
-  const { creation: creationClientData } = useCreationQuery({
+  const { creation: creationClientData, invalidate } = useCreationQuery({
     key: id,
     initialData: creationSSRData
       ? {
@@ -77,7 +77,12 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
           <Skeleton className="min-h-[512px] w-full rounded-xl opacity-0 animate-fade-in" />
         )}
 
-        <DetailSidebar item={creation} type={'creation'} inModal={isModal} />
+        <DetailSidebar
+          item={creation}
+          type={'creation'}
+          inModal={isModal}
+          onUpdate={() => invalidate()}
+        />
       </div>
       <div>
         <div className="px-4 w-full">

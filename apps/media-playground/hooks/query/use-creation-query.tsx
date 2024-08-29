@@ -1,6 +1,6 @@
 import { fetcher } from '@/lib/fetcher'
 import { CreationV2, CreationsV2GetResponse } from '@edenlabs/eden-sdk'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Props = {
   key: CreationV2['_id']
@@ -8,6 +8,8 @@ type Props = {
 }
 
 export const useCreationQuery = ({ key, initialData }: Props) => {
+  const queryKey = ['creations', key]
+
   const {
     data,
     error,
@@ -20,12 +22,15 @@ export const useCreationQuery = ({ key, initialData }: Props) => {
     status,
   } = useQuery({
     initialData,
-    queryKey: ['creations', key],
+    queryKey,
     queryFn: () => fetcher<CreationsV2GetResponse>(`/api/creations/${key}`),
   })
 
+  const queryClient = useQueryClient()
+
   return {
     creation: data?.creation as CreationV2 | undefined,
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
     error,
     isError,
     isPending,
