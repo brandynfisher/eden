@@ -127,10 +127,40 @@ function createFileUrlArraySchema(
   return schema
 }
 
+function createStringArraySchema(
+  parameter: GeneratorParameterV2,
+):
+  | ZodArray<ZodString>
+  | ZodOptional<ZodArray<ZodString>>
+  | ZodDefault<ZodArray<ZodString>> {
+  let schema: ZodArray<ZodString> = z.array(z.string())
+
+  if (
+    parameter.required ||
+    (parameter.min_length !== undefined && parameter.min_length !== null)
+  ) {
+    const min = parameter.min_length || 1
+    schema = schema.min(
+      min,
+      `Must provide at least ${min} value${min > 1 ? 's' : ''}`,
+    )
+  }
+  if (parameter.max_length !== undefined && parameter.max_length !== null) {
+    schema = schema.max(
+      parameter.max_length,
+      `Must provide less than ${parameter.max_length} values`,
+    )
+  }
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
+
+  return schema
+}
+
 export function createZodParameterSchema(
   parameter: GeneratorParameterV2,
 ): ZodTypeAny {
-  //@todo: make array[type] schema validation explicit
   switch (parameter.type) {
     case 'int':
     case 'int[]':
@@ -142,8 +172,10 @@ export function createZodParameterSchema(
       return createBoolSchema(parameter)
     case 'string':
     case 'lora':
-    case 'lora[]':
       return createStringSchema(parameter)
+    case 'string[]':
+    case 'lora[]':
+      return createStringArraySchema(parameter)
     case 'video':
       return createFileUrlSchema(parameter)
     case 'image':
@@ -158,13 +190,10 @@ export function createZodParameterSchema(
 }
 
 export function createZodFormSchema(parameters: GeneratorParameterV2[]) {
-  const schemaObj = parameters.reduce(
-    (prev, curr) => {
-      prev[curr.name] = createZodParameterSchema(curr)
-      return prev
-    },
-    {} as Record<string, ZodTypeAny>,
-  )
+  const schemaObj = parameters.reduce((prev, curr) => {
+    prev[curr.name] = createZodParameterSchema(curr)
+    return prev
+  }, {} as Record<string, ZodTypeAny>)
 
   return z.object(schemaObj)
 }

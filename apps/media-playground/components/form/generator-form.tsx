@@ -3,9 +3,10 @@
 import FormItemHead from '@/components/form/form-item-head'
 import FormItemWrap from '@/components/form/form-item-wrap'
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
+import ModelSelector from '@/components/form/input/model-selector'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
-import ModelSelector from '@/components/form/model-selector'
+import StringArrayInput from '@/components/form/input/string-array-input'
 import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
@@ -128,7 +129,6 @@ const renderFormField = (
               </FormItem>
             )
           case 'string':
-          case 'string[]':
             return name === 'prompt' ||
               name === 'negative_prompt' ||
               name === 'text_input' ? (
@@ -178,12 +178,37 @@ const renderFormField = (
                   />
                 ) : (
                   <Input
+                    type="text"
                     onChange={onChange}
                     onBlur={onBlur}
                     value={value === null ? '' : value}
                   />
                 )}
               </FormItemWrap>
+            )
+          case 'string[]':
+            return (
+              <FormItem className="mt-0 !p-4 !pt-3">
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
+                <FormControl id={name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? [''] : value || ['']}
+                  />
+                </FormControl>
+                <StringArrayInput
+                  minLength={parameter.required ? parameter.min_length || 1 : 0}
+                  maxLength={parameter.max_length || 128}
+                  onChange={onChange}
+                  value={value === null ? [] : value || ['']}
+                />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
             )
           case 'lora':
             parsedValue = typeof value !== 'string' ? '' : value

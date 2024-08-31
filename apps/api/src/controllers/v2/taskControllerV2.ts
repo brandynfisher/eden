@@ -12,7 +12,6 @@ import {
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
-  PaginatedResponse,
   TaskV2,
   TaskV2Result,
   TaskV2Status,
@@ -180,7 +179,6 @@ export const listTasks = async (
     query.workflow = workflow
   }
 
-  let tasks: PaginatedResponse<TaskV2Document> = {}
   const queryOptions = {
     select: '',
     limit,
@@ -194,9 +192,9 @@ export const listTasks = async (
   // remove training image urls from task args
   queryOptions.select = '-args.lora_training_urls'
 
-  const queryResults = await tasksRepository.query(query, queryOptions)
+  const paginatedResponse = await tasksRepository.query(query, queryOptions)
 
-  queryResults.docs.forEach(doc => {
+  paginatedResponse.docs.forEach(doc => {
     if (doc.result) {
       doc.result = doc.result.map(result =>
         injectResultUrls(
@@ -208,9 +206,7 @@ export const listTasks = async (
     }
   })
 
-  tasks = queryResults
-
-  return reply.status(200).send(tasks)
+  return reply.status(200).send(paginatedResponse)
 }
 
 const injectResultUrls = (
