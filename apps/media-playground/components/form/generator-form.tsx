@@ -7,7 +7,6 @@ import ModelSelector from '@/components/form/input/model-selector'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
 import StringArrayInput from '@/components/form/input/string-array-input'
-import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import {
@@ -29,7 +28,7 @@ import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
-import { Suspense, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { UseFormReturn, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -233,9 +232,7 @@ const renderFormField = (
                     value={parsedValue}
                   />
                 </FormControl>
-                <Suspense fallback={<LoadingIndicator />}>
-                  <ModelSelector value={parsedValue} onChange={onChange} />
-                </Suspense>
+                <ModelSelector value={parsedValue} onChange={onChange} />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
@@ -465,7 +462,7 @@ const GeneratorForm = ({ generator }: Props) => {
   return (
     <div
       data-test-id="generator-form"
-      className="flex flex-col items-start overflow-y-auto xl:pr-4 xl:sticky xl:top-16 xl:max-h-[calc(100vh_-_106px)] md:pt-4"
+      className="flex flex-col items-start overflow-y-auto"
     >
       {/*<FormPersist resetKey={resetKey} formKey={`form_tool_${generator.key}`} form={form} defaultValues={defaultValues}/>*/}
       <Form {...form}>

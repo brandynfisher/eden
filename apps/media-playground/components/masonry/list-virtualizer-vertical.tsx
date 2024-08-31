@@ -23,6 +23,20 @@ type Props = {
   queryKey: unknown[]
 }
 
+// export const MasonrySkeleton = () => {
+//   return (
+//     <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4'>
+//       <Skeleton className='h-full w-full aspect-square' />
+//       <Skeleton className='h-full w-full aspect-square' />
+//       <Skeleton className='h-full w-full aspect-square' />
+//       <Skeleton className='h-full w-full aspect-square' />
+//       <Skeleton className='h-full w-full aspect-square' />
+//       <Skeleton className='h-full w-full aspect-square' />
+//       <Skeleton className='h-full w-full aspect-square' />
+//     </div>
+//   )
+// }
+
 const ListVirtualizerVertical = ({
   apiEndpoint,
   render,

@@ -1,8 +1,8 @@
 'use client'
 
 import GeneratorForm from '@/components/form/generator-form'
-import LoadingIndicator from '@/components/loading-indicator'
 import Timeline from '@/components/timeline/timeline'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
@@ -19,10 +19,12 @@ const Workspace = ({ generatorKey }: Props) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 md:gap-4 lg:grid-cols-3 2xl:grid-cols-3">
-      <GeneratorForm generator={generator} />
-      <Suspense fallback={<LoadingIndicator className="p-4" />}>
-        <Timeline generator={generator} />
+      <Suspense fallback={<Skeleton className="h-16 w-full" />}>
+        <div className="overflow-y-auto md:pr-4 md:sticky md:top-16 md:max-h-[calc(100vh_-_106px)] md:pt-4">
+          <GeneratorForm generator={generator} />
+        </div>
       </Suspense>
+      <Timeline generator={generator} />
     </div>
   )
 }

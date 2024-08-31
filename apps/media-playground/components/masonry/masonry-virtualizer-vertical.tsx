@@ -15,20 +15,10 @@ import {
 import { FeedV2CursorResponse } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { Suspense, useCallback, useEffect, useMemo } from 'react'
 
 const MASONRY_GUTTER = 16
 const DEFAULT_PAGE_LIMIT = 35
-
-// type Props = {
-//   apiEndpoint: string
-//   render: (item: CreationV2 | ModelV2, onUpdate: () => void) => React.JSX.Element
-//   query: { [key: string]: unknown }
-//   queryKey: unknown[]
-//   minCols?: number
-//   maxCols?: number
-//   limit?: number
-// }
 
 type Props = {
   apiEndpoint: string
@@ -80,6 +70,8 @@ const MasonryVirtualizerVertical = ({
   ].reverse()
 
   const queryClient = useQueryClient()
+
+  // console.log({ queryKey })
 
   const onUpdate = (updatedItem: RowItem) => {
     console.log(
@@ -235,14 +227,18 @@ const MasonryVirtualizerVertical = ({
               )}
             </div>
           ) : item ? (
-            <>{render(item, onUpdate)}</>
+            <Suspense
+              fallback={<div className="bg-red-500 p-8">rowVirtualizer</div>}
+            >
+              {render(item, onUpdate)}
+            </Suspense>
           ) : (
             <div>Missing data</div>
           )}
         </div>
       )
     },
-    [render, allRows, hasNextPage, rowVirtualizer, columnWidth],
+    [onUpdate, render, allRows, hasNextPage, rowVirtualizer, columnWidth],
   )
 
   return (
@@ -252,19 +248,20 @@ const MasonryVirtualizerVertical = ({
       className="flex pb-12 outline-none"
     >
       <div
+        data-test-id="masonry-virtualizer-vertical-content"
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
           width: '100%',
           position: 'relative',
         }}
       >
-        {!allRows.length ? (
-          <div className="bg-primary/10 w-full h-full flex justify-center rounded-lg">
-            {status === 'pending' ? (
-              <MasonrySkeleton />
-            ) : (
+        {!allRows.length && status ? (
+          <div className="w-full h-full flex justify-center rounded-lg">
+            {status === 'error' ? (
+              <div className="px-4 bg-warning">Error fetching data.</div>
+            ) : status !== 'pending' ? (
               <div className="px-4">Nothing found.</div>
-            )}
+            ) : null}
           </div>
         ) : null}
 

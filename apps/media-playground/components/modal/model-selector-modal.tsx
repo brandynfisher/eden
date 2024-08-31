@@ -1,16 +1,16 @@
 'use client'
 
-import LoadingIndicator from '@/components/loading-indicator'
 import ModelSelectorModalContent from '@/components/modal/model-selector-modal-content'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
 import {
-  Dialog, // DialogClose,
-  DialogDescription, // DialogFooter,
+  Dialog,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, ReactNode, Suspense, useRef } from 'react'
@@ -61,25 +61,17 @@ const ModelSelectorModal = ({
         </Button>
       </DialogTrigger>
       <DialogContentScrollable
-        className={cn([`overflow-x-hidden flex flex-col`, className])}
+        className={cn([`overflow-x-hidden flex flex-col max-w-7xl`, className])}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div>
-          <Suspense fallback={<LoadingIndicator className="p-4" />}>
-            <ModelSelectorModalContent onChange={handleOnChange} />
-          </Suspense>
-
-          {/*<DialogFooter className="w-full mt-4 sm:justify-start">*/}
-          {/*  <DialogClose asChild>*/}
-          {/*    <Button type="button" variant="secondary" className="ml-auto">*/}
-          {/*      Cancel*/}
-          {/*    </Button>*/}
-          {/*  </DialogClose>*/}
-          {/*</DialogFooter>*/}
-        </div>
+        <Suspense
+          fallback={<Skeleton className="h-10 pt-0.5 w-[270px] mb-4" />}
+        >
+          <ModelSelectorModalContent onChange={handleOnChange} />
+        </Suspense>
       </DialogContentScrollable>
     </Dialog>
   )

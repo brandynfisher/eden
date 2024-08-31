@@ -1,3 +1,5 @@
+import CopyTextButton from '@/components/text/copy-text-button'
+import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
@@ -66,10 +68,12 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
 
       {type === 'creation' ? (
         <div className="pb-4 text-sm">
-          <div className="font-bold mb-3">Tool</div>
+          <div className="font-bold mb-4">Tool</div>
           {item && (item as CreationV2).workflow ? (
             <Link
-              href={`/create/${(item as CreationV2).mediaAttributes?.type}/${(item as CreationV2).workflow}`}
+              href={`/create/${(item as CreationV2).mediaAttributes?.type}/${
+                (item as CreationV2).workflow
+              }`}
             >
               {(item as CreationV2).workflow}
             </Link>
@@ -81,9 +85,17 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
 
       {type === 'creation' ? (
         <div className="pb-4 text-sm">
-          <div className="font-bold mb-3">Prompt</div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="font-bold">Prompt</div>
+            {prompt || text_input ? (
+              <CopyTextButton
+                title={'Prompt'}
+                text={prompt || text_input || ''}
+              />
+            ) : null}
+          </div>
           {item ? (
-            <div>{prompt || text_input || '-'}</div>
+            <TextClampMore text={prompt || text_input || '-'} />
           ) : (
             <div className="space-y-1">
               <Skeleton className="h-5 w-[250px]" />

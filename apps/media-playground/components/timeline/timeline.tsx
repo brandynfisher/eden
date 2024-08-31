@@ -1,7 +1,9 @@
 'use client'
 
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
+import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import TimelineItem from '@/components/timeline/timeline-item'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
   IPage,
@@ -13,7 +15,7 @@ import {
 import { useWebSocketContext } from '@/provider/websocket-provider'
 import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 
 type Props = {
   generator: GeneratorV2
@@ -33,8 +35,8 @@ const Timeline = ({ generator }: Props) => {
         generator.outputType === 'lora'
           ? generator.key
           : filterTasksByCurrentWorkflow
-            ? generator.key
-            : undefined,
+          ? generator.key
+          : undefined,
     }),
     [filterTasksByCurrentWorkflow, generator.outputType, generator.key],
   )
@@ -46,8 +48,8 @@ const Timeline = ({ generator }: Props) => {
         generator.outputType === 'lora'
           ? generator.key
           : filterTasksByCurrentWorkflow
-            ? generator.key
-            : undefined,
+          ? generator.key
+          : undefined,
       ],
       query,
     ],
@@ -123,12 +125,20 @@ const Timeline = ({ generator }: Props) => {
       ) : null}
 
       <div data-test-id="timeline">
-        <ListVirtualizerVertical
-          apiEndpoint={'/api/tasks/list'}
-          query={query}
-          queryKey={queryKey}
-          render={item => <TimelineItem item={item.item} />}
-        />
+        <Suspense fallback={<MasonrySkeleton />}>
+          <ListVirtualizerVertical
+            apiEndpoint={'/api/tasks/list'}
+            query={query}
+            queryKey={queryKey}
+            render={item => (
+              <Suspense
+                fallback={<Skeleton className="h-16 w-16 bg-green-500" />}
+              >
+                <TimelineItem item={item.item} />
+              </Suspense>
+            )}
+          />
+        </Suspense>
       </div>
     </div>
   )
