@@ -31,11 +31,14 @@ const CopyTextButton = ({ title, text }: Props) => {
   }
 
   return (
-    <div onClick={handleCopyString(text, title)}>
-      <Button size="sm" variant="ghost">
-        <CopyIcon className="h-3 w-3" />
-      </Button>
-    </div>
+    <Button
+      title="Copy"
+      size="sm"
+      variant="ghost"
+      onClick={handleCopyString(text, title)}
+    >
+      <CopyIcon className="h-3 w-3" />
+    </Button>
   )
 }
 

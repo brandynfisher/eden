@@ -68,7 +68,9 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
 
       {type === 'creation' ? (
         <div className="pb-4 text-sm">
-          <div className="font-bold mb-4">Tool</div>
+          <div className="h-9 flex items-center justify-between font-bold">
+            Tool
+          </div>
           {item && (item as CreationV2).workflow ? (
             <Link
               href={`/create/${(item as CreationV2).mediaAttributes?.type}/${
@@ -85,7 +87,7 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
 
       {type === 'creation' ? (
         <div className="pb-4 text-sm">
-          <div className="flex items-center justify-between mb-3">
+          <div className="h-9 flex items-center justify-between">
             <div className="font-bold">Prompt</div>
             {prompt || text_input ? (
               <CopyTextButton
