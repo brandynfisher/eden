@@ -15,7 +15,7 @@ import {
 import { FeedV2CursorResponse } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
-import React, { Suspense, useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 
 const MASONRY_GUTTER = 16
 const DEFAULT_PAGE_LIMIT = 35
@@ -227,11 +227,7 @@ const MasonryVirtualizerVertical = ({
               )}
             </div>
           ) : item ? (
-            <Suspense
-              fallback={<div className="bg-red-500 p-8">rowVirtualizer</div>}
-            >
-              {render(item, onUpdate)}
-            </Suspense>
+            render(item, onUpdate)
           ) : (
             <div>Missing data</div>
           )}
