@@ -1,6 +1,7 @@
-const eden = require('../../init_eden.js')
+const eden = require('../init_eden.js')
 
-const taskId = '0b74fb4091aa9ec9fcb9039d6e9de30c5b1e97b9863225ad'
+const taskId = '665eab82c4dc04af3d0c5c9b' //stg
+// const taskId = '66d1c47704836400aad2ab30' //prod
 
 async function run() {
   try {

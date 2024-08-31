@@ -198,11 +198,18 @@ const renderFormField = (
                     className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? [''] : value || ['']}
+                    value={value === null ? '' : value || ''}
                   />
                 </FormControl>
                 <StringArrayInput
-                  minLength={parameter.required ? parameter.min_length || 1 : 0}
+                  minLength={
+                    parameter.required
+                      ? parameter.min_length !== undefined &&
+                        parameter.min_length !== null
+                        ? parameter.min_length
+                        : 0
+                      : 1
+                  }
                   maxLength={parameter.max_length || 128}
                   onChange={onChange}
                   value={value === null ? [] : value || ['']}

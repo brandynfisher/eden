@@ -1,4 +1,4 @@
-const eden = require('../../init_eden.js')
+const eden = require('../init_eden.js')
 
 // const task = {
 //   workflow: 'xhibit/vton',

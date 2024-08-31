@@ -1,4 +1,4 @@
-const eden = require('../../init_eden.js')
+const eden = require('../init_eden.js')
 const fs = require('fs')
 // const { fileURLToPath } = require('url')
 // const { dirname } = require('path')

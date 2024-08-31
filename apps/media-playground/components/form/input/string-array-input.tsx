@@ -6,7 +6,7 @@ import React, { ChangeEvent, useEffect, useState } from 'react'
 type Props = {
   minLength: number
   maxLength: number
-  onChange: (newVal: string[]) => void
+  onChange: (newVal: string[] | undefined) => void
   value: string[]
 }
 
@@ -26,28 +26,41 @@ function StringArrayInput({
     setFields(value)
   }, [value])
 
+  // console.log({ fields, value, initialFields })
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement>,
     index: number,
   ) => {
     const newFields = fields.map((f, i) => (i === index ? e.target.value : f))
-    onChange(newFields)
     setFields(newFields)
+
+    // Check if all the fields are empty. If so, set value to `[]`.
+    const isEmpty = newFields.every(field => field.trim() === '')
+    onChange(isEmpty ? undefined : newFields)
+  }
+
+  const handleRemoveClick = (indexToRemove: number) => {
+    // Allow removal if it would not breach minLength condition or if all the fields are empty.
+    if (
+      fields.length > minLength ||
+      fields.every(field => field.trim() === '')
+    ) {
+      const newFields = fields.filter((_, index) => index !== indexToRemove)
+      setFields(newFields)
+
+      // Check if all the fields are empty. If so, set value to `[]`.
+      const isEmpty = newFields.every(field => field.trim() === '')
+      onChange(isEmpty ? undefined : newFields)
+    }
   }
 
   const handleAddClick = () => {
     setFields(fields => [...fields, ''])
   }
 
-  const handleRemoveClick = (indexToRemove: number) => {
-    const newFields = fields.filter((_, index) => index !== indexToRemove)
-    onChange(newFields)
-    setFields(newFields)
-  }
-
   return (
     <>
-      {fields.map((fieldValue, index) => (
+      {fields?.map((fieldValue, index) => (
         <div key={index.toString()} className="flex items-center space-x-2">
           <Input
             type="text"

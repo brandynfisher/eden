@@ -139,7 +139,10 @@ function createStringArraySchema(
     parameter.required ||
     (parameter.min_length !== undefined && parameter.min_length !== null)
   ) {
-    const min = parameter.min_length || 1
+    const min =
+      parameter.min_length !== undefined && parameter.min_length !== null
+        ? parameter.min_length
+        : 1
     schema = schema.min(
       min,
       `Must provide at least ${min} value${min > 1 ? 's' : ''}`,
