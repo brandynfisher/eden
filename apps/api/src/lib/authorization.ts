@@ -3,7 +3,6 @@ import {
   hasFeatureFlag,
   hasMinimumSubscriptionTier,
 } from '../middleware/authMiddleware'
-import { Task, TaskStatus } from '../models/Task'
 import {
   CharactersUpdateArguments,
   ConceptsUpdateArguments,
@@ -124,44 +123,6 @@ export const conceptExportPermissionCheck = (
   request: FastifyRequest,
 ): boolean => {
   if (hasMinimumSubscriptionTier(request, SubscriptionTier.Pro)) {
-    return true
-  }
-
-  return false
-}
-
-const maximumTasksInProgressMap: Record<SubscriptionTier, number> = {
-  [SubscriptionTier.Free]: 1,
-  [SubscriptionTier.Basic]: 3,
-  [SubscriptionTier.Pro]: 6,
-  [SubscriptionTier.Believer]: 10,
-}
-
-export const maximumTasksInProgressPermissionCheck = async (
-  request: FastifyRequest,
-) => {
-  const { userId, subscriptionTier, featureFlags } = request.user
-  const maximumTasksInProgress = featureFlags?.includes('preview')
-    ? 10
-    : maximumTasksInProgressMap[
-        (subscriptionTier as SubscriptionTier) || SubscriptionTier.Free
-      ]
-
-  const inProgressStatus: TaskStatus[] = [
-    TaskStatus.Pending,
-    TaskStatus.Running,
-  ]
-
-  const oneHourAgo = new Date()
-  oneHourAgo.setHours(oneHourAgo.getHours() - 1)
-
-  const tasksInProgress = await Task.find({
-    userId,
-    status: { $in: inProgressStatus },
-    createdAt: { $gte: oneHourAgo },
-  })
-
-  if (tasksInProgress.length >= maximumTasksInProgress) {
     return true
   }
 

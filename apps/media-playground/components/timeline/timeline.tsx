@@ -3,7 +3,6 @@
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import TimelineItem from '@/components/timeline/timeline-item'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
   IPage,
@@ -130,13 +129,7 @@ const Timeline = ({ generator }: Props) => {
             apiEndpoint={'/api/tasks/list'}
             query={query}
             queryKey={queryKey}
-            render={item => (
-              <Suspense
-                fallback={<Skeleton className="h-16 w-16 bg-green-500" />}
-              >
-                <TimelineItem item={item.item} />
-              </Suspense>
-            )}
+            render={item => <TimelineItem item={item.item} />}
           />
         </Suspense>
       </div>

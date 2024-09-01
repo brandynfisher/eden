@@ -1,4 +1,3 @@
-import { UserDocument } from '../models/Creator'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
 import mongoose from 'mongoose'
 
@@ -17,13 +16,13 @@ export const enforceUserDocumentLimit = async (
   }
 }
 
-export const checkUserFlags = async (
-  user: UserDocument,
-  flag: FeatureFlag,
-): Promise<boolean> => {
-  if (!user.featureFlags) {
+export const checkUserFlags = (
+  featureFlags?: FeatureFlag[],
+  flag?: FeatureFlag,
+): boolean => {
+  if (!featureFlags || !flag) {
     return false
   }
 
-  return user.featureFlags.includes(flag)
+  return featureFlags.includes(flag)
 }

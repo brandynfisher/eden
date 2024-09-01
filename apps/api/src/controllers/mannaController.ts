@@ -1,3 +1,4 @@
+import { checkUserFlags } from '../lib/data'
 import { randomId } from '../lib/util'
 import { User, UserDocument } from '../models/Creator'
 import { Manna } from '../models/Manna'
@@ -222,10 +223,7 @@ const handleEden2AccessVoucher = async (
   user: UserDocument,
   voucher: MannaVoucherDocument,
 ) => {
-  if (
-    user.featureFlags &&
-    user.featureFlags.includes(FeatureFlag.Eden2EarlyAccess)
-  ) {
+  if (checkUserFlags(user.featureFlags, FeatureFlag.Eden2EarlyAccess)) {
     return reply
       .status(400)
       .send({ message: 'User already has Early Access flag' })

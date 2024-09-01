@@ -1,4 +1,5 @@
 import { eden2EarlyAccessCheck, isAllowedAccess } from '../lib/authorization'
+import { checkUserFlags } from '../lib/data'
 import { ApiKey } from '../models/ApiKey'
 import { User } from '../models/Creator'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
@@ -146,7 +147,7 @@ export const hasMinimumSubscriptionTier = (
     request.user.subscriptionTier >= minimumTier ||
     // Admin user and preview user are equivalent to having the highest tier
     request.user.isAdmin ||
-    request.user.featureFlags.includes('preview')
+    checkUserFlags(request.user.featureFlags, FeatureFlag.Preview)
   )
 }
 
@@ -154,7 +155,7 @@ export const hasFeatureFlag = (
   request: FastifyRequest,
   featureFlag: FeatureFlag,
 ) => {
-  return request.user.featureFlags.includes(featureFlag)
+  return checkUserFlags(request.user.featureFlags, featureFlag)
 }
 
 export const maybeAuthEden2 = async (

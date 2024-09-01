@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
-import { CopyIcon } from 'lucide-react'
+import { CheckIcon, CopyIcon } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -10,15 +11,19 @@ type Props = {
 
 const CopyTextButton = ({ title, text }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
+  const [hasCopied, setHasCopied] = useState(false)
+
   const handleCopyString = (text: string, title?: string) => () => {
     copy(text)
       .then(() => {
-        toast.success(`Copied ${title ? `"${title}"` : 'value'}`, {
+        setHasCopied(true)
+        toast.info(`Copied ${title ? `"${title}"` : 'value'}`, {
           description:
             text && text.length > 120 ? `${text.substring(0, 120)}...` : text,
           dismissible: true,
           richColors: true,
         })
+        setTimeout(() => setHasCopied(false), 2000)
         console.log('Copied!', { copiedText })
       })
       .catch(error => {
@@ -37,7 +42,11 @@ const CopyTextButton = ({ title, text }: Props) => {
       variant="ghost"
       onClick={handleCopyString(text, title)}
     >
-      <CopyIcon className="h-3 w-3" />
+      {hasCopied ? (
+        <CheckIcon className="h-3 w-3" />
+      ) : (
+        <CopyIcon className="h-3 w-3" />
+      )}
     </Button>
   )
 }

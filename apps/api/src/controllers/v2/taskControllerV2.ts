@@ -1,4 +1,5 @@
 import { getFileTypeByMimeType } from '../../lib/eden2'
+import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
@@ -78,6 +79,16 @@ export const createTask = async (
   if (!userDocument) {
     return reply.status(404).send({
       message: `User not found`,
+    })
+  }
+
+  const rateLimitCheckResult = await taskRateLimitCheck(
+    request,
+    generatorConfig.outputType,
+  )
+  if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
+    return reply.status(429).send({
+      message: rateLimitCheckResult.message,
     })
   }
 

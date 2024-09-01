@@ -1,8 +1,8 @@
-import '@fastify/jwt'
-import { ObjectId } from 'mongodb'
-
 import { CharacterDocument } from '../models/Character'
 import { SubscriptionTier } from '../models/Creator'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
+import '@fastify/jwt'
+import { ObjectId } from 'mongodb'
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
@@ -10,7 +10,7 @@ declare module '@fastify/jwt' {
     user: {
       userId: ObjectId
       character?: CharacterDocument
-      featureFlags: string[]
+      featureFlags: FeatureFlag[]
       subscriptionTier: SubscriptionTier
       isAdmin: boolean
     }
