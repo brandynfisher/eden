@@ -91,13 +91,14 @@ const getMaximumTasks = (
 }
 
 // Helper function to find tasks created since a given timeframe
-const getTasksCreatedSince = async (
+const getTasksCreatedOrRunningSince = async (
   userId: ObjectId | undefined,
   since: Date,
+  status: TaskStatus[] = [],
 ) => {
   return TaskV2.countDocuments({
     user: userId,
-    status: { $in: [TaskStatus.Pending, TaskStatus.Running] },
+    status: { $in: status },
     createdAt: { $gte: since },
   })
 }
@@ -133,7 +134,12 @@ export const taskRateLimitCheck = async (
   )
   const oneHourAgo = new Date()
   oneHourAgo.setHours(oneHourAgo.getHours() - 1)
-  const numTasksInProgress = await getTasksCreatedSince(userId, oneHourAgo)
+  const numTasksInProgress = await getTasksCreatedOrRunningSince(
+    userId,
+    oneHourAgo,
+    [TaskStatus.Pending, TaskStatus.Running],
+  )
+
   const subscriptionTierName =
     subscriptionTierNameMap[
       (subscriptionTier || SubscriptionTier.Free) as SubscriptionTier
@@ -144,8 +150,8 @@ export const taskRateLimitCheck = async (
       message: `Concurrency limit for '${outputType}' reached! Max. ${maximumTasksConcurrency} on '${subscriptionTierName}' plan. Wait for some tasks to finish.`,
     }
   }
-  const oneMinuteAgo = new Date(Date.now() - 3600000)
-  const numTasksCreatedLastMinute = await getTasksCreatedSince(
+  const oneMinuteAgo = new Date(Date.now() - 60000)
+  const numTasksCreatedLastMinute = await getTasksCreatedOrRunningSince(
     userId,
     oneMinuteAgo,
   )
@@ -156,7 +162,10 @@ export const taskRateLimitCheck = async (
     }
   }
 
-  const numTasksCreatedLastHour = await getTasksCreatedSince(userId, oneHourAgo)
+  const numTasksCreatedLastHour = await getTasksCreatedOrRunningSince(
+    userId,
+    oneHourAgo,
+  )
   if (numTasksCreatedLastHour >= maximumTasksPerHour) {
     return {
       status: 'error',
