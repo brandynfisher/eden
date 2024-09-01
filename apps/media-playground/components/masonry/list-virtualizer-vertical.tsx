@@ -82,7 +82,7 @@ const ListVirtualizerVertical = ({
     },
     staleTime: 1000,
     getNextPageParam: (lastPage: TasksV2ListResponse) => {
-      return lastPage.nextPage ? lastPage.nextPage : undefined
+      return lastPage && lastPage.nextPage ? lastPage.nextPage : undefined
     },
     initialPageParam: 1,
   })

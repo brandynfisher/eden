@@ -42,6 +42,7 @@ const UserModelsFeed = ({ userName, minCols, maxCols, onClick }: Props) => {
 
   return (
     <MasonryVirtualizerVertical
+      key={queryKey.join('_')}
       apiEndpoint={'/api/feed/models'}
       queryKey={queryKey}
       query={query}

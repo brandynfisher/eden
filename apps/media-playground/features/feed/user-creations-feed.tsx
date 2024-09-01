@@ -41,6 +41,7 @@ const UserCreationsFeed = ({ userName, minCols, maxCols }: Props) => {
 
   return (
     <MasonryVirtualizerVertical
+      key={queryKey.join('_')}
       apiEndpoint={'/api/feed/creations'}
       queryKey={queryKey}
       query={query}
