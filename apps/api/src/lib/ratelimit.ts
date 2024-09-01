@@ -1,7 +1,10 @@
-import { TaskStatus } from '../models/Task'
 import { TaskV2 } from '../models/v2/TaskV2'
 import { eden2EarlyAccessCheck } from './authorization'
-import { GeneratorOutputTypeV2, SubscriptionTier } from '@edenlabs/eden-sdk'
+import {
+  GeneratorOutputTypeV2,
+  SubscriptionTier,
+  TaskV2Status,
+} from '@edenlabs/eden-sdk'
 import { FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
@@ -91,16 +94,31 @@ const getMaximumTasks = (
 }
 
 // Helper function to find tasks created since a given timeframe
-const getTasksCreatedOrRunningSince = async (
+const getTasksCount = async (
   userId: ObjectId | undefined,
   since: Date,
-  status: TaskStatus[] = [],
+  status: TaskV2Status[] = [],
+  outputType: GeneratorOutputTypeV2 | undefined,
 ) => {
-  return TaskV2.countDocuments({
+  const query: {
+    user?: ObjectId
+    status?: { $in: TaskV2Status[] }
+    createdAt?: { $gte: Date }
+    outputType?: GeneratorOutputTypeV2
+  } = {
     user: userId,
-    status: { $in: status },
     createdAt: { $gte: since },
-  })
+  }
+
+  if (status) {
+    query.status = { $in: status }
+  }
+
+  if (outputType) {
+    query.outputType = outputType
+  }
+
+  return TaskV2.countDocuments(query)
 }
 
 export const taskRateLimitCheck = async (
@@ -108,6 +126,7 @@ export const taskRateLimitCheck = async (
   outputType: GeneratorOutputTypeV2,
 ): Promise<TaskRateLimitCheckResult> => {
   const { userId, subscriptionTier } = request.user
+  const type = outputType === 'image' ? 'image' : 'video'
 
   const hasEarlyAccess = eden2EarlyAccessCheck(request)
   if (!hasEarlyAccess) {
@@ -120,24 +139,26 @@ export const taskRateLimitCheck = async (
   const maximumTasksConcurrency = getMaximumTasks(
     maximumTasksConcurrencyMap,
     subscriptionTier,
-    outputType,
+    type,
   )
   const maximumTasksPerMinute = getMaximumTasks(
     maximumTasksPerMinuteMap,
     subscriptionTier,
-    outputType,
+    type,
   )
   const maximumTasksPerHour = getMaximumTasks(
     maximumTasksPerHourMap,
     subscriptionTier,
-    outputType,
+    type,
   )
+
   const oneHourAgo = new Date()
   oneHourAgo.setHours(oneHourAgo.getHours() - 1)
-  const numTasksInProgress = await getTasksCreatedOrRunningSince(
+  const numTasksInProgress = await getTasksCount(
     userId,
     oneHourAgo,
-    [TaskStatus.Pending, TaskStatus.Running],
+    [TaskV2Status.Pending, TaskV2Status.Running],
+    type,
   )
 
   const subscriptionTierName =
@@ -151,9 +172,16 @@ export const taskRateLimitCheck = async (
     }
   }
   const oneMinuteAgo = new Date(Date.now() - 60000)
-  const numTasksCreatedLastMinute = await getTasksCreatedOrRunningSince(
+  const numTasksCreatedLastMinute = await getTasksCount(
     userId,
     oneMinuteAgo,
+    [
+      TaskV2Status.Pending,
+      TaskV2Status.Running,
+      TaskV2Status.Completed,
+      TaskV2Status.Cancelled,
+    ],
+    type,
   )
   if (numTasksCreatedLastMinute >= maximumTasksPerMinute) {
     return {
@@ -162,9 +190,16 @@ export const taskRateLimitCheck = async (
     }
   }
 
-  const numTasksCreatedLastHour = await getTasksCreatedOrRunningSince(
+  const numTasksCreatedLastHour = await getTasksCount(
     userId,
     oneHourAgo,
+    [
+      TaskV2Status.Pending,
+      TaskV2Status.Running,
+      TaskV2Status.Completed,
+      TaskV2Status.Cancelled,
+    ],
+    type,
   )
   if (numTasksCreatedLastHour >= maximumTasksPerHour) {
     return {
