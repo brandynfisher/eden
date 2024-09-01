@@ -33,7 +33,10 @@ const FullScreenModal = ({
   return (
     <Dialog defaultOpen={true} open={true} onOpenChange={handleOpenChange}>
       <DialogContentScrollable
-        className={cn([`h-fit overflow-x-hidden`, className])}
+        className={cn([
+          `w-full md:w-[calc(100dvw_-_32px)] h-fit overflow-x-hidden`,
+          className,
+        ])}
       >
         <VisuallyHidden>
           <DialogHeader>

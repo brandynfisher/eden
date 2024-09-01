@@ -7,6 +7,7 @@ import {
 } from '../../types'
 import { ReactionType } from '../Creations'
 import { Creator } from '../Creators'
+import { GeneratorOutputTypeV2 } from './GeneratorsV2'
 import { TaskV2Args, TaskV2Result } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 import { ObjectId } from 'mongodb'
@@ -157,6 +158,7 @@ export type CreationV2 = TaskV2Result & {
   user: Creator
   task: ObjectId
   args: TaskV2Args
+  output_type: GeneratorOutputTypeV2
   workflow: string
   createdAt: Date
   updatedAt: Date

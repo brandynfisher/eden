@@ -137,7 +137,7 @@ const ListVirtualizerVertical = ({
 
       return (
         <div
-          key={virtualItem.index}
+          key={`${apiEndpoint}_${virtualItem.index}`}
           ref={rowVirtualizer.measureElement}
           data-index={virtualItem.index}
           style={{
@@ -171,6 +171,7 @@ const ListVirtualizerVertical = ({
 
   return (
     <div
+      key={`${apiEndpoint}_${queryKey.join(',')}`}
       data-test-id="list-virtualizer-vertical"
       ref={masonryWrapRef}
       className="flex"

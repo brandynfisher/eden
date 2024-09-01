@@ -91,6 +91,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
           status: Type.Optional(Type.Any()), //{ type: ['string', 'array'] },
           taskId: Type.Optional(Type.Any()), //{ type: ['string', 'array'] },
           type: Type.Optional(Type.String()),
+          output_type: Type.Optional(Type.String()),
           workflow: Type.Optional(Type.String()),
           ...paginationProperties(),
         },

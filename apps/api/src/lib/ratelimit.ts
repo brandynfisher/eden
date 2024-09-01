@@ -104,7 +104,7 @@ const getTasksCount = async (
     user?: ObjectId
     status?: { $in: TaskV2Status[] }
     createdAt?: { $gte: Date }
-    outputType?: GeneratorOutputTypeV2
+    output_type?: GeneratorOutputTypeV2
   } = {
     user: userId,
     createdAt: { $gte: since },
@@ -115,7 +115,7 @@ const getTasksCount = async (
   }
 
   if (outputType) {
-    query.outputType = outputType
+    query.output_type = outputType
   }
 
   return TaskV2.countDocuments(query)

@@ -1,3 +1,5 @@
+'use client'
+
 import { useMe } from '@/hooks/use-me'
 import { env, siteConfig } from '@/lib/config'
 import { useAuth, useClerk } from '@clerk/nextjs'

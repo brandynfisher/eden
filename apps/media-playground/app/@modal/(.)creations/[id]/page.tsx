@@ -9,7 +9,7 @@ export default function CreationsModalPage({
   params: { id: creationId },
 }: Props) {
   return (
-    <FullScreenModal className="md:w-[calc(100dvw_-_32px)]">
+    <FullScreenModal>
       <CreationDetail id={creationId} isModal={true} />
     </FullScreenModal>
   )

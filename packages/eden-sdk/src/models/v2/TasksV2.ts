@@ -7,6 +7,7 @@ import {
 } from '../../types'
 import { MediaAttributes } from '../Media'
 import { CreationV2 } from './CreationsV2'
+import { GeneratorOutputTypeV2 } from './GeneratorsV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -21,6 +22,7 @@ export interface TasksV2ListArguments
   taskId?: string | string[]
   status?: string | string[]
   type?: 'concepts' | 'creations'
+  output_type?: GeneratorOutputTypeV2
   workflow?: string
 }
 
@@ -182,6 +184,7 @@ export type TaskV2 = {
   _id: string
   user: string
   workflow: string
+  output_type?: GeneratorOutputTypeV2
   model?: string
   name?: string
   args: TaskV2Args

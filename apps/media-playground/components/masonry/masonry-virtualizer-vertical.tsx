@@ -73,29 +73,32 @@ const MasonryVirtualizerVertical = ({
 
   // console.log({ queryKey })
 
-  const onUpdate = (updatedItem: RowItem) => {
-    console.log(
-      'onUpdate - somehow update/invalidate/refetch or whatever it will be',
-    )
-
-    try {
-      queryClient.setQueryData(
-        queryKey,
-        (old: PageData<IPage<RowItem>> | undefined) => {
-          let updatedPages: IPage<RowItem>[] = old ? [...old.pages] : []
-
-          if (updatedPages.length > 0) {
-            updatedPages = addDocIfNotExistInPage(updatedItem, updatedPages)
-            updatedPages = updateDocInPage(updatedItem, updatedPages)
-          }
-
-          return { ...old, pages: updatedPages }
-        },
+  const onUpdate = useCallback(
+    (updatedItem: RowItem) => {
+      console.log(
+        'onUpdate - somehow update/invalidate/refetch or whatever it will be',
       )
-    } catch (e) {
-      console.log(e)
-    }
-  }
+
+      try {
+        queryClient.setQueryData(
+          queryKey,
+          (old: PageData<IPage<RowItem>> | undefined) => {
+            let updatedPages: IPage<RowItem>[] = old ? [...old.pages] : []
+
+            if (updatedPages.length > 0) {
+              updatedPages = addDocIfNotExistInPage(updatedItem, updatedPages)
+              updatedPages = updateDocInPage(updatedItem, updatedPages)
+            }
+
+            return { ...old, pages: updatedPages }
+          },
+        )
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    [queryKey, queryClient],
+  )
 
   const activeMQ = mediaQueries.lastIndexOf(true)
 
@@ -174,7 +177,7 @@ const MasonryVirtualizerVertical = ({
   )
 
   useEffect(() => {
-    if (!lastItem) {
+    if (!lastItem || hasNextPage === undefined) {
       return
     }
 
@@ -205,7 +208,7 @@ const MasonryVirtualizerVertical = ({
 
       return (
         <div
-          key={virtualItem.index}
+          key={`${apiEndpoint}_${virtualItem.index}`}
           ref={rowVirtualizer.measureElement}
           data-index={virtualItem.index}
           style={{
@@ -234,11 +237,20 @@ const MasonryVirtualizerVertical = ({
         </div>
       )
     },
-    [onUpdate, render, allRows, hasNextPage, rowVirtualizer, columnWidth],
+    [
+      apiEndpoint,
+      onUpdate,
+      render,
+      allRows,
+      hasNextPage,
+      rowVirtualizer,
+      columnWidth,
+    ],
   )
 
   return (
     <div
+      key={`${apiEndpoint}_${queryKey.join(',')}`}
       data-test-id="masonry-virtualizer-vertical"
       ref={masonryWrapRef}
       className="flex pb-12 outline-none"

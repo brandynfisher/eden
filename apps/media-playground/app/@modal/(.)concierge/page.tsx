@@ -3,7 +3,10 @@ import ConciergeContent from '@/features/concierge/concierge-content'
 
 export default function ConciergeModalPage() {
   return (
-    <FullScreenModal className="flex self-center p-8" title="Concierge">
+    <FullScreenModal
+      title="Concierge"
+      className="flex self-center p-8 !w-auto !max-w-screen-2xl"
+    >
       <ConciergeContent />
     </FullScreenModal>
   )
