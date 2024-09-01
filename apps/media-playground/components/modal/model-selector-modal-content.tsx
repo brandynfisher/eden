@@ -16,25 +16,27 @@ const ModelSelectorModalContent = ({ onChange }: Props) => {
   const [showUserModelsOnly, setShowUserModelsOnly] = useState(true)
 
   return (
-    <div className="flex flex-col items-center sm:block">
-      <ToggleGroup
-        type="single"
-        value={showUserModelsOnly ? 'user' : 'public'}
-        className="border border-muted rounded-lg p-1 mb-4 flex items-center max-w-fit bg-popover"
-      >
-        <ToggleButton
-          className="w-32"
-          value={'user'}
-          label={'My Models'}
-          onClick={() => setShowUserModelsOnly(true)}
-        />
-        <ToggleButton
-          className="w-32"
-          value={'public'}
-          label={'Public Models'}
-          onClick={() => setShowUserModelsOnly(false)}
-        />
-      </ToggleGroup>
+    <div>
+      <div className="flex flex-col items-center sm:block">
+        <ToggleGroup
+          type="single"
+          value={showUserModelsOnly ? 'user' : 'public'}
+          className="border border-muted rounded-lg p-1 mb-4 flex items-center max-w-fit bg-popover"
+        >
+          <ToggleButton
+            className="w-32"
+            value={'user'}
+            label={'My Models'}
+            onClick={() => setShowUserModelsOnly(true)}
+          />
+          <ToggleButton
+            className="w-32"
+            value={'public'}
+            label={'Public Models'}
+            onClick={() => setShowUserModelsOnly(false)}
+          />
+        </ToggleGroup>
+      </div>
 
       <Suspense fallback={<MasonrySkeleton />}>
         {showUserModelsOnly ? (
