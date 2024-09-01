@@ -87,10 +87,20 @@ const Timeline = ({ generator }: Props) => {
         queryClient.setQueryData(
           queryKey,
           (old: PageData<IPage<RowItem>> | undefined) => {
-            let updatedPages: IPage<RowItem>[] = old ? [...old.pages] : []
+            if (!old || !old.pages.length) {
+              console.error('No pages to update!')
+              return old
+            }
 
-            if (updatedPages.length > 0) {
+            let updatedPages: IPage<RowItem>[] = [...old.pages]
+
+            let pageIndex = updatedPages.findIndex(page =>
+              page?.docs?.some(doc => doc._id === taskUpdate._id),
+            )
+
+            if (pageIndex === -1) {
               updatedPages = addDocIfNotExistInPage(taskUpdate, updatedPages)
+            } else {
               updatedPages = updateDocInPage(taskUpdate, updatedPages)
             }
 

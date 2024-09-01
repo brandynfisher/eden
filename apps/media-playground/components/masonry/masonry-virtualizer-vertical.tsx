@@ -72,7 +72,6 @@ const MasonryVirtualizerVertical = ({
   const queryClient = useQueryClient()
 
   // console.log({ queryKey })
-
   const onUpdate = useCallback(
     (updatedItem: RowItem) => {
       console.log(
@@ -83,10 +82,22 @@ const MasonryVirtualizerVertical = ({
         queryClient.setQueryData(
           queryKey,
           (old: PageData<IPage<RowItem>> | undefined) => {
-            let updatedPages: IPage<RowItem>[] = old ? [...old.pages] : []
+            // If 'old' is undefined or doesn't have any pages, throw an error or handle this case accordingly.
+            if (!old || !old.pages.length) {
+              // Either return the original data, throwing error or handling situation is up to your context.
+              console.error('No pages to update!')
+              return old
+            }
 
-            if (updatedPages.length > 0) {
+            let updatedPages: IPage<RowItem>[] = [...old.pages]
+
+            let pageIndex = updatedPages.findIndex(page =>
+              page?.docs?.some(doc => doc._id === updatedItem._id),
+            )
+
+            if (pageIndex === -1) {
               updatedPages = addDocIfNotExistInPage(updatedItem, updatedPages)
+            } else {
               updatedPages = updateDocInPage(updatedItem, updatedPages)
             }
 

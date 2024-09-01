@@ -106,7 +106,7 @@ const ListVirtualizerVertical = ({
   )
 
   useEffect(() => {
-    if (!lastItem) {
+    if (!lastItem || hasNextPage === undefined) {
       return
     }
 
