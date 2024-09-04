@@ -2,7 +2,6 @@ import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
-import { getFileTypeByMimeType } from '@/lib/files'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import React from 'react'
 
@@ -12,8 +11,6 @@ type Props = {
 }
 
 const TimelineItemMediaResult = ({ task, result }: Props) => {
-  const fileType = getFileTypeByMimeType(result.mediaAttributes?.mimeType)
-
   return (
     <>
       <div
@@ -21,10 +18,10 @@ const TimelineItemMediaResult = ({ task, result }: Props) => {
         style={{
           aspectRatio:
             result?.mediaAttributes?.aspectRatio ||
-            (fileType === 'audio' ? 3 : 1),
+            (task.output_type === 'audio' ? 3 : 1),
         }}
       >
-        {fileType === 'audio' ? (
+        {task.output_type === 'audio' ? (
           <div className="flex w-full h-full items-center justify-center">
             <audio src={result.url || result.filename} controls={true} />
           </div>

@@ -114,7 +114,6 @@ const TimelineItem = ({ item }: Props) => {
               result.model === undefined ? (
                 <TimelineItemMediaResult
                   key={`${item._id}_${index}`}
-                  index={index}
                   task={item}
                   result={result}
                 />
