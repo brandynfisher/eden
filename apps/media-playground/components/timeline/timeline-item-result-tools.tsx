@@ -131,7 +131,7 @@ const TimelineItemResultTools = ({ task, result, className }: Props) => {
                 size="sm"
                 className="px-2 flex gap-2 items-center justify-center"
               >
-                <Link href={`/models/${result?.model}`}>
+                <Link href={`/models/${result?.model._id}`}>
                   <ExternalLinkIcon className="h-4 w-4" />
                 </Link>
               </Button>
@@ -183,7 +183,7 @@ const TimelineItemResultTools = ({ task, result, className }: Props) => {
                   size="sm"
                   className="px-2 flex gap-2 items-center justify-center"
                 >
-                  <Link href={`/creations/${result?.creation}`}>
+                  <Link href={`/creations/${result?.creation._id}`}>
                     <ExternalLinkIcon className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -212,8 +212,8 @@ const TimelineItemResultTools = ({ task, result, className }: Props) => {
               <ListIcon size={20} />
             </Button>
           </CollapsibleTrigger>
-          {task.output_type === 'lora' ? (
-            <ModelActionsMenu modelId={result.model} className="ml-auto" />
+          {task.output_type === 'lora' && result.model ? (
+            <ModelActionsMenu model={result.model} className="ml-auto" />
           ) : null}
         </div>
         <CollapsibleContent>

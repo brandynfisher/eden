@@ -10,6 +10,7 @@ import {
   s3ThumbnailUrl,
   s3Url,
 } from '../../plugins/s3Plugin'
+import { QueryOptions } from '../../repositories/RestfulRepository'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
@@ -195,7 +196,7 @@ export const listTasks = async (
     query.workflow = workflow
   }
 
-  const queryOptions = {
+  const queryOptions: QueryOptions = {
     select: '',
     limit,
     page,
@@ -207,8 +208,36 @@ export const listTasks = async (
 
   // remove training image urls from task args
   queryOptions.select = '-args.lora_training_urls'
+  // queryOptions.populate = {
+  //   path: 'result.model',
+  //   model: 'models',
+  //   select: '-args.lora_training_urls',
+  // }
 
   const paginatedResponse = await tasksRepository.query(query, queryOptions)
+
+  await tasksRepository.model.populate(paginatedResponse.docs, {
+    path: 'result.creation',
+    model: 'creations2',
+  })
+
+  await tasksRepository.model.populate(paginatedResponse.docs, {
+    path: 'result.creation.user',
+    model: 'users',
+    select: '_id username userId userImage',
+  })
+
+  await tasksRepository.model.populate(paginatedResponse.docs, {
+    path: 'result.model',
+    model: 'models',
+    select: '-args.lora_training_urls',
+  })
+
+  await tasksRepository.model.populate(paginatedResponse.docs, {
+    path: 'result.model.user',
+    model: 'users',
+    select: '_id username userId userImage',
+  })
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
     path: 'user',
@@ -436,9 +465,33 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
         return
       }
 
+      const tasksRepository = new TaskV2Repository(TaskV2Model)
       // socket message is only sent to the intended recipient
       if (metaData?._id?.toString() === task.user.toString()) {
-        await task.populate({
+        await tasksRepository.model.populate(task, {
+          path: 'result.creation',
+          model: 'creations2',
+        })
+
+        await tasksRepository.model.populate(task, {
+          path: 'result.creation.user',
+          model: 'users',
+          select: '_id username userId userImage',
+        })
+
+        await tasksRepository.model.populate(task, {
+          path: 'result.model',
+          model: 'models',
+          select: '-args.lora_training_urls',
+        })
+
+        await tasksRepository.model.populate(task, {
+          path: 'result.model.user',
+          model: 'users',
+          select: '_id username userId userImage',
+        })
+
+        await tasksRepository.model.populate(task, {
           path: 'user',
           select: '_id username userId userImage',
         })

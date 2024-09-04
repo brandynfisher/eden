@@ -30,7 +30,7 @@ const ParameterGroupCollapse = ({ group, form }: Props) => {
           parameter={group.toggle}
           form={form}
           className={cn([
-            'border',
+            'border transition-colors',
             isOpen
               ? 'bg-muted-foreground/10 rounded-b-none'
               : 'border border-muted bg-popover',

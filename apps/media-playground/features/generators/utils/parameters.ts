@@ -34,16 +34,20 @@ export function groupParameters(parameters: GeneratorParameterV2[]) {
         })
       } else {
         const [toggleName, requiredValue] = parameter.visible_if.split('=')
-        const elementIndex = orderedElements.findIndex(
+        const toggleElementIndex = orderedElements.findIndex(
           val => val.toggle?.name === toggleName,
         )
 
         // hidden by default, displayed beneath toggle
         if (requiredValue === 'true') {
-          orderedElements[elementIndex]?.groupParameters?.push(parameter)
+          orderedElements[toggleElementIndex]?.groupParameters?.push(parameter)
         } else {
           orderedElements.push({
             type: 'standalone',
+            toggle:
+              toggleElementIndex !== -1
+                ? orderedElements[toggleElementIndex].parameter
+                : undefined,
             parameter,
           })
         }

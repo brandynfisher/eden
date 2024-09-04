@@ -15,18 +15,16 @@ import Link from 'next/link'
 import React from 'react'
 
 type Props = {
-  model?: ModelV2
-  modelId?: string
+  model: ModelV2
   onUpdate?: (item: ModelV2) => void
   className?: string
 }
 
-const ModelActionsMenu = ({ model, modelId, onUpdate, className }: Props) => {
+const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
   // @todo: This is ugly as hell. We should populate task.result[].model API side but populating array items sucks in mongo...
   const { user } = useAuthState()
   const { model: modelResponse, invalidate: refetchModel } = useModelQuery({
-    key: modelId ? modelId : model?._id || 'model_na',
-    enabled: !!modelId,
+    key: model._id,
   })
   const modelData = model || modelResponse
 

@@ -8,6 +8,7 @@ import {
 import { MediaAttributes } from '../Media'
 import { CreationV2 } from './CreationsV2'
 import { GeneratorOutputTypeV2 } from './GeneratorsV2'
+import { ModelV2 } from './ModelsV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -46,8 +47,8 @@ export type TaskV2Result = {
   metadata?: string | null
   mediaAttributes?: MediaAttributes
   published?: boolean
-  model?: string
-  creation?: string
+  model?: ModelV2
+  creation?: CreationV2
 }
 
 // Requests

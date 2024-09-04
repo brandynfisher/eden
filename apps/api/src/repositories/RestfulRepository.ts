@@ -33,6 +33,14 @@ interface PaginatedResponse<T> {
   nextPage: number
 }
 
+export type QueryOptions = {
+  page?: number
+  limit?: number
+  sort?: object
+  select?: object | string
+  populate?: string | object
+}
+
 class RestfulRepository<T> implements IRepository<T> {
   constructor(public model: any) {
     // The 'any' type is used here since the 'model' type is not specified in the provided code.
@@ -45,13 +53,7 @@ class RestfulRepository<T> implements IRepository<T> {
       string,
       string | string[] | ObjectId | object | undefined | unknown
     >,
-    options: {
-      page?: number
-      limit?: number
-      sort?: object
-      select?: object | string
-      populate?: string | object
-    } = { populate: undefined },
+    options: QueryOptions = { populate: undefined },
     projection: object = {},
   ): Promise<PaginatedResponse<T>> {
     const labels = {

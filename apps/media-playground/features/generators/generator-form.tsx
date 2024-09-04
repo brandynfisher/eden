@@ -120,6 +120,8 @@ const GeneratorForm = ({ generator }: Props) => {
     ? groupParameters(optionalParameters)
     : []
 
+  // console.log(groupedOptionalParameters)
+
   return (
     <div
       data-test-id="generator-form"

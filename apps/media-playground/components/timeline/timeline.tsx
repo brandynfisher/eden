@@ -3,6 +3,7 @@
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import TimelineItem from '@/components/timeline/timeline-item'
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Switch } from '@/components/ui/switch'
 import {
   IPage,
@@ -23,8 +24,7 @@ type Props = {
 const Timeline = ({ generator }: Props) => {
   const queryClient = useQueryClient()
   const { lastMessageJson } = useWebSocketContext()
-  const [filterTasksByCurrentWorkflow, setFilterTasksByCurrentWorkflow] =
-    useState(false)
+  const [showAllToolResults, setShowAllToolResults] = useState(true)
 
   const query: TasksV2ListArguments = useMemo(
     () => ({
@@ -33,11 +33,11 @@ const Timeline = ({ generator }: Props) => {
       workflow:
         generator.outputType === 'lora'
           ? generator.key
-          : filterTasksByCurrentWorkflow
+          : !showAllToolResults
           ? generator.key
           : undefined,
     }),
-    [filterTasksByCurrentWorkflow, generator.outputType, generator.key],
+    [showAllToolResults, generator.outputType, generator.key],
   )
 
   const queryKey = useMemo(
@@ -46,13 +46,13 @@ const Timeline = ({ generator }: Props) => {
         'tasks',
         generator.outputType === 'lora'
           ? generator.key
-          : filterTasksByCurrentWorkflow
+          : !showAllToolResults
           ? generator.key
           : undefined,
       ],
       query,
     ],
-    [filterTasksByCurrentWorkflow, generator.outputType, generator.key, query],
+    [showAllToolResults, generator.outputType, generator.key, query],
   )
 
   useEffect(() => {
@@ -67,10 +67,7 @@ const Timeline = ({ generator }: Props) => {
     ) {
       const taskUpdate = lastMessageJson.data.task as TaskV2
 
-      if (
-        filterTasksByCurrentWorkflow &&
-        taskUpdate.workflow !== generator.key
-      ) {
+      if (showAllToolResults && taskUpdate.workflow !== generator.key) {
         console.log(
           `discarding task-update for other workflow: ${taskUpdate.workflow}`,
           taskUpdate,
@@ -112,7 +109,7 @@ const Timeline = ({ generator }: Props) => {
       }
     }
   }, [
-    filterTasksByCurrentWorkflow,
+    showAllToolResults,
     generator.key,
     lastMessageJson,
     queryClient,
@@ -121,15 +118,17 @@ const Timeline = ({ generator }: Props) => {
 
   return (
     <div className="mb-8 lg:col-span-2 md:pt-4">
+      <DropdownMenuSeparator className="mb-3 md:hidden" />
+
       {generator.outputType !== 'lora' ? (
-        <div className="flex flex-row items-center justify-between rounded-lg border p-4 my-2">
-          <div className="space-y-0.5">
-            <label className="text-base">Hide other tool results</label>
+        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 mb-2 bg-muted/30">
+          <div className="flex items-center justify-between gap-2">
+            <label className="text-sm">Show all tool results</label>
+            <Switch
+              defaultChecked={showAllToolResults}
+              onCheckedChange={setShowAllToolResults}
+            />
           </div>
-          <Switch
-            checked={filterTasksByCurrentWorkflow}
-            onCheckedChange={setFilterTasksByCurrentWorkflow}
-          />
         </div>
       ) : null}
 
