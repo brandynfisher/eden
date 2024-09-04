@@ -4,6 +4,13 @@ export const configType = Type.Record(Type.String(), Type.Any())
 export const argsType = Type.Record(Type.String(), Type.Any())
 export const parameterType = Type.Array(Type.Record(Type.String(), Type.Any()))
 
+export const populatedUserType = Type.Object({
+  _id: Type.String(),
+  userId: Type.String(),
+  username: Type.String(),
+  userImage: Type.String(),
+})
+
 export const conceptDocType = Type.Object({
   deleted: Type.Boolean(),
   isPrivate: Type.Boolean(),
@@ -29,12 +36,7 @@ export const conceptType = Type.Object({
     deleted: Type.Boolean(),
     isPrivate: Type.Boolean(),
     _id: Type.String(),
-    user: Type.Object({
-      _id: Type.String(),
-      userId: Type.String(),
-      username: Type.String(),
-      userImage: Type.String(),
-    }),
+    user: populatedUserType,
     praiseCount: Type.Number(),
     bookmarkCount: Type.Number(),
     uri: Type.String(),
@@ -60,8 +62,9 @@ export const sessionType = Type.Object({
 
 export const taskV2Type = Type.Object({
   _id: Type.String(),
-  user: Type.String(),
+  user: populatedUserType,
   workflow: Type.String(),
+  output_type: Type.Optional(Type.String()),
   args: Type.Any(),
   status: Type.String(),
   result: Type.Optional(Type.Any()),
@@ -75,7 +78,7 @@ export const taskV2Type = Type.Object({
 export const modelV2Type = Type.Object({
   _id: Type.String(),
   name: Type.String(),
-  user: Type.Any(),
+  user: populatedUserType,
   args: Type.Any(),
   checkpoint: Type.String(),
   public: Type.Boolean(),

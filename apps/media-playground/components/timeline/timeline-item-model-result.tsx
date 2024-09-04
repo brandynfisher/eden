@@ -22,13 +22,7 @@ const TimelineItemModelResult = ({ result, task }: Props) => {
           className="w-full h-full"
         />
       </div>
-      <TimelineItemResultTools
-        result={result}
-        outputType={'model'}
-        task={task}
-        originalFilename={result.url || ''}
-        fileName={task.args.name || '_noname_'}
-      />
+      <TimelineItemResultTools result={result} task={task} />
     </>
   )
 }

@@ -104,4 +104,6 @@ export type GeneratorParameterV2 = {
   step: number | null | undefined
   choices: Array<string | number> | null | undefined
   hide_from_agent?: boolean
+  hide_from_ui?: boolean
+  visible_if?: string
 }

@@ -3,17 +3,15 @@ import LightboxGallery, {
 } from '@/components/media/lightbox-gallery'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { getFileTypeByMimeType } from '@/lib/files'
-import { getCloudfrontUrl } from '@/lib/media'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 type Props = {
   task: TaskV2
   result: TaskV2Result
-  index: number
 }
 
-const TimelineItemMediaResult = ({ task, result, index }: Props) => {
+const TimelineItemMediaResult = ({ task, result }: Props) => {
   const fileType = getFileTypeByMimeType(result.mediaAttributes?.mimeType)
 
   return (
@@ -45,13 +43,7 @@ const TimelineItemMediaResult = ({ task, result, index }: Props) => {
           </LightboxGallery>
         )}
       </div>
-      <TimelineItemResultTools
-        outputType={'creation'}
-        task={task}
-        result={result}
-        originalFilename={result.url || getCloudfrontUrl(result.filename) || ''}
-        fileName={`${task.args?.prompt || '_noname'}_${index}`}
-      />
+      <TimelineItemResultTools task={task} result={result} />
     </>
   )
 }

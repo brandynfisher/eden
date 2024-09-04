@@ -7,7 +7,7 @@ Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   enabled: process.env.NODE_ENV === 'production',
   environment: process.env.NEXT_PUBLIC_APP_ENV,
-
+  ignoreErrors: ['Request method eth_chainId is not supported'],
   // Adjust this value in production, or use tracesSampler for greater control
   tracesSampleRate: 1,
 
@@ -23,8 +23,8 @@ Sentry.init({
   integrations: [
     Sentry.replayIntegration({
       // Additional Replay configuration goes in here, for example:
-      maskAllText: true,
-      blockAllMedia: true,
+      maskAllText: false,
+      blockAllMedia: false,
     }),
     Sentry.feedbackIntegration({
       // Additional SDK configuration goes in here, for example:

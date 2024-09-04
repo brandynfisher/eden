@@ -1,8 +1,8 @@
 'use client'
 
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
+import ActionsDropdown from '@/components/button/actions-dropdown'
 import LikeButton from '@/components/button/like-button'
-import ToolsButton from '@/components/button/tools-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import VideoResult from '@/components/media/video-result'
@@ -92,7 +92,7 @@ const CreationCard = ({ creation, showFooter, style }: Props) => {
               isActive={false}
               onChange={() => null}
             />,
-            <ToolsButton key={1} />,
+            <ActionsDropdown key={1} />,
           ]}
         />
       ) : null}

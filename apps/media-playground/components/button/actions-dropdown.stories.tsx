@@ -1,14 +1,14 @@
-import ToolsButton from '@/components/button/tools-button'
+import ActionsDropdown from '@/components/button/actions-dropdown'
 import type { Meta, StoryObj } from '@storybook/react'
 
-const meta: Meta<typeof ToolsButton> = {
-  title: 'Atoms/Button/ToolsButton',
-  component: ToolsButton,
+const meta: Meta<typeof ActionsDropdown> = {
+  title: 'Atoms/Button/ActionsDropdown',
+  component: ActionsDropdown,
   // tags: ['autodocs'],
   parameters: {
     layout: 'centered',
   },
-} satisfies Meta<typeof ToolsButton>
+} satisfies Meta<typeof ActionsDropdown>
 
 export default meta
 type Story = StoryObj<typeof meta>

@@ -1,8 +1,8 @@
 'use client'
 
-import GeneratorForm from '@/components/form/generator-form'
 import Timeline from '@/components/timeline/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
+import GeneratorForm from '@/features/generators/generator-form'
 import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'

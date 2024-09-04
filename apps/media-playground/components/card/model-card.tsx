@@ -1,20 +1,11 @@
-import ToolsButton from '@/components/button/tools-button'
+import ModelActionsMenu from '@/components/button/model-actions-menu'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import { Card } from '@/components/ui/card'
-import {
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuShortcut,
-} from '@/components/ui/dropdown-menu'
-import { useAuthState } from '@/hooks/use-auth-state'
-import { fetcher } from '@/lib/fetcher'
-import { Creator, ModelV2, ModelsV2PatchResponse } from '@edenlabs/eden-sdk'
-import { LockClosedIcon } from '@radix-ui/react-icons'
-import { LockOpenIcon, SquareMousePointerIcon } from 'lucide-react'
+import { Creator, ModelV2 } from '@edenlabs/eden-sdk'
+import { SquareMousePointerIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties } from 'react'
-import { toast } from 'sonner'
 
 type Props = {
   model: ModelV2
@@ -27,47 +18,6 @@ type Props = {
 }
 
 const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
-  const { user } = useAuthState()
-  const { user: creator } = model || {}
-
-  const onTogglePublic = async () => {
-    try {
-      const response: ModelsV2PatchResponse = await fetcher(
-        `/api/models/${model._id}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            public: !model.public,
-          }),
-        },
-      )
-
-      if (!response) {
-        console.error('response empty')
-        return
-      }
-
-      if (!response.model) {
-        console.error('model empty')
-        return
-      }
-
-      onUpdate && onUpdate(response.model)
-
-      toast.success(`Model updated`, {
-        description: `set to ${model.public ? 'private' : 'public'}`,
-        dismissible: true,
-        richColors: true,
-      })
-    } catch (e) {
-      toast.error(`Update Error`, {
-        description: 'Failed to toggle model privacy',
-        dismissible: true,
-        richColors: true,
-      })
-    }
-  }
-
   return (
     <Card
       className="relative overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712] group"
@@ -107,26 +57,7 @@ const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
             //   isActive={false}
             //   onChange={() => null}
             // />,
-            <ToolsButton key={1}>
-              {creator._id === user?._id ? (
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={onTogglePublic}
-                    className="cursor-pointer"
-                  >
-                    {model.public ? (
-                      <LockClosedIcon className="mr-2 h-4 w-4" />
-                    ) : (
-                      <LockOpenIcon className="mr-2 h-4 w-4" />
-                    )}
-                    <span>
-                      Set <strong>{model.public ? 'Private' : 'Public'}</strong>
-                    </span>
-                    <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              ) : null}
-            </ToolsButton>,
+            <ModelActionsMenu key={1} onUpdate={onUpdate} model={model} />,
           ]}
         >
           <div className="text-xs">{model.name}</div>

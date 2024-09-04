@@ -1,3 +1,4 @@
+import ModelActionsMenu from '@/components/button/model-actions-menu'
 import LoadingIndicator from '@/components/loading-indicator'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { Button } from '@/components/ui/button'
@@ -6,8 +7,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
-import { downloadFile, getDownloadFileName } from '@/lib/files'
+// import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { cn } from '@/lib/utils'
 import {
   TaskV2,
@@ -17,9 +17,7 @@ import {
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
   BookCheckIcon,
-  BookHeartIcon, // ClipboardCopy,
-  CopyIcon,
-  DownloadIcon,
+  BookHeartIcon,
   ExternalLinkIcon,
   ListIcon,
 } from 'lucide-react'
@@ -28,59 +26,32 @@ import React, { useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
-  originalFilename: string
-  fileName: string
   task: TaskV2
   result: TaskV2Result
-  outputType: 'creation' | 'model'
   className?: string
 }
 
-const TimelineItemResultTools = ({
-  task,
-  result,
-  originalFilename,
-  fileName,
-  outputType,
-  className,
-}: Props) => {
-  const [isDownloading, setIsDownloading] = useState(false)
-  const handleFileDownload = async (
-    originalFilename: string,
-    downloadFilename: string,
-  ) => {
-    // console.log({ originalFilename, downloadFilename })
-
-    setIsDownloading(true)
-    await downloadFile(originalFilename, downloadFilename)
-    setIsDownloading(false)
-    toast.info(`Downloading...`, {
-      description: downloadFilename,
-      dismissible: true,
-      richColors: true,
-    })
-  }
-
-  const [copiedText, copy] = useCopyToClipboard()
-
-  const handleCopyString = (text: string) => () => {
-    copy(text)
-      .then(() => {
-        toast.success(`Copied Model ID`, {
-          description: text,
-          dismissible: true,
-          richColors: true,
-        })
-        console.log('Copied!', { copiedText })
-      })
-      .catch(error => {
-        toast.error(`Failed to copy!`, {
-          description: error,
-          dismissible: true,
-          richColors: true,
-        })
-      })
-  }
+const TimelineItemResultTools = ({ task, result, className }: Props) => {
+  // const [copiedText, copy] = useCopyToClipboard()
+  //
+  // const handleCopyString = (text: string) => () => {
+  //   copy(text)
+  //     .then(() => {
+  //       toast.success(`Copied Model ID`, {
+  //         description: text,
+  //         dismissible: true,
+  //         richColors: true,
+  //       })
+  //       console.log('Copied!', { copiedText })
+  //     })
+  //     .catch(error => {
+  //       toast.error(`Failed to copy!`, {
+  //         description: error,
+  //         dismissible: true,
+  //         richColors: true,
+  //       })
+  //     })
+  // }
 
   const [isPublishing, setIsPublishing] = useState(false)
   const publishTaskResult = async (taskId: string, originalFileUrl: string) => {
@@ -143,17 +114,17 @@ const TimelineItemResultTools = ({
     >
       <Collapsible>
         <div className="flex flex-wrap gap-2">
-          {outputType === 'model' ? (
+          {task.output_type === 'lora' && result.model ? (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="px-2 flex gap-2 items-center justify-center"
-                onClick={handleCopyString(result.model || '')}
-              >
-                <CopyIcon size={20} />
-                Copy ID
-              </Button>
+              {/*<Button*/}
+              {/*  variant="outline"*/}
+              {/*  size="sm"*/}
+              {/*  className="px-2 flex gap-2 items-center justify-center"*/}
+              {/*  onClick={handleCopyString(result.model || '')}*/}
+              {/*>*/}
+              {/*  <CopyIcon size={20} />*/}
+              {/*  Copy ID*/}
+              {/*</Button>*/}
               <Button
                 asChild
                 variant="outline"
@@ -220,24 +191,6 @@ const TimelineItemResultTools = ({
             </>
           )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="px-2 ml-auto"
-            title={`Download ${outputType}`}
-            onClick={() =>
-              handleFileDownload(
-                originalFilename,
-                getDownloadFileName(task.user, task._id, fileName),
-              )
-            }
-          >
-            {isDownloading ? (
-              <LoadingIndicator className="h-5 w-5" />
-            ) : (
-              <DownloadIcon size={20} />
-            )}
-          </Button>
           {/*<Button*/}
           {/*  variant="outline"*/}
           {/*  size="sm"*/}
@@ -259,6 +212,9 @@ const TimelineItemResultTools = ({
               <ListIcon size={20} />
             </Button>
           </CollapsibleTrigger>
+          {task.output_type === 'lora' ? (
+            <ModelActionsMenu modelId={result.model} className="ml-auto" />
+          ) : null}
         </div>
         <CollapsibleContent>
           <div className="mt-2">

@@ -87,6 +87,11 @@ export const createTask = async (
     generatorConfig.outputType,
   )
   if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
+    if (server.Sentry) {
+      server.Sentry.captureMessage(
+        `taskRateLimitCheck failed for user:${userId} | message:${rateLimitCheckResult.message}`,
+      )
+    }
     return reply.status(429).send({
       message: rateLimitCheckResult.message,
     })
@@ -156,12 +161,12 @@ export const listTasks = async (
     })
   }
 
-  const typeQuery =
-    !workflow || workflow !== 'lora_trainer'
-      ? {
-          workflow: { $ne: 'lora_trainer' },
-        }
-      : {}
+  const isModelTaskQuery = workflow && workflow === 'lora_trainer'
+  const typeQuery = !isModelTaskQuery
+    ? {
+        workflow: { $ne: 'lora_trainer' },
+      }
+    : {}
 
   const tasksRepository = new TaskV2Repository(TaskV2Model)
 
@@ -205,14 +210,15 @@ export const listTasks = async (
 
   const paginatedResponse = await tasksRepository.query(query, queryOptions)
 
+  await tasksRepository.model.populate(paginatedResponse.docs, {
+    path: 'user',
+    select: '_id username userId userImage',
+  })
+
   paginatedResponse.docs.forEach(doc => {
     if (doc.result) {
       doc.result = doc.result.map(result =>
-        injectResultUrls(
-          server,
-          result,
-          !!workflow && workflow === 'lora_trainer',
-        ),
+        injectResultUrls(server, result, doc.output_type === 'lora'),
       )
     }
   })
@@ -432,6 +438,11 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
 
       // socket message is only sent to the intended recipient
       if (metaData?._id?.toString() === task.user.toString()) {
+        await task.populate({
+          path: 'user',
+          select: '_id username userId userImage',
+        })
+
         // emit WS Event
         socket.send(
           JSON.stringify({
@@ -445,7 +456,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
                         injectResultUrls(
                           this,
                           result,
-                          task.workflow === 'lora_trainer',
+                          task.output_type === 'lora',
                         ),
                       ),
                     }

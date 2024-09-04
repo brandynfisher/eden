@@ -1,5 +1,6 @@
 import FormItemHead from '@/components/form/form-item-head'
 import { FormControl, FormItem, FormMessage } from '@/components/ui/form'
+import { cn } from '@/lib/utils'
 import { PropsWithChildren } from 'react'
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
   label: string
   description: string
   errorMessage?: string
+  className?: string
 } & PropsWithChildren
 
 const FormItemWrap = ({
@@ -14,10 +16,11 @@ const FormItemWrap = ({
   label,
   description,
   errorMessage,
+  className,
   children,
 }: Props) => {
   return (
-    <FormItem className="mt-0 !p-4 !pt-3">
+    <FormItem className={cn(['mt-0 !p-4 !pt-3', className])}>
       <FormItemHead label={label} description={description} />
       <FormControl id={name}>{children}</FormControl>
       <FormMessage>{errorMessage}</FormMessage>

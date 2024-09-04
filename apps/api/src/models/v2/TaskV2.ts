@@ -79,6 +79,7 @@ export const taskSchema = new Schema<TaskV2Document>(
 )
 
 taskSchema.index({ createdAt: -1 })
+taskSchema.index({ handler_id: -1 })
 taskSchema.index({
   user: 1,
   status: 1,

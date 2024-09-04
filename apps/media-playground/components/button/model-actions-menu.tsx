@@ -1,0 +1,69 @@
+import ActionsDropdown from '@/components/button/actions-dropdown'
+import DownloadActionItem from '@/components/button/download-action-item'
+import PrivacyActionItem from '@/components/button/privacy-action-item'
+import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+} from '@/components/ui/dropdown-menu'
+import { useModelQuery } from '@/hooks/query/use-model-query'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { ModelV2 } from '@edenlabs/eden-sdk'
+import { ExternalLinkIcon } from 'lucide-react'
+import Link from 'next/link'
+import React from 'react'
+
+type Props = {
+  model?: ModelV2
+  modelId?: string
+  onUpdate?: (item: ModelV2) => void
+  className?: string
+}
+
+const ModelActionsMenu = ({ model, modelId, onUpdate, className }: Props) => {
+  // @todo: This is ugly as hell. We should populate task.result[].model API side but populating array items sucks in mongo...
+  const { user } = useAuthState()
+  const { model: modelResponse, invalidate: refetchModel } = useModelQuery({
+    key: modelId ? modelId : model?._id || 'model_na',
+    enabled: !!modelId,
+  })
+  const modelData = model || modelResponse
+
+  if (!modelData) {
+    return null
+  }
+
+  return (
+    <ActionsDropdown className={className}>
+      <DropdownMenuGroup>
+        <DropdownMenuItem asChild>
+          <Link href={`/models/${modelData._id}`}>
+            <ExternalLinkIcon className="mr-2 h-4 w-4" />
+            View Details
+            <DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+      {modelData.user._id === user?._id ? (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <PrivacyActionItem
+              type="model"
+              item={modelData}
+              onUpdate={onUpdate ? onUpdate : refetchModel}
+            />
+            <DownloadActionItem
+              type="model"
+              originalFileUrl={modelData.checkpoint}
+              saveAsFileName={modelData.slug.replaceAll('/', '_')}
+            />
+          </DropdownMenuGroup>
+        </>
+      ) : null}
+    </ActionsDropdown>
+  )
+}
+
+export default ModelActionsMenu

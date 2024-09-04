@@ -14,7 +14,7 @@ type Props = {
 
 const FormItemHead = ({ label, description }: Props) => {
   return (
-    <div className="space-y-0.5 flex">
+    <div className="space-y-0.5 flex items-center">
       <FormLabel className="text-sm first-letter:uppercase mr-2">
         {label}
       </FormLabel>
@@ -22,7 +22,7 @@ const FormItemHead = ({ label, description }: Props) => {
         <TooltipProvider delayDuration={125}>
           <Tooltip>
             <TooltipTrigger
-              className="hover:text-accent-foreground cursor-pointer"
+              className="hover:text-accent-foreground cursor-pointer flex items-center"
               onClick={ev => ev.preventDefault()}
             >
               <InfoIcon className="h-4 w-4" />

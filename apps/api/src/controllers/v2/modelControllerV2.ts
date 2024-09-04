@@ -121,6 +121,11 @@ export const modelUpdate = async (
 
   await model.save()
 
+  await model.populate({
+    path: 'user',
+    select: '_id username userId userImage',
+  })
+
   return reply.status(200).send({
     model,
   })
