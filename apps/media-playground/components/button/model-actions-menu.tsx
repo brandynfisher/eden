@@ -21,12 +21,13 @@ type Props = {
 }
 
 const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
-  // @todo: This is ugly as hell. We should populate task.result[].model API side but populating array items sucks in mongo...
   const { user } = useAuthState()
   const { model: modelResponse, invalidate: refetchModel } = useModelQuery({
     key: model._id,
+    initialData: model,
   })
-  const modelData = model || modelResponse
+
+  const modelData = modelResponse || model
 
   if (!modelData) {
     return null
