@@ -139,9 +139,9 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     autoResize={true}
                     spellCheck={false}
                     placeholder={parameter.description}
-                    className={`!mt-0 !ml-0 border-0 resize-none overflow-hidden rounded-lg ${
+                    className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg ${
                       parameter.required
-                        ? '!outline-none !p-4 !pt-3'
+                        ? '!outline-none !p-4 !pt-3 !mt-0'
                         : 'rounded-lg border p-2 '
                     }`}
                     onChange={onChange}
