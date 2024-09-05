@@ -195,6 +195,8 @@ import {
 import {
   CreationsV2GetArguments,
   CreationsV2GetResponse,
+  CreationsV2PatchArguments,
+  CreationsV2PatchResponse,
   GeneratorsGetArgumentsV2,
   GeneratorsGetResponseV2,
   GeneratorsListArgumentsV2,
@@ -216,6 +218,7 @@ import {
   TasksV2PublishArguments,
   TasksV2PublishResponse,
   creationsV2GetRequestConfig,
+  creationsV2PatchRequestConfig,
   generatorsGetRequestConfigV2,
   generatorsListRequestConfigV2,
   modelsV2GetRequestConfig,
@@ -468,6 +471,10 @@ export abstract class Methods {
     update: bindApiCall<CreationsUpdateArguments, CreationsUpdateResponse>(
       this,
       creationsUpdateRequestConfig,
+    ),
+    updateV2: bindApiCall<CreationsV2PatchArguments, CreationsV2PatchResponse>(
+      this,
+      creationsV2PatchRequestConfig,
     ),
     delete: bindApiCall<CreationsDeleteArguments, CreationsDeleteResponse>(
       this,

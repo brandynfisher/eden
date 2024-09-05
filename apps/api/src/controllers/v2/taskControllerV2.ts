@@ -1,4 +1,3 @@
-import { getFileTypeByMimeType } from '../../lib/eden2'
 import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
@@ -760,7 +759,7 @@ export const publishTaskResult = async (
     })
   }
 
-  console.log({ resultFilename, taskDocument })
+  // console.log({ resultFilename, taskDocument })
 
   const taskResultIndex = taskDocument.result.findIndex(val => {
     return (
@@ -800,10 +799,7 @@ export const publishTaskResult = async (
   creation.workflow = taskDocument.workflow
   creation.mediaAttributes = {
     ...taskResult.mediaAttributes,
-    type:
-      getFileTypeByMimeType(
-        taskResult.mediaAttributes?.mimeType || 'image/jpeg',
-      ) || 'image',
+    type: taskDocument.output_type,
     mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
   }
   creation.metadata = taskResult.metadata

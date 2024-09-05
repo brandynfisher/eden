@@ -199,7 +199,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                         : 0
                       : 1
                   }
-                  maxLength={parameter.max_length || 128}
+                  maxLength={parameter.max_length || 256}
                   onChange={onChange}
                   value={value === null ? [] : value || ['']}
                 />
@@ -273,7 +273,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                   maxFiles={
                     parameter.max_length === null ||
                     parameter.max_length === undefined
-                      ? 128
+                      ? 256
                       : parameter.max_length || 1
                   }
                   allowMultiple={true}

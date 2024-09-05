@@ -43,9 +43,9 @@ export interface TasksV2PublishArguments extends WebAPICallOptions {
 export type TaskV2Result = {
   url?: string
   thumbnail?: string
-  filename?: string
+  filename: string
   metadata?: string | null
-  mediaAttributes?: MediaAttributes
+  mediaAttributes?: MediaAttributes & { type: GeneratorOutputTypeV2 }
   published?: boolean
   model?: ModelV2
   creation?: CreationV2

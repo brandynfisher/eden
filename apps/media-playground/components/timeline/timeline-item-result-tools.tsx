@@ -1,3 +1,4 @@
+import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
 import LoadingIndicator from '@/components/loading-indicator'
 import ParameterTable from '@/components/timeline/parameter-table'
@@ -214,6 +215,11 @@ const TimelineItemResultTools = ({ task, result, className }: Props) => {
           </CollapsibleTrigger>
           {task.output_type === 'lora' && result.model ? (
             <ModelActionsMenu model={result.model} className="ml-auto" />
+          ) : result.creation ? (
+            <CreationActionsMenu
+              creation={result.creation}
+              className="ml-auto"
+            />
           ) : null}
         </div>
         <CollapsibleContent>

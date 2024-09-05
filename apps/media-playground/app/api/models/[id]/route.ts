@@ -1,6 +1,10 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { auth } from '@clerk/nextjs/server'
-import { EdenClient, ModelsV2PatchArguments } from '@edenlabs/eden-sdk'
+import {
+  EdenClient,
+  ModelsV2PatchArguments,
+  ModelsV2PatchResponse,
+} from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
@@ -77,7 +81,7 @@ export async function PATCH(
       )
     }
 
-    return NextResponse.json(res)
+    return NextResponse.json<ModelsV2PatchResponse>(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

@@ -49,16 +49,11 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
         )}
       </div>
 
-      {type === 'model' && creator?._id === user?._id ? (
+      {creator?._id === user?._id ? (
         <div className="pb-3">
           {item && item.public !== undefined ? (
             <>
-              <PrivacyToggle
-                isPublic={item.public}
-                type={type}
-                id={item._id}
-                onUpdate={onUpdate}
-              />
+              <PrivacyToggle type={type} item={item} onUpdate={onUpdate} />
             </>
           ) : (
             <Skeleton className="h-[42px] w-[142px]" />

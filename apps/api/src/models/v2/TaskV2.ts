@@ -14,7 +14,7 @@ export interface TaskV2Schema {
   user: UserDocument
   workflow: string
   args: TaskV2Args
-  output_type?: GeneratorOutputTypeV2
+  output_type: GeneratorOutputTypeV2
   result: TaskV2Result[]
   status: TaskV2Status
   // cost: number
@@ -28,7 +28,7 @@ export interface TaskV2Input {
   user: ObjectId
   workflow: string
   args: TaskV2Args
-  output_type?: GeneratorOutputTypeV2
+  output_type: GeneratorOutputTypeV2
   result: TaskV2Result[]
   status?: TaskV2Status
   // cost: number
@@ -50,6 +50,7 @@ export const taskSchema = new Schema<TaskV2Document>(
     },
     output_type: {
       type: Schema.Types.String,
+      required: true,
     },
     args: {
       type: Schema.Types.Mixed,

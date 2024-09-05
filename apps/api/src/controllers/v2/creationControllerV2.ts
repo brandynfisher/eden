@@ -1,9 +1,10 @@
-import {
-  CreationV2Document,
-  CreationV2 as CreationV2Model,
-} from '../../models/v2/CreationV2'
+import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
 import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
-import { CreationsV2GetArguments, ReactionType } from '@edenlabs/eden-sdk'
+import {
+  CreationsV2GetArguments,
+  CreationsV2PatchArguments,
+  ReactionType,
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getCreation = async (
@@ -13,17 +14,9 @@ export const getCreation = async (
 ) => {
   const { creationId } = request.params as CreationsV2GetArguments
 
-  const creation = (await CreationV2Model.findOneWithDeleted({
+  const creation = (await CreationV2.findOneWithDeleted({
     _id: creationId,
   })
-    // .populate({
-    //   path: 'task',
-    //   select: 'config status generator',
-    //   populate: {
-    //     path: 'generator',
-    //     select: 'generatorName description output',
-    //   },
-    // })
     // .populate({
     //   path: 'concept',
     //   select: '_id name user conceptName creationCount thumbnail',
@@ -61,4 +54,45 @@ export const getCreation = async (
   creation.thumbnail = s3ThumbnailUrl(server, creation.thumbnail || '', 1024)
 
   return reply.status(200).send({ creation })
+}
+
+export const creationUpdate = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { creationId } = request.params as CreationsV2PatchArguments
+  const { public: isPublic } = request.body as CreationsV2PatchArguments
+
+  if (!userId || !creationId || typeof isPublic === 'undefined') {
+    return reply.status(422).send({
+      message: 'Missing parameters or malformed request body',
+    })
+  }
+
+  const creation = await CreationV2.findOne({
+    _id: creationId,
+    user: userId,
+  })
+
+  if (!creation) {
+    return reply.status(404).send({
+      message: 'Creation not found',
+    })
+  }
+
+  if (typeof isPublic !== 'undefined') {
+    creation.public = isPublic
+  }
+
+  await creation.save()
+
+  await creation.populate({
+    path: 'user',
+    select: '_id username userId userImage',
+  })
+
+  return reply.status(200).send({
+    creation,
+  })
 }

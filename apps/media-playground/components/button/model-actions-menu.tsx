@@ -9,14 +9,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { ModelV2 } from '@edenlabs/eden-sdk'
+import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { ExternalLinkIcon } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
 type Props = {
   model: ModelV2
-  onUpdate?: (item: ModelV2) => void
+  onUpdate?: (item: ModelV2 | CreationV2) => void
   className?: string
 }
 
@@ -24,7 +24,9 @@ const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
   const { user } = useAuthState()
   const { model: modelResponse, invalidate: refetchModel } = useModelQuery({
     key: model._id,
-    initialData: model,
+    initialData: {
+      model,
+    },
   })
 
   const modelData = modelResponse || model

@@ -2,7 +2,7 @@ import ModelActionsMenu from '@/components/button/model-actions-menu'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import { Card } from '@/components/ui/card'
-import { Creator, ModelV2 } from '@edenlabs/eden-sdk'
+import { CreationV2, Creator, ModelV2 } from '@edenlabs/eden-sdk'
 import { SquareMousePointerIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties } from 'react'
@@ -13,7 +13,7 @@ type Props = {
   creator?: Creator
   showFooter?: boolean
   style?: CSSProperties
-  onUpdate?: (item: ModelV2) => void
+  onUpdate?: (item: ModelV2 | CreationV2) => void
   onClick?: (item: ModelV2) => void
 }
 

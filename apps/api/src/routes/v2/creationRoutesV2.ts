@@ -1,7 +1,8 @@
 import { paginatedResponse, paginationProperties } from '..'
 import { listCreations } from '../../controllers/creationsController'
 import { getCreation } from '../../controllers/v2/creationControllerV2'
-import { maybeAuthEden2 } from '../../middleware/authMiddleware'
+import { creationUpdate } from '../../controllers/v2/creationControllerV2'
+import { isAuthEden2, maybeAuthEden2 } from '../../middleware/authMiddleware'
 // import { ReactionType } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -186,6 +187,32 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
   //   preHandler: [(request, reply) => isAuth(server, request, reply)],
   //   handler: (request, reply) => creationUnreact(request, reply),
   // })
+
+  server.patch('/v2/creations/:creationId', {
+    schema: {
+      tags: ['Creations'],
+      description: 'Update a creation',
+      security: [
+        {
+          apiKey: [],
+          // apiSecret: [],
+        },
+      ],
+      params: {
+        creationId: Type.String(),
+      },
+      body: Type.Object({
+        public: Type.Optional(Type.Boolean()),
+      }),
+      response: {
+        200: {
+          creation: Type.Any(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => creationUpdate(request, reply),
+  })
 }
 
 export default creationRoutesV2

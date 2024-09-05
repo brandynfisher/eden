@@ -44,9 +44,9 @@ export interface CreationsV2DeleteArguments extends WebAPICallOptions {
   creationId: string
 }
 
-export interface CreationsV2UpdateArguments extends WebAPICallOptions {
+export interface CreationsV2PatchArguments extends WebAPICallOptions {
   creationId: string
-  public: boolean
+  public?: boolean
 }
 
 // Requests
@@ -95,8 +95,8 @@ export const creationsV2UnreactRequestConfig = (
   }
 }
 
-export const creationsV2UpdateRequestConfig = (
-  args: CreationsV2UpdateArguments,
+export const creationsV2PatchRequestConfig = (
+  args: CreationsV2PatchArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'PATCH',
@@ -142,7 +142,7 @@ export type CreationsV2UnreactResponse = WebAPICallResult & {
   success?: boolean
 }
 
-export type CreationsV2UpdateResponse = WebAPICallResult & {
+export type CreationsV2PatchResponse = WebAPICallResult & {
   error?: string
   creation?: CreationV2
 }

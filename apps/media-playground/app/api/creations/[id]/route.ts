@@ -1,6 +1,10 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { auth } from '@clerk/nextjs/server'
-import { EdenClient } from '@edenlabs/eden-sdk'
+import {
+  CreationsV2PatchArguments,
+  CreationsV2PatchResponse,
+  EdenClient,
+} from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
@@ -36,6 +40,54 @@ export async function GET(
     }
 
     return NextResponse.json(res)
+  } catch (error) {
+    const errorMessage = handleAxiosServerError(error)
+    console.error(errorMessage)
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
+      status: 500,
+    })
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params: { id } }: { params: { id: string } },
+) {
+  if (!id) {
+    return new NextResponse(JSON.stringify({ message: 'Missing id' }), {
+      status: 400,
+    })
+  }
+
+  const { getToken } = auth()
+  const authToken = await getToken()
+
+  console.log('auth()', id, request.url)
+
+  const requestJson = await request.json()
+  const { public: isPublic } = requestJson as CreationsV2PatchArguments
+
+  try {
+    const eden = new EdenClient({
+      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
+      token: authToken !== null ? authToken : undefined,
+    })
+
+    const res = await eden.creations.updateV2({
+      creationId: id,
+      public: isPublic,
+    })
+
+    if (!res) {
+      return new NextResponse(
+        JSON.stringify({ message: 'Creation update error' }),
+        {
+          status: 500,
+        },
+      )
+    }
+
+    return NextResponse.json<CreationsV2PatchResponse>(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

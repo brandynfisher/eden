@@ -1,4 +1,4 @@
-import { MediaType, TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
+import { TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -8,7 +8,9 @@ import mongooseDelete, {
 } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-export interface CreationV2Schema extends TaskV2Result {
+type BaseTaskResult = Omit<TaskV2Result, 'creation' | 'model'>
+
+export interface CreationV2Schema extends BaseTaskResult {
   user: ObjectId
   task: ObjectId
   args: TaskV2Args
@@ -18,7 +20,7 @@ export interface CreationV2Schema extends TaskV2Result {
   public?: boolean
 }
 
-export interface CreationV2Input extends TaskV2Result {
+export interface CreationV2Input extends BaseTaskResult {
   user: ObjectId
   task: ObjectId
   args: TaskV2Args
@@ -67,7 +69,6 @@ export const creationSchema = new Schema<CreationV2Document>(
       },
       type: {
         type: String,
-        enum: Object.values(MediaType),
         required: true,
       },
       duration: {
