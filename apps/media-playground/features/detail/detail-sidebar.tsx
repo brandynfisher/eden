@@ -1,3 +1,5 @@
+import CreationActionsMenu from '@/components/button/creations-actions-menu'
+import ModelActionsMenu from '@/components/button/model-actions-menu'
 import CopyTextButton from '@/components/text/copy-text-button'
 import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
@@ -33,10 +35,25 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
       <div className="pt-4 pb-3">
         {item ? (
           <div>
-            <UserAvatarLink
-              name={item.user.username || item.user._id}
-              image={item.user.userImage}
-            />
+            <div className="flex">
+              <UserAvatarLink
+                name={item.user.username || item.user._id}
+                image={item.user.userImage}
+              />
+              {type === 'creation' ? (
+                <CreationActionsMenu
+                  creation={item as CreationV2}
+                  onUpdate={onUpdate}
+                  className="ml-auto"
+                />
+              ) : (
+                <ModelActionsMenu
+                  model={item as ModelV2}
+                  onUpdate={onUpdate}
+                  className="ml-auto"
+                />
+              )}
+            </div>
             <div className="text-xs text-foreground/70 mt-2">
               <TimeAgo date={item.createdAt} />
             </div>
