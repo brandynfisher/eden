@@ -22,3 +22,41 @@ export function getCloudfrontUrl(filename?: string, size: number = 2560) {
 
   return `${env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL}/${filename}`
 }
+
+export function getCloudfrontOriginalUrl(filename?: string) {
+  if (!filename) {
+    return ''
+  }
+
+  if (filename.startsWith(env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL)) {
+    // if filename is a video or ends with _ followed by any number and then . and any extension, do nothing
+    if (filename.endsWith('.mp4') || filename.match(/_\d+\.\w+$/)) {
+      return filename
+    }
+  }
+
+  // any other full url should be returned as is (maybe legacy or whatever)
+  if (filename.startsWith('https://')) {
+    return filename
+  }
+
+  return `${env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL}/${filename}`
+}
+
+export const calculateMaxDimensions = (
+  aspectRatio: number,
+  maxDimension: number,
+): {
+  width: number
+  height: number
+} => {
+  let width, height
+  if (aspectRatio > 1) {
+    width = maxDimension
+    height = Math.round(maxDimension / aspectRatio)
+  } else {
+    width = Math.round(maxDimension * aspectRatio)
+    height = maxDimension
+  }
+  return { width, height }
+}

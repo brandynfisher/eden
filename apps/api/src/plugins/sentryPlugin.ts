@@ -7,7 +7,8 @@ export const registerSentry = async (fastify: FastifyInstance) => {
       environment: process.env.NODE_ENV,
       enabled:
         process.env.NODE_ENV === 'production' ||
-        process.env.NODE_ENV === 'staging',
+        (process.env.NODE_ENV === 'staging' &&
+          process.env.ENV_API !== 'development)'),
       release: '1.0.0',
     })
     fastify.log.info('Successfully registered plugin: Sentry')

@@ -1,3 +1,4 @@
+import { calculateMaxDimensions } from '../../lib/eden2'
 import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
@@ -23,9 +24,11 @@ import {
   TasksV2PublishArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import { encode } from 'blurhash'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+import sharp from 'sharp'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
 
@@ -802,6 +805,46 @@ export const publishTaskResult = async (
     type: taskDocument.output_type,
     mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
   }
+
+  try {
+    const isModelResult = taskDocument.result[0].filename.endsWith('.tar')
+
+    if (!isModelResult) {
+      const IMAGE_SIZE = 384
+      const thumbnailUrl = s3ThumbnailUrl(
+        server,
+        taskResult.filename,
+        IMAGE_SIZE,
+      )
+      console.log({ thumbnailUrl, file: taskResult.filename })
+      const response = await axios.get(thumbnailUrl, {
+        responseType: 'arraybuffer',
+      })
+      const buffer = Buffer.from(response.data)
+      const { width, height } = calculateMaxDimensions(
+        (taskResult.mediaAttributes?.width || IMAGE_SIZE) /
+          (taskResult.mediaAttributes?.height || IMAGE_SIZE),
+        IMAGE_SIZE,
+      )
+
+      console.log({ width, height })
+
+      const image = await sharp(buffer).raw().ensureAlpha().toBuffer()
+
+      const blurhash = encode(
+        new Uint8ClampedArray(image.buffer),
+        width,
+        height,
+        4,
+        4,
+      )
+
+      creation.mediaAttributes.blur = blurhash
+    }
+  } catch (e) {
+    console.error(`Error creating blurhash`, e)
+  }
+
   creation.metadata = taskResult.metadata
   creation.url = taskResult.filename || taskResult.url
   creation.thumbnail = changeExtension(

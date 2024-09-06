@@ -3,6 +3,7 @@ import 'photoswipe/dist/photoswipe.css'
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
 // import LoadingIndicator from '@/components/loading-indicator'
 import VideoResult from '@/components/media/video-result'
+import { useBlurDataUrl } from '@/hooks/use-blur-hash'
 import { useHover } from '@/hooks/use-hover'
 import customImageLoader from '@/image-loader'
 import { siteConfig } from '@/lib/config'
@@ -19,6 +20,7 @@ type GalleryItem = {
   width?: number
   height?: number
   duration?: number
+  blur?: string
 }
 
 type LightboxGalleryItemProps = {
@@ -38,6 +40,9 @@ export const LightboxGalleryItem = ({
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
   const width = item.width || 1024
   const height = item.height || 1024
+
+  const blurDataUrl = useBlurDataUrl(item.blur, item.width, item.height)
+
   return (
     <Item
       alt={item.url}
@@ -79,10 +84,13 @@ export const LightboxGalleryItem = ({
               ev.stopPropagation()
               open(ev)
             }}
-            src={item.thumbnail || siteConfig.mediaErrorUrl}
+            // src={item.thumbnail || siteConfig.mediaErrorUrl}
+            src={blurDataUrl}
             alt={item.url || ''}
             width={width}
             height={height}
+            blurDataURL={blurDataUrl}
+            placeholder={blurDataUrl ? 'blur' : undefined}
             className={cn([`object-contain cursor-zoom-in w-full`, className])}
           />
           {item.url?.endsWith('.mp4') ? (

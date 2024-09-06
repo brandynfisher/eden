@@ -55,6 +55,7 @@ const CreationCard = ({ creation, showFooter, style }: Props) => {
               width: creation.mediaAttributes?.width,
               height: creation.mediaAttributes?.height,
               type: creation.mediaAttributes?.type as FileType,
+              blur: creation.mediaAttributes?.blur,
             }}
           />
         )}

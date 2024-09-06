@@ -7,6 +7,7 @@ export interface MediaAttributes {
   width?: number
   height?: number
   aspectRatio?: number
+  blur?: string
 }
 
 export enum MediaType {
