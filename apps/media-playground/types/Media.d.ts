@@ -19,6 +19,7 @@ interface Media {
   height?: number
   type: FileType
   mimeType?: MimeType
+  blur?: string
 }
 
 interface MediaVideo extends Media {

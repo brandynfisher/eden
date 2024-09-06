@@ -1,5 +1,5 @@
 module.exports = {
-  ...require('@edenlabs/config/eslint-garden.js'),
+  ...require('@edenlabs/config/eslint-eden2.js'),
   parserOptions: {
     tsconfigRootDir: __dirname,
     project: './tsconfig.json',

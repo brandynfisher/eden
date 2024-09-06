@@ -3,7 +3,7 @@ import {
   DropdownMenuShortcut,
 } from '@/components/ui/dropdown-menu'
 import { downloadFile } from '@/lib/files'
-import { getCloudfrontUrl } from '@/lib/media'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { DownloadIcon } from 'lucide-react'
 import React from 'react'
 import { toast } from 'sonner'
@@ -21,7 +21,7 @@ const DownloadActionItem = ({
 }: Props) => {
   const handleFileDownload = async () => {
     await downloadFile(
-      getCloudfrontUrl(originalFileUrl),
+      getCloudfrontOriginalUrl(originalFileUrl),
       `Eden_${type}_${saveAsFileName}`,
     )
     toast.info(`Downloading...`, {

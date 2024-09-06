@@ -34,6 +34,20 @@ export const handleTaskUpdateStreamEvent = async (
   server.internalMessages.publish('task-updates-v2', task)
 }
 
-export const getFileTypeByMimeType = (mimeType: string) => {
-  return mimeType.split('/')[0]
+export const calculateMaxDimensions = (
+  aspectRatio: number,
+  maxDimension: number,
+): {
+  width: number
+  height: number
+} => {
+  let width, height
+  if (aspectRatio > 1) {
+    width = maxDimension
+    height = Math.round(maxDimension / aspectRatio)
+  } else {
+    width = Math.round(maxDimension * aspectRatio)
+    height = maxDimension
+  }
+  return { width, height }
 }

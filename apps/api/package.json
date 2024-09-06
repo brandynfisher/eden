@@ -44,6 +44,7 @@
     "aws-sdk": "^2.1454.0",
     "axios": "^1.6.8",
     "axios-retry": "^4.4.1",
+    "blurhash": "^2.0.5",
     "chromadb": "^1.7.2",
     "cloudinary": "^2.2.0",
     "dotenv": "^16.0.3",
