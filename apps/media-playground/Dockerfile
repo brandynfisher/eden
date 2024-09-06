@@ -20,8 +20,12 @@ RUN apk update
 WORKDIR /app
 
 # Install node-canvas deps
-RUN apt-get update --fix-missing
-RUN apt-get install -y --fix-missing build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+RUN apk add --update --no-cache \
+    build-base \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev
 
 # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
