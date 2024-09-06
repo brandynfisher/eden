@@ -21,8 +21,13 @@ export function useBlurDataUrl(
         const pixels = decodeBlurHash(blurHash, blurWidth, blurHeight)
         const canvas = createCanvas(blurWidth, blurHeight)
         const ctx = canvas.getContext('2d')
+
+        if (!ctx) {
+          return ''
+        }
+
         const imageData = new ImageData(pixels, blurWidth, blurHeight)
-        ctx.putImageData(imageData, 0, 0)
+        ctx?.putImageData(imageData, 0, 0)
         return canvas.toDataURL()
       }
 
