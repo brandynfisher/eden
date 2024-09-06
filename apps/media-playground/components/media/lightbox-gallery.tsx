@@ -19,6 +19,7 @@ type GalleryItem = {
   width?: number
   height?: number
   duration?: number
+  blur?: string
 }
 
 type LightboxGalleryItemProps = {

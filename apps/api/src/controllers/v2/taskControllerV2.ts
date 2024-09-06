@@ -1,3 +1,4 @@
+import { calculateMaxDimensions } from '../../lib/eden2'
 import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
@@ -805,38 +806,43 @@ export const publishTaskResult = async (
     mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
   }
 
-  const isModelResult = taskDocument.result[0].filename.endsWith('.tar')
+  try {
+    const isModelResult = taskDocument.result[0].filename.endsWith('.tar')
 
-  if (!isModelResult) {
-    const thumbnailUrl = s3ThumbnailUrl(server, taskResult.filename, 1024)
+    if (!isModelResult) {
+      const IMAGE_SIZE = 384
+      const thumbnailUrl = s3ThumbnailUrl(
+        server,
+        taskResult.filename,
+        IMAGE_SIZE,
+      )
+      console.log({ thumbnailUrl, file: taskResult.filename })
+      const response = await axios.get(thumbnailUrl, {
+        responseType: 'arraybuffer',
+      })
+      const buffer = Buffer.from(response.data)
+      const { width, height } = calculateMaxDimensions(
+        (taskResult.mediaAttributes?.width || IMAGE_SIZE) /
+          (taskResult.mediaAttributes?.height || IMAGE_SIZE),
+        IMAGE_SIZE,
+      )
 
-    const response = await axios.get(thumbnailUrl, {
-      responseType: 'arraybuffer',
-    })
-    const buffer = Buffer.from(response.data)
+      console.log({ width, height })
 
-    const width = taskResult.mediaAttributes?.width || 1024
-    const height = taskResult.mediaAttributes?.height || 1024
+      const image = await sharp(buffer).raw().ensureAlpha().toBuffer()
 
-    const image = await sharp(buffer)
-      .raw()
-      .ensureAlpha()
-      .resize({
+      const blurhash = encode(
+        new Uint8ClampedArray(image.buffer),
         width,
         height,
-        fit: 'inside',
-      })
-      .toBuffer()
+        4,
+        4,
+      )
 
-    const blurhash = encode(
-      new Uint8ClampedArray(image.buffer),
-      width,
-      height,
-      4,
-      4,
-    )
-
-    creation.mediaAttributes.blur = blurhash
+      creation.mediaAttributes.blur = blurhash
+    }
+  } catch (e) {
+    console.error(`Error creating blurhash`, e)
   }
 
   creation.metadata = taskResult.metadata

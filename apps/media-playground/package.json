@@ -51,7 +51,7 @@
     "@tanstack/react-virtual": "^3.4.0",
     "@zeit/next-css": "^1.0.1",
     "axios": "^1.6.8",
-    "canvas": "^2.11.2",
+    "canvas": "^3.0.0-rc2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "event-source-polyfill": "^1.0.31",
