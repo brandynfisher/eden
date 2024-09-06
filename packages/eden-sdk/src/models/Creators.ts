@@ -236,9 +236,14 @@ export enum SubscriptionTier {
   Basic = 1,
   Pro = 2,
   Believer = 3,
+  Admin = 4,
 }
 
 export enum FeatureFlag {
   Preview = 'preview',
   Eden2EarlyAccess = 'eden2earlyaccess',
+  LimitsBasic = 'limits_Basic',
+  LimitsPro = 'limits_Pro',
+  LimitsBeliever = 'limits_Believer',
+  LimitsAdmin = 'limits_Admin',
 }
