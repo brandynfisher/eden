@@ -1,0 +1,36 @@
+import { calculateMaxDimensions } from '@/lib/media'
+import { createCanvas } from 'canvas'
+import { decodeBlurHash } from 'fast-blurhash'
+import { useEffect, useState } from 'react'
+
+export function useBlurDataUrl(
+  blurHash?: string,
+  width?: number,
+  height?: number,
+) {
+  const [dataUrl, setDataUrl] = useState('')
+
+  useEffect(() => {
+    const createBlurDataUrl = async () => {
+      const url = () => {
+        if (!blurHash) return ''
+        const { width: blurWidth, height: blurHeight } = calculateMaxDimensions(
+          (width || 1024) / (height || 1024),
+          32,
+        )
+        const pixels = decodeBlurHash(blurHash, blurWidth, blurHeight)
+        const canvas = createCanvas(blurWidth, blurHeight)
+        const ctx = canvas.getContext('2d')
+        const imageData = new ImageData(pixels, blurWidth, blurHeight)
+        ctx.putImageData(imageData, 0, 0)
+        return canvas.toDataURL()
+      }
+
+      setDataUrl(url)
+    }
+
+    createBlurDataUrl()
+  }, [blurHash, width, height])
+
+  return dataUrl
+}
