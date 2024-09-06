@@ -67,7 +67,7 @@ const Timeline = ({ generator }: Props) => {
     ) {
       const taskUpdate = lastMessageJson.data.task as TaskV2
 
-      if (showAllToolResults && taskUpdate.workflow !== generator.key) {
+      if (!showAllToolResults && taskUpdate.workflow !== generator.key) {
         console.log(
           `discarding task-update for other workflow: ${taskUpdate.workflow}`,
           taskUpdate,

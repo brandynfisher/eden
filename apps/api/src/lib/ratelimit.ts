@@ -1,6 +1,7 @@
 import { TaskV2 } from '../models/v2/TaskV2'
 import { eden2EarlyAccessCheck } from './authorization'
 import {
+  FeatureFlag,
   GeneratorOutputTypeV2,
   SubscriptionTier,
   TaskV2Status,
@@ -30,6 +31,10 @@ const maximumTasksConcurrencyMap: Record<SubscriptionTier, TaskRateLimit> = {
     image: 24,
     video: 12,
   },
+  [SubscriptionTier.Admin]: {
+    image: 64,
+    video: 32,
+  },
 }
 
 const maximumTasksPerHourMap: Record<SubscriptionTier, TaskRateLimit> = {
@@ -48,6 +53,10 @@ const maximumTasksPerHourMap: Record<SubscriptionTier, TaskRateLimit> = {
   [SubscriptionTier.Believer]: {
     image: 1800,
     video: 180,
+  },
+  [SubscriptionTier.Admin]: {
+    image: 3600,
+    video: 360,
   },
 }
 
@@ -68,6 +77,10 @@ const maximumTasksPerMinuteMap: Record<SubscriptionTier, TaskRateLimit> = {
     image: 240,
     video: 24,
   },
+  [SubscriptionTier.Admin]: {
+    image: 480,
+    video: 48,
+  },
 }
 
 export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
@@ -75,6 +88,7 @@ export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
   [SubscriptionTier.Basic]: 'Basic',
   [SubscriptionTier.Pro]: 'Pro',
   [SubscriptionTier.Believer]: 'Believer',
+  [SubscriptionTier.Admin]: 'Admin',
 }
 
 type TaskRateLimitCheckResult = {
@@ -121,6 +135,35 @@ const getTasksCount = async (
   return TaskV2.countDocuments(query)
 }
 
+const LIMIT_FLAGS = [
+  FeatureFlag.LimitsBasic,
+  FeatureFlag.LimitsPro,
+  FeatureFlag.LimitsBeliever,
+  FeatureFlag.LimitsAdmin,
+]
+
+// check if featureFlags includes at least one of LIMIT_FLAGS values to override and if so, return the last one
+const getUserLimitTier = (
+  subscriptionTier: SubscriptionTier,
+  featureFlags: FeatureFlag[],
+) => {
+  const limitFlag = featureFlags.find(flag => LIMIT_FLAGS.includes(flag))
+
+  if (limitFlag) {
+    const splittedFlag = limitFlag.split('_')[1]
+    if (splittedFlag in SubscriptionTier) {
+      const limitFlagTier =
+        SubscriptionTier[splittedFlag as keyof typeof SubscriptionTier]
+
+      if (limitFlagTier > subscriptionTier) {
+        return limitFlagTier
+      }
+    }
+  }
+
+  return subscriptionTier || SubscriptionTier.Free
+}
+
 export const taskRateLimitCheck = async (
   request: FastifyRequest,
   outputType: GeneratorOutputTypeV2,
@@ -136,19 +179,24 @@ export const taskRateLimitCheck = async (
     }
   }
 
+  const userLimitTier = getUserLimitTier(
+    subscriptionTier,
+    request.user.featureFlags,
+  )
+
   const maximumTasksConcurrency = getMaximumTasks(
     maximumTasksConcurrencyMap,
-    subscriptionTier,
+    userLimitTier,
     type,
   )
   const maximumTasksPerMinute = getMaximumTasks(
     maximumTasksPerMinuteMap,
-    subscriptionTier,
+    userLimitTier,
     type,
   )
   const maximumTasksPerHour = getMaximumTasks(
     maximumTasksPerHourMap,
-    subscriptionTier,
+    userLimitTier,
     type,
   )
 
@@ -161,10 +209,7 @@ export const taskRateLimitCheck = async (
     type,
   )
 
-  const subscriptionTierName =
-    subscriptionTierNameMap[
-      (subscriptionTier || SubscriptionTier.Free) as SubscriptionTier
-    ]
+  const subscriptionTierName = subscriptionTierNameMap[userLimitTier]
   if (numTasksInProgress >= maximumTasksConcurrency) {
     return {
       status: 'error',
@@ -207,5 +252,8 @@ export const taskRateLimitCheck = async (
       message: `Rate limit for '${outputType}' reached! Max. ${maximumTasksPerHour} per hour on '${subscriptionTierName}' plan. Try again later.`,
     }
   }
+
+  // console.log({userLimitTier, subscriptionTier, maximumTasksPerMinute, maximumTasksPerHour, maximumTasksConcurrency})
+
   return { status: 'ok' }
 }
