@@ -83,6 +83,9 @@ export const creationSchema = new Schema<CreationV2Document>(
       aspectRatio: {
         type: Number,
       },
+      blur: {
+        type: String,
+      },
     },
     deleted: {
       type: Boolean,

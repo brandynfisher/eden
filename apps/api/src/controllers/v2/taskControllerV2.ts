@@ -23,9 +23,11 @@ import {
   TasksV2PublishArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import { encode } from 'blurhash'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+import sharp from 'sharp'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
 
@@ -802,6 +804,41 @@ export const publishTaskResult = async (
     type: taskDocument.output_type,
     mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
   }
+
+  const isModelResult = taskDocument.result[0].filename.endsWith('.tar')
+
+  if (!isModelResult) {
+    const thumbnailUrl = s3ThumbnailUrl(server, taskResult.filename, 1024)
+
+    const response = await axios.get(thumbnailUrl, {
+      responseType: 'arraybuffer',
+    })
+    const buffer = Buffer.from(response.data)
+
+    const width = taskResult.mediaAttributes?.width || 1024
+    const height = taskResult.mediaAttributes?.height || 1024
+
+    const image = await sharp(buffer)
+      .raw()
+      .ensureAlpha()
+      .resize({
+        width,
+        height,
+        fit: 'inside',
+      })
+      .toBuffer()
+
+    const blurhash = encode(
+      new Uint8ClampedArray(image.buffer),
+      width,
+      height,
+      4,
+      4,
+    )
+
+    creation.mediaAttributes.blur = blurhash
+  }
+
   creation.metadata = taskResult.metadata
   creation.url = taskResult.filename || taskResult.url
   creation.thumbnail = changeExtension(
