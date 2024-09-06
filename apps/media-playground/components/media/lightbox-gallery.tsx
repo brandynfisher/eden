@@ -84,8 +84,7 @@ export const LightboxGalleryItem = ({
               ev.stopPropagation()
               open(ev)
             }}
-            // src={item.thumbnail || siteConfig.mediaErrorUrl}
-            src={blurDataUrl}
+            src={item.thumbnail || siteConfig.mediaErrorUrl}
             alt={item.url || ''}
             width={width}
             height={height}
