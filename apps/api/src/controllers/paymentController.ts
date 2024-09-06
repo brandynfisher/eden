@@ -42,6 +42,7 @@ const discountMap = (
     [SubscriptionTier.Basic]: server.config.STRIPE_DISCOUNT_CODE_BASIC,
     [SubscriptionTier.Pro]: server.config.STRIPE_DISCOUNT_CODE_PRO,
     [SubscriptionTier.Believer]: server.config.STRIPE_DISCOUNT_CODE_BELIEVER,
+    [SubscriptionTier.Admin]: undefined,
   }
   return map[subscriptionTier || SubscriptionTier.Free]
 }
@@ -52,6 +53,7 @@ const mannaTierMap = (subscriptionTier?: SubscriptionTier) => {
     [SubscriptionTier.Basic]: 1000,
     [SubscriptionTier.Pro]: 5000,
     [SubscriptionTier.Believer]: 10000,
+    [SubscriptionTier.Admin]: 0,
   }
   return map[subscriptionTier || SubscriptionTier.Free]
 }
