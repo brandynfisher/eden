@@ -42,4 +42,5 @@ export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
   [SubscriptionTier.Basic]: 'Basic',
   [SubscriptionTier.Pro]: 'Pro',
   [SubscriptionTier.Believer]: 'Believer',
+  [SubscriptionTier.Admin]: 'Admin',
 }

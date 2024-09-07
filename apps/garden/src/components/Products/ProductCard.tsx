@@ -1,8 +1,8 @@
+import CdnImage from '@/components/Media/cdn-image'
 import { UserContext } from '@/providers/UserProvider'
 import { Product, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Button, Card } from 'antd'
 import { useContext } from 'react'
-import CdnImage from '@/components/Media/cdn-image'
 
 const { Meta } = Card
 
@@ -11,6 +11,7 @@ const discountFactorMap: { [key in SubscriptionTier]: number } = {
   1: 0.9,
   2: 0.8,
   3: 0.7,
+  4: 1,
 }
 
 export const renderDisplayPrice = (

@@ -26,6 +26,7 @@ const mannaCapTierMap = {
   1: 1000,
   2: 5000,
   3: 10000,
+  4: 0,
 }
 
 const dummyFeatures: { [key in SubscriptionTier]: string[] } = {
@@ -56,6 +57,7 @@ const dummyFeatures: { [key in SubscriptionTier]: string[] } = {
     'Early access to preview features',
     'Priority support',
   ],
+  4: [],
 }
 
 const ProductsList = ({
