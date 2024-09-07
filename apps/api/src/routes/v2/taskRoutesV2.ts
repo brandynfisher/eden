@@ -67,7 +67,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
           message: Type.Optional(Type.String()),
         },
         500: {
-          // error: Type.Optional(Type.String()),
+          error: Type.Optional(Type.Any()),
           message: Type.Optional(Type.String()),
         },
       },

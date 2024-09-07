@@ -137,7 +137,14 @@ export const createTask = async (
 
     return reply.status(200).send({ task })
   } catch (e) {
-    server.log.error({ message: 'Failed to create task', error: e })
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({ message: 'Failed to create task', error: errorMessage })
+    return reply.status(500).send({ error: errorMessage })
   }
 }
 

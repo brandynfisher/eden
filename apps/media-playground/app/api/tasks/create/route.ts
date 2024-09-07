@@ -42,12 +42,14 @@ const createTask = async (
       return NextResponse.json(response.task)
     })
     .catch(error => {
+      // console.log(error.response.data)
       return new NextResponse(
         JSON.stringify({
-          message:
-            error?.response?.data?.message ||
-            error.response.statusText ||
-            'Internal Exception',
+          message: error?.response?.data
+            ? error.response.data.error
+              ? error.response.data.error
+              : error.response.data.message
+            : error.response.statusText || 'Internal Exception',
           error:
             process.env.NEXT_PUBLIC_APP_ENV === 'production'
               ? '- redacted -'
