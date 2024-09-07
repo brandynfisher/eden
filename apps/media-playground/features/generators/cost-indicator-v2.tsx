@@ -46,7 +46,7 @@ const CostValue = ({ formula, parameterNames }: CostValueProps) => {
 
   return formula ? (
     <div className="flex items-center justify-center text-sm">
-      <CoinsIcon className="mr-2 h-4 w-4" />
+      <CoinsIcon className="mr-1.5 h-4 w-4" />
       <span className="font-mono">{Math.floor(cost) || 1}</span>
     </div>
   ) : (

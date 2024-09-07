@@ -5,6 +5,7 @@ import { fetcher } from '@/lib/fetcher'
 import { CreatorsGetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
+import { notFound } from 'next/navigation'
 import { Suspense, cache } from 'react'
 
 type Props = {
@@ -14,11 +15,14 @@ type Props = {
 }
 
 const getUser = async (name: string) => {
-  const response = await fetcher<CreatorsGetResponse>(
-    `${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`,
-  )
-
-  return response
+  try {
+    const response = await fetcher<CreatorsGetResponse>(
+      `${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`,
+    )
+    return response
+  } catch (e) {
+    return
+  }
 }
 
 const getUserCached = cache(getUser)
@@ -32,6 +36,10 @@ export async function generateMetadata(
 
   // fetch data
   const creatorResponse = await getUserCached(name || '')
+
+  if (!creatorResponse) {
+    return {}
+  }
 
   // optionally access and extend (rather than replace) parent metadata
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
@@ -56,13 +64,13 @@ export async function generateMetadata(
 
 const CreatorProfilePage = async ({ params: { name } }: Props) => {
   if (!name) {
-    return <div>name missing</div>
+    return notFound()
   }
 
   const creatorResponse = await getUserCached(name || '')
 
   if (!creatorResponse || !creatorResponse.creator) {
-    return <div>empty response</div>
+    return notFound()
   }
 
   if (creatorResponse.error) {

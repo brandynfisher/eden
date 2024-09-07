@@ -5,6 +5,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { CreationsV2GetResponse, MediaType } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
+import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 type Props = {
@@ -12,12 +13,16 @@ type Props = {
 }
 
 const getCreation = async (id: string) => {
-  const response = await fetcher<CreationsV2GetResponse>(
-    `${process.env.NEXT_PUBLIC_HOST}/api/creations/${id}`,
-    { credentials: 'include' },
-  )
+  try {
+    const response = await fetcher<CreationsV2GetResponse>(
+      `${process.env.NEXT_PUBLIC_HOST}/api/creations/${id}`,
+      { credentials: 'include' },
+    )
 
-  return response
+    return response
+  } catch (e) {
+    return
+  }
 }
 
 const getCreationCached = cache(getCreation)
@@ -31,6 +36,10 @@ export async function generateMetadata(
 
   // fetch data
   const response = await getCreationCached(id || '')
+
+  if (!response) {
+    return {}
+  }
 
   // optionally access and extend (rather than replace) parent metadata
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
@@ -69,13 +78,13 @@ export async function generateMetadata(
 
 const CreationDetailPage = async ({ params: { id: creationId } }: Props) => {
   if (!creationId) {
-    return <div>creationId missing</div>
+    return notFound()
   }
 
   const creationResponse = await getCreationCached(creationId || '')
 
   if (!creationResponse || !creationResponse.creation) {
-    return <div>empty response</div>
+    return notFound()
   }
 
   if (creationResponse.error) {

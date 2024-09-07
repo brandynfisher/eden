@@ -4,6 +4,7 @@ import { fetcher } from '@/lib/fetcher'
 import { ModelsV2GetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
+import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 type Props = {
@@ -11,12 +12,16 @@ type Props = {
 }
 
 const getModel = async (id: string) => {
-  const response = await fetcher<ModelsV2GetResponse>(
-    `${process.env.NEXT_PUBLIC_HOST}/api/models/${id}`,
-    { credentials: 'include' },
-  )
+  try {
+    const response = await fetcher<ModelsV2GetResponse>(
+      `${process.env.NEXT_PUBLIC_HOST}/api/models/${id}`,
+      { credentials: 'include' },
+    )
 
-  return response
+    return response
+  } catch (e) {
+    return
+  }
 }
 
 const getModelCached = cache(getModel)
@@ -30,6 +35,10 @@ export async function generateMetadata(
 
   // fetch data
   const response = await getModelCached(id || '')
+
+  if (!response) {
+    return {}
+  }
 
   // optionally access and extend (rather than replace) parent metadata
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
@@ -63,13 +72,13 @@ export async function generateMetadata(
 
 const ModelDetailPage = async ({ params: { id: modelId } }: Props) => {
   if (!modelId) {
-    return <div>modelId missing</div>
+    return notFound()
   }
 
   const response = await getModelCached(modelId || '')
 
   if (!response || !response.model) {
-    return <div>empty response</div>
+    return notFound()
   }
 
   if (response.error) {
