@@ -26,7 +26,7 @@ const TimelineItemMediaResult = ({ task, result }: Props) => {
             <audio src={result.url || result.filename} controls={true} />
           </div>
         ) : (
-          <LightboxGallery withDownloadButton={true}>
+          <LightboxGallery>
             <LightboxGalleryItem
               className="w-full h-full"
               item={{

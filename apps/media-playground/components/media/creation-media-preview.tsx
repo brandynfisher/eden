@@ -18,7 +18,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
           <audio src={creation.url} controls={true} />
         </div>
       ) : (
-        <LightboxGallery withDownloadButton={true}>
+        <LightboxGallery>
           <LightboxGalleryItem
             className={cn([
               'lg:absolute lg:h-full',
