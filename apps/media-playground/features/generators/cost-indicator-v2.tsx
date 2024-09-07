@@ -6,13 +6,10 @@ import { useWatch } from 'react-hook-form'
 const regex = /\b[^\d\W]+\b/g //match words, not numbers
 
 const calculateCost = (
-  evalParser: Parser,
   formula: string,
   fieldNames: string[],
   values: number[],
 ) => {
-  // console.log({ fieldNames, values })
-
   const nameValueMap: Record<GeneratorParameterV2['name'], number> =
     fieldNames.reduce<Record<GeneratorParameterV2['name'], number>>(
       (object, key, index) => {
@@ -22,27 +19,22 @@ const calculateCost = (
       {},
     )
 
-  // console.log({ formula, nameValueMap })
-
-  let expr = evalParser.parse(formula)
-
-  return expr.evaluate(nameValueMap)
+  return Parser.evaluate(formula, nameValueMap)
 }
 
 type CostValueProps = {
-  evalParser: Parser
   formula?: string
   parameterNames: GeneratorParameterV2['name'][]
 }
 
-const CostValue = ({ evalParser, formula, parameterNames }: CostValueProps) => {
+const CostValue = ({ formula, parameterNames }: CostValueProps) => {
   // console.log('re-rendering costValue', formula, !!formula)
   const watchedValues: number[] = useWatch({
     name: parameterNames,
     disabled: !parameterNames.length,
   })
   const cost = formula
-    ? calculateCost(evalParser, formula, parameterNames, watchedValues)
+    ? calculateCost(formula, parameterNames, watchedValues)
     : 1
   // console.log({ formula, parameterNames, watchedValues, cost })
 
@@ -63,15 +55,10 @@ type Props = {
 const CostIndicatorV2 = ({ formula }: Props) => {
   const matches = formula?.match(regex) || []
   const costParameterNames = matches.map(match => match.trim())
-  const evalParser = new Parser()
 
   return (
     <div className="flex items-center justify-center border border-muted rounded-md py-2 px-2">
-      <CostValue
-        evalParser={evalParser}
-        formula={formula}
-        parameterNames={costParameterNames}
-      />
+      <CostValue formula={formula} parameterNames={costParameterNames} />
     </div>
   )
 }
