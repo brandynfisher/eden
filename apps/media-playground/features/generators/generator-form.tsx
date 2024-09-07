@@ -153,7 +153,7 @@ const GeneratorForm = ({ generator }: Props) => {
             ) : null}
           </div>
 
-          <div className="flex justify-between flex-wrap gap-4 my-2">
+          <div className="flex justify-between flex-wrap gap-4 mt-4 mb-2">
             <div className="flex gap-2">
               {optionalParameters?.length ? (
                 <Button

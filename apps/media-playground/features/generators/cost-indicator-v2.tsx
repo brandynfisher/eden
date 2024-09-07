@@ -1,3 +1,9 @@
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import { Parser } from 'expr-eval'
 import { CoinsIcon } from 'lucide-react'
@@ -41,7 +47,7 @@ const CostValue = ({ formula, parameterNames }: CostValueProps) => {
   return formula ? (
     <div className="flex items-center justify-center text-sm">
       <CoinsIcon className="mr-2 h-4 w-4" />
-      <span>{Math.floor(cost) || 1}</span>
+      <span className="font-mono">{Math.floor(cost) || 1}</span>
     </div>
   ) : (
     <div>n/a</div>
@@ -57,9 +63,18 @@ const CostIndicatorV2 = ({ formula }: Props) => {
   const costParameterNames = matches.map(match => match.trim())
 
   return (
-    <div className="flex items-center justify-center border border-muted rounded-md py-2 px-2">
-      <CostValue formula={formula} parameterNames={costParameterNames} />
-    </div>
+    <TooltipProvider delayDuration={125}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="cursor-pointer flex items-center justify-center border border-muted rounded-md py-2 px-2 bg-accent">
+            <CostValue formula={formula} parameterNames={costParameterNames} />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          Estimated Manna cost for this configuration
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
