@@ -3,7 +3,7 @@ import { Parser } from 'expr-eval'
 import { CoinsIcon } from 'lucide-react'
 import { useWatch } from 'react-hook-form'
 
-const regex = /\b(\w+)\b/g //match words delimited by spaces
+const regex = /\b[^\d\W]+\b/g //match words, not numbers
 
 const calculateCost = (
   evalParser: Parser,
