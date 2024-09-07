@@ -55,6 +55,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "event-source-polyfill": "^1.0.31",
+    "expr-eval": "^2.0.2",
     "fast-blurhash": "^1.1.4",
     "lucide-react": "^0.356.0",
     "next": "14.2.4",

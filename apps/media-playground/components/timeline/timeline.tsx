@@ -118,7 +118,7 @@ const Timeline = ({ generator }: Props) => {
 
   return (
     <div className="mb-8 lg:col-span-2 md:pt-4">
-      <DropdownMenuSeparator className="mb-3 md:hidden" />
+      <DropdownMenuSeparator className="mt-2 mb-4 md:hidden" />
 
       {generator.outputType !== 'lora' ? (
         <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 mb-2 bg-muted/30">

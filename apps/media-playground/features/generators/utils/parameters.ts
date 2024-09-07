@@ -8,13 +8,11 @@ export type ParameterGroup = {
 }
 
 /**
- * Groups the given parameters based on their visibility conditions.
- *
- * @param {GeneratorParameterV2[]} parameters - The list of parameters to be grouped.
- *
- * @return {ParameterGroup[]} - The grouped parameters.
+ * Groups the given parameters with their toggle based on their visibility conditions.
  */
-export function groupParameters(parameters: GeneratorParameterV2[]) {
+export function groupParameters(
+  parameters: GeneratorParameterV2[],
+): ParameterGroup[] {
   const orderedElements: ParameterGroup[] = []
   parameters.forEach(parameter => {
     const isToggle =
@@ -55,4 +53,18 @@ export function groupParameters(parameters: GeneratorParameterV2[]) {
     }
   })
   return orderedElements
+}
+
+export function getCostRelevantParameters(parameters?: GeneratorParameterV2[]) {
+  if (!parameters || !parameters.length) return []
+
+  const dummyList: GeneratorParameterV2['name'][] = [
+    'width',
+    'height',
+    'n_frames',
+  ]
+  const costParams = parameters.filter(param => dummyList.includes(param.name))
+  console.log('getCostRelevantParameters', { dummyList, costParams })
+
+  return costParams
 }

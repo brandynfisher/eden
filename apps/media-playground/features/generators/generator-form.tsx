@@ -4,8 +4,9 @@ import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import ParameterField from '@/features/generators/parameter-field'
-import ParameterGroupCollapse from '@/features/generators/parameter-group-collapse'
+import CostIndicatorV2 from '@/features/generators/cost-indicator-v2'
+import ParameterField from '@/features/generators/parameters/parameter-field'
+import ParameterGroupCollapse from '@/features/generators/parameters/parameter-group-collapse'
 import { groupParameters } from '@/features/generators/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema } from '@/lib/forms'
@@ -14,7 +15,7 @@ import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -110,15 +111,20 @@ const GeneratorForm = ({ generator }: Props) => {
     // }, 100)
   }, [])
 
-  const requiredParameters = generator.parameters?.filter(
-    parameter => parameter.required,
+  const requiredParameters = useMemo(
+    () => generator.parameters?.filter(parameter => parameter.required),
+    [generator.parameters],
   )
-  const optionalParameters = generator.parameters?.filter(
-    parameter => !parameter.required,
+
+  const optionalParameters = useMemo(
+    () => generator.parameters?.filter(parameter => !parameter.required),
+    [generator.parameters],
   )
-  const groupedOptionalParameters = optionalParameters
-    ? groupParameters(optionalParameters)
-    : []
+
+  const groupedOptionalParameters = useMemo(
+    () => (optionalParameters ? groupParameters(optionalParameters) : []),
+    [optionalParameters],
+  )
 
   // console.log(groupedOptionalParameters)
 
@@ -129,7 +135,7 @@ const GeneratorForm = ({ generator }: Props) => {
     >
       {/*<FormPersist resetKey={resetKey} formKey={`form_tool_${generator.key}`} form={form} defaultValues={defaultValues}/>*/}
       <Form {...form}>
-        <form className="flex flex-col w-full">
+        <form className="w-full">
           <TypographyH4 className="mb-2">{generator.name}</TypographyH4>
           <div
             data-test-id="generator-form-settings-required"
@@ -147,44 +153,53 @@ const GeneratorForm = ({ generator }: Props) => {
             ) : null}
           </div>
 
-          <div className="flex gap-4 my-2">
-            {optionalParameters?.length ? (
+          <div className="flex justify-between flex-wrap gap-4 my-2">
+            <div className="flex gap-2">
+              {optionalParameters?.length ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="flex items-center gap-2"
+                  onClick={() => setShowForm(!showForm)}
+                >
+                  <Settings2Icon className="h-4 w-4" />
+                  Settings
+                </Button>
+              ) : null}
+
               <Button
                 type="button"
-                variant="secondary"
-                className="flex items-center gap-2"
-                onClick={() => setShowForm(!showForm)}
+                variant="ghost"
+                className="text-muted-foreground"
+                onClick={!isSubmitting ? handleReset : undefined}
+                disabled={isSubmitting}
               >
-                <Settings2Icon className="h-4 w-4" />
-                Settings
+                Reset
               </Button>
-            ) : null}
+            </div>
 
-            <Button
-              type="button"
-              variant="ghost"
-              className="text-muted-foreground"
-              onClick={!isSubmitting ? handleReset : undefined}
-              disabled={isSubmitting}
-            >
-              Reset
-            </Button>
+            <div className="flex gap-2 justify-between">
+              {/*<CostIndicatorV2 formula={generator.costEstimate} />*/}
+              <CostIndicatorV2 formula={generator.costEstimate} />
 
-            <Button
-              type="button"
-              className="ml-auto"
-              onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
-                </>
-              ) : (
-                <>Create</>
-              )}
-            </Button>
+              <Button
+                type="button"
+                className="ml-auto"
+                onClick={
+                  !isSubmitting ? form.handleSubmit(onSubmit) : undefined
+                }
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                ) : (
+                  <>Create</>
+                )}
+              </Button>
+            </div>
           </div>
           {optionalParameters?.length ? (
             <div

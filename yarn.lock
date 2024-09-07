@@ -15266,6 +15266,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expr-eval@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "expr-eval@npm:2.0.2"
+  checksum: 10c0/642f112ff28ea34574c595c3ad73ccd8e638498879a4dd28620c4dabebab2e11987a851266ba81883dae85a5800e0c93b3d06f81718b71a215f831534646e4f2
+  languageName: node
+  linkType: hard
+
 "express@npm:^4.17.3":
   version: 4.19.2
   resolution: "express@npm:4.19.2"
@@ -18938,6 +18945,7 @@ __metadata:
     eslint-plugin-jsx-a11y: "npm:^6.8.0"
     eslint-plugin-storybook: "npm:^0.8.0"
     event-source-polyfill: "npm:^1.0.31"
+    expr-eval: "npm:^2.0.2"
     fast-blurhash: "npm:^1.1.4"
     lucide-react: "npm:^0.356.0"
     next: "npm:14.2.4"

@@ -1,10 +1,10 @@
-import { ParameterGroup } from './utils/parameters'
+import { ParameterGroup } from '../utils/parameters'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import ParameterField from '@/features/generators/parameter-field'
+import ParameterField from '@/features/generators/parameters/parameter-field'
 import { cn } from '@/lib/utils'
 import { UseFormReturn } from 'react-hook-form'
 

@@ -67,6 +67,7 @@ export type GeneratorV2 = {
   private?: boolean
   parameters?: GeneratorParameterV2[]
   outputType: GeneratorOutputTypeV2
+  costEstimate?: string
 }
 
 export type GeneratorParameterType =
