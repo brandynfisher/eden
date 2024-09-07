@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 type Props = {
   item?: CreationV2 | ModelV2
@@ -40,19 +41,21 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
                 name={item.user.username || item.user._id}
                 image={item.user.userImage}
               />
-              {type === 'creation' ? (
-                <CreationActionsMenu
-                  creation={item as CreationV2}
-                  onUpdate={onUpdate}
-                  className="ml-auto"
-                />
-              ) : (
-                <ModelActionsMenu
-                  model={item as ModelV2}
-                  onUpdate={onUpdate}
-                  className="ml-auto"
-                />
-              )}
+              <Suspense>
+                {type === 'creation' ? (
+                  <CreationActionsMenu
+                    creation={item as CreationV2}
+                    onUpdate={onUpdate}
+                    className="ml-auto"
+                  />
+                ) : (
+                  <ModelActionsMenu
+                    model={item as ModelV2}
+                    onUpdate={onUpdate}
+                    className="ml-auto"
+                  />
+                )}
+              </Suspense>
             </div>
             <div className="text-xs text-foreground/70 mt-2">
               <TimeAgo date={item.createdAt} />

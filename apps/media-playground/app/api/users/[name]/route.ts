@@ -1,5 +1,5 @@
+import { getAuthToken } from '@/lib/auth'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { auth } from '@clerk/nextjs/server'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -13,15 +13,14 @@ export async function GET(
     })
   }
 
-  const { getToken } = auth()
-  const authToken = await getToken()
+  const authToken = await getAuthToken(request)
 
   // console.log('auth()', name, request.url)
 
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-      token: authToken !== null ? authToken : undefined,
+      token: authToken,
     })
 
     const res = await eden.creators.getV2({ userId: name })

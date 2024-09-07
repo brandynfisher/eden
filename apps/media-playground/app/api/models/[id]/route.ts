@@ -1,5 +1,5 @@
+import { getAuthToken } from '@/lib/auth'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { auth } from '@clerk/nextjs/server'
 import {
   EdenClient,
   ModelsV2PatchArguments,
@@ -17,8 +17,7 @@ export async function GET(
     })
   }
 
-  const { getToken } = auth()
-  const authToken = await getToken()
+  const authToken = await getAuthToken(request)
 
   // console.log('auth()', id, request.url)
 
@@ -56,8 +55,7 @@ export async function PATCH(
     })
   }
 
-  const { getToken } = auth()
-  const authToken = await getToken()
+  const authToken = await getAuthToken(request)
 
   // console.log('auth()', id, request.url)
 

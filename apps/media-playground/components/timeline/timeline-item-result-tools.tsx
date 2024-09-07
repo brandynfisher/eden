@@ -23,7 +23,7 @@ import {
   ListIcon,
 } from 'lucide-react'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -213,14 +213,16 @@ const TimelineItemResultTools = ({ task, result, className }: Props) => {
               <ListIcon size={20} />
             </Button>
           </CollapsibleTrigger>
-          {task.output_type === 'lora' && result.model ? (
-            <ModelActionsMenu model={result.model} className="ml-auto" />
-          ) : result.creation ? (
-            <CreationActionsMenu
-              creation={result.creation}
-              className="ml-auto"
-            />
-          ) : null}
+          <Suspense>
+            {task.output_type === 'lora' && result.model ? (
+              <ModelActionsMenu model={result.model} className="ml-auto" />
+            ) : result.creation ? (
+              <CreationActionsMenu
+                creation={result.creation}
+                className="ml-auto"
+              />
+            ) : null}
+          </Suspense>
         </div>
         <CollapsibleContent>
           <div className="mt-2">

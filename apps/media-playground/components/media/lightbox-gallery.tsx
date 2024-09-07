@@ -40,7 +40,6 @@ export const LightboxGalleryItem = ({
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
   const width = item.width || 1024
   const height = item.height || 1024
-
   const blurDataUrl = useBlurDataUrl(item.blur, item.width, item.height)
 
   return (
@@ -90,7 +89,10 @@ export const LightboxGalleryItem = ({
             height={height}
             blurDataURL={blurDataUrl}
             placeholder={blurDataUrl ? 'blur' : undefined}
-            className={cn([`object-contain cursor-zoom-in w-full`, className])}
+            className={cn([
+              `object-contain cursor-zoom-in w-full !bg-contain`,
+              className,
+            ])}
           />
           {item.url?.endsWith('.mp4') ? (
             <>

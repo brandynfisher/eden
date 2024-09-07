@@ -1,11 +1,13 @@
 'use client'
 
+import LoadingIndicator from '@/components/loading-indicator'
 import ModelMediaPreview from '@/components/media/model-media-preview'
 import { Skeleton } from '@/components/ui/skeleton'
 import DetailSidebar from '@/features/detail/detail-sidebar'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
+import { Suspense } from 'react'
 
 type Props = {
   id: string
@@ -42,12 +44,14 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
           <Skeleton className="min-h-[512px] w-full rounded-xl opacity-0 animate-fade-in" />
         )}
 
-        <DetailSidebar
-          item={model}
-          type={'model'}
-          inModal={isModal}
-          onUpdate={() => invalidate()}
-        />
+        <Suspense fallback={<LoadingIndicator />}>
+          <DetailSidebar
+            item={model}
+            type={'model'}
+            inModal={isModal}
+            onUpdate={() => invalidate()}
+          />
+        </Suspense>
       </div>
     </>
   )

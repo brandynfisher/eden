@@ -5,22 +5,6 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { CreationsV2GetResponse, MediaType } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
-// import { getAuth } from '@clerk/nextjs/server'
-// import { NextRequest } from 'next/server'
-//
-// const getAuthToken = async (req: NextRequest) => {
-//   const { getToken } = getAuth(req)
-//   const authToken = await getToken()
-//   return authToken || undefined
-// }
-//
-// const getAuthHeaders = async (req: NextRequest) => {
-//   const authToken = req ? await getAuthToken(req) : ''
-//
-//   return {
-//     Authorization: authToken ? `Bearer ${authToken}` : '',
-//   }
-// }
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'

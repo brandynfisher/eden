@@ -1,5 +1,6 @@
 'use client'
 
+import LoadingIndicator from '@/components/loading-indicator'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import CreationMediaPreview from '@/components/media/creation-media-preview'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -77,12 +78,14 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
           <Skeleton className="min-h-[512px] w-full rounded-xl opacity-0 animate-fade-in" />
         )}
 
-        <DetailSidebar
-          item={creation}
-          type={'creation'}
-          inModal={isModal}
-          onUpdate={() => invalidate()}
-        />
+        <Suspense fallback={<LoadingIndicator />}>
+          <DetailSidebar
+            item={creation}
+            type={'creation'}
+            inModal={isModal}
+            onUpdate={() => invalidate()}
+          />
+        </Suspense>
       </div>
       <div>
         <div className="px-4 w-full">
