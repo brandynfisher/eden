@@ -16,7 +16,7 @@ export async function GET(
   const { getToken } = auth()
   const authToken = await getToken()
 
-  console.log('auth()', name, request.url)
+  // console.log('auth()', name, request.url)
 
   try {
     const eden = new EdenClient({

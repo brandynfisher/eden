@@ -20,7 +20,7 @@ export async function GET(
   const { getToken } = auth()
   const authToken = await getToken()
 
-  console.log('auth()', id, request.url)
+  // console.log('auth()', id, request.url)
 
   try {
     const eden = new EdenClient({
@@ -59,7 +59,7 @@ export async function PATCH(
   const { getToken } = auth()
   const authToken = await getToken()
 
-  console.log('auth()', id, request.url)
+  // console.log('auth()', id, request.url)
 
   const requestJson = await request.json()
   const { public: isPublic } = requestJson as ModelsV2PatchArguments

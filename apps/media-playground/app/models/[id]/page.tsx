@@ -4,6 +4,7 @@ import { fetcher } from '@/lib/fetcher'
 import { ModelsV2GetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
@@ -15,7 +16,10 @@ const getModel = async (id: string) => {
   try {
     const response = await fetcher<ModelsV2GetResponse>(
       `${process.env.NEXT_PUBLIC_HOST}/api/models/${id}`,
-      { credentials: 'include' },
+      {
+        credentials: 'include',
+        headers: { Cookie: cookies().toString() },
+      },
     )
 
     return response

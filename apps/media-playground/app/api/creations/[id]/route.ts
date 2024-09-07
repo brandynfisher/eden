@@ -1,5 +1,5 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { auth } from '@clerk/nextjs/server'
+import { getAuth } from '@clerk/nextjs/server'
 import {
   CreationsV2PatchArguments,
   CreationsV2PatchResponse,
@@ -17,10 +17,10 @@ export async function GET(
     })
   }
 
-  const { getToken } = auth()
+  const { getToken } = getAuth(request)
   const authToken = await getToken()
 
-  console.log('auth()', id, request.url)
+  // console.log('auth()', id, request.url, authToken)
 
   try {
     const eden = new EdenClient({
@@ -59,10 +59,10 @@ export async function PATCH(
     })
   }
 
-  const { getToken } = auth()
+  const { getToken } = getAuth(request)
   const authToken = await getToken()
 
-  console.log('auth()', id, request.url)
+  // console.log('auth()', id, request.url)
 
   const requestJson = await request.json()
   const { public: isPublic } = requestJson as CreationsV2PatchArguments

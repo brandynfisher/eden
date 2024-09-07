@@ -5,6 +5,7 @@ import { fetcher } from '@/lib/fetcher'
 import { CreatorsGetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Suspense, cache } from 'react'
 
@@ -18,6 +19,10 @@ const getUser = async (name: string) => {
   try {
     const response = await fetcher<CreatorsGetResponse>(
       `${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`,
+      {
+        credentials: 'include',
+        headers: { Cookie: cookies().toString() },
+      },
     )
     return response
   } catch (e) {
