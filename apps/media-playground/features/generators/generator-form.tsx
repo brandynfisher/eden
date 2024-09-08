@@ -143,15 +143,20 @@ const GeneratorForm = ({ generator }: Props) => {
           }
         : undefined
 
-    console.log({ presetValues })
+    console.log({
+      queryParams,
+      lora: queryParams.get('lora'),
+      presetValues,
+      default: defaultValues?.lora,
+    })
 
     if (presetValues) {
       presetValues?.lora && form.setValue('use_lora', true)
       presetValues?.lora && form.setValue('lora', presetValues?.lora)
+      setShowForm(true)
     } else {
-      defaultValues?.use_lora &&
-        form.setValue('use_lora', defaultValues?.use_lora)
-      defaultValues?.lora && form.setValue('lora', defaultValues?.lora)
+      form.setValue('use_lora', defaultValues?.use_lora)
+      form.setValue('lora', defaultValues?.lora || '')
     }
   }, [form, queryParams])
 
@@ -180,8 +185,8 @@ const GeneratorForm = ({ generator }: Props) => {
             ) : null}
           </div>
 
-          <div className="flex justify-between flex-wrap gap-4 mt-4 mb-2">
-            <div className="flex gap-2">
+          <div className="flex justify-between flex-wrap gap-2 mt-4 mb-2">
+            <div className="flex gap-2 items-center">
               {optionalParameters?.length ? (
                 <Button
                   type="button"
@@ -196,8 +201,9 @@ const GeneratorForm = ({ generator }: Props) => {
 
               <Button
                 type="button"
+                size="sm"
                 variant="ghost"
-                className="text-muted-foreground"
+                className="text-muted-foreground px-1"
                 onClick={!isSubmitting ? handleReset : undefined}
                 disabled={isSubmitting}
               >
@@ -206,7 +212,6 @@ const GeneratorForm = ({ generator }: Props) => {
             </div>
 
             <div className="flex gap-2 justify-between">
-              {/*<CostIndicatorV2 formula={generator.costEstimate} />*/}
               <CostIndicatorV2 formula={generator.costEstimate} />
 
               <Button

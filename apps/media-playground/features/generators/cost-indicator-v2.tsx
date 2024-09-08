@@ -7,25 +7,36 @@ import {
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import { Parser } from 'expr-eval'
 import { CoinsIcon } from 'lucide-react'
-import { useWatch } from 'react-hook-form'
+import React from 'react'
+import { useFormContext } from 'react-hook-form'
 
-const regex = /\b[^\d\W]+\b/g //match words, not numbers
+const regex = /\b[^\d\W]+(\.[^\d\W]+)*\b/g
 
 const calculateCost = (
   formula: string,
-  fieldNames: string[],
-  values: number[],
+  parameterNames: GeneratorParameterV2['name'][],
+  values: string[] | number[],
 ) => {
-  const nameValueMap: Record<GeneratorParameterV2['name'], number> =
-    fieldNames.reduce<Record<GeneratorParameterV2['name'], number>>(
-      (object, key, index) => {
-        object[key as GeneratorParameterV2['name']] = values[index]
-        return object
-      },
-      {},
-    )
+  const nameValueMap: Map<string, number> = parameterNames.reduce(
+    (acc, key, i) => {
+      const isArrayField =
+        typeof values[i] === 'undefined' || Array.isArray(values[i])
+      if (isArrayField) {
+        acc.set(
+          `${key}_length`,
+          Array.isArray(values[i]) ? (values[i] as string).length : 0,
+        )
+      } else {
+        acc.set(key, values[i] as number)
+      }
+      return acc
+    },
+    new Map<string, number>(),
+  )
 
-  return Parser.evaluate(formula, nameValueMap)
+  const nameValueObject = Object.fromEntries(nameValueMap.entries())
+
+  return Parser.evaluate(formula, nameValueObject)
 }
 
 type CostValueProps = {
@@ -33,24 +44,24 @@ type CostValueProps = {
   parameterNames: GeneratorParameterV2['name'][]
 }
 
-const CostValue = ({ formula, parameterNames }: CostValueProps) => {
-  // console.log('re-rendering costValue', formula, !!formula)
-  const watchedValues: number[] = useWatch({
-    name: parameterNames,
-    disabled: !parameterNames.length,
-  })
-  const cost = formula
-    ? calculateCost(formula, parameterNames, watchedValues)
-    : 1
-  // console.log({ formula, parameterNames, watchedValues, cost })
+const CostValue: React.FC<CostValueProps> = ({ formula, parameterNames }) => {
+  const { watch } = useFormContext()
+  const values = watch(parameterNames)
+  let cost = 1
 
-  return formula ? (
-    <div className="flex items-center justify-center text-sm">
+  if (formula) {
+    cost = calculateCost(
+      formula.replace(/\.length/g, '_length'),
+      parameterNames,
+      values,
+    )
+  }
+
+  return (
+    <div className="flex items-center justify-center text-xs">
       <CoinsIcon className="mr-1.5 h-4 w-4" />
       <span className="font-mono">{Math.floor(cost) || 1}</span>
     </div>
-  ) : (
-    <div>n/a</div>
   )
 }
 
@@ -58,15 +69,22 @@ type Props = {
   formula?: string
 }
 
-const CostIndicatorV2 = ({ formula }: Props) => {
-  const matches = formula?.match(regex) || []
-  const costParameterNames = matches.map(match => match.trim())
+const CostIndicatorV2: React.FC<Props> = ({ formula }) => {
+  const costParameterNames = formula
+    ? Array.from(
+        new Set(
+          (formula.match(regex) || []).map(match =>
+            match.replace('.length', ''),
+          ),
+        ),
+      )
+    : []
 
   return (
     <TooltipProvider delayDuration={125}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="cursor-pointer flex items-center justify-center border border-muted rounded-md py-2 px-2 bg-accent">
+          <div className="cursor-pointer flex items-center justify-center">
             <CostValue formula={formula} parameterNames={costParameterNames} />
           </div>
         </TooltipTrigger>

@@ -1,3 +1,4 @@
+import CdnImage from '@/components/Media/cdn-image'
 import CreatorProfileLink from '@/components/Profile/CreatorProfileLink'
 import { Concept } from '@edenlabs/eden-sdk'
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded'
@@ -5,7 +6,6 @@ import ZoomIn from '@mui/icons-material/ZoomIn'
 import { Button } from '@mui/material'
 import Link from 'next/link'
 import React from 'react'
-import CdnImage from '@/components/Media/cdn-image'
 
 const HighlightCard = ({
   concept,
@@ -54,7 +54,7 @@ const HighlightCard = ({
         <div className="flex gap-2 lg:gap-4 justify-between mt-auto">
           <Link href={`/create/creations?concept=${concept._id}`}>
             <Button variant="outlined" className="!flex !items-center h-9">
-              <div>Use Model</div>
+              <div>Use Model (txt2img)</div>
               <PlayArrowRounded fontSize="small" className="hidden md:block" />
             </Button>
           </Link>
