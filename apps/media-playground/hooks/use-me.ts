@@ -47,7 +47,7 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     user: currentUser,
     hasMinimumSubscriptionTier,
     hasEden2EarlyAccess,
-    balance,
+    balance: balance as number,
     foreverBalance,
     subscriptionBalance,
     isLoading,

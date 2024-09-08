@@ -142,13 +142,13 @@ const GeneratorForm = ({ generator }: Props) => {
             lora: queryParams.get('lora'),
           }
         : undefined
-
-    console.log({
-      queryParams,
-      lora: queryParams.get('lora'),
-      presetValues,
-      default: defaultValues?.lora,
-    })
+    //
+    // console.log({
+    //   queryParams,
+    //   lora: queryParams.get('lora'),
+    //   presetValues,
+    //   default: defaultValues?.lora,
+    // })
 
     if (presetValues) {
       presetValues?.lora && form.setValue('use_lora', true)

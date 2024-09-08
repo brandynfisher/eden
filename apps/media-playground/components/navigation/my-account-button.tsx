@@ -10,10 +10,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
-import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { useMe } from '@/hooks/use-me'
+import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { LogOutIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -32,8 +34,9 @@ const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
 ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 const AccountDropdown = () => {
   const router = useRouter()
-  const { creator: user } = useCreatorQuery({ key: 'me' })
   const { isSignedIn } = useAuth()
+
+  const { user, balance } = useMe({ isAuthenticated: !!isSignedIn })
   const { signOut } = useClerk()
 
   const logout = async () => {
@@ -59,7 +62,7 @@ const AccountDropdown = () => {
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="min-w-48">
         {/*<DropdownMenuLabel>My Account</DropdownMenuLabel>*/}
         {/*<DropdownMenuSeparator />*/}
         <DropdownMenuItem className="cursor-pointer group" asChild>
@@ -73,6 +76,24 @@ const AccountDropdown = () => {
             </div>
           </Link>
           {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <div className="flex items-center justify-between w-full">
+            <div className="capitalize text-xs">
+              <span>
+                {
+                  subscriptionTierNameMap[
+                    user?.subscriptionTier || SubscriptionTier.Free
+                  ]
+                }
+              </span>
+              <span className="ml-1 text-muted-foreground/70">plan</span>
+            </div>
+            <div className="text-xs">
+              <span>{balance}</span>
+              <span className="ml-1 text-muted-foreground/70">manna</span>
+            </div>
+          </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
