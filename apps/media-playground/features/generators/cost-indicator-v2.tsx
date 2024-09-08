@@ -10,7 +10,7 @@ import { CoinsIcon } from 'lucide-react'
 import React from 'react'
 import { useFormContext } from 'react-hook-form'
 
-const regex = /\b[^\d\W]+(\.[^\d\W]+)*\b/g
+const regex = /\b[^\d\W]+(\.[^\d\W]+)*\b/g // match words that may contain periods: "(width/1024)/prompts.length * 2"
 
 const calculateCost = (
   formula: string,

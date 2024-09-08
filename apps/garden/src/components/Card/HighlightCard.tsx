@@ -54,7 +54,7 @@ const HighlightCard = ({
         <div className="flex gap-2 lg:gap-4 justify-between mt-auto">
           <Link href={`/create/creations?concept=${concept._id}`}>
             <Button variant="outlined" className="!flex !items-center h-9">
-              <div>Use Model (txt2img)</div>
+              <div>Use Model</div>
               <PlayArrowRounded fontSize="small" className="hidden md:block" />
             </Button>
           </Link>
