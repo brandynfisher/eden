@@ -15,7 +15,8 @@ import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -29,14 +30,6 @@ type Props = {
 const GeneratorForm = ({ generator }: Props) => {
   const { verifyAuth } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const defaultValues = generator.parameters?.reduce((accum, currParameter) => {
-    return {
-      ...accum,
-      [currParameter.name]: currParameter.default,
-    }
-  }, {})
-
   // console.log({defaultValues})
 
   const hasAspectRatioSelector = generator.parameters?.some(
@@ -48,6 +41,15 @@ const GeneratorForm = ({ generator }: Props) => {
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
 
   type FormData = z.infer<typeof parameterSchema>
+  const defaultValues: FormData | undefined = generator.parameters?.reduce(
+    (accum, currParameter) => {
+      return {
+        ...accum,
+        [currParameter.name]: currParameter.default,
+      }
+    },
+    {},
+  )
 
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
@@ -96,12 +98,16 @@ const GeneratorForm = ({ generator }: Props) => {
     }
   }
 
+  const router = useRouter()
+  const pathname = usePathname()
+
   const [showForm, setShowForm] = useState(false)
   // const [resetKey, setResetKey] = useState(0)
 
   // console.log({defaultValues})
 
   const handleReset = useCallback(() => {
+    router.push(pathname, { scroll: false })
     form.reset(defaultValues, { keepDefaultValues: true })
     // setResetKey(prev => prev + 1)
     //
@@ -109,7 +115,7 @@ const GeneratorForm = ({ generator }: Props) => {
     //   console.log('before reset', {defaultValues})
     //   form.reset(defaultValues, { keepDefaultValues: true })
     // }, 100)
-  }, [])
+  }, [pathname])
 
   const requiredParameters = useMemo(
     () => generator.parameters?.filter(parameter => parameter.required),
@@ -125,8 +131,29 @@ const GeneratorForm = ({ generator }: Props) => {
     () => (optionalParameters ? groupParameters(optionalParameters) : []),
     [optionalParameters],
   )
-
   // console.log(groupedOptionalParameters)
+
+  // @todo: refactor this base implementation for Preset values to handle query params for specific fields but also whole creations/tasks as a source
+  const queryParams = useSearchParams()
+  useEffect(() => {
+    const presetValues =
+      queryParams.size > 0
+        ? {
+            lora: queryParams.get('lora'),
+          }
+        : undefined
+
+    console.log({ presetValues })
+
+    if (presetValues) {
+      presetValues?.lora && form.setValue('use_lora', true)
+      presetValues?.lora && form.setValue('lora', presetValues?.lora)
+    } else {
+      defaultValues?.use_lora &&
+        form.setValue('use_lora', defaultValues?.use_lora)
+      defaultValues?.lora && form.setValue('lora', defaultValues?.lora)
+    }
+  }, [form, queryParams])
 
   return (
     <div

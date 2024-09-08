@@ -10,7 +10,7 @@ import {
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
-import { ExternalLinkIcon } from 'lucide-react'
+import { ComponentIcon, ExternalLinkIcon } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -43,6 +43,13 @@ const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
             <DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/create/image/txt2img?lora=${model._id}`}>
+            <ComponentIcon className="mr-2 h-4 w-4" />
+            Use Model
+            <DropdownMenuShortcut>⇧⌘M</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>

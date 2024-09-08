@@ -8,6 +8,7 @@ import { useModelQuery } from '@/hooks/query/use-model-query'
 import customImageLoader from '@/image-loader'
 import { X } from 'lucide-react'
 import Image from 'next/image'
+import { usePathname, useRouter } from 'next/navigation'
 import React from 'react'
 
 type Props = {
@@ -17,6 +18,13 @@ type Props = {
 
 const ModelSelector = ({ onChange, value }: Props) => {
   const { model, isLoading } = useModelQuery({ key: value, enabled: !!value })
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const handleRemoveModelSelection = () => {
+    router.push(pathname, { scroll: false })
+    onChange('')
+  }
 
   return (
     <div>
@@ -48,7 +56,7 @@ const ModelSelector = ({ onChange, value }: Props) => {
                   </Badge>
                 </div>
                 <div className="text-muted-foreground mt-auto">
-                  <div>{model.slug}</div>
+                  <div>{model.user.username}</div>
                   <div>{model.args.sd_model_version}</div>
                 </div>
               </div>
@@ -56,7 +64,7 @@ const ModelSelector = ({ onChange, value }: Props) => {
                 size="sm"
                 variant="outline"
                 className="ml-auto mr-2"
-                onClick={() => onChange('')}
+                onClick={handleRemoveModelSelection}
               >
                 <X size={20} />
               </Button>

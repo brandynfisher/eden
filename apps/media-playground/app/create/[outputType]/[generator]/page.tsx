@@ -12,9 +12,6 @@ type Props = {
 }
 
 const GeneratorPage = ({ params }: Props) => {
-  // const { userId } = auth()
-  // console.log('auth', { userId })
-
   const { generator } = params
 
   return (
