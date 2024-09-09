@@ -44,7 +44,7 @@ const SliderInput = ({
 }: Props) => {
   return (
     <div className="flex items-center">
-      <div className="relative flex items-center gap-4 w-full">
+      <div className="relative flex items-center w-full">
         <SliderInputRangeLabel
           text={`${min}${unit || ''}`}
           className="left-4"
@@ -69,7 +69,7 @@ const SliderInput = ({
         />
       </div>
       <Input
-        className="w-20 h-8 rounded-md rounded-l-none relative font-mono"
+        className="ml-2 w-20 h-8 rounded-md relative font-mono"
         type="number"
         min={max || 0}
         max={max || 1}

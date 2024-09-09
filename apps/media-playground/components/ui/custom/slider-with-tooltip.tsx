@@ -48,7 +48,7 @@ const SliderWithTooltip = React.forwardRef<HTMLElement, SliderProps>(
         onPointerDown={handlePointerDown}
         {...props}
       >
-        <SliderPrimitive.Track className="relative h-8 w-full grow overflow-hidden rounded-l-md bg-accent border border-input border-r-0">
+        <SliderPrimitive.Track className="relative h-8 w-full grow overflow-hidden rounded-md bg-accent border border-input">
           <SliderPrimitive.Range className="absolute h-full bg-muted-foreground/60 group-hover:bg-muted-foreground/70" />
         </SliderPrimitive.Track>
         <TooltipProvider>
