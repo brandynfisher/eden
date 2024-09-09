@@ -47,8 +47,8 @@ export default function RootLayout({
       <PreloadResources />
       <body
         className={cn(
-          'min-h-screen bg-background font-sans antialiased',
-          fontSans.variable,
+          'min-h-screen bg-background antialiased',
+          fontSans.className,
         )}
       >
         <Providers>

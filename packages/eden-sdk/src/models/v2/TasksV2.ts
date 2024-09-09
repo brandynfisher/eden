@@ -5,6 +5,7 @@ import {
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../../types'
+import { Creator } from '../Creators'
 import { MediaAttributes } from '../Media'
 import { CreationV2 } from './CreationsV2'
 import { GeneratorOutputTypeV2 } from './GeneratorsV2'
@@ -183,7 +184,7 @@ export type TaskV2Args = {
 
 export type TaskV2 = {
   _id: string
-  user: string
+  user: Creator
   workflow: string
   output_type?: GeneratorOutputTypeV2
   model?: string

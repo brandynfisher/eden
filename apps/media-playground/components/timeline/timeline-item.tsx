@@ -118,6 +118,7 @@ const TimelineItem = ({ item }: Props) => {
               result.model === undefined ? (
                 <TimelineItemMediaResult
                   key={`${item._id}_${index}`}
+                  index={index}
                   task={item}
                   result={result}
                 />
@@ -125,6 +126,7 @@ const TimelineItem = ({ item }: Props) => {
                 // api populates a model property with full model document
                 <TimelineItemModelResult
                   key={`${item._id}_${index}`}
+                  index={index}
                   result={result}
                   task={item}
                 />

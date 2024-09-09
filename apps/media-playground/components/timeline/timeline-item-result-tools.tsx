@@ -1,5 +1,6 @@
 import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
+import TaskActionsMenu from '@/components/button/task-actions-menu'
 import LoadingIndicator from '@/components/loading-indicator'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { Button } from '@/components/ui/button'
@@ -29,31 +30,11 @@ import { toast } from 'sonner'
 type Props = {
   task: TaskV2
   result: TaskV2Result
+  index: number
   className?: string
 }
 
-const TimelineItemResultTools = ({ task, result, className }: Props) => {
-  // const [copiedText, copy] = useCopyToClipboard()
-  //
-  // const handleCopyString = (text: string) => () => {
-  //   copy(text)
-  //     .then(() => {
-  //       toast.success(`Copied Model ID`, {
-  //         description: text,
-  //         dismissible: true,
-  //         richColors: true,
-  //       })
-  //       console.log('Copied!', { copiedText })
-  //     })
-  //     .catch(error => {
-  //       toast.error(`Failed to copy!`, {
-  //         description: error,
-  //         dismissible: true,
-  //         richColors: true,
-  //       })
-  //     })
-  // }
-
+const TimelineItemResultTools = ({ task, result, index, className }: Props) => {
   const [isPublishing, setIsPublishing] = useState(false)
   const publishTaskResult = async (taskId: string, originalFileUrl: string) => {
     setIsPublishing(true)
@@ -116,27 +97,16 @@ const TimelineItemResultTools = ({ task, result, className }: Props) => {
       <Collapsible>
         <div className="flex flex-wrap gap-2">
           {task.output_type === 'lora' && result.model ? (
-            <>
-              {/*<Button*/}
-              {/*  variant="outline"*/}
-              {/*  size="sm"*/}
-              {/*  className="px-2 flex gap-2 items-center justify-center"*/}
-              {/*  onClick={handleCopyString(result.model || '')}*/}
-              {/*>*/}
-              {/*  <CopyIcon size={20} />*/}
-              {/*  Copy ID*/}
-              {/*</Button>*/}
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="px-2 flex gap-2 items-center justify-center"
-              >
-                <Link href={`/models/${result?.model._id}`}>
-                  <ExternalLinkIcon className="h-4 w-4" />
-                </Link>
-              </Button>
-            </>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="px-2 flex gap-2 items-center justify-center"
+            >
+              <Link href={`/models/${result?.model._id}`}>
+                <ExternalLinkIcon className="h-4 w-4" />
+              </Link>
+            </Button>
           ) : (
             <>
               <Button
@@ -192,17 +162,6 @@ const TimelineItemResultTools = ({ task, result, className }: Props) => {
             </>
           )}
 
-          {/*<Button*/}
-          {/*  variant="outline"*/}
-          {/*  size="sm"*/}
-          {/*  title={`Re-Use configuration (${task.workflow})`}*/}
-          {/*  className="px-2"*/}
-          {/*  onClick={() =>*/}
-          {/*    alert('Re-use configuration/Preset - Not implemented')*/}
-          {/*  }*/}
-          {/*>*/}
-          {/*  <ClipboardCopy size={20} />*/}
-          {/*</Button>*/}
           <CollapsibleTrigger asChild>
             <Button
               variant="outline"
@@ -221,7 +180,14 @@ const TimelineItemResultTools = ({ task, result, className }: Props) => {
                 creation={result.creation}
                 className="ml-auto"
               />
-            ) : null}
+            ) : (
+              <TaskActionsMenu
+                task={task}
+                result={result}
+                index={index}
+                className="ml-auto"
+              />
+            )}
           </Suspense>
         </div>
         <CollapsibleContent>
