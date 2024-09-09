@@ -9,9 +9,20 @@ import { Suspense } from 'react'
 
 type Props = {
   generatorKey: GeneratorV2['key']
+  generatorSSRData?: GeneratorV2
 }
-const Workspace = ({ generatorKey }: Props) => {
-  const { generator } = useGeneratorQuery({ key: generatorKey })
+
+const Workspace = ({ generatorKey, generatorSSRData }: Props) => {
+  const { generator: generatorClientData } = useGeneratorQuery({
+    key: generatorKey,
+    initialData: generatorSSRData
+      ? {
+          generator: generatorSSRData,
+        }
+      : undefined,
+  })
+
+  const generator = generatorSSRData || generatorClientData
 
   if (!generator) {
     return null

@@ -13,7 +13,7 @@ const LinkCard = ({
 }) => {
   return (
     <Link href={href} className="group rounded-lg">
-      <Card className="h-full transition-colors group-hover:bg-muted !shadow-none !drop-shadow-none group-hover:border-input group-hover:!shadow-sm">
+      <Card className="h-full transition-colors bg-accent/50 group-hover:bg-muted !shadow-none !drop-shadow-none group-hover:border-input group-hover:!shadow-sm">
         <CardHeader>
           <div className="flex gap-1 items-center">
             <h2 className={`text-2xl font-semibold`}>{title} </h2>
