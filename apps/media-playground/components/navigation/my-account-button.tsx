@@ -57,22 +57,33 @@ const AccountDropdown = () => {
           <UserAvatar
             image={user?.userImage}
             name={user?.username}
-            variant="large"
+            className="w-10 h-10"
           />
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-48">
+      <DropdownMenuContent align="end" className="w-60">
         {/*<DropdownMenuLabel>My Account</DropdownMenuLabel>*/}
         {/*<DropdownMenuSeparator />*/}
         <DropdownMenuItem className="cursor-pointer group" asChild>
           <Link
             href={`/creators/${user?.username}`}
-            className="group flex gap-2 items-center cursor-pointer"
+            className="group flex gap-2 items-center cursor-pointer "
           >
-            <UserAvatar image={user?.userImage} name={user?.username} />
-            <div className="group-hover:text-primary text-xs transition-colors">
-              {user?.username}
+            <UserAvatar
+              image={user?.userImage}
+              name={user?.username}
+              className="h-8 w-8"
+            />
+            <div className="flex flex-col justify-center min-w-0">
+              <div className="group-hover:text-primary text-xs transition-colors">
+                {user?.username}
+              </div>
+              {user?.email ? (
+                <span className="text-xs text-muted-foreground/70 truncate">
+                  {user?.email}
+                </span>
+              ) : null}
             </div>
           </Link>
           {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
