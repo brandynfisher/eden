@@ -6,7 +6,7 @@ import TypographyH3 from '@/components/ui/typography/TypographyH3'
 const ConciergeContent = () => {
   return (
     <div className="flex flex-col items-center justify-center">
-      <TypographyH3>
+      <TypographyH3 className="mt-4">
         Eden Create is in <span className="italic"> Private Beta</span>
       </TypographyH3>
 

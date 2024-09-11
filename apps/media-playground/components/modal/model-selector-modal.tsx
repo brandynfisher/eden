@@ -63,7 +63,7 @@ const ModelSelectorModal = ({
       <DialogContentScrollable
         className={cn([`overflow-x-hidden flex flex-col max-w-7xl`, className])}
       >
-        <DialogHeader>
+        <DialogHeader className="mt-4">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
