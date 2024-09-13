@@ -1,17 +1,20 @@
 import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
+import ModelMiniCard from '@/components/card/model-mini-card'
 import CopyTextButton from '@/components/text/copy-text-button'
 import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { ComponentIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 
 type Props = {
   item?: CreationV2 | ModelV2
@@ -126,6 +129,17 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
       {lora ? (
         <div>
           <div className="font-bold text-sm mb-3">Model</div>
+          <ModelMiniCard modelId={lora} className="bg-popover">
+            <Button size="sm" variant="outline" asChild>
+              <Link
+                href={`/create/image/txt2img?lora=${lora}`}
+                className="ml-auto mr-2"
+              >
+                <ComponentIcon className="mr-2 h-4 w-4" />
+                Use
+              </Link>
+            </Button>
+          </ModelMiniCard>
         </div>
       ) : null}
 

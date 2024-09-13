@@ -9,7 +9,6 @@ type Props = {
 }
 
 export const useModelQuery = ({ key, enabled, initialData }: Props) => {
-  console.log({ key, enabled, initialData })
   const queryKey = ['models', key]
 
   const {
