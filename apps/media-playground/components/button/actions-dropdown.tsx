@@ -9,11 +9,12 @@ import { PropsWithChildren } from 'react'
 
 type Props = {
   className?: string
+  onOpenChange?: (open: boolean) => void
 } & PropsWithChildren
 
-const ActionsDropdown = ({ children, className }: Props) => {
+const ActionsDropdown = ({ children, className, onOpenChange }: Props) => {
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <div
           className={cn([
@@ -24,11 +25,7 @@ const ActionsDropdown = ({ children, className }: Props) => {
           <EllipsisIcon className="group-hover:text-primary" size={20} />
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        {/*<DropdownMenuLabel>Actions</DropdownMenuLabel>*/}
-        {/*<DropdownMenuSeparator />*/}
-        {children}
-      </DropdownMenuContent>
+      <DropdownMenuContent className="w-56">{children}</DropdownMenuContent>
     </DropdownMenu>
   )
 }

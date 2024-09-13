@@ -22,7 +22,7 @@ type Props = {
 
 const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
   const { user: creator } = item || {}
-  const { prompt, text_input, ...remainingArgs } = item?.args || {}
+  const { prompt, text_input, lora, ...remainingArgs } = item?.args || {}
   const { TimeAgo } = useTimeAgo()
   const { user } = useAuthState()
 
@@ -120,6 +120,12 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
               <Skeleton className="h-5 w-[250px]" />
             </div>
           )}
+        </div>
+      ) : null}
+
+      {lora ? (
+        <div>
+          <div className="font-bold text-sm mb-3">Model</div>
         </div>
       ) : null}
 

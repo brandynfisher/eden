@@ -12,7 +12,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { ComponentIcon, ExternalLinkIcon, FileSlidersIcon } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 
 type Props = {
   model: ModelV2
@@ -22,6 +22,32 @@ type Props = {
 
 const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
   const { user } = useAuthState()
+  const [isOpen, setIsOpen] = useState(false)
+
+  if (!model) {
+    return null
+  }
+
+  return (
+    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
+      {isOpen && (
+        <ModelActionsContent
+          model={model}
+          onUpdate={onUpdate}
+          userId={user?._id}
+        />
+      )}
+    </ActionsDropdown>
+  )
+}
+
+type ContentProps = {
+  model: ModelV2
+  onUpdate?: (item: ModelV2 | CreationV2) => void
+  userId?: string
+}
+
+const ModelActionsContent = ({ model, onUpdate, userId }: ContentProps) => {
   const { model: modelResponse, invalidate: refetchModel } = useModelQuery({
     key: model._id,
     initialData: {
@@ -31,12 +57,8 @@ const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
 
   const modelData = modelResponse || model
 
-  if (!modelData) {
-    return null
-  }
-
   return (
-    <ActionsDropdown className={className}>
+    <>
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
           <Link href={`/models/${modelData._id}`}>
@@ -60,14 +82,14 @@ const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>
-      {modelData.user._id === user?._id ? (
+      {modelData.user._id === userId && (
         <>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <PrivacyActionItem
               type="model"
               item={modelData}
-              onUpdate={onUpdate ? onUpdate : refetchModel}
+              onUpdate={onUpdate || refetchModel}
             />
             <DownloadActionItem
               type="model"
@@ -76,8 +98,8 @@ const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
             />
           </DropdownMenuGroup>
         </>
-      ) : null}
-    </ActionsDropdown>
+      )}
+    </>
   )
 }
 

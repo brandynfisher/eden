@@ -9,6 +9,7 @@ type Props = {
 }
 
 export const useModelQuery = ({ key, enabled, initialData }: Props) => {
+  console.log({ key, enabled, initialData })
   const queryKey = ['models', key]
 
   const {
@@ -25,10 +26,7 @@ export const useModelQuery = ({ key, enabled, initialData }: Props) => {
     enabled,
     initialData,
     queryKey,
-    queryFn: () =>
-      fetcher<ModelsV2GetResponse>(`/api/models/${key}`, {
-        credentials: 'include',
-      }),
+    queryFn: () => fetcher<ModelsV2GetResponse>(`/api/models/${key}`),
   })
 
   const queryClient = useQueryClient()

@@ -6,7 +6,7 @@ import CreationMediaPreview from '@/components/media/creation-media-preview'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import DetailSidebar from '@/features/detail/detail-sidebar'
-import UserCreationsFeed from '@/features/feed/user-creations-feed'
+import CreationsFeed from '@/features/feed/creations-feed'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { cn } from '@/lib/utils'
 import { CreationV2 } from '@edenlabs/eden-sdk'
@@ -19,7 +19,6 @@ type Props = {
 }
 
 const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
-  // const { user } = useAuthState()
   const { creation: creationClientData, invalidate } = useCreationQuery({
     key: id,
     initialData: creationSSRData
@@ -104,8 +103,8 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
               >
                 {shouldRenderRecentCreations ? (
                   <Suspense fallback={<MasonrySkeleton />}>
-                    <UserCreationsFeed
-                      userName={creation.user.username || ''}
+                    <CreationsFeed
+                      query={{ user: creation.user._id }}
                       maxCols={5}
                     />
                   </Suspense>
