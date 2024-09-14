@@ -433,7 +433,7 @@ const FileUploader = ({
           return false
         }
 
-        toast.success(`Upload finished`, {
+        toast.info(`Upload finished`, {
           description: (
             <code className="text-xs text-foreground">
               {acceptedFiles.length} Files

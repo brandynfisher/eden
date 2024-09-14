@@ -22,8 +22,6 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-// import FormPersist from '@/components/form-persist'
-
 type Props = {
   generator: GeneratorV2
 }
@@ -32,13 +30,9 @@ const GeneratorForm = ({ generator }: Props) => {
   const { verifyAuth } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // console.log({defaultValues})
-
   const hasAspectRatioSelector = generator.parameters?.some(
     param => param.name === 'width' || param.name === 'height',
   )
-
-  // console.log({ hasAspectRatioSelector })
 
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
 
@@ -52,38 +46,38 @@ const GeneratorForm = ({ generator }: Props) => {
     },
     {},
   )
-  const presetValues = useToolPreset()
+
+  const {
+    presetValues,
+    // isLoading: isPresetLoading,
+    // error: presetError
+  } = useToolPreset()
+
   const [showSettings, setShowSettings] = useState(false)
+
+  console.log({ presetValues, defaultValues })
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(parameterSchema), // use generated form schema for resolver
+    defaultValues,
+  })
 
   useEffect(() => {
     if (presetValues) {
       setShowSettings(true)
+      form.reset({ ...defaultValues, ...presetValues })
     } else {
       form.reset({ ...defaultValues, lora: '' })
     }
   }, [presetValues])
 
-  // @todo: produce a presetDefaultValues object
-  // @todo: use that to initialize the form
-  // @todo: on form.reset() anywhere we pass in defaultValues instead of parameterDefaultValues to reset to base
-
-  const values = { ...defaultValues, ...presetValues }
-
-  console.log({ values, presetValues, defaultValues })
-
-  const form = useForm<FormData>({
-    resolver: zodResolver(parameterSchema), // use generated form schema for resolver
-    defaultValues,
-    values,
-  })
-
-  async function onSubmit(formData: z.infer<typeof parameterSchema>) {
-    // console.log('try onSubmit', formData)
+  async function onSubmit(formData: FormData) {
     if (!(await verifyAuth())) {
       return
     }
 
-    console.log('onSubmit', formData)
+    // console.log('onSubmit', formData)
+
     setIsSubmitting(true)
 
     try {
@@ -104,7 +98,6 @@ const GeneratorForm = ({ generator }: Props) => {
         richColors: true,
       })
     } catch (err) {
-      console.log(err)
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'
@@ -122,17 +115,9 @@ const GeneratorForm = ({ generator }: Props) => {
   const router = useRouter()
   const pathname = usePathname()
 
-  // const [resetKey, setResetKey] = useState(0)
-  // console.log({defaultValues})
-
   const handleReset = useCallback(() => {
     router.push(pathname, { scroll: false })
     form.reset(defaultValues, { keepDefaultValues: true })
-    // setResetKey(prev => prev + 1)
-    // setTimeout(() => {
-    //   console.log('before reset', {defaultValues})
-    //   form.reset(defaultValues, { keepDefaultValues: true })
-    // }, 100)
   }, [pathname])
 
   const requiredParameters = useMemo(
@@ -155,7 +140,6 @@ const GeneratorForm = ({ generator }: Props) => {
       data-test-id="generator-form"
       className="flex flex-col items-start overflow-y-auto"
     >
-      {/*<FormPersist resetKey={resetKey} formKey={`form_tool_${generator.key}`} form={form} defaultValues={defaultValues}/>*/}
       <Form {...form}>
         <form className="w-full">
           <TypographyH4 className="mb-2">{generator.name}</TypographyH4>
