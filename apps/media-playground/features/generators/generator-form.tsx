@@ -9,13 +9,14 @@ import ParameterField from '@/features/generators/parameters/parameter-field'
 import ParameterGroupCollapse from '@/features/generators/parameters/parameter-group-collapse'
 import { groupParameters } from '@/features/generators/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { useToolPreset } from '@/hooks/use-tool-preset'
 import { createZodFormSchema } from '@/lib/forms'
 import { cn } from '@/lib/utils'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -30,6 +31,7 @@ type Props = {
 const GeneratorForm = ({ generator }: Props) => {
   const { verifyAuth } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
   // console.log({defaultValues})
 
   const hasAspectRatioSelector = generator.parameters?.some(
@@ -50,10 +52,29 @@ const GeneratorForm = ({ generator }: Props) => {
     },
     {},
   )
+  const presetValues = useToolPreset()
+  const [showSettings, setShowSettings] = useState(false)
+
+  useEffect(() => {
+    if (presetValues) {
+      setShowSettings(true)
+    } else {
+      form.reset({ ...defaultValues, lora: '' })
+    }
+  }, [presetValues])
+
+  // @todo: produce a presetDefaultValues object
+  // @todo: use that to initialize the form
+  // @todo: on form.reset() anywhere we pass in defaultValues instead of parameterDefaultValues to reset to base
+
+  const values = { ...defaultValues, ...presetValues }
+
+  console.log({ values, presetValues, defaultValues })
 
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
     defaultValues,
+    values,
   })
 
   async function onSubmit(formData: z.infer<typeof parameterSchema>) {
@@ -101,16 +122,13 @@ const GeneratorForm = ({ generator }: Props) => {
   const router = useRouter()
   const pathname = usePathname()
 
-  const [showForm, setShowForm] = useState(false)
   // const [resetKey, setResetKey] = useState(0)
-
   // console.log({defaultValues})
 
   const handleReset = useCallback(() => {
     router.push(pathname, { scroll: false })
     form.reset(defaultValues, { keepDefaultValues: true })
     // setResetKey(prev => prev + 1)
-    //
     // setTimeout(() => {
     //   console.log('before reset', {defaultValues})
     //   form.reset(defaultValues, { keepDefaultValues: true })
@@ -131,34 +149,6 @@ const GeneratorForm = ({ generator }: Props) => {
     () => (optionalParameters ? groupParameters(optionalParameters) : []),
     [optionalParameters],
   )
-  // console.log(groupedOptionalParameters)
-
-  // @todo: refactor this base implementation for Preset values to handle query params for specific fields but also whole creations/tasks as a source
-  const queryParams = useSearchParams()
-  useEffect(() => {
-    const presetValues =
-      queryParams.size > 0
-        ? {
-            lora: queryParams.get('lora'),
-          }
-        : undefined
-    //
-    // console.log({
-    //   queryParams,
-    //   lora: queryParams.get('lora'),
-    //   presetValues,
-    //   default: defaultValues?.lora,
-    // })
-
-    if (presetValues) {
-      presetValues?.lora && form.setValue('use_lora', true)
-      presetValues?.lora && form.setValue('lora', presetValues?.lora)
-      setShowForm(true)
-    } else {
-      form.setValue('use_lora', defaultValues?.use_lora)
-      form.setValue('lora', defaultValues?.lora || '')
-    }
-  }, [form, queryParams])
 
   return (
     <div
@@ -192,7 +182,7 @@ const GeneratorForm = ({ generator }: Props) => {
                   type="button"
                   variant="secondary"
                   className="flex items-center gap-2"
-                  onClick={() => setShowForm(!showForm)}
+                  onClick={() => setShowSettings(!showSettings)}
                 >
                   <Settings2Icon className="h-4 w-4" />
                   Settings
@@ -233,12 +223,12 @@ const GeneratorForm = ({ generator }: Props) => {
           {optionalParameters?.length ? (
             <div
               data-test-id="generator-form-settings-optional"
-              className={cn([showForm ? '' : 'overflow-hidden'])}
+              className={cn([showSettings ? '' : 'overflow-hidden'])}
             >
               <div
                 className={cn([
                   'flex flex-col gap-2 w-full relative transition-all',
-                  showForm ? ' mb-4' : 'max-h-0 ',
+                  showSettings ? ' mb-4' : 'max-h-0 ',
                 ])}
               >
                 {groupedOptionalParameters?.map((element, index) => (
