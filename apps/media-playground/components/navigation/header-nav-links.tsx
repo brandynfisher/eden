@@ -1,6 +1,6 @@
 'use client'
 
-import EdenLogoBwGlow from '@/components/logo/eden-logo-bw-glow'
+import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { NavLinkProps } from '@/components/navigation/nav-link'
 import NavLinkList from '@/components/navigation/nav-link-list'
 import { Separator } from '@/components/ui/separator'
@@ -14,7 +14,11 @@ const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
       className="relative flex items-center gap-2 text-lg font-semibold md:text-base"
       {...rest}
     >
-      <EdenLogoBwGlow />
+      {/*{ inSheet ? (*/}
+      {/*  <EdenLogoWithTextBw />*/}
+      {/*) : (*/}
+      <EdenLogoBw />
+      {/*) }*/}
       <span className="sr-only">Eden2.0</span>
     </Link>
   )

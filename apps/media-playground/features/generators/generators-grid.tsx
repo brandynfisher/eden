@@ -49,7 +49,9 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
 const getMediaUrl = (generatorKey: GeneratorV2['key']) => {
   const mediaFileName = toolThumbnails[generatorKey]
 
-  return `https://d14i3advvh2bvd.cloudfront.net/app/${mediaFileName || 'logo-bw.png'}`
+  return `https://d14i3advvh2bvd.cloudfront.net/app/${
+    mediaFileName || 'android-chrome-512x512.png'
+  }`
 }
 
 const GridSection = ({ generators }: Props) => {
