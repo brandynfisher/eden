@@ -62,10 +62,6 @@ export const metadata: Metadata = {
       url: '/safari-pinned-tab.svg',
     },
     {
-      rel: 'mask-icon',
-      url: '/safari-pinned-tab.svg',
-    },
-    {
       url: '/android-chrome-192x192.png',
       sizes: '192x192',
       type: 'image/png',
