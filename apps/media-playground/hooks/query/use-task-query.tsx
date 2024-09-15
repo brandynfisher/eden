@@ -28,7 +28,7 @@ export const useTaskQuery = ({ key, initialData, enabled = true }: Props) => {
     queryFn: () => fetcher<TasksV2GetResponse>(`/api/tasks/${key}`),
   })
 
-  console.log({ data })
+  // console.log({ data })
 
   const queryClient = useQueryClient()
 
