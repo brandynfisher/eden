@@ -89,6 +89,29 @@ const creatorRoutes: FastifyPluginAsync = async server => {
   //   handler: (request, reply) => listCreatorFollowing(request, reply),
   // })
 
+  server.get('/v2/creators/me', {
+    schema: {
+      tags: ['Creators'],
+      description: 'Get your own info',
+      security: [
+        {
+          apiKey: [],
+          // apiSecret: [],
+        },
+      ],
+      response: {
+        200: Type.Object({
+          creator: Type.Optional(Type.Any()),
+          balance: Type.Number(),
+          subscriptionBalance: Type.Number(),
+          foreverBalance: Type.Number(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => getCreatorMe(request, reply),
+  })
+
   server.get('/v2/creators/:userId', {
     schema: {
       tags: ['Creators'],
@@ -179,29 +202,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => unfollowCreator(request, reply),
-  })
-
-  server.get('/v2/creators/me', {
-    schema: {
-      tags: ['Creators'],
-      description: 'Get your own info',
-      security: [
-        {
-          apiKey: [],
-          // apiSecret: [],
-        },
-      ],
-      response: {
-        200: Type.Object({
-          creator: Type.Optional(Type.Any()),
-          balance: Type.Number(),
-          subscriptionBalance: Type.Number(),
-          foreverBalance: Type.Number(),
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => getCreatorMe(request, reply),
   })
 }
 
