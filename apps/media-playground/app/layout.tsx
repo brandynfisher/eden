@@ -9,6 +9,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { env } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { GoogleTagManager } from '@next/third-parties/google'
+import HolyLoader from 'holy-loader'
 import { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
 import { ReactNode } from 'react'
@@ -90,6 +91,11 @@ export default function RootLayout({
           fontSans.className,
         )}
       >
+        <HolyLoader
+          color="#7d2edb"
+          height="1px"
+          // ignoreSearchParams={true}
+        />
         <Providers>
           <div className="flex min-h-screen w-full flex-col">
             <Header />

@@ -57,6 +57,7 @@
     "event-source-polyfill": "^1.0.31",
     "expr-eval": "^2.0.2",
     "fast-blurhash": "^1.1.4",
+    "holy-loader": "^2.3.6",
     "lucide-react": "^0.356.0",
     "next": "14.2.4",
     "next-cloudinary": "^6.5.1",

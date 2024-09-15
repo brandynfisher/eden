@@ -16865,6 +16865,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"holy-loader@npm:^2.3.6":
+  version: 2.3.6
+  resolution: "holy-loader@npm:2.3.6"
+  peerDependencies:
+    react: ">= 16.0.0"
+  checksum: 10c0/b1b791610f0d23da842d4abfb7ff9f5860c5a5581d6bc42fea018ae2795d13b45a2188ea10826cb8c4a340b8a687dc9dfedb337f52b68f4b4de39e7a7091ba06
+  languageName: node
+  linkType: hard
+
 "hosted-git-info@npm:^2.1.4":
   version: 2.8.9
   resolution: "hosted-git-info@npm:2.8.9"
@@ -18947,6 +18956,7 @@ __metadata:
     event-source-polyfill: "npm:^1.0.31"
     expr-eval: "npm:^2.0.2"
     fast-blurhash: "npm:^1.1.4"
+    holy-loader: "npm:^2.3.6"
     lucide-react: "npm:^0.356.0"
     next: "npm:14.2.4"
     next-cloudinary: "npm:^6.5.1"
