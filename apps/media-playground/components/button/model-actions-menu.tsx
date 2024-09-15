@@ -10,7 +10,7 @@ import {
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
-import { ComponentIcon, ExternalLinkIcon, FileSlidersIcon } from 'lucide-react'
+import { ComponentIcon, ExternalLinkIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
@@ -67,13 +67,13 @@ const ModelActionsContent = ({ model, onUpdate, userId }: ContentProps) => {
             <DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/train/model/lora_trainer?task=${model._id}`}>
-            <FileSlidersIcon className="mr-2 h-4 w-4" />
-            Use as Preset
-            <DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>
-          </Link>
-        </DropdownMenuItem>
+        {/*<DropdownMenuItem asChild>*/}
+        {/*  <Link href={`/train/model/lora_trainer?task=${model._id}`}>*/}
+        {/*    <FileSlidersIcon className="mr-2 h-4 w-4" />*/}
+        {/*    Use as Preset*/}
+        {/*    <DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
+        {/*  </Link>*/}
+        {/*</DropdownMenuItem>*/}
         <DropdownMenuItem asChild>
           <Link href={`/create/image/txt2img?lora=${model._id}`}>
             <ComponentIcon className="mr-2 h-4 w-4" />
