@@ -5,9 +5,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 type Props = {
   key: CreationV2['_id']
   initialData?: CreationsV2GetResponse
+  enabled?: boolean
 }
 
-export const useCreationQuery = ({ key, initialData }: Props) => {
+export const useCreationQuery = ({
+  key,
+  initialData,
+  enabled = true,
+}: Props) => {
   const queryKey = ['creations', key]
 
   const {
@@ -21,6 +26,7 @@ export const useCreationQuery = ({ key, initialData }: Props) => {
     isSuccess,
     status,
   } = useQuery({
+    enabled,
     initialData,
     queryKey,
     queryFn: () => fetcher<CreationsV2GetResponse>(`/api/creations/${key}`),

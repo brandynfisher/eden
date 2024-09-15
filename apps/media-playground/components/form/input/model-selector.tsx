@@ -4,7 +4,7 @@ import ModelMiniCard from '@/components/card/model-mini-card'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import React from 'react'
 
 type Props = {
@@ -15,9 +15,13 @@ type Props = {
 const ModelSelector = ({ onChange, value }: Props) => {
   const router = useRouter()
   const pathname = usePathname()
+  const queryParams = useSearchParams()
 
   const handleRemoveModelSelection = () => {
-    router.push(pathname, { scroll: false })
+    if (queryParams && queryParams.get('lora')) {
+      router.push(pathname, { scroll: false })
+    }
+
     onChange('')
   }
 

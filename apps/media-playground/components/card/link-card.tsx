@@ -14,13 +14,13 @@ const LinkCard = ({
   return (
     <Link href={href} className="group rounded-lg">
       <Card className="h-full transition-colors bg-accent/50 group-hover:bg-muted !shadow-none !drop-shadow-none group-hover:border-input group-hover:!shadow-sm">
-        <CardHeader>
+        <CardHeader className="p-4">
           <div className="flex gap-1 items-center">
-            <h2 className={`text-2xl font-semibold`}>{title} </h2>
+            <h2 className={`text-lg md:text-xl font-semibold`}>{title} </h2>
             <ChevronRightIcon className="group-hover:translate-x-1 motion-reduce:transform-none duration-200" />
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0">
           <div>
             <p
               className={`m-0 max-w-[30ch] text-sm opacity-50 group-hover:opacity-60`}

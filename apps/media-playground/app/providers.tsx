@@ -3,6 +3,7 @@ import { ReactQueryProvider } from '@/provider/react-query-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { WebSocketProvider } from '@/provider/websocket-provider'
 import { ClerkProvider } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 import { PropsWithChildren } from 'react'
 
 export default function Providers({ children }: PropsWithChildren) {
@@ -15,13 +16,14 @@ export default function Providers({ children }: PropsWithChildren) {
     >
       <ClerkProvider
         appearance={{
+          baseTheme: dark,
           layout: {
             socialButtonsPlacement: 'bottom',
             socialButtonsVariant: 'iconButton',
             termsPageUrl: 'https://app.eden.art/terms',
             privacyPageUrl: 'https://app.eden.art/privacy',
             helpPageUrl: 'https://app.eden.art/help',
-            logoImageUrl: 'https://app2.eden.art/eden-logo-512x512.png',
+            logoImageUrl: `${env.NEXT_PUBLIC_HOST}/android-chrome-512x512.png`,
           },
         }}
       >

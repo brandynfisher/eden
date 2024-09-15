@@ -46,12 +46,12 @@ export const siteConfig: SiteConfig = {
   },
   links: {
     homepage: 'https://eden.art',
-    instagram: 'https://instagram.com/eden.art____',
+    instagram: 'https://instagram.com/edenartlab',
     twitter: 'https://x.com/eden_art_',
     linkedIn: 'https://www.linkedin.com/company/eden-labs-inc/',
     github: 'https://github.com/edenartlabs/eden',
   },
-  ogImage: `${env.NEXT_PUBLIC_HOST}/logo-bw.png`,
+  ogImage: `${env.NEXT_PUBLIC_HOST}/android-chrome-512x512.png`,
   mediaErrorUrl:
     'https://edenartlab-prod-data.s3-accelerate.amazonaws.com/7c31e443f964e9d0e99c2fd45bf0b042999045e224aa7e38cb91049dc8340c93.jpeg',
   publicRoutes: [
