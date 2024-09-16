@@ -235,7 +235,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                 />
                 <FormControl id={name}>
                   <Input
-                    // className={'hidden'}
+                    className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
                     value={value === null ? '' : value || ''}
