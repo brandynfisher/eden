@@ -5,6 +5,7 @@ import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
 import StringArrayInput from '@/components/form/input/string-array-input'
 import FileUploader from '@/components/media/file-uploader'
+import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   FormControl,
   FormField,
@@ -14,7 +15,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import { UseFormReturn } from 'react-hook-form'
@@ -135,8 +135,8 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                   />
                 )}
                 <FormControl id={name}>
-                  <Textarea
-                    autoResize={true}
+                  <AutosizeTextarea
+                    // autoResize={true}
                     spellCheck={false}
                     placeholder={parameter.description}
                     className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg ${
@@ -148,6 +148,19 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     onBlur={onBlur}
                     value={value || ''}
                   />
+                  {/*<Textarea*/}
+                  {/*  autoResize={true}*/}
+                  {/*  spellCheck={false}*/}
+                  {/*  placeholder={parameter.description}*/}
+                  {/*  className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg ${*/}
+                  {/*    parameter.required*/}
+                  {/*      ? '!outline-none !p-4 !pt-3 !mt-0'*/}
+                  {/*      : 'rounded-lg border p-2 '*/}
+                  {/*  }`}*/}
+                  {/*  onChange={onChange}*/}
+                  {/*  onBlur={onBlur}*/}
+                  {/*  value={value || ''}*/}
+                  {/*/>*/}
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>

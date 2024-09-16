@@ -48,7 +48,7 @@ export async function generateMetadata(
   // optionally access and extend (rather than replace) parent metadata
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
 
-  const title = `Creation by ${response.creation?.user.username} | Garden of Eden`
+  const title = `${response.creation?.workflow} by ${response.creation?.user.username} | Eden Create`
   const description = ``
   const media: { images?: string[]; videos?: string[] } = {}
   if (response.creation?.mediaAttributes?.type === MediaType.Video) {

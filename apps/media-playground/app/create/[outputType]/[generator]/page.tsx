@@ -49,9 +49,10 @@ export async function generateMetadata(
   // optionally access and extend (rather than replace) parent metadata
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
 
-  const title = `${response.generator?.key} | Garden of Eden`
+  const title = `${response.generator?.key} | Eden Create`
   const description = response.generator?.description
   const media: { images?: string[]; videos?: string[] } = {}
+
   // if (response.generator?.mediaAttributes?.type === MediaType.Video) {
   //   media.videos = response.creation?.url
   //     ? [getCloudfrontUrl(response.creation?.url)]
