@@ -242,7 +242,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value || ''}
+                  value={value === null ? '' : value || ''}
                   onChange={onChange}
                   allowedFileTypes={['image']}
                   maxFiles={1}
@@ -297,7 +297,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value}
+                  value={value === null ? '' : value}
                   onChange={onChange}
                   allowedFileTypes={['video']}
                   maxFiles={1}

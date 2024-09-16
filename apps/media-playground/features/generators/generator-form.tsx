@@ -76,7 +76,7 @@ const GeneratorForm = ({ generator }: Props) => {
       return
     }
 
-    // console.log('onSubmit', formData)
+    console.log('onSubmit', formData)
 
     setIsSubmitting(true)
 

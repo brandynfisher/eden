@@ -1,8 +1,17 @@
+import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
-const EdenLogoTall = () => {
+type Props = {
+  className?: string
+}
+const EdenLogoTall = ({ className }: Props) => {
   return (
-    <div className="relative flex flex-grow items-center invert dark:invert-0">
+    <div
+      className={cn([
+        'relative flex flex-grow items-center invert dark:invert-0',
+        className,
+      ])}
+    >
       <Image
         src={'/eden-logo-text-tall-mono.png'}
         alt={'Logo'}

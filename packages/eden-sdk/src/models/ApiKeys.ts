@@ -1,5 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
-
 import { transformArgsIntoURLParams } from '../types'
 import {
   ListQueryParams,
@@ -7,6 +5,7 @@ import {
   WebAPICallOptions,
   WebAPICallResult,
 } from '../types'
+import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 
@@ -82,7 +81,7 @@ export type ApiKeysListResponse = WebAPICallResult &
 
 export type ApiKey = {
   apiKey: string
-  apiSecret: string
+  apiSecret?: string
   note: string
   createdAt: string
 }
