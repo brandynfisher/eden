@@ -2,9 +2,9 @@ import CreationDetail from '@/features/detail/creation-detail'
 import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'
 import { getCloudfrontUrl } from '@/lib/media'
+import { OpenGraph, OpenGraphVideo } from '@/types/OpenGraph'
 import { CreationsV2GetResponse, MediaType } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
-import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
@@ -35,28 +35,23 @@ export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
-  // read route params
   const id = params.id
-
-  // fetch data
   const response = await getCreationCached(id || '')
 
   if (!response) {
     return {}
   }
 
-  // optionally access and extend (rather than replace) parent metadata
-  const previousOg: OpenGraph | {} = (await parent).openGraph || {}
+  const previousOg = (await parent).openGraph || {}
 
   const title = `${response.creation?.workflow} by ${response.creation?.user.username} | Eden Create`
-  const description = ``
-  const media: { images?: string[]; videos?: string[] } = {}
-  if (response.creation?.mediaAttributes?.type === MediaType.Video) {
-    media.videos = response.creation?.url
-      ? [getCloudfrontUrl(response.creation?.url)]
-      : undefined
-  } else {
-    media.images = response.creation?.thumbnail
+  const description = `Check out the latest creation by ${response.creation?.user.username}!`
+
+  const og: OpenGraph = {
+    ...previousOg,
+    title,
+    description,
+    images: response.creation?.thumbnail
       ? [
           customImageLoader({
             src: response.creation?.thumbnail || '',
@@ -64,19 +59,31 @@ export async function generateMetadata(
             format: Formats.JPG,
           }),
         ]
-      : undefined
+      : undefined,
+  }
+
+  if (
+    response.creation?.output_type === MediaType.Video &&
+    response.creation.url
+  ) {
+    const videoUrl = getCloudfrontUrl(response.creation.url)
+
+    const video: OpenGraphVideo = {
+      url: videoUrl,
+      secureUrl: videoUrl,
+      type: response.creation.mediaAttributes?.mimeType || 'video/mp4',
+      width: response.creation.mediaAttributes?.width || 1024,
+      height: response.creation.mediaAttributes?.height || 1024,
+    }
+
+    og.type = 'video.other' // Specify the OG type as video
+    og.videos = [video]
   }
 
   return {
-    // ...(await parent),
     title,
     description,
-    openGraph: {
-      ...previousOg,
-      title,
-      description,
-      ...media,
-    },
+    openGraph: og,
   }
 }
 
