@@ -136,7 +136,6 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                 )}
                 <FormControl id={name}>
                   <AutosizeTextarea
-                    // autoResize={true}
                     spellCheck={false}
                     placeholder={parameter.description}
                     className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg ${
@@ -148,19 +147,6 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     onBlur={onBlur}
                     value={value || ''}
                   />
-                  {/*<Textarea*/}
-                  {/*  autoResize={true}*/}
-                  {/*  spellCheck={false}*/}
-                  {/*  placeholder={parameter.description}*/}
-                  {/*  className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg ${*/}
-                  {/*    parameter.required*/}
-                  {/*      ? '!outline-none !p-4 !pt-3 !mt-0'*/}
-                  {/*      : 'rounded-lg border p-2 '*/}
-                  {/*  }`}*/}
-                  {/*  onChange={onChange}*/}
-                  {/*  onBlur={onBlur}*/}
-                  {/*  value={value || ''}*/}
-                  {/*/>*/}
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
@@ -183,7 +169,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     type="text"
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? '' : value}
+                    value={value || ''}
                   />
                 )}
               </FormItemWrap>

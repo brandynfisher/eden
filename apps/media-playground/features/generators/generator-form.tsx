@@ -55,7 +55,7 @@ const GeneratorForm = ({ generator }: Props) => {
 
   const [showSettings, setShowSettings] = useState(false)
 
-  console.log({ presetValues, defaultValues })
+  // console.log({ presetValues, defaultValues })
 
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
@@ -77,7 +77,6 @@ const GeneratorForm = ({ generator }: Props) => {
     }
 
     console.log('onSubmit', formData)
-
     setIsSubmitting(true)
 
     try {

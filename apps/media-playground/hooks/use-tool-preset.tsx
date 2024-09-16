@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react'
 
 // hooks/useToolPreset.ts
 
+// hooks/useToolPreset.ts
+
 type GenericValues = {
   [key: string]: number | string | undefined | boolean | null
 }
@@ -121,7 +123,7 @@ export const useToolPreset = () => {
   // Capture the first error encountered
   const error = creationError || taskError
 
-  console.log({ presetValues })
+  // console.log({ presetValues })
 
   return {
     presetValues,
