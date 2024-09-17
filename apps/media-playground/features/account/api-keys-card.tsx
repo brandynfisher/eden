@@ -110,15 +110,18 @@ const ApiKeysCard = () => {
       </CardHeader>
       <CardContent>
         {!hasApiAccessPermission ? (
-          <div className="text-gray-500">
-            Only pro+ subscribers can create API keys. Please upgrade your{' '}
-            <Link
-              href="/settings/subscription"
-              className="font-bold hover:text-gray-300 transition-colors"
-            >
-              subscription
-            </Link>
-            .
+          <div className="bg-accent text-gray-500 p-2 rounded-lg">
+            <div>Only pro+ subscribers can create API keys.</div>
+            <div>
+              Please upgrade your{' '}
+              <Link
+                href="/settings/subscription"
+                className="font-bold hover:text-gray-300 transition-colors"
+              >
+                subscription
+              </Link>
+              .
+            </div>
           </div>
         ) : apiKeysResponse.length > 0 ? (
           <Table>
