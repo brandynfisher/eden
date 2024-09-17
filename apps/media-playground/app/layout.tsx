@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: 'Eden Create',
     description: 'The Garden of Artificial Delights',
     type: 'website',
-    images: ['/android-chrome-512x512.png'],
+    images: ['/logo_badge_square.png'],
   },
   icons: [
     {
