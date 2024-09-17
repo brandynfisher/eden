@@ -1,12 +1,8 @@
 import { fetcher } from '@/lib/fetcher'
-import { ApiKeysListResponse } from '@edenlabs/eden-sdk'
+import { ApiKey } from '@edenlabs/eden-sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-type Props = {
-  initialData?: ApiKeysListResponse
-}
-
-export const useApiKeysQuery = ({ initialData }: Props) => {
+export const useApiKeysQuery = () => {
   const queryKey = ['api-keys']
 
   const {
@@ -20,18 +16,17 @@ export const useApiKeysQuery = ({ initialData }: Props) => {
     isSuccess,
     status,
   } = useQuery({
-    initialData,
     queryKey,
     queryFn: () =>
       fetcher<{
-        apiKeys: ApiKeysListResponse['docs']
+        apiKeys: ApiKey[]
       }>(`/api/apikeys`),
   })
 
   const queryClient = useQueryClient()
 
   return {
-    apiKeys: (data?.apiKeys as ApiKeysListResponse['docs']) || [],
+    apiKeys: (data?.apiKeys as ApiKey[]) || [],
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     error,
     isError,

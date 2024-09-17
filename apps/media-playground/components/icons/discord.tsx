@@ -7,7 +7,7 @@ const DiscordIcon = ({ size = 32 }: { size: number }) => {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_10031_177575)">
+      <g clipPath="url(#clip0_10031_177575)">
         <mask
           id="mask0_10031_177575"
           maskUnits="userSpaceOnUse"

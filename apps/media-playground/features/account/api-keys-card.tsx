@@ -61,7 +61,7 @@ const ApiKeysCard = () => {
     [hasMinimumSubscriptionTier],
   )
 
-  const { apiKeys: apiKeysResponse, invalidate } = useApiKeysQuery({})
+  const { apiKeys: apiKeysResponse, invalidate } = useApiKeysQuery()
   const [isGenerateApiKeyDialogOpen, setIsGenerateApiKeyDialogOpen] =
     React.useState(false)
 
@@ -179,6 +179,7 @@ const ApiKeysCard = () => {
           onOpenChange={setIsGenerateApiKeyDialogOpen}
         >
           <Button
+            variant="secondary"
             disabled={!hasApiAccessPermission}
             onClick={() => setIsGenerateApiKeyDialogOpen(true)}
           >
