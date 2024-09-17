@@ -1,4 +1,3 @@
-// app/[id]/page.tsx
 import CreationDetail from '@/features/detail/creation-detail'
 import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'

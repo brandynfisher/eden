@@ -1,6 +1,7 @@
 import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
 import ModelMiniCard from '@/components/card/model-mini-card'
+import LoadingIndicator from '@/components/loading-indicator'
 import CopyTextButton from '@/components/text/copy-text-button'
 import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
@@ -129,17 +130,19 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
       {lora ? (
         <div>
           <div className="font-bold text-sm mb-3">Model</div>
-          <ModelMiniCard modelId={lora} className="bg-popover">
-            <Button size="sm" variant="outline" asChild>
-              <Link
-                href={`/create/image/txt2img?lora=${lora}`}
-                className="ml-auto mr-2"
-              >
-                <ComponentIcon className="mr-2 h-4 w-4" />
-                Use
-              </Link>
-            </Button>
-          </ModelMiniCard>
+          <Suspense fallback={<LoadingIndicator />}>
+            <ModelMiniCard modelId={lora} className="bg-popover">
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  href={`/create/image/txt2img?lora=${lora}`}
+                  className="ml-auto mr-2"
+                >
+                  <ComponentIcon className="mr-2 h-4 w-4" />
+                  Use
+                </Link>
+              </Button>
+            </ModelMiniCard>
+          </Suspense>
         </div>
       ) : null}
 

@@ -4,6 +4,7 @@ import ModelSelector from '@/components/form/input/model-selector'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
 import StringArrayInput from '@/components/form/input/string-array-input'
+import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -17,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { Suspense } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
@@ -221,7 +223,9 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     value={parsedValue}
                   />
                 </FormControl>
-                <ModelSelector value={parsedValue} onChange={onChange} />
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ModelSelector value={parsedValue} onChange={onChange} />
+                </Suspense>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )

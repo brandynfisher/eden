@@ -1,11 +1,12 @@
 'use client'
 
 import ModelMiniCard from '@/components/card/model-mini-card'
+import LoadingIndicator from '@/components/loading-indicator'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import React from 'react'
+import React, { Suspense } from 'react'
 
 type Props = {
   onChange: (newVal: string | undefined) => void
@@ -28,16 +29,18 @@ const ModelSelector = ({ onChange, value }: Props) => {
   return (
     <div>
       {value ? (
-        <ModelMiniCard modelId={value}>
-          <Button
-            size="sm"
-            variant="outline"
-            className="ml-auto mr-2"
-            onClick={handleRemoveModelSelection}
-          >
-            <X size={20} />
-          </Button>
-        </ModelMiniCard>
+        <Suspense fallback={<LoadingIndicator />}>
+          <ModelMiniCard modelId={value}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-auto mr-2"
+              onClick={handleRemoveModelSelection}
+            >
+              <X size={20} />
+            </Button>
+          </ModelMiniCard>
+        </Suspense>
       ) : null}
 
       <ModelSelectorModal

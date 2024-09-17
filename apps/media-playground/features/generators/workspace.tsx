@@ -1,5 +1,6 @@
 'use client'
 
+import LoadingIndicator from '@/components/loading-indicator'
 import Timeline from '@/components/timeline/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
 import GeneratorForm from '@/features/generators/generator-form'
@@ -35,7 +36,9 @@ const Workspace = ({ generatorKey, generatorSSRData }: Props) => {
           <GeneratorForm generator={generator} />
         </div>
       </Suspense>
-      <Timeline generator={generator} />
+      <Suspense fallback={<LoadingIndicator />}>
+        <Timeline generator={generator} />
+      </Suspense>
     </div>
   )
 }

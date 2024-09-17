@@ -1,5 +1,6 @@
 'use client'
 
+import LoadingIndicator from '@/components/loading-indicator'
 import { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
 import {
   NavigationMenu,
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import * as React from 'react'
+import { Suspense } from 'react'
 
 // import { useSelectedLayoutSegments } from 'next/navigation'
 
@@ -49,17 +51,19 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
                 {item.title}
               </NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid gap-3 p-4 w-[350px] md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                  {item.links.map(link => (
-                    <ListItem
-                      key={`/${link.segments.join('/')}`}
-                      href={`/${link.segments.join('/')}`}
-                      title={link.label}
-                    >
-                      {link.description}
-                    </ListItem>
-                  ))}
-                </ul>
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ul className="grid gap-3 p-4 w-[350px] md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                    {item.links.map(link => (
+                      <ListItem
+                        key={`/${link.segments.join('/')}`}
+                        href={`/${link.segments.join('/')}`}
+                        title={link.label}
+                      >
+                        {link.description}
+                      </ListItem>
+                    ))}
+                  </ul>
+                </Suspense>
               </NavigationMenuContent>
             </NavigationMenuItem>
           ))}
