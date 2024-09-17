@@ -45,7 +45,8 @@ export async function generateMetadata(
   const previousOg = (await parent).openGraph || {}
 
   const title = `${response.creation?.workflow} by ${response.creation?.user.username} | Eden Create`
-  const description = `Check out the latest creation by ${response.creation?.user.username}!`
+  // const description = `Check out the latest creation by ${response.creation?.user.username}!`
+  const description = ``
 
   const og: OpenGraph = {
     ...previousOg,
