@@ -13,3 +13,14 @@ export interface OpenGraph {
   images?: string[]
   videos?: OpenGraphVideo[]
 }
+
+export interface TwitterMetadata {
+  card?: 'summary' | 'summary_large_image' | 'player'
+  title?: string
+  description?: string
+  images?: string[]
+  player?: string
+  playerWidth?: number
+  playerHeight?: number
+  // Add other Twitter Card properties as needed
+}
