@@ -351,11 +351,7 @@ export const subscribeTaskUpdates = async (
           ? {
               ...task,
               result: task.result.map(result =>
-                injectResultUrls(
-                  server,
-                  result,
-                  task.workflow === 'lora_trainer',
-                ),
+                injectResultUrls(server, result, task.output_type === 'lora'),
               ),
             }
           : task

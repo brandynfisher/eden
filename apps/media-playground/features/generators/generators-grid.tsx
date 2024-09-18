@@ -30,7 +30,7 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   // images
   flux: 'flux.png',
   background_removal: 'background_removal_opt.mp4',
-  clarity_upscaler: 'clarity_upscaler_opt.mp4',
+  upscaler: 'clarity_upscaler_opt.mp4',
   face_styler: 'face_styler.png',
   inpaint: 'inpaint_opt.mp4',
   outpaint: 'outpaint_opt.mp4',

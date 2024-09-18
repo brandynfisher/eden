@@ -12,7 +12,7 @@ import {
   addDocIfNotExistInPage,
   updateDocInPage,
 } from '@/lib/query'
-import { useWebSocketContext } from '@/provider/websocket-provider'
+import { useWebSocketContext } from '@/providers/websocket-provider'
 import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { Suspense, useEffect, useMemo, useState } from 'react'
