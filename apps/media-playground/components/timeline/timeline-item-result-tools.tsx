@@ -2,7 +2,13 @@ import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
 import TaskActionsMenu from '@/components/button/task-actions-menu'
 import LoadingIndicator from '@/components/loading-indicator'
+import ParameterTable from '@/components/timeline/parameter-table'
 import { Button } from '@/components/ui/button'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 // import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { cn } from '@/lib/utils'
@@ -12,7 +18,7 @@ import {
   TasksV2PublishResponse,
 } from '@edenlabs/eden-sdk'
 import axios, { AxiosError, AxiosResponse } from 'axios'
-import { BookHeartIcon } from 'lucide-react'
+import { BookHeartIcon, ListIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { Suspense, useState } from 'react'
 import { toast } from 'sonner'
@@ -84,84 +90,101 @@ const TimelineItemResultTools = ({ task, result, index, className }: Props) => {
         className,
       ])}
     >
-      <div className="flex flex-wrap gap-2">
-        {task.output_type !== 'lora' && !result.published ? (
-          <Button
-            variant={result.published ? 'ghost' : 'outline'}
-            size="sm"
-            title={
-              result.published
-                ? 'Creation was saved'
-                : `Save creation to profile`
-            }
-            className={`px-2 flex gap-2 items-center justify-center ${
-              result.published ? 'cursor-default' : ''
-            }`}
-            onClick={
-              result.published
-                ? undefined
-                : () =>
-                    publishTaskResult(
-                      task._id,
-                      result.filename || result.url || '',
-                    )
-            }
-            disabled={isPublishing}
-          >
-            {!result.published ? (
-              <>
-                <BookHeartIcon size={20} />
-                Save
-              </>
-            ) : isPublishing ? (
-              <>
-                <LoadingIndicator className="h-4 w-4" />
-                Saving
-              </>
-            ) : null}
-          </Button>
-        ) : (
-          <>
-            {result.model ? (
-              <PrivacyToggle
-                type={'model'}
-                item={result.model}
-                onUpdate={() => {
-                  // @todo: mutate/invalidate/optimistic update
-                  console.log('should set private')
-                }}
-              />
-            ) : null}
-            {result.creation ? (
-              <PrivacyToggle
-                type={'creation'}
-                item={result.creation}
-                onUpdate={() => {
-                  // @todo: mutate/invalidate/optimistic update
-                  console.log('should set private')
-                }}
-              />
-            ) : null}
-          </>
-        )}
-        <Suspense>
-          {task.output_type === 'lora' && result.model ? (
-            <ModelActionsMenu model={result.model} className="ml-auto" />
-          ) : result.creation ? (
-            <CreationActionsMenu
-              creation={result.creation}
-              className="ml-auto"
-            />
+      <Collapsible>
+        <div className="flex flex-wrap gap-2">
+          {task.output_type !== 'lora' && !result.published ? (
+            <Button
+              variant={result.published ? 'ghost' : 'outline'}
+              size="sm"
+              title={
+                result.published
+                  ? 'Creation was saved'
+                  : `Save creation to profile`
+              }
+              className={`px-2 flex gap-2 items-center justify-center ${
+                result.published ? 'cursor-default' : ''
+              }`}
+              onClick={
+                result.published
+                  ? undefined
+                  : () =>
+                      publishTaskResult(
+                        task._id,
+                        result.filename || result.url || '',
+                      )
+              }
+              disabled={isPublishing}
+            >
+              {!result.published ? (
+                <>
+                  <BookHeartIcon size={20} />
+                  Save
+                </>
+              ) : isPublishing ? (
+                <>
+                  <LoadingIndicator className="h-4 w-4" />
+                  Saving
+                </>
+              ) : null}
+            </Button>
           ) : (
-            <TaskActionsMenu
-              task={task}
-              result={result}
-              index={index}
-              className="ml-auto"
-            />
+            <>
+              {result.model ? (
+                <PrivacyToggle
+                  type={'model'}
+                  item={result.model}
+                  onUpdate={() => {
+                    // @todo: mutate/invalidate/optimistic update
+                    console.log('should set private')
+                  }}
+                />
+              ) : null}
+              {result.creation ? (
+                <PrivacyToggle
+                  type={'creation'}
+                  item={result.creation}
+                  onUpdate={() => {
+                    // @todo: mutate/invalidate/optimistic update
+                    console.log('should set private')
+                  }}
+                />
+              ) : null}
+            </>
           )}
-        </Suspense>
-      </div>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              title="Show task configuration"
+              className="px-2"
+            >
+              <ListIcon size={20} />
+            </Button>
+          </CollapsibleTrigger>
+          <Suspense>
+            {task.output_type === 'lora' && result.model ? (
+              <ModelActionsMenu model={result.model} className="ml-auto" />
+            ) : result.creation ? (
+              <CreationActionsMenu
+                creation={result.creation}
+                className="ml-auto"
+              />
+            ) : (
+              <TaskActionsMenu
+                task={task}
+                result={result}
+                index={index}
+                className="ml-auto"
+              />
+            )}
+          </Suspense>
+        </div>
+        <CollapsibleContent>
+          <div className="mt-2">
+            <ParameterTable args={task.args} />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   )
 }
