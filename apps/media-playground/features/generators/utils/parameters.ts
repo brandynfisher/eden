@@ -54,17 +54,3 @@ export function groupParameters(
   })
   return orderedElements
 }
-
-export function getCostRelevantParameters(parameters?: GeneratorParameterV2[]) {
-  if (!parameters || !parameters.length) return []
-
-  const dummyList: GeneratorParameterV2['name'][] = [
-    'width',
-    'height',
-    'n_frames',
-  ]
-  const costParams = parameters.filter(param => dummyList.includes(param.name))
-  console.log('getCostRelevantParameters', { dummyList, costParams })
-
-  return costParams
-}

@@ -89,9 +89,7 @@ const GeneratorForm = ({ generator }: Props) => {
 
       toast.success(`Task submitted`, {
         description: (
-          <code className=" text-xs text-foreground">
-            Tool: {generator.key}
-          </code>
+          <code className="text-xs text-foreground">Tool: {generator.key}</code>
         ),
         dismissible: true,
         richColors: true,

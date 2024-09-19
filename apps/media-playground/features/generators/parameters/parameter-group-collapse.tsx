@@ -51,12 +51,3 @@ const ParameterGroupCollapse = ({ group, form }: Props) => {
 }
 
 export default ParameterGroupCollapse
-
-// <div className='bg-accent rounded-lg overflow-hidden'>
-// {/*<ParameterField parameter={group.toggle} form={form} className={cn([isOpen ? 'bg-accent-foreground/20 rounded-b-none' : ''])}/>*/}
-// {/*<div className={cn(['overflow-hidden animate-collapsible-up', isOpen ? 'animate-collapsible-down' : ''])}>*/}
-// {/*  { group.groupParameters?.map((param) => (*/}
-// {/*    <ParameterField key={param.name} parameter={param} form={form} />*/}
-// {/*  )) }*/}
-// {/*</div>*/}
-// {/*</div>*/}
