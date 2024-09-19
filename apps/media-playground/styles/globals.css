@@ -89,3 +89,7 @@
         @apply bg-background text-foreground;
     }
 }
+
+.card-gradient:hover {
+    background: linear-gradient(rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.16) 40%, rgba(0, 0, 0, 0.04) 75%, rgba(0, 0, 0, 0.02) 85%, rgba(0, 0, 0, 0) 100%)
+}

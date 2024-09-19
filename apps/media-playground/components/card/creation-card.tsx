@@ -6,12 +6,13 @@ import LikeButton from '@/components/button/like-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import VideoResult from '@/components/media/video-result'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useHover } from '@/hooks/use-hover'
 import { getCloudfrontUrl } from '@/lib/media'
 import { FileType } from '@/types/Media'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
-import { AudioLinesIcon } from 'lucide-react'
+import { AudioLinesIcon, SquareIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties, useState } from 'react'
 
@@ -22,23 +23,52 @@ type Props = {
   showFooter?: boolean
   style?: CSSProperties
   onUpdate?: (item: CreationV2) => void
+  multiselect?: boolean
 }
 
-const CreationCard = ({ creation, showFooter, style }: Props) => {
+const CreationCard = ({
+  creation,
+  showFooter,
+  style,
+  multiselect = true,
+}: Props) => {
   const { hovered, ref } = useHover()
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
 
   return (
     <Card
       ref={ref}
-      className="overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
+      className="relative overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
       style={style}
     >
       <Link
         href={`/creations/${creation._id}`}
         prefetch={false}
-        className="relative w-full block"
+        className="relative w-full block group"
       >
+        {multiselect ? (
+          <div className={`absolute inset-0 w-full h-full z-10 card-gradient`}>
+            {/* //@todo:  always show multi select checkbox when input type === coarse? */}
+            <Button
+              variant="ghost"
+              className="relative top-1 left-1 p-1 h-9 w-9 hover:backdrop-blur-[2px] overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20"
+              onClick={event => {
+                // prevent bubbling up to link / router
+                event.stopPropagation()
+                event.preventDefault()
+                event.nativeEvent.stopImmediatePropagation()
+
+                console.log('multiselect:add/remove')
+
+                // @todo: use context/store to handle current selection
+                // @todo: show bottom toolbar with selection count and applicable multi actions (download, delete, private/public, add to collection)
+              }}
+            >
+              <SquareIcon className="h-5 w-5 text-white opacity-50 group-hover:opacity-100" />
+            </Button>
+          </div>
+        ) : null}
+
         {creation.mediaAttributes?.type === 'audio' ? (
           <div className="flex items-center justify-center h-32">
             <MediaDurationBadge
