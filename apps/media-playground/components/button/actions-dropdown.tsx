@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,14 +17,15 @@ const ActionsDropdown = ({ children, className, onOpenChange }: Props) => {
   return (
     <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
-        <div
+        <Button
+          variant="outline"
           className={cn([
-            `flex group items-center justify-center cursor-pointer w-8 h-8`,
+            `flex group items-center justify-center cursor-pointer w-9 h-9 p-2`,
             className,
           ])}
         >
-          <EllipsisIcon className="group-hover:text-primary" size={20} />
-        </div>
+          <EllipsisIcon className="group-hover:text-primary" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">{children}</DropdownMenuContent>
     </DropdownMenu>

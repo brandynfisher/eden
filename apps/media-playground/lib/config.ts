@@ -28,7 +28,7 @@ export const env = {
 }
 
 export const siteConfig: SiteConfig = {
-  name: 'Eden',
+  name: 'Eden Create',
   author: 'edenlabs',
   description: 'Garden of Artificial Delights',
   keywords: [
@@ -51,7 +51,7 @@ export const siteConfig: SiteConfig = {
     linkedIn: 'https://www.linkedin.com/company/eden-labs-inc/',
     github: 'https://github.com/edenartlabs/eden',
   },
-  ogImage: `${env.NEXT_PUBLIC_HOST}/android-chrome-512x512.png`,
+  ogImage: `${env.NEXT_PUBLIC_HOST}/logo_badge_square.png`,
   mediaErrorUrl:
     'https://edenartlab-prod-data.s3-accelerate.amazonaws.com/7c31e443f964e9d0e99c2fd45bf0b042999045e224aa7e38cb91049dc8340c93.jpeg',
   publicRoutes: [

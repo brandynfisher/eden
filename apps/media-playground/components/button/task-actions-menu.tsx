@@ -12,8 +12,8 @@ import React from 'react'
 
 type Props = {
   task: TaskV2
-  result: TaskV2Result
-  index: number
+  result?: TaskV2Result
+  index?: number
   className?: string
 }
 
@@ -30,18 +30,20 @@ const TaskActionsMenu = ({ task, result, index, className }: Props) => {
             <DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
-        <DownloadActionItem
-          type={'creation'}
-          originalFileUrl={result.url || ''}
-          saveAsFileName={`${task.user.username || ''}${
-            task.args.prompt
-              ? `_${task.args.prompt
-                  .substring(0, 64)
-                  .trim()
-                  .replace(/\s+/g, '-')}`
-              : ``
-          }_${task._id}_${index}`}
-        />
+        {result ? (
+          <DownloadActionItem
+            type={'creation'}
+            originalFileUrl={result.url || ''}
+            saveAsFileName={`${task.user.username || ''}${
+              task.args.prompt
+                ? `_${task.args.prompt
+                    .substring(0, 64)
+                    .trim()
+                    .replace(/\s+/g, '-')}`
+                : ``
+            }_${task._id}_${index}`}
+          />
+        ) : null}
       </DropdownMenuGroup>
     </ActionsDropdown>
   )

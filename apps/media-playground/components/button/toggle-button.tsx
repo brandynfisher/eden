@@ -23,7 +23,7 @@ const ToggleButton = ({
     >
       <div
         className={cn([
-          `'flex items-center gap-1 h-8 w-16 cursor-pointer text-xs rounded-lg justify-center'`,
+          `'flex items-center gap-1 h-7 w-16 cursor-pointer text-xs rounded-lg justify-center'`,
           className,
         ])}
         onClick={onClick}

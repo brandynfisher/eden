@@ -12,7 +12,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import HolyLoader from 'holy-loader'
 import { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
-import { ReactNode } from 'react'
+import { ReactNode, StrictMode } from 'react'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -83,36 +83,38 @@ export default function RootLayout({
   modal: ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <PreloadResources />
-      <body
-        className={cn(
-          'min-h-screen bg-background antialiased',
-          fontSans.className,
-        )}
-      >
-        <HolyLoader
-          color="#7d2edb"
-          height="1px"
-          // ignoreSearchParams={true}
-        />
-        <Providers>
-          <div className="flex min-h-screen w-full flex-col">
-            <Header />
-            {modal}
-            {children}
-          </div>
-
-          {env.NEXT_PUBLIC_APP_ENV === 'production' ? (
-            <GoogleTagManager gtmId={env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
-          ) : (
-            <TailwindIndicator />
+    <StrictMode>
+      <html lang="en" suppressHydrationWarning>
+        <PreloadResources />
+        <body
+          className={cn(
+            'min-h-screen bg-background antialiased',
+            fontSans.className,
           )}
+        >
+          <HolyLoader
+            color="#7d2edb"
+            height="1px"
+            // ignoreSearchParams={true}
+          />
+          <Providers>
+            <div className="flex min-h-screen w-full flex-col">
+              <Header />
+              {modal}
+              {children}
+            </div>
 
-          <div id="modal-root" />
-          <Toaster expand={false} visibleToasts={9} closeButton={true} />
-        </Providers>
-      </body>
-    </html>
+            {env.NEXT_PUBLIC_APP_ENV === 'production' ? (
+              <GoogleTagManager gtmId={env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
+            ) : (
+              <TailwindIndicator />
+            )}
+
+            <div id="modal-root" />
+            <Toaster expand={false} visibleToasts={9} closeButton={true} />
+          </Providers>
+        </body>
+      </html>
+    </StrictMode>
   )
 }
