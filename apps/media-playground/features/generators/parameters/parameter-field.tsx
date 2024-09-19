@@ -321,11 +321,11 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? '' : value}
+                    value={value === null ? '' : value || ''}
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value}
+                  value={value === null ? [] : value || []}
                   onChange={onChange}
                   allowedFileTypes={['video']}
                   maxFiles={

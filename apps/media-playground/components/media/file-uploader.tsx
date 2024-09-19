@@ -38,6 +38,8 @@ import { toast } from 'sonner'
 
 // components/media/file-uploader.tsx
 
+// ... (rest of the imports and existing code)
+
 interface FileUploadProgress {
   progress: number
   File: File
@@ -285,6 +287,9 @@ const FileUploader = ({
 
       setFilesToUpload(prev => [...prev, ...newUploads])
 
+      // Array to collect successfully uploaded file URLs
+      const uploadedFileUrls: string[] = []
+
       // Start uploading
       const uploadPromises = acceptedFiles.map(async file => {
         const cancelSource = axios.CancelToken.source()
@@ -307,8 +312,8 @@ const FileUploader = ({
             },
           ])
 
-          const updatedUrls = [...existingFiles.map(f => f.url), asset.fileUrl]
-          onChange(maxFiles === 1 ? asset.fileUrl : updatedUrls)
+          // Collect the uploaded file URL
+          uploadedFileUrls.push(asset.fileUrl)
         }
 
         setFilesToUpload(prev => prev.filter(item => item.File !== file))
@@ -316,6 +321,15 @@ const FileUploader = ({
 
       try {
         await Promise.all(uploadPromises)
+
+        // After all uploads, call onChange once with the updated URLs
+        const allUrls = [...existingFiles.map(f => f.url), ...uploadedFileUrls]
+        onChange(
+          maxFiles === 1
+            ? uploadedFileUrls[uploadedFileUrls.length - 1]
+            : allUrls,
+        )
+
         toast.info(`Upload finished`, {
           description: `${acceptedFiles.length} File${
             acceptedFiles.length > 1 ? 's' : ''
@@ -326,7 +340,8 @@ const FileUploader = ({
       } catch (error) {
         console.error('Error uploading files: ', error)
         const errorMessage = axios.isAxiosError(error)
-          ? JSON.parse((error as AxiosError).request.responseText)?.message
+          ? JSON.parse((error as AxiosError).request?.responseText || '{}')
+              ?.message
           : 'Unknown Error'
 
         toast.error('Error while uploading files', {
