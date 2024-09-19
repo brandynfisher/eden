@@ -44,7 +44,8 @@ const GeneratorCard = ({ title, image, link, description }: Props) => {
             className="object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10"
           />
         )}
-        <div className="relative flex flex-col group bg-gradient-to-b from-popover/90 from-10% via-transparent via-15% hover:via-100% hover:to-100% [@media(pointer:coarse)]:via-30% [@media(pointer:coarse)]:to-75% to-transparent flex-grow transition-all">
+        {/*<div className="relative flex flex-col group bg-gradient-to-b from-popover/90 from-10% via-transparent via-15% hover:via-100% hover:to-100% [@media(pointer:coarse)]:via-30% [@media(pointer:coarse)]:to-75% to-transparent flex-grow transition-all">*/}
+        <div className="relative flex flex-col group generator-gradient flex-grow transition-all drop-shadow">
           <div className="px-3 py-2">
             <TypographyH6 className="opacity-75 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-all">
               {title}

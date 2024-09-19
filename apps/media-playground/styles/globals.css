@@ -93,3 +93,6 @@
 .card-gradient:hover {
     background: linear-gradient(rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.16) 40%, rgba(0, 0, 0, 0.04) 75%, rgba(0, 0, 0, 0.02) 85%, rgba(0, 0, 0, 0) 100%)
 }
+.generator-gradient {
+    background: linear-gradient(rgba(0, 0, 0, 0.90) 0%, rgba(0, 0, 0, 0.16) 32%, rgba(0, 0, 0, 0.04) 64%, rgba(0, 0, 0, 0.02) 85%, rgba(0, 0, 0, 0) 100%)
+}

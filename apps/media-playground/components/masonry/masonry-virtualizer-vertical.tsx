@@ -2,6 +2,8 @@
 
 import LoadingIndicator from '@/components/loading-indicator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { MultiSelectProvider } from '@/contexts/multi-select-context'
+import MultiSelectToolbar from '@/features/feed/multi-select-toolbar'
 import { useElementSize } from '@/hooks/use-element-size'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
@@ -260,37 +262,42 @@ const MasonryVirtualizerVertical = ({
   )
 
   return (
-    <div
-      key={`${apiEndpoint}_${queryKey.join(',')}`}
-      data-test-id="masonry-virtualizer-vertical"
-      ref={masonryWrapRef}
-      className="flex pb-12 outline-none"
-    >
+    <MultiSelectProvider>
       <div
-        data-test-id="masonry-virtualizer-vertical-content"
-        style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }}
+        key={`${apiEndpoint}_${queryKey.join(',')}`}
+        data-test-id="masonry-virtualizer-vertical"
+        ref={masonryWrapRef}
+        className="flex pb-12 outline-none"
       >
-        {!allRows.length && status ? (
-          <div className="w-full h-full flex justify-center rounded-lg">
-            {status === 'error' ? (
-              <div className="px-4 bg-warning">Error fetching data.</div>
-            ) : status !== 'pending' ? (
-              <div className="px-4">Nothing found.</div>
-            ) : null}
-          </div>
-        ) : null}
+        <div
+          data-test-id="masonry-virtualizer-vertical-content"
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          {!allRows.length && status ? (
+            <div className="w-full h-full flex justify-center rounded-lg">
+              {status === 'error' ? (
+                <div className="px-4 bg-warning">Error fetching data.</div>
+              ) : status !== 'pending' ? (
+                <div className="px-4">Nothing found.</div>
+              ) : null}
+            </div>
+          ) : null}
 
-        {rowVirtualizer
-          .getVirtualItems()
-          .map(virtualItem => renderItem(virtualItem))}
+          {rowVirtualizer
+            .getVirtualItems()
+            .map(virtualItem => renderItem(virtualItem))}
 
-        {error ? <div className="text-destructive">{error.message}</div> : null}
+          {error ? (
+            <div className="text-destructive">{error.message}</div>
+          ) : null}
+        </div>
       </div>
-    </div>
+      <MultiSelectToolbar />
+    </MultiSelectProvider>
   )
 }
 

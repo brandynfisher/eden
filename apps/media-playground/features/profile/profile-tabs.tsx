@@ -15,7 +15,11 @@ const ProfileTabs = () => {
       key: 'creations',
       title: 'Creations',
       content: creator ? (
-        <CreationsFeed query={{ user: creator._id }} maxCols={7} />
+        <CreationsFeed
+          query={{ user: creator._id }}
+          maxCols={7}
+          multiselect={true}
+        />
       ) : null,
     },
     {

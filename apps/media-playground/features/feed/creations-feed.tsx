@@ -10,9 +10,15 @@ type Props = {
   query?: FeedCreationsCursorArguments
   minCols?: number
   maxCols?: number
+  multiselect?: boolean
 }
 
-const CreationsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
+const CreationsFeed = ({
+  query: queryProp,
+  minCols,
+  maxCols,
+  multiselect,
+}: Props) => {
   const defaultQuery: FeedCreationsCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -43,6 +49,7 @@ const CreationsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
           creation={item as CreationV2}
           creator={(item as CreationV2).user}
           linkHref={`/creations/${item._id}`}
+          multiselect={multiselect}
         />
       )}
     />
