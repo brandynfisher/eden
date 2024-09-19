@@ -31,7 +31,9 @@ const MultiSelectToolbar: React.FC = () => {
           <XIcon className="h-5 w-5" />
           <span className="sr-only">Clear Selection</span>
         </Button>
-        <span className="text-white">{selectedItems.length} selected</span>
+        <span className="text-accent-foreground">
+          {selectedItems.length} selected
+        </span>
         <div className="flex space-x-2 ml-auto">
           <Button
             variant="secondary"

@@ -50,13 +50,16 @@ const CreationCard = ({
   return (
     <Card
       ref={ref}
-      className="relative overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
+      className="relative overflow-hidden border-0 z-10"
       style={style}
     >
       <Link
         href={`/creations/${creation._id}`}
         prefetch={false}
-        className="relative w-full block group"
+        className={cn([
+          'relative w-full block group',
+          selected ? 'bg-popover-foreground/30' : '',
+        ])}
       >
         {multiselect ? (
           <div className={`absolute inset-0 w-full h-full z-10 card-gradient`}>
@@ -69,14 +72,19 @@ const CreationCard = ({
               aria-label={selected ? 'Deselect item' : 'Select item'}
             >
               {selected ? (
-                <CheckIcon className="h-5 w-5 p-0.5 bg-purple-600 rounded text-white opacity-95 group-hover:opacity-100" />
+                <CheckIcon className="h-5 w-5 p-0.5 bg-purple-600 rounded-sm text-white opacity-95 group-hover:opacity-100" />
               ) : (
                 <SquareIcon className="h-4 w-4 text-white opacity-50 group-hover:opacity-100" />
               )}
             </Button>
           </div>
         ) : null}
-        <div className={cn(['transition-transform '])}>
+        <div
+          className={cn([
+            'transition-transform',
+            selected ? 'scale-[0.85] rounded-md overflow-hidden' : '',
+          ])}
+        >
           {creation.mediaAttributes?.type === 'audio' ? (
             <div className="flex items-center justify-center h-32">
               <MediaDurationBadge
