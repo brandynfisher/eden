@@ -86,7 +86,7 @@ const TimelineItemResultTools = ({ task, result, index, className }: Props) => {
     <div
       data-test-id="timeline-item-result-tools"
       className={cn([
-        `relative text-sm py-2 px-2 rounded-b-lg bg-muted/60`,
+        `relative text-sm p-2 rounded-b-lg bg-muted/60`,
         className,
       ])}
     >

@@ -28,7 +28,7 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   video_upscaler: 'video_upscaler_opt.mp4',
 
   // images
-  'flux-schnell': 'flux.png',
+  'flux-schnell': 'flux-schnell.png',
   'flux-dev': 'flux.png',
   background_removal: 'background_removal_opt.mp4',
   upscaler: 'clarity_upscaler_opt.mp4',

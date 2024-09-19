@@ -64,9 +64,9 @@ const TimelineItem = ({ item }: Props) => {
     >
       <TaskParameterList task={item} />
       {item.status !== 'completed' ? (
-        <div className="relative bg-muted rounded-bl-lg rounded-br-lg">
+        <div className="relative rounded-bl-lg rounded-br-lg">
           {item.status === 'failed' ? (
-            <div className="h-full p-2">
+            <div className="h-full p-2 bg-accent">
               <TaskStatusBadge status={item.status} />
               <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
                 {item.error}
@@ -75,7 +75,7 @@ const TimelineItem = ({ item }: Props) => {
           ) : null}
 
           {item.status === 'cancelled' ? (
-            <div className="h-full p-2">
+            <div className="h-full p-2 bg-accent">
               <TaskStatusBadge status={item.status} />
             </div>
           ) : null}
@@ -107,7 +107,7 @@ const TimelineItem = ({ item }: Props) => {
               </Button>
             </div>
           ) : null}
-          <div className="relative text-sm py-2 px-2 rounded-b-lg bg-muted/60">
+          <div className="relative text-sm p-2 rounded-b-lg bg-muted/60">
             <TaskActionsMenu task={item} className="ml-auto" />
           </div>
         </div>

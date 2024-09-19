@@ -175,7 +175,7 @@ export const downloadFile = async (url: string, fileName: string) => {
   }
 
   try {
-    console.log({ url, fileName })
+    // console.log({ url, fileName })
     const parsedUrl = new URL(url)
     const extension = parsedUrl.pathname.split('.').pop()
     const response = await axios.get(

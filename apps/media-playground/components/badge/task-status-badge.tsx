@@ -10,7 +10,7 @@ type Props = {
 }
 const TaskStatusBadge = ({ outputType, status, hideText }: Props) => {
   return (
-    <div className="flex items-center gap-2 ">
+    <div className="flex items-center gap-2">
       {status === 'pending' ? <HourglassIcon className="h-4 w-4" /> : null}
       {status === 'running' ? (
         <LoadingIndicator
