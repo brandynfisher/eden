@@ -62,20 +62,26 @@ export async function PATCH(
   const { getToken } = getAuth(request)
   const authToken = await getToken()
 
+  if (!authToken) {
+    return new NextResponse(JSON.stringify({ error: 'Not authenticated' }), {
+      status: 401,
+    })
+  }
   // console.log('auth()', id, request.url)
 
   const requestJson = await request.json()
-  const { public: isPublic } = requestJson as CreationsV2PatchArguments
+  const { public: isPublic, deleted } = requestJson as CreationsV2PatchArguments
 
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-      token: authToken !== null ? authToken : undefined,
+      token: authToken,
     })
 
     const res = await eden.creations.updateV2({
       creationId: id,
       public: isPublic,
+      deleted,
     })
 
     if (!res) {

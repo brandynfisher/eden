@@ -34,11 +34,6 @@ export function useTogglePrivacy({ type, item, onUpdate }: Props) {
         return
       }
 
-      if (!response) {
-        console.error('response empty')
-        return
-      }
-
       if (isModelsV2PatchResponse(response)) {
         if (response.model) {
           onUpdate && onUpdate(response.model)

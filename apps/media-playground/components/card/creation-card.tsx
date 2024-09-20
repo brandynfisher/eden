@@ -32,11 +32,11 @@ const CreationCard = ({
   creation,
   showFooter,
   style,
-  multiselect = true,
+  multiselect = false,
 }: Props) => {
   const { hovered, ref } = useHover()
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
-  const { toggleSelection, isSelected } = useMultiSelection()
+  const { toggleSelection, isSelected, selectedItems } = useMultiSelection()
 
   const handleSelection = (event: React.MouseEvent) => {
     event.stopPropagation()
@@ -66,15 +66,20 @@ const CreationCard = ({
             {/* Always show multi select checkbox when input type === coarse? */}
             <Button
               variant="ghost"
-              className="relative top-1 left-1 p-1 h-9 w-9 transition-all hover:backdrop-blur-[2px] overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20"
+              className="relative top-1 left-1 p-1 h-9 w-9  [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:w-7 transition-all hover:backdrop-blur-[2px] overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20 [@media(pointer:coarse)]:!bg-opacity-10"
               onClick={handleSelection}
               aria-pressed={selected}
               aria-label={selected ? 'Deselect item' : 'Select item'}
             >
               {selected ? (
-                <CheckIcon className="h-5 w-5 p-0.5 bg-purple-600 rounded-sm text-white opacity-95 group-hover:opacity-100" />
+                <CheckIcon className="h-5 w-5 p-0.5 bg-purple-600 rounded-sm text-white opacity-95 group-hover:opacity-100 drop-shadow" />
               ) : (
-                <SquareIcon className="h-4 w-4 text-white opacity-50 group-hover:opacity-100" />
+                <SquareIcon
+                  className={cn([
+                    `h-4 w-4 text-white opacity-0 [@media(pointer:coarse)]:opacity-50 group-hover:opacity-100`,
+                    selectedItems.length ? 'opacity-50' : '',
+                  ])}
+                />
               )}
             </Button>
           </div>
@@ -82,7 +87,7 @@ const CreationCard = ({
         <div
           className={cn([
             'transition-transform',
-            selected ? 'scale-[0.85] rounded-md overflow-hidden' : '',
+            selected ? 'scale-[0.80] rounded-md overflow-hidden' : '',
           ])}
         >
           {creation.mediaAttributes?.type === 'audio' ? (

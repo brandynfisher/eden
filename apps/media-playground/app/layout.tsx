@@ -93,7 +93,7 @@ export default function RootLayout({
           )}
         >
           <HolyLoader
-            color="#7d2edb"
+            color="#9333ea"
             height="1px"
             // ignoreSearchParams={true}
           />

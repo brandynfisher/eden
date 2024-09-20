@@ -1,11 +1,12 @@
 import {
   getMediaDownloadUrl,
+  getMediaDownloadZip,
   receiveMediaTranscodeUpdate,
   uploadMedia,
   uploadMediaRequestCloudinary,
   uploadS3MediaRequest,
 } from '../controllers/mediaController'
-import { isAuth } from '../middleware/authMiddleware'
+import { isAuth, isAuthEden2 } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -100,6 +101,29 @@ const mediaRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (req, reply) => getMediaDownloadUrl(server, req, reply),
+  })
+
+  server.post('/media/download/bulk', {
+    schema: {
+      tags: ['Media'],
+      description: 'Bulk download media as zip file',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        files: Type.Array(
+          Type.Object({
+            url: Type.String({ format: 'uri' }),
+            fileName: Type.Optional(Type.String()),
+            fileExtension: Type.Optional(Type.String()),
+          }),
+        ),
+      }),
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (req, reply) => getMediaDownloadZip(server, req, reply),
   })
 
   server.post('/media/update/transcode', {

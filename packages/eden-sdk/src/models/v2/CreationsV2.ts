@@ -47,6 +47,13 @@ export interface CreationsV2DeleteArguments extends WebAPICallOptions {
 export interface CreationsV2PatchArguments extends WebAPICallOptions {
   creationId: string
   public?: boolean
+  deleted?: boolean
+}
+
+export interface CreationsV2BulkPatchArguments extends WebAPICallOptions {
+  creationIds: string[]
+  public?: boolean
+  deleted?: boolean
 }
 
 // Requests
@@ -107,6 +114,18 @@ export const creationsV2PatchRequestConfig = (
   }
 }
 
+export const creationsV2BulkPatchRequestConfig = (
+  args: CreationsV2BulkPatchArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `v2/creations/bulk`,
+    data: {
+      ...args,
+    },
+  }
+}
+
 export const creationsV2DeleteRequestConfig = (
   args: CreationsV2DeleteArguments,
 ): AxiosRequestConfig => {
@@ -145,6 +164,11 @@ export type CreationsV2UnreactResponse = WebAPICallResult & {
 export type CreationsV2PatchResponse = WebAPICallResult & {
   error?: string
   creation?: CreationV2
+}
+
+export type CreationsV2BulkPatchResponse = WebAPICallResult & {
+  error?: string
+  creations?: CreationV2[]
 }
 
 export type CreationsV2DeleteResponse = WebAPICallResult & {
