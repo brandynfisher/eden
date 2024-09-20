@@ -4,10 +4,12 @@ import RouterTabs from '@/components/tabs/router-tabs'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { useParams } from 'next/navigation'
 
 const ProfileTabs = () => {
   const params = useParams<{ name: string }>()
+  const { user } = useAuthState()
   const { creator } = useCreatorQuery({ key: params.name })
 
   const tabs = [
@@ -18,7 +20,7 @@ const ProfileTabs = () => {
         <CreationsFeed
           query={{ user: creator._id }}
           maxCols={7}
-          multiselect={true}
+          multiselect={user?._id === creator._id}
         />
       ) : null,
     },
