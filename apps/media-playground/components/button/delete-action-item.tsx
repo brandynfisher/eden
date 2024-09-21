@@ -1,7 +1,4 @@
-import {
-  DropdownMenuItem,
-  DropdownMenuShortcut,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useDelete } from '@/hooks/use-delete'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { Trash2Icon } from 'lucide-react'
@@ -23,7 +20,6 @@ const DeleteActionItem = ({ type, item, onUpdate }: Props) => {
     >
       <Trash2Icon className="mr-2 h-4 w-4" />
       <span>Delete</span>
-      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
     </DropdownMenuItem>
   )
 }

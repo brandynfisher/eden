@@ -3,7 +3,6 @@ import DownloadActionItem from '@/components/button/download-action-item'
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuShortcut,
 } from '@/components/ui/dropdown-menu'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import { FileSlidersIcon } from 'lucide-react'
@@ -27,7 +26,7 @@ const TaskActionsMenu = ({ task, result, index, className }: Props) => {
           >
             <FileSlidersIcon className="mr-2 h-4 w-4" />
             Use as Preset
-            <DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>
+            {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
         {result ? (

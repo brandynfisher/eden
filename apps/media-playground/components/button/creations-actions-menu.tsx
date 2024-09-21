@@ -6,7 +6,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -70,7 +69,7 @@ const CreationActionsContent = ({
           <Link href={`/creations/${creationData._id}`}>
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
-            <DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>
+            {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -79,7 +78,7 @@ const CreationActionsContent = ({
           >
             <FileSlidersIcon className="mr-2 h-4 w-4" />
             Use as Preset
-            <DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>
+            {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>

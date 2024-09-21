@@ -5,7 +5,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
 } from '@/components/ui/dropdown-menu'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -64,7 +63,7 @@ const ModelActionsContent = ({ model, onUpdate, userId }: ContentProps) => {
           <Link href={`/models/${modelData._id}`}>
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
-            <DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>
+            {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
         {/*<DropdownMenuItem asChild>*/}
@@ -78,7 +77,7 @@ const ModelActionsContent = ({ model, onUpdate, userId }: ContentProps) => {
           <Link href={`/create/image/txt2img?lora=${model._id}`}>
             <ComponentIcon className="mr-2 h-4 w-4" />
             Use Model
-            <DropdownMenuShortcut>⇧⌘M</DropdownMenuShortcut>
+            {/*<DropdownMenuShortcut>⇧⌘M</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>

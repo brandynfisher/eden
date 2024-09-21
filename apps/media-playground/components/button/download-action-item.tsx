@@ -1,7 +1,4 @@
-import {
-  DropdownMenuItem,
-  DropdownMenuShortcut,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { downloadFile } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { DownloadIcon } from 'lucide-react'
@@ -35,7 +32,7 @@ const DownloadActionItem = ({
     <DropdownMenuItem onClick={handleFileDownload} className="cursor-pointer">
       <DownloadIcon className="mr-2 h-4 w-4" />
       <span>Download</span>
-      <DropdownMenuShortcut>⇧⌘S</DropdownMenuShortcut>
+      {/*<DropdownMenuShortcut>⇧⌘S</DropdownMenuShortcut>*/}
     </DropdownMenuItem>
   )
 }
