@@ -80,7 +80,6 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       params: {
@@ -88,6 +87,7 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
       },
       body: Type.Object({
         public: Type.Optional(Type.Boolean()),
+        deleted: Type.Optional(Type.Boolean()),
       }),
       response: {
         200: {

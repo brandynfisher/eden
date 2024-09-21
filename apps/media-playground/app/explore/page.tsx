@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 
 const ExplorePage = () => {
   return (
-    <div className="p-4">
+    <div className="p-4 ">
       <Suspense fallback={<LoadingIndicator />}>
         <FeedTabs />
       </Suspense>

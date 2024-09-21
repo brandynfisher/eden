@@ -30,13 +30,7 @@ export const getCreation = async (
     bookmarked?: boolean
   }
 
-  // nothing found or it was deleted and the user is not the owner
-  if (
-    !creation ||
-    (request.user?.userId &&
-      creation.deleted &&
-      creation.user._id.toString() !== request.user?.userId.toString())
-  ) {
+  if (!creation || creation.deleted) {
     return reply.status(404).send({
       message: 'Creation not found',
     })
@@ -63,13 +57,19 @@ export const creationUpdate = async (
 ) => {
   const { userId } = request.user
   const { creationId } = request.params as CreationsV2PatchArguments
-  const { public: isPublic } = request.body as CreationsV2PatchArguments
+  const { public: isPublic, deleted } =
+    request.body as CreationsV2PatchArguments
 
-  if (!userId || !creationId || typeof isPublic === 'undefined') {
+  if (
+    !userId ||
+    !creationId ||
+    (typeof isPublic === 'undefined' && typeof deleted === 'undefined')
+  ) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
   }
+  ``
 
   const creation = await CreationV2.findOne({
     _id: creationId,
@@ -84,6 +84,10 @@ export const creationUpdate = async (
 
   if (typeof isPublic !== 'undefined') {
     creation.public = isPublic
+  }
+
+  if (typeof deleted !== 'undefined') {
+    creation.deleted = deleted
   }
 
   await creation.save()

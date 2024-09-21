@@ -1,4 +1,5 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
+import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import {
@@ -102,6 +103,14 @@ const CreationActionsContent = ({
                       .replace(/\s+/g, '-')}`
                   : ``
               }_${creationData._id}`}
+            />
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DeleteActionItem
+              type="creation"
+              item={creationData}
+              onUpdate={onUpdate || refetchCreation}
             />
           </DropdownMenuGroup>
         </>

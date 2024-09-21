@@ -93,7 +93,7 @@ export const creationSchema = new Schema<CreationV2Document>(
     },
     public: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   {

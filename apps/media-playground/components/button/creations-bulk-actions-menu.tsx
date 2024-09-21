@@ -1,6 +1,10 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
+import DeleteBulkActionItem from '@/components/button/delete-bulk-action-item'
 import PrivacyBulkActionItem from '@/components/button/privacy-bulk-action-item'
-import { DropdownMenuGroup } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenuGroup,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import React, { ReactNode, useState } from 'react'
@@ -51,13 +55,23 @@ type ContentProps = {
 
 const CreationsBulkActionsContent = ({ creations, onUpdate }: ContentProps) => {
   return (
-    <DropdownMenuGroup>
-      <PrivacyBulkActionItem
-        type="creation"
-        items={creations}
-        onUpdate={onUpdate}
-      />
-    </DropdownMenuGroup>
+    <>
+      <DropdownMenuGroup>
+        <PrivacyBulkActionItem
+          type="creation"
+          items={creations}
+          onUpdate={onUpdate}
+        />
+      </DropdownMenuGroup>
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <DeleteBulkActionItem
+          type="creation"
+          items={creations}
+          onUpdate={onUpdate}
+        />
+      </DropdownMenuGroup>
+    </>
   )
 }
 

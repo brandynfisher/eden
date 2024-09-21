@@ -123,7 +123,6 @@ const CreationCard = ({
                   videoUrl={getCloudfrontUrl(creation.url) || ''}
                   width={creation.mediaAttributes.width}
                   height={creation.mediaAttributes.height}
-                  posterUrl={getCloudfrontUrl(creation.thumbnail)}
                   muted={true}
                   loop={true}
                   autoPlay={true}

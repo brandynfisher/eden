@@ -99,24 +99,6 @@ const MultiSelectToolbar: React.FC = () => {
             <XIcon className="h-5 w-5" />
             <span className="sr-only">Clear Selection</span>
           </Button>
-          {/*<Button*/}
-          {/*  variant="outline"*/}
-          {/*  onClick={handleAddToCollection}*/}
-          {/*  className="flex items-center"*/}
-          {/*  title="Add items to Collection"*/}
-          {/*>*/}
-          {/*  <LucideListPlus className="h-5 w-5" />*/}
-          {/*  <span className="sr-only">Add to collection</span>*/}
-          {/*</Button>*/}
-          {/*<Button*/}
-          {/*  variant="outline"*/}
-          {/*  onClick={handleDelete}*/}
-          {/*  className="flex items-center text-destructive border border-destructive"*/}
-          {/*  title="Delete items"*/}
-          {/*>*/}
-          {/*  <Trash2Icon className="h-4 w-4" />*/}
-          {/*  <span className="sr-only">Delete</span>*/}
-          {/*</Button>*/}
         </div>
       </div>
     </div>

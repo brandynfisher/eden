@@ -39,56 +39,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => listCreators(request, reply),
   })
 
-  // server.get('/v2/creators/:userId/followers', {
-  //   schema: {
-  //     tags: ['Creators'],
-  //     description: 'List creator followers',
-  //     security: [
-  //       {
-  //         apiKey: [],
-  //         // apiSecret: [],
-  //       },
-  //     ],
-  //     querystring: {
-  //       type: 'object',
-  //       properties: {
-  //         ...paginationProperties(),
-  //       },
-  //       required: [],
-  //     },
-  //     response: {
-  //       200: paginatedResponse(Type.Any()),
-  //     },
-  //   },
-  //   preHandler: [(request, reply) => isAuth(server, request, reply)],
-  //   handler: (request, reply) => listCreatorFollowers(request, reply),
-  // })
-
-  // server.get('/v2/creators/:userId/following', {
-  //   schema: {
-  //     tags: ['Creators'],
-  //     description: 'List creator following',
-  //     security: [
-  //       {
-  //         apiKey: [],
-  //         // apiSecret: [],
-  //       },
-  //     ],
-  //     querystring: {
-  //       type: 'object',
-  //       properties: {
-  //         ...paginationProperties(),
-  //       },
-  //       required: [],
-  //     },
-  //     response: {
-  //       200: paginatedResponse(Type.Any()),
-  //     },
-  //   },
-  //   preHandler: [(request, reply) => isAuth(server, request, reply)],
-  //   handler: (request, reply) => listCreatorFollowing(request, reply),
-  // })
-
   server.get('/v2/creators/:userId', {
     schema: {
       tags: ['Creators'],
@@ -96,7 +46,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       response: {
@@ -116,7 +65,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       request: {
