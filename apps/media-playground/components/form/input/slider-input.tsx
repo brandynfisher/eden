@@ -46,7 +46,7 @@ const SliderInput = ({
     <div className="flex items-center">
       <div className="relative flex items-center w-full">
         <SliderInputRangeLabel
-          text={`${min}${unit || ''}`}
+          text={`${min.toLocaleString()}${unit || ''}`}
           className="left-4"
         />
         <div className="flex-1 relative">
@@ -64,7 +64,7 @@ const SliderInput = ({
           />
         </div>
         <SliderInputRangeLabel
-          text={`${max}${unit || ''}`}
+          text={`${max.toLocaleString()}${unit || ''}`}
           className="right-4"
         />
       </div>
