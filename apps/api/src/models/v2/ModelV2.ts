@@ -76,7 +76,9 @@ export const modelSchema = new Schema<ModelV2Document>(
 )
 
 modelSchema.index({ createdAt: -1 })
-modelSchema.index({ user: 1, createdAt: -1 })
+modelSchema.index({ deleted: -1, createdAt: -1 })
+modelSchema.index({ public: -1, deleted: -1, createdAt: -1 })
+modelSchema.index({ user: 1, public: -1, deleted: -1, createdAt: -1 })
 modelSchema.plugin(paginate)
 modelSchema.plugin(aggregatePaginate)
 modelSchema.plugin(mongooseDelete, {

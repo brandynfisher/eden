@@ -73,8 +73,8 @@ const CostIndicatorV2: React.FC<Props> = ({ formula }) => {
   const costParameterNames = formula
     ? Array.from(
         new Set(
-          (formula.match(regex) || []).map(match =>
-            match.replace('.length', ''),
+          (formula.match(regex) || []).map(
+            match => match.replace('.length', ''), // if expression field ends with .length, we're interested in num array elements of the given field
           ),
         ),
       )
