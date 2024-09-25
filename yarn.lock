@@ -13188,6 +13188,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"currency.js@npm:^2.0.4":
+  version: 2.0.4
+  resolution: "currency.js@npm:2.0.4"
+  checksum: 10c0/e7cd308a97c7b5d3413fa304542da62b7205a28144889b9b38f0fd203fe4d3c499a9541303fcbb6a9fac33a7ee39ab02d810c2c8f37cd5c69a7991adef638ba3
+  languageName: node
+  linkType: hard
+
 "damerau-levenshtein@npm:^1.0.8":
   version: 1.0.8
   resolution: "damerau-levenshtein@npm:1.0.8"
@@ -18946,6 +18953,7 @@ __metadata:
     canvas: "npm:^2.11.2"
     class-variance-authority: "npm:^0.7.0"
     clsx: "npm:^2.1.0"
+    currency.js: "npm:^2.0.4"
     dayjs: "npm:^1.11.13"
     env-cmd: "npm:^10.1.0"
     eslint: "npm:8.56.0"
