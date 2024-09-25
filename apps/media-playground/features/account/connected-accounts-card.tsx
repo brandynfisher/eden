@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useClerk, useSignIn, useSignUp } from '@clerk/nextjs'
+import { useAuth } from '@clerk/nextjs'
 import { OAuthStrategy } from '@clerk/types'
 import axios from 'axios'
 import { X } from 'lucide-react'
@@ -21,63 +21,30 @@ const ConnectedAccountsCard = ({
 }: {
   connectedEmails: { id: string; email: string; linkedTo: string }[]
 }) => {
-  const { signIn } = useSignIn()
-  const { signUp, setActive } = useSignUp()
-  const { signOut } = useClerk()
-
-  if (!signIn || !signUp) return null
-
-  const signInWith = (strategy: OAuthStrategy) => {
-    return signIn.authenticateWithRedirect({
-      strategy,
-      redirectUrl: '/sign-up/sso-callback',
-      redirectUrlComplete: '/',
-    })
-  }
-
   async function handleSignIn(strategy: OAuthStrategy) {
-    if (!signIn || !signUp) return null
+    try {
+      const response = await axios.post(
+        'https://oriented-glider-22.clerk.accounts.dev/v1/dev_browser',
+      )
 
-    await signOut()
+      const devBrowserToken = response.data.token
 
-    // If the user has an account in your application, but does not yet
-    // have an OAuth account connected to it, you can transfer the OAuth
-    // account to the existing user account.
-    const userExistsButNeedsToSignIn =
-      signUp.verifications.externalAccount.status === 'transferable' &&
-      signUp.verifications.externalAccount.error?.code ===
-        'external_account_exists'
-
-    if (userExistsButNeedsToSignIn) {
-      const res = await signIn.create({ transfer: true })
-
-      if (res.status === 'complete') {
-        setActive({
-          session: res.createdSessionId,
-        })
-      }
-    }
-
-    // If the user has an OAuth account but does not yet
-    // have an account in your app, you can create an account
-    // for them using the OAuth information.
-    const userNeedsToBeCreated =
-      signIn.firstFactorVerification.status === 'transferable'
-
-    if (userNeedsToBeCreated) {
-      const res = await signUp.create({
-        transfer: true,
-      })
-
-      if (res.status === 'complete') {
-        setActive({
-          session: res.createdSessionId,
-        })
-      }
-    } else {
-      // If the user has an account in your application
-      // and has an OAuth account connected to it, you can sign them in.
-      signInWith(strategy)
+      await axios.post(
+        'https://oriented-glider-22.clerk.accounts.dev/v1/me/external_accounts',
+        {},
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          params: {
+            strategy,
+            redirectUrl: 'http://localhost:3000/sign-up/sso-callback',
+            __dev_session: devBrowserToken,
+          },
+        },
+      )
+    } catch (error) {
+      console.log(error)
     }
   }
 
