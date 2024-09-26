@@ -18,8 +18,8 @@ const ModelMediaPreview = ({ model, isModal }: Props) => {
           className={cn([
             'lg:absolute lg:h-full',
             isModal
-              ? 'max-h-[calc(100dvh_-_125px)]'
-              : 'max-h-[calc(100dvh_-_172px)]',
+              ? 'max-h-[calc(100dvh_-_130px)]'
+              : 'max-h-[calc(100dvh_-_230px)]',
           ])}
           forceRender={true}
           item={{

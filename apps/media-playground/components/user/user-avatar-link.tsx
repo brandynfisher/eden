@@ -13,7 +13,7 @@ const UserAvatarLink = ({ name, image, hideName }: UserAvatarLinkProps) => {
       href={`/creators/${name}`}
       className="group flex gap-2 items-center cursor-pointer"
     >
-      <UserAvatar image={image} name={name} />
+      <UserAvatar image={image} name={name} className="h-8 w-8" />
       {!hideName ? (
         <div className="group-hover:text-primary transition-colors">{name}</div>
       ) : null}

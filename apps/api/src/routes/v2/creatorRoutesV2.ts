@@ -1,11 +1,8 @@
 import { paginatedResponse, paginationProperties } from '..'
 import {
-  // followCreator,
   getCreator,
-  getCreatorMe, // listCreatorFollowers,
-  // listCreatorFollowing,
+  getCreatorMe,
   listCreators,
-  unfollowCreator,
   updateCreator,
 } from '../../controllers/creatorsController'
 import { isAuthEden2, maybeAuthEden2 } from '../../middleware/authMiddleware'
@@ -20,7 +17,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       querystring: {
@@ -39,56 +35,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => listCreators(request, reply),
   })
 
-  // server.get('/v2/creators/:userId/followers', {
-  //   schema: {
-  //     tags: ['Creators'],
-  //     description: 'List creator followers',
-  //     security: [
-  //       {
-  //         apiKey: [],
-  //         // apiSecret: [],
-  //       },
-  //     ],
-  //     querystring: {
-  //       type: 'object',
-  //       properties: {
-  //         ...paginationProperties(),
-  //       },
-  //       required: [],
-  //     },
-  //     response: {
-  //       200: paginatedResponse(Type.Any()),
-  //     },
-  //   },
-  //   preHandler: [(request, reply) => isAuth(server, request, reply)],
-  //   handler: (request, reply) => listCreatorFollowers(request, reply),
-  // })
-
-  // server.get('/v2/creators/:userId/following', {
-  //   schema: {
-  //     tags: ['Creators'],
-  //     description: 'List creator following',
-  //     security: [
-  //       {
-  //         apiKey: [],
-  //         // apiSecret: [],
-  //       },
-  //     ],
-  //     querystring: {
-  //       type: 'object',
-  //       properties: {
-  //         ...paginationProperties(),
-  //       },
-  //       required: [],
-  //     },
-  //     response: {
-  //       200: paginatedResponse(Type.Any()),
-  //     },
-  //   },
-  //   preHandler: [(request, reply) => isAuth(server, request, reply)],
-  //   handler: (request, reply) => listCreatorFollowing(request, reply),
-  // })
-
   server.get('/v2/creators/me', {
     schema: {
       tags: ['Creators'],
@@ -96,7 +42,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       response: {
@@ -119,7 +64,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       response: {
@@ -139,7 +83,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       request: {
@@ -156,52 +99,6 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => updateCreator(request, reply),
-  })
-
-  // server.post('/creators/follow', {
-  //   schema: {
-  //     tags: ['Creators'],
-  //     description: 'Follow a creator',
-  //     security: [
-  //       {
-  //         apiKey: [],
-  //         // apiSecret: [],
-  //       },
-  //     ],
-  //     body: Type.Object({
-  //       userId: Type.String(),
-  //     }),
-  //     response: {
-  //       200: {
-  //         success: Type.Boolean(),
-  //       },
-  //     },
-  //   },
-  //   preHandler: [(request, reply) => isAuth(server, request, reply)],
-  //   handler: (request, reply) => followCreator(request, reply),
-  // })
-
-  server.post('/v2/creators/unfollow', {
-    schema: {
-      tags: ['Creators'],
-      description: 'Unfollow a creator',
-      security: [
-        {
-          apiKey: [],
-          // apiSecret: [],
-        },
-      ],
-      body: Type.Object({
-        userId: Type.String(),
-      }),
-      response: {
-        200: {
-          success: Type.Boolean(),
-        },
-      },
-    },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => unfollowCreator(request, reply),
   })
 }
 

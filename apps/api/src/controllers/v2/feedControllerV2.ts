@@ -406,13 +406,13 @@ const handleArguments = async ({
       ? { public: { $eq: true } }
       : undefined
 
-  // const defaultDeletedFilter = usesPrivacy
-  //   ? { deleted: { $eq: false } }
-  //   : undefined
+  const defaultDeletedFilter = usesPrivacy
+    ? { deleted: { $eq: false } }
+    : undefined
 
   const filters = {
     ...defaultPrivacyFilter,
-    // ...defaultDeletedFilter,
+    ...defaultDeletedFilter,
     ...customFilterMap,
     ...filterOptions,
   }

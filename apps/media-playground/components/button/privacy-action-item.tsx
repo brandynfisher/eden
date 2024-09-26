@@ -1,7 +1,4 @@
-import {
-  DropdownMenuItem,
-  DropdownMenuShortcut,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useTogglePrivacy } from '@/hooks/use-toggle-privacy'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { LockIcon, LockOpenIcon } from 'lucide-react'
@@ -26,7 +23,7 @@ const PrivacyActionItem = ({ type, item, onUpdate }: Props) => {
       <span>
         Set <strong>{item.public ? 'Private' : 'Public'}</strong>
       </span>
-      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+      {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
     </DropdownMenuItem>
   )
 }

@@ -2,7 +2,6 @@ import ToggleButton from '@/components/button/toggle-button'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import { ToggleGroup } from '@/components/ui/toggle-group'
 import ModelsFeed from '@/features/feed/models-feed'
-import UserModelsFeed from '@/features/feed/user-models-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { ModelV2 } from '@edenlabs/eden-sdk'
 import { Suspense, useState } from 'react'
@@ -40,8 +39,8 @@ const ModelSelectorModalContent = ({ onChange }: Props) => {
 
       <Suspense fallback={<MasonrySkeleton />}>
         {showUserModelsOnly ? (
-          <UserModelsFeed
-            userName={user?._id || ''}
+          <ModelsFeed
+            query={user ? { user: user?._id } : {}}
             minCols={2}
             maxCols={5}
             onClick={onChange}

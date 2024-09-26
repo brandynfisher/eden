@@ -1,18 +1,18 @@
 import LoginOrVoucher from '@/components/form/login-or-voucher'
-import RotatingEdenLogo from '@/components/logo/rotating-eden-logo'
+import EdenLogoTall from '@/components/logo/eden-logo-tall'
 import { Button } from '@/components/ui/button'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
 
 const ConciergeContent = () => {
   return (
     <div className="flex flex-col items-center justify-center">
-      <TypographyH3>
+      <div className="flex items-center my-4 opacity-75">
+        <EdenLogoTall />
+      </div>
+
+      <TypographyH3 className="mt-4">
         Eden Create is in <span className="italic"> Private Beta</span>
       </TypographyH3>
-
-      <div className="flex items-center my-4 opacity-75">
-        <RotatingEdenLogo variant={'medium'} />
-      </div>
 
       <div className="flex gap-2 mt-8">
         <Button asChild variant="secondary">

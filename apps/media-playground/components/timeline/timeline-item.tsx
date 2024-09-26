@@ -1,10 +1,10 @@
 import TaskStatusBadge from '@/components/badge/task-status-badge'
+import TaskActionsMenu from '@/components/button/task-actions-menu'
 import TaskParameterList from '@/components/timeline/task-parameter-list'
 import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
 import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { TaskV2 } from '@edenlabs/eden-sdk'
 import axios, { AxiosError } from 'axios'
@@ -64,9 +64,9 @@ const TimelineItem = ({ item }: Props) => {
     >
       <TaskParameterList task={item} />
       {item.status !== 'completed' ? (
-        <div className="relative bg-muted rounded-bl-lg rounded-br-lg">
+        <div className="relative rounded-bl-lg rounded-br-lg">
           {item.status === 'failed' ? (
-            <div className="h-full p-2">
+            <div className="h-full p-2 bg-accent">
               <TaskStatusBadge status={item.status} />
               <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
                 {item.error}
@@ -75,7 +75,7 @@ const TimelineItem = ({ item }: Props) => {
           ) : null}
 
           {item.status === 'cancelled' ? (
-            <div className="h-full p-2">
+            <div className="h-full p-2 bg-accent">
               <TaskStatusBadge status={item.status} />
             </div>
           ) : null}
@@ -83,11 +83,10 @@ const TimelineItem = ({ item }: Props) => {
           {item.status === 'pending' || item.status === 'running' ? (
             <div className="w-full relative flex flex-col items-center justify-around">
               <AspectRatio
+                className="bg-accent"
                 ratio={(item.args.width || 1024) / (item.args.height || 1024)}
-              >
-                <Skeleton className="w-full h-full rounded-t-none rounded-bl-lg rounded-br-lg" />
-              </AspectRatio>
-              <div className="absolute flex items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground">
+              />
+              <div className="absolute flex items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse">
                 <TaskStatusBadge
                   status={item.status}
                   hideText={true}
@@ -108,6 +107,9 @@ const TimelineItem = ({ item }: Props) => {
               </Button>
             </div>
           ) : null}
+          <div className="relative text-sm p-2 rounded-b-lg bg-muted/60">
+            <TaskActionsMenu task={item} className="ml-auto" />
+          </div>
         </div>
       ) : (
         <div>
@@ -118,6 +120,7 @@ const TimelineItem = ({ item }: Props) => {
               result.model === undefined ? (
                 <TimelineItemMediaResult
                   key={`${item._id}_${index}`}
+                  index={index}
                   task={item}
                   result={result}
                 />
@@ -125,6 +128,7 @@ const TimelineItem = ({ item }: Props) => {
                 // api populates a model property with full model document
                 <TimelineItemModelResult
                   key={`${item._id}_${index}`}
+                  index={index}
                   result={result}
                   task={item}
                 />

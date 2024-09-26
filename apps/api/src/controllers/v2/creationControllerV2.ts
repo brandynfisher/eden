@@ -1,6 +1,7 @@
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
 import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
 import {
+  CreationsV2BulkPatchArguments,
   CreationsV2GetArguments,
   CreationsV2PatchArguments,
   ReactionType,
@@ -29,13 +30,7 @@ export const getCreation = async (
     bookmarked?: boolean
   }
 
-  // nothing found or it was deleted and the user is not the owner
-  if (
-    !creation ||
-    (request.user?.userId &&
-      creation.deleted &&
-      creation.user._id.toString() !== request.user?.userId.toString())
-  ) {
+  if (!creation || creation.deleted) {
     return reply.status(404).send({
       message: 'Creation not found',
     })
@@ -62,13 +57,19 @@ export const creationUpdate = async (
 ) => {
   const { userId } = request.user
   const { creationId } = request.params as CreationsV2PatchArguments
-  const { public: isPublic } = request.body as CreationsV2PatchArguments
+  const { public: isPublic, deleted } =
+    request.body as CreationsV2PatchArguments
 
-  if (!userId || !creationId || typeof isPublic === 'undefined') {
+  if (
+    !userId ||
+    !creationId ||
+    (typeof isPublic === 'undefined' && typeof deleted === 'undefined')
+  ) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
   }
+  ``
 
   const creation = await CreationV2.findOne({
     _id: creationId,
@@ -85,6 +86,10 @@ export const creationUpdate = async (
     creation.public = isPublic
   }
 
+  if (typeof deleted !== 'undefined') {
+    creation.deleted = deleted
+  }
+
   await creation.save()
 
   await creation.populate({
@@ -94,5 +99,95 @@ export const creationUpdate = async (
 
   return reply.status(200).send({
     creation,
+  })
+}
+
+interface UpdateResult {
+  creationId: string
+  status: 'success' | 'failed'
+  creation?: any // Replace 'any' with your creation type
+  error?: string
+}
+
+export const creationBulkUpdate = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const {
+    creationIds,
+    public: isPublic,
+    deleted,
+  } = request.body as CreationsV2BulkPatchArguments
+
+  if (
+    !userId ||
+    !creationIds ||
+    !Array.isArray(creationIds) ||
+    creationIds.length === 0 ||
+    (typeof isPublic === 'undefined' && typeof deleted === 'undefined')
+  ) {
+    return reply.status(422).send({
+      message: 'Missing parameters or malformed request body',
+    })
+  }
+
+  const results: UpdateResult[] = []
+
+  for (const creationId of creationIds) {
+    try {
+      // Find the creation belonging to the user
+      const creation = await CreationV2.findOne({
+        _id: creationId,
+        user: userId,
+      })
+
+      if (!creation) {
+        // If creation not found, record the failure
+        results.push({
+          creationId,
+          status: 'failed',
+          error: 'Creation not found',
+        })
+        continue // Proceed to the next creationId
+      }
+
+      // Update the fields if they are provided
+      if (typeof isPublic !== 'undefined') {
+        creation.public = isPublic
+      }
+
+      if (typeof deleted !== 'undefined') {
+        creation.deleted = deleted
+      }
+
+      // Save the updated creation
+      await creation.save()
+
+      // Populate the 'user' field as needed
+      await creation.populate({
+        path: 'user',
+        select: '_id username userId userImage',
+      })
+
+      // Record the successful update
+      results.push({
+        creationId,
+        status: 'success',
+        creation, // Optionally include the updated creation data
+      })
+    } catch (error: any) {
+      // Handle any unexpected errors during the update process
+      results.push({
+        creationId,
+        status: 'failed',
+        error: error.message || 'An unexpected error occurred',
+      })
+    }
+  }
+
+  // **4. Send the Response with All Results**
+  return reply.status(200).send({
+    results,
   })
 }

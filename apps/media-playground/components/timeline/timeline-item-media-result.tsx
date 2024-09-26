@@ -8,9 +8,10 @@ import React from 'react'
 type Props = {
   task: TaskV2
   result: TaskV2Result
+  index: number
 }
 
-const TimelineItemMediaResult = ({ task, result }: Props) => {
+const TimelineItemMediaResult = ({ task, result, index }: Props) => {
   return (
     <>
       <div
@@ -40,7 +41,7 @@ const TimelineItemMediaResult = ({ task, result }: Props) => {
           </LightboxGallery>
         )}
       </div>
-      <TimelineItemResultTools task={task} result={result} />
+      <TimelineItemResultTools task={task} result={result} index={index} />
     </>
   )
 }

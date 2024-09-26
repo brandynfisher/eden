@@ -1,31 +1,39 @@
-import * as React from 'react'
+// hooks/useAutosizeTextArea.ts
+'use client'
 
-export const useAutoResizeTextarea = (
-  ref: React.ForwardedRef<HTMLTextAreaElement>,
-  autoResize: boolean,
-) => {
-  const textAreaRef = React.useRef<HTMLTextAreaElement>(null)
+import { useLayoutEffect } from 'react'
 
-  React.useImperativeHandle(ref, () => textAreaRef.current!)
+// hooks/useAutosizeTextArea.ts
 
-  React.useEffect(() => {
-    const ref = textAreaRef?.current
+interface UseAutosizeTextAreaProps {
+  textAreaRef: HTMLTextAreaElement | null
+  minHeight?: number
+  maxHeight?: number
+  triggerAutoSize: string
+}
 
-    const updateTextareaHeight = () => {
-      if (ref && autoResize) {
-        ref.style.height = 'auto'
-        ref.style.height = ref?.scrollHeight + 'px'
+export const useAutosizeTextArea = ({
+  textAreaRef,
+  triggerAutoSize,
+  maxHeight = Number.MAX_SAFE_INTEGER,
+  minHeight = 0,
+}: UseAutosizeTextAreaProps) => {
+  useLayoutEffect(() => {
+    if (textAreaRef) {
+      const offsetBorder = 2 // Adjust if needed based on your styling
+
+      // Reset the height to allow the textarea to shrink when needed
+      textAreaRef.style.height = `${minHeight + offsetBorder}px`
+
+      // Calculate the new height based on the scrollHeight
+      const scrollHeight = textAreaRef.scrollHeight
+
+      // Apply the new height, bounded by maxHeight
+      if (scrollHeight > maxHeight) {
+        textAreaRef.style.height = `${maxHeight}px`
+      } else {
+        textAreaRef.style.height = `${scrollHeight + offsetBorder}px`
       }
     }
-
-    updateTextareaHeight()
-
-    ref?.addEventListener('input', updateTextareaHeight)
-
-    return () => ref?.removeEventListener('input', updateTextareaHeight)
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  return { textAreaRef }
+  }, [textAreaRef, triggerAutoSize, minHeight, maxHeight])
 }

@@ -85,7 +85,8 @@ export interface FeedCreationsArguments
     ListQueryParams {}
 
 export interface FeedCreationsCursorArguments
-  extends CursorPaginatedFeedQuery {}
+  extends FeedCreationsBaseArguments,
+    ListCursorQueryParams {}
 
 export interface FeedConceptsCursorArguments
   extends FeedConceptsBaseArguments,

@@ -175,7 +175,7 @@ export const downloadFile = async (url: string, fileName: string) => {
   }
 
   try {
-    console.log({ url, fileName })
+    // console.log({ url, fileName })
     const parsedUrl = new URL(url)
     const extension = parsedUrl.pathname.split('.').pop()
     const response = await axios.get(
@@ -184,12 +184,96 @@ export const downloadFile = async (url: string, fileName: string) => {
     const link = document.createElement('a')
     link.download = `${fileName}.${extension}`
     link.href = response.data.signedUrl
+    link.target = '_blank'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     return true
   } catch (error) {
     console.error('Error downloading creation:', error)
+    return false
+  }
+}
+
+export type DownloadFile = {
+  url: string
+  fileName: string
+  fileExtension?: string
+}
+
+export const downloadFiles = async (
+  files: DownloadFile[],
+): Promise<boolean> => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    // console.error('Download can only be performed in a browser environment.')
+    return false
+  }
+
+  if (!files || !Array.isArray(files) || files.length === 0) {
+    console.error('No files provided for download.')
+    return false
+  }
+
+  try {
+    const requestPayload: DownloadFile[] = files.map(file => {
+      const parsedUrl = new URL(file.url)
+      const extension = parsedUrl.pathname.split('.').pop()
+
+      return {
+        ...file,
+        fileExtension: extension,
+      }
+    })
+
+    const response = await axios.post(
+      '/api/media/download/bulk',
+      { files: requestPayload },
+      {
+        responseType: 'blob', // Important to receive the response as a Blob
+      },
+    )
+
+    const contentType = response.headers['content-type']
+    const contentDisposition = response.headers['content-disposition']
+
+    if (contentType !== 'application/zip') {
+      console.error('Unexpected content type:', contentType)
+      return false
+    }
+
+    // **6. Extract the Filename from Content-Disposition**
+    let fileName = 'eden_downloads.zip' // Default filename
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+      if (fileNameMatch && fileNameMatch[1]) {
+        fileName = fileNameMatch[1]
+      }
+    }
+
+    const blob = new Blob([response.data], { type: 'application/zip' })
+
+    const link = document.createElement('a')
+    const url = window.URL.createObjectURL(blob)
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url) // Clean up the URL object
+
+    return true
+  } catch (error) {
+    console.error('Error downloading ZIP:', error)
+
+    if (axios.isAxiosError(error) && error.response) {
+      console.error('Server responded with:', error.response.data)
+    } else {
+      console.error(
+        'An unexpected error occurred:',
+        (error as unknown as { message?: string }).message || '',
+      )
+    }
+
     return false
   }
 }

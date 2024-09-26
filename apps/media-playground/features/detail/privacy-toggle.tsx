@@ -16,7 +16,7 @@ const PrivacyToggle = ({ type, item, onUpdate }: Props) => {
     <ToggleGroup
       type="single"
       value={item.public ? 'public' : 'private'}
-      className="border border-muted rounded-lg p-1 flex items-center justify-normal max-w-fit bg-popover"
+      className="border border-muted rounded-lg gap-0.5 p-0.5 flex items-center justify-normal max-w-fit bg-popover"
     >
       <ToggleButton value={'public'} label={'Public'} onClick={handleToggle} />
       <ToggleButton

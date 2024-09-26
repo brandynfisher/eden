@@ -1,24 +1,35 @@
 'use client'
 
 import RouterTabs from '@/components/tabs/router-tabs'
-import UserCreationsFeed from '@/features/feed/user-creations-feed'
-import UserModelsFeed from '@/features/feed/user-models-feed'
+import CreationsFeed from '@/features/feed/creations-feed'
+import ModelsFeed from '@/features/feed/models-feed'
+import { useCreatorQuery } from '@/hooks/query/use-creator-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { useParams } from 'next/navigation'
 
 const ProfileTabs = () => {
   const params = useParams<{ name: string }>()
+  const { user } = useAuthState()
+  const { creator } = useCreatorQuery({ key: params.name })
+
   const tabs = [
     {
       key: 'creations',
       title: 'Creations',
-      content: <UserCreationsFeed userName={params.name} maxCols={7} />,
+      content: creator ? (
+        <CreationsFeed
+          query={{ user: creator._id }}
+          maxCols={7}
+          multiselect={user?._id === creator._id}
+        />
+      ) : null,
     },
     {
       key: 'models',
       title: 'Models',
-      content: (
-        <UserModelsFeed userName={params.name} minCols={1} maxCols={4} />
-      ),
+      content: creator ? (
+        <ModelsFeed query={{ user: creator._id }} minCols={1} maxCols={4} />
+      ) : null,
     },
     // {
     //   key: 'collections',

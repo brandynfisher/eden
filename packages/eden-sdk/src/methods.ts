@@ -95,6 +95,8 @@ import {
   MannaBalanceGetResponse,
   MannaVoucherRedeemResponse,
   MannaVouchersRedeemArguments,
+  MediaBulkDownloadArguments,
+  MediaBulkDownloadResponse,
   MediaUploadArguments,
   MediaUploadResponse,
   PaymentsCreateArguments,
@@ -175,6 +177,7 @@ import {
   generatorsListRequestConfig,
   mannaBalanceGetRequestConfig,
   mannaVouchersRedeemRequestConfig,
+  mediaBulkDownloadRequestConfig,
   mediaUploadRequestConfig,
   paymentsCreateRequestConfig,
   paymentsProductsRequestConfig,
@@ -193,6 +196,8 @@ import {
   tasksListRequestConfig,
 } from './models'
 import {
+  CreationsV2BulkPatchArguments,
+  CreationsV2BulkPatchResponse,
   CreationsV2GetArguments,
   CreationsV2GetResponse,
   CreationsV2PatchArguments,
@@ -217,6 +222,7 @@ import {
   TasksV2ListResponse,
   TasksV2PublishArguments,
   TasksV2PublishResponse,
+  creationsV2BulkPatchRequestConfig,
   creationsV2GetRequestConfig,
   creationsV2PatchRequestConfig,
   generatorsGetRequestConfigV2,
@@ -476,6 +482,10 @@ export abstract class Methods {
       this,
       creationsV2PatchRequestConfig,
     ),
+    bulkUpdateV2: bindApiCall<
+      CreationsV2BulkPatchArguments,
+      CreationsV2BulkPatchResponse
+    >(this, creationsV2BulkPatchRequestConfig),
     delete: bindApiCall<CreationsDeleteArguments, CreationsDeleteResponse>(
       this,
       creationsDeleteRequestConfig,
@@ -584,6 +594,10 @@ export abstract class Methods {
       this,
       mediaUploadRequestConfig,
     ),
+    bulkDownload: bindApiCall<
+      MediaBulkDownloadArguments,
+      MediaBulkDownloadResponse
+    >(this, mediaBulkDownloadRequestConfig),
   }
 
   public readonly payments = {

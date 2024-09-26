@@ -1,18 +1,18 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
+import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
-import { ExternalLinkIcon } from 'lucide-react'
+import { ExternalLinkIcon, FileSlidersIcon } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 
 type Props = {
   creation: CreationV2
@@ -22,6 +22,36 @@ type Props = {
 
 const CreationActionsMenu = ({ creation, onUpdate, className }: Props) => {
   const { user } = useAuthState()
+  const [isOpen, setIsOpen] = useState(false)
+
+  if (!creation) {
+    return null
+  }
+
+  return (
+    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
+      {isOpen && (
+        <CreationActionsContent
+          creation={creation}
+          onUpdate={onUpdate}
+          userId={user?._id}
+        />
+      )}
+    </ActionsDropdown>
+  )
+}
+
+type ContentProps = {
+  creation: CreationV2
+  onUpdate?: (item: ModelV2 | CreationV2) => void
+  userId?: string
+}
+
+const CreationActionsContent = ({
+  creation,
+  onUpdate,
+  userId,
+}: ContentProps) => {
   const { creation: creationResponse, invalidate: refetchCreation } =
     useCreationQuery({
       key: creation._id,
@@ -32,29 +62,34 @@ const CreationActionsMenu = ({ creation, onUpdate, className }: Props) => {
 
   const creationData = creationResponse || creation
 
-  if (!creationData) {
-    return null
-  }
-
   return (
-    <ActionsDropdown className={className}>
+    <>
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
           <Link href={`/creations/${creationData._id}`}>
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
-            <DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>
+            {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
+            href={`/create/${creationData.mediaAttributes?.type}/${creationData.workflow}?creation=${creationData._id}`}
+          >
+            <FileSlidersIcon className="mr-2 h-4 w-4" />
+            Use as Preset
+            {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>
-      {creationData.user._id === user?._id ? (
+      {creationData.user._id === userId && (
         <>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <PrivacyActionItem
               type="creation"
               item={creationData}
-              onUpdate={onUpdate ? onUpdate : refetchCreation}
+              onUpdate={onUpdate || refetchCreation}
             />
             <DownloadActionItem
               type="creation"
@@ -69,9 +104,17 @@ const CreationActionsMenu = ({ creation, onUpdate, className }: Props) => {
               }_${creationData._id}`}
             />
           </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DeleteActionItem
+              type="creation"
+              item={creationData}
+              onUpdate={onUpdate || refetchCreation}
+            />
+          </DropdownMenuGroup>
         </>
-      ) : null}
-    </ActionsDropdown>
+      )}
+    </>
   )
 }
 

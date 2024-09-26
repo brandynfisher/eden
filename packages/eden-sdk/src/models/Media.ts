@@ -26,6 +26,14 @@ export interface MediaUploadArguments extends WebAPICallOptions {
   media: Buffer
 }
 
+export interface MediaBulkDownloadArguments extends WebAPICallOptions {
+  files: {
+    url: string
+    fileName: string
+    fileExtension?: string
+  }
+}
+
 // Requests
 
 export const mediaUploadRequestConfig = (args: MediaUploadArguments) => {
@@ -42,9 +50,26 @@ export const mediaUploadRequestConfig = (args: MediaUploadArguments) => {
   }
 }
 
+export const mediaBulkDownloadRequestConfig = (
+  args: MediaBulkDownloadArguments,
+) => {
+  return {
+    method: 'POST',
+    url: '/media/download/bulk',
+    data: {
+      ...args,
+    },
+  }
+}
+
 // Responses
 
 export type MediaUploadResponse = WebAPICallResult & {
   error?: string
   url?: string
+}
+
+export type MediaBulkDownloadResponse = WebAPICallResult & {
+  error?: string
+  signedUrls?: string[]
 }

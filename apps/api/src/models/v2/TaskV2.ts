@@ -89,6 +89,7 @@ taskSchema.index({
   createdAt: -1,
 })
 taskSchema.index({ status: 1, createdAt: -1 })
+taskSchema.index({ cost: 1, status: 1, createdAt: -1 })
 taskSchema.plugin(paginate)
 taskSchema.plugin(aggregatePaginate)
 

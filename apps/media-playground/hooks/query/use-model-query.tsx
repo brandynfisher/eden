@@ -25,10 +25,7 @@ export const useModelQuery = ({ key, enabled, initialData }: Props) => {
     enabled,
     initialData,
     queryKey,
-    queryFn: () =>
-      fetcher<ModelsV2GetResponse>(`/api/models/${key}`, {
-        credentials: 'include',
-      }),
+    queryFn: () => fetcher<ModelsV2GetResponse>(`/api/models/${key}`),
   })
 
   const queryClient = useQueryClient()

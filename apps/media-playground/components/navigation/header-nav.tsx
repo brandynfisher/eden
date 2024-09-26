@@ -1,4 +1,4 @@
-import EdenLogoBwGlow from '@/components/logo/eden-logo-bw-glow'
+import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import DesktopHeaderNav from '@/components/navigation/desktop-header-nav'
 import HeaderNavLinks from '@/components/navigation/header-nav-links'
 import MobileHeaderNav from '@/components/navigation/mobile-header-nav'
@@ -21,7 +21,7 @@ const HeaderNav = () => {
             size="icon"
             variant="outline"
           >
-            <EdenLogoBwGlow className="w-[24px]" />
+            <EdenLogoBw className="w-[24px]" />
             <MenuIcon className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>

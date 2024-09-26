@@ -4,7 +4,9 @@ import ModelSelector from '@/components/form/input/model-selector'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
 import StringArrayInput from '@/components/form/input/string-array-input'
+import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
+import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   FormControl,
   FormField,
@@ -14,9 +16,9 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { Suspense } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
@@ -135,8 +137,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                   />
                 )}
                 <FormControl id={name}>
-                  <Textarea
-                    autoResize={true}
+                  <AutosizeTextarea
                     spellCheck={false}
                     placeholder={parameter.description}
                     className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg ${
@@ -170,7 +171,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     type="text"
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? '' : value}
+                    value={value || ''}
                   />
                 )}
               </FormItemWrap>
@@ -222,7 +223,9 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     value={parsedValue}
                   />
                 </FormControl>
-                <ModelSelector value={parsedValue} onChange={onChange} />
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ModelSelector value={parsedValue} onChange={onChange} />
+                </Suspense>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
@@ -242,7 +245,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value || ''}
+                  value={value === null ? '' : value || ''}
                   onChange={onChange}
                   allowedFileTypes={['image']}
                   maxFiles={1}
@@ -297,7 +300,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value}
+                  value={value === null ? '' : value}
                   onChange={onChange}
                   allowedFileTypes={['video']}
                   maxFiles={1}
@@ -318,11 +321,11 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={value === null ? '' : value}
+                    value={value === null ? '' : value || ''}
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value}
+                  value={value === null ? [] : value || []}
                   onChange={onChange}
                   allowedFileTypes={['video']}
                   maxFiles={

@@ -7,12 +7,19 @@ import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
 
 type Props = {
+  query?: FeedCreationsCursorArguments
   minCols?: number
   maxCols?: number
+  multiselect?: boolean
 }
 
-const CreationsFeed = ({ minCols, maxCols }: Props) => {
-  const query: FeedCreationsCursorArguments = useMemo(
+const CreationsFeed = ({
+  query: queryProp,
+  minCols,
+  maxCols,
+  multiselect,
+}: Props) => {
+  const defaultQuery: FeedCreationsCursorArguments = useMemo(
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
@@ -20,11 +27,17 @@ const CreationsFeed = ({ minCols, maxCols }: Props) => {
     [],
   )
 
+  const query = useMemo(() => {
+    return { ...defaultQuery, ...queryProp }
+  }, [defaultQuery, queryProp])
+
   const queryKey = useMemo(() => ['creations', query], [query])
+
+  // console.log({ query, queryKey })
 
   return (
     <MasonryVirtualizerVertical
-      key={queryKey.join('_')}
+      key={JSON.stringify(queryKey)}
       apiEndpoint={'/api/feed/creations'}
       queryKey={queryKey}
       query={query}
@@ -36,6 +49,7 @@ const CreationsFeed = ({ minCols, maxCols }: Props) => {
           creation={item as CreationV2}
           creator={(item as CreationV2).user}
           linkHref={`/creations/${item._id}`}
+          multiselect={multiselect}
         />
       )}
     />

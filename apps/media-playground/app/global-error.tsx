@@ -1,7 +1,7 @@
 'use client'
 
 // Error components must be Client Components
-import EdenLogoBwGlow from '@/components/logo/eden-logo-bw-glow'
+import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { Button } from '@/components/ui/button'
 import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
@@ -24,7 +24,7 @@ export default function GlobalError({
       <div className="px-5 md:px-10">
         <div className="py-16 md:py-24 lg:py-32">
           <div className="mx-auto flex-col flex w-full max-w-3xl items-center">
-            <EdenLogoBwGlow />
+            <EdenLogoBw />
             <div className="text-center mt-4">
               <h2 className="font-bold mb-4 text-2xl md:text-4xl">Error</h2>
               <div className="mx-auto max-w-[528px] mb-5 md:mb-6 lg:mb-8">

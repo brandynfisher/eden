@@ -34,7 +34,7 @@ const FullScreenModal = ({
     <Dialog defaultOpen={true} open={true} onOpenChange={handleOpenChange}>
       <DialogContentScrollable
         className={cn([
-          `w-full md:w-[calc(100dvw_-_32px)] h-fit overflow-x-hidden !p-0`,
+          `w-full md:w-[calc(100dvw_-_32px)] h-fit overflow-x-hidden`,
           className,
         ])}
       >

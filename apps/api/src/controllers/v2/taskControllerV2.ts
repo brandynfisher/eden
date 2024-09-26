@@ -298,9 +298,17 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
     })
   }
 
-  const task = await TaskV2Model.findOne({ _id: taskId, user: userId }).select(
-    '-args.lora_training_urls',
-  )
+  const task = await TaskV2Model.findOne({
+    _id: new ObjectId(taskId),
+    user: userId,
+  })
+    .select('-args.lora_training_urls')
+    .populate({
+      path: 'user',
+      select: '_id username userId userImage',
+    })
+
+  console.log(task)
 
   if (!task) {
     return reply.status(404).send({
@@ -343,11 +351,7 @@ export const subscribeTaskUpdates = async (
           ? {
               ...task,
               result: task.result.map(result =>
-                injectResultUrls(
-                  server,
-                  result,
-                  task.workflow === 'lora_trainer',
-                ),
+                injectResultUrls(server, result, task.output_type === 'lora'),
               ),
             }
           : task

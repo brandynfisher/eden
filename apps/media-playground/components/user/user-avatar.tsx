@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -6,29 +6,30 @@ import Image from 'next/image'
 type Props = {
   image?: string
   name?: string
-  variant?: 'small' | 'large'
+  className?: string
 }
-const UserAvatar = ({ image, name, variant = 'small' }: Props) => {
+const UserAvatar = ({ image, name, className }: Props) => {
   return (
     <Avatar
       className={cn(
-        'group-hover:brightness-105 transition-all ',
-        variant === 'small'
-          ? 'h-5 w-5 sm:h-6 sm:w-6'
-          : 'h-9 w-9 group-hover:scale-110',
+        'group-hover:brightness-105 transition-all flex items-center',
       )}
     >
       {image ? (
-        <AvatarImage asChild src={image}>
-          <Image src={image} alt="logo" width={40} height={40} />
-        </AvatarImage>
+        <Image
+          src={image}
+          alt="logo"
+          width={64}
+          height={64}
+          className={cn(['group-hover:brightness-105', className])}
+        />
       ) : (
         <Skeleton className="absolute inset-0 w-full h-full rounded-full overflow-hidden" />
       )}
 
-      {name ? (
+      {!image && name ? (
         <AvatarFallback
-          delayMs={500}
+          delayMs={1250}
           className="font-bold text-sm text-muted-foreground"
         >
           {`${name[0]}${name.slice(-1)}`}

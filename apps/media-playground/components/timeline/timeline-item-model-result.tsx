@@ -7,9 +7,10 @@ import React from 'react'
 type Props = {
   result: TaskV2Result
   task: TaskV2
+  index: number
 }
 
-const TimelineItemModelResult = ({ result, task }: Props) => {
+const TimelineItemModelResult = ({ result, task, index }: Props) => {
   return (
     <>
       <div className="relative border-transparent bg-popover aspect-square">
@@ -22,7 +23,7 @@ const TimelineItemModelResult = ({ result, task }: Props) => {
           className="w-full h-full"
         />
       </div>
-      <TimelineItemResultTools result={result} task={task} />
+      <TimelineItemResultTools result={result} task={task} index={index} />
     </>
   )
 }

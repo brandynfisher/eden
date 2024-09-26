@@ -1,12 +1,10 @@
 import LinkCard from '@/components/card/link-card'
-import RotatingEdenLogo from '@/components/logo/rotating-eden-logo'
+import EdenLogoTall from '@/components/logo/eden-logo-tall'
 
 const Landing = () => {
   return (
     <div className="flex flex-col gap-8 justify-between items-center flex-grow">
-      <div className="flex flex-grow items-center">
-        <RotatingEdenLogo variant={'large'} />
-      </div>
+      <EdenLogoTall />
 
       <div className="mb-0 grid sm:grid-cols-2 gap-4 lg:max-w-5xl lg:w-full lg:grid-cols-3 lg:text-left">
         <LinkCard

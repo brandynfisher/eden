@@ -28,9 +28,10 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   video_upscaler: 'video_upscaler_opt.mp4',
 
   // images
-  flux: 'flux.png',
+  'flux-schnell': 'flux-schnell.png',
+  'flux-dev': 'flux.png',
   background_removal: 'background_removal_opt.mp4',
-  clarity_upscaler: 'clarity_upscaler_opt.mp4',
+  upscaler: 'clarity_upscaler_opt.mp4',
   face_styler: 'face_styler.png',
   inpaint: 'inpaint_opt.mp4',
   outpaint: 'outpaint_opt.mp4',
@@ -49,7 +50,9 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
 const getMediaUrl = (generatorKey: GeneratorV2['key']) => {
   const mediaFileName = toolThumbnails[generatorKey]
 
-  return `https://d14i3advvh2bvd.cloudfront.net/app/${mediaFileName || 'logo-bw.png'}`
+  return `https://d14i3advvh2bvd.cloudfront.net/app/${
+    mediaFileName || 'android-chrome-512x512.png'
+  }`
 }
 
 const GridSection = ({ generators }: Props) => {
