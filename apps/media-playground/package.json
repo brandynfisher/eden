@@ -54,6 +54,8 @@
     "canvas": "^2.11.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "currency.js": "^2.0.4",
+    "dayjs": "^1.11.13",
     "event-source-polyfill": "^1.0.31",
     "expr-eval": "^2.0.2",
     "fast-blurhash": "^1.1.4",
