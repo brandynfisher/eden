@@ -35,6 +35,7 @@ export const useTaskQuery = ({ key, initialData, enabled = true }: Props) => {
   return {
     task: data?.task as TaskV2 | undefined,
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    queryKey,
     error,
     isError,
     isPending,
