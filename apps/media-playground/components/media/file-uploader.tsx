@@ -38,6 +38,8 @@ import { toast } from 'sonner'
 
 // components/media/file-uploader.tsx
 
+// components/media/file-uploader.tsx
+
 // ... (rest of the imports and existing code)
 
 interface FileUploadProgress {
@@ -134,6 +136,7 @@ export type FileWithPreview = {
   name: string
   size?: number
   dimensions?: { width: number; height: number }
+  duration?: number
 }
 
 type Props = {
@@ -304,11 +307,11 @@ const FileUploader = ({
           setExistingFiles(prev => [
             ...prev,
             {
+              ...asset,
               url: asset.fileUrl,
               type: getFileTypeByMimeType(asset.type as MimeType) || 'image',
               name: file.name,
               size: file.size,
-              dimensions: asset.dimensions, // assuming uploadFileToS3 returns dimensions if image
             },
           ])
 
@@ -471,7 +474,7 @@ const FileUploader = ({
                             />
                           )}
                         </div>
-                        <div className="space-y-1 max-w-[96px] md:max-w-[120px] lg:max-w-[217px] overflow-hidden">
+                        <div className="space-y-1 max-w-[96px] md:max-w-[110px] lg:max-w-[200px] overflow-hidden">
                           <div className="text-sm text-muted-foreground">
                             <Truncate text={file.name} />
                           </div>
@@ -490,6 +493,7 @@ const FileUploader = ({
                                 })}
                               </div>
                             )}
+                            {file.duration && <div>{file.duration} s</div>}
                           </div>
                         </div>
                       </div>
@@ -530,7 +534,7 @@ const FileUploader = ({
                   </div>
                   <div className="w-full space-y-1">
                     <div className="text-xs flex items-center justify-between">
-                      <div className="text-sm text-muted-foreground max-w-[96px] md:max-w-[175px]">
+                      <div className="text-sm text-muted-foreground max-w-[96px] md:max-w-[110px]">
                         <Truncate text={fileUploadProgress.File.name} />
                       </div>
                       <span>{fileUploadProgress.progress}%</span>

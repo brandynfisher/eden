@@ -57,11 +57,14 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
   const response = await axios.put(signedUrl, file, config)
 
   const fileObjURL = URL.createObjectURL(file)
+  const fileMetadata = await getUploadedMediaMetadata(file, fileObjURL)
+
+  console.log(fileMetadata)
 
   const fileWithExtra = Object.assign(file, {
     fileUrl: signedUrl.split('?')[0],
     preview: fileObjURL,
-    dimensions: await getUploadedMediaDimensions(file, fileObjURL),
+    ...fileMetadata,
   })
 
   if (response.status !== 200) {
@@ -71,53 +74,80 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
   return fileWithExtra
 }
 
-export const getUploadedMediaDimensions = async (
+export const getUploadedMediaMetadata = async (
   file: File,
   fileObjURL: string,
 ) => {
   if (file.type.startsWith('image')) {
-    return getDimensionsFromImgBlob(file)
+    return {
+      dimensions: await getDimensionsFromImgBlob(file),
+    }
   }
 
   if (file.type.startsWith('video')) {
-    return getDimensionsFromVideo(fileObjURL)
+    const videoMetadata = await getVideoMetadata(fileObjURL)
+
+    if (!videoMetadata) {
+      return {}
+    }
+
+    return {
+      dimensions: {
+        width: videoMetadata.width,
+        height: videoMetadata.height,
+      },
+      duration: videoMetadata.duration,
+    }
   }
 
   return undefined
 }
 
-export const getDimensionsFromVideo = async (fileObjURL: string) => {
-  if (!window || !document) {
+interface VideoMetadata {
+  width: number
+  height: number
+  duration: number
+  // Add more properties here if needed
+}
+
+export const getVideoMetadata = async (
+  fileObjURL: string,
+): Promise<VideoMetadata | undefined> => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
     return undefined
   }
 
-  const video = document.createElement('video')
-  video.preload = 'metadata'
+  return new Promise<VideoMetadata | undefined>(resolve => {
+    const video = document.createElement('video')
+    video.preload = 'metadata'
 
-  const dimensions = await new Promise<{ width: number; height: number }>(
-    resolve => {
-      const cleanup = () => {
-        video.removeEventListener('loadedmetadata', onMetadataLoaded)
-        video.removeEventListener('error', onError)
+    const cleanup = () => {
+      video.removeEventListener('loadedmetadata', onMetadataLoaded)
+      video.removeEventListener('error', onError)
+      URL.revokeObjectURL(fileObjURL) // Clean up the object URL
+    }
+
+    const onMetadataLoaded = () => {
+      const metadata: VideoMetadata = {
+        width: video.videoWidth,
+        height: video.videoHeight,
+        duration: video.duration,
+        // Populate additional properties here
       }
+      resolve(metadata)
+      cleanup()
+    }
 
-      const onMetadataLoaded = () => {
-        resolve({ width: video.videoWidth, height: video.videoHeight })
-        cleanup()
-      }
+    const onError = () => {
+      console.error('An error occurred while loading video metadata')
+      resolve(undefined)
+      cleanup()
+    }
 
-      const onError = () => {
-        console.error('An error occurred while loading video metadata')
-        cleanup()
-      }
-
-      video.addEventListener('loadedmetadata', onMetadataLoaded)
-      video.addEventListener('error', onError)
-      video.src = fileObjURL
-    },
-  )
-
-  return dimensions
+    video.addEventListener('loadedmetadata', onMetadataLoaded)
+    video.addEventListener('error', onError)
+    video.src = fileObjURL
+  })
 }
 
 export const getDimensionsFromImgBlob = async (file: File) => {
