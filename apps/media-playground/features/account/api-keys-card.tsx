@@ -185,7 +185,7 @@ const ApiKeysCard = () => {
           >
             Generate new API key
           </Button>
-          <DialogContent className="max-w-[328px] sm:max-w-full">
+          <DialogContent className="max-w-[calc(100%-32px)] sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>Generate new API key</DialogTitle>
             </DialogHeader>
