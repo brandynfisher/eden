@@ -17,7 +17,7 @@ import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { LogOutIcon } from 'lucide-react'
+import { LogOutIcon, SettingsIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -122,13 +122,12 @@ const AccountDropdown = () => {
         {/*  /!*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*!/*/}
         {/*</DropdownMenuItem>*/}
         <DropdownMenuSeparator />
-        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
-        {/*  <Link href={`/settings/account`}>*/}
-        {/*    <SettingsIcon className="mr-2 h-4 w-4" />*/}
-        {/*    <span>Settings</span>*/}
-        {/*  </Link>*/}
-        {/*  /!*  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*!/*/}
-        {/*</DropdownMenuItem>*/}
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/settings/account`}>
+            <SettingsIcon className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </DropdownMenuItem>
         {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
         {/*  <Link href={`/settings/subscription`}>*/}
         {/*    <CreditCardIcon className="mr-2 h-4 w-4" />*/}

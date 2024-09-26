@@ -7,14 +7,15 @@ import { toast } from 'sonner'
 type Props = {
   title?: string
   text: string
+  copyContent?: string
 }
 
-const CopyTextButton = ({ title, text }: Props) => {
+const CopyTextButton = ({ title, text, copyContent }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
   const [hasCopied, setHasCopied] = useState(false)
 
   const handleCopyString = (text: string, title?: string) => () => {
-    copy(text)
+    copy(copyContent || text)
       .then(() => {
         setHasCopied(true)
         toast.info(`Copied ${title ? `"${title}"` : 'value'}`, {
