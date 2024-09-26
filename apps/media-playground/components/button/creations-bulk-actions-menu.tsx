@@ -33,6 +33,7 @@ const CreationsBulkActionsMenu = ({
     <ActionsDropdown
       size={'sm'}
       className={className}
+      open={isOpen}
       onOpenChange={setIsOpen}
       label={label}
     >

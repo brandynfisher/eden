@@ -96,9 +96,13 @@ export const modelUpdate = async (
 ) => {
   const { userId } = request.user
   const { modelId } = request.params as ModelsV2PatchArguments
-  const { public: isPublic } = request.body as ModelsV2PatchArguments
+  const { public: isPublic, deleted } = request.body as ModelsV2PatchArguments
 
-  if (!userId || !modelId || typeof isPublic === 'undefined') {
+  if (
+    !userId ||
+    !modelId ||
+    (typeof isPublic === 'undefined' && typeof deleted === 'undefined')
+  ) {
     return reply.status(422).send({
       message: 'Missing parameters or malformed request body',
     })
@@ -117,6 +121,10 @@ export const modelUpdate = async (
 
   if (typeof isPublic !== 'undefined') {
     model.public = isPublic
+  }
+
+  if (typeof deleted !== 'undefined') {
+    model.deleted = deleted
   }
 
   await model.save()

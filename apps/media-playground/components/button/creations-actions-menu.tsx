@@ -9,18 +9,19 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { CreationV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import { ExternalLinkIcon, FileSlidersIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
 type Props = {
   creation: CreationV2
-  onUpdate?: (item: ModelV2 | CreationV2) => void
+  queryKey: QueryKey
   className?: string
 }
 
-const CreationActionsMenu = ({ creation, onUpdate, className }: Props) => {
+const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
   const { user } = useAuthState()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -33,8 +34,9 @@ const CreationActionsMenu = ({ creation, onUpdate, className }: Props) => {
       {isOpen && (
         <CreationActionsContent
           creation={creation}
-          onUpdate={onUpdate}
+          queryKey={queryKey}
           userId={user?._id}
+          isOpen={isOpen}
         />
       )}
     </ActionsDropdown>
@@ -43,22 +45,24 @@ const CreationActionsMenu = ({ creation, onUpdate, className }: Props) => {
 
 type ContentProps = {
   creation: CreationV2
-  onUpdate?: (item: ModelV2 | CreationV2) => void
+  queryKey: QueryKey
   userId?: string
+  isOpen?: boolean
 }
 
 const CreationActionsContent = ({
   creation,
-  onUpdate,
+  queryKey,
   userId,
+  isOpen,
 }: ContentProps) => {
-  const { creation: creationResponse, invalidate: refetchCreation } =
-    useCreationQuery({
-      key: creation._id,
-      initialData: {
-        creation,
-      },
-    })
+  const { creation: creationResponse } = useCreationQuery({
+    key: creation._id,
+    initialData: {
+      creation,
+    },
+    enabled: isOpen,
+  })
 
   const creationData = creationResponse || creation
 
@@ -89,7 +93,7 @@ const CreationActionsContent = ({
             <PrivacyActionItem
               type="creation"
               item={creationData}
-              onUpdate={onUpdate || refetchCreation}
+              queryKey={queryKey}
             />
             <DownloadActionItem
               type="creation"
@@ -109,7 +113,7 @@ const CreationActionsContent = ({
             <DeleteActionItem
               type="creation"
               item={creationData}
-              onUpdate={onUpdate || refetchCreation}
+              queryKey={queryKey}
             />
           </DropdownMenuGroup>
         </>

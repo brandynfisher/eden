@@ -41,17 +41,6 @@ export interface TasksV2PublishArguments extends WebAPICallOptions {
   resultFilename: string
 }
 
-export type TaskV2Result = {
-  url?: string
-  thumbnail?: string
-  filename: string
-  metadata?: string | null
-  mediaAttributes?: MediaAttributes & { type: GeneratorOutputTypeV2 }
-  published?: boolean
-  model?: ModelV2
-  creation?: CreationV2
-}
-
 // Requests
 
 export const tasksV2CreateRequestConfig = (
@@ -180,6 +169,17 @@ export type TaskV2Args = {
   concept_mode?: string
   max_train_steps?: number
   resolution?: number
+}
+
+export type TaskV2Result = {
+  url?: string
+  thumbnail?: string
+  filename: string
+  metadata?: string | null
+  mediaAttributes?: MediaAttributes & { type: GeneratorOutputTypeV2 }
+  published?: boolean
+  model?: ModelV2
+  creation?: CreationV2
 }
 
 export type TaskV2 = {

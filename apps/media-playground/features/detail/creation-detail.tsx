@@ -19,7 +19,7 @@ type Props = {
 }
 
 const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
-  const { creation: creationClientData, invalidate } = useCreationQuery({
+  const { creation: creationClientData, queryKey } = useCreationQuery({
     key: id,
     initialData: creationSSRData
       ? {
@@ -82,7 +82,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
             item={creation}
             type={'creation'}
             inModal={isModal}
-            onUpdate={() => invalidate()}
+            queryKey={queryKey}
           />
         </Suspense>
       </div>

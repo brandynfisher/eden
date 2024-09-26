@@ -60,7 +60,7 @@ export async function PATCH(
   // console.log('auth()', id, request.url)
 
   const requestJson = await request.json()
-  const { public: isPublic } = requestJson as ModelsV2PatchArguments
+  const { public: isPublic, deleted } = requestJson as ModelsV2PatchArguments
 
   try {
     const eden = new EdenClient({
@@ -68,7 +68,11 @@ export async function PATCH(
       token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.models.update({ modelId: id, public: isPublic })
+    const res = await eden.models.update({
+      modelId: id,
+      public: isPublic,
+      deleted,
+    })
 
     if (!res) {
       return new NextResponse(

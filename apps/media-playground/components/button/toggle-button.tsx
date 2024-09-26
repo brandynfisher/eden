@@ -5,6 +5,7 @@ type ToggleButtonProps = {
   value: string
   label: string
   onClick: () => void
+  disabled?: boolean
   className?: string
 }
 
@@ -13,23 +14,22 @@ const ToggleButton = ({
   label,
   onClick,
   className,
+  disabled,
 }: ToggleButtonProps) => {
   return (
     <ToggleGroupItem
       value={value}
       aria-label={`Set ${label}`}
-      asChild
-      className="px-1 data-[state=on]:bg-muted hover:data-[state=off]:bg-muted/50 data-[state=on]:text-primary data-[state=off]:text-muted-foreground"
+      onClick={!disabled ? onClick : undefined}
+      className={cn([
+        'flex items-center h-7 w-16 text-xs rounded-md justify-center data-[disabled]:text-accent-foreground',
+        disabled
+          ? 'cursor-auto !bg-muted'
+          : 'hover:!bg-accent hover:!text-primary',
+        className,
+      ])}
     >
-      <div
-        className={cn([
-          `'flex items-center gap-1 h-7 w-16 cursor-pointer text-xs rounded-lg justify-center'`,
-          className,
-        ])}
-        onClick={onClick}
-      >
-        {label}
-      </div>
+      {label}
     </ToggleGroupItem>
   )
 }

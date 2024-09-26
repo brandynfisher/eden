@@ -4,6 +4,7 @@ import { useTogglePrivacy } from '@/hooks/use-toggle-privacy'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
+import { useState } from 'react'
 
 type Props = {
   type: 'creation' | 'model'
@@ -14,6 +15,17 @@ type Props = {
 
 const PrivacyToggle = ({ type, item, queryKey, className }: Props) => {
   const { handleToggle } = useTogglePrivacy({ type, item, queryKey })
+  const [isLoading, setIsLoading] = useState(false)
+
+  const onToggle = () => {
+    setIsLoading(true)
+
+    handleToggle()
+
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 750)
+  }
 
   return (
     <ToggleGroup
@@ -23,18 +35,18 @@ const PrivacyToggle = ({ type, item, queryKey, className }: Props) => {
         'border border-muted rounded-lg gap-0.5 flex items-center justify-normal bg-popover px-0.5',
         className,
       ])}
-      // disabled={isPending}
+      disabled={isLoading}
     >
       <ToggleButton
         value={'public'}
         label={'Public'}
-        onClick={handleToggle}
+        onClick={onToggle}
         disabled={item.public}
       />
       <ToggleButton
         value={'private'}
         label={'Private'}
-        onClick={handleToggle}
+        onClick={onToggle}
         disabled={!item.public}
       />
     </ToggleGroup>

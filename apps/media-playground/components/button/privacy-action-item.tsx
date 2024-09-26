@@ -1,17 +1,18 @@
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useTogglePrivacy } from '@/hooks/use-toggle-privacy'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import { LockIcon, LockOpenIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
   item: ModelV2 | CreationV2
   type: 'creation' | 'model'
-  onUpdate?: (item: ModelV2 | CreationV2) => void
+  queryKey: QueryKey
 }
 
-const PrivacyActionItem = ({ type, item, onUpdate }: Props) => {
-  const { handleToggle } = useTogglePrivacy({ type, item, onUpdate })
+const PrivacyActionItem = ({ type, item, queryKey }: Props) => {
+  const { handleToggle } = useTogglePrivacy({ type, item, queryKey })
 
   return (
     <DropdownMenuItem onClick={handleToggle} className="cursor-pointer">

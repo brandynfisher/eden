@@ -808,6 +808,7 @@ export const publishTaskResult = async (
 
   creation.task = new ObjectId(taskId)
   creation.user = new ObjectId(userId)
+  creation.public = false
 
   creation.args = taskDocument.args
   creation.workflow = taskDocument.workflow
@@ -827,7 +828,7 @@ export const publishTaskResult = async (
         taskResult.filename,
         IMAGE_SIZE,
       )
-      console.log({ thumbnailUrl, file: taskResult.filename })
+      // console.log({ thumbnailUrl, file: taskResult.filename })
       const response = await axios.get(thumbnailUrl, {
         responseType: 'arraybuffer',
       })
@@ -838,7 +839,7 @@ export const publishTaskResult = async (
         IMAGE_SIZE,
       )
 
-      console.log({ width, height })
+      // console.log({ width, height })
 
       const image = await sharp(buffer).raw().ensureAlpha().toBuffer()
 

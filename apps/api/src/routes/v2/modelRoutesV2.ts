@@ -4,30 +4,6 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const modelRoutesV2: FastifyPluginAsync = async server => {
-  // server.get('/v2/models', {
-  //   schema: {
-  //     tags: ['Models'],
-  //     description: 'List Models',
-  //     security: [
-  //       {
-  //         apiKey: [],
-  //       },
-  //     ],
-  //     querystring: {
-  //       type: 'object',
-  //       properties: {
-  //         ...paginationProperties(),
-  //       },
-  //       required: [],
-  //     },
-  //     response: {
-  //       200: paginatedResponse(modelV2Type),
-  //     },
-  //   },
-  //   preHandler: [(request) => maybeAuthEden2(server, request)],
-  //   handler: (request, reply) => listModels(request, reply),
-  // })
-
   server.get('/v2/models/:modelId', {
     schema: {
       tags: ['Models'],
@@ -73,7 +49,6 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       params: {
@@ -81,6 +56,7 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
       },
       body: Type.Object({
         public: Type.Optional(Type.Boolean()),
+        deleted: Type.Optional(Type.Boolean()),
       }),
       response: {
         200: {

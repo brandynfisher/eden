@@ -491,6 +491,7 @@ const FileUploader = ({
                         </div>
                       </div>
                       <button
+                        type="button"
                         onClick={() => removeFile(file.url)}
                         className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
                       >
@@ -545,6 +546,7 @@ const FileUploader = ({
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     if (fileUploadProgress.source) {
                       fileUploadProgress.source.cancel('Upload cancelled')

@@ -106,7 +106,6 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: Type.Object({

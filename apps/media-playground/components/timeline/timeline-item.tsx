@@ -7,15 +7,17 @@ import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { TaskV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
 import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
   item: TaskV2
+  queryKey: QueryKey
 }
 
-const TimelineItem = ({ item }: Props) => {
+const TimelineItem = ({ item, queryKey }: Props) => {
   const { verifyAuth } = useAuthState()
 
   const [isCancelling, setIsCancelling] = useState(false)
@@ -119,6 +121,7 @@ const TimelineItem = ({ item }: Props) => {
             item.result.map((result, index) =>
               result.model === undefined ? (
                 <TimelineItemMediaResult
+                  queryKey={queryKey}
                   key={`${item._id}_${index}`}
                   index={index}
                   task={item}
@@ -127,6 +130,7 @@ const TimelineItem = ({ item }: Props) => {
               ) : (
                 // api populates a model property with full model document
                 <TimelineItemModelResult
+                  queryKey={queryKey}
                   key={`${item._id}_${index}`}
                   index={index}
                   result={result}
