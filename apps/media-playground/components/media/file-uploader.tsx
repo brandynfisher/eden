@@ -1,4 +1,3 @@
-// components/media/file-uploader.tsx
 'use client'
 
 import LightboxGallery, {
@@ -35,12 +34,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import Truncate from 'react-truncate-inside/es'
 import { toast } from 'sonner'
-
-// components/media/file-uploader.tsx
-
-// components/media/file-uploader.tsx
-
-// ... (rest of the imports and existing code)
 
 interface FileUploadProgress {
   progress: number

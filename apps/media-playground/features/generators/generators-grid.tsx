@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/accordion'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
+import { siteConfig } from '@/lib/config'
 import { GeneratorOutputTypeV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 
 type Props = {
@@ -89,7 +90,20 @@ const GeneratorsGrid = ({ outputType }: GeneratorsGridProps) => {
   const { generators } = useGeneratorsListQuery({ outputType })
 
   return (
-    <Accordion type="multiple" defaultValue={outputType}>
+    <Accordion type="multiple" defaultValue={['featured', ...outputType]}>
+      <AccordionItem key="featured" value="featured">
+        <AccordionTrigger className="capitalize bg-primary-foreground/40 hover:bg-primary-foreground/60 px-4">
+          <TypographyH4 className="capitalize">Featured</TypographyH4>
+        </AccordionTrigger>
+        <AccordionContent className="my-4">
+          <GridSection
+            title="Featured"
+            generators={generators?.filter(gen =>
+              siteConfig.featured.tools.includes(gen.key),
+            )}
+          />
+        </AccordionContent>
+      </AccordionItem>
       {outputType?.map(type => (
         <AccordionItem key={type} value={type}>
           <AccordionTrigger className="capitalize bg-primary-foreground/40 hover:bg-primary-foreground/60 px-4">
