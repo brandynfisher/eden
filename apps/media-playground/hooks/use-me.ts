@@ -58,6 +58,6 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     foreverBalance,
     subscriptionBalance,
     isLoading,
-    invalidate,
+    invalidate: invalidate as () => Promise<void>,
   }
 }
