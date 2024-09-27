@@ -22,6 +22,12 @@ export interface ModelsV2GetArguments extends WebAPICallOptions {
   modelId: string
 }
 
+export interface ModelsV2PatchArguments extends WebAPICallOptions {
+  modelId: string
+  public?: boolean
+  deleted?: boolean
+}
+
 // Requests
 export const modelsV2ListRequestConfig = (
   args: ModelsV2ListArguments,
@@ -41,11 +47,6 @@ export const modelsV2GetRequestConfig = (
     method: 'GET',
     url: `v2/models/${args.modelId}`,
   }
-}
-
-export interface ModelsV2PatchArguments extends WebAPICallOptions {
-  modelId: string
-  public?: boolean
 }
 
 export const modelsV2PatchRequestConfig = (

@@ -50,9 +50,7 @@ const GeneratorCard = ({ title, image, link, description }: Props) => {
             <TypographyH6 className="opacity-75 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-all">
               {title}
             </TypographyH6>
-            <div className="text-sm opacity-0 [@media(pointer:coarse)]:opacity-100 group-hover:opacity-100 transition-all line-clamp-2">
-              {description}
-            </div>
+            <div className="text-sm line-clamp-2">{description}</div>
           </div>
         </div>
       </Card>

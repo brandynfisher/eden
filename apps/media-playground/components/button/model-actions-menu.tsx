@@ -1,4 +1,5 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
+import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import {
@@ -8,18 +9,19 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { ModelV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import { ComponentIcon, ExternalLinkIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
 type Props = {
   model: ModelV2
-  onUpdate?: (item: ModelV2 | CreationV2) => void
+  queryKey: QueryKey
   className?: string
 }
 
-const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
+const ModelActionsMenu = ({ model, queryKey, className }: Props) => {
   const { user } = useAuthState()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -32,7 +34,7 @@ const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
       {isOpen && (
         <ModelActionsContent
           model={model}
-          onUpdate={onUpdate}
+          queryKey={queryKey}
           userId={user?._id}
         />
       )}
@@ -42,12 +44,12 @@ const ModelActionsMenu = ({ model, onUpdate, className }: Props) => {
 
 type ContentProps = {
   model: ModelV2
-  onUpdate?: (item: ModelV2 | CreationV2) => void
+  queryKey: QueryKey
   userId?: string
 }
 
-const ModelActionsContent = ({ model, onUpdate, userId }: ContentProps) => {
-  const { model: modelResponse, invalidate: refetchModel } = useModelQuery({
+const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
+  const { model: modelResponse } = useModelQuery({
     key: model._id,
     initialData: {
       model,
@@ -88,12 +90,21 @@ const ModelActionsContent = ({ model, onUpdate, userId }: ContentProps) => {
             <PrivacyActionItem
               type="model"
               item={modelData}
-              onUpdate={onUpdate || refetchModel}
+              queryKey={queryKey}
+              // onUpdate={onUpdate || refetchModel}
             />
             <DownloadActionItem
               type="model"
               originalFileUrl={modelData.checkpoint}
               saveAsFileName={modelData.slug.replaceAll('/', '_')}
+            />
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DeleteActionItem
+              type="model"
+              item={modelData}
+              // queryKey={queryKey}
             />
           </DropdownMenuGroup>
         </>

@@ -3,15 +3,17 @@ import LightboxGallery, {
 } from '@/components/media/lightbox-gallery'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import React from 'react'
 
 type Props = {
   task: TaskV2
   result: TaskV2Result
   index: number
+  queryKey: QueryKey
 }
 
-const TimelineItemMediaResult = ({ task, result, index }: Props) => {
+const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
     <>
       <div
@@ -41,7 +43,12 @@ const TimelineItemMediaResult = ({ task, result, index }: Props) => {
           </LightboxGallery>
         )}
       </div>
-      <TimelineItemResultTools task={task} result={result} index={index} />
+      <TimelineItemResultTools
+        task={task}
+        result={result}
+        index={index}
+        queryKey={queryKey}
+      />
     </>
   )
 }

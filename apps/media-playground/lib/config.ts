@@ -64,4 +64,7 @@ export const siteConfig: SiteConfig = {
     '/creations',
     '/models',
   ],
+  featured: {
+    tools: ['flux-schnell', 'flux-dev', 'style_mixing', 'animate_3D'],
+  },
 }

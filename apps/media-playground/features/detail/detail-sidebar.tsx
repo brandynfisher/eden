@@ -12,6 +12,7 @@ import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import { ComponentIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
@@ -20,11 +21,11 @@ import React, { Suspense } from 'react'
 type Props = {
   item?: CreationV2 | ModelV2
   type: 'creation' | 'model'
+  queryKey: QueryKey
   inModal?: boolean
-  onUpdate: () => void
 }
 
-const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
+const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { user: creator } = item || {}
   const { prompt, text_input, lora, ...remainingArgs } = item?.args || {}
   const { TimeAgo } = useTimeAgo()
@@ -49,13 +50,13 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
                 {type === 'creation' ? (
                   <CreationActionsMenu
                     creation={item as CreationV2}
-                    onUpdate={onUpdate}
+                    queryKey={queryKey}
                     className="ml-auto"
                   />
                 ) : (
                   <ModelActionsMenu
                     model={item as ModelV2}
-                    onUpdate={onUpdate}
+                    queryKey={queryKey}
                     className="ml-auto"
                   />
                 )}
@@ -76,9 +77,12 @@ const DetailSidebar = ({ item, type, inModal, onUpdate }: Props) => {
       {creator?._id === user?._id ? (
         <div className="pb-3">
           {item && item.public !== undefined ? (
-            <>
-              <PrivacyToggle type={type} item={item} onUpdate={onUpdate} />
-            </>
+            <PrivacyToggle
+              type={type}
+              item={item}
+              queryKey={queryKey}
+              className="h-9 max-w-fit"
+            />
           ) : (
             <Skeleton className="h-[42px] w-[142px]" />
           )}

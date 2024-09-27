@@ -1,6 +1,7 @@
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import customImageLoader from '@/image-loader'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import Image from 'next/image'
 import React from 'react'
 
@@ -8,9 +9,10 @@ type Props = {
   result: TaskV2Result
   task: TaskV2
   index: number
+  queryKey: QueryKey
 }
 
-const TimelineItemModelResult = ({ result, task, index }: Props) => {
+const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
   return (
     <>
       <div className="relative border-transparent bg-popover aspect-square">
@@ -23,7 +25,12 @@ const TimelineItemModelResult = ({ result, task, index }: Props) => {
           className="w-full h-full"
         />
       </div>
-      <TimelineItemResultTools result={result} task={task} index={index} />
+      <TimelineItemResultTools
+        result={result}
+        task={task}
+        index={index}
+        queryKey={queryKey}
+      />
     </>
   )
 }
