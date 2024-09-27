@@ -17,7 +17,7 @@ type Props = {
 
 const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
   // const { user } = useAuthState()
-  const { model: modelClientData, invalidate } = useModelQuery({
+  const { model: modelClientData, queryKey } = useModelQuery({
     key: id,
     initialData: modelSSRData
       ? {
@@ -49,7 +49,8 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
             item={model}
             type={'model'}
             inModal={isModal}
-            onUpdate={() => invalidate()}
+            queryKey={queryKey}
+            // onUpdate={() => invalidate()}
           />
         </Suspense>
       </div>
