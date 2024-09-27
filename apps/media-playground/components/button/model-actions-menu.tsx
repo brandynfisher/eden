@@ -104,7 +104,7 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
             <DeleteActionItem
               type="model"
               item={modelData}
-              queryKey={queryKey}
+              // queryKey={queryKey}
             />
           </DropdownMenuGroup>
         </>

@@ -7,18 +7,11 @@ import {
 } from '@edenlabs/eden-sdk'
 import { toast } from 'sonner'
 
-function isModelsV2PatchResponse(
-  response: ModelsV2PatchResponse | CreationsV2PatchResponse,
-): response is ModelsV2PatchResponse {
-  return (response as ModelsV2PatchResponse).model !== undefined
-}
-
 type Props = {
   type: 'creation' | 'model'
   item: ModelV2 | CreationV2
-  onUpdate?: (item: ModelV2 | CreationV2) => void
 }
-export function useDelete({ type, item, onUpdate }: Props) {
+export function useDelete({ type, item }: Props) {
   const handleDelete = async () => {
     try {
       const response: ModelsV2PatchResponse | CreationsV2PatchResponse =
@@ -34,15 +27,16 @@ export function useDelete({ type, item, onUpdate }: Props) {
         return
       }
 
-      if (isModelsV2PatchResponse(response)) {
-        if (response.model) {
-          onUpdate && onUpdate(response.model)
-        }
-      } else {
-        if (response.creation) {
-          onUpdate && onUpdate(response.creation)
-        }
-      }
+      // @todo: implement optimistic update
+      // if (isModelsV2PatchResponse(response)) {
+      //   if (response.model) {
+      //     onUpdate && onUpdate(response.model)
+      //   }
+      // } else {
+      //   if (response.creation) {
+      //     onUpdate && onUpdate(response.creation)
+      //   }
+      // }
 
       toast.success(`${type} deleted`, {
         description: ``,

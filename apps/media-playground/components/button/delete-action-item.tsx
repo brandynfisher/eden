@@ -4,14 +4,17 @@ import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { Trash2Icon } from 'lucide-react'
 import React from 'react'
 
+// import { QueryKey } from '@tanstack/react-query'
+
 type Props = {
   item: ModelV2 | CreationV2
   type: 'creation' | 'model'
-  onUpdate?: (item: ModelV2 | CreationV2) => void
+  // queryKey: QueryKey
 }
 
-const DeleteActionItem = ({ type, item, onUpdate }: Props) => {
-  const { handleDelete } = useDelete({ type, item, onUpdate })
+const DeleteActionItem = ({ type, item }: Props) => {
+  // const { handleDelete } = useDelete({ type, item, queryKey })
+  const { handleDelete } = useDelete({ type, item })
 
   return (
     <DropdownMenuItem
