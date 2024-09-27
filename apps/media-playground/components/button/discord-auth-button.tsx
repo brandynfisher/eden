@@ -34,7 +34,7 @@ const DiscordAuthButton = () => {
       className="gap-2"
       onClick={handleDiscordConnection}
       disabled={isLoading}
-      variant={user?.discordId ? 'destructive' : 'secondary'}
+      variant={'secondary'}
     >
       <DiscordIcon size={24} />
       {user?.discordId ? 'Disconnect' : 'Connect'} Discord Account
