@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useAuth } from '@clerk/nextjs'
 import { OAuthStrategy } from '@clerk/types'
 import axios from 'axios'
 import { X } from 'lucide-react'
