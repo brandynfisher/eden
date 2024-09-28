@@ -18,3 +18,8 @@ export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
   [SubscriptionTier.Believer]: 'Believer',
   [SubscriptionTier.Admin]: 'Admin',
 }
+
+// Helper function to capitalize the first letter
+export function capitalize<T extends string>(str: T): Capitalize<T> {
+  return (str.charAt(0).toUpperCase() + str.slice(1)) as Capitalize<T>
+}

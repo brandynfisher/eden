@@ -14,7 +14,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { FileType } from '@/types/Media'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
-import { AudioLinesIcon, CheckIcon, SquareIcon } from 'lucide-react'
+import { AudioLinesIcon, CheckIcon, LockIcon, SquareIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties, useState } from 'react'
 
@@ -63,10 +63,16 @@ const CreationCard = ({
       >
         {multiselect ? (
           <div className={`absolute inset-0 w-full h-full z-10 card-gradient`}>
+            {!creation.public ? (
+              <LockIcon className="absolute h-4 w-4 right-3 top-3.5 text-white [@media(pointer:coarse)]:right-2 [@media(pointer:coarse)]:top-2.5 bg-gray-300 bg-opacity-20 rounded-sm p-0.5 drop-shadow backdrop-blur-[2px]" />
+            ) : null}
             {/* Always show multi select checkbox when input type === coarse? */}
             <Button
               variant="ghost"
-              className="relative top-1 left-1 p-1 h-9 w-9  [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:w-7 transition-all hover:backdrop-blur-[2px] overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20 [@media(pointer:coarse)]:!bg-opacity-10"
+              className={cn([
+                'relative top-1 left-1 p-1 h-9 w-9  [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:w-7 transition-all hover:backdrop-blur-[2px] overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20 [@media(pointer:coarse)]:!bg-opacity-20',
+                selectedItems.length ? '!bg-opacity-10' : '',
+              ])}
               onClick={handleSelection}
               aria-pressed={selected}
               aria-label={selected ? 'Deselect item' : 'Select item'}
@@ -76,7 +82,7 @@ const CreationCard = ({
               ) : (
                 <SquareIcon
                   className={cn([
-                    `h-4 w-4 text-white opacity-0 [@media(pointer:coarse)]:opacity-50 group-hover:opacity-100`,
+                    `h-4 w-4 text-white opacity-0 [@media(pointer:coarse)]:opacity-70 group-hover:opacity-100 drop-shadow`,
                     selectedItems.length ? 'opacity-50' : '',
                   ])}
                 />

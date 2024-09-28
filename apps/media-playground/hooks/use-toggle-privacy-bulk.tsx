@@ -1,80 +1,40 @@
-import { fetcher } from '@/lib/fetcher'
-import { CreationV2, CreationsV2PatchResponse } from '@edenlabs/eden-sdk'
-import { toast } from 'sonner'
+// hooks/useTogglePrivacyBulk.ts
+import { usePrivacyToggleMutation } from '@/hooks/use-privacy-toggle-mutation'
+import { capitalize } from '@/lib/strings'
+import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 
-type Props = {
+// Props for the bulk toggle hook
+type TogglePrivacyBulkProps = {
   type: 'creation' | 'model'
-  items: CreationV2[]
-  onUpdate?: (items: CreationV2[]) => void
+  items: (ModelV2 | CreationV2)[]
+  queryKey: QueryKey
 }
-export function useTogglePrivacyBulk({ type, items, onUpdate }: Props) {
-  const handleSetPrivate = async () => {
-    console.log({ onUpdate })
-    try {
-      const response: CreationsV2PatchResponse = await fetcher(
-        `/api/${type}s/bulk`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            creationIds: items.map(item => item._id),
-            public: false,
-          }),
-        },
-      )
 
-      if (!response) {
-        console.error('response empty')
-        return
-      }
+export function useTogglePrivacyBulk({
+  type,
+  items,
+  queryKey,
+}: TogglePrivacyBulkProps) {
+  const mutation = usePrivacyToggleMutation({
+    type,
+    queryKey,
+    onSuccessMessage: `${capitalize(type)}s updated`,
+  })
 
-      toast.success(`${type}s updated`, {
-        description: `Set to 'private'`,
-        dismissible: true,
-        richColors: true,
-      })
-    } catch (e) {
-      toast.error(`Update Error`, {
-        description: 'Failed to update privacy setting',
-        dismissible: true,
-        richColors: true,
-      })
-    }
+  const handleSetPrivate = () => {
+    const ids = items.map(item => item._id)
+    mutation.mutate({ ids, public: false })
   }
 
-  const handleSetPublic = async () => {
-    try {
-      const response: CreationsV2PatchResponse = await fetcher(
-        `/api/${type}s/bulk`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            creationIds: items.map(item => item._id),
-            public: true,
-          }),
-        },
-      )
-
-      if (!response) {
-        console.error('response empty')
-        return
-      }
-
-      toast.success(`${type} updated`, {
-        description: `Set to 'public'`,
-        dismissible: true,
-        richColors: true,
-      })
-    } catch (e) {
-      toast.error(`Update Error`, {
-        description: 'Failed to update privacy setting',
-        dismissible: true,
-        richColors: true,
-      })
-    }
+  const handleSetPublic = () => {
+    const ids = items.map(item => item._id)
+    mutation.mutate({ ids, public: true })
   }
 
   return {
     handleSetPrivate,
     handleSetPublic,
+    isPending: mutation.isPending,
   }
 }
