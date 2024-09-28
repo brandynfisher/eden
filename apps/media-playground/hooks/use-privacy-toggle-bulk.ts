@@ -11,7 +11,7 @@ type TogglePrivacyBulkProps = {
   queryKey: QueryKey
 }
 
-export function useTogglePrivacyBulk({
+export function usePrivacyToggleBulk({
   type,
   items,
   queryKey,

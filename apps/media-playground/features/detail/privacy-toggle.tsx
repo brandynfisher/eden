@@ -1,6 +1,6 @@
 import ToggleButton from '@/components/button/toggle-button'
 import { ToggleGroup } from '@/components/ui/toggle-group'
-import { useTogglePrivacy } from '@/hooks/use-toggle-privacy'
+import { usePrivacyToggle } from '@/hooks/use-privacy-toggle'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -14,7 +14,7 @@ type Props = {
 }
 
 const PrivacyToggle = ({ type, item, queryKey, className }: Props) => {
-  const { handleToggle } = useTogglePrivacy({ type, item, queryKey })
+  const { handleToggle } = usePrivacyToggle({ type, item, queryKey })
   const [isLoading, setIsLoading] = useState(false)
 
   const onToggle = () => {

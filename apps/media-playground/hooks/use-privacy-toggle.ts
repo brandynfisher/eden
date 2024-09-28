@@ -9,7 +9,7 @@ type TogglePrivacyProps = {
   queryKey: QueryKey
 }
 
-export function useTogglePrivacy({ type, item, queryKey }: TogglePrivacyProps) {
+export function usePrivacyToggle({ type, item, queryKey }: TogglePrivacyProps) {
   const mutation = usePrivacyToggleMutation({
     type,
     queryKey,

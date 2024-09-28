@@ -296,7 +296,7 @@ const MasonryVirtualizerVertical = ({
           ) : null}
         </div>
       </div>
-      <MultiSelectToolbar />
+      <MultiSelectToolbar queryKey={queryKey} />
     </MultiSelectProvider>
   )
 }

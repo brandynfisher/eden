@@ -7,6 +7,7 @@ import { useMultiSelection } from '@/contexts/multi-select-context'
 import { DownloadFile, downloadFiles } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import { DownloadIcon, XIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
@@ -23,7 +24,11 @@ const getSaveAsFileName = (
   return `Eden_${tool}_${username || ''}${formattedPrompt}_${id}`
 }
 
-const MultiSelectToolbar: React.FC = () => {
+type Props = {
+  queryKey: QueryKey
+}
+
+const MultiSelectToolbar = ({ queryKey }: Props) => {
   const [isPreparingDownload, setIsPreparingDownload] = useState(false)
   const { selectedItems, clearSelection } = useMultiSelection()
 
@@ -84,6 +89,7 @@ const MultiSelectToolbar: React.FC = () => {
           </Button>
 
           <CreationsBulkActionsMenu
+            queryKey={queryKey}
             className="w-full h-9 px-3 py-0"
             creations={selectedItems}
             label={<span className="ml-2 hidden md:block">More</span>}
