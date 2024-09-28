@@ -10,7 +10,7 @@ import CreationsFeed from '@/features/feed/creations-feed'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { cn } from '@/lib/utils'
 import { CreationV2 } from '@edenlabs/eden-sdk'
-import { Suspense, useEffect, useRef, useState } from 'react'
+import React, { Suspense, useEffect, useRef, useState } from 'react'
 
 type Props = {
   id: string
@@ -27,6 +27,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
         }
       : undefined,
   })
+  console.log({ id, creationClientData, creationSSRData, queryKey })
 
   const creation = creationSSRData || creationClientData
 

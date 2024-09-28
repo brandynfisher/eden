@@ -1,56 +1,29 @@
-import { fetcher } from '@/lib/fetcher'
-import {
-  CreationV2,
-  CreationsV2PatchResponse,
-  ModelV2,
-  ModelsV2PatchResponse,
-} from '@edenlabs/eden-sdk'
-import { toast } from 'sonner'
+import { useDeleteMutation } from '@/hooks/use-delete-mutation'
+import { capitalize } from '@/lib/strings'
+import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 
-type Props = {
+type DeleteProps = {
   type: 'creation' | 'model'
   item: ModelV2 | CreationV2
+  queryKey: QueryKey
 }
-export function useDelete({ type, item }: Props) {
-  const handleDelete = async () => {
-    try {
-      const response: ModelsV2PatchResponse | CreationsV2PatchResponse =
-        await fetcher(`/api/${type}s/${item._id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({
-            deleted: true,
-          }),
-        })
 
-      if (!response) {
-        console.error('response empty')
-        return
-      }
+export function useDelete({ type, item, queryKey }: DeleteProps) {
+  const mutation = useDeleteMutation({
+    type,
+    queryKey,
+    onSuccessMessage: `${capitalize(type)} deleted`,
+  })
 
-      // @todo: implement optimistic update
-      // if (isModelsV2PatchResponse(response)) {
-      //   if (response.model) {
-      //     onUpdate && onUpdate(response.model)
-      //   }
-      // } else {
-      //   if (response.creation) {
-      //     onUpdate && onUpdate(response.creation)
-      //   }
-      // }
-
-      toast.success(`${type} deleted`, {
-        description: ``,
-        dismissible: true,
-        richColors: true,
-      })
-    } catch (e) {
-      toast.error(`Delete Error`, {
-        description: `Failed to delete ${type}`,
-        dismissible: true,
-        richColors: true,
-      })
-    }
+  const handleDelete = () => {
+    mutation.mutate({ ids: [item._id], deleted: true })
   }
 
-  return { handleDelete }
+  return {
+    handleDelete,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+  }
 }

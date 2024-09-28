@@ -2,7 +2,7 @@
 
 import ModelCard from '@/components/card/model-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import { RowItem } from '@/lib/query'
+import { RowItem } from '@/lib/mutations/query'
 import { FeedConceptsCursorArguments, ModelV2 } from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
 

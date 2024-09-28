@@ -1,4 +1,3 @@
-// hooks/usePrivacyToggleMutation.ts
 import { fetcher } from '@/lib/fetcher'
 import {
   isCreationData,
@@ -7,7 +6,7 @@ import {
   isModelsV2PatchResponse,
   isTaskV2,
   isTasksV2ListResponse,
-} from '@/lib/privacy'
+} from '@/lib/mutations/guards'
 import { capitalize } from '@/lib/strings'
 import {
   CreationV2,
@@ -38,7 +37,7 @@ type MutationOptions = {
   onSuccessMessage?: string
 }
 
-export function usePrivacyToggleMutation({
+export function usePrivacyMutation({
   type,
   queryKey,
   onSuccessMessage,

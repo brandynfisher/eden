@@ -17,13 +17,20 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
     <>
       <div
-        className="relative border-transparent bg-popover z-10 shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712]"
+        className="relative border-transparent bg-popover z-10"
         style={{
           aspectRatio:
             result?.mediaAttributes?.aspectRatio ||
             (task.output_type === 'audio' ? 3 : 1),
         }}
       >
+        {result.creation === null || result.creation?.deleted ? (
+          <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
+            <div className="p-1 px-2 border border-destructive/50 bg-destructive/20 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
+              deleted
+            </div>
+          </div>
+        ) : null}
         {task.output_type === 'audio' ? (
           <div className="flex w-full h-full items-center justify-center">
             <audio src={result.url || result.filename} controls={true} />

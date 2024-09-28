@@ -1,4 +1,4 @@
-import { usePrivacyToggleMutation } from '@/hooks/use-privacy-toggle-mutation'
+import { usePrivacyMutation } from '@/hooks/use-privacy-mutation'
 import { capitalize } from '@/lib/strings'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -10,7 +10,7 @@ type TogglePrivacyProps = {
 }
 
 export function usePrivacyToggle({ type, item, queryKey }: TogglePrivacyProps) {
-  const mutation = usePrivacyToggleMutation({
+  const mutation = usePrivacyMutation({
     type,
     queryKey,
     onSuccessMessage: `${capitalize(type)} updated`,
@@ -23,5 +23,7 @@ export function usePrivacyToggle({ type, item, queryKey }: TogglePrivacyProps) {
   return {
     handleToggle,
     isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
   }
 }

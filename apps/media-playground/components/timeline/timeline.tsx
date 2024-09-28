@@ -11,7 +11,7 @@ import {
   RowItem,
   addDocIfNotExistInPage,
   updateDocInPage,
-} from '@/lib/query'
+} from '@/lib/mutations/query'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
 import { QueryKey, useQueryClient } from '@tanstack/react-query'

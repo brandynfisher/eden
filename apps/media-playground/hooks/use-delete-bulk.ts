@@ -1,47 +1,30 @@
-import { fetcher } from '@/lib/fetcher'
-import { CreationV2, CreationsV2PatchResponse } from '@edenlabs/eden-sdk'
-import { toast } from 'sonner'
+import { useDeleteMutation } from '@/hooks/use-delete-mutation'
+import { capitalize } from '@/lib/strings'
+import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 
 type Props = {
   type: 'creation' | 'model'
-  items: CreationV2[]
-  onUpdate?: (items: CreationV2[]) => void
+  items: (ModelV2 | CreationV2)[]
+  queryKey: QueryKey
 }
-export function useDeleteBulk({ type, items, onUpdate }: Props) {
+
+export function useDeleteBulk({ type, items, queryKey }: Props) {
+  const mutation = useDeleteMutation({
+    type,
+    queryKey,
+    onSuccessMessage: `${capitalize(type)}s deleted`,
+  })
+
   const handleDelete = async () => {
-    console.log({ onUpdate })
-    try {
-      const response: CreationsV2PatchResponse = await fetcher(
-        `/api/${type}s/bulk`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            creationIds: items.map(item => item._id),
-            deleted: true,
-          }),
-        },
-      )
-
-      if (!response) {
-        console.error('response empty')
-        return
-      }
-
-      toast.success(`${type} deleted`, {
-        description: `${items.length} items`,
-        dismissible: true,
-        richColors: true,
-      })
-    } catch (e) {
-      toast.error(`Delete Error`, {
-        description: `Failed to delete ${type}s`,
-        dismissible: true,
-        richColors: true,
-      })
-    }
+    const ids = items.map(item => item._id)
+    mutation.mutate({ ids, deleted: true })
   }
 
   return {
     handleDelete,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
   }
 }

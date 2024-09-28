@@ -13,6 +13,13 @@ type Props = {
 const CreationMediaPreview = ({ creation, isModal }: Props) => {
   return (
     <div className="relative w-full my-4">
+      {creation?.deleted ? (
+        <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
+          <div className="p-1 bg-destructive/50 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
+            deleted
+          </div>
+        </div>
+      ) : null}
       {creation.mediaAttributes?.type === 'audio' ? (
         <div className="flex w-full h-full items-center justify-center min-h-64">
           <audio src={creation.url} controls={true} />

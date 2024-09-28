@@ -1,26 +1,35 @@
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
+import { useMultiSelection } from '@/contexts/multi-select-context'
 import { useDeleteBulk } from '@/hooks/use-delete-bulk'
 import { CreationV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import { Trash2Icon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
   items: CreationV2[]
   type: 'creation'
-  onUpdate?: (items: CreationV2[]) => void
+  queryKey: QueryKey
 }
 
-const PrivacyBulkActionItem = ({ type, items, onUpdate }: Props) => {
+const PrivacyBulkActionItem = ({ type, items, queryKey }: Props) => {
+  const { clearSelection } = useMultiSelection()
+
   const { handleDelete } = useDeleteBulk({
     type,
     items,
-    onUpdate,
+    queryKey,
   })
+
+  const onDelete = async () => {
+    await handleDelete()
+    clearSelection()
+  }
 
   return (
     <>
       <DropdownMenuItem
-        onClick={handleDelete}
+        onClick={onDelete}
         className="cursor-pointer text-destructive"
       >
         <Trash2Icon className="mr-2 h-4 w-4" />
