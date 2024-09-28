@@ -113,7 +113,7 @@ const CreationActionsContent = ({
             <DeleteActionItem
               type="creation"
               item={creationData}
-              // queryKey={queryKey}
+              queryKey={queryKey}
             />
           </DropdownMenuGroup>
         </>
