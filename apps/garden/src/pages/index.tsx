@@ -87,10 +87,10 @@ const featuredArtistsConfig =
     : [
         'xander',
         'va2rosa',
-        'xander_eden',
-        'jmill4747',
-        'gene3',
-        'laub-local-new',
+        // 'xander_eden',
+        // 'jmill4747',
+        // 'gene3',
+        // 'laub-local-new',
       ]
 
 const fetchConcept = async (conceptId: string) => {
