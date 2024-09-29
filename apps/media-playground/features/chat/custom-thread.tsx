@@ -1,8 +1,10 @@
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import CustomThreadSuggestion from '@/features/chat/custom-thread-suggestion'
 import CustomThreadWelcome from '@/features/chat/custom-thread-welcome'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { AssistantV2 } from '@/types/Assistant'
 import {
@@ -128,11 +130,17 @@ const MyEditComposer: FC = () => {
   )
 }
 
-const MyAssistantMessage: FC = () => {
+type MyAssistantMessageProps = {
+  assistant: AssistantV2
+}
+const MyAssistantMessage = ({ assistant }: MyAssistantMessageProps) => {
   return (
     <MessagePrimitive.Root className="relative grid w-full max-w-2xl grid-cols-[auto_auto_1fr] grid-rows-[auto_1fr] py-4">
-      <Avatar className="col-start-1 row-span-full row-start-1 mr-4">
-        <AvatarFallback>A</AvatarFallback>
+      <Avatar className="w-10 h-10 md:w-12 md:h-12 col-start-1 row-span-full row-start-1 mr-4">
+        <AvatarImage src={getCloudfrontOriginalUrl(assistant.image)} />
+        <AvatarFallback className="w-10 h-10 md:w-12 md:h-12">
+          {assistant.name}
+        </AvatarFallback>
       </Avatar>
 
       <div className="text-foreground col-span-2 col-start-2 row-start-1 my-1.5 max-w-xl break-words leading-7">
@@ -227,11 +235,28 @@ const CustomThread = ({ assistant }: CustomThreadProps) => {
           components={{
             UserMessage: MyUserMessage,
             EditComposer: MyEditComposer,
-            AssistantMessage: MyAssistantMessage,
+            AssistantMessage: () => (
+              <MyAssistantMessage assistant={assistant} />
+            ),
           }}
         />
 
         <div className="sticky bottom-0 mt-4 flex w-full max-w-2xl flex-grow flex-col items-center justify-end rounded-t-lg bg-inherit pb-4">
+          <ThreadPrimitive.Empty>
+            <div className="flex flex-wrap w-full gap-4 mb-4">
+              <CustomThreadSuggestion
+                prompt={'List all tools you have access to'}
+              >
+                What can you do?
+              </CustomThreadSuggestion>
+              <CustomThreadSuggestion
+                prompt={'Create an image of a penguin using flux-schnell.'}
+              >
+                Create an image of a penguin
+              </CustomThreadSuggestion>
+            </div>
+          </ThreadPrimitive.Empty>
+
           <MyThreadScrollToBottom />
           <MyComposer />
         </div>

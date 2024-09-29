@@ -11,10 +11,13 @@ const CustomThreadWelcome = ({ assistant }: CustomThreadWelcomeProps) => {
   return (
     <ThreadPrimitive.Empty>
       <div className="flex flex-grow basis-full flex-col items-center justify-center">
-        <Avatar className="max-w-16">
+        <Avatar className="w-16 h-16 md:w-24 md:h-24">
           <AvatarImage src={getCloudfrontOriginalUrl(assistant.image)} />
-          <AvatarFallback>{assistant.name}</AvatarFallback>
+          <AvatarFallback className="w-16 h-16 md:w-24 md:h-24">
+            {assistant.name}
+          </AvatarFallback>
         </Avatar>
+
         <p className="mt-4 font-medium">{assistant.welcomeText}</p>
       </div>
     </ThreadPrimitive.Empty>

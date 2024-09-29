@@ -76,7 +76,7 @@ const AnnouncementBanner: FC<AnnouncementBannerProps> = ({
   return (
     <>
       <div
-        className={`announcement-banner ${
+        className={`announcement-banner h-9 lg:h-16 ml-auto lg:w-[calc(100dvw_-_200px)] lg:ml-[200px] ${
           isVisible ? 'visible' : ''
         } bg-purple-600 dark:bg-purple-800 text-gray-800 dark:text-gray-300`}
         aria-live="polite"
@@ -114,8 +114,6 @@ const AnnouncementBanner: FC<AnnouncementBannerProps> = ({
       <style jsx>{`
         .announcement-banner {
           overflow: hidden;
-          width: calc(100% - 200px);
-          margin-left: 200px;
           transform: translateY(-100%);
           opacity: 0;
           transition: transform 0.5s ease, opacity 0.5s ease;
@@ -161,11 +159,7 @@ const AnnouncementBanner: FC<AnnouncementBannerProps> = ({
         }
 
         /* Responsive Design */
-        @media (max-width: 600px) {
-          .announcement-banner {
-            width: 100%;
-            margin-left: initial;
-          }
+        @media (max-width: 1024px) {
           .banner-content {
             align-items: flex-start;
             padding: 8px 16px;

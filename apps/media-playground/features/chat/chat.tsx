@@ -6,7 +6,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import CustomThread from '@/features/chat/custom-thread'
-import Sessions from '@/features/chat/sessions-list'
+import SessionsList from '@/features/chat/sessions-list'
 import { AssistantV2 } from '@/types/Assistant'
 
 const Chat = () => {
@@ -18,14 +18,25 @@ const Chat = () => {
 
   return (
     <div className="h-[calc(100dvh_-_64px)]">
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel>
-          <Sessions />
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="!flex-col md:!flex-row"
+      >
+        <ResizablePanel
+          defaultSize={20}
+          minSize={10}
+          className="!basis-auto md:!basis-0"
+        >
+          <SessionsList />
         </ResizablePanel>
 
-        <ResizableHandle />
+        <ResizableHandle withHandle className="hidden md:flex" />
 
-        <ResizablePanel>
+        <ResizablePanel
+          defaultSize={75}
+          minSize={25}
+          className="!basis-auto md:!basis-0"
+        >
           <CustomThread assistant={assistant} />
         </ResizablePanel>
       </ResizablePanelGroup>
