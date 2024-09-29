@@ -6,6 +6,7 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
+import { TaskV2Args } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -78,9 +79,34 @@ export type ThreadsGetResponse = WebAPICallResult & {
 
 // Types
 
+export type Message = {
+  role: 'user' | 'assistant'
+  content: string
+  createdAt: Date
+}
+
+export type UserMessage = Message & {
+  role: 'user'
+  name: string
+  metadata?: { [key: string]: string | boolean | number }
+  attachments?: string[]
+}
+
+export type ToolCall = {
+  id: string
+  name: string
+  input: TaskV2Args
+}
+
+export type AssistantMessage = Message & {
+  role: 'assistant'
+  tool_calls?: ToolCall[]
+}
+
 export type Thread = {
   _id: string
   user: Creator
+  messages: (UserMessage | AssistantMessage)[]
   createdAt: Date
   updatedAt: Date
 }
