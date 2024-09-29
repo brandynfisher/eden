@@ -7,7 +7,7 @@ import DetailSidebar from '@/features/detail/detail-sidebar'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 
 type Props = {
   id: string
@@ -17,7 +17,7 @@ type Props = {
 
 const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
   // const { user } = useAuthState()
-  const { model: modelClientData, invalidate } = useModelQuery({
+  const { model: modelClientData, queryKey } = useModelQuery({
     key: id,
     initialData: modelSSRData
       ? {
@@ -38,6 +38,13 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
             : 'lg:h-[calc(100vh_-_64px)] lg:w-[calc(100dvw_-_16px)]',
         ])}
       >
+        {model?.deleted ? (
+          <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
+            <div className="p-1 bg-destructive/50 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
+              deleted
+            </div>
+          </div>
+        ) : null}
         {model ? (
           <ModelMediaPreview model={model} isModal={isModal} />
         ) : (
@@ -49,7 +56,8 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
             item={model}
             type={'model'}
             inModal={isModal}
-            onUpdate={() => invalidate()}
+            queryKey={queryKey}
+            // onUpdate={() => invalidate()}
           />
         </Suspense>
       </div>

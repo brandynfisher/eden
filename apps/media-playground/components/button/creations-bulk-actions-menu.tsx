@@ -7,19 +7,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { CreationV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import React, { ReactNode, useState } from 'react'
 
 type Props = {
   label?: ReactNode
   creations: CreationV2[]
-  onUpdate?: (items: CreationV2[]) => void
+  queryKey: QueryKey
   className?: string
 }
 
 const CreationsBulkActionsMenu = ({
   creations,
   label,
-  onUpdate,
+  queryKey,
   className,
 }: Props) => {
   const { user } = useAuthState()
@@ -39,7 +40,7 @@ const CreationsBulkActionsMenu = ({
       {isOpen && (
         <CreationsBulkActionsContent
           creations={creations}
-          onUpdate={onUpdate}
+          queryKey={queryKey}
           userId={user?._id}
         />
       )}
@@ -49,18 +50,18 @@ const CreationsBulkActionsMenu = ({
 
 type ContentProps = {
   creations: CreationV2[]
-  onUpdate?: (item: CreationV2[]) => void
+  queryKey: QueryKey
   userId?: string
 }
 
-const CreationsBulkActionsContent = ({ creations, onUpdate }: ContentProps) => {
+const CreationsBulkActionsContent = ({ creations, queryKey }: ContentProps) => {
   return (
     <>
       <DropdownMenuGroup>
         <PrivacyBulkActionItem
           type="creation"
           items={creations}
-          onUpdate={onUpdate}
+          queryKey={queryKey}
         />
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
@@ -68,7 +69,7 @@ const CreationsBulkActionsContent = ({ creations, onUpdate }: ContentProps) => {
         <DeleteBulkActionItem
           type="creation"
           items={creations}
-          onUpdate={onUpdate}
+          queryKey={queryKey}
         />
       </DropdownMenuGroup>
     </>

@@ -86,7 +86,6 @@ const ProfileImageCard = () => {
         <UserAvatar
           image={avatarUrl ?? user?.userImage}
           name={user?.username}
-          variant="large"
         />
 
         <Input

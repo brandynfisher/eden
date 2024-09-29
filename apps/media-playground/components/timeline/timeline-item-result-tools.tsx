@@ -10,13 +10,13 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
-// import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { cn } from '@/lib/utils'
 import {
   TaskV2,
   TaskV2Result,
   TasksV2PublishResponse,
 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { BookHeartIcon, ListIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -27,10 +27,17 @@ type Props = {
   task: TaskV2
   result: TaskV2Result
   index: number
+  queryKey: QueryKey
   className?: string
 }
 
-const TimelineItemResultTools = ({ task, result, index, className }: Props) => {
+const TimelineItemResultTools = ({
+  task,
+  result,
+  index,
+  queryKey,
+  className,
+}: Props) => {
   const [isPublishing, setIsPublishing] = useState(false)
   const publishTaskResult = async (taskId: string, originalFileUrl: string) => {
     setIsPublishing(true)
@@ -131,22 +138,24 @@ const TimelineItemResultTools = ({ task, result, index, className }: Props) => {
             <>
               {result.model ? (
                 <PrivacyToggle
+                  queryKey={queryKey}
                   type={'model'}
                   item={result.model}
-                  onUpdate={() => {
-                    // @todo: mutate/invalidate/optimistic update
-                    console.log('should set private')
-                  }}
+                  // onUpdate={() => {
+                  //   // @todo: mutate/invalidate/optimistic update
+                  //   console.log('should set private')
+                  // }}
                 />
               ) : null}
               {result.creation ? (
                 <PrivacyToggle
+                  queryKey={queryKey}
                   type={'creation'}
                   item={result.creation}
-                  onUpdate={() => {
-                    // @todo: mutate/invalidate/optimistic update
-                    console.log('should set private')
-                  }}
+                  // onUpdate={() => {
+                  //   // @todo: mutate/invalidate/optimistic update
+                  //   console.log('should set private')
+                  // }}
                 />
               ) : null}
             </>
@@ -163,11 +172,16 @@ const TimelineItemResultTools = ({ task, result, index, className }: Props) => {
           </CollapsibleTrigger>
           <Suspense>
             {task.output_type === 'lora' && result.model ? (
-              <ModelActionsMenu model={result.model} className="ml-auto" />
+              <ModelActionsMenu
+                model={result.model}
+                className="ml-auto"
+                queryKey={queryKey}
+              />
             ) : result.creation ? (
               <CreationActionsMenu
                 creation={result.creation}
                 className="ml-auto"
+                queryKey={queryKey}
               />
             ) : (
               <TaskActionsMenu
@@ -175,6 +189,7 @@ const TimelineItemResultTools = ({ task, result, index, className }: Props) => {
                 result={result}
                 index={index}
                 className="ml-auto"
+                // queryKey={queryKey}
               />
             )}
           </Suspense>

@@ -1,18 +1,18 @@
+import AnnouncementBanner from '@/components/Banners/AnnouncementBanner'
 import FetchIndicator from '@/components/Layout/FetchIndicator'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
 import RouteProgressBar from '@/components/Layout/RouteProgressBar'
 import BackToTopButton from '@/components/Layout/buttons/BackToTopButton'
 import { Layout } from 'antd'
 import { Router } from 'next/router'
-import {
+import React, {
   Dispatch,
   PropsWithChildren,
   SetStateAction,
   useEffect,
   useState,
 } from 'react'
-import { Middleware } from 'swr'
-import { BareFetcher, SWRConfig } from 'swr'
+import { BareFetcher, Middleware, SWRConfig } from 'swr'
 
 type Args = []
 type Data = Promise<unknown[]>
@@ -88,6 +88,12 @@ const CustomLayout = ({
           fixedHeight ? 'h-screen overflow-hidden' : ''
         }`}
       >
+        <AnnouncementBanner
+          id={'beta_announcer'}
+          text={<span>NEW! Eden Create Beta</span>}
+          linkUrl={'https://beta.eden.art'}
+          linkText={'Try it now!'}
+        />
         <LayoutHeader />
         <Layout
           hasSider={false}

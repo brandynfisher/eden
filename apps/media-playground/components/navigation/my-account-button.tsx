@@ -17,7 +17,7 @@ import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { LogOutIcon, SettingsIcon } from 'lucide-react'
+import { ComponentIcon, LogOutIcon, SettingsIcon, UserIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -108,11 +108,17 @@ const AccountDropdown = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user?.username}`}>Profile</Link>
+          <Link href={`/creators/${user?.username}`}>
+            <UserIcon className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
           {/*<DropdownMenuShortcut>⌘B</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/creators/${user?.username}?tab=models`}>Models</Link>
+          <Link href={`/creators/${user?.username}?tab=models`}>
+            <ComponentIcon className="mr-2 h-4 w-4" />
+            <span>Models</span>
+          </Link>
           {/*<DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
         {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}

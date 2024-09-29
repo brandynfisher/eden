@@ -30,6 +30,13 @@ function replaceNullWithUndefined(
   })
 }
 
+function prepareParameters(
+  arr: GeneratorParameterV2[],
+): GeneratorParameterV2[] {
+  const filterHidden = arr.filter(param => param.hide_from_ui === false)
+  return replaceNullWithUndefined(filterHidden)
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: { key: string } },
@@ -41,7 +48,7 @@ export async function GET(
 
     const res = await eden.generators.getV2({ generatorKey: params.key })
     const transformedParameters = res.generator?.parameters
-      ? replaceNullWithUndefined(res.generator?.parameters)
+      ? prepareParameters(res.generator?.parameters)
       : []
     return NextResponse.json({
       generator: { ...res.generator, parameters: transformedParameters },

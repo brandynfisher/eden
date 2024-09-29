@@ -2,7 +2,7 @@
 
 import CreationCard from '@/components/card/creation-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import { RowItem } from '@/lib/query'
+import { RowItem } from '@/lib/mutations/query'
 import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
 

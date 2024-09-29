@@ -56,5 +56,5 @@ jobs:
             "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}"
             "EDEN_COMPUTE_API_URL=${{ secrets.EDEN_COMPUTE_API_URL }}"
             "EDEN_COMPUTE_API_KEY=${{ secrets.EDEN_COMPUTE_API_KEY }}"
-            "EDEN2_FRONTEND_URL=https://app2.eden.art"
+            "EDEN2_FRONTEND_URL=https://beta.eden.art"
             "CLERK_JWT_KEY=${{ secrets.CLERK_JWT_KEY }}"

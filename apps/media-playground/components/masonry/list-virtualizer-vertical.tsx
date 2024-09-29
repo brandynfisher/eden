@@ -9,7 +9,7 @@ import {
   TasksV2ListResponse,
   transformArgsIntoURLParams,
 } from '@edenlabs/eden-sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
@@ -20,7 +20,7 @@ type Props = {
   apiEndpoint: string
   render: ({ item }: { item: TaskV2 }) => React.JSX.Element
   query: { [key: string]: unknown }
-  queryKey: unknown[]
+  queryKey: QueryKey
 }
 
 // export const MasonrySkeleton = () => {

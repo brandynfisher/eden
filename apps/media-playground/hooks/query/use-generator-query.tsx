@@ -31,6 +31,7 @@ export const useGeneratorQuery = ({ key, initialData }: Props) => {
   return {
     generator: data?.generator as GeneratorV2 | undefined,
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    queryKey,
     error,
     isError,
     isPending,

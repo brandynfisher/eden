@@ -1,10 +1,11 @@
-import Landing from '@/features/landing/landing'
-import DefaultLayout from '@/components/layout/default-layout'
+import { redirect } from 'next/navigation'
 
 export default function Homepage() {
-  return (
-    <DefaultLayout>
-      <Landing />
-    </DefaultLayout>
-  )
+  redirect('/create')
+  //
+  // return (
+  //   <DefaultLayout>
+  //     <Landing />
+  //   </DefaultLayout>
+  // )
 }

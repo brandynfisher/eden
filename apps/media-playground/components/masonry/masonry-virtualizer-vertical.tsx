@@ -13,7 +13,7 @@ import {
   RowItem,
   addDocIfNotExistInPage,
   updateDocInPage,
-} from '@/lib/query'
+} from '@/lib/mutations/query'
 import { FeedV2CursorResponse } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
@@ -296,7 +296,7 @@ const MasonryVirtualizerVertical = ({
           ) : null}
         </div>
       </div>
-      <MultiSelectToolbar />
+      <MultiSelectToolbar queryKey={queryKey} />
     </MultiSelectProvider>
   )
 }

@@ -1,13 +1,17 @@
+import LoadingIndicator from '@/components/loading-indicator'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { useMe } from '@/hooks/use-me'
+import { cn } from '@/lib/utils'
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import { Parser } from 'expr-eval'
 import { CoinsIcon } from 'lucide-react'
-import React from 'react'
+import React, { Suspense } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 const regex = /\b[^\d\W]+(\.[^\d\W]+)*\b/g // match words that may contain periods: "(width/1024)/prompts.length * 2"
@@ -45,6 +49,8 @@ type CostValueProps = {
 }
 
 const CostValue: React.FC<CostValueProps> = ({ formula, parameterNames }) => {
+  const { isSignedIn } = useAuthState()
+  const { balance } = useMe({ isAuthenticated: !!isSignedIn })
   const { watch } = useFormContext()
   const values = watch(parameterNames)
   let cost = 1
@@ -58,7 +64,12 @@ const CostValue: React.FC<CostValueProps> = ({ formula, parameterNames }) => {
   }
 
   return (
-    <div className="flex items-center justify-center text-xs">
+    <div
+      className={cn([
+        'flex items-center justify-center text-xs',
+        balance < cost ? 'text-destructive' : '',
+      ])}
+    >
       <CoinsIcon className="mr-1.5 h-4 w-4" />
       <span className="font-mono">{Math.floor(cost) || 1}</span>
     </div>
@@ -73,8 +84,8 @@ const CostIndicatorV2: React.FC<Props> = ({ formula }) => {
   const costParameterNames = formula
     ? Array.from(
         new Set(
-          (formula.match(regex) || []).map(match =>
-            match.replace('.length', ''),
+          (formula.match(regex) || []).map(
+            match => match.replace('.length', ''), // if expression field ends with .length, we're interested in num array elements of the given field
           ),
         ),
       )
@@ -85,7 +96,12 @@ const CostIndicatorV2: React.FC<Props> = ({ formula }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="cursor-pointer flex items-center justify-center">
-            <CostValue formula={formula} parameterNames={costParameterNames} />
+            <Suspense fallback={<LoadingIndicator />}>
+              <CostValue
+                formula={formula}
+                parameterNames={costParameterNames}
+              />
+            </Suspense>
           </div>
         </TooltipTrigger>
         <TooltipContent>

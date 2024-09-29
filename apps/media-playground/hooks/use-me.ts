@@ -1,5 +1,9 @@
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
-import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
+import {
+  CreatorsGetMeResponse,
+  FeatureFlag,
+  SubscriptionTier,
+} from '@edenlabs/eden-sdk'
 
 export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
   const {
@@ -9,7 +13,10 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     subscriptionBalance,
     isLoading,
     invalidate,
-  } = useCreatorQuery({ key: 'me', enabled: isAuthenticated })
+  } = useCreatorQuery({
+    key: 'me',
+    enabled: isAuthenticated,
+  }) as unknown as CreatorsGetMeResponse
 
   const hasMinimumSubscriptionTier = (minimumTier: SubscriptionTier) => {
     if (!isAuthenticated || !currentUser) {
@@ -51,6 +58,6 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     foreverBalance,
     subscriptionBalance,
     isLoading,
-    invalidate,
+    invalidate: invalidate as () => Promise<void>,
   }
 }

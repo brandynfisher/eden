@@ -11,10 +11,10 @@ import {
   RowItem,
   addDocIfNotExistInPage,
   updateDocInPage,
-} from '@/lib/query'
+} from '@/lib/mutations/query'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
-import { useQueryClient } from '@tanstack/react-query'
+import { QueryKey, useQueryClient } from '@tanstack/react-query'
 import { Suspense, useEffect, useMemo, useState } from 'react'
 
 type Props = {
@@ -40,7 +40,7 @@ const Timeline = ({ generator }: Props) => {
     [showAllToolResults, generator.outputType, generator.key],
   )
 
-  const queryKey = useMemo(
+  const queryKey: QueryKey = useMemo(
     () => [
       [
         'tasks',
@@ -49,7 +49,7 @@ const Timeline = ({ generator }: Props) => {
           : !showAllToolResults
           ? generator.key
           : undefined,
-      ],
+      ].filter(Boolean),
       query,
     ],
     [showAllToolResults, generator.outputType, generator.key, query],
@@ -138,7 +138,9 @@ const Timeline = ({ generator }: Props) => {
             apiEndpoint={'/api/tasks/list'}
             query={query}
             queryKey={queryKey}
-            render={item => <TimelineItem item={item.item} />}
+            render={item => (
+              <TimelineItem item={item.item} queryKey={queryKey} />
+            )}
           />
         </Suspense>
       </div>

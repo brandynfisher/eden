@@ -150,6 +150,7 @@ const handleArguments = async ({
       delete filterMap[indexPrivacyParam]
     }
   }
+
   const filterUserIds = filterMap
     ? filterMap
         ?.filter(
@@ -407,7 +408,7 @@ const handleArguments = async ({
       : undefined
 
   const defaultDeletedFilter = usesPrivacy
-    ? { deleted: { $eq: false } }
+    ? { $or: [{ deleted: { $exists: false } }, { deleted: false }] }
     : undefined
 
   const filters = {

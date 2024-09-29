@@ -2,7 +2,7 @@
 
 import ModelCard from '@/components/card/model-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import { RowItem } from '@/lib/query'
+import { RowItem } from '@/lib/mutations/query'
 import { FeedConceptsCursorArguments, ModelV2 } from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
 
@@ -36,10 +36,10 @@ const ModelsFeed = ({ query: queryProp, minCols, maxCols, onClick }: Props) => {
       query={query}
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
-      render={(item: RowItem, onUpdate) => (
+      render={(item: RowItem) => (
         <ModelCard
           onClick={onClick}
-          onUpdate={onUpdate}
+          queryKey={queryKey}
           model={item as ModelV2}
           creator={(item as ModelV2).user}
           linkHref={`/models/${item._id}`}

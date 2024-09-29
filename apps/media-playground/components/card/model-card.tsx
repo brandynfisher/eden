@@ -2,7 +2,8 @@ import ModelActionsMenu from '@/components/button/model-actions-menu'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import { Card } from '@/components/ui/card'
-import { CreationV2, Creator, ModelV2 } from '@edenlabs/eden-sdk'
+import { Creator, ModelV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import { SquareMousePointerIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties } from 'react'
@@ -13,11 +14,11 @@ type Props = {
   creator?: Creator
   showFooter?: boolean
   style?: CSSProperties
-  onUpdate?: (item: ModelV2 | CreationV2) => void
+  queryKey: QueryKey
   onClick?: (item: ModelV2) => void
 }
 
-const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
+const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
   return (
     <Card
       className="relative overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712] group"
@@ -57,7 +58,7 @@ const ModelCard = ({ model, showFooter, style, onUpdate, onClick }: Props) => {
             //   isActive={false}
             //   onChange={() => null}
             // />,
-            <ModelActionsMenu key={1} onUpdate={onUpdate} model={model} />,
+            <ModelActionsMenu key={1} queryKey={queryKey} model={model} />,
           ]}
         >
           <div className="text-xs">{model.name}</div>

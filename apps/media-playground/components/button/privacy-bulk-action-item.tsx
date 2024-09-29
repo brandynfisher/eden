@@ -1,20 +1,21 @@
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
-import { useTogglePrivacyBulk } from '@/hooks/use-toggle-privacy-bulk'
+import { usePrivacyToggleBulk } from '@/hooks/use-privacy-toggle-bulk'
 import { CreationV2 } from '@edenlabs/eden-sdk'
+import { QueryKey } from '@tanstack/react-query'
 import { LockIcon, LockOpenIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
   items: CreationV2[]
   type: 'creation'
-  onUpdate?: (items: CreationV2[]) => void
+  queryKey: QueryKey
 }
 
-const PrivacyBulkActionItem = ({ type, items, onUpdate }: Props) => {
-  const { handleSetPrivate, handleSetPublic } = useTogglePrivacyBulk({
+const PrivacyBulkActionItem = ({ type, items, queryKey }: Props) => {
+  const { handleSetPrivate, handleSetPublic } = usePrivacyToggleBulk({
     type,
     items,
-    onUpdate,
+    queryKey,
   })
 
   return (

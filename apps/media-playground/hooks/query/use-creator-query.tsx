@@ -4,8 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Props = {
   key: Creator['username']
-  enabled?: boolean
   initialData?: CreatorsGetResponse
+  enabled?: boolean
 }
 
 export const useCreatorQuery = ({
@@ -36,6 +36,7 @@ export const useCreatorQuery = ({
 
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    queryKey,
     creator: data?.creator as Creator | undefined,
     balance: data?.balance || undefined,
     foreverBalance: data?.foreverBalance || undefined,
