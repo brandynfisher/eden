@@ -53,7 +53,7 @@ const fetchConfigs = async (
   }
 }
 
-const REFRESH_INTERVAL_MS = 10 * 60 * 1000
+const REFRESH_INTERVAL_MS = 1 * 60 * 1000
 
 const registerGeneratorConfigs: FastifyPluginAsync = async fastify => {
   try {
