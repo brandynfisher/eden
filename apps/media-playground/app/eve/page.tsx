@@ -1,7 +1,7 @@
-import { MyAssistantSidebar } from '@/components/ui/assistant-ui/assistant-sidebar'
+import Chat from '@/features/chat/chat'
 
 const EvePage = async () => {
-  return <MyAssistantSidebar>Left side</MyAssistantSidebar>
+  return <Chat />
 }
 
 export default EvePage

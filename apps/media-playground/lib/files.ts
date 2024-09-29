@@ -214,7 +214,7 @@ export const downloadFile = async (url: string, fileName: string) => {
     const link = document.createElement('a')
     link.download = `${fileName}.${extension}`
     link.href = response.data.signedUrl
-    link.target = '_blank'
+    // link.target = '_blank'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
