@@ -40,7 +40,6 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
   }
 
   const hasEden2EarlyAccess = () => {
-    // console.log('hasEden2EarlyAccess', {isAuthenticated, currentUser, hasAccess: currentUser?.featureFlags?.includes(FeatureFlag.Eden2EarlyAccess)})
     if (!isAuthenticated || !currentUser) {
       return false
     }

@@ -80,14 +80,14 @@ export type ThreadsGetResponse = WebAPICallResult & {
 // Types
 
 export type Message = {
-  role: 'user' | 'assistant'
-  content: string
+  role: 'user' | 'assistant' | 'tool'
   createdAt: Date
 }
 
 export type UserMessage = Message & {
   role: 'user'
   name: string
+  content: string
   metadata?: { [key: string]: string | boolean | number }
   attachments?: string[]
 }
@@ -98,9 +98,19 @@ export type ToolCall = {
   input: TaskV2Args
 }
 
+export type ToolResults = {
+  id: string
+}
+
 export type AssistantMessage = Message & {
   role: 'assistant'
+  content: string
   tool_calls?: ToolCall[]
+}
+
+export type ToolMessage = Message & {
+  role: 'tool'
+  tool_results: ToolResults[]
 }
 
 export type Thread = {

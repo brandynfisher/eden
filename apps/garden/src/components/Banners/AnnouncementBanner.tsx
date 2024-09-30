@@ -76,7 +76,7 @@ const AnnouncementBanner: FC<AnnouncementBannerProps> = ({
   return (
     <>
       <div
-        className={`announcement-banner h-9 lg:h-16 ml-auto lg:w-[calc(100dvw_-_200px)] lg:ml-[200px] ${
+        className={`announcement-banner h-9 lg:h-11 ml-0 w-full lg:w-[calc(100dvw_-_200px)] lg:ml-[200px] ${
           isVisible ? 'visible' : ''
         } bg-purple-600 dark:bg-purple-800 text-gray-800 dark:text-gray-300`}
         aria-live="polite"
