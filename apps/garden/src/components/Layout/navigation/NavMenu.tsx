@@ -7,8 +7,8 @@ import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { ConnectedTvOutlined, PeopleOutline } from '@mui/icons-material'
 import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline'
 import ExploreOutlined from '@mui/icons-material/ExploreOutlined'
-import ModelTraining from '@mui/icons-material/ModelTraining'
 import HomeOutlined from '@mui/icons-material/HomeOutlined'
+import ModelTraining from '@mui/icons-material/ModelTraining'
 import Yard from '@mui/icons-material/Yard'
 import { Layout, Menu } from 'antd'
 import { useTheme } from 'next-themes'
@@ -216,6 +216,10 @@ const NavMenu = ({
           ),
           label: user.username,
         },
+        {
+          type: 'divider',
+          key: 'p2',
+        },
       ])
     } else {
       setVisibleMenuItems(menuItems)
@@ -289,6 +293,17 @@ const NavMenu = ({
           openKeys={openMenuItemKey}
           items={visibleMenuItems}
         />
+
+        <div className="bg-purple-900 text-sm flex justify-center items-center p-2 py-3">
+          <a
+            href={'https://beta.eden.art'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-200 hover:underline hover:text-gray-300"
+          >
+            Try Eden Create Beta!
+          </a>
+        </div>
         <div
           className="flex flex-col h-full"
           style={{ borderInlineEnd: '1px solid rgba(5, 5, 5, 0.06)' }}

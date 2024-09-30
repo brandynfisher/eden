@@ -27,7 +27,7 @@ type Props = {
 }
 
 const GeneratorForm = ({ generator }: Props) => {
-  const { verifyAuth } = useAuthState()
+  const { isSignedIn, verifyAuth } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const hasAspectRatioSelector = generator.parameters?.some(
@@ -46,6 +46,12 @@ const GeneratorForm = ({ generator }: Props) => {
     },
     {},
   )
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      verifyAuth()
+    }
+  }, [isSignedIn, verifyAuth])
 
   const {
     presetValues,
