@@ -4,13 +4,10 @@ import { useMe } from '@/hooks/use-me'
 import { env } from '@/lib/config'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
-import { useTheme } from 'next-themes'
 
 export function useAuthState() {
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
-  const { resolvedTheme } = useTheme()
-  const clerkTheme = resolvedTheme === 'light' ? undefined : dark
 
   const {
     user,
@@ -26,15 +23,11 @@ export function useAuthState() {
       return true
     }
 
-    openSignIn(
-      clerkTheme
-        ? {
-            fallbackRedirectUrl: env.NEXT_PUBLIC_HOST,
-            signUpFallbackRedirectUrl: env.NEXT_PUBLIC_HOST,
-            appearance: { baseTheme: dark },
-          }
-        : undefined,
-    )
+    openSignIn({
+      fallbackRedirectUrl: env.NEXT_PUBLIC_HOST,
+      signUpFallbackRedirectUrl: env.NEXT_PUBLIC_HOST,
+      appearance: { baseTheme: dark },
+    })
     return false
   }
 

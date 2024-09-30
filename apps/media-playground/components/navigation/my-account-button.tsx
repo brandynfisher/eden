@@ -18,7 +18,6 @@ import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { ComponentIcon, LogOutIcon, SettingsIcon, UserIcon } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
@@ -158,14 +157,10 @@ const AccountDropdown = () => {
 const LoginButton = () => {
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
-  const { theme } = useTheme()
-  const clerkTheme = theme === 'dark' ? dark : undefined
 
   const authenticate = async () => {
     if (!isSignedIn) {
-      openSignIn(
-        clerkTheme ? { appearance: { baseTheme: clerkTheme } } : undefined,
-      )
+      openSignIn({ appearance: { baseTheme: dark } })
     }
   }
 
