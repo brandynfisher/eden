@@ -56,6 +56,8 @@ jobs:
             "NEXT_PUBLIC_EDEN_API_URL=https://api.eden.art"
             "NEXT_PUBLIC_EDEN_SSE_URL=https://api.eden.art"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up"
+            "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             "NEXT_PUBLIC_DISCORD_CLIENT_ID=1001489981694554243"
             "NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=65edf6c6730ba08c8cfc4b18"
