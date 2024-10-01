@@ -79,6 +79,8 @@ jobs:
             "NEXT_PUBLIC_AWS_CLOUDFRONT_URL=https://dtut5r9j4w7j4.cloudfront.net"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
             "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up"
+            "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
             "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/create"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
           # cache-from: type=local,src=/tmp/.buildx-cache
