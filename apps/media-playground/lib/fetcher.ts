@@ -121,6 +121,8 @@ export const createCursorPaginationRoute = (
   const basePath = baseUrl
   const params: CursorPaginatedFeedQuery = {}
 
+  console.log(query)
+
   if (query.limit) {
     params.limit = query.limit
   }
@@ -229,11 +231,12 @@ export const createCursorPaginationRoute = (
     const [field, value] = Object.entries(filter)[0]
     return `filter=${field};${value}`
   })
-  // console.log(queryStringArray)
+  console.log(queryStringArray)
 
+  console.log(filters)
   const queryString = [...queryStringArray, ...filterStringArray].join('&')
 
-  // console.log(queryString)
+  console.log(queryString)
 
   return queryString ? `${basePath}?${queryString}` : basePath
 }

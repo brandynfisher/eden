@@ -1,13 +1,15 @@
 'use client'
 
 import LoadingIndicator from '@/components/loading-indicator'
+import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import ModelMediaPreview from '@/components/media/model-media-preview'
 import { Skeleton } from '@/components/ui/skeleton'
 import DetailSidebar from '@/features/detail/detail-sidebar'
+import CreationsFeed from '@/features/feed/creations-feed'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
-import React, { Suspense } from 'react'
+import React, { Suspense, useEffect, useRef, useState } from 'react'
 
 type Props = {
   id: string
@@ -16,7 +18,6 @@ type Props = {
 }
 
 const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
-  // const { user } = useAuthState()
   const { model: modelClientData, queryKey } = useModelQuery({
     key: id,
     initialData: modelSSRData
@@ -27,6 +28,37 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
   })
 
   const model = modelSSRData || modelClientData
+
+  const [shouldRenderRecentCreations, setShouldRenderRecentCreations] =
+    useState(false)
+  const observedRef = useRef<HTMLDivElement>(null)
+
+  console.log({ shouldRenderRecentCreations, ref: observedRef.current })
+
+  useEffect(() => {
+    let observer: IntersectionObserver
+
+    if (observedRef.current) {
+      observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              setShouldRenderRecentCreations(true)
+            }
+          })
+        },
+        { threshold: 0.1 },
+      )
+
+      observer.observe(observedRef.current)
+    }
+
+    return () => {
+      if (observer) {
+        observer.disconnect()
+      }
+    }
+  }, [observedRef, model?._id])
 
   return (
     <>
@@ -57,9 +89,29 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
             type={'model'}
             inModal={isModal}
             queryKey={queryKey}
-            // onUpdate={() => invalidate()}
           />
         </Suspense>
+      </div>
+      <div>
+        <div className="px-4 w-full">
+          {model ? (
+            <>
+              <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-16 pb-8 lg:pt-24 lg:pb-12">
+                Recent creations using this model
+              </div>
+              <div
+                ref={observedRef}
+                className="lg:max-w-[80%] 2xl:max-w-[70%] mx-auto pb-12"
+              >
+                {shouldRenderRecentCreations ? (
+                  <Suspense fallback={<MasonrySkeleton />}>
+                    <CreationsFeed query={{ concept: model._id }} maxCols={5} />
+                  </Suspense>
+                ) : null}
+              </div>
+            </>
+          ) : null}
+        </div>
       </div>
     </>
   )

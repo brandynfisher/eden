@@ -248,6 +248,10 @@ const handleArguments = async ({
               return []
             }
 
+            if (field === 'concept') {
+              return ['args.lora', value]
+            }
+
             return [field, new ObjectId(value)]
           }
 
