@@ -1,6 +1,7 @@
 import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
 import TaskActionsMenu from '@/components/button/task-actions-menu'
+import ModelMiniCard from '@/components/card/model-mini-card'
 import LoadingIndicator from '@/components/loading-indicator'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { Button } from '@/components/ui/button'
@@ -18,7 +19,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
-import { BookHeartIcon, ListIcon } from 'lucide-react'
+import { BookHeartIcon, ComponentIcon, ListIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { Suspense, useState } from 'react'
 import { toast } from 'sonner'
@@ -196,6 +197,27 @@ const TimelineItemResultTools = ({
         </div>
         <CollapsibleContent>
           <div className="mt-2">
+            {task.args.lora ? (
+              <div>
+                <div className="font-bold text-sm mb-3">Model</div>
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ModelMiniCard
+                    modelId={task.args.lora}
+                    className="bg-popover"
+                  >
+                    <Button size="sm" variant="outline" asChild>
+                      <Link
+                        href={`/create/image/txt2img?lora=${task.args.lora}`}
+                        className="ml-auto mr-2"
+                      >
+                        <ComponentIcon className="mr-2 h-4 w-4" />
+                        Use
+                      </Link>
+                    </Button>
+                  </ModelMiniCard>
+                </Suspense>
+              </div>
+            ) : null}
             <ParameterTable args={task.args} />
           </div>
         </CollapsibleContent>
