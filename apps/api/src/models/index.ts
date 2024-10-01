@@ -16,6 +16,8 @@ import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
 import { UserMigration, UserMigrationDocument } from './UserMigration'
+import { CollectionV2Document } from './v2/CollectionV2'
+import { CollectionV2 } from './v2/CollectionV2'
 import { CreationV2, CreationV2Document } from './v2/CreationV2'
 import { ModelV2, ModelV2Document } from './v2/ModelV2'
 import { TaskV2, TaskV2Document } from './v2/TaskV2'
@@ -36,6 +38,7 @@ export interface Database {
   ModelV2: Model<ModelV2Document>
   Reaction: Model<ReactionDocument>
   Collection: Model<CollectionDocument>
+  CollectionV2: Model<CollectionV2Document>
   Transaction: Model<TransactionDocument>
   Generator: Model<GeneratorDocument>
   Character: Model<CharacterDocument>
@@ -60,6 +63,7 @@ export const models: Database = {
   ModelV2,
   Reaction,
   Collection,
+  CollectionV2,
   Transaction,
   Generator,
   Character,

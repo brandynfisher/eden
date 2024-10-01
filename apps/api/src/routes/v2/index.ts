@@ -1,3 +1,4 @@
+import collectionRoutesV2 from './collectionRoutesV2'
 import creationRoutesV2 from './creationRoutesV2'
 import creatorRoutesV2 from './creatorRoutesV2'
 import feedRoutesV2 from './feedRoutesV2'
@@ -12,4 +13,5 @@ export const routes = [
   modelRoutesV2,
   creationRoutesV2,
   feedRoutesV2,
+  collectionRoutesV2,
 ]
