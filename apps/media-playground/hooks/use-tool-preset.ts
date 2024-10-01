@@ -1,16 +1,9 @@
-// hooks/useToolPreset.ts
 'use client'
 
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useTaskQuery } from '@/hooks/query/use-task-query'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-// hooks/useToolPreset.ts
-
-// hooks/useToolPreset.ts
-
-// hooks/useToolPreset.ts
 
 type GenericValues = {
   [key: string]: number | string | undefined | boolean | null
@@ -19,7 +12,6 @@ type GenericValues = {
 export const useToolPreset = () => {
   const [presetValues, setPresetValues] = useState<GenericValues | false>(false)
   const queryParams = useSearchParams()
-  const pathname = usePathname()
 
   // Extract query parameters
   const loraParam = queryParams.get('lora')
@@ -109,15 +101,7 @@ export const useToolPreset = () => {
     }
 
     derivePresetValues()
-  }, [
-    pathname,
-    queryParams,
-    loraParam,
-    creationParam,
-    creationData,
-    taskParam,
-    taskData,
-  ])
+  }, [loraParam, creationParam, creationData, taskParam, taskData])
 
   // Determine if any loading is in progress
   const isLoading = isCreationLoading || isTaskLoading

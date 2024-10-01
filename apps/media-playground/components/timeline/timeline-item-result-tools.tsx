@@ -198,25 +198,19 @@ const TimelineItemResultTools = ({
         <CollapsibleContent>
           <div className="mt-2">
             {task.args.lora ? (
-              <div>
-                <div className="font-bold text-sm mb-3">Model</div>
-                <Suspense fallback={<LoadingIndicator />}>
-                  <ModelMiniCard
-                    modelId={task.args.lora}
-                    className="bg-popover"
-                  >
-                    <Button size="sm" variant="outline" asChild>
-                      <Link
-                        href={`/create/image/txt2img?lora=${task.args.lora}`}
-                        className="ml-auto mr-2"
-                      >
-                        <ComponentIcon className="mr-2 h-4 w-4" />
-                        Use
-                      </Link>
-                    </Button>
-                  </ModelMiniCard>
-                </Suspense>
-              </div>
+              <Suspense fallback={<LoadingIndicator />}>
+                <ModelMiniCard modelId={task.args.lora} className="bg-popover">
+                  <Button size="sm" variant="outline" asChild>
+                    <Link
+                      href={`/create/image/txt2img?lora=${task.args.lora}`}
+                      className="ml-auto mr-2"
+                    >
+                      <ComponentIcon className="mr-2 h-4 w-4" />
+                      Use
+                    </Link>
+                  </Button>
+                </ModelMiniCard>
+              </Suspense>
             ) : null}
             <ParameterTable args={task.args} />
           </div>
