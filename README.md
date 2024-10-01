@@ -1,5 +1,26 @@
 # Eden Monorepo
 
+**CONTAINER**
+
+![eden](https://argocd.eden.art/api/badge?name=eden&revision=true 'eden')
+
+**PRODUCTION**
+
+| App      | Status                                                                                                                       |
+|----------|------------------------------------------------------------------------------------------------------------------------------|
+| `Create` | ![media-playground-prod](https://argocd.eden.art/api/badge?name=media-playground-prod&revision=true 'media-playground-prod') |
+| `Garden` | ![eden-garden-prod](https://argocd.eden.art/api/badge?name=eden-garden-prod&revision=true 'eden-garden-prod')                |
+| `API`    | ![eden-api-prod](https://argocd.eden.art/api/badge?name=eden-api-prod&revision=true 'eden-api-prod')                         |
+
+**STAGING**
+
+| App      | Status                                                                                                                        |
+|----------|-------------------------------------------------------------------------------------------------------------------------------|
+| `Create` | ![media-playground-staging](https://argocd.eden.art/api/badge?name=media-playground-stg&revision=true 'media-playground-stg') |
+| `Garden` | ![eden-garden-staging](https://argocd.eden.art/api/badge?name=eden-garden-stg&revision=true 'eden-garden-stg')                |
+| `API`    | ![eden-api-staging](https://argocd.eden.art/api/badge?name=eden-api-stg&revision=true 'eden-api-stg')                         |
+
+
 ## Getting Started
 
 - `yarn install`
