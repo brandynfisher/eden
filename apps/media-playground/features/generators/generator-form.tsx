@@ -28,7 +28,7 @@ type Props = {
 }
 
 const GeneratorForm = ({ generator }: Props) => {
-  const { isSignedIn, verifyAuth } = useAuthState()
+  const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const hasAspectRatioSelector = generator.parameters?.some(
@@ -101,6 +101,8 @@ const GeneratorForm = ({ generator }: Props) => {
         dismissible: true,
         richColors: true,
       })
+
+      await refetchMe()
     } catch (err) {
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message

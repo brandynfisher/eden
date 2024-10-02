@@ -2,14 +2,16 @@
 
 import DiscordIcon from '@/components/icons/discord'
 import { Button } from '@/components/ui/button'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
 import { env } from '@/lib/config'
 import axios from 'axios'
-import React from 'react'
+import { useState } from 'react'
 
 const DiscordAuthButton = () => {
-  const { user, invalidate } = useMe({ isAuthenticated: true })
-  const [isLoading, setIsLoading] = React.useState(false)
+  const { isSignedIn } = useAuthState()
+  const { user, invalidate } = useMe({ isAuthenticated: !!isSignedIn })
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleDiscordConnection = async () => {
     if (user?.discordId) {

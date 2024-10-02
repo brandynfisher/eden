@@ -1,4 +1,5 @@
 // import SearchForm from '@/components/form/search-form'
+import MannaBalance from '@/components/header/manna-balance'
 import HeaderNav from '@/components/navigation/header-nav'
 import MyAccountButton from '@/components/navigation/my-account-button'
 
@@ -8,6 +9,7 @@ const Header = () => {
       <HeaderNav />
       <div className="ml-auto flex items-center gap-1">
         {/*<SearchForm />*/}
+        <MannaBalance />
         <MyAccountButton />
       </div>
     </header>

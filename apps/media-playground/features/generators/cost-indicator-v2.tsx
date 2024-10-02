@@ -6,7 +6,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { useMe } from '@/hooks/use-me'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import { Parser } from 'expr-eval'
@@ -49,8 +48,7 @@ type CostValueProps = {
 }
 
 const CostValue: React.FC<CostValueProps> = ({ formula, parameterNames }) => {
-  const { isSignedIn } = useAuthState()
-  const { balance } = useMe({ isAuthenticated: !!isSignedIn })
+  const { balance } = useAuthState()
   const { watch } = useFormContext()
   const values = watch(parameterNames)
   let cost = 1

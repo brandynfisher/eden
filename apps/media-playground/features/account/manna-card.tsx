@@ -19,18 +19,13 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useProductsQuery } from '@/hooks/query/use-products-query'
-import { useMe } from '@/hooks/use-me'
-import { useAuth } from '@clerk/nextjs'
+import { useAuthState } from '@/hooks/use-auth-state'
 import sortBy from 'lodash/sortBy'
 import React from 'react'
 
 const MannaCard = () => {
-  const { isSignedIn } = useAuth()
+  const { balance, subscriptionBalance, foreverBalance } = useAuthState()
   const { products } = useProductsQuery({})
-
-  const { balance, foreverBalance, subscriptionBalance } = useMe({
-    isAuthenticated: !!isSignedIn,
-  })
 
   return (
     <Card>

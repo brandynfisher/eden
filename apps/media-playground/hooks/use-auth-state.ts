@@ -16,6 +16,7 @@ export function useAuthState() {
     subscriptionBalance,
     hasMinimumSubscriptionTier,
     hasEden2EarlyAccess,
+    invalidate,
   } = useMe({ isAuthenticated: !!isSignedIn })
 
   const verifyAuth = async () => {
@@ -40,5 +41,6 @@ export function useAuthState() {
     hasMinimumSubscriptionTier,
     hasEden2EarlyAccess,
     isSignedIn,
+    refetchMe: invalidate,
   }
 }
