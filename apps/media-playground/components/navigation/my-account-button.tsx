@@ -10,13 +10,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
-import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { ComponentIcon, LogOutIcon, SettingsIcon, UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -100,7 +98,7 @@ const AccountDropdown = () => {
               <span className="ml-1 text-muted-foreground/70">plan</span>
             </div>
             <div className="text-xs">
-              <span>{balance}</span>
+              <span>{(balance || 0).toLocaleString()}</span>
               <span className="ml-1 text-muted-foreground/70">manna</span>
             </div>
           </div>
@@ -168,12 +166,8 @@ const LoginButton = () => {
 }
 
 const MyAccountButton = () => {
-  // @todo: this is a stupid way to enforce the hook to run everywhere
-  const { isSignedIn } = useAuthState()
-
   return (
     <>
-      <VisuallyHidden>isSignedIn: {JSON.stringify(isSignedIn)}</VisuallyHidden>
       <SignedIn>
         <AccountDropdown />
       </SignedIn>

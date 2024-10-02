@@ -51,9 +51,7 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
 const getMediaUrl = (generatorKey: GeneratorV2['key']) => {
   const mediaFileName = toolThumbnails[generatorKey]
 
-  return `https://d14i3advvh2bvd.cloudfront.net/app/${
-    mediaFileName || 'android-chrome-512x512.png'
-  }`
+  return `https://d14i3advvh2bvd.cloudfront.net/app/${mediaFileName}`
 }
 
 const GridSection = ({ generators }: Props) => {
@@ -72,6 +70,7 @@ const GridSection = ({ generators }: Props) => {
                   ? 'train'
                   : `create/${generator.outputType}`
               }/${generator.key}`}
+              isPrivate={generator.private}
             />
           ))}
         </>

@@ -1,12 +1,7 @@
-import TypographyH3 from '@/components/ui/typography/TypographyH3'
+import { redirect } from 'next/navigation'
 
 const SettingsPage = () => {
-  return (
-    <>
-      <TypographyH3>Account</TypographyH3>
-      <div>Account page</div>
-    </>
-  )
+  redirect('/settings/account')
 }
 
 export default SettingsPage

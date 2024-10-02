@@ -27,7 +27,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
         }
       : undefined,
   })
-  console.log({ id, creationClientData, creationSSRData, queryKey })
+  // console.log({ id, creationClientData, creationSSRData, queryKey })
 
   const creation = creationSSRData || creationClientData
 

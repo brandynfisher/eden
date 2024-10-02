@@ -19,18 +19,13 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useProductsQuery } from '@/hooks/query/use-products-query'
-import { useMe } from '@/hooks/use-me'
-import { useAuth } from '@clerk/nextjs'
+import { useAuthState } from '@/hooks/use-auth-state'
 import sortBy from 'lodash/sortBy'
 import React from 'react'
 
 const MannaCard = () => {
-  const { isSignedIn } = useAuth()
+  const { balance, subscriptionBalance, foreverBalance } = useAuthState()
   const { products } = useProductsQuery({})
-
-  const { balance, foreverBalance, subscriptionBalance } = useMe({
-    isAuthenticated: !!isSignedIn,
-  })
 
   return (
     <Card>
@@ -52,17 +47,21 @@ const MannaCard = () => {
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">Non-expiring</TableCell>
-                <TableCell>{foreverBalance || 0} Manna</TableCell>
+                <TableCell>
+                  {(foreverBalance || 0).toLocaleString()} Manna
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Subscription</TableCell>
-                <TableCell>{subscriptionBalance || 0} Manna</TableCell>
+                <TableCell>
+                  {(subscriptionBalance || 0).toLocaleString()} Manna
+                </TableCell>
               </TableRow>
             </TableBody>
             <TableFooter>
               <TableRow>
                 <TableCell>Total</TableCell>
-                <TableCell>{balance || 0} Manna</TableCell>
+                <TableCell>{(balance || 0).toLocaleString()} Manna</TableCell>
               </TableRow>
             </TableFooter>
           </Table>

@@ -1,9 +1,10 @@
 'use client'
 
+import ImageWithFallback from '@/components/media/image-with-fallback'
+import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import customImageLoader from '@/image-loader'
-import Image from 'next/image'
 import Link from 'next/link'
 
 type Props = {
@@ -11,9 +12,16 @@ type Props = {
   description?: string
   image: string
   link: string
+  isPrivate?: boolean
 }
 
-const GeneratorCard = ({ title, image, link, description }: Props) => {
+const GeneratorCard = ({
+  title,
+  image,
+  link,
+  description,
+  isPrivate,
+}: Props) => {
   return (
     <Link prefetch={false} href={link} className="group aspect-square">
       <Card className="relative min-h-64 flex flex-col justify-between overflow-hidden border-0 h-full w-full">
@@ -30,7 +38,7 @@ const GeneratorCard = ({ title, image, link, description }: Props) => {
             }}
           />
         ) : (
-          <Image
+          <ImageWithFallback
             loading={'lazy'}
             loader={customImageLoader}
             src={image}
@@ -47,8 +55,9 @@ const GeneratorCard = ({ title, image, link, description }: Props) => {
         {/*<div className="relative flex flex-col group bg-gradient-to-b from-popover/90 from-10% via-transparent via-15% hover:via-100% hover:to-100% [@media(pointer:coarse)]:via-30% [@media(pointer:coarse)]:to-75% to-transparent flex-grow transition-all">*/}
         <div className="relative flex flex-col group generator-gradient flex-grow transition-all drop-shadow">
           <div className="px-3 py-2">
-            <TypographyH6 className="opacity-75 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-all">
+            <TypographyH6 className="flex items-center justify-between opacity-75 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-all">
               {title}
+              {isPrivate ? <Badge variant="destructive">private</Badge> : null}
             </TypographyH6>
             <div className="text-sm line-clamp-2">{description}</div>
           </div>

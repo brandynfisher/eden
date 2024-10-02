@@ -59,12 +59,7 @@ const ParameterTable = ({ args, className }: Props) => {
   }
 
   return (
-    <Table
-      className={cn([
-        `text-xs flex flex-col md:overflow-hidden md:table h-full`,
-        className,
-      ])}
-    >
+    <Table className={cn([`text-xs table-fixed w-full h-full`, className])}>
       <TableCaption className="mb-2 mt-0 md:mb-1 md:mt-2">
         <div className="flex w-full items-center justify-center gap-1 text-xs">
           <InfoIcon size={12} />
@@ -72,29 +67,27 @@ const ParameterTable = ({ args, className }: Props) => {
         </div>
       </TableCaption>
       <TableHeader className="rounded-t-lg overflow-hidden md:rounded-none md:overflow-auto">
-        <TableRow className="bg-popover/50 block md:table-row">
-          <TableHead className="h-10 py-2 w-full md:w-[100px]">
+        <TableRow className="bg-popover/50">
+          <TableHead className="h-10 py-2 w-1/3 md:w-[150px]">
             Parameter
           </TableHead>
-          <TableHead className="h-10 py-2 hidden md:table-cell">
-            Value
-          </TableHead>
+          <TableHead className="h-10 py-2 w-2/3 md:w-auto">Value</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className="bg-popover/20">
         {Object.entries(args).map(taskArg => (
           <TableRow
             key={taskArg[0]}
-            className="cursor-pointer text-xs flex flex-col md:table-row"
+            className="cursor-pointer text-xs"
             onClick={handleCopyString(
               taskArg[0],
               String(taskArg[1] !== null ? taskArg[1] : ''),
             )}
           >
-            <TableCell className="py-2 text-muted-foreground">
+            <TableCell className="py-2 text-muted-foreground w-1/3 md:w-[150px]">
               {taskArg[0]}
             </TableCell>
-            <TableCell className="pt-0 pb-2 md:py-2 flex gap-2 flex-wrap">
+            <TableCell className="py-2 w-2/3 md:w-auto truncate">
               {imageInputParameterNames.includes(taskArg[0]) ? (
                 <LightboxGallery sizeOnLoad={true}>
                   {(
@@ -135,8 +128,6 @@ const ParameterTable = ({ args, className }: Props) => {
                       />
                     ))}
                 </div>
-              ) : taskArg[0] === 'lora' ? (
-                <></>
               ) : typeof taskArg[1] === 'boolean' ? (
                 taskArg[1] ? (
                   <SquareCheckBigIcon size={16} />

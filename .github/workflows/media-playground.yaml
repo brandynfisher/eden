@@ -71,3 +71,8 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
+      - name: Discord Webhook Trigger
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
