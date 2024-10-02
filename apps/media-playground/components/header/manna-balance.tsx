@@ -8,7 +8,7 @@ const MannaBalance = () => {
   const { balance } = useAuthState()
 
   return (
-    <div className="text-xs flex mr-2">
+    <div className="text-xs flex">
       <CoinsIcon className="mr-1.5 h-4 w-4" />
       <span>{(balance || 0).toLocaleString()}</span>
     </div>
