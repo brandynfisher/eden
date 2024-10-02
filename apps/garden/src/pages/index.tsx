@@ -47,8 +47,8 @@ const highlightItemsConfig =
 const featuredConceptsConfig =
   process.env.NEXT_PUBLIC_APP_ENV === 'production'
     ? [
-        // '657a336d0a0f7257405ad024', // private
-        // '66239eb77249a30fcb4b470a', // private
+        '657a336d0a0f7257405ad024',
+        // '66239eb77249a30fcb4b470a', private
         '650599a8160561d1aff45f9f',
         '6620298d3a1b516798ff0c86',
         '65642f9f730b5e00f6f253df',
