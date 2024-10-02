@@ -100,7 +100,7 @@ const AccountDropdown = () => {
               <span className="ml-1 text-muted-foreground/70">plan</span>
             </div>
             <div className="text-xs">
-              <span>{balance}</span>
+              <span>{(balance || 0).toLocaleString()}</span>
               <span className="ml-1 text-muted-foreground/70">manna</span>
             </div>
           </div>

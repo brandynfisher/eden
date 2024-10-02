@@ -1,3 +1,4 @@
+import { env } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
@@ -31,10 +32,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const publicGenerators = res?.generators?.filter(
-      generator => !generator.private,
-    )
-    return NextResponse.json({ generators: publicGenerators })
+    if (env.NEXT_PUBLIC_APP_ENV === 'production') {
+      const publicGenerators = res?.generators?.filter(
+        generator => !generator.private,
+      )
+      return NextResponse.json({ generators: publicGenerators })
+    }
+
+    return NextResponse.json({ generators: res?.generators })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

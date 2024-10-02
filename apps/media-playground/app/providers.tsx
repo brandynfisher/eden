@@ -20,9 +20,9 @@ export default function Providers({ children }: PropsWithChildren) {
           layout: {
             socialButtonsPlacement: 'bottom',
             socialButtonsVariant: 'iconButton',
-            termsPageUrl: 'https://app.eden.art/terms',
-            privacyPageUrl: 'https://app.eden.art/privacy',
-            helpPageUrl: 'https://app.eden.art/help',
+            termsPageUrl: 'https://docs.eden.art/docs/overview/tos',
+            privacyPageUrl: 'https://docs.eden.art/docs/overview/privacy',
+            helpPageUrl: 'https://docs.eden.art/docs/category/overview',
             logoImageUrl: `${env.NEXT_PUBLIC_HOST}/android-chrome-512x512.png`,
           },
         }}

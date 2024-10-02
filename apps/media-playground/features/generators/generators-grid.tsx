@@ -72,6 +72,7 @@ const GridSection = ({ generators }: Props) => {
                   ? 'train'
                   : `create/${generator.outputType}`
               }/${generator.key}`}
+              isPrivate={generator.private}
             />
           ))}
         </>

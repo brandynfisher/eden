@@ -52,17 +52,21 @@ const MannaCard = () => {
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">Non-expiring</TableCell>
-                <TableCell>{foreverBalance || 0} Manna</TableCell>
+                <TableCell>
+                  {(foreverBalance || 0).toLocaleString()} Manna
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Subscription</TableCell>
-                <TableCell>{subscriptionBalance || 0} Manna</TableCell>
+                <TableCell>
+                  {(subscriptionBalance || 0).toLocaleString()} Manna
+                </TableCell>
               </TableRow>
             </TableBody>
             <TableFooter>
               <TableRow>
                 <TableCell>Total</TableCell>
-                <TableCell>{balance || 0} Manna</TableCell>
+                <TableCell>{(balance || 0).toLocaleString()} Manna</TableCell>
               </TableRow>
             </TableFooter>
           </Table>
