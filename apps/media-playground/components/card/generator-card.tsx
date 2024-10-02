@@ -1,10 +1,10 @@
 'use client'
 
+import ImageWithFallback from '@/components/media/image-with-fallback'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import customImageLoader from '@/image-loader'
-import Image from 'next/image'
 import Link from 'next/link'
 
 type Props = {
@@ -38,7 +38,7 @@ const GeneratorCard = ({
             }}
           />
         ) : (
-          <Image
+          <ImageWithFallback
             loading={'lazy'}
             loader={customImageLoader}
             src={image}

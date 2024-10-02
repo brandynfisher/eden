@@ -85,7 +85,7 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-      - name: Discord Webhook
+      - name: Discord Webhook Trigger
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:

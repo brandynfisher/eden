@@ -30,7 +30,7 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
 
   // images
   'flux-schnell': 'flux-schnell.png',
-  'flux-dev': 'flux.png',
+  'flux-dev': 'flux.pn1g',
   background_removal: 'background_removal_opt.mp4',
   upscaler: 'clarity_upscaler_opt.mp4',
   face_styler: 'face_styler.png',
@@ -51,9 +51,7 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
 const getMediaUrl = (generatorKey: GeneratorV2['key']) => {
   const mediaFileName = toolThumbnails[generatorKey]
 
-  return `https://d14i3advvh2bvd.cloudfront.net/app/${
-    mediaFileName || 'android-chrome-512x512.png'
-  }`
+  return `https://d14i3advvh2bvd.cloudfront.net/app/${mediaFileName}`
 }
 
 const GridSection = ({ generators }: Props) => {
