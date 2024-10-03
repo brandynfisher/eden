@@ -7,10 +7,12 @@ export interface PaymentsCreateArguments extends WebAPICallOptions {
   priceId: string
   paymentMode: 'payment' | 'subscription'
   analyticsClientId?: string
+  returnUrl?: string
 }
 
 export interface PaymentsSubscriptionArguments extends WebAPICallOptions {
   stripeCustomerId: string
+  returnUrl?: string
 }
 
 // Requests

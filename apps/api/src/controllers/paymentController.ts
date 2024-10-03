@@ -539,7 +539,7 @@ export const createCheckoutSession = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { priceId, paymentMode, analyticsClientId } =
+  const { priceId, paymentMode, analyticsClientId, returnUrl } =
     request.body as PaymentsCreateArguments
 
   const user = await User.findById(userId)
@@ -582,8 +582,12 @@ export const createCheckoutSession = async (
     customer_creation,
     customer: user.stripeCustomerId,
     client_reference_id: user.userId,
-    success_url: `${server.config.FRONTEND_URL}/order/success?session_id={CHECKOUT_SESSION_ID}&gacid=${analyticsClientId}`,
-    cancel_url: `${server.config.FRONTEND_URL}/order/cancelled?session_id={CHECKOUT_SESSION_ID}&gacid=${analyticsClientId}`,
+    success_url: `${
+      returnUrl ? returnUrl : server.config.FRONTEND_URL
+    }/order/success?session_id={CHECKOUT_SESSION_ID}&gacid=${analyticsClientId}`,
+    cancel_url: `${
+      returnUrl ? returnUrl : server.config.FRONTEND_URL
+    }/order/cancelled?session_id={CHECKOUT_SESSION_ID}&gacid=${analyticsClientId}`,
     metadata: {
       analyticsClientId: analyticsClientId || '',
     },
@@ -602,7 +606,8 @@ export const createSubscriptionSession = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { stripeCustomerId } = request.body as PaymentsSubscriptionArguments
+  const { stripeCustomerId, returnUrl } =
+    request.body as PaymentsSubscriptionArguments
 
   if (!server.stripe) {
     return reply.status(500).send({
@@ -624,7 +629,7 @@ export const createSubscriptionSession = async (
 
   const session = await server.stripe.billingPortal.sessions.create({
     customer: stripeCustomerId,
-    return_url: `${server.config.FRONTEND_URL}`,
+    return_url: returnUrl ? returnUrl : `${server.config.FRONTEND_URL}`,
   })
 
   return reply.status(200).send({
