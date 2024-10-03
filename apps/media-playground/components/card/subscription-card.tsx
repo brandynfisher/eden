@@ -120,7 +120,7 @@ const SubscriptionCard = ({ product }: { product: Product }) => {
       return
     }
     try {
-      const response = await axios.post('/api/account/subscription', {
+      const response = await axios.post('/api/account/payment', {
         requestType: 'manage',
         stripeCustomerId: customerId,
       })

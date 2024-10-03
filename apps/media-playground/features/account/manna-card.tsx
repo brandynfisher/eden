@@ -69,7 +69,7 @@ const MannaCard = () => {
         <CardHeader className="!pl-0 mt-4">
           <CardTitle>Additional Manna</CardTitle>
           <CardDescription>
-            You can buy additional manna to create your own marketplace.
+            You can buy additional manna refills to create more.
           </CardDescription>
         </CardHeader>
         {!products || !products.length ? (
