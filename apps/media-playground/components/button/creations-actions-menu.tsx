@@ -56,6 +56,7 @@ const CreationActionsContent = ({
   userId,
   isOpen,
 }: ContentProps) => {
+  const { isSignedIn } = useAuthState()
   const { creation: creationResponse } = useCreationQuery({
     key: creation._id,
     initialData: {
@@ -70,7 +71,10 @@ const CreationActionsContent = ({
     <>
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
-          <Link href={`/creations/${creationData._id}`}>
+          <Link
+            className="cursor-pointer"
+            href={`/creations/${creationData._id}`}
+          >
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
             {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
@@ -78,6 +82,7 @@ const CreationActionsContent = ({
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link
+            className="cursor-pointer"
             href={`/create/${creationData.mediaAttributes?.type}/${creationData.workflow}?creation=${creationData._id}`}
           >
             <FileSlidersIcon className="mr-2 h-4 w-4" />
@@ -95,6 +100,21 @@ const CreationActionsContent = ({
               item={creationData}
               queryKey={queryKey}
             />
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DeleteActionItem
+              type="creation"
+              item={creationData}
+              queryKey={queryKey}
+            />
+          </DropdownMenuGroup>
+        </>
+      )}
+      {isSignedIn ? (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
             <DownloadActionItem
               type="creation"
               originalFileUrl={creationData.url || ''}
@@ -108,16 +128,8 @@ const CreationActionsContent = ({
               }_${creationData._id}`}
             />
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DeleteActionItem
-              type="creation"
-              item={creationData}
-              queryKey={queryKey}
-            />
-          </DropdownMenuGroup>
         </>
-      )}
+      ) : null}
     </>
   )
 }

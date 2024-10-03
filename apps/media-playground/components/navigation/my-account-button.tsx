@@ -15,7 +15,13 @@ import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
-import { ComponentIcon, LogOutIcon, SettingsIcon, UserIcon } from 'lucide-react'
+import {
+  ComponentIcon,
+  CreditCardIcon,
+  LogOutIcon,
+  SettingsIcon,
+  UserIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
@@ -85,8 +91,11 @@ const AccountDropdown = () => {
           </Link>
           {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <div className="flex items-center justify-between w-full">
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link
+            href={'/settings/subscription'}
+            className="flex items-center justify-between w-full"
+          >
             <div className="capitalize text-xs">
               <span>
                 {
@@ -101,7 +110,7 @@ const AccountDropdown = () => {
               <span>{(balance || 0).toLocaleString()}</span>
               <span className="ml-1 text-muted-foreground/70">manna</span>
             </div>
-          </div>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
@@ -131,13 +140,12 @@ const AccountDropdown = () => {
             <span>Settings</span>
           </Link>
         </DropdownMenuItem>
-        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
-        {/*  <Link href={`/settings/subscription`}>*/}
-        {/*    <CreditCardIcon className="mr-2 h-4 w-4" />*/}
-        {/*    <span>Subscription</span>*/}
-        {/*    /!*<DropdownMenuShortcut>⇧⌘S</DropdownMenuShortcut>*!/*/}
-        {/*  </Link>*/}
-        {/*</DropdownMenuItem>*/}
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/settings/subscription`}>
+            <CreditCardIcon className="mr-2 h-4 w-4" />
+            <span>Subscription</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>

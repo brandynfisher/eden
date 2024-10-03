@@ -59,7 +59,7 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
   const fileObjURL = URL.createObjectURL(file)
   const fileMetadata = await getUploadedMediaMetadata(file, fileObjURL)
 
-  console.log(fileMetadata)
+  // console.log(fileMetadata)
 
   const fileWithExtra = Object.assign(file, {
     fileUrl: signedUrl.split('?')[0],
