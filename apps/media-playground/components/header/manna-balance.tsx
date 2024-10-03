@@ -37,9 +37,9 @@ const MannaBalance = () => {
       </PopoverTrigger>
       <PopoverContent
         collisionPadding={16}
-        className="text-xs flex flex-col p-0 left-4"
+        className="text-xs flex flex-col p-0"
       >
-        <div className="p-2 text-sm text-accent-foreground flex w-full justify-between bg-accent/70 py-2 mt-0 caption-top border border-t-0 border-l-0 border-r-0 border-b-secondary overflow-hidden rounded-t-md">
+        <div className="px-3 py-2 text-sm text-accent-foreground flex w-full justify-between bg-accent/70 mt-0 caption-top border border-t-0 border-l-0 border-r-0 border-b-secondary overflow-hidden rounded-t-md">
           Manna Balance
           <Link className="text-sm underline" href={'/settings/subscription'}>
             Get more!

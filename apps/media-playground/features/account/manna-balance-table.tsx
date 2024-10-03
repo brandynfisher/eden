@@ -22,28 +22,28 @@ const MannaBalanceTable = ({
     <Table className="p-0">
       <TableBody>
         <TableRow>
-          <TableCell className="p-2 text-sm text-muted-foreground">
+          <TableCell className="px-3 py-2 text-sm text-muted-foreground">
             Non-expiring
           </TableCell>
-          <TableCell className="p-2 text-xs font-mono">
+          <TableCell className="px-3 py-2 text-xs font-mono">
             {(foreverBalance || 0).toLocaleString()}
           </TableCell>
         </TableRow>
         <TableRow>
-          <TableCell className="p-2 text-sm text-muted-foreground">
+          <TableCell className="px-3 py-2 text-sm text-muted-foreground">
             Subscription
           </TableCell>
-          <TableCell className="p-2 text-xs font-mono">
+          <TableCell className="px-3 py-2 text-xs font-mono">
             {(subscriptionBalance || 0).toLocaleString()}
           </TableCell>
         </TableRow>
       </TableBody>
       <TableFooter>
         <TableRow>
-          <TableCell className="p-2 text-sm text-muted-foreground">
+          <TableCell className="px-3 py-2 text-sm text-muted-foreground">
             Total
           </TableCell>
-          <TableCell className="p-2 text-xs font-mono font-bold">
+          <TableCell className="px-3 py-2 text-xs font-mono font-bold">
             {(totalBalance || 0).toLocaleString()}
           </TableCell>
         </TableRow>
