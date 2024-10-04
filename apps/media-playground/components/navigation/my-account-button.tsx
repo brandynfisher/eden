@@ -1,5 +1,7 @@
 'use client'
 
+import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
+import DialogMenuItem from '@/components/modal/dialog-menu-item'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,12 +22,13 @@ import {
   CreditCardIcon,
   LogOutIcon,
   SettingsIcon,
+  TicketIcon,
   UserIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
-import { forwardRef } from 'react'
+import { forwardRef, useRef, useState } from 'react'
 
 const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
   ({ ...rest }, ref) => (
@@ -35,6 +38,7 @@ const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
   ),
 )
 ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
+
 const AccountDropdown = () => {
   const router = useRouter()
   const { isSignedIn } = useAuth()
@@ -49,10 +53,27 @@ const AccountDropdown = () => {
     router.push('/sign-in')
   }
 
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [hasOpenDialog, setHasOpenDialog] = useState(false)
+  const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const focusRef = useRef<HTMLButtonElement | null>(null)
+
+  function handleDialogItemSelect() {
+    focusRef.current = dropdownTriggerRef.current
+  }
+
+  function handleDialogItemOpenChange(open: boolean) {
+    setHasOpenDialog(open)
+    if (!open) {
+      setDropdownOpen(false)
+    }
+  }
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button
+          ref={dropdownTriggerRef}
           className="rounded-full group relative z-10 shadow-[0_0px_2px_0_#030712,0_0px_1px_-1px_#030712]"
           size="icon"
           variant="secondary"
@@ -65,9 +86,18 @@ const AccountDropdown = () => {
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60">
-        {/*<DropdownMenuLabel>My Account</DropdownMenuLabel>*/}
-        {/*<DropdownMenuSeparator />*/}
+      <DropdownMenuContent
+        align="end"
+        className="w-60"
+        hidden={hasOpenDialog}
+        onCloseAutoFocus={event => {
+          if (focusRef.current) {
+            (focusRef.current as HTMLButtonElement).focus()
+            focusRef.current = null
+            event.preventDefault()
+          }
+        }}
+      >
         <DropdownMenuItem className="cursor-pointer group" asChild>
           <Link
             href={`/creators/${user?.username}`}
@@ -146,6 +176,19 @@ const AccountDropdown = () => {
             <span>Subscription</span>
           </Link>
         </DropdownMenuItem>
+        <DialogMenuItem
+          onSelect={handleDialogItemSelect}
+          onOpenChange={handleDialogItemOpenChange}
+          triggerChildren={
+            <>
+              <TicketIcon className="mr-2 h-4 w-4" />
+              <span>Redeem Voucher</span>
+            </>
+          }
+        >
+          <RedeemVoucherForm />
+        </DialogMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
