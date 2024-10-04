@@ -31,7 +31,9 @@ const MannaCard = () => {
     <Card>
       <CardHeader>
         <CardTitle>Manna</CardTitle>
-        <CardDescription>Credits for creating on Eden</CardDescription>
+        <CardDescription>
+          You can use this to create your own marketplace.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {balance && (

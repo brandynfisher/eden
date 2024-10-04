@@ -17,8 +17,8 @@ import { PropsWithChildren, ReactNode, Suspense, useRef } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
-  title?: ReactNode
-  description?: ReactNode
+  title?: string
+  description?: string
   className?: string
   trigger?: ReactNode
   currentValue: string
@@ -31,7 +31,7 @@ const ModelSelectorModal = ({
   className,
   onChange,
 }: Props) => {
-  const triggerRef = useRef<HTMLButtonElement | undefined>()
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   const handleOnChange = (model: ModelV2) => {
     onChange(model._id)
