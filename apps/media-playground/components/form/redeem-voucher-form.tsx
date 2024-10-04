@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import {
   Form,
   FormControl,
@@ -11,7 +12,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { useMe } from '@/hooks/use-me'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { useRouter } from 'next/navigation'
@@ -25,10 +25,7 @@ const formSchema = z.object({
 })
 
 const RedeemVoucherForm = () => {
-  const { isSignedIn } = useAuthState()
-  const { invalidate: invalidateUseMeQuery } = useMe({
-    isAuthenticated: !!isSignedIn,
-  })
+  const { refetchMe } = useAuthState()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
@@ -59,7 +56,7 @@ const RedeemVoucherForm = () => {
         richColors: true,
       })
 
-      await invalidateUseMeQuery()
+      await refetchMe()
 
       router.push('/create')
     } catch (err) {
@@ -79,41 +76,46 @@ const RedeemVoucherForm = () => {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="code"
-          render={({ field }) => (
-            <FormItem className=" flex flex-col items-center">
-              <FormLabel className="inline-flex items-center h-10 px-4 py-2">
-                Redeem Early Access Code
-              </FormLabel>
-              <FormControl className="!mt-0">
-                <div className="flex gap-2 items-center">
-                  <Input placeholder="Code" {...field} />
-                  <Button
-                    onClick={
-                      !isSubmitting ? form.handleSubmit(onSubmit) : undefined
-                    }
-                    disabled={isSubmitting}
-                    className="!mt-0"
-                    type="submit"
-                    variant="outline"
-                  >
-                    Submit
-                  </Button>
-                </div>
-              </FormControl>
-              {/*<FormDescription>*/}
-              {/*  Your Early Access Token*/}
-              {/*</FormDescription>*/}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
+    <>
+      <DialogTitle>Redeem Voucher</DialogTitle>
+      <DialogDescription>
+        Here you can claim different vouchers that grant free manna, allowing
+        access to special features or previews.
+      </DialogDescription>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem className=" flex flex-col w-full">
+                <FormLabel className="py-2">Voucher Code</FormLabel>
+                <FormControl className="!mt-0">
+                  <div className="flex gap-2 items-center">
+                    <Input placeholder="Code" {...field} />
+                    <Button
+                      onClick={
+                        !isSubmitting ? form.handleSubmit(onSubmit) : undefined
+                      }
+                      disabled={isSubmitting}
+                      className="!mt-0"
+                      type="submit"
+                      variant="outline"
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </FormControl>
+                {/*<FormDescription>*/}
+                {/*  Your Early Access Token*/}
+                {/*</FormDescription>*/}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    </>
   )
 }
 
