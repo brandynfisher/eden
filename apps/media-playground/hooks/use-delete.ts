@@ -1,11 +1,11 @@
 import { useDeleteMutation } from '@/hooks/use-delete-mutation'
 import { capitalize } from '@/lib/strings'
-import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { CollectionV2, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 
 type DeleteProps = {
-  type: 'creation' | 'model'
-  item: ModelV2 | CreationV2
+  type: 'creation' | 'model' | 'collection'
+  item: ModelV2 | CreationV2 | CollectionV2
   queryKey: QueryKey
 }
 

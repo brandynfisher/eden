@@ -11,6 +11,7 @@ import { CursorPaginatedFeedQuery } from '../Feed'
 import { CreationV2 } from './CreationsV2'
 import { ModelV2 } from './ModelsV2'
 import { AxiosRequestConfig } from 'axios'
+import { CollectionV2 } from 'src/models/v2/CollectionsV2'
 
 // Arguments
 
@@ -29,6 +30,7 @@ export interface FeedCreationsV2BaseArguments extends WebAPICallOptions {
   orderBy?: string
   direction?: 1 | -1
 }
+
 //
 // interface FeedConceptsV2BaseArguments extends WebAPICallOptions {
 //   userId?: string | string[]
@@ -56,6 +58,14 @@ export interface FeedCreationsV2BaseArguments extends WebAPICallOptions {
 
 export interface FeedCreationsV2CursorArguments
   extends CursorPaginatedFeedQuery {}
+
+export interface FeedCollectionsV2CursorArguments
+  extends CursorPaginatedFeedQuery {
+  user?: string
+  name?: string
+  orderBy?: string
+  direction?: 1 | -1
+}
 
 // export interface FeedConceptsCursorArguments
 //   extends FeedCreationsV2Arguments,
@@ -91,6 +101,17 @@ export const feedCursorCreationsV2RequestConfig = (
   return {
     method: 'GET',
     url: 'v2/feed-cursor/creations',
+    params,
+  }
+}
+
+export const feedCursorCollectionsV2RequestConfig = (
+  args: FeedCollectionsV2CursorArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'v2/feed-cursor/collections',
     params,
   }
 }
@@ -157,6 +178,12 @@ export type FeedCreationsV2Response = WebAPICallResult &
       [creationId: string]: boolean
     }
   }
+
+export type FeedCollectionsV2CursorResponse = WebAPICallResult &
+  PaginatedCursorResponse<CollectionV2> & {
+    error?: string
+  }
+
 //
 // export type FeedConceptsResponse = WebAPICallResult &
 //   PaginatedResponse<Concept> & {

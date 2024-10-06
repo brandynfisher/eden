@@ -9,6 +9,9 @@ import {
 } from '@/lib/mutations/guards'
 import { capitalize } from '@/lib/strings'
 import {
+  CollectionV2,
+  CollectionsV2DeleteResponse,
+  CollectionsV2UpdateResponse,
   CreationV2,
   CreationsV2PatchResponse,
   FeedV2CursorResponse,
@@ -28,11 +31,12 @@ import { toast } from 'sonner'
 type PreviousData =
   | InfiniteData<TasksV2ListResponse | FeedV2CursorResponse>
   | CreationV2
+  | CollectionV2
   | ModelV2
   | undefined
 
 type MutationOptions = {
-  type: 'creation' | 'model'
+  type: 'creation' | 'model' | 'collection'
   queryKey: QueryKey
   onSuccessMessage?: string
 }
@@ -45,7 +49,9 @@ export function useDeleteMutation({
   const queryClient = useQueryClient()
 
   return useMutation<
-    ModelsV2PatchResponse | CreationsV2PatchResponse,
+    | ModelsV2PatchResponse
+    | CreationsV2PatchResponse
+    | CollectionsV2UpdateResponse,
     Error,
     { ids: string[]; deleted: boolean },
     { previousData: PreviousData }
@@ -60,9 +66,11 @@ export function useDeleteMutation({
           : { [`${type}Ids`]: ids, deleted: true }
 
       const response = await fetcher<
-        ModelsV2PatchResponse | CreationsV2PatchResponse
+        | ModelsV2PatchResponse
+        | CreationsV2PatchResponse
+        | CollectionsV2DeleteResponse
       >(endpoint, {
-        method: 'PATCH',
+        method: type === 'collection' ? 'DELETE' : 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },

@@ -1,6 +1,7 @@
 'use client'
 
 import RouterTabs from '@/components/tabs/router-tabs'
+import CollectionsFeed from '@/features/feed/collections-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
@@ -31,11 +32,13 @@ const ProfileTabs = () => {
         <ModelsFeed query={{ user: creator._id }} minCols={1} maxCols={4} />
       ) : null,
     },
-    // {
-    //   key: 'collections',
-    //   title: 'Collections',
-    //   content: <div>collections</div>,
-    // },
+    {
+      key: 'collections',
+      title: 'Collections',
+      content: creator ? (
+        <CollectionsFeed query={{ user: creator._id }} />
+      ) : null,
+    },
   ]
 
   return <RouterTabs tabs={tabs} />

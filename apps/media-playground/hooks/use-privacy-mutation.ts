@@ -3,12 +3,12 @@ import {
   isCreationData,
   isInfiniteData,
   isModelData,
-  isModelsV2PatchResponse,
   isTaskV2,
   isTasksV2ListResponse,
 } from '@/lib/mutations/guards'
 import { capitalize } from '@/lib/strings'
 import {
+  CollectionsV2UpdateResponse,
   CreationV2,
   CreationsV2PatchResponse,
   FeedV2CursorResponse,
@@ -32,7 +32,7 @@ type PreviousData =
   | undefined
 
 type MutationOptions = {
-  type: 'creation' | 'model'
+  type: 'creation' | 'model' | 'collection'
   queryKey: QueryKey
   onSuccessMessage?: string
 }
@@ -45,7 +45,9 @@ export function usePrivacyMutation({
   const queryClient = useQueryClient()
 
   return useMutation<
-    ModelsV2PatchResponse | CreationsV2PatchResponse,
+    | ModelsV2PatchResponse
+    | CreationsV2PatchResponse
+    | CollectionsV2UpdateResponse,
     Error,
     { ids: string[]; public: boolean },
     { previousData: PreviousData }
@@ -168,15 +170,18 @@ export function usePrivacyMutation({
         richColors: true,
       })
     },
-    onSuccess: (response: ModelsV2PatchResponse | CreationsV2PatchResponse) => {
-      const newStatus = isModelsV2PatchResponse(response)
-        ? response.model?.public
-        : (response as CreationsV2PatchResponse).creation?.public
+    onSuccess: (
+      response: ModelsV2PatchResponse | CreationsV2PatchResponse,
+      variables,
+    ) => {
+      // const newStatus = isModelsV2PatchResponse(response)
+      //   ? response.model?.public
+      //   : (response as CreationsV2PatchResponse).creation?.public
       const message = onSuccessMessage
         ? onSuccessMessage
         : `${capitalize(type)} updated`
       toast.success(message, {
-        description: `Set to ${newStatus ? 'public' : 'private'}`,
+        description: `Set to ${variables.public ? 'public' : 'private'}`,
         dismissible: true,
         richColors: true,
       })

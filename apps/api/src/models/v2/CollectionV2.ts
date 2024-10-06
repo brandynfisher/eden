@@ -9,6 +9,7 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 
 export interface CollectionV2Schema {
+  _id: string
   user: UserDocument
   name: string
   description?: string

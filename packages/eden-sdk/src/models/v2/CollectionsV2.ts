@@ -11,6 +11,7 @@ import {
 
 // Types
 export type CollectionV2 = {
+  _id: string
   user: Creator
   name: string
   description?: string

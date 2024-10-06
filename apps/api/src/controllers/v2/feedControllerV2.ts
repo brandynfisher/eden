@@ -1,6 +1,7 @@
 import { getSimilarCreationIds } from '../../lib/similar'
 import { Collection } from '../../models/Collection'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
+import { CollectionV2 } from '../../models/v2/CollectionV2'
 import { CreationV2 } from '../../models/v2/CreationV2'
 import { ModelV2 } from '../../models/v2/ModelV2'
 import { CursorPaginatedFeedQuery, ReactionType } from '@edenlabs/eden-sdk'
@@ -492,6 +493,26 @@ const userLookup: PipelineStage[] = [
   { $unwind: '$user' },
 ]
 
+const creationLookup: PipelineStage[] = [
+  {
+    $lookup: {
+      from: 'creations2',
+      localField: 'coverCreation',
+      foreignField: '_id',
+      as: 'coverCreation',
+      pipeline: [
+        {
+          $project: {
+            _id: 1,
+            thumbnail: 1,
+          },
+        },
+      ],
+    },
+  },
+  { $unwind: '$coverCreation' },
+]
+
 export const getCreationsFeedCursorV2 = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -668,6 +689,103 @@ export const getModelsFeedCursorV2 = async (
   console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await ModelV2.aggregate(feedPipeline)
+
+  const feed: FeedResponse = {
+    docs: results,
+    reactions: [],
+    bookmarks: [],
+  }
+
+  try {
+    feed.nextCursor =
+      results && results.length && results[results.length - 1]._id
+
+    if (customFilterOptions.praiseCount) {
+      feed.nextValue =
+        results && results.length && results[results.length - 1].praiseCount
+    }
+
+    reply.send(feed)
+  } catch (error) {
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+}
+
+export const getCollectionsFeedCursorV2 = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { query } = request
+  const { userId: authUserId } = request.user || {}
+
+  const {
+    filters,
+    sortOptions,
+    customFilterOptions,
+    // filterMap,
+    // preAggregateFilterOptions,
+    // useReactionsPreAggregate,
+    // useEmbeddingsPreAggregate,
+    // useCollectionsPreAggregate,
+    // useFollowingPreAggregate,
+  } = await handleArguments({
+    server,
+    reply,
+    authUserId,
+    query: query as CursorPaginatedFeedQuery,
+  })
+
+  const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
+
+  let results = []
+  const lateLookupStages = [...userLookup, ...creationLookup]
+
+  const pipeline = await createPipeline({
+    limit: limit ?? 100,
+    sortOptions: { ...sortOptions, _id: -1 },
+    sortCursor:
+      customFilterOptions.praiseCount && nextValue !== undefined
+        ? { praiseCount: { $lte: nextValue } }
+        : undefined,
+    cursor,
+  })
+
+  // const hoursAgo = 360
+  // currentDate.setMinutes(0, 0, 0)
+  // const minDateDefault = new Date(currentDate)
+  // minDateDefault.setHours(currentDate.getHours() - hoursAgo)
+  // minDateDefault.setMinutes(0, 0, 0)
+  // const maxDate = filterMap
+  //   ? filterMap.filter(item => item.name === 'maxDate')[0]
+  //   : undefined
+  // const minDate = filterMap
+  //   ? filterMap.filter(item => item.name === 'minDate')[0]
+  //   : undefined
+  // const embeddingsFilter = {
+  //   ...filters,
+  //   createdAt: {
+  //     $gte: minDate ? minDate.value : minDateDefault,
+  //     $lte: maxDate ? maxDate?.value : undefined,
+  //   },
+  //   'embedding.score': {
+  //     $exists: true,
+  //   },
+  // }
+
+  // let embeddingsTransform: PipelineStage[] = []
+  const feedPipeline = [
+    // @ts-ignore
+    // { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
+    { $match: filters },
+    //   ...embeddingsTransform,
+    ...pipeline,
+    ...lateLookupStages,
+  ].filter(Boolean)
+
+  console.log(JSON.stringify(feedPipeline, null, 2))
+
+  results = await CollectionV2.aggregate(feedPipeline)
 
   const feed: FeedResponse = {
     docs: results,

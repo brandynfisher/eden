@@ -1,4 +1,4 @@
-import { CreationV2, ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
+import { CollectionV2, CreationV2, ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
 
 export type GenericDocumentType = {
   _id: string
@@ -8,7 +8,7 @@ export interface IEntity {
   _id: string
 }
 
-export type RowItem = CreationV2 | ModelV2 | TaskV2
+export type RowItem = CreationV2 | ModelV2 | TaskV2 | CollectionV2
 
 export type PageData<PageType> = {
   pageParams: number[]

@@ -1,4 +1,5 @@
 import {
+  getCollectionsFeedCursorV2,
   getCreationsFeedCursorV2,
   getModelsFeedCursorV2,
 } from '../../controllers/v2/feedControllerV2'
@@ -57,6 +58,32 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [request => maybeAuthEden2(server, request)],
     handler: (request, reply) => getModelsFeedCursorV2(server, request, reply),
+  })
+
+  server.get('/v2/feed-cursor/collections', {
+    schema: {
+      tags: ['Feed'],
+      description: 'Get collections feed',
+      hide: true,
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      querystring: {
+        type: 'object',
+        properties: {
+          ...cursorPaginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: cursorPaginatedResponse(Type.Any()),
+      },
+    },
+    preHandler: [request => maybeAuthEden2(server, request)],
+    handler: (request, reply) =>
+      getCollectionsFeedCursorV2(server, request, reply),
   })
 }
 

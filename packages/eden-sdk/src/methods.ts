@@ -196,6 +196,10 @@ import {
   tasksListRequestConfig,
 } from './models'
 import {
+  CollectionsV2DeleteArguments,
+  CollectionsV2DeleteResponse,
+  CollectionsV2UpdateArguments,
+  CollectionsV2UpdateResponse,
   CreationsV2BulkPatchArguments,
   CreationsV2BulkPatchResponse,
   CreationsV2GetArguments,
@@ -222,6 +226,8 @@ import {
   TasksV2ListResponse,
   TasksV2PublishArguments,
   TasksV2PublishResponse,
+  collectionsV2DeleteRequestConfig,
+  collectionsV2UpdateRequestConfig,
   creationsV2BulkPatchRequestConfig,
   creationsV2GetRequestConfig,
   creationsV2PatchRequestConfig,
@@ -397,6 +403,14 @@ export abstract class Methods {
         CollectionsRemoveCreationsResponse
       >(this, collectionsRemoveCreationsRequestConfig),
     },
+    updateV2: bindApiCall<
+      CollectionsV2UpdateArguments,
+      CollectionsV2UpdateResponse
+    >(this, collectionsV2UpdateRequestConfig),
+    deleteV2: bindApiCall<
+      CollectionsV2DeleteArguments,
+      CollectionsV2DeleteResponse
+    >(this, collectionsV2DeleteRequestConfig),
   }
 
   public readonly concepts = {
