@@ -17,13 +17,13 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: {
         priceId: Type.String(),
         paymentMode: Type.String(),
         analyticsClientId: Type.Optional(Type.String()),
+        returnUrl: Type.Optional(Type.String()),
       },
       response: {
         200: Type.Object({
@@ -65,7 +65,6 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       response: {
@@ -86,11 +85,11 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       security: [
         {
           apiKey: [],
-          // apiSecret: [],
         },
       ],
       body: {
         stripeCustomerId: Type.String(),
+        returnUrl: Type.Optional(Type.String()),
       },
       response: {
         200: Type.Object({

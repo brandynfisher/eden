@@ -1,6 +1,7 @@
 'use client'
 
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
@@ -27,7 +28,7 @@ type Props = {
 }
 
 const GeneratorForm = ({ generator }: Props) => {
-  const { isSignedIn, verifyAuth } = useAuthState()
+  const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const hasAspectRatioSelector = generator.parameters?.some(
@@ -100,6 +101,8 @@ const GeneratorForm = ({ generator }: Props) => {
         dismissible: true,
         richColors: true,
       })
+
+      await refetchMe()
     } catch (err) {
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
@@ -145,7 +148,12 @@ const GeneratorForm = ({ generator }: Props) => {
     >
       <Form {...form}>
         <form className="w-full">
-          <TypographyH4 className="mb-2">{generator.name}</TypographyH4>
+          <TypographyH4 className="mb-2 flex items-center justify-between">
+            {generator.name}
+            {generator.private ? (
+              <Badge variant="destructive">private</Badge>
+            ) : null}
+          </TypographyH4>
           <div
             data-test-id="generator-form-settings-required"
             className="flex flex-col gap-2"

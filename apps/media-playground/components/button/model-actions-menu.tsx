@@ -62,7 +62,7 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
     <>
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
-          <Link href={`/models/${modelData._id}`}>
+          <Link className="cursor-pointer" href={`/models/${modelData._id}`}>
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
             {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
@@ -76,7 +76,10 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
         {/*  </Link>*/}
         {/*</DropdownMenuItem>*/}
         <DropdownMenuItem asChild>
-          <Link href={`/create/image/txt2img?lora=${model._id}`}>
+          <Link
+            className="cursor-pointer"
+            href={`/create/image/txt2img?lora=${model._id}`}
+          >
             <ComponentIcon className="mr-2 h-4 w-4" />
             Use Model
             {/*<DropdownMenuShortcut>⇧⌘M</DropdownMenuShortcut>*/}
@@ -93,11 +96,6 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
               queryKey={queryKey}
               // onUpdate={onUpdate || refetchModel}
             />
-            <DownloadActionItem
-              type="model"
-              originalFileUrl={modelData.checkpoint}
-              saveAsFileName={modelData.slug.replaceAll('/', '_')}
-            />
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -105,6 +103,14 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
               type="model"
               item={modelData}
               queryKey={queryKey}
+            />
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DownloadActionItem
+              type="model"
+              originalFileUrl={modelData.checkpoint}
+              saveAsFileName={modelData.slug.replaceAll('/', '_')}
             />
           </DropdownMenuGroup>
         </>

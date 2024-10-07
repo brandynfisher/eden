@@ -17,12 +17,17 @@ const checkout = async (
   const response = await eden.payments.create({
     priceId,
     paymentMode,
+    returnUrl: env.NEXT_PUBLIC_HOST,
   })
 
   return NextResponse.json({ url: response.url }, { status: 200 })
 }
 
-const manage = async (authToken: string, stripeCustomerId: string) => {
+const manage = async (
+  authToken: string,
+  stripeCustomerId: string,
+  returnUrl?: string,
+) => {
   const eden = new EdenClient({
     edenApiUrl: env.NEXT_PUBLIC_EDEN_API_URL,
     token: authToken,
@@ -30,6 +35,7 @@ const manage = async (authToken: string, stripeCustomerId: string) => {
 
   const response = await eden.payments.subscription({
     stripeCustomerId,
+    returnUrl,
   })
 
   return NextResponse.json({ url: response.url }, { status: 200 })
@@ -39,7 +45,7 @@ export async function POST(req: NextRequest) {
   const { getToken } = getAuth(req)
   const authToken = await getToken()
 
-  const { requestType, ...body } = await req.json()
+  const { requestType, returnUrl, ...body } = await req.json()
 
   if (!authToken) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -50,7 +56,7 @@ export async function POST(req: NextRequest) {
       case 'checkout':
         return checkout(authToken, body.priceId, body.paymentMode)
       case 'manage':
-        return manage(authToken, body.stripeCustomerId)
+        return manage(authToken, body.stripeCustomerId, returnUrl)
     }
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)

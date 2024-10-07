@@ -1,5 +1,7 @@
 'use client'
 
+import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
+import DialogMenuItem from '@/components/modal/dialog-menu-item'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,18 +12,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
-import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { ComponentIcon, LogOutIcon, SettingsIcon, UserIcon } from 'lucide-react'
+import {
+  ComponentIcon,
+  CreditCardIcon,
+  LogOutIcon,
+  SettingsIcon,
+  TicketIcon,
+  UserIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
-import { forwardRef } from 'react'
+import { forwardRef, useRef, useState } from 'react'
 
 const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
   ({ ...rest }, ref) => (
@@ -31,6 +38,7 @@ const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
   ),
 )
 ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
+
 const AccountDropdown = () => {
   const router = useRouter()
   const { isSignedIn } = useAuth()
@@ -45,10 +53,27 @@ const AccountDropdown = () => {
     router.push('/sign-in')
   }
 
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [hasOpenDialog, setHasOpenDialog] = useState(false)
+  const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const focusRef = useRef<HTMLButtonElement | null>(null)
+
+  function handleDialogItemSelect() {
+    focusRef.current = dropdownTriggerRef.current
+  }
+
+  function handleDialogItemOpenChange(open: boolean) {
+    setHasOpenDialog(open)
+    if (!open) {
+      setDropdownOpen(false)
+    }
+  }
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button
+          ref={dropdownTriggerRef}
           className="rounded-full group relative z-10 shadow-[0_0px_2px_0_#030712,0_0px_1px_-1px_#030712]"
           size="icon"
           variant="secondary"
@@ -61,9 +86,18 @@ const AccountDropdown = () => {
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60">
-        {/*<DropdownMenuLabel>My Account</DropdownMenuLabel>*/}
-        {/*<DropdownMenuSeparator />*/}
+      <DropdownMenuContent
+        align="end"
+        className="w-60"
+        hidden={hasOpenDialog}
+        onCloseAutoFocus={event => {
+          if (focusRef.current) {
+            (focusRef.current as HTMLButtonElement).focus()
+            focusRef.current = null
+            event.preventDefault()
+          }
+        }}
+      >
         <DropdownMenuItem className="cursor-pointer group" asChild>
           <Link
             href={`/creators/${user?.username}`}
@@ -87,8 +121,11 @@ const AccountDropdown = () => {
           </Link>
           {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <div className="flex items-center justify-between w-full">
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link
+            href={'/settings/subscription'}
+            className="flex items-center justify-between w-full"
+          >
             <div className="capitalize text-xs">
               <span>
                 {
@@ -100,10 +137,10 @@ const AccountDropdown = () => {
               <span className="ml-1 text-muted-foreground/70">plan</span>
             </div>
             <div className="text-xs">
-              <span>{balance}</span>
+              <span>{(balance || 0).toLocaleString()}</span>
               <span className="ml-1 text-muted-foreground/70">manna</span>
             </div>
-          </div>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
@@ -133,13 +170,25 @@ const AccountDropdown = () => {
             <span>Settings</span>
           </Link>
         </DropdownMenuItem>
-        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
-        {/*  <Link href={`/settings/subscription`}>*/}
-        {/*    <CreditCardIcon className="mr-2 h-4 w-4" />*/}
-        {/*    <span>Subscription</span>*/}
-        {/*    /!*<DropdownMenuShortcut>⇧⌘S</DropdownMenuShortcut>*!/*/}
-        {/*  </Link>*/}
-        {/*</DropdownMenuItem>*/}
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/settings/subscription`}>
+            <CreditCardIcon className="mr-2 h-4 w-4" />
+            <span>Subscription</span>
+          </Link>
+        </DropdownMenuItem>
+        <DialogMenuItem
+          onSelect={handleDialogItemSelect}
+          onOpenChange={handleDialogItemOpenChange}
+          triggerChildren={
+            <>
+              <TicketIcon className="mr-2 h-4 w-4" />
+              <span>Redeem Voucher</span>
+            </>
+          }
+        >
+          <RedeemVoucherForm />
+        </DialogMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
@@ -168,12 +217,8 @@ const LoginButton = () => {
 }
 
 const MyAccountButton = () => {
-  // @todo: this is a stupid way to enforce the hook to run everywhere
-  const { isSignedIn } = useAuthState()
-
   return (
     <>
-      <VisuallyHidden>isSignedIn: {JSON.stringify(isSignedIn)}</VisuallyHidden>
       <SignedIn>
         <AccountDropdown />
       </SignedIn>

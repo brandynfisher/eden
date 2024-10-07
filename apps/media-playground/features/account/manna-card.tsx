@@ -19,26 +19,19 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useProductsQuery } from '@/hooks/query/use-products-query'
-import { useMe } from '@/hooks/use-me'
-import { useAuth } from '@clerk/nextjs'
+import { useAuthState } from '@/hooks/use-auth-state'
 import sortBy from 'lodash/sortBy'
 import React from 'react'
 
 const MannaCard = () => {
-  const { isSignedIn } = useAuth()
+  const { balance, subscriptionBalance, foreverBalance } = useAuthState()
   const { products } = useProductsQuery({})
-
-  const { balance, foreverBalance, subscriptionBalance } = useMe({
-    isAuthenticated: !!isSignedIn,
-  })
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Manna</CardTitle>
-        <CardDescription>
-          You can use this to create your own marketplace.
-        </CardDescription>
+        <CardDescription>Credits for creating on Eden</CardDescription>
       </CardHeader>
       <CardContent>
         {balance && (
@@ -52,17 +45,21 @@ const MannaCard = () => {
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">Non-expiring</TableCell>
-                <TableCell>{foreverBalance || 0} Manna</TableCell>
+                <TableCell>
+                  {(foreverBalance || 0).toLocaleString()} Manna
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Subscription</TableCell>
-                <TableCell>{subscriptionBalance || 0} Manna</TableCell>
+                <TableCell>
+                  {(subscriptionBalance || 0).toLocaleString()} Manna
+                </TableCell>
               </TableRow>
             </TableBody>
             <TableFooter>
               <TableRow>
                 <TableCell>Total</TableCell>
-                <TableCell>{balance || 0} Manna</TableCell>
+                <TableCell>{(balance || 0).toLocaleString()} Manna</TableCell>
               </TableRow>
             </TableFooter>
           </Table>
@@ -70,7 +67,7 @@ const MannaCard = () => {
         <CardHeader className="!pl-0 mt-4">
           <CardTitle>Additional Manna</CardTitle>
           <CardDescription>
-            You can buy additional manna to create your own marketplace.
+            You can buy additional manna refills to create more.
           </CardDescription>
         </CardHeader>
         {!products || !products.length ? (
