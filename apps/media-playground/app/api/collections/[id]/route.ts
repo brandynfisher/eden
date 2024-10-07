@@ -8,6 +8,53 @@ import {
 } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
+export async function GET(
+  request: NextRequest,
+  { params: { id } }: { params: { id: string } },
+) {
+  if (!id) {
+    return new NextResponse(JSON.stringify({ message: 'Missing id' }), {
+      status: 400,
+    })
+  }
+
+  const { getToken } = getAuth(request)
+  const authToken = await getToken()
+
+  if (!authToken) {
+    return new NextResponse(JSON.stringify({ error: 'Not authenticated' }), {
+      status: 401,
+    })
+  }
+
+  try {
+    const eden = new EdenClient({
+      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
+      token: authToken,
+    })
+
+    const res = await eden.collections.getV2({
+      collectionId: id,
+    })
+
+    if (!res) {
+      return new NextResponse(
+        JSON.stringify({ message: 'Collection not found' }),
+        {
+          status: 404,
+        },
+      )
+    }
+
+    return NextResponse.json(res)
+  } catch (error) {
+    const errorMessage = handleAxiosServerError(error)
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
+      status: 500,
+    })
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params: { id } }: { params: { id: string } },
@@ -29,7 +76,11 @@ export async function PATCH(
   // console.log('auth()', id, request.url)
 
   const requestJson = await request.json()
-  const { public: isPublic } = requestJson as CollectionsV2UpdateArguments
+  const {
+    public: isPublic,
+    name,
+    description,
+  } = requestJson as CollectionsV2UpdateArguments
 
   try {
     const eden = new EdenClient({
@@ -40,6 +91,8 @@ export async function PATCH(
     const res = await eden.collections.updateV2({
       collectionId: id,
       public: isPublic,
+      name,
+      description,
     })
 
     if (!res) {

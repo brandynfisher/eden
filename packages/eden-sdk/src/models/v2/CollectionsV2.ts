@@ -1,13 +1,7 @@
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { CreationV2 } from 'src/models/v2/CreationsV2'
-import {
-  ListQueryParams,
-  PaginatedResponse,
-  WebAPICallOptions,
-  WebAPICallResult,
-  transformArgsIntoURLParams,
-} from 'src/types'
+import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 // Types
 export type CollectionV2 = {
@@ -25,13 +19,6 @@ export type CollectionV2 = {
 }
 
 // Arguments
-export interface CollectionsV2ListArguments
-  extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string
-  creationId?: string
-}
-
 export interface CollectionsV2GetArguments extends WebAPICallOptions {
   collectionId: string
 }
@@ -66,23 +53,12 @@ export interface CollectionsV2RemoveCreationsArguments
 }
 
 // Requests
-export const collectionsV2ListRequestConfig = (
-  args: CollectionsV2ListArguments,
-): AxiosRequestConfig => {
-  const params = transformArgsIntoURLParams(args)
-  return {
-    method: 'GET',
-    url: 'v2/collections',
-    params,
-  }
-}
-
 export const collectionsV2GetRequestConfig = (
   args: CollectionsV2GetArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `v2/collections/${args.creationId}`,
+    url: `v2/collections/${args.collectionId}`,
   }
 }
 
@@ -136,11 +112,6 @@ export const collectionsV2RemoveCreationsRequestConfig = (
 }
 
 // Responses
-export type CollectionsV2ListResponse = WebAPICallResult &
-  PaginatedResponse<CollectionV2> & {
-    error?: string
-  }
-
 export type CollectionsV2GetResponse = WebAPICallResult & {
   collection: CollectionV2
   error?: string
