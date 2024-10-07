@@ -14,6 +14,28 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateQuery } from 'mongoose'
 
+export const getUserCollectionsLight = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+
+  const collectionsRepository = new CollectionV2Repository(CollectionV2)
+  const collections = await collectionsRepository.query(
+    {
+      user: currentUserId,
+      deleted: false,
+    },
+    {
+      select: '_id name collections',
+    },
+  )
+
+  console.log(collections.docs)
+
+  return reply.status(200).send({ collections: collections.docs })
+}
+
 export const getCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,

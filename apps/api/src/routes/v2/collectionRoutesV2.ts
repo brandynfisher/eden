@@ -3,6 +3,7 @@ import {
   createCollection,
   deleteCollection,
   getCollection,
+  getUserCollectionsLight,
   removeCreationsFromCollection,
   updateCollection,
 } from '../../controllers/v2/collectionControllerV2'
@@ -11,6 +12,25 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const collectionRoutesV2: FastifyPluginAsync = async server => {
+  server.get('/v2/collections/light', {
+    schema: {
+      tags: ['Collections'],
+      description: 'Get current user collections, light version',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      response: {
+        200: {
+          collections: Type.Array(Type.Any()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => getUserCollectionsLight(request, reply),
+  })
+
   server.get('/v2/collections/:collectionId', {
     schema: {
       tags: ['Collections'],

@@ -3,12 +3,21 @@
 import CreationsBulkActionsMenu from '@/components/button/creations-bulk-actions-menu'
 import LoadingIndicator from '@/components/loading-indicator'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
 import { useMultiSelection } from '@/contexts/multi-select-context'
 import { DownloadFile, downloadFiles } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { CollectionV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { DownloadIcon, XIcon } from 'lucide-react'
+import axios from 'axios'
+import { DownloadIcon, PlusIcon, XIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -31,6 +40,9 @@ type Props = {
 const MultiSelectToolbar = ({ queryKey }: Props) => {
   const [isPreparingDownload, setIsPreparingDownload] = useState(false)
   const { selectedItems, clearSelection } = useMultiSelection()
+  const [isAddToCollectionDialogOpen, setIsAddToCollectionDialogOpen] =
+    useState(false)
+  const [userCollections, setUserCollections] = useState<CollectionV2[]>([])
 
   if (selectedItems.length === 0) {
     return null
@@ -64,6 +76,36 @@ const MultiSelectToolbar = ({ queryKey }: Props) => {
     setIsPreparingDownload(false)
   }
 
+  const onAddToCollectionClick = async () => {
+    setIsAddToCollectionDialogOpen(true)
+    try {
+      const { data } = await axios.get('/api/collections/light')
+      setUserCollections(data.collections)
+    } catch (error) {
+      console.error('Failed to fetch user collections', error)
+    }
+  }
+
+  const onCollectionSelect = async (collectionId: string, name: string) => {
+    const creationIds = selectedItems.map(item => item._id)
+    try {
+      await axios.patch(`/api/collections/${collectionId}/add`, {
+        creationIds,
+      })
+      toast.success('Added to collection', {
+        description: `Selected items added to ${name}`,
+        dismissible: true,
+        richColors: true,
+      })
+    } catch (error) {
+      toast.error('Failed to add to collection', {
+        description: 'An error occurred while adding items to the collection',
+        dismissible: true,
+        richColors: true,
+      })
+    }
+  }
+
   return (
     <div className="flex justify-center">
       <div className="fixed rounded-lg bottom-4 md:w-full max-w-md bg-muted bg-opacity-85 backdrop-blur-[2px] flex items-center px-3 py-3 drop-shadow-lg gap-4">
@@ -93,7 +135,47 @@ const MultiSelectToolbar = ({ queryKey }: Props) => {
             className="w-full h-9 px-3 py-0"
             creations={selectedItems}
             label={<span className="ml-2 hidden md:block">More</span>}
+            onAddToCollection={onAddToCollectionClick}
           />
+
+          <Dialog
+            open={isAddToCollectionDialogOpen}
+            onOpenChange={setIsAddToCollectionDialogOpen}
+          >
+            <DialogContent>
+              <DialogTitle>Add to collection</DialogTitle>
+              <DialogDescription>
+                Select a collection to add the selected items to. Duplicates
+                will be skipped.
+              </DialogDescription>
+              {userCollections.length > 0 ? (
+                <ScrollArea className="max-h-72 py-4">
+                  {userCollections.map(collection => (
+                    <>
+                      <div
+                        key={collection._id}
+                        className="flex items-center gap-x-2"
+                      >
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() =>
+                            onCollectionSelect(collection._id, collection.name)
+                          }
+                        >
+                          <PlusIcon size={16} />
+                        </Button>
+                        {collection.name}
+                      </div>
+                      <Separator className="my-2" />
+                    </>
+                  ))}
+                </ScrollArea>
+              ) : (
+                <p>No collections found</p>
+              )}
+            </DialogContent>
+          </Dialog>
 
           <Button
             size="sm"

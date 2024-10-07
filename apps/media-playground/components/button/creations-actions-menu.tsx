@@ -2,6 +2,7 @@ import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
+import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
@@ -11,7 +12,7 @@ import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { ExternalLinkIcon, FileSlidersIcon } from 'lucide-react'
+import { ExternalLinkIcon, FileSlidersIcon, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
@@ -56,6 +57,8 @@ const CreationActionsContent = ({
   userId,
   isOpen,
 }: ContentProps) => {
+  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false)
+
   const { creation: creationResponse } = useCreationQuery({
     key: creation._id,
     initialData: {
@@ -84,6 +87,16 @@ const CreationActionsContent = ({
             Use as Preset
             {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
           </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <button
+            type="button"
+            className="w-full"
+            onClick={() => setIsCollectionDialogOpen(true)}
+          >
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add to collection
+          </button>
         </DropdownMenuItem>
       </DropdownMenuGroup>
       {creationData.user._id === userId && (
@@ -118,6 +131,10 @@ const CreationActionsContent = ({
           </DropdownMenuGroup>
         </>
       )}
+      <CollectionSelectionDialog
+        open={isCollectionDialogOpen}
+        onOpenChange={setIsCollectionDialogOpen}
+      />
     </>
   )
 }

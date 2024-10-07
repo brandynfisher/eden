@@ -19,6 +19,8 @@ export type CollectionV2 = {
 }
 
 // Arguments
+export interface CollectionsV2GetLightArguments extends WebAPICallOptions {}
+
 export interface CollectionsV2GetArguments extends WebAPICallOptions {
   collectionId: string
 }
@@ -53,6 +55,16 @@ export interface CollectionsV2RemoveCreationsArguments
 }
 
 // Requests
+export const collectionsV2GetLightRequestConfig = (
+  args: CollectionsV2GetLightArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'v2/collections/light',
+    params: args,
+  }
+}
+
 export const collectionsV2GetRequestConfig = (
   args: CollectionsV2GetArguments,
 ): AxiosRequestConfig => {
@@ -112,6 +124,15 @@ export const collectionsV2RemoveCreationsRequestConfig = (
 }
 
 // Responses
+export type CollectionsV2GetLightResponse = WebAPICallResult & {
+  collections: {
+    _id: string
+    name: string
+    collections: string[]
+  }[]
+  error?: string
+}
+
 export type CollectionsV2GetResponse = WebAPICallResult & {
   collection: CollectionV2
   error?: string

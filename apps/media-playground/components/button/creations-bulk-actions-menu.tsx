@@ -1,4 +1,5 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
+import AddToCollectionActionItem from '@/components/button/add-to-collection-action-item'
 import DeleteBulkActionItem from '@/components/button/delete-bulk-action-item'
 import PrivacyBulkActionItem from '@/components/button/privacy-bulk-action-item'
 import {
@@ -15,6 +16,7 @@ type Props = {
   creations: CreationV2[]
   queryKey: QueryKey
   className?: string
+  onAddToCollection: () => void
 }
 
 const CreationsBulkActionsMenu = ({
@@ -22,6 +24,7 @@ const CreationsBulkActionsMenu = ({
   label,
   queryKey,
   className,
+  onAddToCollection,
 }: Props) => {
   const { user } = useAuthState()
   const [isOpen, setIsOpen] = useState(false)
@@ -42,6 +45,7 @@ const CreationsBulkActionsMenu = ({
           creations={creations}
           queryKey={queryKey}
           userId={user?._id}
+          onAddToCollection={onAddToCollection}
         />
       )}
     </ActionsDropdown>
@@ -52,9 +56,14 @@ type ContentProps = {
   creations: CreationV2[]
   queryKey: QueryKey
   userId?: string
+  onAddToCollection: () => void
 }
 
-const CreationsBulkActionsContent = ({ creations, queryKey }: ContentProps) => {
+const CreationsBulkActionsContent = ({
+  creations,
+  queryKey,
+  onAddToCollection,
+}: ContentProps) => {
   return (
     <>
       <DropdownMenuGroup>
@@ -63,6 +72,10 @@ const CreationsBulkActionsContent = ({ creations, queryKey }: ContentProps) => {
           items={creations}
           queryKey={queryKey}
         />
+      </DropdownMenuGroup>
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <AddToCollectionActionItem onClick={onAddToCollection} />
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
