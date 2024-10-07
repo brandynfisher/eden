@@ -1,28 +1,19 @@
+// providers/WebSocketProvider.tsx
 'use client'
 
-import { useAuth } from '@clerk/nextjs'
+import { useWebSocketAuth } from '@/hooks/use-websocket-auth'
+import { useWebSocketConnection } from '@/hooks/use-websocket-connection'
 import { TaskV2 } from '@edenlabs/eden-sdk'
-import React, {
-  PropsWithChildren,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react'
-import useWebSocket, { ReadyState } from 'react-use-websocket'
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { ReadyState } from 'react-use-websocket'
 
-export type GenericObject = {
-  [key: string]: string | boolean | number
-}
+// providers/WebSocketProvider.tsx
+
+export type GenericObject = { [key: string]: string | boolean | number }
 
 type JsonMessage = {
   event: string
-  data:
-    | {
-        task?: TaskV2
-      }
-    | GenericObject
+  data: { task?: TaskV2 } | GenericObject
 }
 
 type WebSocketMessageEvent = {
@@ -48,94 +39,36 @@ const initialState: WebSocketState = {
   messageHistory: [],
 }
 
-type Props = {
-  endpoint: string
-} & PropsWithChildren
-
 const WebSocketContext = createContext<WebSocketState>(initialState)
 export const useWebSocketContext = () => useContext(WebSocketContext)
+
+type Props = {
+  endpoint: string
+} & React.PropsWithChildren
+
 export const WebSocketProvider = ({ endpoint, children }: Props) => {
   const [shouldConnect, setShouldConnect] = useState<boolean>(false)
-  const [currentAuthToken, setCurrentAuthToken] = useState<string | null>()
-
-  const { isLoaded, isSignedIn, userId, getToken } = useAuth()
   const { sendMessage, sendJsonMessage, lastMessage, readyState } =
-    useWebSocket(
-      endpoint,
-      {
-        // onOpen: event => {
-        //   console.log('ws - onOpen', event)
-        // },
-        onClose: event => console.log('ws - onClose', event),
-        onError: event => console.log('ws - onError', event),
-        // onMessage: event => console.log('ws - onMessage', event),
-        shouldReconnect: event => {
-          console.log('ws - shouldReconnect', isSignedIn, event)
-          return !!isSignedIn
-        },
-        share: true,
-      },
-      shouldConnect,
-    )
+    useWebSocketConnection(endpoint, shouldConnect)
 
-  const refreshToken = useCallback(async () => {
-    const newToken = await getToken()
-    if (newToken) {
-      setCurrentAuthToken(prev =>
-        newToken && newToken !== prev ? newToken : prev,
-      )
-    }
-  }, [getToken, setCurrentAuthToken])
-
-  const sendAuthMessage = useCallback(() => {
-    if (!currentAuthToken) {
-      return
-    }
-
-    sendJsonMessage({
-      event: 'auth',
-      data: {
-        userId,
-        token: currentAuthToken,
-      },
-    })
-  }, [userId, sendJsonMessage, currentAuthToken])
+  const { isSignedIn } = useWebSocketAuth(sendJsonMessage)
 
   useEffect(() => {
-    if (isLoaded) {
-      setShouldConnect(!!isSignedIn)
-    }
-  }, [isLoaded, isSignedIn])
+    setShouldConnect(!!isSignedIn)
+  }, [isSignedIn])
 
+  const [lastMessageJson, setLastMessageJson] = useState<JsonMessage | null>(
+    null,
+  )
   useEffect(() => {
-    let timerId: ReturnType<typeof setInterval>
-
-    if (readyState === ReadyState.OPEN) {
-      // console.log('WS::OPEN')
-      refreshToken()
-
-      timerId = setInterval(() => refreshToken(), 25000)
-    }
-
-    return () => {
-      if (timerId) {
-        clearInterval(timerId)
+    if (lastMessage?.data) {
+      try {
+        const parsed = JSON.parse(lastMessage.data)
+        setLastMessageJson(parsed)
+      } catch (error) {
+        console.error('Failed to parse WebSocket message:', error)
       }
     }
-  }, [readyState, refreshToken])
-
-  useEffect(() => {
-    sendAuthMessage()
-  }, [sendAuthMessage])
-
-  const [lastMessageJson, setLastMessageJson] = useState(null)
-  useEffect(() => {
-    if (!lastMessage || !lastMessage.data) {
-      return
-    }
-
-    const jsonData = JSON.parse(lastMessage.data)
-    setLastMessageJson(jsonData)
   }, [lastMessage])
 
   return (

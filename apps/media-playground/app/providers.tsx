@@ -1,5 +1,6 @@
 import { env } from '@/lib/config'
 import { ReactQueryProvider } from '@/providers/react-query-provider'
+import { TaskStatusProvider } from '@/providers/task-status-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { WebSocketProvider } from '@/providers/websocket-provider'
 import { ClerkProvider } from '@clerk/nextjs'
@@ -31,7 +32,7 @@ export default function Providers({ children }: PropsWithChildren) {
           <WebSocketProvider
             endpoint={env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
           >
-            {children}
+            <TaskStatusProvider>{children}</TaskStatusProvider>
           </WebSocketProvider>
         </ReactQueryProvider>
       </ClerkProvider>

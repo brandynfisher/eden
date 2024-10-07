@@ -703,40 +703,51 @@ export const cancelTask = async (
     })
   }
 
-  const modalRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/cancel`,
-    data: {
-      taskId,
-      user: userId,
-    },
-  }
-
-  server.log.info('> modal::request::cancel')
-  server.log.info(modalRequest)
-
-  const modalResponse = await axios.post(
-    modalRequest.endpoint,
-    modalRequest.data,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+  try {
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/cancel`,
+      data: {
+        taskId,
+        user: userId,
       },
-    },
-  )
+    }
 
-  server.log.info('< modal::response::cancel')
-  server.log.info(modalResponse.data)
+    server.log.info('> modal::request::cancel')
+    server.log.info(modalRequest)
 
-  if (!modalResponse || !modalResponse.data) {
-    console.log('malformed response', modalResponse)
-    return reply.status(500).send({
-      message: `Empty / Unexpected response from compute api`,
-    })
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    server.log.info('< modal::response::cancel')
+    server.log.info(modalResponse.data)
+
+    if (!modalResponse || !modalResponse.data) {
+      console.log('malformed response', modalResponse)
+      return reply.status(500).send({
+        message: `Empty / Unexpected response from compute api`,
+      })
+    }
+
+    const taskStatus = modalResponse.data.status as TaskV2Status
+
+    return reply.status(200).send({ taskStatus })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({ message: 'Failed to cancel task', error: errorMessage })
+    return reply.status(500).send({ error: errorMessage })
   }
-
-  const taskStatus = modalResponse.data.status as TaskV2Status
-
-  return reply.status(200).send({ taskStatus })
 }
 
 export const publishTaskResult = async (
