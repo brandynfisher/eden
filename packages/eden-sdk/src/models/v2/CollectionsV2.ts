@@ -124,11 +124,10 @@ export const collectionsV2RemoveCreationsRequestConfig = (
 }
 
 // Responses
-export type CollectionsV2GetLightResponse = WebAPICallResult & {
+export interface CollectionsV2GetLightResponse extends WebAPICallResult {
   collections: {
     _id: string
     name: string
-    collections: string[]
   }[]
   error?: string
 }

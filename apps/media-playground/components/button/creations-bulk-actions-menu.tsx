@@ -1,90 +1,73 @@
-import ActionsDropdown from '@/components/button/actions-dropdown'
-import AddToCollectionActionItem from '@/components/button/add-to-collection-action-item'
 import DeleteBulkActionItem from '@/components/button/delete-bulk-action-item'
 import PrivacyBulkActionItem from '@/components/button/privacy-bulk-action-item'
+import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
+import { Button } from '@/components/ui/button'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAuthState } from '@/hooks/use-auth-state'
+import { toggleAddToCollectionModal } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import React, { ReactNode, useState } from 'react'
+import { BookmarkPlusIcon, EllipsisIcon } from 'lucide-react'
 
-type Props = {
-  label?: ReactNode
+interface CreationsBulkActionsMenuProps {
   creations: CreationV2[]
   queryKey: QueryKey
-  className?: string
-  onAddToCollection: () => void
 }
 
 const CreationsBulkActionsMenu = ({
   creations,
-  label,
   queryKey,
-  className,
-  onAddToCollection,
-}: Props) => {
-  const { user } = useAuthState()
-  const [isOpen, setIsOpen] = useState(false)
+}: CreationsBulkActionsMenuProps) => {
+  const dispatch = useAppDispatch()
+
+  const handleAddToCollectionSelect = () => {
+    dispatch(toggleAddToCollectionModal())
+  }
 
   if (!creations) {
     return null
   }
 
   return (
-    <ActionsDropdown
-      size={'sm'}
-      className={className}
-      onOpenChange={setIsOpen}
-      label={label}
-    >
-      {isOpen && (
-        <CreationsBulkActionsContent
-          creations={creations}
-          queryKey={queryKey}
-          userId={user?._id}
-          onAddToCollection={onAddToCollection}
-        />
-      )}
-    </ActionsDropdown>
-  )
-}
-
-type ContentProps = {
-  creations: CreationV2[]
-  queryKey: QueryKey
-  userId?: string
-  onAddToCollection: () => void
-}
-
-const CreationsBulkActionsContent = ({
-  creations,
-  queryKey,
-  onAddToCollection,
-}: ContentProps) => {
-  return (
     <>
-      <DropdownMenuGroup>
-        <PrivacyBulkActionItem
-          type="creation"
-          items={creations}
-          queryKey={queryKey}
-        />
-      </DropdownMenuGroup>
-      <DropdownMenuSeparator />
-      <DropdownMenuGroup>
-        <AddToCollectionActionItem onClick={onAddToCollection} />
-      </DropdownMenuGroup>
-      <DropdownMenuSeparator />
-      <DropdownMenuGroup>
-        <DeleteBulkActionItem
-          type="creation"
-          items={creations}
-          queryKey={queryKey}
-        />
-      </DropdownMenuGroup>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="outline">
+            <EllipsisIcon className="group-hover:text-primary" />
+            <span className="ml-2 hidden md:block">More</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuGroup>
+            <PrivacyBulkActionItem
+              type="creation"
+              items={creations}
+              queryKey={queryKey}
+            />
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleAddToCollectionSelect}>
+            <BookmarkPlusIcon className="mr-2 h-4 w-4" />
+            <span>Add to Collection</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DeleteBulkActionItem
+              type="creation"
+              items={creations}
+              queryKey={queryKey}
+            />
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <CollectionSelectionDialog creations={creations} />
     </>
   )
 }

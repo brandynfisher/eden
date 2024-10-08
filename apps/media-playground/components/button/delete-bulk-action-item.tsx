@@ -12,7 +12,7 @@ type Props = {
   queryKey: QueryKey
 }
 
-const PrivacyBulkActionItem = ({ type, items, queryKey }: Props) => {
+const DeleteBulkActionItem = ({ type, items, queryKey }: Props) => {
   const { clearSelection } = useMultiSelection()
 
   const { handleDelete } = useDeleteBulk({
@@ -39,4 +39,4 @@ const PrivacyBulkActionItem = ({ type, items, queryKey }: Props) => {
   )
 }
 
-export default PrivacyBulkActionItem
+export default DeleteBulkActionItem

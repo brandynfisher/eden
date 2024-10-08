@@ -97,7 +97,7 @@ export async function PATCH(
 
     if (!res) {
       return new NextResponse(
-        JSON.stringify({ message: 'Creation update error' }),
+        JSON.stringify({ message: 'Collection update error' }),
         {
           status: 500,
         },

@@ -10,9 +10,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { toggleAddToCollectionModal } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { ExternalLinkIcon, FileSlidersIcon, PlusIcon } from 'lucide-react'
+import {
+  BookmarkPlusIcon,
+  ExternalLinkIcon,
+  FileSlidersIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
@@ -31,16 +37,19 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
   }
 
   return (
-    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
-      {isOpen && (
-        <CreationActionsContent
-          creation={creation}
-          queryKey={queryKey}
-          userId={user?._id}
-          isOpen={isOpen}
-        />
-      )}
-    </ActionsDropdown>
+    <>
+      <ActionsDropdown className={className} onOpenChange={setIsOpen}>
+        {isOpen && (
+          <CreationActionsContent
+            creation={creation}
+            queryKey={queryKey}
+            userId={user?._id}
+            isOpen={isOpen}
+          />
+        )}
+      </ActionsDropdown>
+      <CollectionSelectionDialog creations={[creation]} />
+    </>
   )
 }
 
@@ -57,6 +66,8 @@ const CreationActionsContent = ({
   userId,
   isOpen,
 }: ContentProps) => {
+  const dispatch = useAppDispatch()
+
   const { isSignedIn } = useAuthState()
   const { creation: creationResponse } = useCreationQuery({
     key: creation._id,
@@ -67,6 +78,10 @@ const CreationActionsContent = ({
   })
 
   const creationData = creationResponse || creation
+
+  const handleAddToCollectionClick = () => {
+    dispatch(toggleAddToCollectionModal())
+  }
 
   return (
     <>
@@ -95,9 +110,9 @@ const CreationActionsContent = ({
           <button
             type="button"
             className="w-full"
-            // onClick={() => setIsCollectionDialogOpen(true)}
+            onClick={handleAddToCollectionClick}
           >
-            <PlusIcon className="mr-2 h-4 w-4" />
+            <BookmarkPlusIcon className="mr-2 h-4 w-4" />
             Add to collection
           </button>
         </DropdownMenuItem>

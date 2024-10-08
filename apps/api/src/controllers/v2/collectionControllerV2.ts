@@ -27,7 +27,7 @@ export const getUserCollectionsLight = async (
       deleted: false,
     },
     {
-      select: '_id name collections',
+      select: '_id name',
     },
   )
 
