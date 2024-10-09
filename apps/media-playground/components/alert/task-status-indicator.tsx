@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import customImageLoader from '@/image-loader'
-import { cn } from '@/lib/utils'
 import { useTaskStatus } from '@/providers/task-status-provider'
 import { TaskV2Status } from '@edenlabs/eden-sdk'
 import {
@@ -18,6 +17,7 @@ import {
   CircleCheckIcon,
   CircleIcon,
   ExternalLinkIcon,
+  InboxIcon,
   TriangleAlertIcon,
 } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
@@ -44,22 +44,25 @@ const TaskStatusIndicator = () => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn([
-            'flex border border-muted rounded-md px-2 w-14',
-            pendingRunningTasks && pendingRunningTasks.length
-              ? 'border-blue-500 text-blue-500'
-              : 'text-muted',
-          ])}
-        >
+        <Button variant="outline" size="sm" className="flex px-2 gap-2">
+          {(!pendingRunningTasks || !pendingRunningTasks.length) &&
+          (!completedTasks || !completedTasks.length) ? (
+            <div className="flex items-center">
+              <InboxIcon className="mr-1 h-4 w-4" />0
+            </div>
+          ) : null}
           {pendingRunningTasks && pendingRunningTasks.length ? (
-            <span className={'mr-2 h-5 w-5 loading loading-ring'} />
-          ) : (
-            <CircleIcon className="text-muted mr-2 h-4 w-4" />
-          )}
-          <span className="text-sm">{pendingRunningTasks.length}</span>
+            <div className="flex items-center text-blue-500">
+              <span className={'mr-1 h-5 w-5 loading loading-ring'} />
+              <span className="text-sm">{pendingRunningTasks.length}</span>
+            </div>
+          ) : null}
+          {completedTasks && completedTasks.length ? (
+            <div className="flex items-center text-green-500">
+              <CircleCheckIcon className="mr-1 h-4 w-4" />
+              <span className="text-sm">{completedTasks.length}</span>
+            </div>
+          ) : null}
         </Button>
       </DropdownMenuTrigger>
 

@@ -1,9 +1,5 @@
 # Eden Monorepo
 
-**CONTAINER**
-
-![eden](https://argocd.eden.art/api/badge?name=eden&revision=true 'eden')
-
 **PRODUCTION**
 
 | App      | Status                                                                                                                       |
