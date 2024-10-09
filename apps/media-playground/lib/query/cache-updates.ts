@@ -27,24 +27,32 @@ export const addDocIfNotExistInPage = <T extends GenericDocumentType>(
   if (!docUpdate._id || !Array.isArray(updatedPages)) {
     return updatedPages
   }
-  const pageIndex = updatedPages.findIndex(
+
+  // Check if the document already exists in any page
+  const exists = updatedPages.some(
     page =>
-      Array.isArray(page?.docs) &&
+      Array.isArray(page.docs) &&
       page.docs.some(doc => doc._id === docUpdate._id),
   )
 
-  if (pageIndex === -1) {
+  if (!exists) {
+    // Clone the first page or create a new one if it doesn't exist
+    const firstPage = updatedPages[0] || { docs: [] }
+
+    // Prepend the new document to the first page's docs
+    const newDocs = [docUpdate, ...(firstPage.docs || [])]
+
+    // Return the updated pages with the new document at the beginning
     return [
       {
-        ...(updatedPages[0] || {}),
-        docs: [
-          docUpdate,
-          ...(Array.isArray(updatedPages[0]?.docs) ? updatedPages[0].docs : []),
-        ],
+        ...firstPage,
+        docs: newDocs,
       },
       ...updatedPages.slice(1),
     ]
   }
+
+  // If the document already exists, return the pages unchanged
   return updatedPages
 }
 

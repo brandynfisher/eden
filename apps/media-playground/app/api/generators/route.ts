@@ -24,12 +24,9 @@ export async function GET(request: NextRequest) {
     const res = await eden.generators.listV2(query)
 
     if (!res || !res.generators) {
-      return new NextResponse(
-        JSON.stringify({ message: 'No generators found' }),
-        {
-          status: 404,
-        },
-      )
+      return new NextResponse(JSON.stringify({ message: 'No tools found' }), {
+        status: 404,
+      })
     }
 
     if (env.NEXT_PUBLIC_APP_ENV === 'production') {

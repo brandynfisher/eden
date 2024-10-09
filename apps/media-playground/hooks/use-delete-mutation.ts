@@ -6,7 +6,7 @@ import {
   isModelData,
   isTaskV2,
   isTasksV2ListResponse,
-} from '@/lib/mutations/guards'
+} from '@/lib/query/guards'
 import { capitalize } from '@/lib/strings'
 import {
   CreationV2,
