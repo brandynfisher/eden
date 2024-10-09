@@ -1,4 +1,4 @@
-import '@/styles/globals.css'
+import '@/styles/globals.scss'
 import 'photoswipe/dist/photoswipe.css'
 
 import Providers from '@/app/providers'

@@ -93,6 +93,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
           type: Type.Optional(Type.String()),
           output_type: Type.Optional(Type.String()),
           workflow: Type.Optional(Type.String()),
+          minDate: Type.Optional(Type.Boolean()),
           ...paginationProperties(),
         },
         required: [],

@@ -1,3 +1,4 @@
+// list-virtualizer-vertical.tsx
 'use client'
 
 import LoadingIndicator from '@/components/loading-indicator'
@@ -13,6 +14,8 @@ import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
+// list-virtualizer-vertical.tsx
+
 const MASONRY_GUTTER = 16
 const QUERY_LIMIT = 35
 
@@ -22,20 +25,6 @@ type Props = {
   query: { [key: string]: unknown }
   queryKey: QueryKey
 }
-
-// export const MasonrySkeleton = () => {
-//   return (
-//     <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4'>
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//     </div>
-//   )
-// }
 
 const ListVirtualizerVertical = ({
   apiEndpoint,
@@ -62,14 +51,12 @@ const ListVirtualizerVertical = ({
     status,
     data,
     error,
-    // isFetching,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery({
     queryKey,
     queryFn: ({ pageParam }) => {
-      // console.log(pageParam)
       const queryUrl = `${apiEndpoint}?${transformArgsIntoURLParams(
         pageParam
           ? {

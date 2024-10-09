@@ -14,13 +14,18 @@ export async function GET(request: NextRequest) {
 
   const paginationParams = extractPaginationParams(request.nextUrl.searchParams)
   const workflow = request.nextUrl.searchParams.get('workflow') || undefined
+  const minDate = !!request.nextUrl.searchParams.get('minDate') || undefined
 
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken,
     })
-    const res = await eden.tasks.listV2({ ...paginationParams, workflow })
+    const res = await eden.tasks.listV2({
+      ...paginationParams,
+      workflow,
+      minDate,
+    })
     return NextResponse.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)

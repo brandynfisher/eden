@@ -13,7 +13,7 @@ import {
   RowItem,
   addDocIfNotExistInPage,
   updateDocInPage,
-} from '@/lib/mutations/query'
+} from '@/lib/query/cache-updates'
 import { FeedV2CursorResponse } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'

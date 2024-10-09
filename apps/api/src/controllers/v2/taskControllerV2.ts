@@ -162,6 +162,7 @@ export const listTasks = async (
     limit = 25,
     page,
     sort,
+    minDate,
   } = request.query as TasksV2ListArguments
 
   const user = await User.findById(userId)
@@ -185,11 +186,9 @@ export const listTasks = async (
     status?: string | string[]
     taskId?: string | string[]
     workflow?: string | { $ne: string }
+    createdAt?: { $gte: Date }
   } = {
     user: user._id.toString(),
-    // createdAt: {
-    //   $gte: new Date(new Date().getTime() - (7 * 24 * 60 * 60 * 1000)),
-    // },
     ...typeQuery,
   }
 
@@ -203,6 +202,12 @@ export const listTasks = async (
 
   if (workflow) {
     query.workflow = workflow
+  }
+
+  if (minDate) {
+    query.createdAt = {
+      $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+    }
   }
 
   const queryOptions: QueryOptions = {
@@ -222,6 +227,8 @@ export const listTasks = async (
   //   model: 'models',
   //   select: '-args.lora_training_urls',
   // }
+
+  console.log({ minDate, query, queryOptions })
 
   const paginatedResponse = await tasksRepository.query(query, queryOptions)
 

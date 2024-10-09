@@ -26,6 +26,7 @@ export interface TasksV2ListArguments
   type?: 'concepts' | 'creations'
   output_type?: GeneratorOutputTypeV2
   workflow?: string
+  minDate?: boolean
 }
 
 export interface TasksV2GetArguments extends WebAPICallOptions {

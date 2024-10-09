@@ -1,15 +1,8 @@
 'use client'
 
-import {
-  IPage,
-  PageData,
-  RowItem,
-  addDocIfNotExistInPage,
-  updateDocInPage,
-} from '@/lib/mutations/query'
+import { useTaskListQuery } from '@/hooks/query/use-task-list-query'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import { TaskV2, TaskV2Status } from '@edenlabs/eden-sdk'
-import { useQueryClient } from '@tanstack/react-query'
 import React, {
   createContext,
   useContext,
@@ -17,6 +10,10 @@ import React, {
   useMemo,
   useState,
 } from 'react'
+// Add notification callback for external components
+import { useCallback } from 'react'
+
+export type TaskUpdateCallback = (taskUpdate: TaskV2) => void
 
 type TaskStatusContextType = {
   allTasks: TaskV2[]
@@ -24,6 +21,7 @@ type TaskStatusContextType = {
   failedTasks: TaskV2[]
   completedTasks: TaskV2[]
   cancelledTasks: TaskV2[]
+  subscribeToTaskUpdates: (callback: TaskUpdateCallback) => void
 }
 
 const TaskStatusContext = createContext<TaskStatusContextType>({
@@ -32,6 +30,7 @@ const TaskStatusContext = createContext<TaskStatusContextType>({
   failedTasks: [],
   completedTasks: [],
   cancelledTasks: [],
+  subscribeToTaskUpdates: () => {},
 })
 
 export const useTaskStatus = () => useContext(TaskStatusContext)
@@ -43,22 +42,37 @@ type Props = {
 export const TaskStatusProvider = ({ children }: Props) => {
   const { lastMessageJson } = useWebSocketContext()
   const [allTasks, setAllTasks] = useState<TaskV2[]>([])
-  const queryClient = useQueryClient()
+  const taskUpdateSubscribers = useMemo(() => new Set<TaskUpdateCallback>(), [])
 
-  // Fetch initial tasks on mount
+  // Function to subscribe to task updates
+  const subscribeToTaskUpdates = useCallback(
+    (callback: TaskUpdateCallback) => {
+      taskUpdateSubscribers.add(callback)
+      return () => taskUpdateSubscribers.delete(callback)
+    },
+    [taskUpdateSubscribers],
+  )
+
+  const queryResponse = useTaskListQuery({ enabled: true })
+
+  console.log({ queryResponse })
   useEffect(() => {
-    const fetchInitialTasks = async () => {
-      try {
-        const response = await fetch('/api/tasks/list')
-        const data: TaskV2[] = await response.json()
-        setAllTasks(data)
-      } catch (error) {
-        console.error('Error fetching initial tasks:', error)
-      }
-    }
-
-    fetchInitialTasks()
-  }, [])
+    setAllTasks(queryResponse.tasks || [])
+  }, [queryResponse.tasks])
+  // // Fetch initial tasks on mount
+  // useEffect(() => {
+  //   const fetchInitialTasks = async () => {
+  //     try {
+  //       const response = await fetch('/api/tasks/list')
+  //       const data: TasksV2ListResponse = await response.json()
+  //       setAllTasks(data.docs || [])
+  //     } catch (error) {
+  //       console.error('Error fetching initial tasks:', error)
+  //     }
+  //   }
+  //
+  //   fetchInitialTasks()
+  // }, [])
 
   // Handle WebSocket messages to update tasks
   useEffect(() => {
@@ -69,47 +83,22 @@ export const TaskStatusProvider = ({ children }: Props) => {
     if (event === 'task-update' && data?.task) {
       const taskUpdate = data.task as TaskV2
 
-      // Update global query cache if needed
-      try {
-        queryClient.setQueryData(
-          ['tasks', taskUpdate.workflow],
-          (old: PageData<IPage<RowItem>> | undefined) => {
-            if (!old || !old.pages.length) {
-              console.error('No pages to update!')
-              return old
-            }
-
-            let updatedPages: IPage<RowItem>[] = [...old.pages]
-            const pageIndex = updatedPages.findIndex(page =>
-              page?.docs?.some(doc => doc._id === taskUpdate._id),
-            )
-
-            if (pageIndex === -1) {
-              updatedPages = addDocIfNotExistInPage(taskUpdate, updatedPages)
-            } else {
-              updatedPages = updateDocInPage(taskUpdate, updatedPages)
-            }
-
-            return { ...old, pages: updatedPages }
-          },
-        )
-      } catch (e) {
-        console.error('Error updating query cache:', e)
-      }
-
       // Update allTasks ensuring uniqueness
       setAllTasks(prev => {
         const existingTaskIndex = prev.findIndex(t => t._id === taskUpdate._id)
         if (existingTaskIndex === -1) {
-          return [...prev, taskUpdate]
+          return [taskUpdate, ...prev] // Prepend the new task
         } else {
           const updatedTasks = [...prev]
           updatedTasks[existingTaskIndex] = taskUpdate
           return updatedTasks
         }
       })
+
+      // Notify subscribers of the task update
+      taskUpdateSubscribers.forEach(callback => callback(taskUpdate))
     }
-  }, [lastMessageJson, queryClient])
+  }, [lastMessageJson, taskUpdateSubscribers])
 
   // Categorize tasks based on their status
   const pendingRunningTasks = useMemo(() => {
@@ -125,9 +114,7 @@ export const TaskStatusProvider = ({ children }: Props) => {
   }, [allTasks])
 
   const completedTasks = useMemo(() => {
-    return allTasks
-      .filter(task => task.status === TaskV2Status.Completed)
-      .slice(0, 10) // Keep only the last 10 completed tasks
+    return allTasks.filter(task => task.status === TaskV2Status.Completed)
   }, [allTasks])
 
   const cancelledTasks = useMemo(() => {
@@ -142,6 +129,7 @@ export const TaskStatusProvider = ({ children }: Props) => {
       failedTasks,
       completedTasks,
       cancelledTasks,
+      subscribeToTaskUpdates,
     }),
     [
       allTasks,
@@ -149,6 +137,7 @@ export const TaskStatusProvider = ({ children }: Props) => {
       failedTasks,
       completedTasks,
       cancelledTasks,
+      subscribeToTaskUpdates,
     ],
   )
 
