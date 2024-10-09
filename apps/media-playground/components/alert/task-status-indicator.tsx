@@ -8,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useAuthState } from '@/hooks/use-auth-state'
 import customImageLoader from '@/image-loader'
 import { cn } from '@/lib/utils'
 import { useTaskStatus } from '@/providers/task-status-provider'
@@ -25,6 +26,7 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 
 const TaskStatusIndicator = () => {
+  const { isSignedIn } = useAuthState()
   const {
     allTasks,
     pendingRunningTasks,
@@ -34,6 +36,10 @@ const TaskStatusIndicator = () => {
   } = useTaskStatus()
   const [open, setOpen] = useState(false)
   const { TimeAgo } = useTimeAgo()
+
+  if (!isSignedIn) {
+    return null
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useTaskListQuery } from '@/hooks/query/use-task-list-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import { TaskV2, TaskV2Status } from '@edenlabs/eden-sdk'
 import React, {
@@ -40,6 +41,7 @@ type Props = {
 }
 
 export const TaskStatusProvider = ({ children }: Props) => {
+  const { isSignedIn } = useAuthState()
   const { lastMessageJson } = useWebSocketContext()
   const [allTasks, setAllTasks] = useState<TaskV2[]>([])
   const taskUpdateSubscribers = useMemo(() => new Set<TaskUpdateCallback>(), [])
@@ -53,9 +55,9 @@ export const TaskStatusProvider = ({ children }: Props) => {
     [taskUpdateSubscribers],
   )
 
-  const queryResponse = useTaskListQuery({ enabled: true })
+  const queryResponse = useTaskListQuery({ enabled: !!isSignedIn })
 
-  console.log({ queryResponse })
+  // console.log({ queryResponse })
   useEffect(() => {
     setAllTasks(queryResponse.tasks || [])
   }, [queryResponse.tasks])
