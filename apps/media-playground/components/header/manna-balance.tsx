@@ -20,7 +20,7 @@ const MannaBalance = () => {
     return (
       <Button asChild size="sm" variant="secondary">
         <Link href={'/settings/subscription'}>
-          <CoinsIcon className="mr-1.5 h-4 w-4" />
+          <CoinsIcon className="mr-1 h-4 w-4" />
           Get Manna!
         </Link>
       </Button>
@@ -31,7 +31,7 @@ const MannaBalance = () => {
     <Popover>
       <PopoverTrigger title="Click to show balance breakdown">
         <div className="text-xs flex">
-          <CoinsIcon className="mr-1.5 h-4 w-4" />
+          <CoinsIcon className="mr-1 h-4 w-4" />
           <span>{(balance || 0).toLocaleString()}</span>
         </div>
       </PopoverTrigger>
