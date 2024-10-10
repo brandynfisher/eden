@@ -68,6 +68,7 @@ export type GeneratorV2 = {
   parameters?: GeneratorParameterV2[]
   outputType: GeneratorOutputTypeV2
   costEstimate?: string
+  resolutions?: string[]
 }
 
 export type GeneratorParameterType =

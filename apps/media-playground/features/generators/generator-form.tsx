@@ -31,10 +31,10 @@ const GeneratorForm = ({ generator }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const hasAspectRatioSelector = generator.parameters?.some(
-    param => param.name === 'width' || param.name === 'height',
-  )
-
+  // const hasAspectRatioSelector = generator.parameters?.some(
+  //   param => param.name === 'width' || param.name === 'height',
+  // )
+  const presetResolutions = generator?.resolutions
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
 
   type FormData = z.infer<typeof parameterSchema>
@@ -163,9 +163,12 @@ const GeneratorForm = ({ generator }: Props) => {
                 <ParameterField parameter={parameter} form={form} />
               </div>
             ))}
-            {hasAspectRatioSelector ? (
+            {presetResolutions && presetResolutions.length ? (
               <div className="flex justify-end">
-                <AspectRatioSelector form={form} />
+                <AspectRatioSelector
+                  presetResolutions={presetResolutions}
+                  form={form}
+                />
               </div>
             ) : null}
           </div>

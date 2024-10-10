@@ -15,7 +15,6 @@ import { TaskV2Status } from '@edenlabs/eden-sdk'
 import {
   BanIcon,
   CircleCheckIcon,
-  CircleIcon,
   ExternalLinkIcon,
   InboxIcon,
   TriangleAlertIcon,
@@ -50,19 +49,22 @@ const TaskStatusIndicator = () => {
             <div className="flex items-center">
               <InboxIcon className="mr-1 h-4 w-4" />0
             </div>
-          ) : null}
-          {pendingRunningTasks && pendingRunningTasks.length ? (
-            <div className="flex items-center text-blue-500">
-              <span className={'mr-1 h-5 w-5 loading loading-ring'} />
-              <span className="text-sm">{pendingRunningTasks.length}</span>
-            </div>
-          ) : null}
-          {completedTasks && completedTasks.length ? (
-            <div className="flex items-center text-green-500">
-              <CircleCheckIcon className="mr-1 h-4 w-4" />
-              <span className="text-sm">{completedTasks.length}</span>
-            </div>
-          ) : null}
+          ) : (
+            <>
+              {pendingRunningTasks && pendingRunningTasks.length ? (
+                <div className="flex items-center text-blue-500">
+                  <span className={'mr-1 h-5 w-5 loading loading-ring'} />
+                  <span className="text-sm">{pendingRunningTasks.length}</span>
+                </div>
+              ) : null}
+              {completedTasks && completedTasks.length ? (
+                <div className="flex items-center text-green-500">
+                  <CircleCheckIcon className="mr-1 h-4 w-4" />
+                  <span className="text-sm">{completedTasks.length}</span>
+                </div>
+              ) : null}
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
 
@@ -73,32 +75,35 @@ const TaskStatusIndicator = () => {
             prefetch={false}
             className="text-sm px-2 py-1 flex gap-1 items-center hover:underline"
           >
-            View all
+            View all Tasks
             <ExternalLinkIcon className="ml-1 h-4 w-4" />
           </Link>
           <div className="px-2 py-1">
             <div className="flex space-x-2 justify-between">
-              <div className="flex text-blue-500 items-center">
-                {pendingRunningTasks && pendingRunningTasks.length ? (
+              {pendingRunningTasks && pendingRunningTasks.length ? (
+                <div className="flex text-blue-500 items-center">
                   <span className={'mr-1.5 h-4 w-4 loading loading-ring'} />
-                ) : (
-                  <CircleIcon className="mr-1.5 h-4 w-4" />
-                )}
-                <span className="text-xs">{pendingRunningTasks.length}</span>
-              </div>
-
-              <div className="flex text-red-500 items-center">
-                <TriangleAlertIcon className="mr-1.5 h-4 w-4" />
-                <span className="text-xs">{failedTasks.length}</span>
-              </div>
-              <div className="flex text-yellow-500 items-center">
-                <BanIcon className="mr-1.5 h-4 w-4" />
-                <span className="text-xs">{cancelledTasks.length}</span>
-              </div>
-              <div className="flex text-green-500 items-center">
-                <CircleCheckIcon className="mr-1.5 h-4 w-4" />
-                <span className="text-xs">{completedTasks.length}</span>
-              </div>
+                  <span className="text-xs">{pendingRunningTasks.length}</span>
+                </div>
+              ) : null}
+              {completedTasks && completedTasks.length ? (
+                <div className="flex text-green-500 items-center">
+                  <CircleCheckIcon className="mr-1.5 h-4 w-4" />
+                  <span className="text-xs">{completedTasks.length}</span>
+                </div>
+              ) : null}
+              {failedTasks && failedTasks.length ? (
+                <div className="flex text-red-500 items-center">
+                  <TriangleAlertIcon className="mr-1.5 h-4 w-4" />
+                  <span className="text-xs">{failedTasks.length}</span>
+                </div>
+              ) : null}
+              {cancelledTasks && cancelledTasks.length ? (
+                <div className="flex text-yellow-500 items-center">
+                  <BanIcon className="mr-1.5 h-4 w-4" />
+                  <span className="text-xs">{cancelledTasks.length}</span>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -153,8 +158,6 @@ const TaskStatusIndicator = () => {
                               alt={task.args.prompt || ''}
                               width={48}
                               height={48}
-                              // fill={true}
-                              // sizes={'48px'}
                             />
                           ))
                         : null}
