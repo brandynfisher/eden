@@ -69,44 +69,50 @@ const TaskStatusIndicator = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="bg-popover shadow-md rounded-md w-80">
-        <div className="flex w-full justify-between items-center gap-2">
+        <DropdownMenuItem className="cursor-pointer group" asChild>
           <Link
             href={'/create/image/flux-schnell'}
             prefetch={false}
-            className="text-sm px-2 py-1 flex gap-1 items-center hover:underline"
+            className="text-sm px-2 py-1"
           >
-            View all Tasks
-            <ExternalLinkIcon className="ml-1 h-4 w-4" />
-          </Link>
-          <div className="px-2 py-1">
-            <div className="flex space-x-2 justify-between">
-              {pendingRunningTasks && pendingRunningTasks.length ? (
-                <div className="flex text-blue-500 items-center">
-                  <span className={'mr-1.5 h-4 w-4 loading loading-ring'} />
-                  <span className="text-xs">{pendingRunningTasks.length}</span>
+            <div className="flex w-full justify-between items-center gap-2">
+              <div className=" flex gap-1 items-center">
+                <div className="group-hover:underline">View all Tasks</div>
+                <ExternalLinkIcon className="ml-1 h-4 w-4" />
+              </div>
+              <div className="px-2 py-1">
+                <div className="flex space-x-2 justify-between">
+                  {pendingRunningTasks && pendingRunningTasks.length ? (
+                    <div className="flex text-blue-500 items-center">
+                      <span className={'mr-1.5 h-4 w-4 loading loading-ring'} />
+                      <span className="text-xs">
+                        {pendingRunningTasks.length}
+                      </span>
+                    </div>
+                  ) : null}
+                  {completedTasks && completedTasks.length ? (
+                    <div className="flex text-green-500 items-center">
+                      <CircleCheckIcon className="mr-1.5 h-4 w-4" />
+                      <span className="text-xs">{completedTasks.length}</span>
+                    </div>
+                  ) : null}
+                  {failedTasks && failedTasks.length ? (
+                    <div className="flex text-red-500 items-center">
+                      <TriangleAlertIcon className="mr-1.5 h-4 w-4" />
+                      <span className="text-xs">{failedTasks.length}</span>
+                    </div>
+                  ) : null}
+                  {cancelledTasks && cancelledTasks.length ? (
+                    <div className="flex text-yellow-500 items-center">
+                      <BanIcon className="mr-1.5 h-4 w-4" />
+                      <span className="text-xs">{cancelledTasks.length}</span>
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-              {completedTasks && completedTasks.length ? (
-                <div className="flex text-green-500 items-center">
-                  <CircleCheckIcon className="mr-1.5 h-4 w-4" />
-                  <span className="text-xs">{completedTasks.length}</span>
-                </div>
-              ) : null}
-              {failedTasks && failedTasks.length ? (
-                <div className="flex text-red-500 items-center">
-                  <TriangleAlertIcon className="mr-1.5 h-4 w-4" />
-                  <span className="text-xs">{failedTasks.length}</span>
-                </div>
-              ) : null}
-              {cancelledTasks && cancelledTasks.length ? (
-                <div className="flex text-yellow-500 items-center">
-                  <BanIcon className="mr-1.5 h-4 w-4" />
-                  <span className="text-xs">{cancelledTasks.length}</span>
-                </div>
-              ) : null}
+              </div>
             </div>
-          </div>
-        </div>
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
         <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh_-_240px)] md:max-h-[calc(100dvh_-_120px)]">
