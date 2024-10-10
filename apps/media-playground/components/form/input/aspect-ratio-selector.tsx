@@ -7,54 +7,6 @@ export type Resolution = {
   width: number
   height: number
 }
-//
-// const RESOLUTIONS: Resolution[] = [
-//   {
-//     label: '9:21',
-//     width: 640,
-//     height: 1536,
-//   },
-//   {
-//     label: '9:16',
-//     width: 768,
-//     height: 1344,
-//   },
-//   {
-//     label: '2:3',
-//     width: 832,
-//     height: 1216,
-//   },
-//   {
-//     label: '3:4',
-//     width: 896,
-//     height: 1152,
-//   },
-//   {
-//     label: '1:1',
-//     width: 1024,
-//     height: 1024,
-//   },
-//   {
-//     label: '4:3',
-//     width: 1152,
-//     height: 896,
-//   },
-//   {
-//     label: '3:2',
-//     width: 1216,
-//     height: 832,
-//   },
-//   {
-//     label: '16:9',
-//     width: 1344,
-//     height: 768,
-//   },
-//   {
-//     label: '21:9',
-//     width: 1536,
-//     height: 640,
-//   },
-// ]
 
 type Props = {
   presetResolutions: string[]
@@ -62,17 +14,19 @@ type Props = {
 }
 
 const AspectRatioSelector = ({ presetResolutions, form }: Props) => {
-  const resolutions = presetResolutions.map(presetResolution => {
-    const splitPreset = presetResolution.split('_')
-    const label = splitPreset[0].replace('-', ':')
-    const resolution = splitPreset[1].split('x')
+  const resolutions = presetResolutions
+    .map(presetResolution => {
+      const splitPreset = presetResolution.split('_')
+      const label = splitPreset[0].replace('-', ':')
+      const resolution = splitPreset[1].split('x')
 
-    return {
-      label,
-      width: Number(resolution[0]),
-      height: Number(resolution[1]),
-    }
-  })
+      return {
+        label,
+        width: Number(resolution[0]),
+        height: Number(resolution[1]),
+      }
+    })
+    .reverse()
 
   const widthWatch = form.watch('width')
   const heightWatch = form.watch('height')

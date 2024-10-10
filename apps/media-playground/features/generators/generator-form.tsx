@@ -1,6 +1,7 @@
 'use client'
 
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
+import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
@@ -36,6 +37,9 @@ const GeneratorForm = ({ generator }: Props) => {
   // )
   const presetResolutions = generator?.resolutions
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
+  const sampleCountParameter = generator.parameters?.filter(
+    parameter => parameter.name === 'n_samples',
+  )[0]
 
   type FormData = z.infer<typeof parameterSchema>
   const defaultValues: FormData | undefined = generator.parameters?.reduce(
@@ -127,12 +131,18 @@ const GeneratorForm = ({ generator }: Props) => {
   }, [pathname])
 
   const requiredParameters = useMemo(
-    () => generator.parameters?.filter(parameter => parameter.required),
+    () =>
+      generator.parameters?.filter(
+        parameter => parameter.required && parameter.name !== 'n_samples',
+      ),
     [generator.parameters],
   )
 
   const optionalParameters = useMemo(
-    () => generator.parameters?.filter(parameter => !parameter.required),
+    () =>
+      generator.parameters?.filter(
+        parameter => !parameter.required && parameter.name !== 'n_samples',
+      ),
     [generator.parameters],
   )
 
@@ -163,12 +173,20 @@ const GeneratorForm = ({ generator }: Props) => {
                 <ParameterField parameter={parameter} form={form} />
               </div>
             ))}
-            {presetResolutions && presetResolutions.length ? (
-              <div className="flex justify-end">
-                <AspectRatioSelector
-                  presetResolutions={presetResolutions}
-                  form={form}
-                />
+            {(presetResolutions && presetResolutions.length) ||
+            sampleCountParameter ? (
+              <div className="flex items-center justify-between">
+                {sampleCountParameter ? (
+                  <SampleCountSelector parameter={sampleCountParameter} />
+                ) : null}
+                {presetResolutions && presetResolutions.length ? (
+                  <div className="flex justify-end">
+                    <AspectRatioSelector
+                      presetResolutions={presetResolutions}
+                      form={form}
+                    />
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>

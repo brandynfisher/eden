@@ -23,7 +23,7 @@ function determineSize(width: number): number {
 
 // Utility function to change extension
 function changeExtension(filename: string, format: Formats): string {
-  console.log(filename, format)
+  // console.log(filename, format)
   return filename.replace(EXTENSION_PATTERN, `.${format}`)
 }
 
