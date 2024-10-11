@@ -19,12 +19,14 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 
 // timeline.tsx
 
+// timeline.tsx
+
 export const ListSkeleton = () => {
   return (
     <>
-      <Skeleton className="h-72 w-full" />
-      <Skeleton className="h-72 w-full" />
-      <Skeleton className="h-72 w-full" />
+      <Skeleton className="h-80 w-full" />
+      <Skeleton className="h-80 w-full" />
+      <Skeleton className="h-80 w-full" />
     </>
   )
 }
@@ -101,7 +103,7 @@ const Timeline = ({ generator }: Props) => {
       <DropdownMenuSeparator className="mt-2 mb-4 md:hidden" />
 
       {generator.outputType !== 'lora' ? (
-        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 mb-2 bg-muted/30">
+        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 mb-2 bg-muted-darker">
           <div className="flex items-center justify-between gap-2">
             <label className="text-sm">Show all tool results</label>
             <Switch

@@ -163,6 +163,7 @@ export type TaskV2Args = {
   seed?: number
   lora?: string | null
   lora_strength?: number
+  n_samples?: number
   // models
   name?: string
   lora_training_urls?: string[]

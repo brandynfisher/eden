@@ -6,7 +6,8 @@ import TimelineItemModelResult from '@/components/timeline/timeline-item-model-r
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { TaskV2 } from '@edenlabs/eden-sdk'
+import { cn } from '@/lib/utils'
+import { TaskV2, TaskV2Status } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
 import React, { useCallback, useState } from 'react'
@@ -62,62 +63,64 @@ const TimelineItem = ({ item, queryKey }: Props) => {
     <div
       data-test-id="timeline-item"
       key={item._id}
-      // className="overflow-hidden"
+      className=" rounded-b-lg overflow-hidden"
     >
       <TaskParameterList task={item} />
-      {item.status !== 'completed' ? (
-        <div className="relative rounded-bl-lg rounded-br-lg">
-          {item.status === 'failed' ? (
-            <div className="h-full p-2 bg-accent">
-              <TaskStatusBadge status={item.status} />
-              <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
-                {item.error}
+      <div
+        className={cn([
+          'grid gap-1 px-1 h-fit my-auto grid-cols-2 xl:grid-cols-4 bg-muted-darker',
+          item.args.n_samples && item.args.n_samples > 2
+            ? 'xl:grid-cols-4'
+            : '',
+        ])}
+      >
+        {item.status !== TaskV2Status.Completed ? (
+          <>
+            {item.status === 'failed' ? (
+              <div className="h-full p-2 bg-accent">
+                <TaskStatusBadge status={item.status} />
+                <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
+                  {item.error}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {item.status === 'cancelled' ? (
-            <div className="h-full p-2 bg-accent">
-              <TaskStatusBadge status={item.status} />
-            </div>
-          ) : null}
-
-          {item.status === 'pending' || item.status === 'running' ? (
-            <div className="w-full relative flex flex-col items-center justify-around">
-              <AspectRatio
-                className="bg-accent"
-                ratio={(item.args.width || 1024) / (item.args.height || 1024)}
-              />
-              <div className="absolute flex items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse">
-                <TaskStatusBadge
-                  status={item.status}
-                  hideText={true}
-                  outputType={item.output_type}
-                />
-                {item.status === 'pending'
-                  ? 'Waiting to start...'
-                  : `Generating ${item.output_type}... `}
+            {item.status === 'cancelled' ? (
+              <div className="h-full p-2 bg-accent">
+                <TaskStatusBadge status={item.status} />
               </div>
-              <Button
-                variant="outline"
-                type="button"
-                className="absolute px-2 py-0 h-6 bottom-4 right-4 text-warning/40 text-xs bg-popover/40 hover:bg-popover/70"
-                onClick={() => handleCancel(item._id)}
-                disabled={isCancelling}
+            ) : null}
+          </>
+        ) : null}
+
+        {item.status === 'pending' || item.status === 'running' ? (
+          <>
+            {[...Array(item.args.n_samples || 1)].map((_e, i) => (
+              <div
+                key={i}
+                className="w-full relative flex flex-col items-center justify-around"
               >
-                Cancel Task
-              </Button>
-            </div>
-          ) : null}
-          <div className="relative text-sm p-2 rounded-b-lg bg-muted/60">
-            <TaskActionsMenu task={item} className="ml-auto" />
-          </div>
-        </div>
-      ) : (
-        <div>
-          {item.status === 'completed' &&
-          item.result &&
-          Array.isArray(item.result) ? (
+                <AspectRatio
+                  className="bg-popover/50 rounded-md overflow-hidden"
+                  ratio={(item.args.width || 1024) / (item.args.height || 1024)}
+                />
+                <div className="absolute flex flex-col md:flex-row items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse">
+                  <TaskStatusBadge
+                    status={item.status}
+                    hideText={true}
+                    outputType={item.output_type}
+                  />
+                  {item.status === 'pending'
+                    ? 'Waiting to start...'
+                    : `Generating ${item.output_type}... `}
+                </div>
+              </div>
+            ))}
+          </>
+        ) : null}
+
+        {item.status === 'completed' ? (
+          item.result && Array.isArray(item.result) ? (
             item.result.map((result, index) =>
               result.model === undefined ? (
                 <TimelineItemMediaResult
@@ -142,9 +145,27 @@ const TimelineItem = ({ item, queryKey }: Props) => {
             <div className="text-warning">
               Unhandled result: {item.workflow} - {item._id}
             </div>
-          )}
+          )
+        ) : null}
+      </div>
+
+      {item.status !== TaskV2Status.Completed ? (
+        <div className="flex justify-between p-2 items-center bg-muted-darker rounded-b-lg overflow-hidden">
+          {item.status === TaskV2Status.Pending ||
+          item.status === TaskV2Status.Running ? (
+            <Button
+              variant="outline"
+              type="button"
+              className="px-2 py-0 h-6 text-warning/40 text-xs bg-popover/40 hover:bg-popover/70"
+              onClick={() => handleCancel(item._id)}
+              disabled={isCancelling}
+            >
+              Cancel Task
+            </Button>
+          ) : null}
+          <TaskActionsMenu task={item} className="ml-auto" />
         </div>
-      )}
+      ) : null}
     </div>
   )
 }
