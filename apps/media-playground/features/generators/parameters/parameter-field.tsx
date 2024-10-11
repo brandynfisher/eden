@@ -162,6 +162,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                 {parameter.choices && parameter.choices.length ? (
                   <SelectInput
                     placeholder={label}
+                    label={label}
                     onChange={onChange}
                     value={value}
                     options={parameter.choices}

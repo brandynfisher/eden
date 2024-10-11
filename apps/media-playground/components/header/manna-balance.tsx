@@ -2,10 +2,11 @@
 
 import { Button } from '@/components/ui/button'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import MannaBalanceTable from '@/features/account/manna-balance-table'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { CoinsIcon } from 'lucide-react'
@@ -28,33 +29,36 @@ const MannaBalance = () => {
   }
 
   return (
-    <Popover>
-      <PopoverTrigger title="Click to show balance breakdown">
-        <div className="text-xs flex">
+    <DropdownMenu>
+      <DropdownMenuTrigger title="Click to show balance breakdown" asChild>
+        <Button variant="ghost" className="text-xs px-2 flex focus:!ring-0">
           <CoinsIcon className="mr-1 h-4 w-4" />
           <span>{(balance || 0).toLocaleString()}</span>
-        </div>
-      </PopoverTrigger>
-      <PopoverContent
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
         collisionPadding={16}
-        className="text-xs flex flex-col p-0"
+        className="text-xs flex flex-col p-0 w-64"
       >
-        <div className="px-3 py-2 text-sm text-accent-foreground flex w-full justify-between bg-accent/70 mt-0 caption-top border border-t-0 border-l-0 border-r-0 border-b-secondary overflow-hidden rounded-t-md">
-          Manna Balance
+        <DropdownMenuItem asChild className="cursor-pointer">
           <Link
-            className="text-sm underline hover:text-popover-foreground"
+            className="text-sm group px-3 py-2 bg-accent/70 text-accent-foreground flex items-center w-full justify-between border border-t-0 border-l-0 border-r-0 rounded-b-none"
             href={'/settings/subscription'}
           >
-            Get more!
+            Manna Balance
+            <div className="underline group-hover:text-popover-foreground">
+              Get more!
+            </div>
           </Link>
-        </div>
+          {/*px-3 py-2 text-sm text-accent-foreground flex w-full justify-between bg-accent/70 mt-0 caption-top border border-t-0 border-l-0 border-r-0 border-b-secondary overflow-hidden rounded-t-md*/}
+        </DropdownMenuItem>
         <MannaBalanceTable
           subscriptionBalance={subscriptionBalance}
           foreverBalance={foreverBalance}
           totalBalance={balance}
         />
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

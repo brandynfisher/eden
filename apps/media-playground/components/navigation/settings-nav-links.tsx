@@ -21,6 +21,7 @@ const SettingsNavLinks = () => {
           className={cn(
             'px-2 py-1.5 rounded-md',
             isActive('/settings/account') && 'bg-muted/50 text-foreground',
+            '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
           )}
         >
           Account
@@ -30,6 +31,7 @@ const SettingsNavLinks = () => {
           className={cn(
             'px-2 py-1.5 rounded-md',
             isActive('/settings/integrations') && 'bg-muted/50 text-foreground',
+            '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
           )}
         >
           Integrations
@@ -39,6 +41,7 @@ const SettingsNavLinks = () => {
           className={cn(
             'px-2 py-1.5 rounded-md',
             isActive('/settings/subscription') && 'bg-muted/50 text-foreground',
+            '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
           )}
         >
           Subscription
@@ -54,6 +57,7 @@ const SettingsNavLinks = () => {
           className={cn(
             'px-2 py-1.5 rounded-md',
             isActive('/settings/api') && 'bg-muted/50 text-foreground',
+            '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
           )}
         >
           API Keys

@@ -180,7 +180,7 @@ const GeneratorForm = ({ generator }: Props) => {
                   <SampleCountSelector parameter={sampleCountParameter} />
                 ) : null}
                 {presetResolutions && presetResolutions.length ? (
-                  <div className="flex justify-end">
+                  <div className="flex ml-auto">
                     <AspectRatioSelector
                       presetResolutions={presetResolutions}
                       form={form}

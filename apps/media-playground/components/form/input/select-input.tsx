@@ -1,7 +1,9 @@
 import {
   DelayedSelect,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -9,16 +11,18 @@ import { cn } from '@/lib/utils'
 
 type Props = {
   placeholder: string
+  label?: string
   onChange: (newVal: string | number) => void
   value: string | number
   options: (string | number)[]
+  suffix?: string
   className?: string
   optionClassName?: string
-  suffix?: string
 }
 
 const SelectInput = ({
   placeholder,
+  label,
   onChange,
   value,
   options,
@@ -32,16 +36,23 @@ const SelectInput = ({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {options.map(option => (
-          <SelectItem
-            key={option}
-            value={String(option)}
-            className={optionClassName}
-          >
-            {option}
-            {suffix}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          {label ? (
+            <SelectLabel className="border border-t-0 border-l-0 border-r-0 border-b-secondary mb-0.5">
+              {label}
+            </SelectLabel>
+          ) : null}
+          {options.map(option => (
+            <SelectItem
+              key={option}
+              value={String(option)}
+              className={optionClassName}
+            >
+              {option}
+              {suffix}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </DelayedSelect>
   )

@@ -24,6 +24,7 @@ const SampleCountSelector = ({ parameter }: Props) => {
             <FormControl id={name}>
               <SelectInput
                 placeholder={'Sample Count'}
+                label={'Sample Count'}
                 onChange={newVal => onChange(Number(newVal))}
                 value={value}
                 options={[1, 2, 3, 4]}

@@ -43,7 +43,7 @@ const TaskStatusIndicator = () => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex px-2 gap-2">
+        <Button variant="ghost" className="flex px-2 gap-2 focus:!ring-0">
           {(!pendingRunningTasks || !pendingRunningTasks.length) &&
           (!completedTasks || !completedTasks.length) ? (
             <div className="flex items-center">

@@ -74,7 +74,7 @@ const AccountDropdown = () => {
       <DropdownMenuTrigger asChild>
         <Button
           ref={dropdownTriggerRef}
-          className="rounded-full group relative z-10 shadow-[0_0px_2px_0_#030712,0_0px_1px_-1px_#030712]"
+          className="rounded-full group relative z-10 focus:!ring-0"
           size="icon"
           variant="secondary"
         >
@@ -165,12 +165,6 @@ const AccountDropdown = () => {
         {/*</DropdownMenuItem>*/}
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/settings/account`}>
-            <SettingsIcon className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/settings/subscription`}>
             <CreditCardIcon className="mr-2 h-4 w-4" />
             <span>Subscription</span>
@@ -188,6 +182,12 @@ const AccountDropdown = () => {
         >
           <RedeemVoucherForm />
         </DialogMenuItem>
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/settings/account`}>
+            <SettingsIcon className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />

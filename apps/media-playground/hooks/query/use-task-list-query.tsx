@@ -23,7 +23,7 @@ export const useTaskListQuery = ({ enabled = true }: Props) => {
     enabled,
     queryKey,
     queryFn: () =>
-      fetcher<TasksV2ListResponse>(`/api/tasks/list?limit=50&minDate=true`),
+      fetcher<TasksV2ListResponse>(`/api/tasks/list?limit=100&minDate=true`),
   })
 
   // console.log({ data })
