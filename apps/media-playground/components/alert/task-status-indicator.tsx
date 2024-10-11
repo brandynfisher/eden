@@ -42,7 +42,7 @@ const TaskStatusIndicator = () => {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger title="View recent tasks" asChild>
         <Button variant="ghost" className="flex px-2 gap-2 focus:!ring-0">
           {(!pendingRunningTasks || !pendingRunningTasks.length) &&
           (!completedTasks || !completedTasks.length) ? (

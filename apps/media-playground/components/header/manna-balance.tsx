@@ -30,7 +30,7 @@ const MannaBalance = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger title="Click to show balance breakdown" asChild>
+      <DropdownMenuTrigger title="View manna balance breakdown" asChild>
         <Button variant="ghost" className="text-xs px-2 flex focus:!ring-0">
           <CoinsIcon className="mr-1 h-4 w-4" />
           <span>{(balance || 0).toLocaleString()}</span>
