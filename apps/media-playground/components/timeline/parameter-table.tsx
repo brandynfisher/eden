@@ -96,11 +96,11 @@ const ParameterTable = ({ args, className }: Props) => {
                       : [taskArg[1]]) as string[]
                   )
                     .filter(Boolean)
-                    .map(inputImageUrl => (
+                    .map((inputImageUrl, index) => (
                       <LightboxGalleryItem
                         sizeOnLoad={true}
                         className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
-                        key={inputImageUrl}
+                        key={`${inputImageUrl}_${index}`}
                         item={{
                           url: inputImageUrl,
                           thumbnail: inputImageUrl,

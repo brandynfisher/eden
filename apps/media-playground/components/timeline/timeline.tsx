@@ -2,9 +2,9 @@
 'use client'
 
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
-import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import TimelineItem from '@/components/timeline/timeline-item'
 import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
   IPage,
@@ -19,7 +19,15 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 
 // timeline.tsx
 
-// timeline.tsx
+export const ListSkeleton = () => {
+  return (
+    <>
+      <Skeleton className="h-72 w-full" />
+      <Skeleton className="h-72 w-full" />
+      <Skeleton className="h-72 w-full" />
+    </>
+  )
+}
 
 type Props = {
   generator: GeneratorV2
@@ -89,7 +97,7 @@ const Timeline = ({ generator }: Props) => {
   }, [subscribeToTaskUpdates, queryClient, queryKey])
 
   return (
-    <div className="mb-8 lg:col-span-2 md:pt-4">
+    <div className="mb-8">
       <DropdownMenuSeparator className="mt-2 mb-4 md:hidden" />
 
       {generator.outputType !== 'lora' ? (
@@ -105,7 +113,7 @@ const Timeline = ({ generator }: Props) => {
       ) : null}
 
       <div data-test-id="timeline">
-        <Suspense fallback={<MasonrySkeleton />}>
+        <Suspense fallback={<ListSkeleton />}>
           <ListVirtualizerVertical
             apiEndpoint={'/api/tasks/list'}
             query={query}

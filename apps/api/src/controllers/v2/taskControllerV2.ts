@@ -228,7 +228,7 @@ export const listTasks = async (
   //   select: '-args.lora_training_urls',
   // }
 
-  console.log({ minDate, query, queryOptions })
+  // console.log({ minDate, query, queryOptions })
 
   const paginatedResponse = await tasksRepository.query(query, queryOptions)
 

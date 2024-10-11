@@ -2,8 +2,8 @@
 'use client'
 
 import LoadingIndicator from '@/components/loading-indicator'
+import { ListSkeleton } from '@/components/timeline/timeline'
 import { useElementSize } from '@/hooks/use-element-size'
-import { useMediaQuery } from '@/hooks/use-media-query'
 import { fetcher } from '@/lib/fetcher'
 import {
   TaskV2,
@@ -13,6 +13,8 @@ import {
 import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
+
+// list-virtualizer-vertical.tsx
 
 // list-virtualizer-vertical.tsx
 
@@ -34,11 +36,7 @@ const ListVirtualizerVertical = ({
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
-  const above1536 = useMediaQuery('(min-width: 1536px)')
-  const above1024 = useMediaQuery('(min-width: 1024px)')
-  const above768 = useMediaQuery('(min-width: 768px)')
-
-  const MASONRY_COLUMN_COUNT = above1536 ? 3 : above1024 ? 2 : above768 ? 1 : 1
+  const MASONRY_COLUMN_COUNT = 1
 
   const columnWidth = useMemo(() => {
     return (
@@ -171,11 +169,13 @@ const ListVirtualizerVertical = ({
         }}
       >
         {!allRows.length ? (
-          <div className="bg-primary/10 w-full h-full flex justify-center rounded-lg">
+          <div className="w-full flex flex-col gap-y-4">
             {status === 'pending' ? (
-              <LoadingIndicator />
+              <ListSkeleton />
             ) : (
-              <div className="px-4">No recent tasks found.</div>
+              <div className="p-4 text-center bg-accent rounded-md">
+                No recent tasks found.
+              </div>
             )}
           </div>
         ) : null}
