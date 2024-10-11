@@ -1,4 +1,3 @@
-// list-virtualizer-vertical.tsx
 'use client'
 
 import LoadingIndicator from '@/components/loading-indicator'
@@ -13,10 +12,6 @@ import {
 import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
-
-// list-virtualizer-vertical.tsx
-
-// list-virtualizer-vertical.tsx
 
 const MASONRY_GUTTER = 16
 const QUERY_LIMIT = 35

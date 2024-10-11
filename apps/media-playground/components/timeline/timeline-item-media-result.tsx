@@ -22,7 +22,7 @@ export const MediaResult = ({
 }) => {
   return (
     <div
-      className="relative border-transparent bg-popover z-10"
+      className="relative border-transparent bg-popover z-10 rounded-md overflow-hidden"
       style={{
         aspectRatio:
           result?.mediaAttributes?.aspectRatio ||
@@ -60,7 +60,7 @@ export const MediaResult = ({
 
 const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
-    <>
+    <div>
       <MediaResult task={task} result={result} />
       <TimelineItemResultTools
         task={task}
@@ -68,7 +68,7 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
         index={index}
         queryKey={queryKey}
       />
-    </>
+    </div>
   )
 }
 

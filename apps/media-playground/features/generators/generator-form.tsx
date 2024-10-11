@@ -169,7 +169,7 @@ const GeneratorForm = ({ generator }: Props) => {
             className="flex flex-col gap-2"
           >
             {requiredParameters?.map(parameter => (
-              <div key={parameter.name} className="bg-muted/60 rounded-lg">
+              <div key={parameter.name} className="bg-muted-darker rounded-lg">
                 <ParameterField parameter={parameter} form={form} />
               </div>
             ))}

@@ -1,4 +1,3 @@
-// timeline.tsx
 'use client'
 
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
@@ -15,16 +14,16 @@ import {
 import { useTaskStatus } from '@/providers/task-status-provider'
 import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
 import { QueryKey, useQueryClient } from '@tanstack/react-query'
-import { Suspense, useEffect, useMemo, useState } from 'react'
-
-// timeline.tsx
+import { useEffect, useMemo, useState } from 'react'
 
 export const ListSkeleton = () => {
   return (
     <>
-      <Skeleton className="h-72 w-full" />
-      <Skeleton className="h-72 w-full" />
-      <Skeleton className="h-72 w-full" />
+      <Skeleton className="h-80 w-full" />
+      <Skeleton className="h-80 w-full" />
+      <Skeleton className="h-80 w-full" />
+      <Skeleton className="h-80 w-full" />
+      <Skeleton className="h-80 w-full" />
     </>
   )
 }
@@ -101,7 +100,7 @@ const Timeline = ({ generator }: Props) => {
       <DropdownMenuSeparator className="mt-2 mb-4 md:hidden" />
 
       {generator.outputType !== 'lora' ? (
-        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 mb-2 bg-muted/30">
+        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 mb-2 bg-muted-darker">
           <div className="flex items-center justify-between gap-2">
             <label className="text-sm">Show all tool results</label>
             <Switch
@@ -113,16 +112,12 @@ const Timeline = ({ generator }: Props) => {
       ) : null}
 
       <div data-test-id="timeline">
-        <Suspense fallback={<ListSkeleton />}>
-          <ListVirtualizerVertical
-            apiEndpoint={'/api/tasks/list'}
-            query={query}
-            queryKey={queryKey}
-            render={item => (
-              <TimelineItem item={item.item} queryKey={queryKey} />
-            )}
-          />
-        </Suspense>
+        <ListVirtualizerVertical
+          apiEndpoint={'/api/tasks/list'}
+          query={query}
+          queryKey={queryKey}
+          render={item => <TimelineItem item={item.item} queryKey={queryKey} />}
+        />
       </div>
     </div>
   )
