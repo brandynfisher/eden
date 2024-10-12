@@ -35,7 +35,7 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
   //   : partialSegments
 
   return (
-    <div className="relative flex px-1 items-center bg-muted-darker md:z-50 md:sticky md:top-16">
+    <div className="relative flex px-1 items-center bg-muted-darker md:z-50 md:sticky md:top-16 drop-shadow-lg">
       <NavigationMenu>
         {title ? (
           <Link href={`/${baseSegment}`} className="p-4 px-2 mr-2">

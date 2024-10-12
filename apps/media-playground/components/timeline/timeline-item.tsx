@@ -1,6 +1,6 @@
 import TaskStatusBadge from '@/components/badge/task-status-badge'
 import TaskActionsMenu from '@/components/button/task-actions-menu'
-import TaskParameterList from '@/components/timeline/task-parameter-list'
+import ParameterTableCollapsible from '@/components/timeline/parameter-table-collapsible'
 import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
 import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
@@ -63,15 +63,28 @@ const TimelineItem = ({ item, queryKey }: Props) => {
     <div
       data-test-id="timeline-item"
       key={item._id}
-      className=" rounded-b-lg overflow-hidden"
+      className="border border-secondary p-2 rounded-lg overflow-hidden"
     >
-      <TaskParameterList task={item} />
+      <ParameterTableCollapsible item={item} />
+      {/*<div*/}
+      {/*  // className={cn([*/}
+      {/*  //   'grid gap-2 h-fit my-auto grid-cols-2 xl:grid-cols-4',*/}
+      {/*  //   item.args.n_samples && item.args.n_samples > 2*/}
+      {/*  //     ? 'xl:grid-cols-4'*/}
+      {/*  //     : '',*/}
+      {/*  // ])}*/}
+      {/*  className={cn(['grid space-x-2 space-y-2 grid-flow-col auto-cols-[33.3%]', item.args.n_samples && item.args.n_samples > 2 ? 'auto-cols-[25%]' : ''])}*/}
+      {/*>*/}
       <div
         className={cn([
-          'grid gap-1 px-1 h-fit my-auto grid-cols-2 xl:grid-cols-4 bg-muted-darker',
-          item.args.n_samples && item.args.n_samples > 2
-            ? 'xl:grid-cols-4'
-            : '',
+          'grid gap-2 auto-cols-fr',
+          !item.args.n_samples || item.args.n_samples === 1
+            ? 'grid-cols-1 justify-items-center'
+            : item.args.n_samples > 2
+            ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
+              ? 'md:grid-cols-2 md:grid-rows-2'
+              : 'grid-flow-col auto-cols-[minmax(0,_1fr)] md:grid-cols-2 md:grid-rows-2  lg:grid-cols-4 lg:grid-rows-1'
+            : 'grid-cols-2',
         ])}
       >
         {item.status !== TaskV2Status.Completed ? (

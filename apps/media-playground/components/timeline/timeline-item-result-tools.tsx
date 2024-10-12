@@ -86,7 +86,7 @@ const TimelineItemResultTools = ({
   return (
     <div
       data-test-id="timeline-item-result-tools"
-      className={cn([`relative text-sm py-2`, className])}
+      className={cn([`relative text-sm mt-2`, className])}
     >
       <div className="flex flex-wrap gap-2">
         {task.output_type !== 'lora' && !result.published ? (
