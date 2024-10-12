@@ -81,7 +81,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
         {item.status !== TaskV2Status.Completed ? (
           <>
             {item.status === 'failed' ? (
-              <div className="h-full p-2 bg-accent">
+              <div className="h-full w-full p-2 bg-accent">
                 <TaskStatusBadge status={item.status} />
                 <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
                   {item.error}
@@ -90,7 +90,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
             ) : null}
 
             {item.status === 'cancelled' ? (
-              <div className="h-full p-2 bg-accent">
+              <div className="h-full w-full p-2 bg-accent">
                 <TaskStatusBadge status={item.status} />
               </div>
             ) : null}
