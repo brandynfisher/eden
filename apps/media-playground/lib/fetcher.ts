@@ -121,7 +121,7 @@ export const createCursorPaginationRoute = (
   const basePath = baseUrl
   const params: CursorPaginatedFeedQuery = {}
 
-  console.log(query)
+  // console.log(query)
 
   if (query.limit) {
     params.limit = query.limit
