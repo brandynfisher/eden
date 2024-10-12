@@ -83,7 +83,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
             : item.args.n_samples > 2
             ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
               ? 'md:grid-cols-2 md:grid-rows-2'
-              : 'grid-flow-col auto-cols-[minmax(0,_1fr)] md:grid-cols-2 md:grid-rows-2  lg:grid-cols-4 lg:grid-rows-1'
+              : 'grid-flow-col grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1'
             : 'grid-cols-2',
         ])}
       >
