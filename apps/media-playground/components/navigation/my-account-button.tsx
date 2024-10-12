@@ -18,6 +18,7 @@ import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import {
+  BookmarkIcon,
   ComponentIcon,
   CreditCardIcon,
   LogOutIcon,
@@ -157,12 +158,13 @@ const AccountDropdown = () => {
           </Link>
           {/*<DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
-        {/*<DropdownMenuItem className="cursor-pointer" asChild>*/}
-        {/*  <Link href={`/creators/${user?.username}?tab=collections`}>*/}
-        {/*    Collections*/}
-        {/*  </Link>*/}
-        {/*  /!*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*!/*/}
-        {/*</DropdownMenuItem>*/}
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/creators/${user?.username}?tab=collections`}>
+            <BookmarkIcon className="mr-2 h-4 w-4" />
+            <span>Collections</span>
+          </Link>
+          {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/settings/subscription`}>

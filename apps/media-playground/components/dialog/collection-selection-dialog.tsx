@@ -131,7 +131,7 @@ const CollectionSelectionDialog = ({
           </DialogDescription>
           {collections.length > 0 ? (
             <>
-              <ScrollArea className="max-h-72 py-4">
+              <ScrollArea className="max-h-72">
                 {collections.map(collection => (
                   <div
                     key={collection._id}
@@ -150,19 +150,19 @@ const CollectionSelectionDialog = ({
                   </div>
                 ))}
               </ScrollArea>
-              <Separator className="my-2" />
-              <Button
-                variant="outline"
-                size="lg"
-                className="!w-full"
-                onClick={handleCreateCollectionModalOpenChange}
-              >
-                Create new collection
-              </Button>
+              <Separator className="my-0" />
             </>
           ) : (
             <p>No collections found</p>
           )}
+          <Button
+            variant="secondary"
+            size="lg"
+            className="!w-full"
+            onClick={handleCreateCollectionModalOpenChange}
+          >
+            Create new collection
+          </Button>
         </DialogContent>
       </Dialog>
       <Dialog

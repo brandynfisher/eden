@@ -37,7 +37,9 @@ const Workspace = ({ generatorKey, generatorSSRData }: Props) => {
       </div>
 
       <div className="mb-8 lg:pt-4 flex flex-col gap-y-4 w-full">
-        <Timeline generator={generator} />
+        <Suspense>
+          <Timeline generator={generator} />
+        </Suspense>
       </div>
     </div>
   )

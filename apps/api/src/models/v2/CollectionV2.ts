@@ -9,7 +9,6 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 
 export interface CollectionV2Schema {
-  _id: string
   user: UserDocument
   name: string
   description?: string
@@ -18,7 +17,6 @@ export interface CollectionV2Schema {
   coverCreation?: CreationV2Document
   createdAt: Date
   updatedAt: Date
-  deleted?: boolean
   public?: boolean
 }
 

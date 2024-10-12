@@ -1,5 +1,4 @@
 import { getSimilarCreationIds } from '../../lib/similar'
-import { Collection } from '../../models/Collection'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
 import { CollectionV2 } from '../../models/v2/CollectionV2'
 import { CreationV2 } from '../../models/v2/CreationV2'
@@ -111,6 +110,79 @@ type GenericFilters = {
   character?: ObjectId
   concept?: ObjectId
   collection?: ObjectId
+}
+
+const createCursorMatch = (cursor: string) => {
+  // If a cursor is provided, convert it to an ObjectId, otherwise match all
+  const lastSeenIdMatch = cursor ? { _id: { $lt: new ObjectId(cursor) } } : {}
+  return [lastSeenIdMatch] || []
+}
+
+const maybeAddCursorFilterStage = (
+  cursor?: string,
+  filters?: Filters,
+): PipelineStage | undefined => {
+  const match = cursor
+    ? {
+        $and: [
+          // only add _id match-filter if cursor is defined
+          ...createCursorMatch(cursor),
+          { ...filters },
+        ],
+      }
+    : {
+        ...filters,
+      }
+
+  return Object.keys(match).length ? { $match: match } : undefined
+}
+
+const creationsLookup = (
+  localField: string,
+  foreignField: string,
+  lookupPipeline: PipelineStage[],
+) => {
+  return [
+    {
+      $lookup: {
+        from: 'creations2',
+        localField: localField,
+        foreignField: foreignField,
+        pipeline: lookupPipeline,
+        as: 'creations',
+      },
+    },
+    {
+      $unwind: {
+        path: '$creations',
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$creations',
+      },
+    },
+  ]
+}
+
+const collectionsPreAggregatePipeline = (
+  matchStage: PipelineStage[],
+  lookupPipeline: PipelineStage[],
+) => {
+  return [
+    ...matchStage,
+    {
+      $project: {
+        creations: 1,
+      },
+    },
+    ...creationsLookup('creations', '_id', lookupPipeline),
+    {
+      $sort: {
+        _id: -1,
+      },
+    },
+  ]
 }
 
 const handleArguments = async ({
@@ -396,7 +468,7 @@ const handleArguments = async ({
     item => item.name === 'collection',
   )[0]
   const collection = collectionFilter
-    ? await Collection.findById(collectionFilter.value)
+    ? await CollectionV2.findById(collectionFilter.value)
     : undefined
 
   const defaultPrivacyFilter =
@@ -527,10 +599,10 @@ export const getCreationsFeedCursorV2 = async (
     sortOptions,
     customFilterOptions,
     // filterMap,
-    // preAggregateFilterOptions,
+    preAggregateFilterOptions,
     // useReactionsPreAggregate,
     // useEmbeddingsPreAggregate,
-    // useCollectionsPreAggregate,
+    useCollectionsPreAggregate,
     // useFollowingPreAggregate,
   } = await handleArguments({
     server,
@@ -544,51 +616,96 @@ export const getCreationsFeedCursorV2 = async (
   let results = []
   const lateLookupStages = [...userLookup]
 
-  const pipeline = await createPipeline({
-    limit: limit ?? 100,
-    sortOptions: { ...sortOptions, _id: -1 },
-    sortCursor:
-      customFilterOptions.praiseCount && nextValue !== undefined
-        ? { praiseCount: { $lte: nextValue } }
-        : undefined,
-    cursor,
-  })
+  console.log(
+    JSON.stringify(
+      { useCollectionsPreAggregate, filters, preAggregateFilterOptions },
+      null,
+      2,
+    ),
+  )
 
-  // const hoursAgo = 360
-  // currentDate.setMinutes(0, 0, 0)
-  // const minDateDefault = new Date(currentDate)
-  // minDateDefault.setHours(currentDate.getHours() - hoursAgo)
-  // minDateDefault.setMinutes(0, 0, 0)
-  // const maxDate = filterMap
-  //   ? filterMap.filter(item => item.name === 'maxDate')[0]
-  //   : undefined
-  // const minDate = filterMap
-  //   ? filterMap.filter(item => item.name === 'minDate')[0]
-  //   : undefined
-  // const embeddingsFilter = {
-  //   ...filters,
-  //   createdAt: {
-  //     $gte: minDate ? minDate.value : minDateDefault,
-  //     $lte: maxDate ? maxDate?.value : undefined,
-  //   },
-  //   'embedding.score': {
-  //     $exists: true,
-  //   },
-  // }
+  if (useCollectionsPreAggregate) {
+    const lookupPipeline = await createPipeline({
+      // @ts-ignore
+      filters,
+      sortOptions,
+      // limit: limit ?? 100,
+      // cursor
+    })
+    const pipeline = [
+      ...collectionsPreAggregatePipeline(
+        [
+          // {
+          //   $match: {
+          //     _id: {
+          //       $eq: new ObjectId('65e8da9a6d2f63925c73a89d'),
+          //     },
+          //     createdAt: {
+          //       $lte: customFilterOptions?.createdAt?.$lte,
+          //     },
+          //   },
+          // },
+          { $match: preAggregateFilterOptions },
+          // { $sort: { createdAt: -1 } }, //@todo: only add this if we're actually sorting by reaction date and not reaction count etc
+        ],
+        lookupPipeline,
+      ),
+      maybeAddCursorFilterStage(cursor),
+      { $limit: limit ?? 100 },
+      ...lateLookupStages,
+    ].filter(Boolean)
 
-  // let embeddingsTransform: PipelineStage[] = []
-  const creationFeedPipeline = [
+    // console.log(JSON.stringify(pipeline, null, 2))
+
     // @ts-ignore
-    // { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
-    { $match: filters },
-    //   ...embeddingsTransform,
-    ...pipeline,
-    ...lateLookupStages,
-  ].filter(Boolean)
+    results = await CollectionV2.aggregate(pipeline)
+  } else {
+    const pipeline = await createPipeline({
+      limit: limit ?? 100,
+      sortOptions: { ...sortOptions, _id: -1 },
+      sortCursor:
+        customFilterOptions.praiseCount && nextValue !== undefined
+          ? { praiseCount: { $lte: nextValue } }
+          : undefined,
+      cursor,
+    })
 
-  // console.log(JSON.stringify(creationFeedPipeline, null, 2))
+    // const hoursAgo = 360
+    // currentDate.setMinutes(0, 0, 0)
+    // const minDateDefault = new Date(currentDate)
+    // minDateDefault.setHours(currentDate.getHours() - hoursAgo)
+    // minDateDefault.setMinutes(0, 0, 0)
+    // const maxDate = filterMap
+    //   ? filterMap.filter(item => item.name === 'maxDate')[0]
+    //   : undefined
+    // const minDate = filterMap
+    //   ? filterMap.filter(item => item.name === 'minDate')[0]
+    //   : undefined
+    // const embeddingsFilter = {
+    //   ...filters,
+    //   createdAt: {
+    //     $gte: minDate ? minDate.value : minDateDefault,
+    //     $lte: maxDate ? maxDate?.value : undefined,
+    //   },
+    //   'embedding.score': {
+    //     $exists: true,
+    //   },
+    // }
 
-  results = await CreationV2.aggregate(creationFeedPipeline)
+    // let embeddingsTransform: PipelineStage[] = []
+    const creationFeedPipeline = [
+      // @ts-ignore
+      // { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
+      { $match: filters },
+      //   ...embeddingsTransform,
+      ...pipeline,
+      ...lateLookupStages,
+    ].filter(Boolean)
+
+    // console.log(JSON.stringify(creationFeedPipeline, null, 2))
+
+    results = await CreationV2.aggregate(creationFeedPipeline)
+  }
 
   const feed: FeedResponse = {
     docs: results,

@@ -131,10 +131,6 @@ const TimelineItemResultTools = ({
                 queryKey={queryKey}
                 type={'model'}
                 item={result.model}
-                // onUpdate={() => {
-                //   // @todo: mutate/invalidate/optimistic update
-                //   console.log('should set private')
-                // }}
               />
             ) : null}
             {result.creation ? (
@@ -142,10 +138,6 @@ const TimelineItemResultTools = ({
                 queryKey={queryKey}
                 type={'creation'}
                 item={result.creation}
-                // onUpdate={() => {
-                //   // @todo: mutate/invalidate/optimistic update
-                //   console.log('should set private')
-                // }}
               />
             ) : null}
           </>

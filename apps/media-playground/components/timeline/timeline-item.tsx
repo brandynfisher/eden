@@ -66,15 +66,6 @@ const TimelineItem = ({ item, queryKey }: Props) => {
       className="border border-secondary p-2 rounded-lg overflow-hidden"
     >
       <ParameterTableCollapsible item={item} />
-      {/*<div*/}
-      {/*  // className={cn([*/}
-      {/*  //   'grid gap-2 h-fit my-auto grid-cols-2 xl:grid-cols-4',*/}
-      {/*  //   item.args.n_samples && item.args.n_samples > 2*/}
-      {/*  //     ? 'xl:grid-cols-4'*/}
-      {/*  //     : '',*/}
-      {/*  // ])}*/}
-      {/*  className={cn(['grid space-x-2 space-y-2 grid-flow-col auto-cols-[33.3%]', item.args.n_samples && item.args.n_samples > 2 ? 'auto-cols-[25%]' : ''])}*/}
-      {/*>*/}
       <div
         className={cn([
           'grid gap-2 auto-cols-fr',
@@ -82,8 +73,8 @@ const TimelineItem = ({ item, queryKey }: Props) => {
             ? 'grid-cols-1 justify-items-center'
             : item.args.n_samples > 2
             ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
-              ? 'md:grid-cols-2 md:grid-rows-2'
-              : 'grid-flow-col grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1'
+              ? 'grid-flow-col grid-cols-2 grid-rows-2 md:grid-cols-2 md:grid-rows-2'
+              : 'grid-flow-col grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 lg:grid-cols-2 lg:grid-rows-2 xl:grid-cols-4 xl:grid-rows-1'
             : 'grid-cols-2',
         ])}
       >

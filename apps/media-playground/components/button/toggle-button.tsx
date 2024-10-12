@@ -20,12 +20,13 @@ const ToggleButton = ({
     <ToggleGroupItem
       value={value}
       aria-label={`Set ${label}`}
+      title={!disabled ? `Set ${label}` : undefined}
       onClick={!disabled ? onClick : undefined}
       className={cn([
-        'flex items-center h-7 w-16 text-xs rounded-md justify-center data-[disabled]:text-accent-foreground',
+        'flex items-center h-7 w-12 text-xs rounded-md justify-center px-2',
         disabled
-          ? 'cursor-auto !bg-muted'
-          : 'hover:!bg-accent hover:!text-primary',
+          ? 'cursor-auto !bg-secondary-foreground/10 h-8 !text-popover-foreground/75 border-opacity-30 border border-popover-foreground'
+          : 'bg-popover text-muted-foreground hover:!bg-accent first:rounded-r-none last:rounded-l-none hover:!text-primary',
         className,
       ])}
     >

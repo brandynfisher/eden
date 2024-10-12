@@ -25,7 +25,7 @@ const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
       style={style}
     >
       {!model.public ? (
-        <LockIcon className="absolute h-4 w-4 right-3 top-3.5 text-white [@media(pointer:coarse)]:right-2 [@media(pointer:coarse)]:top-2.5 bg-gray-300 bg-opacity-20 rounded-sm p-0.5 drop-shadow backdrop-blur-[2px] z-20" />
+        <LockIcon className="absolute h-4 w-4 right-2 top-2 text-white bg-gray-300 bg-opacity-20 rounded-sm p-0.5 drop-shadow backdrop-blur-[2px] z-20" />
       ) : null}
       {onClick ? (
         <div

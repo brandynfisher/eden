@@ -16,9 +16,14 @@ type Props = {
 
 const CollectionCard = ({ collection, queryKey, onClick }: Props) => {
   return (
-    <Card className="relative overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712] group">
+    <Card className="relative overflow-hidden border-0 z-10 transition-shadow group">
+      {collection.creations ? (
+        <div className="absolute left-2 text-white top-2 bg-gray-700 bg-opacity-80 rounded-md p-1 drop-shadow backdrop-blur-[2px] z-20 text-xs">
+          {collection.creations.length}
+        </div>
+      ) : null}
       {!collection.public ? (
-        <LockIcon className="absolute h-4 w-4 right-3 top-3.5 text-white [@media(pointer:coarse)]:right-2 [@media(pointer:coarse)]:top-2.5 bg-gray-300 bg-opacity-20 rounded-sm p-0.5 drop-shadow backdrop-blur-[2px] z-20" />
+        <LockIcon className="absolute h-4 w-4 right-2 top-2 text-white bg-gray-300 bg-opacity-20 rounded-sm p-0.5 drop-shadow backdrop-blur-[2px] z-20" />
       ) : null}
       {onClick ? (
         <div

@@ -73,7 +73,7 @@ const ListVirtualizerVertical = ({
 
   const rowVirtualizer = useWindowVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,
-    estimateSize: () => 300,
+    estimateSize: () => 600,
     overscan: QUERY_LIMIT,
     lanes: MASONRY_COLUMN_COUNT,
     gap: MASONRY_GUTTER,

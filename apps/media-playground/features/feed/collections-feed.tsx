@@ -2,7 +2,7 @@
 
 import CollectionCard from '@/components/card/collection-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import { RowItem } from '@/lib/mutations/query'
+import { RowItem } from '@/lib/query/cache-updates'
 import {
   CollectionV2,
   FeedCollectionsV2CursorArguments,

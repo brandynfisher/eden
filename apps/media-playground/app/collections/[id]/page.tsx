@@ -1,218 +1,179 @@
-'use client'
+import CollectionDetail from '@/features/detail/collection-detail'
+import customImageLoader, { Formats } from '@/image-loader'
+import { fetcher } from '@/lib/fetcher'
+import { getCloudfrontUrl } from '@/lib/media'
+import { OpenGraph, OpenGraphVideo, TwitterMetadata } from '@/types/OpenGraph'
+import { CollectionsV2GetResponse, MediaType } from '@edenlabs/eden-sdk'
+import { Metadata, ResolvingMetadata } from 'next'
+import { cookies } from 'next/headers'
+import { notFound } from 'next/navigation'
+import { cache } from 'react'
 
-import LoadingIndicator from '@/components/loading-indicator'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
-import UserAvatarLink from '@/components/user/user-avatar-link'
-import { useCollectionQuery } from '@/hooks/query/use-collection-query'
-import { useAuthState } from '@/hooks/use-auth-state'
-import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
-import { Edit2Icon, LockIcon, LockOpenIcon, TrashIcon } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import { z } from 'zod'
+type Props = {
+  params: { id: string }
+}
+// const CollectionDetails = () => {
+//   const { user } = useAuthState()
+//   const { id } = useParams()
+//   const router = useRouter()
+//
+//   const { collection, isLoading, invalidate } = useCollectionQuery({
+//     key: id as string,
+//   })
+//
+//   if (isLoading) {
+//     return <LoadingIndicator className="mx-auto mt-10" />
+//   }
+//
+//   if (!collection) {
+//     return <div className="mx-auto mt-10">Collection not found</div>
+//   }
+//
+//   return (
+//     <CollectionDetail id={id} collectionSSRData={collection}/>
+//   )
+// }
 
-const updateCollectionSchema = z.object({
-  name: z.string().optional(),
-  description: z.string().optional(),
-  public: z.boolean().optional(),
-})
+const getCollection = async (
+  id: string,
+): Promise<CollectionsV2GetResponse | undefined> => {
+  try {
+    const response = await fetcher<CollectionsV2GetResponse>(
+      `${process.env.NEXT_PUBLIC_HOST}/api/collections/${id}`,
+      {
+        credentials: 'include',
+        headers: { Cookie: cookies().toString() },
+      },
+    )
 
-type UpdateCollectionDto = z.infer<typeof updateCollectionSchema>
+    return response
+  } catch (e) {
+    console.error('Error fetching collection:', e)
+    return undefined
+  }
+}
 
-const CollectionDetails = () => {
-  const { user } = useAuthState()
-  const { id } = useParams()
-  const router = useRouter()
+const getCollectionCached = cache(getCollection)
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const id = params.id
+  const response = await getCollectionCached(id || '')
 
-  const { collection, isLoading, invalidate } = useCollectionQuery({
-    key: id as string,
-  })
-
-  const updateCollectionForm = useForm<UpdateCollectionDto>({
-    resolver: zodResolver(updateCollectionSchema),
-    defaultValues: {
-      name: collection?.name || '',
-      description: collection?.description || '',
-      public: collection?.public || false,
-    },
-  })
-
-  useEffect(() => {
-    if (!collection) {
-      return
-    }
-
-    updateCollectionForm.reset({
-      name: collection.name,
-      description: collection.description,
-      public: collection.public,
-    })
-  }, [collection, updateCollectionForm])
-
-  const onUpdateCollection = async (data: UpdateCollectionDto) => {
-    try {
-      await axios.patch(`/api/collections/${id}`, data)
-      setIsDialogOpen(false)
-      toast.success('Collection updated', {
-        description: `Collection: ${data.name} updated successfully`,
-        dismissible: true,
-        richColors: true,
-      })
-      invalidate()
-    } catch (error) {
-      toast.error('Failed to update collection', {
-        description: `Collection: ${collection?.name} failed to update`,
-        dismissible: true,
-        richColors: true,
-      })
-    }
+  if (!response) {
+    return {}
   }
 
-  const onDeleteCollection = async () => {
-    try {
-      await axios.delete(`/api/collections/${id}`)
-      toast.success('Collection deleted', {
-        description: `Collection: ${collection?.name} deleted successfully`,
-        dismissible: true,
-        richColors: true,
-      })
-      router.push(`/creators/${user?.username}?tab=collections`)
-    } catch (error) {
-      toast.error('Failed to delete collection', {
-        description: `Collection: ${collection?.name} failed to delete`,
-        dismissible: true,
-        richColors: true,
-      })
+  const previousOg = (await parent).openGraph || {}
+  const previousTwitter = (await parent).twitter || {}
+
+  const title = `Collection: ${response.collection?.name} by ${response.collection?.user.username} | Eden Create`
+  const baseDescription = `Check out this collection by ${response.collection?.user.username}!`
+  const description = response.collection?.description
+
+  // Initialize OpenGraph metadata
+  const og: OpenGraph = {
+    ...previousOg,
+    title,
+    description: description,
+    images: response.collection?.coverCreation?.thumbnail
+      ? [
+          customImageLoader({
+            src: response.collection?.coverCreation?.thumbnail || '',
+            width: 1024,
+            format: Formats.JPG,
+          }),
+        ]
+      : undefined,
+  }
+
+  // Initialize Twitter metadata
+  const twitter: TwitterMetadata = {
+    ...previousTwitter,
+    title,
+    description: baseDescription, // Default description for Twitter
+    images: response.collection?.coverCreation.thumbnail
+      ? [
+          customImageLoader({
+            src: response.collection?.coverCreation.thumbnail || '',
+            width: 1024,
+            format: Formats.JPG,
+          }),
+        ]
+      : undefined,
+  }
+
+  if (
+    response.collection?.coverCreation.mediaAttributes?.type ===
+      MediaType.Video &&
+    response.collection.coverCreation.url
+  ) {
+    const videoUrl = getCloudfrontUrl(response.collection.coverCreation.url)
+
+    const video: OpenGraphVideo = {
+      url: videoUrl,
+      secureUrl: videoUrl,
+      type:
+        response.collection.coverCreation.mediaAttributes?.mimeType ||
+        'video/mp4',
+      width: response.collection.coverCreation.mediaAttributes?.width || 1024,
+      height: response.collection.coverCreation.mediaAttributes?.height || 1024,
     }
+
+    // Modify OpenGraph metadata for video
+    og.description = '' // Omit description for Discord compatibility
+    og.type = 'video.other' // Specify the OG type as video
+    og.videos = [video]
+
+    // Modify Twitter metadata for video
+    twitter.card = 'player' // Use 'player' card for video
+    twitter.player = videoUrl
+    twitter.playerWidth =
+      response.collection?.coverCreation?.mediaAttributes?.width || 1024
+    twitter.playerHeight =
+      response.collection?.coverCreation?.mediaAttributes?.height || 1024
+    // Description is already set to baseDescription for Twitter
+  } else {
+    // For images or other media types, use 'summary_large_image' card
+    twitter.card = 'summary_large_image'
   }
 
-  if (isLoading) {
-    return <LoadingIndicator className="mx-auto mt-10" />
+  // Assemble the final metadata object
+  const metadata: Metadata = {
+    title,
+    description: og.description, // OG description (might be empty for videos)
+    openGraph: og,
+    twitter: twitter,
   }
 
-  if (!collection) {
-    return <div className="mx-auto mt-10">Collection not found</div>
+  return metadata
+}
+
+const CollectionDetailPage = async ({
+  params: { id: collectionId },
+}: Props) => {
+  if (!collectionId) {
+    return notFound()
+  }
+
+  const response = await getCollectionCached(collectionId || '')
+
+  if (!response || !response.collection) {
+    return notFound()
+  }
+
+  if (response.error) {
+    return <div>error response: {String(response.error)}</div>
   }
 
   return (
-    <>
-      <div className="relative p-6 bg-secondary rounded-md mx-4 mt-4">
-        {user?._id === collection.user._id && (
-          <div className="absolute right-6 flex gap-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              <Edit2Icon size={18} />
-            </Button>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={onDeleteCollection}
-            >
-              <TrashIcon size={18} />
-            </Button>
-          </div>
-        )}
-        <h1 className="text-2xl font-semibold">{collection.name}</h1>
-        <p className="text-sm mt-2 text-gray-200">{collection.description}</p>
-        <p className="flex items-center gap-x-2 mt-2 text-sm text-gray-300">
-          Curated by{' '}
-          <span>
-            <UserAvatarLink
-              name={collection.user.username || collection.user._id}
-              image={collection.user.userImage}
-            />
-          </span>
-        </p>
-        <p className="text-sm mt-2 text-gray-300">
-          {collection.creations.length} creations
-        </p>
-      </div>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <Form {...updateCollectionForm}>
-            <form
-              onSubmit={updateCollectionForm.handleSubmit(onUpdateCollection)}
-              className="space-y-4"
-            >
-              <FormField
-                control={updateCollectionForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Collection Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={updateCollectionForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Collection Description" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={updateCollectionForm.control}
-                name="public"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col gap-y-2">
-                    <FormLabel>Privacy</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center gap-x-4">
-                        <LockIcon size={16} />
-                        <Switch
-                          className="!mt-0"
-                          checked={field.value}
-                          onCheckedChange={checked => {
-                            field.onChange(checked)
-                          }}
-                        />
-                        <LockOpenIcon size={16} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button disabled={updateCollectionForm.formState.isSubmitting}>
-                  Save
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-    </>
+    <CollectionDetail
+      id={collectionId}
+      collectionSSRData={response.collection}
+    />
   )
 }
 
-export default CollectionDetails
+export default CollectionDetailPage

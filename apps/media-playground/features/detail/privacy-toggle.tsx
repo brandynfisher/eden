@@ -32,7 +32,7 @@ const PrivacyToggle = ({ type, item, queryKey, className }: Props) => {
       type="single"
       value={item.public ? 'public' : 'private'}
       className={cn([
-        'border border-muted rounded-lg gap-0.5 flex items-center justify-normal bg-popover px-0.5',
+        'border-0 rounded-lg flex items-center justify-normal gap-0',
         className,
       ])}
       disabled={isLoading}

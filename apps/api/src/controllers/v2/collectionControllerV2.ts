@@ -31,7 +31,7 @@ export const getUserCollectionsLight = async (
     },
   )
 
-  console.log(collections.docs)
+  // console.log(collections.docs)
 
   return reply.status(200).send({ collections: collections.docs })
 }
@@ -63,7 +63,12 @@ export const getCollection = async (
 
   await collectionsRepository.model.populate(collection, {
     path: 'user',
-    select: 'userId username userImage',
+    select: '_id userId username userImage',
+  })
+
+  await collectionsRepository.model.populate(collection, {
+    path: 'coverCreation',
+    select: '_id mediaAttributes thumbnail',
   })
 
   return reply.status(200).send({ collection })

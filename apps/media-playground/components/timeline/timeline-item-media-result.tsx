@@ -4,6 +4,7 @@ import LightboxGallery, {
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
+import { LockIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
@@ -29,6 +30,9 @@ export const MediaResult = ({
           (task.output_type === 'audio' ? 3 : 1),
       }}
     >
+      {!result.creation?.public ? (
+        <LockIcon className="absolute h-4 w-4 top-2 text-white right-2 bg-gray-300 bg-opacity-20 rounded-sm p-0.5 drop-shadow backdrop-blur-[2px]" />
+      ) : null}
       {result.creation === null || result.creation?.deleted ? (
         <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
           <div className="p-1 px-2 border border-destructive/50 bg-destructive/20 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
