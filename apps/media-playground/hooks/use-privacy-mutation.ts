@@ -171,12 +171,9 @@ export function usePrivacyMutation({
       })
     },
     onSuccess: (
-      response: ModelsV2PatchResponse | CreationsV2PatchResponse,
+      _response: ModelsV2PatchResponse | CreationsV2PatchResponse,
       variables,
     ) => {
-      // const newStatus = isModelsV2PatchResponse(response)
-      //   ? response.model?.public
-      //   : (response as CreationsV2PatchResponse).creation?.public
       const message = onSuccessMessage
         ? onSuccessMessage
         : `${capitalize(type)} updated`
