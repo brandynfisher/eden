@@ -22,7 +22,7 @@ const Workspace = ({ generatorKey, generatorSSRData }: Props) => {
       : undefined,
   })
 
-  const generator = generatorSSRData || generatorClientData
+  const generator = generatorClientData || generatorSSRData
 
   if (!generator) {
     return null

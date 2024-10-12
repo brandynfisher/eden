@@ -29,7 +29,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
   })
   // console.log({ id, creationClientData, creationSSRData, queryKey })
 
-  const creation = creationSSRData || creationClientData
+  const creation = creationClientData || creationSSRData
 
   const [shouldRenderRecentCreations, setShouldRenderRecentCreations] =
     useState(false)

@@ -27,7 +27,7 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
       : undefined,
   })
 
-  const model = modelSSRData || modelClientData
+  const model = modelClientData || modelSSRData
 
   const [shouldRenderRecentCreations, setShouldRenderRecentCreations] =
     useState(false)

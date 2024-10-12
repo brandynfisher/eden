@@ -21,7 +21,7 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
     },
   })
 
-  const creator = creatorSSRData || creatorClientData
+  const creator = creatorClientData || creatorSSRData
 
   return (
     <div>

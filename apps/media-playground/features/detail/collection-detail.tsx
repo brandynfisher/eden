@@ -60,7 +60,7 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
       : undefined,
   })
 
-  const collection = collectionSSRData || collectionClientData
+  const collection = collectionClientData || collectionSSRData
 
   const updateCollectionForm = useForm<UpdateCollectionDto>({
     resolver: zodResolver(updateCollectionSchema),
