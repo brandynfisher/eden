@@ -1,6 +1,7 @@
 import ModelMiniCard from '@/components/card/model-mini-card'
 import LoadingIndicator from '@/components/loading-indicator'
 import ParameterTable from '@/components/timeline/parameter-table'
+import TaskParameter from '@/components/timeline/task-parameter'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -24,7 +25,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="flex text-sm gap-2 items-center mb-2 justify-between">
+      <div className="flex text-sm gap-2 items-center mb-2">
         <CollapsibleTrigger asChild>
           <Button
             variant="outline"
@@ -43,10 +44,22 @@ const ParameterTableCollapsible = ({ item }: Props) => {
           </Button>
         </CollapsibleTrigger>
         <div>
+          {item.name ? (
+            <TaskParameter name={'prompt'} label={'Name'} value={item.name} />
+          ) : null}
+          {item.args.prompt || item.args.text_input ? (
+            <TaskParameter
+              name={'prompt'}
+              label={'Prompt'}
+              value={item.args.prompt || item.args.text_input || ''}
+            />
+          ) : null}
+        </div>
+        <div className="ml-auto">
           <div className="text-popover-foreground text-end">
             {item.workflow}
           </div>
-          <div className="text-muted-foreground/50 text-xs text-end">
+          <div className="text-muted-foreground/50 text-xs text-end text-nowrap">
             <TimeAgo
               date={(item.createdAt || new Date('1974-01-01')).toString()}
             />
