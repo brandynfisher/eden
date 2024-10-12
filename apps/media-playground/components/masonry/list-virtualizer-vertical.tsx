@@ -13,7 +13,7 @@ import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
-const MASONRY_GUTTER = 16
+const MASONRY_GUTTER = 32
 const QUERY_LIMIT = 35
 
 type Props = {
@@ -74,7 +74,7 @@ const ListVirtualizerVertical = ({
   const rowVirtualizer = useWindowVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,
     estimateSize: () => 600,
-    overscan: QUERY_LIMIT,
+    overscan: 8,
     lanes: MASONRY_COLUMN_COUNT,
     gap: MASONRY_GUTTER,
   })
@@ -164,7 +164,7 @@ const ListVirtualizerVertical = ({
         }}
       >
         {!allRows.length ? (
-          <div className="w-full flex flex-col gap-y-4">
+          <div className="w-full flex flex-col gap-y-8">
             {status === 'pending' ? (
               <ListSkeleton />
             ) : (
