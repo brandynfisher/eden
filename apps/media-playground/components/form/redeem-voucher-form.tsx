@@ -79,8 +79,8 @@ const RedeemVoucherForm = () => {
     <>
       <DialogTitle>Redeem Voucher</DialogTitle>
       <DialogDescription>
-        Here you can claim different vouchers that grant free manna, allowing
-        access to special features or previews.
+        Here you can claim vouchers that grant free manna or allow access to
+        special features or previews.
       </DialogDescription>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

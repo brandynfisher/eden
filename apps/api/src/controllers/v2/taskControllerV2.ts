@@ -162,6 +162,7 @@ export const listTasks = async (
     limit = 25,
     page,
     sort,
+    minDate,
   } = request.query as TasksV2ListArguments
 
   const user = await User.findById(userId)
@@ -185,11 +186,9 @@ export const listTasks = async (
     status?: string | string[]
     taskId?: string | string[]
     workflow?: string | { $ne: string }
+    createdAt?: { $gte: Date }
   } = {
     user: user._id.toString(),
-    // createdAt: {
-    //   $gte: new Date(new Date().getTime() - (7 * 24 * 60 * 60 * 1000)),
-    // },
     ...typeQuery,
   }
 
@@ -203,6 +202,12 @@ export const listTasks = async (
 
   if (workflow) {
     query.workflow = workflow
+  }
+
+  if (minDate) {
+    query.createdAt = {
+      $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+    }
   }
 
   const queryOptions: QueryOptions = {
@@ -222,6 +227,8 @@ export const listTasks = async (
   //   model: 'models',
   //   select: '-args.lora_training_urls',
   // }
+
+  // console.log({ minDate, query, queryOptions })
 
   const paginatedResponse = await tasksRepository.query(query, queryOptions)
 
@@ -703,40 +710,51 @@ export const cancelTask = async (
     })
   }
 
-  const modalRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/cancel`,
-    data: {
-      taskId,
-      user: userId,
-    },
-  }
-
-  server.log.info('> modal::request::cancel')
-  server.log.info(modalRequest)
-
-  const modalResponse = await axios.post(
-    modalRequest.endpoint,
-    modalRequest.data,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+  try {
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/cancel`,
+      data: {
+        taskId,
+        user: userId,
       },
-    },
-  )
+    }
 
-  server.log.info('< modal::response::cancel')
-  server.log.info(modalResponse.data)
+    server.log.info('> modal::request::cancel')
+    server.log.info(modalRequest)
 
-  if (!modalResponse || !modalResponse.data) {
-    console.log('malformed response', modalResponse)
-    return reply.status(500).send({
-      message: `Empty / Unexpected response from compute api`,
-    })
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    server.log.info('< modal::response::cancel')
+    server.log.info(modalResponse.data)
+
+    if (!modalResponse || !modalResponse.data) {
+      console.log('malformed response', modalResponse)
+      return reply.status(500).send({
+        message: `Empty / Unexpected response from compute api`,
+      })
+    }
+
+    const taskStatus = modalResponse.data.status as TaskV2Status
+
+    return reply.status(200).send({ taskStatus })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({ message: 'Failed to cancel task', error: errorMessage })
+    return reply.status(500).send({ error: errorMessage })
   }
-
-  const taskStatus = modalResponse.data.status as TaskV2Status
-
-  return reply.status(200).send({ taskStatus })
 }
 
 export const publishTaskResult = async (

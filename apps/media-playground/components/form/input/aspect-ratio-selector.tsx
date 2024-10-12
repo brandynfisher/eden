@@ -8,73 +8,40 @@ export type Resolution = {
   height: number
 }
 
-const RESOLUTIONS: Resolution[] = [
-  {
-    label: '9:21',
-    width: 640,
-    height: 1536,
-  },
-  {
-    label: '9:16',
-    width: 768,
-    height: 1344,
-  },
-  {
-    label: '2:3',
-    width: 832,
-    height: 1216,
-  },
-  {
-    label: '3:4',
-    width: 896,
-    height: 1152,
-  },
-  {
-    label: '1:1',
-    width: 1024,
-    height: 1024,
-  },
-  {
-    label: '4:3',
-    width: 1152,
-    height: 896,
-  },
-  {
-    label: '3:2',
-    width: 1216,
-    height: 832,
-  },
-  {
-    label: '16:9',
-    width: 1344,
-    height: 768,
-  },
-  {
-    label: '21:9',
-    width: 1536,
-    height: 640,
-  },
-]
-
 type Props = {
+  presetResolutions: string[]
   form: UseFormReturn
 }
 
-const AspectRatioSelector = ({ form }: Props) => {
+const AspectRatioSelector = ({ presetResolutions, form }: Props) => {
+  const resolutions = presetResolutions
+    .map(presetResolution => {
+      const splitPreset = presetResolution.split('_')
+      const label = splitPreset[0].replace('-', ':')
+      const resolution = splitPreset[1].split('x')
+
+      return {
+        label,
+        width: Number(resolution[0]),
+        height: Number(resolution[1]),
+      }
+    })
+    .reverse()
+
   const widthWatch = form.watch('width')
   const heightWatch = form.watch('height')
   // console.log({ widthWatch, heightWatch })
 
-  const activeIndex = RESOLUTIONS.findIndex(
+  const activeIndex = resolutions.findIndex(
     res => res.width === widthWatch && res.height === heightWatch,
   )
-  const activeResolution = RESOLUTIONS[activeIndex]
+  const activeResolution = resolutions[activeIndex]
 
-  const squareAspectIndex = RESOLUTIONS.findIndex(res => res.label === '1:1')
-  const squareResolution = RESOLUTIONS[squareAspectIndex]
+  const squareAspectIndex = resolutions.findIndex(res => res.label === '1:1')
+  const squareResolution = resolutions[squareAspectIndex]
 
   const landscapeIndex = activeResolution
-    ? RESOLUTIONS.findIndex(
+    ? resolutions.findIndex(
         res =>
           (res.width === activeResolution.width &&
             res.height === activeResolution.height &&
@@ -83,12 +50,12 @@ const AspectRatioSelector = ({ form }: Props) => {
             res.height === activeResolution.width &&
             res.width > res.height),
       )
-    : RESOLUTIONS.length - 1
+    : resolutions.length - 1
   const landscapeResolution =
-    RESOLUTIONS[landscapeIndex !== -1 ? landscapeIndex : RESOLUTIONS.length - 2]
+    resolutions[landscapeIndex !== -1 ? landscapeIndex : resolutions.length - 2]
 
   const portraitIndex = activeResolution
-    ? RESOLUTIONS.findIndex(
+    ? resolutions.findIndex(
         res =>
           (res.width === activeResolution.width &&
             res.height === activeResolution.height &&
@@ -99,7 +66,7 @@ const AspectRatioSelector = ({ form }: Props) => {
       )
     : 0
   const portraitResolution =
-    RESOLUTIONS[portraitIndex !== -1 ? portraitIndex : 1]
+    resolutions[portraitIndex !== -1 ? portraitIndex : 1]
 
   // console.log({
   //   activeIndex,
@@ -157,7 +124,7 @@ const AspectRatioSelector = ({ form }: Props) => {
         </ToggleGroupItem>
       ))}
       <AspectRatioDropdown
-        resolutions={RESOLUTIONS}
+        resolutions={resolutions}
         activeResolution={activeResolution || undefined}
         onClick={(resolution: Resolution) => updateFormValues(resolution)}
       />

@@ -1,8 +1,8 @@
 'use client'
 
 import LoadingIndicator from '@/components/loading-indicator'
+import { ListSkeleton } from '@/components/timeline/timeline'
 import { useElementSize } from '@/hooks/use-element-size'
-import { useMediaQuery } from '@/hooks/use-media-query'
 import { fetcher } from '@/lib/fetcher'
 import {
   TaskV2,
@@ -23,20 +23,6 @@ type Props = {
   queryKey: QueryKey
 }
 
-// export const MasonrySkeleton = () => {
-//   return (
-//     <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4'>
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//       <Skeleton className='h-full w-full aspect-square' />
-//     </div>
-//   )
-// }
-
 const ListVirtualizerVertical = ({
   apiEndpoint,
   render,
@@ -45,11 +31,7 @@ const ListVirtualizerVertical = ({
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
-  const above1536 = useMediaQuery('(min-width: 1536px)')
-  const above1024 = useMediaQuery('(min-width: 1024px)')
-  const above768 = useMediaQuery('(min-width: 768px)')
-
-  const MASONRY_COLUMN_COUNT = above1536 ? 3 : above1024 ? 2 : above768 ? 1 : 1
+  const MASONRY_COLUMN_COUNT = 1
 
   const columnWidth = useMemo(() => {
     return (
@@ -62,14 +44,12 @@ const ListVirtualizerVertical = ({
     status,
     data,
     error,
-    // isFetching,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery({
     queryKey,
     queryFn: ({ pageParam }) => {
-      // console.log(pageParam)
       const queryUrl = `${apiEndpoint}?${transformArgsIntoURLParams(
         pageParam
           ? {
@@ -184,11 +164,13 @@ const ListVirtualizerVertical = ({
         }}
       >
         {!allRows.length ? (
-          <div className="bg-primary/10 w-full h-full flex justify-center rounded-lg">
+          <div className="w-full flex flex-col gap-y-4">
             {status === 'pending' ? (
-              <LoadingIndicator />
+              <ListSkeleton />
             ) : (
-              <div className="px-4">No recent tasks found.</div>
+              <div className="p-4 text-center bg-accent rounded-md">
+                No recent tasks found.
+              </div>
             )}
           </div>
         ) : null}

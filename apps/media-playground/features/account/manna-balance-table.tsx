@@ -25,7 +25,7 @@ const MannaBalanceTable = ({
           <TableCell className="px-3 py-2 text-sm text-muted-foreground">
             Non-expiring
           </TableCell>
-          <TableCell className="px-3 py-2 text-xs font-mono">
+          <TableCell className="px-3 py-2 text-xs font-mono text-end">
             {(foreverBalance || 0).toLocaleString()}
           </TableCell>
         </TableRow>
@@ -33,7 +33,7 @@ const MannaBalanceTable = ({
           <TableCell className="px-3 py-2 text-sm text-muted-foreground">
             Subscription
           </TableCell>
-          <TableCell className="px-3 py-2 text-xs font-mono">
+          <TableCell className="px-3 py-2 text-xs font-mono text-end">
             {(subscriptionBalance || 0).toLocaleString()}
           </TableCell>
         </TableRow>
@@ -43,7 +43,7 @@ const MannaBalanceTable = ({
           <TableCell className="px-3 py-2 text-sm text-muted-foreground">
             Total
           </TableCell>
-          <TableCell className="px-3 py-2 text-xs font-mono font-bold">
+          <TableCell className="px-3 py-2 text-xs font-mono font-bold text-end">
             {(totalBalance || 0).toLocaleString()}
           </TableCell>
         </TableRow>

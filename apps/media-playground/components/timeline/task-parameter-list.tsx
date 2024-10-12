@@ -10,31 +10,39 @@ const TaskParameterList = ({ task }: Props) => {
   return (
     <div
       data-test-id="task-parameter-list"
-      className="relative flex flex-wrap gap-2 text-sm py-2 px-2 rounded-t-lg bg-muted/60"
+      className="relative flex justify-between flex-wrap gap-2 text-sm py-2 px-2 bg-muted-darker rounded-t-lg"
     >
-      {name ? (
-        <TaskParameter name={'prompt'} label={'Name'} value={name} />
-      ) : null}
-      {prompt || text_input ? (
-        <TaskParameter
-          name={'prompt'}
-          label={'Prompt'}
-          value={prompt || text_input || ''}
-        />
-      ) : null}
-      <TaskParameter name={'workflow'} label={'Tool'} value={task.workflow} />
-      {width && height ? (
-        <TaskParameter
-          name={'resolution'}
-          label={'Resolution'}
-          value={`${width} x ${height}`}
-        />
-      ) : null}
-      <TaskParameter
-        name={'createdAt'}
-        label={'Date'}
-        value={(task.createdAt || new Date('1974-01-01')).toString()}
-      />
+      <div>
+        {name ? (
+          <TaskParameter name={'prompt'} label={'Name'} value={name} />
+        ) : null}
+        {prompt || text_input ? (
+          <TaskParameter
+            name={'prompt'}
+            label={'Prompt'}
+            value={prompt || text_input || ''}
+          />
+        ) : null}
+        <div className="flex gap-4 mt-1">
+          <TaskParameter
+            name={'workflow'}
+            label={'Tool'}
+            value={task.workflow}
+          />
+          {width && height ? (
+            <TaskParameter
+              name={'resolution'}
+              label={'Resolution'}
+              value={`${width} x ${height}`}
+            />
+          ) : null}
+          <TaskParameter
+            name={'createdAt'}
+            label={'Date'}
+            value={(task.createdAt || new Date('1974-01-01')).toString()}
+          />
+        </div>
+      </div>
     </div>
   )
 }

@@ -23,6 +23,7 @@ function determineSize(width: number): number {
 
 // Utility function to change extension
 function changeExtension(filename: string, format: Formats): string {
+  // console.log(filename, format)
   return filename.replace(EXTENSION_PATTERN, `.${format}`)
 }
 
@@ -38,10 +39,7 @@ export default function customImageLoader({
 
   // set size and change extensions
   const selectedSize = determineSize(width)
-  const srcWithSize = src.replace(
-    EXTENSION_PATTERN,
-    `_${selectedSize}$1?width=${selectedSize}`,
-  )
+  const srcWithSize = src.replace(EXTENSION_PATTERN, `_${selectedSize}$1`)
   const finalSrc = changeExtension(srcWithSize, format)
 
   // prepend cloudfront url

@@ -1,9 +1,10 @@
-import '@/styles/globals.css'
+import '@/styles/globals.scss'
 import 'photoswipe/dist/photoswipe.css'
 
 import Providers from '@/app/providers'
 import Header from '@/components/header/header'
 import { PreloadResources } from '@/components/preload-resources'
+import ScrollTopButton from '@/components/scroll-top-button'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Toaster } from '@/components/ui/sonner'
 import { env } from '@/lib/config'
@@ -102,6 +103,7 @@ export default function RootLayout({
               <Header />
               {modal}
               {children}
+              <ScrollTopButton />
             </div>
 
             {env.NEXT_PUBLIC_APP_ENV === 'production' ? (

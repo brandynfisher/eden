@@ -50,6 +50,10 @@ const config = {
           DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
           foreground: 'hsl(var(--muted-foreground) / <alpha-value>)',
         },
+        'muted-darker': {
+          DEFAULT: 'hsl(var(--muted-darker) / <alpha-value>)',
+          foreground: 'hsl(var(--muted-darker-foreground) / <alpha-value>)',
+        },
         accent: {
           DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
           foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',

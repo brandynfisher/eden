@@ -1,4 +1,4 @@
-import '@/styles/globals.css'
+import '@/styles/globals.scss'
 
 //@ts-ignore
 import { ThemeProvider, theme } from '@/providers/theme-provider'

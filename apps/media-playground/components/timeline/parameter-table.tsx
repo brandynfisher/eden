@@ -89,27 +89,29 @@ const ParameterTable = ({ args, className }: Props) => {
             </TableCell>
             <TableCell className="py-2 w-2/3 md:w-auto truncate">
               {imageInputParameterNames.includes(taskArg[0]) ? (
-                <LightboxGallery sizeOnLoad={true}>
-                  {(
-                    (Array.isArray(taskArg[1])
-                      ? taskArg[1]
-                      : [taskArg[1]]) as string[]
-                  )
-                    .filter(Boolean)
-                    .map(inputImageUrl => (
-                      <LightboxGalleryItem
-                        sizeOnLoad={true}
-                        className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
-                        key={inputImageUrl}
-                        item={{
-                          url: inputImageUrl,
-                          thumbnail: inputImageUrl,
-                          width: 72,
-                          height: 72,
-                        }}
-                      />
-                    ))}
-                </LightboxGallery>
+                <div className="flex gap-2">
+                  <LightboxGallery sizeOnLoad={true}>
+                    {(
+                      (Array.isArray(taskArg[1])
+                        ? taskArg[1]
+                        : [taskArg[1]]) as string[]
+                    )
+                      .filter(Boolean)
+                      .map((inputImageUrl, index) => (
+                        <LightboxGalleryItem
+                          sizeOnLoad={true}
+                          className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
+                          key={`${inputImageUrl}_${index}`}
+                          item={{
+                            url: inputImageUrl,
+                            thumbnail: inputImageUrl,
+                            width: 72,
+                            height: 72,
+                          }}
+                        />
+                      ))}
+                  </LightboxGallery>
+                </div>
               ) : videoInputParameterNames.includes(taskArg[0]) ? (
                 <div className="flex flex-wrap gap-2">
                   {(

@@ -1,3 +1,4 @@
+import { env } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient, GeneratorParameterV2 } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
@@ -47,9 +48,17 @@ export async function GET(
     })
 
     const res = await eden.generators.getV2({ generatorKey: params.key })
+
+    if (env.NEXT_PUBLIC_APP_ENV === 'production' && res.generator?.private) {
+      return new NextResponse(JSON.stringify({ message: 'Tool not found' }), {
+        status: 404,
+      })
+    }
+
     const transformedParameters = res.generator?.parameters
       ? prepareParameters(res.generator?.parameters)
       : []
+
     return NextResponse.json({
       generator: { ...res.generator, parameters: transformedParameters },
     })

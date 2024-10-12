@@ -38,12 +38,14 @@ const cancelTask = async (taskId: TaskV2['_id'], eden: EdenClient) => {
       return NextResponse.json({ status: response.taskStatus })
     })
     .catch(error => {
+      // console.log(error.response.data)
       return new NextResponse(
         JSON.stringify({
-          message:
-            error?.response?.data?.message ||
-            error.response.statusText ||
-            'Internal Exception',
+          message: error?.response?.data
+            ? error.response.data.error
+              ? error.response.data.error
+              : error.response.data.message
+            : error.response.statusText || 'Internal Exception',
           error:
             process.env.NEXT_PUBLIC_APP_ENV === 'production'
               ? '- redacted -'

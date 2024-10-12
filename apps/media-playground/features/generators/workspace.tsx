@@ -1,6 +1,5 @@
 'use client'
 
-import LoadingIndicator from '@/components/loading-indicator'
 import Timeline from '@/components/timeline/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
 import GeneratorForm from '@/features/generators/generator-form'
@@ -30,15 +29,16 @@ const Workspace = ({ generatorKey, generatorSSRData }: Props) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-4 lg:grid-cols-3 2xl:grid-cols-3">
-      <Suspense fallback={<Skeleton className="h-16 w-full" />}>
-        <div className="overflow-y-auto md:pr-4 md:sticky md:top-16 md:max-h-[calc(100vh_-_106px)] md:pt-4">
+    <div data-test-id="workspace" className="flex flex-col lg:flex-row">
+      <div className="overflow-y-auto lg:pr-4 lg:sticky lg:top-[120px] lg:h-screen min-w-[324px] w-full lg:max-w-[420px] lg:max-h-[calc(100dvh_-_136px)] lg:pt-4">
+        <Suspense fallback={<Skeleton className="h-full w-full" />}>
           <GeneratorForm generator={generator} />
-        </div>
-      </Suspense>
-      <Suspense fallback={<LoadingIndicator />}>
+        </Suspense>
+      </div>
+
+      <div className="mb-8 lg:pt-4 flex flex-col gap-y-4 w-full">
         <Timeline generator={generator} />
-      </Suspense>
+      </div>
     </div>
   )
 }

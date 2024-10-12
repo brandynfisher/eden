@@ -24,7 +24,7 @@ const SliderInputRangeLabel = ({
   return (
     <span
       className={cn([
-        'absolute text-xs font-mono pointer-events-none text-white z-50 mix-blend-difference dark:mix-blend-soft-light',
+        'absolute text-xs font-mono pointer-events-none text-white z-10 mix-blend-difference dark:mix-blend-soft-light',
         className,
       ])}
     >

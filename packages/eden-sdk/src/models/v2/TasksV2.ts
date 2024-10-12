@@ -26,6 +26,7 @@ export interface TasksV2ListArguments
   type?: 'concepts' | 'creations'
   output_type?: GeneratorOutputTypeV2
   workflow?: string
+  minDate?: boolean
 }
 
 export interface TasksV2GetArguments extends WebAPICallOptions {
@@ -162,6 +163,7 @@ export type TaskV2Args = {
   seed?: number
   lora?: string | null
   lora_strength?: number
+  n_samples?: number
   // models
   name?: string
   lora_training_urls?: string[]
