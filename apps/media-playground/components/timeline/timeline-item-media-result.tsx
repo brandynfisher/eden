@@ -1,10 +1,10 @@
+import PrivateIcon from '@/components/icons/private-icon'
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { LockIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
@@ -23,16 +23,15 @@ export const MediaResult = ({
 }) => {
   return (
     <div
-      className="relative border-transparent bg-popover z-10 rounded-md"
+      className="relative bg-accent z-10 rounded-md"
       style={{
         aspectRatio:
           result?.mediaAttributes?.aspectRatio ||
           (task.output_type === 'audio' ? 3 : 1),
+        height: '-webkit-fill-available',
       }}
     >
-      {!result.creation?.public ? (
-        <LockIcon className="absolute h-4 w-4 top-2 text-white right-2 bg-gray-300 bg-opacity-20 rounded-sm p-0.5 drop-shadow backdrop-blur-[2px]" />
-      ) : null}
+      {!result.creation?.public ? <PrivateIcon /> : null}
       {result.creation === null || result.creation?.deleted ? (
         <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
           <div className="p-1 px-2 border border-destructive/50 bg-destructive/20 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
@@ -65,7 +64,16 @@ export const MediaResult = ({
 const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
     <div className="p-2 bg-secondary rounded-md">
-      <MediaResult task={task} result={result} />
+      <div
+        className={
+          (result?.mediaAttributes?.aspectRatio || 1) < 1 &&
+          (task.args.n_samples || 1) === 1
+            ? 'h-[60dvh] flex justify-center'
+            : ''
+        }
+      >
+        <MediaResult task={task} result={result} />
+      </div>
       <TimelineItemResultTools
         task={task}
         result={result}

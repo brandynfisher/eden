@@ -38,6 +38,7 @@ export const useToolPreset = () => {
   } = useTaskQuery({
     key: taskParam || '',
     enabled: !!taskParam,
+    staleTime: Infinity,
   })
 
   // console.log({taskData, isTaskLoading, taskError})

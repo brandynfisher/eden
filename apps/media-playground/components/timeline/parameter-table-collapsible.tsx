@@ -8,6 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { TaskV2 } from '@edenlabs/eden-sdk'
 import { ChevronDownIcon, ComponentIcon, ListIcon } from 'lucide-react'
@@ -55,14 +56,17 @@ const ParameterTableCollapsible = ({ item }: Props) => {
             />
           ) : null}
         </div>
-        <div className="ml-auto">
-          <div className="text-popover-foreground text-end">
-            {item.workflow}
-          </div>
-          <div className="text-muted-foreground/50 text-xs text-end text-nowrap">
-            <TimeAgo
-              date={(item.createdAt || new Date('1974-01-01')).toString()}
-            />
+        <div className="ml-auto flex items-center gap-4">
+          <Separator orientation="vertical" className="ml-2 h-9" />
+          <div>
+            <div className="text-popover-foreground text-end text-nowrap">
+              {item.workflow}
+            </div>
+            <div className="text-muted-foreground/50 text-xs text-end text-nowrap">
+              <TimeAgo
+                date={(item.createdAt || new Date('1974-01-01')).toString()}
+              />
+            </div>
           </div>
         </div>
       </div>

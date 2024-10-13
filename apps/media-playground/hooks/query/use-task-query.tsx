@@ -5,10 +5,16 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 type Props = {
   key: TaskV2['_id']
   initialData?: TasksV2GetResponse
+  staleTime?: number
   enabled?: boolean
 }
 
-export const useTaskQuery = ({ key, initialData, enabled = true }: Props) => {
+export const useTaskQuery = ({
+  key,
+  initialData,
+  staleTime,
+  enabled = true,
+}: Props) => {
   const queryKey = ['tasks', key]
 
   const {
@@ -26,6 +32,7 @@ export const useTaskQuery = ({ key, initialData, enabled = true }: Props) => {
     initialData,
     queryKey,
     queryFn: () => fetcher<TasksV2GetResponse>(`/api/tasks/${key}`),
+    staleTime,
   })
 
   // console.log({ data })

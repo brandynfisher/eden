@@ -3,7 +3,6 @@ import TaskActionsMenu from '@/components/button/task-actions-menu'
 import ParameterTableCollapsible from '@/components/timeline/parameter-table-collapsible'
 import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
 import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
-import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
@@ -66,95 +65,128 @@ const TimelineItem = ({ item, queryKey }: Props) => {
       className="border border-secondary p-2 rounded-lg overflow-hidden"
     >
       <ParameterTableCollapsible item={item} />
-      <div
-        className={cn([
-          'grid gap-2 auto-cols-fr',
-          !item.args.n_samples || item.args.n_samples === 1
-            ? 'grid-cols-1 justify-items-center'
-            : item.args.n_samples > 2
-            ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
-              ? 'grid-flow-col grid-cols-2 grid-rows-2 md:grid-cols-2 md:grid-rows-2'
-              : 'grid-flow-col grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 lg:grid-cols-2 lg:grid-rows-2 xl:grid-cols-4 xl:grid-rows-1'
-            : 'grid-cols-2',
-        ])}
-      >
-        {item.status !== TaskV2Status.Completed ? (
-          <>
-            {item.status === 'failed' ? (
-              <div className="h-full w-full p-2 bg-accent">
-                <TaskStatusBadge status={item.status} />
-                <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
-                  {item.error}
+      <div className="flex items-center justify-center h-full w-full">
+        <div
+          className={cn([
+            'grid gap-2 auto-cols-fr',
+            !item.args.n_samples || item.args.n_samples === 1
+              ? 'grid-flow-col grid-cols-1'
+              : item.args.n_samples > 2
+              ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
+                ? 'grid-cols-2 grid-rows-2 md:grid-cols-2 md:grid-rows-2 justify-items-center'
+                : 'grid-flow-col auto-cols-[minmax(0,_1fr)] grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 lg:grid-cols-2 lg:grid-rows-2 xl:grid-cols-4 xl:grid-rows-1 justify-items-center'
+              : 'grid-cols-2 justify-items-center',
+            item.args.n_samples === 3
+              ? 'md:!grid-cols-3 xl:!grid-cols-3 md:!grid-rows-1'
+              : '',
+          ])}
+        >
+          {item.status !== TaskV2Status.Completed ? (
+            <>
+              {item.status === 'failed' ? (
+                <div className="h-full w-full p-2 bg-accent">
+                  <TaskStatusBadge status={item.status} />
+                  <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
+                    {item.error}
+                  </div>
                 </div>
-              </div>
-            ) : null}
+              ) : null}
 
-            {item.status === 'cancelled' ? (
-              <div className="h-full w-full p-2 bg-accent">
-                <TaskStatusBadge status={item.status} />
-              </div>
-            ) : null}
-          </>
-        ) : null}
+              {item.status === 'cancelled' ? (
+                <div className="h-full w-full p-2 bg-accent">
+                  <TaskStatusBadge status={item.status} />
+                </div>
+              ) : null}
+            </>
+          ) : null}
 
-        {item.status === 'pending' || item.status === 'running' ? (
-          <>
-            {[...Array(item.args.n_samples || 1)].map((_e, i) => (
-              <div
-                key={i}
-                className="w-full relative flex flex-col items-center justify-around"
-              >
-                <AspectRatio
-                  className="bg-popover/50 rounded-md overflow-hidden"
-                  ratio={(item.args.width || 1024) / (item.args.height || 1024)}
-                />
-                <div className="absolute flex flex-col md:flex-row items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse">
-                  <TaskStatusBadge
-                    status={item.status}
-                    hideText={true}
-                    outputType={item.output_type}
+          {item.status === 'pending' || item.status === 'running' ? (
+            <>
+              {[...Array(item.args.n_samples || 1)].map((_e, i) => (
+                <div
+                  key={i}
+                  className={cn([
+                    'relative p-2 bg-secondary rounded-md overflow-hidden', // flex flex-col items-center overflow-hidden max-h-[50dvh]
+                  ])}
+                >
+                  <div
+                    className={
+                      (item.args.width ?? 1024) / (item.args.height ?? 1024) ||
+                      ((item.output_type === 'audio' ? 3 : 1) < 1 &&
+                        (item.args.n_samples || 1) === 1)
+                        ? 'h-[calc(60dvh_-_72.4px)] flex justify-center max-w-full'
+                        : (item.args.width ?? 1024) /
+                            (item.args.height ?? 1024) >
+                            1 && (item.args.n_samples || 1) === 1
+                        ? 'w-[calc(60dvh_-_72.4px)] max-h-full'
+                        : ''
+                    }
+                  >
+                    <div
+                      className="relative bg-accent z-10 rounded-md max-w-full max-h-full"
+                      style={{
+                        aspectRatio:
+                          (item.args.width ?? 1024) /
+                            (item.args.height ?? 1024) ||
+                          (item.output_type === 'audio' ? 3 : 1),
+                        height:
+                          (item.args.width ?? 1024) /
+                            (item.args.height ?? 1024) <
+                          1
+                            ? '-webkit-fill-available'
+                            : undefined,
+                      }}
+                    >
+                      <div className="absolute flex flex-col md:flex-row items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse">
+                        <TaskStatusBadge
+                          status={item.status}
+                          hideText={true}
+                          outputType={item.output_type}
+                        />
+                        {item.status === 'pending'
+                          ? 'Waiting to start...'
+                          : `Generating ${item.output_type}... `}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : null}
+
+          {item.status === 'completed' ? (
+            item.result && Array.isArray(item.result) ? (
+              item.result.map((result, index) =>
+                result.model === undefined ? (
+                  <TimelineItemMediaResult
+                    queryKey={queryKey}
+                    key={`${item._id}_${index}`}
+                    index={index}
+                    task={item}
+                    result={result}
                   />
-                  {item.status === 'pending'
-                    ? 'Waiting to start...'
-                    : `Generating ${item.output_type}... `}
-                </div>
+                ) : (
+                  // api populates a model property with full model document
+                  <TimelineItemModelResult
+                    queryKey={queryKey}
+                    key={`${item._id}_${index}`}
+                    index={index}
+                    result={result}
+                    task={item}
+                  />
+                ),
+              )
+            ) : (
+              <div className="text-warning">
+                Unhandled result: {item.workflow} - {item._id}
               </div>
-            ))}
-          </>
-        ) : null}
-
-        {item.status === 'completed' ? (
-          item.result && Array.isArray(item.result) ? (
-            item.result.map((result, index) =>
-              result.model === undefined ? (
-                <TimelineItemMediaResult
-                  queryKey={queryKey}
-                  key={`${item._id}_${index}`}
-                  index={index}
-                  task={item}
-                  result={result}
-                />
-              ) : (
-                // api populates a model property with full model document
-                <TimelineItemModelResult
-                  queryKey={queryKey}
-                  key={`${item._id}_${index}`}
-                  index={index}
-                  result={result}
-                  task={item}
-                />
-              ),
             )
-          ) : (
-            <div className="text-warning">
-              Unhandled result: {item.workflow} - {item._id}
-            </div>
-          )
-        ) : null}
+          ) : null}
+        </div>
       </div>
 
       {item.status !== TaskV2Status.Completed ? (
-        <div className="flex justify-between p-2 items-center bg-muted-darker rounded-b-lg overflow-hidden">
+        <div className="flex justify-between items-center mt-2 h-9">
           {item.status === TaskV2Status.Pending ||
           item.status === TaskV2Status.Running ? (
             <Button
@@ -173,5 +205,197 @@ const TimelineItem = ({ item, queryKey }: Props) => {
     </div>
   )
 }
-
 export default TimelineItem
+//
+// import TaskStatusBadge from '@/components/badge/task-status-badge'
+// import TaskActionsMenu from '@/components/button/task-actions-menu'
+// import ParameterTableCollapsible from '@/components/timeline/parameter-table-collapsible'
+// import { Button } from '@/components/ui/button'
+// import { useAuthState } from '@/hooks/use-auth-state'
+// import { cn } from '@/lib/utils'
+// import { TaskV2, TaskV2Status } from '@edenlabs/eden-sdk'
+// import { QueryKey } from '@tanstack/react-query'
+// import axios, { AxiosError } from 'axios'
+// import React, { useCallback, useState } from 'react'
+// import { toast } from 'sonner'
+// import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
+// import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
+//
+// type Props = {
+//   item: TaskV2
+//   queryKey: QueryKey
+// }
+//
+// const TimelineItem = ({ item, queryKey }: Props) => {
+//   const { verifyAuth } = useAuthState()
+//
+//   const [isCancelling, setIsCancelling] = useState(false)
+//
+//   const handleCancel = useCallback(async (taskId: TaskV2['_id']) => {
+//     if (!(await verifyAuth())) {
+//       return
+//     }
+//
+//     setIsCancelling(true)
+//
+//     try {
+//       const response = await axios.post('/api/tasks/cancel', {
+//         taskId,
+//       })
+//
+//       toast.info(`Task cancelled`, {
+//         description: (
+//           <code className=' text-xs text-foreground'>
+//             taskId: {taskId} | status: {response.data.status}
+//           </code>
+//         ),
+//         dismissible: true,
+//         richColors: true,
+//       })
+//     } catch (err) {
+//       console.log(err)
+//       const errorMessage = axios.isAxiosError(err)
+//         ? JSON.parse((err as AxiosError).request.responseText)?.message
+//         : 'Unknown Error'
+//       toast.error(`Failed to cancel task`, {
+//         description: JSON.stringify(errorMessage),
+//         dismissible: true,
+//         richColors: true,
+//       })
+//     } finally {
+//       setIsCancelling(false)
+//     }
+//   }, [verifyAuth])
+//
+//   // Helper function to calculate aspect ratio
+//   const getAspectRatio = () => {
+//     const width = item.args.width ?? 1024
+//     const height = item.args.height ?? 1024
+//     if (height === 0) return '1 / 1' // Prevent division by zero
+//     return `${width} / ${height}`
+//   }
+//
+//   return (
+//     <div
+//       data-test-id='timeline-item'
+//       key={item._id}
+//       className='border border-secondary p-2 rounded-lg overflow-hidden'
+//     >
+//       <ParameterTableCollapsible item={item} />
+//       <div className='flex items-center justify-center w-full'>
+//         <div
+//           className={cn([
+//             'grid gap-2 w-full',
+//             !item.args.n_samples || item.args.n_samples === 1
+//               ? 'grid-cols-1'
+//               : item.args.n_samples > 2
+//                 ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
+//                   ? 'grid-cols-2 grid-rows-2 md:grid-cols-2 md:grid-rows-2 justify-items-center'
+//                   : 'grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 justify-items-center'
+//                 : 'grid-cols-2 justify-items-center',
+//             item.args.n_samples === 3 ? 'md:grid-cols-3 xl:grid-cols-3' : '',
+//           ])}
+//         >
+//           {(item.status === TaskV2Status.Pending || item.status === TaskV2Status.Running) && (
+//             [...Array(item.args.n_samples || 1)].map((_e, i) => (
+//               <div
+//                 key={i}
+//                 className='relative p-2 bg-secondary rounded-md w-full'
+//                 style={{ aspectRatio: getAspectRatio() }}
+//               >
+//                 <div className='absolute inset-0 bg-accent z-10 rounded-md flex flex-col items-center justify-center animate-pulse'>
+//                   <TaskStatusBadge
+//                     status={item.status}
+//                     hideText={true}
+//                     outputType={item.output_type}
+//                   />
+//                   <span className='text-sm text-muted-foreground'>
+//                     {item.status === TaskV2Status.Pending
+//                       ? 'Waiting to start...'
+//                       : `Generating ${item.output_type}...`}
+//                   </span>
+//                 </div>
+//               </div>
+//             ))
+//           )}
+//
+//           {item.status === TaskV2Status.Failed && (
+//             [...Array(item.args.n_samples || 1)].map((_e, i) => (
+//               <div
+//                 key={i}
+//                 className='relative p-2 bg-accent rounded-md w-full'
+//                 style={{ aspectRatio: getAspectRatio() }}
+//               >
+//                 <TaskStatusBadge status={item.status} />
+//                 <div className='mt-1 text-muted-foreground text-sm line-clamp-3'>
+//                   {item.error}
+//                 </div>
+//               </div>
+//             ))
+//           )}
+//
+//           {item.status === TaskV2Status.Cancelled && (
+//             [...Array(item.args.n_samples || 1)].map((_e, i) => (
+//               <div
+//                 key={i}
+//                 className='relative p-2 bg-accent rounded-md w-full'
+//                 style={{ aspectRatio: getAspectRatio() }}
+//               >
+//                 <TaskStatusBadge status={item.status} />
+//               </div>
+//             ))
+//           )}
+//
+//           {item.status === TaskV2Status.Completed && (
+//             item.result && Array.isArray(item.result) ? (
+//               item.result.map((result, index) =>
+//                 result.model === undefined ? (
+//                   <TimelineItemMediaResult
+//                     queryKey={queryKey}
+//                     key={`${item._id}_${index}`}
+//                     index={index}
+//                     task={item}
+//                     result={result}
+//                   />
+//                 ) : (
+//                   // API populates a model property with full model document
+//                   <TimelineItemModelResult
+//                     queryKey={queryKey}
+//                     key={`${item._id}_${index}`}
+//                     index={index}
+//                     result={result}
+//                     task={item}
+//                   />
+//                 ),
+//               )
+//             ) : (
+//               <div className='text-warning'>
+//                 Unhandled result: {item.workflow} - {item._id}
+//               </div>
+//             )
+//           )}
+//         </div>
+//       </div>
+//
+//       {item.status !== TaskV2Status.Completed && (
+//         <div className='flex justify-between items-center mt-2 h-9'>
+//           {(item.status === TaskV2Status.Pending ||
+//             item.status === TaskV2Status.Running) && (
+//             <Button
+//               variant='outline'
+//               type='button'
+//               className='px-2 py-0 h-6 text-warning/40 text-xs bg-popover/40 hover:bg-popover/70'
+//               onClick={() => handleCancel(item._id)}
+//               disabled={isCancelling}
+//             >
+//               Cancel Task
+//             </Button>
+//           )}
+//           <TaskActionsMenu task={item} className='ml-auto' />
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
+//
+// export default TimelineItem

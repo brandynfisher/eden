@@ -5,6 +5,7 @@ import ActionsDropdown from '@/components/button/actions-dropdown'
 import LikeButton from '@/components/button/like-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
+import PrivateIcon from '@/components/icons/private-icon'
 import VideoResult from '@/components/media/video-result'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -14,7 +15,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { FileType } from '@/types/Media'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
-import { AudioLinesIcon, CheckIcon, LockIcon, SquareIcon } from 'lucide-react'
+import { AudioLinesIcon, CheckIcon, SquareIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties, useState } from 'react'
 
@@ -71,7 +72,7 @@ const CreationCard = ({
         {multiselect ? (
           <div className={`absolute inset-0 w-full h-full z-10 card-gradient`}>
             {!creation.public ? (
-              <LockIcon className="absolute h-4 w-4 right-3 top-3.5 text-white [@media(pointer:coarse)]:right-2 [@media(pointer:coarse)]:top-2.5 bg-gray-300 bg-opacity-20 rounded-sm p-0.5 drop-shadow backdrop-blur-[2px]" />
+              <PrivateIcon className="right-3 top-3.5 [@media(pointer:coarse)]:right-2 [@media(pointer:coarse)]:top-2.5" />
             ) : null}
             {/* Always show multi select checkbox when input type === coarse? */}
             <Button

@@ -75,7 +75,10 @@ export const LightboxGalleryItem = ({
       }
     >
       {({ ref, open }) => (
-        <div className={`flex max-w-full max-h-full`} ref={hoverRef}>
+        <div
+          className={`flex max-w-full max-h-full rounded-md overflow-hidden`}
+          ref={hoverRef}
+        >
           <NextImage
             loader={customImageLoader}
             ref={ref}
