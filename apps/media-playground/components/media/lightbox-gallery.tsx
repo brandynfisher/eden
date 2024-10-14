@@ -102,8 +102,8 @@ export const LightboxGalleryItem = ({
               className,
             ])}
             loading={'eager'}
-            onLoad={event => {
-              console.log(event)
+            onLoad={() => {
+              // console.log(event)
               setIsLoaded(true)
             }}
           />

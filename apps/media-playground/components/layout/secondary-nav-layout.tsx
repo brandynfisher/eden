@@ -26,7 +26,7 @@ const SecondaryNavLayout = ({
       />
       <main
         className={cn([
-          'flex flex-1 flex-col gap-4 p-4 md:pt-0',
+          'flex flex-1 flex-col gap-4 p-2 pt-0 md:p-4 md:pt-0',
           wrapClassName,
         ])}
       >

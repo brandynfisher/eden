@@ -2,7 +2,6 @@
 
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
 import TimelineItem from '@/components/timeline/timeline-item'
-import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -120,10 +119,8 @@ const Timeline = ({ generator }: Props) => {
 
   return (
     <div className="mb-8">
-      <DropdownMenuSeparator className="mt-2 mb-4 md:hidden" />
-
       {generator.outputType !== 'lora' ? (
-        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 mb-2 bg-muted-darker">
+        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 my-2 bg-muted-darker">
           <div className="flex items-center justify-between gap-2">
             <label className="text-sm">Show all tool results</label>
             <Switch

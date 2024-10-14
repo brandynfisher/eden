@@ -154,7 +154,7 @@ const GeneratorForm = ({ generator }: Props) => {
   return (
     <div
       data-test-id="generator-form"
-      className="flex flex-col items-start overflow-y-auto"
+      className="flex flex-col items-start overflow-y-auto bg-muted-darker rounded-md p-2"
     >
       <Form {...form}>
         <form className="w-full">
@@ -169,7 +169,7 @@ const GeneratorForm = ({ generator }: Props) => {
             className="flex flex-col gap-2"
           >
             {requiredParameters?.map(parameter => (
-              <div key={parameter.name} className="bg-muted-darker rounded-lg">
+              <div key={parameter.name} className="bg-muted rounded-lg">
                 <ParameterField parameter={parameter} form={form} />
               </div>
             ))}
@@ -244,7 +244,7 @@ const GeneratorForm = ({ generator }: Props) => {
               <div
                 className={cn([
                   'flex flex-col gap-2 w-full relative transition-all',
-                  showSettings ? ' mb-4' : 'max-h-0 ',
+                  showSettings ? ' mb-2' : 'max-h-0 ',
                 ])}
               >
                 {groupedOptionalParameters?.map((element, index) => (

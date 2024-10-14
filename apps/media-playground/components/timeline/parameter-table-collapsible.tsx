@@ -59,7 +59,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
         <div className="ml-auto flex items-center gap-4">
           <Separator orientation="vertical" className="ml-2 h-9" />
           <div>
-            <div className="text-popover-foreground text-end text-nowrap">
+            <div className="text-popover-foreground text-xs md:text-sm text-end text-nowrap">
               {item.workflow}
             </div>
             <div className="text-muted-foreground/50 text-xs text-end text-nowrap">

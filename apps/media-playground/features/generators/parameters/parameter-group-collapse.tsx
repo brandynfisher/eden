@@ -32,14 +32,14 @@ const ParameterGroupCollapse = ({ group, form }: Props) => {
           className={cn([
             'border transition-colors',
             isOpen
-              ? 'bg-muted-foreground/10 rounded-b-none'
+              ? 'bg-muted-foreground/10 border border-gray-400/20 rounded-b-none'
               : 'border border-muted bg-popover',
           ])}
         />
       </CollapsibleTrigger>
       <CollapsibleContent
         className={cn([
-          isOpen ? 'border border-muted border-t-0 rounded-b-lg' : '',
+          isOpen ? 'border border-gray-400/20 border-t-0 rounded-b-lg' : '',
         ])}
       >
         {group.groupParameters?.map(param => (
