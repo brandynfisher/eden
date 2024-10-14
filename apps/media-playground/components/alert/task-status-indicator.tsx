@@ -150,7 +150,7 @@ const TaskStatusIndicator = () => {
                         className="text-xs text-muted-foreground/50 ml-auto"
                         title={new Date(task.createdAt).toLocaleString()}
                       >
-                        <TimeAgo date={task.createdAt} />
+                        <TimeAgo date={task.createdAt} locale="en-short" />
                       </div>
                     </div>
                     <div className={'h-10 flex gap-2 items-center'}>

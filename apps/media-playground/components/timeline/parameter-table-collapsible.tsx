@@ -65,6 +65,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
             <div className="text-muted-foreground/50 text-xs text-end text-nowrap">
               <TimeAgo
                 date={(item.createdAt || new Date('1974-01-01')).toString()}
+                locale="en-short"
               />
             </div>
           </div>
