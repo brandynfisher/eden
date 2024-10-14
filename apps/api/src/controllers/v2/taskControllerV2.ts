@@ -762,140 +762,205 @@ export const publishTaskResult = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
-  const { taskId, resultFilename } = request.body as TasksV2PublishArguments
-
-  if (!taskId) {
-    return reply.status(400).send({
-      message: `taskId missing`,
-    })
-  }
-
-  if (!resultFilename) {
-    return reply.status(400).send({
-      message: `resultFilename missing`,
-    })
-  }
-
-  const userDocument = await User.findById(userId)
-  if (!userDocument) {
-    return reply.status(400).send({
-      message: `User not found`,
-    })
-  }
-
-  const taskDocument = await TaskV2Model.findById(taskId)
-  if (!taskDocument) {
-    return reply.status(404).send({
-      message: `Task not found`,
-    })
-  }
-
-  // console.log({ resultFilename, taskDocument })
-
-  const taskResultIndex = taskDocument.result.findIndex(val => {
-    return (
-      val.filename === resultFilename ||
-      val.filename === s3Url(server, resultFilename) ||
-      val.url === resultFilename
-    )
-  })
-
-  if (taskResultIndex === -1) {
-    return reply.status(404).send({
-      message: `Task result not found`,
-    })
-  }
-
-  const taskResult = taskDocument.result[taskResultIndex]
-
-  const existingCreation = await CreationV2.exists({
-    url: resultFilename,
-    task: taskId,
-  })
-
-  if (existingCreation) {
-    return reply.status(409).send({
-      message: `Creation already exists`,
-    })
-  }
-
-  server.log.info('Saving...')
-  server.log.info({ taskId, resultFilename, taskResult })
-  const creation = new CreationV2()
-
-  creation.task = new ObjectId(taskId)
-  creation.user = new ObjectId(userId)
-  creation.public = false
-
-  creation.args = taskDocument.args
-  creation.workflow = taskDocument.workflow
-  creation.mediaAttributes = {
-    ...taskResult.mediaAttributes,
-    type: taskDocument.output_type,
-    mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
-  }
-
   try {
-    const isModelResult = taskDocument.result[0].filename.endsWith('.tar')
-
-    if (!isModelResult) {
-      const IMAGE_SIZE = 384
-      const thumbnailUrl = s3ThumbnailUrl(
-        server,
-        taskResult.filename,
-        IMAGE_SIZE,
-      )
-      // console.log({ thumbnailUrl, file: taskResult.filename })
-      const response = await axios.get(thumbnailUrl, {
-        responseType: 'arraybuffer',
+    if (!request.user) {
+      server.log.warn('Invalid or missing user information in request.')
+      return reply.status(400).send({
+        message: `Invalid or missing user information`,
       })
-      const buffer = Buffer.from(response.data)
-      const { width, height } = calculateMaxDimensions(
-        (taskResult.mediaAttributes?.width || IMAGE_SIZE) /
-          (taskResult.mediaAttributes?.height || IMAGE_SIZE),
-        IMAGE_SIZE,
-      )
-
-      // console.log({ width, height })
-
-      const image = await sharp(buffer).raw().ensureAlpha().toBuffer()
-
-      const blurhash = encode(
-        new Uint8ClampedArray(image.buffer),
-        width,
-        height,
-        4,
-        4,
-      )
-
-      creation.mediaAttributes.blur = blurhash
     }
-  } catch (e) {
-    console.error(`Error creating blurhash`, e)
-  }
 
-  creation.metadata = taskResult.metadata
-  creation.url = taskResult.filename || taskResult.url
-  creation.thumbnail = changeExtension(
-    taskResult.filename || taskResult.thumbnail || '',
-    ImageFormats.WEBP,
-  )
+    const { userId } = request.user
 
-  const savedCreation = await creation.save()
-  const remainingResults = [...taskDocument.result]
-  const publishedResult = remainingResults.splice(taskResultIndex, 1)[0]
+    if (!request.body || typeof request.body !== 'object') {
+      server.log.warn('Invalid or missing request body.')
+      return reply.status(400).send({
+        message: `Invalid or missing request body`,
+      })
+    }
 
-  taskDocument.result = [
-    ...remainingResults,
-    {
-      ...publishedResult,
+    const { taskId, resultFilename } = request.body as TasksV2PublishArguments
+
+    if (!taskId) {
+      server.log.warn('taskId is missing or not a string.')
+      return reply.status(400).send({
+        message: `taskId is missing or invalid`,
+      })
+    }
+
+    if (!resultFilename) {
+      server.log.warn('resultFilename is missing or not a string.')
+      return reply.status(400).send({
+        message: `resultFilename is missing or invalid`,
+      })
+    }
+
+    const userDocument = await User.findById(userId)
+    if (!userDocument) {
+      server.log.warn(`User not found with ID: ${userId}`)
+      return reply.status(404).send({
+        message: `User not found`,
+      })
+    }
+
+    const taskDocument = await TaskV2Model.findById(taskId)
+    if (!taskDocument) {
+      server.log.warn(`Task not found with ID: ${taskId}`)
+      return reply.status(404).send({
+        message: `Task not found`,
+      })
+    }
+
+    if (!Array.isArray(taskDocument.result)) {
+      server.log.error(
+        `Invalid taskDocument.result structure for task ID: ${taskId}`,
+      )
+      return reply.status(500).send({
+        message: `Invalid task result structure`,
+      })
+    }
+
+    const taskResultIndex = taskDocument.result.findIndex(val => {
+      return (
+        val.filename === resultFilename ||
+        val.filename === s3Url(server, resultFilename) ||
+        val.url === resultFilename
+      )
+    })
+
+    if (taskResultIndex === -1) {
+      server.log.warn(
+        `Task result not found for filename: ${resultFilename} in task ID: ${taskId}`,
+      )
+      return reply.status(404).send({
+        message: `Task result not found`,
+      })
+    }
+
+    const taskResult = taskDocument.result[taskResultIndex]
+
+    // Check for Existing Creation**
+    const existingCreation = await CreationV2.exists({
+      url: resultFilename,
+      task: taskId,
+    })
+
+    if (existingCreation) {
+      server.log.warn(
+        `Creation already exists for URL: ${resultFilename} and task ID: ${taskId}`,
+      )
+      return reply.status(409).send({
+        message: `Creation already exists`,
+      })
+    }
+
+    // server.log.info('Initializing Creation object...')
+    // server.log.info({ taskId, resultFilename, taskResult })
+
+    const creation = new CreationV2()
+
+    creation.task = new ObjectId(taskId)
+    creation.user = new ObjectId(userId)
+    creation.public = false
+
+    creation.args = taskDocument.args
+    creation.workflow = taskDocument.workflow
+    creation.mediaAttributes = {
+      ...taskResult.mediaAttributes,
+      type: taskDocument.output_type,
+      mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
+    }
+
+    // Generate BlurHash if Applicable
+    try {
+      const isModelResult = taskDocument.result[0].filename.endsWith('.tar')
+
+      if (!isModelResult) {
+        const IMAGE_SIZE = 384
+        const thumbnailUrl = s3ThumbnailUrl(
+          server,
+          taskResult.filename,
+          IMAGE_SIZE,
+        )
+        server.log.info(`Fetching thumbnail from URL: ${thumbnailUrl}`)
+
+        const response = await axios.get(thumbnailUrl, {
+          responseType: 'arraybuffer',
+          timeout: 5000, // Timeout after 5 seconds
+        })
+        const buffer = Buffer.from(response.data)
+
+        const aspectRatio =
+          (taskResult.mediaAttributes?.width || IMAGE_SIZE) /
+          (taskResult.mediaAttributes?.height || IMAGE_SIZE)
+        const { width, height } = calculateMaxDimensions(
+          aspectRatio,
+          IMAGE_SIZE,
+        )
+
+        const image = await sharp(buffer)
+          .resize(width, height)
+          .raw()
+          .ensureAlpha()
+          .toBuffer()
+
+        const blurhash = encode(
+          new Uint8ClampedArray(image.buffer),
+          width,
+          height,
+          4,
+          4,
+        )
+
+        creation.mediaAttributes.blur = blurhash
+        server.log.info(
+          `BlurHash generated successfully for result: ${resultFilename}`,
+        )
+      }
+    } catch (e) {
+      server.log.error(
+        `Error creating blurhash for result: ${resultFilename}`,
+        e,
+      )
+    }
+
+    creation.metadata = taskResult.metadata
+
+    if (!taskResult.filename && !taskResult.url) {
+      server.log.error(
+        `Missing filename and URL for result: ${resultFilename} in task ID: ${taskId}`,
+      )
+      return reply.status(500).send({
+        message: `Invalid result data`,
+      })
+    }
+    creation.url = taskResult.filename || taskResult.url
+
+    const thumbnailSource = taskResult.filename || taskResult.thumbnail || ''
+    creation.thumbnail = changeExtension(thumbnailSource, ImageFormats.WEBP)
+
+    server.log.info('Saving Creation object to the database...')
+    const savedCreation = await creation.save()
+    server.log.info(`Creation saved with ID: ${savedCreation._id}`)
+
+    server.log.info('Updating task result to mark as published...')
+    taskDocument.result[taskResultIndex] = {
+      ...taskResult,
       creation: savedCreation._id,
       published: true,
-    },
-  ]
+    }
 
-  await taskDocument.save()
+    await taskDocument.save()
+    server.log.info(`Task document updated successfully for task ID: ${taskId}`)
 
-  return reply.status(200).send({ creation })
+    return reply.status(200).send({ creation: savedCreation })
+  } catch (error) {
+    server.log.error(
+      'An unexpected error occurred in publishTaskResult:',
+      error,
+    )
+    return reply.status(500).send({
+      message: `An unexpected error occurred.`,
+    })
+  }
 }

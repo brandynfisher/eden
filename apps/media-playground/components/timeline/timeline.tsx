@@ -72,17 +72,40 @@ const Timeline = ({ generator }: Props) => {
   useEffect(() => {
     const callback = (taskUpdate: TaskV2) => {
       // Update the query cache for the infinite query in the timeline
-      queryClient.setQueryData<PageData<IPage<TaskV2>>>(queryKey, oldData => {
-        if (!oldData) return oldData
+      // queryClient.setQueryData<PageData<IPage<TaskV2>>>(queryKey, oldData => {
+      //   if (!oldData) return oldData
+      //
+      //   // Update the document in the pages if it already exists, otherwise add it
+      //   let updatedPages = updateDocInPage(taskUpdate, oldData.pages)
+      //   updatedPages = addDocIfNotExistInPage(taskUpdate, updatedPages)
+      //
+      //   return {
+      //     ...oldData,
+      //     pages: updatedPages,
+      //   }
+      // })
 
-        // Update the document in the pages if it already exists, otherwise add it
-        let updatedPages = updateDocInPage(taskUpdate, oldData.pages)
-        updatedPages = addDocIfNotExistInPage(taskUpdate, updatedPages)
-
-        return {
-          ...oldData,
-          pages: updatedPages,
+      queryClient.setQueryData<PageData<IPage<TaskV2>>>(queryKey, old => {
+        // If 'old' is undefined or doesn't have any pages, throw an error or handle this case accordingly.
+        if (!old || !old.pages.length) {
+          // Either return the original data, throwing error or handling situation is up to your context.
+          console.error('No pages to update!')
+          return old
         }
+
+        let updatedPages: IPage<TaskV2>[] = [...old.pages]
+
+        let pageIndex = updatedPages.findIndex(page =>
+          page?.docs?.some(doc => doc._id === taskUpdate._id),
+        )
+
+        if (pageIndex === -1) {
+          updatedPages = addDocIfNotExistInPage(taskUpdate, updatedPages)
+        } else {
+          updatedPages = updateDocInPage(taskUpdate, updatedPages)
+        }
+
+        return { ...old, pages: updatedPages }
       })
     }
 
