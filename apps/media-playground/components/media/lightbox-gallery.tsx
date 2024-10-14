@@ -41,6 +41,7 @@ export const LightboxGalleryItem = ({
   const width = item.width || 1024
   const height = item.height || 1024
   const blurDataUrl = useBlurDataUrl(item.blur, item.width, item.height)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   return (
     <Item
@@ -76,7 +77,11 @@ export const LightboxGalleryItem = ({
     >
       {({ ref, open }) => (
         <div
-          className={`flex max-w-full max-h-full rounded-md overflow-hidden`}
+          className={cn([
+            `rounded-md overflow-hidden`,
+            isLoaded ? 'flex max-w-full max-h-full ' : 'w-full h-full',
+          ])}
+          // style={{ height: isLoaded ? '-webkit-fill-available' : '' }}
           ref={hoverRef}
         >
           <NextImage
@@ -96,6 +101,11 @@ export const LightboxGalleryItem = ({
               `object-contain cursor-zoom-in w-full !bg-contain`,
               className,
             ])}
+            loading={'eager'}
+            onLoad={event => {
+              console.log(event)
+              setIsLoaded(true)
+            }}
           />
           {item.url?.endsWith('.mp4') ? (
             <>

@@ -36,16 +36,17 @@ const CollectionCard = ({ collection, queryKey, onClick }: Props) => {
       <Link
         href={`/collections/${collection._id}`}
         prefetch={false}
-        className="relative w-full block"
+        className="relative w-full block aspect-square"
       >
         <CardImage
           media={{
             url: collection.coverCreation?.thumbnail,
             thumbnail: collection.coverCreation?.thumbnail,
-            width: 256,
-            height: 256,
+            width: 512,
+            height: 512,
             type: 'image',
           }}
+          className="object-cover"
         />
       </Link>
       <CardFooter

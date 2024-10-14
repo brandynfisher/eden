@@ -3,6 +3,7 @@ import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
+import { cn } from '@/lib/utils'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import React from 'react'
@@ -23,7 +24,18 @@ export const MediaResult = ({
 }) => {
   return (
     <div
-      className="relative bg-accent z-10 rounded-md"
+      // className="relative bg-accent z-10 rounded-md"
+      className={cn([
+        'relative bg-accent z-10 rounded-md',
+        (task.args.width ?? 1024) / (task.args.height ?? 1024) ||
+        ((task.output_type === 'audio' ? 3 : 1) < 1 &&
+          (task.args.n_samples || 1) === 1)
+          ? 'h-[calc(60dvh_-_72.4px)] flex justify-center max-w-full max-h-full'
+          : (task.args.width ?? 1024) / (task.args.height ?? 1024) > 1 &&
+            (task.args.n_samples || 1) === 1
+          ? 'w-[calc(60dvh_-_72.4px)] max-h-full max-w-full'
+          : '',
+      ])}
       style={{
         aspectRatio:
           result?.mediaAttributes?.aspectRatio ||

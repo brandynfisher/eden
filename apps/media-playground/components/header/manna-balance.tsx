@@ -28,6 +28,10 @@ const MannaBalance = () => {
     )
   }
 
+  if (!isSignedIn) {
+    return null
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger title="View manna balance breakdown" asChild>

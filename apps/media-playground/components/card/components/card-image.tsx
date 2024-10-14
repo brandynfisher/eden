@@ -1,14 +1,16 @@
 import { useBlurDataUrl } from '@/hooks/use-blur-hash'
 import customImageLoader from '@/image-loader'
 import { siteConfig } from '@/lib/config'
+import { cn } from '@/lib/utils'
 import { Media } from '@/types/Media'
 import Image from 'next/image'
 
 type Props = {
   media: Media
+  className?: string
 }
 
-const CardImage = ({ media }: Props) => {
+const CardImage = ({ media, className }: Props) => {
   const { blur, width, height } = media
 
   const blurDataUrl = useBlurDataUrl(blur, width, height)
@@ -28,7 +30,7 @@ const CardImage = ({ media }: Props) => {
       height={media.height || 1024}
       blurDataURL={blurDataUrl}
       placeholder={blurDataUrl ? 'blur' : undefined}
-      className="w-full h-full"
+      className={cn(['w-full h-full', className])}
     />
   )
 }
