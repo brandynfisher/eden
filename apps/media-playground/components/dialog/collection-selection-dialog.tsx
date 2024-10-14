@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useCollectionsLight } from '@/hooks/query/use-collections-light'
 import {
@@ -31,8 +31,9 @@ import {
 import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { CheckedState } from '@radix-ui/react-checkbox'
 import axios from 'axios'
-import { PlusIcon } from 'lucide-react'
+import { LockIcon } from 'lucide-react'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -57,6 +58,20 @@ const CollectionSelectionDialog = ({
   const [isAddingToCollection, setIsAddingToCollection] = React.useState(false)
 
   const { collections, refetch } = useCollectionsLight()
+
+  const collectionHasAllCreations = React.useMemo(() => {
+    if (!collections || !creations) return {}
+
+    const mapping: Record<string, boolean> = {}
+
+    for (const collection of collections) {
+      mapping[collection._id] = creations.every(creation =>
+        collection.creations.includes(creation._id),
+      )
+    }
+
+    return mapping
+  }, [collections, creations])
 
   const handleAddToCollectionModalOpenChange = React.useCallback(() => {
     dispatch(toggleAddToCollectionModal())
@@ -113,6 +128,39 @@ const CollectionSelectionDialog = ({
     setIsAddingToCollection(false)
   }
 
+  const onRemoveFromCollection = async (collectionId: string) => {
+    try {
+      await axios.patch(`/api/collections/${collectionId}/remove-creations`, {
+        creationIds: creations.map(creation => creation._id),
+      })
+      toast.success('Creations removed from collection', {
+        description: `Creations removed from collection successfully`,
+        dismissible: true,
+        richColors: true,
+      })
+    } catch (error) {
+      toast.error('Failed to remove creations from collection', {
+        description: `Failed to remove creations from collection`,
+        dismissible: true,
+        richColors: true,
+      })
+    }
+  }
+
+  const onCheckboxChange = async (
+    collectionId: string,
+    checked: CheckedState,
+  ) => {
+    setIsAddingToCollection(true)
+    if (checked) {
+      await onAddToCollection(collectionId)
+    } else {
+      await onRemoveFromCollection(collectionId)
+    }
+    await refetch()
+    setIsAddingToCollection(false)
+  }
+
   if (!collections) {
     return null
   }
@@ -123,7 +171,7 @@ const CollectionSelectionDialog = ({
         open={isAddToCollectionModalOpen}
         onOpenChange={handleAddToCollectionModalOpenChange}
       >
-        <DialogContent>
+        <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-lg">
           <DialogTitle>Add to collection</DialogTitle>
           <DialogDescription>
             Select a collection to add the selected items to. Duplicates will be
@@ -131,25 +179,39 @@ const CollectionSelectionDialog = ({
           </DialogDescription>
           {collections.length > 0 ? (
             <>
-              <ScrollArea className="max-h-72">
+              <div className="max-h-72 w-full overflow-x-hidden overflow-y-auto">
                 {collections.map(collection => (
                   <div
                     key={collection._id}
-                    className="flex items-center gap-x-2 my-2"
+                    className="flex items-center justify-between gap-x-2 my-4"
                   >
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="!size-8"
-                      onClick={() => onAddToCollection(collection._id)}
-                      disabled={isAddingToCollection}
-                    >
-                      <PlusIcon size={16} />
-                    </Button>
-                    <p className="font-semibold">{collection.name}</p>
+                    <div className="flex items-center gap-x-2 overflow-hidden">
+                      <Checkbox
+                        id={collection._id}
+                        onCheckedChange={checked => {
+                          onCheckboxChange(collection._id, checked)
+                        }}
+                        checked={collectionHasAllCreations[collection._id]}
+                        disabled={isAddingToCollection}
+                      />
+                      <label
+                        htmlFor={collection._id}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-x-2 overflow-hidden"
+                      >
+                        <span className="overflow-hidden text-ellipsis text-nowrap">
+                          {collection.name}
+                        </span>
+                        {!collection.public && (
+                          <LockIcon className="size-3 flex-shrink-0 text-muted-foreground" />
+                        )}
+                      </label>
+                    </div>
+                    <span className="text-muted-foreground text-xs bg-muted rounded-md px-2 py-1">
+                      {collection.creations.length}
+                    </span>
                   </div>
                 ))}
-              </ScrollArea>
+              </div>
               <Separator className="my-0" />
             </>
           ) : (

@@ -128,6 +128,8 @@ export interface CollectionsV2GetLightResponse extends WebAPICallResult {
   collections: {
     _id: string
     name: string
+    creations: string[]
+    public: boolean
   }[]
   error?: string
 }
