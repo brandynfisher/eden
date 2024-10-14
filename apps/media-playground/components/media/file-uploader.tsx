@@ -449,7 +449,7 @@ const FileUploader = ({
                           {file.type.startsWith('image') ? (
                             <LightboxGalleryItem
                               sizeOnLoad={true}
-                              className="relative rounded-lg hover:brightness-105 h-[64px] w-full"
+                              className="relative rounded-lg hover:brightness-105 h-[64px] w-auto"
                               item={{
                                 url: file.url,
                                 thumbnail: file.url, // assuming URL is accessible
@@ -463,7 +463,7 @@ const FileUploader = ({
                               width={72}
                               height={72}
                               onLoad={() => URL.revokeObjectURL(file.url)}
-                              className="object-contain w-full h-[64px] hover:brightness-105"
+                              className="object-contain h-[64px] w-auto hover:brightness-105"
                             />
                           )}
                         </div>

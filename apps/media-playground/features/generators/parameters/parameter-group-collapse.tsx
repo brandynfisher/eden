@@ -39,11 +39,18 @@ const ParameterGroupCollapse = ({ group, form }: Props) => {
       </CollapsibleTrigger>
       <CollapsibleContent
         className={cn([
-          isOpen ? 'border border-gray-400/20 border-t-0 rounded-b-lg' : '',
+          isOpen
+            ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
+            : '',
         ])}
       >
         {group.groupParameters?.map(param => (
-          <ParameterField key={param.name} parameter={param} form={form} />
+          <ParameterField
+            key={param.name}
+            parameter={param}
+            form={form}
+            className="bg-muted-darker mx-2"
+          />
         ))}
       </CollapsibleContent>
     </Collapsible>

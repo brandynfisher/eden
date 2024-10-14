@@ -142,7 +142,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                     placeholder={parameter.description}
                     className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg ${
                       parameter.required
-                        ? '!outline-none !p-4 !pt-3 !mt-0'
+                        ? '!outline-none !p-4 !pt-2 !mt-0'
                         : 'rounded-lg border p-2 '
                     }`}
                     onChange={onChange}
@@ -179,7 +179,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
             )
           case 'string[]':
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
+              <FormItem className="mt-0 !p-4 !pt-2">
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -211,7 +211,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
           case 'lora':
             parsedValue = typeof value !== 'string' ? '' : value
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
+              <FormItem className="mt-0 !p-4 !pt-2">
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -232,7 +232,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
             )
           case 'image':
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
+              <FormItem className="mt-0 !p-4 !pt-2">
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -257,7 +257,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
             )
           case 'image[]':
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
+              <FormItem className="mt-0 !p-4 !pt-2">
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -287,7 +287,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
             )
           case 'video':
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
+              <FormItem className="mt-0 !p-4 !pt-2">
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -312,7 +312,7 @@ const ParameterField = ({ parameter, form, className }: Props) => {
             )
           case 'video[]':
             return (
-              <FormItem className="mt-0 !p-4 !pt-3">
+              <FormItem className="mt-0 !p-4 !pt-2">
                 <FormItemHead
                   label={label}
                   description={parameter.description}
