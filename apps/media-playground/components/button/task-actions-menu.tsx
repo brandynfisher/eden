@@ -23,6 +23,8 @@ const TaskActionsMenu = ({ task, result, index, className }: Props) => {
         <DropdownMenuItem asChild>
           <Link
             href={`/create/${task.output_type}/${task.workflow}?task=${task._id}`}
+            scroll={false}
+            shallow={true}
           >
             <FileSlidersIcon className="mr-2 h-4 w-4" />
             Use as Preset

@@ -80,6 +80,8 @@ const ParameterTableCollapsible = ({ item }: Props) => {
                   <Link
                     href={`/create/image/txt2img?lora=${item.args.lora}`}
                     className="ml-auto mr-2"
+                    scroll={false}
+                    shallow={true}
                   >
                     <ComponentIcon className="mr-2 h-4 w-4" />
                     Use

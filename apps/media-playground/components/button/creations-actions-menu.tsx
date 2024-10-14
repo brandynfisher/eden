@@ -100,6 +100,8 @@ const CreationActionsContent = ({
           <Link
             className="cursor-pointer"
             href={`/create/${creationData.mediaAttributes?.type}/${creationData.workflow}?creation=${creationData._id}`}
+            scroll={false}
+            shallow={true}
           >
             <FileSlidersIcon className="mr-2 h-4 w-4" />
             Use as Preset

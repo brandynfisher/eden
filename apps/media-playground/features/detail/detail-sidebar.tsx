@@ -140,6 +140,8 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                 <Link
                   href={`/create/image/txt2img?lora=${lora}`}
                   className="ml-auto mr-2"
+                  scroll={false}
+                  shallow={true}
                 >
                   <ComponentIcon className="mr-2 h-4 w-4" />
                   Use
