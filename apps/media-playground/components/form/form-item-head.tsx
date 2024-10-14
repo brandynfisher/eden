@@ -27,7 +27,9 @@ const FormItemHead = ({ label, description }: Props) => {
             >
               <InfoIcon className="h-4 w-4" />
             </TooltipTrigger>
-            <TooltipContent>{description}</TooltipContent>
+            <TooltipContent sideOffset={16} className="max-w-[95dvw]">
+              {description}
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </FormDescription>
