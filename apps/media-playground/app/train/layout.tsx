@@ -1,12 +1,40 @@
+'use client'
+
+import SecondaryNavLayout from '@/components/layout/secondary-nav-layout'
+import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
 import { PropsWithChildren } from 'react'
 
+const baseSegment = 'train'
+
 const PageLayout = ({ children }: PropsWithChildren) => {
+  const { generators } = useGeneratorsListQuery({
+    outputType: ['lora'],
+  })
+
+  if (!generators) {
+    return null
+  }
+
   return (
-    <div className="min-h-[calc(100vh_-_theme(spacing.16))] bg-background">
-      <main className={'flex flex-1 flex-col gap-4 p-4 md:pt-0 !pb-0'}>
-        {children}
-      </main>
-    </div>
+    <SecondaryNavLayout
+      title={'Tools'}
+      wrapClassName={'!pb-0'}
+      baseSegment={baseSegment}
+      navigation={[
+        {
+          title: 'Lora',
+          links: generators
+            .filter(generator => generator.outputType === 'lora')
+            .map(generator => ({
+              label: generator.name,
+              segments: [baseSegment, generator.key],
+              description: generator.description,
+            })),
+        },
+      ]}
+    >
+      {children}
+    </SecondaryNavLayout>
   )
 }
 

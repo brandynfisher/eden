@@ -17,17 +17,18 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   parameter: GeneratorParameterV2
   form: UseFormReturn
+  tool: GeneratorV2
   className?: string
 }
 
-const ParameterField = ({ parameter, form, className }: Props) => {
+const ParameterField = ({ parameter, form, tool, className }: Props) => {
   const { name, label } = parameter
 
   return (
@@ -225,7 +226,11 @@ const ParameterField = ({ parameter, form, className }: Props) => {
                   />
                 </FormControl>
                 <Suspense fallback={<LoadingIndicator />}>
-                  <ModelSelector value={parsedValue} onChange={onChange} />
+                  <ModelSelector
+                    baseModel={tool.baseModel}
+                    value={parsedValue}
+                    onChange={onChange}
+                  />
                 </Suspense>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>

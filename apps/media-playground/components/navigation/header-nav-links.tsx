@@ -46,7 +46,7 @@ const navItemsMake: NavLinkProps[] = [
   },
   {
     label: 'Train',
-    segments: ['train', 'lora_trainer'],
+    segments: ['train'],
   },
 ]
 type Props = {

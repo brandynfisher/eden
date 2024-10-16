@@ -78,7 +78,9 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
         <DropdownMenuItem asChild>
           <Link
             className="cursor-pointer"
-            href={`/create/image/txt2img?lora=${model._id}`}
+            href={`/create/image/${
+              model.base_model === 'sdxl' ? 'txt2img' : 'flux-dev'
+            }?lora=${model._id}`}
           >
             <ComponentIcon className="mr-2 h-4 w-4" />
             Use Model

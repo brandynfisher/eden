@@ -13,6 +13,15 @@ import { CoinsIcon } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
+export const MannaValue = ({ value }: { value: number }) => {
+  return (
+    <>
+      <CoinsIcon className="mr-1 h-4 w-4" />
+      <span>{Math.round(value || 0).toLocaleString()}</span>
+    </>
+  )
+}
+
 const MannaBalance = () => {
   const { isSignedIn, balance, subscriptionBalance, foreverBalance } =
     useAuthState()
@@ -36,8 +45,7 @@ const MannaBalance = () => {
     <DropdownMenu>
       <DropdownMenuTrigger title="View manna balance breakdown" asChild>
         <Button variant="ghost" className="text-xs px-2 flex focus:!ring-0">
-          <CoinsIcon className="mr-1 h-4 w-4" />
-          <span>{(balance || 0).toLocaleString()}</span>
+          <MannaValue value={balance} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

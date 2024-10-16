@@ -78,7 +78,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
               <ModelMiniCard modelId={item.args.lora} className="bg-popover">
                 <Button size="sm" variant="outline" asChild>
                   <Link
-                    href={`/create/image/txt2img?lora=${item.args.lora}`}
+                    href={`/create/image/${item.workflow}?lora=${item.args.lora}`}
                     className="ml-auto mr-2"
                     scroll={false}
                     shallow={true}

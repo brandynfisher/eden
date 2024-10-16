@@ -6,13 +6,15 @@ import {
 } from '@/components/ui/collapsible'
 import ParameterField from '@/features/generators/parameters/parameter-field'
 import { cn } from '@/lib/utils'
+import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   group: ParameterGroup
+  tool: GeneratorV2
   form: UseFormReturn
 }
-const ParameterGroupCollapse = ({ group, form }: Props) => {
+const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
   if (
     !group.groupParameters ||
     !group.groupParameters.length ||
@@ -27,6 +29,7 @@ const ParameterGroupCollapse = ({ group, form }: Props) => {
     <Collapsible open={isOpen}>
       <CollapsibleTrigger asChild>
         <ParameterField
+          tool={tool}
           parameter={group.toggle}
           form={form}
           className={cn([
@@ -47,6 +50,7 @@ const ParameterGroupCollapse = ({ group, form }: Props) => {
         {group.groupParameters?.map(param => (
           <ParameterField
             key={param.name}
+            tool={tool}
             parameter={param}
             form={form}
             className="bg-muted-darker mx-2"

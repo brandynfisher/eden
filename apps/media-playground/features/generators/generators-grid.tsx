@@ -83,26 +83,29 @@ const GridSection = ({ generators }: Props) => {
 
 type GeneratorsGridProps = {
   outputType: GeneratorOutputTypeV2[]
+  showFeatured?: boolean
 }
 
-const GeneratorsGrid = ({ outputType }: GeneratorsGridProps) => {
+const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
   const { generators } = useGeneratorsListQuery({ outputType })
 
   return (
     <Accordion type="multiple" defaultValue={['featured', ...outputType]}>
-      <AccordionItem key="featured" value="featured">
-        <AccordionTrigger className="capitalize bg-primary-foreground/40 hover:bg-primary-foreground/60 px-4">
-          <TypographyH4 className="capitalize">Featured</TypographyH4>
-        </AccordionTrigger>
-        <AccordionContent className="my-4">
-          <GridSection
-            title="Featured"
-            generators={generators?.filter(gen =>
-              siteConfig.featured.tools.includes(gen.key),
-            )}
-          />
-        </AccordionContent>
-      </AccordionItem>
+      {showFeatured ? (
+        <AccordionItem key="featured" value="featured">
+          <AccordionTrigger className="capitalize bg-primary-foreground/40 hover:bg-primary-foreground/60 px-4">
+            <TypographyH4 className="capitalize">Featured</TypographyH4>
+          </AccordionTrigger>
+          <AccordionContent className="my-4">
+            <GridSection
+              title="Featured"
+              generators={generators?.filter(gen =>
+                siteConfig.featured.tools.includes(gen.key),
+              )}
+            />
+          </AccordionContent>
+        </AccordionItem>
+      ) : null}
       {outputType?.map(type => (
         <AccordionItem key={type} value={type}>
           <AccordionTrigger className="capitalize bg-primary-foreground/40 hover:bg-primary-foreground/60 px-4">

@@ -1,6 +1,7 @@
 'use client'
 
 import ModelSelectorModalContent from '@/components/modal/model-selector-modal-content'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
 import {
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { ModelV2 } from '@edenlabs/eden-sdk'
+import { BaseModelName, ModelV2 } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, ReactNode, Suspense, useRef } from 'react'
 import { toast } from 'sonner'
 
@@ -22,6 +23,7 @@ type Props = {
   className?: string
   trigger?: ReactNode
   currentValue: string
+  baseModel?: BaseModelName
   onChange: (id: string) => void
 } & PropsWithChildren
 
@@ -29,6 +31,7 @@ const ModelSelectorModal = ({
   title,
   description,
   className,
+  baseModel,
   onChange,
 }: Props) => {
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -64,13 +67,19 @@ const ModelSelectorModal = ({
         className={cn([`overflow-x-hidden flex flex-col max-w-7xl`, className])}
       >
         <DialogHeader className="mt-4">
-          <DialogTitle>{title}</DialogTitle>
+          <div className="flex gap-4 items-center">
+            <DialogTitle className="py-2">{title}</DialogTitle>
+            <Badge variant="secondary">{baseModel}</Badge>
+          </div>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <Suspense
           fallback={<Skeleton className="h-10 pt-0.5 w-[270px] mb-4" />}
         >
-          <ModelSelectorModalContent onChange={handleOnChange} />
+          <ModelSelectorModalContent
+            baseModel={baseModel}
+            onChange={handleOnChange}
+          />
         </Suspense>
       </DialogContentScrollable>
     </Dialog>

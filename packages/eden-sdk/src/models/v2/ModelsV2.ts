@@ -6,6 +6,7 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
+import { BaseModelName } from './GeneratorsV2'
 import { TaskV2Args } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
@@ -91,4 +92,5 @@ export type ModelV2 = {
   updatedAt: Date
   deleted: boolean
   public?: boolean
+  base_model?: BaseModelName
 }

@@ -616,13 +616,13 @@ export const getCreationsFeedCursorV2 = async (
   let results = []
   const lateLookupStages = [...userLookup]
 
-  console.log(
-    JSON.stringify(
-      { useCollectionsPreAggregate, filters, preAggregateFilterOptions },
-      null,
-      2,
-    ),
-  )
+  // console.log(
+  //   JSON.stringify(
+  //     { useCollectionsPreAggregate, filters, preAggregateFilterOptions },
+  //     null,
+  //     2,
+  //   ),
+  // )
 
   if (useCollectionsPreAggregate) {
     const lookupPipeline = await createPipeline({

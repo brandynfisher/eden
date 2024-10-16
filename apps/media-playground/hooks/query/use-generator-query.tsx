@@ -21,6 +21,7 @@ export const useGeneratorQuery = ({ key, initialData }: Props) => {
     isSuccess,
     status,
   } = useQuery({
+    staleTime: 100000,
     initialData,
     queryKey,
     queryFn: () => fetcher<GeneratorsGetResponseV2>(`/api/generators/${key}`),

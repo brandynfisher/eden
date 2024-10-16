@@ -5,8 +5,10 @@ import PrivacyActionItem from '@/components/button/privacy-action-item'
 import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
 import {
   DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
+  DropdownMenuItem, // DropdownMenuLabel,
+  DropdownMenuSeparator, // DropdownMenuSub,
+  // DropdownMenuSubContent,
+  // DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -17,10 +19,15 @@ import { QueryKey } from '@tanstack/react-query'
 import {
   BookmarkPlusIcon,
   ExternalLinkIcon,
-  FileSlidersIcon,
+  FileSlidersIcon, //FilmIcon
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
+
+// import { useCostCalculation } from '@/hooks/use-cost-calculation'
+// import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
+// import { getDefaultNameValueMap } from '@/lib/forms'
+// import { MannaValue } from '@/components/header/manna-balance'
 
 type Props = {
   creation: CreationV2
@@ -60,6 +67,124 @@ type ContentProps = {
   isOpen?: boolean
 }
 
+//
+// const QuickActionSubMenuItem = ({ label, config, costEstimateFormula, onClick }: {
+//   label: string,
+//   config: { [key: string]: string|number },
+//   costEstimateFormula: string,
+//   onClick: (config: { [key: string]: string|number|boolean }) => void
+// }) => {
+//   const { calculateCost } = useCostCalculation()
+//
+//   return (
+//     <DropdownMenuItem onClick={() => onClick(config)}>
+//       <div className='flex items-center gap-6 w-full cursor-pointer'>
+//         {label}
+//         <div className='text-xs flex ml-auto font-mono text-muted-foreground'>
+//           <MannaValue value={calculateCost(costEstimateFormula || '', config)} />
+//         </div>
+//       </div>
+//     </DropdownMenuItem>
+//   )
+// }
+//
+// const QuickActionAnimate = () => {
+//   const toolKey = 'img2vid'
+//   const { generator } = useGeneratorQuery({ key: toolKey })
+//   const defaultNameValueMap = getDefaultNameValueMap(generator?.parameters)
+//
+//   console.log(toolKey, defaultNameValueMap)
+//
+//   const handleSubmit = (config: { [key: string]: string|number|boolean }) => {
+//     // @todo: submit to create task
+//     // @todo: show info toast
+//     //
+//     console.log({ estimate: generator?.costEstimate, config, final: { ...defaultNameValueMap, ...config } })
+//   }
+//
+//   return (
+//     <DropdownMenuSub>
+//       <DropdownMenuSubTrigger>
+//         <FilmIcon className='mr-2 h-4 w-4' />
+//         Animate
+//       </DropdownMenuSubTrigger>
+//       <DropdownMenuSubContent>
+//         <DropdownMenuLabel>Duration</DropdownMenuLabel>
+//         <DropdownMenuSeparator />
+//         <QuickActionSubMenuItem
+//           label={'24 Frames'}
+//           costEstimateFormula={generator?.costEstimate || ''}
+//           onClick={handleSubmit}
+//           config={{ num_frames: 24 }}
+//         />
+//         <QuickActionSubMenuItem
+//           label={'48 Frames'}
+//           costEstimateFormula={generator?.costEstimate || ''}
+//           onClick={handleSubmit}
+//           config={{ num_frames: 48 }}
+//         />
+//         <QuickActionSubMenuItem
+//           label={'64 Frames'}
+//           costEstimateFormula={generator?.costEstimate || ''}
+//           onClick={handleSubmit}
+//           config={{ num_frames: 64 }}
+//         />
+//       </DropdownMenuSubContent>
+//     </DropdownMenuSub>
+//   )
+// }
+//
+// const QuickActionAnimate3D = () => {
+//   const toolKey = 'animate_3D'
+//   const { generator } = useGeneratorQuery({ key: toolKey })
+//
+//   const baseConfig = {
+//     loop: false,
+//   }
+//
+//   const defaultNameValueMap = { ...getDefaultNameValueMap(generator?.parameters), ...baseConfig }
+//
+//   console.log(toolKey, defaultNameValueMap)
+//
+//   const handleSubmit = (config: { [key: string]: string|number|boolean }) => {
+//     // @todo: submit to create task
+//     // @todo: show info toast
+//     //
+//     console.log({ estimate: generator?.costEstimate, config, final: { ...defaultNameValueMap, ...config } })
+//   }
+//
+//   return (
+//     <DropdownMenuSub>
+//       <DropdownMenuSubTrigger>
+//         <FilmIcon className='mr-2 h-4 w-4' />
+//         Animate 3D
+//       </DropdownMenuSubTrigger>
+//       <DropdownMenuSubContent>
+//         <DropdownMenuLabel>Duration</DropdownMenuLabel>
+//         <DropdownMenuSeparator />
+//         <QuickActionSubMenuItem
+//           label={'24 Frames'}
+//           costEstimateFormula={generator?.costEstimate || ''}
+//           onClick={handleSubmit}
+//           config={{ n_frames: 24 }}
+//         />
+//         <QuickActionSubMenuItem
+//           label={'48 Frames'}
+//           costEstimateFormula={generator?.costEstimate || ''}
+//           onClick={handleSubmit}
+//           config={{ n_frames: 48 }}
+//         />
+//         <QuickActionSubMenuItem
+//           label={'64 Frames'}
+//           costEstimateFormula={generator?.costEstimate || ''}
+//           onClick={handleSubmit}
+//           config={{ n_frames: 64 }}
+//         />
+//       </DropdownMenuSubContent>
+//     </DropdownMenuSub>
+//   )
+// }
+
 const CreationActionsContent = ({
   creation,
   queryKey,
@@ -96,6 +221,9 @@ const CreationActionsContent = ({
             {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {/*<QuickActionAnimate />*/}
+        {/*<QuickActionAnimate3D />*/}
         <DropdownMenuItem asChild>
           <Link
             className="cursor-pointer"

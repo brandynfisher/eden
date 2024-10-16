@@ -200,3 +200,12 @@ export function createZodFormSchema(parameters: GeneratorParameterV2[]) {
 
   return z.object(schemaObj)
 }
+
+export function getDefaultNameValueMap(parameters?: GeneratorParameterV2[]) {
+  return (parameters || []).reduce((accum, currParameter) => {
+    return {
+      ...accum,
+      [currParameter.name]: currParameter.default,
+    }
+  }, {})
+}

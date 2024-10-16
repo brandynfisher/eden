@@ -4,16 +4,18 @@ import ModelMiniCard from '@/components/card/model-mini-card'
 import LoadingIndicator from '@/components/loading-indicator'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
+import { BaseModelName } from '@edenlabs/eden-sdk'
 import { X } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense } from 'react'
 
 type Props = {
+  baseModel?: BaseModelName
   onChange: (newVal: string | undefined) => void
   value: string
 }
 
-const ModelSelector = ({ onChange, value }: Props) => {
+const ModelSelector = ({ baseModel, onChange, value }: Props) => {
   const router = useRouter()
   const pathname = usePathname()
   const queryParams = useSearchParams()
@@ -47,6 +49,7 @@ const ModelSelector = ({ onChange, value }: Props) => {
         className="p-4 md:p-8 w-full"
         title="Select model"
         description="Pick a model to use as a lora"
+        baseModel={baseModel}
         currentValue={value}
         onChange={onChange}
       />

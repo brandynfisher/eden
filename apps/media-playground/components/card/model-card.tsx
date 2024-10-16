@@ -2,6 +2,7 @@ import ModelActionsMenu from '@/components/button/model-actions-menu'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
+import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Creator, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -40,6 +41,11 @@ const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
         prefetch={false}
         className="relative w-full block"
       >
+        <div className="absolute bottom-2 right-2 pointer-events-none">
+          <Badge variant="secondary" className="text-xs bg-opacity-80">
+            {model.base_model}
+          </Badge>
+        </div>
         <CardImage
           media={{
             url: model.thumbnail,

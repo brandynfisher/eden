@@ -1,6 +1,8 @@
 'use client'
 
 import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
+import DiscordIcon from '@/components/icons/discord'
+import TwitterIcon from '@/components/icons/twitter'
 import DialogMenuItem from '@/components/modal/dialog-menu-item'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
@@ -13,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
 import { useMe } from '@/hooks/use-me'
+import { siteConfig } from '@/lib/config'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
@@ -200,6 +203,39 @@ const AccountDropdown = () => {
           <span>Log out</span>
           {/*<DropdownMenuShortcut>⇧Q</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="pl-2">
+          <div className="flex items-center w-full">
+            <Link
+              className="text-xs hover:underline text-muted-foreground"
+              href={`https://docs.eden.art/docs/overview/tos`}
+              prefetch={false}
+            >
+              <span>Terms</span>
+            </Link>
+
+            <div className="ml-auto flex gap-1">
+              <Button variant="ghost" size={'icon'} asChild>
+                <Link
+                  href={siteConfig.links.discord}
+                  target="_blank"
+                  className="filter grayscale hover:grayscale-0"
+                >
+                  <DiscordIcon size={20} />
+                </Link>
+              </Button>
+              <Button variant="ghost" size={'icon'} asChild>
+                <Link
+                  href={siteConfig.links.twitter}
+                  target="_blank"
+                  className="group filter grayscale hover:grayscale-0"
+                >
+                  <TwitterIcon size={18} />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   )

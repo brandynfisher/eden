@@ -93,7 +93,7 @@ const AspectRatioSelector = ({ presetResolutions, form }: Props) => {
     <ToggleGroup
       type="single"
       value={activeResolution ? activeResolution.label : undefined}
-      className="border border-muted rounded-md p-1 flex items-center"
+      className="border border-muted rounded-md p-1 flex items-center bg-popover"
     >
       {visibleResolutions.map(resolution => (
         <ToggleGroupItem

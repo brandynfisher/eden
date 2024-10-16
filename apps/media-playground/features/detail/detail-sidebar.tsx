@@ -108,6 +108,19 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         </div>
       ) : null}
 
+      {type === 'model' ? (
+        <div className="pb-4 text-sm">
+          <div className="h-9 flex items-center justify-between font-bold">
+            Base Model
+          </div>
+          {item && (item as ModelV2).base_model ? (
+            (item as ModelV2).base_model
+          ) : (
+            <Skeleton className="h-5 w-[125px]" />
+          )}
+        </div>
+      ) : null}
+
       {type === 'creation' ? (
         <div className="pb-4 text-sm">
           <div className="h-9 flex items-center justify-between">
@@ -138,7 +151,9 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
             <ModelMiniCard modelId={lora} className="bg-popover">
               <Button size="sm" variant="outline" asChild>
                 <Link
-                  href={`/create/image/txt2img?lora=${lora}`}
+                  href={`/create/image/${
+                    (item as CreationV2).workflow
+                  }?lora=${lora}`}
                   className="ml-auto mr-2"
                   scroll={false}
                   shallow={true}

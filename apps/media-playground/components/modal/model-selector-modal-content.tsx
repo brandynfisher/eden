@@ -3,16 +3,21 @@ import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertic
 import { ToggleGroup } from '@/components/ui/toggle-group'
 import ModelsFeed from '@/features/feed/models-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { ModelV2 } from '@edenlabs/eden-sdk'
+import { BaseModelName, ModelV2 } from '@edenlabs/eden-sdk'
 import { Suspense, useState } from 'react'
 
 type Props = {
+  baseModel?: BaseModelName
   onChange: (item: ModelV2) => void
 }
 
-const ModelSelectorModalContent = ({ onChange }: Props) => {
+const ModelSelectorModalContent = ({ baseModel, onChange }: Props) => {
   const { user } = useAuthState()
   const [showUserModelsOnly, setShowUserModelsOnly] = useState(true)
+
+  const baseQuery = {
+    base_model: baseModel,
+  }
 
   return (
     <div>
@@ -40,13 +45,18 @@ const ModelSelectorModalContent = ({ onChange }: Props) => {
       <Suspense fallback={<MasonrySkeleton />}>
         {showUserModelsOnly ? (
           <ModelsFeed
-            query={user ? { user: user?._id } : {}}
+            query={user ? { ...baseQuery, user: user?._id } : baseQuery}
             minCols={2}
             maxCols={5}
             onClick={onChange}
           />
         ) : (
-          <ModelsFeed minCols={2} maxCols={5} onClick={onChange} />
+          <ModelsFeed
+            query={baseQuery}
+            minCols={2}
+            maxCols={5}
+            onClick={onChange}
+          />
         )}
       </Suspense>
     </div>

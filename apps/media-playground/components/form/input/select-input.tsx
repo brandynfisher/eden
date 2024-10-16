@@ -8,10 +8,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { ReactNode } from 'react'
 
 type Props = {
   placeholder: string
   label?: string
+  icon?: ReactNode
   onChange: (newVal: string | number) => void
   value: string | number
   options: (string | number)[]
@@ -23,6 +25,7 @@ type Props = {
 const SelectInput = ({
   placeholder,
   label,
+  icon,
   onChange,
   value,
   options,
@@ -33,6 +36,7 @@ const SelectInput = ({
   return (
     <DelayedSelect onValueChange={onChange} value={String(value || '')}>
       <SelectTrigger className={cn(['w-full', className])} title={placeholder}>
+        {icon}
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

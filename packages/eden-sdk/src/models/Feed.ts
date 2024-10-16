@@ -11,6 +11,7 @@ import {
 } from '../types'
 import { Concept } from './Concepts'
 import { Creation } from './Creations'
+import { BaseModelName } from './v2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -74,6 +75,7 @@ export type FeedCursorRouteQueryParams = {
     visibility?: 'all' | 'public' | 'private'
     maxDate?: string
     minDate?: string
+    base_model?: BaseModelName
   }
 }
 

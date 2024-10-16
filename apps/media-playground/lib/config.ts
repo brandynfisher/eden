@@ -50,6 +50,7 @@ export const siteConfig: SiteConfig = {
     twitter: 'https://x.com/eden_art_',
     linkedIn: 'https://www.linkedin.com/company/eden-labs-inc/',
     github: 'https://github.com/edenartlabs/eden',
+    discord: 'https://discord.com/invite/4dSYwDT',
   },
   ogImage: `${env.NEXT_PUBLIC_HOST}/logo_badge_square.png`,
   mediaErrorUrl:

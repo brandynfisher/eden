@@ -60,6 +60,8 @@ export type GeneratorsGetResponseV2 = WebAPICallResult & {
 
 // Types
 
+export type BaseModelName = 'sdxl' | 'flux'
+
 export type GeneratorV2 = {
   key: string
   name: string
@@ -69,6 +71,7 @@ export type GeneratorV2 = {
   outputType: GeneratorOutputTypeV2
   costEstimate?: string
   resolutions?: string[]
+  baseModel?: BaseModelName
 }
 
 export type GeneratorParameterType =

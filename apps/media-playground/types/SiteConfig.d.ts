@@ -13,6 +13,7 @@ export type SiteConfig = {
     twitter: string
     linkedIn: string
     github: string
+    discord: string
   }
   ogImage: string
   mediaErrorUrl: string

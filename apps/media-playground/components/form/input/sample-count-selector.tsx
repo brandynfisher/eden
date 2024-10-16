@@ -6,6 +6,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { LayoutGridIcon } from 'lucide-react'
 
 type Props = {
   parameter: GeneratorParameterV2
@@ -30,9 +31,10 @@ const SampleCountSelector = ({ parameter }: Props) => {
                 options={[1, 2, 3, 4]}
                 suffix={'x'}
                 className={
-                  '!mt-0 w-[52px] pl-2.5 pr-1.5 h-[46px] focus:ring-0 font-mono hover:bg-accent'
+                  '!mt-0 w-[70px] pl-2.5 pr-1.5 h-[46px] focus:ring-0 font-mono hover:bg-accent'
                 }
                 optionClassName={'font-mono'}
+                icon={<LayoutGridIcon className="h-4 w-4 mr-1" />}
               />
             </FormControl>
             <FormMessage>{fieldState.error?.message}</FormMessage>

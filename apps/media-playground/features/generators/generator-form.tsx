@@ -12,7 +12,7 @@ import ParameterGroupCollapse from '@/features/generators/parameters/parameter-g
 import { groupParameters } from '@/features/generators/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useToolPreset } from '@/hooks/use-tool-preset'
-import { createZodFormSchema } from '@/lib/forms'
+import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { cn } from '@/lib/utils'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -42,14 +42,8 @@ const GeneratorForm = ({ generator }: Props) => {
   )[0]
 
   type FormData = z.infer<typeof parameterSchema>
-  const defaultValues: FormData | undefined = generator.parameters?.reduce(
-    (accum, currParameter) => {
-      return {
-        ...accum,
-        [currParameter.name]: currParameter.default,
-      }
-    },
-    {},
+  const defaultValues: FormData | undefined = getDefaultNameValueMap(
+    generator.parameters,
   )
 
   useEffect(() => {
@@ -170,7 +164,11 @@ const GeneratorForm = ({ generator }: Props) => {
           >
             {requiredParameters?.map(parameter => (
               <div key={parameter.name} className="bg-muted rounded-lg">
-                <ParameterField parameter={parameter} form={form} />
+                <ParameterField
+                  tool={generator}
+                  parameter={parameter}
+                  form={form}
+                />
               </div>
             ))}
             {(presetResolutions && presetResolutions.length) ||
@@ -251,11 +249,16 @@ const GeneratorForm = ({ generator }: Props) => {
                   <div key={index} className="bg-muted/50 rounded-lg">
                     {element.type === 'standalone' && element.parameter ? (
                       <ParameterField
+                        tool={generator}
                         parameter={element.parameter}
                         form={form}
                       />
                     ) : (
-                      <ParameterGroupCollapse group={element} form={form} />
+                      <ParameterGroupCollapse
+                        tool={generator}
+                        group={element}
+                        form={form}
+                      />
                     )}
                   </div>
                 ))}

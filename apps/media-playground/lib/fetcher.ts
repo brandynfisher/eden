@@ -175,6 +175,9 @@ export const createCursorPaginationRoute = (
   if (query.minDate) {
     filters.push({ minDate: query.minDate })
   }
+  if (query.base_model) {
+    filters.push({ base_model: query.base_model })
+  }
 
   if (query.generator) {
     if (typeof query.generator === 'string') {
@@ -236,6 +239,8 @@ export const createCursorPaginationRoute = (
   const queryString = [...queryStringArray, ...filterStringArray].join('&')
 
   // console.log(queryString)
+
+  console.log({ filters, queryString })
 
   return queryString ? `${basePath}?${queryString}` : basePath
 }

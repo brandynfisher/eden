@@ -13,7 +13,7 @@ const Landing = () => {
           text={'Start creating with Eden'}
         />
         <LinkCard
-          href={'/train/lora_trainer'}
+          href={'/train'}
           title={'Train'}
           text={'Train custom models'}
         />
