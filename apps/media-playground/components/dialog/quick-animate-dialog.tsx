@@ -10,15 +10,11 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { useQuickAnimateModalOpen } from '@/stores/dialogs/dialogs.selector'
-import { toggleQuickAnimateModal } from '@/stores/dialogs/dialogs.slice'
+import { useQuickAnimateModal } from '@/stores/dialogs/dialogs.selector'
+import {  updateQuickAnimateModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { CreationV2 } from '@edenlabs/eden-sdk'
 import React, { Suspense, useCallback } from 'react'
 
-interface QuickAnimateDialogProps {
-  item: CreationV2
-}
 
 const FormSkeleton = () => {
   return (
@@ -30,14 +26,14 @@ const FormSkeleton = () => {
   )
 }
 
-const QuickAnimateDialog = ({ item }: QuickAnimateDialogProps) => {
+const QuickAnimateDialog = () => {
   const dispatch = useAppDispatch()
-  const isModalOpen = useQuickAnimateModalOpen()
+  const quickAnimateModal = useQuickAnimateModal()
   const handleQuickAnimateModalOpenChange = useCallback(() => {
-    dispatch(toggleQuickAnimateModal())
-  }, [dispatch])
+    dispatch(updateQuickAnimateModal({ isOpen: !quickAnimateModal.isOpen }))
+  }, [dispatch, quickAnimateModal.isOpen])
 
-  if (!item) {
+  if (!quickAnimateModal.creation) {
     return null
   }
 
@@ -50,7 +46,7 @@ const QuickAnimateDialog = ({ item }: QuickAnimateDialogProps) => {
           <QuickAnimateForm
             toolKey={'animate_3D'}
             exposedParameters={['n_frames']}
-            initValues={{ image: getCloudfrontOriginalUrl(item.url) || '' }}
+            initValues={{ image: getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '' }}
           />
         </Suspense>
       ),
@@ -63,7 +59,7 @@ const QuickAnimateDialog = ({ item }: QuickAnimateDialogProps) => {
           <QuickAnimateForm
             toolKey={'img2vid'}
             exposedParameters={['num_frames']}
-            initValues={{ image: getCloudfrontOriginalUrl(item.url) || '' }}
+            initValues={{ image: getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '' }}
           />
         </Suspense>
       ),
@@ -73,7 +69,7 @@ const QuickAnimateDialog = ({ item }: QuickAnimateDialogProps) => {
   return (
     <>
       <Dialog
-        open={isModalOpen}
+        open={quickAnimateModal.isOpen}
         onOpenChange={handleQuickAnimateModalOpenChange}
       >
         <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-lg">

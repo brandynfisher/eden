@@ -1,6 +1,5 @@
 import DeleteBulkActionItem from '@/components/button/delete-bulk-action-item'
 import PrivacyBulkActionItem from '@/components/button/privacy-bulk-action-item'
-import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { toggleAddToCollectionModal } from '@/stores/dialogs/dialogs.slice'
+import { updateAddToCollectionModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -34,7 +33,7 @@ const CreationsBulkActionsMenu = ({
   const dispatch = useAppDispatch()
 
   const handleAddToCollectionSelect = () => {
-    dispatch(toggleAddToCollectionModal())
+    dispatch(updateAddToCollectionModal({ isOpen: true, creationIds: creations.map(creation => creation._id) }))
   }
 
   if (!creations) {
@@ -78,7 +77,6 @@ const CreationsBulkActionsMenu = ({
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <CollectionSelectionDialog creations={creations} />
     </>
   )
 }

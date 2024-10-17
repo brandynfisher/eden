@@ -7,14 +7,14 @@ export const useDialogs = () => {
   return dialogs
 }
 
-export const useQuickAnimateModalOpen = () => {
+export const useQuickAnimateModal = () => {
   const dialogs = useAppSelector(selectDialogs)
-  return dialogs.quickAnimateModal.isOpen
+  return dialogs.quickAnimateModal
 }
 
-export const useAddToCollectionModalOpen = () => {
+export const useAddToCollectionModal = () => {
   const dialogs = useAppSelector(selectDialogs)
-  return dialogs.addToCollectionModal.isOpen
+  return dialogs.addToCollectionModal
 }
 
 export const useCreateCollectionModalOpen = () => {

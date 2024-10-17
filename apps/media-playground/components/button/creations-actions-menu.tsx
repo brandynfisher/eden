@@ -2,8 +2,6 @@ import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
-import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
-import QuickAnimateDialog from '@/components/dialog/quick-animate-dialog'
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
@@ -12,8 +10,8 @@ import {
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
-  toggleAddToCollectionModal,
-  toggleQuickAnimateModal,
+  updateAddToCollectionModal,
+  updateQuickAnimateModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
@@ -55,8 +53,6 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
           />
         )}
       </ActionsDropdown>
-      <CollectionSelectionDialog creations={[creation]} />
-      <QuickAnimateDialog item={creation} />
     </>
   )
 }
@@ -88,11 +84,11 @@ const CreationActionsContent = ({
   const creationData = creationResponse || creation
 
   const handleAddToCollectionClick = () => {
-    dispatch(toggleAddToCollectionModal())
+    dispatch(updateAddToCollectionModal({ isOpen: true, creationIds: [creationData._id] }))
   }
 
   const handleQuickAnimateClick = () => {
-    dispatch(toggleQuickAnimateModal())
+    dispatch(updateQuickAnimateModal({ isOpen: true, creation: creationData }))
   }
 
   return (
