@@ -238,9 +238,7 @@ export const createCursorPaginationRoute = (
   // console.log(filters)
   const queryString = [...queryStringArray, ...filterStringArray].join('&')
 
-  // console.log(queryString)
-
-  console.log({ filters, queryString })
+  // console.log({ filters, queryString })
 
   return queryString ? `${basePath}?${queryString}` : basePath
 }

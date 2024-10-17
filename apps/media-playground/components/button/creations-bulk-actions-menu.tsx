@@ -14,7 +14,13 @@ import { toggleAddToCollectionModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { BookmarkPlusIcon, EllipsisIcon } from 'lucide-react'
+import {
+  BookmarkPlusIcon,
+  EllipsisIcon,
+  PictureInPicture2Icon,
+  PictureInPictureIcon,
+} from 'lucide-react'
+import React from 'react'
 
 interface CreationsBulkActionsMenuProps {
   creations: CreationV2[]
@@ -53,9 +59,14 @@ const CreationsBulkActionsMenu = ({
             />
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleAddToCollectionSelect}>
+          <DropdownMenuItem
+            onClick={handleAddToCollectionSelect}
+            className="cursor-pointer group"
+          >
             <BookmarkPlusIcon className="mr-2 h-4 w-4" />
             <span>Add to Collection</span>
+            <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+            <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>

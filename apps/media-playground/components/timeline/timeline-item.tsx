@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { TaskV2, TaskV2Status } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
-import React, { useCallback, useState } from 'react'
+import React, { Suspense, useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -160,34 +160,36 @@ const TimelineItem = ({ item, queryKey }: Props) => {
             </>
           ) : null}
 
-          {item.status === 'completed' ? (
-            item.result && Array.isArray(item.result) ? (
-              item.result.map((result, index) =>
-                result.model === undefined ? (
-                  <TimelineItemMediaResult
-                    queryKey={queryKey}
-                    key={`${item._id}_${index}`}
-                    index={index}
-                    task={item}
-                    result={result}
-                  />
-                ) : (
-                  // api populates a model property with full model document
-                  <TimelineItemModelResult
-                    queryKey={queryKey}
-                    key={`${item._id}_${index}`}
-                    index={index}
-                    result={result}
-                    task={item}
-                  />
-                ),
+          <Suspense>
+            {item.status === 'completed' ? (
+              item.result && Array.isArray(item.result) ? (
+                item.result.map((result, index) =>
+                  result.model === undefined ? (
+                    <TimelineItemMediaResult
+                      queryKey={queryKey}
+                      key={`${item._id}_${index}`}
+                      index={index}
+                      task={item}
+                      result={result}
+                    />
+                  ) : (
+                    // api populates a model property with full model document
+                    <TimelineItemModelResult
+                      queryKey={queryKey}
+                      key={`${item._id}_${index}`}
+                      index={index}
+                      result={result}
+                      task={item}
+                    />
+                  ),
+                )
+              ) : (
+                <div className="text-warning">
+                  Unhandled result: {item.workflow} - {item._id}
+                </div>
               )
-            ) : (
-              <div className="text-warning">
-                Unhandled result: {item.workflow} - {item._id}
-              </div>
-            )
-          ) : null}
+            ) : null}
+          </Suspense>
         </div>
       </div>
 

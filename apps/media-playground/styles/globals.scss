@@ -100,3 +100,25 @@
 .generator-gradient {
     background: linear-gradient(rgba(0, 0, 0, 0.90) 0%, rgba(0, 0, 0, 0.16) 32%, rgba(0, 0, 0, 0.04) 64%, rgba(0, 0, 0, 0.02) 85%, rgba(0, 0, 0, 0) 100%)
 }
+
+// hack to never let popover go off screen (or drodown menu => dropdown menu sub
+//div[data-radix-popper-content-wrapper],
+//div[data-radix-popper-content-wrapper]:has(> div[data-side="right"]) {
+//    left: calc(
+//            min(
+//                    0px,
+//                    var(--radix-popper-available-width) +
+//                    (-1 * var(--radix-popper-anchor-width))
+//            )
+//    ) !important;
+//}
+//div[data-radix-popper-content-wrapper],
+//div[data-radix-popper-content-wrapper]:has(> div[data-side="left"]) {
+//    left: calc(
+//            max(
+//                    0px,
+//                    (-1 * var(--radix-popper-available-width)) +
+//                    var(--radix-popper-anchor-width)
+//            )
+//    ) !important;
+//}
