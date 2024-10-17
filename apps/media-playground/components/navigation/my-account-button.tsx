@@ -228,9 +228,12 @@ const AccountDropdown = () => {
                 <Link
                   href={siteConfig.links.twitter}
                   target="_blank"
-                  className="group filter grayscale hover:grayscale-0"
+                  className="group grayscale hover:grayscale-0 hover:text-white"
                 >
-                  <TwitterIcon size={18} />
+                  <TwitterIcon
+                    size={18}
+                    className="brightness-50 group-hover:!brightness-100"
+                  />
                 </Link>
               </Button>
             </div>

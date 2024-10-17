@@ -10,6 +10,7 @@ import {
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
+  toggleShareDialog,
   updateAddToCollectionModal,
   updateQuickAnimateModal,
 } from '@/stores/dialogs/dialogs.slice'
@@ -20,6 +21,7 @@ import {
   BookmarkPlusIcon,
   ExternalLinkIcon,
   FileSlidersIcon,
+  Share2Icon,
   FilmIcon,
   PictureInPicture2Icon,
   PictureInPictureIcon,
@@ -91,6 +93,10 @@ const CreationActionsContent = ({
     dispatch(updateQuickAnimateModal({ isOpen: true, creation: creationData }))
   }
 
+  const handleShareClick = () => {
+    dispatch(toggleShareDialog())
+  }
+
   return (
     <>
       <DropdownMenuGroup>
@@ -139,6 +145,12 @@ const CreationActionsContent = ({
           <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
         </DropdownMenuItem>
       </DropdownMenuGroup>
+      <DropdownMenuItem asChild>
+        <button type="button" className="w-full" onClick={handleShareClick}>
+          <Share2Icon className="mr-2 h-4 w-4" />
+          Share
+        </button>
+      </DropdownMenuItem>
       {creationData.user._id === userId && (
         <>
           <DropdownMenuSeparator />

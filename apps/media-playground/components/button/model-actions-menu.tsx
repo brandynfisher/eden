@@ -2,6 +2,7 @@ import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
+import ShareDialog from '@/components/dialog/share-dialog'
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
@@ -9,9 +10,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { toggleShareDialog } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { ComponentIcon, ExternalLinkIcon } from 'lucide-react'
+import { ComponentIcon, ExternalLinkIcon, Share2Icon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
@@ -30,15 +33,17 @@ const ModelActionsMenu = ({ model, queryKey, className }: Props) => {
   }
 
   return (
-    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
-      {isOpen && (
-        <ModelActionsContent
-          model={model}
-          queryKey={queryKey}
-          userId={user?._id}
-        />
-      )}
-    </ActionsDropdown>
+    <>
+      <ActionsDropdown className={className} onOpenChange={setIsOpen}>
+        {isOpen && (
+          <ModelActionsContent
+            model={model}
+            queryKey={queryKey}
+            userId={user?._id}
+          />
+        )}
+      </ActionsDropdown>
+    </>
   )
 }
 
@@ -49,6 +54,8 @@ type ContentProps = {
 }
 
 const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
+  const dispatch = useAppDispatch()
+
   const { model: modelResponse } = useModelQuery({
     key: model._id,
     initialData: {
@@ -57,6 +64,10 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
   })
 
   const modelData = modelResponse || model
+
+  const handleShareClick = () => {
+    dispatch(toggleShareDialog())
+  }
 
   return (
     <>
@@ -88,6 +99,12 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>
+      <DropdownMenuItem asChild>
+        <button type="button" className="w-full" onClick={handleShareClick}>
+          <Share2Icon className="mr-2 h-4 w-4" />
+          Share
+        </button>
+      </DropdownMenuItem>
       {modelData.user._id === userId && (
         <>
           <DropdownMenuSeparator />
