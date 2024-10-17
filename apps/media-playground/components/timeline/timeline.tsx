@@ -13,7 +13,7 @@ import {
 import { useTaskStatus } from '@/providers/task-status-provider'
 import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
 import { QueryKey, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 
 export const ListSkeleton = () => {
   return (
@@ -132,12 +132,16 @@ const Timeline = ({ generator }: Props) => {
       ) : null}
 
       <div data-test-id="timeline">
-        <ListVirtualizerVertical
-          apiEndpoint={'/api/tasks/list'}
-          query={query}
-          queryKey={queryKey}
-          render={item => <TimelineItem item={item.item} queryKey={queryKey} />}
-        />
+        <Suspense>
+          <ListVirtualizerVertical
+            apiEndpoint={'/api/tasks/list'}
+            query={query}
+            queryKey={queryKey}
+            render={item => (
+              <TimelineItem item={item.item} queryKey={queryKey} />
+            )}
+          />
+        </Suspense>
       </div>
     </div>
   )

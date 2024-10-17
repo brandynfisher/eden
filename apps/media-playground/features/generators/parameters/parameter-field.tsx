@@ -37,7 +37,7 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value, name } = field
         let parsedValue: number | string | ''
-
+        console.log({ field })
         switch (parameter.type) {
           case 'int':
             parsedValue = Number(value)
@@ -51,6 +51,7 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                 label={label}
                 description={parameter.description}
                 errorMessage={fieldState.error?.message}
+                className={className}
               >
                 {parameter.name === 'seed' ? (
                   <Input

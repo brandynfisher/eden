@@ -152,12 +152,20 @@ const GeneratorForm = ({ generator }: Props) => {
     >
       <Form {...form}>
         <form className="w-full">
-          <TypographyH4 className="mb-2 flex items-center justify-between">
-            {generator.name}
-            {generator.private ? (
-              <Badge variant="destructive">private</Badge>
+          <div className="mb-2 flex items-center justify-between">
+            <TypographyH4>{generator.name}</TypographyH4>
+            {generator.baseModel || generator.private ? (
+              <div>
+                <Badge variant="secondary">{generator.baseModel}</Badge>
+                {generator.private ? (
+                  <Badge variant="destructive" className="ml-2">
+                    private
+                  </Badge>
+                ) : null}
+              </div>
             ) : null}
-          </TypographyH4>
+          </div>
+
           <div
             data-test-id="generator-form-settings-required"
             className="flex flex-col gap-2"
