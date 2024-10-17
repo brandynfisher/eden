@@ -11,7 +11,7 @@ import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAddToCollectionModal,
-  toggleQuickAnimateModal,
+  updateQuickAnimateModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
@@ -88,7 +88,7 @@ const CreationActionsContent = ({
   }
 
   const handleQuickAnimateClick = () => {
-    dispatch(toggleQuickAnimateModal())
+    dispatch(updateQuickAnimateModal({ isOpen: true, creation: creationData }))
   }
 
   return (

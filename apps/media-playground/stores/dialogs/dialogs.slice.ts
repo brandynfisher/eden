@@ -1,8 +1,10 @@
+import { CreationV2 } from '@edenlabs/eden-sdk'
 import { createSlice } from '@reduxjs/toolkit'
 
 export interface DialogsState {
   quickAnimateModal: {
     isOpen: boolean
+    creation?: CreationV2
   }
   addToCollectionModal: {
     isOpen: boolean
@@ -16,6 +18,7 @@ export interface DialogsState {
 const initialState: DialogsState = {
   quickAnimateModal: {
     isOpen: false,
+    creation: undefined,
   },
   addToCollectionModal: {
     isOpen: false,
@@ -30,9 +33,14 @@ const dialogsSlice = createSlice({
   name: 'dialogs',
   initialState,
   reducers: {
-    toggleQuickAnimateModal(state) {
+    updateQuickAnimateModal(state, action: { payload: { isOpen: boolean, creation?: CreationV2 } }) {
       // console.log('toggleQuickAnimateModal', state, !state.quickAnimateModal.isOpen)
-      state.quickAnimateModal.isOpen = !state.quickAnimateModal.isOpen
+      state.quickAnimateModal.isOpen = action.payload.isOpen
+      if (action.payload.creation) {
+        state.quickAnimateModal.creation = action.payload.creation
+      } else {
+        state.quickAnimateModal.creation = undefined
+      }
     },
     updateAddToCollectionModal(state, action: { payload: { isOpen: boolean, creationIds?: string[] } }   ) {
       state.addToCollectionModal.isOpen = action.payload.isOpen
@@ -50,7 +58,7 @@ const dialogsSlice = createSlice({
 })
 
 export const {
-  toggleQuickAnimateModal,
+  updateQuickAnimateModal,
   updateAddToCollectionModal,
   toggleCreateCollectionModal,
 } = dialogsSlice.actions

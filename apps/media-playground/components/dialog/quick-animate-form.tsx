@@ -5,7 +5,7 @@ import ParameterField from '@/features/generators/parameters/parameter-field'
 import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
-import { toggleQuickAnimateModal } from '@/stores/dialogs/dialogs.slice'
+import { updateQuickAnimateModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -67,7 +67,7 @@ const SimpleGeneratorForm = ({
       })
 
       // @todo: this is not working properly as multiple instances exists and the timeline rerenders
-      dispatch(toggleQuickAnimateModal())
+      dispatch(updateQuickAnimateModal({ isOpen: false }))
 
       await refetchMe()
     } catch (err) {
