@@ -1,6 +1,5 @@
 'use client'
 
-import ShareDialog from '@/components/dialog/share-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'

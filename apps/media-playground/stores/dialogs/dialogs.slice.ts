@@ -34,7 +34,6 @@ const initialState: DialogsState = {
   },
   shareDialog: {
     isOpen: false,
-    useNativeShare: false,
   },
 }
 
