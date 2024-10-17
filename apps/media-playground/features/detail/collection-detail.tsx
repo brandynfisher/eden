@@ -1,5 +1,6 @@
 'use client'
 
+import ShareDialog from '@/components/dialog/share-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -22,10 +23,18 @@ import UserAvatarLink from '@/components/user/user-avatar-link'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useCollectionQuery } from '@/hooks/query/use-collection-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { toggleShareDialog } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { CollectionV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { Edit2Icon, LockIcon, LockOpenIcon, TrashIcon } from 'lucide-react'
+import {
+  Edit2Icon,
+  LockIcon,
+  LockOpenIcon,
+  Share2Icon,
+  TrashIcon,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -48,6 +57,7 @@ type UpdateCollectionDto = z.infer<typeof updateCollectionSchema>
 const CollectionDetail = ({ id, collectionSSRData }: Props) => {
   const router = useRouter()
   const { user } = useAuthState()
+  const dispatch = useAppDispatch()
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -120,11 +130,18 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
     }
   }
 
+  const onShareCollection = () => {
+    dispatch(toggleShareDialog())
+  }
+
   return (
     <>
       <div className="relative p-6 bg-muted-darker rounded-md mx-4 mt-4">
         {user?._id === collection?.user._id && (
           <div className="absolute right-6 flex gap-x-2">
+            <Button variant="outline" size="icon" onClick={onShareCollection}>
+              <Share2Icon size={18} />
+            </Button>
             <Button
               variant="outline"
               size="icon"

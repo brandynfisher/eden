@@ -3,6 +3,7 @@ import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
+import ShareDialog from '@/components/dialog/share-dialog'
 import {
   DropdownMenuGroup,
   DropdownMenuItem, // DropdownMenuLabel,
@@ -12,14 +13,18 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { toggleAddToCollectionModal } from '@/stores/dialogs/dialogs.slice'
+import {
+  toggleAddToCollectionModal,
+  toggleShareDialog,
+} from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import {
   BookmarkPlusIcon,
   ExternalLinkIcon,
-  FileSlidersIcon, //FilmIcon
+  FileSlidersIcon,
+  Share2Icon, //FilmIcon
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
@@ -208,6 +213,10 @@ const CreationActionsContent = ({
     dispatch(toggleAddToCollectionModal())
   }
 
+  const handleShareClick = () => {
+    dispatch(toggleShareDialog())
+  }
+
   return (
     <>
       <DropdownMenuGroup>
@@ -247,6 +256,12 @@ const CreationActionsContent = ({
           </button>
         </DropdownMenuItem>
       </DropdownMenuGroup>
+      <DropdownMenuItem asChild>
+        <button type="button" className="w-full" onClick={handleShareClick}>
+          <Share2Icon className="mr-2 h-4 w-4" />
+          Share
+        </button>
+      </DropdownMenuItem>
       {creationData.user._id === userId && (
         <>
           <DropdownMenuSeparator />

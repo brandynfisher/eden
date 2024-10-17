@@ -1,16 +1,27 @@
-const TwitterIcon = ({ size = 32 }: { size: number }) => {
+import React from 'react'
+
+const TwitterIcon = ({
+  size = 32,
+  className,
+  style,
+}: {
+  size: number
+  className?: string
+  style?: React.CSSProperties
+}) => {
   return (
     <svg
-      role="img"
+      xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      className="group-hover:invert group-hover:!brightness-100"
-      style={{ filter: 'invert(1) brightness(0.5)' }}
+      viewBox="0 0 512 512"
+      className={className}
+      style={style}
     >
-      <title>X</title>
-      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+      <path
+        fill="currentColor"
+        d="M389.2 48h70.6L305.6 224.2L487 464H345L233.7 318.6L106.5 464H35.8l164.9-188.5L26.8 48h145.6l100.5 132.9zm-24.8 373.8h39.1L151.1 88h-42z"
+      />
     </svg>
   )
 }

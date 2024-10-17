@@ -14,6 +14,7 @@ import HolyLoader from 'holy-loader'
 import { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
 import { ReactNode, StrictMode } from 'react'
+import ShareDialog from '@/components/dialog/share-dialog'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -114,6 +115,7 @@ export default function RootLayout({
 
             <div id="modal-root" />
             <Toaster expand={false} visibleToasts={9} closeButton={true} />
+            <ShareDialog />
           </Providers>
         </body>
       </html>
