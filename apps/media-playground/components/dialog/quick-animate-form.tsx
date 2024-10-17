@@ -66,7 +66,6 @@ const SimpleGeneratorForm = ({
         richColors: true,
       })
 
-      // @todo: this is not working properly as multiple instances exists and the timeline rerenders
       dispatch(updateQuickAnimateModal({ isOpen: false }))
 
       await refetchMe()

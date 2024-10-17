@@ -1,20 +1,15 @@
 'use client'
 
 import QuickAnimateForm from '@/components/dialog/quick-animate-form'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
+import { Dialog, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { useQuickAnimateModal } from '@/stores/dialogs/dialogs.selector'
-import {  updateQuickAnimateModal } from '@/stores/dialogs/dialogs.slice'
+import { updateQuickAnimateModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import React, { Suspense, useCallback } from 'react'
-
 
 const FormSkeleton = () => {
   return (
@@ -46,7 +41,10 @@ const QuickAnimateDialog = () => {
           <QuickAnimateForm
             toolKey={'animate_3D'}
             exposedParameters={['n_frames']}
-            initValues={{ image: getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '' }}
+            initValues={{
+              image:
+                getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '',
+            }}
           />
         </Suspense>
       ),
@@ -59,7 +57,10 @@ const QuickAnimateDialog = () => {
           <QuickAnimateForm
             toolKey={'img2vid'}
             exposedParameters={['num_frames']}
-            initValues={{ image: getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '' }}
+            initValues={{
+              image:
+                getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '',
+            }}
           />
         </Suspense>
       ),
@@ -72,7 +73,7 @@ const QuickAnimateDialog = () => {
         open={quickAnimateModal.isOpen}
         onOpenChange={handleQuickAnimateModalOpenChange}
       >
-        <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-lg">
+        <DialogContentOverlayBlur className="max-w-[calc(100vw-32px)] sm:max-w-lg">
           <DialogTitle>Quick Animate</DialogTitle>
           <DialogDescription>Animate an image with...</DialogDescription>
           <Tabs defaultValue={tabs[0].key} className="w-full max-w-full">
@@ -94,7 +95,7 @@ const QuickAnimateDialog = () => {
               </TabsContent>
             ))}
           </Tabs>
-        </DialogContent>
+        </DialogContentOverlayBlur>
       </Dialog>
     </>
   )

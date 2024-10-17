@@ -2,9 +2,9 @@
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogTitle,
@@ -25,8 +25,8 @@ import {
   useCreateCollectionModalOpen,
 } from '@/stores/dialogs/dialogs.selector'
 import {
-  updateAddToCollectionModal,
   toggleCreateCollectionModal,
+  updateAddToCollectionModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -58,8 +58,8 @@ const CollectionSelectionDialog = () => {
     const mapping: Record<string, boolean> = {}
 
     for (const collection of collections) {
-      mapping[collection._id] = addToCollectionModal.creationIds.every(creationId =>
-        collection.creations.includes(creationId),
+      mapping[collection._id] = addToCollectionModal.creationIds.every(
+        creationId => collection.creations.includes(creationId),
       )
     }
 
@@ -67,7 +67,9 @@ const CollectionSelectionDialog = () => {
   }, [collections, addToCollectionModal.creationIds])
 
   const handleAddToCollectionModalOpenChange = React.useCallback(() => {
-    dispatch(updateAddToCollectionModal({ isOpen: !addToCollectionModal.isOpen }))
+    dispatch(
+      updateAddToCollectionModal({ isOpen: !addToCollectionModal.isOpen }),
+    )
   }, [dispatch, addToCollectionModal])
 
   const handleCreateCollectionModalOpenChange = React.useCallback(() => {
@@ -164,7 +166,7 @@ const CollectionSelectionDialog = () => {
         open={addToCollectionModal.isOpen}
         onOpenChange={handleAddToCollectionModalOpenChange}
       >
-        <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-lg">
+        <DialogContentOverlayBlur className="max-w-[calc(100vw-32px)] sm:max-w-lg">
           <DialogTitle>Add to collection</DialogTitle>
           <DialogDescription>
             Select a collection to add the selected items to. Duplicates will be
@@ -218,13 +220,13 @@ const CollectionSelectionDialog = () => {
           >
             Create new collection
           </Button>
-        </DialogContent>
+        </DialogContentOverlayBlur>
       </Dialog>
       <Dialog
         open={isCreateCollectionModalOpen}
         onOpenChange={handleCreateCollectionModalOpenChange}
       >
-        <DialogContent>
+        <DialogContentOverlayBlur>
           <DialogTitle>Create collection</DialogTitle>
           <DialogDescription>
             Create a new collection to add the selected items to.
@@ -254,7 +256,7 @@ const CollectionSelectionDialog = () => {
               </DialogFooter>
             </form>
           </Form>
-        </DialogContent>
+        </DialogContentOverlayBlur>
       </Dialog>
     </>
   )
