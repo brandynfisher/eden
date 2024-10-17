@@ -21,15 +21,14 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { useCollectionsLight } from '@/hooks/query/use-collections-light'
 import {
-  useAddToCollectionModalOpen,
+  useAddToCollectionModal,
   useCreateCollectionModalOpen,
 } from '@/stores/dialogs/dialogs.selector'
 import {
-  toggleAddToCollectionModal,
+  updateAddToCollectionModal,
   toggleCreateCollectionModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { CreationV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckedState } from '@radix-ui/react-checkbox'
 import axios from 'axios'
@@ -45,37 +44,31 @@ const createCollectionSchema = z.object({
 
 type CreateCollectionDto = z.infer<typeof createCollectionSchema>
 
-interface CollectionSelectionDialogProps {
-  creations: CreationV2[]
-}
-
-const CollectionSelectionDialog = ({
-  creations,
-}: CollectionSelectionDialogProps) => {
+const CollectionSelectionDialog = () => {
   const dispatch = useAppDispatch()
-  const isAddToCollectionModalOpen = useAddToCollectionModalOpen()
+  const addToCollectionModal = useAddToCollectionModal()
   const isCreateCollectionModalOpen = useCreateCollectionModalOpen()
   const [isAddingToCollection, setIsAddingToCollection] = React.useState(false)
 
   const { collections, refetch } = useCollectionsLight()
 
   const collectionHasAllCreations = React.useMemo(() => {
-    if (!collections || !creations) return {}
+    if (!collections || !addToCollectionModal.creationIds) return {}
 
     const mapping: Record<string, boolean> = {}
 
     for (const collection of collections) {
-      mapping[collection._id] = creations.every(creation =>
-        collection.creations.includes(creation._id),
+      mapping[collection._id] = addToCollectionModal.creationIds.every(creationId =>
+        collection.creations.includes(creationId),
       )
     }
 
     return mapping
-  }, [collections, creations])
+  }, [collections, addToCollectionModal.creationIds])
 
   const handleAddToCollectionModalOpenChange = React.useCallback(() => {
-    dispatch(toggleAddToCollectionModal())
-  }, [dispatch])
+    dispatch(updateAddToCollectionModal({ isOpen: !addToCollectionModal.isOpen }))
+  }, [dispatch, addToCollectionModal])
 
   const handleCreateCollectionModalOpenChange = React.useCallback(() => {
     dispatch(toggleCreateCollectionModal())
@@ -111,7 +104,7 @@ const CollectionSelectionDialog = ({
     setIsAddingToCollection(true)
     try {
       await axios.patch(`/api/collections/${collectionId}/add-creations`, {
-        creationIds: creations.map(creation => creation._id),
+        creationIds: addToCollectionModal.creationIds,
       })
       toast.success('Creations added to collection', {
         description: `Creations added to collection successfully`,
@@ -131,7 +124,7 @@ const CollectionSelectionDialog = ({
   const onRemoveFromCollection = async (collectionId: string) => {
     try {
       await axios.patch(`/api/collections/${collectionId}/remove-creations`, {
-        creationIds: creations.map(creation => creation._id),
+        creationIds: addToCollectionModal.creationIds,
       })
       toast.success('Creations removed from collection', {
         description: `Creations removed from collection successfully`,
@@ -168,7 +161,7 @@ const CollectionSelectionDialog = ({
   return (
     <>
       <Dialog
-        open={isAddToCollectionModalOpen}
+        open={addToCollectionModal.isOpen}
         onOpenChange={handleAddToCollectionModalOpenChange}
       >
         <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-lg">

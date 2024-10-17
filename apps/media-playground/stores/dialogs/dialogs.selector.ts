@@ -14,7 +14,7 @@ export const useQuickAnimateModalOpen = () => {
 
 export const useAddToCollectionModalOpen = () => {
   const dialogs = useAppSelector(selectDialogs)
-  return dialogs.addToCollectionModal.isOpen
+  return dialogs.addToCollectionModal
 }
 
 export const useCreateCollectionModalOpen = () => {

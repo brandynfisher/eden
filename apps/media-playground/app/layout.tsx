@@ -15,6 +15,7 @@ import { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
 import { ReactNode, StrictMode } from 'react'
 
+import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
@@ -114,6 +115,7 @@ export default function RootLayout({
 
             <div id="modal-root" />
             <Toaster expand={false} visibleToasts={9} closeButton={true} />
+            <CollectionSelectionDialog />
           </Providers>
         </body>
       </html>
