@@ -1,7 +1,8 @@
-import { calculateMaxDimensions } from '@/lib/media'
-import { createCanvas } from 'canvas'
-import { decodeBlurHash } from 'fast-blurhash'
-import { useEffect, useState } from 'react'
+import { calculateMaxDimensions } from '@/lib/media';
+import { createCanvas } from 'canvas';
+import { decodeBlurHash } from 'fast-blurhash';
+import { useEffect, useState } from 'react';
+
 
 export function useBlurDataUrl(
   blurHash?: string,
@@ -11,30 +12,23 @@ export function useBlurDataUrl(
   const [dataUrl, setDataUrl] = useState('')
 
   useEffect(() => {
-    const createBlurDataUrl = async () => {
-      const url = () => {
-        if (!blurHash) return ''
-        const { width: blurWidth, height: blurHeight } = calculateMaxDimensions(
-          (width || 1024) / (height || 1024),
-          32,
-        )
-        const pixels = decodeBlurHash(blurHash, blurWidth, blurHeight)
-        const canvas = createCanvas(blurWidth, blurHeight)
-        const ctx = canvas.getContext('2d')
+    if (!blurHash) return;
 
-        if (!ctx) {
-          return ''
-        }
+    const { width: blurWidth, height: blurHeight } = calculateMaxDimensions(
+      (width || 1024) / (height || 1024),
+      32,
+    )
+    const pixels = decodeBlurHash(blurHash, blurWidth, blurHeight)
+    const canvas = createCanvas(blurWidth, blurHeight)
+    const ctx = canvas.getContext('2d')
 
-        const imageData = new ImageData(pixels, blurWidth, blurHeight)
-        ctx?.putImageData(imageData, 0, 0)
-        return canvas.toDataURL()
-      }
+    if (!ctx) return;
 
-      setDataUrl(url)
-    }
+    const imageData = new ImageData(pixels, blurWidth, blurHeight)
+    ctx?.putImageData(imageData, 0, 0)
+    const url = canvas.toDataURL()
 
-    createBlurDataUrl()
+    setDataUrl(url)
   }, [blurHash, width, height])
 
   return dataUrl
