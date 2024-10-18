@@ -20,7 +20,10 @@ const FormItemWrap = ({
   children,
 }: Props) => {
   return (
-    <FormItem className={cn(['mt-0 !p-4 !pt-2', className])}>
+    <FormItem
+      data-test-id={name}
+      className={cn(['mt-0 !p-4 !pt-2', className])}
+    >
       <FormItemHead label={label} description={description} />
       <FormControl id={name}>{children}</FormControl>
       <FormMessage>{errorMessage}</FormMessage>

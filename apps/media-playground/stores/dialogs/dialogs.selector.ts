@@ -12,6 +12,11 @@ export const useQuickAnimateModal = () => {
   return dialogs.quickAnimateModal
 }
 
+export const useQuickUpscaleModal = () => {
+  const dialogs = useAppSelector(selectDialogs)
+  return dialogs.quickUpscaleModal
+}
+
 export const useAddToCollectionModal = () => {
   const dialogs = useAppSelector(selectDialogs)
   return dialogs.addToCollectionModal

@@ -13,18 +13,20 @@ import {
   toggleShareDialog,
   updateAddToCollectionModal,
   updateQuickAnimateModal,
+  updateQuickUpscaleModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
+import { SizeIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
 import {
   BookmarkPlusIcon,
   ExternalLinkIcon,
   FileSlidersIcon,
-  Share2Icon,
   FilmIcon,
   PictureInPicture2Icon,
   PictureInPictureIcon,
+  Share2Icon,
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
@@ -86,11 +88,20 @@ const CreationActionsContent = ({
   const creationData = creationResponse || creation
 
   const handleAddToCollectionClick = () => {
-    dispatch(updateAddToCollectionModal({ isOpen: true, creationIds: [creationData._id] }))
+    dispatch(
+      updateAddToCollectionModal({
+        isOpen: true,
+        creationIds: [creationData._id],
+      }),
+    )
   }
 
   const handleQuickAnimateClick = () => {
     dispatch(updateQuickAnimateModal({ isOpen: true, creation: creationData }))
+  }
+
+  const handleQuickUpscaleClick = () => {
+    dispatch(updateQuickUpscaleModal({ isOpen: true, creation: creationData }))
   }
 
   const handleShareClick = () => {
@@ -112,16 +123,28 @@ const CreationActionsContent = ({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {creationData.mediaAttributes?.type === 'image' ? (
-          <DropdownMenuItem
-            disabled={!isSignedIn}
-            className="cursor-pointer group"
-            onClick={handleQuickAnimateClick}
-          >
-            <FilmIcon className="mr-2 h-4 w-4" />
-            Animate
-            <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-            <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem
+              disabled={!isSignedIn}
+              className="cursor-pointer group"
+              onClick={handleQuickAnimateClick}
+            >
+              <FilmIcon className="mr-2 h-4 w-4" />
+              Animate
+              <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+              <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={!isSignedIn}
+              className="cursor-pointer group"
+              onClick={handleQuickUpscaleClick}
+            >
+              <SizeIcon className="mr-2 h-4 w-4" />
+              Upscale
+              <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+              <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+            </DropdownMenuItem>
+          </>
         ) : null}
         <DropdownMenuItem asChild>
           <Link

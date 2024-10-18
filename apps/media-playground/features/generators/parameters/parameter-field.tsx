@@ -37,7 +37,7 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value, name } = field
         let parsedValue: number | string | ''
-        console.log({ field })
+        // console.log({ field })
         switch (parameter.type) {
           case 'int':
             parsedValue = Number(value)

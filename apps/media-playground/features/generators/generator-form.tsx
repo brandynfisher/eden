@@ -156,7 +156,9 @@ const GeneratorForm = ({ generator }: Props) => {
             <TypographyH4>{generator.name}</TypographyH4>
             {generator.baseModel || generator.private ? (
               <div>
-                <Badge variant="secondary">{generator.baseModel}</Badge>
+                {generator.baseModel ? (
+                  <Badge variant="secondary">{generator.baseModel}</Badge>
+                ) : null}
                 {generator.private ? (
                   <Badge variant="destructive" className="ml-2">
                     private

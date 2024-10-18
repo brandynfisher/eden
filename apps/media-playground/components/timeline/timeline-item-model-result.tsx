@@ -14,8 +14,8 @@ type Props = {
 
 const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
   return (
-    <>
-      <div className="relative border-transparent bg-popover aspect-square">
+    <div className="p-2 bg-secondary rounded-md ">
+      <div className="max-h-[60dvh] aspect-square">
         <Image
           loader={customImageLoader}
           src={result.thumbnail || ''}
@@ -31,7 +31,7 @@ const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
         index={index}
         queryKey={queryKey}
       />
-    </>
+    </div>
   )
 }
 

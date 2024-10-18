@@ -5,8 +5,6 @@ import ParameterField from '@/features/generators/parameters/parameter-field'
 import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
-import { updateQuickAnimateModal } from '@/stores/dialogs/dialogs.slice'
-import { useAppDispatch } from '@/stores/store'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -20,12 +18,13 @@ const SimpleGeneratorForm = ({
   generator,
   exposedParameters,
   initValues,
+  onSubmitSuccess,
 }: {
   generator: GeneratorV2
   exposedParameters: string[]
   initValues: { [key: string]: string | number }
+  onSubmitSuccess: () => void
 }) => {
-  const dispatch = useAppDispatch()
   const { verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const parameters = generator?.parameters?.filter(param =>
@@ -66,7 +65,7 @@ const SimpleGeneratorForm = ({
         richColors: true,
       })
 
-      dispatch(updateQuickAnimateModal({ isOpen: false }))
+      onSubmitSuccess()
 
       await refetchMe()
     } catch (err) {
@@ -120,14 +119,16 @@ const SimpleGeneratorForm = ({
   )
 }
 
-const QuickAnimateForm = ({
+const QuickCreateForm = ({
   toolKey,
   exposedParameters,
   initValues,
+  onSubmitSuccess,
 }: {
   toolKey: string
   exposedParameters: string[]
   initValues: { [key: string]: string | number }
+  onSubmitSuccess: () => void
 }) => {
   const { generator } = useGeneratorQuery({ key: toolKey })
 
@@ -144,9 +145,10 @@ const QuickAnimateForm = ({
         generator={generator}
         exposedParameters={exposedParameters}
         initValues={initValues}
+        onSubmitSuccess={onSubmitSuccess}
       />
     </div>
   )
 }
 
-export default QuickAnimateForm
+export default QuickCreateForm
