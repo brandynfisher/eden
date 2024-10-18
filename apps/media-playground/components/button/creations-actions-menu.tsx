@@ -121,6 +121,22 @@ const CreationActionsContent = ({
             {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <button type="button" className="w-full" onClick={handleShareClick}>
+            <Share2Icon className="mr-2 h-4 w-4" />
+            Share
+          </button>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer w-full group"
+          onClick={handleAddToCollectionClick}
+          disabled={!isSignedIn}
+        >
+          <BookmarkPlusIcon className="mr-2 h-4 w-4" />
+          Add to collection
+          <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+          <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {creationData.mediaAttributes?.type === 'image' ? (
           <>
@@ -146,7 +162,7 @@ const CreationActionsContent = ({
             </DropdownMenuItem>
           </>
         ) : null}
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild disabled={!isSignedIn}>
           <Link
             className="cursor-pointer"
             href={`/create/${creationData.mediaAttributes?.type}/${creationData.workflow}?creation=${creationData._id}`}
@@ -158,22 +174,7 @@ const CreationActionsContent = ({
             {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer w-full group"
-          onClick={handleAddToCollectionClick}
-        >
-          <BookmarkPlusIcon className="mr-2 h-4 w-4" />
-          Add to collection
-          <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-          <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-        </DropdownMenuItem>
       </DropdownMenuGroup>
-      <DropdownMenuItem asChild>
-        <button type="button" className="w-full" onClick={handleShareClick}>
-          <Share2Icon className="mr-2 h-4 w-4" />
-          Share
-        </button>
-      </DropdownMenuItem>
       {creationData.user._id === userId && (
         <>
           <DropdownMenuSeparator />
