@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/accordion'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
+import useLocalStorage from '@/hooks/use-local-storage'
 import { siteConfig } from '@/lib/config'
 import { GeneratorOutputTypeV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 
@@ -89,8 +90,21 @@ type GeneratorsGridProps = {
 const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
   const { generators } = useGeneratorsListQuery({ outputType })
 
+  const [accordionState, setAccordionState] = useLocalStorage<string[]>(
+    'generatorsGridAccordionState',
+    ['featured', ...outputType],
+  )
+
+  const handleAccordionChange = (value: string[]) => {
+    setAccordionState(value)
+  }
+
   return (
-    <Accordion type="multiple" defaultValue={['featured', ...outputType]}>
+    <Accordion
+      type="multiple"
+      defaultValue={accordionState}
+      onValueChange={handleAccordionChange}
+    >
       {showFeatured ? (
         <AccordionItem key="featured" value="featured">
           <AccordionTrigger className="capitalize bg-primary-foreground/40 hover:bg-primary-foreground/60 px-4">
