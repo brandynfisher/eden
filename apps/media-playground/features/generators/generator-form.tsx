@@ -150,16 +150,18 @@ const GeneratorForm = ({ generator }: Props) => {
   return (
     <div
       data-test-id="generator-form"
-      className="flex flex-col items-start overflow-y-auto bg-muted-darker rounded-md p-2"
+      className="flex flex-col items-start overflow-y-auto bg-muted-darker rounded-md"
     >
       <Form {...form}>
         <form className="w-full">
-          <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center justify-between p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
             <TypographyH4>{generator.name}</TypographyH4>
             {generator.baseModel || generator.private ? (
               <div className="flex-shrink-0">
                 {generator.baseModel ? (
-                  <Badge variant="secondary">{generator.baseModel}</Badge>
+                  <Badge variant="outline" className="border-muted-foreground">
+                    {generator.baseModel}
+                  </Badge>
                 ) : null}
                 {generator.private ? (
                   <Badge variant="destructive" className="ml-2">
@@ -170,122 +172,122 @@ const GeneratorForm = ({ generator }: Props) => {
             ) : null}
           </div>
 
-          <div
-            data-test-id="generator-form-settings-required"
-            className="flex flex-col gap-2"
-          >
-            {groupedRequiredParameters?.map((element, index) => (
-              <div key={index} className="bg-muted rounded-lg">
-                {element.type === 'standalone' && element.parameter ? (
-                  <ParameterField
-                    tool={generator}
-                    parameter={element.parameter}
-                    form={form}
-                  />
-                ) : (
-                  <ParameterGroupCollapse
-                    tool={generator}
-                    group={element}
-                    form={form}
-                  />
-                )}
-              </div>
-            ))}
-
-            {(presetResolutions && presetResolutions.length) ||
-            sampleCountParameter ? (
-              <div className="flex items-center justify-between">
-                {sampleCountParameter ? (
-                  <SampleCountSelector parameter={sampleCountParameter} />
-                ) : null}
-                {presetResolutions && presetResolutions.length ? (
-                  <div className="flex ml-auto">
-                    <AspectRatioSelector
-                      presetResolutions={presetResolutions}
+          <div className="lg:max-h-[calc(100dvh_-_264px)] overflow-y-auto p-2 py-4">
+            <div
+              data-test-id="generator-form-settings-required"
+              className="flex flex-col gap-2"
+            >
+              {groupedRequiredParameters?.map((element, index) => (
+                <div key={index} className="bg-muted rounded-lg">
+                  {element.type === 'standalone' && element.parameter ? (
+                    <ParameterField
+                      tool={generator}
+                      parameter={element.parameter}
                       form={form}
                     />
-                  </div>
+                  ) : (
+                    <ParameterGroupCollapse
+                      tool={generator}
+                      group={element}
+                      form={form}
+                    />
+                  )}
+                </div>
+              ))}
+
+              {(presetResolutions && presetResolutions.length) ||
+              sampleCountParameter ? (
+                <div className="flex items-center justify-between">
+                  {sampleCountParameter ? (
+                    <SampleCountSelector parameter={sampleCountParameter} />
+                  ) : null}
+                  {presetResolutions && presetResolutions.length ? (
+                    <div className="flex ml-auto">
+                      <AspectRatioSelector
+                        presetResolutions={presetResolutions}
+                        form={form}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="flex justify-between flex-wrap gap-2 mt-4">
+              <div className="flex gap-2 items-center">
+                {optionalParameters?.length ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="flex items-center gap-2"
+                    onClick={() => setShowSettings(!showSettings)}
+                  >
+                    <Settings2Icon className="h-4 w-4" />
+                    Settings
+                  </Button>
                 ) : null}
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-muted-foreground px-1"
+                  onClick={!isSubmitting ? handleReset : undefined}
+                  disabled={isSubmitting}
+                >
+                  Reset
+                </Button>
+              </div>
+            </div>
+            {optionalParameters?.length ? (
+              <div
+                data-test-id="generator-form-settings-optional"
+                className={cn([showSettings ? 'mt-2' : 'overflow-hidden'])}
+              >
+                <div
+                  className={cn([
+                    'flex flex-col gap-2 w-full relative transition-all',
+                    showSettings ? '' : 'max-h-0 ',
+                  ])}
+                >
+                  {groupedOptionalParameters?.map((element, index) => (
+                    <div key={index} className="bg-muted/50 rounded-lg">
+                      {element.type === 'standalone' && element.parameter ? (
+                        <ParameterField
+                          tool={generator}
+                          parameter={element.parameter}
+                          form={form}
+                        />
+                      ) : (
+                        <ParameterGroupCollapse
+                          tool={generator}
+                          group={element}
+                          form={form}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
           </div>
 
-          <div className="flex justify-between flex-wrap gap-2 mt-4 mb-2">
-            <div className="flex gap-2 items-center">
-              {optionalParameters?.length ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="flex items-center gap-2"
-                  onClick={() => setShowSettings(!showSettings)}
-                >
-                  <Settings2Icon className="h-4 w-4" />
-                  Settings
-                </Button>
-              ) : null}
+          <div className="flex gap-2 justify-end p-2 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
+            <CostIndicatorV2 formula={generator.costEstimate} />
 
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground px-1"
-                onClick={!isSubmitting ? handleReset : undefined}
-                disabled={isSubmitting}
-              >
-                Reset
-              </Button>
-            </div>
-
-            <div className="flex gap-2 justify-between">
-              <CostIndicatorV2 formula={generator.costEstimate} />
-
-              <Button
-                type="button"
-                className="ml-auto w-[72px]"
-                onClick={
-                  !isSubmitting ? form.handleSubmit(onSubmit) : undefined
-                }
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>Create</>
-                )}
-              </Button>
-            </div>
-          </div>
-          {optionalParameters?.length ? (
-            <div
-              data-test-id="generator-form-settings-optional"
-              className={cn([showSettings ? '' : 'overflow-hidden'])}
+            <Button
+              type="button"
+              className="w-[72px]"
+              onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
+              disabled={isSubmitting}
             >
-              <div
-                className={cn([
-                  'flex flex-col gap-2 w-full relative transition-all',
-                  showSettings ? ' mb-2' : 'max-h-0 ',
-                ])}
-              >
-                {groupedOptionalParameters?.map((element, index) => (
-                  <div key={index} className="bg-muted/50 rounded-lg">
-                    {element.type === 'standalone' && element.parameter ? (
-                      <ParameterField
-                        tool={generator}
-                        parameter={element.parameter}
-                        form={form}
-                      />
-                    ) : (
-                      <ParameterGroupCollapse
-                        tool={generator}
-                        group={element}
-                        form={form}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>Create</>
+              )}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

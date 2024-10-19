@@ -30,7 +30,7 @@ const Workspace = ({ generatorKey, generatorSSRData }: Props) => {
 
   return (
     <div data-test-id="workspace" className="flex flex-col lg:flex-row">
-      <div className="overflow-y-auto lg:pr-4 lg:sticky lg:top-[120px] lg:h-screen min-w-[324px] w-full lg:max-w-[420px] lg:max-h-[calc(100dvh_-_136px)] pt-4">
+      <div className="lg:pr-4 lg:sticky lg:top-[120px] lg:h-screen min-w-[324px] w-full lg:max-w-[420px] pt-4">
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
           <GeneratorForm generator={generator} />
         </Suspense>
