@@ -151,8 +151,8 @@ const GeneratorForm = ({ generator }: Props) => {
   const formContent = (
     <Form {...form}>
       <form className="w-full">
-        <div className="flex items-center p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-          <TypographyH4 className="text-sm md:text-lg pl-8 md:pl-12">
+        <div className="flex items-center lg:justify-between p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
+          <TypographyH4 className="text-sm md:text-lg pl-8 md:pl-12 lg:pl-0">
             {generator.name}
           </TypographyH4>
           {generator.baseModel || generator.private ? (
