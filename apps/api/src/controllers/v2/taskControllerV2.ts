@@ -171,10 +171,11 @@ export const listTasks = async (
     })
   }
 
-  const isModelTaskQuery = workflow && workflow === 'lora_trainer'
+  const isModelTaskQuery =
+    workflow && (workflow === 'lora_trainer' || workflow === 'flux_trainer')
   const typeQuery = !isModelTaskQuery
     ? {
-        workflow: { $ne: 'lora_trainer' },
+        workflow: { $nin: ['lora_trainer', 'flux_trainer'] },
       }
     : {}
 
@@ -184,7 +185,7 @@ export const listTasks = async (
     user?: string
     status?: string | string[]
     taskId?: string | string[]
-    workflow?: string | { $ne: string }
+    workflow?: string | { $nin: string[] }
     createdAt?: { $gte: Date }
   } = {
     user: user._id.toString(),
