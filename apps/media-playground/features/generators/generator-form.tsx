@@ -151,12 +151,17 @@ const GeneratorForm = ({ generator }: Props) => {
   const formContent = (
     <Form {...form}>
       <form className="w-full">
-        <div className="flex items-center justify-around lg:justify-between p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-          <TypographyH4>{generator.name}</TypographyH4>
+        <div className="flex items-center p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
+          <TypographyH4 className="text-sm md:text-lg pl-8 md:pl-12">
+            {generator.name}
+          </TypographyH4>
           {generator.baseModel || generator.private ? (
             <div className="flex-shrink-0">
               {generator.baseModel ? (
-                <Badge variant="outline" className="border-muted-foreground">
+                <Badge
+                  variant="outline"
+                  className="ml-2 border-muted-foreground"
+                >
                   {generator.baseModel}
                 </Badge>
               ) : null}
