@@ -6,7 +6,6 @@ import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import {
   ImageFormats,
   changeExtension,
-  rawS3BaseUrl,
   s3ThumbnailUrl,
   s3Url,
 } from '../../plugins/s3Plugin'
@@ -280,16 +279,12 @@ const injectResultUrls = (
     return result
   }
 
-  const baseS3Url = rawS3BaseUrl(server)
-  const mainUrl = isModelResult
-    ? `${baseS3Url}/${result.filename}`
-    : s3Url(server, result.filename)
   const thumbnailName = isModelResult ? result.thumbnail || '' : result.filename
-  const thumbnailSize = isModelResult ? undefined : 1024 // get rid of this special handling once model thumbnails are in line with creations
+  const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
 
   return {
     ...result,
-    url: mainUrl,
+    url: s3Url(server, result.filename),
     thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
   }
 }

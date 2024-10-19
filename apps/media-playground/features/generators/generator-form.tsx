@@ -32,9 +32,6 @@ const GeneratorForm = ({ generator }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // const hasAspectRatioSelector = generator.parameters?.some(
-  //   param => param.name === 'width' || param.name === 'height',
-  // )
   const presetResolutions = generator?.resolutions
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
   const sampleCountParameter = generator.parameters?.filter(
