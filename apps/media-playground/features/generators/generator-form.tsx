@@ -132,6 +132,11 @@ const GeneratorForm = ({ generator }: Props) => {
     [generator.parameters],
   )
 
+  const groupedRequiredParameters = useMemo(
+    () => (requiredParameters ? groupParameters(requiredParameters) : []),
+    [requiredParameters],
+  )
+
   const optionalParameters = useMemo(
     () =>
       generator.parameters?.filter(
@@ -155,7 +160,7 @@ const GeneratorForm = ({ generator }: Props) => {
           <div className="mb-2 flex items-center justify-between">
             <TypographyH4>{generator.name}</TypographyH4>
             {generator.baseModel || generator.private ? (
-              <div>
+              <div className="flex-shrink-0">
                 {generator.baseModel ? (
                   <Badge variant="secondary">{generator.baseModel}</Badge>
                 ) : null}
@@ -172,15 +177,24 @@ const GeneratorForm = ({ generator }: Props) => {
             data-test-id="generator-form-settings-required"
             className="flex flex-col gap-2"
           >
-            {requiredParameters?.map(parameter => (
-              <div key={parameter.name} className="bg-muted rounded-lg">
-                <ParameterField
-                  tool={generator}
-                  parameter={parameter}
-                  form={form}
-                />
+            {groupedRequiredParameters?.map((element, index) => (
+              <div key={index} className="bg-muted rounded-lg">
+                {element.type === 'standalone' && element.parameter ? (
+                  <ParameterField
+                    tool={generator}
+                    parameter={element.parameter}
+                    form={form}
+                  />
+                ) : (
+                  <ParameterGroupCollapse
+                    tool={generator}
+                    group={element}
+                    form={form}
+                  />
+                )}
               </div>
             ))}
+
             {(presetResolutions && presetResolutions.length) ||
             sampleCountParameter ? (
               <div className="flex items-center justify-between">

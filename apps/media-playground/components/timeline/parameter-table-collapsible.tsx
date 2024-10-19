@@ -90,7 +90,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
               </ModelMiniCard>
             </Suspense>
           ) : null}
-          <ParameterTable args={item.args} />
+          <ParameterTable taskId={item._id} args={item.args} />
         </div>
       </CollapsibleContent>
     </Collapsible>

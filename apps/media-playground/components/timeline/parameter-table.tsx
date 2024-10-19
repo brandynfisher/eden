@@ -13,15 +13,10 @@ import {
 } from '@/components/ui/table'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { Long, cn, toBigInt } from '@/lib/utils'
-import { TaskV2Args } from '@edenlabs/eden-sdk'
+import { TaskV2, TaskV2Args } from '@edenlabs/eden-sdk'
 import { InfoIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
 import React from 'react'
 import { toast } from 'sonner'
-
-type Props = {
-  args: TaskV2Args
-  className?: string
-}
 
 const imageInputParameterNames = [
   'image',
@@ -37,7 +32,13 @@ const imageInputParameterNames = [
 
 const videoInputParameterNames = ['video', 'input_video']
 
-const ParameterTable = ({ args, className }: Props) => {
+type Props = {
+  taskId: TaskV2['_id']
+  args: TaskV2Args
+  className?: string
+}
+
+const ParameterTable = ({ taskId, args, className }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
   const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
@@ -75,7 +76,7 @@ const ParameterTable = ({ args, className }: Props) => {
         </TableRow>
       </TableHeader>
       <TableBody className="bg-popover/20">
-        {Object.entries(args).map(taskArg => (
+        {Object.entries({ taskId, ...args }).map(taskArg => (
           <TableRow
             key={taskArg[0]}
             className="cursor-pointer text-xs"

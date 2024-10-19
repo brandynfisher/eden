@@ -180,7 +180,10 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           </AccordionTrigger>
           <AccordionContent>
             {item && remainingArgs ? (
-              <ParameterTable args={remainingArgs} />
+              <ParameterTable
+                taskId={item.task.toString()}
+                args={remainingArgs}
+              />
             ) : (
               <div className="space-y-1">
                 <Skeleton className="h-5 w-[250px]" />
