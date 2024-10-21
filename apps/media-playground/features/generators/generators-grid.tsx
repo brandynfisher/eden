@@ -20,7 +20,7 @@ type Props = {
 const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   // videos
   animate_3D: 'animate_3D_opt.mp4',
-  style_mixing: 'style_mixing_opt.mp4',
+  texture_flow: 'style_mixing_opt.mp4',
   txt2vid: 'txt2vid_opt.mp4',
   txt2vid_lora: 'txt2vid_lora_opt.mp4',
   vid2vid_sdxl: 'vid2vid_sdxl_opt.mp4',

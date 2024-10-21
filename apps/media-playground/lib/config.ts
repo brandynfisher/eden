@@ -66,6 +66,6 @@ export const siteConfig: SiteConfig = {
     '/models',
   ],
   featured: {
-    tools: ['flux-schnell', 'flux-dev', 'style_mixing', 'animate_3D'],
+    tools: ['flux-schnell', 'flux-dev', 'texture_flow', 'animate_3D'],
   },
 }
