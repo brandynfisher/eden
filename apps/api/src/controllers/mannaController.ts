@@ -242,7 +242,7 @@ const handleEden2AccessVoucher = async (
   await voucher.save()
 
   return reply.status(200).send({
-    action: voucher.action,
+    action: 'Early access granted',
     success: true,
   })
 }
@@ -283,6 +283,7 @@ const handleMannaVoucher = async (
   await voucher.save()
 
   return reply.status(200).send({
+    action: 'Manna voucher redeemed',
     manna: newBalance,
     transactionId: transaction._id,
   })
