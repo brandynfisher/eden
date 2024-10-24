@@ -38,7 +38,7 @@ const ShareDialog = () => {
 
   const encodedText = React.useMemo(() => {
     if (isOpen) {
-      return encodeURIComponent('Check  on Eden')
+      return encodeURIComponent('Check on Eden')
     }
     return ''
   }, [isOpen])

@@ -1,8 +1,10 @@
+'use client'
+
 import { fetcher } from '@/lib/fetcher'
 import { CollectionsV2GetLightResponse } from '@edenlabs/eden-sdk'
 import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query'
 
-export const useCollectionsLight = () => {
+export const useCollectionsLight = ({ enabled }: { enabled: boolean }) => {
   const queryKey: QueryKey = ['collections', 'me', 'light']
 
   const {
@@ -16,6 +18,7 @@ export const useCollectionsLight = () => {
     isSuccess,
     status,
   } = useQuery({
+    enabled,
     queryKey,
     queryFn: () =>
       fetcher<CollectionsV2GetLightResponse>(`/api/collections/light`),

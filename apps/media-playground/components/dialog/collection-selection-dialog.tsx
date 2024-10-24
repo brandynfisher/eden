@@ -50,7 +50,9 @@ const CollectionSelectionDialog = () => {
   const isCreateCollectionModalOpen = useCreateCollectionModalOpen()
   const [isAddingToCollection, setIsAddingToCollection] = React.useState(false)
 
-  const { collections, refetch } = useCollectionsLight()
+  const { collections, refetch } = useCollectionsLight({
+    enabled: isCreateCollectionModalOpen || addToCollectionModal.isOpen,
+  })
 
   const collectionHasAllCreations = React.useMemo(() => {
     if (!collections || !addToCollectionModal.creationIds) return {}
