@@ -4,6 +4,10 @@ import { isMobile } from 'react-device-detect'
 import { toast } from 'sonner'
 
 export interface DialogsState {
+  quickUpscaleModal: {
+    isOpen: boolean
+    creation?: CreationV2
+  }
   quickAnimateModal: {
     isOpen: boolean
     creation?: CreationV2
@@ -21,6 +25,10 @@ export interface DialogsState {
 }
 
 const initialState: DialogsState = {
+  quickUpscaleModal: {
+    isOpen: false,
+    creation: undefined,
+  },
   quickAnimateModal: {
     isOpen: false,
     creation: undefined,
@@ -41,7 +49,10 @@ const dialogsSlice = createSlice({
   name: 'dialogs',
   initialState,
   reducers: {
-    updateQuickAnimateModal(state, action: { payload: { isOpen: boolean, creation?: CreationV2 } }) {
+    updateQuickAnimateModal(
+      state,
+      action: { payload: { isOpen: boolean; creation?: CreationV2 } },
+    ) {
       // console.log('toggleQuickAnimateModal', state, !state.quickAnimateModal.isOpen)
       state.quickAnimateModal.isOpen = action.payload.isOpen
       if (action.payload.creation) {
@@ -50,7 +61,22 @@ const dialogsSlice = createSlice({
         state.quickAnimateModal.creation = undefined
       }
     },
-    updateAddToCollectionModal(state, action: { payload: { isOpen: boolean, creationIds?: string[] } }   ) {
+    updateQuickUpscaleModal(
+      state,
+      action: { payload: { isOpen: boolean; creation?: CreationV2 } },
+    ) {
+      // console.log('toggleQuickAnimateModal', state, !state.quickAnimateModal.isOpen)
+      state.quickUpscaleModal.isOpen = action.payload.isOpen
+      if (action.payload.creation) {
+        state.quickUpscaleModal.creation = action.payload.creation
+      } else {
+        state.quickUpscaleModal.creation = undefined
+      }
+    },
+    updateAddToCollectionModal(
+      state,
+      action: { payload: { isOpen: boolean; creationIds?: string[] } },
+    ) {
       state.addToCollectionModal.isOpen = action.payload.isOpen
       if (action.payload.creationIds) {
         state.addToCollectionModal.creationIds = action.payload.creationIds
@@ -87,6 +113,7 @@ const dialogsSlice = createSlice({
 export const {
   toggleShareDialog,
   updateQuickAnimateModal,
+  updateQuickUpscaleModal,
   updateAddToCollectionModal,
   toggleCreateCollectionModal,
 } = dialogsSlice.actions

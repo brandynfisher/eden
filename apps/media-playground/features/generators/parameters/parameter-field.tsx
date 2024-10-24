@@ -37,7 +37,7 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value, name } = field
         let parsedValue: number | string | ''
-        console.log({ field })
+        // console.log({ field })
         switch (parameter.type) {
           case 'int':
             parsedValue = Number(value)
@@ -113,7 +113,7 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                 />
                 <FormControl id={name} className="ml-4">
                   <Switch
-                    className="!mt-0"
+                    className="!mt-0 data-[state=unchecked]:!bg-gray-400 data-[state=unchecked]:dark:!bg-gray-700"
                     checked={value}
                     onCheckedChange={checked => onChange(checked)}
                   />

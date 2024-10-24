@@ -2,12 +2,8 @@
 
 import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
+import { Dialog, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useShareDialogOpen } from '@/stores/dialogs/dialogs.selector'
 import { toggleShareDialog } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -42,7 +38,7 @@ const ShareDialog = () => {
 
   const encodedText = React.useMemo(() => {
     if (isOpen) {
-      return encodeURIComponent('Check out this on Eden')
+      return encodeURIComponent('Check on Eden')
     }
     return ''
   }, [isOpen])
@@ -60,7 +56,7 @@ const ShareDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-md">
+      <DialogContentOverlayBlur className="max-w-[calc(100vw-32px)] sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Share</DialogTitle>
         </DialogHeader>
@@ -98,7 +94,7 @@ const ShareDialog = () => {
             }}
           />
         </div>
-      </DialogContent>
+      </DialogContentOverlayBlur>
     </Dialog>
   )
 }

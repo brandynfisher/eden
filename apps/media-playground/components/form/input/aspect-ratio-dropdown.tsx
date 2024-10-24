@@ -36,7 +36,7 @@ const AspectRatioDropdown = ({
           <ChevronDownIcon size="16px" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-40">
+      <DropdownMenuContent className="w-40 overflow-y-auto max-h-[50dvh]">
         <VisuallyHidden>
           <DropdownMenuLabel>Aspect Ratios / Resolutions</DropdownMenuLabel>
         </VisuallyHidden>

@@ -79,6 +79,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
             item.args.n_samples === 3
               ? 'md:!grid-cols-3 xl:!grid-cols-3 md:!grid-rows-1'
               : '',
+            item.output_type === 'lora' ? 'flex flex-col gap-0' : '',
           ])}
         >
           {item.status !== TaskV2Status.Completed ? (

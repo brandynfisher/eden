@@ -21,7 +21,7 @@ type Props = {
 const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   // videos
   animate_3D: 'animate_3D_opt.mp4',
-  style_mixing: 'style_mixing_opt.mp4',
+  texture_flow: 'style_mixing_opt.mp4',
   txt2vid: 'txt2vid_opt.mp4',
   txt2vid_lora: 'txt2vid_lora_opt.mp4',
   vid2vid_sdxl: 'vid2vid_sdxl_opt.mp4',
@@ -30,8 +30,8 @@ const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
   video_upscaler: 'video_upscaler_opt.mp4',
 
   // images
-  'flux-schnell': 'flux-schnell.png',
-  'flux-dev': 'flux.png',
+  flux_schnell: 'flux-schnell.png',
+  flux_dev: 'flux.png',
   background_removal: 'background_removal_opt.mp4',
   upscaler: 'clarity_upscaler_opt.mp4',
   face_styler: 'face_styler.png',

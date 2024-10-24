@@ -2,11 +2,11 @@ import { calculateMaxDimensions } from '../../lib/eden2'
 import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
+import { GeneratorV2 } from '../../models/v2/GeneratorV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import {
   ImageFormats,
   changeExtension,
-  rawS3BaseUrl,
   s3ThumbnailUrl,
   s3Url,
 } from '../../plugins/s3Plugin'
@@ -61,18 +61,9 @@ export const createTask = async (
 ) => {
   const { userId } = request.user
   const { workflow, args } = request.body as TasksV2CreateArguments
+  const generator = await GeneratorV2.findOne({ key: workflow })
 
-  if (!server.generatorConfigs || !server.generatorConfigs.configs) {
-    return reply.status(500).send({
-      message: `No generators configured`,
-    })
-  }
-
-  const generatorConfig = server.generatorConfigs.configs.find(
-    generator => generator.key === workflow,
-  )
-
-  if (!generatorConfig) {
+  if (!generator) {
     return reply.status(404).send({
       message: `Generator ${workflow} not available`,
     })
@@ -87,7 +78,7 @@ export const createTask = async (
 
   const rateLimitCheckResult = await taskRateLimitCheck(
     request,
-    generatorConfig.outputType,
+    generator.outputType,
   )
   if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
     if (server.Sentry) {
@@ -172,10 +163,11 @@ export const listTasks = async (
     })
   }
 
-  const isModelTaskQuery = workflow && workflow === 'lora_trainer'
+  const isModelTaskQuery =
+    workflow && (workflow === 'lora_trainer' || workflow === 'flux_trainer')
   const typeQuery = !isModelTaskQuery
     ? {
-        workflow: { $ne: 'lora_trainer' },
+        workflow: { $nin: ['lora_trainer', 'flux_trainer'] },
       }
     : {}
 
@@ -185,7 +177,7 @@ export const listTasks = async (
     user?: string
     status?: string | string[]
     taskId?: string | string[]
-    workflow?: string | { $ne: string }
+    workflow?: string | { $nin: string[] }
     createdAt?: { $gte: Date }
   } = {
     user: user._id.toString(),
@@ -280,16 +272,12 @@ const injectResultUrls = (
     return result
   }
 
-  const baseS3Url = rawS3BaseUrl(server)
-  const mainUrl = isModelResult
-    ? `${baseS3Url}/${result.filename}`
-    : s3Url(server, result.filename)
   const thumbnailName = isModelResult ? result.thumbnail || '' : result.filename
-  const thumbnailSize = isModelResult ? undefined : 1024 // get rid of this special handling once model thumbnails are in line with creations
+  const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
 
   return {
     ...result,
-    url: mainUrl,
+    url: s3Url(server, result.filename),
     thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
   }
 }

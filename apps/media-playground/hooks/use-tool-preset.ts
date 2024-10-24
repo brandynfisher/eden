@@ -88,6 +88,11 @@ export const useToolPreset = () => {
           if (value !== null) {
             acc[key] = value
           }
+
+          if (key === 'seed') {
+            acc[key] = undefined
+          }
+
           return acc
         },
         {},

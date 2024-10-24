@@ -1,3 +1,4 @@
+import { GeneratorV2 } from '../../models/v2/GeneratorV2'
 import {
   GeneratorsGetArgumentsV2,
   GeneratorsListArgumentsV2,
@@ -5,49 +6,49 @@ import {
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getGenerator = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { generatorKey } = request.params as GeneratorsGetArgumentsV2
 
-  if (!server.generatorConfigs || !server.generatorConfigs.configs) {
-    return reply.status(500).send({
-      message: `No generators configured`,
-    })
-  }
-
-  const generatorConfig = server.generatorConfigs.configs.find(
-    generator => generator.key === generatorKey,
+  const generator = await GeneratorV2.findOne(
+    {
+      key: generatorKey,
+    },
+    {
+      'parameters.tip': 0,
+    },
   )
 
-  if (!generatorConfig) {
+  console.log({ generator })
+
+  // nothing found or it was deleted and the user is not the owner
+  if (!generator) {
     return reply.status(404).send({
-      message: `Generator '${generatorKey}' not found`,
+      message: 'Tool not found',
     })
   }
 
-  return reply.status(200).send({ generator: generatorConfig })
+  return reply.status(200).send({ generator })
 }
 
 export const listGenerators = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { hideParams } = request.query as GeneratorsListArgumentsV2
+  const projection = hideParams
+    ? {
+        resolutions: 0,
+        parameters: 0,
+      }
+    : {
+        'parameters.tip': 0,
+      }
 
-  if (!server.generatorConfigs || !server.generatorConfigs.configs) {
-    return reply.status(500).send({
-      message: `No generators configured`,
-    })
-  }
+  const generators = await GeneratorV2.find({}, projection)
 
-  return reply
-    .status(200)
-    .send({
-      generators: hideParams
-        ? server.generatorConfigs.list
-        : server.generatorConfigs.configs,
-    })
+  return reply.status(200).send({ generators })
 }

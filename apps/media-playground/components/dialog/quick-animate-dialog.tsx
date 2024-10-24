@@ -1,6 +1,6 @@
 'use client'
 
-import QuickAnimateForm from '@/components/dialog/quick-animate-form'
+import QuickCreateForm from '@/components/dialog/quick-create-form'
 import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
 import { Dialog, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -38,13 +38,16 @@ const QuickAnimateDialog = () => {
       title: 'Animate 3D',
       content: (
         <Suspense fallback={<FormSkeleton />}>
-          <QuickAnimateForm
+          <QuickCreateForm
             toolKey={'animate_3D'}
             exposedParameters={['n_frames']}
             initValues={{
               image:
                 getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '',
             }}
+            onSubmitSuccess={() =>
+              dispatch(updateQuickAnimateModal({ isOpen: false }))
+            }
           />
         </Suspense>
       ),
@@ -54,13 +57,16 @@ const QuickAnimateDialog = () => {
       title: 'Animate',
       content: (
         <Suspense fallback={<FormSkeleton />}>
-          <QuickAnimateForm
+          <QuickCreateForm
             toolKey={'img2vid'}
             exposedParameters={['num_frames']}
             initValues={{
               image:
                 getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '',
             }}
+            onSubmitSuccess={() =>
+              dispatch(updateQuickAnimateModal({ isOpen: false }))
+            }
           />
         </Suspense>
       ),

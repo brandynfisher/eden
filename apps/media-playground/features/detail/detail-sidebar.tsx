@@ -5,6 +5,12 @@ import LoadingIndicator from '@/components/loading-indicator'
 import CopyTextButton from '@/components/text/copy-text-button'
 import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
@@ -167,20 +173,29 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         </div>
       ) : null}
 
-      <div>
-        <div className="font-bold text-sm mb-3">Parameters</div>
-        {item && remainingArgs ? (
-          <ParameterTable args={remainingArgs} />
-        ) : (
-          <div className="space-y-1">
-            <Skeleton className="h-5 w-[250px]" />
-            <Skeleton className="h-5 w-[250px]" />
-            <Skeleton className="h-5 w-[200px]" />
-            <Skeleton className="h-5 w-[200px]" />
-            <Skeleton className="h-5 w-[180px]" />
-          </div>
-        )}
-      </div>
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="parameters" className="!border-b-0">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="font-bold text-sm">Parameters</div>
+          </AccordionTrigger>
+          <AccordionContent>
+            {item && remainingArgs ? (
+              <ParameterTable
+                taskId={item.task.toString()}
+                args={remainingArgs}
+              />
+            ) : (
+              <div className="space-y-1">
+                <Skeleton className="h-5 w-[250px]" />
+                <Skeleton className="h-5 w-[250px]" />
+                <Skeleton className="h-5 w-[200px]" />
+                <Skeleton className="h-5 w-[200px]" />
+                <Skeleton className="h-5 w-[180px]" />
+              </div>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   )
 }

@@ -8,7 +8,6 @@ import config from './plugins/config'
 import registerEden2TaskUpdates from './plugins/eden2TaskUpdatePlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerEventEmitter from './plugins/eventEmitterPlugin'
-import registerGeneratorConfigs from './plugins/generatorConfig'
 import { registerInternalMessages } from './plugins/internalMessagesPlugin'
 import registerLogos from './plugins/logosPlugin'
 import registerMongo from './plugins/mongoPlugin'
@@ -100,7 +99,6 @@ const createServer = async (
   await registerAssetUpload(server)
   await registerS3(server)
   await registerEden2TaskUpdates(server, opts)
-  await registerGeneratorConfigs(server, opts)
 
   registerTaskHandlers(server, opts.taskHandlers)
 
