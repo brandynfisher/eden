@@ -7,8 +7,18 @@ FROM base AS builder
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 RUN apk update
+RUN apk add --update --no-cache \
+    g++ \
+    build-base \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    librsvg-dev \
 # Set working directory
 WORKDIR /app
+# Install node-canvas deps
+
 RUN yarn global add turbo
 COPY . .
 RUN turbo prune --scope=media-playground --docker
@@ -18,14 +28,6 @@ FROM base AS installer
 RUN apk add --no-cache libc6-compat git
 RUN apk update
 WORKDIR /app
-
-# Install node-canvas deps
-RUN apk add --update --no-cache \
-    build-base \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev
 
 # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
