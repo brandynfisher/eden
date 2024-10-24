@@ -21,7 +21,7 @@ export const getGenerator = async (
     },
   )
 
-  console.log({ generator })
+  // console.log({ generator })
 
   // nothing found or it was deleted and the user is not the owner
   if (!generator) {

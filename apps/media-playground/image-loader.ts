@@ -34,7 +34,7 @@ export default function customImageLoader({
 }: ImageLoaderProps): string {
   // use url as is
   if (src.startsWith('https://')) {
-    return src
+    return `${src}?w=${width}`
   }
 
   // set size and change extensions
@@ -43,5 +43,5 @@ export default function customImageLoader({
   const finalSrc = changeExtension(srcWithSize, format)
 
   // prepend cloudfront url
-  return getCloudfrontUrl(finalSrc)
+  return getCloudfrontUrl(finalSrc) + `?w=${width}`
 }
