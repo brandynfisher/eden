@@ -22,20 +22,14 @@ RUN apk add --no-cache libc6-compat git
 RUN apk update
 WORKDIR /app
 
-RUN apk add --no-cache \
-    libc6-compat \
-    cairo-dev \
-    pango-dev \
-    jpeg-dev \
-    giflib-dev \
-    librsvg-dev \
-    pixman-dev \
-    pangocairo-dev \
-    freetype-dev \
-    fontconfig-dev \
-    libjpeg-turbo-dev \
+RUN apk add --update --no-cache \
+    g++ \
     build-base \
-    g++
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    librsvg-dev
 
 # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
@@ -107,20 +101,14 @@ RUN yarn turbo run build --filter=media-playground...
 FROM base AS runner
 WORKDIR /app
 
-RUN apk add --no-cache \
-    libc6-compat \
-    cairo-dev \
-    pango-dev \
-    jpeg-dev \
-    giflib-dev \
-    librsvg-dev \
-    pixman-dev \
-    pangocairo-dev \
-    freetype-dev \
-    fontconfig-dev \
-    libjpeg-turbo-dev \
+RUN apk add --update --no-cache \
+    g++ \
     build-base \
-    g++
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    librsvg-dev
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
