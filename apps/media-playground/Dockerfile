@@ -101,6 +101,15 @@ RUN yarn turbo run build --filter=media-playground...
 FROM base AS runner
 WORKDIR /app
 
+RUN apk add --update --no-cache \
+    g++ \
+    build-base \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    librsvg-dev
+
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
