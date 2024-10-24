@@ -71,7 +71,7 @@ const TaskStatusIndicator = () => {
       <DropdownMenuContent className="bg-popover shadow-md rounded-md w-80">
         <DropdownMenuItem className="cursor-pointer group" asChild>
           <Link
-            href={'/create/image/flux-schnell'}
+            href={'/create/image/flux_schnell'}
             prefetch={false}
             className="text-sm px-2 py-1"
           >
