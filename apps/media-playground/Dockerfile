@@ -14,7 +14,8 @@ RUN apk add --update --no-cache \
     jpeg-dev \
     pango-dev \
     giflib-dev \
-    librsvg-dev \
+    librsvg-dev
+
 # Set working directory
 WORKDIR /app
 # Install node-canvas deps
