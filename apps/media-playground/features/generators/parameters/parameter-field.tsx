@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import MaskingCanvas from '@/features/generators/masking-canvas'
+// import MaskingCanvas from '@/features/generators/masking-canvas'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
@@ -174,9 +174,9 @@ const ParameterField = ({ parameter, tool, className }: Props) => {
                       onBlur={onBlur}
                       value={value || ''}
                     />
-                    {parameter.name === 'masking_prompt' ? (
-                      <MaskingCanvas />
-                    ) : null}
+                    {/*{parameter.name === 'masking_prompt' ? (*/}
+                    {/*  <MaskingCanvas />*/}
+                    {/*) : null}*/}
                   </>
                 )}
               </FormItemWrap>

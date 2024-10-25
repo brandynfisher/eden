@@ -21,6 +21,14 @@ type Props = {
 }
 
 export const IntermediateOutputsDialog = ({ result }: Props) => {
+  const totalArrayElements =
+    result && result.intermediateOutputs
+      ? Object.values(result.intermediateOutputs).reduce(
+          (acc, arr) => acc + arr.length,
+          0,
+        )
+      : 0
+
   return (
     <Dialog>
       <DialogTrigger>
@@ -29,7 +37,7 @@ export const IntermediateOutputsDialog = ({ result }: Props) => {
           className="absolute right-2 bottom-2 bg-purple-600/80 hover:bg-purple-600 cursor-pointer drop-shadow rounded-md p-1 text-sm flex items-center"
         >
           <ImageIcon className="h-3 w-3 mr-1" />
-          <div className="font-mono">+1</div>
+          <div className="font-mono">+{totalArrayElements}</div>
         </div>
       </DialogTrigger>
       <DialogContentScrollable className="p-8 my-4 mx-4 flex flex-col">
