@@ -320,7 +320,8 @@ const ParameterField = ({ parameter, tool, className }: Props) => {
                 <FileUploader
                   value={value === null ? [] : value || []}
                   onChange={onChange}
-                  allowedFileTypes={parameter.type.split('|')} // <-- Pass allowed types
+                  // allowedFileTypes={parameter.type.split('|')} // <-- Pass allowed types
+                  allowedFileTypes={['image', 'video']} // <-- Pass allowed types
                   maxFiles={1}
                   allowMultiple={false}
                 />
