@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { toggleShareDialog } from '@/stores/dialogs/dialogs.slice'
+import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -65,7 +65,14 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
   const modelData = modelResponse || model
 
   const handleShareClick = () => {
-    dispatch(toggleShareDialog())
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${baseUrl}/models/${model._id}`
+    dispatch(
+      updateShareModal({
+        isOpen: true,
+        shareUrl,
+      }),
+    )
   }
 
   return (

@@ -27,7 +27,7 @@ export const useCreateCollectionModalOpen = () => {
   return dialogs.createCollectionModal.isOpen
 }
 
-export const useShareDialogOpen = () => {
+export const useShareModal = () => {
   const dialogs = useAppSelector(selectDialogs)
-  return dialogs.shareDialog.isOpen
+  return dialogs.shareDialog
 }
