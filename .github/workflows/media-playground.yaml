@@ -71,6 +71,12 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
+
+  notify:
+    needs: build-and-push-to-ghcr
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Discord Webhook Trigger
         uses: sarisia/actions-status-discord@v1
         if: always()
