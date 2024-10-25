@@ -90,6 +90,7 @@ const SimpleGeneratorForm = ({
           ? parameters.map(param => {
               return (
                 <ParameterField
+                  form={form}
                   className={'bg-muted rounded-md mb-4'}
                   key={param.name}
                   tool={generator}

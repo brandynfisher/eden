@@ -29,6 +29,7 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
     <Collapsible open={isOpen}>
       <CollapsibleTrigger asChild>
         <ParameterField
+          form={form}
           tool={tool}
           parameter={group.toggle}
           className={cn([
@@ -48,6 +49,7 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
       >
         {group.groupParameters?.map(param => (
           <ParameterField
+            form={form}
             key={param.name}
             tool={tool}
             parameter={param}

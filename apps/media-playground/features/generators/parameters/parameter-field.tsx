@@ -16,18 +16,20 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-// import MaskingCanvas from '@/features/generators/masking-canvas'
+import MaskingCanvas from '@/features/generators/masking-canvas'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
+import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   parameter: GeneratorParameterV2
   tool: GeneratorV2
+  form: UseFormReturn
   className?: string
 }
 
-const ParameterField = ({ parameter, tool, className }: Props) => {
+const ParameterField = ({ parameter, tool, form, className }: Props) => {
   const { name, label } = parameter
 
   return (
@@ -175,9 +177,6 @@ const ParameterField = ({ parameter, tool, className }: Props) => {
                       onBlur={onBlur}
                       value={value || ''}
                     />
-                    {/*{parameter.name === 'masking_prompt' ? (*/}
-                    {/*  <MaskingCanvas />*/}
-                    {/*) : null}*/}
                   </>
                 )}
               </FormItemWrap>
@@ -319,13 +318,15 @@ const ParameterField = ({ parameter, tool, className }: Props) => {
                   />
                 </FormControl>
                 <FileUploader
-                  value={value === null ? [] : value || []}
+                  value={value === null ? '' : value || ''}
                   onChange={onChange}
-                  // allowedFileTypes={parameter.type.split('|')} // <-- Pass allowed types
-                  allowedFileTypes={['image', 'video']} // <-- Pass allowed types
+                  allowedFileTypes={parameter.type.split('|')} // <-- Pass allowed types
                   maxFiles={1}
                   allowMultiple={false}
                 />
+                {parameter.name === 'mask_image' ? (
+                  <MaskingCanvas baseImageFieldName={'image'} form={form} />
+                ) : null}
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )

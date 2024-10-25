@@ -188,6 +188,7 @@ const GeneratorForm = ({ generator }: Props) => {
               <div key={index} className="bg-muted rounded-lg">
                 {element.type === 'standalone' && element.parameter ? (
                   <ParameterField
+                    form={form}
                     tool={generator}
                     parameter={element.parameter}
                   />
@@ -260,6 +261,7 @@ const GeneratorForm = ({ generator }: Props) => {
                   <div key={index} className="bg-muted/50 rounded-lg">
                     {element.type === 'standalone' && element.parameter ? (
                       <ParameterField
+                        form={form}
                         tool={generator}
                         parameter={element.parameter}
                       />
