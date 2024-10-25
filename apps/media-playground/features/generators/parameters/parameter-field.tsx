@@ -165,6 +165,7 @@ const ParameterField = ({ parameter, tool, className }: Props) => {
                     onChange={onChange}
                     value={value}
                     options={parameter.choices}
+                    optionLabels={parameter.choices_label || undefined}
                   />
                 ) : (
                   <>

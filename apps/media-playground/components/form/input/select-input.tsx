@@ -17,6 +17,7 @@ type Props = {
   onChange: (newVal: string | number) => void
   value: string | number
   options: (string | number)[]
+  optionLabels?: string[]
   suffix?: string
   className?: string
   optionClassName?: string
@@ -29,10 +30,18 @@ const SelectInput = ({
   onChange,
   value,
   options,
+  optionLabels,
   suffix,
   className,
   optionClassName,
 }: Props) => {
+  const optionsFormatted = options.map((option, index) => {
+    return {
+      value: option,
+      label: optionLabels && optionLabels[index] ? optionLabels[index] : option,
+    }
+  })
+
   return (
     <DelayedSelect onValueChange={onChange} value={String(value || '')}>
       <SelectTrigger className={cn(['w-full', className])} title={placeholder}>
@@ -46,13 +55,13 @@ const SelectInput = ({
               {label}
             </SelectLabel>
           ) : null}
-          {options.map(option => (
+          {optionsFormatted.map(option => (
             <SelectItem
-              key={option}
-              value={String(option)}
+              key={option.value}
+              value={String(option.value)}
               className={optionClassName}
             >
-              {option}
+              {option.label}
               {suffix}
             </SelectItem>
           ))}
