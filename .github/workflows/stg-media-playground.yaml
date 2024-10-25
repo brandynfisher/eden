@@ -1,4 +1,4 @@
-name: 'Build and Deploy - Media Playground'
+name: 'Build / Deploy - Eden Create - STAGING'
 
 on:
   workflow_dispatch:

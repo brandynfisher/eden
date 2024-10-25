@@ -1,4 +1,4 @@
-name: 'Build and Deploy - API'
+name: 'Build / Deploy - API - PROD'
 
 on:
   workflow_dispatch:
