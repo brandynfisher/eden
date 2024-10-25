@@ -238,31 +238,6 @@ const ParameterField = ({ parameter, tool, className }: Props) => {
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
-          case 'image':
-            return (
-              <FormItem className="mt-0 !p-4 !pt-2">
-                <FormItemHead
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
-                  <Input
-                    className={'hidden'}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value || ''}
-                  />
-                </FormControl>
-                <FileUploader
-                  value={value === null ? '' : value || ''}
-                  onChange={onChange}
-                  allowedFileTypes={['image']}
-                  maxFiles={1}
-                  allowMultiple={false}
-                />
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
           case 'image[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-2">
@@ -293,31 +268,7 @@ const ParameterField = ({ parameter, tool, className }: Props) => {
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
-          case 'video':
-            return (
-              <FormItem className="mt-0 !p-4 !pt-2">
-                <FormItemHead
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
-                  <Input
-                    className={'hidden'}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value}
-                  />
-                </FormControl>
-                <FileUploader
-                  value={value === null ? '' : value}
-                  onChange={onChange}
-                  allowedFileTypes={['video']}
-                  maxFiles={1}
-                  allowMultiple={false}
-                />
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
+
           case 'video[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-2">
@@ -344,6 +295,34 @@ const ParameterField = ({ parameter, tool, className }: Props) => {
                       : parameter.max_length || 1
                   }
                   allowMultiple={parameter.max_length !== 1}
+                />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          case 'image':
+          case 'video':
+          case 'image|video':
+          case 'video|image':
+            return (
+              <FormItem className="mt-0 !p-4 !pt-2">
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
+                <FormControl id={name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value || ''}
+                  />
+                </FormControl>
+                <FileUploader
+                  value={value === null ? [] : value || []}
+                  onChange={onChange}
+                  allowedFileTypes={parameter.type.split('|')} // <-- Pass allowed types
+                  maxFiles={1}
+                  allowMultiple={false}
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>

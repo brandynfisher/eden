@@ -79,6 +79,8 @@ export type GeneratorV2 = {
 export type GeneratorParameterType =
   | 'video'
   | 'image'
+  | 'image|video'
+  | 'video|image'
   | 'model'
   | 'audio'
   | 'string'
