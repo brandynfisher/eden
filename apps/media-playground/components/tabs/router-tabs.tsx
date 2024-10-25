@@ -39,7 +39,7 @@ const RouterTabs = ({ tabs }: Props) => {
       onValueChange={handleTabChange}
       className="w-full max-w-full"
     >
-      <TabsList className="flex justify-stretch lg:max-w-md mb-4">
+      <TabsList className="flex justify-stretch lg:max-w-md mb-4 overflow-x-scroll">
         {tabs.map(tab => (
           <TabsTrigger key={tab.key} value={tab.key} className="w-full">
             {tab.title}

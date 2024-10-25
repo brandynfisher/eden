@@ -11,6 +11,8 @@ import {
   AdminMannaVouchersCreateResponse,
   AdminMediaUploadArguments,
   AdminMediaUploadResponse,
+  AgentsCreateArguments,
+  AgentsCreateResponse,
   ApiKeysCreateArguments,
   ApiKeysCreateResponse,
   ApiKeysDeleteArguments,
@@ -132,6 +134,7 @@ import {
   adminMannaModifyRequestConfig,
   adminMannaVouchersCreateRequestConfig,
   adminMediaUploadRequestConfig,
+  agentsCreateRequestConfig,
   apiKeysCreateRequestConfig,
   apiKeysDeleteRequestConfig,
   apiKeysListRequestConfig,
@@ -500,6 +503,13 @@ export abstract class Methods {
     //   this,
     //   conceptsUnreactRequestConfig,
     // ),
+  }
+
+  public readonly agents = {
+    create: bindApiCall<AgentsCreateArguments, AgentsCreateResponse>(
+      this,
+      agentsCreateRequestConfig,
+    ),
   }
 
   public readonly creations = {

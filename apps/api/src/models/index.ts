@@ -1,3 +1,4 @@
+import { Agent, AgentDocument } from './Agent'
 import { ApiKey, ApiKeyDocument } from './ApiKey'
 import Challenge, { ChallengeDocument } from './Challenge'
 import { Character, CharacterDocument } from './Character'
@@ -5,6 +6,7 @@ import { Collection, CollectionDocument } from './Collection'
 import { Concept, ConceptDocument } from './Concept'
 import { Creation, CreationDocument } from './Creation'
 import { User, UserDocument } from './Creator'
+import { DiscordAgent, DiscordAgentDocument } from './DiscordAgent'
 import { Embedding, EmbeddingDocument } from './Embedding'
 import { Follow, FollowDocument } from './Follow'
 import { Generator, GeneratorDocument } from './Generator'
@@ -48,6 +50,8 @@ export interface Database {
   Session: Model<SessionDocument>
   SessionEvent: Model<SessionEventDocument>
   UserMigration: Model<UserMigrationDocument>
+  Agent: Model<AgentDocument>
+  DiscordAgent: Model<DiscordAgentDocument>
 }
 
 export const models: Database = {
@@ -74,4 +78,6 @@ export const models: Database = {
   Session,
   SessionEvent,
   UserMigration,
+  Agent,
+  DiscordAgent,
 }
