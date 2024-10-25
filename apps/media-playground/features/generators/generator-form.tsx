@@ -313,13 +313,13 @@ const GeneratorForm = ({ generator }: Props) => {
       <Dialog open={mobileIsFormVisible} onOpenChange={setMobileIsFormVisible}>
         <DialogTrigger asChild>
           <div className="lg:hidden fixed bottom-0 flex z-10 bg-accent p-2 w-full justify-center items-center gap-2">
-            <div className="text-sm text-muted-foreground">
-              {generator.name}
-            </div>
             <Button onClick={() => setMobileIsFormVisible(true)}>
               <PlusIcon className="h-4 w-4 mr-1" />
               Create
             </Button>
+            <div className="text-sm text-muted-foreground">
+              {generator.name}
+            </div>
           </div>
         </DialogTrigger>
         <DialogContentOverlayBlur className="p-0 rounded-md overflow-hidden bg-muted-darker">

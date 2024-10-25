@@ -44,9 +44,6 @@ export const MediaResult = ({
         height: '-webkit-fill-available',
       }}
     >
-      {result.intermediateOutputs ? (
-        <IntermediateOutputsDialog result={result} />
-      ) : null}
       {!result.creation?.public ? <PrivateIcon /> : null}
       {result.creation === null || result.creation?.deleted ? (
         <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
@@ -81,14 +78,18 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
     <div className="p-2 bg-secondary rounded-md">
       <div
-        className={
+        className={cn([
+          'relative',
           (result?.mediaAttributes?.aspectRatio || 1) < 1 &&
           (task.args.n_samples || 1) === 1
             ? 'h-[60dvh] flex justify-center'
-            : ''
-        }
+            : '',
+        ])}
       >
         <MediaResult task={task} result={result} />
+        {result.intermediateOutputs ? (
+          <IntermediateOutputsDialog result={result} />
+        ) : null}
       </div>
       <TimelineItemResultTools
         task={task}
