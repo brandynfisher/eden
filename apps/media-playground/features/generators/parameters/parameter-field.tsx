@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import MaskingCanvas from '@/features/generators/masking-canvas'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
@@ -23,12 +24,12 @@ import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   parameter: GeneratorParameterV2
-  form: UseFormReturn
   tool: GeneratorV2
+  form: UseFormReturn
   className?: string
 }
 
-const ParameterField = ({ parameter, form, tool, className }: Props) => {
+const ParameterField = ({ parameter, tool, form, className }: Props) => {
   const { name, label } = parameter
 
   return (
@@ -68,7 +69,6 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                 ) : (
                   <SliderInput
                     type={parameter.type}
-                    form={form}
                     min={parameter.minimum || 0}
                     max={parameter.maximum || 1}
                     step={parameter.step ? parameter.step : 1}
@@ -87,7 +87,6 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                 errorMessage={fieldState.error?.message}
               >
                 <SliderInput
-                  form={form}
                   type={parameter.type}
                   min={parameter.minimum || 0}
                   max={parameter.maximum || 1}
@@ -168,14 +167,17 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                     onChange={onChange}
                     value={value}
                     options={parameter.choices}
+                    optionLabels={parameter.choices_labels || undefined}
                   />
                 ) : (
-                  <Input
-                    type="text"
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value || ''}
-                  />
+                  <>
+                    <Input
+                      type="text"
+                      onChange={onChange}
+                      onBlur={onBlur}
+                      value={value || ''}
+                    />
+                  </>
                 )}
               </FormItemWrap>
             )
@@ -236,31 +238,6 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
-          case 'image':
-            return (
-              <FormItem className="mt-0 !p-4 !pt-2">
-                <FormItemHead
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
-                  <Input
-                    className={'hidden'}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value || ''}
-                  />
-                </FormControl>
-                <FileUploader
-                  value={value === null ? '' : value || ''}
-                  onChange={onChange}
-                  allowedFileTypes={['image']}
-                  maxFiles={1}
-                  allowMultiple={false}
-                />
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
           case 'image[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-2">
@@ -291,31 +268,7 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
-          case 'video':
-            return (
-              <FormItem className="mt-0 !p-4 !pt-2">
-                <FormItemHead
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
-                  <Input
-                    className={'hidden'}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value}
-                  />
-                </FormControl>
-                <FileUploader
-                  value={value === null ? '' : value}
-                  onChange={onChange}
-                  allowedFileTypes={['video']}
-                  maxFiles={1}
-                  allowMultiple={false}
-                />
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
+
           case 'video[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-2">
@@ -343,6 +296,38 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                   }
                   allowMultiple={parameter.max_length !== 1}
                 />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          case 'image':
+          case 'video':
+          case 'image|video':
+          case 'video|image':
+            return (
+              <FormItem className="mt-0 !p-4 !pt-2">
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
+                />
+                <FormControl id={name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value || ''}
+                  />
+                </FormControl>
+                <FileUploader
+                  value={value === null ? '' : value || ''}
+                  onChange={onChange}
+                  allowedFileTypes={parameter.type.split('|')} // <-- Pass allowed types
+                  maxFiles={1}
+                  allowMultiple={false}
+                />
+                {/* //@todo: enable this by changing name */}
+                {parameter.name === 'mask_image_NOTYETNOTYETNOTYET' ? (
+                  <MaskingCanvas baseImageFieldName={'image'} form={form} />
+                ) : null}
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )

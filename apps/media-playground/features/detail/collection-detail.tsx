@@ -22,7 +22,7 @@ import UserAvatarLink from '@/components/user/user-avatar-link'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useCollectionQuery } from '@/hooks/query/use-collection-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { toggleShareDialog } from '@/stores/dialogs/dialogs.slice'
+import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CollectionV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -130,7 +130,14 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
   }
 
   const onShareCollection = () => {
-    dispatch(toggleShareDialog())
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${baseUrl}/collections/${id}`
+    dispatch(
+      updateShareModal({
+        isOpen: true,
+        shareUrl,
+      }),
+    )
   }
 
   return (

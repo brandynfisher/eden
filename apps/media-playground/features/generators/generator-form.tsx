@@ -5,7 +5,12 @@ import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
-import { Dialog, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Form } from '@/components/ui/form'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import CostIndicatorV2 from '@/features/generators/cost-indicator-v2'
@@ -183,9 +188,9 @@ const GeneratorForm = ({ generator }: Props) => {
               <div key={index} className="bg-muted rounded-lg">
                 {element.type === 'standalone' && element.parameter ? (
                   <ParameterField
+                    form={form}
                     tool={generator}
                     parameter={element.parameter}
-                    form={form}
                   />
                 ) : (
                   <ParameterGroupCollapse
@@ -256,9 +261,9 @@ const GeneratorForm = ({ generator }: Props) => {
                   <div key={index} className="bg-muted/50 rounded-lg">
                     {element.type === 'standalone' && element.parameter ? (
                       <ParameterField
+                        form={form}
                         tool={generator}
                         parameter={element.parameter}
-                        form={form}
                       />
                     ) : (
                       <ParameterGroupCollapse
@@ -309,16 +314,20 @@ const GeneratorForm = ({ generator }: Props) => {
 
       <Dialog open={mobileIsFormVisible} onOpenChange={setMobileIsFormVisible}>
         <DialogTrigger asChild>
-          <div className="lg:hidden fixed bottom-0 flex z-10 bg-accent p-2 w-full justify-center">
+          <div className="lg:hidden fixed bottom-0 flex z-10 bg-accent p-2 w-full justify-center items-center gap-2">
             <Button onClick={() => setMobileIsFormVisible(true)}>
               <PlusIcon className="h-4 w-4 mr-1" />
               Create
             </Button>
+            <div className="text-sm text-muted-foreground">
+              {generator.name}
+            </div>
           </div>
         </DialogTrigger>
         <DialogContentOverlayBlur className="p-0 rounded-md overflow-hidden bg-muted-darker">
           <VisuallyHidden>
             <DialogTitle>{generator.name}</DialogTitle>
+            <DialogDescription>Creation UI</DialogDescription>
           </VisuallyHidden>
           {formContent}
           <DialogPrimitive.Close className="absolute w-9 h-9 top-0 left-0 rounded-t-none rounded-l-none flex items-center justify-center lg:left-2 lg:right-auto lg:top-2 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none bg-accent data-[state=open]:text-muted-foreground">

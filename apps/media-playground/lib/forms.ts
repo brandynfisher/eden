@@ -180,8 +180,9 @@ export function createZodParameterSchema(
     case 'lora[]':
       return createStringArraySchema(parameter)
     case 'video':
-      return createFileUrlSchema(parameter)
     case 'image':
+    case 'image|video':
+    case 'video|image':
       return createFileUrlSchema(parameter)
     case 'video[]':
       return createFileUrlArraySchema(parameter)

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { toggleShareDialog } from '@/stores/dialogs/dialogs.slice'
+import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Creator } from '@edenlabs/eden-sdk'
 import { Share2Icon } from 'lucide-react'
@@ -28,6 +28,17 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
   })
 
   const creator = creatorClientData || creatorSSRData
+
+  const onShareProfile = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${baseUrl}/creators/${creator.username}`
+    dispatch(
+      updateShareModal({
+        isOpen: true,
+        shareUrl,
+      }),
+    )
+  }
 
   return (
     <div className="flex justify-between">
@@ -56,7 +67,7 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
           variant="outline"
           size="sm"
           className="flex items-center gap-2"
-          onClick={() => dispatch(toggleShareDialog())}
+          onClick={onShareProfile}
         >
           <Share2Icon className="size-4" />
           Share

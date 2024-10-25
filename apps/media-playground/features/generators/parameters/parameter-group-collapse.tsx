@@ -29,9 +29,9 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
     <Collapsible open={isOpen}>
       <CollapsibleTrigger asChild>
         <ParameterField
+          form={form}
           tool={tool}
           parameter={group.toggle}
-          form={form}
           className={cn([
             'border transition-colors',
             isOpen
@@ -49,10 +49,10 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
       >
         {group.groupParameters?.map(param => (
           <ParameterField
+            form={form}
             key={param.name}
             tool={tool}
             parameter={param}
-            form={form}
             className="bg-muted-darker mx-2"
           />
         ))}

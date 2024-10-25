@@ -4,8 +4,8 @@ import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
 import { Dialog, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { useShareDialogOpen } from '@/stores/dialogs/dialogs.selector'
-import { toggleShareDialog } from '@/stores/dialogs/dialogs.slice'
+import { useShareModal } from '@/stores/dialogs/dialogs.selector'
+import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CopyIcon, MoreHorizontalIcon } from 'lucide-react'
 import React from 'react'
@@ -34,28 +34,32 @@ const ShareButton = ({
 
 const ShareDialog = () => {
   const dispatch = useAppDispatch()
-  const isOpen = useShareDialogOpen()
+  const shareModal = useShareModal()
 
   const encodedText = React.useMemo(() => {
-    if (isOpen) {
+    if (shareModal.isOpen) {
       return encodeURIComponent('Check on Eden')
     }
     return ''
-  }, [isOpen])
+  }, [shareModal.isOpen])
 
   const encodedUrl = React.useMemo(() => {
-    if (isOpen && typeof window !== 'undefined') {
-      return encodeURIComponent(window.location.href)
+    if (shareModal.isOpen && shareModal.shareUrl) {
+      return encodeURIComponent(shareModal.shareUrl)
     }
     return ''
-  }, [isOpen])
+  }, [shareModal.isOpen, shareModal.shareUrl])
 
   const onOpenChange = () => {
-    dispatch(toggleShareDialog())
+    dispatch(
+      updateShareModal({
+        isOpen: false,
+      }),
+    )
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={shareModal.isOpen} onOpenChange={onOpenChange}>
       <DialogContentOverlayBlur className="max-w-[calc(100vw-32px)] sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Share</DialogTitle>
@@ -75,7 +79,7 @@ const ShareDialog = () => {
             icon={<CopyIcon size={16} />}
             label="Copy Link"
             onClick={() => {
-              navigator.clipboard.writeText(window.location.href)
+              navigator.clipboard.writeText(shareModal.shareUrl || '')
               toast.success('Link copied to clipboard', {
                 richColors: true,
                 dismissible: true,
@@ -89,7 +93,7 @@ const ShareDialog = () => {
               navigator.share({
                 title: 'Share',
                 text: 'Check out this on Eden',
-                url: window.location.href,
+                url: shareModal.shareUrl,
               })
             }}
           />

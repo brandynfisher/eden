@@ -71,7 +71,7 @@ export type GeneratorV2 = {
   outputType: GeneratorOutputTypeV2
   costEstimate?: string
   resolutions?: string[]
-  thumbnail?: string[]
+  thumbnail?: string
   order?: number
   baseModel?: BaseModelName
 }
@@ -79,6 +79,8 @@ export type GeneratorV2 = {
 export type GeneratorParameterType =
   | 'video'
   | 'image'
+  | 'image|video'
+  | 'video|image'
   | 'model'
   | 'audio'
   | 'string'
@@ -110,6 +112,7 @@ export type GeneratorParameterV2 = {
   max_length: number | null | undefined
   step: number | null | undefined
   choices: Array<string | number> | null | undefined
+  choices_labels: Array<string> | null | undefined
   hide_from_agent?: boolean
   hide_from_ui?: boolean
   visible_if?: string

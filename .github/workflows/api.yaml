@@ -1,4 +1,4 @@
-name: 'Build and Deploy - API'
+name: 'Build / Deploy - API - PROD'
 
 on:
   workflow_dispatch:
@@ -58,6 +58,11 @@ jobs:
             "EDEN_COMPUTE_API_KEY=${{ secrets.EDEN_COMPUTE_API_KEY }}"
             "EDEN2_FRONTEND_URL=https://beta.eden.art"
             "CLERK_JWT_KEY=${{ secrets.CLERK_JWT_KEY }}"
+  notify:
+    needs: build-and-push-to-ghcr
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Discord Webhook Trigger
         uses: sarisia/actions-status-discord@v1
         if: always()

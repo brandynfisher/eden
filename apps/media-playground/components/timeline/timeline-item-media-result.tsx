@@ -2,6 +2,7 @@ import PrivateIcon from '@/components/icons/private-icon'
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
+import { IntermediateOutputsDialog } from '@/components/timeline/intermediate-outputs-dialog'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { cn } from '@/lib/utils'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
@@ -77,14 +78,18 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
     <div className="p-2 bg-secondary rounded-md">
       <div
-        className={
+        className={cn([
+          'relative',
           (result?.mediaAttributes?.aspectRatio || 1) < 1 &&
           (task.args.n_samples || 1) === 1
             ? 'h-[60dvh] flex justify-center'
-            : ''
-        }
+            : '',
+        ])}
       >
         <MediaResult task={task} result={result} />
+        {result.intermediateOutputs ? (
+          <IntermediateOutputsDialog result={result} />
+        ) : null}
       </div>
       <TimelineItemResultTools
         task={task}
