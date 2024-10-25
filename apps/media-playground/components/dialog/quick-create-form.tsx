@@ -94,7 +94,6 @@ const SimpleGeneratorForm = ({
                   key={param.name}
                   tool={generator}
                   parameter={param}
-                  form={form}
                 />
               )
             })

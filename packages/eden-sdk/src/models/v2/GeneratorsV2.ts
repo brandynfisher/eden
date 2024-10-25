@@ -71,7 +71,7 @@ export type GeneratorV2 = {
   outputType: GeneratorOutputTypeV2
   costEstimate?: string
   resolutions?: string[]
-  thumbnail?: string[]
+  thumbnail?: string
   order?: number
   baseModel?: BaseModelName
 }

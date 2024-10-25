@@ -1,10 +1,8 @@
 import { SliderWithTooltip } from '@/components/ui/custom/slider-with-tooltip'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
-  form: UseFormReturn
   type: 'float' | 'int'
   min: number
   max: number

@@ -16,46 +16,14 @@ import { GeneratorOutputTypeV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 type Props = {
   title: string
   generators?: GeneratorV2[]
+  priority?: boolean
 }
 
-const toolThumbnails: { [key: string]: GeneratorV2['key'] } = {
-  // videos
-  animate_3D: 'animate_3D_opt.mp4',
-  texture_flow: 'style_mixing_opt.mp4',
-  txt2vid: 'txt2vid_opt.mp4',
-  txt2vid_lora: 'txt2vid_lora_opt.mp4',
-  vid2vid_sdxl: 'vid2vid_sdxl_opt.mp4',
-  img2vid: 'img2vid_opt.mp4',
-  vid2vid_sd15: 'vid2vid_sd15_opt.mp4',
-  video_upscaler: 'video_upscaler_opt.mp4',
-
-  // images
-  flux_schnell: 'flux-schnell.png',
-  flux_dev: 'flux.png',
-  background_removal: 'background_removal_opt.mp4',
-  upscaler: 'clarity_upscaler_opt.mp4',
-  face_styler: 'face_styler.png',
-  inpaint: 'inpaint_opt.mp4',
-  outpaint: 'outpaint_opt.mp4',
-  SD3: 'SD3.jpeg',
-  txt2img: 'txt2img.png',
-  img2img: 'img2img.jpeg',
-  layer_diffusion: 'layer_diffusion.png',
-  controlnet: 'controlnet.png',
-  remix: 'remix.png',
-  lora_trainer: 'lora_trainer.png',
-
-  // audio
-  audiocraft: 'audio_craft_opt.mp4',
+const getMediaUrl = (mediaFileName: string) => {
+  return `https://d14i3advvh2bvd.cloudfront.net/${mediaFileName}`
 }
 
-const getMediaUrl = (generatorKey: GeneratorV2['key']) => {
-  const mediaFileName = toolThumbnails[generatorKey]
-
-  return `https://d14i3advvh2bvd.cloudfront.net/app/${mediaFileName}`
-}
-
-const GridSection = ({ generators }: Props) => {
+const GridSection = ({ generators, priority }: Props) => {
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {generators && generators.length ? (
@@ -65,13 +33,14 @@ const GridSection = ({ generators }: Props) => {
               key={generator.key}
               title={generator.name}
               description={generator.description}
-              image={getMediaUrl(generator.key)}
+              image={getMediaUrl(generator.thumbnail || '')}
               link={`/${
                 generator.outputType === 'lora'
                   ? 'train'
                   : `create/${generator.outputType}`
               }/${generator.key}`}
               isPrivate={generator.private}
+              priority={priority}
             />
           ))}
         </>
@@ -116,6 +85,7 @@ const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
               generators={generators?.filter(gen =>
                 siteConfig.featured.tools.includes(gen.key),
               )}
+              priority={true}
             />
           </AccordionContent>
         </AccordionItem>

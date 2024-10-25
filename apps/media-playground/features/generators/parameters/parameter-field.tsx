@@ -16,19 +16,18 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import MaskingCanvas from '@/features/generators/masking-canvas'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
-import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   parameter: GeneratorParameterV2
-  form: UseFormReturn
   tool: GeneratorV2
   className?: string
 }
 
-const ParameterField = ({ parameter, form, tool, className }: Props) => {
+const ParameterField = ({ parameter, tool, className }: Props) => {
   const { name, label } = parameter
 
   return (
@@ -68,7 +67,6 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                 ) : (
                   <SliderInput
                     type={parameter.type}
-                    form={form}
                     min={parameter.minimum || 0}
                     max={parameter.maximum || 1}
                     step={parameter.step ? parameter.step : 1}
@@ -87,7 +85,6 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                 errorMessage={fieldState.error?.message}
               >
                 <SliderInput
-                  form={form}
                   type={parameter.type}
                   min={parameter.minimum || 0}
                   max={parameter.maximum || 1}
@@ -170,12 +167,17 @@ const ParameterField = ({ parameter, form, tool, className }: Props) => {
                     options={parameter.choices}
                   />
                 ) : (
-                  <Input
-                    type="text"
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value || ''}
-                  />
+                  <>
+                    <Input
+                      type="text"
+                      onChange={onChange}
+                      onBlur={onBlur}
+                      value={value || ''}
+                    />
+                    {parameter.name === 'masking_prompt' ? (
+                      <MaskingCanvas />
+                    ) : null}
+                  </>
                 )}
               </FormItemWrap>
             )

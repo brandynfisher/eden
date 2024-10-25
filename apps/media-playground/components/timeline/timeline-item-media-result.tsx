@@ -2,6 +2,7 @@ import PrivateIcon from '@/components/icons/private-icon'
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
+import { IntermediateOutputsDialog } from '@/components/timeline/intermediate-outputs-dialog'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { cn } from '@/lib/utils'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
@@ -43,6 +44,9 @@ export const MediaResult = ({
         height: '-webkit-fill-available',
       }}
     >
+      {result.intermediateOutputs ? (
+        <IntermediateOutputsDialog result={result} />
+      ) : null}
       {!result.creation?.public ? <PrivateIcon /> : null}
       {result.creation === null || result.creation?.deleted ? (
         <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">

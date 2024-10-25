@@ -174,6 +174,11 @@ export type TaskV2Args = {
   resolution?: number
 }
 
+export type MediaResult = {
+  filename: string
+  mediaAttributes?: MediaAttributes
+}
+
 export type TaskV2Result = {
   url?: string
   thumbnail?: string
@@ -183,6 +188,9 @@ export type TaskV2Result = {
   published?: boolean
   model?: ModelV2
   creation?: CreationV2
+  intermediateOutputs?: {
+    inpaint_preview?: MediaResult[]
+  }
 }
 
 export type TaskV2 = {

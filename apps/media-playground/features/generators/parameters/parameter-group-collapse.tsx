@@ -31,7 +31,6 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
         <ParameterField
           tool={tool}
           parameter={group.toggle}
-          form={form}
           className={cn([
             'border transition-colors',
             isOpen
@@ -52,7 +51,6 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
             key={param.name}
             tool={tool}
             parameter={param}
-            form={form}
             className="bg-muted-darker mx-2"
           />
         ))}

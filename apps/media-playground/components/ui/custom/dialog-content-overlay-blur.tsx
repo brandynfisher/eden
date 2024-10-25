@@ -1,3 +1,5 @@
+'use client'
+
 import { DialogOverlay, DialogPortal } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
