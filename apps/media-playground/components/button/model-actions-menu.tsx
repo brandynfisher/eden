@@ -96,7 +96,7 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
           <Link
             className="cursor-pointer"
             href={`/create/image/${
-              model.base_model === 'sdxl' ? 'txt2img' : 'flux-dev'
+              model.base_model === 'sdxl' ? 'txt2img' : 'flux_dev'
             }?lora=${model._id}`}
           >
             <ComponentIcon className="mr-2 h-4 w-4" />
