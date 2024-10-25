@@ -167,7 +167,7 @@ const ParameterField = ({ parameter, tool, form, className }: Props) => {
                     onChange={onChange}
                     value={value}
                     options={parameter.choices}
-                    optionLabels={parameter.choices_label || undefined}
+                    optionLabels={parameter.choices_labels || undefined}
                   />
                 ) : (
                   <>
@@ -324,7 +324,8 @@ const ParameterField = ({ parameter, tool, form, className }: Props) => {
                   maxFiles={1}
                   allowMultiple={false}
                 />
-                {parameter.name === 'mask_image' ? (
+                {/* //@todo: enable this by changing name */}
+                {parameter.name === 'mask_image_NOTYETNOTYETNOTYET' ? (
                   <MaskingCanvas baseImageFieldName={'image'} form={form} />
                 ) : null}
                 <FormMessage>{fieldState.error?.message}</FormMessage>

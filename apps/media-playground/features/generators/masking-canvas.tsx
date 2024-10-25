@@ -20,6 +20,11 @@ type MaskingCanvasProps = {
   height?: number
 }
 
+type Stroke = {
+  imageDataUrl: string
+  lineOpacity: number
+}
+
 const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   form,
   baseImageFieldName,
@@ -30,9 +35,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
 
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const [isDrawing, setIsDrawing] = useState<boolean>(false)
-  const [history, setHistory] = useState<string[]>([])
-  const [redoStack, setRedoStack] = useState<string[]>([])
-  const [lineWidth, setLineWidth] = useState<number>(5)
+  const [history, setHistory] = useState<Stroke[]>([])
+  const [redoStack, setRedoStack] = useState<Stroke[]>([])
+  const [lineWidth, setLineWidth] = useState<number>(15)
   const [lineOpacity, setLineOpacity] = useState<number>(1)
   const [imageOpacity, setImageOpacity] = useState<number>(0.5)
   const [imageDimensions, setImageDimensions] = useState<{
@@ -82,10 +87,11 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           overlayCanvasRef.current.width,
           overlayCanvasRef.current.height,
         )
-        history.forEach(imgDataUrl => {
+        history.forEach(({ imageDataUrl, lineOpacity }) => {
           const img = new Image()
-          img.src = imgDataUrl
+          img.src = imageDataUrl
           img.onload = () => {
+            ctx.globalAlpha = lineOpacity
             ctx.drawImage(img, 0, 0)
           }
         })
@@ -95,15 +101,16 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (overlayCanvasRef.current) {
+      setIsDrawing(true)
       const { offsetX, offsetY } = e.nativeEvent
       const ctx = overlayCanvasRef.current.getContext('2d')
       if (ctx) {
         ctx.lineWidth = lineWidth
-        ctx.globalAlpha = lineOpacity
         ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+        ctx.globalAlpha = lineOpacity
         ctx.beginPath()
         ctx.moveTo(offsetX, offsetY)
-        setIsDrawing(true)
       }
     }
   }
@@ -119,17 +126,24 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   }
 
   const endDrawing = () => {
-    if (!isDrawing || !overlayCanvasRef.current) return
-    const ctx = overlayCanvasRef.current.getContext('2d')
-    if (ctx) {
-      ctx.closePath()
-    }
-    setHistory(prevHistory => {
-      const newHistory = [...prevHistory, overlayCanvasRef.current!.toDataURL()]
-      setRedoStack([])
-      return newHistory
-    })
+    if (!isDrawing) return
     setIsDrawing(false)
+
+    if (overlayCanvasRef.current) {
+      const ctx = overlayCanvasRef.current.getContext('2d')
+      if (ctx) {
+        ctx.closePath()
+        const currentImageData = overlayCanvasRef.current.toDataURL()
+        setHistory(prevHistory => {
+          const newHistory = [
+            ...prevHistory,
+            { imageDataUrl: currentImageData, lineOpacity },
+          ]
+          setRedoStack([])
+          return newHistory
+        })
+      }
+    }
   }
 
   const undo = () => {
@@ -144,17 +158,17 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
 
   const redo = () => {
     if (redoStack.length > 0) {
-      const [redoImg, ...remainingRedoStack] = redoStack
+      const [redoStroke, ...remainingRedoStack] = redoStack
       setRedoStack(remainingRedoStack)
       setHistory(prevHistory => {
-        const newHistory = [...prevHistory, redoImg]
+        const newHistory = [...prevHistory, redoStroke]
         redrawHistoryWithHistory(newHistory)
         return newHistory
       })
     }
   }
 
-  const redrawHistoryWithHistory = (historyToDraw: string[]) => {
+  const redrawHistoryWithHistory = (historyToDraw: Stroke[]) => {
     if (overlayCanvasRef.current) {
       const ctx = overlayCanvasRef.current.getContext('2d')
       if (ctx) {
@@ -164,10 +178,11 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           overlayCanvasRef.current.width,
           overlayCanvasRef.current.height,
         )
-        historyToDraw.forEach(imgDataUrl => {
+        historyToDraw.forEach(({ imageDataUrl, lineOpacity }) => {
           const img = new Image()
-          img.src = imgDataUrl
+          img.src = imageDataUrl
           img.onload = () => {
+            ctx.globalAlpha = lineOpacity
             ctx.drawImage(img, 0, 0)
           }
         })
@@ -209,10 +224,8 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   }
 
   return (
-    <div className="w-full max-w-lg mx-auto flex flex-col items-center gap-2">
-      <div
-        className={`relative w-full rounded-md overflow-hidden border border-secondary`}
-      >
+    <div className="w-full max-w-lg mx-auto flex flex-col items-center">
+      <div className="relative w-full rounded-md overflow-hidden border border-purple-600 mb-2">
         {baseImage && (
           <NextImage
             src={baseImage}
@@ -237,14 +250,24 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           onMouseMove={draw}
           onMouseUp={endDrawing}
           onMouseLeave={endDrawing}
+          width={width}
+          height={height}
           style={{
             aspectRatio: imageDimensions
               ? `${imageDimensions.width} / ${imageDimensions.height}`
               : '1',
           }}
         />
+
+        {history.length === 0 && !isDrawing && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-popover-foreground text-shadow-sm shadow-popover text-lg">
+            <div className="bg-accent bg-opacity-70 rounded-md py-1 px-2">
+              Draw a mask here
+            </div>
+          </div>
+        )}
       </div>
-      <div className="flex flex-wrap gap-2 w-full">
+      <div className="flex flex-wrap gap-2 w-full bg-secondary p-1 rounded-md">
         <div>
           <Button
             type="button"
