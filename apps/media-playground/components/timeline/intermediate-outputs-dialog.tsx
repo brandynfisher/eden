@@ -34,7 +34,7 @@ export const IntermediateOutputsDialog = ({ result }: Props) => {
       <DialogTrigger>
         <div
           title="View Intermediate Outputs"
-          className="absolute right-2 bottom-2 bg-purple-600/80 hover:bg-purple-600 cursor-pointer drop-shadow rounded-md p-1 text-sm flex items-center"
+          className="absolute right-2 bottom-2 bg-purple-600/60 hover:bg-purple-600 border border-purple-600 cursor-pointer drop-shadow rounded-md p-1 text-xs flex items-center"
         >
           <ImageIcon className="h-3 w-3 mr-1" />
           <div className="font-mono">+{totalArrayElements}</div>
